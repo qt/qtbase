@@ -485,7 +485,26 @@ Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);
 
 class QSemaphore;
-class Q_CORE_EXPORT QMetaCallEvent : public QEvent
+class Q_CORE_EXPORT QAbstractMetaCallEvent : public QEvent
+{
+public:
+    QAbstractMetaCallEvent(const QObject *sender, int signalId, QSemaphore *semaphore = nullptr)
+        : QEvent(MetaCall), signalId_(signalId), sender_(sender), semaphore_(semaphore)
+    {}
+    ~QAbstractMetaCallEvent();
+
+    virtual void placeMetaCall(QObject *object) = 0;
+
+    inline const QObject *sender() const { return sender_; }
+    inline int signalId() const { return signalId_; }
+
+private:
+    int signalId_;
+    const QObject *sender_;
+    QSemaphore *semaphore_;
+};
+
+class Q_CORE_EXPORT QMetaCallEvent : public QAbstractMetaCallEvent
 {
 public:
     QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
@@ -496,23 +515,18 @@ public:
     QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
                    int nargs = 0, int *types = nullptr, void **args = nullptr, QSemaphore *semaphore = nullptr);
 
-    ~QMetaCallEvent();
+    ~QMetaCallEvent() override;
 
     inline int id() const { return method_offset_ + method_relative_; }
-    inline const QObject *sender() const { return sender_; }
-    inline int signalId() const { return signalId_; }
     inline void **args() const { return args_; }
 
-    virtual void placeMetaCall(QObject *object);
+    virtual void placeMetaCall(QObject *object) override;
 
 private:
     QtPrivate::QSlotObjectBase *slotObj_;
-    const QObject *sender_;
-    int signalId_;
     int nargs_;
     int *types_;
     void **args_;
-    QSemaphore *semaphore_;
     QObjectPrivate::StaticMetaCallFunction callFunction_;
     ushort method_offset_;
     ushort method_relative_;

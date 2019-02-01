@@ -101,36 +101,37 @@ struct QDBusSlotCache
 Q_DECLARE_SHARED(QDBusSlotCache::Data)
 Q_DECLARE_SHARED(QDBusSlotCache)
 
-class QDBusCallDeliveryEvent: public QMetaCallEvent
+class QDBusCallDeliveryEvent: public QAbstractMetaCallEvent
 {
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
                            const QDBusMessage &msg, const QVector<int> &types, int f = 0)
-        : QMetaCallEvent(0, id, nullptr, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
+        : QAbstractMetaCallEvent(sender, -1), connection(c), message(msg), metaTypes(types), id(id), flags(f)
         { }
 
     void placeMetaCall(QObject *object) override
     {
-        QDBusConnectionPrivate::d(connection)->deliverCall(object, flags, message, metaTypes, id());
+        QDBusConnectionPrivate::d(connection)->deliverCall(object, flags, message, metaTypes, id);
     }
 
 private:
     QDBusConnection connection; // just for refcounting
     QDBusMessage message;
     QVector<int> metaTypes;
+    int id;
     int flags;
 };
 
-class QDBusActivateObjectEvent: public QMetaCallEvent
+class QDBusActivateObjectEvent: public QAbstractMetaCallEvent
 {
 public:
     QDBusActivateObjectEvent(const QDBusConnection &c, QObject *sender,
                              const QDBusConnectionPrivate::ObjectTreeNode &n,
                              int p, const QDBusMessage &m, QSemaphore *s = nullptr)
-        : QMetaCallEvent(0, ushort(-1), nullptr, sender, -1, 0, nullptr, nullptr, s), connection(c), node(n),
+        : QAbstractMetaCallEvent(sender, -1, s), connection(c), node(n),
           pathStartPos(p), message(m), handled(false)
         { }
-    ~QDBusActivateObjectEvent();
+    ~QDBusActivateObjectEvent() override;
 
     void placeMetaCall(QObject *) override;
 
@@ -142,15 +143,15 @@ private:
     bool handled;
 };
 
-class QDBusSpyCallEvent : public QMetaCallEvent
+class QDBusSpyCallEvent : public QAbstractMetaCallEvent
 {
 public:
     typedef void (*Hook)(const QDBusMessage&);
     QDBusSpyCallEvent(QDBusConnectionPrivate *cp, const QDBusConnection &c, const QDBusMessage &msg,
                       const Hook *hooks, int count)
-        : QMetaCallEvent(0, 0, nullptr, cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
+        : QAbstractMetaCallEvent(cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
     {}
-    ~QDBusSpyCallEvent();
+    ~QDBusSpyCallEvent() override;
     void placeMetaCall(QObject *) override;
     static inline void invokeSpyHooks(const QDBusMessage &msg, const Hook *hooks, int hookCount);
 

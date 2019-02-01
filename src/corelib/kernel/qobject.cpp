@@ -420,6 +420,16 @@ bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
     return false;
 }
 
+/*!
+    \internal
+ */
+QAbstractMetaCallEvent::~QAbstractMetaCallEvent()
+{
+#if QT_CONFIG(thread)
+    if (semaphore_)
+        semaphore_->release();
+#endif
+}
 
 /*!
     \internal
@@ -427,8 +437,8 @@ bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
 QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction,
                                const QObject *sender, int signalId,
                                int nargs, int *types, void **args, QSemaphore *semaphore)
-    : QEvent(MetaCall), slotObj_(0), sender_(sender), signalId_(signalId),
-      nargs_(nargs), types_(types), args_(args), semaphore_(semaphore),
+    : QAbstractMetaCallEvent(sender, signalId, semaphore),
+      slotObj_(nullptr), nargs_(nargs), types_(types), args_(args),
       callFunction_(callFunction), method_offset_(method_offset), method_relative_(method_relative)
 { }
 
@@ -437,9 +447,9 @@ QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QOb
  */
 QMetaCallEvent::QMetaCallEvent(QtPrivate::QSlotObjectBase *slotO, const QObject *sender, int signalId,
                                int nargs, int *types, void **args, QSemaphore *semaphore)
-    : QEvent(MetaCall), slotObj_(slotO), sender_(sender), signalId_(signalId),
-      nargs_(nargs), types_(types), args_(args), semaphore_(semaphore),
-      callFunction_(0), method_offset_(0), method_relative_(ushort(-1))
+    : QAbstractMetaCallEvent(sender, signalId, semaphore),
+      slotObj_(slotO), nargs_(nargs), types_(types), args_(args),
+      callFunction_(nullptr), method_offset_(0), method_relative_(ushort(-1))
 {
     if (slotObj_)
         slotObj_->ref();
@@ -458,10 +468,6 @@ QMetaCallEvent::~QMetaCallEvent()
         free(types_);
         free(args_);
     }
-#if QT_CONFIG(thread)
-    if (semaphore_)
-        semaphore_->release();
-#endif
     if (slotObj_)
         slotObj_->destroyIfLastRef();
 }
@@ -1179,7 +1185,7 @@ bool QObject::event(QEvent *e)
 
     case QEvent::MetaCall:
         {
-            QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
+            QAbstractMetaCallEvent *mce = static_cast<QAbstractMetaCallEvent*>(e);
 
             if (!d_func()->connections.load()) {
                 QBasicMutexLocker locker(signalSlotLock(this));
