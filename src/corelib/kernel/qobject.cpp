@@ -161,7 +161,6 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 #endif
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
-void (*QAbstractDeclarativeData::destroyed_qml1)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
@@ -1013,15 +1012,8 @@ QObject::~QObject()
         emit destroyed(this);
     }
 
-    if (d->declarativeData) {
-        if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
-            if (QAbstractDeclarativeData::destroyed_qml1)
-                QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
-        } else {
-            if (QAbstractDeclarativeData::destroyed)
-                QAbstractDeclarativeData::destroyed(d->declarativeData, this);
-        }
-    }
+    if (d->declarativeData && QAbstractDeclarativeData::destroyed)
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
 
     QObjectPrivate::ConnectionData *cd = d->connections.loadRelaxed();
     if (cd) {

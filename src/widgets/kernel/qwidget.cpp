@@ -1513,13 +1513,8 @@ QWidget::~QWidget()
 
     if (d->declarativeData) {
         d->wasDeleted = true; // needed, so that destroying the declarative data does the right thing
-        if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
-            if (QAbstractDeclarativeData::destroyed_qml1)
-                QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
-        } else {
-            if (QAbstractDeclarativeData::destroyed)
-                QAbstractDeclarativeData::destroyed(d->declarativeData, this);
-        }
+        if (QAbstractDeclarativeData::destroyed)
+            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
         d->wasDeleted = false;
     }

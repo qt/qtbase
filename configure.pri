@@ -699,7 +699,6 @@ defineReplace(printInstallPaths) {
         $$printInstallPath(LibraryExecutables, libexecdir, $$DEFAULT_LIBEXEC) \
         $$printInstallPath(Binaries, bindir, bin) \
         $$printInstallPath(Plugins, plugindir, plugins) \
-        $$printInstallPath(Imports, importdir, imports) \
         $$printInstallPath(Qml2Imports, qmldir, qml) \
         $$printInstallPath(ArchData, archdatadir, .) \
         $$printInstallPath(Data, datadir, .) \
@@ -794,7 +793,6 @@ defineTest(qtConfOutput_preparePaths) {
         archdata_pfx = $$config.rel_input.archdatadir/
     processQtPath("", libexecdir, $${archdata_pfx}$$DEFAULT_LIBEXEC)
     processQtPath("", plugindir, $${archdata_pfx}plugins)
-    processQtPath("", importdir, $${archdata_pfx}imports)
     processQtPath("", qmldir, $${archdata_pfx}qml)
     processQtPath("", sysconfdir, $$DEFAULT_SYSCONFDIR)
     $$have_hostprefix {
@@ -838,7 +836,6 @@ defineTest(qtConfOutput_preparePaths) {
     addConfStr($$config.rel_input.libexecdir)
     addConfStr($$config.rel_input.bindir)
     addConfStr($$config.rel_input.plugindir)
-    addConfStr($$config.rel_input.importdir)
     addConfStr($$config.rel_input.qmldir)
     addConfStr($$config.rel_input.archdatadir)
     addConfStr($$config.rel_input.datadir)

@@ -79,7 +79,6 @@ public:
         LibraryExecutablesPath,
         BinariesPath,
         PluginsPath,
-        ImportsPath,
         Qml2ImportsPath,
         ArchDataPath,
         DataPath,

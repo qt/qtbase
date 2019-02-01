@@ -419,7 +419,6 @@ static const struct {
 #endif
     { "Binaries", "bin" },
     { "Plugins", "plugins" }, // should be ${ArchData}/plugins
-    { "Imports", "imports" }, // should be ${ArchData}/imports
     { "Qml2Imports", "qml" }, // should be ${ArchData}/qml
     { "ArchData", "." },
     { "Data", "." },
@@ -834,7 +833,6 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \value LibraryExecutablesPath The location of installed executables required by libraries at runtime.
     \value BinariesPath The location of installed Qt binaries (tools and applications).
     \value PluginsPath The location of installed Qt plugins.
-    \value ImportsPath The location of installed QML extensions to import (QML 1.x).
     \value Qml2ImportsPath The location of installed QML extensions to import (QML 2.x).
     \value ArchDataPath The location of general architecture-dependent Qt data.
     \value DataPath The location of general architecture-independent Qt data.

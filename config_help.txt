@@ -38,8 +38,7 @@ except -sysconfdir should be located under -prefix/-hostprefix:
   -plugindir <dir> ...... Plugins [ARCHDATADIR/plugins]
   -libexecdir <dir> ..... Helper programs [ARCHDATADIR/bin on Windows,
                           ARCHDATADIR/libexec otherwise]
-  -importdir <dir> ...... QML1 imports [ARCHDATADIR/imports]
-  -qmldir <dir> ......... QML2 imports [ARCHDATADIR/qml]
+  -qmldir <dir> ......... QML imports [ARCHDATADIR/qml]
   -datadir <dir> ........ Arch-independent data [PREFIX]
   -docdir <dir> ......... Documentation [DATADIR/doc]
   -translationdir <dir> . Translations [DATADIR/translations]

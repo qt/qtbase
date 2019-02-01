@@ -40,7 +40,6 @@
             "hostbindir": "string",
             "hostdatadir": "string",
             "hostlibdir": "string",
-            "importdir": "string",
             "libdir": "string",
             "libexecdir": "string",
             "plugindir": "string",
