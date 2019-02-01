@@ -73,7 +73,7 @@ public:
     {
         Q_Q(QWidgetWindow);
         if (QWidget *widget = q->widget())
-            widget->setVisible(visible);
+            QWidgetPrivate::get(widget)->setVisible(visible);
         else
             QWindowPrivate::setVisible(visible);
     }
