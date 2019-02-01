@@ -84,9 +84,9 @@ extern "C" int main(int, char **);
 // when passed CP_ACP.
 static inline char *wideToMulti(int codePage, const wchar_t *aw)
 {
-    const int required = WideCharToMultiByte(codePage, 0, aw, -1, NULL, 0, NULL, NULL);
+    const int required = WideCharToMultiByte(codePage, 0, aw, -1, nullptr, 0, nullptr, nullptr);
     char *result = new char[required];
-    WideCharToMultiByte(codePage, 0, aw, -1, result, required, NULL, NULL);
+    WideCharToMultiByte(codePage, 0, aw, -1, result, required, nullptr, nullptr);
     return result;
 }
 
