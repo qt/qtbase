@@ -2585,6 +2585,9 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
         { //actually compile
             t << subtarget->target << ":";
+            auto extraDeps = extraSubTargetDependencies();
+            if (!extraDeps.isEmpty())
+                t << " " << valList(extraDeps);
             if(!subtarget->depends.isEmpty())
                 t << " " << valList(subtarget->depends);
             t << " FORCE";
