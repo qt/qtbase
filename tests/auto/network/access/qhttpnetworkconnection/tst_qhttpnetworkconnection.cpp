@@ -50,6 +50,7 @@ private:
     bool finishedCalled;
     bool finishedWithErrorCalled;
     QNetworkReply::NetworkError netErrorCode;
+    QString (*httpServerName)() = QtNetworkSettings::httpServerName;
 
 private Q_SLOTS:
     void initTestCase();
@@ -101,7 +102,11 @@ private Q_SLOTS:
 
 void tst_QHttpNetworkConnection::initTestCase()
 {
+#if defined(QT_TEST_SERVER)
+    QVERIFY(QtNetworkSettings::verifyConnection(httpServerName(), 80));
+#else
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+#endif
 }
 
 void tst_QHttpNetworkConnection::options_data()
@@ -126,10 +131,9 @@ void tst_QHttpNetworkConnection::head_data()
     QTest::addColumn<QString>("statusString");
     QTest::addColumn<int>("contentLength");
 
-    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962;
-
-    QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1;
-    QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1;
+    QTest::newRow("success-internal") << "http://" << httpServerName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962;
+    QTest::newRow("failure-path") << "http://" << httpServerName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1;
+    QTest::newRow("failure-protocol") << "" << httpServerName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1;
 }
 
 void tst_QHttpNetworkConnection::head()
@@ -175,10 +179,10 @@ void tst_QHttpNetworkConnection::get_data()
     QTest::addColumn<int>("contentLength");
     QTest::addColumn<int>("downloadSize");
 
-    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
+    QTest::newRow("success-internal") << "http://" << httpServerName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
 
-    QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << -1;
-    QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << -1;
+    QTest::newRow("failure-path") << "http://" << httpServerName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << -1;
+    QTest::newRow("failure-protocol") << "" << httpServerName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << -1;
 }
 
 void tst_QHttpNetworkConnection::get()
@@ -244,8 +248,8 @@ void tst_QHttpNetworkConnection::put_data()
     QTest::addColumn<QString>("data");
     QTest::addColumn<bool>("succeed");
 
-    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/dav/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<true;
-    QTest::newRow("fail-internal") << "http://" << QtNetworkSettings::serverName() << "/dav2/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<false;
+    QTest::newRow("success-internal") << "http://" << httpServerName() << "/dav/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<true;
+    QTest::newRow("fail-internal") << "http://" << httpServerName() << "/dav2/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<false;
     QTest::newRow("fail-host") << "http://" << "invalid.test.qt-project.org" << "/dav2/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<false;
 }
 
@@ -324,8 +328,8 @@ void tst_QHttpNetworkConnection::post_data()
     QTest::addColumn<int>("contentLength");
     QTest::addColumn<int>("downloadSize");
 
-    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
-    QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << -1;
+    QTest::newRow("success-internal") << "http://" << httpServerName() << "/qtest/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
+    QTest::newRow("failure-internal") << "http://" << httpServerName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << -1;
 }
 
 void tst_QHttpNetworkConnection::post()
@@ -449,11 +453,11 @@ void tst_QHttpNetworkConnection::get401_data()
     QTest::addColumn<QString>("password");
     QTest::addColumn<int>("statusCode");
 
-    QTest::newRow("no-credentials") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << false << "" << ""<<401;
-    QTest::newRow("invalid-credentials") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << true << "test" << "test"<<401;
-    QTest::newRow("valid-credentials") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << true << "httptest" << "httptest"<<200;
-    QTest::newRow("digest-authentication-invalid") << "http://" << QtNetworkSettings::serverName() << "/qtest/auth-digest/index.html" << ushort(80) << false << true << "wrong" << "wrong"<<401;
-    QTest::newRow("digest-authentication-valid") << "http://" << QtNetworkSettings::serverName() << "/qtest/auth-digest/index.html" << ushort(80) << false << true << "httptest" << "httptest"<<200;
+    QTest::newRow("no-credentials") << "http://" << httpServerName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << false << "" << ""<<401;
+    QTest::newRow("invalid-credentials") << "http://" << httpServerName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << true << "test" << "test"<<401;
+    QTest::newRow("valid-credentials") << "http://" << httpServerName() << "/qtest/rfcs-auth/index.html" << ushort(80) << false << true << "httptest" << "httptest"<<200;
+    QTest::newRow("digest-authentication-invalid") << "http://" << httpServerName() << "/qtest/auth-digest/index.html" << ushort(80) << false << true << "wrong" << "wrong"<<401;
+    QTest::newRow("digest-authentication-valid") << "http://" << httpServerName() << "/qtest/auth-digest/index.html" << ushort(80) << false << true << "httptest" << "httptest"<<200;
 }
 
 void tst_QHttpNetworkConnection::get401()
@@ -508,9 +512,9 @@ void tst_QHttpNetworkConnection::compression_data()
     QTest::addColumn<bool>("autoCompress");
     QTest::addColumn<QString>("contentCoding");
 
-    QTest::newRow("success-autogzip-temp") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs/rfc2616.html" << ushort(80) << false << 200 << "OK" << -1 << 418321 << true << "";
-    QTest::newRow("success-nogzip-temp") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfcs/rfc2616.html" << ushort(80) << false << 200 << "OK" << 418321 << 418321 << false << "identity";
-    QTest::newRow("success-manualgzip-temp") << "http://" << QtNetworkSettings::serverName() << "/qtest/deflate/rfc2616.html" << ushort(80) << false << 200 << "OK" << 119124 << 119124 << false << "gzip";
+    QTest::newRow("success-autogzip-temp") << "http://" << httpServerName() << "/qtest/rfcs/rfc2616.html" << ushort(80) << false << 200 << "OK" << -1 << 418321 << true << "";
+    QTest::newRow("success-nogzip-temp") << "http://" << httpServerName() << "/qtest/rfcs/rfc2616.html" << ushort(80) << false << 200 << "OK" << 418321 << 418321 << false << "identity";
+    QTest::newRow("success-manualgzip-temp") << "http://" << httpServerName() << "/qtest/deflate/rfc2616.html" << ushort(80) << false << 200 << "OK" << 119124 << 119124 << false << "gzip";
 
 }
 
@@ -586,9 +590,9 @@ void tst_QHttpNetworkConnection::ignoresslerror_data()
     // fluke's certificate is signed by a non-standard authority.
     // Since we don't introduce that CA into the SSL verification chain,
     // connecting should fail.
-    QTest::newRow("success-init") << "https://" << QtNetworkSettings::serverName() << "/" << ushort(443) << true << true << false << 200;
-    QTest::newRow("success-fromSignal") << "https://" << QtNetworkSettings::serverName() << "/" << ushort(443) << true << false << true << 200;
-    QTest::newRow("failure") << "https://" << QtNetworkSettings::serverName() << "/" << ushort(443) << true << false << false << 100;
+    QTest::newRow("success-init") << "https://" << httpServerName() << "/" << ushort(443) << true << true << false << 200;
+    QTest::newRow("success-fromSignal") << "https://" << httpServerName() << "/" << ushort(443) << true << false << true << 200;
+    QTest::newRow("failure") << "https://" << httpServerName() << "/" << ushort(443) << true << false << false << 100;
 }
 
 void tst_QHttpNetworkConnection::ignoresslerror()
@@ -635,7 +639,7 @@ void tst_QHttpNetworkConnection::nossl_data()
     QTest::addColumn<bool>("encrypt");
     QTest::addColumn<QNetworkReply::NetworkError>("networkError");
 
-    QTest::newRow("protocol-error") << "https://" << QtNetworkSettings::serverName() << "/" << ushort(443) << true <<QNetworkReply::ProtocolUnknownError;
+    QTest::newRow("protocol-error") << "https://" << httpServerName() << "/" << ushort(443) << true <<QNetworkReply::ProtocolUnknownError;
 }
 
 void tst_QHttpNetworkConnection::nossl()
@@ -696,7 +700,7 @@ void tst_QHttpNetworkConnection::getMultiple()
     QFETCH(bool, pipeliningAllowed);
     QFETCH(int, requestCount);
 
-    QHttpNetworkConnection connection(connectionCount, QtNetworkSettings::serverName());
+    QHttpNetworkConnection connection(connectionCount, httpServerName());
 
     QList<QHttpNetworkRequest*> requests;
     QList<QHttpNetworkReply*> replies;
@@ -705,7 +709,7 @@ void tst_QHttpNetworkConnection::getMultiple()
         // depending on what you use the results will vary.
         // for the "real" results, use a URL that has "internet latency" for you. Then (6 connections, pipelining) will win.
         // for LAN latency, you will possibly get that (1 connection, no pipelining) is the fastest
-        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + httpServerName() + "/qtest/rfc3252.txt");
         if (pipeliningAllowed)
             request->setPipeliningAllowed(true);
         requests.append(request);
@@ -723,7 +727,7 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     quint16 requestCount = 100;
 
     // use 2 connections.
-    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+    QHttpNetworkConnection connection(2, httpServerName());
 
     QList<QHttpNetworkRequest*> requests;
     QList<QHttpNetworkReply*> replies;
@@ -731,9 +735,9 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     for (int i = 0; i < requestCount; i++) {
         QHttpNetworkRequest *request = 0;
         if (i % 3)
-            request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Get);
+            request = new QHttpNetworkRequest("http://" + httpServerName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Get);
         else
-            request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Head);
+            request = new QHttpNetworkRequest("http://" + httpServerName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Head);
 
         if (i % 2 || i % 3)
             request->setPipeliningAllowed(true);
@@ -800,9 +804,9 @@ void tst_QHttpNetworkConnection::getMultipleWithPriorities()
 {
     quint16 requestCount = 100;
     // use 2 connections.
-    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+    QHttpNetworkConnection connection(2, httpServerName());
     GetMultipleWithPrioritiesReceiver receiver(requestCount);
-    QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+    QUrl url("http://" + httpServerName() + "/qtest/rfc3252.txt");
     QList<QHttpNetworkRequest*> requests;
     QList<QHttpNetworkReply*> replies;
 
@@ -854,10 +858,10 @@ void tst_QHttpNetworkConnection::getEmptyWithPipelining()
 {
     quint16 requestCount = 50;
     // use 2 connections.
-    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+    QHttpNetworkConnection connection(2, httpServerName());
     GetEmptyWithPipeliningReceiver receiver(requestCount);
 
-    QUrl url("http://" + QtNetworkSettings::serverName() + "/cgi-bin/echo.cgi"); // a get on this = getting an empty file
+    QUrl url("http://" + httpServerName() + "/cgi-bin/echo.cgi"); // a get on this = getting an empty file
     QList<QHttpNetworkRequest*> requests;
     QList<QHttpNetworkReply*> replies;
 
@@ -901,8 +905,8 @@ void tst_QHttpNetworkConnection::getAndEverythingShouldBePipelined()
 {
     quint16 requestCount = 100;
     // use 1 connection.
-    QHttpNetworkConnection connection(1, QtNetworkSettings::serverName());
-    QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+    QHttpNetworkConnection connection(1, httpServerName());
+    QUrl url("http://" + httpServerName() + "/qtest/rfc3252.txt");
     QList<QHttpNetworkRequest*> requests;
     QList<QHttpNetworkReply*> replies;
 
@@ -937,8 +941,8 @@ void tst_QHttpNetworkConnection::getAndThenDeleteObject_data()
 void tst_QHttpNetworkConnection::getAndThenDeleteObject()
 {
     // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
-    QHttpNetworkConnection *connection = new QHttpNetworkConnection(QtNetworkSettings::serverName());
-    QHttpNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
+    QHttpNetworkConnection *connection = new QHttpNetworkConnection(httpServerName());
+    QHttpNetworkRequest request("http://" + httpServerName() + "/qtest/bigfile");
     QHttpNetworkReply *reply = connection->sendRequest(request);
     reply->setDownstreamLimited(true);
 

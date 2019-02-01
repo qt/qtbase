@@ -73,5 +73,8 @@ touch -d "2007-05-22 12:04:57 GMT" /home/$USER/www/htdocs/fluke.gif
 # Create 10MB file for use by tst_Q*::downloadBigFile and interruption tests:
 su $USER -c "/bin/dd if=/dev/zero of=~/www/htdocs/mediumfile bs=1 count=0 seek=10000000"
 
+# Emulate test server's hierarchy:
+su $USER -c "ln -s ~/www/htdocs/rfcs/rfc2616.html ~/www/htdocs/deflate/"
+
 # enable service with installed configurations
 service apache2 restart
