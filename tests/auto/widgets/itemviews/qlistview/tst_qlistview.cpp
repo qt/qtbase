@@ -380,8 +380,11 @@ void tst_QListView::cursorMove()
              << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Left << Qt::Key_Up << Qt::Key_Down;
 
-    int displayRow    = rows / displayColumns - 1;
-    int displayColumn = displayColumns - (rows % displayColumns) - 1;
+    int lastRow = rows / displayColumns - 1;
+    int lastColumn = displayColumns - 1;
+
+    int displayRow    = lastRow;
+    int displayColumn = lastColumn - (rows % displayColumns);
 
     QApplication::instance()->processEvents();
     for (int i = 0; i < keymoves.size(); ++i) {
@@ -395,10 +398,24 @@ void tst_QListView::cursorMove()
             displayRow = qMin(rows / displayColumns - 1, displayRow + 1);
             break;
         case Qt::Key_Left:
-            displayColumn = qMax(0, displayColumn - 1);
+            if (displayColumn > 0) {
+                displayColumn--;
+            } else {
+                if (displayRow > 0) {
+                    displayRow--;
+                    displayColumn = lastColumn;
+                }
+            }
             break;
         case Qt::Key_Right:
-            displayColumn = qMin(displayColumns-1, displayColumn + 1);
+            if (displayColumn < lastColumn) {
+                displayColumn++;
+            } else {
+                if (displayRow < lastRow) {
+                    displayRow++;
+                    displayColumn = 0;
+                }
+            }
             break;
         default:
             QVERIFY(false);
