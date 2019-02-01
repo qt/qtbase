@@ -39,7 +39,7 @@
 
 #include <algorithm>
 
-#define TESTFILE QLatin1String("http://") + QtNetworkSettings::serverName() + QLatin1String("/qtest/cgi-bin/")
+#define TESTFILE QLatin1String("http://") + QtNetworkSettings::httpServerName() + QLatin1String("/qtest/cgi-bin/")
 
 class tst_QAbstractNetworkCache : public QObject
 {
@@ -127,8 +127,13 @@ Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
 
 void tst_QAbstractNetworkCache::initTestCase()
 {
+#if defined(QT_TEST_SERVER)
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
+
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     networkConfiguration = netConfMan->defaultConfiguration();
