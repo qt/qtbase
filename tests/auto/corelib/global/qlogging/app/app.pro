@@ -14,8 +14,7 @@ QT = core
 
 DESTDIR = ./
 
-CONFIG -= app_bundle
-CONFIG += console
+CONFIG += cmdline
 
 SOURCES += main.cpp
 DEFINES += QT_MESSAGELOGCONTEXT

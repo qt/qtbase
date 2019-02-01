@@ -2,8 +2,7 @@ TEMPLATE = app
 TARGET = highdpi
 INCLUDEPATH += .
 QT += widgets gui-private
-CONFIG +=console
-CONFIG -= app_bundle
+CONFIG += cmdline
 CONFIG += c++11
 # Input
 SOURCES += \

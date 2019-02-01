@@ -1,6 +1,6 @@
 SOURCES = main.cpp
-CONFIG -= qt app_bundle
-CONFIG += console
+CONFIG -= qt
+CONFIG += cmdline
 
 win32:!mingw:!equals(TEMPLATE_PREFIX, "vc"):QMAKE_CXXFLAGS += /GS-
 DESTDIR = ./

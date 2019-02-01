@@ -1060,8 +1060,12 @@
         proper include paths, compiler flags and libraries will
         automatically be added to the project.
     \row \li console \li The target is a Win32 console application (app only). The
-        proper include paths, compiler flags and libraries will
-        automatically be added to the project.
+        proper include paths, compiler flags and libraries will automatically be
+        added to the project. Consider using the option \c{cmdline} for
+        cross-platform applications.
+    \row \li cmdline \li The target is a cross-platform command line application.
+        On Windows, this implies \c{CONFIG += console}.
+        On macOS, this implies \c{CONFIG -= app_bundle}.
     \row \li shared \li{1,2} The target is a shared object/DLL. The proper
         include paths, compiler flags and libraries will automatically be
         added to the project. Note that \c dll can also be used on all platforms;
@@ -4887,8 +4891,7 @@
     \code
     TEMPLATE  = app
     LANGUAGE  = C++
-    CONFIG   += console precompile_header
-    CONFIG   -= app_bundle
+    CONFIG   += cmdline precompile_header
 
     # Use Precompiled headers (PCH)
     PRECOMPILED_HEADER  = stable.h

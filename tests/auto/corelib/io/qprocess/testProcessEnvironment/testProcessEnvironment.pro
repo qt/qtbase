@@ -1,8 +1,4 @@
 SOURCES = main.cpp
 CONFIG -= qt
-CONFIG += console
+CONFIG += cmdline
 DESTDIR = ./
-
-mac {
-  CONFIG -= app_bundle
-}

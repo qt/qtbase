@@ -1,6 +1,5 @@
 QT += concurrent widgets
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 
 SOURCES += main.cpp
 

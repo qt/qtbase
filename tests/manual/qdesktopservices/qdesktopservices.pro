@@ -1,8 +1,7 @@
 QT       += testlib
 
 TARGET = tst_qdesktopservices
-CONFIG   += console
-CONFIG   -= app_bundle
+CONFIG   += cmdline
 
 TEMPLATE = app
 

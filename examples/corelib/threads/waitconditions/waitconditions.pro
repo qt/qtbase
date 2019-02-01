@@ -1,6 +1,6 @@
 QT = core
-CONFIG -= moc app_bundle
-CONFIG += console
+CONFIG -= moc
+CONFIG += cmdline
 
 SOURCES += waitconditions.cpp
 
