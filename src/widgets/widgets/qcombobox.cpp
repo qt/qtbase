@@ -895,14 +895,21 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     currentIndex was reset.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QComboBox::currentIndexChanged(const QString &text)
     \since 4.1
+
+    \obsolete
+
+    Use currentTextChanged(const QString &) or currentIndexChanged(int)
+    instead.
 
     This signal is sent whenever the currentIndex in the combobox
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
 */
+#endif
 
 /*!
     \fn void QComboBox::currentTextChanged(const QString &text)
@@ -1375,7 +1382,9 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     Q_Q(QComboBox);
     const QString text = itemText(index);
     emit q->currentIndexChanged(index.row());
+#if QT_DEPRECATED_SINCE(5, 13)
     emit q->currentIndexChanged(text);
+#endif
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);
