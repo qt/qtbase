@@ -2171,8 +2171,10 @@ void QObject::removeEventFilter(QObject *obj)
 
     Note that entering and leaving a new event loop (e.g., by opening a modal
     dialog) will \e not perform the deferred deletion; for the object to be
-    deleted, the control must return to the event loop from which
-    deleteLater() was called.
+    deleted, the control must return to the event loop from which deleteLater()
+    was called. This does not apply to objects deleted while a previous, nested
+    event loop was still running: the Qt event loop will delete those objects
+    as soon as the new nested event loop starts.
 
     \b{Note:} It is safe to call this function more than once; when the
     first deferred deletion event is delivered, any pending events for the
