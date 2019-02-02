@@ -4089,6 +4089,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (subRule.hasFont)
                 p->setFont(subRule.font);
             boxCopy.rect = subRule.contentsRect(opt->rect);
+            if (subRule.hasImage()) {
+                // the image is already drawn with CE_ToolBoxTabShape, adjust rect here
+                const int iconExtent = proxy()->pixelMetric(QStyle::PM_SmallIconSize, box, w);
+                boxCopy.rect.setLeft(boxCopy.rect.left() + iconExtent);
+            }
             QWindowsStyle::drawControl(ce, &boxCopy, p , w);
             if (subRule.hasFont)
                 p->setFont(oldFont);
