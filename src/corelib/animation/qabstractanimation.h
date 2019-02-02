@@ -147,9 +147,10 @@ public:
 
     virtual qint64 elapsed() const;
 
-    // ### Qt6: Remove these two functions
-    void setStartTime(qint64 startTime);
-    qint64 startTime() const;
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED void setStartTime(qint64 startTime);
+    QT_DEPRECATED qint64 startTime() const;
+#endif
 
 Q_SIGNALS:
     void started();
