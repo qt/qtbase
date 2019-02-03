@@ -81,7 +81,7 @@ exec(e->globalPos());
 //! [6]
 QMenu menu;
 QAction *at = actions[0]; // Assumes actions is not empty
-foreach (QAction *a, actions)
+for (QAction *a : qAsConst(actions))
     menu.addAction(a);
 menu.exec(pos, at);
 //! [6]

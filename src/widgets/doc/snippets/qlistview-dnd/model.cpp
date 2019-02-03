@@ -54,7 +54,7 @@
   A simple model that uses a QStringList as its data source.
 */
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "model.h"
 
@@ -121,7 +121,7 @@ bool DragDropListModel::dropMimeData(const QMimeData *data,
 
 //! [6]
     insertRows(beginRow, rows, QModelIndex());
-    foreach (const QString &text, newItems) {
+    for (const QString &text : qAsConst(newItems)) {
         QModelIndex idx = index(beginRow, 0, QModelIndex());
         setData(idx, text);
         beginRow++;
@@ -146,12 +146,12 @@ Qt::ItemFlags DragDropListModel::flags(const QModelIndex &index) const
 //! [8]
 QMimeData *DragDropListModel::mimeData(const QModelIndexList &indexes) const
 {
-    QMimeData *mimeData = new QMimeData();
+    QMimeData *mimeData = new QMimeData;
     QByteArray encodedData;
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    foreach (const QModelIndex &index, indexes) {
+    for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
             QString text = data(index, Qt::DisplayRole).toString();
             stream << text;

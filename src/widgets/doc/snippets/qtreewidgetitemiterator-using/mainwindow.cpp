@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 
@@ -85,16 +85,15 @@ MainWindow::MainWindow()
     headers << tr("Subject") << tr("Default");
     treeWidget->setHeaderLabels(headers);
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(ascendingAction, SIGNAL(triggered()), this, SLOT(sortAscending()));
-    connect(autoSortAction, SIGNAL(triggered()), this, SLOT(updateSortItems()));
-    connect(descendingAction, SIGNAL(triggered()), this, SLOT(sortDescending()));
-    connect(findItemsAction, SIGNAL(triggered()), this, SLOT(findItems()));
-    connect(insertAction, SIGNAL(triggered()), this, SLOT(insertItem()));
-    connect(removeAction, SIGNAL(triggered()), this, SLOT(removeItem()));
-    connect(treeWidget,
-            SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
-            this, SLOT(updateMenus(QTreeWidgetItem*)));
+    connect(quitAction, &QAction::triggered, this, &QWidget::close);
+    connect(ascendingAction, &QAction::triggered, this, &MainWindow::sortAscending);
+    connect(autoSortAction, &QAction::triggered, this, &MainWindow::updateSortItems);
+    connect(descendingAction, &QAction::triggered, this, &MainWindow::sortDescending);
+    connect(findItemsAction, &QAction::triggered, this, &MainWindow::findItems);
+    connect(insertAction, &QAction::triggered, this, &MainWindow::insertItem);
+    connect(removeAction, &QAction::triggered, this, &MainWindow::removeItem);
+    connect(treeWidget, &QTreeWidget::currentItemChanged,
+            this, &MainWindow::updateMenus);
 
     setupTreeItems();
     updateMenus(treeWidget->currentItem());

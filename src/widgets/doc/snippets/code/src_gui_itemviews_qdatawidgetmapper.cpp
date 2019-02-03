@@ -59,7 +59,7 @@ mapper->toFirst();
 
 
 //! [1]
-QDataWidgetMapper *mapper = new QDataWidgetMapper();
+QDataWidgetMapper *mapper = new QDataWidgetMapper;
 mapper->setModel(myModel);
 mapper->addMapping(nameLineEdit, 0);
 mapper->addMapping(ageSpinBox, 1);
@@ -67,7 +67,7 @@ mapper->addMapping(ageSpinBox, 1);
 
 
 //! [2]
-QDataWidgetMapper *mapper = new QDataWidgetMapper();
-connect(myTableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-        mapper, SLOT(setCurrentModelIndex(QModelIndex)));
+QDataWidgetMapper *mapper = new QDataWidgetMapper;
+connect(myTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
+        mapper, &QDataWidgetMapper::setCurrentModelIndex);
 //! [2]

@@ -81,9 +81,9 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *selectAllAction = actionMenu->addAction(tr("&Select All"));
     menuBar()->addMenu(actionMenu);
 
-    connect(fillAction, SIGNAL(triggered()), this, SLOT(fillSelection()));
-    connect(clearAction, SIGNAL(triggered()), this, SLOT(clearSelection()));
-    connect(selectAllAction, SIGNAL(triggered()), this, SLOT(selectAll()));
+    connect(fillAction, &QAction::triggered, this, &MainWindow::fillSelection);
+    connect(clearAction, &QAction::triggered, this, &MainWindow::clearSelection);
+    connect(selectAllAction, &QAction::triggered, this, &MainWindow::selectAll);
 
     selectionModel = table->selectionModel();
 
@@ -94,10 +94,9 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::fillSelection()
 {
 //! [0]
-    QModelIndexList indexes = selectionModel->selectedIndexes();
-    QModelIndex index;
+    const QModelIndexList indexes = selectionModel->selectedIndexes();
 
-    foreach(index, indexes) {
+    for (const QModelIndex &index : indexes) {
         QString text = QString("(%1,%2)").arg(index.row()).arg(index.column());
         model->setData(index, text);
     }
@@ -106,11 +105,10 @@ void MainWindow::fillSelection()
 
 void MainWindow::clearSelection()
 {
-    QModelIndexList indexes = selectionModel->selectedIndexes();
-    QModelIndex index;
+    const QModelIndexList indexes = selectionModel->selectedIndexes();
 
-    foreach(index, indexes)
-        model->setData(index, "");
+    for (const QModelIndex &index : indexes)
+        model->setData(index, QString());
 }
 
 void MainWindow::selectAll()

@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 
@@ -74,7 +74,7 @@ listWidget->setDragDropMode(QAbstractItemView::InternalMove);
 
     this->listWidget = listWidget;
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(quitAction, &QAction::triggered, this, &QWidget::close);
 
     setupListItems();
 

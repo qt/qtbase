@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 
@@ -63,8 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     textBrowser = new QTextBrowser(this);
 
-    connect(headingList, SIGNAL(itemClicked(QListWidgetItem*)),
-            this, SLOT(updateText(QListWidgetItem*)));
+    connect(headingList, &QListWidget::itemClicked,
+            this, &MainWindow::updateText);
 
     updateText(headingList->item(0));
     headingList->setCurrentRow(0);
@@ -119,7 +119,7 @@ void MainWindow::setupMenus()
     QAction *exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
     exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+    connect(exitAct, &QAction::triggered, qApp, &QApplication::closeAllWindows);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(exitAct);

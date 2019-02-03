@@ -48,13 +48,12 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <QApplication>
+#include <QtWidgets>
 
 class Widget : public QWidget
 {
 public:
-    Widget(QWidget *parent = 0);
+    Widget(QWidget *parent = nullptr);
 };
 
 Widget::Widget(QWidget *parent)
@@ -75,8 +74,8 @@ Widget::Widget(QWidget *parent)
     pageComboBox->addItem(tr("Page 1"));
     pageComboBox->addItem(tr("Page 2"));
     pageComboBox->addItem(tr("Page 3"));
-    connect(pageComboBox, SIGNAL(activated(int)),
-            stackedLayout, SLOT(setCurrentIndex(int)));
+    connect(pageComboBox, QOverload<int>::of(&QComboBox::activated),
+            stackedLayout, &QStackedLayout::setCurrentIndex);
 //! [1]
 
 //! [2]
