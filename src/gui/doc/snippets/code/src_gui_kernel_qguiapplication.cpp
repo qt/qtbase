@@ -64,7 +64,8 @@ MyMainWidget::MyMainWidget(QWidget *parent)
     :QWidget(parent)
 {
     QGuiApplication::setFallbackSessionManagementEnabled(false);
-    connect(qApp, SIGNAL(commitDataRequest(QSessionManager)), SLOT(commitData(QSessionManager)));
+    connect(qApp, &QGuiApplication::commitDataRequest,
+            this, &MyMainWidget::commitData);
 }
 
 void MyMainWidget::commitData(QSessionManager& manager)
@@ -102,12 +103,14 @@ appname -session id
 
 
 //! [3]
-foreach (const QString &command, mySession.restartCommand())
+const QStringList commands = mySession.restartCommand();
+for (const QString &command : commands)
     do_something(command);
 //! [3]
 
 
 //! [4]
-foreach (const QString &command, mySession.discardCommand())
+const QStringList commands = mySession.discardCommand();
+for (const QString &command : mySession.discardCommand())
     do_something(command);
 //! [4]

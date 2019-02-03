@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 int main(int argc, char **argv)
 {
@@ -60,16 +60,19 @@ int main(int argc, char **argv)
     fontTree.setColumnCount(2);
     fontTree.setHeaderLabels(QStringList() << "Font" << "Smooth Sizes");
 
-    foreach (const QString &family, database.families()) {
+    const QStringList fontFamilies = database.families();
+    for (const QString &family : fontFamilies) {
         QTreeWidgetItem *familyItem = new QTreeWidgetItem(&fontTree);
         familyItem->setText(0, family);
 
-        foreach (const QString &style, database.styles(family)) {
+        const QStringList fontStyles = database.styles(family);
+        for (const QString &style : fontStyles) {
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
             styleItem->setText(0, style);
 
             QString sizes;
-            foreach (int points, database.smoothSizes(family, style))
+            const QList<int> smoothSizes = database.smoothSizes(family, style)
+            for (int points : smoothSizes)
                 sizes += QString::number(points) + ' ';
 
             styleItem->setText(1, sizes.trimmed());

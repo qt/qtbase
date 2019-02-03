@@ -73,8 +73,8 @@ for (int i = 0; i < 4; ++i) {
 //! [2]
 QTreeView *treeView = new QTreeView(this);
 treeView->setModel(myStandardItemModel);
-connect(treeView, SIGNAL(clicked(QModelIndex)),
-        this, SLOT(clicked(QModelIndex)));
+connect(treeView, &QTreeView::clicked,
+        this, &MyWidget::clicked);
 //! [2]
 
 
