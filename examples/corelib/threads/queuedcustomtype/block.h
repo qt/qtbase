@@ -52,7 +52,6 @@
 #define BLOCK_H
 
 #include <QColor>
-#include <QDebug>
 #include <QMetaType>
 #include <QRect>
 

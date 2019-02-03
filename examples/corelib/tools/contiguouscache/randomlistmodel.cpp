@@ -49,7 +49,6 @@
 ****************************************************************************/
 #include "randomlistmodel.h"
 #include <QRandomGenerator>
-#include <stdlib.h>
 
 static const int bufferSize(500);
 static const int lookAhead(100);

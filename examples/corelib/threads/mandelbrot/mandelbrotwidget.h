@@ -62,7 +62,7 @@ class MandelbrotWidget : public QWidget
     Q_OBJECT
 
 public:
-    MandelbrotWidget(QWidget *parent = 0);
+    MandelbrotWidget(QWidget *parent = nullptr);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

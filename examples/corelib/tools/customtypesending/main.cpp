@@ -57,19 +57,20 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    Window window1;
     QStringList headers;
     headers << "Subject: Hello World"
             << "From: address@example.com";
     QString body = "This is a test.\r\n";
     Message message(body, headers);
+
+    Window window1;
     window1.setMessage(message);
 
     Window window2;
-    QObject::connect(&window1, SIGNAL(messageSent(Message)),
-                     &window2, SLOT(setMessage(Message)));
-    QObject::connect(&window2, SIGNAL(messageSent(Message)),
-                     &window1, SLOT(setMessage(Message)));
+    QObject::connect(&window1, &Window::messageSent,
+                     &window2, &Window::setMessage);
+    QObject::connect(&window2, &Window::messageSent,
+                     &window1, &Window::setMessage);
     window1.show();
     window2.show();
     return app.exec();

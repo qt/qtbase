@@ -51,7 +51,6 @@
 #include "dialog.h"
 #include <QFileDialog>
 #include <QBuffer>
-#include <QtCore/QDebug>
 
 /*!
   \class Dialog
@@ -81,10 +80,10 @@ Dialog::Dialog(QWidget *parent)
   : QDialog(parent), sharedMemory("QSharedMemoryExample")
 {
     ui.setupUi(this);
-    connect(ui.loadFromFileButton, SIGNAL(clicked()), SLOT(loadFromFile()));
-    connect(ui.loadFromSharedMemoryButton,
-            SIGNAL(clicked()),
-            SLOT(loadFromMemory()));
+    connect(ui.loadFromFileButton, &QPushButton::clicked,
+            this, &Dialog::loadFromFile);
+    connect(ui.loadFromSharedMemoryButton, &QPushButton::clicked,
+            this, &Dialog::loadFromMemory);
     setWindowTitle(tr("SharedMemory Example"));
 }
 //! [0]

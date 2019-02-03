@@ -55,9 +55,6 @@
 
 #include <QCommandLineParser>
 #include <QCommandLineOption>
-#include <QDebug>
-#include <QMimeDatabase>
-#include <QMimeType>
 
 int main(int argc, char *argv[])
 {

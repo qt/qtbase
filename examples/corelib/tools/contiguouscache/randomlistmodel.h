@@ -59,7 +59,7 @@ class RandomListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    RandomListModel(QObject *parent = 0);
+    RandomListModel(QObject *parent = nullptr);
     ~RandomListModel();
 
     int rowCount(const QModelIndex & = QModelIndex()) const override;

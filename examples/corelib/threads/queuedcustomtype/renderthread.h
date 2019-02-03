@@ -62,7 +62,7 @@ class RenderThread : public QThread
     Q_OBJECT
 
 public:
-    RenderThread(QObject *parent = 0);
+    RenderThread(QObject *parent = nullptr);
     ~RenderThread();
 
     void processImage(const QImage &image);

@@ -51,7 +51,6 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include <QDebug>
 #include <QMetaType>
 #include <QStringList>
 

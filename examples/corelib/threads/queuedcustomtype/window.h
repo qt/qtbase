@@ -65,7 +65,7 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window();
+    Window(QWidget *parent = nullptr);
     void loadImage(const QImage &image);
 
 public slots:

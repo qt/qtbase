@@ -50,9 +50,8 @@
 
 #include "mimetypemodel.h"
 
-#include <QIcon>
-
 #include <QDebug>
+#include <QIcon>
 #include <QMimeDatabase>
 #include <QTextStream>
 #include <QVariant>

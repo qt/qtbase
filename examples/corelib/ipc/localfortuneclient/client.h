@@ -53,14 +53,12 @@
 
 #include <QDialog>
 #include <QDataStream>
-
-#include <qlocalsocket.h>
+#include <QLocalSocket>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QLocalSocket;
 QT_END_NAMESPACE
 
 class Client : public QDialog
