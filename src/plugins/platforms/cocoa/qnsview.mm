@@ -85,6 +85,7 @@
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (Mouse)
+- (void)initMouse;
 - (NSPoint)screenMousePoint:(NSEvent *)theEvent;
 - (void)mouseMovedImpl:(NSEvent *)theEvent;
 - (void)mouseEnteredImpl:(NSEvent *)theEvent;
@@ -114,7 +115,6 @@
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) {
     QPointer<QCocoaWindow> m_platformWindow;
-    NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;
     Qt::MouseButtons m_acceptedMouseDowns;
     Qt::MouseButtons m_frameStrutButtons;
@@ -150,7 +150,6 @@
         m_currentlyInterpretedKeyEvent = nil;
         m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(),
             "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
-        m_trackingArea = nil;
 
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
@@ -159,6 +158,7 @@
         self.previousWindow = nil;
 
         [self initDrawing];
+        [self initMouse];
         [self registerDragTypes];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -173,10 +173,6 @@
 {
     qCDebug(lcQpaWindow) << "Deallocating" << self;
 
-    if (m_trackingArea) {
-        [self removeTrackingArea:m_trackingArea];
-        [m_trackingArea release];
-    }
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];

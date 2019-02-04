@@ -151,6 +151,28 @@
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) (Mouse)
 
+- (void)initMouse
+{
+    NSUInteger trackingOptions = NSTrackingActiveInActiveApp
+        | NSTrackingMouseEnteredAndExited | NSTrackingCursorUpdate;
+
+    // Ideally, NSTrackingMouseMoved should be turned on only if QWidget::mouseTracking
+    // is enabled, hover is on, or a tool tip is set. Unfortunately, Qt will send "tooltip"
+    // events on mouse moves, so we need to turn it on in ALL case. That means EVERY QWindow
+    // gets to pay the cost of mouse moves delivered to it (Apple recommends keeping it OFF
+    // because there is a performance hit).
+    trackingOptions |= NSTrackingMouseMoved;
+
+    // Using NSTrackingInVisibleRect means AppKit will automatically synchronize the
+    // tracking rect with changes in the view's visible area, so leave it undefined.
+    trackingOptions |= NSTrackingInVisibleRect;
+    static const NSRect trackingRect = NSZeroRect;
+
+    QMacAutoReleasePool pool;
+    [self addTrackingArea:[[[NSTrackingArea alloc] initWithRect:trackingRect
+        options:trackingOptions owner:m_mouseMoveHelper userInfo:nil] autorelease]];
+}
+
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
@@ -422,35 +444,9 @@
         [super otherMouseUp:theEvent];
 }
 
-- (void)updateTrackingAreas
-{
-    [super updateTrackingAreas];
-
-    QMacAutoReleasePool pool;
-
-    // NSTrackingInVisibleRect keeps care of updating once the tracking is set up, so bail out early
-    if (m_trackingArea && [[self trackingAreas] containsObject:m_trackingArea])
-        return;
-
-    // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
-    // only be turned on if mouseTracking, hover is on or a tool tip is set.
-    // Unfortunately, Qt will send "tooltip" events on mouse moves, so we need to
-    // turn it on in ALL case. That means EVERY QWindow gets to pay the cost of
-    // mouse moves delivered to it (Apple recommends keeping it OFF because there
-    // is a performance hit). So it goes.
-    NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
-                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved | NSTrackingCursorUpdate;
-    [m_trackingArea release];
-    m_trackingArea = [[NSTrackingArea alloc] initWithRect:[self frame]
-                                                  options:trackingOptions
-                                                    owner:m_mouseMoveHelper
-                                                 userInfo:nil];
-    [self addTrackingArea:m_trackingArea];
-}
-
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    qCDebug(lcQpaMouse) << "[QNSView cursorUpdate:]" << self.cursor;
+    qCDebug(lcQpaMouse) << "Updating cursor for" << self << "to" << self.cursor;
 
     // Note: We do not get this callback when moving from a subview that
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
