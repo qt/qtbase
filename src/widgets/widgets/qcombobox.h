@@ -220,15 +220,21 @@ public Q_SLOTS:
 Q_SIGNALS:
     void editTextChanged(const QString &);
     void activated(int index);
-    void activated(const QString &);
+    void textActivated(const QString &);
     void highlighted(int index);
-    void highlighted(const QString &);
+    void textHighlighted(const QString &);
     void currentIndexChanged(int index);
+    void currentTextChanged(const QString &);
 #if QT_DEPRECATED_SINCE(5, 13)
     QT_DEPRECATED_X("Use currentTextChanged() instead")
     void currentIndexChanged(const QString &);
 #endif
-    void currentTextChanged(const QString &);
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use textActivated() instead")
+    void activated(const QString &);
+    QT_DEPRECATED_X("Use textHighlighted() instead")
+    void highlighted(const QString &);
+#endif
 
 protected:
     void focusInEvent(QFocusEvent *e) override;

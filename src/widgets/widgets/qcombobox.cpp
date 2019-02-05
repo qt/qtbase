@@ -1364,7 +1364,10 @@ void QComboBoxPrivate::emitActivated(const QModelIndex &index)
         return;
     QString text(itemText(index));
     emit q->activated(index.row());
+    emit q->textActivated(text);
+#if QT_DEPRECATED_SINCE(5, 15)
     emit q->activated(text);
+#endif
 }
 
 void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
@@ -1374,7 +1377,10 @@ void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
         return;
     QString text(itemText(index));
     emit q->highlighted(index.row());
+    emit q->textHighlighted(text);
+#if QT_DEPRECATED_SINCE(5, 15)
     emit q->highlighted(text);
+#endif
 }
 
 void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
