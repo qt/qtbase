@@ -5070,11 +5070,14 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
 
 /*! \class QMetaObject::Connection
     \inmodule QtCore
-     Represents a handle to a signal-slot connection.
-     It can be used to disconnect that connection, or check if
-     the connection was successful
+     Represents a handle to a signal-slot (or signal-functor) connection.
 
-     \sa QObject::disconnect()
+     It can be used to check if the connection is valid and to disconnect it using
+     QObject::disconnect(). For a signal-functor connection without a context object,
+     it is the only way to selectively disconnect that connection.
+
+     As Connection is just a handle, the underlying signal-slot connection is unaffected
+     when Connection is destroyed or reassigned.
  */
 
 /*!
