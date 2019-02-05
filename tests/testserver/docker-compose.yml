@@ -80,6 +80,7 @@ services:
             - vsftpd:vsftpd.${TEST_DOMAIN}
             - ftp-proxy:ftp-proxy.${TEST_DOMAIN}
             - cyrus:cyrus.${TEST_DOMAIN}
+            - echo:echo.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./danted:/service:ro
@@ -110,3 +111,14 @@ services:
         cap_add:
             - NET_ADMIN
             - NET_RAW
+
+    echo:
+      image: qt-test-server-echo:b29ad409e746a834c1055fd0f7a55fd5056da6ea
+      container_name: qt-test-server-echo
+      domainname: ${TEST_DOMAIN}
+      hostname: echo
+      volumes:
+          - ./common:/common:ro
+          - ./echo:/service:ro
+      entrypoint: common/startup.sh
+      command: service/echo.sh
