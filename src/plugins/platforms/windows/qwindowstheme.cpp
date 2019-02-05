@@ -284,24 +284,24 @@ static inline QPalette systemPalette()
     result.setColor(QPalette::Link, Qt::blue);
     result.setColor(QPalette::LinkVisited, Qt::magenta);
     result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
-    result.setColor(QPalette::Inactive, QPalette::Window, result.background().color());
+    result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
     result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
     result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
 
     if (result.midlight() == result.button())
         result.setColor(QPalette::Midlight, result.button().color().lighter(110));
-    if (result.background() != result.base()) {
+    if (result.window() != result.base()) {
         result.setColor(QPalette::Inactive, QPalette::Highlight, result.color(QPalette::Inactive, QPalette::Window));
         result.setColor(QPalette::Inactive, QPalette::HighlightedText, result.color(QPalette::Inactive, QPalette::Text));
     }
 
     const QColor disabled =
-        mixColors(result.foreground().color(), result.button().color());
+        mixColors(result.windowText().color(), result.button().color());
 
-    result.setColorGroup(QPalette::Disabled, result.foreground(), result.button(),
+    result.setColorGroup(QPalette::Disabled, result.windowText(), result.button(),
                          result.light(), result.dark(), result.mid(),
                          result.text(), result.brightText(), result.base(),
-                         result.background());
+                         result.window());
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
     result.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
@@ -310,7 +310,7 @@ static inline QPalette systemPalette()
     result.setColor(QPalette::Disabled, QPalette::HighlightedText,
                     getSysColor(COLOR_HIGHLIGHTTEXT));
     result.setColor(QPalette::Disabled, QPalette::Base,
-                    result.background().color());
+                    result.window().color());
     return result;
 }
 
@@ -333,7 +333,7 @@ static inline QPalette toolTipPalette(const QPalette &systemPalette)
     result.setColor(QPalette::All, QPalette::ToolTipBase, tipBgColor);
     result.setColor(QPalette::All, QPalette::ToolTipText, tipTextColor);
     const QColor disabled =
-        mixColors(result.foreground().color(), result.button().color());
+        mixColors(result.windowText().color(), result.button().color());
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
     result.setColor(QPalette::Disabled, QPalette::ToolTipText, disabled);
@@ -858,7 +858,8 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
         int iIcon = (useDefaultFolderIcon && defaultFolderIIcon >= 0) ? defaultFolderIIcon
                                                                       : **dirIconEntryCache.object(filePath);
         if (iIcon) {
-            QPixmapCache::find(dirIconPixmapCacheKey(iIcon, iconSize, requestedImageListSize), pixmap);
+            QPixmapCache::find(dirIconPixmapCacheKey(iIcon, iconSize, requestedImageListSize),
+                               &pixmap);
             if (pixmap.isNull()) // Let's keep both caches in sync
                 dirIconEntryCache.remove(filePath);
             else
@@ -889,7 +890,7 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 
             //using the unique icon index provided by windows save us from duplicate keys
             key = dirIconPixmapCacheKey(info.iIcon, iconSize, requestedImageListSize);
-            QPixmapCache::find(key, pixmap);
+            QPixmapCache::find(key, &pixmap);
             if (!pixmap.isNull()) {
                 QMutexLocker locker(&mx);
                 dirIconEntryCache.insert(filePath, FakePointer<int>::create(info.iIcon));

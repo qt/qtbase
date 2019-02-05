@@ -445,7 +445,7 @@ static inline QTextFormat standardFormat(StandardFormat format)
         const QPalette palette = QGuiApplication::palette();
         const QColor background = palette.text().color();
         result.setBackground(QBrush(background));
-        result.setForeground(palette.background());
+        result.setForeground(palette.window());
         break;
     }
     }
