@@ -1579,6 +1579,13 @@ void tst_QMenu::menuSize_Scrolling()
 #ifdef Q_OS_WINRT
             QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
 #endif
+            if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
+                || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
+                QWARN("Skipping test on minimal/offscreen platforms - QTBUG-73522");
+                QMenu::showEvent(e);
+                return;
+            }
+
             QCOMPARE( s.width(), lastItem.right() + fw + hmargin + rightMargin + 1);
             QMenu::showEvent(e);
         }
