@@ -706,7 +706,7 @@ void QSocks5SocketEnginePrivate::reauthenticate()
 
     // we require authentication
     QAuthenticator auth;
-    emit q->proxyAuthenticationRequired(proxyInfo, &auth);
+    q->proxyAuthenticationRequired(proxyInfo, &auth);
 
     if (!auth.user().isEmpty() || !auth.password().isEmpty()) {
         // we have new credentials, let's try again
@@ -915,7 +915,7 @@ void QSocks5SocketEnginePrivate::_q_emitPendingReadNotification()
     if (readNotificationEnabled) {
         QSOCKS5_D_DEBUG << "emitting readNotification";
         QPointer<QSocks5SocketEngine> qq = q;
-        emit q->readNotification();
+        q->readNotification();
         if (!qq)
             return;
         // check if there needs to be a new zero read notification
@@ -944,7 +944,7 @@ void QSocks5SocketEnginePrivate::_q_emitPendingWriteNotification()
     Q_Q(QSocks5SocketEngine);
     if (writeNotificationEnabled) {
         QSOCKS5_D_DEBUG << "emitting writeNotification";
-        emit q->writeNotification();
+        q->writeNotification();
     }
 }
 
@@ -964,7 +964,7 @@ void QSocks5SocketEnginePrivate::_q_emitPendingConnectionNotification()
     connectionNotificationPending = false;
     Q_Q(QSocks5SocketEngine);
     QSOCKS5_D_DEBUG << "emitting connectionNotification";
-    emit q->connectionNotification();
+    q->connectionNotification();
 }
 
 void QSocks5SocketEnginePrivate::emitConnectionNotification()
