@@ -83,7 +83,7 @@ public:
 #ifndef QT_NO_NETWORKPROXY
     inline void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator) override {
         Q_Q(QAbstractSocket);
-        q->proxyAuthenticationRequired(proxy, authenticator);
+        emit q->proxyAuthenticationRequired(proxy, authenticator);
     }
 #endif
 

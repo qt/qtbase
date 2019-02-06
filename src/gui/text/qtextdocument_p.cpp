@@ -275,7 +275,7 @@ void QTextDocumentPrivate::clear()
         init();
         cursors = oldCursors;
         inContentsChange = true;
-        q->contentsChange(0, len, 0);
+        emit q->contentsChange(0, len, 0);
         inContentsChange = false;
         if (lout)
             lout->documentChanged(0, len, 0);
