@@ -50,6 +50,12 @@ The list will automatically be renumbered if you add or remove items. *Try
 adding new sections to the above list or removing existing item to see the
 numbers change.*
 
+Task lists can be used to track progress on projects:
+
+- [ ] This is not yet done
+- This is just a bullet point
+- [x] This is done
+
 ## Images
 
 Inline images are treated like ordinary ranges of characters in the text
