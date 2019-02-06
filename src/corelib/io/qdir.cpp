@@ -1084,7 +1084,10 @@ void QDir::setNameFilters(const QStringList &nameFilters)
 void QDir::addResourceSearchPath(const QString &path)
 {
 #ifdef QT_BUILD_CORE_LIB
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QResource::addSearchPath(path);
+QT_WARNING_POP
 #else
     Q_UNUSED(path)
 #endif

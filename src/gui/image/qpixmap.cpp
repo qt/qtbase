@@ -994,7 +994,10 @@ QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
 */
 QPixmap QPixmap::grabWidget(QObject *widget, int x, int y, int w, int h)
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return grabWidget(widget, QRect(x, y, w, h));
+QT_WARNING_POP
 }
 #endif
 

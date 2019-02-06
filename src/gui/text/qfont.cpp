@@ -2215,7 +2215,10 @@ QString QFont::defaultFamily() const
 */
 QString QFont::lastResortFont() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return lastResortFamily();
+QT_WARNING_POP
 }
 #endif
 

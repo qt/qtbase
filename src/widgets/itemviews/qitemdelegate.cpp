@@ -1005,11 +1005,14 @@ static QString qPixmapSerial(quint64 i, bool enabled)
 QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const
 {
     const QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QPixmap *pm = QPixmapCache::find(key);
     if (pm)
         return pm;
     selectedPixmap(pixmap, palette, enabled);
     return QPixmapCache::find(key);
+QT_WARNING_POP
 }
 #endif
 

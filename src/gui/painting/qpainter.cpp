@@ -2981,7 +2981,10 @@ void QPainter::setMatrix(const QMatrix &matrix, bool combine)
 
 const QMatrix &QPainter::matrix() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return worldMatrix();
+QT_WARNING_POP
 }
 
 
