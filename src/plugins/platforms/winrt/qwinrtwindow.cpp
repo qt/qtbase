@@ -225,7 +225,8 @@ bool QWinRTWindow::isActive() const
 
 bool QWinRTWindow::isExposed() const
 {
-    const bool exposed = isActive();
+    Q_D(const QWinRTWindow);
+    const bool exposed = isActive() && !d->screen->resizePending();
     return exposed;
 }
 
@@ -360,6 +361,7 @@ void QWinRTWindow::setWindowState(Qt::WindowStates state)
             qCDebug(lcQpaWindows) << "Failed to enter full screen mode.";
             return;
         }
+        d->screen->setResizePending();
         d->state = state;
         return;
     }
@@ -384,6 +386,7 @@ void QWinRTWindow::setWindowState(Qt::WindowStates state)
             qCDebug(lcQpaWindows) << "Failed to exit full screen mode.";
             return;
         }
+        d->screen->setResizePending();
     }
 
     if (d->state & Qt::WindowMinimized || state == Qt::WindowNoState || state == Qt::WindowActive)
