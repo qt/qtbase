@@ -109,9 +109,8 @@ void ImageItem::setFrame(int frame)
 //! [4]
 void ImageItem::adjust()
 {
-    QMatrix matrix;
-    matrix.scale(120/ boundingRect().width(), 120/ boundingRect().height());
-    setMatrix(matrix);
+    setTransform(QTransform::fromScale(120 / boundingRect().width(),
+                                       120 / boundingRect().height()));
 }
 //! [4]
 

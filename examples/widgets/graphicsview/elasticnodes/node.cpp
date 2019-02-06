@@ -177,8 +177,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (option->state & QStyle::State_Sunken) {
         gradient.setCenter(3, 3);
         gradient.setFocalPoint(3, 3);
-        gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
+        gradient.setColorAt(1, QColor(Qt::yellow).lighter(120));
+        gradient.setColorAt(0, QColor(Qt::darkYellow).lighter(120));
     } else {
         gradient.setColorAt(0, Qt::yellow);
         gradient.setColorAt(1, Qt::darkYellow);

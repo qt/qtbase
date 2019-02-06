@@ -94,7 +94,7 @@ bool XbelHandler::startElement(const QString & /* namespaceURI */,
         item->setIcon(0, folderIcon);
         item->setText(0, QObject::tr("Folder"));
         bool folded = (attributes.value(foldedAttribute()) != QLatin1String("no"));
-        treeWidget->setItemExpanded(item, !folded);
+        item->setExpanded(!folded);
     } else if (qName == QLatin1String("bookmark")) {
         item = createChildItem(qName);
         item->setFlags(item->flags() | Qt::ItemIsEditable);

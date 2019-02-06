@@ -184,7 +184,7 @@ void XbelTree::parseFolderElement(const QDomElement &element,
     item->setText(0, title);
 
     bool folded = (element.attribute(foldedAttribute()) != QLatin1String("no"));
-    setItemExpanded(item, !folded);
+    item->setExpanded(!folded);
 
     QDomElement child = element.firstChildElement();
     while (!child.isNull()) {

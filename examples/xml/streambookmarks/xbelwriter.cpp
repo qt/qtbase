@@ -87,7 +87,7 @@ void XbelWriter::writeItem(const QTreeWidgetItem *item)
 {
     QString tagName = item->data(0, Qt::UserRole).toString();
     if (tagName == QLatin1String("folder")) {
-        bool folded = !treeWidget->isItemExpanded(item);
+        bool folded = !item->isExpanded();
         xml.writeStartElement(tagName);
         xml.writeAttribute(XbelReader::foldedAttribute(), folded ? yesValue() : noValue());
         xml.writeTextElement(titleElement(), item->text(0));

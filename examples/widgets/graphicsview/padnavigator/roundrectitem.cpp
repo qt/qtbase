@@ -62,7 +62,7 @@ RoundRectItem::RoundRectItem(const QRectF &bounds, const QColor &color,
     gradient.setStart(bounds.topLeft());
     gradient.setFinalStop(bounds.bottomRight());
     gradient.setColorAt(0, color);
-    gradient.setColorAt(1, color.dark(200));
+    gradient.setColorAt(1, color.darker(200));
     setCacheMode(ItemCoordinateCache);
 }
 //! [0]
@@ -94,7 +94,7 @@ void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     Q_UNUSED(widget);
     painter->setPen(Qt::NoPen);
     painter->setBrush(QColor(0, 0, 0, 64));
-    painter->drawRoundRect(bounds.translated(2, 2));
+    painter->drawRoundedRect(bounds.translated(2, 2), 25, 25, Qt::RelativeSize);
 //! [3]
 //! [4]
     if (fillRect)
@@ -102,7 +102,7 @@ void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     else
         painter->setBrush(gradient);
     painter->setPen(QPen(Qt::black, 1));
-    painter->drawRoundRect(bounds);
+    painter->drawRoundedRect(bounds, 25,25, Qt::RelativeSize);
 //! [4]
 //! [5]
     if (!pix.isNull()) {

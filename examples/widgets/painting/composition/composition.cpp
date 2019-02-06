@@ -341,9 +341,9 @@ void CompositionRenderer::drawSource(QPainter &p)
     QRectF circle_rect = rectangle_around(m_circle_pos);
     QColor color = QColor::fromHsvF(m_circle_hue / 360.0, 1, 1, m_circle_alpha / 255.0);
     QLinearGradient circle_gradient(circle_rect.topLeft(), circle_rect.bottomRight());
-    circle_gradient.setColorAt(0, color.light());
+    circle_gradient.setColorAt(0, color.lighter());
     circle_gradient.setColorAt(0.5, color);
-    circle_gradient.setColorAt(1, color.dark());
+    circle_gradient.setColorAt(1, color.darker());
     p.setBrush(circle_gradient);
 
     p.drawEllipse(circle_rect);
