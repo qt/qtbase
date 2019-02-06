@@ -2663,10 +2663,10 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
     bool closeAnchor = false;
 
     if (format.isAnchor()) {
-        const QString name = format.anchorName();
-        if (!name.isEmpty()) {
+        const auto names = format.anchorNames();
+        if (!names.isEmpty()) {
             html += QLatin1String("<a name=\"");
-            html += name.toHtmlEscaped();
+            html += names.constFirst().toHtmlEscaped();
             html += QLatin1String("\"></a>");
         }
         const QString href = format.anchorHref();

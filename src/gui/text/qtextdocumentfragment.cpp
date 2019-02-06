@@ -542,8 +542,10 @@ void QTextHtmlImporter::import()
             }
         }
 
-        if (currentNode->charFormat.isAnchor() && !currentNode->charFormat.anchorName().isEmpty()) {
-            namedAnchors.append(currentNode->charFormat.anchorName());
+        if (currentNode->charFormat.isAnchor()) {
+            const auto names = currentNode->charFormat.anchorNames();
+            if (!names.isEmpty())
+                namedAnchors.append(names.constFirst());
         }
 
         if (appendNodeText())
