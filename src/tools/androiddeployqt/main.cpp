@@ -1906,7 +1906,7 @@ bool stripFile(const Options &options, const QString &fileName)
     }
 
     if (options.useLLVM)
-        strip = QString::fromLatin1("%1 -strip-all -strip-all-gnu %2").arg(shellQuote(strip), shellQuote(fileName));
+        strip = QString::fromLatin1("%1 -strip-all %2").arg(shellQuote(strip), shellQuote(fileName));
     else
         strip = QString::fromLatin1("%1 %2").arg(shellQuote(strip), shellQuote(fileName));
 
