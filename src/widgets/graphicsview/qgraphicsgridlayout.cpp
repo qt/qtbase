@@ -552,20 +552,19 @@ int QGraphicsGridLayout::count() const
 }
 
 /*!
-    Returns the layout item at \a index, or 0 if there is no layout item at
-    this index.
+    Returns the layout item at \a index, or \nullptr if there is no
+    layout item at this index.
 */
 QGraphicsLayoutItem *QGraphicsGridLayout::itemAt(int index) const
 {
     Q_D(const QGraphicsGridLayout);
     if (index < 0 || index >= d->engine.itemCount()) {
         qWarning("QGraphicsGridLayout::itemAt: invalid index %d", index);
-        return 0;
+        return nullptr;
     }
-    QGraphicsLayoutItem *item = 0;
     if (QGraphicsGridLayoutEngineItem *engineItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index)))
-        item = engineItem->layoutItem();
-    return item;
+        return engineItem->layoutItem();
+    return nullptr;
 }
 
 /*!

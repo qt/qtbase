@@ -458,7 +458,7 @@ static QPixmap qt_patternForAlpha(uchar alpha, int screen)
                   % HexString<uchar>(alpha)
                   % HexString<int>(screen);
 
-    if (!QPixmapCache::find(key, pm)) {
+    if (!QPixmapCache::find(key, &pm)) {
         // #### why not use a mono image here????
         QImage pattern(DITHER_SIZE, DITHER_SIZE, QImage::Format_ARGB32);
         pattern.fill(0xffffffff);

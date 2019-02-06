@@ -1003,8 +1003,8 @@
 
     \snippet reading-selections/window.cpp 0
 
-    The above code uses Qt's convenient \l{Container Classes}{foreach
-    keyword} to iterate over, and modify, the items corresponding to the
+    The above code uses a range-based for-loop to iterate over,
+    and modify, the items corresponding to the
     indexes returned by the selection model.
 
     The selection model emits signals to indicate changes in the
@@ -1611,7 +1611,6 @@
     We can obtain a list of matching items with the \c findItems()
     function:
 
-    \snippet qtreewidget-using/mainwindow.cpp 6
     \snippet qtreewidget-using/mainwindow.cpp 7
 
     The above code causes items in a tree widget to be selected if they

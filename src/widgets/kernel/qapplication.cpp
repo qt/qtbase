@@ -784,7 +784,7 @@ QWidget *QApplication::activeModalWidget()
 
 /*!
     Cleans up any window system resources that were allocated by this
-    application. Sets the global variable \c qApp to 0.
+    application. Sets the global variable \c qApp to \nullptr.
 */
 
 QApplication::~QApplication()
@@ -893,8 +893,8 @@ void qt_cleanup()
 /*!
     \fn QWidget *QApplication::widgetAt(const QPoint &point)
 
-    Returns the widget at global screen position \a point, or 0 if there is no
-    Qt widget there.
+    Returns the widget at global screen position \a point, or \nullptr
+    if there is no Qt widget there.
 
     This function can be slow.
 
@@ -904,9 +904,9 @@ QWidget *QApplication::widgetAt(const QPoint &p)
 {
     QWidget *window = QApplication::topLevelAt(p);
     if (!window)
-        return 0;
+        return nullptr;
 
-    QWidget *child = 0;
+    QWidget *child = nullptr;
 
     if (!window->testAttribute(Qt::WA_TransparentForMouseEvents))
         child = window->childAt(window->mapFromGlobal(p));
@@ -942,8 +942,8 @@ QWidget *QApplication::widgetAt(const QPoint &p)
 
     \overload
 
-    Returns the widget at global screen position (\a x, \a y), or 0 if there is
-    no Qt widget there.
+    Returns the widget at global screen position (\a x, \a y), or
+    \nullptr if there is no Qt widget there.
 */
 
 /*!
@@ -1728,8 +1728,8 @@ QWidgetList QApplication::allWidgets()
 }
 
 /*!
-    Returns the application widget that has the keyboard input focus, or 0 if
-    no widget in this application has the focus.
+    Returns the application widget that has the keyboard input focus,
+    or \nullptr if no widget in this application has the focus.
 
     \sa QWidget::setFocus(), QWidget::hasFocus(), activeWindow(), focusChanged()
 */
@@ -1797,7 +1797,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 
 /*!
     Returns the application top-level window that has the keyboard input focus,
-    or 0 if no application window has the focus. There might be an
+    or \nullptr if no application window has the focus. There might be an
     activeWindow() even if there is no focusWidget(), for example if no widget
     in that window accepts key events.
 

@@ -751,7 +751,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-")
                                                           % QLatin1String(metaObject()->className()), opt, QSize(size, size))
                                  % HexString<uint>(pe);
-            if (!QPixmapCache::find(pixmapName, pixmap)) {
+            if (!QPixmapCache::find(pixmapName, &pixmap)) {
                 qreal pixelRatio = p->device()->devicePixelRatioF();
                 int border = qRound(pixelRatio*(size/5));
                 int sqsize = qRound(pixelRatio*(2*(size/2)));

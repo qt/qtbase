@@ -1054,7 +1054,7 @@ static void convertARGBToARGB32PM_avx2(uint *buffer, const uint *src, qsizetype 
         __m128i maskedAlphaMask = _mm256_castsi256_si128(alphaMask);
         __m128i mask = maskFromCount((count - i) * sizeof(*src));
         maskedAlphaMask = _mm_and_si128(mask, maskedAlphaMask);
-        __m128i srcVector = _mm_maskload_epi32(reinterpret_cast<const int *>(src), mask);
+        __m128i srcVector = _mm_maskload_epi32(reinterpret_cast<const int *>(src + i), mask);
 
         if (!_mm_testz_si128(srcVector, maskedAlphaMask)) {
             // keep the two _mm_test[zc]_siXXX next to each other
@@ -1166,7 +1166,7 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
         __m128i maskedAlphaMask = _mm256_castsi256_si128(alphaMask);
         __m128i mask = maskFromCount((count - i) * sizeof(*src));
         maskedAlphaMask = _mm_and_si128(mask, maskedAlphaMask);
-        __m128i srcVector = _mm_maskload_epi32(reinterpret_cast<const int *>(src), mask);
+        __m128i srcVector = _mm_maskload_epi32(reinterpret_cast<const int *>(src + i), mask);
         __m256i src;
 
         if (!_mm_testz_si128(srcVector, maskedAlphaMask)) {

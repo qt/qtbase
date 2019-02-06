@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "dragwidget.h"
 #include "mainwindow.h"
@@ -64,10 +64,10 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel *dataLabel = new QLabel(tr("Amount of data (bytes):"), centralWidget);
     dragWidget = new DragWidget(centralWidget);
 
-    connect(dragWidget, SIGNAL(mimeTypes(QStringList)),
-            this, SLOT(setMimeTypes(QStringList)));
-    connect(dragWidget, SIGNAL(dragResult(QString)),
-            this, SLOT(setDragResult(QString)));
+    connect(dragWidget, &DragWidget::mimeTypes,
+            this, &MainWindow::setMimeTypes);
+    connect(dragWidget, &DragWidget:dragResult,
+            this, &MainWindow::setDragResult);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->addWidget(mimeTypeLabel);

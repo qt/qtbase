@@ -1118,8 +1118,8 @@ void QOpenGLWidget::setTextureFormat(GLenum texFormat)
 /*!
     \return the active internal texture format if the widget has already
     initialized, the requested format if one was set but the widget has not yet
-    been made visible, or 0 if setTextureFormat() was not called and the widget
-    has not yet been made visible.
+    been made visible, or \nullptr if setTextureFormat() was not called and the
+    widget has not yet been made visible.
 
     \since 5.10
  */

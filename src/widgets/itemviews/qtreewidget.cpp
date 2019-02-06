@@ -2539,8 +2539,8 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     QStyle::SH_ItemView_ActivateItemOnSingleClick style hint) or
     pressing a special key (e.g., \uicontrol Enter).
 
-    The specified \a item is the item that was clicked, or 0 if no
-    item was clicked. The \a column is the item's column that was
+    The specified \a item is the item that was clicked, or \nullptr if
+    no item was clicked. The \a column is the item's column that was
     clicked, or -1 if no item was clicked.
 */
 
@@ -2550,8 +2550,8 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     This signal is emitted when the user presses a mouse button inside
     the widget.
 
-    The specified \a item is the item that was clicked, or 0 if no
-    item was clicked. The \a column is the item's column that was
+    The specified \a item is the item that was clicked, or \nullptr if
+    no item was clicked. The \a column is the item's column that was
     clicked, or -1 if no item was clicked.
 */
 
@@ -2571,8 +2571,8 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     This signal is emitted when the user double clicks inside the
     widget.
 
-    The specified \a item is the item that was clicked, or 0 if no
-    item was clicked. The \a column is the item's column that was
+    The specified \a item is the item that was clicked, or \nullptr if
+    no item was clicked. The \a column is the item's column that was
     clicked. If no item was double clicked, no signal will be emitted.
 */
 
@@ -2724,8 +2724,8 @@ QTreeWidgetItem *QTreeWidget::invisibleRootItem() const
 }
 
 /*!
-  Returns the top level item at the given \a index, or 0 if the item does
-  not exist.
+  Returns the top level item at the given \a index, or \nullptr if the
+  item does not exist.
 
   \sa topLevelItemCount(), insertTopLevelItem()
 */

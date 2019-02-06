@@ -326,7 +326,7 @@ QString QSslError::errorString() const
         errStr = QSslSocket::tr("The client is not authorized to request OCSP status from this server");
         break;
     case OcspResponseCannotBeTrusted:
-        errStr = QSslSocket::tr("OCSP reponder's identity cannot be verified");
+        errStr = QSslSocket::tr("OCSP responder's identity cannot be verified");
         break;
     case OcspResponseCertIdUnknown:
         errStr = QSslSocket::tr("The identity of a certificate in an OCSP response cannot be established");

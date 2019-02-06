@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 void myProcessing(const QString &)
 {
@@ -85,8 +85,8 @@ int main()
     {
         // FORMATS
 //! [2]
-        QStringList list = QPicture::inputFormatList();
-        foreach (const QString &string, list)
+        const QStringList list = QPicture::inputFormatList();
+        for (const QString &string : list)
             myProcessing(string);
 //! [2]
     }
@@ -94,8 +94,8 @@ int main()
     {
         // OUTPUT
 //! [3]
-        QStringList list = QPicture::outputFormatList();
-        foreach (const QString &string, list)
+        const QStringList list = QPicture::outputFormatList();
+        for (const QString &string : list)
             myProcessing(string);
 //! [3]
     }

@@ -801,7 +801,7 @@ void QColumnView::initializeColumn(QAbstractItemView *column) const
 }
 
 /*!
-    Returns the preview widget, or 0 if there is none.
+    Returns the preview widget, or \nullptr if there is none.
 
     \sa setPreviewWidget(), updatePreviewWidget()
 */

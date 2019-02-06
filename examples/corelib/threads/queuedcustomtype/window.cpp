@@ -89,9 +89,10 @@ Window::Window()
 void Window::loadImage()
 {
     QStringList formats;
-    foreach (QByteArray format, QImageReader::supportedImageFormats())
+    const QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
+    for (const QByteArray &format : supportedFormats)
         if (format.toLower() == format)
-            formats.append("*." + format);
+            formats.append(QLatin1String("*.") + QString::fromLatin1(format));
 
     QString newPath = QFileDialog::getOpenFileName(this, tr("Open Image"),
         path, tr("Image files (%1)").arg(formats.join(' ')));

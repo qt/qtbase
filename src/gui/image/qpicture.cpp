@@ -858,7 +858,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             break;
         case QPicturePrivate::PdcSetWXform:
             s >> i_8;
-            painter->setMatrixEnabled(i_8);
+            painter->setWorldMatrixEnabled(i_8);
             break;
         case QPicturePrivate::PdcSetWMatrix:
             if (d->formatMajor >= 8) {
@@ -1200,8 +1200,8 @@ QT_END_INCLUDE_NAMESPACE
     \obsolete
 
     Returns a string that specifies the picture format of the file \a
-    fileName, or 0 if the file cannot be read or if the format is not
-    recognized.
+    fileName, or \nullptr if the file cannot be read or if the format
+    is not recognized.
 
     \sa load(), save()
 */
@@ -1543,7 +1543,7 @@ const QPicture &QPictureIO::picture() const { return d->pi; }
 int QPictureIO::status() const { return d->iostat; }
 
 /*!
-    Returns the picture format string or 0 if no format has been
+    Returns the picture format string or \nullptr if no format has been
     explicitly set.
 */
 const char *QPictureIO::format() const { return d->frmt; }

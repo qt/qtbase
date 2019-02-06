@@ -3695,7 +3695,7 @@ void QFileDialogPrivate::_q_goToDirectory(const QString &path)
     }
     QDir dir(path2);
     if (!dir.exists())
-        dir = getEnvironmentVariable(path2);
+        dir.setPath(getEnvironmentVariable(path2));
 
     if (dir.exists() || path2.isEmpty() || path2 == model->myComputer().toString()) {
         _q_enterDirectory(index);

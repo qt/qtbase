@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 #include "xmlwriter.h"
@@ -64,7 +64,7 @@ MainWindow::MainWindow()
     quitAction->setShortcut(tr("Ctrl+Q"));
 
     menuBar()->addMenu(fileMenu);
-    editor = new QTextEdit();
+    editor = new QTextEdit;
 
     QTextCursor cursor(editor->textCursor());
     cursor.movePosition(QTextCursor::Start);
@@ -130,8 +130,8 @@ MainWindow::MainWindow()
                       plainCharFormat);
 
 
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(saveFile()));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+    connect(quitAction, &QAction::triggered, this, &MainWindow::close);
 
     setCentralWidget(editor);
     setWindowTitle(tr("Text Document Frames"));

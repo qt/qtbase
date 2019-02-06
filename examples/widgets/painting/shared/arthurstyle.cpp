@@ -61,10 +61,10 @@
 
 QPixmap cached(const QString &img)
 {
-    if (QPixmap *p = QPixmapCache::find(img))
-        return *p;
-
     QPixmap pm;
+    if (QPixmapCache::find(img, &pm))
+        return pm;
+
     pm = QPixmap::fromImage(QImage(img), Qt::OrderedDither | Qt::OrderedAlphaDither);
     if (pm.isNull())
         return QPixmap();

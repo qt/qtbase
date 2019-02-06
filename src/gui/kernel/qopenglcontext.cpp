@@ -414,15 +414,14 @@ int QOpenGLContextPrivate::maxTextureSize()
 
 /*!
     Returns the last context which called makeCurrent in the current thread,
-    or 0, if no context is current.
+    or \nullptr, if no context is current.
 */
 QOpenGLContext* QOpenGLContext::currentContext()
 {
     QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
-    if (threadContext) {
+    if (threadContext)
         return threadContext->context;
-    }
-    return 0;
+    return nullptr;
 }
 
 /*!

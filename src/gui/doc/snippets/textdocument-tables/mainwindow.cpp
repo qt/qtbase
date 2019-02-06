@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 #include "xmlwriter.h"
@@ -132,9 +132,9 @@ MainWindow::MainWindow()
     }
 //! [8]
 
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(saveFile()));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(showTableAction, SIGNAL(triggered()), this, SLOT(showTable()));
+    connect(saveAction, &QAction:triggered, this, &MainWindow::saveFile);
+    connect(quitAction, &QAction:triggered, this, &MainWindow::close);
+    connect(showTableAction, &QAction:triggered, this, &MainWindow::showTable);
 
     setCentralWidget(editor);
     setWindowTitle(tr("Text Document Tables"));

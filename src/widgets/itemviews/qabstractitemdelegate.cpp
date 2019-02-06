@@ -345,6 +345,7 @@ bool QAbstractItemDelegate::editorEvent(QEvent *,
     return false;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -364,6 +365,7 @@ QString QAbstractItemDelegate::elidedText(const QFontMetrics &fontMetrics, int w
 {
     return fontMetrics.elidedText(text, mode, width);
 }
+#endif
 
 /*!
     \since 4.3

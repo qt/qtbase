@@ -724,8 +724,8 @@ void QItemDelegate::drawDecoration(QPainter *painter, const QStyleOptionViewItem
     QPoint p = QStyle::alignedRect(option.direction, option.decorationAlignment,
                                    pixmap.size(), rect).topLeft();
     if (option.state & QStyle::State_Selected) {
-        QPixmap *pm = selected(pixmap, option.palette, option.state & QStyle::State_Enabled);
-        painter->drawPixmap(p, *pm);
+        const QPixmap pm = selectedPixmap(pixmap, option.palette, option.state & QStyle::State_Enabled);
+        painter->drawPixmap(p, pm);
     } else {
         painter->drawPixmap(p, pixmap);
     }
@@ -1001,17 +1001,29 @@ static QString qPixmapSerial(quint64 i, bool enabled)
     return QString((const QChar *)ptr, int(&arr[sizeof(arr) / sizeof(ushort)] - ptr));
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const
+{
+    const QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
+    QPixmap *pm = QPixmapCache::find(key);
+    if (pm)
+        return pm;
+    selectedPixmap(pixmap, palette, enabled);
+    return QPixmapCache::find(key);
+}
+#endif
+
 /*!
   \internal
   Returns the selected version of the given \a pixmap using the given \a palette.
   The \a enabled argument decides whether the normal or disabled highlight color of
   the palette is used.
 */
-QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const
+QPixmap QItemDelegate::selectedPixmap(const QPixmap &pixmap, const QPalette &palette, bool enabled)
 {
-    QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
-    QPixmap *pm = QPixmapCache::find(key);
-    if (!pm) {
+    const QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
+    QPixmap pm;
+    if (!QPixmapCache::find(key, &pm)) {
         QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
         QColor color = palette.color(enabled ? QPalette::Normal : QPalette::Disabled,
@@ -1023,13 +1035,12 @@ QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette,
         painter.fillRect(0, 0, img.width(), img.height(), color);
         painter.end();
 
-        QPixmap selected = QPixmap(QPixmap::fromImage(img));
-        int n = (img.sizeInBytes() >> 10) + 1;
+        pm = QPixmap(QPixmap::fromImage(img));
+        const int n = (img.sizeInBytes() >> 10) + 1;
         if (QPixmapCache::cacheLimit() < n)
             QPixmapCache::setCacheLimit(n);
 
-        QPixmapCache::insert(key, selected);
-        pm = QPixmapCache::find(key);
+        QPixmapCache::insert(key, pm);
     }
     return pm;
 }

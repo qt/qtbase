@@ -56,7 +56,18 @@
 # Makefile.Debug and Makefile.Release.
 debug_and_release:!build_pass: return()
 
-TESTSERVER_VERSION = $$system(docker-compose --version)
+DOCKER_ENABLED = 1
+
+equals(QMAKE_HOST.os, Darwin) {
+    DOCKER_ENABLED = 0
+    message("Not using docker network test server on macOS, see QTQAINFRA-2717 and QTQAINFRA-2750")
+}
+
+TESTSERVER_VERSION = ""
+
+equals(DOCKER_ENABLED, 1) {
+    TESTSERVER_VERSION = $$system(docker-compose --version)
+}
 
 isEmpty(TESTSERVER_VERSION) {
     # Make check with server "qt-test-server.qt-test-net" as a fallback

@@ -90,11 +90,11 @@ QWindow *QPlatformWindow::window() const
 }
 
 /*!
-    Returns the parent platform window (or 0 if orphan).
+    Returns the parent platform window (or \nullptr if orphan).
 */
 QPlatformWindow *QPlatformWindow::parent() const
 {
-    return window()->parent() ? window()->parent()->handle() : 0;
+    return window()->parent() ? window()->parent()->handle() : nullptr;
 }
 
 /*!

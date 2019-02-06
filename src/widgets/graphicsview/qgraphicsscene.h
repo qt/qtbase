@@ -141,8 +141,10 @@ public:
     ItemIndexMethod itemIndexMethod() const;
     void setItemIndexMethod(ItemIndexMethod method);
 
-    bool isSortCacheEnabled() const;
-    void setSortCacheEnabled(bool enabled);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED bool isSortCacheEnabled() const;
+    QT_DEPRECATED void setSortCacheEnabled(bool enabled);
+#endif
 
     int bspTreeDepth() const;
     void setBspTreeDepth(int depth);

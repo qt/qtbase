@@ -511,10 +511,10 @@ void QWidget::setAutoFillBackground(bool enabled)
     Every widget's constructor accepts one or two standard arguments:
 
     \list 1
-        \li  \c{QWidget *parent = 0} is the parent of the new widget. If it is 0
-            (the default), the new widget will be a window. If not, it will be
-            a child of \e parent, and be constrained by \e parent's geometry
-            (unless you specify Qt::Window as window flag).
+        \li  \c{QWidget *parent = \nullptr} is the parent of the new widget.
+            If it is \nullptr (the default), the new widget will be a window.
+            If not, it will be a child of \e parent, and be constrained by
+            \e parent's geometry (unless you specify Qt::Window as window flag).
         \li  \c{Qt::WindowFlags f = 0} (where available) sets the window flags;
             the default is suitable for almost all widgets, but to get, for
             example, a window without a window system frame, you must use
@@ -1003,7 +1003,7 @@ struct QWidgetExceptionCleaner
     Constructs a widget which is a child of \a parent, with  widget
     flags set to \a f.
 
-    If \a parent is 0, the new widget becomes a window. If
+    If \a parent is \nullptr, the new widget becomes a window. If
     \a parent is another widget, this widget becomes a child window
     inside \a parent. The new widget is deleted when its \a parent is
     deleted.
@@ -2497,12 +2497,12 @@ void QWidgetPrivate::deactivateWidgetCleanup()
 
     The window identifier type depends on the underlying window
     system, see \c qwindowdefs.h for the actual definition. If there
-    is no widget with this identifier, 0 is returned.
+    is no widget with this identifier, \nullptr is returned.
 */
 
 QWidget *QWidget::find(WId id)
 {
-    return QWidgetPrivate::mapper ? QWidgetPrivate::mapper->value(id, 0) : 0;
+    return QWidgetPrivate::mapper ? QWidgetPrivate::mapper->value(id, 0) : nullptr;
 }
 
 
@@ -3279,7 +3279,7 @@ void QWidget::addActions(QList<QAction*> actions)
 
 /*!
     Inserts the action \a action to this widget's list of actions,
-    before the action \a before. It appends the action if \a before is 0 or
+    before the action \a before. It appends the action if \a before is \nullptr or
     \a before is not a valid action for this widget.
 
     A QWidget should only have one of each action.
@@ -3313,7 +3313,7 @@ void QWidget::insertAction(QAction *before, QAction *action)
 
 /*!
     Inserts the actions \a actions to this widget's list of actions,
-    before the action \a before. It appends the action if \a before is 0 or
+    before the action \a before. It appends the action if \a before is \nullptr or
     \a before is not a valid action for this widget.
 
     A QWidget can have at most one of each action.
@@ -4336,7 +4336,8 @@ QWidget *QWidget::window() const
     \since 4.4
 
     Returns the native parent for this widget, i.e. the next ancestor widget
-    that has a system identifier, or 0 if it does not have any native parent.
+    that has a system identifier, or \nullptr if it does not have any native
+    parent.
 
     \sa effectiveWinId()
 */
@@ -5273,7 +5274,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
     \brief The graphicsEffect function returns a pointer to the
     widget's graphics effect.
 
-    If the widget has no graphics effect, 0 is returned.
+    If the widget has no graphics effect, \nullptr is returned.
 
     \since 4.6
 
@@ -5737,12 +5738,10 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
     QPoint offset = targetOffset;
     offset -= paintRegion.boundingRect().topLeft();
     QPoint redirectionOffset;
-    QPaintDevice *redirected = 0;
+    QPaintDevice *redirected = nullptr;
 
     if (target->devType() == QInternal::Widget)
         redirected = static_cast<QWidget *>(target)->d_func()->redirected(&redirectionOffset);
-    if (!redirected)
-        redirected = QPainter::redirected(target, &redirectionOffset);
 
     if (redirected) {
         target = redirected;
@@ -5919,10 +5918,10 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     Finds the nearest widget embedded in a graphics proxy widget along the chain formed by this
     widget and its ancestors. The search starts at \a origin (inclusive).
-    If successful, the function returns the proxy that embeds the widget, or 0 if no embedded
-    widget was found.
+    If successful, the function returns the proxy that embeds the widget, or \nullptr if no
+    embedded widget was found.
 */
-QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget *origin)
+QGraphicsProxyWidget *QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget *origin)
 {
     if (origin) {
         QWExtra *extra = origin->d_func()->extra;
@@ -5930,7 +5929,7 @@ QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget 
             return extra->proxyWidget;
         return nearestGraphicsProxyWidget(origin->parentWidget());
     }
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -6402,7 +6401,7 @@ void QWidget::setWindowRole(const QString &role)
 
 
 /*!
-    Sets the widget's focus proxy to widget \a w. If \a w is 0, the
+    Sets the widget's focus proxy to widget \a w. If \a w is \nullptr, the
     function resets this widget to have no focus proxy.
 
     Some widgets can "have focus", but create a child widget, such as
@@ -6435,15 +6434,15 @@ void QWidget::setFocusProxy(QWidget * w)
 
 
 /*!
-    Returns the focus proxy, or 0 if there is no focus proxy.
+    Returns the focus proxy, or \nullptr if there is no focus proxy.
 
     \sa setFocusProxy()
 */
 
-QWidget * QWidget::focusProxy() const
+QWidget *QWidget::focusProxy() const
 {
     Q_D(const QWidget);
-    return d->extra ? (QWidget *)d->extra->focus_proxy : 0;
+    return d->extra ? (QWidget *)d->extra->focus_proxy : nullptr;
 }
 
 
@@ -8821,7 +8820,7 @@ QSize QWidget::minimumSizeHint() const
 /*!
     \fn QWidget *QWidget::parentWidget() const
 
-    Returns the parent of this widget, or 0 if it does not have any
+    Returns the parent of this widget, or \nullptr if it does not have any
     parent widget.
 */
 
@@ -10231,7 +10230,7 @@ QRegion QWidget::mask() const
 }
 
 /*!
-    Returns the layout manager that is installed on this widget, or 0
+    Returns the layout manager that is installed on this widget, or \nullptr
     if no layout manager is installed.
 
     The layout manager sets the geometry of the widget's children
@@ -12119,14 +12118,14 @@ bool QWidgetPrivate::navigateToDirection(Direction direction)
     Searches for a widget that is positioned in the \a direction, starting
     from the current focusWidget.
 
-    Returns the pointer to a found widget or 0, if there was no widget in
-    that direction.
+    Returns the pointer to a found widget or \nullptr, if there was no widget
+    in that direction.
 */
 QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
 {
     const QWidget *sourceWidget = QApplication::focusWidget();
     if (!sourceWidget)
-        return 0;
+        return nullptr;
     const QRect sourceRect = sourceWidget->rect().translated(sourceWidget->mapToGlobal(QPoint()));
     const int sourceX =
             (direction == DirectionNorth || direction == DirectionSouth) ?
@@ -12140,7 +12139,7 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     const QPoint sourceCenter = sourceRect.center();
     const QWidget *sourceWindow = sourceWidget->window();
 
-    QWidget *targetWidget = 0;
+    QWidget *targetWidget = nullptr;
     int shortestDistance = INT_MAX;
 
     const auto targetCandidates = QApplication::allWidgets();
@@ -12807,7 +12806,7 @@ void QWidget::releaseKeyboard()
     Returns the widget that is currently grabbing the mouse input.
 
     If no widget in this application is currently grabbing the mouse,
-    0 is returned.
+    \nullptr is returned.
 
     \sa grabMouse(), keyboardGrabber()
 */
@@ -12824,7 +12823,7 @@ QWidget *QWidget::mouseGrabber()
     Returns the widget that is currently grabbing the keyboard input.
 
     If no widget in this application is currently grabbing the
-    keyboard, 0 is returned.
+    keyboard, \nullptr is returned.
 
     \sa grabMouse(), mouseGrabber()
 */

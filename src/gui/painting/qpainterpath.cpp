@@ -3242,6 +3242,7 @@ void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadi
   Adds the given rectangle \a x, \a y, \a w, \a h  with rounded corners to the path.
  */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   \obsolete
 
@@ -3308,6 +3309,17 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
   \sa addRoundedRect()
 */
+void QPainterPath::addRoundRect(const QRectF &rect,
+                                int roundness)
+{
+    int xRnd = roundness;
+    int yRnd = roundness;
+    if (rect.width() > rect.height())
+        xRnd = int(roundness * rect.height()/rect.width());
+    else
+        yRnd = int(roundness * rect.width()/rect.height());
+    addRoundRect(rect, xRnd, yRnd);
+}
 
 /*!
   \obsolete
@@ -3324,6 +3336,11 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
   \sa addRoundedRect()
  */
+void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
+                                int xRnd, int yRnd)
+{
+    addRoundRect(QRectF(x, y, w, h), xRnd, yRnd);
+}
 
 /*!
   \obsolete
@@ -3343,6 +3360,12 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
   \sa addRoundedRect()
 */
+void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
+                                int roundness)
+{
+    addRoundRect(QRectF(x, y, w, h), roundness);
+}
+#endif
 
 /*!
     \since 4.3
@@ -3397,6 +3420,7 @@ QPainterPath QPainterPath::subtracted(const QPainterPath &p) const
     return clipper.clip(QPathClipper::BoolSub);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \since 4.3
     \obsolete
@@ -3409,6 +3433,7 @@ QPainterPath QPainterPath::subtractedInverted(const QPainterPath &p) const
 {
     return p.subtracted(*this);
 }
+#endif
 
 /*!
     \since 4.4

@@ -1330,8 +1330,8 @@ QLayoutItem *QGridLayout::itemAt(int index) const
 /*!
     \since 4.4
 
-    Returns the layout item that occupies cell (\a row, \a column), or 0 if
-    the cell is empty.
+    Returns the layout item that occupies cell (\a row, \a column), or
+    \nullptr if the cell is empty.
 
     \sa getItemPosition(), indexOf()
 */
@@ -1346,7 +1346,7 @@ QLayoutItem *QGridLayout::itemAtPosition(int row, int column) const
             return box->item();
         }
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

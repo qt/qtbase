@@ -74,7 +74,7 @@ MainWindow::MainWindow()
     document = new QTextDocument(this);
     editor->setDocument(document);
 
-    connect(editor, SIGNAL(selectionChanged()), this, SLOT(updateMenus()));
+    connect(editor, &QTextEdit::selectionChanged, this, &MainWindow::updateMenus);
 
     setCentralWidget(editor);
     setWindowTitle(tr("Text Document Writer"));

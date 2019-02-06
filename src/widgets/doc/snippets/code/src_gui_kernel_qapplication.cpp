@@ -100,7 +100,8 @@ QSize MyWidget::sizeHint() const
 //! [4]
 void showAllHiddenTopLevelWidgets()
 {
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
         if (widget->isHidden())
             widget->show();
     }
@@ -111,7 +112,8 @@ void showAllHiddenTopLevelWidgets()
 //! [5]
 void updateAllWidgets()
 {
-    foreach (QWidget *widget, QApplication::allWidgets())
+    const QWidgetList allWidgets = QApplication::allWidgets();
+    for (QWidget *widget : allWidgets)
         widget->update();
 }
 //! [5]
@@ -171,13 +173,15 @@ appname -session id
 
 
 //! [10]
-foreach (const QString &command, mySession.restartCommand())
+const QStringList commands = mySession.restartCommand();
+for (const QString &command : commands)
     do_something(command);
 //! [10]
 
 
 //! [11]
-foreach (const QString &command, mySession.discardCommand())
+const QStringList commands = mySession.discardCommand();
+for (const QString &command : commands)
     do_something(command);
 //! [11]
 

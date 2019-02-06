@@ -309,24 +309,24 @@ void QLayoutItem::invalidate()
 
 /*!
     If this item is a QLayout, it is returned as a QLayout; otherwise
-    0 is returned. This function provides type-safe casting.
+    \nullptr is returned. This function provides type-safe casting.
 
     \sa spacerItem(), widget()
 */
-QLayout * QLayoutItem::layout()
+QLayout *QLayoutItem::layout()
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
     If this item is a QSpacerItem, it is returned as a QSpacerItem;
-    otherwise 0 is returned. This function provides type-safe casting.
+    otherwise \nullptr is returned. This function provides type-safe casting.
 
     \sa layout(), widget()
 */
-QSpacerItem * QLayoutItem::spacerItem()
+QSpacerItem *QLayoutItem::spacerItem()
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -354,7 +354,7 @@ QSpacerItem * QSpacerItem::spacerItem()
 
 /*!
     If this item manages a QWidget, returns that widget. Otherwise,
-    \c nullptr is returned.
+    \nullptr is returned.
 
     \note While the functions layout() and spacerItem() perform casts, this
     function returns another object: QLayout and QSpacerItem inherit QLayoutItem,
@@ -362,9 +362,9 @@ QSpacerItem * QSpacerItem::spacerItem()
 
     \sa layout(), spacerItem()
 */
-QWidget * QLayoutItem::widget()
+QWidget *QLayoutItem::widget()
 {
-    return 0;
+    return nullptr;
 }
 
 /*!

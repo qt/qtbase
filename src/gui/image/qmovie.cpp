@@ -659,7 +659,7 @@ void QMovie::setDevice(QIODevice *device)
 
 /*!
     Returns the device QMovie reads image data from. If no device has
-    currently been assigned, 0 is returned.
+    currently been assigned, \nullptr is returned.
 
     \sa setDevice(), fileName()
 */

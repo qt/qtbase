@@ -549,6 +549,7 @@ void QGraphicsItemAnimation::setStep(qreal step)
     afterAnimationStep(step);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Resets the item to its starting position and transformation.
 
@@ -563,6 +564,7 @@ void QGraphicsItemAnimation::reset()
     d->startPos = d->item->pos();
     d->startMatrix = d->item->matrix();
 }
+#endif
 
 /*!
   \fn void QGraphicsItemAnimation::beforeAnimationStep(qreal step)

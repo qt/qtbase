@@ -940,8 +940,8 @@ void QAbstractItemView::setItemDelegateForRow(int row, QAbstractItemDelegate *de
    \since 4.2
 
    Returns the item delegate used by this view and model for the given \a row,
-   or 0 if no delegate has been assigned. You can call itemDelegate() to get a
-   pointer to the current delegate for a given index.
+   or \nullptr if no delegate has been assigned. You can call itemDelegate()
+   to get a pointer to the current delegate for a given index.
 
    \sa setItemDelegateForRow(), itemDelegateForColumn(), setItemDelegate()
 */
@@ -2921,6 +2921,7 @@ void QAbstractItemView::editorDestroyed(QObject *editor)
         setState(NoState);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Sets the horizontal scroll bar's steps per item to \a steps.
@@ -2978,6 +2979,7 @@ int QAbstractItemView::verticalStepsPerItem() const
 {
     return 1;
 }
+#endif
 
 /*!
     Moves to and selects the item best matching the string \a search.

@@ -74,12 +74,10 @@ MainWindow::MainWindow(QWidget *parent)
     table->setModel(model);
 
     selectionModel = table->selectionModel();
-    connect(selectionModel,
-        SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-        this, SLOT(updateSelection(QItemSelection,QItemSelection)));
-    connect(selectionModel,
-        SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-        this, SLOT(changeCurrent(QModelIndex,QModelIndex)));
+    connect(selectionModel, &QItemSelectionModel::selectionChanged,
+            this, &MainWindow::updateSelection);
+    connect(selectionModel, &QItemSelectionModel::currentChanged,
+            this, &MainWindow::changeCurrent);
 
     statusBar();
     setCentralWidget(table);
@@ -89,10 +87,9 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::updateSelection(const QItemSelection &selected,
     const QItemSelection &deselected)
 {
-    QModelIndex index;
     QModelIndexList items = selected.indexes();
 
-    foreach (index, items) {
+    for (const QModelIndex &index : qAsConst(items)) {
         QString text = QString("(%1,%2)").arg(index.row()).arg(index.column());
         model->setData(index, text);
 //! [0] //! [1]
@@ -102,8 +99,8 @@ void MainWindow::updateSelection(const QItemSelection &selected,
 //! [2]
     items = deselected.indexes();
 
-    foreach (index, items)
-        model->setData(index, "");
+    for (const QModelIndex &index : qAsConst(items)) {
+        model->setData(index, QString());
 }
 //! [2]
 

@@ -564,8 +564,8 @@ void QCursor::setShape(Qt::CursorShape shape)
 }
 
 /*!
-    Returns the cursor bitmap, or 0 if it is one of the standard
-    cursors.
+    Returns the cursor bitmap, or \nullptr if it is one of the
+    standard cursors.
 */
 const QBitmap *QCursor::bitmap() const
 {
@@ -575,8 +575,8 @@ const QBitmap *QCursor::bitmap() const
 }
 
 /*!
-    Returns the cursor bitmap mask, or 0 if it is one of the standard
-    cursors.
+    Returns the cursor bitmap mask, or \nullptr if it is one of the
+    standard cursors.
 */
 
 const QBitmap *QCursor::mask() const
