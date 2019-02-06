@@ -403,14 +403,17 @@ void tst_QListWidget::closePersistentEditor()
 void tst_QListWidget::setItemHidden()
 {
 #if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // Boundary checking
-    testWidget->setItemHidden(0, true);
-    testWidget->setItemHidden(0, false);
+    testWidget->setItemHidden(nullptr, true);
+    testWidget->setItemHidden(nullptr, false);
+QT_WARNING_POP
 #endif
 
     int totalHidden = 0;
     for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->isItemHidden(testWidget->item(i)))
+        if (testWidget->item(i)->isHidden())
             totalHidden++;
 
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
@@ -419,7 +422,7 @@ void tst_QListWidget::setItemHidden()
     // Check that nothing else changed
     int newTotal = 0;
     for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->isItemHidden(testWidget->item(i)))
+        if (testWidget->item(i)->isHidden())
             newTotal++;
     QCOMPARE(newTotal, totalHidden);
 

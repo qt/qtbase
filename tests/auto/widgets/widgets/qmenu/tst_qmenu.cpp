@@ -1001,7 +1001,7 @@ void tst_QMenu::task258920_mouseBorder()
     menu.setMouseTracking(true);
     QAction *action = menu.addAction("test");
 
-    const QPoint center = QApplication::desktop()->availableGeometry().center();
+    const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
     menu.popup(center);
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QRect actionRect = menu.actionGeometry(action);
@@ -1073,9 +1073,9 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
 
     QMenu *buttonMenu= new PopulateOnAboutToShowTestMenu(&b);
     b.setMenu(buttonMenu);
-    const int scrNumber = QApplication::desktop()->screenNumber(&b);
+    const QScreen *scr = QGuiApplication::screenAt(b.pos());
     b.show();
-    const QRect screen = QApplication::desktop()->screenGeometry(scrNumber);
+    const QRect screen = scr->geometry();
 
     QRect desiredGeometry = b.geometry();
     desiredGeometry.moveTopLeft(QPoint(screen.x() + 10, screen.bottom() - b.height() - 5));
@@ -1450,13 +1450,14 @@ void tst_QMenu::QTBUG_56917_wideMenuScreenNumber()
     QString longString;
     longString.fill(QLatin1Char('Q'), 3000);
 
-    for (int i = 0; i < QApplication::desktop()->screenCount(); i++) {
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    for (QScreen *screen : screens) {
         QMenu menu;
         menu.addAction(longString);
-        menu.popup(QApplication::desktop()->screen(i)->geometry().center());
+        menu.popup(screen->geometry().center());
         QVERIFY(QTest::qWaitForWindowExposed(&menu));
         QVERIFY(menu.isVisible());
-        QCOMPARE(QApplication::desktop()->screenNumber(&menu), i);
+        QCOMPARE(QGuiApplication::screenAt(menu.pos()), screen);
     }
 }
 
@@ -1468,19 +1469,20 @@ void tst_QMenu::QTBUG_56917_wideSubmenuScreenNumber()
     QString longString;
     longString.fill(QLatin1Char('Q'), 3000);
 
-    for (int i = 0; i < QApplication::desktop()->screenCount(); i++) {
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    for (QScreen *screen : screens) {
         QMenu menu;
         QMenu submenu("Submenu");
         submenu.addAction(longString);
         QAction *action = menu.addMenu(&submenu);
-        menu.popup(QApplication::desktop()->screen(i)->geometry().center());
+        menu.popup(screen->geometry().center());
         QVERIFY(QTest::qWaitForWindowExposed(&menu));
         QVERIFY(menu.isVisible());
         QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.actionGeometry(action).center());
         QTest::qWait(100);
         QVERIFY(QTest::qWaitForWindowExposed(&submenu));
         QVERIFY(submenu.isVisible());
-        QCOMPARE(QApplication::desktop()->screenNumber(&submenu), i);
+        QCOMPARE(QGuiApplication::screenAt(submenu.pos()), screen);
     }
 }
 

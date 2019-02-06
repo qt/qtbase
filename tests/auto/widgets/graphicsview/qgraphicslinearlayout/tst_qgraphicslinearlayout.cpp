@@ -150,7 +150,7 @@ public:
         Q_UNUSED(option);
         Q_UNUSED(widget);
         painter->setBrush(m_brush);
-        painter->drawRoundRect(rect());
+        painter->drawRoundedRect(rect(), 25, 25, Qt::RelativeSize);
     }
 
     void setSizeHint(Qt::SizeHint which, const QSizeF &size) {

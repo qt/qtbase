@@ -2200,8 +2200,6 @@ void tst_QApplication::abortQuitOnShow()
 void tst_QApplication::staticFunctions()
 {
     QApplication::setStyle(QStringLiteral("blub"));
-    QApplication::colorSpec();
-    QApplication::setColorSpec(42);
     QApplication::allWidgets();
     QApplication::topLevelWidgets();
     QApplication::desktop();

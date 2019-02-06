@@ -874,9 +874,12 @@ void tst_QTreeWidget::selectedItems()
     }
 
 #if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // Possible to select null without crashing?
-    testWidget->setItemSelected(0, true);
-    QVERIFY(!testWidget->isItemSelected(0));
+    testWidget->setItemSelected(nullptr, true);
+    QVERIFY(!testWidget->isItemSelected(nullptr));
+QT_WARNING_POP
 #endif
 
     // unselect
@@ -1876,14 +1879,14 @@ void tst_QTreeWidget::setData()
                     item->setBackground(j, backgroundColor);
                     QCOMPARE(itemChangedSpy.count(), 0);
 
-                    QColor textColor((i == 1) ? Qt::green : Qt::cyan);
-                    item->setTextColor(j, textColor);
-                    QCOMPARE(item->textColor(j), textColor);
+                    const QColor foregroundColor((i == 1) ? Qt::green : Qt::cyan);
+                    item->setForeground(j, foregroundColor);
+                    QCOMPARE(item->foreground(j), foregroundColor);
                     QCOMPARE(itemChangedSpy.count(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
-                    item->setTextColor(j, textColor);
+                    item->setForeground(j, foregroundColor);
                     QCOMPARE(itemChangedSpy.count(), 0);
 
                     Qt::CheckState checkState((i == 1) ? Qt::PartiallyChecked : Qt::Checked);
@@ -1905,7 +1908,7 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(item->font(j), font);
                     QCOMPARE(item->textAlignment(j), int(textAlignment));
                     QCOMPARE(item->background(j).color(), backgroundColor);
-                    QCOMPARE(item->textColor(j), textColor);
+                    QCOMPARE(item->foreground(j), foregroundColor);
                     QCOMPARE(item->checkState(j), checkState);
 
                     QCOMPARE(qvariant_cast<QString>(item->data(j, Qt::DisplayRole)), text);
@@ -1917,7 +1920,7 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QFont>(item->data(j, Qt::FontRole)), font);
                     QCOMPARE(qvariant_cast<int>(item->data(j, Qt::TextAlignmentRole)), int(textAlignment));
                     QCOMPARE(qvariant_cast<QBrush>(item->data(j, Qt::BackgroundRole)), QBrush(backgroundColor));
-                    QCOMPARE(qvariant_cast<QColor>(item->data(j, Qt::ForegroundRole)), textColor);
+                    QCOMPARE(qvariant_cast<QColor>(item->data(j, Qt::ForegroundRole)), foregroundColor);
                     QCOMPARE(qvariant_cast<int>(item->data(j, Qt::CheckStateRole)), int(checkState));
 
                     item->setBackground(j, pixmap);

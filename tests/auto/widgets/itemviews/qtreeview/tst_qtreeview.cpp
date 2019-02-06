@@ -1796,7 +1796,7 @@ void tst_QTreeView::keyboardNavigation()
         case Qt::Key_Down:
             if (view.isExpanded(index)) {
                 row = 0;
-                index = index.child(row, column);
+                index = model.index(row, column, index);
             } else {
                 row = qMin(rows - 1, row + 1);
                 index = index.sibling(row, column);

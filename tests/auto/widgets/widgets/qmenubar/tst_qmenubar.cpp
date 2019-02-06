@@ -326,7 +326,7 @@ TestMenu tst_QMenuBar::initComplexMenuBar(QMenuBar *mb)
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     result.actions << action;
 
-    qFill(m_complexTriggerCount, m_complexTriggerCount + sizeof(m_complexTriggerCount) / sizeof(int), 0);
+    std::fill(m_complexTriggerCount, m_complexTriggerCount + sizeof(m_complexTriggerCount) / sizeof(int), 0);
 
     return result;
 }

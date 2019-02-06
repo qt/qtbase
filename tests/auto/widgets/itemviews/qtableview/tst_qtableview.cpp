@@ -4253,7 +4253,7 @@ void tst_QTableView::task234926_setHeaderSorting()
     QStringList sortedDataA = data;
     QStringList sortedDataD = data;
     std::sort(sortedDataA.begin(), sortedDataA.end());
-    std::sort(sortedDataD.begin(), sortedDataD.end(), qGreater<QString>());
+    std::sort(sortedDataD.begin(), sortedDataD.end(), std::greater<QString>());
     model.setStringList(data);
     QTableView view;
     view.setModel(&model);

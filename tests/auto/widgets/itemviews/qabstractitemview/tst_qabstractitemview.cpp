@@ -502,11 +502,6 @@ void tst_QAbstractItemView::basic_tests(QAbstractItemView *view)
     view->commitData(0);
     view->editorDestroyed(0);
 
-    view->setHorizontalStepsPerItem(2);
-    view->horizontalStepsPerItem();
-    view->setVerticalStepsPerItem(2);
-    view->verticalStepsPerItem();
-
     // Will assert as it should
     // view->setIndexWidget(QModelIndex(), 0);
 

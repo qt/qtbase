@@ -1567,7 +1567,7 @@ void tst_QTableWidget::task262056_sortDuplicate()
     }
     testWidget->sortItems(0, Qt::AscendingOrder);
     QSignalSpy layoutChangedSpy(testWidget->model(), SIGNAL(layoutChanged()));
-    testWidget->item(3,0)->setBackgroundColor(Qt::red);
+    testWidget->item(3,0)->setBackground(Qt::red);
 
     QCOMPARE(layoutChangedSpy.count(),0);
 

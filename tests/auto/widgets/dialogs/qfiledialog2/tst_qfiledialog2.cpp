@@ -486,7 +486,7 @@ protected:
             parentIndex = source_parent;
 
             QString path;
-            path = parentIndex.child(source_row,0).data(Qt::DisplayRole).toString();
+            path = sourceModel()->index(source_row, 0, parentIndex).data(Qt::DisplayRole).toString();
 
             do {
               path = parentIndex.data(Qt::DisplayRole).toString() + QLatin1Char('/') + path;
