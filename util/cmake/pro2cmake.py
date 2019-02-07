@@ -77,14 +77,10 @@ def spaces(indent: int) -> str:
 
 def map_to_file(f: str, top_dir: str, current_dir: str,
                 want_absolute_path: bool = False) -> typing.Optional[str]:
-    if f == '$$NO_PCH_SOURCES':
-        return None
     if f.startswith('$$PWD/') or f == '$$PWD':  # INCLUDEPATH += $$PWD
         return os.path.join(os.path.relpath(current_dir, top_dir), f[6:])
     if f.startswith('$$OUT_PWD/'):
         return "${CMAKE_CURRENT_BUILD_DIR}/" + f[10:]
-    if f.startswith('$$QT_SOURCE_TREE'):
-        return "${PROJECT_SOURCE_DIR}/" + f[17:]
     if f.startswith("./"):
         return os.path.join(current_dir, f) if current_dir != '.' else f[2:]
     if want_absolute_path and not os.path.isabs(f):
@@ -102,8 +98,6 @@ def map_source_to_cmake(source: str, base_dir: str,
         return source[2:]
     if source == '.':
         return "${CMAKE_CURRENT_SOURCE_DIR}"
-    if source.startswith('$$QT_SOURCE_TREE/'):
-        return "${PROJECT_SOURCE_DIR}/" + source[17:]
 
     if os.path.exists(os.path.join(base_dir, source)):
         return source
@@ -201,7 +195,10 @@ class Scope(object):
                  parent_scope: typing.Optional[Scope],
                  file: typing.Optional[str] = None, condition: str = '',
                  base_dir: str = '',
-                 operations: typing.Mapping[str, typing.List[Operation]] = {}) -> None:
+                 operations: typing.Mapping[str, typing.List[Operation]] = {
+                    'QT_SOURCE_TREE': [SetOperation('${PROJECT_SOURCE_DIR}')],
+                    'QT_BUILD_TREE': [SetOperation('${PROJECT_BUILD_DIR}')],
+                 }) -> None:
         if parent_scope:
             parent_scope._add_child(self)
         else:
@@ -452,6 +449,33 @@ class Scope(object):
             return default
         assert len(v) == 1
         return v[0]
+
+    def _expand_value(self, value: str) -> typing.List[str]:
+        result = value
+        pattern = re.compile(r'\$\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?')
+        match = re.search(pattern, result)
+        while match:
+            if match.group(0) == value:
+                return self.expand(match.group(1), '')
+            else:
+                result = result[:match.start()] \
+                         + self.expandString(match.group(1)) \
+                         + result[match.end():]
+            match = re.search(pattern, result)
+        return [result]
+
+    def expand(self, key: str, default=None) -> typing.List[str]:
+        value = self.get(key, default)
+        result: typing.List[str] = []
+        assert isinstance(value, list)
+        for v in value:
+            result += self._expand_value(v)
+        return result
+
+    def expandString(self, key: str) -> str:
+        result = self._expand_value(self.getString(key))
+        assert len(result) == 1
+        return result[0]
 
     @property
     def TEMPLATE(self) -> str:
@@ -715,10 +739,10 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
-    sources = scope.get('SOURCES') + scope.get('HEADERS') \
-        + scope.get('OBJECTIVE_SOURCES') + scope.get('NO_PCH_SOURCES') \
-        + scope.get('FORMS')
-    resources = scope.get('RESOURCES')
+    sources = scope.expand('SOURCES') + scope.expand('HEADERS') \
+        + scope.expand('OBJECTIVE_SOURCES') + scope.expand('NO_PCH_SOURCES') \
+        + scope.expand('FORMS')
+    resources = scope.expand('RESOURCES')
     if resources:
         qrc_only = True
         for r in resources:
@@ -731,7 +755,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         else:
             sources += resources
 
-    vpath = scope.get('VPATH')
+    vpath = scope.expand('VPATH')
 
     sources = [map_source_to_cmake(s, scope.basedir, vpath) for s in sources]
     if sources:
@@ -739,26 +763,27 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     for l in sort_sources(sources):
         cm_fh.write('{}        {}\n'.format(ind, l))
 
-    defines = scope.get('DEFINES')
+    defines = scope.expand('DEFINES')
     if defines:
         cm_fh.write('{}    DEFINES\n'.format(ind))
         for d in defines:
             d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
                           '="${CMAKE_CURRENT_SOURCE_DIR}/"')
             cm_fh.write('{}        {}\n'.format(ind, d))
-    includes = scope.get('INCLUDEPATH')
+    includes = scope.expand('INCLUDEPATH')
     if includes:
         cm_fh.write('{}    INCLUDE_DIRECTORIES\n'.format(ind))
         for i in includes:
             i = i.rstrip('/') or ('/')
+            i = map_source_to_cmake(i, scope.basedir, vpath)
             cm_fh.write('{}        {}\n'.format(ind, i))
 
-    dependencies = [map_qt_library(q) for q in scope.get('QT')
+    dependencies = [map_qt_library(q) for q in scope.expand('QT')
                     if map_qt_library(q) not in known_libraries]
-    dependencies += [map_qt_library(q) for q in scope.get('QT_FOR_PRIVATE')
+    dependencies += [map_qt_library(q) for q in scope.expand('QT_FOR_PRIVATE')
                      if map_qt_library(q) not in known_libraries]
-    dependencies += scope.get('QMAKE_USE_PRIVATE') + scope.get('QMAKE_USE') \
-        + scope.get('LIBS_PRIVATE') + scope.get('LIBS')
+    dependencies += scope.expand('QMAKE_USE_PRIVATE') + scope.expand('QMAKE_USE') \
+        + scope.expand('LIBS_PRIVATE') + scope.expand('LIBS')
     if dependencies:
         cm_fh.write('{}    LIBRARIES\n'.format(ind))
         is_framework = False
@@ -807,7 +832,8 @@ def is_simple_condition(condition: str) -> bool:
 def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
     result = ''
     for k in sorted(ignored_keys):
-        if k == '_INCLUDED' or k == 'TARGET' or k == 'QMAKE_DOCS':
+        if k == '_INCLUDED' or k == 'TARGET' or k == 'QMAKE_DOCS' or k == 'QT_SOURCE_TREE' \
+                or k == 'QT_BUILD_TREE':
             # All these keys are actually reported already
             continue
         values = scope.get(k)
