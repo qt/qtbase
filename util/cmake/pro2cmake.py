@@ -86,7 +86,7 @@ def map_to_file(f: str, top_dir: str, current_dir: str,
     if f.startswith('$$QT_SOURCE_TREE'):
         return "${PROJECT_SOURCE_DIR}/" + f[17:]
     if f.startswith("./"):
-        return os.path.join(current_dir, f)
+        return os.path.join(current_dir, f) if current_dir != '.' else f[2:]
     if want_absolute_path and not os.path.isabs(f):
         return os.path.join(current_dir, f)
     return f
@@ -98,6 +98,8 @@ def map_source_to_cmake(source: str, base_dir: str,
         return ''
     if source.startswith('$$PWD/'):
         return source[6:]
+    if source.startswith('./'):
+        return source[2:]
     if source == '.':
         return "${CMAKE_CURRENT_SOURCE_DIR}"
     if source.startswith('$$QT_SOURCE_TREE/'):
