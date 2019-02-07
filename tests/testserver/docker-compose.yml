@@ -76,8 +76,20 @@ services:
             - apache2:apache2.${TEST_DOMAIN}
             - vsftpd:vsftpd.${TEST_DOMAIN}
             - ftp-proxy:ftp-proxy.${TEST_DOMAIN}
+            - cyrus:cyrus.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./danted:/service:ro
         entrypoint: common/startup.sh
         command: service/danted.sh
+
+    cyrus:
+        image: qt-test-server-cyrus:c8d72754abc0e501afd624ce838e4df35505abc9
+        container_name: qt-test-server-cyrus
+        domainname: ${TEST_DOMAIN}
+        hostname: cyrus
+        volumes:
+            - ./common:/common:ro
+            - ./cyrus:/service:ro
+        entrypoint: common/startup.sh
+        command: service/cyrus.sh

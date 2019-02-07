@@ -137,7 +137,13 @@ private slots:
 
 void tst_QSocks5SocketEngine::initTestCase()
 {
+#ifdef QT_TEST_SERVER
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
+#else
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -293,13 +299,13 @@ void tst_QSocks5SocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QCOMPARE(socketDevice.state(), QAbstractSocket::UnconnectedState);
 
-    socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
+    socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1080));
 
-    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::imapServerIp(), 143));
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectedState);
-    QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::serverIP());
+    QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::imapServerIp());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -347,10 +353,10 @@ void tst_QSocks5SocketEngine::simpleErrorsAndStates()
         // Initialize device
         QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-        socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
+        socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1080));
 
         QCOMPARE(socketDevice.state(), QAbstractSocket::UnconnectedState);
-        QVERIFY(!socketDevice.connectToHost(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first(), 8088));
+        QVERIFY(!socketDevice.connectToHost(QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses().first(), 8088));
         QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectingState);
         if (socketDevice.waitForWrite(15000)) {
             QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState ||
@@ -433,7 +439,7 @@ void tst_QSocks5SocketEngine::serverTest()
     // Initialize a Tcp socket
     QVERIFY(server.initialize(QAbstractSocket::TcpSocket));
 
-    QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080);
+    QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1080);
 
     server.setProxy(proxy);
 
@@ -510,7 +516,7 @@ void tst_QSocks5SocketEngine::udpTest()
     QVERIFY(udpSocket.initialize(QAbstractSocket::UdpSocket));
     QVERIFY(udpSocket.isValid());
 
-    QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080);
+    QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1080);
 
     udpSocket.setProxy(proxy);
 
@@ -564,7 +570,7 @@ void tst_QSocks5SocketEngine::tcpSocketBlockingTest()
     QTcpSocket socket;
 
     // Connect
-    socket.connectToHost(QtNetworkSettings::serverName(), 143);
+    socket.connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket.waitForConnected());
     QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
 
@@ -635,7 +641,7 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
             });
 
     // Connect
-    socket.connectToHost(QtNetworkSettings::serverName(), 143);
+    socket.connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket.state() == QTcpSocket::HostLookupState ||
             socket.state() == QTcpSocket::ConnectingState);
 
@@ -754,13 +760,13 @@ void tst_QSocks5SocketEngine::downloadBigFile()
                     << " (" << stopWatch.elapsed() << "ms)";
             });
 
-    socket.connectToHost(QtNetworkSettings::serverName(), 80);
+    socket.connectToHost(QtNetworkSettings::httpServerName(), 80);
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
 
-    QByteArray hostName = QtNetworkSettings::serverName().toLatin1();
+    QByteArray hostName = QtNetworkSettings::httpServerName().toLatin1();
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
     QVERIFY(socket.write("GET /qtest/mediumfile HTTP/1.0\r\n") > 0);
     QVERIFY(socket.write("HOST: ") > 0);
@@ -791,13 +797,13 @@ void tst_QSocks5SocketEngine::passwordAuth()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QCOMPARE(socketDevice.state(), QAbstractSocket::UnconnectedState);
 
-    socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080, "qsockstest", "password"));
+    socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1080, "qsockstest", "password"));
 
     // Connect to imap.trolltech.com's IP
-    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::imapServerIp(), 143));
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
-    if (!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143)) {
+    if (!socketDevice.connectToHost(QtNetworkSettings::imapServerIp(), 143)) {
         qDebug("%d, %s", socketDevice.error(), socketDevice.errorString().toLatin1().constData());
     }
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectedState);
@@ -857,19 +863,19 @@ void tst_QSocks5SocketEngine::passwordAuth2()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QCOMPARE(socketDevice.state(), QAbstractSocket::UnconnectedState);
 
-    socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1081));
+    socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1081));
     socketDevice.setReceiver(this);
 
-    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::imapServerIp(), 143));
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectingState);
     while (socketDevice.state() == QAbstractSocket::ConnectingState) {
         QVERIFY(socketDevice.waitForWrite());
-        socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143);
+        socketDevice.connectToHost(QtNetworkSettings::imapServerIp(), 143);
     }
     if (socketDevice.state() != QAbstractSocket::ConnectedState)
         qDebug("%d, %s", socketDevice.error(), socketDevice.errorString().toLatin1().constData());
     QCOMPARE(socketDevice.state(), QAbstractSocket::ConnectedState);
-    QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::serverIP());
+    QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::imapServerIp());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
