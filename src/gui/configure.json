@@ -1387,7 +1387,7 @@
         "eglfs": {
             "label": "EGLFS",
             "section": "Platform plugins",
-            "condition": "!config.android && !config.darwin && !config.win32 && features.egl",
+            "condition": "!config.android && !config.darwin && !config.win32 && !config.wasm && features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
