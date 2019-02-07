@@ -118,21 +118,6 @@ def map_source_to_cmake(source: str, base_dir: str,
     return '{}-NOTFOUND'.format(source)
 
 
-def map_source_to_fs(base_dir: str, file: str,
-                     source: str) -> str:
-    if source is None or source == '$$NO_PCH_SOURCES':
-        return ''
-    if source.startswith('$$PWD/'):
-        return os.path.join(os.path.dirname(file), source[6:])
-    if source.startswith('$$QT_SOURCE_TREE/'):
-        return os.path.join('.', source[17:])
-    if source.startswith('${PROJECT_SOURCE_DIR}/'):
-        return os.path.join('.', source[22:])
-    if source.startswith('${CMAKE_CURRENT_SOURCE_DIR}/'):
-        return os.path.join(base_dir, source[28:])
-    return os.path.join(base_dir, source)
-
-
 class Operation:
     def __init__(self, value):
         if isinstance(value, list):
