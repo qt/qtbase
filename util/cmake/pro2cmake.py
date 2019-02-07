@@ -588,11 +588,11 @@ def parseProFile(file: str, *, debug=False):
 
 
 def map_condition(condition: str) -> str:
-    re.sub(r'if\s*\((.*?)\)', r'\1', condition)
-    re.sub(r'(^|[^a-zA-Z0-9_])isEmpty\s*\((.*?)\)', r'\2_ISEMPTY', condition)
-    re.sub(r'(^|[^a-zA-Z0-9_])contains\s*\((.*?), (.*)?\)',
-           r'\2___contains___\3', condition)
-    re.sub(r'\s*==\s*', '___STREQUAL___', condition)
+    condition = re.sub(r'\bif\s*\((.*?)\)', r'\1', condition)
+    condition = re.sub(r'\bisEmpty\s*\((.*?)\)', r'\1_ISEMPTY', condition)
+    condition = re.sub(r'\bcontains\s*\((.*?), (.*)?\)',
+                       r'\1___contains___\2', condition)
+    condition = re.sub(r'\s*==\s*', '___STREQUAL___', condition)
 
     condition = condition.replace('*', '_x_')
     condition = condition.replace('.$$', '__ss_')
