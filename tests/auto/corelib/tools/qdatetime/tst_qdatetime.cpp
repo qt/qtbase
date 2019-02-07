@@ -2401,6 +2401,19 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("late") << QString("9999-12-31T23:59:59.999Z")
                           << QString("yyyy-MM-ddThh:mm:ss.zZ")
                           << QDateTime(QDate(9999, 12, 31), QTime(23, 59, 59, 999));
+    // Separators match /([^aAdhHMmstyz]*)/
+    QTest::newRow("oddly-separated") // To show broken-separator's format is valid.
+        << QStringLiteral("2018 wilful long working block relief 12-19T21:09 cruel blurb encore flux")
+        << QStringLiteral("yyyy wilful long working block relief MM-ddThh:mm cruel blurb encore flux")
+        << QDateTime(QDate(2018, 12, 19), QTime(21, 9));
+    QTest::newRow("broken-separator")
+        << QStringLiteral("2018 wilful")
+        << QStringLiteral("yyyy wilful long working block relief MM-ddThh:mm cruel blurb encore flux")
+        << invalidDateTime();
+    QTest::newRow("broken-terminator")
+        << QStringLiteral("2018 wilful long working block relief 12-19T21:09 cruel")
+        << QStringLiteral("yyyy wilful long working block relief MM-ddThh:mm cruel blurb encore flux")
+        << invalidDateTime();
 }
 
 void tst_QDateTime::fromStringStringFormat()
