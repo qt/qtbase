@@ -121,6 +121,7 @@ private slots:
     void task254449_draggingItemToNegativeCoordinates();
     void keyboardSearch();
     void shiftSelectionWithNonUniformItemSizes();
+    void shiftSelectionWithItemAlignment();
     void clickOnViewportClearsSelection();
     void task262152_setModelColumnNavigate();
     void taskQTBUG_2233_scrollHiddenItems_data();
@@ -1796,6 +1797,51 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         QCOMPARE(selected.count(), 3);
         QVERIFY(!selected.contains(model.index(0, 0)));
     }
+}
+
+void tst_QListView::shiftSelectionWithItemAlignment()
+{
+    QStringList items;
+    for (int c = 0; c < 2; c++) {
+        for (int i = 10; i > 0; i--)
+            items << QString(i, QLatin1Char('*'));
+
+        for (int i = 1; i < 11; i++)
+            items << QString(i, QLatin1Char('*'));
+    }
+
+    QListView view;
+    view.setFlow(QListView::TopToBottom);
+    view.setWrapping(true);
+    view.setItemAlignment(Qt::AlignLeft);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+    QStringListModel model(items);
+    view.setModel(&model);
+
+    QFont font = view.font();
+    font.setPixelSize(10);
+    view.setFont(font);
+    view.resize(300, view.sizeHintForRow(0) * items.size() / 2 + view.horizontalScrollBar()->height());
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
+
+    QModelIndex index1 = view.model()->index(items.size() / 4, 0);
+    QPoint p = view.visualRect(index1).center();
+    QVERIFY(view.viewport()->rect().contains(p));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(view.currentIndex(), index1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
+
+    QModelIndex index2 = view.model()->index(items.size() / 4 * 3, 0);
+    p = view.visualRect(index2).center();
+    QVERIFY(view.viewport()->rect().contains(p));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, p);
+    QCOMPARE(view.currentIndex(), index2);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), index2.row() - index1.row() + 1);
 }
 
 void tst_QListView::clickOnViewportClearsSelection()

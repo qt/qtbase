@@ -333,12 +333,29 @@ public:
     inline QModelIndex listViewItemToIndex(const QListViewItem &item) const
         { return model->index(commonListView->itemIndex(item), column, root); }
 
+    inline bool hasRectForIndex(const QModelIndex &index) const
+    {
+        return isIndexValid(index) && index.parent() == root && index.column() == column && !isHidden(index.row());
+    }
+
     QRect rectForIndex(const QModelIndex &index) const
     {
-        if (!isIndexValid(index) || index.parent() != root || index.column() != column || isHidden(index.row()))
+        if (!hasRectForIndex(index))
             return QRect();
         executePostedLayout();
         return viewItemRect(indexToListViewItem(index));
+    }
+
+    QRect cellRectForIndex(const QModelIndex &index)
+    {
+        if (!hasRectForIndex(index))
+            return QRect();
+        executePostedLayout();
+        auto oldItemAlignment = itemAlignment;
+        itemAlignment = Qt::Alignment();
+        const QRect rect = rectForIndex(index);
+        itemAlignment = oldItemAlignment;
+        return rect;
     }
 
     void viewUpdateGeometries() { q_func()->updateGeometries(); }
