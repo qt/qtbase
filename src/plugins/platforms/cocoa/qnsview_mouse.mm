@@ -39,6 +39,22 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+/*
+    The reason for using this helper is to ensure that QNSView doesn't implement
+    the NSResponder callbacks for mouseEntered, mouseExited, and mouseMoved.
+
+    If it did, we would get mouse events though the responder chain as well,
+    for example if a subview has a tracking area of its own and calls super
+    in the handler, which results in forwarding the event though the responder
+    chain. The same applies if NSWindow.acceptsMouseMovedEvents is YES.
+
+    By having a helper as the target for our tracking areas, we know for sure
+    that the events we are getting stem from our own tracking areas.
+
+    FIXME: Ideally we wouldn't need this workaround, and would correctly
+    interact with the responder chain by e.g. calling super if Qt does not
+    accept the mouse event
+*/
 @implementation QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) {
     QNSView *view;
 }
