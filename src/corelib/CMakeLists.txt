@@ -241,6 +241,8 @@ add_qt_module(Core
 
 add_dependencies(Core Qt::moc)
 add_dependencies(Core Qt::rcc)
+add_dependencies(CorePrivate Qt::moc)
+add_dependencies(CorePrivate Qt::rcc)
 
 configure_file(global/qconfig.cpp.in global/qconfig.cpp)
 
