@@ -141,13 +141,15 @@ extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
     INCLUDE_DIRECTORIES
         nativepainting/
 )
-#
-#extend_target(XcbQpa CONDITION (QT_FEATURE_xcb_native_painting) AND (QT_FEATURE_xrender)
-#)
+
+extend_target(XcbQpa CONDITION (QT_FEATURE_xcb_native_painting) AND (QT_FEATURE_xrender)
+    LIBRARIES
+        X11::Xrender
+)
 
 extend_target(XcbQpa CONDITION (QT_FEATURE_xcb_native_painting) AND (QT_FEATURE_fontconfig)
     LIBRARIES
-        freetype
+        Freetype::Freetype
 )
 
 add_qt_plugin(qxcb
