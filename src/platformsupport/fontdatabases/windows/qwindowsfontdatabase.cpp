@@ -1429,8 +1429,8 @@ QT_WARNING_POP
                     reinterpret_cast<const OS2Table *>(fontData.constData()
                                                        + qFromBigEndian<quint32>(os2TableEntry->offset));
 
-            bool italic = qFromBigEndian<quint16>(os2Table->selection) & 1;
-            bool oblique = qFromBigEndian<quint16>(os2Table->selection) & 128;
+            bool italic = qFromBigEndian<quint16>(os2Table->selection)  & (1 << 0);
+            bool oblique = qFromBigEndian<quint16>(os2Table->selection) & (1 << 9);
 
             if (italic)
                 fontEngine->fontDef.style = QFont::StyleItalic;
