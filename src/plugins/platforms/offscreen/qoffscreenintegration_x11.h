@@ -104,6 +104,9 @@ public:
     bool isSharing() const override;
     bool isValid() const override;
 
+    void *glxConfig() const;
+    void *glxContext() const;
+
 private:
     QScopedPointer<QOffscreenX11GLXContextData> d;
 };

@@ -122,11 +122,16 @@ void *QOffscreenX11Integration::nativeResourceForScreen(const QByteArray &resour
 #ifndef QT_NO_OPENGL
 void *QOffscreenX11Integration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) {
     if (resource.toLower() == QByteArrayLiteral("glxconfig") ) {
-        if (!m_connection)
-            m_connection.reset(new QOffscreenX11Connection);
-        QOffscreenX11Info *x11 = m_connection->x11Info();
-        GLXFBConfig config = qglx_findConfig(x11->display(), x11->screenNumber(), context->format());
-        return config;
+        if (context) {
+            QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());
+            return glxPlatformContext->glxConfig();
+        }
+    }
+    if (resource.toLower() == QByteArrayLiteral("glxcontext") ) {
+        if (context) {
+            QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());
+            return glxPlatformContext->glxContext();
+        }
     }
     return nullptr;
 }
@@ -158,11 +163,12 @@ QOffscreenX11Info *QOffscreenX11Connection::x11Info()
 class QOffscreenX11GLXContextData
 {
 public:
-    QOffscreenX11Info *x11;
+    QOffscreenX11Info *x11 = nullptr;
     QSurfaceFormat format;
-    GLXContext context;
-    GLXContext shareContext;
-    Window window;
+    GLXContext context = nullptr;
+    GLXContext shareContext = nullptr;
+    GLXFBConfig config = nullptr;
+    Window window = 0;
 };
 
 static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
@@ -172,6 +178,7 @@ static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
     a.background_pixel = WhitePixel(x11->display(), x11->screenNumber());
     a.border_pixel = BlackPixel(x11->display(), x11->screenNumber());
     a.colormap = cmap;
+
 
     Window window = XCreateWindow(x11->display(), x11->root(),
                                   0, 0, 100, 100,
@@ -194,6 +201,7 @@ static Window createDummyWindow(QOffscreenX11Info *x11, GLXFBConfig config)
 QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGLContext *context)
     : d(new QOffscreenX11GLXContextData)
 {
+
     d->x11 = x11;
     d->format = context->format();
 
@@ -208,6 +216,8 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
         d->shareContext = static_cast<QOffscreenX11GLXContext *>(context->shareHandle())->d->context;
 
     GLXFBConfig config = qglx_findConfig(x11->display(), x11->screenNumber(), d->format);
+    d->config = config;
+
     if (config) {
         d->context = glXCreateNewContext(x11->display(), config, GLX_RGBA_TYPE, d->shareContext, true);
         if (!d->context && d->shareContext) {
@@ -289,6 +299,16 @@ bool QOffscreenX11GLXContext::isSharing() const
 bool QOffscreenX11GLXContext::isValid() const
 {
     return d->context && d->window;
+}
+
+void *QOffscreenX11GLXContext::glxContext() const
+{
+    return d->context;
+}
+
+void *QOffscreenX11GLXContext::glxConfig() const
+{
+    return d->config;
 }
 
 QT_END_NAMESPACE
