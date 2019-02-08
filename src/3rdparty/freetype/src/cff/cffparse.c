@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CFF token stream parser (body)                                       */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -20,9 +20,12 @@
 #include "cffparse.h"
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_DEBUG_H
+#include FT_INTERNAL_CALC_H
+#include FT_INTERNAL_POSTSCRIPT_AUX_H
 
 #include "cfferrs.h"
 #include "cffpic.h"
+#include "cffload.h"
 
 
   /*************************************************************************/
@@ -35,18 +38,52 @@
 #define FT_COMPONENT  trace_cffparse
 
 
-  FT_LOCAL_DEF( void )
+  FT_LOCAL_DEF( FT_Error )
   cff_parser_init( CFF_Parser  parser,
                    FT_UInt     code,
                    void*       object,
-                   FT_Library  library)
+                   FT_Library  library,
+                   FT_UInt     stackSize,
+                   FT_UShort   num_designs,
+                   FT_UShort   num_axes )
   {
-    FT_MEM_ZERO( parser, sizeof ( *parser ) );
+    FT_Memory  memory = library->memory;    /* for FT_NEW_ARRAY */
+    FT_Error   error;                       /* for FT_NEW_ARRAY */
 
+
+    FT_ZERO( parser );
+
+#if 0
     parser->top         = parser->stack;
+#endif
     parser->object_code = code;
     parser->object      = object;
     parser->library     = library;
+    parser->num_designs = num_designs;
+    parser->num_axes    = num_axes;
+
+    /* allocate the stack buffer */
+    if ( FT_NEW_ARRAY( parser->stack, stackSize ) )
+    {
+      FT_FREE( parser->stack );
+      goto Exit;
+    }
+
+    parser->stackSize = stackSize;
+    parser->top       = parser->stack;    /* empty stack */
+
+  Exit:
+    return error;
+  }
+
+
+  FT_LOCAL_DEF( void )
+  cff_parser_done( CFF_Parser  parser )
+  {
+    FT_Memory  memory = parser->library->memory;    /* for FT_FREE */
+
+
+    FT_FREE( parser->stack );
   }
 
 
@@ -118,6 +155,22 @@
     10000000L,
     100000000L,
     1000000000L
+  };
+
+  /* maximum values allowed for multiplying      */
+  /* with the corresponding `power_tens' element */
+  static const FT_Long power_ten_limits[] =
+  {
+    FT_LONG_MAX / 1L,
+    FT_LONG_MAX / 10L,
+    FT_LONG_MAX / 100L,
+    FT_LONG_MAX / 1000L,
+    FT_LONG_MAX / 10000L,
+    FT_LONG_MAX / 100000L,
+    FT_LONG_MAX / 1000000L,
+    FT_LONG_MAX / 10000000L,
+    FT_LONG_MAX / 100000000L,
+    FT_LONG_MAX / 1000000000L,
   };
 
 
@@ -397,28 +450,66 @@
 
 
   /* read a number, either integer or real */
-  static FT_Long
-  cff_parse_num( FT_Byte**  d )
+  FT_LOCAL_DEF( FT_Long )
+  cff_parse_num( CFF_Parser  parser,
+                 FT_Byte**   d )
   {
-    return **d == 30 ? ( cff_parse_real( d[0], d[1], 0, NULL ) >> 16 )
-                     :   cff_parse_integer( d[0], d[1] );
+    if ( **d == 30 )
+    {
+      /* binary-coded decimal is truncated to integer */
+      return cff_parse_real( *d, parser->limit, 0, NULL ) >> 16;
+    }
+
+    else if ( **d == 255 )
+    {
+      /* 16.16 fixed point is used internally for CFF2 blend results. */
+      /* Since these are trusted values, a limit check is not needed. */
+
+      /* After the 255, 4 bytes give the number.                 */
+      /* The blend value is converted to integer, with rounding; */
+      /* due to the right-shift we don't need the lowest byte.   */
+#if 0
+      return (FT_Short)(
+               ( ( ( (FT_UInt32)*( d[0] + 1 ) << 24 ) |
+                   ( (FT_UInt32)*( d[0] + 2 ) << 16 ) |
+                   ( (FT_UInt32)*( d[0] + 3 ) <<  8 ) |
+                     (FT_UInt32)*( d[0] + 4 )         ) + 0x8000U ) >> 16 );
+#else
+      return (FT_Short)(
+               ( ( ( (FT_UInt32)*( d[0] + 1 ) << 16 ) |
+                   ( (FT_UInt32)*( d[0] + 2 ) <<  8 ) |
+                     (FT_UInt32)*( d[0] + 3 )         ) + 0x80U ) >> 8 );
+#endif
+    }
+
+    else
+      return cff_parse_integer( *d, parser->limit );
   }
 
 
   /* read a floating point number, either integer or real */
   static FT_Fixed
-  do_fixed( FT_Byte**  d,
-            FT_Long    scaling )
+  do_fixed( CFF_Parser  parser,
+            FT_Byte**   d,
+            FT_Long     scaling )
   {
     if ( **d == 30 )
-      return cff_parse_real( d[0], d[1], scaling, NULL );
+      return cff_parse_real( *d, parser->limit, scaling, NULL );
     else
     {
-      FT_Long  val = cff_parse_integer( d[0], d[1] );
+      FT_Long  val = cff_parse_integer( *d, parser->limit );
 
 
       if ( scaling )
+      {
+        if ( FT_ABS( val ) > power_ten_limits[scaling] )
+        {
+          val = val > 0 ? 0x7FFFFFFFL : -0x7FFFFFFFL;
+          goto Overflow;
+        }
+
         val *= power_tens[scaling];
+      }
 
       if ( val > 0x7FFF )
       {
@@ -442,19 +533,21 @@
 
   /* read a floating point number, either integer or real */
   static FT_Fixed
-  cff_parse_fixed( FT_Byte**  d )
+  cff_parse_fixed( CFF_Parser  parser,
+                   FT_Byte**   d )
   {
-    return do_fixed( d, 0 );
+    return do_fixed( parser, d, 0 );
   }
 
 
   /* read a floating point number, either integer or real, */
   /* but return `10^scaling' times the number read in      */
   static FT_Fixed
-  cff_parse_fixed_scaled( FT_Byte**  d,
-                          FT_Long    scaling )
+  cff_parse_fixed_scaled( CFF_Parser  parser,
+                          FT_Byte**   d,
+                          FT_Long     scaling )
   {
-    return do_fixed( d, scaling );
+    return do_fixed( parser, d, scaling );
   }
 
 
@@ -462,13 +555,14 @@
   /* and return it as precise as possible -- `scaling' returns */
   /* the scaling factor (as a power of 10)                     */
   static FT_Fixed
-  cff_parse_fixed_dynamic( FT_Byte**  d,
-                           FT_Long*   scaling )
+  cff_parse_fixed_dynamic( CFF_Parser  parser,
+                           FT_Byte**   d,
+                           FT_Long*    scaling )
   {
     FT_ASSERT( scaling );
 
     if ( **d == 30 )
-      return cff_parse_real( d[0], d[1], 0, scaling );
+      return cff_parse_real( *d, parser->limit, 0, scaling );
     else
     {
       FT_Long  number;
@@ -516,7 +610,11 @@
 
     if ( parser->top >= parser->stack + 6 )
     {
-      FT_Long  scaling;
+      FT_Fixed  values[6];
+      FT_Long   scalings[6];
+
+      FT_Long  min_scaling, max_scaling;
+      int      i;
 
 
       error = FT_Err_Ok;
@@ -525,22 +623,36 @@
 
       /* We expect a well-formed font matrix, this is, the matrix elements */
       /* `xx' and `yy' are of approximately the same magnitude.  To avoid  */
-      /* loss of precision, we use the magnitude of element `xx' to scale  */
-      /* all other elements.  The scaling factor is then contained in the  */
-      /* `units_per_em' value.                                             */
+      /* loss of precision, we use the magnitude of the largest matrix     */
+      /* element to scale all other elements.  The scaling factor is then  */
+      /* contained in the `units_per_em' value.                            */
 
-      matrix->xx = cff_parse_fixed_dynamic( data++, &scaling );
+      max_scaling = FT_LONG_MIN;
+      min_scaling = FT_LONG_MAX;
 
-      scaling = -scaling;
+      for ( i = 0; i < 6; i++ )
+      {
+        values[i] = cff_parse_fixed_dynamic( parser, data++, &scalings[i] );
+        if ( values[i] )
+        {
+          if ( scalings[i] > max_scaling )
+            max_scaling = scalings[i];
+          if ( scalings[i] < min_scaling )
+            min_scaling = scalings[i];
+        }
+      }
 
-      if ( scaling < 0 || scaling > 9 )
+      if ( max_scaling < -9                  ||
+           max_scaling > 0                   ||
+           ( max_scaling - min_scaling ) < 0 ||
+           ( max_scaling - min_scaling ) > 9 )
       {
         /* Return default matrix in case of unlikely values. */
 
         FT_TRACE1(( "cff_parse_font_matrix:"
-                    " strange scaling value for xx element (%d),\n"
+                    " strange scaling values (minimum %d, maximum %d),\n"
                     "                      "
-                    " using default matrix\n", scaling ));
+                    " using default matrix\n", min_scaling, max_scaling ));
 
         matrix->xx = 0x10000L;
         matrix->yx = 0;
@@ -553,13 +665,42 @@
         goto Exit;
       }
 
-      matrix->yx = cff_parse_fixed_scaled( data++, scaling );
-      matrix->xy = cff_parse_fixed_scaled( data++, scaling );
-      matrix->yy = cff_parse_fixed_scaled( data++, scaling );
-      offset->x  = cff_parse_fixed_scaled( data++, scaling );
-      offset->y  = cff_parse_fixed_scaled( data,   scaling );
+      for ( i = 0; i < 6; i++ )
+      {
+        FT_Fixed  value = values[i];
+        FT_Long   divisor, half_divisor;
 
-      *upm = (FT_ULong)power_tens[scaling];
+
+        if ( !value )
+          continue;
+
+        divisor      = power_tens[max_scaling - scalings[i]];
+        half_divisor = divisor >> 1;
+
+        if ( value < 0 )
+        {
+          if ( FT_LONG_MIN + half_divisor < value )
+            values[i] = ( value - half_divisor ) / divisor;
+          else
+            values[i] = FT_LONG_MIN / divisor;
+        }
+        else
+        {
+          if ( FT_LONG_MAX - half_divisor > value )
+            values[i] = ( value + half_divisor ) / divisor;
+          else
+            values[i] = FT_LONG_MAX / divisor;
+        }
+      }
+
+      matrix->xx = values[0];
+      matrix->yx = values[1];
+      matrix->xy = values[2];
+      matrix->yy = values[3];
+      offset->x  = values[4];
+      offset->y  = values[5];
+
+      *upm = (FT_ULong)power_tens[-max_scaling];
 
       FT_TRACE4(( " [%f %f %f %f %f %f]\n",
                   (double)matrix->xx / *upm / 65536,
@@ -588,10 +729,10 @@
 
     if ( parser->top >= parser->stack + 4 )
     {
-      bbox->xMin = FT_RoundFix( cff_parse_fixed( data++ ) );
-      bbox->yMin = FT_RoundFix( cff_parse_fixed( data++ ) );
-      bbox->xMax = FT_RoundFix( cff_parse_fixed( data++ ) );
-      bbox->yMax = FT_RoundFix( cff_parse_fixed( data   ) );
+      bbox->xMin = FT_RoundFix( cff_parse_fixed( parser, data++ ) );
+      bbox->yMin = FT_RoundFix( cff_parse_fixed( parser, data++ ) );
+      bbox->xMax = FT_RoundFix( cff_parse_fixed( parser, data++ ) );
+      bbox->yMax = FT_RoundFix( cff_parse_fixed( parser, data   ) );
       error = FT_Err_Ok;
 
       FT_TRACE4(( " [%d %d %d %d]\n",
@@ -620,7 +761,7 @@
       FT_Long  tmp;
 
 
-      tmp = cff_parse_num( data++ );
+      tmp = cff_parse_num( parser, data++ );
       if ( tmp < 0 )
       {
         FT_ERROR(( "cff_parse_private_dict: Invalid dictionary size\n" ));
@@ -629,7 +770,7 @@
       }
       dict->private_size = (FT_ULong)tmp;
 
-      tmp = cff_parse_num( data );
+      tmp = cff_parse_num( parser, data );
       if ( tmp < 0 )
       {
         FT_ERROR(( "cff_parse_private_dict: Invalid dictionary offset\n" ));
@@ -649,6 +790,56 @@
   }
 
 
+  /* The `MultipleMaster' operator comes before any  */
+  /* top DICT operators that contain T2 charstrings. */
+
+  static FT_Error
+  cff_parse_multiple_master( CFF_Parser  parser )
+  {
+    CFF_FontRecDict  dict = (CFF_FontRecDict)parser->object;
+    FT_Error         error;
+
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+    /* beautify tracing message */
+    if ( ft_trace_levels[FT_COMPONENT] < 4 )
+      FT_TRACE1(( "Multiple Master CFFs not supported yet,"
+                  " handling first master design only\n" ));
+    else
+      FT_TRACE1(( " (not supported yet,"
+                  " handling first master design only)\n" ));
+#endif
+
+    error = FT_ERR( Stack_Underflow );
+
+    /* currently, we handle only the first argument */
+    if ( parser->top >= parser->stack + 5 )
+    {
+      FT_Long  num_designs = cff_parse_num( parser, parser->stack );
+
+
+      if ( num_designs > 16 || num_designs < 2 )
+      {
+        FT_ERROR(( "cff_parse_multiple_master:"
+                   " Invalid number of designs\n" ));
+        error = FT_THROW( Invalid_File_Format );
+      }
+      else
+      {
+        dict->num_designs   = (FT_UShort)num_designs;
+        dict->num_axes      = (FT_UShort)( parser->top - parser->stack - 4 );
+
+        parser->num_designs = dict->num_designs;
+        parser->num_axes    = dict->num_axes;
+
+        error = FT_Err_Ok;
+      }
+    }
+
+    return error;
+  }
+
+
   static FT_Error
   cff_parse_cid_ros( CFF_Parser  parser )
   {
@@ -661,11 +852,11 @@
 
     if ( parser->top >= parser->stack + 3 )
     {
-      dict->cid_registry = (FT_UInt)cff_parse_num( data++ );
-      dict->cid_ordering = (FT_UInt)cff_parse_num( data++ );
+      dict->cid_registry = (FT_UInt)cff_parse_num( parser, data++ );
+      dict->cid_ordering = (FT_UInt)cff_parse_num( parser, data++ );
       if ( **data == 30 )
         FT_TRACE1(( "cff_parse_cid_ros: real supplement is rounded\n" ));
-      dict->cid_supplement = cff_parse_num( data );
+      dict->cid_supplement = cff_parse_num( parser, data );
       if ( dict->cid_supplement < 0 )
         FT_TRACE1(( "cff_parse_cid_ros: negative supplement %d is found\n",
                    dict->cid_supplement ));
@@ -681,6 +872,125 @@
   }
 
 
+  static FT_Error
+  cff_parse_vsindex( CFF_Parser  parser )
+  {
+    /* vsindex operator can only be used in a Private DICT */
+    CFF_Private  priv = (CFF_Private)parser->object;
+    FT_Byte**    data = parser->stack;
+    CFF_Blend    blend;
+    FT_Error     error;
+
+
+    if ( !priv || !priv->subfont )
+    {
+      error = FT_THROW( Invalid_File_Format );
+      goto Exit;
+    }
+
+    blend = &priv->subfont->blend;
+
+    if ( blend->usedBV )
+    {
+      FT_ERROR(( " cff_parse_vsindex: vsindex not allowed after blend\n" ));
+      error = FT_THROW( Syntax_Error );
+      goto Exit;
+    }
+
+    priv->vsindex = (FT_UInt)cff_parse_num( parser, data++ );
+
+    FT_TRACE4(( " %d\n", priv->vsindex ));
+
+    error = FT_Err_Ok;
+
+  Exit:
+    return error;
+  }
+
+
+  static FT_Error
+  cff_parse_blend( CFF_Parser  parser )
+  {
+    /* blend operator can only be used in a Private DICT */
+    CFF_Private  priv = (CFF_Private)parser->object;
+    CFF_SubFont  subFont;
+    CFF_Blend    blend;
+    FT_UInt      numBlends;
+    FT_Error     error;
+
+
+    if ( !priv || !priv->subfont )
+    {
+      error = FT_THROW( Invalid_File_Format );
+      goto Exit;
+    }
+
+    subFont = priv->subfont;
+    blend   = &subFont->blend;
+
+    if ( cff_blend_check_vector( blend,
+                                 priv->vsindex,
+                                 subFont->lenNDV,
+                                 subFont->NDV ) )
+    {
+      error = cff_blend_build_vector( blend,
+                                      priv->vsindex,
+                                      subFont->lenNDV,
+                                      subFont->NDV );
+      if ( error )
+        goto Exit;
+    }
+
+    numBlends = (FT_UInt)cff_parse_num( parser, parser->top - 1 );
+    if ( numBlends > parser->stackSize )
+    {
+      FT_ERROR(( "cff_parse_blend: Invalid number of blends\n" ));
+      error = FT_THROW( Invalid_File_Format );
+      goto Exit;
+    }
+
+    FT_TRACE4(( "   %d value%s blended\n",
+                numBlends,
+                numBlends == 1 ? "" : "s" ));
+
+    error = cff_blend_doBlend( subFont, parser, numBlends );
+
+    blend->usedBV = TRUE;
+
+  Exit:
+    return error;
+  }
+
+
+  /* maxstack operator increases parser and operand stacks for CFF2 */
+  static FT_Error
+  cff_parse_maxstack( CFF_Parser  parser )
+  {
+    /* maxstack operator can only be used in a Top DICT */
+    CFF_FontRecDict  dict  = (CFF_FontRecDict)parser->object;
+    FT_Byte**        data  = parser->stack;
+    FT_Error         error = FT_Err_Ok;
+
+
+    if ( !dict )
+    {
+      error = FT_THROW( Invalid_File_Format );
+      goto Exit;
+    }
+
+    dict->maxstack = (FT_UInt)cff_parse_num( parser, data++ );
+    if ( dict->maxstack > CFF2_MAX_STACK )
+      dict->maxstack = CFF2_MAX_STACK;
+    if ( dict->maxstack < CFF2_DEFAULT_STACK )
+      dict->maxstack = CFF2_DEFAULT_STACK;
+
+    FT_TRACE4(( " %d\n", dict->maxstack ));
+
+  Exit:
+    return error;
+  }
+
+
 #define CFF_FIELD_NUM( code, name, id )             \
           CFF_FIELD( code, name, id, cff_kind_num )
 #define CFF_FIELD_FIXED( code, name, id )             \
@@ -691,9 +1001,6 @@
           CFF_FIELD( code, name, id, cff_kind_string )
 #define CFF_FIELD_BOOL( code, name, id )             \
           CFF_FIELD( code, name, id, cff_kind_bool )
-
-#define CFFCODE_TOPDICT  0x1000
-#define CFFCODE_PRIVATE  0x2000
 
 
 #ifndef FT_CONFIG_OPTION_PIC
@@ -713,6 +1020,15 @@
             0, 0,                            \
             cff_parse_ ## name,              \
             0, 0                             \
+          },
+
+#define CFF_FIELD_BLEND( code, id ) \
+          {                         \
+            cff_kind_blend,         \
+            code | CFFCODE,         \
+            0, 0,                   \
+            cff_parse_blend,        \
+            0, 0                    \
           },
 
 #define CFF_FIELD( code, name, id, kind ) \
@@ -756,6 +1072,16 @@
             cff_parse_ ## name,              \
             0, 0,                            \
             id                               \
+          },
+
+#define CFF_FIELD_BLEND( code, id ) \
+          {                         \
+            cff_kind_blend,         \
+            code | CFFCODE,         \
+            0, 0,                   \
+            cff_parse_blend,        \
+            0, 0,                   \
+            id                      \
           },
 
 #define CFF_FIELD( code, name, id, kind ) \
@@ -824,6 +1150,8 @@
 #define CFF_FIELD_DELTA( code, name, max, id ) i++;
 #undef CFF_FIELD_CALLBACK
 #define CFF_FIELD_CALLBACK( code, name, id ) i++;
+#undef CFF_FIELD_BLEND
+#define CFF_FIELD_BLEND( code, id ) i++;
 
 #include "cfftoken.h"
 
@@ -869,6 +1197,17 @@
           clazz[i].reader       = 0;                                \
           clazz[i].array_max    = max_;                             \
           clazz[i].count_offset = FT_FIELD_OFFSET( num_ ## name_ ); \
+          i++;
+
+#undef  CFF_FIELD_BLEND
+#define CFF_FIELD_BLEND( code_, id_ )              \
+          clazz[i].kind         = cff_kind_blend;  \
+          clazz[i].code         = code_ | CFFCODE; \
+          clazz[i].offset       = 0;               \
+          clazz[i].size         = 0;               \
+          clazz[i].reader       = cff_parse_blend; \
+          clazz[i].array_max    = 0;               \
+          clazz[i].count_offset = 0;               \
           i++;
 
 #include "cfftoken.h"
@@ -921,6 +1260,18 @@
           clazz[i].id           = id_;                              \
           i++;
 
+#undef  CFF_FIELD_BLEND
+#define CFF_FIELD_BLEND( code_, id_ )              \
+          clazz[i].kind         = cff_kind_blend;  \
+          clazz[i].code         = code_ | CFFCODE; \
+          clazz[i].offset       = 0;               \
+          clazz[i].size         = 0;               \
+          clazz[i].reader       = cff_parse_blend; \
+          clazz[i].array_max    = 0;               \
+          clazz[i].count_offset = 0;               \
+          clazz[i].id           = id_;             \
+          i++;
+
 #include "cfftoken.h"
 
     clazz[i].kind         = 0;
@@ -950,9 +1301,14 @@
                   FT_Byte*    start,
                   FT_Byte*    limit )
   {
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+    PSAux_Service  psaux;
+#endif
+
     FT_Byte*    p       = start;
     FT_Error    error   = FT_Err_Ok;
     FT_Library  library = parser->library;
+
     FT_UNUSED( library );
 
 
@@ -965,14 +1321,16 @@
     {
       FT_UInt  v = *p;
 
-
-      if ( v >= 27 && v != 31 )
+      /* Opcode 31 is legacy MM T2 operator, not a number.      */
+      /* Opcode 255 is reserved and should not appear in fonts; */
+      /* it is used internally for CFF2 blends.                 */
+      if ( v >= 27 && v != 31 && v != 255 )
       {
         /* it's a number; we will push its position on the stack */
-        if ( parser->top - parser->stack >= CFF_MAX_STACK_DEPTH )
+        if ( (FT_UInt)( parser->top - parser->stack ) >= parser->stackSize )
           goto Stack_Overflow;
 
-        *parser->top ++ = p;
+        *parser->top++ = p;
 
         /* now, skip it */
         if ( v == 30 )
@@ -1001,19 +1359,159 @@
         else if ( v > 246 )
           p += 1;
       }
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+      else if ( v == 31 )
+      {
+        /* a Type 2 charstring */
+
+        CFF_Decoder  decoder;
+        CFF_FontRec  cff_rec;
+        FT_Byte*     charstring_base;
+        FT_ULong     charstring_len;
+
+        FT_Fixed*  stack;
+        FT_Byte*   q;
+
+
+        charstring_base = ++p;
+
+        /* search `endchar' operator */
+        for (;;)
+        {
+          if ( p >= limit )
+            goto Exit;
+          if ( *p == 14 )
+            break;
+          p++;
+        }
+
+        charstring_len = (FT_ULong)( p - charstring_base ) + 1;
+
+        /* construct CFF_Decoder object */
+        FT_ZERO( &decoder );
+        FT_ZERO( &cff_rec );
+
+        cff_rec.top_font.font_dict.num_designs = parser->num_designs;
+        cff_rec.top_font.font_dict.num_axes    = parser->num_axes;
+        decoder.cff                            = &cff_rec;
+
+        psaux = (PSAux_Service)FT_Get_Module_Interface( library, "psaux" );
+        if ( !psaux )
+        {
+          FT_ERROR(( "cff_parser_run: cannot access `psaux' module\n" ));
+          error = FT_THROW( Missing_Module );
+          goto Exit;
+        }
+
+        error = psaux->cff_decoder_funcs->parse_charstrings_old(
+                  &decoder, charstring_base, charstring_len, 1 );
+
+        /* Now copy the stack data in the temporary decoder object,    */
+        /* converting it back to charstring number representations     */
+        /* (this is ugly, I know).                                     */
+        /*                                                             */
+        /* We overwrite the original top DICT charstring under the     */
+        /* assumption that the charstring representation of the result */
+        /* of `cff_decoder_parse_charstrings' is shorter, which should */
+        /* be always true.                                             */
+
+        q     = charstring_base - 1;
+        stack = decoder.stack;
+
+        while ( stack < decoder.top )
+        {
+          FT_ULong  num;
+          FT_Bool   neg;
+
+
+          if ( (FT_UInt)( parser->top - parser->stack ) >= parser->stackSize )
+            goto Stack_Overflow;
+
+          *parser->top++ = q;
+
+          if ( *stack < 0 )
+          {
+            num = (FT_ULong)-*stack;
+            neg = 1;
+          }
+          else
+          {
+            num = (FT_ULong)*stack;
+            neg = 0;
+          }
+
+          if ( num & 0xFFFFU )
+          {
+            if ( neg )
+              num = (FT_ULong)-num;
+
+            *q++ = 255;
+            *q++ = ( num & 0xFF000000U ) >> 24;
+            *q++ = ( num & 0x00FF0000U ) >> 16;
+            *q++ = ( num & 0x0000FF00U ) >>  8;
+            *q++ =   num & 0x000000FFU;
+          }
+          else
+          {
+            num >>= 16;
+
+            if ( neg )
+            {
+              if ( num <= 107 )
+                *q++ = (FT_Byte)( 139 - num );
+              else if ( num <= 1131 )
+              {
+                *q++ = (FT_Byte)( ( ( num - 108 ) >> 8 ) + 251 );
+                *q++ = (FT_Byte)( ( num - 108 ) & 0xFF );
+              }
+              else
+              {
+                num = (FT_ULong)-num;
+
+                *q++ = 28;
+                *q++ = (FT_Byte)( num >> 8 );
+                *q++ = (FT_Byte)( num & 0xFF );
+              }
+            }
+            else
+            {
+              if ( num <= 107 )
+                *q++ = (FT_Byte)( num + 139 );
+              else if ( num <= 1131 )
+              {
+                *q++ = (FT_Byte)( ( ( num - 108 ) >> 8 ) + 247 );
+                *q++ = (FT_Byte)( ( num - 108 ) & 0xFF );
+              }
+              else
+              {
+                *q++ = 28;
+                *q++ = (FT_Byte)( num >> 8 );
+                *q++ = (FT_Byte)( num & 0xFF );
+              }
+            }
+          }
+
+          stack++;
+        }
+      }
+#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
       else
       {
         /* This is not a number, hence it's an operator.  Compute its code */
         /* and look for it in our current list.                            */
 
         FT_UInt                   code;
-        FT_UInt                   num_args = (FT_UInt)
-                                             ( parser->top - parser->stack );
+        FT_UInt                   num_args;
         const CFF_Field_Handler*  field;
 
 
+        if ( (FT_UInt)( parser->top - parser->stack ) >= parser->stackSize )
+          goto Stack_Overflow;
+
+        num_args     = (FT_UInt)( parser->top - parser->stack );
         *parser->top = p;
-        code = v;
+        code         = v;
+
         if ( v == 12 )
         {
           /* two byte operator */
@@ -1048,15 +1546,15 @@
             case cff_kind_bool:
             case cff_kind_string:
             case cff_kind_num:
-              val = cff_parse_num( parser->stack );
+              val = cff_parse_num( parser, parser->stack );
               goto Store_Number;
 
             case cff_kind_fixed:
-              val = cff_parse_fixed( parser->stack );
+              val = cff_parse_fixed( parser, parser->stack );
               goto Store_Number;
 
             case cff_kind_fixed_thousand:
-              val = cff_parse_fixed_scaled( parser->stack, 3 );
+              val = cff_parse_fixed_scaled( parser, parser->stack, 3 );
 
             Store_Number:
               switch ( field->size )
@@ -1125,7 +1623,7 @@
                 val = 0;
                 while ( num_args > 0 )
                 {
-                  val += cff_parse_num( data++ );
+                  val = ADD_LONG( val, cff_parse_num( parser, data++ ) );
                   switch ( field->size )
                   {
                   case (8 / FT_CHAR_BIT):
@@ -1154,7 +1652,7 @@
               }
               break;
 
-            default:  /* callback */
+            default:  /* callback or blend */
               error = field->reader( parser );
               if ( error )
                 goto Exit;
@@ -1168,7 +1666,10 @@
 
       Found:
         /* clear stack */
-        parser->top = parser->stack;
+        /* TODO: could clear blend stack here,       */
+        /*       but we don't have access to subFont */
+        if ( field->kind != cff_kind_blend )
+          parser->top = parser->stack;
       }
       p++;
     }

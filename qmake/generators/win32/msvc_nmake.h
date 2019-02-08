@@ -48,6 +48,7 @@ class NmakeMakefileGenerator : public Win32MakefileGenerator
 protected:
     void writeSubMakeCall(QTextStream &t, const QString &callPrefix,
                           const QString &makeArguments) override;
+    ProStringList extraSubTargetDependencies() override;
     QString defaultInstall(const QString &t) override;
     QStringList &findDependencies(const QString &file) override;
     QString var(const ProKey &value) const override;

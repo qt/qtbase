@@ -3,10 +3,11 @@ SUBDIRS = \
         corelib \
         sql \
 
-# removed-by-refactor qtHaveModule(opengl): SUBDIRS += opengl
 qtHaveModule(dbus): SUBDIRS += dbus
-qtHaveModule(network): SUBDIRS += network
 qtHaveModule(gui): SUBDIRS += gui
+qtHaveModule(network): SUBDIRS += network
+# removed-by-refactor qtHaveModule(opengl): SUBDIRS += opengl
+qtHaveModule(testlib): SUBDIRS += testlib
 qtHaveModule(widgets): SUBDIRS += widgets
 
 check-trusted.CONFIG += recursive

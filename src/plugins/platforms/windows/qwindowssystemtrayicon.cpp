@@ -160,7 +160,7 @@ static inline HWND createTrayIconMessageWindow()
 {
     QWindowsContext *ctx = QWindowsContext::instance();
     if (!ctx)
-        return 0;
+        return nullptr;
     // Register window class in the platform plugin.
     const QString className =
         ctx->registerWindowClass(QStringLiteral("QTrayIconMessageWindowClass"),
@@ -170,7 +170,8 @@ static inline HWND createTrayIconMessageWindow()
                           windowName, WS_OVERLAPPED,
                           CW_USEDEFAULT, CW_USEDEFAULT,
                           CW_USEDEFAULT, CW_USEDEFAULT,
-                          NULL, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
+                          nullptr, nullptr,
+                          static_cast<HINSTANCE>(GetModuleHandle(nullptr)), nullptr);
 }
 
 /*!

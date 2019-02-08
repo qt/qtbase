@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType path stroker (specification).                               */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FT_STROKE_H__
-#define __FT_STROKE_H__
+#ifndef FTSTROKE_H_
+#define FTSTROKE_H_
 
 #include <ft2build.h>
 #include FT_OUTLINE_H
@@ -136,7 +136,7 @@ FT_BEGIN_HEADER
    *     FT_STROKER_LINEJOIN_MITER_VARIABLE generates a mitered line
    *     join as used in XPS.  FT_STROKER_LINEJOIN_MITER is an alias
    *     for FT_STROKER_LINEJOIN_MITER_VARIABLE, retained for
-   *     backwards compatibility.
+   *     backward compatibility.
    */
   typedef enum  FT_Stroker_LineJoin_
   {
@@ -466,7 +466,7 @@ FT_BEGIN_HEADER
    *   FT_Stroker_ConicTo
    *
    * @description:
-   *   `Draw' a single quadratic Bézier in the stroker's current sub-path,
+   *   `Draw' a single quadratic Bezier in the stroker's current sub-path,
    *   from the last position.
    *
    * @input:
@@ -474,7 +474,7 @@ FT_BEGIN_HEADER
    *     The target stroker handle.
    *
    *   control ::
-   *     A pointer to a Bézier control point.
+   *     A pointer to a Bezier control point.
    *
    *   to ::
    *     A pointer to the destination point.
@@ -498,7 +498,7 @@ FT_BEGIN_HEADER
    *   FT_Stroker_CubicTo
    *
    * @description:
-   *   `Draw' a single cubic Bézier in the stroker's current sub-path,
+   *   `Draw' a single cubic Bezier in the stroker's current sub-path,
    *   from the last position.
    *
    * @input:
@@ -506,10 +506,10 @@ FT_BEGIN_HEADER
    *     The target stroker handle.
    *
    *   control1 ::
-   *     A pointer to the first Bézier control point.
+   *     A pointer to the first Bezier control point.
    *
    *   control2 ::
-   *     A pointer to second Bézier control point.
+   *     A pointer to second Bezier control point.
    *
    *   to ::
    *     A pointer to the destination point.
@@ -774,7 +774,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FT_STROKE_H__ */
+#endif /* FTSTROKE_H_ */
 
 
 /* END */

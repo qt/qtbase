@@ -494,8 +494,8 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     //
     connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
             SLOT(_q_onlineStateChanged(bool)));
-    connect(&d->networkConfigurationManager, SIGNAL(configurationChanged(const QNetworkConfiguration &)),
-            SLOT(_q_configurationChanged(const QNetworkConfiguration &)));
+    connect(&d->networkConfigurationManager, SIGNAL(configurationChanged(QNetworkConfiguration)),
+            SLOT(_q_configurationChanged(QNetworkConfiguration)));
 
 #endif
 }

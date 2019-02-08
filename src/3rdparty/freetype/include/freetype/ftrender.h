@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType renderer modules public interface (specification).          */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTRENDER_H__
-#define __FTRENDER_H__
+#ifndef FTRENDER_H_
+#define FTRENDER_H_
 
 
 #include <ft2build.h>
@@ -75,6 +75,7 @@ FT_BEGIN_HEADER
   {
     FT_Long                 glyph_size;
     FT_Glyph_Format         glyph_format;
+
     FT_Glyph_InitFunc       glyph_init;
     FT_Glyph_DoneFunc       glyph_done;
     FT_Glyph_CopyFunc       glyph_copy;
@@ -87,7 +88,7 @@ FT_BEGIN_HEADER
   typedef FT_Error
   (*FT_Renderer_RenderFunc)( FT_Renderer       renderer,
                              FT_GlyphSlot      slot,
-                             FT_UInt           mode,
+                             FT_Render_Mode    mode,
                              const FT_Vector*  origin );
 
   typedef FT_Error
@@ -226,7 +227,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTRENDER_H__ */
+#endif /* FTRENDER_H_ */
 
 
 /* END */

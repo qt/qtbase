@@ -30,6 +30,8 @@ SUBDIRS=\
    gestures \
    lancelot \
    languagechange \
+   macgui \
+   macplist \
    qaccessibility \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \

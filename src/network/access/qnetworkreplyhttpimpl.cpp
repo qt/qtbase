@@ -918,7 +918,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             // From http thread to user thread:
             QObject::connect(forwardUploadDevice, SIGNAL(wantData(qint64)),
                              q, SLOT(wantUploadDataSlot(qint64)));
-            QObject::connect(forwardUploadDevice,SIGNAL(processedData(qint64, qint64)),
+            QObject::connect(forwardUploadDevice,SIGNAL(processedData(qint64,qint64)),
                              q, SLOT(sentUploadDataSlot(qint64,qint64)));
             QObject::connect(forwardUploadDevice, SIGNAL(resetData(bool*)),
                     q, SLOT(resetUploadDataSlot(bool*)),

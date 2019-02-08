@@ -53,7 +53,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
     m_needsCompositor = w->surfaceType() != QSurface::OpenGLSurface;
     static int serialNo = 0;
     m_winid = ++serialNo;
-    qWarning("QWasmWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 
     m_compositor->addWindow(this);
 

@@ -5,7 +5,7 @@
 /*    Support for the FT_Outline type used to store glyph shapes of        */
 /*    most scalable font formats (specification).                          */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,8 +17,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTOUTLN_H__
-#define __FTOUTLN_H__
+#ifndef FTOUTLN_H_
+#define FTOUTLN_H_
 
 
 #include <ft2build.h>
@@ -89,7 +89,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    Walk over an outline's structure to decompose it into individual   */
-  /*    segments and Bézier arcs.  This function also emits `move to'      */
+  /*    segments and Bezier arcs.  This function also emits `move to'      */
   /*    operations to indicate the start of new contours in the outline.   */
   /*                                                                       */
   /* <Input>                                                               */
@@ -114,6 +114,10 @@ FT_BEGIN_HEADER
   /*    most cases, it is best to filter this out before using the         */
   /*    outline for stroking purposes (otherwise it would result in a      */
   /*    visible dot when round caps are used).                             */
+  /*                                                                       */
+  /*    Similarly, the function returns success for an empty outline also  */
+  /*    (doing nothing, this is, not calling any emitter); if necessary,   */
+  /*    you should filter this out, too.                                   */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Decompose( FT_Outline*              outline,
@@ -186,9 +190,6 @@ FT_BEGIN_HEADER
   /*    If the outline's `owner' field is not set, only the outline        */
   /*    descriptor will be released.                                       */
   /*                                                                       */
-  /*    The reason why this function takes an `library' parameter is       */
-  /*    simply to use ft_mem_free().                                       */
-  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Done( FT_Library   library,
                    FT_Outline*  outline );
@@ -213,6 +214,10 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
+  /* <Note>                                                                */
+  /*    An empty outline, or an outline with a single point only is also   */
+  /*    valid.                                                             */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Check( FT_Outline*  outline );
 
@@ -224,10 +229,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    Return an outline's `control box'.  The control box encloses all   */
-  /*    the outline's points, including Bézier control points.  Though it  */
+  /*    the outline's points, including Bezier control points.  Though it  */
   /*    coincides with the exact bounding box for most glyphs, it can be   */
   /*    slightly larger in some situations (like when rotating an outline  */
-  /*    that contains Bézier outside arcs).                                */
+  /*    that contains Bezier outside arcs).                                */
   /*                                                                       */
   /*    Computing the control box is very fast, while getting the bounding */
   /*    box can take much more time as it needs to walk over all segments  */
@@ -376,6 +381,9 @@ FT_BEGIN_HEADER
   /*    wider and `ystrength' pixels higher.  Otherwise, it is similar to  */
   /*    @FT_Outline_Embolden, which uses the same strength in both         */
   /*    directions.                                                        */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.4.10                                                             */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_EmboldenXY( FT_Outline*  outline,
@@ -563,7 +571,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTOUTLN_H__ */
+#endif /* FTOUTLN_H_ */
 
 
 /* END */

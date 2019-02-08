@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the Windows main function of the Qt Toolkit.
@@ -48,12 +48,8 @@
 **
 ****************************************************************************/
 
-#include "qt_windows.h"
-#include "qbytearray.h"
-#include "qstring.h"
-#include "qvector.h"
-
-#include <shlobj.h>
+#include <windows.h>
+#include <shellapi.h>
 
 /*
   This file contains the code in the qtmain library for Windows.
@@ -63,9 +59,6 @@
   When a Windows application starts, the WinMain function is
   invoked.
 */
-
-QT_USE_NAMESPACE
-
 
 #if defined(QT_NEEDS_QMAIN)
 int qMain(int, char **);
@@ -82,27 +75,27 @@ extern "C" int main(int, char **);
 
 // Convert a wchar_t to char string, equivalent to QString::toLocal8Bit()
 // when passed CP_ACP.
-static inline char *wideToMulti(int codePage, const wchar_t *aw)
+static inline char *wideToMulti(unsigned int codePage, const wchar_t *aw)
 {
-    const int required = WideCharToMultiByte(codePage, 0, aw, -1, NULL, 0, NULL, NULL);
+    const int required = WideCharToMultiByte(codePage, 0, aw, -1, nullptr, 0, nullptr, nullptr);
     char *result = new char[required];
-    WideCharToMultiByte(codePage, 0, aw, -1, result, required, NULL, NULL);
+    WideCharToMultiByte(codePage, 0, aw, -1, result, required, nullptr, nullptr);
     return result;
 }
 
 extern "C" int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR /*cmdParamarg*/, int /* cmdShow */)
 {
-    int argc;
+    int argc = 0;
     wchar_t **argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (!argvW)
+    if (argvW == nullptr)
         return -1;
     char **argv = new char *[argc + 1];
-    for (int i = 0; i < argc; ++i)
+    for (int i = 0; i != argc; ++i)
         argv[i] = wideToMulti(CP_ACP, argvW[i]);
     argv[argc] = nullptr;
     LocalFree(argvW);
     const int exitCode = main(argc, argv);
-    for (int i = 0; i < argc && argv[i]; ++i)
+    for (int i = 0; (i != argc) && (argv[i] != nullptr); ++i)
         delete [] argv[i];
     delete [] argv;
     return exitCode;

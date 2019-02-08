@@ -90,7 +90,7 @@ HWND hwndForAccessible(const QAccessibleInterface *accessible)
             return QWindowsBaseWindow::handleOf(window);
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void clearVariant(VARIANT *variant)

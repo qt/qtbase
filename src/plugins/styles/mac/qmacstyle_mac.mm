@@ -2996,7 +2996,20 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         // inContext:, but only in light mode. In dark mode, we use a custom NSBox subclass,
         // QDarkNSBox, of type NSBoxCustom. Its appearance is close enough to the real thing so
         // we can use this for now.
-        d->drawNSViewInRect(box, opt->rect, p, ^(CGContextRef ctx, const CGRect &rect) {
+        auto adjustedRect = opt->rect;
+        bool needTranslation = false;
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
+            && !qt_mac_applicationIsInDarkMode()) {
+            // Another surprise from AppKit (SDK 10.14) - -displayRectIgnoringOpacity:
+            // is different from drawRect: for some Apple-known reason box is smaller
+            // in height than we need, resulting in tab buttons sitting too high/not
+            // centered. Attempts to play with insets etc did not work - the same wrong
+            // height. Simple translation is not working (too much space "at bottom"),
+            // so we make it bigger and translate (otherwise it's clipped at bottom btw).
+            adjustedRect.adjust(0, 0, 0, 3);
+            needTranslation = true;
+        }
+        d->drawNSViewInRect(box, adjustedRect, p, ^(CGContextRef ctx, const CGRect &rect) {
             if (QTabWidget *tabWidget = qobject_cast<QTabWidget *>(opt->styleObject))
                 clipTabBarFrame(opt, this, ctx);
             CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
@@ -3005,6 +3018,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 || [box isMemberOfClass:QDarkNSBox.class]) {
                 [box drawRect:rect];
             } else {
+                if (needTranslation)
+                    CGContextTranslateCTM(ctx, 0.0, 4.0);
                 [box displayRectIgnoringOpacity:box.bounds inContext:NSGraphicsContext.currentContext];
             }
         });
@@ -4214,7 +4229,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_MenuBarEmptyArea:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             const bool selected = (opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken);
-            const QBrush bg = selected ? mi->palette.highlight() : mi->palette.background();
+            const QBrush bg = selected ? mi->palette.highlight() : mi->palette.window();
             p->fillRect(mi->rect, bg);
 
             if (ce != CE_MenuBarItem)

@@ -1056,6 +1056,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
                                          Qt::ConnectionType connectionType)
 {
     const auto httpReply = stream.reply();
+    const auto &httpRequest = stream.request();
     Q_ASSERT(httpReply || stream.state == Stream::remoteReserved);
 
     if (!httpReply) {
@@ -1114,6 +1115,9 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
         httpReply->setRedirectUrl(redirectUrl);
+
+    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress)
+        httpReplyPrivate->removeAutoDecompressHeader();
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode)
         || statusCode == 401 || statusCode == 407) {

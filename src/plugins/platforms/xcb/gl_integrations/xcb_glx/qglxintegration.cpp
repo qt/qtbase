@@ -48,7 +48,9 @@
 #undef register
 #include <GL/glx.h>
 
-#include <QtCore/QRegularExpression>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/QRegularExpression>
+#endif
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
 
@@ -722,6 +724,7 @@ void QGLXContext::queryDummyContext()
             // The issue was fixed in Xcb 1.11, but we can't check for that
             // at runtime, so instead assume it fixed with recent Mesa versions
             // released several years after the Xcb fix.
+#if QT_CONFIG(regularexpression)
             QRegularExpression versionTest(QStringLiteral("Mesa (\\d+)"));
             QRegularExpressionMatch result = versionTest.match(QString::fromLatin1(mesaVersionStr));
             int versionNr = 0;
@@ -731,6 +734,7 @@ void QGLXContext::queryDummyContext()
                 // White-listed
                 m_supportsThreading = true;
             }
+#endif
         }
         if (!m_supportsThreading) {
             qCDebug(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "

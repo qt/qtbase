@@ -168,6 +168,18 @@ private:
     }
 };
 
+class QInputDialogListView : public QListView
+{
+public:
+    QInputDialogListView(QWidget *parent = 0) : QListView(parent) {}
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override
+    {
+        if (query == Qt::ImEnabled)
+            return false;
+        return QListView::inputMethodQuery(query);
+    }
+};
+
 class QInputDialogPrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QInputDialog)
@@ -201,7 +213,7 @@ public:
     mutable QSpinBox *intSpinBox;
     mutable QDoubleSpinBox *doubleSpinBox;
     mutable QComboBox *comboBox;
-    mutable QListView *listView;
+    mutable QInputDialogListView *listView;
     mutable QWidget *inputWidget;
     mutable QVBoxLayout *mainLayout;
     QInputDialog::InputDialogOptions opts;
@@ -298,8 +310,7 @@ void QInputDialogPrivate::ensureListView()
     Q_Q(QInputDialog);
     if (!listView) {
         ensureComboBox();
-
-        listView = new QListView(q);
+        listView = new QInputDialogListView(q);
         listView->hide();
         listView->setEditTriggers(QAbstractItemView::NoEditTriggers);
         listView->setSelectionMode(QAbstractItemView::SingleSelection);

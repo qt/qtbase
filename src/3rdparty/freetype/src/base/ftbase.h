@@ -2,9 +2,9 @@
 /*                                                                         */
 /*  ftbase.h                                                               */
 /*                                                                         */
-/*    The FreeType private functions used in base module (specification).  */
+/*    Private functions used in the `base' module (specification).         */
 /*                                                                         */
-/*  Copyright 2008-2015 by                                                 */
+/*  Copyright 2008-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya.      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTBASE_H__
-#define __FTBASE_H__
+#ifndef FTBASE_H_
+#define FTBASE_H_
 
 
 #include <ft2build.h>
@@ -26,6 +26,8 @@
 
 FT_BEGIN_HEADER
 
+
+#ifdef FT_CONFIG_OPTION_MAC_FONTS
 
   /* MacOS resource fork cannot exceed 16MB at least for Carbon code; */
   /* see https://support.microsoft.com/en-us/kb/130437                */
@@ -65,10 +67,12 @@ FT_BEGIN_HEADER
   ft_raccess_rule_by_darwin_vfs( FT_Library library, FT_UInt  rule_index );
 #endif
 
+#endif /* FT_CONFIG_OPTION_MAC_FONTS */
+
 
 FT_END_HEADER
 
-#endif /* __FTBASE_H__ */
+#endif /* FTBASE_H_ */
 
 
 /* END */

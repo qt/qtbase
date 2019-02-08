@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType modules public interface (specification).                   */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTMODAPI_H__
-#define __FTMODAPI_H__
+#ifndef FTMODAPI_H_
+#define FTMODAPI_H_
 
 
 #include <ft2build.h>
@@ -89,6 +89,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_Property_Set                                                    */
   /*    FT_Property_Get                                                    */
+  /*    FT_Set_Default_Properties                                          */
   /*                                                                       */
   /*    FT_New_Library                                                     */
   /*    FT_Done_Library                                                    */
@@ -111,12 +112,14 @@ FT_BEGIN_HEADER
 #define FT_MODULE_HINTER              4  /* this module is a glyph hinter */
 #define FT_MODULE_STYLER              8  /* this module is a styler       */
 
-#define FT_MODULE_DRIVER_SCALABLE     0x100   /* the driver supports      */
+#define FT_MODULE_DRIVER_SCALABLE      0x100  /* the driver supports      */
                                               /* scalable fonts           */
-#define FT_MODULE_DRIVER_NO_OUTLINES  0x200   /* the driver does not      */
+#define FT_MODULE_DRIVER_NO_OUTLINES   0x200  /* the driver does not      */
                                               /* support vector outlines  */
-#define FT_MODULE_DRIVER_HAS_HINTER   0x400   /* the driver provides its  */
+#define FT_MODULE_DRIVER_HAS_HINTER    0x400  /* the driver provides its  */
                                               /* own hinter               */
+#define FT_MODULE_DRIVER_HINTS_LIGHTLY 0x800  /* the driver's hinter      */
+                                              /* produces LIGHT hints     */
 
 
   /* deprecated values */
@@ -125,9 +128,10 @@ FT_BEGIN_HEADER
 #define ft_module_hinter              FT_MODULE_HINTER
 #define ft_module_styler              FT_MODULE_STYLER
 
-#define ft_module_driver_scalable     FT_MODULE_DRIVER_SCALABLE
-#define ft_module_driver_no_outlines  FT_MODULE_DRIVER_NO_OUTLINES
-#define ft_module_driver_has_hinter   FT_MODULE_DRIVER_HAS_HINTER
+#define ft_module_driver_scalable       FT_MODULE_DRIVER_SCALABLE
+#define ft_module_driver_no_outlines    FT_MODULE_DRIVER_NO_OUTLINES
+#define ft_module_driver_has_hinter     FT_MODULE_DRIVER_HAS_HINTER
+#define ft_module_driver_hints_lightly  FT_MODULE_DRIVER_HINTS_LIGHTLY
 
 
   typedef FT_Pointer  FT_Module_Interface;
@@ -319,16 +323,15 @@ FT_BEGIN_HEADER
    *       The module name.
    *
    *    property_name ::
-   *       The property name.  Properties are described in the `Synopsis'
-   *       subsection of the module's documentation.
+   *       The property name.  Properties are described in section
+   *       @properties.
    *
    *       Note that only a few modules have properties.
    *
    *    value ::
    *       A generic pointer to a variable or structure that gives the new
    *       value of the property.  The exact definition of `value' is
-   *       dependent on the property; see the `Synopsis' subsection of the
-   *       module's documentation.
+   *       dependent on the property; see section @properties.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -386,15 +389,14 @@ FT_BEGIN_HEADER
    *       The module name.
    *
    *    property_name ::
-   *       The property name.  Properties are described in the `Synopsis'
-   *       subsection of the module's documentation.
+   *       The property name.  Properties are described in section
+   *       @properties.
    *
    * @inout:
    *    value ::
    *       A generic pointer to a variable or structure that gives the
    *       value of the property.  The exact definition of `value' is
-   *       dependent on the property; see the `Synopsis' subsection of the
-   *       module's documentation.
+   *       dependent on the property; see section @properties.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -437,6 +439,50 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
+  /*    FT_Set_Default_Properties                                          */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    If compilation option FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES is   */
+  /*    set, this function reads the `FREETYPE_PROPERTIES' environment     */
+  /*    variable to control driver properties.  See section @properties    */
+  /*    for more.                                                          */
+  /*                                                                       */
+  /*    If the compilation option is not set, this function does nothing.  */
+  /*                                                                       */
+  /*    `FREETYPE_PROPERTIES' has the following syntax form (broken here   */
+  /*    into multiple lines for better readability).                       */
+  /*                                                                       */
+  /*    {                                                                  */
+  /*      <optional whitespace>                                            */
+  /*      <module-name1> ':'                                               */
+  /*      <property-name1> '=' <property-value1>                           */
+  /*      <whitespace>                                                     */
+  /*      <module-name2> ':'                                               */
+  /*      <property-name2> '=' <property-value2>                           */
+  /*      ...                                                              */
+  /*    }                                                                  */
+  /*                                                                       */
+  /*    Example:                                                           */
+  /*                                                                       */
+  /*    {                                                                  */
+  /*      FREETYPE_PROPERTIES=truetype:interpreter-version=35 \            */
+  /*                          cff:no-stem-darkening=1 \                    */
+  /*                          autofitter:warping=1                         */
+  /*    }                                                                  */
+  /*                                                                       */
+  /* <InOut>                                                               */
+  /*    library :: A handle to a new library object.                       */
+  /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.8                                                                */
+  /*                                                                       */
+  FT_EXPORT( void )
+  FT_Set_Default_Properties( FT_Library  library );
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
   /*    FT_Reference_Library                                               */
   /*                                                                       */
   /* <Description>                                                         */
@@ -474,8 +520,9 @@ FT_BEGIN_HEADER
   /*    valid for the life of the @FT_Library object.                      */
   /*                                                                       */
   /*    Normally, you would call this function (followed by a call to      */
-  /*    @FT_Add_Default_Modules or a series of calls to @FT_Add_Module)    */
-  /*    instead of @FT_Init_FreeType to initialize the FreeType library.   */
+  /*    @FT_Add_Default_Modules or a series of calls to @FT_Add_Module,    */
+  /*    and a call to @FT_Set_Default_Properties) instead of               */
+  /*    @FT_Init_FreeType to initialize the FreeType library.              */
   /*                                                                       */
   /*    Don't use @FT_Done_FreeType but @FT_Done_Library to destroy a      */
   /*    library instance.                                                  */
@@ -610,12 +657,7 @@ FT_BEGIN_HEADER
    *       The library doesn't implement any kind of bytecode interpreter.
    *
    *     FT_TRUETYPE_ENGINE_TYPE_UNPATENTED ::
-   *       The library implements a bytecode interpreter that doesn't
-   *       support the patented operations of the TrueType virtual machine.
-   *
-   *       Its main use is to load certain Asian fonts that position and
-   *       scale glyph components with bytecode instructions.  It produces
-   *       bad output for most other fonts.
+   *       Deprecated and removed.
    *
    *     FT_TRUETYPE_ENGINE_TYPE_PATENTED ::
    *       The library implements a bytecode interpreter that covers
@@ -663,7 +705,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTMODAPI_H__ */
+#endif /* FTMODAPI_H_ */
 
 
 /* END */
