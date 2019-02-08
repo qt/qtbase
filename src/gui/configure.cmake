@@ -411,6 +411,8 @@ glProgramUniform1i(0, 0, 0);
 # xlib
 qt_config_compile_test(xlib
     LABEL "XLib"
+    LIBRARIES X11::X11
+    CODE
 "
 #include <X11/Xlib.h>
 
@@ -423,7 +425,7 @@ XCloseDisplay(d);
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: CONFIG += x11
+"
 )
 
 
