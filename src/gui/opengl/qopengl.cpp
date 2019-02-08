@@ -60,6 +60,10 @@ QT_BEGIN_NAMESPACE
 typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 #endif
 
+#ifndef GL_CONTEXT_LOST
+#define GL_CONTEXT_LOST                   0x0507
+#endif
+
 QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -80,8 +84,13 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     } else {
 #ifdef QT_OPENGL_3
         // clear error state
-        while (funcs->glGetError()) {}
-
+        while (true) { // Clear error state.
+            GLenum error = funcs->glGetError();
+            if (error == GL_NO_ERROR)
+                break;
+            if (error == GL_CONTEXT_LOST)
+                return;
+        };
         qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress("glGetStringi");
 
         if (!glGetStringi)

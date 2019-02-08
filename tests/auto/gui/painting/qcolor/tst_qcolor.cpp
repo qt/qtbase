@@ -1291,7 +1291,7 @@ void tst_QColor::toCmyk_data()
         << QColor::fromHslF(180./360., 1., 0.5, 1.0);
 
     QTest::newRow("data1")
-        << QColor::fromCmyk(255, 255, 255, 255)
+        << QColor::fromCmyk(0, 0, 0, 255)
         << QColor::fromRgb(0, 0, 0)
         << QColor::fromRgb(0, 0, 0).toHsv()
         << QColor::fromRgb(0, 0, 0).toHsl();

@@ -84,7 +84,7 @@ QWindowsOleDataObject::~QWindowsOleDataObject() = default;
 
 void QWindowsOleDataObject::releaseQt()
 {
-    data = 0;
+    data = nullptr;
 }
 
 QMimeData *QWindowsOleDataObject::mimeData() const
@@ -142,7 +142,7 @@ QWindowsOleDataObject::QueryGetData(LPFORMATETC pformatetc)
 STDMETHODIMP
 QWindowsOleDataObject::GetCanonicalFormatEtc(LPFORMATETC, LPFORMATETC pformatetcOut)
 {
-    pformatetcOut->ptd = NULL;
+    pformatetcOut->ptd = nullptr;
     return ResultFromScode(E_NOTIMPL);
 }
 
@@ -188,7 +188,7 @@ QWindowsOleDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* ppe
         formatetc.cfFormat = CLIPFORMAT(CF_PERFORMEDDROPEFFECT);
         formatetc.dwAspect = DVASPECT_CONTENT;
         formatetc.lindex = -1;
-        formatetc.ptd = NULL;
+        formatetc.ptd = nullptr;
         formatetc.tymed = TYMED_HGLOBAL;
         fmtetcs.append(formatetc);
     }
@@ -197,7 +197,7 @@ QWindowsOleDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* ppe
     *ppenumFormatEtc = enumFmtEtc;
     if (enumFmtEtc->isNull()) {
         delete enumFmtEtc;
-        *ppenumFormatEtc = NULL;
+        *ppenumFormatEtc = nullptr;
         sc = E_OUTOFMEMORY;
     }
 
@@ -295,7 +295,7 @@ QWindowsOleEnumFmtEtc::Next(ULONG celt, LPFORMATETC rgelt, ULONG FAR* pceltFetch
     ULONG i=0;
     ULONG nOffset;
 
-    if (rgelt == NULL)
+    if (rgelt == nullptr)
         return ResultFromScode(E_INVALIDARG);
 
     while (i < celt) {
@@ -311,7 +311,7 @@ QWindowsOleEnumFmtEtc::Next(ULONG celt, LPFORMATETC rgelt, ULONG FAR* pceltFetch
 
     m_nIndex += i;
 
-    if (pceltFetched != NULL)
+    if (pceltFetched != nullptr)
         *pceltFetched = i;
 
     if (i != celt)
@@ -354,7 +354,7 @@ QWindowsOleEnumFmtEtc::Reset()
 STDMETHODIMP
 QWindowsOleEnumFmtEtc::Clone(LPENUMFORMATETC FAR* newEnum)
 {
-    if (newEnum == NULL)
+    if (newEnum == nullptr)
         return ResultFromScode(E_INVALIDARG);
 
     QWindowsOleEnumFmtEtc *result = new QWindowsOleEnumFmtEtc(m_lpfmtetcs);
@@ -371,7 +371,7 @@ QWindowsOleEnumFmtEtc::Clone(LPENUMFORMATETC FAR* newEnum)
 
 bool QWindowsOleEnumFmtEtc::copyFormatEtc(LPFORMATETC dest, const FORMATETC *src) const
 {
-    if (dest == NULL || src == NULL)
+    if (dest == nullptr || src == nullptr)
         return false;
 
     *dest = *src;

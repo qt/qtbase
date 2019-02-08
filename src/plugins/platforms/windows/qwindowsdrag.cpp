@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsDragCursorWindow : public QRasterWindow
 {
 public:
-    explicit QWindowsDragCursorWindow(QWindow *parent = 0);
+    explicit QWindowsDragCursorWindow(QWindow *parent = nullptr);
 
     void setPixmap(const QPixmap &p);
 
@@ -264,7 +264,7 @@ QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag)
     , m_drag(drag)
     , m_windowUnderMouse(QWindowsContext::instance()->windowUnderMouse())
     , m_currentButtons(Qt::NoButton)
-    , m_touchDragWindow(0)
+    , m_touchDragWindow(nullptr)
 {
     qCDebug(lcQpaMime) << __FUNCTION__ << m_mode;
 }
@@ -572,7 +572,7 @@ QWindowsOleDropTarget::DragLeave()
 
     qCDebug(lcQpaMime) << __FUNCTION__ << ' ' << m_window;
 
-    QWindowSystemInterface::handleDrag(m_window, 0, QPoint(), Qt::IgnoreAction,
+    QWindowSystemInterface::handleDrag(m_window, nullptr, QPoint(), Qt::IgnoreAction,
                                        Qt::NoButton, Qt::NoModifier);
 
     if (!QDragManager::self()->source())
@@ -626,7 +626,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                 FORMATETC format;
                 format.cfFormat = CLIPFORMAT(RegisterClipboardFormat(CFSTR_PERFORMEDDROPEFFECT));
                 format.tymed = TYMED_HGLOBAL;
-                format.ptd = 0;
+                format.ptd = nullptr;
                 format.dwAspect = 1;
                 format.lindex = -1;
                 windowsDrag->dropDataObject()->SetData(&format, &medium, true);
@@ -678,7 +678,7 @@ QMimeData *QWindowsDrag::dropData()
 */
 IDropTargetHelper* QWindowsDrag::dropHelper() {
     if (!m_cachedDropTargetHelper) {
-        CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
+        CoCreateInstance(CLSID_DragDropHelper, nullptr, CLSCTX_INPROC_SERVER,
                          IID_IDropTargetHelper,
                          reinterpret_cast<void**>(&m_cachedDropTargetHelper));
     }
@@ -739,7 +739,7 @@ void QWindowsDrag::releaseDropDataObject()
     qCDebug(lcQpaMime) << __FUNCTION__ << m_dropDataObject;
     if (m_dropDataObject) {
         m_dropDataObject->Release();
-        m_dropDataObject = 0;
+        m_dropDataObject = nullptr;
     }
 }
 

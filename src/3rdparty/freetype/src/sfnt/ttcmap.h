@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType character mapping table (cmap) support (specification).     */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __TTCMAP_H__
-#define __TTCMAP_H__
+#ifndef TTCMAP_H_
+#define TTCMAP_H_
 
 
 #include <ft2build.h>
@@ -141,6 +141,8 @@ FT_BEGIN_HEADER
 #define TT_VALID_GLYPH_COUNT( x )  TT_VALIDATOR( x )->num_glyphs
 
 
+  FT_CALLBACK_TABLE const TT_CMap_ClassRec  tt_cmap_unicode_class_rec;
+
   FT_LOCAL( FT_Error )
   tt_face_build_cmaps( TT_Face  face );
 
@@ -152,7 +154,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __TTCMAP_H__ */
+#endif /* TTCMAP_H_ */
 
 
 /* END */

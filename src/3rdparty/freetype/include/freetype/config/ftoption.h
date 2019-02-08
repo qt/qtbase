@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    User-selectable configuration macros (specification only).           */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTOPTION_H__
-#define __FTOPTION_H__
+#ifndef FTOPTION_H_
+#define FTOPTION_H_
 
 
 #include <ft2build.h>
@@ -75,22 +75,52 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
+  /*#***********************************************************************/
+  /*                                                                       */
+  /* If you enable this configuration option, FreeType recognizes an       */
+  /* environment variable called `FREETYPE_PROPERTIES', which can be used  */
+  /* to control the various font drivers and modules.  The controllable    */
+  /* properties are listed in the section @properties.                     */
+  /*                                                                       */
+  /* You have to undefine this configuration option on platforms that lack */
+  /* the concept of environment variables (and thus don't have the         */
+  /* `getenv' function), for example Windows CE.                           */
+  /*                                                                       */
+  /* `FREETYPE_PROPERTIES' has the following syntax form (broken here into */
+  /* multiple lines for better readability).                               */
+  /*                                                                       */
+  /* {                                                                     */
+  /*   <optional whitespace>                                               */
+  /*   <module-name1> ':'                                                  */
+  /*   <property-name1> '=' <property-value1>                              */
+  /*   <whitespace>                                                        */
+  /*   <module-name2> ':'                                                  */
+  /*   <property-name2> '=' <property-value2>                              */
+  /*   ...                                                                 */
+  /* }                                                                     */
+  /*                                                                       */
+  /* Example:                                                              */
+  /*                                                                       */
+  /*   FREETYPE_PROPERTIES=truetype:interpreter-version=35 \               */
+  /*                       cff:no-stem-darkening=1 \                       */
+  /*                       autofitter:warping=1                            */
+  /*                                                                       */
+#define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
+
+
   /*************************************************************************/
   /*                                                                       */
-  /* Uncomment the line below if you want to activate sub-pixel rendering  */
-  /* (a.k.a. LCD rendering, or ClearType) in this build of the library.    */
+  /* Uncomment the line below if you want to activate LCD rendering        */
+  /* technology similar to ClearType in this build of the library.  This   */
+  /* technology triples the resolution in the direction color subpixels.   */
+  /* To mitigate color fringes inherent to this technology, you also need  */
+  /* to explicitly set up LCD filtering.                                   */
   /*                                                                       */
   /* Note that this feature is covered by several Microsoft patents        */
   /* and should not be activated in any default build of the library.      */
-  /*                                                                       */
-  /* This macro has no impact on the FreeType API, only on its             */
-  /* _implementation_.  For example, using FT_RENDER_MODE_LCD when calling */
-  /* FT_Render_Glyph still generates a bitmap that is 3 times wider than   */
-  /* the original size in case this macro isn't defined; however, each     */
-  /* triplet of subpixels has R=G=B.                                       */
-  /*                                                                       */
-  /* This is done to allow FreeType clients to run unmodified, forcing     */
-  /* them to display normal gray-level anti-aliased glyphs.                */
+  /* When this macro is not defined, FreeType offers alternative LCD       */
+  /* rendering technology that produces excellent output without LCD       */
+  /* filtering.                                                            */
   /*                                                                       */
 /* #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
@@ -184,6 +214,10 @@ FT_BEGIN_HEADER
   /*   Do not #undef this macro here since the build system might define   */
   /*   it for certain configurations only.                                 */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
 
@@ -199,6 +233,10 @@ FT_BEGIN_HEADER
   /*   the system available bzip2 implementation.                          */
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
+  /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
   /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_BZIP2 */
 
@@ -225,6 +263,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_PNG */
 
 
@@ -238,49 +280,11 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
+  /*   If you use a build system like cmake or the `configure' script,     */
+  /*   options set by those programs have precendence, overwriting the     */
+  /*   value here with the configured one.                                 */
+  /*                                                                       */
 /* #define FT_CONFIG_OPTION_USE_HARFBUZZ */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* DLL export compilation                                                */
-  /*                                                                       */
-  /*   When compiling FreeType as a DLL, some systems/compilers need a     */
-  /*   special keyword in front OR after the return type of function       */
-  /*   declarations.                                                       */
-  /*                                                                       */
-  /*   Two macros are used within the FreeType source code to define       */
-  /*   exported library functions: FT_EXPORT and FT_EXPORT_DEF.            */
-  /*                                                                       */
-  /*     FT_EXPORT( return_type )                                          */
-  /*                                                                       */
-  /*       is used in a function declaration, as in                        */
-  /*                                                                       */
-  /*         FT_EXPORT( FT_Error )                                         */
-  /*         FT_Init_FreeType( FT_Library*  alibrary );                    */
-  /*                                                                       */
-  /*                                                                       */
-  /*     FT_EXPORT_DEF( return_type )                                      */
-  /*                                                                       */
-  /*       is used in a function definition, as in                         */
-  /*                                                                       */
-  /*         FT_EXPORT_DEF( FT_Error )                                     */
-  /*         FT_Init_FreeType( FT_Library*  alibrary )                     */
-  /*         {                                                             */
-  /*           ... some code ...                                           */
-  /*           return FT_Err_Ok;                                           */
-  /*         }                                                             */
-  /*                                                                       */
-  /*   You can provide your own implementation of FT_EXPORT and            */
-  /*   FT_EXPORT_DEF here if you want.  If you leave them undefined, they  */
-  /*   will be later automatically defined as `extern return_type' to      */
-  /*   allow normal compilation.                                           */
-  /*                                                                       */
-  /*   Do not #undef these macros here since the build system might define */
-  /*   them for certain configurations only.                               */
-  /*                                                                       */
-/* #define FT_EXPORT(x)      extern x */
-/* #define FT_EXPORT_DEF(x)  x */
 
 
   /*************************************************************************/
@@ -297,7 +301,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   - The TrueType driver will provide its own set of glyph names,      */
   /*     if you build it to support postscript names in the TrueType       */
-  /*     `post' table.                                                     */
+  /*     `post' table, but will not synthesize a missing Unicode charmap.  */
   /*                                                                       */
   /*   - The Type 1 driver will not be able to synthesize a Unicode        */
   /*     charmap out of the glyphs found in the fonts.                     */
@@ -492,7 +496,21 @@ FT_BEGIN_HEADER
   /*   code will be used.                                                  */
   /*                                                                       */
   /*   Setting this macro is needed for systems that prohibit address      */
-  /*   fixups, such as BREW.                                               */
+  /*   fixups, such as BREW.  [Note that standard compilers like gcc or    */
+  /*   clang handle PIC generation automatically; you don't have to set    */
+  /*   FT_CONFIG_OPTION_PIC, which is only necessary for very special      */
+  /*   compilers.]                                                         */
+  /*                                                                       */
+  /*   Note that FT_CONFIG_OPTION_PIC support is not available for all     */
+  /*   modules (see `modules.cfg' for a complete list).  For building with */
+  /*   FT_CONFIG_OPTION_PIC support, do the following.                     */
+  /*                                                                       */
+  /*     0. Clone the repository.                                          */
+  /*     1. Define FT_CONFIG_OPTION_PIC.                                   */
+  /*     2. Remove all subdirectories in `src' that don't have             */
+  /*        FT_CONFIG_OPTION_PIC support.                                  */
+  /*     3. Comment out the corresponding modules in `modules.cfg'.        */
+  /*     4. Compile.                                                       */
   /*                                                                       */
 /* #define FT_CONFIG_OPTION_PIC */
 
@@ -586,73 +604,62 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*                                                                       */
   /* Define TT_CONFIG_OPTION_SUBPIXEL_HINTING if you want to compile       */
-  /* EXPERIMENTAL subpixel hinting support into the TrueType driver.  This */
-  /* replaces the native TrueType hinting mechanism when anything but      */
-  /* FT_RENDER_MODE_MONO is requested.                                     */
+  /* subpixel hinting support into the TrueType driver.  This modifies the */
+  /* TrueType hinting mechanism when anything but FT_RENDER_MODE_MONO is   */
+  /* requested.                                                            */
   /*                                                                       */
-  /* Enabling this causes the TrueType driver to ignore instructions under */
-  /* certain conditions.  This is done in accordance with the guide here,  */
-  /* with some minor differences:                                          */
+  /* In particular, it modifies the bytecode interpreter to interpret (or  */
+  /* not) instructions in a certain way so that all TrueType fonts look    */
+  /* like they do in a Windows ClearType (DirectWrite) environment.  See   */
+  /* [1] for a technical overview on what this means.  See `ttinterp.h'    */
+  /* for more details on the LEAN option.                                  */
   /*                                                                       */
-  /*  http://www.microsoft.com/typography/cleartype/truetypecleartype.aspx */
+  /* There are three possible values.                                      */
   /*                                                                       */
-  /* By undefining this, you only compile the code necessary to hint       */
-  /* TrueType glyphs with native TT hinting.                               */
+  /* Value 1:                                                              */
+  /*    This value is associated with the `Infinality' moniker,            */
+  /*    contributed by an individual nicknamed Infinality with the goal of */
+  /*    making TrueType fonts render better than on Windows.  A high       */
+  /*    amount of configurability and flexibility, down to rules for       */
+  /*    single glyphs in fonts, but also very slow.  Its experimental and  */
+  /*    slow nature and the original developer losing interest meant that  */
+  /*    this option was never enabled in default builds.                   */
   /*                                                                       */
-  /*   This option requires TT_CONFIG_OPTION_BYTECODE_INTERPRETER to be    */
-  /*   defined.                                                            */
+  /*    The corresponding interpreter version is v38.                      */
   /*                                                                       */
-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING */
-
-
-  /*************************************************************************/
+  /* Value 2:                                                              */
+  /*    The new default mode for the TrueType driver.  The Infinality code */
+  /*    base was stripped to the bare minimum and all configurability      */
+  /*    removed in the name of speed and simplicity.  The configurability  */
+  /*    was mainly aimed at legacy fonts like Arial, Times New Roman, or   */
+  /*    Courier.  Legacy fonts are fonts that modify vertical stems to     */
+  /*    achieve clean black-and-white bitmaps.  The new mode focuses on    */
+  /*    applying a minimal set of rules to all fonts indiscriminately so   */
+  /*    that modern and web fonts render well while legacy fonts render    */
+  /*    okay.                                                              */
   /*                                                                       */
-  /* If you define TT_CONFIG_OPTION_UNPATENTED_HINTING, a special version  */
-  /* of the TrueType bytecode interpreter is used that doesn't implement   */
-  /* any of the patented opcodes and algorithms.  The patents related to   */
-  /* TrueType hinting have expired worldwide since May 2010; this option   */
-  /* is now deprecated.                                                    */
+  /*    The corresponding interpreter version is v40.                      */
   /*                                                                       */
-  /* Note that the TT_CONFIG_OPTION_UNPATENTED_HINTING macro is *ignored*  */
-  /* if you define TT_CONFIG_OPTION_BYTECODE_INTERPRETER; in other words,  */
-  /* either define TT_CONFIG_OPTION_BYTECODE_INTERPRETER or                */
-  /* TT_CONFIG_OPTION_UNPATENTED_HINTING but not both at the same time.    */
+  /* Value 3:                                                              */
+  /*    Compile both, making both v38 and v40 available (the latter is the */
+  /*    default).                                                          */
   /*                                                                       */
-  /* This macro is only useful for a small number of font files (mostly    */
-  /* for Asian scripts) that require bytecode interpretation to properly   */
-  /* load glyphs.  For all other fonts, this produces unpleasant results,  */
-  /* thus the unpatented interpreter is never used to load glyphs from     */
-  /* TrueType fonts unless one of the following two options is used.       */
+  /* By undefining these, you get rendering behavior like on Windows       */
+  /* without ClearType, i.e., Windows XP without ClearType enabled and     */
+  /* Win9x (interpreter version v35).  Or not, depending on how much       */
+  /* hinting blood and testing tears the font designer put into a given    */
+  /* font.  If you define one or both subpixel hinting options, you can    */
+  /* switch between between v35 and the ones you define (using             */
+  /* `FT_Property_Set').                                                   */
   /*                                                                       */
-  /*   - The unpatented interpreter is explicitly activated by the user    */
-  /*     through the FT_PARAM_TAG_UNPATENTED_HINTING parameter tag         */
-  /*     when opening the FT_Face.                                         */
+  /* This option requires TT_CONFIG_OPTION_BYTECODE_INTERPRETER to be      */
+  /* defined.                                                              */
   /*                                                                       */
-  /*   - FreeType detects that the FT_Face corresponds to one of the       */
-  /*     `trick' fonts (e.g., `Mingliu') it knows about.  The font engine  */
-  /*     contains a hard-coded list of font names and other matching       */
-  /*     parameters (see function `tt_face_init' in file                   */
-  /*     `src/truetype/ttobjs.c').                                         */
+  /* [1] https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx */
   /*                                                                       */
-  /* Here a sample code snippet for using FT_PARAM_TAG_UNPATENTED_HINTING. */
-  /*                                                                       */
-  /*   {                                                                   */
-  /*     FT_Parameter  parameter;                                          */
-  /*     FT_Open_Args  open_args;                                          */
-  /*                                                                       */
-  /*                                                                       */
-  /*     parameter.tag = FT_PARAM_TAG_UNPATENTED_HINTING;                  */
-  /*                                                                       */
-  /*     open_args.flags      = FT_OPEN_PATHNAME | FT_OPEN_PARAMS;         */
-  /*     open_args.pathname   = my_font_pathname;                          */
-  /*     open_args.num_params = 1;                                         */
-  /*     open_args.params     = &parameter;                                */
-  /*                                                                       */
-  /*     error = FT_Open_Face( library, &open_args, index, &face );        */
-  /*     ...                                                               */
-  /*   }                                                                   */
-  /*                                                                       */
-/* #define TT_CONFIG_OPTION_UNPATENTED_HINTING */
+/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  1         */
+#define TT_CONFIG_OPTION_SUBPIXEL_HINTING  2
+/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  ( 1 | 2 ) */
 
 
   /*************************************************************************/
@@ -668,7 +675,7 @@ FT_BEGIN_HEADER
   /* composite flags array which can be used to disambiguate, but old      */
   /* fonts will not have them.                                             */
   /*                                                                       */
-  /*   http://www.microsoft.com/typography/otspec/glyf.htm                 */
+  /*   https://www.microsoft.com/typography/otspec/glyf.htm                */
   /*   https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html */
   /*                                                                       */
 #undef TT_CONFIG_OPTION_COMPONENT_OFFSET_SCALED
@@ -690,6 +697,24 @@ FT_BEGIN_HEADER
   /* an embedded `BDF ' table within SFNT-based bitmap formats.            */
   /*                                                                       */
 #define TT_CONFIG_OPTION_BDF
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Option TT_CONFIG_OPTION_MAX_RUNNABLE_OPCODES controls the maximum     */
+  /* number of bytecode instructions executed for a single run of the      */
+  /* bytecode interpreter, needed to prevent infinite loops.  You don't    */
+  /* want to change this except for very special situations (e.g., making  */
+  /* a library fuzzer spend less time to handle broken fonts).             */
+  /*                                                                       */
+  /* It is not expected that this value is ever modified by a configuring  */
+  /* script; instead, it gets surrounded with #ifndef ... #endif so that   */
+  /* the value can be set as a preprocessor option on the compiler's       */
+  /* command line.                                                         */
+  /*                                                                       */
+#ifndef TT_CONFIG_OPTION_MAX_RUNNABLE_OPCODES
+#define TT_CONFIG_OPTION_MAX_RUNNABLE_OPCODES  1000000L
+#endif
 
 
   /*************************************************************************/
@@ -748,6 +773,16 @@ FT_BEGIN_HEADER
 
 
   /*************************************************************************/
+  /*                                                                       */
+  /* T1_CONFIG_OPTION_OLD_ENGINE controls whether the pre-Adobe Type 1     */
+  /* engine gets compiled into FreeType.  If defined, it is possible to    */
+  /* switch between the two engines using the `hinting-engine' property of */
+  /* the type1 driver module.                                              */
+  /*                                                                       */
+/* #define T1_CONFIG_OPTION_OLD_ENGINE */
+
+
+  /*************************************************************************/
   /*************************************************************************/
   /****                                                                 ****/
   /****         C F F   D R I V E R    C O N F I G U R A T I O N        ****/
@@ -762,8 +797,8 @@ FT_BEGIN_HEADER
   /* possible to set up the default values of the four control points that */
   /* define the stem darkening behaviour of the (new) CFF engine.  For     */
   /* more details please read the documentation of the                     */
-  /* `darkening-parameters' property of the cff driver module (file        */
-  /* `ftcffdrv.h'), which allows the control at run-time.                  */
+  /* `darkening-parameters' property (file `ftdriver.h'), which allows the */
+  /* control at run-time.                                                  */
   /*                                                                       */
   /* Do *not* undefine these macros!                                       */
   /*                                                                       */
@@ -793,6 +828,33 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*************************************************************************/
   /****                                                                 ****/
+  /****         P C F   D R I V E R    C O N F I G U R A T I O N        ****/
+  /****                                                                 ****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* There are many PCF fonts just called `Fixed' which look completely    */
+  /* different, and which have nothing to do with each other.  When        */
+  /* selecting `Fixed' in KDE or Gnome one gets results that appear rather */
+  /* random, the style changes often if one changes the size and one       */
+  /* cannot select some fonts at all.  This option makes the PCF module    */
+  /* prepend the foundry name (plus a space) to the family name.           */
+  /*                                                                       */
+  /* We also check whether we have `wide' characters; all put together, we */
+  /* get family names like `Sony Fixed' or `Misc Fixed Wide'.              */
+  /*                                                                       */
+  /* If this option is activated, it can be controlled with the            */
+  /* `no-long-family-names' property of the pcf driver module.             */
+  /*                                                                       */
+/* #define PCF_CONFIG_OPTION_LONG_FAMILY_NAMES */
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /****                                                                 ****/
   /****    A U T O F I T   M O D U L E    C O N F I G U R A T I O N     ****/
   /****                                                                 ****/
   /*************************************************************************/
@@ -808,7 +870,9 @@ FT_BEGIN_HEADER
 
   /*************************************************************************/
   /*                                                                       */
-  /* Compile autofit module with Indic script support.                     */
+  /* Compile autofit module with fallback Indic script support, covering   */
+  /* some scripts that the `latin' submodule of the autofit module doesn't */
+  /* (yet) handle.                                                         */
   /*                                                                       */
 #define AF_CONFIG_OPTION_INDIC
 
@@ -822,10 +886,30 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* This experimental option is active only if the rendering mode is      */
   /* FT_RENDER_MODE_LIGHT; you can switch warping on and off with the      */
-  /* `warping' property of the auto-hinter (see file `ftautoh.h' for more  */
+  /* `warping' property of the auto-hinter (see file `ftdriver.h' for more */
   /* information; by default it is switched off).                          */
   /*                                                                       */
 #define AF_CONFIG_OPTION_USE_WARPER
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Use TrueType-like size metrics for `light' auto-hinting.              */
+  /*                                                                       */
+  /* It is strongly recommended to avoid this option, which exists only to */
+  /* help some legacy applications retain its appearance and behaviour     */
+  /* with respect to auto-hinted TrueType fonts.                           */
+  /*                                                                       */
+  /* The very reason this option exists at all are GNU/Linux distributions */
+  /* like Fedora that did not un-patch the following change (which was     */
+  /* present in FreeType between versions 2.4.6 and 2.7.1, inclusive).     */
+  /*                                                                       */
+  /*   2011-07-16  Steven Chu  <steven.f.chu@gmail.com>                    */
+  /*                                                                       */
+  /*     [truetype] Fix metrics on size request for scalable fonts.        */
+  /*                                                                       */
+  /* This problematic commit is now reverted (more or less).               */
+  /*                                                                       */
+/* #define AF_CONFIG_OPTION_TT_SIZE_METRICS */
 
   /* */
 
@@ -838,14 +922,21 @@ FT_BEGIN_HEADER
 
 
   /*
-   * This macro is defined if either unpatented or native TrueType
-   * hinting is requested by the definitions above.
+   * This macro is defined if native TrueType hinting is requested by the
+   * definitions above.
    */
 #ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 #define  TT_USE_BYTECODE_INTERPRETER
-#undef   TT_CONFIG_OPTION_UNPATENTED_HINTING
-#elif defined TT_CONFIG_OPTION_UNPATENTED_HINTING
-#define  TT_USE_BYTECODE_INTERPRETER
+
+#ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
+#if TT_CONFIG_OPTION_SUBPIXEL_HINTING & 1
+#define  TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
+#endif
+
+#if TT_CONFIG_OPTION_SUBPIXEL_HINTING & 2
+#define  TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+#endif
+#endif
 #endif
 
 
@@ -880,7 +971,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __FTOPTION_H__ */
+#endif /* FTOPTION_H_ */
 
 
 /* END */

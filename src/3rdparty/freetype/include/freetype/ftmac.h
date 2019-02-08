@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Additional Mac-specific API.                                         */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg.     */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -25,8 +25,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTMAC_H__
-#define __FTMAC_H__
+#ifndef FTMAC_H_
+#define FTMAC_H_
 
 
 #include <ft2build.h>
@@ -35,11 +35,12 @@
 FT_BEGIN_HEADER
 
 
-/* gcc-3.4.1 and later can warn about functions tagged as deprecated */
+  /* gcc-3.1 and later can warn about functions tagged as deprecated */
 #ifndef FT_DEPRECATED_ATTRIBUTE
-#if defined(__GNUC__)                                               && \
-    ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#define FT_DEPRECATED_ATTRIBUTE  __attribute__((deprecated))
+#if defined( __GNUC__ )                                     && \
+    ( ( __GNUC__ >= 4 )                                  ||    \
+      ( ( __GNUC__ == 3 ) && ( __GNUC_MINOR__ >= 1 ) ) )
+#define FT_DEPRECATED_ATTRIBUTE  __attribute__(( deprecated ))
 #else
 #define FT_DEPRECATED_ATTRIBUTE
 #endif
@@ -268,7 +269,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __FTMAC_H__ */
+#endif /* FTMAC_H_ */
 
 
 /* END */

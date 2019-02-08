@@ -237,7 +237,6 @@ uchar *QPlatformGraphicsBuffer::data()
 */
 int QPlatformGraphicsBuffer::byteCount() const
 {
-    Q_ASSERT(isLocked() & SWReadAccess);
     return size().height() * bytesPerLine();
 }
 

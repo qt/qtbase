@@ -113,7 +113,6 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 }
 
 @implementation QMacAccessibilityElement {
-    NSString *role;
     QAccessible::Id axid;
 }
 
@@ -123,9 +122,6 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     self = [super init];
     if (self) {
         axid = anId;
-        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-        Q_ASSERT(iface);
-        role = QCocoaAccessible::macRole(iface);
     }
 
     return self;
@@ -295,11 +291,12 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     }
 
     if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
-        return role;
+        return QCocoaAccessible::macRole(iface);
     } else if ([attribute isEqualToString:NSAccessibilitySubroleAttribute]) {
         return QCocoaAccessible::macSubrole(iface);
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
-        return NSAccessibilityRoleDescription(role, [self accessibilityAttributeValue:NSAccessibilitySubroleAttribute]);
+        return NSAccessibilityRoleDescription(QCocoaAccessible::macRole(iface),
+            [self accessibilityAttributeValue:NSAccessibilitySubroleAttribute]);
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
         return QCocoaAccessible::unignoredChildren(iface);
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {

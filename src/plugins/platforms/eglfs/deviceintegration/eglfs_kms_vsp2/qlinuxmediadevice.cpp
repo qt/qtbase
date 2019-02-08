@@ -273,9 +273,30 @@ bool QLinuxMediaDevice::disableLink(struct media_link *link)
     return true;
 }
 
-media_entity *QLinuxMediaDevice::getEntity(const QString &name)
+// Between the v4l-utils 1.10 and 1.12 releases, media_get_entity_by_name changed signature,
+// i.e. breaking source compatibility. Unfortunately the v4l-utils version is not exposed
+// through anything we can use through a regular ifdef so here we do a hack and create two
+// overloads for a function based on the signature of the function pointer argument. This
+// means that by calling safeGetEntity with media_get_entity_by_name as an argument, the
+// compiler will pick the correct version.
+//
+// v4l-utils v1.12 and later
+static struct media_entity *safeGetEntity(struct media_entity *(get_entity_by_name_fn)(struct media_device *, const char *),
+                                          struct media_device *device, const QString &name)
 {
-    struct media_entity *entity = media_get_entity_by_name(m_mediaDevice, name.toStdString().c_str(), name.length());
+    return get_entity_by_name_fn(device, name.toStdString().c_str());
+}
+// v4l-utils v1.10 and earlier
+static struct media_entity *safeGetEntity(struct media_entity *(get_entity_by_name_fn)(struct media_device *, const char *, size_t),
+                                          struct media_device *device,
+                                          const QString &name)
+{
+    return get_entity_by_name_fn(device, name.toStdString().c_str(), name.length());
+}
+
+struct media_entity *QLinuxMediaDevice::getEntity(const QString &name)
+{
+    struct media_entity *entity = safeGetEntity(media_get_entity_by_name, m_mediaDevice, name);
 
     if (!entity)
         qWarning() << "Failed to get media entity:" << name;

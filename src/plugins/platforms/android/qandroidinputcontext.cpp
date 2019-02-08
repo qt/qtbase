@@ -978,6 +978,10 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
     m_composingText.clear();
     m_composingTextStart = -1;
 
+    QString text = query->value(Qt::ImSurroundingText).toString();
+    if (text.isEmpty())
+        return JNI_TRUE;
+
     if (leftLength < 0) {
         rightLength += -leftLength;
         leftLength = 0;

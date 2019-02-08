@@ -714,8 +714,8 @@ QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode)
     control the conversion.
 
     Note that QPixmaps are automatically added to the QPixmapCache
-    when loaded from a file; the key used is internal and can not
-    be acquired.
+    when loaded from a file in main thread; the key used is internal
+    and cannot be acquired.
 
     \sa loadFromData(), {QPixmap#Reading and Writing Image
     Files}{Reading and Writing Image Files}
@@ -729,6 +729,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         // Note: If no extension is provided, we try to match the
         // file against known plugin extensions
         if (info.completeSuffix().isEmpty() || info.exists()) {
+            const bool inGuiThread = qApp->thread() == QThread::currentThread();
 
             QString key = QLatin1String("qt_pixmap")
                     % info.absoluteFilePath()
@@ -736,13 +737,14 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
                     % HexString<quint64>(info.size())
                     % HexString<uint>(data ? data->pixelType() : QPlatformPixmap::PixmapType);
 
-            if (QPixmapCache::find(key, this))
+            if (inGuiThread && QPixmapCache::find(key, this))
                 return true;
 
             data = QPlatformPixmap::create(0, 0, data ? data->pixelType() : QPlatformPixmap::PixmapType);
 
             if (data->fromFile(fileName, format, flags)) {
-                QPixmapCache::insert(key, *this);
+                if (inGuiThread)
+                    QPixmapCache::insert(key, *this);
                 return true;
             }
         }

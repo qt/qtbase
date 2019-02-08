@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PostScript hinting algorithm (body).                                 */
 /*                                                                         */
-/*  Copyright 2001-2015 by                                                 */
+/*  Copyright 2001-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used        */
@@ -26,7 +26,7 @@
 
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_pshalgo2
+#define FT_COMPONENT  trace_pshalgo
 
 
 #ifdef DEBUG_HINTER
@@ -779,7 +779,7 @@
            * It turns out though that minimizing the total number of lit
            * pixels is also important, so position C), with one edge
            * aligned with a pixel boundary is actually preferable
-           * to A).  There are also more possibile positions for C) than
+           * to A).  There are also more possible positions for C) than
            * for A) or B), so it involves less distortion of the overall
            * character shape.
            */
@@ -802,7 +802,7 @@
             }
 
             /* We choose between B) and C) above based on the amount
-             * of fractinal stem width; for small amounts, choose
+             * of fractional stem width; for small amounts, choose
              * C) always, for large amounts, B) always, and inbetween,
              * pick whichever one involves less stem movement.
              */
@@ -898,7 +898,7 @@
   static void
   psh_print_zone( PSH_Zone  zone )
   {
-    printf( "zone [scale,delta,min,max] = [%.3f,%.3f,%d,%d]\n",
+    printf( "zone [scale,delta,min,max] = [%.5f,%.2f,%d,%d]\n",
              zone->scale / 65536.0,
              zone->delta / 64.0,
              zone->min,
@@ -1162,7 +1162,7 @@
 
 
     /* clear all fields */
-    FT_MEM_ZERO( glyph, sizeof ( *glyph ) );
+    FT_ZERO( glyph );
 
     memory = glyph->memory = globals->memory;
 
@@ -1531,7 +1531,7 @@
           }
         }
 
-        if ( point->hint == NULL )
+        if ( !point->hint )
         {
           for ( nn = 0; nn < num_hints; nn++ )
           {
@@ -1572,8 +1572,8 @@
     PS_Mask         mask      = table->hint_masks->masks;
     FT_UInt         num_masks = table->hint_masks->num_masks;
     FT_UInt         first     = 0;
-    FT_Int          major_dir = dimension == 0 ? PSH_DIR_VERTICAL
-                                               : PSH_DIR_HORIZONTAL;
+    FT_Int          major_dir = ( dimension == 0 ) ? PSH_DIR_VERTICAL
+                                                   : PSH_DIR_HORIZONTAL;
     PSH_Dimension   dim       = &glyph->globals->dimension[dimension];
     FT_Fixed        scale     = dim->scale_mult;
     FT_Int          threshold;

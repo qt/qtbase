@@ -115,13 +115,13 @@ static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 
 IDataObject *QWindowsClipboardRetrievalMimeData::retrieveDataObject() const
 {
-    IDataObject * pDataObj = 0;
+    IDataObject * pDataObj = nullptr;
     if (OleGetClipboard(&pDataObj) == S_OK) {
         if (QWindowsContext::verbose > 1)
             qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj;
         return pDataObj;
     }
-    return 0;
+    return nullptr;
 }
 
 void QWindowsClipboardRetrievalMimeData::releaseDataObject(IDataObject *dataObject) const
@@ -148,7 +148,7 @@ static void cleanClipboardPostRoutine()
         cl->cleanup();
 }
 
-QWindowsClipboard *QWindowsClipboard::m_instance = 0;
+QWindowsClipboard *QWindowsClipboard::m_instance = nullptr;
 
 QWindowsClipboard::QWindowsClipboard()
 {
@@ -159,7 +159,7 @@ QWindowsClipboard::QWindowsClipboard()
 QWindowsClipboard::~QWindowsClipboard()
 {
     cleanup();
-    QWindowsClipboard::m_instance = 0;
+    QWindowsClipboard::m_instance = nullptr;
 }
 
 void QWindowsClipboard::cleanup()
@@ -174,7 +174,7 @@ void QWindowsClipboard::releaseIData()
         delete m_data->mimeData();
         m_data->releaseQt();
         m_data->Release();
-        m_data = 0;
+        m_data = nullptr;
     }
 }
 
@@ -207,10 +207,10 @@ void QWindowsClipboard::unregisterViewer()
             m_formatListenerRegistered = false;
         } else {
             ChangeClipboardChain(m_clipboardViewer, m_nextClipboardViewer);
-            m_nextClipboardViewer = 0;
+            m_nextClipboardViewer = nullptr;
         }
         DestroyWindow(m_clipboardViewer);
-        m_clipboardViewer = 0;
+        m_clipboardViewer = nullptr;
     }
 }
 
@@ -300,7 +300,7 @@ QMimeData *QWindowsClipboard::mimeData(QClipboard::Mode mode)
 {
     qCDebug(lcQpaMime) << __FUNCTION__ <<  mode;
     if (mode != QClipboard::Clipboard)
-        return 0;
+        return nullptr;
     if (ownsClipboard())
         return m_data->mimeData();
     return &m_retrievalData;
@@ -341,7 +341,7 @@ void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
 void QWindowsClipboard::clear()
 {
-    const HRESULT src = OleSetClipboard(0);
+    const HRESULT src = OleSetClipboard(nullptr);
     if (src != S_OK)
         qErrnoWarning("OleSetClipboard: Failed to clear the clipboard: 0x%lx", src);
 }

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter warping algorithm (body).                                */
 /*                                                                         */
-/*  Copyright 2006-2015 by                                                 */
+/*  Copyright 2006-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -98,7 +98,6 @@
       if ( xx1min + w < warper->x2min )
         xx1min = warper->x2min - w;
 
-      xx1max = warper->x1max;
       if ( xx1max + w > warper->x2max )
         xx1max = warper->x2max - w;
 
@@ -193,7 +192,7 @@
 
     warper->best_scale   = org_scale;
     warper->best_delta   = org_delta;
-    warper->best_score   = INT_MIN;
+    warper->best_score   = FT_INT_MIN;
     warper->best_distort = 0;
 
     axis         = &hints->axis[dim];

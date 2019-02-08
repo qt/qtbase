@@ -241,7 +241,8 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
                 continue;
             if (requestedAlpha && actualAlpha < requestedAlpha)
                 continue;
-            compatibleCandidate = candidate;
+            if (!compatibleCandidate) // Only pick up the first compatible one offered by the server
+                compatibleCandidate = candidate;
 
             if (requestedRed && actualRed != requestedRed)
                 continue;

@@ -1398,11 +1398,12 @@ void QTextEngine::shapeText(int item) const
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
         QTextCharFormat f = format(&si);
-        kerningEnabled = f.fontKerning();
+        QFont font = f.font();
+        kerningEnabled = font.kerning();
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
-                || (f.fontStyleStrategy() & QFont::PreferNoShaping) == 0;
-        wordSpacing = QFixed::fromReal(f.fontWordSpacing());
-        letterSpacing = QFixed::fromReal(f.fontLetterSpacing());
+                || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
+        wordSpacing = QFixed::fromReal(font.wordSpacing());
+        letterSpacing = QFixed::fromReal(font.letterSpacing());
         letterSpacingIsAbsolute = true;
     } else
 #endif

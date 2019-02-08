@@ -68,11 +68,11 @@ public:
         const int ntypes = int(sizeof(typeAttempts) / sizeof(typeAttempts[0]));
 
         for (int i = 0; i < ntypes; i++) {
-            hr = D3D11CreateDevice(NULL,
+            hr = D3D11CreateDevice(nullptr,
                                    typeAttempts[i],
-                                   NULL,
+                                   nullptr,
                                    D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_BGRA_SUPPORT,
-                                   NULL,
+                                   nullptr,
                                    0,
                                    D3D11_SDK_VERSION,
                                    &d3dDevice,

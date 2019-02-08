@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter routines to compute global hinting values (body).        */
 /*                                                                         */
-/*  Copyright 2003-2015 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,7 +18,7 @@
 
 #include "afglobal.h"
 #include "afranges.h"
-#include "hbshim.h"
+#include "afshaper.h"
 #include FT_INTERNAL_DEBUG_H
 
 
@@ -42,13 +42,14 @@
 
 
 #undef  SCRIPT
-#define SCRIPT( s, S, d, h, sc1, sc2, sc3 ) \
+#define SCRIPT( s, S, d, h, H, ss )         \
           AF_DEFINE_SCRIPT_CLASS(           \
             af_ ## s ## _script_class,      \
             AF_SCRIPT_ ## S,                \
             af_ ## s ## _uniranges,         \
             af_ ## s ## _nonbase_uniranges, \
-            sc1, sc2, sc3 )
+            AF_ ## H,                       \
+            ss )
 
 #include "afscript.h"
 
@@ -83,7 +84,7 @@
 
 
 #undef  SCRIPT
-#define SCRIPT( s, S, d, h, sc1, sc2, sc3 ) \
+#define SCRIPT( s, S, d, h, H, ss )   \
           &af_ ## s ## _script_class,
 
   FT_LOCAL_ARRAY_DEF( AF_ScriptClass )
@@ -167,7 +168,7 @@
       AF_Script_UniRange  range;
 
 
-      if ( script_class->script_uni_ranges == NULL )
+      if ( !script_class->script_uni_ranges )
         continue;
 
       /*
@@ -240,22 +241,22 @@
       else
       {
         /* get glyphs not directly addressable by cmap */
-        af_get_coverage( globals, style_class, gstyles );
+        af_shaper_get_coverage( globals, style_class, gstyles, 0 );
       }
     }
 
-    /* handle the default OpenType features of the default script ... */
-    af_get_coverage( globals, AF_STYLE_CLASSES_GET[dflt], gstyles );
-
-    /* ... and the remaining default OpenType features */
+    /* handle the remaining default OpenType features ... */
     for ( ss = 0; AF_STYLE_CLASSES_GET[ss]; ss++ )
     {
       AF_StyleClass  style_class = AF_STYLE_CLASSES_GET[ss];
 
 
-      if ( ss != dflt && style_class->coverage == AF_COVERAGE_DEFAULT )
-        af_get_coverage( globals, style_class, gstyles );
+      if ( style_class->coverage == AF_COVERAGE_DEFAULT )
+        af_shaper_get_coverage( globals, style_class, gstyles, 0 );
     }
+
+    /* ... and finally the default OpenType features of the default script */
+    af_shaper_get_coverage( globals, AF_STYLE_CLASSES_GET[dflt], gstyles, 1 );
 
     /* mark ASCII digits */
     for ( i = 0x30; i <= 0x39; i++ )
@@ -350,14 +351,21 @@
                      (FT_ULong)face->num_glyphs * sizeof ( FT_UShort ) ) )
       goto Exit;
 
-    globals->face         = face;
-    globals->glyph_count  = face->num_glyphs;
+    globals->face                      = face;
+    globals->glyph_count               = face->num_glyphs;
     /* right after the globals structure come the glyph styles */
-    globals->glyph_styles = (FT_UShort*)( globals + 1 );
-    globals->module       = module;
+    globals->glyph_styles              = (FT_UShort*)( globals + 1 );
+    globals->module                    = module;
+    globals->stem_darkening_for_ppem   = 0;
+    globals->darken_x                  = 0;
+    globals->darken_y                  = 0;
+    globals->standard_vertical_width   = 0;
+    globals->standard_horizontal_width = 0;
+    globals->scale_down_factor         = 0;
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     globals->hb_font = hb_ft_font_create( face, NULL );
+    globals->hb_buf  = hb_buffer_create();
 #endif
 
     error = af_face_globals_compute_style_coverage( globals );
@@ -403,13 +411,11 @@
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
       hb_font_destroy( globals->hb_font );
-      globals->hb_font = NULL;
+      hb_buffer_destroy( globals->hb_buf );
 #endif
 
-      globals->glyph_count  = 0;
-      globals->glyph_styles = NULL;  /* no need to free this one! */
-      globals->face         = NULL;
-
+      /* no need to free `globals->glyph_styles'; */
+      /* it is part of the `globals' array        */
       FT_FREE( globals );
     }
   }
@@ -447,7 +453,7 @@
                              [style_class->writing_system];
 
     metrics = globals->metrics[style];
-    if ( metrics == NULL )
+    if ( !metrics )
     {
       /* create the global metrics object if necessary */
       FT_Memory  memory = globals->face->memory;

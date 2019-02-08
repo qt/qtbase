@@ -290,6 +290,10 @@ static void cpuidFeatures07_00(uint &ebx, uint &ecx, uint &edx)
     ebx = info[1];
     ecx = info[2];
     edx = info[3];
+#else
+    Q_UNUSED(ebx);
+    Q_UNUSED(ecx);
+    Q_UNUSED(edx);
 #endif
 }
 

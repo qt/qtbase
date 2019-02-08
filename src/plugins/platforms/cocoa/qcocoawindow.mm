@@ -228,8 +228,9 @@ QSurfaceFormat QCocoaWindow::format() const
 
     // Upgrade the default surface format to include an alpha channel. The default RGB format
     // causes Cocoa to spend an unreasonable amount of time converting it to RGBA internally.
-    if (format == QSurfaceFormat())
+    if (format.alphaBufferSize() < 0)
         format.setAlphaBufferSize(8);
+
     return format;
 }
 
@@ -1487,6 +1488,17 @@ void QCocoaWindow::requestUpdate()
 
 void QCocoaWindow::deliverUpdateRequest()
 {
+    // Don't send update requests for views that need display, as the update
+    // request doesn't carry any information about dirty rects, so the app
+    // may end up painting a smaller region than required. (For some reason
+    // the layer and view's needsDisplay status isn't always in sync, even if
+    // the view is layer-backed, not layer-hosted, so we check both).
+    if (m_view.layer.needsDisplay || m_view.needsDisplay) {
+        qCDebug(lcQpaDrawing) << "View needs display, deferring update request for" << window();
+        requestUpdate();
+        return;
+    }
+
     qCDebug(lcQpaDrawing) << "Delivering update request to" << window();
     QPlatformWindow::deliverUpdateRequest();
 }
