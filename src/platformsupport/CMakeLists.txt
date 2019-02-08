@@ -3,6 +3,8 @@
 add_subdirectory(themes)
 add_subdirectory(edid)
 add_subdirectory(eventdispatchers)
+add_subdirectory(devicediscovery)
+add_subdirectory(fbconvenience)
 
 if(QT_FEATURE_freetype OR APPLE OR WIN32)
     add_subdirectory(fontdatabases)
