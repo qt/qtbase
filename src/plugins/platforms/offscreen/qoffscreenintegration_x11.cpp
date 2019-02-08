@@ -77,11 +77,6 @@ private:
     QOffscreenX11Connection *m_connection;
 };
 
-QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration()
-{
-    return new QOffscreenX11Integration;
-}
-
 bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
