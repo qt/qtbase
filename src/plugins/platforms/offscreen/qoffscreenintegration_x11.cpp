@@ -87,6 +87,7 @@ bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability ca
     switch (cap) {
     case OpenGL: return true;
     case ThreadedOpenGL: return true;
+    case RasterGLSurface: return true;
     default: return QOffscreenIntegration::hasCapability(cap);
     }
 }
@@ -195,6 +196,12 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
 {
     d->x11 = x11;
     d->format = context->format();
+
+    if (d->format.renderableType() == QSurfaceFormat::DefaultRenderableType)
+        d->format.setRenderableType(QSurfaceFormat::OpenGL);
+
+    if (d->format.renderableType() != QSurfaceFormat::OpenGL)
+        return;
 
     d->shareContext = 0;
     if (context->shareHandle())
