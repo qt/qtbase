@@ -10,3 +10,8 @@ MOC_DIR=tmp
 requires(qtConfig(private_tests))
 QT = core-private network-private testlib
 
+# TODO: For now linux-only, because cyrus is linux-only atm ...
+linux {
+    QT_TEST_SERVER_LIST = squid danted cyrus apache2
+    include($$dirname(_QMAKE_CONF_)/tests/auto/testserver.pri)
+}
