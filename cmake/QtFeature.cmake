@@ -385,9 +385,12 @@ function(qt_feature_module_end target)
 endfunction()
 
 function(qt_config_compile_test name)
-    cmake_parse_arguments(arg "" "LABEL" "" ${ARGN})
+    cmake_parse_arguments(arg "" "LABEL" "LIBRARIES;CODE" ${ARGN})
 
-    check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS}" HAVE_${name})
+    set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
+    set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
+    check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
+    set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
     set(TEST_${name} "${HAVE_${name}}" CACHE INTERNAL "${arg_LABEL}")
 endfunction()
 
