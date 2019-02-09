@@ -119,8 +119,9 @@ void QToolBarLayout::updateMarginAndSpacing()
     QStyle *style = tb->style();
     QStyleOptionToolBar opt;
     tb->initStyleOption(&opt);
-    setMargin(style->pixelMetric(QStyle::PM_ToolBarItemMargin, &opt, tb)
-                + style->pixelMetric(QStyle::PM_ToolBarFrameWidth, &opt, tb));
+    const int margin = style->pixelMetric(QStyle::PM_ToolBarItemMargin, &opt, tb)
+            + style->pixelMetric(QStyle::PM_ToolBarFrameWidth, &opt, tb);
+    setContentsMargins(margin, margin, margin, margin);
     setSpacing(style->pixelMetric(QStyle::PM_ToolBarItemSpacing, &opt, tb));
 }
 
@@ -268,7 +269,7 @@ void QToolBarLayout::updateGeomArray() const
     tb->initStyleOption(&opt);
     const int handleExtent = movable()
             ? style->pixelMetric(QStyle::PM_ToolBarHandleExtent, &opt, tb) : 0;
-    const int margin = this->margin();
+    const QMargins margins = contentsMargins();
     const int spacing = this->spacing();
     const int extensionExtent = style->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt, tb);
     Qt::Orientation o = tb->orientation();
@@ -330,12 +331,12 @@ void QToolBarLayout::updateGeomArray() const
     that->empty = count == 0;
 
     rpick(o, that->minSize) += handleExtent;
-    that->minSize += QSize(2*margin, 2*margin);
+    that->minSize += QSize(pick(Qt::Horizontal, margins), pick(Qt::Vertical, margins));
     if (items.count() > 1)
         rpick(o, that->minSize) += spacing + extensionExtent;
 
     rpick(o, that->hint) += handleExtent;
-    that->hint += QSize(2*margin, 2*margin);
+    that->hint += QSize(pick(Qt::Horizontal, margins), pick(Qt::Vertical, margins));
     that->dirty = false;
 }
 
@@ -384,7 +385,7 @@ void QToolBarLayout::setGeometry(const QRect &rect)
     QStyle *style = tb->style();
     QStyleOptionToolBar opt;
     tb->initStyleOption(&opt);
-    const int margin = this->margin();
+    const QMargins margins = contentsMargins();
     const int extensionExtent = style->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt, tb);
     Qt::Orientation o = tb->orientation();
 
@@ -403,14 +404,18 @@ void QToolBarLayout::setGeometry(const QRect &rect)
         QSize hint = sizeHint();
 
         QPoint pos;
-        rpick(o, pos) = pick(o, rect.bottomRight()) - margin - extensionExtent + 2;
+        rpick(o, pos) = pick(o, rect.bottomRight()) -
+                pick(o, QSize(margins.bottom(), margins.right())) - extensionExtent + 2;
         if (area == Qt::LeftToolBarArea || area == Qt::TopToolBarArea)
-            rperp(o, pos) = perp(o, rect.topLeft()) + margin;
+            rperp(o, pos) = perp(o, rect.topLeft()) +
+                    perp(o, QSize(margins.top(), margins.left()));
         else
-            rperp(o, pos) = perp(o, rect.bottomRight()) - margin - (perp(o, hint) - 2*margin) + 1;
+            rperp(o, pos) = perp(o, rect.bottomRight()) -
+                    perp(o, QSize(margins.bottom(), margins.right())) -
+                    (perp(o, hint) - perp(o, margins)) + 1;
         QSize size;
         rpick(o, size) = extensionExtent;
-        rperp(o, size) = perp(o, hint) - 2*margin;
+        rperp(o, size) = perp(o, hint) - perp(o, margins);
         QRect r(pos, size);
 
         if (o == Qt::Horizontal)
@@ -443,13 +448,13 @@ bool QToolBarLayout::layoutActions(const QSize &size)
     tb->initStyleOption(&opt);
     const int handleExtent = movable()
             ? style->pixelMetric(QStyle::PM_ToolBarHandleExtent, &opt, tb) : 0;
-    const int margin = this->margin();
+    const QMargins margins = contentsMargins();
     const int spacing = this->spacing();
     const int extensionExtent = style->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt, tb);
     Qt::Orientation o = tb->orientation();
     bool extensionMenuContainsOnlyWidgetActions = true;
 
-    int space = pick(o, rect.size()) - 2*margin - handleExtent;
+    int space = pick(o, rect.size()) - pick(o, margins) - handleExtent;
     if (space <= 0)
         return false;  // nothing to do.
 
@@ -458,7 +463,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
 
     bool ranOutOfSpace = false;
     int rows = 0;
-    int rowPos = perp(o, rect.topLeft()) + margin;
+    int rowPos = perp(o, rect.topLeft()) + perp(o, QSize(margins.top(), margins.left()));
     int i = 0;
     while (i < items.count()) {
         QVector<QLayoutStruct> a = geomArray;
@@ -521,14 +526,14 @@ bool QToolBarLayout::layoutActions(const QSize &size)
             }
 
             QPoint pos;
-            rpick(o, pos) = margin + handleExtent + a[j].pos;
+            rpick(o, pos) = pick(o, QSize(margins.top(), margins.left())) + handleExtent + a[j].pos;
             rperp(o, pos) = rowPos;
             QSize size;
             rpick(o, size) = a[j].size;
             if (expanded)
                 rperp(o, size) = rowHeight;
             else
-                rperp(o, size) = perp(o, rect.size()) - 2*margin;
+                rperp(o, size) = perp(o, rect.size()) - perp(o, QSize(margins.top(), margins.left()));
             QRect r(pos, size);
 
             if (o == Qt::Horizontal)
@@ -589,7 +594,7 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
     tb->initStyleOption(&opt);
     const int handleExtent = movable()
             ? style->pixelMetric(QStyle::PM_ToolBarHandleExtent, &opt, tb) : 0;
-    const int margin = this->margin();
+    const QMargins margins = contentsMargins();
     const int spacing = this->spacing();
     const int extensionExtent = style->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt, tb);
 
@@ -609,9 +614,9 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
     if (rows == 1)
         ++rows;      // we want to expand to at least two rows
     int space = total_w/rows + spacing + extensionExtent;
-    space = qMax(space, min_w - 2*margin - handleExtent);
+    space = qMax(space, min_w - pick(o, margins) - handleExtent);
     if (win != 0)
-        space = qMin(space, pick(o, win->size()) - 2*margin - handleExtent);
+        space = qMin(space, pick(o, win->size()) - pick(o, margins) - handleExtent);
 
     int w = 0;
     int h = 0;
@@ -644,11 +649,11 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
         h += rowHeight + spacing;
     }
 
-    w += 2*margin + handleExtent + spacing + extensionExtent;
+    w += pick(Qt::Horizontal, margins) + handleExtent + spacing + extensionExtent;
     w = qMax(w, min_w);
     if (win != 0)
         w = qMin(w, pick(o, win->size()));
-    h += 2*margin - spacing; //there is no spacing before the first row
+    h += pick(Qt::Vertical, margins) - spacing; //there is no spacing before the first row
 
     QSize result;
     rpick(o, result) = w;
