@@ -1228,6 +1228,7 @@ QSslKey QSslSocket::privateKey() const
     return d->configuration.privateKey;
 }
 
+#if QT_DEPRECATED_SINCE(5, 5)
 /*!
     \deprecated
 
@@ -1371,6 +1372,7 @@ QList<QSslCipher> QSslSocket::supportedCiphers()
 {
     return QSslSocketPrivate::supportedCiphers();
 }
+#endif  // #if QT_DEPRECATED_SINCE(5, 5)
 
 /*!
   Searches all files in the \a path for certificates encoded in the
@@ -1430,6 +1432,7 @@ void QSslSocket::addCaCertificates(const QList<QSslCertificate> &certificates)
     d->configuration.caCertificates += certificates;
 }
 
+#if QT_DEPRECATED_SINCE(5, 5)
 /*!
   \deprecated
 
@@ -1474,6 +1477,7 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     Q_D(const QSslSocket);
     return d->configuration.caCertificates;
 }
+#endif  // #if QT_DEPRECATED_SINCE(5, 5)
 
 /*!
     Searches all files in the \a path for certificates with the
@@ -1518,6 +1522,7 @@ void QSslSocket::addDefaultCaCertificates(const QList<QSslCertificate> &certific
     QSslSocketPrivate::addDefaultCaCertificates(certificates);
 }
 
+#if QT_DEPRECATED_SINCE(5, 5)
 /*!
     \deprecated
 
@@ -1585,6 +1590,7 @@ QList<QSslCertificate> QSslSocket::systemCaCertificates()
     // we are calling ensureInitialized() in the method below
     return QSslSocketPrivate::systemCaCertificates();
 }
+#endif  // #if QT_DEPRECATED_SINCE(5, 5)
 
 /*!
     Waits until the socket is connected, or \a msecs milliseconds,
