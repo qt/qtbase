@@ -115,7 +115,7 @@ public:
     QGraphicsItem *item;
 
     QPointF startPos;
-    QMatrix startMatrix;
+    QTransform startTransform;
 
     qreal step;
 
@@ -294,23 +294,38 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
     return list;
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
   Returns the matrix used to transform the item at the specified \a step value.
+
+  \obsolete Use transformAt() instead
 */
 QMatrix QGraphicsItemAnimation::matrixAt(qreal step) const
 {
     check_step_valid(step, "matrixAt");
+    return transformAt(step).toAffine();
+}
+#endif
 
-    QMatrix matrix;
+/*!
+  Returns the transform used for the item at the specified \a step value.
+
+  \since 5.14
+*/
+QTransform QGraphicsItemAnimation::transformAt(qreal step) const
+{
+    check_step_valid(step, "transformAt");
+
+    QTransform transform;
     if (!d->rotation.isEmpty())
-        matrix.rotate(rotationAt(step));
+        transform.rotate(rotationAt(step));
     if (!d->verticalScale.isEmpty())
-        matrix.scale(horizontalScaleAt(step), verticalScaleAt(step));
+        transform.scale(horizontalScaleAt(step), verticalScaleAt(step));
     if (!d->verticalShear.isEmpty())
-        matrix.shear(horizontalShearAt(step), verticalShearAt(step));
+        transform.shear(horizontalShearAt(step), verticalShearAt(step));
     if (!d->xTranslation.isEmpty())
-        matrix.translate(xTranslationAt(step), yTranslationAt(step));
-    return matrix;
+        transform.translate(xTranslationAt(step), yTranslationAt(step));
+    return transform;
 }
 
 /*!
@@ -542,7 +557,7 @@ void QGraphicsItemAnimation::setStep(qreal step)
             || !d->horizontalShear.isEmpty()
             || !d->xTranslation.isEmpty()
             || !d->yTranslation.isEmpty()) {
-            d->item->setMatrix(d->startMatrix * matrixAt(step));
+            d->item->setTransform(d->startTransform * transformAt(step));
         }
     }
 
@@ -562,7 +577,7 @@ void QGraphicsItemAnimation::reset()
     if (!d->item)
         return;
     d->startPos = d->item->pos();
-    d->startMatrix = d->item->matrix();
+    d->startTransform = d->item->transform();
 }
 #endif
 
