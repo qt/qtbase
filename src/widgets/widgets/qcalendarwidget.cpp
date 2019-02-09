@@ -1778,7 +1778,7 @@ void QCalendarWidgetPrivate::createNavigationBar(QWidget *widget)
     spaceHolder = new QSpacerItem(0,0);
 
     QHBoxLayout *headerLayout = new QHBoxLayout;
-    headerLayout->setMargin(0);
+    headerLayout->setContentsMargins(QMargins());
     headerLayout->setSpacing(0);
     headerLayout->addWidget(prevMonth);
     headerLayout->insertStretch(headerLayout->count());
@@ -2101,7 +2101,7 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
     setBackgroundRole(QPalette::Window);
 
     QVBoxLayout *layoutV = new QVBoxLayout(this);
-    layoutV->setMargin(0);
+    layoutV->setContentsMargins(QMargins());
     d->m_model = new QCalendarModel(this);
     QTextCharFormat fmt;
     fmt.setForeground(QBrush(Qt::red));
@@ -2148,7 +2148,7 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
     connect(d->yearEdit, SIGNAL(editingFinished()),
             this, SLOT(_q_yearEditingFinished()));
 
-    layoutV->setMargin(0);
+    layoutV->setContentsMargins(QMargins());
     layoutV->setSpacing(0);
     layoutV->addWidget(d->navBarBackground);
     layoutV->addWidget(d->m_view);

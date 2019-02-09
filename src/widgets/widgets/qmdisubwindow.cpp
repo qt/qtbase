@@ -2268,7 +2268,7 @@ QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
     setMouseTracking(true);
     setLayout(new QVBoxLayout);
     setFocusPolicy(Qt::StrongFocus);
-    layout()->setMargin(0);
+    layout()->setContentsMargins(QMargins());
     d->updateGeometryConstraints();
     setAttribute(Qt::WA_Resized, false);
     d->titleBarPalette = d->desktopPalette();

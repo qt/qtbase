@@ -294,7 +294,7 @@ QToolBox::QToolBox(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QToolBox);
     d->layout = new QVBoxLayout(this);
-    d->layout->setMargin(0);
+    d->layout->setContentsMargins(QMargins());
     setBackgroundRole(QPalette::Button);
 }
 
@@ -437,7 +437,7 @@ void QToolBoxPrivate::relayout()
     Q_Q(QToolBox);
     delete layout;
     layout = new QVBoxLayout(q);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
     for (QToolBoxPrivate::PageList::ConstIterator i = pageList.constBegin(); i != pageList.constEnd(); ++i) {
         layout->addWidget((*i).button);
         layout->addWidget((*i).sv);
