@@ -245,10 +245,12 @@ inline qreal QTransform::determinant() const
     return affine._m11*(m_33*affine._m22-affine._dy*m_23) -
         affine._m21*(m_33*affine._m12-affine._dy*m_13)+affine._dx*(m_23*affine._m12-affine._m22*m_13);
 }
+#if QT_DEPRECATED_SINCE(5, 13)
 inline qreal QTransform::det() const
 {
     return determinant();
 }
+#endif
 inline qreal QTransform::m11() const
 {
     return affine._m11;
