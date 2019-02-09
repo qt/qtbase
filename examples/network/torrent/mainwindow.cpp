@@ -630,7 +630,7 @@ void MainWindow::about()
     QPushButton *quitButton = new QPushButton("OK");
 
     QHBoxLayout *topLayout = new QHBoxLayout;
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10, 10, 10, 10);
     topLayout->setSpacing(10);
     topLayout->addWidget(icon);
     topLayout->addWidget(text);

@@ -443,9 +443,9 @@ void ArthurStyle::polish(QWidget *widget)
     if (widget->layout() && qobject_cast<QGroupBox *>(widget)) {
         if (widget->findChildren<QGroupBox *>().size() == 0) {
             widget->layout()->setSpacing(0);
-            widget->layout()->setMargin(12);
+            widget->layout()->setContentsMargins(12, 12, 12, 12);
         } else {
-            widget->layout()->setMargin(13);
+            widget->layout()->setContentsMargins(13, 13, 13, 13);
         }
     }
 

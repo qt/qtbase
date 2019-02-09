@@ -50,10 +50,10 @@
 
 #include "borderlayout.h"
 
-BorderLayout::BorderLayout(QWidget *parent, int margin, int spacing)
+BorderLayout::BorderLayout(QWidget *parent, const QMargins &margins, int spacing)
     : QLayout(parent)
 {
-    setMargin(margin);
+    setContentsMargins(margins);
     setSpacing(spacing);
 }
 

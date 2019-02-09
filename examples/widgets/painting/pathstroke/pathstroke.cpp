@@ -227,11 +227,11 @@ void PathStrokeControls::layoutForDesktop()
     penWidthLayout->addWidget(penWidth);
 
     QVBoxLayout * mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(QMargins());
     mainLayout->addWidget(mainGroup);
 
     QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
-    mainGroupLayout->setMargin(3);
+    mainGroupLayout->setContentsMargins(3, 3, 3, 3);
     mainGroupLayout->addWidget(m_capGroup);
     mainGroupLayout->addWidget(m_joinGroup);
     mainGroupLayout->addWidget(m_styleGroup);
@@ -270,10 +270,10 @@ void PathStrokeControls::layoutForSmallScreens()
 {
     createCommonControls(this);
 
-    m_capGroup->layout()->setMargin(0);
-    m_joinGroup->layout()->setMargin(0);
-    m_styleGroup->layout()->setMargin(0);
-    m_pathModeGroup->layout()->setMargin(0);
+    m_capGroup->layout()->setContentsMargins(QMargins());
+    m_joinGroup->layout()->setContentsMargins(QMargins());
+    m_styleGroup->layout()->setContentsMargins(QMargins());
+    m_pathModeGroup->layout()->setContentsMargins(QMargins());
 
     QPushButton* okBtn = new QPushButton(tr("OK"), this);
     okBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -313,7 +313,7 @@ void PathStrokeControls::layoutForSmallScreens()
     rightLayout->addWidget(m_pathModeGroup);
 
     QGridLayout *mainLayout = new QGridLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(QMargins());
 
     // Add spacers around the form items so we don't look stupid at higher resolutions
     mainLayout->addItem(new QSpacerItem(0,0), 0, 0, 1, 4);
