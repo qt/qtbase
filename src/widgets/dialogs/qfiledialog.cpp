@@ -1864,6 +1864,7 @@ QFileDialog::AcceptMode QFileDialog::acceptMode() const
     return static_cast<AcceptMode>(d->options->acceptMode());
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QFileDialog::readOnly
     \obsolete
@@ -1884,7 +1885,6 @@ bool QFileDialog::isReadOnly() const
     return testOption(ReadOnly);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QFileDialog::resolveSymlinks
     \obsolete
@@ -1905,7 +1905,6 @@ bool QFileDialog::resolveSymlinks() const
 {
     return !testOption(DontResolveSymlinks);
 }
-#endif
 
 /*!
     \property QFileDialog::confirmOverwrite
@@ -1925,6 +1924,7 @@ bool QFileDialog::confirmOverwrite() const
 {
     return !testOption(DontConfirmOverwrite);
 }
+#endif
 
 /*!
     \property QFileDialog::defaultSuffix

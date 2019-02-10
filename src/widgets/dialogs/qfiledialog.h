@@ -66,10 +66,10 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
     Q_PROPERTY(FileMode fileMode READ fileMode WRITE setFileMode)
     Q_PROPERTY(AcceptMode acceptMode READ acceptMode WRITE setAcceptMode)
-    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly DESIGNABLE false)
-    Q_PROPERTY(bool confirmOverwrite READ confirmOverwrite WRITE setConfirmOverwrite DESIGNABLE false)
     Q_PROPERTY(QString defaultSuffix READ defaultSuffix WRITE setDefaultSuffix)
 #if QT_DEPRECATED_SINCE(5, 13)
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly DESIGNABLE false)
+    Q_PROPERTY(bool confirmOverwrite READ confirmOverwrite WRITE setConfirmOverwrite DESIGNABLE false)
     Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks DESIGNABLE false)
     Q_PROPERTY(bool nameFilterDetailsVisible READ isNameFilterDetailsVisible
                WRITE setNameFilterDetailsVisible DESIGNABLE false)
@@ -80,7 +80,8 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 public:
     enum ViewMode { Detail, List };
     Q_ENUM(ViewMode)
-    enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles, DirectoryOnly };
+    enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles,
+                    DirectoryOnly Q_DECL_ENUMERATOR_DEPRECATED_X("Use setOption(ShowDirsOnly, true) instead")};
     Q_ENUM(FileMode)
     enum AcceptMode { AcceptOpen, AcceptSave };
     Q_ENUM(AcceptMode)
@@ -153,10 +154,10 @@ public:
     void setAcceptMode(AcceptMode mode);
     AcceptMode acceptMode() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
     void setReadOnly(bool enabled);
     bool isReadOnly() const;
 
-#if QT_DEPRECATED_SINCE(5, 13)
     QT_DEPRECATED_X("Use setOption(DontResolveSymlinks, !enabled) instead")
     void setResolveSymlinks(bool enabled);
     QT_DEPRECATED_X("Use !testOption(DontResolveSymlinks) instead")
@@ -169,8 +170,12 @@ public:
     QByteArray saveState() const;
     bool restoreState(const QByteArray &state);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setOption(DontConfirmOverwrite, !enabled) instead")
     void setConfirmOverwrite(bool enabled);
+    QT_DEPRECATED_X("Use !testOption(DontConfirmOverwrite) instead")
     bool confirmOverwrite() const;
+#endif
 
     void setDefaultSuffix(const QString &suffix);
     QString defaultSuffix() const;
