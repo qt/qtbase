@@ -1380,14 +1380,12 @@ inline std::wstring QString::toStdWString() const
 {
     std::wstring str;
     str.resize(length());
-
-#ifdef Q_CC_MSVC
-    // VS2005 crashes if the string is empty
-    if (!length())
-        return str;
+#if __cplusplus >= 201703L
+    str.resize(toWCharArray(str.data()));
+#else
+    if (length())
+        str.resize(toWCharArray(&str.front()));
 #endif
-
-    str.resize(toWCharArray(&(*str.begin())));
     return str;
 }
 
