@@ -102,40 +102,6 @@ static QCocoaWindow *toPlatformWindow(NSWindow *window)
     return QCocoaScreen::mapToNative(maximizedFrame);
 }
 
-#pragma clang diagnostic push
-// NSDisableScreenUpdates and NSEnableScreenUpdates are deprecated, but the
-// NSAnimationContext API that replaces them doesn't handle the use-case of
-// cross-thread screen update synchronization.
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (NSSize)windowWillResize:(NSWindow *)window toSize:(NSSize)frameSize
-{
-    Q_ASSERT(toPlatformWindow(window));
-
-    qCDebug(lcQpaWindow) << window << "will resize to" << QSizeF::fromCGSize(frameSize)
-        << "- disabling screen updates temporarily";
-
-    // There may be separate threads rendering to CA layers in this window,
-    // and if any of them do a swap while the resize is still in progress,
-    // the visual bounds of that layer will be updated before the visual
-    // bounds of the window frame, resulting in flickering while resizing.
-
-    // To prevent this we disable screen updates for the whole process until
-    // the resize is complete, which makes the whole thing visually atomic.
-    NSDisableScreenUpdates();
-
-    return frameSize;
-}
-
-- (void)windowDidResize:(NSNotification *)notification
-{
-    NSWindow *window = notification.object;
-    Q_ASSERT(toPlatformWindow(window));
-
-    qCDebug(lcQpaWindow) << window << "was resized - re-enabling screen updates";
-    NSEnableScreenUpdates();
-}
-#pragma clang diagnostic pop
-
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
 {
     Q_UNUSED(menu);
