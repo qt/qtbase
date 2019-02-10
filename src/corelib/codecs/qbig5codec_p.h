@@ -69,12 +69,12 @@ public:
     static QList<QByteArray> _aliases();
     static int _mibEnum();
 
-    QByteArray name() const { return _name(); }
-    QList<QByteArray> aliases() const { return _aliases(); }
-    int mibEnum() const { return _mibEnum(); }
+    QByteArray name() const override { return _name(); }
+    QList<QByteArray> aliases() const override { return _aliases(); }
+    int mibEnum() const override { return _mibEnum(); }
 
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
+    QString convertToUnicode(const char *, int, ConverterState *) const override;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override;
 };
 
 class QBig5hkscsCodec : public QTextCodec {
@@ -83,12 +83,12 @@ public:
     static QList<QByteArray> _aliases() { return QList<QByteArray>(); }
     static int _mibEnum();
 
-    QByteArray name() const { return _name(); }
-    QList<QByteArray> aliases() const { return _aliases(); }
-    int mibEnum() const { return _mibEnum(); }
+    QByteArray name() const override { return _name(); }
+    QList<QByteArray> aliases() const override { return _aliases(); }
+    int mibEnum() const override { return _mibEnum(); }
 
-    QString convertToUnicode(const char *, int, ConverterState *) const;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
+    QString convertToUnicode(const char *, int, ConverterState *) const override;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override;
 };
 
 QT_END_NAMESPACE
