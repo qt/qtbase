@@ -396,6 +396,10 @@ endfunction()
 
 function(qt_config_compile_test_x86simd extension label)
     string(TOUPPER ${extension} extension_uppercase)
+    if (DEFINED TEST_X86SIMD_${extension})
+        return()
+    endif()
+
     try_compile(TEST_X86SIMD_${extension} "${CMAKE_CURRENT_BINARY_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd/main.cpp"
         COMPILE_DEFINITIONS -DQT_COMPILER_SUPPORTS_${extension_uppercase}
