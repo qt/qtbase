@@ -761,6 +761,22 @@ endfunction()
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
 function(add_qt_tool name)
+    set01(_build_tools "x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
+    if (NOT _build_tools)
+        message("Searching for ${name}.")
+        find_program("_PROG_${name}" "${name}" PATHS "${HOST_QT_TOOLS_DIRECTORY}" NO_DEFAULT_PATH)
+        if (_PROG_${name} STREQUAL "_PROG_${name}-NOTFOUND")
+            message(FATAL_ERROR "The name \"${name}\" was not found in the "
+                                "HOST_QT_TOOLS_DIRECTORY (\"${HOST_QT_TOOLS_DIRECTORY}\").")
+        else()
+            message(STATUS "${name} was found at ${_PROG_${name}}.")
+            add_executable("${name}" IMPORTED GLOBAL)
+            set_target_properties("${name}" PROPERTIES IMPORTED_LOCATION "${_PROG_${name}}")
+            qt_internal_add_target_aliases("${name}")
+        endif()
+        return()
+    endif()
+
     qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP" "" "${__default_private_args}" ${ARGN})
 
     if (arg_BOOTSTRAP)

@@ -18,32 +18,13 @@ function(find_or_build_bootstrap_names)
     # Move these into their own folder and move this code in the CMakeLists.txt file there!
     set01(_build_tools "x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
 
-    function(find_or_build_bootstrap_tool name)
-        if (_build_tools)
-            add_subdirectory(tools/${name})
-        else()
-            message("Searching for ${name}.")
-            find_program("_PROG_${name}" "${name}" PATHS "${HOST_QT_TOOLS_DIRECTORY}" NO_DEFAULT_PATH)
-            if (_PROG_${name} STREQUAL "_PROG_${name}-NOTFOUND")
-                message(FATAL_ERROR "The name \"${name}\" was not found in the "
-                                    "HOST_QT_TOOLS_DIRECTORY (\"${HOST_QT_TOOLS_DIRECTORY}\").")
-            else()
-                message("${name} was found at ${_PROG_${name}}.")
-                add_executable("${name}" IMPORTED GLOBAL)
-                set_target_properties("${name}" PROPERTIES IMPORTED_LOCATION "${_PROG_${name}}")
-
-                add_executable("Qt::${name}" ALIAS "${name}")
-            endif()
-        endif()
-    endfunction()
-
     if (_build_tools)
         add_subdirectory(tools/bootstrap)  # bootstrap library
     endif()
-    find_or_build_bootstrap_tool(moc)
-    find_or_build_bootstrap_tool(rcc)
-    find_or_build_bootstrap_tool(qfloat16-tables)
-    find_or_build_bootstrap_tool(tracegen)
+    add_subdirectory(tools/moc)
+    add_subdirectory(tools/rcc)
+    add_subdirectory(tools/qfloat16-tables)
+    add_subdirectory(tools/tracegen)
 
     if (_build_tools)
         install(EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::" DESTINATION "${INSTALL_LIBDIR}/cmake/Qt${PROJECT_VERSION_MAJOR}")
