@@ -287,7 +287,7 @@ extend_target(Gui CONDITION QT_FEATURE_png
 extend_target(Gui CONDITION QT_FEATURE_harfbuzz
     SOURCES
         text/qharfbuzzng.cpp text/qharfbuzzng_p.h
-    LIBRARIES harfbuzz
+    LIBRARIES harfbuzz::harfbuzz
 )
 
 extend_target(Gui CONDITION QT_FEATURE_textodfwriter
