@@ -6,10 +6,6 @@
 set(INPUT_freetype "undefined" CACHE STRING "")
 set_property(CACHE INPUT_freetype PROPERTY STRINGS undefined no qt system)
 
-# input harfbuzz
-set(INPUT_harfbuzz "undefined" CACHE STRING "")
-set_property(CACHE INPUT_harfbuzz PROPERTY STRINGS undefined no qt system)
-
 # input libjpeg
 set(INPUT_libjpeg "undefined" CACHE STRING "")
 set_property(CACHE INPUT_libjpeg PROPERTY STRINGS undefined no qt system)
@@ -479,15 +475,9 @@ qt_feature("fontconfig" PUBLIC PRIVATE
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("harfbuzz" PUBLIC PRIVATE
     LABEL "HarfBuzz"
+    CONDITION HARFBUZZ_FOUND
 )
 qt_feature_definition("harfbuzz" "QT_NO_HARFBUZZ" NEGATE VALUE "1")
-qt_feature("system_harfbuzz" PRIVATE
-    LABEL "  Using system HarfBuzz"
-    AUTODETECT NOT APPLE AND NOT WIN32
-    CONDITION QT_FEATURE_harfbuzz AND harfbuzz_FOUND
-    ENABLE INPUT_harfbuzz STREQUAL 'system'
-    DISABLE INPUT_harfbuzz STREQUAL 'qt'
-)
 qt_feature("qqnx_imf" PRIVATE
     LABEL "IMF"
     CONDITION libs.imf OR FIXME
