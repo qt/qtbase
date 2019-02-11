@@ -78,6 +78,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'pps': 'PPS',
        'slog2': 'Slog2',
        'sun_iconv': None,
+       'tslib': 'Tslib',
        'udev': 'Libudev',
        'vulkan': 'Vulkan',
        'wayland_server': 'Wayland',

@@ -10,7 +10,7 @@ if(QT_FEATURE_evdev)
 endif()
 
 if(QT_FEATURE_tslib)
-#   TODO  add_subdirectory(tslib)
+    add_subdirectory(tslib)
 endif()
 
 if(QT_FEATURE_tuiotouch)

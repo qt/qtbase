@@ -6,6 +6,9 @@ set_package_properties(Libinput PROPERTIES TYPE OPTIONAL)
 find_package(XKB)
 set_package_properties(XKB PROPERTIES TYPE OPTIONAL)
 
+find_package(Tslib)
+set_package_properties(Tslib PROPERTIES TYPE OPTIONAL)
+
 #####################################################################
 ## InputSupport Module:
 #####################################################################
@@ -65,7 +68,7 @@ extend_target(InputSupport CONDITION QT_FEATURE_tslib
     SOURCES
         tslib/qtslib.cpp tslib/qtslib_p.h
     LIBRARIES
-        tslib
+        PkgConfig::Tslib
 )
 
 extend_target(InputSupport CONDITION QT_FEATURE_libinput

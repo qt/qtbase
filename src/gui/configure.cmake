@@ -54,6 +54,8 @@ find_package(JPEG)
 set_package_properties(JPEG PROPERTIES TYPE OPTIONAL)
 find_package(PNG)
 set_package_properties(PNG PROPERTIES TYPE OPTIONAL)
+find_package(Tslib)
+set_package_properties(Tslib PROPERTIES TYPE OPTIONAL)
 find_package(Vulkan)
 set_package_properties(Vulkan PROPERTIES TYPE OPTIONAL)
 find_package(Wayland)
@@ -436,8 +438,6 @@ XCloseDisplay(d);
 "
 )
 
-
-
 #### Features
 
 qt_feature("accessibility_atspi_bridge" PUBLIC PRIVATE
@@ -691,7 +691,7 @@ qt_feature("sessionmanager" PUBLIC
 qt_feature_definition("sessionmanager" "QT_NO_SESSIONMANAGER" NEGATE VALUE "1")
 qt_feature("tslib" PRIVATE
     LABEL "tslib"
-    CONDITION libs.tslib OR FIXME
+    CONDITION Tslib_FOUND
 )
 qt_feature("tuiotouch" PRIVATE
     LABEL "TuioTouch"
