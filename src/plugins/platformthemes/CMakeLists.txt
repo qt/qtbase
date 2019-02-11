@@ -1,7 +1,7 @@
 # Generated from platformthemes.pro.
 
 if (QT_FEATURE_dbus AND QT_FEATURE_regularexpression)
-#     TODO add_subdirectory(xdgdesktopportal)
+    add_subdirectory(xdgdesktopportal)
 endif()
 
 if (QT_FEATURE_widgets AND QT_FEATURE_gtk3)
