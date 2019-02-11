@@ -42,8 +42,9 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 
+#include <QtCore/qshareddata.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qscopedpointer.h>
 
 #ifndef Q_CLANG_QDOC
 QT_REQUIRE_CONFIG(ssl);
@@ -51,14 +52,14 @@ QT_REQUIRE_CONFIG(ssl);
 
 QT_BEGIN_NAMESPACE
 
-enum class OcspCertificateStatus
+enum class QOcspCertificateStatus
 {
     Good,
     Revoked,
     Unknown
 };
 
-enum class OcspRevocationReason
+enum class QOcspRevocationReason
 {
     None = -1,
     Unspecified,
@@ -71,8 +72,11 @@ enum class OcspRevocationReason
     RemoveFromCRL
 };
 
+class QOcspResponse;
+Q_NETWORK_EXPORT uint qHash(const QOcspResponse &response, uint seed = 0);
+
 class QOcspResponsePrivate;
-class QOcspResponse
+class Q_NETWORK_EXPORT QOcspResponse
 {
 public:
 
@@ -84,18 +88,29 @@ public:
     QOcspResponse &operator = (const QOcspResponse &other);
     QOcspResponse &operator = (QOcspResponse &&other) Q_DECL_NOTHROW;
 
-    OcspCertificateStatus certificateStatus() const;
-    OcspRevocationReason revocationReason() const;
+    QOcspCertificateStatus certificateStatus() const;
+    QOcspRevocationReason revocationReason() const;
 
     class QSslCertificate responder() const;
     QSslCertificate subject() const;
 
+    void swap(QOcspResponse &other) Q_DECL_NOTHROW { d.swap(other.d); }
+
 private:
 
     friend class QSslSocketBackendPrivate;
-    QScopedPointer<QOcspResponsePrivate> d;
+    friend Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs);
+    friend Q_NETWORK_EXPORT uint qHash(const QOcspResponse &response, uint seed);
+
+    QSharedDataPointer<QOcspResponsePrivate> d;
 };
 
+inline bool operator!=(const QOcspResponse &lhs, const QOcspResponse &rhs) { return !(lhs == rhs); }
+
+Q_DECLARE_SHARED(QOcspResponse)
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QOcspResponse)
 
 #endif // QOCSPRESPONSE_H
