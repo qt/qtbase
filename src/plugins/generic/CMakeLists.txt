@@ -1,7 +1,7 @@
 
 if(QT_FEATURE_evdev)
     add_subdirectory(evdevmouse)
-#   TODO  add_subdirectory(evdevtouch)
+    add_subdirectory(evdevtouch)
 #   TODO  add_subdirectory(evdevkeyboard)
 
     if(QT_FEATURE_tabletevent)
