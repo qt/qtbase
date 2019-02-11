@@ -230,6 +230,8 @@ private slots:
 
     void convertColorTable();
 
+    void wideImage();
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
@@ -3533,6 +3535,24 @@ void tst_QImage::convertColorTable()
     QCOMPARE(argb32pm.pixel(0,0), 0x80808080);
     QImage rgb32 = image.convertToFormat(QImage::Format_RGB32);
     QCOMPARE(rgb32.pixel(0,0), 0xffffffff);
+}
+
+void tst_QImage::wideImage()
+{
+    // QTBUG-73731 and QTBUG-73732
+    QImage i(538994187, 2, QImage::Format_ARGB32);
+    QImage i2(32, 32, QImage::Format_ARGB32);
+    i2.fill(Qt::white);
+
+    // Test that it doesn't crash:
+    QPainter painter(&i);
+    // With the composition mode is SourceOver out it's an invalid write
+    // With the composition mode is Source it's an invalid read
+    painter.drawImage(0, 0, i2);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.drawImage(0, 0, i2);
+
+    // Qt6: Test that it actually works on 64bit architectures.
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
