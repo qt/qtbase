@@ -2,6 +2,10 @@ if (NOT ANDROID)
     add_subdirectory(minimal)
 endif()
 
+if (NOT ANDROID AND QT_FEATURE_freetype)
+    add_subdirectory(offscreen)
+endif()
+
 if(QT_FEATURE_xcb)
     add_subdirectory(xcb)
 endif()
