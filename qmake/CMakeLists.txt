@@ -1,2 +1,2 @@
 ## FIXME: Actually build something...
-install(DIRECTORY mkspecs DESTINATION ${INSTALL_DATADIR})
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs" DESTINATION ${INSTALL_DATADIR})
