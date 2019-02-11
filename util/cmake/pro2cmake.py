@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import copy
+from itertools import chain
 import os.path
 import re
 import io
@@ -509,10 +510,12 @@ class QmakeParser:
         # Define grammar:
         pp.ParserElement.setDefaultWhitespaceChars(' \t')
 
-        LC = pp.Suppress(pp.Literal('\\') + pp.LineEnd())
-        EOL = pp.Suppress(pp.Optional(pp.pythonStyleComment()) + pp.LineEnd())
-
+        LC = pp.Suppress(pp.Literal('\\\n'))
+        EOL = pp.Suppress(pp.Literal('\n'))
+        Else = pp.Keyword('else')
+        DefineTest = pp.Keyword('defineTest')
         Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
+
         Substitution \
             = pp.Combine(pp.Literal('$')
                          + (((pp.Literal('$') + Identifier
@@ -525,32 +528,31 @@ class QmakeParser:
                              | (pp.Literal('$') + pp.Literal('[') + Identifier
                                 + pp.Literal(']'))
                              )))
-        # Do not match word ending in '\' since that breaks line
-        # continuation:-/
         LiteralValuePart = pp.Word(pp.printables, excludeChars='$#{}()')
         SubstitutionValue \
             = pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart
                                       | pp.Literal('$')))
-        Value = (pp.QuotedString(quoteChar='"', escChar='\\')
-                 | SubstitutionValue)
+        Value = pp.NotAny(Else | pp.Literal('}') | EOL | pp.Literal('\\')) \
+                + (pp.QuotedString(quoteChar='"', escChar='\\')
+                     | SubstitutionValue)
 
-        Values = pp.ZeroOrMore(Value)('value')
+        Values = pp.ZeroOrMore(Value + pp.Optional(LC))('value')
 
         Op = pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') \
             | pp.Literal('*=')
 
-        Operation = Identifier('key') + Op('operation') + Values('value')
-        Load = pp.Keyword('load') + pp.Suppress('(') \
-            + Identifier('loaded') + pp.Suppress(')')
-        Include = pp.Keyword('include') + pp.Suppress('(') \
-            + pp.CharsNotIn(':{=}#)\n')('included') + pp.Suppress(')')
-        Option = pp.Keyword('option') + pp.Suppress('(') \
-            + Identifier('option') + pp.Suppress(')')
-        DefineTest = pp.Suppress(pp.Keyword('defineTest')
-                                 + pp.Suppress('(') + Identifier
-                                 + pp.Suppress(')')
-                                 + pp.nestedExpr(opener='{', closer='}')
-                                 + pp.LineEnd())  # ignore the whole thing...
+        Key = Identifier
+
+        Operation = Key('key') + pp.Optional(LC) \
+            + Op('operation') + pp.Optional(LC) \
+            + Values('value')
+        CallArgs = pp.nestedExpr()
+        CallArgs.setParseAction(lambda x: ' '.join(chain(*x)))
+        Load = pp.Keyword('load') + CallArgs('loaded')
+        Include = pp.Keyword('include') + CallArgs('included')
+        Option = pp.Keyword('option') + CallArgs('option')
+        DefineTestDefinition = pp.Suppress(DefineTest + CallArgs \
+             + pp.nestedExpr(opener='{', closer='}'))  # ignore the whole thing...
         ForLoop = pp.Suppress(pp.Keyword('for') + pp.nestedExpr()
                               + pp.nestedExpr(opener='{', closer='}',
                                               ignoreExpr=None)
@@ -559,45 +561,54 @@ class QmakeParser:
 
         Scope = pp.Forward()
 
-        Statement = pp.Group(Load | Include | Option | DefineTest
-                             | ForLoop | FunctionCall | Operation)
-        StatementLine = Statement + EOL
-        StatementGroup = pp.ZeroOrMore(StatementLine | Scope | EOL)
+        Statement = pp.Group(Load | Include | Option | ForLoop \
+            | DefineTestDefinition | FunctionCall | Operation)
+        StatementLine = Statement + (EOL | pp.FollowedBy('}'))
+        StatementGroup = pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL))
 
-        Block = pp.Suppress('{') + pp.Optional(EOL) \
-            + pp.ZeroOrMore(EOL | Statement + EOL | Scope) \
-            + pp.Optional(Statement) + pp.Optional(EOL) \
-            + pp.Suppress('}') + pp.Optional(EOL)
+        Block = pp.Suppress('{')  + pp.Optional(LC | EOL) \
+            + StatementGroup + pp.Optional(LC | EOL) \
+            + pp.Suppress('}') + pp.Optional(LC | EOL)
 
-        Condition = pp.Optional(pp.White()) + pp.CharsNotIn(':{=}#\\\n')
-        Condition.setParseAction(lambda x: ' '.join(x).strip())
+        ConditionEnd = pp.FollowedBy((pp.Optional(LC) + (pp.Literal(':') \
+                                                         | pp.Literal('{') \
+                                                         | pp.Literal('|'))))
+        ConditionPart = pp.CharsNotIn('#{}|:=\\\n') + pp.Optional(LC) + ConditionEnd
+        Condition = pp.Combine(ConditionPart \
+            + pp.ZeroOrMore((pp.Literal('|') ^ pp.Literal(':')) \
+            + ConditionPart))
+        Condition.setParseAction(lambda x: ' '.join(x).strip().replace(':', ' && ').strip(' && '))
 
-        SingleLineScope = pp.Suppress(pp.Literal(':')) \
-            + pp.Group(Scope | Block | StatementLine)('statements')
-        MultiLineScope = Block('statements')
+        SingleLineScope = pp.Suppress(pp.Literal(':')) + pp.Optional(LC) \
+            + pp.Group(Block | (Statement + EOL))('statements')
+        MultiLineScope = pp.Optional(LC) + Block('statements')
 
-        SingleLineElse = pp.Suppress(pp.Literal(':')) \
-            + pp.Group(Scope | StatementLine)('else_statements')
-        MultiLineElse = pp.Group(Block)('else_statements')
-        Else = pp.Suppress(pp.Keyword('else')) \
-            + (SingleLineElse | MultiLineElse)
-        Scope <<= pp.Group(Condition('condition')
-                           + (SingleLineScope | MultiLineScope)
-                           + pp.Optional(Else))
+        SingleLineElse = pp.Suppress(pp.Literal(':')) + pp.Optional(LC) \
+            + (Scope | Block | (Statement + pp.Optional(EOL)))
+        MultiLineElse = Block
+        ElseBranch = pp.Suppress(Else) + (SingleLineElse | MultiLineElse)
+        Scope <<= pp.Optional(LC) \
+            + pp.Group(Condition('condition') \
+            + (SingleLineScope | MultiLineScope) \
+            + pp.Optional(ElseBranch)('else_statements'))
 
         if debug:
-            for ename in 'EOL Identifier Substitution SubstitutionValue ' \
-                         'LiteralValuePart Value Values SingleLineScope ' \
-                         'MultiLineScope Scope SingleLineElse ' \
-                         'MultiLineElse Else Condition Block ' \
-                         'StatementGroup Statement Load Include Option ' \
-                         'DefineTest ForLoop FunctionCall Operation'.split():
+            for ename in 'LC EOL ' \
+                         'Condition ConditionPart ConditionEnd ' \
+                         'Else ElseBranch SingleLineElse MultiLineElse ' \
+                         'SingleLineScope MultiLineScope ' \
+                         'Identifier ' \
+                         'Key Op Values Value ' \
+                         'Scope Block ' \
+                         'StatementGroup StatementLine Statement '\
+                         'Load Include Option DefineTest ForLoop ' \
+                         'FunctionCall CallArgs Operation'.split():
                 expr = locals()[ename]
                 expr.setName(ename)
                 expr.setDebug()
 
         Grammar = StatementGroup('statements')
-        Grammar.ignore(LC)
+        Grammar.ignore(pp.pythonStyleComment())
 
         return Grammar
 
@@ -971,8 +982,8 @@ def simplify_condition(condition: str) -> str:
         condition = condition.replace(' NOT ', ' ~ ')
         condition = condition.replace(' AND ', ' & ')
         condition = condition.replace(' OR ', ' | ')
-        condition = condition.replace(' ON ', 'true')
-        condition = condition.replace(' OFF ', 'false')
+        condition = condition.replace(' ON ', ' true ')
+        condition = condition.replace(' OFF ', ' false ')
 
     try:
         # Generate and simplify condition using sympy:
@@ -989,9 +1000,7 @@ def simplify_condition(condition: str) -> str:
         # sympy did not like our input, so leave this condition alone:
         condition = input_condition
 
-    if condition == '':
-        condition = 'ON'
-    return condition
+    return condition or 'ON'
 
 
 def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',

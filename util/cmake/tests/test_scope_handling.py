@@ -280,3 +280,59 @@ def test_merge_parent_child_scopes_with_on_child_condition():
     assert r0.getString('test1') == 'parent'
     assert r0.getString('test2') == 'child'
 
+
+# Real world examples:
+
+# qstandardpaths selection:
+
+def test_qstandardpaths_scopes():
+    # top level:
+    scope1 = _new_scope(condition='ON', scope_id=1)
+
+    # win32 {
+    scope2 = _new_scope(parent_scope=scope1, condition='WIN32')
+    #     !winrt {
+    #         SOURCES += io/qstandardpaths_win.cpp
+    scope3 = _new_scope(parent_scope=scope2, condition='NOT WINRT',
+                        SOURCES='qsp_win.cpp')
+    #     } else {
+    #         SOURCES += io/qstandardpaths_winrt.cpp
+    scope4 = _new_scope(parent_scope=scope2, condition='else',
+                        SOURCES='qsp_winrt.cpp')
+    #     }
+    # else: unix {
+    scope5 = _new_scope(parent_scope=scope1, condition='else')
+    scope6 = _new_scope(parent_scope=scope5, condition='UNIX')
+    #     mac {
+    #         OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
+    scope7 = _new_scope(parent_scope=scope6, condition='APPLE_OSX', SOURCES='qsp_mac.mm')
+    #     } else:android:!android-embedded {
+    #         SOURCES += io/qstandardpaths_android.cpp
+    scope8 = _new_scope(parent_scope=scope6, condition='else')
+    scope9 = _new_scope(parent_scope=scope8,
+                        condition='ANDROID AND NOT ANDROID_EMBEDDED',
+                        SOURCES='qsp_android.cpp')
+    #     } else:haiku {
+    #              SOURCES += io/qstandardpaths_haiku.cpp
+    scope10 = _new_scope(parent_scope=scope8, condition='else')
+    scope11 = _new_scope(parent_scope=scope10, condition='HAIKU', SOURCES='qsp_haiku.cpp')
+    #     } else {
+    #         SOURCES +=io/qstandardpaths_unix.cpp
+    scope12 = _new_scope(parent_scope=scope10, condition='else', SOURCES='qsp_unix.cpp')
+    #     }
+    # }
+
+    recursive_evaluate_scope(scope1)
+
+    assert scope1.total_condition == 'ON'
+    assert scope2.total_condition == 'WIN32'
+    assert scope3.total_condition == 'WIN32 AND NOT WINRT'
+    assert scope4.total_condition == 'WINRT'
+    assert scope5.total_condition == 'UNIX'
+    assert scope6.total_condition == 'UNIX'
+    assert scope7.total_condition == 'APPLE_OSX'
+    assert scope8.total_condition == 'UNIX AND NOT APPLE_OSX'
+    assert scope9.total_condition == 'ANDROID AND NOT ANDROID_EMBEDDED AND NOT APPLE_OSX'
+    assert scope10.total_condition == 'UNIX AND NOT APPLE_OSX AND (ANDROID_EMBEDDED OR NOT ANDROID)'
+    assert scope11.total_condition == 'HAIKU AND UNIX AND NOT APPLE_OSX AND (ANDROID_EMBEDDED OR NOT ANDROID)'
+    assert scope12.total_condition == 'UNIX AND NOT APPLE_OSX AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)'
