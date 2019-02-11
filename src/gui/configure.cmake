@@ -332,24 +332,6 @@ FBDriver *driver = 0;
 }
 ")
 
-# libinput_axis_api
-qt_config_compile_test(libinput_axis_api
-    LABEL "axis API in libinput"
-    LIBRARIES Libinput::Libinput
-    CODE
-"
-#include <libinput.h>
-
-int main(int argc, char **argv)
-{
-    (void)argc; (void)argv;
-    /* BEGIN TEST: */
-libinput_event_pointer_has_axis(nullptr, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
-    /* END TEST: */
-    return 0;
-}
-")
-
 # linuxfb
 qt_config_compile_test(linuxfb
     LABEL "LinuxFB"
@@ -536,7 +518,7 @@ qt_feature("integrityhid" PRIVATE
 )
 qt_feature("libinput_axis_api" PRIVATE
     LABEL "axis API in libinput"
-    CONDITION QT_FEATURE_libinput AND TEST_libinput_axis_api
+    CONDITION QT_FEATURE_libinput AND ON
 )
 qt_feature("linuxfb" PRIVATE
     SECTION "Platform plugins"

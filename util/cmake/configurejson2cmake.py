@@ -184,6 +184,8 @@ def map_tests(test: str) -> str:
         'openssl11': '(OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")',
 
         'reduce_exports': 'CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY',
+
+        'libinput_axis_api': 'ON',
     }
     if test in testmap:
         return testmap.get(test, None)
@@ -546,6 +548,7 @@ def parseTest(ctx, test, data, cm_fh):
        'posix-iconv', "sun-iconv",
        'separate_debug_info',  # FIXME: see if cmake can do this
        'gc_binaries',
+       'libinput_axis_api',
     }
 
     if test in skip_tests:
