@@ -321,6 +321,30 @@ function(qt_internal_library_deprecation_level result)
 endfunction()
 
 
+function(qt_install_injections module)
+    set(injections ${ARGN})
+    # examples:
+    #  SYNCQT.INJECTIONS = src/corelib/global/qconfig.h:qconfig.h:QtConfig src/corelib/global/qconfig_p.h:5.12.0/QtCore/private/qconfig_p.h
+    #  SYNCQT.INJECTIONS = src/gui/vulkan/qvulkanfunctions.h:^qvulkanfunctions.h:QVulkanFunctions:QVulkanDeviceFunctions src/gui/vulkan/qvulkanfunctions_p.h:^5.12.0/QtGui/private/qvulkanfunctions_p.h
+    separate_arguments(injections UNIX_COMMAND "${injections}")
+    foreach(injection ${injections})
+        string(REPLACE ":" ";" injection ${injection})
+        list(GET injection 0 file)
+        list(GET injection 1 destination)
+        string(REGEX REPLACE "^\\^" "" destination "${destination}")
+        list(REMOVE_AT injection 0 1)
+        set(fwd_hdrs ${injection})
+        get_filename_component(destinationdir ${destination} DIRECTORY)
+        get_filename_component(destinationname ${destination} NAME)
+        install(FILES ${PROJECT_BINARY_DIR}/${file} DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${destinationdir} RENAME ${destinationname})
+        foreach(fwd_hdr ${fwd_hdrs})
+            file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${fwd_hdr}" CONTENT "#include \"${destinationname}\"\n")
+            install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${fwd_hdr}" DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${destinationdir})
+        endforeach()
+    endforeach()
+endfunction()
+
+
 function(qt_read_headers_pri target resultVarPrefix)
     qt_internal_module_info(module "${target}")
     file(STRINGS "${module_include_dir}/headers.pri" headers_pri_contents)
@@ -337,7 +361,8 @@ function(qt_read_headers_pri target resultVarPrefix)
             foreach(generated_header ${generated_module_headers})
                 list(APPEND public_module_headers "${module_include_dir}/${generated_header}")
             endforeach()
-        # Ignore INJECTIONS!
+        elseif("${line}" MATCHES "SYNCQT.INJECTIONS = (.*)")
+            set(injections "${CMAKE_MATCH_1}")
         elseif("${line}" MATCHES "SYNCQT.([A-Z_]+)_HEADER_FILES = (.+)")
             set(prefix "${CMAKE_MATCH_1}")
             string(TOLOWER "${prefix}" prefix)
@@ -348,6 +373,7 @@ function(qt_read_headers_pri target resultVarPrefix)
     endforeach()
     set(${resultVarPrefix}_public "${public_module_headers}" PARENT_SCOPE)
     set(${resultVarPrefix}_private "${private_module_headers}" PARENT_SCOPE)
+    set(${resultVarPrefix}_injections "${injections}" PARENT_SCOPE)
 endfunction()
 
 
@@ -416,6 +442,7 @@ function(add_qt_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
+        qt_install_injections("${module}" ${module_headers_injections})
     endif()
 
     set_target_properties("${target}" PROPERTIES
