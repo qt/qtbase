@@ -15,5 +15,3 @@ add_qt_executable(qmyserver_qdbusinterface
         Qt::Core
         Qt::DBus
 )
-
-set_target_properties(qmyserver_qdbusinterface PROPERTIES OUTPUT_NAME qmyserver)
