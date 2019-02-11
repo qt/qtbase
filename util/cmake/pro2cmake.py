@@ -943,6 +943,7 @@ def _recursive_simplify(expr):
     expr = _simplify_flavors_in_condition('APPLE', apples, expr)
     expr = _simplify_flavors_in_condition('BSD', bsds, expr)
     expr = _simplify_flavors_in_condition('UNIX', unixes, expr)
+    expr = _simplify_flavors_in_condition('ANDROID', ('ANDROID_EMBEDDED',), expr)
 
     # Now simplify further:
     expr = simplify_logic(expr)
