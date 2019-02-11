@@ -373,7 +373,7 @@ ioctl(fd, FBIOGET_VSCREENINFO, &vinfo);
 # opengles3
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
-    LIBRARIES OpenGL::OpenGL
+    LIBRARIES OpenGL::GL
     CODE
 "#ifdef __APPLE__
 #  include <OpenGLES/ES3/gl.h>
@@ -400,7 +400,7 @@ glMapBufferRange(GL_ARRAY_BUFFER, 0, 0, GL_MAP_READ_BIT);
 # opengles31
 qt_config_compile_test(opengles31
     LABEL "OpenGL ES 3.1"
-    LIBRARIES OpenGL::OpenGL
+    LIBRARIES OpenGL::GL
     CODE
 "
 #include <GLES3/gl31.h>
