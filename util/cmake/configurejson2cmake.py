@@ -49,6 +49,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
     libmap = {
        'atspi': 'ATSPI2',
        'corewlan': None, # Framework
+       'cups': 'Cups',
        'double-conversion': 'WrapDoubleConversion',
        'drm': 'Libdrm',
        'egl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_EGL"),

@@ -23,6 +23,6 @@ if (QT_FEATURE_widgets)
 #     TODO add_subdirectory(styles)
 endif()
 
-if (NOT WINRT AND QT_FEATURE_printsupport)
-#     TODO add_subdirectory(printsupport)
+if (NOT WINRT AND TARGET PrintSupport)
+    add_subdirectory(printsupport)
 endif()

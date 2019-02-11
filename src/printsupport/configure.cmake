@@ -6,6 +6,8 @@
 
 #### Libraries
 
+find_package(Cups)
+set_package_properties(Cups PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests
@@ -18,7 +20,7 @@ qt_feature("cups" PUBLIC PRIVATE
     SECTION "Painting"
     LABEL "CUPS"
     PURPOSE "Provides support for the Common Unix Printing System."
-    CONDITION libs.cups AND QT_FEATURE_printer AND QT_FEATURE_datestring OR FIXME
+    CONDITION Cups_FOUND AND QT_FEATURE_printer AND QT_FEATURE_datestring
 )
 qt_feature_definition("cups" "QT_NO_CUPS" NEGATE VALUE "1")
 qt_feature("cupsjobwidget" PUBLIC PRIVATE
