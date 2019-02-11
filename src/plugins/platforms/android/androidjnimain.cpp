@@ -560,10 +560,15 @@ static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)
 {
     // QAndroidEventDispatcherStopper is stopped when the user uses the task manager to kill the application
-    if (!QAndroidEventDispatcherStopper::instance()->stopped()) {
-        sem_wait(&m_terminateSemaphore);
-        sem_destroy(&m_terminateSemaphore);
+    if (QAndroidEventDispatcherStopper::instance()->stopped()) {
+        QAndroidEventDispatcherStopper::instance()->startAll();
+        QCoreApplication::quit();
+        QAndroidEventDispatcherStopper::instance()->goingToStop(false);
     }
+
+    sem_wait(&m_terminateSemaphore);
+    sem_destroy(&m_terminateSemaphore);
+
     env->DeleteGlobalRef(m_applicationClass);
     env->DeleteGlobalRef(m_classLoaderObject);
     if (m_resourcesObj)
@@ -583,10 +588,7 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
-
-    if (!QAndroidEventDispatcherStopper::instance()->stopped()) {
-        sem_post(&m_exitSemaphore);
-    }
+    sem_post(&m_exitSemaphore);
 }
 
 static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface, jint w, jint h)
