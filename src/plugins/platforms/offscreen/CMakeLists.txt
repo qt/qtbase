@@ -35,7 +35,7 @@ extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT
         Qt::GlxSupportPrivate
 )
 
-extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2 AND QT_FEATURE_xlib
+extend_target(qoffscreen CONDITION NOT QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR NOT QT_FEATURE_xlib
     SOURCES
         qoffscreenintegration_dummy.cpp
 )
