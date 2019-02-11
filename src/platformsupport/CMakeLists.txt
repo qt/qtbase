@@ -37,6 +37,10 @@ if(QT_FEATURE_egl)
     add_subdirectory(eglconvenience)
 endif()
 
+if(QT_FEATURE_opengl)
+    add_subdirectory(platformcompositor)
+endif()
+
 if(APPLE)
     add_subdirectory(clipboard)
     add_subdirectory(graphics)
