@@ -10,6 +10,10 @@ if(QT_FEATURE_xcb)
     add_subdirectory(xcb)
 endif()
 
+if(QT_FEATURE_eglfs)
+    add_subdirectory(minimalegl)
+endif()
+
 if(QT_FEATURE_linuxfb)
     add_subdirectory(linuxfb)
 endif()
