@@ -8,6 +8,7 @@ find_package(X11)
 find_package(XCB)
 find_package(XKB)
 find_package(PkgConfig)
+find_package(Freetype)
 
 pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET)
 
