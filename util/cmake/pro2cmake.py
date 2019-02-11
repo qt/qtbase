@@ -1000,29 +1000,13 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
     if total_condition == 'else':
         assert previous_condition, \
             "Else branch without previous condition in: %s" % scope.file
-        if previous_condition.startswith('NOT '):
-            total_condition = previous_condition[4:]
-        elif is_simple_condition(previous_condition):
-            total_condition = 'NOT {}'.format(previous_condition)
-        else:
-            total_condition = 'NOT ({})'.format(previous_condition)
+        total_condition = 'NOT ({})'.format(previous_condition)
     if parent_condition:
         if not total_condition:
             total_condition = parent_condition
         else:
-            if is_simple_condition(parent_condition) \
-                    and is_simple_condition(total_condition):
-                total_condition = '{} AND {}'.format(parent_condition,
+            total_condition = '({}) AND ({})'.format(parent_condition,
                                                      total_condition)
-            elif is_simple_condition(total_condition):
-                total_condition = '({}) AND {}'.format(parent_condition,
-                                                       total_condition)
-            elif is_simple_condition(parent_condition):
-                total_condition = '{} AND ({})'.format(parent_condition,
-                                                       total_condition)
-            else:
-                total_condition = '({}) AND ({})'.format(parent_condition,
-                                                         total_condition)
 
     scope.total_condition = simplify_condition(total_condition)
 
