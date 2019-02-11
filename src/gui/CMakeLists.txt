@@ -423,7 +423,6 @@ extend_target(Gui CONDITION QT_FEATURE_neon
     SOURCES
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
-        painting/qdrawhelper_mips_dspr2_asm.S
         painting/qimagescale_neon.cpp painting/qdrawhelper_neon_asm.S
         ../3rdparty/pixman/pixman-arm-neon-asm.S
     COMPILE_FLAGS ${QT_CFLAGS_NEON}
