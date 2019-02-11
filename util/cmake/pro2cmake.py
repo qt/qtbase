@@ -455,17 +455,24 @@ class Scope(object):
         pattern = re.compile(r'\$\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?')
         match = re.search(pattern, result)
         while match:
+            old_result = result
             if match.group(0) == value:
-                return self.expand(match.group(1), '')
-            else:
-                result = result[:match.start()] \
-                         + self.expandString(match.group(1)) \
-                         + result[match.end():]
+                return self.get(match.group(1), [])
+
+            replacement = self.expand(match.group(1))
+            replacement_str = replacement[0] if replacement else ''
+            result = result[:match.start()] \
+                     + replacement_str \
+                     + result[match.end():]
+
+            if result == old_result:
+                return result # Do not go into infinite loop
+
             match = re.search(pattern, result)
         return [result]
 
-    def expand(self, key: str, default=None) -> typing.List[str]:
-        value = self.get(key, default)
+    def expand(self, key: str) -> typing.List[str]:
+        value = self.get(key, [])
         result: typing.List[str] = []
         assert isinstance(value, list)
         for v in value:
