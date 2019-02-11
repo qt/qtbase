@@ -4,7 +4,7 @@ project(QtBase
     VERSION 5.12.0
     DESCRIPTION "Qt Base Libraries"
     HOMEPAGE_URL "https://qt.io/"
-    LANGUAGES CXX C
+    LANGUAGES CXX C ASM
 )
 
 ## Add some paths to check for cmake modules:
