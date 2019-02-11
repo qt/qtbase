@@ -231,6 +231,41 @@ public class QtNative
         });
     }
 
+    public static String loadMainLibrary(final String mainLibrary, final String nativeLibraryDir)
+    {
+        final String[] res = new String[1];
+        res[0] = null;
+        m_qtThread.run(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String mainLibNameTemplate = "lib" + mainLibrary + ".so";
+                    File f = new File(nativeLibraryDir + mainLibNameTemplate);
+                    if (!f.exists()) {
+                        try {
+                            ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
+                                    PackageManager.GET_META_DATA);
+                            String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
+                            if (info.metaData.containsKey("android.app.system_libs_prefix"))
+                                systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
+                            f = new File(systemLibraryDir + mainLibNameTemplate);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    }
+                    if (!f.exists())
+                        return;
+                    System.load(f.getAbsolutePath());
+                    res[0] = f.getAbsolutePath();
+                } catch (Exception e) {
+                    Log.e(QtTAG, "Can't load '" + mainLibrary + "'", e);
+                }
+            }
+        });
+        return res[0];
+    }
+
     public static void setActivity(Activity qtMainActivity, QtActivityDelegate qtActivityDelegate)
     {
         synchronized (m_mainActivityMutex) {
@@ -308,46 +343,20 @@ public class QtNative
         });
     }
 
-    public static boolean startApplication(String params,
-                                           final String environment,
-                                           String mainLibrary,
-                                           String nativeLibraryDir) throws Exception
+    public static boolean startApplication(String params, final String environment, String mainLib) throws Exception
     {
-        String mainLibNameTemplate = "lib" + mainLibrary + ".so";
-        File f = new File(nativeLibraryDir + mainLibNameTemplate);
-        if (!f.exists()) {
-            try {
-                ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
-                                                                                   PackageManager.GET_META_DATA);
-                String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
-                if (info.metaData.containsKey("android.app.system_libs_prefix"))
-                    systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
-                f = new File(systemLibraryDir + mainLibNameTemplate);
-            } catch (Exception e) {
-
-            }
-        }
-        if (!f.exists())
-            throw new Exception("Can't find main library '" + mainLibrary + "'");
-
         if (params == null)
             params = "-platform\tandroid";
 
-        final String mainLibraryPath = f.getAbsolutePath();
         final boolean[] res = new boolean[1];
         res[0] = false;
         synchronized (m_mainActivityMutex) {
             if (params.length() > 0 && !params.startsWith("\t"))
                 params = "\t" + params;
-            final String qtParams = f.getAbsolutePath() + params;
+            final String qtParams = mainLib + params;
             m_qtThread.run(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        System.load(mainLibraryPath);
-                    } catch (Exception e) {
-                        Log.i(QtTAG, "Can't load '" + mainLibraryPath + "'", e);
-                    }
                     res[0] = startQtAndroidPlugin(qtParams, environment);
                     setDisplayMetrics(m_displayMetricsScreenWidthPixels,
                                       m_displayMetricsScreenHeightPixels,
