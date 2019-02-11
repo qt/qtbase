@@ -14,7 +14,7 @@ if(QT_FEATURE_tslib)
 endif()
 
 if(QT_FEATURE_tuiotouch)
-#   TODO  add_subdirectory(tuiotouch)
+    add_subdirectory(tuiotouch)
 endif()
 
 if(QT_FEATURE_libinput)
