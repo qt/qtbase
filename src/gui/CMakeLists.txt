@@ -458,10 +458,11 @@ if (QT_FEATURE_vulkan)
 
     add_custom_command(
         OUTPUT "${vulkan_fun}" "${vulkan_fun_p}" "${vulkan_fun_p_cpp}"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/vulkan/"
         COMMAND "${qvkgen_command}"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
             "${PROJECT_SOURCE_DIR}/header.LGPL"
-            "${CMAKE_CURRENT_BINARY_DIR}/qvulkanfunctions"
+            "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
         DEPENDS vulkan/vk.xml
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Generating vulkan data"
