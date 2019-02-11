@@ -5,7 +5,7 @@ if(QT_FEATURE_evdev)
     add_subdirectory(evdevkeyboard)
 
     if(QT_FEATURE_tabletevent)
-#      TODO   add_subdirectory(evdevtablet)
+        add_subdirectory(evdevtablet)
     endif()
 endif()
 
