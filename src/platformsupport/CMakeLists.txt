@@ -14,6 +14,10 @@ if((UNIX AND (NOT uikit)) OR QT_FEATURE_xcb)
     add_subdirectory(services)
 endif()
 
+if(QT_FEATURE_evdev OR QT_FEATURE_tslib OR QT_FEATURE_libinput OR QT_FEATURE_integrityhid)
+    add_subdirectory(input)
+endif()
+
 if(QT_FEATURE_accessibility)
     add_subdirectory(accessibility)
     if(QT_FEATURE_accessibility_atspi_bridge)
