@@ -456,7 +456,7 @@ if (QT_FEATURE_vulkan)
     set(vulkan_fun_p_cpp "qvulkanfunctions_p.cpp")
 
     add_custom_command(
-        OUTPUT "${vulkan_fun}" "${vulkan_fun_p}" "${vulkan_fun_p_cpp}"
+        OUTPUT "vulkan/${vulkan_fun}" "vulkan/${vulkan_fun_p}" "vulkan/${vulkan_fun_p_cpp}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/vulkan/"
         COMMAND "${qvkgen_command}"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
@@ -467,16 +467,16 @@ if (QT_FEATURE_vulkan)
         COMMENT "Generating vulkan data"
     )
 
-    qt_generate_forwarding_headers("Gui" SOURCE "${vulkan_fun}"
-        DESTINATION qvulkanfunctions.h
+    qt_generate_forwarding_headers("Gui" SOURCE "vulkan/${vulkan_fun}"
+        DESTINATION "qvulkanfunctions.h"
         CLASSES QVulkanFunctions QVulkanDeviceFunctions
     )
-    qt_generate_forwarding_headers("Gui" SOURCE "${vulkan_fun_p}"
-        DESTINATION qvulkanfunctions_p.h PRIVATE
+    qt_generate_forwarding_headers("Gui" SOURCE "vulkan/${vulkan_fun_p}"
+        DESTINATION "qvulkanfunctions_p.h" PRIVATE
     )
 
     extend_target(Gui CONDITION QT_FEATURE_vulkan
-        SOURCES "${vulkan_fun}" "${vulkan_fun_p}" "${vulkan_fun_p_cpp}"
+        SOURCES "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun}" "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p}" "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p_cpp}"
         LIBRARIES Vulkan::Vulkan
     )
 endif()
