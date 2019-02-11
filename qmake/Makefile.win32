@@ -12,11 +12,11 @@ QMKSRC = $(SOURCE_PATH)\qmake
 #
 !if "$(QMAKESPEC)" == "win32-icc"
 CXX               = icl
-LINKER            = link
+LINKER            = xilink
 CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11
 !elseif "$(QMAKESPEC)" == "win32-clang-msvc"
 CXX               = clang-cl
-LINKER            = link
+LINKER            = lld-link
 CFLAGS_EXTRA      = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value
 !else
 CXX               = cl
