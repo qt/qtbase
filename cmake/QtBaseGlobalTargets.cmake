@@ -1,34 +1,29 @@
-# Where QtBuild.cmake can find QtModuleConfig.cmake.in
-set(Qt${PROJECT_VERSION_MAJOR}_DIR "${PROJECT_SOURCE_DIR}/cmake")
-
-
 ## QtPlatform Target:
-set(name "Qt")
-add_library("${name}" INTERFACE)
-add_library("Qt::Platform" ALIAS "${name}")
-target_include_directories("${name}"
+add_library(Platform INTERFACE)
+add_library(Qt::Platform ALIAS Platform)
+target_include_directories(Platform
     INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${QT_PLATFORM_DEFINITION_DIR}>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${INSTALL_DATADIR}/${QT_PLATFORM_DEFINITION_DIR}>
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
     )
-target_compile_definitions("${name}" INTERFACE ${QT_PLATFORM_DEFINITIONS})
-set(config_install_dir "${INSTALL_LIBDIR}/cmake/${name}${PROJECT_VERSION_MAJOR}")
+target_compile_definitions(Platform INTERFACE ${QT_PLATFORM_DEFINITIONS})
+set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}")
 
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/Qt${PROJECT_VERSION_MAJOR}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     INSTALL_DESTINATION "${config_install_dir}"
 )
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/Qt${PROJECT_VERSION_MAJOR}ConfigVersion.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/Qt${PROJECT_VERSION_MAJOR}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/Qt${PROJECT_VERSION_MAJOR}ConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
     DESTINATION "${config_install_dir}"
     COMPONENT Devel
 )
@@ -63,8 +58,8 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
-install(TARGETS "${name}" GlobalConfig GlobalConfigPrivate EXPORT "${name}${PROJECT_VERSION_MAJOR}Targets")
-install(EXPORT "${name}${PROJECT_VERSION_MAJOR}Targets" NAMESPACE Qt:: DESTINATION "${config_install_dir}")
+install(TARGETS Platform GlobalConfig GlobalConfigPrivate EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets")
+install(EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets" NAMESPACE Qt:: DESTINATION "${config_install_dir}")
 
 ## Install some QtBase specific CMake files:
 install(FILES

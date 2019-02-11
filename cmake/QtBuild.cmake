@@ -36,6 +36,8 @@ set(INSTALL_SYSCONFDIR "etc/xdg" CACHE PATH
 set(INSTALL_EXAMPLESDIR "examples" CACHE PATH "Examples [PREFIX/examples]")
 set(INSTALL_TESTSDIR "tests" CACHE PATH "Tests [PREFIX/tests]")
 
+set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
+
 # Platform define path, etc.
 if(WIN32)
     set(QT_DEFAULT_PLATFORM_DEFINITIONS UNICODE _UNICODE WIN32 _ENABLE_EXTENDED_ALIGNED_STORAGE)
@@ -520,28 +522,37 @@ function(add_qt_module target)
         PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
         )
 
-    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${module_versioned}")
+    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
     install(EXPORT "${module_versioned}Targets" NAMESPACE Qt:: DESTINATION ${config_install_dir})
 
+    set(target_deps)
+    foreach(lib ${arg_PUBLIC_LIBRARIES})
+        if ("${lib}" MATCHES "^Qt::(Platform|GlobalConfig)")
+            list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
+        elseif ("${lib}" MATCHES "^Qt::")
+            string(REGEX REPLACE "^Qt::" "${INSTALL_CMAKE_NAMESPACE}" dep "${lib}")
+            list(APPEND target_deps "${dep}\;${PROJECT_VERSION}")
+        endif()
+    endforeach()
     configure_package_config_file(
-        "${Qt${PROJECT_VERSION_MAJOR}_DIR}/QtModuleConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}Config.cmake"
+        "${PROJECT_SOURCE_DIR}/cmake/QtModuleConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
     write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}ConfigVersion.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
 
     set(extra_cmake_files)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${module_versioned}Macros.cmake")
-        list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${module_versioned}Macros.cmake")
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
+        list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
     endif()
 
     install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${module_versioned}ConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
         ${extra_cmake_files}
         DESTINATION "${config_install_dir}"
         COMPONENT Devel

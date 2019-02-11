@@ -1,13 +1,34 @@
 @PACKAGE_INIT@
 
-find_package(Qt@PROJECT_VERSION_MAJOR@ QUIET)
+include(CMakeFindDependencyMacro)
 
-include("${CMAKE_CURRENT_LIST_DIR}/@module_versioned@Targets.cmake")
+get_filename_component(_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_import_prefix "${_import_prefix}" REALPATH)
 
-if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/@module_versioned@Macros.cmake")
-    include("${CMAKE_CURRENT_LIST_DIR}/@module_versioned@Macros.cmake")
+# note: target_deps example: "Qt5Core\;5.12.0;Qt5Gui\;5.12.0"
+set(_target_deps "@target_deps@")
+foreach(_target_dep ${_target_deps})
+    list(GET _target_dep 0 pkg)
+    list(GET _target_dep 1 version)
+
+    if (NOT ${pkg}_FOUND)
+        find_dependency(${pkg} ${version}
+            PATHS "${CMAKE_CURRENT_LIST_DIR}/.." NO_DEFAULT_PATH
+        )
+    endif()
+
+    if (NOT ${pkg}_FOUND)
+        set(@target@_FOUND FALSE)
+        return()
+    endif()
+endforeach()
+
+include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Targets.cmake")
+
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Macros.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Macros.cmake")
 endif()
 
-include QtFeature
+include(${_import_prefix}/../@INSTALL_CMAKE_NAMESPACE@/QtFeature.cmake)
 
-qt_make_features_available(Qt::@module@)
+qt_make_features_available(Qt::@target@)
