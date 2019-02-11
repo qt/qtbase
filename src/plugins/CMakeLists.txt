@@ -1,10 +1,28 @@
+
+if (QT_FEATURE_sql)
+#     TODO add_subdirectory(sqldrivers)
+endif()
+
+if(QT_FEATURE_network AND QT_FEATURE_bearermanagement)
+#     TODO add_subdirectory(bearer)
+endif()
+
 if(QT_FEATURE_gui)
-    add_subdirectory(imageformats)
     add_subdirectory(platforms)
     add_subdirectory(platformthemes)
     add_subdirectory(platforminputcontexts)
-
+    if (QT_FEATURE_imageformatplugin)
+        add_subdirectory(imageformats)
+    endif()
     if (NOT ANDROID AND QT_FEATURE_library)
         add_subdirectory(generic)
     endif()
+endif()
+
+if (QT_FEATURE_widgets)
+#     TODO add_subdirectory(styles)
+endif()
+
+if (NOT WINRT AND QT_FEATURE_printsupport)
+#     TODO add_subdirectory(printsupport)
 endif()
