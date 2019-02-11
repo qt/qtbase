@@ -29,6 +29,10 @@ if(QT_FEATURE_vulkan)
     add_subdirectory(vkconvenience)
 endif()
 
+if(QT_FEATURE_kms)
+    add_subdirectory(kmsconvenience)
+endif()
+
 if(APPLE)
     add_subdirectory(clipboard)
     add_subdirectory(graphics)

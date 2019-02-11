@@ -1,0 +1,20 @@
+# Generated from kmsconvenience.pro.
+
+#####################################################################
+## KmsSupport Module:
+#####################################################################
+
+find_package(Libdrm)
+
+add_qt_module(KmsSupport
+    STATIC
+    SOURCES
+        qkmsdevice.cpp qkmsdevice_p.h
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Libdrm::Libdrm
+)
