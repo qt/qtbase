@@ -333,6 +333,8 @@ FBDriver *driver = 0;
 # libinput_axis_api
 qt_config_compile_test(libinput_axis_api
     LABEL "axis API in libinput"
+    LIBRARIES Libinput::Libinput
+    CODE
 "
 #include <libinput.h>
 
