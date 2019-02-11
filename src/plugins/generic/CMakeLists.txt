@@ -18,7 +18,7 @@ if(QT_FEATURE_tuiotouch)
 endif()
 
 if(QT_FEATURE_libinput)
-#   TODO  add_subdirectory(libinput)
+    add_subdirectory(libinput)
 endif()
 
 if(FREEBSD)
