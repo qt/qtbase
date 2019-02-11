@@ -346,7 +346,9 @@ public class QtActivityDelegate
                 }
             } else if ((inputHints & ImhHiddenText) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-            } else if ((inputHints & ImhSensitiveData) != 0 || (inputHints & ImhNoPredictiveText) != 0) {
+            } else if ((inputHints & ImhSensitiveData) != 0 ||
+                ((inputHints & ImhNoPredictiveText) != 0 &&
+                  System.getenv("QT_ANDROID_ENABLE_WORKAROUND_TO_DISABLE_PREDICTIVE_TEXT") != null)) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
             }
 
