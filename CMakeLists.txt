@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.13.0) ## FIXME This is wrong we actually need pre-relase 3.14
-
-CMAKE_POLICY(SET CMP0083 NEW) ## TODO Remove when we start requiring 3.14 in the line above
+cmake_minimum_required(VERSION 3.14.0)
 
 project(QtBase
     VERSION 5.12.0
