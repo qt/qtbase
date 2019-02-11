@@ -616,6 +616,8 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r'\bisEmpty\s*\((.*?)\)', r'\1_ISEMPTY', condition)
     condition = re.sub(r'\bcontains\s*\((.*?), (.*)?\)',
                        r'\1___contains___\2', condition)
+    condition = re.sub(r'\bequals\s*\((.*?), (.*)?\)',
+                       r'\1___equals___\2', condition)
     condition = re.sub(r'\s*==\s*', '___STREQUAL___', condition)
 
     condition = condition.replace('*', '_x_')
