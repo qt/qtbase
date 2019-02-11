@@ -387,10 +387,24 @@ endfunction()
 function(qt_config_compile_test name)
     cmake_parse_arguments(arg "" "LABEL" "LIBRARIES;CODE" ${ARGN})
 
-    set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
-    set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
-    check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
-    set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
+    foreach(library IN ITEMS ${arg_LIBRARIES})
+        if(NOT TARGET "${library}")
+            # If the dependency looks like a cmake target, then make this compile test
+            # fail instead of cmake abort later via CMAKE_REQUIRED_LIBRARIES.
+            string(FIND "${library}" "::" cmake_target_namespace_separator)
+            if(NOT cmake_target_namespace_separator EQUAL -1)
+                set(HAVE_${name} FALSE)
+                break()
+            endif()
+        endif()
+    endforeach()
+
+    if(NOT DEFINED HAVE_${name})
+        set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
+        set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
+        check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
+        set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
+    endif()
     set(TEST_${name} "${HAVE_${name}}" CACHE INTERNAL "${arg_LABEL}")
 endfunction()
 
