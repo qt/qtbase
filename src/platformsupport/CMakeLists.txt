@@ -33,6 +33,10 @@ if(QT_FEATURE_kms)
     add_subdirectory(kmsconvenience)
 endif()
 
+if(QT_FEATURE_egl)
+    add_subdirectory(eglconvenience)
+endif()
+
 if(APPLE)
     add_subdirectory(clipboard)
     add_subdirectory(graphics)
