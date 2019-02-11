@@ -857,11 +857,6 @@ void QCoreApplicationPrivate::init()
     eventDispatcherReady();
 #endif
 
-#ifdef QT_EVAL
-    extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
-    qt_core_eval_init(application_type);
-#endif
-
     processCommandLineArguments();
 
     qt_call_pre_routines();

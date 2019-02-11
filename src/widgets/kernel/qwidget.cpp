@@ -1348,11 +1348,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     if (!isWindow() && parentWidget() && parentWidget()->testAttribute(Qt::WA_DropSiteRegistered))
         setAttribute(Qt::WA_DropSiteRegistered, true);
 
-#ifdef QT_EVAL
-    extern void qt_eval_init_widget(QWidget *w);
-    qt_eval_init_widget(this);
-#endif
-
     // need to force the resting of the icon after changing parents
     if (testAttribute(Qt::WA_SetWindowIcon))
         d->setWindowIcon_sys();
@@ -6055,13 +6050,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
 {
     Q_ASSERT(widget);
 
-#ifdef QT_EVAL
-    extern QString qt_eval_adapt_window_title(const QString &title);
-    QString cap = qt_eval_adapt_window_title(title);
-#else
     QString cap = title;
-#endif
-
     if (cap.isEmpty())
         return cap;
 

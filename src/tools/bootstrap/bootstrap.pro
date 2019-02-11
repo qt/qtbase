@@ -19,8 +19,6 @@ DEFINES += \
     QT_NO_FOREACH \
     QT_NO_CAST_FROM_ASCII
 
-DEFINES -= QT_EVAL
-
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \

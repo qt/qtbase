@@ -717,11 +717,6 @@ void qt_core_boilerplate()
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 
-#ifdef QT_EVAL
-    extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
-    qt_core_eval_init(QCoreApplicationPrivate::Tty);
-#endif
-
     exit(0);
 }
 

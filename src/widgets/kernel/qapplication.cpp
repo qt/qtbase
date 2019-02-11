@@ -575,10 +575,6 @@ void QApplicationPrivate::init()
     initialize();
     eventDispatcher->startingUp();
 
-#ifdef QT_EVAL
-    extern void qt_gui_eval_init(QCoreApplicationPrivate::Type);
-    qt_gui_eval_init(application_type);
-#endif
 #ifndef QT_NO_ACCESSIBILITY
     // factory for accessible interfaces for widgets shipped with Qt
     QAccessible::installFactory(&qAccessibleFactory);
