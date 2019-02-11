@@ -41,6 +41,8 @@ endif()
 if("x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
     set(QT_SYNCQT "${PROJECT_SOURCE_DIR}/bin/syncqt.pl")
     install(PROGRAMS "${QT_SYNCQT}" DESTINATION "${INSTALL_BINDIR}")
+else()
+    set(QT_SYNCQT "${HOST_QT_TOOLS_DIRECTORY}/syncqt.pl")
 endif()
 
 ## Enable support for sanitizers:
