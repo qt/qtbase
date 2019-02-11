@@ -79,13 +79,13 @@ add_dependencies(Widgets Qt::uic)
 #extend_target(Widgets CONDITION APPLE_OSX
 #)
 
-extend_target(Widgets CONDITION (APPLE_OSX) AND (macos)
+extend_target(Widgets CONDITION APPLE_OSX
     LIBRARIES
         ${FWAppKit}
         z
 )
 
-extend_target(Widgets CONDITION ((APPLE_OSX) AND (macos)) AND (*-mwerks)
+extend_target(Widgets CONDITION APPLE_OSX AND (*-mwerks)
     INCLUDE_DIRECTORIES
         compat
 )
@@ -114,7 +114,7 @@ extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
 #extend_target(Widgets CONDITION testcocoon
 #)
 
-extend_target(Widgets CONDITION macx
+extend_target(Widgets CONDITION APPLE_OSX
     SOURCES
         kernel/qmacgesturerecognizer.cpp kernel/qmacgesturerecognizer_p.h
 )
@@ -377,13 +377,13 @@ extend_target(Widgets CONDITION QT_FEATURE_widgettextcontrol
         widgets/qwidgettextcontrol_p_p.h
 )
 
-extend_target(Widgets CONDITION macx
+extend_target(Widgets CONDITION APPLE_OSX
     SOURCES
         widgets/qmaccocoaviewcontainer_mac.h widgets/qmaccocoaviewcontainer_mac.mm
         widgets/qmacnativewidget_mac.h widgets/qmacnativewidget_mac.mm
 )
 
-extend_target(Widgets CONDITION (macx) AND (QT_FEATURE_menu OR QT_FEATURE_menubar)
+extend_target(Widgets CONDITION (APPLE_OSX) AND (QT_FEATURE_menu OR QT_FEATURE_menubar)
     SOURCES
         widgets/qmenu_mac.mm
 )
