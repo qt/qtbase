@@ -208,6 +208,7 @@ libray_mapping = {
     'doubleconversion': 'double-conversion',
     'freetype': 'Freetype::Freetype',
     'glib': 'GLIB2::GLIB2',
+    'harfbuzz': 'harfbuzz::harfbuzz',
     'icu': 'ICU::i18n ICU::uc ICU::data',
     'libatomic': 'Atomic',
     'libdl': '${CMAKE_DL_LIBS}',
