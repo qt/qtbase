@@ -1,6 +1,6 @@
 # Generated from eglconvenience.pro.
 
-find_package(OpenGL)
+find_package(EGL)
 
 #####################################################################
 ## EglSupport Module:
@@ -18,8 +18,12 @@ add_qt_module(EglSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-        OpenGL::EGL
+        EGL::EGL
         ${CMAKE_DL_LIBS}
+    # CONFIG = "static" "internal_module" "egl"
+    # MODULE = "egl_support"
+    # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+    # _LOADED = "qt_module"
 )
 
 ## Scopes:

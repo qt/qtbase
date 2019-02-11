@@ -1,0 +1,16 @@
+
+# Logic derived from mkspecs/features/unix/opengl.prf: prefer GLESv2 over GL
+
+if(TARGET WrapOpenGL)
+    return()
+endif()
+
+add_library(WrapOpenGL INTERFACE)
+
+if(QT_FEATURE_opengles2)
+    find_package(GLESv2)
+    target_link_libraries(WrapOpenGL INTERFACE GLESv2::GLESv2)
+else()
+    find_package(OpenGL)
+    target_link_libraries(WrapOpenGL INTERFACE OpenGL::GL)
+endif()

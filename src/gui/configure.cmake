@@ -38,8 +38,8 @@ find_package(ATSPI2)
 set_package_properties(ATSPI2 PROPERTIES TYPE OPTIONAL)
 find_package(Libdrm)
 set_package_properties(Libdrm PROPERTIES TYPE OPTIONAL)
-find_package(OpenGL)
-set_package_properties(OpenGL PROPERTIES TYPE OPTIONAL)
+find_package(EGL)
+set_package_properties(EGL PROPERTIES TYPE OPTIONAL)
 find_package(Freetype)
 set_package_properties(Freetype PROPERTIES TYPE OPTIONAL)
 find_package(Fontconfig)
@@ -56,6 +56,10 @@ find_package(PNG)
 set_package_properties(PNG PROPERTIES TYPE OPTIONAL)
 find_package(Mtdev)
 set_package_properties(Mtdev PROPERTIES TYPE OPTIONAL)
+find_package(OpenGL)
+set_package_properties(OpenGL PROPERTIES TYPE OPTIONAL)
+find_package(GLESv2)
+set_package_properties(GLESv2 PROPERTIES TYPE OPTIONAL)
 find_package(Tslib)
 set_package_properties(Tslib PROPERTIES TYPE OPTIONAL)
 find_package(Vulkan)
@@ -537,7 +541,7 @@ qt_feature("mtdev" PRIVATE
 )
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"
-    CONDITION WIN32 OR ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND libs.opengl_es2 ) OR FIXME
+    CONDITION WIN32 OR ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
     ENABLE INPUT_opengl STREQUAL 'es2'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
@@ -586,7 +590,7 @@ qt_feature("openvg" PUBLIC
 )
 qt_feature("egl" PUBLIC PRIVATE
     LABEL "EGL"
-    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR OpenGL_EGL_FOUND )
+    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR EGL_FOUND )
 )
 qt_feature_definition("egl" "QT_NO_EGL" NEGATE VALUE "1")
 qt_feature("egl_x11" PRIVATE

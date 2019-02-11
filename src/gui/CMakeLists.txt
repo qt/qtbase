@@ -317,6 +317,12 @@ extend_target(Gui CONDITION TEST_architecture STREQUAL arm64 AND NOT APPLE_UIKIT
     DEFINES ENABLE_PIXMAN_DRAWHELPERS
 )
 
+# With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
+# acted like WrapOpenGL: direct linkage against either libGLESv2 or
+# libGL, depending in the opengl _feature_. This is done by hand now
+# here (where the feature is available).
+find_package(WrapOpenGL)
+
 extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
         opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
@@ -347,7 +353,7 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
     LIBRARIES
-        OpenGL::GL
+        WrapOpenGL
 )
 
 extend_target(Gui CONDITION (QT_FEATURE_opengl) AND (NOT QT_FEATURE_opengles2)

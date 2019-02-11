@@ -52,7 +52,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'cups': 'Cups',
        'double-conversion': 'WrapDoubleConversion',
        'drm': 'Libdrm',
-       'egl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_EGL"),
+       'egl': 'EGL',
        'fontconfig': LibraryMapping(package='Fontconfig', resultVariable="FONTCONFIG"),
        'freetype': 'Freetype',
        'gbm': 'gbm',
@@ -101,6 +101,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'xrender': LibraryMapping(package="XCB", resultVariable="XCB_RENDER"),
        'zlib': 'ZLIB',
        'zstd': 'ZSTD',
+       'opengl_es2': 'GLESv2',
     }  # type: Dict[str, Union[str, List[str], LibraryMapping]]
     if lib not in libmap:
         raise Exception('    XXXX Unknown library "{}".'.format(lib))
