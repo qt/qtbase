@@ -129,6 +129,8 @@ drmModeAtomicReq *request;
 # egl-x11
 qt_config_compile_test(egl_x11
     LABEL "EGL on X11"
+    LIBRARIES X11::X11
+CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
 // has to be disabled in plugins like xcb in this case since the native display,
