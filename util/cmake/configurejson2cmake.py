@@ -57,6 +57,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'gbm': 'gbm',
        'glib': 'GLIB2',
        'gnu_iconv': None,
+       'gtk3': 'GTK3',
        'harfbuzz': 'harfbuzz',
        'host_dbus': None,
        'icu': ['ICU', 'COMPONENTS', 'i18n', 'uc', 'data'],

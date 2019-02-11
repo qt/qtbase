@@ -6,6 +6,8 @@
 
 #### Libraries
 
+find_package(GTK3)
+set_package_properties(GTK3 PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests
@@ -17,7 +19,7 @@
 qt_feature("gtk3" PRIVATE
     LABEL "GTK+"
     AUTODETECT NOT APPLE
-    CONDITION QT_FEATURE_glib AND libs.gtk3 OR FIXME
+    CONDITION QT_FEATURE_glib AND GTK3_FOUND
 )
 qt_feature("style_fusion" PRIVATE
     LABEL "Fusion"
