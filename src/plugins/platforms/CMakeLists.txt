@@ -1,3 +1,7 @@
+if (NOT ANDROID)
+    add_subdirectory(minimal)
+endif()
+
 if(QT_FEATURE_xcb)
     add_subdirectory(xcb)
 endif()
