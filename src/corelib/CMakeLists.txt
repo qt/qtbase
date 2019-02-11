@@ -268,6 +268,13 @@ target_include_directories(Core_qobject PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/ker
 target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
 target_link_libraries(Core PRIVATE Core_qobject)
 
+if(NOT BUILD_SHARED_LIBS)
+    install(
+      TARGETS Core_qobject
+      EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets"
+    )
+endif()
+
 set_property(TARGET Core APPEND PROPERTY
     PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
 set_property(TARGET Core APPEND PROPERTY

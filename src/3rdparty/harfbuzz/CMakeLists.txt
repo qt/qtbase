@@ -8,4 +8,7 @@ add_library(QtHarfBuzz STATIC
     src/harfbuzz-open.c
     src/harfbuzz-stream.c
     )
-target_include_directories(QtHarfBuzz PUBLIC src)
+target_include_directories(QtHarfBuzz PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+
+qt_install_3rdparty_library(QtHarfBuzz)

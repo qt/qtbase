@@ -712,6 +712,15 @@ function(add_qt_module target)
         endif()
     endforeach()
 
+    foreach(lib ${arg_LIBRARIES})
+        if (TARGET "${lib}")
+            get_target_property(_is_exported "${lib}" INTERFACE_QT_EXPORTED_LIBRARY)
+            if("${_is_exported}")
+                list(APPEND target_deps "${lib}\;${PROJECT_VERSION}")
+            endif()
+        endif()
+    endforeach()
+
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
@@ -800,7 +809,6 @@ function(qt_internal_check_directory_or_type name dir type default result_var)
         set(${result_var} "${dir}" PARENT_SCOPE)
     endif()
 endfunction()
-
 
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
@@ -1222,6 +1230,13 @@ function(add_qt_simd_part target)
             $<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>)
 
         target_link_libraries("${target}" PRIVATE "${name}")
+
+        if(NOT BUILD_SHARED_LIBS)
+            install(
+              TARGETS ${name}
+              EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets"
+            )
+        endif()
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("add_qt_simd_part(${target} SIMD ${arg_SIMD} ...): Skipped")
@@ -1421,3 +1436,81 @@ macro(qt_find_package)
         endforeach()
     endif()
 endmacro()
+
+# Creates a simple export set for the various Find* dependencies
+# which are needed when creating a static build of Qt.
+# This introduces a custom target property: INTERFACE_QT_EXPORTED_LIBRARY
+# This target property indicates that Qt modules / plugins using this 3rd party library
+# must add it to their list of dependencies when creating their own ${qtmodule}Config.cmake
+function(qt_install_static_target_export target)
+    if(BUILD_SHARED_LIBS)
+        return()
+    endif()
+
+    qt_parse_all_arguments(arg "qt_install_3rdparty_config_files" "" "EXPORT" "" ${ARGN})
+    # TODO mark EXPORT as required
+
+    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${arg_EXPORT}")
+
+    set_target_properties(${target}
+        PROPERTIES
+            INTERFACE_QT_EXPORTED_LIBRARY 1)
+
+    install(
+        TARGETS ${target}
+        EXPORT ${arg_EXPORT}Targets
+        LIBRARY DESTINATION ${INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${INSTALL_LIBDIR})
+
+    install(
+        EXPORT ${arg_EXPORT}Targets
+        DESTINATION "${config_install_dir}"
+    )
+
+    export(EXPORT ${arg_EXPORT}Targets)
+endfunction()
+
+# Create a set of ${target}Config.cmake and ${target}Version.cmake for a
+# third-party library so that it can be found by client code linking statically.
+function(qt_install_3rdparty_config_files target)
+    if(BUILD_SHARED_LIBS)
+       return()
+    endif()
+
+    qt_parse_all_arguments(arg "qt_install_3rdparty_config_files" "" "EXPORT" "PACKAGES;ADDITIONAL_FILES" ${ARGN})
+    # TODO mark EXPORT as required
+
+    set(3RDPARTY_ADDITIONAL_SETUP_CODE)
+    foreach(package ${arg_PACKAGES})
+      list(APPEND 3RDPARTY_ADDITIONAL_SETUP_CODE "find_package(${package})\n")
+    endforeach()
+
+    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${arg_EXPORT}")
+    configure_package_config_file(
+        "${PROJECT_SOURCE_DIR}/cmake/3rdpartyConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${target}Config.cmake"
+        INSTALL_DESTINATION "${config_install_dir}"
+    )
+
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/${target}ConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${target}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${target}ConfigVersion.cmake"
+        ${arg_ADDITIONAL_FILES}
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
+endfunction()
+
+# Call this function in 3rdparty find modules that ought to be installed alongside
+# Qt modules and must be found when linking statically.
+function(qt_install_3rdparty_library target)
+    qt_install_static_target_export(${target} EXPORT ${target})
+    qt_install_3rdparty_config_files(${target} EXPORT ${target} ${ARGN})
+endfunction()
+

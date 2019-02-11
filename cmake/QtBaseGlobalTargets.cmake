@@ -78,6 +78,7 @@ add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
 install(TARGETS Platform GlobalConfig GlobalConfigPrivate EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets")
 install(EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets" NAMESPACE ${INSTALL_CMAKE_EXPORT_NAMESPACE}:: DESTINATION "${config_install_dir}")
+export(EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets")
 
 ## Install some QtBase specific CMake files:
 install(FILES
