@@ -47,3 +47,11 @@ endif()
 
 ## Enable support for sanitizers:
 include(${CMAKE_CURRENT_LIST_DIR}/3rdparty/extra-cmake-modules/modules/ECMEnableSanitizers.cmake)
+
+option(QT_USE_CCACHE "Enable the use of ccache")
+if(QT_USE_CCACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_OBJC_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
