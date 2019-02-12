@@ -1,6 +1,6 @@
 # Generated from minimalegl.pro.
 
-find_package(FindWrapOpenGL)
+find_package(WrapOpenGL)
 
 #####################################################################
 ## qminimalegl Plugin:
