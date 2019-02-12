@@ -604,12 +604,32 @@ def parseTest(ctx, test, data, cm_fh):
 
         sourceCode = sourceCode.replace('"', '\\"')
 
+        librariesCmakeName = ""
+        qmakeFixme = ""
+
         cm_fh.write("# {}\n".format(test))
+        if "qmake" in details: # We don't really have many so we can just enumerate them all
+            if details["qmake"] == "unix:LIBS += -lpthread":
+                librariesCmakeName = format(test) + "_TEST_LIBRARIES"
+                cm_fh.write("if (UNIX)\n")
+                cm_fh.write("    set(" + librariesCmakeName + " pthread)\n")
+                cm_fh.write("endif()\n")
+            elif details["qmake"] == "linux: LIBS += -lpthread -lrt":
+                librariesCmakeName = format(test) + "_TEST_LIBRARIES"
+                cm_fh.write("if (LINUX)\n")
+                cm_fh.write("    set(" + librariesCmakeName + " pthread rt)\n")
+                cm_fh.write("endif()\n")
+            else:
+                qmakeFixme = "# FIXME: qmake: {}\n".format(details["qmake"])
+
         cm_fh.write("qt_config_compile_test({}\n".format(featureName(test)))
         cm_fh.write(lineify("LABEL", data.get("label", "")))
+        if librariesCmakeName != "":
+            cm_fh.write(lineify("LIBRARIES", "${"+librariesCmakeName+"}"))
+            cm_fh.write("    CODE\n")
         cm_fh.write('"' + sourceCode + '"')
-        if "qmake" in details:
-            cm_fh.write("# FIXME: qmake: {}\n".format(details["qmake"]))
+        if qmakeFixme != "":
+            cm_fh.write(qmakeFixme)
         if "use" in data:
             cm_fh.write("# FIXME: use: {}\n".format(data["use"]))
         cm_fh.write(")\n\n")

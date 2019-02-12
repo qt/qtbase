@@ -114,11 +114,11 @@ int pipes[2];
 
 # cxx11_future
 if (UNIX)
-    set(CXX11_FUTURE_TEST_LIBRARIES pthread)
+    set(cxx11_future_TEST_LIBRARIES pthread)
 endif()
 qt_config_compile_test(cxx11_future
     LABEL "C++11 <future>"
-    LIBRARIES ${CXX11_FUTURE_TEST_LIBRARIES}
+    LIBRARIES "${cxx11_future_TEST_LIBRARIES}"
     CODE
 "
 #include <future>
@@ -132,8 +132,7 @@ std::future<int> f = std::async([]() { return 42; });
     /* END TEST: */
     return 0;
 }
-"
-)
+")
 
 # eventfd
 qt_config_compile_test(eventfd
@@ -197,11 +196,11 @@ shmctl(0, 0, (struct shmid_ds *)(0));
 
 # ipc_posix
 if (LINUX)
-    set(IPC_POSIX_TEST_LIBRARIES pthread rt)
+    set(ipc_posix_TEST_LIBRARIES pthread rt)
 endif()
 qt_config_compile_test(ipc_posix
     LABEL "POSIX IPC"
-    LIBRARIES ${IPC_POSIX_TEST_LIBRARIES}
+    LIBRARIES "${ipc_posix_TEST_LIBRARIES}"
     CODE
 "
 #include <sys/types.h>
@@ -219,8 +218,7 @@ shm_unlink(\"test\");
     /* END TEST: */
     return 0;
 }
-"
-)
+")
 
 # linkat
 qt_config_compile_test(linkat
