@@ -177,6 +177,19 @@ static bool isMouseEvent(NSEvent *ev)
     return canBecomeMain;
 }
 
+- (BOOL)worksWhenModal
+{
+    if ([self isKindOfClass:[QNSPanel class]]) {
+        if (QCocoaWindow *pw = self.platformWindow) {
+            Qt::WindowType type = pw->window()->type();
+            if (type == Qt::Popup || type == Qt::Dialog || type == Qt::Tool)
+                return YES;
+        }
+    }
+
+    return qt_objcDynamicSuper();
+}
+
 - (BOOL)isOpaque
 {
     return self.platformWindow ?

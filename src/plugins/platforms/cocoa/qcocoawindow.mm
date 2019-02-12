@@ -367,23 +367,19 @@ void QCocoaWindow::setVisible(bool visible)
                     [m_view.window orderFront:nil];
                 }
 
-                // We want the events to properly reach the popup, dialog, and tool
-                if ((window()->type() == Qt::Popup || window()->type() == Qt::Dialog || window()->type() == Qt::Tool)
-                    && [m_view.window isKindOfClass:[NSPanel class]]) {
-                    ((NSPanel *)m_view.window).worksWhenModal = YES;
-                    if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
-                        removeMonitor();
-                        NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
-                                              | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
-                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
-                            const auto button = cocoaButton2QtButton(e);
-                            const auto buttons = currentlyPressedMouseButtons();
-                            const auto eventType = cocoaEvent2QtMouseEvent(e);
-                            const auto globalPoint = QCocoaScreen::mapFromNative(NSEvent.mouseLocation);
-                            const auto localPoint = window()->mapFromGlobal(globalPoint.toPoint());
-                            QWindowSystemInterface::handleMouseEvent(window(), localPoint, globalPoint, buttons, button, eventType);
-                        }];
-                    }
+                // Close popup when clicking outside it
+                if (window()->type() == Qt::Popup && !(parentCocoaWindow && window()->transientParent()->isActive())) {
+                    removeMonitor();
+                    NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
+                                          | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
+                    monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
+                        const auto button = cocoaButton2QtButton(e);
+                        const auto buttons = currentlyPressedMouseButtons();
+                        const auto eventType = cocoaEvent2QtMouseEvent(e);
+                        const auto globalPoint = QCocoaScreen::mapFromNative(NSEvent.mouseLocation);
+                        const auto localPoint = window()->mapFromGlobal(globalPoint.toPoint());
+                        QWindowSystemInterface::handleMouseEvent(window(), localPoint, globalPoint, buttons, button, eventType);
+                    }];
                 }
             }
         }
