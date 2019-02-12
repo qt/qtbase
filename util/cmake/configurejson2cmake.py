@@ -80,6 +80,7 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'pcre2': ['PCRE2', 'REQUIRED'],
        'posix_iconv': None,
        'pps': 'PPS',
+       'psql': 'PostgreSQL',
        'slog2': 'Slog2',
        'sqlite3': 'SQLite3',
        'sun_iconv': None,

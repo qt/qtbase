@@ -15,7 +15,7 @@ qt_feature_module_end(NO_MODULE)
 
 
 if(QT_FEATURE_sql_psql)
-#     TODO add_subdirectory(psql)
+    add_subdirectory(psql)
 endif()
 
 if(QT_FEATURE_sql_mysql)
