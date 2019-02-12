@@ -2,6 +2,7 @@
 # Logic derived from mkspecs/features/unix/opengl.prf: prefer GLESv2 over GL
 
 if(TARGET WrapOpenGL)
+    set(WrapOpenGL_FOUND ON)
     return()
 endif()
 
@@ -14,3 +15,4 @@ else()
     find_package(OpenGL)
     target_link_libraries(WrapOpenGL INTERFACE OpenGL::GL)
 endif()
+set(WrapOpenGL_FOUND ON)
