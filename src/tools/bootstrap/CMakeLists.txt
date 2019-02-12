@@ -34,7 +34,7 @@ else()
     set(os_libs "")
 endif()
 
-add_library(QtBootstrap STATIC
+add_library(Bootstrap STATIC
     ../../corelib/codecs/qlatincodec.cpp
     ../../corelib/codecs/qtextcodec.cpp
     ../../corelib/codecs/qutfcodec.cpp
@@ -113,18 +113,19 @@ add_library(QtBootstrap STATIC
     ${os_sources}
 )
 
-add_library(Qt::Bootstrap ALIAS QtBootstrap)
+add_library(Qt::Bootstrap ALIAS Bootstrap)
+qt_internal_add_target_aliases(Bootstrap)
 
 qt_ensure_perl()
 foreach(module QtCore QtXml)
     execute_process(COMMAND "${HOST_PERL}" -w "${PROJECT_SOURCE_DIR}/bin/syncqt.pl" -quiet -minimal -module "${module}" -version "${PROJECT_VERSION}" -outdir "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
-    target_include_directories(QtBootstrap PUBLIC
+    target_include_directories(Bootstrap PUBLIC
         "${PROJECT_BINARY_DIR}/include/${module}"
         "${PROJECT_BINARY_DIR}/include/${module}/${PROJECT_VERSION}"
         "${PROJECT_BINARY_DIR}/include/${module}/${PROJECT_VERSION}/${module}")
 endforeach()
 
-target_compile_definitions(QtBootstrap PUBLIC
+target_compile_definitions(Bootstrap PUBLIC
     QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
     QT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
     QT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
@@ -134,18 +135,18 @@ target_compile_definitions(QtBootstrap PUBLIC
     QT_NO_FOREACH
     QT_NO_CAST_FROM_ASCII
 )
-target_link_libraries(QtBootstrap PUBLIC Qt::Platform ${os_libs})
-target_include_directories(QtBootstrap PUBLIC "${PROJECT_BINARY_DIR}/include")
-target_link_libraries(QtBootstrap PRIVATE ZLIB::ZLIB)
+target_link_libraries(Bootstrap PUBLIC Qt::Platform ${os_libs})
+target_include_directories(Bootstrap PUBLIC "${PROJECT_BINARY_DIR}/include")
+target_link_libraries(Bootstrap PRIVATE ZLIB::ZLIB)
 
 ### fixme: Expose as some cmake equivalent of a reusable qmake mkspecs/features/gc_binaries.prf.
 if(APPLE)
-    target_link_libraries(QtBootstrap INTERFACE "-Wl,-dead_strip")
+    target_link_libraries(Bootstrap INTERFACE "-Wl,-dead_strip")
 endif()
 
 if (APPLE)
     find_library(FWFoundation Foundation)
     find_library(FWCoreServices CoreServices)
-    target_link_libraries(QtBootstrap INTERFACE ${FWFoundation})
-    target_link_libraries(QtBootstrap PRIVATE ${FWCoreServices})
+    target_link_libraries(Bootstrap INTERFACE ${FWFoundation})
+    target_link_libraries(Bootstrap PRIVATE ${FWCoreServices})
 endif()
