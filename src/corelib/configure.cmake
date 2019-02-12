@@ -82,7 +82,8 @@ clock_gettime(CLOCK_MONOTONIC, &ts);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: librt
+)
 
 # cloexec
 qt_config_compile_test(cloexec

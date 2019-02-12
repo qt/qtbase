@@ -107,7 +107,8 @@ DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: directwrite
+)
 
 # drm_atomic
 qt_config_compile_test(drm_atomic
@@ -126,13 +127,12 @@ drmModeAtomicReq *request;
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: drm
+)
 
 # egl-x11
 qt_config_compile_test(egl_x11
     LABEL "EGL on X11"
-    LIBRARIES X11::X11
-CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
 // has to be disabled in plugins like xcb in this case since the native display,
@@ -156,7 +156,8 @@ XCloseDisplay(dpy);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl xcb_xlib
+)
 
 # egl-brcm
 qt_config_compile_test(egl_brcm
@@ -173,7 +174,8 @@ vc_dispmanx_display_open(0);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl bcm_host
+)
 
 # egl-egldevice
 qt_config_compile_test(egl_egldevice
@@ -193,7 +195,8 @@ EGLOutputLayerEXT layer = 0;
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl
+)
 
 # egl-mali
 qt_config_compile_test(egl_mali
@@ -211,7 +214,8 @@ fbdev_window *w = 0;
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl
+)
 
 # egl-mali-2
 qt_config_compile_test(egl_mali_2
@@ -228,7 +232,8 @@ mali_native_window *w = 0;
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl
+)
 
 # egl-viv
 qt_config_compile_test(egl_viv
@@ -252,6 +257,7 @@ fbGetDisplayByIndex(0);
     return 0;
 }
 "# FIXME: qmake: ['DEFINES += EGL_API_FB=1', '!integrity: DEFINES += LINUX=1']
+# FIXME: use: egl
 )
 
 # egl-openwfd
@@ -268,7 +274,8 @@ wfdEnumerateDevices(nullptr, 0, nullptr);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl
+)
 
 # egl-rcar
 qt_config_compile_test(egl_rcar
@@ -286,7 +293,8 @@ PVRGrfxServerInit();
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl opengl_es2
+)
 
 # evdev
 qt_config_compile_test(evdev
@@ -357,8 +365,6 @@ ioctl(fd, FBIOGET_VSCREENINFO, &vinfo);
 # opengles3
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
-    LIBRARIES OpenGL::GL
-    CODE
 "#ifdef __APPLE__
 #  include <OpenGLES/ES3/gl.h>
 #else
@@ -379,13 +385,12 @@ glMapBufferRange(GL_ARRAY_BUFFER, 0, 0, GL_MAP_READ_BIT);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: opengl_es2
+)
 
 # opengles31
 qt_config_compile_test(opengles31
     LABEL "OpenGL ES 3.1"
-    LIBRARIES OpenGL::GL
-    CODE
 "
 #include <GLES3/gl31.h>
 
@@ -398,7 +403,8 @@ glProgramUniform1i(0, 0, 0);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: opengl_es2
+)
 
 
 

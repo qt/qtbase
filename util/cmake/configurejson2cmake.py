@@ -610,6 +610,8 @@ def parseTest(ctx, test, data, cm_fh):
         cm_fh.write('"' + sourceCode + '"')
         if "qmake" in details:
             cm_fh.write("# FIXME: qmake: {}\n".format(details["qmake"]))
+        if "use" in data:
+            cm_fh.write("# FIXME: use: {}\n".format(data["use"]))
         cm_fh.write(")\n\n")
 
     elif data["type"] == "x86Simd":

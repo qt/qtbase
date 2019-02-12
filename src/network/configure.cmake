@@ -33,7 +33,8 @@ freeifaddrs(list);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: network
+)
 
 # ipv6ifname
 qt_config_compile_test(ipv6ifname
@@ -54,7 +55,8 @@ if_freenameindex(if_nameindex());
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: network
+)
 
 # linux-netlink
 qt_config_compile_test(linux_netlink
@@ -103,7 +105,8 @@ socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: network
+)
 
 # dtls
 qt_config_compile_test(dtls
@@ -121,7 +124,8 @@ int main(int argc, char **argv)
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: openssl
+)
 
 
 
