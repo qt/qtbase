@@ -215,6 +215,7 @@ libray_mapping = {
     'libproxy': 'LibProxy::LibProxy',
     'librt': 'WrapRt',
     'pcre2': 'PCRE2',
+    'sqlite': 'SQLite3',
     'x11sm': '${X11_SM_LIB} ${X11_ICE_LIB}',
     'xcb_icccm': 'XCB::ICCCM',
     'xcb_image': 'XCB::IMAGE',

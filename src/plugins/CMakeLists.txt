@@ -1,6 +1,6 @@
 
 if (QT_FEATURE_sql)
-#     TODO add_subdirectory(sqldrivers)
+    add_subdirectory(sqldrivers)
 endif()
 
 if(QT_FEATURE_network AND QT_FEATURE_bearermanagement)
