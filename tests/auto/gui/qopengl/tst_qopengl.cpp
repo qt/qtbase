@@ -642,6 +642,8 @@ static bool supportsInternalFboFormat(QOpenGLContext *ctx, int glFormat)
                 return false;
         }
     }
+#else
+    Q_UNUSED(glFormat);
 #endif
     return true;
 }
