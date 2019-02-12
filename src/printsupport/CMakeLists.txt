@@ -20,9 +20,17 @@ add_qt_module(PrintSupport
     DEFINES
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
-    INCLUDE_DIRECTORIES widgets dialogs
-    LIBRARIES Qt::CorePrivate Qt::GuiPrivate Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES Qt::Gui # for QPageSize
+    INCLUDE_DIRECTORIES
+        widgets
+        dialogs
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES Qt::Gui # manual: for QPageSize
+    # MODULE_PLUGIN_TYPES = "printsupport"
+    # QMAKE_LIBS = "$$QMAKE_LIBS_PRINTSUPPORT"
+    # _LOADED = "qt_module"
 )
 
 ## Scopes:
@@ -31,6 +39,7 @@ add_qt_module(PrintSupport
 extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
     SOURCES
         kernel/qpaintengine_preview.cpp kernel/qpaintengine_preview_p.h
+        widgets/qprintpreviewwidget.cpp widgets/qprintpreviewwidget.h
 )
 
 extend_target(PrintSupport CONDITION WIN32
@@ -39,20 +48,19 @@ extend_target(PrintSupport CONDITION WIN32
 )
 
 extend_target(PrintSupport CONDITION WIN32 AND NOT WINRT
-    LIBRARIES winspool comdlg32 gdi32 user32
+    LIBRARIES
+        winspool
+        comdlg32
+        gdi32
+        user32
 )
 
-extend_target(PrintSupport CONDITION (UNIX AND NOT APPLE) AND QT_FEATURE_cups
+extend_target(PrintSupport CONDITION QT_FEATURE_cups AND UNIX AND NOT APPLE
     SOURCES
         kernel/qcups.cpp kernel/qcups_p.h
 )
 
-extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
-    SOURCES
-        widgets/qprintpreviewwidget.cpp widgets/qprintpreviewwidget.h
-)
-
-extend_target(PrintSupport CONDITION (UNIX AND NOT APPLE) AND QT_FEATURE_cupsjobwidget
+extend_target(PrintSupport CONDITION QT_FEATURE_cupsjobwidget AND UNIX AND NOT APPLE
     SOURCES
         widgets/qcupsjobwidget.cpp widgets/qcupsjobwidget.ui widgets/qcupsjobwidget_p.h
 )
@@ -65,7 +73,7 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
         dialogs/qprintdialog.h dialogs/qprintdialog.qrc
 )
 
-extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND macos
+extend_target(PrintSupport CONDITION APPLE_OSX AND QT_FEATURE_printdialog
     SOURCES
         dialogs/qpagesetupdialog_mac.mm
         dialogs/qprintdialog_mac.mm
@@ -79,7 +87,7 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND WIN32
         dialogs/qprintdialog_win.cpp
 )
 
-extend_target(PrintSupport CONDITION (QT_FEATURE_printdialog AND UNIX) AND NOT APPLE
+extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX AND NOT APPLE
     SOURCES
         dialogs/qpagesetupdialog_unix.cpp dialogs/qpagesetupdialog_unix_p.h
         dialogs/qprintdialog_unix.cpp
