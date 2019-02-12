@@ -454,7 +454,7 @@ function(add_qt_module target)
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
-        OUTPUT_NAME "${module_versioned}")
+        OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}")
 
     qt_internal_library_deprecation_level(deprecation_define)
 
@@ -519,7 +519,7 @@ function(add_qt_module target)
         qt_internal_add_linker_version_script("${target}")
     endif()
 
-    install(TARGETS "${target}" "${target_private}" EXPORT "${module_versioned}Targets"
+    install(TARGETS "${target}" "${target_private}" EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
@@ -527,7 +527,7 @@ function(add_qt_module target)
         )
 
     set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
-    install(EXPORT "${module_versioned}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${config_install_dir})
+    install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${config_install_dir})
 
     set(target_deps)
     foreach(lib ${arg_PUBLIC_LIBRARIES})
