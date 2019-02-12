@@ -73,7 +73,7 @@ const char _slnHeader120[]      = "Microsoft Visual Studio Solution File, Format
 const char _slnHeader140[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
                                   "\n# Visual Studio 2015";
 const char _slnHeader141[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
-                                  "\n# Visual Studio 2017";
+                                  "\n# Visual Studio 15";
 const char _slnHeader142[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
                                   "\n# Visual Studio Version 16";
                                   // The following UUID _may_ change for later servicepacks...
