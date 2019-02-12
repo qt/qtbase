@@ -276,6 +276,32 @@ extend_target(Network CONDITION WINRT
         socket/qnativesocketengine_winrt.cpp socket/qnativesocketengine_winrt_p.h
 )
 
+extend_target(Network CONDITION QT_FEATURE_localserver
+    SOURCES
+        socket/qlocalserver.cpp socket/qlocalserver.h socket/qlocalserver_p.h
+        socket/qlocalsocket.cpp socket/qlocalsocket.h socket/qlocalsocket_p.h
+)
+
+extend_target(Network CONDITION QT_FEATURE_localserver AND ((INTEGRITY) OR (WINRT))
+    SOURCES
+        socket/qlocalsocket_tcp.cpp
+        socket/qlocalserver_tcp.cpp
+    DEFINES
+        QT_LOCALSOCKET_TCP
+)
+
+extend_target(Network CONDITION QT_FEATURE_localserver AND (UNIX) AND (NOT INTEGRITY)
+    SOURCES
+        socket/qlocalsocket_unix.cpp
+        socket/qlocalserver_unix.cpp
+)
+
+extend_target(Network CONDITION QT_FEATURE_localserver AND (WIN32) AND (NOT WINRT)
+    SOURCES
+        socket/qlocalsocket_win.cpp
+        socket/qlocalserver_win.cpp
+)
+
 extend_target(Network CONDITION NOT QT_FEATURE_openssl
     SOURCES
         ssl/qsslcertificate_qt.cpp
