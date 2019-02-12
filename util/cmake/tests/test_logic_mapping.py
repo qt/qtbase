@@ -47,6 +47,14 @@ def test_simplify_off():
     validate_simplify_unchanged('OFF')
 
 
+def test_simplify_not_on():
+    validate_simplify('NOT ON', 'OFF')
+
+
+def test_simplify_not_off():
+    validate_simplify('NOT OFF', 'ON')
+
+
 def test_simplify_isEmpty():
     validate_simplify_unchanged('isEmpty(foo)')
 
@@ -99,11 +107,19 @@ def test_simplify_unix_and_win32():
     validate_simplify('WIN32 AND UNIX', 'OFF')
 
 
+def test_simplify_unix_or_win32():
+    validate_simplify('WIN32 OR UNIX', 'ON')
+
+
 def test_simplify_unix_and_win32_or_foobar_or_barfoo():
     validate_simplify('WIN32 AND foobar AND UNIX AND barfoo', 'OFF')
 
 
 def test_simplify_watchos_and_win32():
+    validate_simplify('APPLE_WATCHOS AND WIN32', 'OFF')
+
+
+def test_simplify_win32_and_watchos():
     validate_simplify('WIN32 AND APPLE_WATCHOS', 'OFF')
 
 
@@ -163,3 +179,8 @@ def test_simplify_complex_false():
     validate_simplify('WIN32 AND foobar    AND (    '
                       'APPLE  OR  ( UNIX OR FREEBSD ))',
                       'OFF')
+
+
+def test_simplify_android_not_apple():
+    validate_simplify('ANDROID AND NOT ANDROID_EMBEDDED AND NOT APPLE_OSX',
+                      'ANDROID AND NOT ANDROID_EMBEDDED')

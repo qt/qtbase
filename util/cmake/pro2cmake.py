@@ -875,12 +875,11 @@ def _iterate_expr_tree(expr, op, matches):
             keepers = (*keepers, *extra_keepers)
         else:
             keepers = (*keepers, arg)
-    return (matches, keepers)
+    return matches, keepers
 
 
 def _simplify_expressions(expr, op, matches, replacement):
-    args = expr.args
-    for arg in args:
+    for arg in expr.args:
         expr = expr.subs(arg, _simplify_expressions(arg, op, matches,
                                                     replacement))
 
@@ -920,17 +919,34 @@ def _simplify_flavors_in_condition(base: str, flavors, expr):
     return expr
 
 
+def _simplify_os_families(expr, family_members, other_family_members):
+    for family in family_members:
+        for other in other_family_members:
+            if other in family_members:
+                continue  # skip those in the sub-family
+
+            f_expr = simplify_logic(family)
+            o_expr = simplify_logic(other)
+
+            expr = _simplify_expressions(expr, And, (f_expr, Not(o_expr)), f_expr)
+            expr = _simplify_expressions(expr, And, (Not(f_expr), o_expr), o_expr)
+            expr = _simplify_expressions(expr, And, (f_expr, o_expr), simplify_logic('false'))
+    return expr
+
+
 def _recursive_simplify(expr):
     ''' Simplify the expression as much as possible based on
         domain knowledge. '''
     input_expr = expr
 
     # Simplify even further, based on domain knowledge:
+    windowses = ('WIN32', 'WINRT')
     apples = ('APPLE_OSX', 'APPLE_UIKIT', 'APPLE_IOS',
               'APPLE_TVOS', 'APPLE_WATCHOS',)
     bsds = ('APPLE', 'FREEBSD', 'OPENBSD', 'NETBSD',)
+    androids = ('ANDROID', 'ANDROID_EMBEDDED')
     unixes = ('APPLE', *apples, 'BSD', *bsds, 'LINUX',
-              'ANDROID', 'ANDROID_EMBEDDED',
+              *androids, 'HAIKU',
               'INTEGRITY', 'VXWORKS', 'QNX', 'WASM')
 
     unix_expr = simplify_logic('UNIX')
@@ -945,17 +961,20 @@ def _recursive_simplify(expr):
     expr = _simplify_expressions(expr, Or, (unix_expr, win_expr,), true_expr)
     # UNIX  [AND foo ]AND WIN32 -> OFF [AND foo]
     expr = _simplify_expressions(expr, And, (unix_expr, win_expr,), false_expr)
-    for unix_flavor in unixes:
-        #  unix_flavor [AND foo ] AND WIN32 -> FALSE [AND foo]
-        flavor_expr = simplify_logic(unix_flavor)
-        expr = _simplify_expressions(expr, And, (win_expr, flavor_expr,),
-                                     false_expr)
 
     expr = _simplify_flavors_in_condition('WIN32', ('WINRT',), expr)
     expr = _simplify_flavors_in_condition('APPLE', apples, expr)
     expr = _simplify_flavors_in_condition('BSD', bsds, expr)
     expr = _simplify_flavors_in_condition('UNIX', unixes, expr)
     expr = _simplify_flavors_in_condition('ANDROID', ('ANDROID_EMBEDDED',), expr)
+
+    # Simplify families of OSes against other families:
+    expr = _simplify_os_families(expr, ('WIN32', 'WINRT'), unixes)
+    expr = _simplify_os_families(expr, androids, unixes)
+    expr = _simplify_os_families(expr, ('BSD', *bsds), unixes)
+
+    for family in ('HAIKU', 'QNX', 'INTEGRITY', 'LINUX', 'VXWORKS'):
+        expr = _simplify_os_families(expr, (family,), unixes)
 
     # Now simplify further:
     expr = simplify_logic(expr)
