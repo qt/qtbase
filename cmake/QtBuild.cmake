@@ -538,6 +538,21 @@ function(add_qt_module target)
             list(APPEND target_deps "${dep}\;${PROJECT_VERSION}")
         endif()
     endforeach()
+
+    set(extra_cmake_files)
+    set(extra_cmake_includes)
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
+        list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
+        list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
+    endif()
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in")
+        configure_file("${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake"
+            @ONLY)
+        list(APPEND extra_cmake_files "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
+        list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
+    endif()
+
     configure_package_config_file(
         "${PROJECT_SOURCE_DIR}/cmake/QtModuleConfig.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
@@ -548,11 +563,6 @@ function(add_qt_module target)
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
-
-    set(extra_cmake_files)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
-        list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
-    endif()
 
     install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
