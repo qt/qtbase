@@ -588,7 +588,7 @@ function(add_qt_module target)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
-    if (GCC)
+    if (GCC OR CLANG)
         qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
     endif()
 
@@ -674,7 +674,7 @@ function(add_qt_plugin target)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
-    if (GCC)
+    if (GCC OR CLANG)
         qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
     endif()
 
