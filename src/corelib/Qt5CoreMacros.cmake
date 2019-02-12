@@ -133,7 +133,7 @@ function(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target 
 
     set(_moc_extra_parameters_file @${_moc_parameters_file})
     add_custom_command(OUTPUT ${outfile}
-                       COMMAND ${Qt5Core_MOC_EXECUTABLE} ${_moc_extra_parameters_file}
+                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${_moc_extra_parameters_file}
                        DEPENDS ${infile} ${moc_depends}
                        ${_moc_working_dir}
                        VERBATIM)
@@ -249,7 +249,7 @@ function(QT5_ADD_BINARY_RESOURCES target )
     endforeach()
 
     add_custom_command(OUTPUT ${rcc_destination}
-                       COMMAND ${Qt5Core_RCC_EXECUTABLE}
+                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                        ARGS ${rcc_options} --binary --name ${target} --output ${rcc_destination} ${infiles}
                        DEPENDS ${rc_depends} ${out_depends} ${infiles} VERBATIM)
     add_custom_target(${target} ALL DEPENDS ${rcc_destination})
@@ -282,7 +282,7 @@ function(QT5_ADD_RESOURCES outfiles )
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
 
         add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${Qt5Core_RCC_EXECUTABLE}
+                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
                            MAIN_DEPENDENCY ${infile}
                            DEPENDS ${_rc_depends} "${out_depends}" VERBATIM)
@@ -319,7 +319,7 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
         add_custom_command(OUTPUT ${tmpoutfile}
-                           COMMAND ${Qt5Core_RCC_EXECUTABLE} ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
+                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
         set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOMOC ON)
         set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOUIC ON)
@@ -327,7 +327,7 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
         add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${Qt5Core_RCC_EXECUTABLE}
+                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}
                            DEPENDS rcc_object_${outfilename}
                            VERBATIM)

@@ -38,6 +38,8 @@ set(INSTALL_TESTSDIR "tests" CACHE PATH "Tests [PREFIX/tests]")
 
 set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
 
+set(QT_CMAKE_EXPORT_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace used when exporting targets [Qt${PROJECT_VERSION_MAJOR}]")
+
 # Platform define path, etc.
 if(WIN32)
     set(QT_DEFAULT_PLATFORM_DEFINITIONS UNICODE _UNICODE WIN32 _ENABLE_EXTENDED_ALIGNED_STORAGE)
@@ -153,7 +155,7 @@ endfunction()
 function(qt_ensure_sync_qt)
     qt_ensure_perl()
     if(NOT DEFINED QT_SYNCQT)
-        get_target_property(mocPath "Qt::moc" LOCATION)
+        get_target_property(mocPath "${QT_CMAKE_EXPORT_NAMESPACE}::moc" LOCATION)
         get_filename_component(binDirectory "${mocPath}" DIRECTORY)
         # We could put this into the cache, but on the other hand there's no real need to
         # pollute the app's cache with this. For the first qtbase build, the variable is
@@ -286,11 +288,11 @@ function(extend_target target)
 
         set_target_properties("${target}" PROPERTIES
             AUTOMOC ON
-            AUTOMOC_EXECUTABLE "$<TARGET_FILE:Qt::moc>"
+            AUTOMOC_EXECUTABLE "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::moc>"
             AUTORCC ON
-            AUTORCC_EXECUTABLE "$<TARGET_FILE:Qt::rcc>"
+            AUTORCC_EXECUTABLE "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::rcc>"
             AUTOUIC ON
-            AUTOUIC_EXECUTABLE "$<TARGET_FILE:Qt::uic>"
+            AUTOUIC_EXECUTABLE "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::uic>"
         )
 
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
@@ -525,7 +527,7 @@ function(add_qt_module target)
         )
 
     set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
-    install(EXPORT "${module_versioned}Targets" NAMESPACE Qt:: DESTINATION ${config_install_dir})
+    install(EXPORT "${module_versioned}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${config_install_dir})
 
     set(target_deps)
     foreach(lib ${arg_PUBLIC_LIBRARIES})
@@ -644,7 +646,7 @@ function(add_qt_plugin target)
         LIBRARY DESTINATION ${INSTALL_PLUGINSDIR}/${arg_TYPE}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}/${arg_TYPE}
         )
-    install(EXPORT "${target}Targets" NAMESPACE Qt:: DESTINATION ${INSTALL_LIBDIR}/cmake)
+    install(EXPORT "${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${INSTALL_LIBDIR}/cmake)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
@@ -704,7 +706,7 @@ function(add_qt_test name)
             "${CMAKE_CURRENT_BINARY_DIR}"
             "${arg_INCLUDE_DIRECTORIES}"
         DEFINES "${arg_DEFINES}"
-        LIBRARIES Qt::Core Qt::Test ${arg_LIBRARIES}
+        LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_LIBRARIES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
@@ -732,9 +734,9 @@ function(add_qt_tool name)
     qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP" "" "${__default_private_args}" ${ARGN})
 
     if (arg_BOOTSTRAP)
-        set(corelib Qt::Bootstrap)
+        set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Bootstrap)
     else()
-        set(corelib Qt::Core)
+        set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
     endif()
 
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
@@ -789,7 +791,7 @@ function(add_qt_resource target resourceName)
 
     set(generatedSourceCode "${CMAKE_CURRENT_BINARY_DIR}/qrc_${resourceName}.cpp")
     add_custom_command(OUTPUT "${generatedSourceCode}"
-                       COMMAND "Qt::rcc"
+                       COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"
                        ARGS --name "${resourceName}"
                            --output "${generatedSourceCode}" "${generatedResourceFile}"
                        DEPENDS ${files}
@@ -838,8 +840,8 @@ function(qt_manual_moc result)
         file(GENERATE OUTPUT "${moc_parameters_file}" CONTENT "${moc_parameters}\n")
 
         add_custom_command(OUTPUT "${outfile}"
-                           COMMAND Qt::moc "@${moc_parameters_file}"
-                           DEPENDS "${infile}" ${moc_depends} Qt::moc
+                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc "@${moc_parameters_file}"
+                           DEPENDS "${infile}" ${moc_depends} ${QT_CMAKE_EXPORT_NAMESPACE}::moc
                            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" VERBATIM)
     endforeach()
     set("${result}" ${moc_files} PARENT_SCOPE)
@@ -873,7 +875,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
     set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}.cpp")
 
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
-                       COMMAND Qt::qdbusxml2cpp ${arg_FLAGS} "${option}" "${header_file}:${source_file}" "${infile}"
+                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${arg_FLAGS} "${option}" "${header_file}:${source_file}" "${infile}"
                        DEPENDS "${infile}"
                        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                        VERBATIM)

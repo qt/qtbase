@@ -46,7 +46,7 @@ function(find_or_build_bootstrap_names)
     find_or_build_bootstrap_tool(tracegen)
 
     if (_build_tools)
-        install(EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" NAMESPACE "Qt::" DESTINATION "${INSTALL_LIBDIR}/cmake/Qt${PROJECT_VERSION_MAJOR}")
+        install(EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::" DESTINATION "${INSTALL_LIBDIR}/cmake/Qt${PROJECT_VERSION_MAJOR}")
     endif()
 endfunction()
 

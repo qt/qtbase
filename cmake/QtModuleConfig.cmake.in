@@ -31,4 +31,4 @@ endif()
 
 include(${_import_prefix}/../@INSTALL_CMAKE_NAMESPACE@/QtFeature.cmake)
 
-qt_make_features_available(Qt::@target@)
+qt_make_features_available(@QT_CMAKE_EXPORT_NAMESPACE@::@target@)
