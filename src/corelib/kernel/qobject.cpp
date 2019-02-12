@@ -2404,8 +2404,7 @@ int QObject::receivers(const char *signal) const
 {
     Q_D(const QObject);
     int receivers = 0;
-    QObjectPrivate::ConnectionData *cd = d->connections.load();
-    if (signal && cd) {
+    if (signal) {
         QByteArray signal_name = QMetaObject::normalizedSignature(signal);
         signal = signal_name;
 #ifndef QT_NO_DEBUG
@@ -2429,8 +2428,9 @@ int QObject::receivers(const char *signal) const
                                                              signal_index);
         }
 
+        QObjectPrivate::ConnectionData *cd = d->connections.load();
         QBasicMutexLocker locker(signalSlotLock(this));
-        if (signal_index < cd->signalVector.count()) {
+        if (cd && signal_index < cd->signalVector.count()) {
             const QObjectPrivate::Connection *c =
                 cd->signalVector.at(signal_index).first;
             while (c) {
