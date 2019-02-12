@@ -269,6 +269,8 @@ struct DeferredDebugHelper
 
 void QCocoaScreen::deliverUpdateRequests()
 {
+    QMacAutoReleasePool pool;
+
     // The CVDisplayLink callback is a notification that it's a good time to produce a new frame.
     // Since the callback is delivered on a separate thread we have to marshal it over to the
     // main thread, as Qt requires update requests to be delivered there. This needs to happen
