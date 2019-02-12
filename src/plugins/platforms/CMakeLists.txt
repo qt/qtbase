@@ -52,7 +52,7 @@ if(QT_FEATURE_linuxfb)
 endif()
 
 if(TARGET Qt::Network AND QT_FEATURE_vnc)
-#    TODO   add_subdirectory(vnc)
+    add_subdirectory(vnc)
 endif()
 
 if(FREEBSD)
