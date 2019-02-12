@@ -54,6 +54,8 @@ find_package(JPEG)
 set_package_properties(JPEG PROPERTIES TYPE OPTIONAL)
 find_package(PNG)
 set_package_properties(PNG PROPERTIES TYPE OPTIONAL)
+find_package(Mtdev)
+set_package_properties(Mtdev PROPERTIES TYPE OPTIONAL)
 find_package(Tslib)
 set_package_properties(Tslib PROPERTIES TYPE OPTIONAL)
 find_package(Vulkan)
@@ -531,7 +533,7 @@ qt_feature("mirclient" PRIVATE
 )
 qt_feature("mtdev" PRIVATE
     LABEL "mtdev"
-    CONDITION libs.mtdev OR FIXME
+    CONDITION Mtdev_FOUND
 )
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"

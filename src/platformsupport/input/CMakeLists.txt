@@ -9,6 +9,9 @@ set_package_properties(XKB PROPERTIES TYPE OPTIONAL)
 find_package(Tslib)
 set_package_properties(Tslib PROPERTIES TYPE OPTIONAL)
 
+find_package(Mtdev)
+set_package_properties(Mtdev PROPERTIES TYPE OPTIONAL)
+
 #####################################################################
 ## InputSupport Module:
 #####################################################################
@@ -61,7 +64,7 @@ extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev
 
 extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_mtdev
     LIBRARIES
-        mtdev
+        PkgConfig::Mtdev
 )
 
 extend_target(InputSupport CONDITION QT_FEATURE_tslib
