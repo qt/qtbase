@@ -169,14 +169,16 @@ endfunction()
 
 function(qt_ensure_sync_qt)
     qt_ensure_perl()
-    if(NOT DEFINED QT_SYNCQT)
-        get_target_property(mocPath "${QT_CMAKE_EXPORT_NAMESPACE}::moc" LOCATION)
-        get_filename_component(binDirectory "${mocPath}" DIRECTORY)
-        # We could put this into the cache, but on the other hand there's no real need to
-        # pollute the app's cache with this. For the first qtbase build, the variable is
-        # set in global scope.
-        set(QT_SYNCQT "${binDirectory}/syncqt.pl")
+    if(DEFINED QT_SYNCQT)
+        return()
     endif()
+
+    get_target_property(mocPath "${QT_CMAKE_EXPORT_NAMESPACE}::moc" LOCATION)
+    get_filename_component(binDirectory "${mocPath}" DIRECTORY)
+    # We could put this into the cache, but on the other hand there's no real need to
+    # pollute the app's cache with this. For the first qtbase build, the variable is
+    # set in global scope.
+    set(QT_SYNCQT "${binDirectory}/syncqt.pl" CACHE FILEPATH "syncqt script")
 endfunction()
 
 # A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
