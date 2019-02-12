@@ -1,7 +1,7 @@
 if (NOT ANDROID AND LINUX AND QT_FEATURE_dbus)
     add_subdirectory(generic)
     add_subdirectory(connman)
-#     TODO add_subdirectory(networkmanager)
+    add_subdirectory(networkmanager)
 elseif(ANDROID AND NOT ANDROID_EMBEDDED)
 #     TODO add_subdirectory(android)
 else()
