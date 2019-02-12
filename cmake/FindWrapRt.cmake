@@ -1,8 +1,9 @@
 include(CheckCXXSourceCompiles)
+include(CMakePushCheckState)
 
 find_library(LIBRT rt)
 
-set(_libraries "${CMAKE_REQUIRED_LIBRARIES}")
+cmake_push_check_state()
 if(LIBRT_FOUND)
     list(APPEND CMAKE_REQUIRED_LIBRARIES "${LIBRT}")
 endif()
@@ -15,8 +16,7 @@ int main(int argc, char *argv[]) {
     timespec ts; clock_gettime(CLOCK_REALTIME, &ts);
 }" HAVE_GETTIME)
 
-set(CMAKE_REQUIRED_LIBRARIES "${_libraries}")
-unset(_libraries)
+cmake_pop_check_state()
 
 add_library(WrapRt INTERFACE)
 if (LIBRT_FOUND)
