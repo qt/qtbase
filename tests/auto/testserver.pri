@@ -93,7 +93,7 @@ isEmpty(TESTSERVER_VERSION) {
         # but it causes a port conflict if the user is running a service that
         # binds the same port on the host. An alternative solution is to deploy
         # the docker environment into VirtualBox using docker-machine.
-        TESTSERVER_COMPOSE_FILE = \
+        isEmpty(TESTSERVER_COMPOSE_FILE): TESTSERVER_COMPOSE_FILE = \
             $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose-for-macOS.yml
 
         # The connection configuration for the target machine
@@ -106,7 +106,7 @@ isEmpty(TESTSERVER_VERSION) {
     } else:equals(QMAKE_HOST.os, Windows) {
         # There is no docker bridge on Windows. It is impossible to ping a container.
         # Use docker-machine to deploy the docker environment into VirtualBox.
-        TESTSERVER_COMPOSE_FILE = \
+        isEmpty(TESTSERVER_COMPOSE_FILE): TESTSERVER_COMPOSE_FILE = \
             $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose-for-windows.yml
 
         # The connection configuration for the target machine
@@ -123,12 +123,14 @@ isEmpty(TESTSERVER_VERSION) {
         TEST_CMD = 'PowerShell -noprofile'
         CONFIG += PowerShell
     } else {
-        TESTSERVER_COMPOSE_FILE = $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
-
+        isEmpty(TESTSERVER_COMPOSE_FILE): TESTSERVER_COMPOSE_FILE = \
+            $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
         # The environment variables passed to the docker-compose file
         TEST_ENV = 'TEST_DOMAIN=$$DNSDOMAIN'
         TEST_CMD = env
     }
+    !exists($$TESTSERVER_COMPOSE_FILE): error("Invalid TESTSERVER_COMPOSE_FILE specified")
+
 
     # The domain name is relevant to https keycert (qnetworkreply/crts/qt-test-net-cacert.pem).
     DEFINES += QT_TEST_SERVER QT_TEST_SERVER_DOMAIN=$$shell_quote(\"$${DNSDOMAIN}\")
