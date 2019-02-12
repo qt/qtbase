@@ -35,6 +35,16 @@ You may use vcpkg to install dependencies needed to build QtBase.
   * When running cmake in qtbase, pass ``-DCMAKE_PREFIX_PATH=/path/to/your/vcpkg/installed/$VCPKG_DEFAULT_TRIPLET`` or ``-DCMAKE_PREFIX_PATH=/path/to/your/vcpkg/installed/%VCPKG_DEFAULT_TRIPLET%`` on Windows.
 
 
+# Building against homebrew on macOS
+
+vcpkg doesn't support clang on macOS, see https://github.com/Microsoft/vcpkg/issues/4475 .
+
+  * Install homebrew: ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
+  * Build Qt dependencies:  ``brew install pcre2 harfbuzz``
+  * Build cmake from HEAD (or you can build your own):  ``brew --HEAD install cmake``
+  * When running cmake in qtbase, pass ``-DCMAKE_PREFIX_PATH=/usr/local``
+
+
 # Building
 
 The basic way of building with cmake is as follows:
