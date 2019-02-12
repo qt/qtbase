@@ -8,6 +8,8 @@
 
 find_package(PostgreSQL)
 set_package_properties(PostgreSQL PROPERTIES TYPE OPTIONAL)
+find_package(ODBC)
+set_package_properties(ODBC PROPERTIES TYPE OPTIONAL)
 find_package(SQLite3)
 set_package_properties(SQLite3 PROPERTIES TYPE OPTIONAL)
 
@@ -36,7 +38,7 @@ qt_feature("sql_oci" PRIVATE
 )
 qt_feature("sql_odbc" PRIVATE
     LABEL "ODBC"
-    CONDITION QT_FEATURE_datestring AND libs.odbc OR FIXME
+    CONDITION QT_FEATURE_datestring AND ODBC_FOUND
 )
 qt_feature("sql_psql" PRIVATE
     LABEL "PostgreSQL"

@@ -23,7 +23,7 @@ if(QT_FEATURE_sql_mysql)
 endif()
 
 if(QT_FEATURE_sql_odbc)
-#     TODO add_subdirectory(odbc)
+    add_subdirectory(odbc)
 endif()
 
 if(QT_FEATURE_sql_tds)
