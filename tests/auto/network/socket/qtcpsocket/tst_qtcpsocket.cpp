@@ -317,7 +317,7 @@ tst_QTcpSocket::tst_QTcpSocket()
     connect(earlyConstructedSockets->endPoints[1], SIGNAL(bytesWritten(qint64)), this, SLOT(earlySocketBytesSent(qint64)));
     earlyConstructedSockets->endPoints[1]->write("hello work");
 
-    firstFailInfo.setAddresses(QList<QHostAddress>() << QHostAddress("224.0.0.0") << QtNetworkSettings::serverIP());
+    firstFailInfo.setAddresses(QList<QHostAddress>() << QHostAddress("224.0.0.0") << QtNetworkSettings::httpServerIp());
 }
 
 void tst_QTcpSocket::initTestCase_data()
@@ -326,7 +326,6 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::addColumn<int>("proxyType");
     QTest::addColumn<bool>("ssl");
 
-    qDebug() << QtNetworkSettings::serverName();
     QTest::newRow("WithoutProxy") << false << 0 << false;
     //QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false; ### temporarily disabled, QTBUG-38385
     //QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false; ### temporarily disabled, QTBUG-38385
@@ -352,7 +351,17 @@ void tst_QTcpSocket::initTestCase_data()
 
 void tst_QTcpSocket::initTestCase()
 {
+#ifdef QT_TEST_SERVER
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
+     //QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::firewallServerName(), 1357));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpServerName(), 21));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+#else
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+#endif
 }
 
 void tst_QTcpSocket::init()
@@ -361,30 +370,33 @@ void tst_QTcpSocket::init()
     if (setProxy) {
 #ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
-        QList<QHostAddress> addresses = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses();
-        QVERIFY2(addresses.count() > 0, "failed to get ip address for test server");
-        QString fluke = addresses.first().toString();
+        QList<QHostAddress> socks5Addresses = QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses();
+        QList<QHostAddress> httpProxyAddresses = QHostInfo::fromName(QtNetworkSettings::httpProxyServerName()).addresses();
+        QVERIFY2(socks5Addresses.count() > 0, "failed to get ip address for SOCKS5 proxy server");
+        QVERIFY2(httpProxyAddresses.count() > 0, "failed to get ip address for HTTP proxy server");
+        QString socks5Address = socks5Addresses.first().toString();
+        QString httpProxyAddress = httpProxyAddresses.first().toString();
         QNetworkProxy proxy;
 
         switch (proxyType) {
         case Socks5Proxy:
-            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, fluke, 1080);
+            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, socks5Address, 1080);
             break;
 
         case Socks5Proxy | AuthBasic:
-            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, fluke, 1081);
+            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, socks5Address, 1081);
             break;
 
         case HttpProxy | NoAuth:
-            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, fluke, 3128);
+            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, httpProxyAddress, 3128);
             break;
 
         case HttpProxy | AuthBasic:
-            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, fluke, 3129);
+            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, httpProxyAddress, 3129);
             break;
 
         case HttpProxy | AuthNtlm:
-            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, fluke, 3130);
+            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, httpProxyAddress, 3130);
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
@@ -644,8 +656,8 @@ void tst_QTcpSocket::bind()
 void tst_QTcpSocket::bindThenResolveHost_data()
 {
     QTest::addColumn<QString>("hostName");
-    QTest::newRow("ip-literal") << QtNetworkSettings::serverIP().toString();
-    QTest::newRow("name") << QtNetworkSettings::serverName();
+    QTest::newRow("ip-literal") << QtNetworkSettings::httpServerIp().toString();
+    QTest::newRow("name") << QtNetworkSettings::httpServerName();
     QTest::newRow("first-fail") << firstFailName;
 }
 
@@ -715,7 +727,7 @@ void tst_QTcpSocket::setSocketDescriptor()
 #ifdef Q_OS_WIN
     // need the dummy to ensure winsock is started
     QTcpSocket *dummy = newSocket();
-    dummy->connectToHost(QtNetworkSettings::serverName(), 143);
+    dummy->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(dummy->waitForConnected());
 
     SOCKET sock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -737,7 +749,7 @@ void tst_QTcpSocket::setSocketDescriptor()
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
 
     qt_qhostinfo_clear_cache(); //avoid the HostLookupState being skipped due to address being in cache from previous test.
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     QCOMPARE(socket->state(), QTcpSocket::HostLookupState);
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     QVERIFY(socket->waitForConnected(10000));
@@ -758,7 +770,7 @@ void tst_QTcpSocket::socketDescriptor()
     QTcpSocket *socket = newSocket();
 
     QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
             socket->state() == QAbstractSocket::ConnectingState);
     QVERIFY(socket->waitForConnected(10000));
@@ -775,7 +787,7 @@ void tst_QTcpSocket::blockingIMAP()
     QTcpSocket *socket = newSocket();
 
     // Connect
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
     QVERIFY(socket->isValid());
@@ -852,6 +864,14 @@ void tst_QTcpSocket::hostNotFound()
     socket->connectToHost("nosuchserver.qt-project.org", 80);
     QVERIFY(!socket->waitForConnected());
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+#ifdef QT_TEST_SERVER
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy) {
+        QEXPECT_FAIL("", "QTBUG-73953: The version of Squid in the docker container behaves "
+                         "differently to the one in the network testing server, returning 503 "
+                         "when we expect 404", Continue);
+    }
+#endif
     QCOMPARE(int(socket->error()), int(QTcpSocket::HostNotFoundError));
 
     delete socket;
@@ -861,8 +881,8 @@ void tst_QTcpSocket::hostNotFound()
 void tst_QTcpSocket::timeoutConnect_data()
 {
     QTest::addColumn<QString>("address");
-    QTest::newRow("host") << QtNetworkSettings::serverName();
-    QTest::newRow("ip") << QtNetworkSettings::serverIP().toString();
+    QTest::newRow("host") << QtNetworkSettings::firewallServerName();
+    QTest::newRow("ip") << QtNetworkSettings::firewallServerIp().toString();
 }
 
 void tst_QTcpSocket::timeoutConnect()
@@ -910,7 +930,7 @@ void tst_QTcpSocket::nonBlockingIMAP()
     nonBlockingIMAP_socket = socket;
 
     // Connect
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->state() == QTcpSocket::HostLookupState ||
             socket->state() == QTcpSocket::ConnectingState);
 
@@ -1036,7 +1056,7 @@ void tst_QTcpSocket::delayedClose()
     connect(socket, SIGNAL(connected()), SLOT(nonBlockingIMAP_connected()));
     connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
 
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
 
     enterLoop(30);
     if (timeout())
@@ -1082,7 +1102,7 @@ QByteArray tst_QTcpSocket::expectedReplyIMAP()
 void tst_QTcpSocket::fetchExpectedReplyIMAP()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY2(socket->waitForConnected(10000), qPrintable(socket->errorString()));
     QVERIFY2(socket->state() == QTcpSocket::ConnectedState, qPrintable(socket->errorString()));
 
@@ -1101,7 +1121,7 @@ void tst_QTcpSocket::fetchExpectedReplyIMAP()
 void tst_QTcpSocket::partialRead()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
     char buf[512];
@@ -1125,7 +1145,7 @@ void tst_QTcpSocket::partialRead()
 void tst_QTcpSocket::unget()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
     char buf[512];
@@ -1162,7 +1182,7 @@ void tst_QTcpSocket::readRegularFile_readyRead()
 void tst_QTcpSocket::readAllAfterClose()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     connect(socket, SIGNAL(readyRead()), SLOT(readRegularFile_readyRead()));
     enterLoop(10);
     if (timeout())
@@ -1202,7 +1222,7 @@ void tst_QTcpSocket::openCloseOpenClose()
 
         QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
 
-        socket->connectToHost(QtNetworkSettings::serverName(), 143);
+        socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         QVERIFY(socket->waitForConnected(10000));
         socket->close();
     }
@@ -1225,7 +1245,7 @@ void tst_QTcpSocket::connectDisconnectConnectDisconnect()
         QCOMPARE(int(socket->peerPort()), 0);
         QCOMPARE(socket->peerAddress(), QHostAddress());
 
-        socket->connectToHost(QtNetworkSettings::serverName(), 143);
+        socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         QVERIFY(socket->waitForReadyRead(10000));
         QCOMPARE(QString::fromLatin1(socket->read(4)), QString("* OK"));
 
@@ -1429,7 +1449,7 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // just connect and disconnect, then make sure nothing weird happened
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 21);
+    socket->connectToHost(QtNetworkSettings::ftpServerName(), 21);
 
     // check that connect is in progress
     QVERIFY(socket->state() != QAbstractSocket::UnconnectedState);
@@ -1477,7 +1497,7 @@ void tst_QTcpSocket::downloadBigFile()
     connect(tmpSocket, SIGNAL(readyRead()), SLOT(downloadBigFileSlot()));
     connect(tmpSocket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
 
-    tmpSocket->connectToHost(QtNetworkSettings::serverName(), 80);
+    tmpSocket->connectToHost(QtNetworkSettings::httpServerName(), 80);
 
     enterLoop(30);
     if (timeout()) {
@@ -1486,7 +1506,7 @@ void tst_QTcpSocket::downloadBigFile()
         QFAIL("Network operation timed out");
     }
 
-    QByteArray hostName = QtNetworkSettings::serverName().toLatin1();
+    QByteArray hostName = QtNetworkSettings::httpServerName().toLatin1();
     QCOMPARE(tmpSocket->state(), QAbstractSocket::ConnectedState);
     QVERIFY(tmpSocket->write("GET /qtest/mediumfile HTTP/1.0\r\n") > 0);
     QVERIFY(tmpSocket->write("HOST: ") > 0);
@@ -1552,7 +1572,7 @@ void tst_QTcpSocket::downloadBigFileSlot()
 void tst_QTcpSocket::readLine()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->waitForConnected(5000));
 
     while (!socket->canReadLine())
@@ -1601,7 +1621,7 @@ void tst_QTcpSocket::readLine()
 void tst_QTcpSocket::readLineString()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->waitForReadyRead(10000));
 
     QByteArray arr = socket->readLine();
@@ -1614,7 +1634,7 @@ void tst_QTcpSocket::readLineString()
 void tst_QTcpSocket::readChunks()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->waitForReadyRead(5000));
 
@@ -1634,7 +1654,7 @@ void tst_QTcpSocket::readChunks()
 void tst_QTcpSocket::waitForBytesWritten()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     QVERIFY(socket->waitForConnected(10000));
 
     socket->write("GET / HTTP/1.0\r\n\r\n");
@@ -1652,7 +1672,7 @@ void tst_QTcpSocket::waitForBytesWrittenMinusOne()
     QSKIP("QTBUG-24451 - indefinite wait may hang");
 #endif
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     QVERIFY(socket->waitForConnected(10000));
 
     socket->write("GET / HTTP/1.0\r\n\r\n");
@@ -1667,7 +1687,7 @@ void tst_QTcpSocket::waitForBytesWrittenMinusOne()
 void tst_QTcpSocket::waitForReadyRead()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     socket->write("GET / HTTP/1.0\r\n\r\n");
     QVERIFY(socket->waitForReadyRead(5000));
     delete socket;
@@ -1680,7 +1700,7 @@ void tst_QTcpSocket::waitForReadyReadMinusOne()
     QSKIP("QTBUG-24451 - indefinite wait may hang");
 #endif
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     socket->write("GET / HTTP/1.0\r\n\r\n");
     QVERIFY(socket->waitForReadyRead(-1));
     delete socket;
@@ -1693,7 +1713,7 @@ void tst_QTcpSocket::flush()
     socket->flush();
 
     connect(socket, SIGNAL(connected()), SLOT(exitLoopSlot()));
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     enterLoop(60);
     QVERIFY(socket->isOpen());
 
@@ -1710,7 +1730,7 @@ void tst_QTcpSocket::flush()
 void tst_QTcpSocket::synchronousApi()
 {
     QTcpSocket *ftpSocket = newSocket();
-    ftpSocket->connectToHost(QtNetworkSettings::serverName(), 21);
+    ftpSocket->connectToHost(QtNetworkSettings::ftpServerName(), 21);
     ftpSocket->write("QUIT\r\n");
     QVERIFY(ftpSocket->waitForDisconnected(10000));
     QVERIFY(ftpSocket->bytesAvailable() > 0);
@@ -1757,10 +1777,10 @@ void tst_QTcpSocket::recursiveReadyRead()
 
     QSignalSpy spy(testSocket, SIGNAL(readyRead()));
 
-    testSocket->connectToHost(QtNetworkSettings::serverName(), 143);
+    testSocket->connectToHost(QtNetworkSettings::imapServerName(), 143);
     enterLoop(30);
     QVERIFY2(!timeout(),
-            "Timed out when connecting to QtNetworkSettings::serverName().");
+            "Timed out when connecting to QtNetworkSettings::imapServerName().");
 
     enterLoop(30);
     QVERIFY2(!timeout(),
@@ -1794,7 +1814,7 @@ void tst_QTcpSocket::recursiveReadyReadSlot()
 void tst_QTcpSocket::atEnd()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 21);
+    socket->connectToHost(QtNetworkSettings::ftpServerName(), 21);
 
     QVERIFY(socket->waitForReadyRead(15000));
     QTextStream stream(socket);
@@ -1802,9 +1822,15 @@ void tst_QTcpSocket::atEnd()
     QString greeting = stream.readLine();
     QVERIFY(stream.atEnd());
 
+#ifdef QT_TEST_SERVER
+    // Test server must use some vsFTPd 3.x.x version
+    QVERIFY2(greeting.length() == sizeof("220 (vsFTPd 3.x.x)")-1, qPrintable(greeting));
+    QVERIFY2(greeting.startsWith("220 (vsFTPd 3."), qPrintable(greeting));
+#else
     // Test server must use some vsFTPd 2.x.x version
     QVERIFY2(greeting.length() == sizeof("220 (vsFTPd 2.x.x)")-1, qPrintable(greeting));
     QVERIFY2(greeting.startsWith("220 (vsFTPd 2."), qPrintable(greeting));
+#endif
     QVERIFY2(greeting.endsWith(QLatin1Char(')')), qPrintable(greeting));
 
     delete socket;
@@ -1835,7 +1861,7 @@ protected:
         connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)), Qt::DirectConnection);
 
-        socket->connectToHost(QtNetworkSettings::serverName(), 21);
+        socket->connectToHost(QtNetworkSettings::ftpServerName(), 21);
         socket->write("QUIT\r\n");
         exec();
 
@@ -1909,7 +1935,7 @@ void tst_QTcpSocket::waitForReadyReadInASlot()
     tmpSocket = socket;
     connect(socket, SIGNAL(connected()), this, SLOT(waitForReadyReadInASlotSlot()));
 
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     socket->write("GET / HTTP/1.0\r\n\r\n");
 
     enterLoop(30);
@@ -2073,7 +2099,7 @@ void tst_QTcpSocket::waitForConnectedInHostLookupSlot()
     timer.start(15000);
 
     connect(tmpSocket, SIGNAL(hostFound()), this, SLOT(hostLookupSlot()));
-    tmpSocket->connectToHost(QtNetworkSettings::serverName(), 143);
+    tmpSocket->connectToHost(QtNetworkSettings::imapServerName(), 143);
 
     // only execute the loop if not already connected
     if (tmpSocket->state() != QAbstractSocket::ConnectedState)
@@ -2128,7 +2154,7 @@ public slots:
     inline void doIt()
     {
         attemptedToConnect = true;
-        sock->connectToHost(QtNetworkSettings::serverName(), 80);
+        sock->connectToHost(QtNetworkSettings::httpServerName(), 80);
 
 #if defined(Q_OS_MAC)
         pthread_yield_np();
@@ -2179,7 +2205,7 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QSignalSpy readyReadSpy(socket, SIGNAL(readyRead()));
 
     // Connect
-    socket->connectToHost(QtNetworkSettings::serverName(), 143);
+    socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
 
     // Wait for the read
     QVERIFY(socket->waitForReadyRead(10000));
@@ -2315,7 +2341,7 @@ void tst_QTcpSocket::localAddressEmptyOnBSD()
 void tst_QTcpSocket::zeroAndMinusOneReturns()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 80);
     socket->write("GET / HTTP/1.0\r\nConnection: keep-alive\r\n\r\n");
     QVERIFY(socket->waitForReadyRead(15000));
 
@@ -2376,7 +2402,7 @@ void tst_QTcpSocket::connectionRefused()
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
             &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    socket->connectToHost(QtNetworkSettings::serverName(), 144);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 144);
 
     enterLoop(10);
     disconnect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
@@ -2523,7 +2549,7 @@ void tst_QTcpSocket::moveToThread0()
     {
         // Case 1: Moved after connecting, before waiting for connection.
         QTcpSocket *socket = newSocket();;
-        socket->connectToHost(QtNetworkSettings::serverName(), 143);
+        socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         socket->moveToThread(0);
         QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
@@ -2535,7 +2561,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 2: Moved before connecting
         QTcpSocket *socket = newSocket();
         socket->moveToThread(0);
-        socket->connectToHost(QtNetworkSettings::serverName(), 143);
+        socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
@@ -2545,7 +2571,7 @@ void tst_QTcpSocket::moveToThread0()
     {
         // Case 3: Moved after writing, while waiting for bytes to be written.
         QTcpSocket *socket = newSocket();
-        socket->connectToHost(QtNetworkSettings::serverName(), 143);
+        socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         socket->moveToThread(0);
@@ -2556,7 +2582,7 @@ void tst_QTcpSocket::moveToThread0()
     {
         // Case 4: Moved after writing, while waiting for response.
         QTcpSocket *socket = newSocket();
-        socket->connectToHost(QtNetworkSettings::serverName(), 143);
+        socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
@@ -2687,7 +2713,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
     // use waitForConnected, e.g. this should use a synchronous select() on the OS level
 
     QTcpSocket socket;
-    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+    socket.connectToHost(QtNetworkSettings::httpServerName(), 12346);
     QTime timer;
     timer.start();
     socket.waitForConnected(10000);
@@ -2707,7 +2733,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
     // This testcase uses an event loop
     QTcpSocket socket;
     connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+    socket.connectToHost(QtNetworkSettings::httpServerName(), 12346);
 
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY2(!QTestEventLoop::instance().timeout(), "Connection to closed port timed out instead of refusing, something is wrong");
@@ -2720,7 +2746,7 @@ void tst_QTcpSocket::taskQtBug7054TimeoutErrorResetting()
 {
     QTcpSocket *socket = newSocket();
 
-    socket->connectToHost(QtNetworkSettings::serverName(), 443);
+    socket->connectToHost(QtNetworkSettings::httpServerName(), 443);
     QVERIFY(socket->waitForConnected(5*1000));
     QCOMPARE(socket->error(), QAbstractSocket::UnknownSocketError);
 
@@ -2749,10 +2775,12 @@ void tst_QTcpSocket::invalidProxy_data()
     QTest::addColumn<bool>("failsAtConnect");
     QTest::addColumn<int>("expectedError");
 
-    QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
-    QTest::newRow("ftp-proxy") << int(QNetworkProxy::FtpCachingProxy) << fluke << 21 << true
+    const QString ftpAddress = QtNetworkSettings::ftpServerIp().toString();
+    const QString httpProxyAddress = QtNetworkSettings::httpProxyServerIp().toString();
+    const QString socksProxyAddress = QtNetworkSettings::socksProxyServerIp().toString();
+    QTest::newRow("ftp-proxy") << int(QNetworkProxy::FtpCachingProxy) << ftpAddress << 21 << true
                                << int(QAbstractSocket::UnsupportedSocketOperationError);
-    QTest::newRow("http-caching-proxy") << int(QNetworkProxy::HttpCachingProxy) << fluke << 3128 << true
+    QTest::newRow("http-caching-proxy") << int(QNetworkProxy::HttpCachingProxy) << httpProxyAddress << 3128 << true
                                         << int(QAbstractSocket::UnsupportedSocketOperationError);
     QTest::newRow("no-such-host-socks5") << int(QNetworkProxy::Socks5Proxy)
                                          << "this-host-will-never-exist.qt-project.org" << 1080 << false
@@ -2760,9 +2788,9 @@ void tst_QTcpSocket::invalidProxy_data()
     QTest::newRow("no-such-host-http") << int(QNetworkProxy::HttpProxy)
                                        << "this-host-will-never-exist.qt-project.org" << 3128 << false
                                        << int(QAbstractSocket::ProxyNotFoundError);
-    QTest::newRow("http-on-socks5") << int(QNetworkProxy::HttpProxy) << fluke << 1080 << false
+    QTest::newRow("http-on-socks5") << int(QNetworkProxy::HttpProxy) << socksProxyAddress << 1080 << false
                                     << int(QAbstractSocket::ProxyConnectionClosedError);
-    QTest::newRow("socks5-on-http") << int(QNetworkProxy::Socks5Proxy) << fluke << 3128 << false
+    QTest::newRow("socks5-on-http") << int(QNetworkProxy::Socks5Proxy) << httpProxyAddress << 3128 << false
                                     << int(QAbstractSocket::SocketTimeoutError);
 }
 
@@ -2781,7 +2809,7 @@ void tst_QTcpSocket::invalidProxy()
 
     QTcpSocket *socket = newSocket();
     socket->setProxy(proxy);
-    socket->connectToHost(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString(), 80);
+    socket->connectToHost(QtNetworkSettings::httpServerIp().toString(), 80);
 
     if (failsAtConnect) {
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
@@ -2833,48 +2861,48 @@ void tst_QTcpSocket::proxyFactory_data()
 
     // tests that do connect
 
-    proxyList << QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3129);
+    proxyList << QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::httpProxyServerName(), 3129);
     QTest::newRow("http")
         << proxyList << proxyList.at(0)
         << false << int(QAbstractSocket::UnknownSocketError);
 
     proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1081);
+    proxyList << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1081);
     QTest::newRow("socks5")
         << proxyList << proxyList.at(0)
         << false << int(QAbstractSocket::UnknownSocketError);
 
     proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::serverName(), 3129)
-              << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1081);
+    proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
+              << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1081);
     QTest::newRow("cachinghttp+socks5")
         << proxyList << proxyList.at(1)
         << false << int(QAbstractSocket::UnknownSocketError);
 
     proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::serverName(), 2121)
-              << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::serverName(), 3129)
-              << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1081);
+    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
+              << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
+              << QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1081);
     QTest::newRow("ftp+cachinghttp+socks5")
         << proxyList << proxyList.at(2)
         << false << int(QAbstractSocket::UnknownSocketError);
 
     // tests that fail to connect
     proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::serverName(), 3129);
+    proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129);
     QTest::newRow("cachinghttp")
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
 
     proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::serverName(), 2121);
+    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
     QTest::newRow("ftp")
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
 
     proxyList.clear();
-    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::serverName(), 2121)
-              << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::serverName(), 3129);
+    proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121)
+              << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129);
     QTest::newRow("ftp+cachinghttp")
         << proxyList << QNetworkProxy()
         << true << int(QAbstractSocket::UnsupportedSocketOperationError);
@@ -2895,7 +2923,7 @@ void tst_QTcpSocket::proxyFactory()
     QNetworkProxyFactory::setApplicationProxyFactory(factory);
 
     QTcpSocket *socket = newSocket();
-    QString host = QtNetworkSettings::serverName();
+    QString host = QtNetworkSettings::httpServerName();
     socket->connectToHost(host, 80);
 
     // Verify that the factory was called properly

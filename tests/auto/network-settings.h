@@ -228,10 +228,58 @@ public:
 #endif
     }
 
+    static QString echoServerName()
+    {
+#ifdef QT_TEST_SERVER_NAME
+        return QString("echo.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+
+    static QString firewallServerName()
+    {
+#ifdef QT_TEST_SERVER_NAME
+        return QString("iptables.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+
 #ifdef QT_NETWORK_LIB
     static QHostAddress imapServerIp()
     {
         return getServerIpImpl(imapServerName());
+    }
+
+    static QHostAddress httpServerIp()
+    {
+        return getServerIpImpl(httpServerName());
+    }
+
+    static QHostAddress httpProxyServerIp()
+    {
+        return getServerIpImpl(httpProxyServerName());
+    }
+
+    static QHostAddress socksProxyServerIp()
+    {
+        return getServerIpImpl(socksProxyServerName());
+    }
+
+    static QHostAddress ftpProxyServerIp()
+    {
+        return getServerIpImpl(ftpProxyServerName());
+    }
+
+    static QHostAddress ftpServerIp()
+    {
+        return getServerIpImpl(ftpServerName());
+    }
+
+    static QHostAddress firewallServerIp()
+    {
+        return getServerIpImpl(firewallServerName());
     }
 #endif
 };

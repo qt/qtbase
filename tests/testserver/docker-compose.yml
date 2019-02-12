@@ -31,6 +31,9 @@ services:
             - apache2
         external_links:
             - apache2:apache2.${TEST_DOMAIN}
+            - cyrus:cyrus.${TEST_DOMAIN}
+            - iptables:iptables.${TEST_DOMAIN}
+            - vsftpd:vsftpd.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./squid:/service:ro
@@ -93,3 +96,17 @@ services:
             - ./cyrus:/service:ro
         entrypoint: common/startup.sh
         command: service/cyrus.sh
+
+    iptables:
+        image: qt-test-server-iptables:cb7a8bd6d28602085a88c8ced7d67e28e75781e2
+        container_name: qt-test-server-iptables
+        domainname: ${TEST_DOMAIN}
+        hostname: iptables
+        volumes:
+            - ./common:/common:ro
+            - ./iptables:/service:ro
+        entrypoint: common/startup.sh
+        command: service/iptables.sh
+        cap_add:
+            - NET_ADMIN
+            - NET_RAW
