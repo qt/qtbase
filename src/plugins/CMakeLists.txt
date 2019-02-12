@@ -4,7 +4,7 @@ if (QT_FEATURE_sql)
 endif()
 
 if(QT_FEATURE_network AND QT_FEATURE_bearermanagement)
-#     TODO add_subdirectory(bearer)
+    add_subdirectory(bearer)
 endif()
 
 if(QT_FEATURE_gui)
