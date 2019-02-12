@@ -158,8 +158,6 @@ HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
     return S_OK;
 }
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-
 static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 {
     ComPtr<IInputPaneStatics> factory;
@@ -220,7 +218,5 @@ void QWinRTInputContext::hideInputPanel()
         return S_OK;
     });
 }
-
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 QT_END_NAMESPACE

@@ -330,7 +330,7 @@ void QCocoaScreen::deliverUpdateRequests()
         auto windows = QGuiApplication::allWindows();
         for (int i = 0; i < windows.size(); ++i) {
             QWindow *window = windows.at(i);
-            QPlatformWindow *platformWindow = window->handle();
+            auto *platformWindow = static_cast<QCocoaWindow*>(window->handle());
             if (!platformWindow)
                 continue;
 
@@ -341,7 +341,7 @@ void QCocoaScreen::deliverUpdateRequests()
                 continue;
 
             // Skip windows that are not doing update requests via display link
-            if (!(window->format().swapInterval() > 0))
+            if (!platformWindow->updatesWithDisplayLink())
                 continue;
 
             platformWindow->deliverUpdateRequest();

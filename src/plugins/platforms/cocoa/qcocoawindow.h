@@ -129,6 +129,7 @@ public:
     bool isForeignWindow() const override;
 
     void requestUpdate() override;
+    bool updatesWithDisplayLink() const;
     void deliverUpdateRequest() override;
 
     void requestActivateWindow() override;

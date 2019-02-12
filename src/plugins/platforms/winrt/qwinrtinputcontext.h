@@ -74,10 +74,8 @@ public:
 
     bool isInputPanelVisible() const override;
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     void showInputPanel() override;
     void hideInputPanel() override;
-#endif
 
 private slots:
     void updateScreenCursorRect();
