@@ -129,6 +129,16 @@ QT_USE_NAMESPACE
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAutoReleasePoolTracker);
 QT_BEGIN_NAMESPACE
 
+
+/*
+    Manages a scoped auto-release pool.
+
+    To track autoreleases without any pools in place, such as in main()
+    before the runloop has started, export OBJC_DEBUG_MISSING_POOLS=YES
+    and break in objc_autoreleaseNoPool, e.g.:
+
+        br set -n objc_autoreleaseNoPool -c "[((NSObject*)$r14) class] == [QNSWindow class]"
+*/
 QMacAutoReleasePool::QMacAutoReleasePool()
     : pool([[NSAutoreleasePool alloc] init])
 {
