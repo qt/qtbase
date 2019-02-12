@@ -546,16 +546,6 @@ function(add_qt_module target)
     set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
     install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${config_install_dir})
 
-    set(target_deps)
-    foreach(lib ${arg_PUBLIC_LIBRARIES})
-        if ("${lib}" MATCHES "^Qt::(Platform|GlobalConfig)")
-            list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
-        elseif ("${lib}" MATCHES "^Qt::")
-            string(REGEX REPLACE "^Qt::" "${INSTALL_CMAKE_NAMESPACE}" dep "${lib}")
-            list(APPEND target_deps "${dep}\;${PROJECT_VERSION}")
-        endif()
-    endforeach()
-
     set(extra_cmake_files)
     set(extra_cmake_includes)
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
@@ -569,6 +559,44 @@ function(add_qt_module target)
         list(APPEND extra_cmake_files "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
     endif()
+
+    ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
+    # that belong to Qt.
+    if (GCC OR CLANG)
+        qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
+    endif()
+
+    # When a public module depends on private, also make its private depend on the other's private
+    set(qt_libs_private "")
+    foreach(it ${KNOWN_QT_MODULES})
+        list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
+        if(pos GREATER -1)
+            list(APPEND qt_libs_private "Qt::${it}Private")
+        endif()
+    endforeach()
+
+    target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
+    target_include_directories("${target_private}" INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>
+        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>
+        $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
+        $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
+    )
+
+    set(target_deps)
+    foreach(lib IN LISTS arg_PUBLIC_LIBRARIES qt_libs_private)
+        if ("${lib}" MATCHES "^Qt::(.*)")
+            set(lib "${CMAKE_MATCH_1}")
+            if (lib STREQUAL Platform OR lib STREQUAL GlobalConfig)
+                list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
+            elseif ("${lib}" MATCHES "(.*)Private")
+                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${CMAKE_MATCH_1}\;${PROJECT_VERSION}")
+            else()
+                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
+            endif()
+        endif()
+    endforeach()
 
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
@@ -587,31 +615,6 @@ function(add_qt_module target)
         ${extra_cmake_files}
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
-    )
-
-    ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
-    # that belong to Qt.
-    if (GCC OR CLANG)
-        qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
-    endif()
-
-    # When a public module depends on private, also make its private depend on the other's private
-    set(qt_libs_private "")
-    foreach(it ${KNOWN_QT_MODULES})
-        list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
-        if(pos GREATER -1)
-            list(APPEND qt_libs_private "Qt::${it}Private")
-        endif()
-    endforeach()
-
-    target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
-
-    target_include_directories("${target_private}" INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>
-        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>
-        $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
-        $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
 endfunction()
 
