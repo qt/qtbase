@@ -400,25 +400,7 @@ glProgramUniform1i(0, 0, 0);
 }
 ")
 
-# xlib
-qt_config_compile_test(xlib
-    LABEL "XLib"
-    LIBRARIES X11::X11
-    CODE
-"
-#include <X11/Xlib.h>
 
-int main(int argc, char **argv)
-{
-    (void)argc; (void)argv;
-    /* BEGIN TEST: */
-Display *d = XOpenDisplay(NULL);
-XCloseDisplay(d);
-    /* END TEST: */
-    return 0;
-}
-"
-)
 
 #### Features
 
@@ -734,7 +716,7 @@ qt_feature("xkbcommon_evdev" PRIVATE
 qt_feature("xlib" PRIVATE
     LABEL "XLib"
     AUTODETECT NOT APPLE OR QT_FEATURE_xcb
-    CONDITION TEST_xlib
+    CONDITION X11_FOUND
 )
 qt_feature("texthtmlparser" PUBLIC
     SECTION "Kernel"
