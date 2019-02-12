@@ -166,7 +166,7 @@ qt_feature("openssl" PUBLIC PRIVATE
 qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
 qt_feature("openssl_linked" PUBLIC PRIVATE
     LABEL "  Qt directly linked to OpenSSL"
-    CONDITION NOT QT_FEATURE_securetransport AND libs.openssl OR FIXME
+    CONDITION NOT QT_FEATURE_securetransport AND OpenSSL_FOUND
     ENABLE INPUT_openssl STREQUAL 'linked'
     DISABLE ( NOT INPUT_openssl STREQUAL 'linked' )
 )
