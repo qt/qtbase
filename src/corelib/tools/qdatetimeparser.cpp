@@ -1125,13 +1125,14 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
 
     for (int index = 0; index < sectionNodesCount; ++index) {
         Q_ASSERT(state != Invalid);
-        if (QStringRef(input, pos, separators.at(index).size()) != separators.at(index)) {
-            QDTPDEBUG << "invalid because" << input->midRef(pos, separators.at(index).size())
-                      << "!=" << separators.at(index)
+        const QString &separator = separators.at(index);
+        if (input->midRef(pos, separator.size()) != separator) {
+            QDTPDEBUG << "invalid because" << input->midRef(pos, separator.size())
+                      << "!=" << separator
                       << index << pos << currentSectionIndex;
             return StateNode();
         }
-        pos += separators.at(index).size();
+        pos += separator.size();
         sectionNodes[index].pos = pos;
         int *current = 0;
         const SectionNode sn = sectionNodes.at(index);
@@ -1227,7 +1228,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         isSet |= sn.type;
     }
 
-    if (QStringRef(input, pos, input->size() - pos) != separators.last()) {
+    if (input->midRef(pos) != separators.last()) {
         QDTPDEBUG << "invalid because" << input->midRef(pos)
                   << "!=" << separators.last() << pos;
         return StateNode();

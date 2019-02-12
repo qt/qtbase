@@ -1102,6 +1102,9 @@ void QCocoaWindow::setEmbeddedInForeignView()
 
 void QCocoaWindow::viewDidChangeFrame()
 {
+    if (isContentView())
+        return; // Handled below
+
     handleGeometryChange();
 }
 
@@ -1474,16 +1477,21 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
 void QCocoaWindow::requestUpdate()
 {
-    const int swapInterval = format().swapInterval();
-    qCDebug(lcQpaDrawing) << "QCocoaWindow::requestUpdate" << window() << "swapInterval" << swapInterval;
+    qCDebug(lcQpaDrawing) << "QCocoaWindow::requestUpdate" << window()
+        << "using" << (updatesWithDisplayLink() ? "display-link" : "timer");
 
-    if (swapInterval > 0) {
-        // Vsync is enabled, deliver via CVDisplayLink
+    if (updatesWithDisplayLink()) {
         static_cast<QCocoaScreen *>(screen())->requestUpdate();
     } else {
         // Fall back to the un-throttled timer-based callback
         QPlatformWindow::requestUpdate();
     }
+}
+
+bool QCocoaWindow::updatesWithDisplayLink() const
+{
+    // Update via CVDisplayLink if Vsync is enabled
+    return format().swapInterval() != 0;
 }
 
 void QCocoaWindow::deliverUpdateRequest()

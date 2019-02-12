@@ -66,8 +66,19 @@ void tst_QComplexText::bidiReorderString_data()
             << QString::fromUtf8( data->logical )
             << QString::fromUtf8( data->visual )
             << (int) data->basicDir;
+
+        QTest::newRow( QByteArray(data->name) + " (doubled)" )
+            << (QString::fromUtf8( data->logical ) + QChar(QChar::ParagraphSeparator) + QString::fromUtf8( data->logical ))
+            << (QString::fromUtf8( data->visual ) + QChar(QChar::ParagraphSeparator) + QString::fromUtf8( data->visual ))
+            << (int) data->basicDir;
         data++;
     }
+
+    QString isolateAndBoundary =  QString(QChar(0x2068 /* DirFSI */)) + QChar(0x1c /* DirB */) + QChar(0x2069 /* DirPDI */);
+    QTest::newRow( "isolateAndBoundary" )
+        << QString::fromUtf8( data->logical )
+        << QString::fromUtf8( data->visual )
+        << (int) QChar::DirL;
 }
 
 void tst_QComplexText::bidiReorderString()
@@ -426,7 +437,7 @@ ushort unicodeForDirection(const QByteArray &direction)
         { "ET", 0x24 },
         { "AN", 0x660 },
         { "CS", 0x2c },
-        { "B", QChar::ParagraphSeparator },
+        { "B", '\n' },
         { "S", 0x9 },
         { "WS", 0x20 },
         { "ON", 0x2a },

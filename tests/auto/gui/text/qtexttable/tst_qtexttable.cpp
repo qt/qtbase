@@ -431,6 +431,12 @@ void tst_QTextTable::insertRows()
     table->insertRows(5, 2);
     QCOMPARE(table->rows(), 7);
 
+    table = cursor.insertTable(5,5);
+    table->mergeCells(0,0,3,3);
+    table->insertRows(2,1);
+
+    QCOMPARE(table->rows(), 6);
+
 }
 
 void tst_QTextTable::deleteInTable()

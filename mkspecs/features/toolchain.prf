@@ -229,7 +229,10 @@ isEmpty($${target_prefix}.INCDIRS) {
                 line ~= s/^[ \\t]*//  # remove leading spaces
                 contains(line, "LIBRARY_PATH=.*") {
                     line ~= s/^LIBRARY_PATH=//  # remove leading LIBRARY_PATH=
-                    paths = $$split(line, $$QMAKE_DIRLIST_SEP)
+                    equals(QMAKE_HOST.os, Windows): \
+                        paths = $$split(line, ;)
+                    else: \
+                        paths = $$split(line, $$QMAKE_DIRLIST_SEP)
                     for (path, paths): \
                         QMAKE_DEFAULT_LIBDIRS += $$clean_path($$path)
                 } else: contains(line, "Library search paths:") {

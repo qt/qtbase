@@ -112,6 +112,8 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
     d->screen = static_cast<QWinRTScreen *>(screen());
     handleContentOrientationChange(window->contentOrientation());
 
+    d->surfaceFormat.setMajorVersion(3);
+    d->surfaceFormat.setMinorVersion(0);
     d->surfaceFormat.setAlphaBufferSize(0);
     d->surfaceFormat.setRedBufferSize(8);
     d->surfaceFormat.setGreenBufferSize(8);

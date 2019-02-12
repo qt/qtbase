@@ -393,8 +393,14 @@ QWindowsEGLContext::QWindowsEGLContext(QWindowsEGLStaticContext *staticContext,
     m_shareContext = share ? static_cast<QWindowsEGLContext *>(share)->m_eglContext : nullptr;
 
     QVector<EGLint> contextAttrs;
-    contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
-    contextAttrs.append(m_format.majorVersion());
+    const int major = m_format.majorVersion();
+    const int minor = m_format.minorVersion();
+    if (major > 3 || (major == 3 && minor > 0))
+        qWarning("QWindowsEGLContext: ANGLE only partially supports OpenGL ES > 3.0");
+    contextAttrs.append(EGL_CONTEXT_MAJOR_VERSION);
+    contextAttrs.append(major);
+    contextAttrs.append(EGL_CONTEXT_MINOR_VERSION);
+    contextAttrs.append(minor);
     contextAttrs.append(EGL_NONE);
 
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);

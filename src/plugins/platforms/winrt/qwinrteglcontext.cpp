@@ -134,11 +134,14 @@ void QWinRTEGLContext::initialize()
 
     const EGLint flags = d->format.testOption(QSurfaceFormat::DebugContext)
             ? EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR : 0;
+    const int major = d->format.majorVersion();
+    const int minor = d->format.minorVersion();
+    if (major > 3 || (major == 3 && minor > 0))
+        qWarning("QWinRTEGLContext: ANGLE only partially supports OpenGL ES > 3.0");
     const EGLint attributes[] = {
         EGL_CONTEXT_CLIENT_VERSION, d->format.majorVersion(),
         EGL_CONTEXT_MINOR_VERSION_KHR, d->format.minorVersion(),
         EGL_CONTEXT_FLAGS_KHR, flags,
-        EGL_CONTEXT_OPENGL_NO_ERROR_KHR, true,
         EGL_NONE
     };
     d->eglContext = eglCreateContext(g->eglDisplay, d->eglConfig, d->eglShareContext, attributes);
