@@ -56,7 +56,7 @@ function(QT5_WRAP_UI outfiles )
         get_filename_component(infile ${it} ABSOLUTE)
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.h)
         add_custom_command(OUTPUT ${outfile}
-          COMMAND ${Qt5Widgets_UIC_EXECUTABLE}
+          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::uic
           ARGS ${ui_options} -o ${outfile} ${infile}
           MAIN_DEPENDENCY ${infile} VERBATIM)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTOUIC ON)

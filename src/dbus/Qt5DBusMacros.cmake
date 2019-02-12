@@ -58,7 +58,7 @@ function(QT5_ADD_DBUS_INTERFACE _sources _interface _basename)
     endif()
 
     add_custom_command(OUTPUT "${_impl}" "${_header}"
-        COMMAND ${Qt5DBus_QDBUSXML2CPP_EXECUTABLE} ${_params} -p ${_basename} ${_infile}
+        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${_params} -p ${_basename} ${_infile}
         DEPENDS ${_infile} VERBATIM)
 
     set_source_files_properties("${_impl}" "${_header}" PROPERTIES SKIP_AUTOMOC TRUE)
@@ -111,7 +111,7 @@ function(QT5_GENERATE_DBUS_INTERFACE _header) # _customName OPTIONS -some -optio
     endif()
 
     add_custom_command(OUTPUT ${_target}
-        COMMAND ${Qt5DBus_QDBUSCPP2XML_EXECUTABLE} ${_DBUS_INTERFACE_OPTIONS} ${_in_file} -o ${_target}
+        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml ${_DBUS_INTERFACE_OPTIONS} ${_in_file} -o ${_target}
         DEPENDS ${_in_file} VERBATIM
     )
 endfunction()
@@ -135,12 +135,12 @@ function(QT5_ADD_DBUS_ADAPTOR _sources _xml_file _include _parentClass) # _optio
 
     if(_optionalClassName)
         add_custom_command(OUTPUT "${_impl}" "${_header}"
-          COMMAND ${Qt5DBus_QDBUSXML2CPP_EXECUTABLE} -m -a ${_basename} -c ${_optionalClassName} -i ${_include} -l ${_parentClass} ${_infile}
+          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -c ${_optionalClassName} -i ${_include} -l ${_parentClass} ${_infile}
           DEPENDS ${_infile} VERBATIM
         )
     else()
         add_custom_command(OUTPUT "${_impl}" "${_header}"
-          COMMAND ${Qt5DBus_QDBUSXML2CPP_EXECUTABLE} -m -a ${_basename} -i ${_include} -l ${_parentClass} ${_infile}
+          COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -i ${_include} -l ${_parentClass} ${_infile}
           DEPENDS ${_infile} VERBATIM
         )
     endif()
