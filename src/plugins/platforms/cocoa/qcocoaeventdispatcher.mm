@@ -672,6 +672,11 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
     return currentModalSessionCached;
 }
 
+bool QCocoaEventDispatcherPrivate::hasModalSession() const
+{
+    return !cocoaModalSessionStack.isEmpty();
+}
+
 void QCocoaEventDispatcherPrivate::cleanupModalSessions()
 {
     // Go through the list of modal sessions, and end those

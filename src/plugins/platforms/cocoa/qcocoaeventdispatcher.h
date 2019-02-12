@@ -171,6 +171,7 @@ public:
     void temporarilyStopAllModalSessions();
     void beginModalSession(QWindow *widget);
     void endModalSession(QWindow *widget);
+    bool hasModalSession() const;
     void cleanupModalSessions();
 
     void cancelWaitForMoreEvents();

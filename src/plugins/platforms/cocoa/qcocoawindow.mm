@@ -153,7 +153,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_inSetStyleMask(false)
     , m_menubar(nullptr)
     , m_needsInvalidateShadow(false)
-    , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
@@ -360,8 +359,7 @@ void QCocoaWindow::setVisible(bool visible)
                 } else if (window()->modality() == Qt::ApplicationModal) {
                     // Show the window as application modal
                     eventDispatcher()->beginModalSession(window());
-                    m_hasModalSession = true;
-                } else if (m_view.window.canBecomeKeyWindow && eventDispatcher()->cocoaModalSessionStack.isEmpty()) {
+                } else if (m_view.window.canBecomeKeyWindow && !eventDispatcher()->hasModalSession()) {
                     [m_view.window makeKeyAndOrderFront:nil];
                 } else {
                     [m_view.window orderFront:nil];
@@ -393,9 +391,8 @@ void QCocoaWindow::setVisible(bool visible)
     } else {
         // Window not visible, hide it
         if (isContentView()) {
-            if (m_hasModalSession) {
+            if (eventDispatcher()->hasModalSession()) {
                 eventDispatcher()->endModalSession(window());
-                m_hasModalSession = false;
             } else {
                 if ([m_view.window isSheet]) {
                     Q_ASSERT_X(parentCocoaWindow, "QCocoaWindow", "Window modal dialog has no transient parent.");
@@ -405,7 +402,7 @@ void QCocoaWindow::setVisible(bool visible)
 
             [m_view.window orderOut:nil];
 
-            if (m_view.window == [NSApp keyWindow] && !eventDispatcher()->currentModalSession()) {
+            if (m_view.window == [NSApp keyWindow] && !eventDispatcher()->hasModalSession()) {
                 // Probably because we call runModalSession: outside [NSApp run] in QCocoaEventDispatcher
                 // (e.g., when show()-ing a modal QDialog instead of exec()-ing it), it can happen that
                 // the current NSWindow is still key after being ordered out. Then, after checking we
