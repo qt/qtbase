@@ -59,8 +59,7 @@ test(fptr);
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: CONFIG += c++11
-)
+")
 
 # clock-monotonic
 qt_config_compile_test(clock_monotonic

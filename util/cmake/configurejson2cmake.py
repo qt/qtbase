@@ -619,6 +619,9 @@ def parseTest(ctx, test, data, cm_fh):
                 cm_fh.write("if (LINUX)\n")
                 cm_fh.write("    set(" + librariesCmakeName + " pthread rt)\n")
                 cm_fh.write("endif()\n")
+            elif details["qmake"] == "CONFIG += c++11":
+                # do nothing we're always in c++11 mode
+                pass
             else:
                 qmakeFixme = "# FIXME: qmake: {}\n".format(details["qmake"])
 
