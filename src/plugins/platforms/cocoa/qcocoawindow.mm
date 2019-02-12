@@ -303,12 +303,16 @@ void QCocoaWindow::setVisible(bool visible)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setVisible" << window() << visible;
 
-    m_inSetVisible = true;
+    QScopedValueRollback<bool> rollback(m_inSetVisible, true);
 
     QMacAutoReleasePool pool;
     QCocoaWindow *parentCocoaWindow = nullptr;
     if (window()->transientParent())
         parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
+
+    auto eventDispatcher = [] {
+        return static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(qApp->eventDispatcher()));
+    };
 
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
@@ -350,28 +354,15 @@ void QCocoaWindow::setVisible(bool visible)
             applyWindowState(window()->windowStates());
 
             if (window()->windowState() != Qt::WindowMinimized) {
-                if ((window()->modality() == Qt::WindowModal
-                     || window()->type() == Qt::Sheet)
-                        && parentCocoaWindow) {
-                    // show the window as a sheet
+                if (parentCocoaWindow && (window()->modality() == Qt::WindowModal || window()->type() == Qt::Sheet)) {
+                    // Show the window as a sheet
                     [parentCocoaWindow->nativeWindow() beginSheet:m_view.window completionHandler:nil];
-                } else if (window()->modality() != Qt::NonModal) {
-                    // show the window as application modal
-                    QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-                    Q_ASSERT(cocoaEventDispatcher);
-                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
-                    cocoaEventDispatcherPrivate->beginModalSession(window());
+                } else if (window()->modality() == Qt::ApplicationModal) {
+                    // Show the window as application modal
+                    eventDispatcher()->beginModalSession(window());
                     m_hasModalSession = true;
-                } else if ([m_view.window canBecomeKeyWindow]) {
-                    QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
-                    if (cocoaEventDispatcher)
-                        cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
-
-                    if (cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->cocoaModalSessionStack.isEmpty())
-                        [m_view.window makeKeyAndOrderFront:nil];
-                    else
-                        [m_view.window orderFront:nil];
+                } else if (m_view.window.canBecomeKeyWindow && eventDispatcher()->cocoaModalSessionStack.isEmpty()) {
+                    [m_view.window makeKeyAndOrderFront:nil];
                 } else {
                     [m_view.window orderFront:nil];
                 }
@@ -396,21 +387,18 @@ void QCocoaWindow::setVisible(bool visible)
                 }
             }
         }
+
         // In some cases, e.g. QDockWidget, the content view is hidden before moving to its own
         // Cocoa window, and then shown again. Therefore, we test for the view being hidden even
         // if it's attached to an NSWindow.
         if ([m_view isHidden])
             [m_view setHidden:NO];
+
     } else {
-        // qDebug() << "close" << this;
-        QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-        QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
-        if (cocoaEventDispatcher)
-            cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+        // Window not visible, hide it
         if (isContentView()) {
             if (m_hasModalSession) {
-                if (cocoaEventDispatcherPrivate)
-                    cocoaEventDispatcherPrivate->endModalSession(window());
+                eventDispatcher()->endModalSession(window());
                 m_hasModalSession = false;
             } else {
                 if ([m_view.window isSheet]) {
@@ -421,8 +409,7 @@ void QCocoaWindow::setVisible(bool visible)
 
             [m_view.window orderOut:nil];
 
-            if (m_view.window == [NSApp keyWindow]
-                && !(cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->currentModalSession())) {
+            if (m_view.window == [NSApp keyWindow] && !eventDispatcher()->currentModalSession()) {
                 // Probably because we call runModalSession: outside [NSApp run] in QCocoaEventDispatcher
                 // (e.g., when show()-ing a modal QDialog instead of exec()-ing it), it can happen that
                 // the current NSWindow is still key after being ordered out. Then, after checking we
@@ -434,6 +421,7 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_view setHidden:YES];
         }
+
         removeMonitor();
 
         if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
@@ -447,8 +435,6 @@ void QCocoaWindow::setVisible(bool visible)
                 nativeParentWindow.styleMask |= NSWindowStyleMaskResizable;
         }
     }
-
-    m_inSetVisible = false;
 }
 
 NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
