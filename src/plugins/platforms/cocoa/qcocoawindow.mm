@@ -1539,7 +1539,8 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         // Deferring window creation breaks OpenGL (the GL context is
         // set up before the window is shown and needs a proper window)
         backing:NSBackingStoreBuffered defer:NO
-        screen:cocoaScreen->nativeScreen()];
+        screen:cocoaScreen->nativeScreen()
+        platformWindow:this];
 
     Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
         "Resulting NSScreen should match the requested NSScreen");

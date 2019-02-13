@@ -162,11 +162,28 @@ static bool isMouseEvent(NSEvent *ev)
 
 #else // QNSWINDOW_PROTOCOL_IMPLMENTATION
 
-// The following methods are mixed in to the QNSWindow and QNSPanel classes via includes
+// The following content is mixed in to the QNSWindow and QNSPanel classes via includes
+
+{
+    // Member variables
+    QPointer<QCocoaWindow> m_platformWindow;
+}
+
+- (instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)style
+    backing:(NSBackingStoreType)backingStoreType defer:(BOOL)defer screen:(NSScreen *)screen
+    platformWindow:(QCocoaWindow*)window
+{
+    // Initializing the window will end up in [NSWindow _commonAwake], which calls many
+    // of the getters below. We need to set up the platform window reference first, so
+    // we can properly reflect the window's state during initialization.
+    m_platformWindow = window;
+
+    return [super initWithContentRect:contentRect styleMask:style backing:backingStoreType defer:defer screen:screen];
+}
 
 - (QCocoaWindow *)platformWindow
 {
-    return qnsview_cast(self.contentView).platformWindow;
+    return m_platformWindow;
 }
 
 - (NSString *)description
@@ -187,16 +204,15 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)canBecomeKeyWindow
 {
-    QCocoaWindow *pw = self.platformWindow;
-    if (!pw)
+    if (!m_platformWindow)
         return NO;
 
-    if (pw->shouldRefuseKeyWindowAndFirstResponder())
+    if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
 
     if ([self isKindOfClass:[QNSPanel class]]) {
         // Only tool or dialog windows should become key:
-        Qt::WindowType type = pw->window()->type();
+        Qt::WindowType type = m_platformWindow->window()->type();
         if (type == Qt::Tool || type == Qt::Dialog)
             return YES;
 
@@ -215,8 +231,7 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
-    QCocoaWindow *pw = self.platformWindow;
-    if (!pw || pw->window()->transientParent())
+    if (!m_platformWindow || m_platformWindow->window()->transientParent())
         canBecomeMain = NO;
 
     return canBecomeMain;
@@ -224,12 +239,10 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)worksWhenModal
 {
-    if ([self isKindOfClass:[QNSPanel class]]) {
-        if (QCocoaWindow *pw = self.platformWindow) {
-            Qt::WindowType type = pw->window()->type();
-            if (type == Qt::Popup || type == Qt::Dialog || type == Qt::Tool)
-                return YES;
-        }
+    if (m_platformWindow && [self isKindOfClass:[QNSPanel class]]) {
+        Qt::WindowType type = m_platformWindow->window()->type();
+        if (type == Qt::Popup || type == Qt::Dialog || type == Qt::Tool)
+            return YES;
     }
 
     return [super worksWhenModal];
@@ -237,8 +250,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)isOpaque
 {
-    return self.platformWindow ?
-        self.platformWindow->isOpaque() : [super isOpaque];
+    return m_platformWindow ? m_platformWindow->isOpaque() : [super isOpaque];
 }
 
 /*!
@@ -266,7 +278,7 @@ static bool isMouseEvent(NSEvent *ev)
     // e.g. if being retained by other parts of AppKit, or in an auto-release
     // pool. We guard against this in QNSView as well, as not all callbacks
     // come via events, but if they do there's no point in propagating them.
-    if (!self.platformWindow)
+    if (!m_platformWindow)
         return;
 
     // Prevent deallocation of this NSWindow during event delivery, as we
@@ -274,23 +286,22 @@ static bool isMouseEvent(NSEvent *ev)
     [[self retain] autorelease];
 
     const char *eventType = object_getClassName(theEvent);
-    if (QWindowSystemInterface::handleNativeEvent(self.platformWindow->window(),
+    if (QWindowSystemInterface::handleNativeEvent(m_platformWindow->window(),
         QByteArray::fromRawData(eventType, qstrlen(eventType)), theEvent, nullptr)) {
         return;
     }
 
     [super sendEvent:theEvent];
 
-    if (!self.platformWindow)
+    if (!m_platformWindow)
         return; // Platform window went away while processing event
 
-    QCocoaWindow *pw = self.platformWindow;
-    if (pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
+    if (m_platformWindow->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
         NSPoint loc = [theEvent locationInWindow];
         NSRect windowFrame = [self convertRectFromScreen:self.frame];
         NSRect contentFrame = self.contentView.frame;
         if (NSMouseInRect(loc, windowFrame, NO) && !NSMouseInRect(loc, contentFrame, NO))
-            [qnsview_cast(pw->view()) handleFrameStrutMouseEvent:theEvent];
+            [qnsview_cast(m_platformWindow->view()) handleFrameStrutMouseEvent:theEvent];
     }
 }
 
