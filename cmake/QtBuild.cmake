@@ -39,6 +39,7 @@ set(INSTALL_TESTSDIR "tests" CACHE PATH "Tests [PREFIX/tests]")
 set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
 
 set(QT_CMAKE_EXPORT_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace used when exporting targets [Qt${PROJECT_VERSION_MAJOR}]")
+set(QT_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # the default RPATH to be used when installing, but only if it's not a system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
@@ -568,7 +569,7 @@ function(add_qt_module target)
     endif()
 
     configure_package_config_file(
-        "${PROJECT_SOURCE_DIR}/cmake/QtModuleConfig.cmake.in"
+        "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
