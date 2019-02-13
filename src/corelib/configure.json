@@ -133,6 +133,7 @@
         "libatomic": {
             "label": "64 bit atomics",
             "test": {
+                "include": [ "atomic", "cstdint" ],
                 "tail": [
                     "void test(volatile std::atomic<std::int64_t> &a)",
                     "{",
@@ -151,7 +152,6 @@
                 ],
                 "qmake": "CONFIG += c++11"
             },
-            "headers": [ "atomic", "cstdint" ],
             "sources": [
                 "",
                 "-latomic"
