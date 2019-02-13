@@ -2136,7 +2136,7 @@ void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imag
     QCOMPARE(image.depth(), 32);
     QCOMPARE(original.depth(), image.depth());
 
-    const int bytesPerLine = image.bytesPerLine();
+    const qsizetype bytesPerLine = image.bytesPerLine();
     const int width = image.width();
     const int height = image.height();
 

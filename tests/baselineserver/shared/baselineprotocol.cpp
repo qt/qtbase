@@ -223,8 +223,8 @@ quint32       *pb);       /* IN: more seed OUT: secondary hash value */
 quint64 ImageItem::computeChecksum(const QImage &image)
 {
     QImage img(image);
-    const int bpl = img.bytesPerLine();
-    const int padBytes = bpl - (img.width() * img.depth() / 8);
+    const qsizetype bpl = img.bytesPerLine();
+    const int padBytes = bpl - (qsizetype(img.width()) * img.depth() / 8);
     if (padBytes) {
         uchar *p = img.bits() + bpl - padBytes;
         const int h = img.height();

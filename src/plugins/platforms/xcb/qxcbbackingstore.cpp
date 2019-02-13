@@ -537,7 +537,7 @@ void QXcbBackingStoreImage::ensureGC(xcb_drawable_t dst)
 static inline void copy_unswapped(char *dst, int dstBytesPerLine, const QImage &img, const QRect &rect)
 {
     const uchar *srcData = img.constBits();
-    const int srcBytesPerLine = img.bytesPerLine();
+    const qsizetype srcBytesPerLine = img.bytesPerLine();
 
     const int leftOffset = rect.left() * img.depth() >> 3;
     const int bottom = rect.bottom() + 1;
@@ -553,7 +553,7 @@ template <class Pixel>
 static inline void copy_swapped(char *dst, const int dstStride, const QImage &img, const QRect &rect)
 {
     const uchar *srcData = img.constBits();
-    const int srcBytesPerLine = img.bytesPerLine();
+    const qsizetype srcBytesPerLine = img.bytesPerLine();
 
     const int left = rect.left();
     const int width = rect.width();

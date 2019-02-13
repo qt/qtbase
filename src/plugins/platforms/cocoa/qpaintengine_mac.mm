@@ -90,7 +90,7 @@ CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
         image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     const int sx = qRound(sr.x()), sy = qRound(sr.y()), sw = qRound(sr.width()), sh = qRound(sr.height());
-    const int sbpr = image.bytesPerLine();
+    const qsizetype sbpr = image.bytesPerLine();
     const uint nbytes = sw * sh;
     //  alpha is always 255 for bitmaps, ignore it in this case.
     const quint32 mask = pixmap.depth() == 1 ? 0x00ffffff : 0xffffffff;

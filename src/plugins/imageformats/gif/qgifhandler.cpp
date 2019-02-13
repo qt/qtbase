@@ -246,7 +246,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
     }
 
     image->detach();
-    int bpl = image->bytesPerLine();
+    qsizetype bpl = image->bytesPerLine();
     unsigned char *bits = image->bits();
 
 #define LM(l, m) (((m)<<8)|l)
@@ -422,7 +422,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         }
                         memset(backingstore.bits(), 0, backingstore.sizeInBytes());
                     }
-                    const int dest_bpl = backingstore.bytesPerLine();
+                    const qsizetype dest_bpl = backingstore.bytesPerLine();
                     unsigned char *dest_data = backingstore.bits();
                     for (int ln=0; ln<h; ln++) {
                         memcpy(FAST_SCAN_LINE(dest_data, dest_bpl, ln),

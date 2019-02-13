@@ -163,7 +163,7 @@ private:
 
 #  define QT_XFORM_TYPE_MSBFIRST 0
 #  define QT_XFORM_TYPE_LSBFIRST 1
-Q_GUI_EXPORT bool qt_xForm_helper(const QTransform&, int, int, int, uchar*, int, int, int, const uchar*, int, int, int);
+Q_GUI_EXPORT bool qt_xForm_helper(const QTransform&, int, int, int, uchar*, qsizetype, int, int, const uchar*, qsizetype, int, int);
 
 QT_END_NAMESPACE
 

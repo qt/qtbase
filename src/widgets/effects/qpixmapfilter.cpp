@@ -784,11 +784,11 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
         dest.setDevicePixelRatio(source.devicePixelRatioF());
 
         const uchar *src = reinterpret_cast<const uchar*>(const_cast<const QImage &>(srcImage).bits());
-        int sx = srcImage.bytesPerLine();
-        int sx2 = sx << 1;
+        qsizetype sx = srcImage.bytesPerLine();
+        qsizetype sx2 = sx << 1;
 
         uchar *dst = reinterpret_cast<uchar*>(dest.bits());
-        int dx = dest.bytesPerLine();
+        qsizetype dx = dest.bytesPerLine();
         int ww = dest.width();
         int hh = dest.height();
 
@@ -806,11 +806,11 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
         dest.setDevicePixelRatio(source.devicePixelRatioF());
 
         const uchar *src = reinterpret_cast<const uchar*>(const_cast<const QImage &>(srcImage).bits());
-        int sx = srcImage.bytesPerLine();
-        int sx2 = sx << 1;
+        qsizetype sx = srcImage.bytesPerLine();
+        qsizetype sx2 = sx << 1;
 
         uchar *dst = reinterpret_cast<uchar*>(dest.bits());
-        int dx = dest.bytesPerLine();
+        qsizetype dx = dest.bytesPerLine();
         int ww = dest.width();
         int hh = dest.height();
 
@@ -843,11 +843,11 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
     dest.setDevicePixelRatio(source.devicePixelRatioF());
 
     const quint32 *src = reinterpret_cast<const quint32*>(const_cast<const QImage &>(srcImage).bits());
-    int sx = srcImage.bytesPerLine() >> 2;
-    int sx2 = sx << 1;
+    qsizetype sx = srcImage.bytesPerLine() >> 2;
+    qsizetype sx2 = sx << 1;
 
     quint32 *dst = reinterpret_cast<quint32*>(dest.bits());
-    int dx = dest.bytesPerLine() >> 2;
+    qsizetype dx = dest.bytesPerLine() >> 2;
     int ww = dest.width();
     int hh = dest.height();
 

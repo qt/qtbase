@@ -777,9 +777,9 @@ bool QBmpHandler::write(const QImage &img)
     }
 
     int nbits;
-    int bpl_bmp;
+    qsizetype bpl_bmp;
     // Calculate a minimum bytes-per-line instead of using whatever value this QImage is using internally.
-    int bpl = ((image.width() * image.depth() + 31) >> 5) << 2;
+    qsizetype bpl = ((image.width() * image.depth() + 31) >> 5) << 2;
 
     if (image.depth() == 8 && image.colorCount() <= 16) {
         bpl_bmp = (((bpl+1)/2+3)/4)*4;
@@ -791,6 +791,8 @@ bool QBmpHandler::write(const QImage &img)
         bpl_bmp = bpl;
         nbits = image.depth();
     }
+    if (qsizetype(int(bpl_bmp)) != bpl_bmp)
+        return false;
 
     if (m_format == DibFormat) {
         QDataStream dibStream(device());
@@ -813,6 +815,8 @@ bool QBmpHandler::write(const QImage &img)
     bf.bfReserved2 = 0;
     bf.bfOffBits = BMP_FILEHDR_SIZE + BMP_WIN + image.colorCount() * 4;
     bf.bfSize = bf.bfOffBits + bpl_bmp*image.height();
+    if (qsizetype(bf.bfSize) != bf.bfOffBits + bpl_bmp*image.height())
+        return false;
     s << bf;
 
     // write image

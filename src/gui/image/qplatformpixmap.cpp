@@ -183,7 +183,7 @@ QBitmap QPlatformPixmap::mask() const
     mask.setColor(0, QColor(Qt::color0).rgba());
     mask.setColor(1, QColor(Qt::color1).rgba());
 
-    const int bpl = mask.bytesPerLine();
+    const qsizetype bpl = mask.bytesPerLine();
 
     for (int y = 0; y < h; ++y) {
         const QRgb *src = reinterpret_cast<const QRgb*>(image.scanLine(y));
@@ -216,7 +216,7 @@ void QPlatformPixmap::setMask(const QBitmap &mask)
             for (int y = 0; y < h; ++y) {
                 const uchar *mscan = imageMask.scanLine(y);
                 uchar *tscan = image.scanLine(y);
-                int bytesPerLine = image.bytesPerLine();
+                qsizetype bytesPerLine = image.bytesPerLine();
                 for (int i = 0; i < bytesPerLine; ++i)
                     tscan[i] &= mscan[i];
             }

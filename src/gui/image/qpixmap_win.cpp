@@ -121,7 +121,7 @@ static inline void copyImageDataCreateAlpha(const uchar *data, QImage *target)
     const uint mask = target->format() == QImage::Format_RGB32 ? 0xff000000 : 0;
     const int height = target->height();
     const int width = target->width();
-    const int bytesPerLine = width * int(sizeof(QRgb));
+    const qsizetype bytesPerLine = width * sizeof(QRgb);
     for (int y = 0; y < height; ++y) {
         QRgb *dest = reinterpret_cast<QRgb *>(target->scanLine(y));
         const QRgb *src = reinterpret_cast<const QRgb *>(data + y * bytesPerLine);

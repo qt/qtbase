@@ -350,7 +350,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
         int mw = qMin(mask.width(), c.w);
         int mh = qMin(mask.height(), c.h);
         uchar *d = m_image.bits();
-        int dbpl = m_image.bytesPerLine();
+        qsizetype dbpl = m_image.bytesPerLine();
 
         for (int y = 0; y < c.h; ++y) {
             uchar *dest = d + (c.y + y) *dbpl + c.x/8;
@@ -372,7 +372,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
         int mw = qMin(mask.width(), c.w);
         int mh = qMin(mask.height(), c.h);
         uchar *d = m_image.bits();
-        int dbpl = m_image.bytesPerLine();
+        qsizetype dbpl = m_image.bytesPerLine();
 
         if (mask.depth() == 1) {
             for (int y = 0; y < c.h; ++y) {

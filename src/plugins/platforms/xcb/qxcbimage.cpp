@@ -212,7 +212,7 @@ xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image)
     }
     const int width = bitmap.width();
     const int height = bitmap.height();
-    const int bytesPerLine = bitmap.bytesPerLine();
+    const qsizetype bytesPerLine = bitmap.bytesPerLine();
     int destLineSize = width / 8;
     if (width % 8)
         ++destLineSize;

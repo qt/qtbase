@@ -356,7 +356,7 @@ void ICOReader::read1BitBMP(QImage & image)
     if (iod) {
 
         int h = image.height();
-        int bpl = image.bytesPerLine();
+        qsizetype bpl = image.bytesPerLine();
 
         while (--h >= 0) {
             if (iod->read((char*)image.scanLine(h),bpl) != bpl) {
@@ -405,7 +405,7 @@ void ICOReader::read8BitBMP(QImage & image)
     if (iod) {
 
         int h = icoAttrib.h;
-        int bpl = image.bytesPerLine();
+        qsizetype bpl = image.bytesPerLine();
 
         while (--h >= 0) {
             if (iod->read((char *)image.scanLine(h), bpl) != bpl) {
@@ -425,7 +425,7 @@ void ICOReader::read16_24_32BMP(QImage & image)
         QRgb *p;
         QRgb  *end;
         uchar *buf = new uchar[image.bytesPerLine()];
-        int    bpl = ((icoAttrib.w*icoAttrib.nbits+31)/32)*4;
+        qsizetype    bpl = ((qsizetype(icoAttrib.w)*icoAttrib.nbits+31)/32)*4;
         uchar *b;
 
         while (--h >= 0) {

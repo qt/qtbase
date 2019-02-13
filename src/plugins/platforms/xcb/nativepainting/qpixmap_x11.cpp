@@ -1747,7 +1747,7 @@ XID QX11PlatformPixmap::createBitmapFromImage(const QImage &image)
     int w = img.width();
     int h = img.height();
     int bpl = (w + 7) / 8;
-    int ibpl = img.bytesPerLine();
+    qsizetype ibpl = img.bytesPerLine();
     if (bpl != ibpl) {
         tmp_bits = new uchar[bpl*h];
         bits = (char *)tmp_bits;
@@ -2017,7 +2017,7 @@ QImage QX11PlatformPixmap::toImage(const QXImageWrapper &xiWrapper, const QRect 
         }
     } else if (xi->bits_per_pixel == d) {        // compatible depth
         char *xidata = xi->data;                // copy each scanline
-        int bpl = qMin(int(image.bytesPerLine()),xi->bytes_per_line);
+        qsizetype bpl = qMin(image.bytesPerLine(),xi->bytes_per_line);
         for (int y=0; y<xi->height; y++) {
             memcpy(image.scanLine(y), xidata, bpl);
             xidata += xi->bytes_per_line;
@@ -2038,10 +2038,10 @@ QImage QX11PlatformPixmap::toImage(const QXImageWrapper &xiWrapper, const QRect 
         uchar *end;
         uchar  use[256];                        // pixel-in-use table
         uchar  pix[256];                        // pixel translation table
-        int    ncols, bpl;
+        int    ncols;
         memset(use, 0, 256);
         memset(pix, 0, 256);
-        bpl = image.bytesPerLine();
+        qsizetype bpl = image.bytesPerLine();
 
         if (x11_mask) {                         // which pixels are used?
             for (int i = 0; i < xi->height; i++) {

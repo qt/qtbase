@@ -305,7 +305,7 @@ void QAlphaWidget::alphaBlend()
 
     const int sw = frontImage.width();
     const int sh = frontImage.height();
-    const int bpl = frontImage.bytesPerLine();
+    const qsizetype bpl = frontImage.bytesPerLine();
     switch(frontImage.depth()) {
     case 32:
         {

@@ -2906,7 +2906,7 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
         int32x4_t v_fdy = vdupq_n_s32(fdy * 4);
 
         const uchar *textureData = image.imageData;
-        const int bytesPerLine = image.bytesPerLine;
+        const qsizetype bytesPerLine = image.bytesPerLine;
 
         int32x4_t v_fx = vmovq_n_s32(fx);
         int32x4_t v_fy = vmovq_n_s32(fy);

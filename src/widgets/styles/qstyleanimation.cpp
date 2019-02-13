@@ -266,7 +266,7 @@ static QImage blendedImage(const QImage &start, const QImage &end, float alpha)
     const int ia = 256 - a;
     const int sw = start.width();
     const int sh = start.height();
-    const int bpl = start.bytesPerLine();
+    const qsizetype bpl = start.bytesPerLine();
     switch (start.depth()) {
     case 32:
         {

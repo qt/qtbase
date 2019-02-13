@@ -149,7 +149,10 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
         return false;
 
     //depth will be always 32
-    int bpl_bmp = image.width()*4;
+    qsizetype bpl_bmp = qsizetype(image.width()) * 4;
+    qsizetype size = bpl_bmp * image.height();
+    if (qsizetype(DWORD(size)) != size)
+        return false;
 
     BMP_BITMAPV5HEADER bi;
     ZeroMemory(&bi, sizeof(bi));
@@ -261,11 +264,11 @@ static bool qt_read_dibv5(QDataStream &s, QImage &image)
     const int blue_shift = calc_shift(blue_mask);
     const int alpha_shift =  alpha_mask ? calc_shift(alpha_mask) : 0u;
 
-    const int  bpl = image.bytesPerLine();
+    const qsizetype  bpl = image.bytesPerLine();
     uchar *data = image.bits();
 
     auto *buf24 = new uchar[bpl];
-    const int bpl24 = ((w * nbits + 31) / 32) * 4;
+    const qsizetype bpl24 = ((qsizetype(w) * nbits + 31) / 32) * 4;
 
     while (--h >= 0) {
         QRgb *p = reinterpret_cast<QRgb *>(data + h * bpl);

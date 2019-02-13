@@ -622,7 +622,7 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
     int x = -1, w = 0;
 
     uchar *cursor_data = cursorImage.bits();
-    int bpl = cursorImage.bytesPerLine();
+    qsizetype bpl = cursorImage.bytesPerLine();
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < bytesPerLine; j++, data++, mask++)

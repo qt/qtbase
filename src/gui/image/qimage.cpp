@@ -781,7 +781,7 @@ QImage::QImage(const QSize &size, Format format)
 
 
 
-QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+QImageData *QImageData::create(uchar *data, int width, int height,  qsizetype bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
 {
     if (width <= 0 || height <= 0 || !data || format == QImage::Format_Invalid)
         return nullptr;
@@ -793,7 +793,7 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
 
     if (bpl > 0) {
         // can't overflow, because has calculateImageParameters already done this multiplication
-        const int min_bytes_per_line = (width * depth + 7)/8;
+        const qsizetype min_bytes_per_line = (qsizetype(width) * depth + 7)/8;
         if (bpl < min_bytes_per_line)
             return nullptr;
 
@@ -894,12 +894,16 @@ QImage::QImage(const uchar* data, int width, int height, Format format, QImageCl
     initially empty and must be sufficiently expanded with
     setColorCount() or setColorTable() before the image is used.
 */
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QImage::QImage(uchar *data, int width, int height, qsizetype bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+#else
 QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+#endif
     :QPaintDevice()
 {
     d = QImageData::create(data, width, height, bytesPerLine, format, false, cleanupFunction, cleanupInfo);
 }
-
 
 /*!
     Constructs an image with the given \a width, \a height and \a
@@ -926,7 +930,11 @@ QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format form
     data being changed.
 */
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QImage::QImage(const uchar *data, int width, int height, qsizetype bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+#else
 QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
+#endif
     :QPaintDevice()
 {
     d = QImageData::create(const_cast<uchar*>(data), width, height, bytesPerLine, format, true, cleanupFunction, cleanupInfo);
@@ -1165,7 +1173,7 @@ QImage QImage::copy(const QRect& r) const
         // Qt for Embedded Linux can create images with non-default bpl
         // make sure we don't crash.
         if (image.d->nbytes != d->nbytes) {
-            int bpl = qMin(bytesPerLine(), image.bytesPerLine());
+            qsizetype bpl = qMin(bytesPerLine(), image.bytesPerLine());
             for (int i = 0; i < height(); i++)
                 memcpy(image.scanLine(i), scanLine(i), bpl);
         } else
@@ -1224,7 +1232,7 @@ QImage QImage::copy(const QRect& r) const
     if (byteAligned) {
         const uchar *src = d->data + ((x * d->depth) >> 3) + y * d->bytes_per_line;
         uchar *dest = image.d->data + ((dx * d->depth) >> 3) + dy * image.d->bytes_per_line;
-        const int bytes_to_copy = (pixels_to_copy * d->depth) >> 3;
+        const qsizetype bytes_to_copy = (qsizetype(pixels_to_copy) * d->depth) >> 3;
         for (int i = 0; i < lines_to_copy; ++i) {
             memcpy(dest, src, bytes_to_copy);
             src += d->bytes_per_line;
@@ -1890,11 +1898,11 @@ void QImage::invertPixels(InvertMode mode)
 
     if (depth() < 32) {
         // This assumes no alpha-channel as the only formats with non-premultipled alpha are 32bit.
-        int bpl = (d->width * d->depth + 7) / 8;
+        qsizetype bpl = (qsizetype(d->width) * d->depth + 7) / 8;
         int pad = d->bytes_per_line - bpl;
         uchar *sl = d->data;
         for (int y=0; y<d->height; ++y) {
-            for (int x=0; x<bpl; ++x)
+            for (qsizetype x=0; x<bpl; ++x)
                 *sl++ ^= 0xff;
             sl += pad;
         }
@@ -4169,8 +4177,8 @@ int QImage::metric(PaintDeviceMetric metric) const
                         trigy += m12;
         // END OF MACRO
 bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth,
-                     uchar *dptr, int dbpl, int p_inc, int dHeight,
-                     const uchar *sptr, int sbpl, int sWidth, int sHeight)
+                     uchar *dptr, qsizetype dbpl, int p_inc, int dHeight,
+                     const uchar *sptr, qsizetype sbpl, int sWidth, int sHeight)
 {
     int m11 = int(trueMat.m11()*4096.0);
     int m12 = int(trueMat.m12()*4096.0);
@@ -4712,7 +4720,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
     int bpp = depth();
 
-    int sbpl = bytesPerLine();
+    qsizetype sbpl = bytesPerLine();
     const uchar *sptr = bits();
 
     QImage::Format target_format = d->format;
@@ -4767,7 +4775,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
         // create target image (some of the code is from QImage::copy())
         int type = format() == Format_Mono ? QT_XFORM_TYPE_MSBFIRST : QT_XFORM_TYPE_LSBFIRST;
-        int dbpl = dImage.bytesPerLine();
+        qsizetype dbpl = dImage.bytesPerLine();
         qt_xForm_helper(mat, 0, type, bpp, dImage.bits(), dbpl, 0, hd, sptr, sbpl, ws, hs);
     }
     copyMetadata(dImage.d, d);

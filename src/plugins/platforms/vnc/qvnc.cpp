@@ -502,7 +502,7 @@ void QRfbRawEncoder::write()
         const quint32 encoding = htonl(0); // raw encoding
         socket->write((char *)&encoding, sizeof(encoding));
 
-        int linestep = screenImage.bytesPerLine();
+        qsizetype linestep = screenImage.bytesPerLine();
         const uchar *screendata = screenImage.scanLine(rect.y)
                                   + rect.x * screenImage.depth() / 8;
 

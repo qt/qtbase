@@ -135,7 +135,7 @@ static inline QRgb scale_pbm_color(quint16 mx, quint16 rv, quint16 gv, quint16 b
 static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, QImage *outImage)
 {
     int nbits, y;
-    int pbm_bpl;
+    qsizetype pbm_bpl;
     bool raw;
 
     QImage::Format format;
@@ -166,7 +166,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
             return false;
     }
 
-    pbm_bpl = (nbits*w+7)/8;                        // bytes per scanline in PBM
+    pbm_bpl = (qsizetype(w) * nbits + 7) / 8;   // bytes per scanline in PBM
 
     if (raw) {                                // read raw data
         if (nbits == 32) {                        // type 6
@@ -225,14 +225,14 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                 if (device->read((char *)p, pbm_bpl) != pbm_bpl)
                     return false;
                 if (nbits == 8 && mcc < 255) {
-                    for (int i = 0; i < pbm_bpl; i++)
+                    for (qsizetype i = 0; i < pbm_bpl; i++)
                         p[i] = (p[i] * 255) / mcc;
                 }
             }
         }
     } else {                                        // read ascii data
         uchar *p;
-        int n;
+        qsizetype n;
         char buf;
         for (y = 0; (y < h) && (device->peek(&buf, 1) == 1); y++) {
             p = outImage->scanLine(y);
@@ -367,7 +367,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             str.append("255\n");
             if (out->write(str, str.length()) != str.length())
                 return false;
-            uint bpl = w * (gray ? 1 : 3);
+            qsizetype bpl = qsizetype(w) * (gray ? 1 : 3);
             uchar *buf = new uchar[bpl];
             if (image.format() == QImage::Format_Indexed8) {
                 QVector<QRgb> color = image.colorTable();
@@ -388,7 +388,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
                             *p++ = qBlue(rgb);
                         }
                     }
-                    if (bpl != (uint)out->write((char*)buf, bpl))
+                    if (bpl != (qsizetype)out->write((char*)buf, bpl))
                         return false;
                 }
             } else {
@@ -407,7 +407,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
                             *p++ = color;
                         }
                     }
-                    if (bpl != (uint)out->write((char*)buf, bpl))
+                    if (bpl != (qsizetype)out->write((char*)buf, bpl))
                         return false;
                 }
             }
@@ -420,7 +420,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             str.append("255\n");
             if (out->write(str, str.length()) != str.length())
                 return false;
-            uint bpl = w * 3;
+            qsizetype bpl = qsizetype(w) * 3;
             uchar *buf = new uchar[bpl];
             for (uint y=0; y<h; y++) {
                 const QRgb  *b = reinterpret_cast<const QRgb *>(image.constScanLine(y));
@@ -432,7 +432,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
                     *p++ = qGreen(rgb);
                     *p++ = qBlue(rgb);
                 }
-                if (bpl != (uint)out->write((char*)buf, bpl))
+                if (bpl != (qsizetype)out->write((char*)buf, bpl))
                     return false;
             }
             delete [] buf;

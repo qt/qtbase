@@ -322,7 +322,7 @@ void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPo
     // make sure we don't detach
     uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
 
-    int lineskip = img.bytesPerLine();
+    qsizetype lineskip = img.bytesPerLine();
     int depth = img.depth() >> 3;
 
     const QRect imageRect(0, 0, img.width(), img.height());

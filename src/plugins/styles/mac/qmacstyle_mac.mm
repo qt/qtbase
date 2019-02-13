@@ -2766,12 +2766,12 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             }
 
             const QRgb *sptr = (QRgb*)img.bits(), *srow;
-            const int sbpl = img.bytesPerLine();
+            const qsizetype sbpl = img.bytesPerLine();
             const int w = sbpl/4, h = img.height();
 
             QImage img_mask(img.width(), img.height(), QImage::Format_ARGB32);
             QRgb *dptr = (QRgb*)img_mask.bits(), *drow;
-            const int dbpl = img_mask.bytesPerLine();
+            const qsizetype dbpl = img_mask.bytesPerLine();
 
             for (int y = 0; y < h; ++y) {
                 srow = sptr+((y*sbpl)/4);

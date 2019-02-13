@@ -455,7 +455,7 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
     png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
     uchar *data = outImage->bits();
-    int bpl = outImage->bytesPerLine();
+    qsizetype bpl = outImage->bytesPerLine();
 
     if (scaledSize.isEmpty() || !width || !height)
         return;
@@ -709,7 +709,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
         png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
         uchar *data = outImage->bits();
-        int bpl = outImage->bytesPerLine();
+        qsizetype bpl = outImage->bytesPerLine();
         amp.row_pointers = new png_bytep[height];
 
         for (uint y = 0; y < height; y++)

@@ -804,14 +804,14 @@ void QFontEngine::addBitmapFontToPath(qreal x, qreal y, const QGlyphLayout &glyp
 
         const int w = alphaMask.width();
         const int h = alphaMask.height();
-        const int srcBpl = alphaMask.bytesPerLine();
+        const qsizetype srcBpl = alphaMask.bytesPerLine();
         QImage bitmap;
         if (alphaMask.depth() == 1) {
             bitmap = alphaMask;
         } else {
             bitmap = QImage(w, h, QImage::Format_Mono);
             const uchar *imageData = alphaMask.bits();
-            const int destBpl = bitmap.bytesPerLine();
+            const qsizetype destBpl = bitmap.bytesPerLine();
             uchar *bitmapData = bitmap.bits();
 
             for (int yi = 0; yi < h; ++yi) {

@@ -94,8 +94,8 @@ private:
 
 static void initializePadding(QImage *image)
 {
-    int effectiveBytesPerLine = (image->width() * image->depth() + 7) / 8;
-    int paddingBytes = image->bytesPerLine() - effectiveBytesPerLine;
+    qsizetype effectiveBytesPerLine = (qsizetype(image->width()) * image->depth() + 7) / 8;
+    qsizetype paddingBytes = image->bytesPerLine() - effectiveBytesPerLine;
     if (paddingBytes == 0)
         return;
     for (int y = 0; y < image->height(); ++y) {

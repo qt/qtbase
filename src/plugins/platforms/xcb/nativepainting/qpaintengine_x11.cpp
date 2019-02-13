@@ -2016,7 +2016,7 @@ Q_GUI_EXPORT void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const Q
         || (image_byte_order == LSBFirst && bgr_layout))
     {
         im = image.copy(rect);
-        const int iw = im.bytesPerLine() / 4;
+        const qsizetype iw = im.bytesPerLine() / 4;
         uint *data = (uint *)im.bits();
         for (int i=0; i < h; i++) {
             uint *p = data;
