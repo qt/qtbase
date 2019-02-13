@@ -20,7 +20,7 @@ if(QT_FEATURE_gui)
 endif()
 
 if (QT_FEATURE_widgets)
-#     TODO add_subdirectory(styles)
+    add_subdirectory(styles)
 endif()
 
 if (NOT WINRT AND TARGET PrintSupport)
