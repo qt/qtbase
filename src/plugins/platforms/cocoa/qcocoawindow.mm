@@ -376,8 +376,11 @@ void QCocoaWindow::setVisible(bool visible)
                 } else if (window()->modality() == Qt::ApplicationModal) {
                     // Show the window as application modal
                     eventDispatcher()->beginModalSession(window());
-                } else if (m_view.window.canBecomeKeyWindow && !eventDispatcher()->hasModalSession()) {
-                    [m_view.window makeKeyAndOrderFront:nil];
+                } else if (m_view.window.canBecomeKeyWindow) {
+                    if (!NSApp.modalWindow || m_view.window.worksWhenModal)
+                        [m_view.window makeKeyAndOrderFront:nil];
+                    else
+                        [m_view.window orderFront:nil];
                 } else {
                     [m_view.window orderFront:nil];
                 }
