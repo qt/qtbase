@@ -115,20 +115,8 @@ QT_USE_NAMESPACE
     self = [super init];
     if (self) {
         inLaunch = true;
-        [[NSNotificationCenter defaultCenter]
-                addObserver:self
-                   selector:@selector(updateScreens:)
-                       name:NSApplicationDidChangeScreenParametersNotification
-                     object:NSApp];
     }
     return self;
-}
-
-- (void)updateScreens:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-    if (QCocoaIntegration *ci = QCocoaIntegration::instance())
-        ci->updateScreens();
 }
 
 - (void)dealloc
