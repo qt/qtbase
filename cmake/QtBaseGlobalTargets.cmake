@@ -64,9 +64,15 @@ install(EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets" NAMESPACE ${INSTALL_CMAKE_EXP
 ## Install some QtBase specific CMake files:
 install(FILES
         cmake/QtBuild.cmake
+        cmake/QtCompilerOptimization.cmake
         cmake/QtFeature.cmake
+        cmake/QtPlatformSupport.cmake
         cmake/QtPostProcess.cmake
         cmake/QtSetup.cmake
         cmake/QtModuleConfig.cmake.in
+    DESTINATION "${config_install_dir}"
+)
+# TODO: Check whether this is the right place to install these
+install(DIRECTORY cmake/3rdparty
     DESTINATION "${config_install_dir}"
 )
