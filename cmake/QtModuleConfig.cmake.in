@@ -18,7 +18,7 @@ foreach(_target_dep ${_target_deps})
     endif()
 
     if (NOT ${pkg}_FOUND)
-        set(@target@_FOUND FALSE)
+        set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
         return()
     endif()
 endforeach()
