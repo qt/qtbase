@@ -115,30 +115,33 @@ static FontKeys &fontKeys()
 {
     static FontKeys result;
     if (result.isEmpty()) {
-        const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
-                                     QSettings::NativeFormat);
-        const QStringList allKeys = fontRegistry.allKeys();
-        const QString trueType = QStringLiteral("(TrueType)");
+        const QStringList keys = { QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
+                                   QStringLiteral("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts") };
+        for (const auto key : keys) {
+            const QSettings fontRegistry(key, QSettings::NativeFormat);
+            const QStringList allKeys = fontRegistry.allKeys();
+            const QString trueType = QStringLiteral("(TrueType)");
 #if QT_CONFIG(regularexpression)
-        const QRegularExpression sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
+            const QRegularExpression sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
 #else
-        const QRegExp sizeListMatch(QLatin1String("\\s(\\d+,)+\\d+"));
+            const QRegExp sizeListMatch(QLatin1String("\\s(\\d+,)+\\d+"));
 #endif
-        Q_ASSERT(sizeListMatch.isValid());
-        const int size = allKeys.size();
-        result.reserve(size);
-        for (int i = 0; i < size; ++i) {
-            FontKey fontKey;
-            const QString &registryFontKey = allKeys.at(i);
-            fontKey.fileName = fontRegistry.value(registryFontKey).toString();
-            QString realKey = registryFontKey;
-            realKey.remove(trueType);
-            realKey.remove(sizeListMatch);
-            const auto fontNames = QStringRef(&realKey).trimmed().split(QLatin1Char('&'));
-            fontKey.fontNames.reserve(fontNames.size());
-            for (const QStringRef &fontName : fontNames)
-                fontKey.fontNames.append(fontName.trimmed().toString());
-            result.append(fontKey);
+            Q_ASSERT(sizeListMatch.isValid());
+            const int size = allKeys.size();
+            result.reserve(result.size() + size);
+            for (int i = 0; i < size; ++i) {
+                FontKey fontKey;
+                const QString &registryFontKey = allKeys.at(i);
+                fontKey.fileName = fontRegistry.value(registryFontKey).toString();
+                QString realKey = registryFontKey;
+                realKey.remove(trueType);
+                realKey.remove(sizeListMatch);
+                const auto fontNames = QStringRef(&realKey).trimmed().split(QLatin1Char('&'));
+                fontKey.fontNames.reserve(fontNames.size());
+                for (const QStringRef &fontName : fontNames)
+                    fontKey.fontNames.append(fontName.trimmed().toString());
+                result.append(fontKey);
+            }
         }
     }
     return result;
