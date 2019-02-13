@@ -72,6 +72,13 @@ def _parse_commandline():
     return parser.parse_args()
 
 
+def fixup_linecontinuation(contents: str) -> str:
+    contents = re.sub(r'([^\t ])\\[ \t]*\n', '\\1 \\\n', contents)
+    contents = re.sub(r'\\[ \t]*\n', '\\\n', contents)
+
+    return contents
+
+
 def spaces(indent: int) -> str:
     return '    ' * indent
 
@@ -622,7 +629,16 @@ class QmakeParser:
     def parseFile(self, file: str):
         print('Parsing \"{}\"...'.format(file))
         try:
-            result = self._Grammar.parseFile(file, parseAll=True)
+            with open(file, 'r') as file_fd:
+                contents = file_fd.read()
+
+            old_contents = contents
+            contents = fixup_linecontinuation(contents)
+
+            if old_contents != contents:
+                print('Warning: Fixed line continuation in .pro-file!\n'
+                      '         Position information in Parsing output might be wrong!')
+            result = self._Grammar.parseString(contents, parseAll=True)
         except pp.ParseException as pe:
             print(pe.line)
             print(' '*(pe.col-1) + '^')
