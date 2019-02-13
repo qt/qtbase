@@ -515,6 +515,12 @@ class QmakeParser:
         Else = pp.Keyword('else')
         DefineTest = pp.Keyword('defineTest')
         Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
+        BracedValue = pp.nestedExpr(ignoreExpr=pp.quotedString \
+                                        | pp.QuotedString(quoteChar='$(',
+                                                          endQuoteChar=')',
+                                                          escQuote='\\',
+                                                          unquoteResults=False)
+                                   ).setParseAction(lambda s, l, t: ['(', *t[0], ')'])
 
         Substitution \
             = pp.Combine(pp.Literal('$')
@@ -534,7 +540,8 @@ class QmakeParser:
                                       | pp.Literal('$')))
         Value = pp.NotAny(Else | pp.Literal('}') | EOL | pp.Literal('\\')) \
                 + (pp.QuotedString(quoteChar='"', escChar='\\')
-                     | SubstitutionValue)
+                    | SubstitutionValue
+                    | BracedValue)
 
         Values = pp.ZeroOrMore(Value + pp.Optional(LC))('value')
 
@@ -598,7 +605,7 @@ class QmakeParser:
                          'Else ElseBranch SingleLineElse MultiLineElse ' \
                          'SingleLineScope MultiLineScope ' \
                          'Identifier ' \
-                         'Key Op Values Value ' \
+                         'Key Op Values Value BracedValue ' \
                          'Scope Block ' \
                          'StatementGroup StatementLine Statement '\
                          'Load Include Option DefineTest ForLoop ' \

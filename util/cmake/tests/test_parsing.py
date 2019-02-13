@@ -254,3 +254,9 @@ def test_realworld_contains_scope():
     result = parse_file(_tests_path + '/data/contains_scope.pro')
     assert len(result) == 2
 
+
+def test_realworld_complex_assign():
+    result = parse_file(_tests_path + '/data/complex_assign.pro')
+    assert len(result) == 1
+    validate_op('qmake-clean.commands', '+=', '( cd qmake && $(MAKE) clean ":-(==)-:" \'(Foo)\' )'.split(),
+                result[0])
