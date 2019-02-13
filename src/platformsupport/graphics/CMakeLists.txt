@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(GraphicsSupport
+    STATIC
     SOURCES
         qrasterbackingstore.cpp qrasterbackingstore_p.h
     DEFINES

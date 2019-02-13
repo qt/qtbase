@@ -87,13 +87,13 @@ extend_target(qcocoa CONDITION QT_FEATURE_vulkan
 
 extend_target(qcocoa CONDITION QT_FEATURE_widgets
     SOURCES
-        # qcocoaprintdevice.h qcocoaprintdevice.mm
-        # qcocoaprintersupport.h qcocoaprintersupport.mm
-        # qpaintengine_mac.mm qpaintengine_mac_p.h
-        # qprintengine_mac.mm qprintengine_mac_p.h
+        qcocoaprintdevice.h qcocoaprintdevice.mm
+        qcocoaprintersupport.h qcocoaprintersupport.mm
+        qpaintengine_mac.mm qpaintengine_mac_p.h
+        qprintengine_mac.mm qprintengine_mac_p.h
     LIBRARIES
         Qt::WidgetsPrivate
-        # Qt::PrintSupportPrivate
+        Qt::PrintSupportPrivate
 )
 
 extend_target(qcocoa CONDITION (QT_FEATURE_widgets) AND (QT_FEATURE_colordialog)
