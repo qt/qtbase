@@ -676,7 +676,6 @@ def map_condition(condition: str) -> str:
 
 def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
                   indent: int = 0) -> None:
-    assert scope.TEMPLATE == 'subdirs'
     ind = '    ' * indent
     for sd in scope.get('SUBDIRS', []):
         full_sd = os.path.join(scope.basedir, sd)
@@ -697,7 +696,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
         else:
             print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
 
-    for c in scope.children():
+    for c in scope.children:
         cond = c.condition
         if cond == 'else':
             cm_fh.write('\n{}else()\n'.format(ind))
