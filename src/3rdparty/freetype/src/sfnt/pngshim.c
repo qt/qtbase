@@ -68,6 +68,7 @@
         ( ( __clang_major__ >= 4 )                               ||       \
         ( ( __clang_major__ == 3 ) && ( __clang_minor__ >= 2 ) ) ) ) ) && \
     defined( __OPTIMIZE__ )                                            && \
+    !defined( __EMSCRIPTEN__ )                                         && \
     __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
 #ifdef __clang__
