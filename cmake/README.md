@@ -78,6 +78,30 @@ When you're done with the build, you may want to install it, using ``ninja insta
 
 You can use ``cmake-gui {path to build directory}`` or ``ccmake {path to build directory}`` to configure the values of individual cmake variables or Qt features. After changing a value, you need to choose the *configure* step (usually several times:-/), followed by the *generate* step (to generate makefiles/ninja files).
 
+## Building with CCache
+
+You can pass ``-DQT_USE_CCACHE=ON`` to make the build system look for ``ccache`` in your ``PATH`` and prepend it to all C/C++/Objective-C compiler calls. At the moment this is only supported for the Ninja and the Makefile generators.
+
+## Cross Compiling
+
+Compiling for a target architecture that's different than the host requires one build of Qt for the host. This "host build" is needed because the process of building Qt involves the compilation of intermediate code generator tools, that in turn are called to produce source code that needs to be compiled into the final libraries. These tools are built using Qt itself and they need to run on the machine you're building on, regardless of the architecure you are targeting.
+
+Build Qt regularly for your host system and install it into a directory of your choice using the ``CMAKE_INSTALL_PREFIX`` variable.  You are free to disable the build of tests and examples by setting ``BUILD_EXAMPLES=OFF`` and ``BUILD_TESTING=OFF``.
+
+With this installation of Qt in place, which contains all tools needed, we can proceed to create a new build of Qt that is cross-compiled to the target architecture of choice. You may proceed by setting up your environment. The CMake wiki has further information how to do that at
+
+<https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling>
+
+Yocto based device SDKs come with an environment setup script that needs to be sourced in your shell and takes care of setting up environment variables and a cmake alias with a toolchain file, so that you can call cmake as you always do.
+
+In order to make sure that Qt picks up the code generator tools from the host build, you need to pass an extra parameter to cmake:
+
+```
+    -DHOST_QT_TOOLS_DIRECTORY=/path/to/your/host_build/bin
+```
+
+The specified path needs to point to a directory that contains all the binaries of the host build of Qt.
+
 # Debugging CMake files
 
 CMake allows specifying the ``--trace`` and ``--trace-expand`` options, which work like ``qmake -d -d``: As the cmake code is evaluated, the values of parameters and variables is shown. This can be a lot of output, so you may want to redirect it to a file.
