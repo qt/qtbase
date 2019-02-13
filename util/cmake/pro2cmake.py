@@ -546,9 +546,9 @@ class QmakeParser:
             = pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart
                                       | pp.Literal('$')))
         Value = pp.NotAny(Else | pp.Literal('}') | EOL | pp.Literal('\\')) \
-                + (pp.QuotedString(quoteChar='"', escChar='\\')
-                    | SubstitutionValue
-                    | BracedValue)
+            + (pp.QuotedString(quoteChar='"', escChar='\\')
+                | SubstitutionValue
+                | BracedValue)
 
         Values = pp.ZeroOrMore(Value + pp.Optional(LC))('value')
 
@@ -584,10 +584,12 @@ class QmakeParser:
             + StatementGroup + pp.Optional(LC | EOL) \
             + pp.Suppress('}') + pp.Optional(LC | EOL)
 
-        ConditionEnd = pp.FollowedBy((pp.Optional(LC) + (pp.Literal(':') \
-                                                         | pp.Literal('{') \
-                                                         | pp.Literal('|'))))
-        ConditionPart = pp.CharsNotIn('#{}|:=\\\n') + pp.Optional(LC) + ConditionEnd
+        ConditionEnd = pp.FollowedBy((pp.Optional(pp.White())
+            + pp.Optional(LC) + (pp.Literal(':') \
+                 | pp.Literal('{') \
+                 | pp.Literal('|'))))
+        ConditionPart = ((pp.Optional('!') + Identifier + pp.Optional(BracedValue)) \
+            ^ pp.CharsNotIn('#{}|:=\\\n')) + pp.Optional(LC) + ConditionEnd
         Condition = pp.Combine(ConditionPart \
             + pp.ZeroOrMore((pp.Literal('|') ^ pp.Literal(':')) \
             + ConditionPart))
@@ -1172,7 +1174,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 def write_module(cm_fh: typing.IO[str], scope: Scope, *,
                  indent: int = 0) -> None:
     module_name = scope.TARGET
-    assert module_name.startswith('Qt')
+    if not module_name.startswith('Qt'):
+        print('XXXXXX Module name {} does not start with Qt!'.format(module_name))
 
     extra = []
     if 'static' in scope.get('CONFIG'):

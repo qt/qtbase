@@ -260,3 +260,17 @@ def test_realworld_complex_assign():
     assert len(result) == 1
     validate_op('qmake-clean.commands', '+=', '( cd qmake && $(MAKE) clean ":-(==)-:" \'(Foo)\' )'.split(),
                 result[0])
+
+
+def test_realworld_complex_condition():
+    result = parse_file(_tests_path + '/data/complex_condition.pro')
+    assert len(result) == 1
+    (cond, if_branch, else_branch) = evaluate_condition(result[0])
+    assert cond == '!system("dbus-send --session --type=signal / ' \
+                   'local.AutotestCheck.Hello >$$QMAKE_SYSTEM_NULL_DEVICE ' \
+                   '2>&1")'
+    assert len(if_branch) == 1
+    validate_op('SOURCES', '=', ['dbus.cpp'], if_branch[0])
+
+    assert len(else_branch) == 0
+
