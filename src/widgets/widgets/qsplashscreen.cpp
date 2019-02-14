@@ -289,8 +289,7 @@ void QSplashScreen::setPixmap(const QPixmap &pixmap)
 // 1) If a QDesktopScreenWidget is found in the parent hierarchy, use that (see docs on
 //    QSplashScreen(QWidget *, QPixmap).
 // 2) If a widget with associated QWindow is found, use that
-// 3) When nothing can be found, do not position the widget, allowing for
-//    QPlatformWindow::initialGeometry() to center it over the cursor
+// 3) When nothing can be found, try to center it over the cursor
 
 static inline int screenNumberOf(const QDesktopScreenWidget *dsw)
 {
@@ -307,7 +306,15 @@ const QScreen *QSplashScreenPrivate::screenFor(const QWidget *w)
         if (QWindow *window = p->windowHandle())
             return window->screen();
     }
-    return nullptr;
+#if QT_CONFIG(cursor)
+    // Note: We could rely on QPlatformWindow::initialGeometry() to center it
+    // over the cursor, but not all platforms (namely Android) use that.
+    if (QGuiApplication::screens().size() > 1) {
+        if (auto screenAtCursor = QGuiApplication::screenAt(QCursor::pos()))
+            return screenAtCursor;
+    }
+#endif // cursor
+    return QGuiApplication::primaryScreen();
 }
 
 void QSplashScreenPrivate::setPixmap(const QPixmap &p, const QScreen *screen)
