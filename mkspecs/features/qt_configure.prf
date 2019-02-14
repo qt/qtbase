@@ -338,7 +338,7 @@ defineTest(qtConfParseCommandLine) {
                 qtConfAddWarning("Command line option -skip is only effective in top-level builds.")
                 skipOptionWarningAdded = 1
             }
-            $$qtConfGetNextCommandlineArg()
+            val = $$qtConfGetNextCommandlineArg()
             next()
         }
 
