@@ -1912,7 +1912,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool click = (index == d->pressedIndex && index.isValid());
     bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
-    bool edited = edit(index, trigger, event);
+    const bool edited = click ? edit(index, trigger, event) : false;
 
     d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 

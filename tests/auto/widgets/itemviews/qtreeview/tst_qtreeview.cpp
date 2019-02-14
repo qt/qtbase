@@ -199,6 +199,7 @@ private slots:
     void taskQTBUG_45697_crash();
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_8376();
+    void taskQTBUG_61476();
     void testInitialFocus();
 };
 
@@ -4724,6 +4725,59 @@ void tst_QTreeView::taskQTBUG_8376()
     tv.showColumn(1);
     const int rowHeightLvl1Visible2 = tv.rowHeight(idxLvl1);
     QCOMPARE(rowHeightLvl1Visible, rowHeightLvl1Visible2);
+}
+
+void tst_QTreeView::taskQTBUG_61476()
+{
+    // This checks that if a user clicks on an item to collapse it that it
+    // does not edit (in this case change the check state) the item that is
+    // now over the mouse just because it got a release event
+    QTreeView tv;
+    QStandardItemModel model;
+    QStandardItem *lastTopLevel = nullptr;
+    {
+        for (int i = 0; i < 4; ++i) {
+            QStandardItem *item = new QStandardItem(QLatin1String("Row Item"));
+            item->setCheckable(true);
+            item->setCheckState(Qt::Checked);
+            model.appendRow(item);
+            lastTopLevel = item;
+            for (int j = 0; j < 2; ++j) {
+                QStandardItem *childItem = new QStandardItem(QLatin1String("Child row Item"));
+                childItem->setCheckable(true);
+                childItem->setCheckState(Qt::Checked);
+                item->appendRow(childItem);
+                QStandardItem *grandChild = new QStandardItem(QLatin1String("Grand child row Item"));
+                grandChild->setCheckable(true);
+                grandChild->setCheckState(Qt::Checked);
+                childItem->appendRow(grandChild);
+            }
+        }
+    }
+    tv.setModel(&model);
+    tv.expandAll();
+    // We need it to be this size so that the effect of the collapsing will
+    // cause the parent item to move to be under the cursor
+    tv.resize(200, 200);
+    tv.show();
+    QVERIFY(QTest::qWaitForWindowActive(&tv));
+    tv.verticalScrollBar()->setValue(tv.verticalScrollBar()->maximum());
+
+    // We want to press specifically right around where a checkbox for the
+    // parent item could be when collapsing
+    QTreeViewPrivate *priv = static_cast<QTreeViewPrivate*>(qt_widget_private(&tv));
+    const QModelIndex mi = lastTopLevel->child(0)->index();
+    const QRect rect = priv->itemDecorationRect(mi);
+    const QPoint pos = rect.center();
+
+    QTest::mousePress(tv.viewport(), Qt::LeftButton, 0, pos);
+    if (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, &tv) ==
+        QEvent::MouseButtonPress)
+        QTRY_VERIFY(!tv.isExpanded(mi));
+
+    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, 0, pos);
+    QTRY_VERIFY(!tv.isExpanded(mi));
+    QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
 }
 
 QTEST_MAIN(tst_QTreeView)
