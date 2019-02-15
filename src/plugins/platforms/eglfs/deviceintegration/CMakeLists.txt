@@ -45,5 +45,5 @@ if(QT_FEATURE_eglfs_openwfd)
 endif()
 
 if(QT_FEATURE_opengl)
-#     TODO add_subdirectory(eglfs_emu)
+    add_subdirectory(eglfs_emu)
 endif()
