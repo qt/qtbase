@@ -5,7 +5,7 @@ if(QT_FEATURE_egl_x11)
 endif()
 
 if(QT_FEATURE_eglfs_gbm OR QT_FEATURE_eglfs_egldevice)
-#     TODO add_subdirectory(eglfs_kms_support)
+    add_subdirectory(eglfs_kms_support)
 endif()
 
 if(QT_FEATURE_eglfs_gbm)
