@@ -306,7 +306,7 @@ QVulkanInstance::QVulkanInstance()
 /*!
     Destructor.
 
-    \note current() will return \c nullptr once the instance is destroyed.
+    \note current() will return \nullptr once the instance is destroyed.
  */
 QVulkanInstance::~QVulkanInstance()
 {

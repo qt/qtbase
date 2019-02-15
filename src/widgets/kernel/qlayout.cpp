@@ -109,7 +109,7 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
 
 /*!
     Constructs a new top-level QLayout, with parent \a parent.
-    \a parent may not be a \c nullptr.
+    \a parent may not be a \nullptr.
 
     The layout is set directly as the top-level layout for
     \a parent. There can be only one top-level layout for a

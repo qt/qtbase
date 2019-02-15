@@ -493,7 +493,7 @@ QHostAddress QTcpServer::serverAddress() const
     Waits for at most \a msec milliseconds or until an incoming
     connection is available. Returns \c true if a connection is
     available; otherwise returns \c false. If the operation timed out
-    and \a timedOut is not 0, *\a timedOut will be set to true.
+    and \a timedOut is not \nullptr, *\a timedOut will be set to true.
 
     This is a blocking function call. Its use is disadvised in a
     single-threaded GUI application, since the whole application will

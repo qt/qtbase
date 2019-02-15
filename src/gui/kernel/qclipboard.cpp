@@ -439,7 +439,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
     \fn QMimeData *QClipboard::mimeData(Mode mode) const
 
     Returns a pointer to a QMimeData representation of the current
-    clipboard data (can be NULL if the given \a mode is not
+    clipboard data (can be \nullptr if the given \a mode is not
     supported by the platform).
 
     The \a mode argument is used to control which part of the system

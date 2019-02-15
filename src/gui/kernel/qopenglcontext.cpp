@@ -1235,7 +1235,8 @@ void QOpenGLContext::deleteQGLContext()
   Returns the platform-specific handle for the OpenGL implementation that
   is currently in use. (for example, a HMODULE on Windows)
 
-  On platforms that do not use dynamic GL switch the return value is null.
+  On platforms that do not use dynamic GL switching, the return value
+  is \nullptr.
 
   The library might be GL-only, meaning that windowing system interface
   functions (for example EGL) may live in another, separate library.

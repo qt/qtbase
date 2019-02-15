@@ -291,7 +291,7 @@ QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::Pix
     platform implementation is responsible for querying the configuriation from the provided
     native context.
 
-    Returns a pointer to a QPlatformOpenGLContext instance or \c NULL if the context could
+    Returns a pointer to a QPlatformOpenGLContext instance or \nullptr if the context could
     not be created.
 
     \sa QOpenGLContext
@@ -647,7 +647,7 @@ void QPlatformIntegration::setApplicationIcon(const QIcon &icon) const
     pointer to the instance for which a platform-specific backend needs to be
     created.
 
-    Returns a pointer to a QPlatformOpenGLContext instance or \c NULL if the context could
+    Returns a pointer to a QPlatformOpenGLContext instance or \nullptr if the context could
     not be created.
 
     \sa QVulkanInstance

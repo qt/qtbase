@@ -1023,7 +1023,7 @@ QList<QScreen *> QGuiApplication::screens()
 }
 
 /*!
-    Returns the screen at \a point, or \c nullptr if outside of any screen.
+    Returns the screen at \a point, or \nullptr if outside of any screen.
 
     The \a point is in relation to the virtualGeometry() of each set of virtual
     siblings. If the point maps to more than one set of virtual siblings the first
