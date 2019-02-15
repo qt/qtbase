@@ -104,4 +104,5 @@ add_qt_plugin(qeglfs
 #extend_target(qeglfs CONDITION NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN
 #    # PLUGIN_EXTENDS = "-"
 #)
-# TODO add_subdirectory(deviceintegration)
+
+add_subdirectory(deviceintegration)
