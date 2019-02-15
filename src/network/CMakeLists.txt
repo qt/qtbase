@@ -216,7 +216,7 @@ extend_target(Network CONDITION APPLE_OSX
 
 extend_target(Network CONDITION (ANDROID) AND (QT_FEATURE_dnslookup)
     SOURCES
-        -kernel/qdnslookup_unix.cpp
+        kernel/qdnslookup_unix.cpp
         kernel/qdnslookup_android.cpp
 )
 
