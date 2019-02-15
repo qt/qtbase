@@ -13,7 +13,7 @@ if(QT_FEATURE_eglfs_gbm)
 endif()
 
 if(QT_FEATURE_eglfs_egldevice)
-#     TODO add_subdirectory(eglfs_kms_egldevice)
+    add_subdirectory(eglfs_kms_egldevice)
 endif()
 
 if(QT_FEATURE_eglfs_vsp2)
