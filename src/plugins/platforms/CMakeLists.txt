@@ -39,7 +39,7 @@ if(QNX)
 endif()
 
 if(QT_FEATURE_eglfs)
-#    TODO   add_subdirectory(eglfs)
+    add_subdirectory(eglfs)
     add_subdirectory(minimalegl)
 endif()
 
