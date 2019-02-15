@@ -254,14 +254,12 @@ set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
 target_sources(Core_qobject PRIVATE
     global/qnamespace.h
     kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h ${qobject_moc_files})
-target_include_directories(Core_qobject PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}"
-    "${CMAKE_CURRENT_BINARY_DIR}/global"
-    "${CMAKE_CURRENT_BINARY_DIR}/kernel"
-    "${PROJECT_BINARY_DIR}/include"
-    "${PROJECT_BINARY_DIR}/include/QtCore"
-    "${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}"
-    "${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore")
+set_target_properties(Core_qobject PROPERTIES
+    COMPILE_OPTIONS $<TARGET_PROPERTY:Core,COMPILE_OPTIONS>
+    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Core,COMPILE_DEFINITIONS>
+    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
+)
+target_include_directories(Core_qobject PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/kernel") # for moc_qobject.cpp
 target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
 target_link_libraries(Core PRIVATE Core_qobject)
 
