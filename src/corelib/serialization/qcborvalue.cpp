@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
 
     QCborValue can contain a value of "null", which is not of any specific type.
     It resembles the C++ \c {std::nullptr_t} type, whose only possible value is
-    \c nullptr. QCborValue has a constructor taking such a type and creates a
+    \nullptr. QCborValue has a constructor taking such a type and creates a
     null QCborValue.
 
     Null values are used to indicate that an optional value is not present. In
@@ -417,7 +417,7 @@ QT_BEGIN_NAMESPACE
     using toSimpleType() as well as isSimpleType(st).
 
     CBOR simple types are types that do not have any associated value, like
-    C++'s \c{std::nullptr_t} type, whose only possible value is \c nullptr.
+    C++'s \c{std::nullptr_t} type, whose only possible value is \nullptr.
 
     If \a st is \c{QCborSimpleType::Null}, the resulting QCborValue will be of
     the \l{Type}{Null} type and similarly for \c{QCborSimpleType::Undefined}.

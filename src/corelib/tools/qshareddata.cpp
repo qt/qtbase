@@ -368,7 +368,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn template <class T> bool QSharedDataPointer<T>::operator!() const
-    Returns \c true if the \e{d pointer} of \e this is null.
+    Returns \c true if the \e{d pointer} of \e this is \nullptr.
 */
 
 /*! \fn template <class T> void QSharedDataPointer<T>::detach()
@@ -583,7 +583,7 @@ QT_BEGIN_NAMESPACE
     \since 5.12
 
     Returns a pointer to the shared object, and resets \e this to be null.
-    That is, this function sets the \e{d pointer} of \e this to \c nullptr.
+    That is, this function sets the \e{d pointer} of \e this to \nullptr.
  */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::operator bool () const
@@ -591,7 +591,7 @@ QT_BEGIN_NAMESPACE
  */
 
 /*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!() const
-    Returns \c true if the \e{d pointer} of \e this is null.
+    Returns \c true if the \e{d pointer} of \e this is \nullptr.
 */
 
 /*! \fn template <class T> void QExplicitlySharedDataPointer<T>::detach()

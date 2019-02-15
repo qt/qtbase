@@ -1265,7 +1265,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1283,7 +1283,7 @@ short QLocale::toShort(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1301,7 +1301,7 @@ ushort QLocale::toUShort(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1319,7 +1319,7 @@ int QLocale::toInt(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1337,7 +1337,7 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1357,7 +1357,7 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1376,7 +1376,7 @@ qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for any other reason (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1398,7 +1398,7 @@ float QLocale::toFloat(const QString &s, bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for any other reason (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1424,7 +1424,7 @@ double QLocale::toDouble(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1444,7 +1444,7 @@ short QLocale::toShort(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1464,7 +1464,7 @@ ushort QLocale::toUShort(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1484,7 +1484,7 @@ int QLocale::toInt(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1504,7 +1504,7 @@ uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1526,7 +1526,7 @@ qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1547,7 +1547,7 @@ qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for any other reason (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1571,7 +1571,7 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for any other reason (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1600,7 +1600,7 @@ double QLocale::toDouble(const QStringRef &s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1620,7 +1620,7 @@ short QLocale::toShort(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1640,7 +1640,7 @@ ushort QLocale::toUShort(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1660,7 +1660,7 @@ int QLocale::toInt(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1680,7 +1680,7 @@ uint QLocale::toUInt(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1702,7 +1702,7 @@ qlonglong QLocale::toLongLong(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1723,7 +1723,7 @@ qulonglong QLocale::toULongLong(QStringView s, bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for any other reason (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1744,7 +1744,7 @@ float QLocale::toFloat(QStringView s, bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for any other reason (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     Unlike QString::toDouble(), this function does not fall back to

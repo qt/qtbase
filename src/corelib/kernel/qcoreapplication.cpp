@@ -1636,14 +1636,15 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
 
 /*!
   Immediately dispatches all events which have been previously queued
-  with QCoreApplication::postEvent() and which are for the object \a receiver
-  and have the event type \a event_type.
+  with QCoreApplication::postEvent() and which are for the object \a
+  receiver and have the event type \a event_type.
 
   Events from the window system are \e not dispatched by this
   function, but by processEvents().
 
-  If \a receiver is null, the events of \a event_type are sent for all
-  objects. If \a event_type is 0, all the events are sent for \a receiver.
+  If \a receiver is \nullptr, the events of \a event_type are sent for
+  all objects. If \a event_type is 0, all the events are sent for
+  \a receiver.
 
   \note This method must be called from the thread in which its QObject
   parameter, \a receiver, lives.
@@ -1824,10 +1825,10 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     call it, be aware that killing events may cause \a receiver to
     break one or more invariants.
 
-    If \a receiver is null, the events of \a eventType are removed for
-    all objects. If \a eventType is 0, all the events are removed for
-    \a receiver. You should never call this function with \a eventType
-    of 0.
+    If \a receiver is \nullptr, the events of \a eventType are removed
+    for all objects. If \a eventType is 0, all the events are removed
+    for \a receiver. You should never call this function with \a
+    eventType of 0.
 
     \threadsafe
 */
@@ -2140,7 +2141,7 @@ static void replacePercentN(QString *result, int n)
 
     \a disambiguation is an identifying string, for when the same \a
     sourceText is used in different roles within the same context. By
-    default, it is null.
+    default, it is \nullptr.
 
     See the \l QTranslator and \l QObject::tr() documentation for
     more information about contexts, disambiguations and comments.

@@ -3284,7 +3284,7 @@ QMetaObject::Connection QMetaObject::connect(const QObject *sender, int signal_i
     \internal
    Same as the QMetaObject::connect, but \a signal_index must be the result of QObjectPrivate::signalIndex
 
-    method_index is relative to the rmeta metaobject, if rmeta is null, then it is absolute index
+    method_index is relative to the rmeta metaobject, if rmeta is \nullptr, then it is absolute index
 
     the QObjectPrivate::Connection* has a refcount of 2, so it must be passed to a QMetaObject::Connection
  */
@@ -3856,7 +3856,7 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
     It is different from QMetaObject::indexOfSignal():  indexOfSignal is the same as indexOfMethod
     while QObjectPrivate::signalIndex is smaller because it doesn't give index to slots.
 
-    If \a meta is not 0, it is set to the meta-object where the signal was found.
+    If \a meta is not \nullptr, it is set to the meta-object where the signal was found.
 */
 int QObjectPrivate::signalIndex(const char *signalName,
                                 const QMetaObject **meta) const

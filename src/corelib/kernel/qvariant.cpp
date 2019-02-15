@@ -1768,7 +1768,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \fn QVariant::QVariant(int typeId, const void *copy)
 
     Constructs variant of type \a typeId, and initializes with
-    \a copy if \a copy is not 0.
+    \a copy if \a copy is not \nullptr.
 
     Note that you have to pass the address of the variable you want stored.
 
@@ -1797,7 +1797,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \internal
 
     Constructs a variant private of type \a type, and initializes with \a copy if
-    \a copy is not 0.
+    \a copy is not \nullptr.
 */
 
 void QVariant::create(int type, const void *copy)
