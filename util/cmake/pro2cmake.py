@@ -643,7 +643,7 @@ def map_condition(condition: str) -> str:
                            part)
         if feature:
             if (feature.group(1) == "qtHaveModule"):
-                part = 'TARGET {}'.format(map_qt_base_library(
+                part = 'TARGET {}'.format(map_qt_library(
                                             feature.group(2)))
             else:
                 feature = featureName(feature.group(2))
