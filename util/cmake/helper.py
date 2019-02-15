@@ -79,6 +79,7 @@ def map_qt_base_library(lib: str) -> str:
         'input_support': 'Qt::InputSupport',
         'installer-lib': 'Qt::AppManInstaller',
         'kmsconvenience': 'Qt::KmsSupport',
+        'kms_support': 'Qt::KmsSupport',
         'launcher-lib': 'Qt::AppManLauncher',
         'lib': 'Qt::Designer',
         'linuxaccessibility': 'Qt::LinuxAccessibilitySupport',
@@ -210,8 +211,10 @@ def substitute_platform(platform: str) -> str:
 
 
 libray_mapping = {
+    'drm': 'Libdrm::Libdrm',
     'doubleconversion': 'double-conversion',
     'freetype': 'Freetype::Freetype',
+    'gbm': 'gbm::gbm',
     'glib': 'GLIB2::GLIB2',
     'harfbuzz': 'harfbuzz::harfbuzz',
     'icu': 'ICU::i18n ICU::uc ICU::data',
