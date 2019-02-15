@@ -71,23 +71,20 @@ public:
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
     QPlatformClipboard *clipboard() const override;
 
-    QWasmScreen *screen() { return m_screen; }
-    QWasmCompositor *compositor() { return m_compositor; }
-    QWasmEventTranslator *eventTranslator() { return m_eventTranslator; }
+    QVector<QWasmScreen *>screens();
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
 
     static QWasmIntegration *get() { return s_instance; }
     static void QWasmBrowserExit();
-    QStringList canvasIds;
 
 private:
+    void addScreen(const QString &canvasId);
+
     mutable QWasmFontDatabase *m_fontDb;
-    QWasmCompositor *m_compositor;
-    mutable QWasmScreen *m_screen;
-    mutable QWasmEventTranslator *m_eventTranslator;
     mutable QWasmEventDispatcher *m_eventDispatcher;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
 
+    QVector<QWasmScreen *> m_screens;
     mutable QWasmClipboard *m_clipboard;
     static QWasmIntegration *s_instance;
 };

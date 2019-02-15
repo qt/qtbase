@@ -70,36 +70,35 @@ QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
-      m_compositor(new QWasmCompositor),
-      m_screen(new QWasmScreen(m_compositor)),
       m_eventDispatcher(nullptr),
       m_clipboard(new QWasmClipboard)
 {
-
-    globalHtml5Integration = this;
     s_instance = this;
 
-    emscripten::val defaultCanvasId = emscripten::val::global("canvas");
-    canvasIds.append(QString::fromStdString(defaultCanvasId["id"].as<std::string>()));
-    m_screen->setCanvas(canvasIds.at(0));
+    // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
+    // Also check Module.canvas, which may be set if the emscripen or a custom loader is used.
+    emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
+    emscripten::val canvas = val::module_property("canvas");
 
-    globalHtml5Integration = this;
-
-    screen()->updateQScreenAndCanvasRenderSize(m_screen->m_canvasId);
-    screenAdded(m_screen);
-
-    m_eventTranslator = new QWasmEventTranslator;
+    if (!qtCanvaseElements.isUndefined()) {
+        int screenCount = qtCanvaseElements["length"].as<int>();
+        for (int i = 0; i < screenCount; ++i) {
+            emscripten::val canvas = qtCanvaseElements[i].as<emscripten::val>();
+            QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+            addScreen(canvasId);
+        }
+    } else if (!canvas.isUndefined()){
+        QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+        addScreen(canvasId);
+    }
 
     emscripten::val::global("window").set("onbeforeunload", val::module_property("browserBeforeUnload"));
-
 }
 
 QWasmIntegration::~QWasmIntegration()
 {
-    delete m_compositor;
-    destroyScreen(m_screen);
     delete m_fontDb;
-    delete m_eventTranslator;
+    qDeleteAll(m_screens);
     s_instance = nullptr;
 }
 
@@ -124,13 +123,15 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QPlatformWindow *QWasmIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QWasmWindow(window, m_compositor, m_backingStores.value(window));
+    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
+    return new QWasmWindow(window, compositor, m_backingStores.value(window));
 }
 
 QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *window) const
 {
 #ifndef QT_NO_OPENGL
-    QWasmBackingStore *backingStore = new QWasmBackingStore(m_compositor, window);
+    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
+    QWasmBackingStore *backingStore = new QWasmBackingStore(compositor, window);
     m_backingStores.insert(window, backingStore);
     return backingStore;
 #else
@@ -177,9 +178,20 @@ QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
 
 QPlatformClipboard* QWasmIntegration::clipboard() const
 {
-    if (!m_clipboard)
-        m_clipboard = new QWasmClipboard;
     return m_clipboard;
+}
+
+QVector<QWasmScreen *> QWasmIntegration::screens()
+{
+    return m_screens;
+}
+
+void QWasmIntegration::addScreen(const QString &canvasId)
+{
+    QWasmScreen *screen = new QWasmScreen(canvasId);
+    m_clipboard->installEventHandlers(canvasId);
+    m_screens.append(screen);
+    screenAdded(screen);
 }
 
 QT_END_NAMESPACE

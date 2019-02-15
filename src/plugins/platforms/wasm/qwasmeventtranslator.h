@@ -48,7 +48,7 @@ class QWasmEventTranslator : public QObject
 
 public:
 
-    explicit QWasmEventTranslator(QObject *parent = 0);
+    explicit QWasmEventTranslator(QWasmScreen *screen);
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
     static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
@@ -60,12 +60,12 @@ public:
     static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
 
     void processEvents();
-    void initEventHandlers(const QString &);
+    void initEventHandlers();
 
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
 private:
-
+    QWasmScreen *screen();
     Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey);
     template <typename Event>
     QFlags<Qt::KeyboardModifier> translatKeyModifier(const Event *event);

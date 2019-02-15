@@ -15,23 +15,24 @@
     </style>
   </head>
   <body onload="init()">
-    <figure style="overflow:visible;" id="spinner">
+    <figure style="overflow:visible;" id="qtspinner">
       <center style="margin-top:1.5em; line-height:150%">
         <img src="qtlogo.svg"; width=320; height=200; style="display:block"> </img>
         <strong>Qt for WebAssembly: APPNAME</strong>
-        <div id="status"></div>
+        <div id="qtstatus"></div>
         <noscript>JavaScript is disabled. Please enable JavaScript to use this application.</noscript>
       </center>
     </figure>
-    <canvas id="canvas" oncontextmenu="event.preventDefault()" contenteditable="true"></canvas>
+    <canvas id="qtcanvas" oncontextmenu="event.preventDefault()" contenteditable="true"></canvas>
 
     <script type='text/javascript'>
         function init() {
-          var spinner = document.getElementById('spinner');
-          var canvas = document.getElementById('canvas');
-          var status = document.getElementById('status')
+          var spinner = document.getElementById('qtspinner');
+          var canvas = document.getElementById('qtcanvas');
+          var status = document.getElementById('qtstatus')
 
           var qtLoader = QtLoader({
+              canvasElements : [canvas],
               showLoader: function(loaderStatus) {
                   spinner.style.display = 'block';
                   canvas.style.display = 'none';
@@ -54,7 +55,6 @@
               showCanvas: function() {
                   spinner.style.display = 'none';
                   canvas.style.display = 'block';
-                  return canvas;
               },
           });
           qtLoader.loadEmscriptenModule("APPNAME");

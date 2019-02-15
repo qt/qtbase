@@ -57,9 +57,7 @@ void QWasmOpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surfac
             emscripten_webgl_destroy_context(m_context);
 
         // Create new context
-        QWasmScreen *wasmScreen = QWasmIntegration::get()->screen();
-        const QString canvasId = wasmScreen->m_canvasId;
-         // FIXME: get the actual canvas from the surface.
+        const QString canvasId = QWasmScreen::get(surface->screen())->canvasId();
         m_context = createEmscriptenContext(canvasId, m_requestedFormat);
 
         // Register context-lost callback.

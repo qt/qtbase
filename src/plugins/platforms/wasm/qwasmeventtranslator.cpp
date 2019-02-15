@@ -320,8 +320,8 @@ EMSCRIPTEN_BINDINGS(mouse_module) {
     function("mouseWheelEvent", &mouseWheelEvent);
 }
 
-QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
-    : QObject(parent)
+QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
+    : QObject(screen)
     , draggedWindow(nullptr)
     , lastWindow(nullptr)
     , pressedButtons(Qt::NoButton)
@@ -332,13 +332,16 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
     touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
     QWindowSystemInterface::registerTouchDevice(touchDevice);
 
-    QWasmScreen *wasmScreen = QWasmIntegration::get()->screen();
-    initEventHandlers(wasmScreen->m_canvasId);
+    initEventHandlers();
 }
 
-void QWasmEventTranslator::initEventHandlers(const QString &canvas)
+void QWasmEventTranslator::initEventHandlers()
 {
-    const char *canvasId = canvas.toLocal8Bit().constData();
+    qDebug() << "QWasmEventTranslator::initEventHandlers";
+
+    QByteArray _canvasId = screen()->canvasId().toUtf8();
+    const char *canvasId = _canvasId.constData();
+
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
         GenericPlatform,
@@ -375,7 +378,7 @@ void QWasmEventTranslator::initEventHandlers(const QString &canvas)
     emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
     emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
 
-    emscripten_set_resize_callback(canvasId, (void *)this, 1, uiEvent_cb);
+    emscripten_set_resize_callback(nullptr, (void *)this, 1, uiEvent_cb); // Note: handles browser window resize
 
 }
 
@@ -423,6 +426,11 @@ int QWasmEventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEve
     bool accepted = wasmTranslator->processKeyboard(eventType, keyEvent);
 
     return accepted ? 1 : 0;
+}
+
+QWasmScreen *QWasmEventTranslator::screen()
+{
+    return static_cast<QWasmScreen *>(parent());
 }
 
 Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey)
@@ -541,14 +549,14 @@ void resizeWindow(QWindow *window, QWasmWindow::ResizeMode mode,
 void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
 {
     auto timestamp = mouseEvent->timestamp;
-    QPoint point(mouseEvent->canvasX, mouseEvent->canvasY);
+    QPoint point(mouseEvent->targetX, mouseEvent->targetY);
 
     QEvent::Type buttonEventType = QEvent::None;
 
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
-    QWindow *window2 = QWasmIntegration::get()->compositor()->windowAt(point, 5);
+    QWindow *window2 = screen()->compositor()->windowAt(point, 5);
     if (window2 != nullptr)
         lastWindow = window2;
 
@@ -645,6 +653,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 {
     Q_UNUSED(eventType)
 
+    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
     EmscriptenMouseEvent mouseEvent = wheelEvent->mouse;
 
     int scrollFactor = 0;
@@ -668,7 +677,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
     auto timestamp = mouseEvent.timestamp;
     QPoint globalPoint(mouseEvent.canvasX, mouseEvent.canvasY);
 
-    QWindow *window2 = QWasmIntegration::get()->compositor()->windowAt(globalPoint, 5);
+    QWindow *window2 = eventTranslator->screen()->compositor()->windowAt(globalPoint, 5);
 
     QPoint localPoint(globalPoint.x() - window2->geometry().x(), globalPoint.y() - window2->geometry().y());
 
@@ -686,6 +695,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 
 int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
+    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
     QList<QWindowSystemInterface::TouchPoint> touchPointList;
     touchPointList.reserve(touchEvent->numTouches);
     QWindow *window2;
@@ -695,7 +705,7 @@ int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEven
         const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
 
         QPoint point(touches->canvasX, touches->canvasY);
-        window2 = QWasmIntegration::get()->compositor()->windowAt(point, 5);
+        window2 = eventTranslator->screen()->compositor()->windowAt(point, 5);
 
         QWindowSystemInterface::TouchPoint touchPoint;
 
@@ -878,15 +888,13 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
 int QWasmEventTranslator::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
 {
     Q_UNUSED(e)
-    Q_UNUSED(userData)
+    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
 
     if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
         // This resize event is called when the HTML window is resized. Depending
         // on the page layout the the canvas might also have been resized, so we
         // update the Qt screen size (and canvas render size).
-        QWasmScreen *wasmScreen = QWasmIntegration::get()->screen();
-
-        wasmScreen->updateQScreenAndCanvasRenderSize(wasmScreen->m_canvasId.toLocal8Bit().constData());
+        eventTranslator->screen()->updateQScreenAndCanvasRenderSize();
     }
 
     return 0;
