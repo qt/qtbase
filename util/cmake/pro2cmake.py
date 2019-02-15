@@ -678,7 +678,8 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
                                  subdir_result.asDict().get('statements'),
                                  '', scope.basedir)
 
-            cmakeify_scope(subdir_scope, cm_fh, indent=indent + 1)
+            do_include(subdir_scope)
+            cmakeify_scope(subdir_scope, cm_fh, indent=indent)
         elif sd.startswith('-'):
             cm_fh.write('{}### remove_subdirectory'
                         '("{}")\n'.format(ind, sd[1:]))
