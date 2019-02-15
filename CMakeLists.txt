@@ -40,7 +40,9 @@ if (BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-add_subdirectory(qmake)
+if (NOT CMAKE_CROSSCOMPILING)
+    add_subdirectory(qmake)
+endif()
 
 option(BUILD_EXAMPLES "Build Qt examples" ON)
 if (BUILD_EXAMPLES)
