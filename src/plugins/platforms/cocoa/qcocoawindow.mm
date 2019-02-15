@@ -1513,9 +1513,9 @@ void QCocoaWindow::deliverUpdateRequest()
 
 void QCocoaWindow::requestActivateWindow()
 {
-    NSWindow *window = [m_view window];
-    [window makeFirstResponder:m_view];
-    [window makeKeyWindow];
+    QMacAutoReleasePool pool;
+    [m_view.window makeFirstResponder:m_view];
+    [m_view.window makeKeyWindow];
 }
 
 QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)

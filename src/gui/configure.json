@@ -59,8 +59,9 @@
         },
         "bcm_host": {
             "export": "",
+            "headers": ["bcm_host.h"],
             "sources": [
-                "-lbcm_host"
+                { "type": "makeSpec", "spec": "BCM_HOST" }
             ]
         },
         "dxguid": {

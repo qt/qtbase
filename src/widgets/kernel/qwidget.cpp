@@ -8298,49 +8298,57 @@ void QWidgetPrivate::hide_sys()
     \endlist
 */
 
-
 void QWidget::setVisible(bool visible)
 {
+    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) == !visible)
+        return;
+
+    // Remember that setVisible was called explicitly
+    setAttribute(Qt::WA_WState_ExplicitShowHide);
+
+    Q_D(QWidget);
+    d->setVisible(visible);
+}
+
+// This method is called from QWidgetWindow in response to QWindow::setVisible,
+// and should match the semantics of QWindow::setVisible. QWidget::setVisible on
+// the other hand keeps track of WA_WState_ExplicitShowHide in addition.
+void QWidgetPrivate::setVisible(bool visible)
+{
+    Q_Q(QWidget);
     if (visible) { // show
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
-            return;
-
-        Q_D(QWidget);
-
         // Designer uses a trick to make grabWidget work without showing
-        if (!isWindow() && parentWidget() && parentWidget()->isVisible()
-            && !parentWidget()->testAttribute(Qt::WA_WState_Created))
-            parentWidget()->window()->d_func()->createRecursively();
+        if (!q->isWindow() && q->parentWidget() && q->parentWidget()->isVisible()
+            && !q->parentWidget()->testAttribute(Qt::WA_WState_Created))
+            q->parentWidget()->window()->d_func()->createRecursively();
 
         //create toplevels but not children of non-visible parents
-        QWidget *pw = parentWidget();
-        if (!testAttribute(Qt::WA_WState_Created)
-            && (isWindow() || pw->testAttribute(Qt::WA_WState_Created))) {
-            create();
+        QWidget *pw = q->parentWidget();
+        if (!q->testAttribute(Qt::WA_WState_Created)
+            && (q->isWindow() || pw->testAttribute(Qt::WA_WState_Created))) {
+            q->create();
         }
 
-        bool wasResized = testAttribute(Qt::WA_Resized);
-        Qt::WindowStates initialWindowState = windowState();
+        bool wasResized = q->testAttribute(Qt::WA_Resized);
+        Qt::WindowStates initialWindowState = q->windowState();
 
         // polish if necessary
-        ensurePolished();
+        q->ensurePolished();
 
-        // remember that show was called explicitly
-        setAttribute(Qt::WA_WState_ExplicitShowHide);
         // whether we need to inform the parent widget immediately
-        bool needUpdateGeometry = !isWindow() && testAttribute(Qt::WA_WState_Hidden);
+        bool needUpdateGeometry = !q->isWindow() && q->testAttribute(Qt::WA_WState_Hidden);
         // we are no longer hidden
-        setAttribute(Qt::WA_WState_Hidden, false);
+        q->setAttribute(Qt::WA_WState_Hidden, false);
 
         if (needUpdateGeometry)
-            d->updateGeometry_helper(true);
+            updateGeometry_helper(true);
 
         // activate our layout before we and our children become visible
-        if (d->layout)
-            d->layout->activate();
+        if (layout)
+            layout->activate();
 
-        if (!isWindow()) {
-            QWidget *parent = parentWidget();
+        if (!q->isWindow()) {
+            QWidget *parent = q->parentWidget();
             while (parent && parent->isVisible() && parent->d_func()->layout  && !parent->data->in_show) {
                 parent->d_func()->layout->activate();
                 if (parent->isWindow())
@@ -8353,30 +8361,28 @@ void QWidget::setVisible(bool visible)
 
         // adjust size if necessary
         if (!wasResized
-            && (isWindow() || !parentWidget()->d_func()->layout))  {
-            if (isWindow()) {
-                adjustSize();
-                if (windowState() != initialWindowState)
-                    setWindowState(initialWindowState);
+            && (q->isWindow() || !q->parentWidget()->d_func()->layout))  {
+            if (q->isWindow()) {
+                q->adjustSize();
+                if (q->windowState() != initialWindowState)
+                    q->setWindowState(initialWindowState);
             } else {
-                adjustSize();
+                q->adjustSize();
             }
-            setAttribute(Qt::WA_Resized, false);
+            q->setAttribute(Qt::WA_Resized, false);
         }
 
-        setAttribute(Qt::WA_KeyboardFocusChange, false);
+        q->setAttribute(Qt::WA_KeyboardFocusChange, false);
 
-        if (isWindow() || parentWidget()->isVisible()) {
-            d->show_helper();
+        if (q->isWindow() || q->parentWidget()->isVisible()) {
+            show_helper();
 
-            qApp->d_func()->sendSyntheticEnterLeave(this);
+            qApp->d_func()->sendSyntheticEnterLeave(q);
         }
 
         QEvent showToParentEvent(QEvent::ShowToParent);
-        QApplication::sendEvent(this, &showToParentEvent);
+        QApplication::sendEvent(q, &showToParentEvent);
     } else { // hide
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
-            return;
 #if 0 // Used to be included in Qt4 for Q_WS_WIN
         // reset WS_DISABLED style in a Blocked window
         if(isWindow() && testAttribute(Qt::WA_WState_Created)
@@ -8387,33 +8393,30 @@ void QWidget::setVisible(bool visible)
             SetWindowLong(winId(), GWL_STYLE, dwStyle);
         }
 #endif
-        if (QApplicationPrivate::hidden_focus_widget == this)
+        if (QApplicationPrivate::hidden_focus_widget == q)
             QApplicationPrivate::hidden_focus_widget = 0;
-
-        Q_D(QWidget);
 
         // hw: The test on getOpaqueRegion() needs to be more intelligent
         // currently it doesn't work if the widget is hidden (the region will
         // be clipped). The real check should be testing the cached region
         // (and dirty flag) directly.
-        if (!isWindow() && parentWidget()) // && !d->getOpaqueRegion().isEmpty())
-            parentWidget()->d_func()->setDirtyOpaqueRegion();
+        if (!q->isWindow() && q->parentWidget()) // && !d->getOpaqueRegion().isEmpty())
+            q->parentWidget()->d_func()->setDirtyOpaqueRegion();
 
-        setAttribute(Qt::WA_WState_Hidden);
-        setAttribute(Qt::WA_WState_ExplicitShowHide);
-        if (testAttribute(Qt::WA_WState_Created))
-            d->hide_helper();
+        q->setAttribute(Qt::WA_WState_Hidden);
+        if (q->testAttribute(Qt::WA_WState_Created))
+            hide_helper();
 
         // invalidate layout similar to updateGeometry()
-        if (!isWindow() && parentWidget()) {
-            if (parentWidget()->d_func()->layout)
-                parentWidget()->d_func()->layout->invalidate();
-            else if (parentWidget()->isVisible())
-                QApplication::postEvent(parentWidget(), new QEvent(QEvent::LayoutRequest));
+        if (!q->isWindow() && q->parentWidget()) {
+            if (q->parentWidget()->d_func()->layout)
+                q->parentWidget()->d_func()->layout->invalidate();
+            else if (q->parentWidget()->isVisible())
+                QApplication::postEvent(q->parentWidget(), new QEvent(QEvent::LayoutRequest));
         }
 
         QEvent hideToParentEvent(QEvent::HideToParent);
-        QApplication::sendEvent(this, &hideToParentEvent);
+        QApplication::sendEvent(q, &hideToParentEvent);
     }
 }
 

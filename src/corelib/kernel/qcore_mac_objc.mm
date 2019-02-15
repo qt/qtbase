@@ -48,6 +48,11 @@
 #include <UIKit/UIKit.h>
 #endif
 
+#include <execinfo.h>
+#include <dlfcn.h>
+#include <cxxabi.h>
+#include <objc/runtime.h>
+
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -127,12 +132,54 @@ QT_USE_NAMESPACE
 }
 @end
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAutoReleasePoolTracker);
+
 QT_BEGIN_NAMESPACE
 
 QMacAutoReleasePool::QMacAutoReleasePool()
     : pool([[NSAutoreleasePool alloc] init])
 {
-    [[[QMacAutoReleasePoolTracker alloc] initWithPool:
+    Class trackerClass = [QMacAutoReleasePoolTracker class];
+
+#ifdef QT_DEBUG
+    void *poolFrame = nullptr;
+    if (__builtin_available(macOS 10.14, iOS 12.0, tvOS 12.0, watchOS 5.0, *)) {
+        void *frame;
+        if (backtrace_from_fp(__builtin_frame_address(0), &frame, 1))
+            poolFrame = frame;
+    } else {
+        static const int maxFrames = 3;
+        void *callstack[maxFrames];
+        if (backtrace(callstack, maxFrames) == maxFrames)
+            poolFrame = callstack[maxFrames - 1];
+    }
+
+    if (poolFrame) {
+        Dl_info info;
+        if (dladdr(poolFrame, &info) && info.dli_sname) {
+            const char *symbolName = info.dli_sname;
+            if (symbolName[0] == '_') {
+                int status;
+                if (char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status))
+                    symbolName = demangled;
+            }
+
+            char *className = nullptr;
+            asprintf(&className, "  ^-- allocated in function: %s", symbolName);
+
+            if (Class existingClass = objc_getClass(className))
+                trackerClass = existingClass;
+            else
+                trackerClass = objc_duplicateClass(trackerClass, className, 0);
+
+            free(className);
+
+            if (symbolName != info.dli_sname)
+                free((char*)symbolName);
+        }
+    }
+#endif
+
+    [[[trackerClass alloc] initWithPool:
         reinterpret_cast<NSAutoreleasePool **>(&pool)] autorelease];
 }
 

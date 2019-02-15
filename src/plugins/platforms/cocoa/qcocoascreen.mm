@@ -269,15 +269,14 @@ struct DeferredDebugHelper
 
 void QCocoaScreen::deliverUpdateRequests()
 {
-    if (!QGuiApplication::instance())
-        return;
+    QMacAutoReleasePool pool;
 
     // The CVDisplayLink callback is a notification that it's a good time to produce a new frame.
     // Since the callback is delivered on a separate thread we have to marshal it over to the
     // main thread, as Qt requires update requests to be delivered there. This needs to happen
     // asynchronously, as otherwise we may end up deadlocking if the main thread calls back
     // into any of the CVDisplayLink APIs.
-    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+    if (!NSThread.isMainThread) {
         // We're explicitly not using the data of the GCD source to track the pending updates,
         // as the data isn't reset to 0 until after the event handler, and also doesn't update
         // during the event handler, both of which we need to track late frames.

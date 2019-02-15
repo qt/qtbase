@@ -59,6 +59,7 @@
 // We are hot - unistd.h should have turned on the specific APIs we requested
 
 
+#include <features.h>
 #include <pthread.h>
 #include <dirent.h>
 #include <fcntl.h>
