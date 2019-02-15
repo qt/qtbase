@@ -2187,8 +2187,6 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 #endif // QT_CONFIG(wheelevent)
 }
 
-// Remember, Qt convention is:  keyboard state is state *before*
-
 void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e)
 {
     QWindow *window = e->window.data();
