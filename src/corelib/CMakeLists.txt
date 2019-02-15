@@ -268,12 +268,22 @@ set_property(TARGET Core APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_
 
 # FIXME: tools still have a lot of special stuff that is not ported!
 
-# FIXME: qmake condition: (linux*|hurd*):!cross_compile:!static:!*-armcc*
-# FIXME: qmake gets the elf interpreter out of /bin/ls
-find_program(HOST_ELF_INTERPRETER NAMES ld-linux-x86-64.so.2 PATHS /lib /lib64 NO_DEFAULT_PATH)
-if (LINUX AND NOT CMAKE_CROSSCOMPILING AND HOST_ELF_INTERPRETER_FOUND)
-    qt_internal_add_link_flags(Core "-Wl,-e,qt_core_boilerplate")
-    target_compile_definitions(Core PRIVATE ELF_INTERPRETER="${HOST_ELF_INTERPRETER}")
+if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
+    if (NOT DEFINED ELF_INTERPRETER)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C readelf -l /bin/ls
+                        RESULT_VARIABLE readelf_ok
+                        OUTPUT_VARIABLE readelf_output
+                       )
+        if ("${readelf_ok}" STREQUAL "0" AND "${readelf_output}" MATCHES "program interpreter: (.*)]")
+            set(ELF_INTERPRETER "${CMAKE_MATCH_1}" CACHE INTERNAL "ELF interpreter location")
+        else
+            set(ELF_INTERPRETER "" CACHE INTERNAL "ELF interpreter location")
+        endif()
+    endif()
+    if (ELF_INTERPRETER)
+        qt_internal_add_link_flags(Core "-Wl,-e,qt_core_boilerplate")
+        target_compile_definitions(Core PRIVATE ELF_INTERPRETER="${ELF_INTERPRETER}")
+    endif()
 endif()
 
 
