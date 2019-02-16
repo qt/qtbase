@@ -98,6 +98,10 @@ QT_BEGIN_NAMESPACE
     ensures that you get integers of the size you want and insulates
     you from compiler and platform differences.
 
+    Enumerations can be serialized through QDataStream without the
+    need of manually defining streaming operators. Enum classes are
+    serialized using the declared size.
+
     To take one example, a \c{char *} string is written as a 32-bit
     integer equal to the length of the string including the '\\0' byte,
     followed by all the characters of the string including the

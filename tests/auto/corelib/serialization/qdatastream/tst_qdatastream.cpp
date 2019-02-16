@@ -181,6 +181,8 @@ private slots:
 
     void streamRealDataTypes();
 
+    void enumTest();
+
     void floatingPointPrecision();
 
     void compatibility_Qt3();
@@ -3407,6 +3409,90 @@ void tst_QDataStream::floatingPointNaN()
         stream >> fr;
         QCOMPARE(fr, xs[1].f);
     }
+}
+
+void tst_QDataStream::enumTest()
+{
+    QByteArray ba;
+
+    enum class E1 : qint8
+    {
+        A,
+        B,
+        C
+    };
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream << E1::A;
+        QCOMPARE(ba.size(), int(sizeof(E1)));
+    }
+    {
+        QDataStream stream(ba);
+        E1 e;
+        stream >> e;
+        QCOMPARE(e, E1::A);
+    }
+    ba.clear();
+
+    enum class E2 : qint16
+    {
+        A,
+        B,
+        C
+    };
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream << E2::B;
+        QCOMPARE(ba.size(), int(sizeof(E2)));
+    }
+    {
+        QDataStream stream(ba);
+        E2 e;
+        stream >> e;
+        QCOMPARE(e, E2::B);
+    }
+    ba.clear();
+
+    enum class E4 : qint32
+    {
+        A,
+        B,
+        C
+    };
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream << E4::C;
+        QCOMPARE(ba.size(), int(sizeof(E4)));
+    }
+    {
+        QDataStream stream(ba);
+        E4 e;
+        stream >> e;
+        QCOMPARE(e, E4::C);
+    }
+    ba.clear();
+
+
+    enum E
+    {
+        A,
+        B,
+        C,
+        D
+    };
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream << E::D;
+        QCOMPARE(ba.size(), 4);
+    }
+    {
+        QDataStream stream(ba);
+        E e;
+        stream >> e;
+        QCOMPARE(e, E::D);
+    }
+    ba.clear();
+
 }
 
 void tst_QDataStream::floatingPointPrecision()
