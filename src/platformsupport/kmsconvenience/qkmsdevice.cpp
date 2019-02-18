@@ -777,9 +777,7 @@ void QKmsDevice::discoverPlanes()
         for (int i = 0; i < countFormats; ++i) {
             uint32_t f = drmplane->formats[i];
             plane.supportedFormats.append(f);
-            QString s;
-            s.sprintf("%c%c%c%c ", f, f >> 8, f >> 16, f >> 24);
-            formatStr += s;
+            formatStr += QString::asprintf("%c%c%c%c ", f, f >> 8, f >> 16, f >> 24);
         }
 
         qCDebug(qLcKmsDebug, "plane %d: id = %u countFormats = %d possibleCrtcs = 0x%x supported formats = %s",

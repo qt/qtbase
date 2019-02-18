@@ -495,7 +495,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
 
 void QPrintPreviewDialogPrivate::updateZoomFactor()
 {
-    zoomFactor->lineEdit()->setText(QString().sprintf("%.1f%%", preview->zoomFactor()*100));
+    zoomFactor->lineEdit()->setText(QString::asprintf("%.1f%%", preview->zoomFactor()*100));
 }
 
 void QPrintPreviewDialogPrivate::_q_fit(QAction* action)

@@ -192,22 +192,20 @@ QString VkSpecParser::parseName()
 
 QString funcSig(const VkSpecParser::Command &c, const char *className = nullptr)
 {
-    QString s;
-    s.sprintf("%s %s%s%s", qPrintable(c.cmd.type),
-              (className ? className : ""), (className ? "::" : ""),
-              qPrintable(c.cmd.name));
+    QString s(QString::asprintf("%s %s%s%s", qPrintable(c.cmd.type),
+                                (className ? className : ""), (className ? "::" : ""),
+                                qPrintable(c.cmd.name)));
     if (!c.args.isEmpty()) {
         s += QLatin1Char('(');
         bool first = true;
         for (const VkSpecParser::TypedName &a : c.args) {
-            QString argStr;
-            argStr.sprintf("%s%s%s%s", qPrintable(a.type), (a.type.endsWith(QLatin1Char('*')) ? "" : " "),
-                           qPrintable(a.name), qPrintable(a.typeSuffix));
             if (!first)
                 s += QStringLiteral(", ");
             else
                 first = false;
-            s += argStr;
+            s += QString::asprintf("%s%s%s%s", qPrintable(a.type),
+                                   (a.type.endsWith(QLatin1Char('*')) ? "" : " "),
+                                   qPrintable(a.name), qPrintable(a.typeSuffix));
         }
         s += QLatin1Char(')');
     }
@@ -216,13 +214,12 @@ QString funcSig(const VkSpecParser::Command &c, const char *className = nullptr)
 
 QString funcCall(const VkSpecParser::Command &c, int idx)
 {
-    QString s;
     // template:
     //     [return] reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(d_ptr->m_funcs[0])(instance, pPhysicalDeviceCount, pPhysicalDevices);
-    s.sprintf("%sreinterpret_cast<PFN_%s>(d_ptr->m_funcs[%d])",
-              (c.cmd.type == QStringLiteral("void") ? "" : "return "),
-              qPrintable(c.cmd.name),
-              idx);
+    QString s = QString::asprintf("%sreinterpret_cast<PFN_%s>(d_ptr->m_funcs[%d])",
+                                  (c.cmd.type == QStringLiteral("void") ? "" : "return "),
+                                  qPrintable(c.cmd.name),
+                                  idx);
     if (!c.args.isEmpty()) {
         s += QLatin1Char('(');
         bool first = true;
@@ -338,10 +335,9 @@ bool genVulkanFunctionsH(const QVector<VkSpecParser::Command> &commands, const Q
         *dst += QStringLiteral(";\n");
     }
 
-    QString str;
-    str.sprintf(s, preamble.get(licHeaderFn).constData(), instCmdStr.toUtf8().constData(), devCmdStr.toUtf8().constData());
-
-    f.write(str.toUtf8());
+    f.write(QString::asprintf(s, preamble.get(licHeaderFn).constData(),
+                              instCmdStr.toUtf8().constData(),
+                              devCmdStr.toUtf8().constData()).toUtf8());
 
     return true;
 }
@@ -400,10 +396,7 @@ bool genVulkanFunctionsPH(const QVector<VkSpecParser::Command> &commands, const 
                                             [](const VkSpecParser::Command &c) { return c.deviceLevel; });
     const int instLevelCount = commands.count() - devLevelCount;
 
-    QString str;
-    str.sprintf(s, preamble.get(licHeaderFn).constData(), instLevelCount, devLevelCount);
-
-    f.write(str.toUtf8());
+    f.write(QString::asprintf(s, preamble.get(licHeaderFn).constData(), instLevelCount, devLevelCount).toUtf8());
 
     return true;
 }
@@ -478,10 +471,12 @@ bool genVulkanFunctionsPC(const QVector<VkSpecParser::Command> &commands, const 
     if (instCmdNamesStr.count() > 2)
         instCmdNamesStr = instCmdNamesStr.left(instCmdNamesStr.count() - 2);
 
-    QString str;
-    str.sprintf(s, preamble.get(licHeaderFn).constData(),
-                instCmdWrapperStr.toUtf8().constData(), instCmdNamesStr.toUtf8().constData(), instIdx,
-                devCmdWrapperStr.toUtf8().constData(), devCmdNamesStr.toUtf8().constData(), commands.count() - instIdx);
+    const QString str =
+            QString::asprintf(s, preamble.get(licHeaderFn).constData(),
+                              instCmdWrapperStr.toUtf8().constData(),
+                              instCmdNamesStr.toUtf8().constData(), instIdx,
+                              devCmdWrapperStr.toUtf8().constData(),
+                              devCmdNamesStr.toUtf8().constData(), commands.count() - instIdx);
 
     f.write(str.toUtf8());
 

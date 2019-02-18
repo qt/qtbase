@@ -320,8 +320,12 @@ public:
                 const QString &a4, const QString &a5, const QString &a6,
                 const QString &a7, const QString &a8, const QString &a9) const;
 
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("Use vasprintf(), arg() or QTextStream instead")
     QString &vsprintf(const char *format, va_list ap) Q_ATTRIBUTE_FORMAT_PRINTF(2, 0);
+    QT_DEPRECATED_X("Use asprintf(), arg() or QTextStream instead")
     QString &sprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
+#endif
     static QString vasprintf(const char *format, va_list ap) Q_ATTRIBUTE_FORMAT_PRINTF(1, 0);
     static QString asprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 

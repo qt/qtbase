@@ -6835,6 +6835,7 @@ QString QString::toUpper_helper(QString &str)
     return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(str);
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
     \obsolete
 
@@ -6848,6 +6849,7 @@ QString &QString::sprintf(const char *cformat, ...)
     va_end(ap);
     return *this;
 }
+#endif
 
 // ### Qt 6: Consider whether this function shouldn't be removed See task 202871.
 /*!
@@ -6893,6 +6895,7 @@ QString QString::asprintf(const char *cformat, ...)
     return s;
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
     \obsolete
 
@@ -6902,6 +6905,7 @@ QString &QString::vsprintf(const char *cformat, va_list ap)
 {
     return *this = vasprintf(cformat, ap);
 }
+#endif
 
 static void append_utf8(QString &qs, const char *cs, int len)
 {
