@@ -96,6 +96,7 @@ private slots:
     void textStyle(int styleIndex);
     void textColor();
     void textAlign(QAction *a);
+    void setChecked(bool checked);
 
     void currentCharFormatChanged(const QTextCharFormat &format);
     void cursorPositionChanged();
@@ -125,6 +126,7 @@ private:
     QAction *actionAlignCenter;
     QAction *actionAlignRight;
     QAction *actionAlignJustify;
+    QAction *actionToggleCheckState;
     QAction *actionUndo;
     QAction *actionRedo;
 #ifndef QT_NO_CLIPBOARD

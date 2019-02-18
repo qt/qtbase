@@ -343,6 +343,15 @@ void TextEdit::setupTextActions()
     actionTextColor = menu->addAction(pix, tr("&Color..."), this, &TextEdit::textColor);
     tb->addAction(actionTextColor);
 
+    menu->addSeparator();
+
+    const QIcon checkboxIcon = QIcon::fromTheme("status-checkbox-checked", QIcon(rsrcPath + "/checkbox-checked.png"));
+    actionToggleCheckState = menu->addAction(checkboxIcon, tr("Chec&ked"), this, &TextEdit::setChecked);
+    actionToggleCheckState->setShortcut(Qt::CTRL + Qt::Key_K);
+    actionToggleCheckState->setCheckable(true);
+    actionToggleCheckState->setPriority(QAction::LowPriority);
+    tb->addAction(actionToggleCheckState);
+
     tb = addToolBar(tr("Format Actions"));
     tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
     addToolBarBreak(Qt::TopToolBarArea);
@@ -354,6 +363,8 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Bullet List (Disc)");
     comboStyle->addItem("Bullet List (Circle)");
     comboStyle->addItem("Bullet List (Square)");
+    comboStyle->addItem("Task List (Unchecked)");
+    comboStyle->addItem("Task List (Checked)");
     comboStyle->addItem("Ordered List (Decimal)");
     comboStyle->addItem("Ordered List (Alpha lower)");
     comboStyle->addItem("Ordered List (Alpha upper)");
@@ -617,6 +628,7 @@ void TextEdit::textStyle(int styleIndex)
 {
     QTextCursor cursor = textEdit->textCursor();
     QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
+    QTextBlockFormat::MarkerType marker = QTextBlockFormat::NoMarker;
 
     switch (styleIndex) {
     case 1:
@@ -629,18 +641,32 @@ void TextEdit::textStyle(int styleIndex)
         style = QTextListFormat::ListSquare;
         break;
     case 4:
-        style = QTextListFormat::ListDecimal;
+        if (cursor.currentList())
+            style = cursor.currentList()->format().style();
+        else
+            style = QTextListFormat::ListDisc;
+        marker = QTextBlockFormat::Unchecked;
         break;
     case 5:
-        style = QTextListFormat::ListLowerAlpha;
+        if (cursor.currentList())
+            style = cursor.currentList()->format().style();
+        else
+            style = QTextListFormat::ListDisc;
+        marker = QTextBlockFormat::Checked;
         break;
     case 6:
-        style = QTextListFormat::ListUpperAlpha;
+        style = QTextListFormat::ListDecimal;
         break;
     case 7:
-        style = QTextListFormat::ListLowerRoman;
+        style = QTextListFormat::ListLowerAlpha;
         break;
     case 8:
+        style = QTextListFormat::ListUpperAlpha;
+        break;
+    case 9:
+        style = QTextListFormat::ListLowerRoman;
+        break;
+    case 10:
         style = QTextListFormat::ListUpperRoman;
         break;
     default:
@@ -665,6 +691,8 @@ void TextEdit::textStyle(int styleIndex)
         cursor.mergeCharFormat(fmt);
         textEdit->mergeCurrentCharFormat(fmt);
     } else {
+        blockFmt.setMarker(marker);
+        cursor.setBlockFormat(blockFmt);
         QTextListFormat listFmt;
         if (cursor.currentList()) {
             listFmt = cursor.currentList()->format();
@@ -703,6 +731,11 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignJustify);
 }
 
+void TextEdit::setChecked(bool checked)
+{
+    textStyle(checked ? 5 : 4);
+}
+
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 {
     fontChanged(format.font());
@@ -725,22 +758,35 @@ void TextEdit::cursorPositionChanged()
             comboStyle->setCurrentIndex(3);
             break;
         case QTextListFormat::ListDecimal:
-            comboStyle->setCurrentIndex(4);
-            break;
-        case QTextListFormat::ListLowerAlpha:
-            comboStyle->setCurrentIndex(5);
-            break;
-        case QTextListFormat::ListUpperAlpha:
             comboStyle->setCurrentIndex(6);
             break;
-        case QTextListFormat::ListLowerRoman:
+        case QTextListFormat::ListLowerAlpha:
             comboStyle->setCurrentIndex(7);
             break;
-        case QTextListFormat::ListUpperRoman:
+        case QTextListFormat::ListUpperAlpha:
             comboStyle->setCurrentIndex(8);
+            break;
+        case QTextListFormat::ListLowerRoman:
+            comboStyle->setCurrentIndex(9);
+            break;
+        case QTextListFormat::ListUpperRoman:
+            comboStyle->setCurrentIndex(10);
             break;
         default:
             comboStyle->setCurrentIndex(-1);
+            break;
+        }
+        switch (textEdit->textCursor().block().blockFormat().marker()) {
+        case QTextBlockFormat::NoMarker:
+            actionToggleCheckState->setChecked(false);
+            break;
+        case QTextBlockFormat::Unchecked:
+            comboStyle->setCurrentIndex(4);
+            actionToggleCheckState->setChecked(false);
+            break;
+        case QTextBlockFormat::Checked:
+            comboStyle->setCurrentIndex(5);
+            actionToggleCheckState->setChecked(true);
             break;
         }
     } else {

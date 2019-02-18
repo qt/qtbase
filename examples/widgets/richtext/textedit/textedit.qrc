@@ -1,6 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
   <file>images/logo32.png</file>
+  <file>images/mac/checkbox.png</file>
+  <file>images/mac/checkbox-checked.png</file>
   <file>images/mac/editcopy.png</file>
   <file>images/mac/editcut.png</file>
   <file>images/mac/editpaste.png</file>
@@ -20,6 +22,8 @@
   <file>images/mac/textunder.png</file>
   <file>images/mac/zoomin.png</file>
   <file>images/mac/zoomout.png</file>
+  <file>images/win/checkbox.png</file>
+  <file>images/win/checkbox-checked.png</file>
   <file>images/win/editcopy.png</file>
   <file>images/win/editcut.png</file>
   <file>images/win/editpaste.png</file>
