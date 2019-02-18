@@ -206,7 +206,7 @@ private slots:
     void stepModifierPressAndHold_data();
     void stepModifierPressAndHold();
 public slots:
-    void valueChangedHelper(const QString &);
+    void textChangedHelper(const QString &);
     void valueChangedHelper(int);
 private:
     QStringList actualTexts;
@@ -474,7 +474,7 @@ void tst_QSpinBox::setPrefixSuffix()
     QCOMPARE(spin.cleanText(), expectedCleanText);
 }
 
-void tst_QSpinBox::valueChangedHelper(const QString &text)
+void tst_QSpinBox::textChangedHelper(const QString &text)
 {
     actualTexts << text;
 }
@@ -552,7 +552,7 @@ void tst_QSpinBox::setTracking()
     QSpinBox spin(0);
     spin.setKeyboardTracking(tracking);
     spin.show();
-    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(QString)));
+    connect(&spin, &QSpinBox::textChanged, this, &tst_QSpinBox::textChangedHelper);
 
     keys.simulate(&spin);
     QCOMPARE(actualTexts, texts);

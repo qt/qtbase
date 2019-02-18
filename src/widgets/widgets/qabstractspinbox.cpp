@@ -252,7 +252,7 @@ QString QAbstractSpinBox::text() const
 
     All values are displayed with the prefix and suffix (if set), \e
     except for the special value, which only shows the special value
-    text. This special text is passed in the QSpinBox::valueChanged()
+    text. This special text is passed in the QSpinBox::textChanged()
     signal that passes a QString.
 
     To turn off the special-value text display, call this function
@@ -342,18 +342,18 @@ void QAbstractSpinBox::setReadOnly(bool enable)
     \since 4.3
 
     If keyboard tracking is enabled (the default), the spinbox
-    emits the valueChanged() signal while the new value is being
-    entered from the keyboard.
+    emits the valueChanged() and textChanged() signals while the
+    new value is being entered from the keyboard.
 
     E.g. when the user enters the value 600 by typing 6, 0, and 0,
     the spinbox emits 3 signals with the values 6, 60, and 600
     respectively.
 
     If keyboard tracking is disabled, the spinbox doesn't emit the
-    valueChanged() signal while typing. It emits the signal later,
-    when the return key is pressed, when keyboard focus is lost, or
-    when other spinbox functionality is used, e.g. pressing an arrow
-    key.
+    valueChanged() and textChanged() signals while typing. It emits
+    the signals later, when the return key is pressed, when keyboard
+    focus is lost, or when other spinbox functionality is used, e.g.
+    pressing an arrow key.
 */
 
 bool QAbstractSpinBox::keyboardTracking() const
