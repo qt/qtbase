@@ -379,6 +379,9 @@ int QPdfWriter::resolution() const
 */
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
     \reimp
 
@@ -404,6 +407,8 @@ void QPdfWriter::setPageSizeMM(const QSizeF &size)
 {
     setPageSize(QPageSize(size, QPageSize::Millimeter));
 }
+QT_WARNING_POP
+#endif
 
 /*!
     \internal
@@ -427,6 +432,9 @@ bool QPdfWriter::newPage()
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
     \reimp
 
@@ -438,6 +446,8 @@ void QPdfWriter::setMargins(const Margins &m)
 {
     setPageMargins(QMarginsF(m.left, m.top, m.right, m.bottom), QPageLayout::Millimeter);
 }
+QT_WARNING_POP
+#endif
 
 QT_END_NAMESPACE
 

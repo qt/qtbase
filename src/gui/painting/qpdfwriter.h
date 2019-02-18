@@ -86,10 +86,14 @@ public:
     using QPagedPaintDevice::setPageSize;
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("Use setPageSize(QPageSize(id)) instead")
     void setPageSize(PageSize size) override;
+    QT_DEPRECATED_X("Use setPageSize(QPageSize(size, QPageSize::Millimeter)) instead")
     void setPageSizeMM(const QSizeF &size) override;
-
+    QT_DEPRECATED_X("Use setPageMargins(QMarginsF(l, t, r, b), QPageLayout::Millimeter) instead")
     void setMargins(const Margins &m) override;
+#endif
 
 protected:
     QPaintEngine *paintEngine() const override;
