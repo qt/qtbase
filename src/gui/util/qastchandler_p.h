@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,74 +37,37 @@
 **
 ****************************************************************************/
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include "qtexturefilereader_p.h"
+#ifndef QASTCHANDLER_H
+#define QASTCHANDLER_H
 
-#include "qpkmhandler_p.h"
-#include "qktxhandler_p.h"
-#if QT_CONFIG(texture_format_astc_experimental)
-#include "qastchandler_p.h"
-#endif
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QFileInfo>
+#include "qtexturefilehandler_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QTextureFileReader::QTextureFileReader(QIODevice *device, const QString &fileName)
-    : m_device(device), m_fileName(fileName)
+class QAstcHandler : public QTextureFileHandler
 {
-}
+public:
+    using QTextureFileHandler::QTextureFileHandler;
 
-QTextureFileReader::~QTextureFileReader()
-{
-    delete m_handler;
-}
+    static bool canRead(const QByteArray &suffix, const QByteArray &block);
 
-QTextureFileData QTextureFileReader::read()
-{
-    if (!canRead())
-        return QTextureFileData();
-    return m_handler->read();
-}
+    QTextureFileData read() override;
 
-bool QTextureFileReader::canRead()
-{
-    if (!checked) {
-        checked = true;
-        if (!init())
-            return false;
-
-        QByteArray headerBlock = m_device->peek(64);
-        QFileInfo fi(m_fileName);
-        QByteArray suffix = fi.suffix().toLower().toLatin1();
-        QByteArray logName = fi.fileName().toUtf8();
-
-        // Currently the handlers are hardcoded; later maybe a list of plugins
-        if (QPkmHandler::canRead(suffix, headerBlock)) {
-            m_handler = new QPkmHandler(m_device, logName);
-        } else if (QKtxHandler::canRead(suffix, headerBlock)) {
-            m_handler = new QKtxHandler(m_device, logName);
-#if QT_CONFIG(texture_format_astc_experimental)
-        } else if (QAstcHandler::canRead(suffix, headerBlock)) {
-            m_handler = new QAstcHandler(m_device, logName);
-#endif
-        }
-        // else if OtherHandler::canRead() ...etc.
-    }
-    return (m_handler != nullptr);
-}
-
-QList<QByteArray> QTextureFileReader::supportedFileFormats()
-{
-    // Hardcoded for now
-    return {QByteArrayLiteral("pkm"), QByteArrayLiteral("ktx"), QByteArrayLiteral("astc")};
-}
-
-bool QTextureFileReader::init()
-{
-    if (!m_device)
-        return false;
-    return m_device->isReadable();
-}
+private:
+    quint32 astcGLFormat(quint8 xBlockDim, quint8 yBlockDim) const;
+};
 
 QT_END_NAMESPACE
+
+#endif // QASTCHANDLER_H

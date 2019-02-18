@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <private/qtexturefilereader_p.h>
+#include <private/qtguiglobal_p.h>
 #include <QtTest>
 
 class tst_qtexturefilereader : public QObject
@@ -49,33 +50,57 @@ void tst_qtexturefilereader::checkHandlers_data()
     QTest::addColumn<QList<int>>("dataOffsets");
     QTest::addColumn<QList<int>>("dataLengths");
 
-    QTest::addRow("pattern.pkm") << QStringLiteral(":/texturefiles/pattern.pkm")
-                                 << QSize(64, 64)
-                                 << quint32(0x0)
-                                 << quint32(0x8d64)
-                                 << quint32(0x0)
-                                 << 1
-                                 << (QList<int>() << 16)
-                                 << (QList<int>() << 2048);
+    QTest::addRow("pattern.pkm")
+            << QStringLiteral(":/texturefiles/pattern.pkm")
+            << QSize(64, 64)
+            << quint32(0x0)
+            << quint32(0x8d64)
+            << quint32(0x0)
+            << 1
+            << (QList<int>() << 16)
+            << (QList<int>() << 2048);
 
-    QTest::addRow("car.ktx") << QStringLiteral(":/texturefiles/car.ktx")
-                             << QSize(146, 80)
-                             << quint32(0x0)
-                             << quint32(0x9278)
-                             << quint32(0x1908)
-                             << 1
-                             << (QList<int>() << 68)
-                             << (QList<int>() << 11840);
+    QTest::addRow("car.ktx")
+            << QStringLiteral(":/texturefiles/car.ktx")
+            << QSize(146, 80)
+            << quint32(0x0)
+            << quint32(0x9278)
+            << quint32(0x1908)
+            << 1
+            << (QList<int>() << 68)
+            << (QList<int>() << 11840);
 
-    QTest::addRow("car_mips.ktx") << QStringLiteral(":/texturefiles/car_mips.ktx")
-                                  << QSize(146, 80)
-                                  << quint32(0x0)
-                                  << quint32(0x9274)
-                                  << quint32(0x1907)
-                                  << 8
-                                  << (QList<int>() << 68 << 5992 << 7516 << 7880 << 8004 << 8056 << 8068 << 8080)
-                                  << (QList<int>() << 5920 << 1520 << 360 << 120 << 48 << 8 << 8 << 8);
+    QTest::addRow("car_mips.ktx")
+            << QStringLiteral(":/texturefiles/car_mips.ktx")
+            << QSize(146, 80)
+            << quint32(0x0)
+            << quint32(0x9274)
+            << quint32(0x1907)
+            << 8
+            << (QList<int>() << 68 << 5992 << 7516 << 7880 << 8004 << 8056 << 8068 << 8080)
+            << (QList<int>() << 5920 << 1520 << 360 << 120 << 48 << 8 << 8 << 8);
 
+#if QT_CONFIG(texture_format_astc_experimental)
+    QTest::addRow("newlogo.astc")
+            << QStringLiteral(":/texturefiles/newlogo.astc")
+            << QSize(111, 78)
+            << quint32(0x0)
+            << quint32(0x93b9)
+            << quint32(0x0)
+            << 1
+            << (QList<int>() << 16)
+            << (QList<int>() << 2496);
+
+    QTest::addRow("newlogo_srgb.astc")
+            << QStringLiteral(":/texturefiles/newlogo_srgb.astc")
+            << QSize(111, 78)
+            << quint32(0x0)
+            << quint32(0x93d9)
+            << quint32(0x0)
+            << 1
+            << (QList<int>() << 16)
+            << (QList<int>() << 2496);
+#endif // QT_CONFIG(texture_format_astc_experimental)
 }
 
 void tst_qtexturefilereader::checkHandlers()

@@ -1748,6 +1748,11 @@
             "section": "Images",
             "output": [ "publicFeature", "feature" ]
         },
+        "texture_format_astc_experimental" : {
+            "label": "ASTC Texture format (experimental)",
+            "autoDetect": "false",
+            "output": [ "privateFeature" ]
+        },
         "picture": {
             "label": "QPicture",
             "purpose": "Supports recording and replaying QPainter commands.",
