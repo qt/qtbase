@@ -891,7 +891,7 @@ bool readInputFile(Options *options)
             options->extraPlugins = extraPlugins.toString().split(QLatin1Char(','));
     }
 
-    {
+    if (!options->auxMode) {
         const QJsonValue stdcppPath = jsonObject.value(QStringLiteral("stdcpp-path"));
         if (stdcppPath.isUndefined()) {
             fprintf(stderr, "No stdcpp-path defined in json file.\n");
