@@ -1209,12 +1209,21 @@ void QSslSocket::setPrivateKey(const QSslKey &key)
 void QSslSocket::setPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algorithm,
                                QSsl::EncodingFormat format, const QByteArray &passPhrase)
 {
-    Q_D(QSslSocket);
     QFile file(fileName);
-    if (file.open(QIODevice::ReadOnly)) {
-        d->configuration.privateKey = QSslKey(file.readAll(), algorithm,
-                                              format, QSsl::PrivateKey, passPhrase);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qCWarning(lcSsl, "QSslSocket::setPrivateKey: Couldn't open file for reading");
+        return;
     }
+
+    QSslKey key(file.readAll(), algorithm, format, QSsl::PrivateKey, passPhrase);
+    if (key.isNull()) {
+        qCWarning(lcSsl, "QSslSocket::setPrivateKey: "
+                         "The specified file does not contain a valid key");
+        return;
+    }
+
+    Q_D(QSslSocket);
+    d->configuration.privateKey = key;
 }
 
 /*!
