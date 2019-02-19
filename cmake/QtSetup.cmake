@@ -1,3 +1,15 @@
+## Set a default build type if none was specified
+set(_default_build_type "Release")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+    set(_default_build_type "Debug")
+endif()
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${_default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo") # Set the possible values of build type for cmake-gui
+endif()
+
 ## Force C++ standard, do not fall back, do not use compiler extensions
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
