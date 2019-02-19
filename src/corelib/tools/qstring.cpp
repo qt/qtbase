@@ -1047,6 +1047,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
     __m128i nullmask = _mm_setzero_si128();
     qptrdiff offset = 0;
 
+#  if !defined(__OPTIMIZE_SIZE__)
     // Using the PMOVMSKB instruction, we get two bits for each character
     // we compare.
     int retval;
@@ -1059,6 +1060,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
         retval = uc[offset + idx / 2] - c[offset + idx / 2];
         return true;
     };
+#  endif
 
     // we're going to read uc[offset..offset+15] (32 bytes)
     // and c[offset..offset+15] (16 bytes)
