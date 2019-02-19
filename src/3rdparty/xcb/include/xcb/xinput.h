@@ -12,8 +12,8 @@
 #ifndef __XINPUT_H
 #define __XINPUT_H
 
-#include "xcb.h"
-#include "xfixes.h"
+#include <xcb/xcb.h>
+#include <xcb/xfixes.h>
 
 #ifdef __cplusplus
 extern "C" {

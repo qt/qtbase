@@ -67,9 +67,7 @@
 #include <xcb/xcb_icccm.h>
 #include <xcb/xfixes.h>
 #include <xcb/shape.h>
-#if QT_CONFIG(xcb_xinput)
 #include <xcb/xinput.h>
-#endif
 
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
@@ -492,14 +490,12 @@ void QXcbWindow::create()
                         atom(QXcbAtom::_XEMBED_INFO),
                         32, 2, (void *)data);
 
-#if QT_CONFIG(xcb_xinput)
     if (connection()->hasXInput2()) {
         if (connection()->xi2MouseEventsDisabled())
             connection()->xi2SelectDeviceEventsCompatibility(m_window);
         else
             connection()->xi2SelectDeviceEvents(m_window);
     }
-#endif
 
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
@@ -1895,9 +1891,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
     QPoint global(root_x, root_y);
 
     if (isWheel) {
-#if QT_CONFIG(xcb_xinput)
         if (!connection()->isAtLeastXI21()) {
-#endif
             QPoint angleDelta;
             if (detail == 4)
                 angleDelta.setY(120);
@@ -1910,9 +1904,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
             if (modifiers & Qt::AltModifier)
                 angleDelta = angleDelta.transposed();
             QWindowSystemInterface::handleWheelEvent(window(), timestamp, local, global, QPoint(), angleDelta, modifiers);
-#if QT_CONFIG(xcb_xinput)
         }
-#endif
         return;
     }
 
@@ -1948,13 +1940,8 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
      * not pressed, otherwise (e.g. on Alt+Tab) it can igonre important enter/leave events.
     */
     if (conn) {
-
         const bool mouseButtonsPressed = (conn->buttonState() != Qt::NoButton);
-#if QT_CONFIG(xcb_xinput)
         return mouseButtonsPressed || (conn->hasXInput2() && !conn->xi2MouseEventsDisabled());
-#else
-        return mouseButtonsPressed;
-#endif
     }
     return true;
 }
@@ -1986,10 +1973,9 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 
     if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
-#if QT_CONFIG(xcb_xinput)
+
     // Updates scroll valuators, as user might have done some scrolling outside our X client.
     connection()->xi2UpdateScrollingDevices();
-#endif
 
     const QPoint local(event_x, event_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
@@ -2064,7 +2050,6 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
                             event->time, QEvent::MouseMove);
 }
 
-#if QT_CONFIG(xcb_xinput)
 static inline int fixed1616ToInt(xcb_input_fp1616_t val)
 {
     return int(qreal(val) / 0x10000);
@@ -2165,7 +2150,6 @@ void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
         break;
     }
 }
-#endif
 
 QXcbWindow *QXcbWindow::toWindow() { return this; }
 
@@ -2301,14 +2285,12 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (grab && !connection()->canGrab())
         return false;
 
-#if QT_CONFIG(xcb_xinput)
     if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
         if (grab && result)
             connection()->setMouseGrabber(this);
         return result;
     }
-#endif
 
     if (!grab) {
         xcb_ungrab_pointer(xcb_connection(), XCB_TIME_CURRENT_TIME);
@@ -2376,7 +2358,7 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
         return false;
 
     const QPoint globalPos = QHighDpi::toNativePixels(window()->mapToGlobal(pos), window()->screen());
-#if QT_CONFIG(xcb_xinput)
+
     // ### FIXME QTBUG-53389
     bool startedByTouch = connection()->startSystemMoveResizeForTouchBegin(m_window, globalPos, corner);
     if (startedByTouch) {
@@ -2386,9 +2368,7 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
             return false;
         }
         // KWin, Openbox, AwesomeWM have been tested to work with _NET_WM_MOVERESIZE.
-    } else
-#endif
-    { // Started by mouse press.
+    } else { // Started by mouse press.
         if (connection()->isUnity())
             return false; // _NET_WM_MOVERESIZE on this WM is bouncy (WM bug?).
 

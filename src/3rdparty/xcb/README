@@ -1,19 +1,22 @@
-Contains the header and sources files from selected xcb libraries:
+*****************************************************************
+From 62f053c19b917a369c4aad5b71ab150911b589aa:
 
-   libxcb-1.9.1 together with xcb-proto-1.8 (randr, render, shape, shm, sync,
-       xfixes, xinerama sources)
-   # libxkbcommon-x11 requires libxcb-xkb >= 1.10
-   libxcb-1.10 together with xcb-proto-1.10 (xkb sources)
-   libxcb-1.13 together with xcb-proto-1.13 (xinput sources with removed
-       Pointer Barriers API and SendExtensionEvent API)
-   libxcb-util-image-0.3.9
-   libxcb-util-keysyms-0.3.9
-   libxcb-util-renderutil-0.3.9
-   libxcb-util-wm-0.3.9
+xcb-xinput code was produced by build of libxcb 1.13 with xcb-proto 1.13.
 
-The 'include' directory was obtained by compiling and installing all of the modules.
-When upgrading the bundled xcb headers, they must be tested to run also with the
-minimal supported libxcb version, which currently is 1.9.1.
+The following parts were removed from it:
+ - Pointer Barriers API (requires xcb-xfixes 1.9 with xcb-proto 1.9)
+ - SendExtensionEvent API (requires definition of xcb_raw_generic_event_t
+   from libxcb 1.13)
 
-Use the -qt-xcb configure option to use the files instead of system xcb libraries.
-See src/plugins/platforms/xcb/README for details.
+*****************************************************************
+
+As of time of writing the minimal required libxcb version is 1.11, hence
+we could restore the Pointer Barriers API, but we don't use it, so it is
+not worth the hustle. When we will bump the minimal required version of libxcb
+to 1.13, then we can drop the bundled xcb-xinput altogether.
+
+The xcb-xinput files where modified to use system includes, see:
+
+src/3rdparty/xcb/include/xcb/fixup-xinput-h.patch
+src/3rdparty/xcb/libxcb/fixup-xinput-c.patch
+

@@ -104,10 +104,8 @@ public:
     virtual void handleFocusInEvent(const xcb_focus_in_event_t *) {}
     virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
     virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
-#if QT_CONFIG(xcb_xinput)
     virtual void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource = Qt::MouseEventNotSynthesized) {}
     virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
-#endif
     virtual QXcbWindow *toWindow() { return nullptr; }
 };
 
@@ -225,7 +223,6 @@ public:
 
     bool isUserInputEvent(xcb_generic_event_t *event) const;
 
-#if QT_CONFIG(xcb_xinput)
     void xi2SelectStateEvents();
     void xi2SelectDeviceEvents(xcb_window_t window);
     void xi2SelectDeviceEventsCompatibility(xcb_window_t window);
@@ -236,7 +233,6 @@ public:
     bool startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner);
     void abortSystemMoveResizeForTouch();
     bool isTouchScreen(int id);
-#endif
 
     bool canGrab() const { return m_canGrabServer; }
 
@@ -267,7 +263,6 @@ private:
     inline bool timeGreaterThan(xcb_timestamp_t a, xcb_timestamp_t b) const
     { return static_cast<int32_t>(a - b) > 0 || b == XCB_CURRENT_TIME; }
 
-#if QT_CONFIG(xcb_xinput)
     void xi2SetupDevice(void *info, bool removeExisting = true);
     void xi2SetupDevices();
     struct TouchDeviceData {
@@ -341,7 +336,6 @@ private:
         uint32_t pointid;
         int corner;
     } m_startSystemMoveResizeInfo;
-#endif // QT_CONFIG(xcb_xinput)
 
     const bool m_canGrabServer;
     const xcb_visualid_t m_defaultVisualId;
@@ -389,11 +383,9 @@ private:
     QTimer m_focusInTimer;
 
 };
-#if QT_CONFIG(xcb_xinput)
 #if QT_CONFIG(tabletevent)
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
-#endif
 #endif
 
 class QXcbConnectionGrabber
