@@ -42,6 +42,9 @@ include(QtFeature)
 ## Compiler optimization flags:
 include(QtCompilerOptimization)
 
+## Compiler flags:
+include(QtCompilerFlags)
+
 ## Find host tools (if non native):
 set(HOST_QT_TOOLS_DIRECTORY "" CACHE PATH "Directory with Qt host tools.")
 
