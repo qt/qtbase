@@ -63,11 +63,11 @@
 
 QT_REQUIRE_CONFIG(ocsp);
 
-#ifdef Q_OS_WIN64
+#ifdef Q_OS_WIN
 #undef X509_NAME
 #undef OCSP_REQUEST
 #undef OCSP_RESPONSE
-#endif // Q_OS_WIN64
+#endif // Q_OS_WIN
 
 #include <openssl/ocsp.h>
 
