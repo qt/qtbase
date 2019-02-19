@@ -2,6 +2,5 @@ SOURCES = qpinger.cpp ../interface.cpp
 HEADERS = ../interface.h
 TARGET = qpinger
 DESTDIR = ./
-CONFIG -= app_bundle
-CONFIG += console
+CONFIG += cmdline
 QT = core dbus

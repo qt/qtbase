@@ -2,8 +2,7 @@ HEADERS += Test.h
 SOURCES += main.cpp Test.cpp
 QT = core network testlib
 
-CONFIG -= app_bundle
-CONFIG += console
+CONFIG += cmdline
 DESTDIR = ./
 MOC_DIR = .moc/
 TMP_DIR = .tmp/

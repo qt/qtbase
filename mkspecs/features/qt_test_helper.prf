@@ -16,8 +16,7 @@
 # Additionally the helper's executable is suffixed with "_helper" to
 # avoid name clashes with its folder.
 
-CONFIG -= app_bundle
-CONFIG += console
+CONFIG += cmdline
 
 debug_and_release {
     CONFIG(debug, debug|release) {

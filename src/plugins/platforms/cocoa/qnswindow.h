@@ -62,6 +62,7 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 @protocol QNSWindowProtocol
 @optional
 - (BOOL)canBecomeKeyWindow;
+- (BOOL)worksWhenModal;
 - (void)sendEvent:(NSEvent*)theEvent;
 - (void)closeAndRelease;
 - (void)dealloc;

@@ -6,8 +6,7 @@
 #! [0]
 TEMPLATE  = app
 LANGUAGE  = C++
-CONFIG	 += console precompile_header
-CONFIG   -= app_bundle
+CONFIG += cmdline precompile_header
 QT += widgets
 
 # Use Precompiled headers (PCH)

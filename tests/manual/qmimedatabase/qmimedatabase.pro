@@ -1,5 +1,4 @@
 TEMPLATE = app
 QT = core
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 SOURCES += main.cpp

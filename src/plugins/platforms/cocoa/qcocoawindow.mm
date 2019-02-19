@@ -153,7 +153,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_inSetStyleMask(false)
     , m_menubar(nullptr)
     , m_needsInvalidateShadow(false)
-    , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
@@ -304,12 +303,16 @@ void QCocoaWindow::setVisible(bool visible)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setVisible" << window() << visible;
 
-    m_inSetVisible = true;
+    QScopedValueRollback<bool> rollback(m_inSetVisible, true);
 
     QMacAutoReleasePool pool;
     QCocoaWindow *parentCocoaWindow = nullptr;
     if (window()->transientParent())
         parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
+
+    auto eventDispatcher = [] {
+        return static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(qApp->eventDispatcher()));
+    };
 
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
@@ -351,68 +354,46 @@ void QCocoaWindow::setVisible(bool visible)
             applyWindowState(window()->windowStates());
 
             if (window()->windowState() != Qt::WindowMinimized) {
-                if ((window()->modality() == Qt::WindowModal
-                     || window()->type() == Qt::Sheet)
-                        && parentCocoaWindow) {
-                    // show the window as a sheet
+                if (parentCocoaWindow && (window()->modality() == Qt::WindowModal || window()->type() == Qt::Sheet)) {
+                    // Show the window as a sheet
                     [parentCocoaWindow->nativeWindow() beginSheet:m_view.window completionHandler:nil];
-                } else if (window()->modality() != Qt::NonModal) {
-                    // show the window as application modal
-                    QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-                    Q_ASSERT(cocoaEventDispatcher);
-                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
-                    cocoaEventDispatcherPrivate->beginModalSession(window());
-                    m_hasModalSession = true;
-                } else if ([m_view.window canBecomeKeyWindow]) {
-                    QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
-                    if (cocoaEventDispatcher)
-                        cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
-
-                    if (cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->cocoaModalSessionStack.isEmpty())
-                        [m_view.window makeKeyAndOrderFront:nil];
-                    else
-                        [m_view.window orderFront:nil];
+                } else if (window()->modality() == Qt::ApplicationModal) {
+                    // Show the window as application modal
+                    eventDispatcher()->beginModalSession(window());
+                } else if (m_view.window.canBecomeKeyWindow && !eventDispatcher()->hasModalSession()) {
+                    [m_view.window makeKeyAndOrderFront:nil];
                 } else {
                     [m_view.window orderFront:nil];
                 }
 
-                // We want the events to properly reach the popup, dialog, and tool
-                if ((window()->type() == Qt::Popup || window()->type() == Qt::Dialog || window()->type() == Qt::Tool)
-                    && [m_view.window isKindOfClass:[NSPanel class]]) {
-                    ((NSPanel *)m_view.window).worksWhenModal = YES;
-                    if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
-                        removeMonitor();
-                        NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
-                                              | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
-                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
-                            const auto button = cocoaButton2QtButton(e);
-                            const auto buttons = currentlyPressedMouseButtons();
-                            const auto eventType = cocoaEvent2QtMouseEvent(e);
-                            const auto globalPoint = QCocoaScreen::mapFromNative(NSEvent.mouseLocation);
-                            const auto localPoint = window()->mapFromGlobal(globalPoint.toPoint());
-                            QWindowSystemInterface::handleMouseEvent(window(), localPoint, globalPoint, buttons, button, eventType);
-                        }];
-                    }
+                // Close popup when clicking outside it
+                if (window()->type() == Qt::Popup && !(parentCocoaWindow && window()->transientParent()->isActive())) {
+                    removeMonitor();
+                    NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
+                                          | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
+                    monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
+                        const auto button = cocoaButton2QtButton(e);
+                        const auto buttons = currentlyPressedMouseButtons();
+                        const auto eventType = cocoaEvent2QtMouseEvent(e);
+                        const auto globalPoint = QCocoaScreen::mapFromNative(NSEvent.mouseLocation);
+                        const auto localPoint = window()->mapFromGlobal(globalPoint.toPoint());
+                        QWindowSystemInterface::handleMouseEvent(window(), localPoint, globalPoint, buttons, button, eventType);
+                    }];
                 }
             }
         }
+
         // In some cases, e.g. QDockWidget, the content view is hidden before moving to its own
         // Cocoa window, and then shown again. Therefore, we test for the view being hidden even
         // if it's attached to an NSWindow.
         if ([m_view isHidden])
             [m_view setHidden:NO];
+
     } else {
-        // qDebug() << "close" << this;
-        QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-        QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = nullptr;
-        if (cocoaEventDispatcher)
-            cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+        // Window not visible, hide it
         if (isContentView()) {
-            if (m_hasModalSession) {
-                if (cocoaEventDispatcherPrivate)
-                    cocoaEventDispatcherPrivate->endModalSession(window());
-                m_hasModalSession = false;
+            if (eventDispatcher()->hasModalSession()) {
+                eventDispatcher()->endModalSession(window());
             } else {
                 if ([m_view.window isSheet]) {
                     Q_ASSERT_X(parentCocoaWindow, "QCocoaWindow", "Window modal dialog has no transient parent.");
@@ -422,8 +403,7 @@ void QCocoaWindow::setVisible(bool visible)
 
             [m_view.window orderOut:nil];
 
-            if (m_view.window == [NSApp keyWindow]
-                && !(cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->currentModalSession())) {
+            if (m_view.window == [NSApp keyWindow] && !eventDispatcher()->hasModalSession()) {
                 // Probably because we call runModalSession: outside [NSApp run] in QCocoaEventDispatcher
                 // (e.g., when show()-ing a modal QDialog instead of exec()-ing it), it can happen that
                 // the current NSWindow is still key after being ordered out. Then, after checking we
@@ -435,6 +415,7 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_view setHidden:YES];
         }
+
         removeMonitor();
 
         if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
@@ -448,8 +429,6 @@ void QCocoaWindow::setVisible(bool visible)
                 nativeParentWindow.styleMask |= NSWindowStyleMaskResizable;
         }
     }
-
-    m_inSetVisible = false;
 }
 
 NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
