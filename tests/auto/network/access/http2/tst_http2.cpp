@@ -473,7 +473,7 @@ void tst_Http2::earlyResponse()
     runEventLoop();
 
     QVERIFY(serverPort);
-    sendRequest(1, QNetworkRequest::NormalPriority, {10000000, Qt::Uninitialized});
+    sendRequest(1, QNetworkRequest::NormalPriority, {1000000, Qt::Uninitialized});
 
     runEventLoop();
 
