@@ -1454,6 +1454,7 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
         d->devicePixelRatio = scaleFactor;
 }
 
+#if QT_DEPRECATED_SINCE(5, 10)
 /*!
     \since 4.6
     \obsolete
@@ -1470,6 +1471,7 @@ int QImage::byteCount() const
     Q_ASSERT(!d || d->nbytes < std::numeric_limits<int>::max());
     return d ? int(d->nbytes) : 0;
 }
+#endif
 
 /*!
     \since 5.10

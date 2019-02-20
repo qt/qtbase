@@ -78,7 +78,9 @@ stack_protector_strong {
 
 # disable special linker flags for host builds (no proper test for host support yet)
 !host_build|!cross_compile {
+    use_bfd_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_BFD
     use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD
+    use_lld_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_LLD
     enable_new_dtags: QMAKE_LFLAGS += $$QMAKE_LFLAGS_NEW_DTAGS
     enable_gdb_index: QMAKE_LFLAGS += $$QMAKE_LFLAGS_GDB_INDEX
 }

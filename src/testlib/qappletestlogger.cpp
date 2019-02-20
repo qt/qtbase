@@ -101,6 +101,10 @@ static IncidentClassification incidentTypeToClassification(QAbstractTestLogger::
         return IncidentClassification(QtWarningMsg, "bpass");
     case QAbstractTestLogger::BlacklistedFail:
         return IncidentClassification(QtInfoMsg, "bfail");
+    case QAbstractTestLogger::BlacklistedXPass:
+        return IncidentClassification(QtWarningMsg, "bxpass");
+    case QAbstractTestLogger::BlacklistedXFail:
+        return IncidentClassification(QtInfoMsg, "bxfail");
     }
     return IncidentClassification(QtFatalMsg, nullptr);
 }

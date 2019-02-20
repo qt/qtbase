@@ -1517,8 +1517,23 @@ QRegion QTransform::map(const QRegion &r) const
         return copy;
     }
 
-    if (t == TxScale && r.rectCount() == 1)
-        return QRegion(mapRect(r.boundingRect()));
+    if (t == TxScale) {
+        QRegion res;
+        if (m11() < 0 || m22() < 0) {
+            for (const QRect &rect : r)
+                res += mapRect(rect);
+        } else {
+            QVarLengthArray<QRect, 32> rects;
+            rects.reserve(r.rectCount());
+            for (const QRect &rect : r) {
+                QRect nr = mapRect(rect);
+                if (!nr.isEmpty())
+                    rects.append(nr);
+            }
+            res.setRects(rects.constData(), rects.count());
+        }
+        return res;
+    }
 
     QPainterPath p = map(qt_regionToPath(r));
     return p.toFillPolygon(QTransform()).toPolygon();

@@ -439,7 +439,7 @@ void FileDialogPanel::restoreDefaults()
     m_showDirsOnly->setChecked(d.testOption(QFileDialog::ShowDirsOnly));
     m_allowedSchemes->setText(QString());
     m_confirmOverWrite->setChecked(d.confirmOverwrite());
-    m_nameFilterDetailsVisible->setChecked(d.isNameFilterDetailsVisible());
+    m_nameFilterDetailsVisible->setChecked(!d.testOption(QFileDialog::HideNameFilterDetails));
     m_resolveSymLinks->setChecked(d.resolveSymlinks());
     m_readOnly->setChecked(d.isReadOnly());
     m_native->setChecked(true);

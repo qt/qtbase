@@ -331,7 +331,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 
     QVBoxLayout *topLayout = new QVBoxLayout;
     topLayout->addWidget(mw);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0, 0, 0, 0);
     q->setLayout(topLayout);
 
     QString caption = QCoreApplication::translate("QPrintPreviewDialog", "Print Preview");

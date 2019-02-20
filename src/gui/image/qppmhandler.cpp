@@ -576,10 +576,12 @@ void QPpmHandler::setOption(ImageOption option, const QVariant &value)
         subType = value.toByteArray().toLower();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 QByteArray QPpmHandler::name() const
 {
     return subType.isEmpty() ? QByteArray("ppm") : subType;
 }
+#endif
 
 QT_END_NAMESPACE
 

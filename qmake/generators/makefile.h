@@ -119,6 +119,7 @@ protected:
     virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
                                   const QString &makeFileIn);
     virtual void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
+    virtual ProStringList extraSubTargetDependencies() { return {}; }
 
     //extra compiler interface
     bool verifyExtraCompiler(const ProString &c, const QString &f);

@@ -91,7 +91,7 @@ FindDialog::FindDialog(QWidget *parent)
     connect(moreButton, &QAbstractButton::toggled, extension, &QWidget::setVisible);
 
     QVBoxLayout *extensionLayout = new QVBoxLayout;
-    extensionLayout->setMargin(0);
+    extensionLayout->setContentsMargins(QMargins());
     extensionLayout->addWidget(wholeWordsCheckBox);
     extensionLayout->addWidget(backwardCheckBox);
     extensionLayout->addWidget(searchSelectionCheckBox);

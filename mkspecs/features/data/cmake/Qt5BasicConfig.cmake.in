@@ -52,13 +52,18 @@ endmacro()
 function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configuration lib_deps link_flags)
     set(_lib_deps)
     set(_link_flags)
+
+    get_filename_component(_qt5_install_libs \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/lib\" ABSOLUTE)
+
     if(EXISTS \"${prl_file_location}\")
         file(STRINGS \"${prl_file_location}\" _prl_strings REGEX \"QMAKE_PRL_LIBS[ \\t]*=\")
         string(REGEX REPLACE \"QMAKE_PRL_LIBS[ \\t]*=[ \\t]*([^\\n]*)\" \"\\\\1\" _static_depends ${_prl_strings})
         string(REGEX REPLACE \"[ \\t]+\" \";\" _static_depends ${_static_depends})
         set(_search_paths)
+        string(REPLACE \"\\$\\$[QT_INSTALL_LIBS]\" \"${_qt5_install_libs}\" _static_depends \"${_static_depends}\")
         foreach(_flag ${_static_depends})
             if(_flag MATCHES \"^-l(.*)$\")
+                # Handle normal libraries passed as -lfoo
                 set(_lib \"${CMAKE_MATCH_1}\")
                 if(_lib MATCHES \"^pthread$\")
                     find_package(Threads REQUIRED)
@@ -77,9 +82,14 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
                         message(FATAL_ERROR \"Library not found: ${_lib}\")
                     endif()
                 endif()
+            elseif(EXISTS \"${_flag}\")
+                # The flag is an absolute path to an existing library
+                list(APPEND _lib_deps \"${_flag}\")
             elseif(_flag MATCHES \"^-L(.*)$\")
+                # Handle -Lfoo flags by putting their paths in the search path used by find_library above
                 list(APPEND _search_paths \"${CMAKE_MATCH_1}\")
             else()
+                # Handle all remaining flags by simply passing them to the linker
                 list(APPEND _link_flags ${_flag})
             endif()
         endforeach()

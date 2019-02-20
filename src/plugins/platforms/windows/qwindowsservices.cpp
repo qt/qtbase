@@ -58,9 +58,9 @@ static inline bool shellExecute(const QUrl &url)
         ? QDir::toNativeSeparators(url.toLocalFile())
         : url.toString(QUrl::FullyEncoded);
     const quintptr result =
-        reinterpret_cast<quintptr>(ShellExecute(0, 0,
+        reinterpret_cast<quintptr>(ShellExecute(nullptr, nullptr,
                                                 reinterpret_cast<const wchar_t *>(nativeFilePath.utf16()),
-                                                0, 0, SW_SHOWNORMAL));
+                                                nullptr, nullptr, SW_SHOWNORMAL));
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
         qWarning("ShellExecute '%s' failed (error %s).", qPrintable(url.toString()), qPrintable(QString::number(result)));
@@ -84,7 +84,7 @@ static inline QString mailCommand()
     QString keyName;
     if (!RegOpenKeyEx(HKEY_CURRENT_USER, mailUserKey, 0, KEY_READ, &handle)) {
         DWORD bufferSize = BufferSize;
-        if (!RegQueryValueEx(handle, L"Progid", 0, 0, reinterpret_cast<unsigned char*>(command), &bufferSize))
+        if (!RegQueryValueEx(handle, L"Progid", nullptr, nullptr, reinterpret_cast<unsigned char*>(command), &bufferSize))
             keyName = QString::fromWCharArray(command);
         RegCloseKey(handle);
     }
@@ -95,7 +95,7 @@ static inline QString mailCommand()
     command[0] = 0;
     if (!RegOpenKeyExW(HKEY_CLASSES_ROOT, reinterpret_cast<const wchar_t*>(keyName.utf16()), 0, KEY_READ, &handle)) {
         DWORD bufferSize = BufferSize;
-        RegQueryValueEx(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(command), &bufferSize);
+        RegQueryValueEx(handle, L"", nullptr, nullptr, reinterpret_cast<unsigned char*>(command), &bufferSize);
         RegCloseKey(handle);
     }
     // QTBUG-57816: As of Windows 10, if there is no mail client installed, an entry like
@@ -136,8 +136,8 @@ static inline bool launchMail(const QUrl &url)
     STARTUPINFO si;
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
-    if (!CreateProcess(NULL, reinterpret_cast<wchar_t *>(const_cast<ushort *>(command.utf16())),
-                       NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    if (!CreateProcess(nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(command.utf16())),
+                       nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
         qErrnoWarning("Unable to launch '%s'", qPrintable(command));
         return false;
     }

@@ -123,7 +123,7 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
 }
 
 
-static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
+static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy, const QString &peerVerifyName)
 {
     QString result;
     QUrl copy = url;
@@ -170,7 +170,8 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
 #else
     Q_UNUSED(proxy)
 #endif
-
+    if (!peerVerifyName.isEmpty())
+        result += QLatin1Char(':') + peerVerifyName;
     return "http-connection:" + std::move(result).toLatin1();
 }
 
@@ -317,12 +318,12 @@ void QHttpThreadDelegate::startRequest()
 
 #ifndef QT_NO_NETWORKPROXY
     if (transparentProxy.type() != QNetworkProxy::NoProxy)
-        cacheKey = makeCacheKey(urlCopy, &transparentProxy);
+        cacheKey = makeCacheKey(urlCopy, &transparentProxy, httpRequest.peerVerifyName());
     else if (cacheProxy.type() != QNetworkProxy::NoProxy)
-        cacheKey = makeCacheKey(urlCopy, &cacheProxy);
+        cacheKey = makeCacheKey(urlCopy, &cacheProxy, httpRequest.peerVerifyName());
     else
 #endif
-        cacheKey = makeCacheKey(urlCopy, 0);
+        cacheKey = makeCacheKey(urlCopy, 0, httpRequest.peerVerifyName());
 
 
     // the http object is actually a QHttpNetworkConnection
@@ -352,7 +353,7 @@ void QHttpThreadDelegate::startRequest()
         httpConnection->setTransparentProxy(transparentProxy);
         httpConnection->setCacheProxy(cacheProxy);
 #endif
-
+        httpConnection->setPeerVerifyName(httpRequest.peerVerifyName());
         // cache the QHttpNetworkConnection corresponding to this cache key
         connections.localData()->addEntry(cacheKey, httpConnection);
     } else {

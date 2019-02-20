@@ -2,8 +2,7 @@ QT += core
 QT -= gui
 
 TARGET = convert
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 
 TEMPLATE = app
 

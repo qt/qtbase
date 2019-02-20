@@ -9,8 +9,7 @@ debug_and_release {
     TARGET = ../crashOnExit_helper
 }
 QT = core
-CONFIG -= app_bundle
-CONFIG += console
+CONFIG += cmdline
 
 # This app is testdata for tst_qthreadstorage
 target.path = $$[QT_INSTALL_TESTS]/tst_qthreadstorage/$$TARGET

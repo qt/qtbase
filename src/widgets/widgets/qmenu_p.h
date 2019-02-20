@@ -95,6 +95,12 @@ static inline int &rperp(Qt::Orientation o, QPoint &pos)
 static inline int &rperp(Qt::Orientation o, QSize &size)
 { return o == Qt::Vertical ? size.rwidth() : size.rheight(); }
 
+static inline int pick(Qt::Orientation o, const QMargins &m)
+{ return o == Qt::Horizontal ? (m.left() + m.right()) : (m.top() + m.bottom()); }
+
+static inline int perp(Qt::Orientation o, const QMargins &m)
+{ return o == Qt::Vertical ? (m.left() + m.right()) : (m.top() + m.bottom()); }
+
 class QTornOffMenu;
 class QEventLoop;
 

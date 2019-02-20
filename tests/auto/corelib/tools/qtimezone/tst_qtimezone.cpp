@@ -508,8 +508,7 @@ void tst_QTimeZone::transitionEachZone()
 #ifdef USING_WIN_TZ
         // See QTBUG-64985: MS's TZ APIs' misdescription of Europe/Samara leads
         // to mis-disambiguation of its fall-back here.
-        if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::Windows7
-            && zone == "Europe/Samara" && i == -3) {
+        if (zone == "Europe/Samara" && i == -3) {
             continue;
         }
 #endif

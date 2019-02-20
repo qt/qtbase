@@ -52,9 +52,11 @@ class QDesktopWidgetPrivate;
 class Q_WIDGETS_EXPORT QDesktopWidget : public QWidget
 {
     Q_OBJECT
+#if QT_DEPRECATED_SINCE(5, 11)
     Q_PROPERTY(bool virtualDesktop READ isVirtualDesktop)
     Q_PROPERTY(int screenCount READ screenCount NOTIFY screenCountChanged)
     Q_PROPERTY(int primaryScreen READ primaryScreen NOTIFY primaryScreenChanged)
+#endif
 public:
     QDesktopWidget();
     ~QDesktopWidget();

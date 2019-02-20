@@ -112,7 +112,7 @@ static char *_q_uuidToHex(const QUuid &uuid, char *dst, QUuid::StringFormat mode
 
     Parses the string representation of a UUID (with optional surrounding "{}")
     by reading at most MaxStringUuidLength (38) characters from \a src, which
-    may be \c nullptr. Stops at the first invalid character (which includes a
+    may be \nullptr. Stops at the first invalid character (which includes a
     premature NUL).
 
     Returns the successfully parsed QUuid, or a null QUuid in case of failure.

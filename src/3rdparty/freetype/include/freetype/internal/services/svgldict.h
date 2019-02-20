@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType glyph dictionary services (specification).              */
 /*                                                                         */
-/*  Copyright 2003-2015 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVGLDICT_H__
-#define __SVGLDICT_H__
+#ifndef SVGLDICT_H_
+#define SVGLDICT_H_
 
 #include FT_INTERNAL_SERVICE_H
 
@@ -56,7 +56,7 @@ FT_BEGIN_HEADER
 
 #define FT_DEFINE_SERVICE_GLYPHDICTREC( class_,                        \
                                         get_name_,                     \
-                                        name_index_)                   \
+                                        name_index_ )                  \
   static const FT_Service_GlyphDictRec  class_ =                       \
   {                                                                    \
     get_name_, name_index_                                             \
@@ -66,7 +66,7 @@ FT_BEGIN_HEADER
 
 #define FT_DEFINE_SERVICE_GLYPHDICTREC( class_,                        \
                                         get_name_,                     \
-                                        name_index_)                   \
+                                        name_index_ )                  \
   void                                                                 \
   FT_Init_Class_ ## class_( FT_Library                library,         \
                             FT_Service_GlyphDictRec*  clazz )          \
@@ -85,4 +85,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __SVGLDICT_H__ */
+#endif /* SVGLDICT_H_ */
+
+
+/* END */

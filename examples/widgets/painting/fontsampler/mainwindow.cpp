@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(fontTree, &QTreeWidget::itemChanged,
             this, &MainWindow::updateStyles);
 
-    fontTree->setItemSelected(fontTree->topLevelItem(0), true);
+    fontTree->topLevelItem(0)->setSelected(true);
     showFont(fontTree->topLevelItem(0));
 }
 

@@ -1239,6 +1239,7 @@ QStyle* QApplication::setStyle(const QString& style)
     return s;
 }
 
+#if QT_DEPRECATED_SINCE(5, 8)
 /*!
     Returns the color specification.
     \obsolete
@@ -1313,6 +1314,7 @@ void QApplication::setColorSpec(int spec)
 {
     Q_UNUSED(spec)
 }
+#endif
 
 /*!
     \property QApplication::globalStrut

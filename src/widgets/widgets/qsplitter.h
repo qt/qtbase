@@ -129,8 +129,12 @@ private:
     friend class QSplitterHandle;
 };
 
+#if QT_DEPRECATED_SINCE(5, 13)
+QT_DEPRECATED_X("Use QSplitter::saveState() instead")
 Q_WIDGETS_EXPORT QTextStream& operator<<(QTextStream&, const QSplitter&);
+QT_DEPRECATED_X("Use QSplitter::restoreState() instead")
 Q_WIDGETS_EXPORT QTextStream& operator>>(QTextStream&, QSplitter&);
+#endif
 
 class QSplitterHandlePrivate;
 class Q_WIDGETS_EXPORT QSplitterHandle : public QWidget

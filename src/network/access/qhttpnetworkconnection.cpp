@@ -1518,6 +1518,18 @@ void QHttpNetworkConnection::preConnectFinished()
     d_func()->preConnectRequests--;
 }
 
+QString QHttpNetworkConnection::peerVerifyName() const
+{
+    Q_D(const QHttpNetworkConnection);
+    return d->peerVerifyName;
+}
+
+void QHttpNetworkConnection::setPeerVerifyName(const QString &peerName)
+{
+    Q_D(QHttpNetworkConnection);
+    d->peerVerifyName = peerName;
+}
+
 #ifndef QT_NO_NETWORKPROXY
 // only called from QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired, not
 // from QHttpNetworkConnectionChannel::handleAuthenticationChallenge

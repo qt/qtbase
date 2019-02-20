@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsDirect2DEventDispatcher : public QWindowsGuiEventDispatcher
 {
 public:
-    QWindowsDirect2DEventDispatcher(QObject *parent = 0)
+    QWindowsDirect2DEventDispatcher(QObject *parent = nullptr)
         : QWindowsGuiEventDispatcher(parent)
     {
         uninstallMessageHook(); // ### Workaround for QTBUG-42428
@@ -82,7 +82,7 @@ static QVersionNumber systemD2DVersion()
     UINT i = GetSystemDirectory(filename, bufSize);
     if (i > 0 && i < bufSize) {
         if (_tcscat_s(filename, bufSize, __TEXT("\\d2d1.dll")) == 0) {
-            DWORD versionInfoSize = GetFileVersionInfoSize(filename, NULL);
+            DWORD versionInfoSize = GetFileVersionInfoSize(filename, nullptr);
             if (versionInfoSize) {
                 QVarLengthArray<BYTE> info(static_cast<int>(versionInfoSize));
                 if (GetFileVersionInfo(filename, 0, versionInfoSize, info.data())) {
@@ -132,7 +132,7 @@ QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringLi
         QString caption = QCoreApplication::translate("QWindowsDirect2DIntegration",
             "Cannot load direct2d platform plugin");
 
-        MessageBoxW(NULL,
+        MessageBoxW(nullptr,
                     msg.toStdWString().c_str(),
                     caption.toStdWString().c_str(),
                     MB_OK | MB_ICONERROR);
@@ -144,7 +144,7 @@ QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringLi
 
     if (!integration->init()) {
         delete integration;
-        integration = 0;
+        integration = nullptr;
     }
 
     return integration;

@@ -75,11 +75,11 @@ static inline void compressMouseMove(MSG *msg)
                 // key release events (kls 2003-05-13):
                 MSG keyMsg;
                 bool done = false;
-                while (PeekMessage(&keyMsg, 0, WM_KEYFIRST, WM_KEYLAST,
+                while (PeekMessage(&keyMsg, nullptr, WM_KEYFIRST, WM_KEYLAST,
                                    PM_NOREMOVE)) {
                     if (keyMsg.time < mouseMsg.time) {
                         if ((keyMsg.lParam & 0xC0000000) == 0x40000000) {
-                            PeekMessage(&keyMsg, 0, keyMsg.message,
+                            PeekMessage(&keyMsg, nullptr, keyMsg.message,
                                         keyMsg.message, PM_REMOVE);
                         } else {
                             done = true;
@@ -121,7 +121,7 @@ static inline QTouchDevice *createTouchDevice()
 {
     const int digitizers = GetSystemMetrics(SM_DIGITIZER);
     if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
-        return 0;
+        return nullptr;
     const int tabletPc = GetSystemMetrics(SM_TABLETPC);
     const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
     qCDebug(lcQpaEvents) << "Digitizers:" << hex << showbase << (digitizers & ~NID_READY)
@@ -159,7 +159,7 @@ QTouchDevice *QWindowsMouseHandler::ensureTouchDevice()
 
 Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
 {
-    Qt::MouseButtons result = 0;
+    Qt::MouseButtons result = nullptr;
     const bool mouseSwapped = GetSystemMetrics(SM_SWAPBUTTON);
     if (GetAsyncKeyState(VK_LBUTTON) < 0)
         result |= mouseSwapped ? Qt::RightButton: Qt::LeftButton;
@@ -327,8 +327,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             QWindow *leaveTarget = m_windowUnderMouse ? m_windowUnderMouse : m_trackedWindow;
             qCDebug(lcQpaEvents) << "Generating leave event for " << leaveTarget;
             QWindowSystemInterface::handleLeaveEvent(leaveTarget);
-            m_trackedWindow = 0;
-            m_windowUnderMouse = 0;
+            m_trackedWindow = nullptr;
+            m_windowUnderMouse = nullptr;
         }
         return true;
     }
@@ -430,7 +430,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             if (currentNotCapturing) {
                 // Clear tracking if capturing and current window is not the capturing window
                 // to avoid leave when mouse actually leaves the application.
-                m_trackedWindow = 0;
+                m_trackedWindow = nullptr;
                 // We are not officially in any window, but we need to set some cursor to clear
                 // whatever cursor the left window had, so apply the cursor of the capture window.
                 platformWindow->applyCursor();
@@ -464,7 +464,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                                  QWindowsKeyMapper::queryKeyboardModifiers(),
                                                  source);
     }
-    m_previousCaptureWindow = hasCapture ? window : 0;
+    m_previousCaptureWindow = hasCapture ? window : nullptr;
     // QTBUG-48117, force synchronous handling for the extra buttons so that WM_APPCOMMAND
     // is sent for unhandled WM_XBUTTONDOWN.
     return (msg.message != WM_XBUTTONUP && msg.message != WM_XBUTTONDOWN && msg.message != WM_XBUTTONDBLCLK)
@@ -595,7 +595,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
 
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
-    Qt::TouchPointStates allStates = 0;
+    Qt::TouchPointStates allStates = nullptr;
 
     GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(msg.lParam),
                       UINT(msg.wParam), winTouchInputs.data(), sizeof(TOUCHINPUT));

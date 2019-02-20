@@ -846,8 +846,6 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 }
 #endif // QT_CONFIG(toolbutton)
 
-#if QT_CONFIG(itemviews)
-
 static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
 {
     qreal height = 0;
@@ -865,6 +863,80 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
     textLayout.endLayout();
     return QSizeF(widthUsed, height);
 }
+
+QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTextOption &textOption,
+                                                 const QFont &font, const QRect &textRect, const Qt::Alignment valign,
+                                                 Qt::TextElideMode textElideMode, int flags,
+                                                 bool lastVisibleLineShouldBeElided, QPointF *paintStartPosition) const
+{
+    QTextLayout textLayout(text, font);
+    textLayout.setTextOption(textOption);
+
+    viewItemTextLayout(textLayout, textRect.width());
+
+    const QRectF boundingRect = textLayout.boundingRect();
+    // don't care about LTR/RTL here, only need the height
+    const QRect layoutRect = QStyle::alignedRect(Qt::LayoutDirectionAuto, valign,
+                                                 boundingRect.size().toSize(), textRect);
+
+    if (paintStartPosition)
+        *paintStartPosition = QPointF(textRect.x(), layoutRect.top());
+
+    QString ret;
+    qreal height = 0;
+    const int lineCount = textLayout.lineCount();
+    for (int i = 0; i < lineCount; ++i) {
+        const QTextLine line = textLayout.lineAt(i);
+        height += line.height();
+
+        // above visible rect
+        if (height + layoutRect.top() <= textRect.top()) {
+            if (paintStartPosition)
+                paintStartPosition->ry() += line.height();
+            continue;
+        }
+
+        const int start = line.textStart();
+        const int length = line.textLength();
+        const bool drawElided = line.naturalTextWidth() > textRect.width();
+        bool elideLastVisibleLine = false;
+        if (!drawElided && i + 1 < lineCount && lastVisibleLineShouldBeElided) {
+            const QTextLine nextLine = textLayout.lineAt(i + 1);
+            const int nextHeight = height + nextLine.height() / 2;
+            // elide when less than the next half line is visible
+            if (nextHeight + layoutRect.top() > textRect.height() + textRect.top())
+                elideLastVisibleLine = true;
+        }
+
+        QString text = textLayout.text().mid(start, length);
+        if (drawElided || elideLastVisibleLine) {
+            if (elideLastVisibleLine) {
+                if (text.endsWith(QChar::LineSeparator))
+                    text.chop(1);
+                text += QChar(0x2026);
+            }
+            const QStackTextEngine engine(text, font);
+            ret += engine.elidedText(textElideMode, textRect.width(), flags);
+
+            // no newline for the last line (last visible or real)
+            // sometimes drawElided is true but no eliding is done so the text ends
+            // with QChar::LineSeparator - don't add another one. This happened with
+            // arabic text in the testcase for QTBUG-72805
+            if (i < lineCount - 1 &&
+                !ret.endsWith(QChar::LineSeparator))
+                ret += QChar::LineSeparator;
+        } else {
+            ret += text;
+        }
+
+        // below visible text, can stop
+        if (height + layoutRect.top() >= textRect.bottom())
+            break;
+    }
+    return ret;
+}
+
+#if QT_CONFIG(itemviews)
 
 QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int role) const
 {
@@ -938,67 +1010,15 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     textOption.setWrapMode(wrapText ? QTextOption::WordWrap : QTextOption::ManualWrap);
     textOption.setTextDirection(option->direction);
     textOption.setAlignment(QStyle::visualAlignment(option->direction, option->displayAlignment));
-    QTextLayout textLayout(option->text, option->font);
+
+    QPointF paintPosition;
+    const QString newText = calculateElidedText(option->text, textOption,
+                                                option->font, textRect, option->displayAlignment,
+                                                option->textElideMode, 0,
+                                                true, &paintPosition);
+
+    QTextLayout textLayout(newText, option->font);
     textLayout.setTextOption(textOption);
-
-    viewItemTextLayout(textLayout, textRect.width());
-
-    const QRectF boundingRect = textLayout.boundingRect();
-    const QRect layoutRect = QStyle::alignedRect(option->direction, option->displayAlignment,
-                                                 boundingRect.size().toSize(), textRect);
-    QPointF paintPosition = QPointF(textRect.x(), layoutRect.top());
-
-    QString newText;
-    qreal height = 0;
-    const int lineCount = textLayout.lineCount();
-    for (int i = 0; i < lineCount; ++i) {
-        const QTextLine line = textLayout.lineAt(i);
-        height += line.height();
-
-        // above visible rect
-        if (height + layoutRect.top() <= textRect.top()) {
-            paintPosition.ry() += line.height();
-            continue;
-        }
-
-        const int start = line.textStart();
-        const int length = line.textLength();
-
-        const bool drawElided = line.naturalTextWidth() > textRect.width();
-        bool elideLastVisibleLine = false;
-        if (!drawElided && i + 1 < lineCount) {
-            const QTextLine nextLine = textLayout.lineAt(i + 1);
-            const int nextHeight = height + nextLine.height() / 2;
-            // elide when less than the next half line is visible
-            if (nextHeight + layoutRect.top() > textRect.height() + textRect.top())
-                elideLastVisibleLine = true;
-        }
-
-        QString text = textLayout.text().mid(start, length);
-        if (drawElided || elideLastVisibleLine) {
-            if (elideLastVisibleLine) {
-                if (text.endsWith(QChar::LineSeparator))
-                    text.chop(1);
-                text += QChar(0x2026);
-            }
-            const QStackTextEngine engine(text, option->font);
-            newText += engine.elidedText(option->textElideMode, textRect.width());
-            // sometimes drawElided is true but no eliding is done so the text ends
-            // with QChar::LineSeparator - don't add another one. This happened with
-            // arabic text in the testcase for QTBUG-72805
-            if (i < lineCount - 1 &&
-                !newText.endsWith(QChar::LineSeparator))
-                newText += QChar::LineSeparator;
-        } else {
-            newText += text;
-        }
-
-        // below visible text, can stop
-        if (height + layoutRect.top() >= textRect.bottom())
-            break;
-    }
-
-    textLayout.setText(newText);
     viewItemTextLayout(textLayout, textRect.width());
     textLayout.draw(p, paintPosition);
 }
@@ -1140,6 +1160,25 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
 }
 #endif // QT_CONFIG(itemviews)
 
+#if QT_CONFIG(toolbutton)
+QString QCommonStylePrivate::toolButtonElideText(const QStyleOptionToolButton *option,
+                                                 const QRect &textRect, int flags) const
+{
+    if (option->fontMetrics.horizontalAdvance(option->text) <= textRect.width())
+        return option->text;
+
+    QString text = option->text;
+    text.replace('\n', QChar::LineSeparator);
+    QTextOption textOption;
+    textOption.setWrapMode(QTextOption::ManualWrap);
+    textOption.setTextDirection(option->direction);
+
+    return calculateElidedText(text, textOption,
+                               option->font, textRect, Qt::AlignTop,
+                               Qt::ElideMiddle, flags,
+                               false, nullptr);
+}
+#endif // QT_CONFIG(toolbutton)
 
 #if QT_CONFIG(tabbar)
 /*! \internal
@@ -1689,8 +1728,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
                     tr.translate(shiftX, shiftY);
-                    const QString text = toolbutton->fontMetrics.elidedText(toolbutton->text, Qt::ElideMiddle,
-                                                                            tr.width(), alignment);
+                    const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
                     proxy()->drawItemText(p, QStyle::visualRect(opt->direction, rect, tr), alignment, toolbutton->palette,
                                  toolbutton->state & State_Enabled, text,
                                  QPalette::ButtonText);
@@ -3102,13 +3140,17 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 ///we need to access the widget here because the style option doesn't
                 //have all the information we need (ie. the layout's margin)
                 const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
-                const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
+                const QMargins margins = tb && tb->layout() ? tb->layout()->contentsMargins() : QMargins(2, 2, 2, 2);
                 const int handleExtent = proxy()->pixelMetric(QStyle::PM_ToolBarHandleExtent, opt, tb);
                 if (tbopt->state & QStyle::State_Horizontal) {
-                    r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
+                    r = QRect(margins.left(), margins.top(),
+                              handleExtent,
+                              tbopt->rect.height() - (margins.top() + margins.bottom()));
                     r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
                 } else {
-                    r = QRect(margin, margin, tbopt->rect.width() - 2*margin, handleExtent);
+                    r = QRect(margins.left(), margins.top(),
+                              tbopt->rect.width() - (margins.left() + margins.right()),
+                              handleExtent);
                 }
             }
         }

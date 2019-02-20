@@ -158,6 +158,8 @@ private slots:
     void lastInsertId();
     void lastQuery_data() { generic_data(); }
     void lastQuery();
+    void lastQueryTwoQueries_data() { generic_data(); }
+    void lastQueryTwoQueries();
     void bindBool_data() { generic_data(); }
     void bindBool();
     void psql_bindWithDoubleColonCastOperator_data() { generic_data("QPSQL"); }
@@ -2811,6 +2813,25 @@ void tst_QSqlQuery::lastQuery()
     QVERIFY_SQL( q, exec( sql ) );
     QCOMPARE( q.lastQuery(), sql );
     QCOMPARE( q.executedQuery(), sql );
+}
+
+void tst_QSqlQuery::lastQueryTwoQueries()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QString sql = QLatin1String("select * from ") + qtest;
+    QVERIFY_SQL(q, exec(sql));
+    QCOMPARE(q.lastQuery(), sql);
+    QCOMPARE(q.executedQuery(), sql);
+
+    sql = QLatin1String("select id from ") + qtest;
+    QVERIFY_SQL(q, exec(sql));
+    QCOMPARE(q.lastQuery(), sql);
+    QCOMPARE(q.executedQuery(), sql);
 }
 
 void tst_QSqlQuery::psql_bindWithDoubleColonCastOperator()

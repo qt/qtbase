@@ -971,6 +971,7 @@ void **QListData::erase(void **xi)
 */
 
 /*! \fn template <class T> void QList<T>::swapItemsAt(int i, int j)
+    \since 5.13
 
     Exchange the item at index position \a i with the item at index
     position \a j. This function assumes that both \a i and \a j are

@@ -2981,7 +2981,10 @@ void QPainter::setMatrix(const QMatrix &matrix, bool combine)
 
 const QMatrix &QPainter::matrix() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return worldMatrix();
+QT_WARNING_POP
 }
 
 
@@ -4216,7 +4219,7 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 */
 void QPainter::drawRoundRect(const QRect &rect, int xRnd, int yRnd)
 {
-    drawRoundRect(QRectF(rect), xRnd, yRnd);
+    drawRoundedRect(QRectF(rect), xRnd, yRnd, Qt::RelativeSize);
 }
 
 /*!
@@ -4230,7 +4233,7 @@ void QPainter::drawRoundRect(const QRect &rect, int xRnd, int yRnd)
 */
 void QPainter::drawRoundRect(int x, int y, int w, int h, int xRnd, int yRnd)
 {
-    drawRoundRect(QRectF(x, y, w, h), xRnd, yRnd);
+    drawRoundedRect(QRectF(x, y, w, h), xRnd, yRnd, Qt::RelativeSize);
 }
 #endif
 
@@ -8346,7 +8349,7 @@ void QPainter::resetTransform()
     d->state->ww = d->state->vw = d->device->metric(QPaintDevice::PdmWidth);
     d->state->wh = d->state->vh = d->device->metric(QPaintDevice::PdmHeight);
     d->state->worldMatrix = QTransform();
-    setMatrixEnabled(false);
+    setWorldMatrixEnabled(false);
     setViewTransformEnabled(false);
     if (d->extended)
         d->extended->transformChanged();

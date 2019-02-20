@@ -173,6 +173,8 @@ public:
     int maximumRedirectsAllowed() const;
     void setMaximumRedirectsAllowed(int maximumRedirectsAllowed);
 
+    QString peerVerifyName() const;
+    void setPeerVerifyName(const QString &peerName);
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;
     friend class QNetworkRequestPrivate;

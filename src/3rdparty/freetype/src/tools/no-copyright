@@ -14,6 +14,9 @@ builds/unix/pkg.m4
 docs/FTL.TXT
 docs/GPLv2.TXT
 #
+include/freetype/internal/fthash.h
+#
+src/base/fthash.c
 src/base/md5.c
 src/base/md5.h
 #
@@ -56,6 +59,7 @@ src/gzip/zlib.h
 src/gzip/zutil.c
 src/gzip/zutil.h
 #
+src/tools/apinames.c
 src/tools/ftrandom/ftrandom.c
 #
 # EOF

@@ -331,7 +331,7 @@ QWizardHeader::QWizardHeader(QWidget *parent)
     titleLabel->setFont(font);
 
     layout = new QGridLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
     layout->setSpacing(0);
 
     layout->setRowMinimumHeight(3, 1);
@@ -456,7 +456,7 @@ public:
 
     QSize minimumSizeHint() const override {
         if (pixmap() && !pixmap()->isNull())
-            return pixmap()->size();
+            return pixmap()->size() / pixmap()->devicePixelRatio();
         return QFrame::minimumSizeHint();
     }
 
@@ -1032,13 +1032,13 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
     int pageColumn = qMin(1, numColumns - 1);
 
     if (mac) {
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(QMargins());
         mainLayout->setSpacing(0);
         buttonLayout->setContentsMargins(MacLayoutLeftMargin, MacButtonTopMargin, MacLayoutRightMargin, MacLayoutBottomMargin);
-        pageVBoxLayout->setMargin(7);
+        pageVBoxLayout->setContentsMargins(7, 7, 7, 7);
     } else {
         if (modern) {
-            mainLayout->setMargin(0);
+            mainLayout->setContentsMargins(QMargins());
             mainLayout->setSpacing(0);
             pageVBoxLayout->setContentsMargins(deltaMarginLeft, deltaMarginTop,
                                                deltaMarginRight, deltaMarginBottom);

@@ -232,9 +232,9 @@ QT_BEGIN_NAMESPACE
 
     The range \c{[str,len)} must remain valid for the lifetime of this string view object.
 
-    Passing \c nullptr as \a str is safe if \a len is 0, too, and results in a null string view.
+    Passing \nullptr as \a str is safe if \a len is 0, too, and results in a null string view.
 
-    The behavior is undefined if \a len is negative or, when positive, if \a str is \c nullptr.
+    The behavior is undefined if \a len is negative or, when positive, if \a str is \nullptr.
 
     This constructor only participates in overload resolution if \c Char is a compatible
     character type. The compatible character types are: \c QChar, \c ushort, \c char16_t and
@@ -249,11 +249,11 @@ QT_BEGIN_NAMESPACE
     The range \c{[first,last)} must remain valid for the lifetime of
     this string view object.
 
-    Passing \c nullptr as \a first is safe if \a last is nullptr, too,
+    Passing \c \nullptr as \a first is safe if \a last is \nullptr, too,
     and results in a null string view.
 
     The behavior is undefined if \a last precedes \a first, or \a first
-    is \c nullptr and \a last is not.
+    is \nullptr and \a last is not.
 
     This constructor only participates in overload resolution if \c Char
     is a compatible character type. The compatible character types
@@ -269,7 +269,7 @@ QT_BEGIN_NAMESPACE
 
     \a str must remain valid for the lifetime of this string view object.
 
-    Passing \c nullptr as \a str is safe and results in a null string view.
+    Passing \nullptr as \a str is safe and results in a null string view.
 
     This constructor only participates in overload resolution if \a
     str is not an array and if \c Char is a compatible character
@@ -332,7 +332,7 @@ QT_BEGIN_NAMESPACE
 
     The string view will be empty if and only if \c{str.empty()}. It is unspecified
     whether this constructor can result in a null string view (\c{str.data()} would
-    have to return \c nullptr for this).
+    have to return \nullptr for this).
 
     \sa isNull(), isEmpty()
 */

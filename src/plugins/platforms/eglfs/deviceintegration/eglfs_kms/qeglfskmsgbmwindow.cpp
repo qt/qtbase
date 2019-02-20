@@ -45,6 +45,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef EGL_EXT_platform_base
+typedef EGLSurface (EGLAPIENTRYP PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy, EGLConfig config, void *native_window, const EGLint *attrib_list);
+#endif
+
 void QEglFSKmsGbmWindow::resetSurface()
 {
     QEglFSKmsGbmScreen *gbmScreen = static_cast<QEglFSKmsGbmScreen *>(screen());

@@ -445,7 +445,13 @@ tst_QHeaderView::tst_QHeaderView()
 
 void tst_QHeaderView::initTestCase()
 {
-    m_tableview = new QTableView();
+    m_tableview = new QTableView;
+    qDebug().noquote().nospace()
+            << "default min section size is "
+            << QString::number(m_tableview->verticalHeader()->minimumSectionSize())
+            << QLatin1Char('/')
+            << m_tableview->horizontalHeader()->minimumSectionSize()
+            << " (v/h)";
 }
 
 void tst_QHeaderView::cleanupTestCase()
@@ -1857,9 +1863,14 @@ void tst_QHeaderView::restoreBeforeSetModel()
 
 void tst_QHeaderView::defaultSectionSizeTest()
 {
+#if defined Q_OS_WINRT
+    QSKIP("Fails on WinRT - QTBUG-73309");
+#endif
+
     // Setup
     QTableView qtv;
     QHeaderView *hv = qtv.verticalHeader();
+    hv->setMinimumSectionSize(10);
     hv->setDefaultSectionSize(99); // Set it to a value different from defaultSize.
     QStandardItemModel amodel(4, 4);
     qtv.setModel(&amodel);

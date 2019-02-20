@@ -2093,7 +2093,6 @@ void QTabBarPrivate::setupMovableTab()
     grabImage.setDevicePixelRatio(q->devicePixelRatioF());
     grabImage.fill(Qt::transparent);
     QStylePainter p(&grabImage, q);
-    p.initFrom(q);
 
     QStyleOptionTab tab;
     q->initStyleOption(&tab, pressedIndex);

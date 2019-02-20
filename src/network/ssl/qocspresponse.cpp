@@ -40,6 +40,8 @@
 #include "qocspresponse_p.h"
 #include "qocspresponse.h"
 
+#include "qhashfunctions.h"
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -56,13 +58,13 @@ QT_BEGIN_NAMESPACE
     configured with OCSP stapling enabled.
 
     \sa QSslSocket, QSslSocket::ocspResponse(), certificateStatus(),
-    revocationReason(), responder(), subject(), OcspCertificateStatus, OcspRevocationReason,
+    revocationReason(), responder(), subject(), QOcspCertificateStatus, QOcspRevocationReason,
     QSslConfiguration::setOcspStaplingEnabled(), QSslConfiguration::ocspStaplingEnabled(),
     QSslConfiguration::peerCertificate()
 */
 
 /*!
-    \enum OcspCertificateStatus
+    \enum QOcspCertificateStatus
     \brief Describes the Online Certificate Status
     \relates QOcspResponse
     \since 5.13
@@ -79,11 +81,11 @@ QT_BEGIN_NAMESPACE
     \value Unknown This state indicates that the responder doesn't know about
            the certificate being requested.
 
-    \sa OcspRevocationReason
+    \sa QOcspRevocationReason
 */
 
 /*!
-    \enum OcspRevocationReason
+    \enum QOcspRevocationReason
     \brief Describes the reason for revocation
     \relates QOcspResponse
     \since 5.13
@@ -109,10 +111,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \since 5.13
 
-    Creates a new response with status OcspCertificateStatus::Unknown
-    and revocation reason OcspRevocationReason::None.
+    Creates a new response with status QOcspCertificateStatus::Unknown
+    and revocation reason QOcspRevocationReason::None.
 
-    \sa OcspCertificateStatus
+    \sa QOcspCertificateStatus
 */
 QOcspResponse::QOcspResponse()
     : d(new QOcspResponsePrivate)
@@ -124,64 +126,51 @@ QOcspResponse::QOcspResponse()
 
     Creates a new response, the copy of \a other.
 */
-QOcspResponse::QOcspResponse(const QOcspResponse &other)
-{
-    *d = *other.d;
-}
+QOcspResponse::QOcspResponse(const QOcspResponse &other) = default;
 
 /*!
     \since 5.13
 
     Move-constructs a QOcspResponse instance from \a other.
 */
-QOcspResponse::QOcspResponse(QOcspResponse &&other) Q_DECL_NOTHROW
-{
-    d.swap(other.d);
-}
+QOcspResponse::QOcspResponse(QOcspResponse &&other) Q_DECL_NOTHROW = default;
 
 /*!
     \since 5.13
 
     Destroys the response.
 */
-QOcspResponse::~QOcspResponse()
-{
-}
+QOcspResponse::~QOcspResponse() = default;
 
 /*!
     \since 5.13
 
-    Assignes \a other to the response and returns a reference to this response.
+    Assigns \a other to the response and returns a reference to this response.
 */
-QOcspResponse &QOcspResponse::operator=(const QOcspResponse &other)
-{
-    if (this != &other)
-        *d = *other.d;
-
-    return *this;
-}
+QOcspResponse &QOcspResponse::operator=(const QOcspResponse &other) = default;
 
 /*!
     \since 5.13
 
     Move-assigns \a other to this QOcspResponse instance.
 */
-QOcspResponse &QOcspResponse::operator=(QOcspResponse &&other) Q_DECL_NOTHROW
-{
-    if (this != &other)
-        d.swap(other.d);
+QOcspResponse &QOcspResponse::operator=(QOcspResponse &&other) Q_DECL_NOTHROW = default;
 
-    return *this;
-}
+/*!
+    \fn void QOcspResponse::swap(QOcspResponse &other)
+    \since 5.13
+
+    Swaps this response with \a other.
+*/
 
 /*!
     \since 5.13
 
     Returns the certificate status.
 
-    \sa OcspCertificateStatus
+    \sa QOcspCertificateStatus
 */
-OcspCertificateStatus QOcspResponse::certificateStatus() const
+QOcspCertificateStatus QOcspResponse::certificateStatus() const
 {
     return d->certificateStatus;
 }
@@ -191,7 +180,7 @@ OcspCertificateStatus QOcspResponse::certificateStatus() const
 
     Returns the reason for revocation.
 */
-OcspRevocationReason QOcspResponse::revocationReason() const
+QOcspRevocationReason QOcspResponse::revocationReason() const
 {
     return d->revocationReason;
 }
@@ -214,6 +203,56 @@ QSslCertificate QOcspResponse::responder() const
 QSslCertificate QOcspResponse::subject() const
 {
     return d->subjectCert;
+}
+
+/*!
+    \fn bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
+
+    Returns \c true if \a lhs and \a rhs are the responses for the same
+    certificate, signed by the same responder, have the same
+    revocation reason and the same certificate status.
+
+    \since 5.13
+    \relates QOcspResponse
+ */
+Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
+{
+    return lhs.d == rhs.d || *lhs.d == *rhs.d;
+}
+
+/*!
+  \fn bool operator != (const QOcspResponse &lhs, const QOcspResponse &rhs)
+
+  Returns \c true if \a lhs and \a rhs are responses for different certificates,
+  or signed by different responders, or have different revocation reasons, or different
+  certificate statuses.
+
+  \since 5.13
+  \relates QOcspResponse
+*/
+
+/*!
+    \fn uint qHash(const QOcspResponse &response, uint seed)
+
+    Returns the hash value for the \a response, using \a seed to seed the calculation.
+
+    \since 5.13
+    \relates QHash
+*/
+uint qHash(const QOcspResponse &response, uint seed)
+{
+    const QOcspResponsePrivate *d = response.d.data();
+    Q_ASSERT(d);
+
+    QtPrivate::QHashCombine hasher;
+    uint hash = hasher(seed, int(d->certificateStatus));
+    hash = hasher(hash, int(d->revocationReason));
+    if (!d->signerCert.isNull())
+        hash = hasher(hash, d->signerCert);
+    if (!d->subjectCert.isNull())
+        hash = hasher(hash, d->subjectCert);
+
+    return hash;
 }
 
 QT_END_NAMESPACE

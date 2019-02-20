@@ -376,7 +376,7 @@ QWidget *RegularExpressionDialog::setupLeftUi()
 
     QFormLayout *layout = new QFormLayout(container);
     layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
 
     QLabel *regexpAndSubjectLabel = new QLabel(tr("<h3>Regular expression and text input</h3>"));
     layout->addRow(regexpAndSubjectLabel);
@@ -448,7 +448,7 @@ QWidget *RegularExpressionDialog::setupRightUi()
 
     QFormLayout *layout = new QFormLayout(container);
     layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
 
     QLabel *matchInfoLabel = new QLabel(tr("<h3>Match information</h3>"));
     layout->addRow(matchInfoLabel);

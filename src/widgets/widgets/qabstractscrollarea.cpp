@@ -185,7 +185,7 @@ QAbstractScrollAreaScrollBarContainer::QAbstractScrollAreaScrollBarContainer(Qt:
      orientation(orientation)
 {
     setLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
     layout->setSpacing(0);
     layout->addWidget(scrollBar);
     layout->setSizeConstraint(QLayout::SetMaximumSize);

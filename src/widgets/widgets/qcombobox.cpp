@@ -472,7 +472,7 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     // we need a vertical layout
     QBoxLayout *layout =  new QBoxLayout(QBoxLayout::TopToBottom, this);
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
 
     // set item view
     setItemView(itemView);
@@ -895,14 +895,21 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     currentIndex was reset.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QComboBox::currentIndexChanged(const QString &text)
     \since 4.1
+
+    \obsolete
+
+    Use currentTextChanged(const QString &) or currentIndexChanged(int)
+    instead.
 
     This signal is sent whenever the currentIndex in the combobox
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
 */
+#endif
 
 /*!
     \fn void QComboBox::currentTextChanged(const QString &text)
@@ -1375,7 +1382,9 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     Q_Q(QComboBox);
     const QString text = itemText(index);
     emit q->currentIndexChanged(index.row());
+#if QT_DEPRECATED_SINCE(5, 13)
     emit q->currentIndexChanged(text);
+#endif
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);
@@ -1483,6 +1492,7 @@ int QComboBox::maxCount() const
 }
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
 
 /*!
     \property QComboBox::autoCompletion
@@ -1576,6 +1586,7 @@ void QComboBox::setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity
     if (d->lineEdit && d->lineEdit->completer())
         d->lineEdit->completer()->setCaseSensitivity(sensitivity);
 }
+#endif  //  QT_DEPRECATED_SINCE(5, 13)
 
 #endif // QT_CONFIG(completer)
 

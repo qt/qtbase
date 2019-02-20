@@ -148,6 +148,10 @@ struct Options
     QString rootPath;
     QStringList qmlImportPaths;
 
+    // Versioning
+    QString versionName;
+    QString versionCode;
+
     // lib c++ path
     QString stdCppPath;
     QString stdCppName = QStringLiteral("gnustl_shared");
@@ -757,6 +761,22 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue androidVersionName = jsonObject.value(QStringLiteral("android-version-name"));
+        if (!androidVersionName.isUndefined())
+            options->versionName = androidVersionName.toString();
+        else
+            options->versionName = QStringLiteral("1.0");
+    }
+
+    {
+        const QJsonValue androidVersionCode = jsonObject.value(QStringLiteral("android-version-code"));
+        if (!androidVersionCode.isUndefined())
+            options->versionCode = androidVersionCode.toString();
+        else
+            options->versionCode = QStringLiteral("1");
+    }
+
+    {
         const QJsonValue applicationBinary = jsonObject.value(QStringLiteral("application-binary"));
         if (applicationBinary.isUndefined()) {
             fprintf(stderr, "No application binary defined in json file.\n");
@@ -1324,6 +1344,8 @@ bool updateAndroidManifest(Options &options)
     replacements[QLatin1String("-- %%INSERT_LOCAL_LIBS%% --")] = localLibs.join(QLatin1Char(':'));
     replacements[QLatin1String("-- %%INSERT_LOCAL_JARS%% --")] = options.localJars.join(QLatin1Char(':'));
     replacements[QLatin1String("-- %%INSERT_INIT_CLASSES%% --")] = options.initClasses.join(QLatin1Char(':'));
+    replacements[QLatin1String("-- %%INSERT_VERSION_NAME%% --")] = options.versionName;
+    replacements[QLatin1String("-- %%INSERT_VERSION_CODE%% --")] = options.versionCode;
     replacements[QLatin1String("package=\"org.qtproject.example\"")] = QString::fromLatin1("package=\"%1\"").arg(options.packageName);
     replacements[QLatin1String("-- %%BUNDLE_LOCAL_QT_LIBS%% --")]
             = (options.deploymentMechanism == Options::Bundled) ? QString::fromLatin1("1") : QString::fromLatin1("0");
@@ -1884,7 +1906,7 @@ bool stripFile(const Options &options, const QString &fileName)
     }
 
     if (options.useLLVM)
-        strip = QString::fromLatin1("%1 -strip-all -strip-all-gnu %2").arg(shellQuote(strip), shellQuote(fileName));
+        strip = QString::fromLatin1("%1 -strip-all %2").arg(shellQuote(strip), shellQuote(fileName));
     else
         strip = QString::fromLatin1("%1 %2").arg(shellQuote(strip), shellQuote(fileName));
 

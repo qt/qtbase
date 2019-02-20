@@ -3522,7 +3522,7 @@ bool QMetaProperty::isStored(const QObject *object) const
     false. e.g., the \c text property is the \c USER editable property
     of a QLineEdit.
 
-    If \a object is null, the function returns \c false if the \c
+    If \a object is \nullptr, the function returns \c false if the \c
     {Q_PROPERTY()}'s \c USER attribute is false. Otherwise it returns
     true.
 

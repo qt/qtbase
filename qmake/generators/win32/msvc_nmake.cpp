@@ -76,6 +76,11 @@ void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &cal
     Win32MakefileGenerator::writeSubMakeCall(t, callPrefix, makeArguments);
 }
 
+ProStringList NmakeMakefileGenerator::extraSubTargetDependencies()
+{
+    return { "$(MAKEFILE)" };
+}
+
 QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 {
     QString ret = Win32MakefileGenerator::defaultInstall(t);

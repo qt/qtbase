@@ -2598,7 +2598,7 @@ void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
     QVBoxLayout *widgetLayout = qobject_cast<QVBoxLayout*>(layout());
     if (!widgetLayout) {
         widgetLayout = new QVBoxLayout(this);
-        widgetLayout->setMargin(0);
+        widgetLayout->setContentsMargins(QMargins());
         widgetLayout->setSpacing(0);
     }
     delete calendar.data();

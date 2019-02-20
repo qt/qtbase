@@ -1866,7 +1866,7 @@ QList<QByteArray> QPictureIO::outputFormats()
 bool QPictureIO::read()
 {
     QFile           file;
-    const char          *picture_format;
+    QByteArray      picture_format;
     QPictureHandler *h;
 
     if (d->iodev) {                                // read from io device
@@ -1882,7 +1882,7 @@ bool QPictureIO::read()
     if (d->frmt.isEmpty()) {
         // Try to guess format
         picture_format = pictureFormat(d->iodev);        // get picture format
-        if (!picture_format) {
+        if (picture_format.isEmpty()) {
             if (file.isOpen()) {                        // unknown format
                 file.close();
                 d->iodev = 0;

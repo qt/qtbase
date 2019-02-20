@@ -1778,7 +1778,7 @@ void QCalendarWidgetPrivate::createNavigationBar(QWidget *widget)
     spaceHolder = new QSpacerItem(0,0);
 
     QHBoxLayout *headerLayout = new QHBoxLayout;
-    headerLayout->setMargin(0);
+    headerLayout->setContentsMargins(QMargins());
     headerLayout->setSpacing(0);
     headerLayout->addWidget(prevMonth);
     headerLayout->insertStretch(headerLayout->count());
@@ -2101,7 +2101,7 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
     setBackgroundRole(QPalette::Window);
 
     QVBoxLayout *layoutV = new QVBoxLayout(this);
-    layoutV->setMargin(0);
+    layoutV->setContentsMargins(QMargins());
     d->m_model = new QCalendarModel(this);
     QTextCharFormat fmt;
     fmt.setForeground(QBrush(Qt::red));
@@ -2148,7 +2148,7 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
     connect(d->yearEdit, SIGNAL(editingFinished()),
             this, SLOT(_q_yearEditingFinished()));
 
-    layoutV->setMargin(0);
+    layoutV->setContentsMargins(QMargins());
     layoutV->setSpacing(0);
     layoutV->addWidget(d->navBarBackground);
     layoutV->addWidget(d->m_view);
@@ -3064,19 +3064,22 @@ bool QCalendarWidget::eventFilter(QObject *watched, QEvent *event)
 {
     Q_D(QCalendarWidget);
     if (event->type() == QEvent::MouseButtonPress && d->yearEdit->hasFocus()) {
+        // We can get filtered press events that were intended for Qt Virtual Keyboard's
+        // input panel (QQuickView), so we have to make sure that the window is indeed a QWidget - no static_cast.
+        // In addition, as we have a event filter on the whole application we first make sure that the top level widget
+        // of both this and the watched widget are the same to decide if we should finish the year edition.
         QWidget *tlw = window();
-        QWidget *widget = static_cast<QWidget*>(watched);
-        //as we have a event filter on the whole application we first make sure that the top level widget
-        //of both this and the watched widget are the same to decide if we should finish the year edition.
-        if (widget->window() == tlw) {
-            QPoint mousePos = widget->mapTo(tlw, static_cast<QMouseEvent *>(event)->pos());
-            QRect geom = QRect(d->yearEdit->mapTo(tlw, QPoint(0, 0)), d->yearEdit->size());
-            if (!geom.contains(mousePos)) {
-                event->accept();
-                d->_q_yearEditingFinished();
-                setFocus();
-                return true;
-            }
+        QWidget *widget = qobject_cast<QWidget *>(watched);
+        if (!widget || widget->window() != tlw)
+            return QWidget::eventFilter(watched, event);
+
+        QPoint mousePos = widget->mapTo(tlw, static_cast<QMouseEvent *>(event)->pos());
+        QRect geom = QRect(d->yearEdit->mapTo(tlw, QPoint(0, 0)), d->yearEdit->size());
+        if (!geom.contains(mousePos)) {
+            event->accept();
+            d->_q_yearEditingFinished();
+            setFocus();
+            return true;
         }
     }
     return QWidget::eventFilter(watched, event);

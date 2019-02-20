@@ -85,7 +85,7 @@
 #include <QtCore/qscopedvaluerollback.h>
 
 #if QT_CONFIG(ocsp)
-#include <openssl/ocsp.h>
+#include "qocsp_p.h"
 #endif
 
 #include <algorithm>
@@ -258,29 +258,29 @@ QSslError qt_OCSP_response_status_to_QSslError(long code)
     Q_UNREACHABLE();
 }
 
-OcspRevocationReason qt_OCSP_revocation_reason(int reason)
+QOcspRevocationReason qt_OCSP_revocation_reason(int reason)
 {
     switch (reason) {
     case OCSP_REVOKED_STATUS_NOSTATUS:
-        return OcspRevocationReason::None;
+        return QOcspRevocationReason::None;
     case OCSP_REVOKED_STATUS_UNSPECIFIED:
-        return OcspRevocationReason::Unspecified;
+        return QOcspRevocationReason::Unspecified;
     case OCSP_REVOKED_STATUS_KEYCOMPROMISE:
-        return OcspRevocationReason::KeyCompromise;
+        return QOcspRevocationReason::KeyCompromise;
     case OCSP_REVOKED_STATUS_CACOMPROMISE:
-        return OcspRevocationReason::CACompromise;
+        return QOcspRevocationReason::CACompromise;
     case OCSP_REVOKED_STATUS_AFFILIATIONCHANGED:
-        return OcspRevocationReason::AffiliationChanged;
+        return QOcspRevocationReason::AffiliationChanged;
     case OCSP_REVOKED_STATUS_SUPERSEDED:
-        return OcspRevocationReason::Superseded;
+        return QOcspRevocationReason::Superseded;
     case OCSP_REVOKED_STATUS_CESSATIONOFOPERATION:
-        return OcspRevocationReason::CessationOfOperation;
+        return QOcspRevocationReason::CessationOfOperation;
     case OCSP_REVOKED_STATUS_CERTIFICATEHOLD:
-        return OcspRevocationReason::CertificateHold;
+        return QOcspRevocationReason::CertificateHold;
     case OCSP_REVOKED_STATUS_REMOVEFROMCRL:
-        return OcspRevocationReason::RemoveFromCRL;
+        return QOcspRevocationReason::RemoveFromCRL;
     default:
-        return OcspRevocationReason::None;
+        return QOcspRevocationReason::None;
     }
 
     Q_UNREACHABLE();
@@ -596,6 +596,10 @@ bool QSslSocketBackendPrivate::initSslContext()
 void QSslSocketBackendPrivate::destroySslContext()
 {
     if (ssl) {
+        // We do not send a shutdown alert here. Just mark the session as
+        // resumable for qhttpnetworkconnection's "optimization", otherwise
+        // OpenSSL won't start a session resumption.
+        q_SSL_shutdown(ssl);
         q_SSL_free(ssl);
         ssl = nullptr;
     }
@@ -1620,15 +1624,15 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     switch (certStatus) {
     case V_OCSP_CERTSTATUS_GOOD:
         // This certificate was not found among the revoked ones.
-        dResponse->certificateStatus = OcspCertificateStatus::Good;
+        dResponse->certificateStatus = QOcspCertificateStatus::Good;
         break;
     case V_OCSP_CERTSTATUS_REVOKED:
-        dResponse->certificateStatus = OcspCertificateStatus::Revoked;
+        dResponse->certificateStatus = QOcspCertificateStatus::Revoked;
         dResponse->revocationReason = qt_OCSP_revocation_reason(reason);
         ocspErrors.push_back({QSslError::CertificateRevoked, configuration.peerCertificate});
         break;
     case V_OCSP_CERTSTATUS_UNKNOWN:
-        dResponse->certificateStatus = OcspCertificateStatus::Unknown;
+        dResponse->certificateStatus = QOcspCertificateStatus::Unknown;
         ocspErrors.push_back({QSslError::OcspStatusUnknown, configuration.peerCertificate});
     }
 

@@ -118,10 +118,8 @@ public:
         return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && dirtyRenderToTextureWidgets.isEmpty());
     }
 
-    // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-    void markDirty(const QRegion &rgn, QWidget *widget, UpdateTime updateTime = UpdateLater,
-                   BufferState bufferState = BufferValid);
-    void markDirty(const QRect &rect, QWidget *widget, UpdateTime updateTime = UpdateLater,
+    template <class T>
+    void markDirty(const T &r, QWidget *widget, UpdateTime updateTime = UpdateLater,
                    BufferState bufferState = BufferValid);
 
 private:

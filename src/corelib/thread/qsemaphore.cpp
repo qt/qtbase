@@ -606,7 +606,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
     \fn QSemaphoreReleaser::semaphore() const
 
     Returns a pointer to the QSemaphore object provided to the constructor,
-    or by the last move assignment, if any. Otherwise, returns \c nullptr.
+    or by the last move assignment, if any. Otherwise, returns \nullptr.
 */
 
 /*!
@@ -614,7 +614,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     Cancels this QSemaphoreReleaser such that the destructor will no longer
     call \c{semaphore()->release()}. Returns the value of semaphore()
-    before this call. After this call, semaphore() will return \c nullptr.
+    before this call. After this call, semaphore() will return \nullptr.
 
     To enable again, assign a new QSemaphoreReleaser:
 

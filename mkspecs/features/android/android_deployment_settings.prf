@@ -58,6 +58,14 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
     !isEmpty(ANDROID_PACKAGE_SOURCE_DIR): \
         FILE_CONTENT += "   \"android-package-source-directory\": $$emitString($$ANDROID_PACKAGE_SOURCE_DIR),"
 
+    # Android-specific version string
+    !isEmpty(ANDROID_VERSION_NAME): \
+        FILE_CONTENT += "   \"android-version-name\": $$emitString($$ANDROID_VERSION_NAME),"
+
+    # Android-specific version number
+    !isEmpty(ANDROID_VERSION_CODE): \
+        FILE_CONTENT += "   \"android-version-code\": $$emitString($$ANDROID_VERSION_CODE),"
+
     !isEmpty(ANDROID_EXTRA_LIBS): \
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
 

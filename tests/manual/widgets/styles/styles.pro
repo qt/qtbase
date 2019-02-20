@@ -1,7 +1,6 @@
 TEMPLATE = app
 QT = widgets
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 CONFIG += c++11
 
 SOURCES += main.cpp

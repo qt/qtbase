@@ -239,8 +239,8 @@ qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t heade
     Returns a duplicate string.
 
     Allocates space for a copy of \a src, copies it, and returns a
-    pointer to the copy. If \a src is nullptr, it immediately returns
-    nullptr.
+    pointer to the copy. If \a src is \nullptr, it immediately returns
+    \nullptr.
 
     Ownership is passed to the caller, so the returned string must be
     deleted using \c delete[].
@@ -258,7 +258,7 @@ char *qstrdup(const char *src)
 
     Copies all the characters up to and including the '\\0' from \a
     src into \a dst and returns a pointer to \a dst. If \a src is
-    nullptr, it immediately returns nullptr.
+    \nullptr, it immediately returns \nullptr.
 
     This function assumes that \a dst is large enough to hold the
     contents of \a src.
@@ -291,7 +291,7 @@ char *qstrcpy(char *dst, const char *src)
     Copies at most \a len bytes from \a src (stopping at \a len or the
     terminating '\\0' whichever comes first) into \a dst and returns a
     pointer to \a dst. Guarantees that \a dst is '\\0'-terminated. If
-    \a src or \a dst is nullptr, returns nullptr immediately.
+    \a src or \a dst is \nullptr, returns \nullptr immediately.
 
     This function assumes that \a dst is at least \a len characters
     long.
@@ -326,7 +326,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
     A safe \c strlen() function.
 
     Returns the number of characters that precede the terminating '\\0',
-    or 0 if \a str is nullptr.
+    or 0 if \a str is \nullptr.
 
     \sa qstrnlen()
 */
@@ -338,7 +338,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
     A safe \c strnlen() function.
 
     Returns the number of characters that precede the terminating '\\0', but
-    at most \a maxlen. If \a str is nullptr, returns 0.
+    at most \a maxlen. If \a str is \nullptr, returns 0.
 
     \sa qstrlen()
 */
@@ -352,10 +352,10 @@ char *qstrncpy(char *dst, const char *src, uint len)
     is less than \a str2, 0 if \a str1 is equal to \a str2 or a
     positive value if \a str1 is greater than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
 
     Special case 2: Returns an arbitrary non-zero value if \a str1 is
-    nullptr or \a str2 is nullptr (but not both).
+    \nullptr or \a str2 is \nullptr (but not both).
 
     \sa qstrncmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons},
         QByteArray::compare()
@@ -378,10 +378,10 @@ int qstrcmp(const char *str1, const char *str2)
     str1 is equal to \a str2 or a positive value if \a str1 is greater
     than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
 
-    Special case 2: Returns a random non-zero value if \a str1 is nullptr
-    or \a str2 is nullptr (but not both).
+    Special case 2: Returns a random non-zero value if \a str1 is \nullptr
+    or \a str2 is \nullptr (but not both).
 
     \sa qstrcmp(), qstricmp(), qstrnicmp(), {8-bit Character Comparisons},
         QByteArray::compare()
@@ -398,10 +398,10 @@ int qstrcmp(const char *str1, const char *str2)
     str1 is equal to \a str2 or a positive value if \a str1 is greater
     than \a str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
 
-    Special case 2: Returns a random non-zero value if \a str1 is nullptr
-    or \a str2 is nullptr (but not both).
+    Special case 2: Returns a random non-zero value if \a str1 is \nullptr
+    or \a str2 is \nullptr (but not both).
 
     \sa qstrcmp(), qstrncmp(), qstrnicmp(), {8-bit Character Comparisons},
         QByteArray::compare()
@@ -491,10 +491,10 @@ int qstricmp(const char *str1, const char *str2)
     is equal to \a str2 or a positive value if \a str1 is greater than \a
     str2.
 
-    Special case 1: Returns 0 if \a str1 and \a str2 are both nullptr.
+    Special case 1: Returns 0 if \a str1 and \a str2 are both \nullptr.
 
-    Special case 2: Returns a random non-zero value if \a str1 is nullptr
-    or \a str2 is nullptr (but not both).
+    Special case 2: Returns a random non-zero value if \a str1 is \nullptr
+    or \a str2 is \nullptr (but not both).
 
     \sa qstrcmp(), qstrncmp(), qstricmp(), {8-bit Character Comparisons},
         QByteArray::compare()
@@ -3912,7 +3912,7 @@ T toIntegral_helper(const char *data, bool *ok, int base)
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
@@ -3938,7 +3938,7 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
@@ -3963,7 +3963,7 @@ qulonglong QByteArray::toULongLong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 36
@@ -3990,7 +3990,7 @@ int QByteArray::toInt(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
@@ -4017,7 +4017,7 @@ uint QByteArray::toUInt(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 37
@@ -4045,7 +4045,7 @@ long QByteArray::toLong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
@@ -4069,7 +4069,7 @@ ulong QByteArray::toULong(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
@@ -4094,7 +4094,7 @@ short QByteArray::toShort(bool *ok, int base) const
 
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \note The conversion of the number is performed in the default C locale,
@@ -4115,7 +4115,7 @@ ushort QByteArray::toUShort(bool *ok, int base) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for other reasons (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 38
@@ -4151,7 +4151,7 @@ double QByteArray::toDouble(bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for other reasons (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet code/src_corelib_tools_qbytearray.cpp 38float

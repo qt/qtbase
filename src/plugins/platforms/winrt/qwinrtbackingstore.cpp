@@ -45,8 +45,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFramebufferObject>
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,7 +82,7 @@ bool QWinRTBackingStore::initialize()
         return true;
 
     d->context.reset(new QOpenGLContext);
-    QSurfaceFormat format = window()->requestedFormat();
+    QSurfaceFormat format = window()->format();
     d->context->setFormat(format);
     d->context->setScreen(window()->screen());
     if (!d->context->create())
@@ -138,7 +137,7 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     const int y2 = y1 + bounds.height();
     const int x1 = bounds.x();
     const int x2 = x1 + bounds.width();
-    glBlitFramebufferANGLE(x1, y1, x2, y2,
+    glBlitFramebuffer(x1, y1, x2, y2,
                       x1, d->size.height() - y1, x2, d->size.height() - y2,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
 

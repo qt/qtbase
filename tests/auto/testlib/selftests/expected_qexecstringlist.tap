@@ -1,0 +1,54 @@
+TAP version 13
+# tst_QExecStringList
+ok 1 - initTestCase()
+ok 2 - testA()
+ok 3 - testB(Data1)
+ok 4 - testB(Data2)
+ok 5 - testB(Data3)
+ok 6 - testC()
+ok 7 - cleanupTestCase()
+1..7
+# tests 7
+# pass 7
+# fail 0
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testA()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
+PASS   : tst_QExecStringList::testC()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testA()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testC()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********

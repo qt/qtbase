@@ -542,8 +542,10 @@ void QTextHtmlImporter::import()
             }
         }
 
-        if (currentNode->charFormat.isAnchor() && !currentNode->charFormat.anchorName().isEmpty()) {
-            namedAnchors.append(currentNode->charFormat.anchorName());
+        if (currentNode->charFormat.isAnchor()) {
+            const auto names = currentNode->charFormat.anchorNames();
+            if (!names.isEmpty())
+                namedAnchors.append(names.constFirst());
         }
 
         if (appendNodeText())
@@ -1139,7 +1141,8 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
     // ####################
     //                block.setFloatPosition(node->cssFloat);
 
-    if (wsm == QTextHtmlParserNode::WhiteSpacePre) {
+    if (wsm == QTextHtmlParserNode::WhiteSpacePre
+            || wsm == QTextHtmlParserNode::WhiteSpaceNoWrap) {
         block.setNonBreakableLines(true);
         modifiedBlockFormat = true;
     }

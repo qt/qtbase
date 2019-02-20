@@ -158,6 +158,9 @@ public:
 #ifndef QT_NO_SSL
     void connectToHostEncrypted(const QString &hostName, quint16 port = 443,
                                 const QSslConfiguration &sslConfiguration = QSslConfiguration::defaultConfiguration());
+    void connectToHostEncrypted(const QString &hostName, quint16 port,
+                                const QSslConfiguration &sslConfiguration,
+                                const QString &peerName);
 #endif
     void connectToHost(const QString &hostName, quint16 port = 80);
 

@@ -32,6 +32,7 @@
 #include <QtCore/qdebug.h>
 
 #include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
 
 void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
@@ -52,11 +53,7 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
         htmlCursorName = "auto";
 
     // Set cursor on the main canvas
-    EM_ASM_ARGS({
-        if (Module['canvas']) {
-            Module['canvas'].style['cursor'] = Pointer_stringify($0);
-        }
-    }, htmlCursorName.constData());
+    emscripten::val::global("window").set("cursor", emscripten::val(htmlCursorName.constData()));
 }
 
 QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)

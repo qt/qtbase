@@ -86,7 +86,7 @@ QColor bgColorForName(const QString &name)
         return QColor("#D8D8F1");
     if (name == "Yellow")
         return QColor("#F1F0D8");
-    return QColor(name).light(110);
+    return QColor(name).lighter(110);
 }
 
 QColor fgColorForName(const QString &name)

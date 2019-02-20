@@ -58,8 +58,9 @@
         },
         "bcm_host": {
             "export": "",
+            "headers": ["bcm_host.h"],
             "sources": [
-                "-lbcm_host"
+                { "type": "makeSpec", "spec": "BCM_HOST" }
             ]
         },
         "dxguid": {
@@ -1090,7 +1091,7 @@
         "angle": {
             "label": "ANGLE",
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
-            "condition": "features.dxguid && tests.fxc && (features.direct3d9 || (config.winrt && features.direct3d11 && libs.d3dcompiler))",
+            "condition": "!features.opengl-desktop && features.dxguid && tests.fxc && (features.direct3d9 || (config.winrt && features.direct3d11 && libs.d3dcompiler))",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" },
@@ -1286,9 +1287,9 @@
         },
         "opengles2": {
             "label": "OpenGL ES 2.0",
-            "enable": "input.opengl == 'es2'",
+            "enable": "input.opengl == 'es2' || input.angle == 'yes'",
             "disable": "input.opengl == 'desktop' || input.opengl == 'dynamic' || input.opengl == 'no'",
-            "condition": "config.win32 || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
+            "condition": "(config.win32 && !features.opengl-dynamic) || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
             "output": [
                 "publicFeature",
                 "publicQtConfig",
@@ -1322,6 +1323,7 @@
         },
         "opengl-desktop": {
             "label": "Desktop OpenGL",
+            "autoDetect": "!config.win32",
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
@@ -1329,8 +1331,7 @@
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",
-            "enable": "input.opengl == 'dynamic'",
-            "autoDetect": false,
+            "disable": "input.angle == 'yes' || input.opengl == 'no' || input.opengl == 'desktop'",
             "condition": "config.win32 && !config.winrt",
             "output": [
                 { "type": "publicFeature", "name": "dynamicgl" },
@@ -1365,7 +1366,7 @@
         "eglfs": {
             "label": "EGLFS",
             "section": "Platform plugins",
-            "condition": "!config.android && !config.darwin && !config.win32 && features.egl",
+            "condition": "!config.android && !config.darwin && !config.win32 && !config.wasm && features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {

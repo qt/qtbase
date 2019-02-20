@@ -18,7 +18,8 @@ SOURCES = \
     qwasmcompositor.cpp \
     qwasmcursor.cpp \
     qwasmopenglcontext.cpp \
-    qwasmtheme.cpp
+    qwasmtheme.cpp \
+    qwasmclipboard.cpp
 
 HEADERS = \
     qwasmintegration.h \
@@ -31,7 +32,8 @@ HEADERS = \
     qwasmstylepixmaps_p.h \
     qwasmcursor.h \
     qwasmopenglcontext.h \
-    qwasmtheme.h
+    qwasmtheme.h \
+    qwasmclipboard.h
 
 wasmfonts.files = \
     ../../../3rdparty/wasm/Vera.ttf \

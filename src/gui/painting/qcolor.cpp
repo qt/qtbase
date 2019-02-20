@@ -541,7 +541,15 @@ static QStringList get_colornames()
     \section1 The HSL Color Model
 
     HSL is similar to HSV, however instead of the Value parameter, HSL
-    specifies a Lightness parameter.
+    specifies a Lightness parameter which maps somewhat differently to the
+    brightness of the color.
+
+    Similarly, the HSL saturation value is not in general the same as the HSV
+    saturation value for the same color. hslSaturation() provides the color's
+    HSL saturation value, while saturation() and hsvSaturation() provides the
+    HSV saturation value.
+
+    The hue value is defined to be the same in HSL and HSV.
 
     \section1 The CMYK Color Model
 
@@ -1098,7 +1106,7 @@ void QColor::setHsv(int h, int s, int v, int a)
     These components can be retrieved individually using the hslHueF(),
     hslSaturationF(), lightnessF() and alphaF() functions.
 
-    \sa setHsl()
+    \sa getHsl(), setHslF(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 void QColor::getHslF(qreal *h, qreal *s, qreal *l, qreal *a) const
 {
@@ -1128,7 +1136,7 @@ void QColor::getHslF(qreal *h, qreal *s, qreal *l, qreal *a) const
     These components can be retrieved individually using the hslHue(),
     hslSaturation(), lightness() and alpha() functions.
 
-    \sa setHsl()
+    \sa getHslF(), setHsl(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 void QColor::getHsl(int *h, int *s, int *l, int *a) const
 {
@@ -1619,11 +1627,11 @@ void QColor::setBlueF(qreal blue)
 }
 
 /*!
-    Returns the hue color component of this color.
+    Returns the HSV hue color component of this color.
 
     The color is implicitly converted to HSV.
 
-    \sa hsvHue(), hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa hsvHue(), hslHue(), hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 
 int QColor::hue() const Q_DECL_NOTHROW
@@ -1632,9 +1640,9 @@ int QColor::hue() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns the hue color component of this color.
+    Returns the HSV hue color component of this color.
 
-    \sa hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa hueF(), hslHue(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 int QColor::hsvHue() const Q_DECL_NOTHROW
 {
@@ -1644,11 +1652,11 @@ int QColor::hsvHue() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns the saturation color component of this color.
+    Returns the HSV saturation color component of this color.
 
     The color is implicitly converted to HSV.
 
-    \sa hsvSaturation(), saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
+    \sa hsvSaturation(), hslSaturation(), saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
 
@@ -1658,9 +1666,9 @@ int QColor::saturation() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns the saturation color component of this color.
+    Returns the HSV saturation color component of this color.
 
-    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa saturationF(), hslSaturation(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 int QColor::hsvSaturation() const Q_DECL_NOTHROW
 {
@@ -1682,11 +1690,11 @@ int QColor::value() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns the hue color component of this color.
+    Returns the HSV hue color component of this color.
 
     The color is implicitly converted to HSV.
 
-    \sa hsvHueF(), hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa hsvHueF(), hslHueF(), hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 qreal QColor::hueF() const Q_DECL_NOTHROW
 {
@@ -1696,7 +1704,7 @@ qreal QColor::hueF() const Q_DECL_NOTHROW
 /*!
     Returns the hue color component of this color.
 
-    \sa hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+    \sa hue(), hslHueF(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
 qreal QColor::hsvHueF() const Q_DECL_NOTHROW
@@ -1707,11 +1715,11 @@ qreal QColor::hsvHueF() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns the saturation color component of this color.
+    Returns the HSV saturation color component of this color.
 
      The color is implicitly converted to HSV.
 
-    \sa hsvSaturationF(), saturation(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+    \sa hsvSaturationF(), hslSaturationF(), saturation(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
 qreal QColor::saturationF() const Q_DECL_NOTHROW
@@ -1720,9 +1728,9 @@ qreal QColor::saturationF() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns the saturation color component of this color.
+    Returns the HSV saturation color component of this color.
 
-    \sa saturation(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa saturation(), hslSaturationF(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color Model}
 */
 qreal QColor::hsvSaturationF() const Q_DECL_NOTHROW
 {
@@ -1746,9 +1754,9 @@ qreal QColor::valueF() const Q_DECL_NOTHROW
 /*!
     \since 4.6
 
-    Returns the hue color component of this color.
+    Returns the HSL hue color component of this color.
 
-    \sa getHslF(), getHsl()
+    \sa hslHueF(), hsvHue(), getHsl(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 int QColor::hslHue() const Q_DECL_NOTHROW
 {
@@ -1760,9 +1768,9 @@ int QColor::hslHue() const Q_DECL_NOTHROW
 /*!
     \since 4.6
 
-    Returns the saturation color component of this color.
+    Returns the HSL saturation color component of this color.
 
-    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color Model}
+    \sa hslSaturationF(), hsvSaturation(), getHsl(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 int QColor::hslSaturation() const Q_DECL_NOTHROW
 {
@@ -1788,9 +1796,9 @@ int QColor::lightness() const Q_DECL_NOTHROW
 /*!
     \since 4.6
 
-    Returns the hue color component of this color.
+    Returns the HSL hue color component of this color.
 
-    \sa hue(), getHslF()
+    \sa hslHue(), hsvHueF(), getHslF()
 */
 qreal QColor::hslHueF() const Q_DECL_NOTHROW
 {
@@ -1802,9 +1810,9 @@ qreal QColor::hslHueF() const Q_DECL_NOTHROW
 /*!
     \since 4.6
 
-    Returns the saturation color component of this color.
+    Returns the HSL saturation color component of this color.
 
-    \sa saturationF(), getHslF()
+    \sa hslSaturation(), hsvSaturationF(), getHslF(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 qreal QColor::hslSaturationF() const Q_DECL_NOTHROW
 {
@@ -2124,7 +2132,7 @@ QColor QColor::toHsv() const Q_DECL_NOTHROW
 /*!
     Creates and returns an HSL QColor based on this color.
 
-    \sa fromHsl(), convertTo(), isValid()
+    \sa fromHsl(), convertTo(), isValid(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 QColor QColor::toHsl() const Q_DECL_NOTHROW
 {
@@ -2193,27 +2201,32 @@ QColor QColor::toCmyk() const Q_DECL_NOTHROW
     color.cspec = Cmyk;
     color.ct.acmyk.alpha = ct.argb.alpha;
 
-    // rgb -> cmy
-    const qreal r = ct.argb.red   / qreal(USHRT_MAX);
-    const qreal g = ct.argb.green / qreal(USHRT_MAX);
-    const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
-    qreal c = qreal(1.0) - r;
-    qreal m = qreal(1.0) - g;
-    qreal y = qreal(1.0) - b;
+    if (!ct.argb.red && !ct.argb.green && !ct.argb.blue) {
+        // Avoid div-by-0 below
+        color.ct.acmyk.cyan    = 0;
+        color.ct.acmyk.magenta = 0;
+        color.ct.acmyk.yellow  = 0;
+        color.ct.acmyk.black   = USHRT_MAX;
+    } else {
+        // rgb -> cmy
+        const qreal r = ct.argb.red   / qreal(USHRT_MAX);
+        const qreal g = ct.argb.green / qreal(USHRT_MAX);
+        const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
+        qreal c = qreal(1.0) - r;
+        qreal m = qreal(1.0) - g;
+        qreal y = qreal(1.0) - b;
 
-    // cmy -> cmyk
-    const qreal k = qMin(c, qMin(m, y));
-
-    if (!qFuzzyIsNull(k - 1)) {
+        // cmy -> cmyk
+        const qreal k = qMin(c, qMin(m, y));
         c = (c - k) / (qreal(1.0) - k);
         m = (m - k) / (qreal(1.0) - k);
         y = (y - k) / (qreal(1.0) - k);
-    }
 
-    color.ct.acmyk.cyan    = qRound(c * USHRT_MAX);
-    color.ct.acmyk.magenta = qRound(m * USHRT_MAX);
-    color.ct.acmyk.yellow  = qRound(y * USHRT_MAX);
-    color.ct.acmyk.black   = qRound(k * USHRT_MAX);
+        color.ct.acmyk.cyan    = qRound(c * USHRT_MAX);
+        color.ct.acmyk.magenta = qRound(m * USHRT_MAX);
+        color.ct.acmyk.yellow  = qRound(y * USHRT_MAX);
+        color.ct.acmyk.black   = qRound(k * USHRT_MAX);
+    }
 
     return color;
 }
@@ -2431,7 +2444,7 @@ QColor QColor::fromHsvF(qreal h, qreal s, qreal v, qreal a)
     The value of \a s, \a l, and \a a must all be in the range 0-255; the value
     of \a h must be in the range 0-359.
 
-    \sa toHsl(), fromHslF(), isValid()
+    \sa toHsl(), fromHslF(), isValid(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 QColor QColor::fromHsl(int h, int s, int l, int a)
 {
@@ -2463,7 +2476,7 @@ QColor QColor::fromHsl(int h, int s, int l, int a)
 
     All the values must be in the range 0.0-1.0.
 
-    \sa toHsl(), fromHsl(), isValid()
+    \sa toHsl(), fromHsl(), isValid(), {QColor#The HSL Color Model}{The HSL Color Model}
 */
 QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
 {

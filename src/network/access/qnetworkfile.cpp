@@ -65,21 +65,21 @@ void QNetworkFile::open()
     if (fi.isDir()) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",
             "Cannot open %1: Path is a directory").arg(fileName());
-        error(QNetworkReply::ContentOperationNotPermittedError, msg);
+        emit error(QNetworkReply::ContentOperationNotPermittedError, msg);
     } else {
-        headerRead(QNetworkRequest::LastModifiedHeader, QVariant::fromValue(fi.lastModified()));
-        headerRead(QNetworkRequest::ContentLengthHeader, QVariant::fromValue(fi.size()));
+        emit headerRead(QNetworkRequest::LastModifiedHeader, QVariant::fromValue(fi.lastModified()));
+        emit headerRead(QNetworkRequest::ContentLengthHeader, QVariant::fromValue(fi.size()));
         opened = QFile::open(QIODevice::ReadOnly | QIODevice::Unbuffered);
         if (!opened) {
             QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",
                 "Error opening %1: %2").arg(fileName(), errorString());
             if (exists())
-                error(QNetworkReply::ContentAccessDenied, msg);
+                emit error(QNetworkReply::ContentAccessDenied, msg);
             else
-                error(QNetworkReply::ContentNotFoundError, msg);
+                emit error(QNetworkReply::ContentNotFoundError, msg);
         }
     }
-    finished(opened);
+    emit finished(opened);
 }
 
 void QNetworkFile::close()

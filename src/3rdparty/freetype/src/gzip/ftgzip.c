@@ -8,7 +8,7 @@
 /*  parse compressed PCF fonts, as found with many X11 server              */
 /*  distributions.                                                         */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -30,7 +30,7 @@
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  Gzip_Err_
@@ -51,17 +51,29 @@
 
 #else /* !FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
- /* In this case, we include our own modified sources of the ZLib    */
- /* within the "ftgzip" component.  The modifications were necessary */
- /* to #include all files without conflicts, as well as preventing   */
- /* the definition of "extern" functions that may cause linking      */
- /* conflicts when a program is linked with both FreeType and the    */
- /* original ZLib.                                                   */
+  /* In this case, we include our own modified sources of the ZLib  */
+  /* within the `gzip' component.  The modifications were necessary */
+  /* to #include all files without conflicts, as well as preventing */
+  /* the definition of `extern' functions that may cause linking    */
+  /* conflicts when a program is linked with both FreeType and the  */
+  /* original ZLib.                                                 */
 
 #ifndef USE_ZLIB_ZCALLOC
-#define MY_ZCALLOC /* prevent all zcalloc() & zfree() in zutils.c */
+#define MY_ZCALLOC /* prevent all zcalloc() & zfree() in zutil.c */
 #endif
 
+  /* Note that our `zlib.h' includes `ftzconf.h' instead of `zconf.h'; */
+  /* the main reason is that even a global `zlib.h' includes `zconf.h' */
+  /* with                                                              */
+  /*                                                                   */
+  /*   #include "zconf.h"                                              */
+  /*                                                                   */
+  /* instead of the expected                                           */
+  /*                                                                   */
+  /*   #include <zconf.h>                                              */
+  /*                                                                   */
+  /* so that configuration with `FT_CONFIG_OPTION_SYSTEM_ZLIB' might   */
+  /* include the wrong `zconf.h' file, leading to errors.              */
 #include "zlib.h"
 
 #undef  SLOW
@@ -305,7 +317,7 @@
     zstream->next_in  = zip->buffer;
 
     if ( inflateInit2( zstream, -MAX_WBITS ) != Z_OK ||
-         zstream->next_in == NULL                     )
+         !zstream->next_in                           )
       error = FT_THROW( Invalid_File_Format );
 
   Exit:
@@ -691,9 +703,13 @@
         }
         error = FT_Err_Ok;
       }
+
+      if ( zip_size )
+        stream->size = zip_size;
+      else
+        stream->size  = 0x7FFFFFFFL;  /* don't know the real size! */
     }
 
-    stream->size  = 0x7FFFFFFFL;  /* don't know the real size! */
     stream->pos   = 0;
     stream->base  = NULL;
     stream->read  = ft_gzip_stream_io;

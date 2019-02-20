@@ -3225,7 +3225,7 @@ QMetaObject::Connection QMetaObject::connect(const QObject *sender, int signal_i
     \internal
    Same as the QMetaObject::connect, but \a signal_index must be the result of QObjectPrivate::signalIndex
 
-    method_index is relative to the rmeta metaobject, if rmeta is null, then it is absolute index
+    method_index is relative to the rmeta metaobject, if rmeta is \nullptr, then it is absolute index
 
     the QObjectPrivate::Connection* has a refcount of 2, so it must be passed to a QMetaObject::Connection
  */
@@ -3779,7 +3779,7 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
     It is different from QMetaObject::indexOfSignal():  indexOfSignal is the same as indexOfMethod
     while QObjectPrivate::signalIndex is smaller because it doesn't give index to slots.
 
-    If \a meta is not 0, it is set to the meta-object where the signal was found.
+    If \a meta is not \nullptr, it is set to the meta-object where the signal was found.
 */
 int QObjectPrivate::signalIndex(const char *signalName,
                                 const QMetaObject **meta) const
@@ -4996,11 +4996,14 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
 
 /*! \class QMetaObject::Connection
     \inmodule QtCore
-     Represents a handle to a signal-slot connection.
-     It can be used to disconnect that connection, or check if
-     the connection was successful
+     Represents a handle to a signal-slot (or signal-functor) connection.
 
-     \sa QObject::disconnect()
+     It can be used to check if the connection is valid and to disconnect it using
+     QObject::disconnect(). For a signal-functor connection without a context object,
+     it is the only way to selectively disconnect that connection.
+
+     As Connection is just a handle, the underlying signal-slot connection is unaffected
+     when Connection is destroyed or reassigned.
  */
 
 /*!

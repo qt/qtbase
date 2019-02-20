@@ -144,6 +144,9 @@ attribute_target("sha") void test_shani()
 #endif
 
 #if T(AVX)
+#  if defined(__WIN64__) && defined(__GNUC__) && !defined(__clang__)
+#    error "AVX support is broken in 64-bit MinGW - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=49001"
+#  endif
 attribute_target("avx") void test_avx()
 {
     __m256d a = _mm256_setzero_pd();

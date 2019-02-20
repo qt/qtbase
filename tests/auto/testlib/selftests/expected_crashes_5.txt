@@ -1,0 +1,5 @@
+********* Start testing of tst_Crashes *********
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+PASS   : tst_Crashes::initTestCase()
+QFATAL : tst_Crashes::crash() Received signal 11
+         Function time: ms Total time: ms

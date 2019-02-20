@@ -1783,6 +1783,7 @@ void QSplitter::setStretchFactor(int index, int stretch)
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \relates QSplitter
     \obsolete
@@ -1813,6 +1814,7 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
     splitter.restoreState(std::move(line).toLatin1());
     return ts;
 }
+#endif
 
 QT_END_NAMESPACE
 

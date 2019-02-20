@@ -100,6 +100,9 @@
 #include <sys/neutrino.h>
 #endif
 
+#if defined(Q_OS_WASM)
+#include <emscripten/val.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -499,6 +502,8 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
     // as of aug 2008 VxWorks < 6.6 only supports one single core CPU
     cores = 1;
 #  endif
+#elif defined(Q_OS_WASM)
+    cores = emscripten::val::global("navigator")["hardwareConcurrency"].as<int>();
 #else
     // the rest: Linux, Solaris, AIX, Tru64
     cores = (int)sysconf(_SC_NPROCESSORS_ONLN);

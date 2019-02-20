@@ -49,6 +49,7 @@
 #include "androidjniinput.h"
 #include "androidjniclipboard.h"
 #include "androidjnimenu.h"
+#include "androidcontentfileengine.h"
 #include "androiddeadlockprotector.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
@@ -116,6 +117,7 @@ static double m_scaledDensity = 0;
 static double m_density = 1.0;
 
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = nullptr;
+static AndroidContentFileEngineHandler *m_androidContentFileEngineHandler = nullptr;
 
 
 
@@ -445,6 +447,7 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
 {
     m_androidPlatformIntegration = nullptr;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
+    m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
     m_mainLibraryHnd = nullptr;
     { // Set env. vars
         const char *nativeString = env->GetStringUTFChars(environmentString, 0);
@@ -555,6 +558,8 @@ static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
+    delete m_androidContentFileEngineHandler;
+    m_androidContentFileEngineHandler = nullptr;
 }
 
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)

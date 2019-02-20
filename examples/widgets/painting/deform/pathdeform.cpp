@@ -150,7 +150,7 @@ void PathDeformControls::layoutForDesktop()
 
     QVBoxLayout * mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(mainGroup);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(QMargins());
 
     connect(radiusSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setRadius);
     connect(deformSlider, &QAbstractSlider::valueChanged, m_renderer, &PathDeformRenderer::setIntensity);
@@ -211,7 +211,7 @@ void PathDeformControls::layoutForSmallScreen()
 
 
     QGridLayout *mainGroupLayout = new QGridLayout(mainGroup);
-    mainGroupLayout->setMargin(0);
+    mainGroupLayout->setContentsMargins(QMargins());
     mainGroupLayout->addWidget(radiusLabel, 0, 0, Qt::AlignRight);
     mainGroupLayout->addWidget(radiusSlider, 0, 1);
     mainGroupLayout->addWidget(deformLabel, 1, 0, Qt::AlignRight);

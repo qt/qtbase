@@ -1,5 +1,5 @@
 SOURCES = main.cpp
-CONFIG += console
-CONFIG -= qt app_bundle
+CONFIG += cmdline
+CONFIG -= qt
 
 DESTDIR = ./

@@ -1,7 +1,6 @@
 SOURCES += main.cpp
 QT = core
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 DESTDIR = ./
 
 # This app is testdata for tst_qtextstream

@@ -995,16 +995,11 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *
     }
 }
 
-static inline __m128i maskFromCount(qsizetype count)
+static inline __m256i epilogueMaskFromCount(qsizetype count)
 {
     Q_ASSERT(count > 0);
-    static const qint64 data[] = { -1, -1, 0, 0 };
-    auto ptr = reinterpret_cast<const quint8 *>(data) + sizeof(__m128i);
-
-    if (count > int(sizeof(__m128i)))
-        return _mm_set1_epi8(-1);
-
-    return _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr - count));
+    static const __m256i offsetMask = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+    return _mm256_add_epi32(offsetMask, _mm256_set1_epi32(-count));
 }
 
 template<bool RGBA>
@@ -1050,40 +1045,39 @@ static void convertARGBToARGB32PM_avx2(uint *buffer, const uint *src, qsizetype 
         }
     }
 
-    for ( ; i < count; i += 4) {
-        __m128i maskedAlphaMask = _mm256_castsi256_si128(alphaMask);
-        __m128i mask = maskFromCount((count - i) * sizeof(*src));
-        maskedAlphaMask = _mm_and_si128(mask, maskedAlphaMask);
-        __m128i srcVector = _mm_maskload_epi32(reinterpret_cast<const int *>(src + i), mask);
+    if (i < count) {
+        const __m256i epilogueMask = epilogueMaskFromCount(count - i);
+        __m256i srcVector = _mm256_maskload_epi32(reinterpret_cast<const int *>(src + i), epilogueMask);
+        const __m256i epilogueAlphaMask = _mm256_blendv_epi8(_mm256_setzero_si256(), alphaMask, epilogueMask);
 
-        if (!_mm_testz_si128(srcVector, maskedAlphaMask)) {
+        if (!_mm256_testz_si256(srcVector, epilogueAlphaMask)) {
             // keep the two _mm_test[zc]_siXXX next to each other
-            bool cf = _mm_testc_si128(srcVector, maskedAlphaMask);
+            bool cf = _mm256_testc_si256(srcVector, epilogueAlphaMask);
             if (RGBA)
-                srcVector = _mm_shuffle_epi8(srcVector, _mm256_castsi256_si128(rgbaMask));
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
             if (!cf) {
-                __m128i src1 = _mm_unpacklo_epi8(srcVector, _mm256_castsi256_si128(zero));
-                __m128i src2 = _mm_unpackhi_epi8(srcVector, _mm256_castsi256_si128(zero));
-                __m128i alpha1 = _mm_shuffle_epi8(src1, _mm256_castsi256_si128(shuffleMask));
-                __m128i alpha2 = _mm_shuffle_epi8(src2, _mm256_castsi256_si128(shuffleMask));
-                src1 = _mm_mullo_epi16(src1, alpha1);
-                src2 = _mm_mullo_epi16(src2, alpha2);
-                src1 = _mm_add_epi16(src1, _mm_srli_epi16(src1, 8));
-                src2 = _mm_add_epi16(src2, _mm_srli_epi16(src2, 8));
-                src1 = _mm_add_epi16(src1, _mm256_castsi256_si128(half));
-                src2 = _mm_add_epi16(src2, _mm256_castsi256_si128(half));
-                src1 = _mm_srli_epi16(src1, 8);
-                src2 = _mm_srli_epi16(src2, 8);
-                src1 = _mm_blend_epi16(src1, alpha1, 0x88);
-                src2 = _mm_blend_epi16(src2, alpha2, 0x88);
-                srcVector = _mm_packus_epi16(src1, src2);
-                _mm_maskstore_epi32(reinterpret_cast<int *>(buffer + i), mask, srcVector);
+                __m256i src1 = _mm256_unpacklo_epi8(srcVector, zero);
+                __m256i src2 = _mm256_unpackhi_epi8(srcVector, zero);
+                __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                src1 = _mm256_mullo_epi16(src1, alpha1);
+                src2 = _mm256_mullo_epi16(src2, alpha2);
+                src1 = _mm256_add_epi16(src1, _mm256_srli_epi16(src1, 8));
+                src2 = _mm256_add_epi16(src2, _mm256_srli_epi16(src2, 8));
+                src1 = _mm256_add_epi16(src1, half);
+                src2 = _mm256_add_epi16(src2, half);
+                src1 = _mm256_srli_epi16(src1, 8);
+                src2 = _mm256_srli_epi16(src2, 8);
+                src1 = _mm256_blend_epi16(src1, alpha1, 0x88);
+                src2 = _mm256_blend_epi16(src2, alpha2, 0x88);
+                srcVector = _mm256_packus_epi16(src1, src2);
+                _mm256_maskstore_epi32(reinterpret_cast<int *>(buffer + i), epilogueMask, srcVector);
             } else {
                 if (buffer != src || RGBA)
-                    _mm_maskstore_epi32(reinterpret_cast<int *>(buffer + i), mask, srcVector);
+                    _mm256_maskstore_epi32(reinterpret_cast<int *>(buffer + i), epilogueMask, srcVector);
             }
         } else {
-            _mm_maskstore_epi32(reinterpret_cast<int *>(buffer + i), mask, _mm256_castsi256_si128(zero));
+            _mm256_maskstore_epi32(reinterpret_cast<int *>(buffer + i), epilogueMask, zero);
         }
     }
 }
@@ -1116,13 +1110,13 @@ template<bool RGBA>
 static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizetype count)
 {
     qsizetype i = 0;
-    const __m256i alphaMask = _mm256_broadcastsi128_si256(_mm_set1_epi32(0xff000000));
+    const __m256i alphaMask = _mm256_set1_epi32(0xff000000);
     const __m256i rgbaMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15));
     const __m256i shuffleMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15));
     const __m256i zero = _mm256_setzero_si256();
 
     for (; i < count - 7; i += 8) {
-        __m256i src1, src2;
+        __m256i dst1, dst2;
         __m256i srcVector = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + i));
         if (!_mm256_testz_si256(srcVector, alphaMask)) {
             // keep the two _mm_test[zc]_siXXX next to each other
@@ -1138,64 +1132,66 @@ static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizety
             //  after unpacklo/hi [ P1, P2; P3, P4 ] [ P5, P6; P7, P8 ]
             srcVector = _mm256_permute4x64_epi64(srcVector, _MM_SHUFFLE(3, 1, 2, 0));
 
+            const __m256i src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
+            const __m256i src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
             if (!cf) {
-                src1 = _mm256_unpacklo_epi8(srcVector, zero);
-                src2 = _mm256_unpackhi_epi8(srcVector, zero);
-                __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
-                __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
-                src1 = _mm256_mullo_epi16(src1, alpha1);
-                src2 = _mm256_mullo_epi16(src2, alpha2);
-                alpha1 = _mm256_unpacklo_epi8(srcVector, srcVector);
-                alpha2 = _mm256_unpackhi_epi8(srcVector, srcVector);
-                src1 = _mm256_add_epi16(src1, _mm256_srli_epi16(src1, 7));
-                src2 = _mm256_add_epi16(src2, _mm256_srli_epi16(src2, 7));
-                src1 = _mm256_blend_epi16(src1, alpha1, 0x88);
-                src2 = _mm256_blend_epi16(src2, alpha2, 0x88);
+                const __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                const __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                dst1 = _mm256_mulhi_epu16(src1, alpha1);
+                dst2 = _mm256_mulhi_epu16(src2, alpha2);
+                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 15));
+                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 15));
+                dst1 = _mm256_blend_epi16(dst1, src1, 0x88);
+                dst2 = _mm256_blend_epi16(dst2, src2, 0x88);
             } else {
-                src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
-                src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
+                dst1 = src1;
+                dst2 = src2;
             }
         } else {
-            src1 = src2 = zero;
+            dst1 = dst2 = zero;
         }
-        _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), src1);
-        _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i) + 1, src2);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), dst1);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i) + 1, dst2);
     }
 
-    for ( ; i < count; i += 4) {
-        __m128i maskedAlphaMask = _mm256_castsi256_si128(alphaMask);
-        __m128i mask = maskFromCount((count - i) * sizeof(*src));
-        maskedAlphaMask = _mm_and_si128(mask, maskedAlphaMask);
-        __m128i srcVector = _mm_maskload_epi32(reinterpret_cast<const int *>(src + i), mask);
-        __m256i src;
+    if (i < count) {
+        __m256i epilogueMask = epilogueMaskFromCount(count - i);
+        const __m256i epilogueAlphaMask = _mm256_blendv_epi8(_mm256_setzero_si256(), alphaMask, epilogueMask);
+        __m256i dst1, dst2;
+        __m256i srcVector = _mm256_maskload_epi32(reinterpret_cast<const int *>(src + i), epilogueMask);
 
-        if (!_mm_testz_si128(srcVector, maskedAlphaMask)) {
+        if (!_mm256_testz_si256(srcVector, epilogueAlphaMask)) {
             // keep the two _mm_test[zc]_siXXX next to each other
-            bool cf = _mm_testc_si128(srcVector, maskedAlphaMask);
+            bool cf = _mm256_testc_si256(srcVector, epilogueAlphaMask);
             if (!RGBA)
-                srcVector = _mm_shuffle_epi8(srcVector, _mm256_castsi256_si128(rgbaMask));
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+            srcVector = _mm256_permute4x64_epi64(srcVector, _MM_SHUFFLE(3, 1, 2, 0));
+            const __m256i src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
+            const __m256i src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
             if (!cf) {
-                src = _mm256_cvtepu8_epi16(srcVector);
-                __m256i alpha = _mm256_shuffle_epi8(src, shuffleMask);
-                src = _mm256_mullo_epi16(src, alpha);
-
-                __m128i alpha1 = _mm_unpacklo_epi8(srcVector, srcVector);
-                __m128i alpha2 = _mm_unpackhi_epi8(srcVector, srcVector);
-                alpha = _mm256_inserti128_si256(_mm256_castsi128_si256(alpha1), alpha2, 1);
-                src = _mm256_add_epi16(src, _mm256_srli_epi16(src, 7));
-                src = _mm256_blend_epi16(src, alpha, 0x88);
+                const __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                const __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                dst1 = _mm256_mulhi_epu16(src1, alpha1);
+                dst2 = _mm256_mulhi_epu16(src2, alpha2);
+                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 15));
+                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 15));
+                dst1 = _mm256_blend_epi16(dst1, src1, 0x88);
+                dst2 = _mm256_blend_epi16(dst2, src2, 0x88);
             } else {
-                const __m128i src1 = _mm_unpacklo_epi8(srcVector, srcVector);
-                const __m128i src2 = _mm_unpackhi_epi8(srcVector, srcVector);
-                src = _mm256_castsi128_si256(src1);
-                src = _mm256_inserti128_si256(src, src2, 1);
+                dst1 = src1;
+                dst2 = src2;
             }
         } else {
-            src = zero;
+            dst1 = dst2 = zero;
         }
-        __m256i xmask = _mm256_cvtepi32_epi64(mask);
-        _mm256_maskstore_epi64(reinterpret_cast<qint64 *>(buffer + i), xmask, src);
-    };
+        epilogueMask = _mm256_permute4x64_epi64(epilogueMask, _MM_SHUFFLE(3, 1, 2, 0));
+        _mm256_maskstore_epi64(reinterpret_cast<qint64 *>(buffer + i),
+                               _mm256_unpacklo_epi32(epilogueMask, epilogueMask),
+                               dst1);
+        _mm256_maskstore_epi64(reinterpret_cast<qint64 *>(buffer + i + 4),
+                               _mm256_unpackhi_epi32(epilogueMask, epilogueMask),
+                               dst2);
+    }
 }
 
 const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, int count,

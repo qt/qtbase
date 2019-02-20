@@ -171,12 +171,12 @@ void QWindowsDirect2DWindow::present(const QRegion &region)
     const BLENDFUNCTION blend = { AC_SRC_OVER, 0, BYTE(255.0 * opacity()), AC_SRC_ALPHA };
     const QRect r = region.boundingRect();
     const RECT dirty = { r.left(), r.top(), r.left() + r.width(), r.top() + r.height() };
-    UPDATELAYEREDWINDOWINFO info = { sizeof(UPDATELAYEREDWINDOWINFO), NULL,
+    UPDATELAYEREDWINDOWINFO info = { sizeof(UPDATELAYEREDWINDOWINFO), nullptr,
                                      &ptDst, &size, hdc, &ptSrc, 0, &blend, ULW_ALPHA, &dirty };
     if (!UpdateLayeredWindowIndirect(handle(), &info))
         qErrnoWarning(int(GetLastError()), "Failed to update the layered window");
 
-    hr = dxgiSurface->ReleaseDC(NULL);
+    hr = dxgiSurface->ReleaseDC(nullptr);
     if (FAILED(hr))
         qErrnoWarning(hr, "Failed to release the DC for presentation");
 }
@@ -195,8 +195,8 @@ void QWindowsDirect2DWindow::setupSwapChain()
                 QWindowsDirect2DContext::instance()->d3dDevice(), // [in]   IUnknown *pDevice
                 handle(),                                         // [in]   HWND hWnd
                 &desc,                                            // [in]   const DXGI_SWAP_CHAIN_DESC1 *pDesc
-                NULL,                                             // [in]   const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pFullscreenDesc
-                NULL,                                             // [in]   IDXGIOutput *pRestrictToOutput
+                nullptr,                                          // [in]   const DXGI_SWAP_CHAIN_FULLSCREEN_DESC *pFullscreenDesc
+                nullptr,                                          // [in]   IDXGIOutput *pRestrictToOutput
                 m_swapChain.ReleaseAndGetAddressOf());            // [out]  IDXGISwapChain1 **ppSwapChain
 
     if (FAILED(hr))
@@ -244,14 +244,14 @@ QSharedPointer<QWindowsDirect2DBitmap> QWindowsDirect2DWindow::copyBackBuffer() 
         nullptr                   // _Field_size_opt_(1) ID2D1ColorContext *colorContext;
     };
     ComPtr<ID2D1Bitmap1> copy;
-    HRESULT hr = m_deviceContext.Get()->CreateBitmap(size, NULL, 0, properties, &copy);
+    HRESULT hr = m_deviceContext.Get()->CreateBitmap(size, nullptr, 0, properties, &copy);
 
     if (FAILED(hr)) {
         qWarning("%s: Could not create staging bitmap: %#lx", __FUNCTION__, hr);
         return null_result;
     }
 
-    hr = copy.Get()->CopyFromBitmap(NULL, m_bitmap->bitmap(), NULL);
+    hr = copy.Get()->CopyFromBitmap(nullptr, m_bitmap->bitmap(), nullptr);
     if (FAILED(hr)) {
         qWarning("%s: Could not copy from bitmap! %#lx", __FUNCTION__, hr);
         return null_result;
@@ -285,7 +285,7 @@ void QWindowsDirect2DWindow::setupBitmap()
         backBufferDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
         backBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_GDI_COMPATIBLE;
         ComPtr<ID3D11Texture2D> backBufferTexture;
-        HRESULT hr = QWindowsDirect2DContext::instance()->d3dDevice()->CreateTexture2D(&backBufferDesc, NULL, &backBufferTexture);
+        HRESULT hr = QWindowsDirect2DContext::instance()->d3dDevice()->CreateTexture2D(&backBufferDesc, nullptr, &backBufferTexture);
         if (FAILED(hr)) {
             qErrnoWarning(hr, "Failed to create backing texture for indirect rendering");
             return;
@@ -299,7 +299,7 @@ void QWindowsDirect2DWindow::setupBitmap()
     }
 
     ComPtr<ID2D1Bitmap1> backBufferBitmap;
-    hr = m_deviceContext->CreateBitmapFromDxgiSurface(backBufferSurface.Get(), NULL, backBufferBitmap.GetAddressOf());
+    hr = m_deviceContext->CreateBitmapFromDxgiSurface(backBufferSurface.Get(), nullptr, backBufferBitmap.GetAddressOf());
     if (FAILED(hr)) {
         qWarning("%s: Could not create Direct2D Bitmap from DXGI Surface: %#lx", __FUNCTION__, hr);
         return;

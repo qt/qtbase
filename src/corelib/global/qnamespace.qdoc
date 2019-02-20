@@ -2208,6 +2208,12 @@
     \value MSWindowsFixedSizeDialogHint  Gives the window a thin dialog border on Windows.
            This style is traditionally used for fixed-size dialogs.
 
+           \note The use of this flag is not recommended in multi-monitor
+           environments. This is because the system will enforce that the window
+           maintains its native size when moving it across screens. This is
+           particularly undesirable when using monitors with different
+           resolutions.
+
     \value MSWindowsOwnDC  Gives the window its own display
            context on Windows.
 

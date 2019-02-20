@@ -53,6 +53,8 @@
 #include <QStyleOptionSpinBox>
 #include <QStyle>
 #include <QProxyStyle>
+#include <QScreen>
+
 
 class SpinBox : public QSpinBox
 {
@@ -343,6 +345,14 @@ tst_QSpinBox::tst_QSpinBox()
 void tst_QSpinBox::init()
 {
     QLocale::setDefault(QLocale(QLocale::C));
+
+#if QT_CONFIG(cursor)
+    // Ensure mouse cursor was not left by previous tests where widgets
+    // will appear, as it could cause events and interfere with the tests.
+    const QScreen *screen = QGuiApplication::primaryScreen();
+    const QRect availableGeometry = screen->availableGeometry();
+    QCursor::setPos(availableGeometry.topLeft());
+#endif
 }
 
 void tst_QSpinBox::setValue_data()

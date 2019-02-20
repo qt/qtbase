@@ -90,6 +90,7 @@
             "headersclean": "boolean",
             "incredibuild-xge": { "type": "boolean", "name": "incredibuild_xge" },
             "libudev": "boolean",
+            "linker": { "type": "optionalString", "values": [ "bfd", "gold", "lld" ] },
             "ltcg": "boolean",
             "make": { "type": "addString", "values": [ "examples", "libs", "tests", "tools" ] },
             "make-tool": "string",
@@ -131,7 +132,7 @@
             "syncqt": "boolean",
             "sysroot": "string",
             "testcocoon": "boolean",
-            "use-gold-linker": { "type": "boolean", "name": "use_gold_linker" },
+            "use-gold-linker": { "type": "boolean", "name": "use_gold_linker_alias" },
             "warnings-are-errors": { "type": "boolean", "name": "warnings_are_errors" },
             "Werror": { "type": "boolean", "name": "warnings_are_errors" },
             "widgets": "boolean",
@@ -224,8 +225,8 @@
     },
 
     "testTypeDependencies": {
-        "linkerSupportsFlag": [ "use_gold_linker" ],
-        "verifySpec": [ "shared", "use_gold_linker", "compiler-flags", "qmakeargs", "commit" ],
+        "linkerSupportsFlag": [ "use_bfd_linker", "use_gold_linker", "use_lld_linker" ],
+        "verifySpec": [ "shared", "use_bfd_linker", "use_gold_linker", "use_lld_linker", "compiler-flags", "qmakeargs", "commit" ],
         "compile": [ "verifyspec" ],
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config", "compiler-flags" ],
@@ -357,10 +358,20 @@
                 ]
             }
         },
+        "use_bfd_linker": {
+            "label": "bfd linker",
+            "type": "compilerSupportsFlag",
+            "flag": "-fuse-ld=bfd"
+        },
         "use_gold_linker": {
             "label": "gold linker",
             "type": "compilerSupportsFlag",
             "flag": "-fuse-ld=gold"
+        },
+        "use_lld_linker" : {
+            "label": "lld linker",
+            "type": "compilerSupportsFlag",
+            "flag": "-fuse-ld=lld"
         },
         "optimize_debug": {
             "label": "-Og support",
@@ -649,10 +660,33 @@
             "output": [ "qmakeArgs" ],
             "condition": "input.qmakeArgs != ''"
         },
+        "use_bfd_linker": {
+            "label": "bfd",
+            "autoDetect": "false",
+            "enable" : "input.linker == 'bfd'",
+            "disable" : "input.linker == 'gold' || input.linker == 'lld'",
+            "condition": "!config.win32 && !config.integrity && !config.wasm && tests.use_bfd_linker",
+            "output": [ "privateConfig", "useBFDLinker" ]
+        },
+        "use_gold_linker_alias": {
+            "autoDetect": "false",
+            "condition": "!config.win32 && !config.integrity && !config.wasm && tests.use_gold_linker"
+        },
         "use_gold_linker": {
-            "label": "Using gold linker",
+            "label": "gold",
+            "autoDetect": "false",
+            "enable" : "input.linker == 'gold' || features.use_gold_linker_alias" ,
+            "disable" : "input.linker == 'bfd' || input.linker == 'lld'",
             "condition": "!config.win32 && !config.integrity && !config.wasm && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
+        },
+        "use_lld_linker": {
+            "label": "lld",
+            "autoDetect": "false",
+            "enable" : "input.linker == 'lld'",
+            "disable" : "input.linker == 'bfd' || input.linker == 'gold'",
+            "condition": "!config.win32 && !config.integrity && !config.wasm && tests.use_lld_linker",
+            "output": [ "privateConfig", "useLLDLinker" ]
         },
         "optimize_debug": {
             "label": "Optimize debug build",
@@ -1165,7 +1199,7 @@
             "label": "Thread support",
             "purpose": "Provides QThread and related classes.",
             "section": "Kernel",
-            "condition": "!config.wasm",
+            "autoDetect": "!config.wasm",
             "output": [ "publicFeature" ]
         },
         "future": {
@@ -1386,7 +1420,12 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "args": "ccache",
                     "condition": "config.unix"
                 },
-                "use_gold_linker",
+                {
+                    "message": "Linker",
+                    "type": "firstAvailableFeature",
+                    "args": "use_bfd_linker use_gold_linker use_lld_linker",
+                    "condition": "features.use_bfd_linker || features.use_gold_linker || features.use_lld_linker"
+                },
                 {
                     "type": "feature",
                     "args": "enable_new_dtags",

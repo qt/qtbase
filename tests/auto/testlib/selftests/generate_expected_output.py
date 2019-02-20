@@ -132,7 +132,7 @@ class Cleaner (object):
         # Add path to specific sources and to tst_*.cpp if missing (for in-source builds):
         patterns += ((r'(^|[^/])\b(qtestcase.cpp)\b', r'\1qtbase/src/testlib/\2'),
                      # Add more special cases here, if they show up !
-                     (r'([[" ])\.\./(counting/tst_counting.cpp)\b',
+                     (r'([\[" ])\.\./(counting/tst_counting.cpp)\b',
                       r'\1' + os.path.sep.join(hereNames + (r'\2',))),
                      # The common pattern:
                      (r'(^|[^/])\b(tst_)?([a-z]+\d*)\.cpp\b',

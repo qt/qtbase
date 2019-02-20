@@ -48,13 +48,13 @@ void *QWindowsGdiNativeInterface::nativeResourceForBackingStore(const QByteArray
 {
     if (!bs || !bs->handle()) {
         qWarning("%s: '%s' requested for null backingstore or backingstore without handle.", __FUNCTION__, resource.constData());
-        return 0;
+        return nullptr;
     }
     QWindowsBackingStore *wbs = static_cast<QWindowsBackingStore *>(bs->handle());
     if (resource == "getDC")
         return wbs->getDC();
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

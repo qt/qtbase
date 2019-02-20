@@ -2185,8 +2185,6 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 #endif // QT_CONFIG(wheelevent)
 }
 
-// Remember, Qt convention is:  keyboard state is state *before*
-
 void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e)
 {
     QWindow *window = e->window.data();
@@ -2425,9 +2423,9 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         window->d_func()->resizeEventPending = false;
 
         if (actualGeometry.width() != lastReportedGeometry.width())
-            window->widthChanged(actualGeometry.width());
+            emit window->widthChanged(actualGeometry.width());
         if (actualGeometry.height() != lastReportedGeometry.height())
-            window->heightChanged(actualGeometry.height());
+            emit window->heightChanged(actualGeometry.height());
     }
 
     if (isMove) {
@@ -2436,9 +2434,9 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
         if (actualGeometry.x() != lastReportedGeometry.x())
-            window->xChanged(actualGeometry.x());
+            emit window->xChanged(actualGeometry.x());
         if (actualGeometry.y() != lastReportedGeometry.y())
-            window->yChanged(actualGeometry.y());
+            emit window->yChanged(actualGeometry.y());
     }
 }
 
@@ -3076,41 +3074,8 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
 
 /*! \internal
 
-  This function updates an internal state to keep the source compatibility. Documentation of
-  QGuiApplication::mouseButtons() states - "The current state is updated synchronously as
-  the event queue is emptied of events that will spontaneously change the mouse state
-  (QEvent::MouseButtonPress and QEvent::MouseButtonRelease events)". But internally we have
-  been updating these state variables from various places to keep buttons returned by
-  mouseButtons() in sync with the systems state. This is not the documented behavior.
-
-  ### Qt6 - Remove QGuiApplication::mouseButtons()/keyboardModifiers() API? And here
-  are the reasons:
-
-  - It is an easy to misuse API by:
-
-   a) Application developers: The only place where the values of this API can be trusted is
-      when using within mouse handling callbacks. In these callbacks we work with the state
-      that was provided directly by the windowing system. Anywhere else it might not reflect what
-      user wrongly expects. We might not always receive a matching mouse release for a press event
-      (e.g. When dismissing a popup window on X11. Or when dnd enter Qt application with mouse
-      button down, we update mouse_buttons and then dnd leaves Qt application and does a drop
-      somewhere else) and hence mouseButtons() will be out-of-sync from users perspective, see
-      for example QTBUG-33161. BUT THIS IS NOT HOW THE API IS SUPPOSED TO BE USED. Since the only
-      safe place to use this API is from mouse event handlers, we might as well deprecate it and
-      pass down the button state if we are not already doing that everywhere where it matters.
-
-   b) Qt framework developers:
-
-      We see users complaining, we start adding hacks everywhere just to keep buttons in sync ;)
-      There are corner cases that can not be solved and adding this kind of hacks is never ending
-      task.
-
-  - Real mouse events, tablet mouse events, etc: all go through QGuiApplication::processMouseEvent,
-    and all share mouse_buttons. What if we want to support multiple mice in future? The API must
-    go.
-
-  - Motivation why this API is public is not clear. Could the same be achieved by a user by
-    installing an event filter?
+  This function updates an internal state to keep the source compatibility.
+  ### Qt 6 - Won't need after QTBUG-73829
 */
 static void updateMouseAndModifierButtonState(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
 {

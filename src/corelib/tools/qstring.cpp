@@ -7231,7 +7231,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7273,7 +7273,7 @@ qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int b
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7317,7 +7317,7 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7348,7 +7348,7 @@ long QString::toLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7378,7 +7378,7 @@ ulong QString::toULong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7407,7 +7407,7 @@ int QString::toInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7436,7 +7436,7 @@ uint QString::toUInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7465,7 +7465,7 @@ short QString::toShort(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -7496,7 +7496,7 @@ ushort QString::toUShort(bool *ok, int base) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for other reasons (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \snippet qstring/main.cpp 66
@@ -7535,7 +7535,7 @@ double QString::toDouble(bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for other reasons (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     \warning The QString content may only contain valid numerical characters
@@ -9440,11 +9440,11 @@ QString &QString::setRawData(const QChar *unicode, int size)
     The range \c{[first,last)} must remain valid for the lifetime of
     this Latin-1 string object.
 
-    Passing \c nullptr as \a first is safe if \a last is \c nullptr,
+    Passing \nullptr as \a first is safe if \a last is \nullptr,
     too, and results in a null Latin-1 string.
 
     The behavior is undefined if \a last precedes \a first, \a first
-    is \c nullptr and \a last is not, or if \c{last - first >
+    is \nullptr and \a last is not, or if \c{last - first >
     INT_MAX}.
 */
 
@@ -11933,7 +11933,7 @@ QStringRef QStringRef::trimmed() const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -11958,7 +11958,7 @@ qint64 QStringRef::toLongLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -11985,7 +11985,7 @@ quint64 QStringRef::toULongLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -12012,7 +12012,7 @@ long QStringRef::toLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -12038,7 +12038,7 @@ ulong QStringRef::toULong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -12063,7 +12063,7 @@ int QStringRef::toInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -12088,7 +12088,7 @@ uint QStringRef::toUInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -12113,7 +12113,7 @@ short QStringRef::toShort(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     If \a base is 0, the C language convention is used: If the string
@@ -12140,7 +12140,7 @@ ushort QStringRef::toUShort(bool *ok, int base) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for other reasons (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     The string conversion will always happen in the 'C' locale. For locale
@@ -12166,7 +12166,7 @@ double QStringRef::toDouble(bool *ok) const
     Returns an infinity if the conversion overflows or 0.0 if the
     conversion fails for other reasons (e.g. underflow).
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     The string conversion will always happen in the 'C' locale. For locale

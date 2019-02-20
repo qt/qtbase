@@ -185,7 +185,7 @@ void Game::write(QJsonObject &json) const
     json["player"] = playerObject;
 
     QJsonArray levelArray;
-    for (const Level level : mLevels) {
+    for (const Level &level : mLevels) {
         QJsonObject levelObject;
         level.write(levelObject);
         levelArray.append(levelObject);

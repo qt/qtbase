@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Volker Krause <vkrause@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,9 +37,56 @@
 **
 ****************************************************************************/
 
-#include "qoffscreenintegration.h"
+#include "androidcontentfileengine.h"
 
-QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration()
+#include <private/qjni_p.h>
+#include <private/qjnihelpers_p.h>
+
+#include <QDebug>
+
+AndroidContentFileEngine::AndroidContentFileEngine(const QString &fileName)
+    : QFSFileEngine(fileName)
 {
-    return new QOffscreenIntegration;
+}
+
+bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
+{
+    QString openModeStr;
+    if (openMode & QFileDevice::ReadOnly) {
+        openModeStr += QLatin1Char('r');
+    }
+    if (openMode & QFileDevice::WriteOnly) {
+        openModeStr += QLatin1Char('w');
+    }
+    if (openMode & QFileDevice::Truncate) {
+        openModeStr += QLatin1Char('t');
+    } else if (openMode & QFileDevice::Append) {
+        openModeStr += QLatin1Char('a');
+    }
+
+    const auto fd = QJNIObjectPrivate::callStaticMethod<jint>("org/qtproject/qt5/android/QtNative",
+        "openFdForContentUrl",
+        "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)I",
+        QtAndroidPrivate::context(),
+        QJNIObjectPrivate::fromString(fileName(DefaultName)).object(),
+        QJNIObjectPrivate::fromString(openModeStr).object());
+
+    if (fd < 0) {
+        return false;
+    }
+
+    return QFSFileEngine::open(openMode, fd, QFile::AutoCloseHandle);
+}
+
+
+AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;
+AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;
+
+QAbstractFileEngine* AndroidContentFileEngineHandler::create(const QString &fileName) const
+{
+    if (!fileName.startsWith(QLatin1String("content"))) {
+        return nullptr;
+    }
+
+    return new AndroidContentFileEngine(fileName);
 }

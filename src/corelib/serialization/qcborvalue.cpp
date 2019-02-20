@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
 
     QCborValue can contain a value of "null", which is not of any specific type.
     It resembles the C++ \c {std::nullptr_t} type, whose only possible value is
-    \c nullptr. QCborValue has a constructor taking such a type and creates a
+    \nullptr. QCborValue has a constructor taking such a type and creates a
     null QCborValue.
 
     Null values are used to indicate that an optional value is not present. In
@@ -417,7 +417,7 @@ QT_BEGIN_NAMESPACE
     using toSimpleType() as well as isSimpleType(st).
 
     CBOR simple types are types that do not have any associated value, like
-    C++'s \c{std::nullptr_t} type, whose only possible value is \c nullptr.
+    C++'s \c{std::nullptr_t} type, whose only possible value is \nullptr.
 
     If \a st is \c{QCborSimpleType::Null}, the resulting QCborValue will be of
     the \l{Type}{Null} type and similarly for \c{QCborSimpleType::Undefined}.
@@ -1772,6 +1772,7 @@ QCborValue::QCborValue(const QUrl &url)
     container->elements[1].type = String;
 }
 
+#if QT_CONFIG(regularexpression)
 /*!
     Creates a QCborValue object of the regular expression pattern extended type
     and containing the value represented by \a rx. The value can later be retrieved
@@ -1790,6 +1791,7 @@ QCborValue::QCborValue(const QRegularExpression &rx)
     // change type
     t = RegularExpression;
 }
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     Creates a QCborValue object of the UUID extended type and containing the
@@ -1943,6 +1945,7 @@ QUrl QCborValue::toUrl(const QUrl &defaultValue) const
     return QUrl::fromEncoded(byteData->asByteArrayView());
 }
 
+#if QT_CONFIG(regularexpression)
 /*!
     Returns the regular expression value stored in this QCborValue, if it is of
     the regular expression pattern extended type. Otherwise, it returns \a
@@ -1961,6 +1964,7 @@ QRegularExpression QCborValue::toRegularExpression(const QRegularExpression &def
     Q_ASSERT(n == -1);
     return QRegularExpression(container->stringAt(1));
 }
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     Returns the UUID value stored in this QCborValue, if it is of the UUID
@@ -2870,12 +2874,16 @@ uint qHash(const QCborValue &value, uint seed)
         return qHash(value.toDateTime(), seed);
     case QCborValue::Url:
         return qHash(value.toUrl(), seed);
+#if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return qHash(value.toRegularExpression(), seed);
+#endif
     case QCborValue::Uuid:
         return qHash(value.toUuid(), seed);
     case QCborValue::Invalid:
         return seed;
+    default:
+        break;
     }
 
     Q_ASSERT(value.isSimpleType());
@@ -2920,12 +2928,16 @@ static QDebug debugContents(QDebug &dbg, const QCborValue &v)
         return dbg << v.toDateTime();
     case QCborValue::Url:
         return dbg << v.toUrl();
+#if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return dbg << v.toRegularExpression();
+#endif
     case QCborValue::Uuid:
         return dbg << v.toUuid();
     case QCborValue::Invalid:
         return dbg << "<invalid>";
+    default:
+        break;
     }
     if (v.isSimpleType())
         return dbg << v.toSimpleType();

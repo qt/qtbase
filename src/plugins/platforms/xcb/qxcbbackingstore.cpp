@@ -641,17 +641,17 @@ void QXcbBackingStoreImage::flushPixmap(const QRegion &region, bool fullRegion)
     xcb_subimage.bit_order = m_xcb_image->bit_order;
 
     const bool needsByteSwap = xcb_subimage.byte_order != m_xcb_image->byte_order;
+    // Ensure that we don't send more than maxPutImageRequestDataBytes per request.
+    const auto maxPutImageRequestDataBytes = connection()->maxRequestDataBytes(sizeof(xcb_put_image_request_t));
 
     for (const QRect &rect : region) {
-        // We must make sure that each request is not larger than max_req_size.
-        // Each request takes req_size + m_xcb_image->stride * height bytes.
-        static const uint32_t req_size = sizeof(xcb_put_image_request_t);
-        const uint32_t max_req_size = xcb_get_maximum_request_length(xcb_connection());
-        const int rows_per_put = (max_req_size - req_size) / m_xcb_image->stride;
+        const quint32 stride = round_up_scanline(rect.width() * m_qimage.depth(), xcb_subimage.scanline_pad) >> 3;
+        const int rows_per_put = maxPutImageRequestDataBytes / stride;
 
         // This assert could trigger if a single row has more pixels than fit in
-        // a single PutImage request. However, max_req_size is guaranteed to be
-        // at least 16384 bytes. That should be enough for quite large images.
+        // a single PutImage request. In the absence of the BIG-REQUESTS extension
+        // the theoretical maximum lengths of maxPutImageRequestDataBytes can be
+        // roughly 256kB.
         Q_ASSERT(rows_per_put > 0);
 
         // If we upload the whole image in a single chunk, the result might be
@@ -666,8 +666,9 @@ void QXcbBackingStoreImage::flushPixmap(const QRegion &region, bool fullRegion)
         while (height > 0) {
             const int rows = std::min(height, rows_per_put);
             const QRect subRect(x, y, width, rows);
-            const quint32 stride = round_up_scanline(width * m_qimage.depth(), xcb_subimage.scanline_pad) >> 3;
             const QImage subImage = native_sub_image(&m_flushBuffer, stride, m_qimage, subRect, needsByteSwap);
+
+            Q_ASSERT(static_cast<size_t>(subImage.sizeInBytes()) <= maxPutImageRequestDataBytes);
 
             xcb_subimage.width = width;
             xcb_subimage.height = rows;

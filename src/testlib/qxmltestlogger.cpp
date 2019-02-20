@@ -91,6 +91,10 @@ namespace QTest {
             return "bpass";
         case QAbstractTestLogger::BlacklistedFail:
             return "bfail";
+        case QAbstractTestLogger::BlacklistedXPass:
+            return "bxpass";
+        case QAbstractTestLogger::BlacklistedXFail:
+            return "bxfail";
         }
         return "??????";
     }

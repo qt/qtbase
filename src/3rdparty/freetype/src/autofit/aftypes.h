@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter types (specification only).                              */
 /*                                                                         */
-/*  Copyright 2003-2015 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -22,15 +22,15 @@
    *  Its main feature is the ability to differentiate between different
    *  writing systems and scripts in order to apply specific rules.
    *
-   *  The code has also been compartmentized into several entities that
+   *  The code has also been compartmentalized into several entities that
    *  should make algorithmic experimentation easier than with the old
    *  code.
    *
    *************************************************************************/
 
 
-#ifndef __AFTYPES_H__
-#define __AFTYPES_H__
+#ifndef AFTYPES_H_
+#define AFTYPES_H_
 
 #include <ft2build.h>
 
@@ -76,9 +76,9 @@ extern void*  _af_debug_hints;
 
   typedef struct  AF_WidthRec_
   {
-    FT_Pos  org;  /* original position/width in font units              */
-    FT_Pos  cur;  /* current/scaled position/width in device sub-pixels */
-    FT_Pos  fit;  /* current/fitted position/width in device sub-pixels */
+    FT_Pos  org;  /* original position/width in font units             */
+    FT_Pos  cur;  /* current/scaled position/width in device subpixels */
+    FT_Pos  fit;  /* current/fitted position/width in device subpixels */
 
   } AF_WidthRec, *AF_Width;
 
@@ -211,12 +211,17 @@ extern void*  _af_debug_hints;
   typedef void
   (*AF_WritingSystem_DoneMetricsFunc)( AF_StyleMetrics  metrics );
 
+  typedef void
+  (*AF_WritingSystem_GetStdWidthsFunc)( AF_StyleMetrics  metrics,
+                                        FT_Pos*          stdHW,
+                                        FT_Pos*          stdVW );
+
 
   typedef FT_Error
   (*AF_WritingSystem_InitHintsFunc)( AF_GlyphHints    hints,
                                      AF_StyleMetrics  metrics );
 
-  typedef void
+  typedef FT_Error
   (*AF_WritingSystem_ApplyHintsFunc)( FT_UInt          glyph_index,
                                       AF_GlyphHints    hints,
                                       FT_Outline*      outline,
@@ -250,7 +255,7 @@ extern void*  _af_debug_hints;
    *    outline according to the results of the glyph analyzer.
    */
 
-#define __AFWRTSYS_H__  /* don't load header files */
+#define AFWRTSYS_H_  /* don't load header files */
 #undef  WRITING_SYSTEM
 #define WRITING_SYSTEM( ws, WS )    \
           AF_WRITING_SYSTEM_ ## WS,
@@ -265,7 +270,7 @@ extern void*  _af_debug_hints;
 
   } AF_WritingSystem;
 
-#undef  __AFWRTSYS_H__
+#undef  AFWRTSYS_H_
 
 
   typedef struct  AF_WritingSystemClassRec_
@@ -276,6 +281,7 @@ extern void*  _af_debug_hints;
     AF_WritingSystem_InitMetricsFunc   style_metrics_init;
     AF_WritingSystem_ScaleMetricsFunc  style_metrics_scale;
     AF_WritingSystem_DoneMetricsFunc   style_metrics_done;
+    AF_WritingSystem_GetStdWidthsFunc  style_metrics_getstdw;
 
     AF_WritingSystem_InitHintsFunc     style_hints_init;
     AF_WritingSystem_ApplyHintsFunc    style_hints_apply;
@@ -303,7 +309,7 @@ extern void*  _af_debug_hints;
    */
 
 #undef  SCRIPT
-#define SCRIPT( s, S, d, h, sc1, sc2, sc3 ) \
+#define SCRIPT( s, S, d, h, H, ss ) \
           AF_SCRIPT_ ## S,
 
   /* The list of known scripts. */
@@ -337,9 +343,9 @@ extern void*  _af_debug_hints;
     AF_Script_UniRange  script_uni_ranges;
     AF_Script_UniRange  script_uni_nonbase_ranges;
 
-    FT_UInt32  standard_char1;             /* for default width and height */
-    FT_UInt32  standard_char2;             /* ditto                        */
-    FT_UInt32  standard_char3;             /* ditto                        */
+    FT_Bool  top_to_bottom_hinting;
+
+    const char*  standard_charstring;      /* for default width and height */
 
   } AF_ScriptClassRec;
 
@@ -475,6 +481,10 @@ extern void*  _af_debug_hints;
   } AF_StyleMetricsRec;
 
 
+#define AF_HINTING_BOTTOM_TO_TOP  0
+#define AF_HINTING_TOP_TO_BOTTOM  1
+
+
   /* Declare and define vtables for classes */
 #ifndef FT_CONFIG_OPTION_PIC
 
@@ -489,6 +499,7 @@ extern void*  _af_debug_hints;
           m_init,                                        \
           m_scale,                                       \
           m_done,                                        \
+          m_stdw,                                        \
           h_init,                                        \
           h_apply )                                      \
   FT_CALLBACK_TABLE_DEF                                  \
@@ -501,6 +512,7 @@ extern void*  _af_debug_hints;
     m_init,                                              \
     m_scale,                                             \
     m_done,                                              \
+    m_stdw,                                              \
                                                          \
     h_init,                                              \
     h_apply                                              \
@@ -516,18 +528,16 @@ extern void*  _af_debug_hints;
           script,                         \
           ranges,                         \
           nonbase_ranges,                 \
-          std_char1,                      \
-          std_char2,                      \
-          std_char3 )                     \
+          top_to_bottom,                  \
+          std_charstring )                \
   FT_CALLBACK_TABLE_DEF                   \
   const AF_ScriptClassRec  script_class = \
   {                                       \
     script,                               \
     ranges,                               \
     nonbase_ranges,                       \
-    std_char1,                            \
-    std_char2,                            \
-    std_char3                             \
+    top_to_bottom,                        \
+    std_charstring,                       \
   };
 
 
@@ -565,21 +575,23 @@ extern void*  _af_debug_hints;
           m_init,                                                         \
           m_scale,                                                        \
           m_done,                                                         \
+          m_stdw,                                                         \
           h_init,                                                         \
           h_apply )                                                       \
   FT_LOCAL_DEF( void )                                                    \
   FT_Init_Class_ ## writing_system_class( AF_WritingSystemClassRec*  ac ) \
   {                                                                       \
-    ac->writing_system      = system;                                     \
+    ac->writing_system        = system;                                   \
                                                                           \
-    ac->style_metrics_size  = m_size;                                     \
+    ac->style_metrics_size    = m_size;                                   \
                                                                           \
-    ac->style_metrics_init  = m_init;                                     \
-    ac->style_metrics_scale = m_scale;                                    \
-    ac->style_metrics_done  = m_done;                                     \
+    ac->style_metrics_init    = m_init;                                   \
+    ac->style_metrics_scale   = m_scale;                                  \
+    ac->style_metrics_done    = m_done;                                   \
+    ac->style_metrics_getstdw = m_stdw;                                   \
                                                                           \
-    ac->style_hints_init    = h_init;                                     \
-    ac->style_hints_apply   = h_apply;                                    \
+    ac->style_hints_init      = h_init;                                   \
+    ac->style_hints_apply     = h_apply;                                  \
   }
 
 
@@ -592,18 +604,16 @@ extern void*  _af_debug_hints;
           script_,                                         \
           ranges,                                          \
           nonbase_ranges,                                  \
-          std_char1,                                       \
-          std_char2,                                       \
-          std_char3 )                                      \
+          top_to_bottom,                                   \
+          std_charstring )                                 \
   FT_LOCAL_DEF( void )                                     \
   FT_Init_Class_ ## script_class( AF_ScriptClassRec*  ac ) \
   {                                                        \
     ac->script                    = script_;               \
     ac->script_uni_ranges         = ranges;                \
     ac->script_uni_nonbase_ranges = nonbase_ranges;        \
-    ac->standard_char1            = std_char1;             \
-    ac->standard_char2            = std_char2;             \
-    ac->standard_char3            = std_char3;             \
+    ac->top_to_bottom_hinting     = top_to_bottom;         \
+    ac->standard_charstring       = std_charstring;        \
   }
 
 
@@ -635,7 +645,7 @@ extern void*  _af_debug_hints;
 
 FT_END_HEADER
 
-#endif /* __AFTYPES_H__ */
+#endif /* AFTYPES_H_ */
 
 
 /* END */

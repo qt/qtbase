@@ -65,14 +65,14 @@ void tst_Blacklisted::fail()
 
 void tst_Blacklisted::xfail()
 {
-    QEXPECT_FAIL("", "This test should XFAIL then BPASS", Abort);
+    QEXPECT_FAIL("", "This test should BXFAIL then BPASS", Abort);
     QVERIFY(false);
 }
 
 void tst_Blacklisted::xpass()
 {
-    QEXPECT_FAIL("", "This test should XPASS", Abort);
-    QVERIFY2(true, "This test should XPASS, blacklist ignored for XPASS");
+    QEXPECT_FAIL("", "This test should BXPASS", Abort);
+    QVERIFY2(true, "This test should BXPASS");
 }
 
 #ifndef Q_OS_WIN

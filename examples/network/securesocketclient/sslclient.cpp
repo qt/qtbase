@@ -206,7 +206,8 @@ void SslClient::setupUi()
     padLock->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Ignored);
 
     QHBoxLayout *layout = new QHBoxLayout(form->hostNameEdit);
-    layout->setMargin(form->hostNameEdit->style()->pixelMetric(QStyle::PM_DefaultFrameWidth));
+    const int margin = form->hostNameEdit->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+    layout->setContentsMargins(margin, margin, margin, margin);
     layout->setSpacing(0);
     layout->addStretch();
     layout->addWidget(padLock);

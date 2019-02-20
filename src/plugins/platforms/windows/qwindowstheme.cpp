@@ -159,7 +159,7 @@ public:
 
     void run() override
     {
-        m_init = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+        m_init = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
         QMutexLocker readyLocker(&m_readyMutex);
         while (!m_cancelled.load()) {
@@ -284,24 +284,24 @@ static inline QPalette systemPalette()
     result.setColor(QPalette::Link, Qt::blue);
     result.setColor(QPalette::LinkVisited, Qt::magenta);
     result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
-    result.setColor(QPalette::Inactive, QPalette::Window, result.background().color());
+    result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
     result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
     result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
 
     if (result.midlight() == result.button())
         result.setColor(QPalette::Midlight, result.button().color().lighter(110));
-    if (result.background() != result.base()) {
+    if (result.window() != result.base()) {
         result.setColor(QPalette::Inactive, QPalette::Highlight, result.color(QPalette::Inactive, QPalette::Window));
         result.setColor(QPalette::Inactive, QPalette::HighlightedText, result.color(QPalette::Inactive, QPalette::Text));
     }
 
     const QColor disabled =
-        mixColors(result.foreground().color(), result.button().color());
+        mixColors(result.windowText().color(), result.button().color());
 
-    result.setColorGroup(QPalette::Disabled, result.foreground(), result.button(),
+    result.setColorGroup(QPalette::Disabled, result.windowText(), result.button(),
                          result.light(), result.dark(), result.mid(),
                          result.text(), result.brightText(), result.base(),
-                         result.background());
+                         result.window());
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
     result.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
@@ -310,7 +310,7 @@ static inline QPalette systemPalette()
     result.setColor(QPalette::Disabled, QPalette::HighlightedText,
                     getSysColor(COLOR_HIGHLIGHTTEXT));
     result.setColor(QPalette::Disabled, QPalette::Base,
-                    result.background().color());
+                    result.window().color());
     return result;
 }
 
@@ -333,7 +333,7 @@ static inline QPalette toolTipPalette(const QPalette &systemPalette)
     result.setColor(QPalette::All, QPalette::ToolTipBase, tipBgColor);
     result.setColor(QPalette::All, QPalette::ToolTipText, tipTextColor);
     const QColor disabled =
-        mixColors(result.foreground().color(), result.button().color());
+        mixColors(result.windowText().color(), result.button().color());
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
     result.setColor(QPalette::Disabled, QPalette::ToolTipText, disabled);
@@ -381,7 +381,7 @@ static inline QPalette menuPalette(const QPalette &systemPalette)
 
 static inline QPalette *menuBarPalette(const QPalette &menuPalette)
 {
-    QPalette *result = 0;
+    QPalette *result = nullptr;
     if (booleanSystemParametersInfo(SPI_GETFLATMENU, false)) {
         result = new QPalette(menuPalette);
         const QColor menubar(getSysColor(COLOR_MENUBAR));
@@ -393,13 +393,13 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette)
 }
 
 const char *QWindowsTheme::name = "windows";
-QWindowsTheme *QWindowsTheme::m_instance = 0;
+QWindowsTheme *QWindowsTheme::m_instance = nullptr;
 
 QWindowsTheme::QWindowsTheme()
 {
     m_instance = this;
-    std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
-    std::fill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+    std::fill(m_fonts, m_fonts + NFonts, nullptr);
+    std::fill(m_palettes, m_palettes + NPalettes, nullptr);
     refresh();
     refreshIconPixmapSizes();
 }
@@ -408,7 +408,7 @@ QWindowsTheme::~QWindowsTheme()
 {
     clearPalettes();
     clearFonts();
-    m_instance = 0;
+    m_instance = nullptr;
 }
 
 static inline QStringList iconThemeSearchPaths()
@@ -481,7 +481,7 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 void QWindowsTheme::clearPalettes()
 {
     qDeleteAll(m_palettes, m_palettes + NPalettes);
-    std::fill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+    std::fill(m_palettes, m_palettes + NPalettes, nullptr);
 }
 
 void QWindowsTheme::refreshPalettes()
@@ -498,7 +498,7 @@ void QWindowsTheme::refreshPalettes()
 void QWindowsTheme::clearFonts()
 {
     qDeleteAll(m_fonts, m_fonts + NFonts);
-    std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
+    std::fill(m_fonts, m_fonts + NFonts, nullptr);
 }
 
 void QWindowsTheme::refreshFonts()
@@ -606,7 +606,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
     int resourceId = -1;
     SHSTOCKICONID stockId = SIID_INVALID;
     UINT stockFlags = 0;
-    LPCTSTR iconName = 0;
+    LPCTSTR iconName = nullptr;
     switch (sp) {
     case DriveCDIcon:
         stockId = SIID_DRIVECD;
@@ -716,7 +716,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
     }
 
     if (iconName) {
-        HICON iconHandle = LoadIcon(NULL, iconName);
+        HICON iconHandle = LoadIcon(nullptr, iconName);
         QPixmap pixmap = qt_pixmapFromWinHICON(iconHandle);
         DestroyIcon(iconHandle);
         if (!pixmap.isNull())
@@ -776,7 +776,7 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
     // For MinGW:
     static const IID iID_IImageList = {0x46eb5926, 0x582e, 0x4017, {0x9f, 0xdf, 0xe8, 0x99, 0x8d, 0xaa, 0x9, 0x50}};
 
-    IImageList *imageList = 0;
+    IImageList *imageList = nullptr;
     HRESULT hr = SHGetImageList(iImageList, iID_IImageList, reinterpret_cast<void **>(&imageList));
     if (hr != S_OK)
         return result;
@@ -832,7 +832,7 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 {
     /* We don't use the variable, but by storing it statically, we
      * ensure CoInitialize is only called once. */
-    static HRESULT comInit = CoInitialize(NULL);
+    static HRESULT comInit = CoInitialize(nullptr);
     Q_UNUSED(comInit);
 
     static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);
@@ -858,7 +858,8 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
         int iIcon = (useDefaultFolderIcon && defaultFolderIIcon >= 0) ? defaultFolderIIcon
                                                                       : **dirIconEntryCache.object(filePath);
         if (iIcon) {
-            QPixmapCache::find(dirIconPixmapCacheKey(iIcon, iconSize, requestedImageListSize), pixmap);
+            QPixmapCache::find(dirIconPixmapCacheKey(iIcon, iconSize, requestedImageListSize),
+                               &pixmap);
             if (pixmap.isNull()) // Let's keep both caches in sync
                 dirIconEntryCache.remove(filePath);
             else
@@ -889,7 +890,7 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 
             //using the unique icon index provided by windows save us from duplicate keys
             key = dirIconPixmapCacheKey(info.iIcon, iconSize, requestedImageListSize);
-            QPixmapCache::find(key, pixmap);
+            QPixmapCache::find(key, &pixmap);
             if (!pixmap.isNull()) {
                 QMutexLocker locker(&mx);
                 dirIconEntryCache.insert(filePath, FakePointer<int>::create(info.iIcon));

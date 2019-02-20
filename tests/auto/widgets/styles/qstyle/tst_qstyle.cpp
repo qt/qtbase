@@ -197,7 +197,7 @@ void tst_QStyle::drawItemPixmap()
     const QRgb green = QColor(Qt::green).rgb();
     QVERIFY(image.reinterpretAsFormat(QImage::Format_RGB32));
     const QRgb *bits = reinterpret_cast<const QRgb *>(image.constBits());
-    const QRgb *end = bits + image.byteCount() / sizeof(QRgb);
+    const QRgb *end = bits + image.sizeInBytes() / sizeof(QRgb);
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "QWidget::resize does not work on WinRT", Continue);
 #endif

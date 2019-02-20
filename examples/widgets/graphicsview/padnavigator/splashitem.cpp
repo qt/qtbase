@@ -79,7 +79,7 @@ void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     painter->setPen(QPen(Qt::black, 2));
     painter->setBrush(QColor(245, 245, 255, 220));
     painter->setClipRect(boundingRect());
-    painter->drawRoundRect(3, -100 + 3, 400 - 6, 250 - 6);
+    painter->drawRoundedRect(3, -100 + 3, 400 - 6, 250 - 6, 25, 25, Qt::RelativeSize);
 
     QRectF textRect = boundingRect().adjusted(10, 10, -10, -10);
     int flags = Qt::AlignTop | Qt::AlignLeft | Qt::TextWordWrap;

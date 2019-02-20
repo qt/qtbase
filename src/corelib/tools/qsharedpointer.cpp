@@ -579,8 +579,8 @@
 /*!
     \fn template <class T> bool QSharedPointer<T>::operator !() const
 
-    Returns \c true if this object is null. This function is suitable
-    for use in \tt if-constructs, like:
+    Returns \c true if this object is \nullptr. This function is
+    suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qsharedpointer.cpp 5
 
@@ -854,8 +854,8 @@
 /*!
     \fn template <class T> bool QWeakPointer<T>::operator !() const
 
-    Returns \c true if this object is null. This function is suitable
-    for use in \tt if-constructs, like:
+    Returns \c true if this object is \nullptr. This function is
+    suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qsharedpointer.cpp 9
 

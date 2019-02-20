@@ -66,6 +66,10 @@
 
 #include <qpa/qplatformservices.h>
 
+#if QT_CONFIG(system_xcb) && QT_CONFIG(xlib) && QT_CONFIG(opengl) && !QT_CONFIG(opengles2)
+#include "qoffscreenintegration_x11.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QCoreTextFontEngine;
@@ -217,6 +221,16 @@ QPlatformDrag *QOffscreenIntegration::drag() const
 QPlatformServices *QOffscreenIntegration::services() const
 {
     return m_services.data();
+}
+
+QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration()
+{
+#if QT_CONFIG(system_xcb) && QT_CONFIG(xlib) && QT_CONFIG(opengl) && !QT_CONFIG(opengles2)
+    QByteArray glx = qgetenv("QT_QPA_OFFSCREEN_NO_GLX");
+    if (glx.isEmpty())
+        return new QOffscreenX11Integration;
+#endif
+    return new QOffscreenIntegration;
 }
 
 QT_END_NAMESPACE

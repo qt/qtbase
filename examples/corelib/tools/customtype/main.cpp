@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QVariant>
 #include "message.h"
 

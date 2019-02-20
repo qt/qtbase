@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PNG Bitmap glyph support.                                            */
 /*                                                                         */
-/*  Copyright 2013-2015 by                                                 */
+/*  Copyright 2013-2018 by                                                 */
 /*  Google, Inc.                                                           */
 /*  Written by Stuart Gill and Behdad Esfahbod.                            */
 /*                                                                         */
@@ -17,8 +17,8 @@
 /***************************************************************************/
 
 
-#ifndef __PNGSHIM_H__
-#define __PNGSHIM_H__
+#ifndef PNGSHIM_H_
+#define PNGSHIM_H_
 
 
 #include <ft2build.h>
@@ -38,13 +38,14 @@ FT_BEGIN_HEADER
                  FT_Memory        memory,
                  FT_Byte*         data,
                  FT_UInt          png_len,
-                 FT_Bool          populate_map_and_metrics );
+                 FT_Bool          populate_map_and_metrics,
+                 FT_Bool          metrics_only );
 
 #endif
 
 FT_END_HEADER
 
-#endif /* __PNGSHIM_H__ */
+#endif /* PNGSHIM_H_ */
 
 
 /* END */

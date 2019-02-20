@@ -252,7 +252,7 @@ void tst_QFileDialog2::showNameFilterDetails()
     QFileDialog fd;
     QComboBox *filters = fd.findChild<QComboBox*>("fileTypeCombo");
     QVERIFY(filters);
-    QVERIFY(fd.isNameFilterDetailsVisible());
+    QVERIFY(!fd.testOption(QFileDialog::HideNameFilterDetails));
 
 
     QStringList filterChoices;
@@ -261,12 +261,12 @@ void tst_QFileDialog2::showNameFilterDetails()
                   << "Any files (*.*)";
     fd.setNameFilters(filterChoices);
 
-    fd.setNameFilterDetailsVisible(false);
+    fd.setOption(QFileDialog::HideNameFilterDetails, true);
     QCOMPARE(filters->itemText(0), QString("Image files"));
     QCOMPARE(filters->itemText(1), QString("Text files"));
     QCOMPARE(filters->itemText(2), QString("Any files"));
 
-    fd.setNameFilterDetailsVisible(true);
+    fd.setOption(QFileDialog::HideNameFilterDetails, false);
     QCOMPARE(filters->itemText(0), filterChoices.at(0));
     QCOMPARE(filters->itemText(1), filterChoices.at(1));
     QCOMPARE(filters->itemText(2), filterChoices.at(2));
@@ -486,7 +486,7 @@ protected:
             parentIndex = source_parent;
 
             QString path;
-            path = parentIndex.child(source_row,0).data(Qt::DisplayRole).toString();
+            path = sourceModel()->index(source_row, 0, parentIndex).data(Qt::DisplayRole).toString();
 
             do {
               path = parentIndex.data(Qt::DisplayRole).toString() + QLatin1Char('/') + path;

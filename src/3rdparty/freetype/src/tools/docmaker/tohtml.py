@@ -3,7 +3,7 @@
 #
 #    A sub-class container of the `Formatter' class to produce HTML.
 #
-#  Copyright 2002-2015 by
+#  Copyright 2002-2018 by
 #  David Turner.
 #
 #  This file is part of the FreeType project, and may only be used,
@@ -25,7 +25,7 @@ import time
 # The following strings define the HTML header used by all generated pages.
 html_header_1 = """\
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+"https://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -164,7 +164,8 @@ html_footer = """\
 """
 
 # The header and footer used for each section.
-section_title_header = "<h1>"
+section_title_header1 = '<h1 id="'
+section_title_header2 = '">'
 section_title_footer = "</h1>"
 
 # The header and footer used for code segments.
@@ -309,7 +310,14 @@ class  HtmlFormatter( Formatter ):
     def  make_block_url( self, block, name = None ):
         if name == None:
             name = block.name
-        return self.make_section_url( block.section ) + "#" + name
+
+        try:
+            section_url = self.make_section_url( block.section )
+        except:
+            # we already have a section
+            section_url = self.make_section_url( block )
+
+        return section_url + "#" + name
 
     def  make_html_word( self, word ):
         """Analyze a simple word to detect cross-references and markup."""
@@ -317,11 +325,27 @@ class  HtmlFormatter( Formatter ):
         m = re_crossref.match( word )
         if m:
             try:
-                name = m.group( 1 )
-                rest = m.group( 2 )
+                name = m.group( 'name' )
+                rest = m.group( 'rest' )
                 block = self.identifiers[name]
                 url   = self.make_block_url( block )
-                return '<a href="' + url + '">' + name + '</a>' + rest
+                # display `foo[bar]' as `foo'
+                name = re.sub( r'\[.*\]', '', name )
+                # normalize url, following RFC 3986
+                url = string.replace( url, "[", "(" )
+                url = string.replace( url, "]", ")" )
+
+                try:
+                    # for sections, display title
+                    url = ( '&lsquo;<a href="' + url + '">'
+                            + block.title + '</a>&rsquo;'
+                            + rest )
+                except:
+                    url = ( '<a href="' + url + '">'
+                            + name + '</a>'
+                            + rest )
+
+                return url
             except:
                 # we detected a cross-reference to an unknown item
                 sys.stderr.write( "WARNING: undefined cross reference"
@@ -366,7 +390,7 @@ class  HtmlFormatter( Formatter ):
         """Convert a code sequence to HTML."""
         line = code_header + '\n'
         for l in lines:
-            line = line + html_quote( l ) + '\n'
+            line = line + html_quote( l ).rstrip() + '\n'
 
         return line + code_footer
 
@@ -382,7 +406,7 @@ class  HtmlFormatter( Formatter ):
         return string.join( lines, '\n' )
 
     def  print_html_items( self, items ):
-        print self.make_html_items( items )
+        print( self.make_html_items( items ) )
 
     def  print_html_field( self, field ):
         if field.name:
@@ -390,10 +414,10 @@ class  HtmlFormatter( Formatter ):
                    + field.name
                    + "</b></td><td>" )
 
-        print self.make_html_items( field.items )
+        print( self.make_html_items( field.items ) )
 
         if field.name:
-            print "</td></tr></table>"
+            print( "</td></tr></table>" )
 
     def  html_source_quote( self, line, block_name = None ):
         result = ""
@@ -417,16 +441,22 @@ class  HtmlFormatter( Formatter ):
                     id = block.name
 
                     # link to a field ID if possible
-                    for markup in block.markups:
-                        if markup.tag == 'values':
-                            for field in markup.fields:
-                                if field.name:
-                                    id = name
+                    try:
+                      for markup in block.markups:
+                          if markup.tag == 'values':
+                              for field in markup.fields:
+                                  if field.name:
+                                      id = name
 
-                    result = ( result + prefix
-                               + '<a href="'
-                               + self.make_block_url( block, id )
-                               + '">' + name + '</a>' )
+                      result = ( result + prefix
+                                 + '<a href="'
+                                 + self.make_block_url( block, id )
+                                 + '">' + name + '</a>' )
+                    except:
+                      # sections don't have `markups'; however, we don't
+                      # want references to sections here anyway
+                      result = result + html_quote( line[:length] )
+
                 else:
                     result = result + html_quote( line[:length] )
 
@@ -438,14 +468,14 @@ class  HtmlFormatter( Formatter ):
         return result
 
     def  print_html_field_list( self, fields ):
-        print '<table class="fields">'
+        print( '<table class="fields">' )
         for field in fields:
-            print ( '<tr><td class="val" id="' + field.name + '">'
-                    + field.name
-                    + '</td><td class="desc">' )
+            print( '<tr><td class="val" id="' + field.name + '">'
+                   + field.name
+                   + '</td><td class="desc">' )
             self.print_html_items( field.items )
-            print "</td></tr>"
-        print "</table>"
+            print( "</td></tr>" )
+        print( "</table>" )
 
     def  print_html_markup( self, markup ):
         table_fields = []
@@ -469,7 +499,7 @@ class  HtmlFormatter( Formatter ):
     # formatting the index
     #
     def  index_enter( self ):
-        print self.html_index_header
+        print( self.html_index_header )
         self.index_items = {}
 
     def  index_name_enter( self, name ):
@@ -482,7 +512,7 @@ class  HtmlFormatter( Formatter ):
         count = len( self.block_index )
         rows  = ( count + self.columns - 1 ) // self.columns
 
-        print '<table class="index">'
+        print( '<table class="index">' )
         for r in range( rows ):
             line = "<tr>"
             for c in range( self.columns ):
@@ -490,20 +520,26 @@ class  HtmlFormatter( Formatter ):
                 if i < count:
                     bname = self.block_index[r + c * rows]
                     url   = self.index_items[bname]
+                    # display `foo[bar]' as `foo (bar)'
+                    bname = string.replace( bname, "[", " (" )
+                    bname = string.replace( bname, "]", ")"  )
+                    # normalize url, following RFC 3986
+                    url = string.replace( url, "[", "(" )
+                    url = string.replace( url, "]", ")" )
                     line  = ( line + '<td><a href="' + url + '">'
                               + bname + '</a></td>' )
                 else:
                     line = line + '<td></td>'
             line = line + "</tr>"
-            print line
+            print( line )
 
-        print "</table>"
+        print( "</table>" )
 
         print( index_footer_start
                + self.file_prefix + "toc.html"
                + index_footer_end )
 
-        print self.html_footer
+        print( self.html_footer )
 
         self.index_items = {}
 
@@ -517,25 +553,25 @@ class  HtmlFormatter( Formatter ):
     # formatting the table of contents
     #
     def  toc_enter( self ):
-        print self.html_toc_header
-        print "<h1>Table of Contents</h1>"
+        print( self.html_toc_header )
+        print( "<h1>Table of Contents</h1>" )
 
     def  toc_chapter_enter( self, chapter ):
-        print chapter_header + string.join( chapter.title ) + chapter_inter
-        print '<table class="toc">'
+        print( chapter_header + string.join( chapter.title ) + chapter_inter )
+        print( '<table class="toc">' )
 
     def  toc_section_enter( self, section ):
-        print ( '<tr><td class="link">'
-                + '<a href="' + self.make_section_url( section ) + '">'
-                + section.title + '</a></td><td class="desc">' )
-        print self.make_html_para( section.abstract )
+        print( '<tr><td class="link">'
+               + '<a href="' + self.make_section_url( section ) + '">'
+               + section.title + '</a></td><td class="desc">' )
+        print( self.make_html_para( section.abstract ) )
 
     def  toc_section_exit( self, section ):
-        print "</td></tr>"
+        print( "</td></tr>" )
 
     def  toc_chapter_exit( self, chapter ):
-        print "</table>"
-        print chapter_footer
+        print( "</table>" )
+        print( chapter_footer )
 
     def  toc_index( self, index_filename ):
         print( chapter_header
@@ -547,7 +583,7 @@ class  HtmlFormatter( Formatter ):
                + self.file_prefix + "index.html"
                + toc_footer_end )
 
-        print self.html_footer
+        print( self.html_footer )
 
     def  toc_dump( self, toc_filename = None, index_filename = None ):
         if toc_filename == None:
@@ -562,9 +598,11 @@ class  HtmlFormatter( Formatter ):
     # formatting sections
     #
     def  section_enter( self, section ):
-        print self.html_header
+        print( self.html_header )
 
-        print section_title_header + section.title + section_title_footer
+        print( section_title_header1 + section.name + section_title_header2
+               + section.title
+               + section_title_footer )
 
         maxwidth = 0
         for b in section.blocks.values():
@@ -574,8 +612,8 @@ class  HtmlFormatter( Formatter ):
         width = 70  # XXX magic number
         if maxwidth > 0:
             # print section synopsis
-            print section_synopsis_header
-            print '<table class="synopsis">'
+            print( section_synopsis_header )
+            print( '<table class="synopsis">' )
 
             columns = width // maxwidth
             if columns < 1:
@@ -601,26 +639,38 @@ class  HtmlFormatter( Formatter ):
                             # even omit it completely)
                             line = line + "&nbsp;"
                         else:
-                            line = ( line + '<a href="#' + name + '">'
+                            url = name
+                            # display `foo[bar]' as `foo'
+                            name = re.sub( r'\[.*\]', '', name )
+                            # normalize url, following RFC 3986
+                            url = string.replace( url, "[", "(" )
+                            url = string.replace( url, "]", ")" )
+                            line = ( line + '<a href="#' + url + '">'
                                      + name + '</a>' )
 
                     line = line + '</td>'
                 line = line + "</tr>"
-                print line
+                print( line )
 
-            print "</table>"
-            print section_synopsis_footer
+            print( "</table>" )
+            print( section_synopsis_footer )
 
-        print description_header
-        print self.make_html_items( section.description )
-        print description_footer
+        print( description_header )
+        print( self.make_html_items( section.description ) )
+        print( description_footer )
 
     def  block_enter( self, block ):
-        print block_header
+        print( block_header )
 
         # place html anchor if needed
         if block.name:
-            print( '<h3 id="' + block.name + '">' + block.name + '</h3>' )
+            url = block.name
+            # display `foo[bar]' as `foo'
+            name = re.sub( r'\[.*\]', '', block.name )
+            # normalize url, following RFC 3986
+            url = string.replace( url, "[", "(" )
+            url = string.replace( url, "]", ")" )
+            print( '<h3 id="' + url + '">' + name + '</h3>' )
 
         # dump the block C source lines now
         if block.code:
@@ -636,28 +686,28 @@ class  HtmlFormatter( Formatter ):
 #                 + " '" + block.source.filename + "'.\n" )
 
             if header:
-                print ( header_location_header
-                        + 'Defined in ' + header + '.'
-                        + header_location_footer )
+                print( header_location_header
+                       + 'Defined in ' + header + '.'
+                       + header_location_footer )
 
-            print source_header
+            print( source_header )
             for l in block.code:
-                print self.html_source_quote( l, block.name )
-            print source_footer
+                print( self.html_source_quote( l, block.name ) )
+            print( source_footer )
 
     def  markup_enter( self, markup, block ):
         if markup.tag == "description":
-            print description_header
+            print( description_header )
         else:
-            print marker_header + markup.tag + marker_inter
+            print( marker_header + markup.tag + marker_inter )
 
         self.print_html_markup( markup )
 
     def  markup_exit( self, markup, block ):
         if markup.tag == "description":
-            print description_footer
+            print( description_footer )
         else:
-            print marker_footer
+            print( marker_footer )
 
     def  block_exit( self, block ):
         print( block_footer_start + self.file_prefix + "index.html"
@@ -665,7 +715,7 @@ class  HtmlFormatter( Formatter ):
                + block_footer_end )
 
     def  section_exit( self, section ):
-        print html_footer
+        print( html_footer )
 
     def  section_dump_all( self ):
         for section in self.sections:

@@ -740,7 +740,8 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeDa
 {
     QPainter *painter = themeData.painter;
 
-    const QPointF redirectionDelta(painter->deviceMatrix().dx(), painter->deviceMatrix().dy());
+    const auto deviceTransform = painter->deviceTransform();
+    const QPointF redirectionDelta(deviceTransform.dx(), deviceTransform.dy());
     const QRect area = scaleRect(QRectF(themeData.rect), additionalDevicePixelRatio).translated(redirectionDelta).toRect();
 
     QRegion sysRgn = painter->paintEngine()->systemClip();
@@ -835,7 +836,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         alphaType = data.alphaType;
         potentialInvalidAlpha = data.hadInvalidAlpha;
 
-        haveCachedPixmap = QPixmapCache::find(pixmapCacheKey, cachedPixmap);
+        haveCachedPixmap = QPixmapCache::find(pixmapCacheKey, &cachedPixmap);
 
 #ifdef DEBUG_XP_STYLE
         char buf[25];

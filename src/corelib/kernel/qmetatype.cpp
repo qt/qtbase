@@ -432,7 +432,7 @@ struct DefinedTypesFilter {
     \since 5.0
 
     Returns a copy of \a copy, assuming it is of the type that this
-    QMetaType instance was created for. If \a copy is null, creates
+    QMetaType instance was created for. If \a copy is \nullptr, creates
     a default constructed instance.
 
     \sa QMetaType::destroy()

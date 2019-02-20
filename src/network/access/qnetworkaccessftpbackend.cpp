@@ -351,7 +351,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         }
     } else if (state == Statting) {
         // statted successfully, send the actual request
-        emit metaDataChanged();
+        metaDataChanged();
         state = Transferring;
 
         QFtp::TransferType type = QFtp::Binary;

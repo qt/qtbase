@@ -672,7 +672,6 @@ void QVector<T>::realloc(int aalloc, QArrayData::AllocationOptions options)
     Data *x = d;
 
     const bool isShared = d->ref.isShared();
-    Q_ASSERT(aalloc != int(d->alloc) || isShared);
 
     QT_TRY {
         // allocate memory

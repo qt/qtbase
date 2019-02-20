@@ -146,13 +146,13 @@ QState *createLightState(LightWidget *light, int duration, QState *parent = 0)
 class TrafficLight : public QWidget
 {
 public:
-    TrafficLight(QWidget *parent = 0)
+    TrafficLight(QWidget *parent = nullptr)
         : QWidget(parent)
     {
         QVBoxLayout *vbox = new QVBoxLayout(this);
-        TrafficLightWidget *widget = new TrafficLightWidget();
+        TrafficLightWidget *widget = new TrafficLightWidget;
         vbox->addWidget(widget);
-        vbox->setMargin(0);
+        vbox->setContentsMargins(QMargins());
 
         QStateMachine *machine = new QStateMachine(this);
         QState *redGoingYellow = createLightState(widget->redLight(), 3000);

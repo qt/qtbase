@@ -321,7 +321,9 @@ private slots:
     void setMaskInResizeEvent();
     void moveInResizeEvent();
 
-    void immediateRepaintAfterInvalidateBuffer();
+#ifdef QT_BUILD_INTERNAL
+    void immediateRepaintAfterInvalidateBackingStore();
+#endif
 
     void effectiveWinId();
     void effectiveWinId2();
@@ -8215,7 +8217,7 @@ void tst_QWidget::resizeInPaintEvent()
 
     widget.resizeInPaintEvent = true;
     // This will call resize in the paintEvent, which in turn will call
-    // invalidateBuffer() and a new update request should be posted.
+    // invalidateBackingStore() and a new update request should be posted.
     widget.repaint();
     QCOMPARE(widget.numPaintEvents, 1);
     widget.numPaintEvents = 0;
@@ -8370,7 +8372,8 @@ void tst_QWidget::moveInResizeEvent()
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
 }
 
-void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
+#ifdef QT_BUILD_INTERNAL
+void tst_QWidget::immediateRepaintAfterInvalidateBackingStore()
 {
     if (m_platform != QStringLiteral("xcb") && m_platform != QStringLiteral("windows"))
         QSKIP("We don't support immediate repaint right after show on other platforms.");
@@ -8384,7 +8387,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
 
     // Marks the area covered by the widget as dirty in the backing store and
     // posts an UpdateRequest event.
-    qt_widget_private(widget.data())->invalidateBuffer(widget->rect());
+    qt_widget_private(widget.data())->invalidateBackingStore(widget->rect());
     QCOMPARE(widget->numPaintEvents, 0);
 
     // The entire widget is already dirty, but this time we want to update immediately
@@ -8393,6 +8396,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
     widget->repaint();
     QCOMPARE(widget->numPaintEvents, 1);
 }
+#endif
 
 void tst_QWidget::effectiveWinId()
 {
@@ -9628,7 +9632,7 @@ public:
     {
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
             static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStoreTracker.create(this);
-            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
+            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBackingStore(this->rect());
             repaint();
         }
     }

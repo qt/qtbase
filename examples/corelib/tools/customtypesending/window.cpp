@@ -52,14 +52,15 @@
 #include "window.h"
 
 //! [Window constructor]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent), editor(new QTextEdit(this))
 {
-    editor = new QTextEdit();
     QPushButton *sendButton = new QPushButton(tr("&Send message"));
 
-    connect(sendButton, SIGNAL(clicked()), this, SLOT(sendMessage()));
+    connect(sendButton, &QPushButton::clicked,
+            this, &Window::sendMessage);
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch();
     buttonLayout->addWidget(sendButton);
     buttonLayout->addStretch();

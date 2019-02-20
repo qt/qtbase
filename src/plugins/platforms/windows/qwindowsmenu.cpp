@@ -797,7 +797,7 @@ QWindowsMenuBar *QWindowsMenuBar::menuBarOf(const QWindow *notYetCreatedWindow)
 static inline void forceNcCalcSize(HWND hwnd)
 {
     // Force WM_NCCALCSIZE to adjust margin: Does not appear to work?
-    SetWindowPos(hwnd, 0, 0, 0, 0, 0,
+    SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
                  SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 

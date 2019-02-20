@@ -81,7 +81,7 @@ void QTransposeProxyModelPrivate::onLayoutChanged(const QList<QPersistentModelIn
         proxyHint = QAbstractItemModel::HorizontalSortHint;
     else if (hint == QAbstractItemModel::HorizontalSortHint)
         proxyHint = QAbstractItemModel::VerticalSortHint;
-    q->layoutChanged(proxyParents, proxyHint);
+    emit q->layoutChanged(proxyParents, proxyHint);
 }
 
 void QTransposeProxyModelPrivate::onLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint)
@@ -108,19 +108,19 @@ void QTransposeProxyModelPrivate::onLayoutAboutToBeChanged(const QList<QPersiste
         proxyHint = QAbstractItemModel::HorizontalSortHint;
     else if (hint == QAbstractItemModel::HorizontalSortHint)
         proxyHint = QAbstractItemModel::VerticalSortHint;
-    q->layoutAboutToBeChanged(proxyParents, proxyHint);
+    emit q->layoutAboutToBeChanged(proxyParents, proxyHint);
 }
 
 void QTransposeProxyModelPrivate::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
 {
     Q_Q(QTransposeProxyModel);
-    q->dataChanged(q->mapFromSource(topLeft), q->mapFromSource(bottomRight), roles);
+    emit q->dataChanged(q->mapFromSource(topLeft), q->mapFromSource(bottomRight), roles);
 }
 
 void QTransposeProxyModelPrivate::onHeaderDataChanged(Qt::Orientation orientation, int first, int last)
 {
     Q_Q(QTransposeProxyModel);
-    q->headerDataChanged(orientation == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal, first, last);
+    emit q->headerDataChanged(orientation == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal, first, last);
 }
 
 void QTransposeProxyModelPrivate::onColumnsAboutToBeInserted(const QModelIndex &parent, int first, int last)

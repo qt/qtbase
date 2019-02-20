@@ -3,8 +3,8 @@
 # and the configures.
 
 option(host_build)
-CONFIG += console
-CONFIG -= qt app_bundle
+CONFIG += cmdline
+CONFIG -= qt
 
 DEFINES += \
     PROEVALUATOR_FULL \

@@ -182,7 +182,7 @@ typedef unsigned long  ulg;
 #endif
 
 /* Diagnostic functions */
-#if defined(DEBUG) && !defined(_WIN32_WCE)
+#ifdef DEBUG
 #  include <stdio.h>
    extern int z_verbose;
    extern void z_error    OF((char *m));

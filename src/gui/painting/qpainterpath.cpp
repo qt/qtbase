@@ -3318,7 +3318,7 @@ void QPainterPath::addRoundRect(const QRectF &rect,
         xRnd = int(roundness * rect.height()/rect.width());
     else
         yRnd = int(roundness * rect.width()/rect.height());
-    addRoundRect(rect, xRnd, yRnd);
+    addRoundedRect(rect, xRnd, yRnd, Qt::RelativeSize);
 }
 
 /*!
@@ -3339,7 +3339,7 @@ void QPainterPath::addRoundRect(const QRectF &rect,
 void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
                                 int xRnd, int yRnd)
 {
-    addRoundRect(QRectF(x, y, w, h), xRnd, yRnd);
+    addRoundedRect(QRectF(x, y, w, h), xRnd, yRnd, Qt::RelativeSize);
 }
 
 /*!
@@ -3363,7 +3363,7 @@ void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
 void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
                                 int roundness)
 {
-    addRoundRect(QRectF(x, y, w, h), roundness);
+    addRoundedRect(QRectF(x, y, w, h), roundness, Qt::RelativeSize);
 }
 #endif
 

@@ -41,6 +41,7 @@
 
 #include <QByteArray>
 #include <QOpenGLContext>
+#include <QtPlatformHeaders/QGLXNativeContext>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
@@ -51,47 +52,6 @@
 #include <qsurface.h>
 
 QT_BEGIN_NAMESPACE
-
-QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration()
-{
-    return new QOffscreenX11Integration;
-}
-
-bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability cap) const
-{
-    switch (cap) {
-    case OpenGL: return true;
-    case ThreadedOpenGL: return true;
-    default: return QOffscreenIntegration::hasCapability(cap);
-    }
-}
-
-QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
-{
-    if (!m_connection)
-        m_connection.reset(new QOffscreenX11Connection);
-
-    if (!m_connection->display())
-        return nullptr;
-
-    return new QOffscreenX11GLXContext(m_connection->x11Info(), context);
-}
-
-QOffscreenX11Connection::QOffscreenX11Connection()
-{
-    XInitThreads();
-
-    QByteArray displayName = qgetenv("DISPLAY");
-    Display *display = XOpenDisplay(displayName.constData());
-    m_display = display;
-    m_screenNumber = m_display ? DefaultScreen(m_display) : -1;
-}
-
-QOffscreenX11Connection::~QOffscreenX11Connection()
-{
-    if (m_display)
-        XCloseDisplay((Display *)m_display);
-}
 
 class QOffscreenX11Info
 {
@@ -117,6 +77,77 @@ private:
     QOffscreenX11Connection *m_connection;
 };
 
+bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case OpenGL: return true;
+    case ThreadedOpenGL: return true;
+    case RasterGLSurface: return true;
+    default: return QOffscreenIntegration::hasCapability(cap);
+    }
+}
+
+QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    if (!m_connection)
+        m_connection.reset(new QOffscreenX11Connection);
+
+    if (!m_connection->display())
+        return nullptr;
+
+    return new QOffscreenX11GLXContext(m_connection->x11Info(), context);
+}
+
+QPlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
+{
+   return const_cast<QOffscreenX11Integration *>(this);
+}
+
+void *QOffscreenX11Integration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    Q_UNUSED(screen)
+    if (resource.toLower() == QByteArrayLiteral("display") ) {
+        if (!m_connection)
+            m_connection.reset(new QOffscreenX11Connection);
+        return m_connection->display();
+    }
+    return nullptr;
+}
+
+#ifndef QT_NO_OPENGL
+void *QOffscreenX11Integration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) {
+    if (resource.toLower() == QByteArrayLiteral("glxconfig") ) {
+        if (context) {
+            QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());
+            return glxPlatformContext->glxConfig();
+        }
+    }
+    if (resource.toLower() == QByteArrayLiteral("glxcontext") ) {
+        if (context) {
+            QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());
+            return glxPlatformContext->glxContext();
+        }
+    }
+    return nullptr;
+}
+#endif
+
+QOffscreenX11Connection::QOffscreenX11Connection()
+{
+    XInitThreads();
+
+    QByteArray displayName = qgetenv("DISPLAY");
+    Display *display = XOpenDisplay(displayName.constData());
+    m_display = display;
+    m_screenNumber = m_display ? DefaultScreen(m_display) : -1;
+}
+
+QOffscreenX11Connection::~QOffscreenX11Connection()
+{
+    if (m_display)
+        XCloseDisplay((Display *)m_display);
+}
+
 QOffscreenX11Info *QOffscreenX11Connection::x11Info()
 {
     if (!m_x11Info)
@@ -127,11 +158,12 @@ QOffscreenX11Info *QOffscreenX11Connection::x11Info()
 class QOffscreenX11GLXContextData
 {
 public:
-    QOffscreenX11Info *x11;
+    QOffscreenX11Info *x11 = nullptr;
     QSurfaceFormat format;
-    GLXContext context;
-    GLXContext shareContext;
-    Window window;
+    GLXContext context = nullptr;
+    GLXContext shareContext = nullptr;
+    GLXFBConfig config = nullptr;
+    Window window = 0;
 };
 
 static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
@@ -141,6 +173,7 @@ static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
     a.background_pixel = WhitePixel(x11->display(), x11->screenNumber());
     a.border_pixel = BlackPixel(x11->display(), x11->screenNumber());
     a.colormap = cmap;
+
 
     Window window = XCreateWindow(x11->display(), x11->root(),
                                   0, 0, 100, 100,
@@ -163,14 +196,23 @@ static Window createDummyWindow(QOffscreenX11Info *x11, GLXFBConfig config)
 QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGLContext *context)
     : d(new QOffscreenX11GLXContextData)
 {
+
     d->x11 = x11;
     d->format = context->format();
+
+    if (d->format.renderableType() == QSurfaceFormat::DefaultRenderableType)
+        d->format.setRenderableType(QSurfaceFormat::OpenGL);
+
+    if (d->format.renderableType() != QSurfaceFormat::OpenGL)
+        return;
 
     d->shareContext = 0;
     if (context->shareHandle())
         d->shareContext = static_cast<QOffscreenX11GLXContext *>(context->shareHandle())->d->context;
 
     GLXFBConfig config = qglx_findConfig(x11->display(), x11->screenNumber(), d->format);
+    d->config = config;
+
     if (config) {
         d->context = glXCreateNewContext(x11->display(), config, GLX_RGBA_TYPE, d->shareContext, true);
         if (!d->context && d->shareContext) {
@@ -199,6 +241,9 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
         d->window = createDummyWindow(x11, visualInfo);
         XFree(visualInfo);
     }
+    if (d->context)
+        context->setNativeHandle(QVariant::fromValue<QGLXNativeContext>(QGLXNativeContext(d->context)));
+
 }
 
 QOffscreenX11GLXContext::~QOffscreenX11GLXContext()
@@ -249,6 +294,16 @@ bool QOffscreenX11GLXContext::isSharing() const
 bool QOffscreenX11GLXContext::isValid() const
 {
     return d->context && d->window;
+}
+
+void *QOffscreenX11GLXContext::glxContext() const
+{
+    return d->context;
+}
+
+void *QOffscreenX11GLXContext::glxConfig() const
+{
+    return d->config;
 }
 
 QT_END_NAMESPACE

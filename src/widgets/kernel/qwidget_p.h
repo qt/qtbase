@@ -452,10 +452,11 @@ public:
     void scrollChildren(int dx, int dy);
     void moveRect(const QRect &, int dx, int dy);
     void scrollRect(const QRect &, int dx, int dy);
-    void invalidateBuffer_resizeHelper(const QPoint &oldPos, const QSize &oldSize);
-    // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-    void invalidateBuffer(const QRegion &);
-    void invalidateBuffer(const QRect &);
+    void invalidateBackingStore_resizeHelper(const QPoint &oldPos, const QSize &oldSize);
+
+    template <class T>
+    void invalidateBackingStore(const T &);
+
     QRegion overlappedRegion(const QRect &rect, bool breakAfterFirst = false) const;
     void syncBackingStore();
     void syncBackingStore(const QRegion &region);
@@ -484,6 +485,7 @@ public:
     void hide_sys();
     void hide_helper();
     void _q_showIfNotHidden();
+    void setVisible(bool);
 
     void setEnabled_helper(bool);
     static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = 0);
@@ -604,6 +606,11 @@ public:
     inline bool nativeChildrenForced() const
     {
         return extra ? extra->nativeChildrenForced : false;
+    }
+
+    inline QRect effectiveRectFor(const QRegion &region) const
+    {
+        return effectiveRectFor(region.boundingRect());
     }
 
     inline QRect effectiveRectFor(const QRect &rect) const

@@ -44,6 +44,9 @@
 
 #include <qsslcertificate.h>
 #include <qocspresponse.h>
+
+#include <qshareddata.h>
+
 //
 //  W A R N I N G
 //  -------------
@@ -57,16 +60,24 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOcspResponsePrivate
+class QOcspResponsePrivate : public QSharedData
 {
 public:
 
-    OcspCertificateStatus certificateStatus = OcspCertificateStatus::Unknown;
-    OcspRevocationReason revocationReason = OcspRevocationReason::None;
+    QOcspCertificateStatus certificateStatus = QOcspCertificateStatus::Unknown;
+    QOcspRevocationReason revocationReason = QOcspRevocationReason::None;
 
     QSslCertificate signerCert;
     QSslCertificate subjectCert;
 };
+
+inline bool operator==(const QOcspResponsePrivate &lhs, const QOcspResponsePrivate &rhs)
+{
+    return lhs.certificateStatus == rhs.certificateStatus
+            && lhs.revocationReason == rhs.revocationReason
+            && lhs.signerCert == rhs.signerCert
+            && lhs.subjectCert == rhs.subjectCert;
+}
 
 QT_END_NAMESPACE
 

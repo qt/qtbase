@@ -236,9 +236,10 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     if (QFontDatabase().isSmoothlyScalable(text)) {
         icon = &truetype;
     }
-    QSize actualSize = icon->actualSize(r.size());
-
-    icon->paint(painter, r, Qt::AlignLeft|Qt::AlignVCenter);
+    const QSize actualSize = icon->actualSize(r.size());
+    const QRect iconRect = QStyle::alignedRect(option.direction, option.displayAlignment,
+                                               actualSize, r);
+    icon->paint(painter, iconRect, Qt::AlignLeft|Qt::AlignVCenter);
     if (option.direction == Qt::RightToLeft)
         r.setRight(r.right() - actualSize.width() - 4);
     else
@@ -247,6 +248,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     QFont old = painter->font();
     painter->setFont(font);
 
+    const Qt::Alignment textAlign = QStyle::visualAlignment(option.direction, option.displayAlignment);
     // If the ascent of the font is larger than the height of the rect,
     // we will clip the text, so it's better to align the tight bounding rect in this case
     // This is specifically for fonts where the ascent is very large compared to
@@ -254,9 +256,11 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     QFontMetricsF fontMetrics(font);
     if (fontMetrics.ascent() > r.height()) {
         QRectF tbr = fontMetrics.tightBoundingRect(text);
-        painter->drawText(r.x(), r.y() + (r.height() + tbr.height()) / 2.0, text);
+        QRect textRect(r);
+        textRect.setHeight(textRect.height() + (r.height() - tbr.height()));
+        painter->drawText(textRect, Qt::AlignBottom|Qt::TextSingleLine|textAlign, text);
     } else {
-        painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeading|Qt::TextSingleLine, text);
+        painter->drawText(r, Qt::AlignVCenter|Qt::TextSingleLine|textAlign, text);
     }
 
     if (writingSystem != QFontDatabase::Any)
@@ -270,7 +274,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
             r.setRight(r.right() - w);
         else
             r.setLeft(r.left() + w);
-        painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeading|Qt::TextSingleLine, sample);
+        painter->drawText(r, Qt::AlignVCenter|Qt::TextSingleLine|textAlign, sample);
     }
     painter->setFont(old);
 

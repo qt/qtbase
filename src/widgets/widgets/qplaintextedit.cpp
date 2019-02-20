@@ -312,10 +312,11 @@ void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int c
         QTextBlock block = changeStartBlock;
         do {
             block.clearLayout();
-            const int lineCount = block.isVisible() ? 1 : 0;
-            if (block.lineCount() != lineCount) {
+            if (block.isVisible()
+                    ? (block.lineCount() == 0)
+                    : (block.lineCount() > 0)) {
                 blockVisibilityChanged = true;
-                block.setLineCount(lineCount);
+                block.setLineCount(block.isVisible() ? 1 : 0);
             }
             if (block == changeEndBlock)
                 break;

@@ -44,6 +44,7 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qregexp.h>
+#include <QtCore/qvector.h>
 #ifndef QT_NO_SSL
 #   include <QtNetwork/qtcpsocket.h>
 #   include <QtNetwork/qsslerror.h>
@@ -61,7 +62,6 @@ class QSslConfiguration;
 class QSslEllipticCurve;
 class QSslPreSharedKeyAuthenticator;
 class QOcspResponse;
-template<class> class QVector;
 
 class QSslSocketPrivate;
 class Q_NETWORK_EXPORT QSslSocket : public QTcpSocket

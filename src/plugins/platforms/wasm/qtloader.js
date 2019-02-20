@@ -312,13 +312,13 @@ function QtLoader(config)
         // and is ready to be instantiated. Define the instantiateWasm callback which
         // emscripten will call to create the instance.
         Module.instantiateWasm = function(imports, successCallback) {
-            return WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
-                successCallback(instance);
-                return instance;
+            WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
+                successCallback(instance, wasmModule);
             }, function(error) {
                 self.error = error;
                 setStatus("Error");
             });
+            return {};
         };
 
         Module.locateFile = Module.locateFile || function(filename) {
@@ -381,6 +381,8 @@ function QtLoader(config)
                 Module.ENV[key.toUpperCase()] = value;
             }
         });
+
+        Module.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
 
         config.restart = function() {
 

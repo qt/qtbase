@@ -779,7 +779,9 @@ void QDialog::setVisible(bool visible)
             return;
 
         QWidget::setVisible(visible);
+#if QT_DEPRECATED_SINCE(5, 13)
         showExtension(d->doShowExtension);
+#endif
         QWidget *fw = window()->focusWidget();
         if (!fw)
             fw = this;
@@ -946,6 +948,7 @@ void QDialog::adjustPosition(QWidget* w)
     move(p);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -1090,7 +1093,7 @@ void QDialog::showExtension(bool showIt)
 #endif
     }
 }
-
+#endif
 
 /*! \reimp */
 QSize QDialog::sizeHint() const

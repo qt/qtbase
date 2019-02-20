@@ -180,7 +180,7 @@ GradientEditor::GradientEditor(QWidget *parent)
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->setSpacing(1);
-    vbox->setMargin(1);
+    vbox->setContentsMargins(1, 1, 1, 1);
 
     m_red_shade = new ShadeWidget(ShadeWidget::RedShade, this);
     m_green_shade = new ShadeWidget(ShadeWidget::GreenShade, this);

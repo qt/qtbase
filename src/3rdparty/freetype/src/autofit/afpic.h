@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services for autofit module.  */
 /*                                                                         */
-/*  Copyright 2009-2015 by                                                 */
+/*  Copyright 2009-2018 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __AFPIC_H__
-#define __AFPIC_H__
+#ifndef AFPIC_H_
+#define AFPIC_H_
 
 
 #include FT_INTERNAL_PIC_H
@@ -69,7 +69,7 @@ FT_BEGIN_HEADER
 
 
 #define GET_PIC( lib )  \
-          ( (AFModulePIC*)((lib)->pic_container.autofit) )
+          ( (AFModulePIC*)( (lib)->pic_container.autofit ) )
 
 #define AF_SERVICES_GET  \
           ( GET_PIC( library )->af_services )
@@ -99,7 +99,7 @@ FT_END_HEADER
 
  /* */
 
-#endif /* __AFPIC_H__ */
+#endif /* AFPIC_H_ */
 
 
 /* END */

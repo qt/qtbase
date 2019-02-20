@@ -100,7 +100,7 @@ void XbelGenerator::generateItem(const QTreeWidgetItem *item, int depth)
 {
     QString tagName = item->data(0, Qt::UserRole).toString();
     if (tagName == QLatin1String("folder")) {
-        bool folded = !treeWidget->isItemExpanded(item);
+        bool folded = !item->isExpanded();
         out << indent(depth) << "<folder folded=\"" << (folded ? "yes" : "no")
                              << "\">\n"
             << indent(depth + 1) << "<title>" << escapedText(item->text(0))

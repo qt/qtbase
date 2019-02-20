@@ -33,6 +33,7 @@
 #include "qwasmcompositor.h"
 #include "qwasmopenglcontext.h"
 #include "qwasmtheme.h"
+#include "qwasmclipboard.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -55,7 +56,7 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
-void browserBeforeUnload()
+void browserBeforeUnload(emscripten::val)
 {
     QWasmIntegration::QWasmBrowserExit();
 }
@@ -65,17 +66,16 @@ EMSCRIPTEN_BINDINGS(my_module)
     function("browserBeforeUnload", &browserBeforeUnload);
 }
 
-static QWasmIntegration *globalHtml5Integration;
-QWasmIntegration *QWasmIntegration::get() { return globalHtml5Integration; }
+QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
       m_compositor(new QWasmCompositor),
       m_screen(new QWasmScreen(m_compositor)),
-      m_eventDispatcher(nullptr)
+      m_eventDispatcher(nullptr),
+      m_clipboard(new QWasmClipboard)
 {
-
-    globalHtml5Integration = this;
+    s_instance = this;
 
     updateQScreenAndCanvasRenderSize();
     screenAdded(m_screen);
@@ -83,11 +83,8 @@ QWasmIntegration::QWasmIntegration()
 
     m_eventTranslator = new QWasmEventTranslator;
 
-    EM_ASM(// exit app if browser closes
-           window.onbeforeunload = function () {
-           Module.browserBeforeUnload();
-           };
-     );
+    emscripten::val::global("window").set("onbeforeunload", val::module_property("browserBeforeUnload"));
+
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -96,6 +93,7 @@ QWasmIntegration::~QWasmIntegration()
     destroyScreen(m_screen);
     delete m_fontDb;
     delete m_eventTranslator;
+    s_instance = nullptr;
 }
 
 void QWasmIntegration::QWasmBrowserExit()
@@ -187,11 +185,9 @@ int QWasmIntegration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void
 
 static void set_canvas_size(double width, double height)
 {
-    EM_ASM_({
-        var canvas = Module.canvas;
-        canvas.width = $0;
-        canvas.height = $1;
-    }, width, height);
+    emscripten::val canvas = emscripten::val::global("canvas");
+    canvas.set("width", width);
+    canvas.set("height", height);
 }
 
 void QWasmIntegration::updateQScreenAndCanvasRenderSize()
@@ -214,6 +210,13 @@ void QWasmIntegration::updateQScreenAndCanvasRenderSize()
     set_canvas_size(canvasSize.width(), canvasSize.height());
     screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
     QWasmIntegration::get()->m_compositor->redrawWindowContent();
+}
+
+QPlatformClipboard* QWasmIntegration::clipboard() const
+{
+    if (!m_clipboard)
+        m_clipboard = new QWasmClipboard;
+    return m_clipboard;
 }
 
 QT_END_NAMESPACE

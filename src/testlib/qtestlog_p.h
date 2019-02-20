@@ -80,6 +80,8 @@ public:
     static void addXPass(const char *msg, const char *file, int line);
     static void addBPass(const char *msg);
     static void addBFail(const char *msg, const char *file, int line);
+    static void addBXPass(const char *msg, const char *file, int line);
+    static void addBXFail(const char *msg, const char *file, int line);
     static void addSkip(const char *msg, const char *file, int line);
     static void addBenchmarkResult(const QBenchmarkResult &result);
 

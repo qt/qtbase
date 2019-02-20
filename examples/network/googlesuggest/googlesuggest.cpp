@@ -160,7 +160,7 @@ void GSuggestCompletion::showCompletion(const QVector<QString> &choices)
     for (const auto &choice : choices) {
         auto item  = new QTreeWidgetItem(popup);
         item->setText(0, choice);
-        item->setTextColor(0, color);
+        item->setForeground(0, color);
     }
 
     popup->setCurrentItem(popup->topLevelItem(0));
