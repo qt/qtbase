@@ -101,6 +101,10 @@ public:
     void setData(int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace,
                  QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
                  const void *data, const QOpenGLPixelTransferOptions * const options);
+    void setData(int xOffset, int yOffset, int zOffset, int width, int height, int depth,
+                 int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace,
+                 QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
+                 const void *data, const QOpenGLPixelTransferOptions * const options);
     void setCompressedData(int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace,
                            int dataSize, const void *data,
                            const QOpenGLPixelTransferOptions * const options);

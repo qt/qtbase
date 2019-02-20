@@ -1467,6 +1467,122 @@ void QOpenGLTexturePrivate::setData(int mipLevel, int layer, int layerCount, QOp
     }
 }
 
+void QOpenGLTexturePrivate::setData(int xOffset, int yOffset, int zOffset, int width, int height, int depth,
+                                    int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace,
+                                    QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
+                                    const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    switch (target) {
+    case QOpenGLTexture::Target1D:
+        Q_UNUSED(layer);
+        Q_UNUSED(cubeFace);
+        Q_UNUSED(layerCount);
+        Q_UNUSED(yOffset);
+        Q_UNUSED(zOffset);
+        Q_UNUSED(height);
+        Q_UNUSED(depth);
+        texFuncs->glTextureSubImage1D(textureId, target, bindingTarget, mipLevel,
+                                      xOffset, width,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::Target1DArray:
+        Q_UNUSED(cubeFace);
+        Q_UNUSED(yOffset);
+        Q_UNUSED(zOffset);
+        Q_UNUSED(height);
+        Q_UNUSED(depth);
+        texFuncs->glTextureSubImage2D(textureId, target, bindingTarget, mipLevel,
+                                      xOffset, layer,
+                                      width,
+                                      layerCount,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::Target2D:
+        Q_UNUSED(layer);
+        Q_UNUSED(cubeFace);
+        Q_UNUSED(layerCount);
+        Q_UNUSED(zOffset);
+        Q_UNUSED(depth);
+        texFuncs->glTextureSubImage2D(textureId, target, bindingTarget, mipLevel,
+                                      xOffset, yOffset,
+                                      width, height,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::Target2DArray:
+        Q_UNUSED(cubeFace);
+        Q_UNUSED(zOffset);
+        Q_UNUSED(depth);
+        texFuncs->glTextureSubImage3D(textureId, target, bindingTarget, mipLevel,
+                                      xOffset, yOffset, layer,
+                                      width, height, layerCount,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::Target3D:
+        Q_UNUSED(cubeFace);
+        Q_UNUSED(layerCount);
+        texFuncs->glTextureSubImage3D(textureId, target, bindingTarget, mipLevel,
+                                      xOffset, yOffset, zOffset,
+                                      width, height, depth,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::TargetCubeMap:
+        Q_UNUSED(layer);
+        Q_UNUSED(layerCount);
+        Q_UNUSED(zOffset);
+        Q_UNUSED(depth);
+        texFuncs->glTextureSubImage2D(textureId, cubeFace, bindingTarget, mipLevel,
+                                      xOffset, yOffset,
+                                      width, height,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::TargetCubeMapArray: {
+        Q_UNUSED(zOffset);
+        Q_UNUSED(depth);
+        int faceIndex = cubeFace - QOpenGLTexture::CubeMapPositiveX;
+        int layerFace = 6 * layer + faceIndex;
+        texFuncs->glTextureSubImage3D(textureId, target, bindingTarget, mipLevel,
+                                      xOffset, yOffset, layerFace,
+                                      width, height,
+                                      layerCount,
+                                      sourceFormat, sourceType, data, options);
+        break;
+    }
+
+    case QOpenGLTexture::TargetRectangle:
+        Q_UNUSED(mipLevel);
+        Q_UNUSED(layer);
+        Q_UNUSED(cubeFace);
+        Q_UNUSED(layerCount);
+        Q_UNUSED(zOffset);
+        Q_UNUSED(depth);
+        texFuncs->glTextureSubImage2D(textureId, target, bindingTarget, 0,
+                                      xOffset, yOffset,
+                                      width, height,
+                                      sourceFormat, sourceType, data, options);
+        break;
+
+    case QOpenGLTexture::Target2DMultisample:
+    case QOpenGLTexture::Target2DMultisampleArray:
+    case QOpenGLTexture::TargetBuffer:
+        // We don't upload pixel data for these targets
+        qWarning("QOpenGLTexture::setData(): Texture target does not support pixel data upload");
+        break;
+    }
+
+    // If requested perform automatic mip map generation
+    if (mipLevel == 0 && autoGenerateMipMaps && mipLevels > 1) {
+        Q_Q(QOpenGLTexture);
+        q->generateMipMaps();
+    }
+}
+
+
 void QOpenGLTexturePrivate::setCompressedData(int mipLevel, int layer, int layerCount,
                                               QOpenGLTexture::CubeMapFace cubeFace,
                                               int dataSize, const void *data,
@@ -3378,6 +3494,124 @@ void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
     Q_D(QOpenGLTexture);
     Q_ASSERT(d->textureId);
     d->setData(0, 0, 1, QOpenGLTexture::CubeMapPositiveX, sourceFormat, sourceType, data, options);
+}
+
+/*!
+    \since 5.14
+    \overload
+
+    This overload is to be used to update a part of the texture. Parameters \a
+    xOffset, \a yOffset, \a zOffset specify the texel offsets within the
+    texture. Parameters \a width, \a height and \a depth specify the dimensions
+    of the sub image.
+
+    The structure of the pixel data pointed to by \a data is specified by \a
+    sourceFormat and \a sourceType. The pixel data upload can optionally be
+    controlled by \a options.
+*/
+void QOpenGLTexture::setData(int xOffset, int yOffset, int zOffset,
+                             int width, int height, int depth,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(xOffset, yOffset, zOffset,
+               width, height, depth,
+               0, 0, 1,
+               QOpenGLTexture::CubeMapPositiveX, sourceFormat,
+               sourceType, data, options);
+}
+
+/*!
+    \since 5.14
+    \overload
+
+    This overload is to be used to update a part of the texture. Parameters \a
+    xOffset, \a yOffset, \a zOffset specify the texel offsets within the
+    texture. Parameters \a width, \a height and \a depth specify the dimensions
+    of the sub image. The mip map level and layerof the sub image we want to
+    update are specified with \a mipLevel and \a layer.
+
+    The structure of the pixel data pointed to by \a data is specified by \a
+    sourceFormat and \a sourceType. The pixel data upload can optionally be
+    controlled by \a options.
+*/
+void QOpenGLTexture::setData(int xOffset, int yOffset, int zOffset,
+                             int width, int height, int depth,
+                             int mipLevel, int layer,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(xOffset, yOffset, zOffset,
+               width, height, depth,
+               mipLevel, layer, 1,
+               QOpenGLTexture::CubeMapPositiveX, sourceFormat,
+               sourceType, data, options);
+}
+
+/*!
+    \since 5.14
+    \overload
+
+    This overload is to be used to update a part of the texture. Parameters \a
+    xOffset, \a yOffset, \a zOffset specify the texel offsets within the
+    texture. Parameters \a width, \a height and \a depth specify the dimensions
+    of the sub image.The mip map level, layer and cube map face of the sub
+    image we want to update are specified with \a mipLevel, \a layer and \a
+    face.
+
+    The structure of the pixel data pointed to by \a data is specified by \a
+    sourceFormat and \a sourceType. The pixel data upload can optionally be
+    controlled by \a options.
+*/
+void QOpenGLTexture::setData(int xOffset, int yOffset, int zOffset,
+                             int width, int height, int depth,
+                             int mipLevel, int layer,
+                             CubeMapFace face,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(xOffset, yOffset, zOffset,
+               width, height, depth,
+               mipLevel, layer, 1,
+               face, sourceFormat,
+               sourceType, data, options);
+}
+
+/*!
+    \since 5.14
+    \overload
+
+    This overload is to be used to update a part of the texture. Parameters \a
+    xOffset, \a yOffset, \a zOffset specify the texel offsets within the
+    texture. Parameters \a width, \a height and \a depth specify the dimensions
+    of the sub image.The mip map level, starting layer, cube map face and
+    number of layers of the sub image we want to update are specified with \a
+    mipLevel, \a layer, \a face and \a layerCount.
+
+    The structure of the pixel data pointed to by \a data is specified by \a
+    sourceFormat and \a sourceType. The pixel data upload can optionally be
+    controlled by \a options.
+*/
+void QOpenGLTexture::setData(int xOffset, int yOffset, int zOffset,
+                             int width, int height, int depth,
+                             int mipLevel, int layer,
+                             CubeMapFace face, int layerCount,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(xOffset, yOffset, zOffset,
+               width, height, depth,
+               mipLevel, layer, layerCount,
+               face, sourceFormat,
+               sourceType, data, options);
 }
 
 #if QT_DEPRECATED_SINCE(5, 3)
