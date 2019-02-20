@@ -537,6 +537,7 @@ public:
     static QList<QWindowSystemInterface::TouchPoint>
         toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
                             const QWindow *window);
+    static void clearPointIdMap();
 
     static void installWindowSystemEventHandler(QWindowSystemEventHandler *handler);
     static void removeWindowSystemEventhandler(QWindowSystemEventHandler *handler);
