@@ -136,6 +136,9 @@ public:
 
     void emulateMouseMove(const QPointF &point, MousePositionTransition transition);
 
+    void setResizePending();
+    bool resizePending() const;
+
 private:
     void handleExpose();
 

@@ -94,7 +94,6 @@ QT_USE_NAMESPACE
     bool startedQuit;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
-    QWindowList hiddenWindows;
 }
 
 + (instancetype)sharedDelegate
@@ -311,41 +310,6 @@ QT_USE_NAMESPACE
     return NO; // Someday qApp->quitOnLastWindowClosed(); when QApp and NSApp work closer together.
 }
 
-- (void)applicationWillHide:(NSNotification *)notification
-{
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationWillHide:)]) {
-        [reflectionDelegate applicationWillHide:notification];
-    }
-
-    // When the application is hidden Qt will hide the popup windows associated with
-    // it when it has lost the activation for the application. However, when it gets
-    // to this point it believes the popup windows to be hidden already due to the
-    // fact that the application itself is hidden, which will cause a problem when
-    // the application is made visible again.
-    const QWindowList topLevelWindows = QGuiApplication::topLevelWindows();
-    for (QWindow *topLevelWindow : topLevelWindows) {
-        if ((topLevelWindow->type() & Qt::Popup) == Qt::Popup && topLevelWindow->isVisible()) {
-            topLevelWindow->hide();
-
-            if ((topLevelWindow->type() & Qt::Tool) == Qt::Tool)
-                hiddenWindows << topLevelWindow;
-        }
-    }
-}
-
-- (void)applicationDidUnhide:(NSNotification *)notification
-{
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationDidUnhide:)])
-        [reflectionDelegate applicationDidUnhide:notification];
-
-    for (QWindow *window : qAsConst(hiddenWindows))
-        window->show();
-
-    hiddenWindows.clear();
-}
-
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
     if (reflectionDelegate
@@ -353,21 +317,6 @@ QT_USE_NAMESPACE
         [reflectionDelegate applicationDidBecomeActive:notification];
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
-/*
-    onApplicationChangedActivation(true);
-
-    if (!QWidget::mouseGrabber()){
-        // Update enter/leave immidiatly, don't wait for a move event. But only
-        // if no grab exists (even if the grab points to this widget, it seems, ref X11)
-        QPoint qlocal, qglobal;
-        QWidget *widgetUnderMouse = 0;
-        qt_mac_getTargetForMouseEvent(0, QEvent::Enter, qlocal, qglobal, 0, &widgetUnderMouse);
-        QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, 0);
-        qt_last_mouse_receiver = widgetUnderMouse;
-        qt_last_native_mouse_receiver = widgetUnderMouse ?
-            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
-    }
-*/
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification
@@ -377,15 +326,6 @@ QT_USE_NAMESPACE
         [reflectionDelegate applicationDidResignActive:notification];
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
-/*
-    onApplicationChangedActivation(false);
-
-    if (!QWidget::mouseGrabber())
-        QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver);
-    qt_last_mouse_receiver = 0;
-    qt_last_native_mouse_receiver = 0;
-    qt_button_down = 0;
-*/
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag

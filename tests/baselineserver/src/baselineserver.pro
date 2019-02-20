@@ -5,8 +5,7 @@ QT       += core network
 
 TARGET = baselineserver
 DESTDIR = ../bin
-CONFIG   += console
-CONFIG   -= app_bundle
+CONFIG += cmdline
 
 TEMPLATE = app
 

@@ -1,7 +1,6 @@
 TEMPLATE = app
 QT = core network
-mac:CONFIG -= app_bundle
-win32:CONFIG += console
+CONFIG += cmdline
 HEADERS += dnslookup.h
 SOURCES += dnslookup.cpp
 

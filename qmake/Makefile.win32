@@ -13,7 +13,7 @@ QMKSRC = $(SOURCE_PATH)\qmake
 !if "$(QMAKESPEC)" == "win32-icc"
 CXX               = icl
 LINKER            = xilink
-CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11
+CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11 /O3
 !elseif "$(QMAKESPEC)" == "win32-clang-msvc"
 CXX               = clang-cl
 LINKER            = lld-link
@@ -30,7 +30,7 @@ PCH_OBJECT        = qmake_pch.obj
 !endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
-              -W2 -nologo -O1 \
+              -W2 -nologo -O2 \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \

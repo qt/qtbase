@@ -511,6 +511,7 @@ public:
     QWindow *currentPressWindow = nullptr;
     QWindow *currentTargetWindow = nullptr;
     bool firstMouseMove = true;
+    bool resizePending = false;
 };
 
 // To be called from the XAML thread
@@ -1402,6 +1403,18 @@ void QWinRTScreen::emulateMouseMove(const QPointF &point, MousePositionTransitio
                                              Qt::NoModifier);
 }
 
+void QWinRTScreen::setResizePending()
+{
+    Q_D(QWinRTScreen);
+    d->resizePending = true;
+}
+
+bool QWinRTScreen::resizePending() const
+{
+    Q_D(const QWinRTScreen);
+    return d->resizePending;
+}
+
 HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args)
 {
     Q_D(QWinRTScreen);
@@ -1507,7 +1520,7 @@ HRESULT QWinRTScreen::onRedirectReleased(ICorePointerRedirector *, IPointerEvent
     return onPointerUpdated(nullptr, args);
 }
 
-HRESULT QWinRTScreen::onWindowSizeChanged(IApplicationView *, IInspectable *)
+HRESULT QWinRTScreen::onWindowSizeChanged(IApplicationView *w, IInspectable *)
 {
     Q_D(QWinRTScreen);
 
@@ -1527,6 +1540,9 @@ HRESULT QWinRTScreen::onWindowSizeChanged(IApplicationView *, IInspectable *)
     QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     QPlatformScreen::resizeMaximizedWindows();
     handleExpose();
+    // If we "emulate" a resize, w will be nullptr.Checking w shows whether it's a real resize
+    if (w)
+        d->resizePending = false;
     return S_OK;
 }
 

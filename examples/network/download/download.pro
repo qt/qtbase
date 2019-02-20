@@ -1,6 +1,5 @@
 QT = core network
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 
 SOURCES += main.cpp
 

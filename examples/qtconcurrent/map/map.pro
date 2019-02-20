@@ -1,8 +1,7 @@
 TEMPLATE = app
 TARGET = mapdemo
 QT += concurrent
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 
 SOURCES += main.cpp
 

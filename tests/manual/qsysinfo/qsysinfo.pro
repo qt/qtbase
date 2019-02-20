@@ -1,7 +1,6 @@
 QT       = core
 TARGET   = qsysinfo
 TEMPLATE = app
-CONFIG   += console
-CONFIG   -= app_bundle
+CONFIG   += cmdline
 
 SOURCES += main.cpp

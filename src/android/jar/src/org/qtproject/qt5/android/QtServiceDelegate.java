@@ -98,8 +98,8 @@ public class QtServiceDelegate
     private static final String APP_DISPLAY_METRIC_SCREEN_YDPI_KEY = "display.screen.dpi.y";
     private static final String APP_DISPLAY_METRIC_SCREEN_DENSITY_KEY = "display.screen.density";
 
+    private String m_mainLib = null;
     private Service m_service = null;
-    private String m_mainLib;
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
 
@@ -142,9 +142,9 @@ public class QtServiceDelegate
         }
         QtNative.loadQtLibraries(loaderParams.getStringArrayList(NATIVE_LIBRARIES_KEY));
         ArrayList<String> libraries = loaderParams.getStringArrayList(BUNDLED_LIBRARIES_KEY);
-        QtNative.loadBundledLibraries(libraries, QtNativeLibrariesDir.nativeLibrariesDir(m_service));
+        String nativeLibsDir = QtNativeLibrariesDir.nativeLibrariesDir(m_service);
+        QtNative.loadBundledLibraries(libraries, nativeLibsDir);
         m_mainLib = loaderParams.getString(MAIN_LIBRARY_KEY);
-
         m_environmentVariables = loaderParams.getString(ENVIRONMENT_VARIABLES_KEY);
         String additionalEnvironmentVariables = "QT_ANDROID_FONTS_MONOSPACE=Droid Sans Mono;Droid Sans;Droid Sans Fallback"
                                               + "\tQT_ANDROID_FONTS_SERIF=Droid Serif"
@@ -165,7 +165,8 @@ public class QtServiceDelegate
         else
             m_applicationParameters = "";
 
-        return true;
+        m_mainLib = QtNative.loadMainLibrary(m_mainLib, nativeLibsDir);
+        return m_mainLib != null;
     }
 
     public boolean startApplication()
@@ -173,10 +174,7 @@ public class QtServiceDelegate
         // start application
         try {
             String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_service);
-            QtNative.startApplication(m_applicationParameters,
-                    m_environmentVariables,
-                    m_mainLib,
-                    nativeLibraryDir);
+            QtNative.startApplication(m_applicationParameters, m_environmentVariables, m_mainLib);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

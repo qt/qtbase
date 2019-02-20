@@ -168,10 +168,10 @@ public:
     uint processEventsCalled;
     NSModalSession currentModalSessionCached;
     NSModalSession currentModalSession();
-    void updateChildrenWorksWhenModal();
     void temporarilyStopAllModalSessions();
     void beginModalSession(QWindow *widget);
     void endModalSession(QWindow *widget);
+    bool hasModalSession() const;
     void cleanupModalSessions();
 
     void cancelWaitForMoreEvents();

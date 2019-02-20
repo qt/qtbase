@@ -606,11 +606,14 @@ public class QtActivityDelegate
         }
         QtNative.loadQtLibraries(loaderParams.getStringArrayList(NATIVE_LIBRARIES_KEY));
         ArrayList<String> libraries = loaderParams.getStringArrayList(BUNDLED_LIBRARIES_KEY);
-        QtNative.loadBundledLibraries(libraries, QtNativeLibrariesDir.nativeLibrariesDir(m_activity));
+        String nativeLibsDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
+        QtNative.loadBundledLibraries(libraries, nativeLibsDir);
         m_mainLib = loaderParams.getString(MAIN_LIBRARY_KEY);
         // older apps provide the main library as the last bundled library; look for this if the main library isn't provided
-        if (null == m_mainLib && libraries.size() > 0)
+        if (null == m_mainLib && libraries.size() > 0) {
             m_mainLib = libraries.get(libraries.size() - 1);
+            libraries.remove(libraries.size() - 1);
+        }
 
         if (loaderParams.containsKey(EXTRACT_STYLE_KEY)) {
             String path = loaderParams.getString(EXTRACT_STYLE_KEY);
@@ -664,8 +667,8 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return true;
+        m_mainLib = QtNative.loadMainLibrary(m_mainLib, nativeLibsDir);
+        return m_mainLib != null;
     }
 
     public boolean startApplication()
@@ -728,11 +731,7 @@ public class QtActivityDelegate
                 @Override
                 public void run() {
                     try {
-                        String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
-                        QtNative.startApplication(m_applicationParameters,
-                            m_environmentVariables,
-                            m_mainLib,
-                            nativeLibraryDir);
+                        QtNative.startApplication(m_applicationParameters, m_environmentVariables, m_mainLib);
                         m_started = true;
                     } catch (Exception e) {
                         e.printStackTrace();

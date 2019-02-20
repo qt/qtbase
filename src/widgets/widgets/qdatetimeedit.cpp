@@ -1092,6 +1092,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
         d->setSelected(d->currentSectionIndex, true);
         event->ignore();
         emit editingFinished();
+        emit d->edit->returnPressed();
         return;
     default:
 #ifdef QT_KEYPAD_NAVIGATION

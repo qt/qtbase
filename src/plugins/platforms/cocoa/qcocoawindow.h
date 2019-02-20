@@ -253,7 +253,6 @@ public: // for QNSView
 
     bool m_needsInvalidateShadow;
 
-    bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
     QRect m_exposedRect;
     int m_registerTouchCount;
