@@ -75,11 +75,9 @@ set(EGL_DEFINITIONS ${PKG_EGL_CFLAGS_OTHER})
 
 find_path(EGL_INCLUDE_DIR
     NAMES
-        egl.h
+        EGL/egl.h
     HINTS
         ${PKG_EGL_INCLUDE_DIRS}
-    PATH_SUFFIXES
-        EGL
 )
 find_library(EGL_LIBRARY
     NAMES
@@ -95,7 +93,7 @@ if(EGL_INCLUDE_DIR)
     # version; so the header for EGL 1.1 will define EGL_VERSION_1_0 and
     # EGL_VERSION_1_1.  Finding the highest supported version involves
     # finding all these defines and selecting the highest numbered.
-    file(READ "${EGL_INCLUDE_DIR}/egl.h" _EGL_header_contents)
+    file(READ "${EGL_INCLUDE_DIR}/EGL/egl.h" _EGL_header_contents)
     string(REGEX MATCHALL
         "[ \t]EGL_VERSION_[0-9_]+"
         _EGL_version_lines
