@@ -3402,6 +3402,21 @@ void tst_QUrl::effectiveTLDs_data()
     QTest::newRow("yes16") << QUrl::fromEncoded("http://anything.pagespeedmobilizer.com") << ".pagespeedmobilizer.com";
     QTest::newRow("yes17") << QUrl::fromEncoded("http://anything.eu-central-1.compute.amazonaws.com") << ".eu-central-1.compute.amazonaws.com";
     QTest::newRow("yes18") << QUrl::fromEncoded("http://anything.ltd.hk") << ".ltd.hk";
+    QTest::newRow("trentino.it")
+        << QUrl::fromEncoded("http://any.thing.trentino.it") << ".trentino.it";
+    QTest::newRow("net.ni") << QUrl::fromEncoded("http://test.net.ni") << ".net.ni";
+    QTest::newRow("dyn.cosidns.de")
+        << QUrl::fromEncoded("http://test.dyn.cosidns.de") << ".dyn.cosidns.de";
+    QTest::newRow("freeddns.org")
+        << QUrl::fromEncoded("http://test.freeddns.org") << ".freeddns.org";
+    QTest::newRow("app.os.stg.fedoraproject.org")
+        << QUrl::fromEncoded("http://test.app.os.stg.fedoraproject.org")
+        << ".app.os.stg.fedoraproject.org";
+    QTest::newRow("development.run") << QUrl::fromEncoded("http://test.development.run") << ".development.run";
+    QTest::newRow("crafting.xyz") << QUrl::fromEncoded("http://test.crafting.xyz") << ".crafting.xyz";
+    QTest::newRow("nym.ie") << QUrl::fromEncoded("http://shamus.nym.ie") << ".nym.ie";
+    QTest::newRow("vapor.cloud") << QUrl::fromEncoded("http://test.vapor.cloud") << ".vapor.cloud";
+    QTest::newRow("official.academy") << QUrl::fromEncoded("http://acredited.official.academy") << ".official.academy";
 }
 
 void tst_QUrl::effectiveTLDs()
