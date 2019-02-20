@@ -44,7 +44,9 @@ for (cp, COPIES) {
         $${pfx}.output = $$path/${QMAKE_FUNC_FILE_IN_qtStripSrcDir_$$cp}
     }
     $${pfx}.input = $${pfx}.files
-    $${pfx}.commands = $(QINSTALL) ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+    contains(TEMPLATE, "vc.*"): copycommand = $$QMAKE_QMAKE -install qinstall
+    else: copycommand = $(QINSTALL)
+    $${pfx}.commands = $$copycommand ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
     $${pfx}.name = COPY ${QMAKE_FILE_IN}
     $${pfx}.CONFIG = no_link no_clean target_predeps
     QMAKE_EXTRA_COMPILERS += $${pfx}
