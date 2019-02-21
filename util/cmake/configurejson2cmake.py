@@ -616,12 +616,12 @@ def parseTest(ctx, test, data, cm_fh):
         cm_fh.write("# {}\n".format(test))
         if "qmake" in details: # We don't really have many so we can just enumerate them all
             if details["qmake"] == "unix:LIBS += -lpthread":
-                librariesCmakeName = format(test) + "_TEST_LIBRARIES"
+                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
                 cm_fh.write("if (UNIX)\n")
                 cm_fh.write("    set(" + librariesCmakeName + " pthread)\n")
                 cm_fh.write("endif()\n")
             elif details["qmake"] == "linux: LIBS += -lpthread -lrt":
-                librariesCmakeName = format(test) + "_TEST_LIBRARIES"
+                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
                 cm_fh.write("if (LINUX)\n")
                 cm_fh.write("    set(" + librariesCmakeName + " pthread rt)\n")
                 cm_fh.write("endif()\n")
@@ -631,6 +631,15 @@ def parseTest(ctx, test, data, cm_fh):
             else:
                 qmakeFixme = "# FIXME: qmake: {}\n".format(details["qmake"])
 
+        if "use" in data:
+            if data["use"] == "egl xcb_xlib":
+                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
+                cm_fh.write("if (HAVE_EGL AND X11_XCB_FOUND AND X11_FOUND)\n")
+                cm_fh.write("    set(" + librariesCmakeName + " EGL::EGL X11::X11 X11::XCB)\n")
+                cm_fh.write("endif()\n")
+            else:
+                qmakeFixme += "# FIXME: use: {}\n".format(data["use"])
+
         cm_fh.write("qt_config_compile_test({}\n".format(featureName(test)))
         cm_fh.write(lineify("LABEL", data.get("label", "")))
         if librariesCmakeName != "":
@@ -639,8 +648,6 @@ def parseTest(ctx, test, data, cm_fh):
         cm_fh.write('"' + sourceCode + '"')
         if qmakeFixme != "":
             cm_fh.write(qmakeFixme)
-        if "use" in data:
-            cm_fh.write("# FIXME: use: {}\n".format(data["use"]))
         cm_fh.write(")\n\n")
 
     elif data["type"] == "x86Simd":

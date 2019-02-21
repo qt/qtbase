@@ -137,8 +137,13 @@ drmModeAtomicReq *request;
 )
 
 # egl-x11
+if (HAVE_EGL AND X11_XCB_FOUND AND X11_FOUND)
+    set(egl_x11_TEST_LIBRARIES EGL::EGL X11::X11 X11::XCB)
+endif()
 qt_config_compile_test(egl_x11
     LABEL "EGL on X11"
+    LIBRARIES "${egl_x11_TEST_LIBRARIES}"
+    CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
 // has to be disabled in plugins like xcb in this case since the native display,
@@ -162,8 +167,7 @@ XCloseDisplay(dpy);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl xcb_xlib
-)
+")
 
 # egl-brcm
 qt_config_compile_test(egl_brcm

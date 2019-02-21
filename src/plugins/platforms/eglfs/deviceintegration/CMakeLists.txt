@@ -1,7 +1,7 @@
 # Generated from deviceintegration.pro.
 
 if(QT_FEATURE_egl_x11)
-#     TODO #     TODO add_subdirectory(eglfs_x11)
+    add_subdirectory(eglfs_x11)
 endif()
 
 if(QT_FEATURE_eglfs_gbm OR QT_FEATURE_eglfs_egldevice)
