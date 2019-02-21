@@ -1,11 +1,11 @@
 ********* Start testing of tst_float *********
 Config: Using QtTest library
 PASS   : tst_float::initTestCase()
-PASS   : tst_float::doubleComparisons(should PASS 1)
 FAIL!  : tst_float::doubleComparisons(should FAIL 1) Compared doubles are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
+PASS   : tst_float::doubleComparisons(should PASS 1)
 FAIL!  : tst_float::doubleComparisons(should FAIL 2) Compared doubles are not the same (fuzzy compare)
    Actual   (operandLeft) : 1e-07
    Expected (operandRight): 3e-07

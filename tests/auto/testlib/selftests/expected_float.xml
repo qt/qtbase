@@ -10,14 +10,14 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="doubleComparisons">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[should PASS 1]]></DataTag>
-</Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
     <DataTag><![CDATA[should FAIL 1]]></DataTag>
     <Description><![CDATA[Compared doubles are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should PASS 1]]></DataTag>
 </Incident>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
     <DataTag><![CDATA[should FAIL 2]]></DataTag>
