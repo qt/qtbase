@@ -475,6 +475,8 @@ void QTestLog::addBXFail(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
+    ++QTest::blacklists;
+
     QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedXFail, msg, file, line);
 }
 

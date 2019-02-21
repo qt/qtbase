@@ -3,4 +3,5 @@
     <string name="ministro_not_found_msg">Tidak jumpa servis Ministro.\nAplikasi tidak boleh dimulakan.</string>
     <string name="ministro_needed_msg">Aplikasi ini memerlukan servis Ministro. Adakah anda ingin pasang servis itu?</string>
     <string name="fatal_error_msg">Aplikasi anda menemui ralat muat dan tidak boleh diteruskan.</string>
+    <string name="unsupported_android_version">Versi Android ini tidak disokong.</string>
 </resources>

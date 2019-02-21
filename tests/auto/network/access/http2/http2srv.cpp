@@ -431,6 +431,13 @@ void Http2Server::readReady()
     if (connectionError)
         return;
 
+    if (redirectSent) {
+        // We are a "single shot" server, working in 'h2' mode,
+        // responding with a redirect code. Don't bother to handle
+        // anything else now.
+        return;
+    }
+
     if (upgradeProtocol) {
         handleProtocolUpgrade();
     } else if (waitingClientPreface) {
@@ -800,6 +807,13 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
 
     HttpHeader header;
     if (redirectWhileReading) {
+        if (redirectSent) {
+            // This is a "single-shot" server responding with a redirect code.
+            return;
+        }
+
+        redirectSent = true;
+
         qDebug("server received HEADERS frame (followed by DATA frames), redirecting ...");
         Q_ASSERT(targetPort);
         header.push_back({":status", "308"});

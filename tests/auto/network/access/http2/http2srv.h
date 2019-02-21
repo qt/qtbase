@@ -193,6 +193,7 @@ private:
     // Redirect, with status code 308, as soon as we've seen headers, while client
     // may still be sending DATA frames.  See tst_Http2::earlyResponse().
     bool redirectWhileReading = false;
+    bool redirectSent = false;
     quint16 targetPort = 0;
     QAtomicInt interrupted;
 protected slots:
