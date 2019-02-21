@@ -90,6 +90,7 @@ add_qt_plugin(qeglfs
     INCLUDE_DIRECTORIES
         api
     LIBRARIES
+        Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate
         EGL::EGL
     # CONFIG = "egl"
