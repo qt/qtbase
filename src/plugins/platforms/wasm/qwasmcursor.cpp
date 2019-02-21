@@ -53,7 +53,8 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
         htmlCursorName = "auto";
 
     // Set cursor on the main canvas
-    emscripten::val::global("window").set("cursor", emscripten::val(htmlCursorName.constData()));
+    emscripten::val canvasStyle = emscripten::val::module_property("canvas")["style"];
+    canvasStyle.set("cursor", emscripten::val(htmlCursorName.constData()));
 }
 
 QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
