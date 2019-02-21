@@ -276,7 +276,7 @@ if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
                        )
         if ("${readelf_ok}" STREQUAL "0" AND "${readelf_output}" MATCHES "program interpreter: (.*)]")
             set(ELF_INTERPRETER "${CMAKE_MATCH_1}" CACHE INTERNAL "ELF interpreter location")
-        else
+        else()
             set(ELF_INTERPRETER "" CACHE INTERNAL "ELF interpreter location")
         endif()
     endif()
