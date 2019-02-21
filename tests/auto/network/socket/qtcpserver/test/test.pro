@@ -16,3 +16,9 @@ win32 {
 QT = core network testlib
 
 MOC_DIR=tmp
+
+# Only on Linux until cyrus has been added to docker-compose-for-{windows,macOS}.yml and tested
+linux {
+    QT_TEST_SERVER_LIST = danted cyrus squid ftp-proxy
+    include($$dirname(_QMAKE_CONF_)/tests/auto/testserver.pri)
+}
