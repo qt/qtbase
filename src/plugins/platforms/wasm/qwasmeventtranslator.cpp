@@ -831,16 +831,30 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     if (keyType == QEvent::None)
         return 0;
 
+    QFlags<Qt::KeyboardModifier> mods = translateKeyboardEventModifier(keyEvent);
     bool accepted = false;
 
-    if (keyText.isEmpty())
-        keyText = QString(keyEvent->key);
-    if (keyText.size() > 1)
-        keyText.clear();
-     accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-        0, keyType, qtKey, modifiers, keyText);
+    if (keyType == QEvent::KeyPress &&
+            mods.testFlag(Qt::ControlModifier)
+            && qtKey == Qt::Key_V) {
+        QWasmIntegration::get()->getWasmClipboard()->readTextFromClipboard();
+    } else {
+        if (keyText.isEmpty())
+            keyText = QString(keyEvent->key);
+        if (keyText.size() > 1)
+            keyText.clear();
+        accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+                    0, keyType, qtKey, modifiers, keyText);
+    }
+    if (keyType == QEvent::KeyPress &&
+            mods.testFlag(Qt::ControlModifier)
+            && qtKey == Qt::Key_C) {
+        QWasmIntegration::get()->getWasmClipboard()->writeTextToClipboard();
+    }
+
     QWasmEventDispatcher::maintainTimers();
-    return accepted ? 1 : 0;
+
+    return accepted;
 }
 
 QT_END_NAMESPACE
