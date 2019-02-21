@@ -2167,6 +2167,9 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \snippet settings/settings.cpp 15
 
+    Note that type information is not preserved when reading settings from INI
+    files; all values will be returned as QString.
+
     The \l{tools/settingseditor}{Settings Editor} example lets you
     experiment with different settings location and with fallbacks
     turned on or off.
@@ -2448,7 +2451,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
                             On 32-bit Windows or from a 64-bit application on 64-bit Windows,
                             this works the same as specifying NativeFormat.
                             This enum value was added in Qt 5.7.
-    \value IniFormat        Store the settings in INI files.
+    \value IniFormat        Store the settings in INI files. Note that type information
+                            is not preserved when reading settings from INI files;
+                            all values will be returned as QString.
+
     \value InvalidFormat    Special value returned by registerFormat().
     \omitvalue CustomFormat1
     \omitvalue CustomFormat2

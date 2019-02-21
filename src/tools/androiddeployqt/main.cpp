@@ -43,6 +43,15 @@
 #include <QRegExp>
 
 #include <algorithm>
+
+#ifdef Q_CC_MSVC
+#define popen _popen
+#define QT_POPEN_READ "rb"
+#define pclose _pclose
+#else
+#define QT_POPEN_READ "r"
+#endif
+
 static const bool mustReadOutputAnyway = true; // pclose seems to return the wrong error code unless we read the output
 
 void deleteRecursively(const QString &dirName)
@@ -70,7 +79,7 @@ FILE *openProcess(const QString &command)
     QString processedCommand = command;
 #endif
 
-    return popen(processedCommand.toLocal8Bit().constData(), "r");
+    return popen(processedCommand.toLocal8Bit().constData(), QT_POPEN_READ);
 }
 
 struct QtDependency
@@ -1252,7 +1261,7 @@ bool updateStringsXml(const Options &options)
             fprintf(stderr, "Can't open %s for writing.\n", qPrintable(fileName));
             return false;
         }
-        file.write(QByteArray("<?xml version='1.0' encoding='utf-8'?><resources><string name=\"app_name\">")
+        file.write(QByteArray("<?xml version='1.0' encoding='utf-8'?><resources><string name=\"app_name\" translatable=\"false\">")
                    .append(QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1).toLatin1())
                    .append("</string></resources>\n"));
         return true;
@@ -1721,7 +1730,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             .arg(shellQuote(rootPath))
             .arg(importPaths.join(QLatin1Char(' ')));
 
-    FILE *qmlImportScannerCommand = popen(qmlImportScanner.toLocal8Bit().constData(), "r");
+    FILE *qmlImportScannerCommand = popen(qmlImportScanner.toLocal8Bit().constData(), QT_POPEN_READ);
     if (qmlImportScannerCommand == 0) {
         fprintf(stderr, "Couldn't run qmlimportscanner.\n");
         return false;
@@ -2160,7 +2169,7 @@ bool createAndroidProject(const Options &options)
         if (options.verbose)
             fprintf(stdout, "  -- Command: %s\n", qPrintable(androidTool));
 
-        FILE *androidToolCommand = popen(androidTool.toLocal8Bit().constData(), "r");
+        FILE *androidToolCommand = popen(androidTool.toLocal8Bit().constData(), QT_POPEN_READ);
         if (androidToolCommand == 0) {
             fprintf(stderr, "Cannot run command '%s'\n", qPrintable(androidTool));
             return false;
