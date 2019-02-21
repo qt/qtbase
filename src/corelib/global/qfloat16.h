@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: http://www.qt-project.org/legal
 **
@@ -66,6 +67,13 @@ QT_BEGIN_NAMESPACE
 
 class qfloat16
 {
+    struct Wrap
+    {
+        // To let our private constructor work, without other code seeing
+        // ambiguity when constructing from int, double &c.
+        quint16 b16;
+        constexpr inline explicit Wrap(int value) : b16(value) {}
+    };
 public:
     constexpr inline qfloat16() noexcept : b16(0) {}
     inline qfloat16(float f) noexcept;
@@ -75,8 +83,20 @@ public:
     bool isInf() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7c; }
     bool isNaN() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7e; }
     bool isFinite() const noexcept { return ((b16 >> 8) & 0x7c) != 0x7c; }
+    // Support for std::numeric_limits<qfloat16>
+    static constexpr qfloat16 _limit_epsilon()    noexcept { return qfloat16(Wrap(0x1400)); }
+    static constexpr qfloat16 _limit_min()        noexcept { return qfloat16(Wrap(0x400)); }
+    static constexpr qfloat16 _limit_denorm_min() noexcept { return qfloat16(Wrap(1)); }
+    static constexpr qfloat16 _limit_max()        noexcept { return qfloat16(Wrap(0x7bff)); }
+    static constexpr qfloat16 _limit_lowest()     noexcept { return qfloat16(Wrap(0xfbff)); }
+    static constexpr qfloat16 _limit_infinity()   noexcept { return qfloat16(Wrap(0x7c00)); }
+    static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return qfloat16(Wrap(0x7e00)); }
+    // Signalling NaN is 0x7f00
+    inline constexpr bool isNormal() const noexcept
+    { return b16 == 0 || ((b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00); }
 private:
     quint16 b16;
+    constexpr inline explicit qfloat16(Wrap nibble) noexcept : b16(nibble.b16) {}
 
     Q_CORE_EXPORT static const quint32 mantissatable[];
     Q_CORE_EXPORT static const quint32 exponenttable[];
@@ -262,5 +282,56 @@ Q_REQUIRED_RESULT inline bool qFuzzyIsNull(qfloat16 f) noexcept
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(qfloat16)
+
+namespace std {
+template<>
+class numeric_limits<QT_PREPEND_NAMESPACE(qfloat16)> : public numeric_limits<float>
+{
+public:
+    /*
+      Treat quint16 b16 as if it were:
+      uint S: 1; // b16 >> 15 (sign)
+      uint E: 5; // (b16 >> 10) & 0x1f (offset exponent)
+      uint M: 10; // b16 & 0x3ff (adjusted mantissa)
+
+      for E == 0: magnitude is M / 2.^{24}
+      for 0 < E < 31: magnitude is (1. + M / 2.^{10}) * 2.^{E - 15)
+      for E == 31: not finite
+     */
+    static constexpr int digits = 11;
+    static constexpr int min_exponent = -13;
+    static constexpr int max_exponent = 16;
+
+    static constexpr int digits10 = 3;
+    static constexpr int max_digits10 = 5;
+    static constexpr int min_exponent10 = -4;
+    static constexpr int max_exponent10 = 4;
+
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) epsilon()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_epsilon(); }
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) (min)()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_min(); }
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) denorm_min()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_denorm_min(); }
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) (max)()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_max(); }
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) lowest()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_lowest(); }
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) infinity()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_infinity(); }
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) quiet_NaN()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_quiet_NaN(); }
+};
+
+template<> class numeric_limits<const QT_PREPEND_NAMESPACE(qfloat16)>
+    : public numeric_limits<QT_PREPEND_NAMESPACE(qfloat16)> {};
+template<> class numeric_limits<volatile QT_PREPEND_NAMESPACE(qfloat16)>
+    : public numeric_limits<QT_PREPEND_NAMESPACE(qfloat16)> {};
+template<> class numeric_limits<const volatile QT_PREPEND_NAMESPACE(qfloat16)>
+    : public numeric_limits<QT_PREPEND_NAMESPACE(qfloat16)> {};
+
+// Adding overloads to std isn't allowed, so we can't extend this to support
+// for fpclassify(), isnormal() &c. (which, furthermore, are macros on MinGW).
+} // namespace std
 
 #endif // QFLOAT16_H
