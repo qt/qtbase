@@ -187,10 +187,10 @@ public:
     void addPeekFunc(PeekFunc f);
 
     inline xcb_timestamp_t time() const { return m_time; }
-    inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
+    inline void setTime(xcb_timestamp_t t) { if (timeGreaterThan(t, m_time)) m_time = t; }
 
     inline xcb_timestamp_t netWmUserTime() const { return m_netWmUserTime; }
-    inline void setNetWmUserTime(xcb_timestamp_t t) { if (t > m_netWmUserTime) m_netWmUserTime = t; }
+    inline void setNetWmUserTime(xcb_timestamp_t t) { if (timeGreaterThan(t, m_netWmUserTime)) m_netWmUserTime = t; }
 
     xcb_timestamp_t getTimestamp();
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
@@ -264,6 +264,8 @@ private:
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens();
     bool compressEvent(xcb_generic_event_t *event) const;
+    inline bool timeGreaterThan(xcb_timestamp_t a, xcb_timestamp_t b) const
+    { return static_cast<int32_t>(a - b) > 0 || b == XCB_CURRENT_TIME; }
 
 #if QT_CONFIG(xcb_xinput)
     void xi2SetupDevice(void *info, bool removeExisting = true);
