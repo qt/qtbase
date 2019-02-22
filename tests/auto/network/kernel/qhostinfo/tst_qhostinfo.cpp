@@ -179,7 +179,6 @@ void tst_QHostInfo::staticInformation()
 
 void tst_QHostInfo::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     //start the default network
     netConfMan = new QNetworkConfigurationManager(this);
@@ -240,8 +239,6 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-    // Test server lookup
-    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("single_ip4") << "a-single" TEST_DOMAIN << "192.0.2.1" << int(QHostInfo::NoError);
