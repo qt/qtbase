@@ -178,7 +178,7 @@ public:
 #ifndef QT_NO_REGEXP
 #if QT_DEPRECATED_SINCE(5, 13)
     template<typename T>
-    QT_DEPRECATED_X("Use findChildren(const RegularExpression &, ...) instead.")
+    QT_DEPRECATED_X("Use findChildren(const QRegularExpression &, ...) instead.")
     inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;

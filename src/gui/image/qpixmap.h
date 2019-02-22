@@ -95,9 +95,9 @@ public:
 
     void fill(const QColor &fillColor = Qt::white);
 #if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X(" Use QPainter or the fill(QColor)")
+    QT_DEPRECATED_X("Use QPainter or fill(QColor)")
     void fill(const QPaintDevice *device, const QPoint &ofs);
-    QT_DEPRECATED_X(" Use QPainter or the fill(QColor)")
+    QT_DEPRECATED_X("Use QPainter or fill(QColor)")
     void fill(const QPaintDevice *device, int xofs, int yofs);
 #endif
 
