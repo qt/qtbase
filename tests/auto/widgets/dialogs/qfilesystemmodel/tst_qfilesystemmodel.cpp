@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 
+#include <emulationdetector.h>
 #include <QtTest/QtTest>
 #ifdef QT_BUILD_INTERNAL
 #include <private/qfilesystemmodel_p.h>
@@ -787,6 +788,9 @@ void tst_QFileSystemModel::sort()
 
     MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();
     QTreeView *tree = new QTreeView();
+
+    if (fileDialogMode && EmulationDetector::isRunningArmOnX86())
+        QSKIP("Crashes in QEMU. QTBUG-70572");
 
 #ifdef QT_BUILD_INTERNAL
     if (fileDialogMode)

@@ -206,6 +206,9 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     // by explicitly setting the presentation option to the magic 'default value',
     // which will resolve to an actual value and result in screen invalidation.
     cocoaApplication.presentationOptions = NSApplicationPresentationDefault;
+
+    m_screensObserver = QMacScopedObserver([NSApplication sharedApplication],
+        NSApplicationDidChangeScreenParametersNotification, [&]() { updateScreens(); });
     updateScreens();
 
     QMacInternalPasteboardMime::initializeMimeTypes();

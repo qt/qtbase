@@ -2613,8 +2613,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     is returned. If no such feature exists the return value is
     undefined.
 
-    If \a ok is not 0: \c{*}\a{ok}  is set to true if the reader has the
-    feature called \a name; otherwise \c{*}\a{ok} is set to false.
+    If \a ok is not \nullptr: \c{*}\a{ok}  is set to true if the
+    reader has the feature called \a name; otherwise \c{*}\a{ok} is
+    set to false.
 
     \sa setFeature(), hasFeature()
 */
@@ -2643,7 +2644,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     If the reader has the property \a name, this function returns the
     value of the property; otherwise the return value is undefined.
 
-    If \a ok is not 0: if the reader has the \a name property
+    If \a ok is not \nullptr: if the reader has the \a name property
     \c{*}\a{ok} is set to true; otherwise \c{*}\a{ok} is set to false.
 
     \sa setProperty(), hasProperty()

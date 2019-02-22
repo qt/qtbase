@@ -48,6 +48,7 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 
+#include <QFile>
 #include <QMetaType>
 #include <QMimeType>
 #include <QMimeDatabase>
@@ -181,10 +182,10 @@ void QXdgDesktopPortalFileDialog::openPortal()
 
     if (d->saveFile) {
         if (!d->directory.isEmpty())
-            options.insert(QLatin1String("current_folder"), d->directory.toLatin1().append('\0'));
+            options.insert(QLatin1String("current_folder"), QFile::encodeName(d->directory).append('\0'));
 
         if (!d->selectedFiles.isEmpty())
-            options.insert(QLatin1String("current_file"), d->selectedFiles.first().toLatin1().append('\0'));
+            options.insert(QLatin1String("current_file"), QFile::encodeName(d->selectedFiles.first()).append('\0'));
     }
 
     // Insert filters

@@ -102,9 +102,9 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs a QUndoCommand object with the given \a parent and \a text.
 
-    If \a parent is not 0, this command is appended to parent's child list.
-    The parent command then owns this command and will delete it in its
-    destructor.
+    If \a parent is not \nullptr, this command is appended to parent's
+    child list. The parent command then owns this command and will delete
+    it in its destructor.
 
     \sa ~QUndoCommand()
 */
@@ -118,9 +118,9 @@ QUndoCommand::QUndoCommand(const QString &text, QUndoCommand *parent)
 /*!
     Constructs a QUndoCommand object with parent \a parent.
 
-    If \a parent is not 0, this command is appended to parent's child list.
-    The parent command then owns this command and will delete it in its
-    destructor.
+    If \a parent is not \nullptr, this command is appended to parent's
+    child list. The parent command then owns this command and will delete
+    it in its destructor.
 
     \sa ~QUndoCommand()
 */

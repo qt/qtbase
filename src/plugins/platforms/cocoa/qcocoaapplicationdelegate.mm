@@ -94,7 +94,6 @@ QT_USE_NAMESPACE
     bool startedQuit;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
-    QWindowList hiddenWindows;
 }
 
 + (instancetype)sharedDelegate
@@ -116,20 +115,8 @@ QT_USE_NAMESPACE
     self = [super init];
     if (self) {
         inLaunch = true;
-        [[NSNotificationCenter defaultCenter]
-                addObserver:self
-                   selector:@selector(updateScreens:)
-                       name:NSApplicationDidChangeScreenParametersNotification
-                     object:NSApp];
     }
     return self;
-}
-
-- (void)updateScreens:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-    if (QCocoaIntegration *ci = QCocoaIntegration::instance())
-        ci->updateScreens();
 }
 
 - (void)dealloc
@@ -309,41 +296,6 @@ QT_USE_NAMESPACE
                             @selector(applicationShouldTerminateAfterLastWindowClosed:)])
         return [reflectionDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
     return NO; // Someday qApp->quitOnLastWindowClosed(); when QApp and NSApp work closer together.
-}
-
-- (void)applicationWillHide:(NSNotification *)notification
-{
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationWillHide:)]) {
-        [reflectionDelegate applicationWillHide:notification];
-    }
-
-    // When the application is hidden Qt will hide the popup windows associated with
-    // it when it has lost the activation for the application. However, when it gets
-    // to this point it believes the popup windows to be hidden already due to the
-    // fact that the application itself is hidden, which will cause a problem when
-    // the application is made visible again.
-    const QWindowList topLevelWindows = QGuiApplication::topLevelWindows();
-    for (QWindow *topLevelWindow : topLevelWindows) {
-        if ((topLevelWindow->type() & Qt::Popup) == Qt::Popup && topLevelWindow->isVisible()) {
-            topLevelWindow->hide();
-
-            if ((topLevelWindow->type() & Qt::Tool) == Qt::Tool)
-                hiddenWindows << topLevelWindow;
-        }
-    }
-}
-
-- (void)applicationDidUnhide:(NSNotification *)notification
-{
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationDidUnhide:)])
-        [reflectionDelegate applicationDidUnhide:notification];
-
-    for (QWindow *window : qAsConst(hiddenWindows))
-        window->show();
-
-    hiddenWindows.clear();
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification

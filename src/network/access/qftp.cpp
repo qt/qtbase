@@ -1826,8 +1826,8 @@ int QFtp::cd(const QString &dir)
     is data available to read. You can then read the data with the
     read() or readAll() functions.
 
-    If \a dev is not 0, the data is written directly to the device \a
-    dev. Make sure that the \a dev pointer is valid for the duration
+    If \a dev is not \nullptr, the data is written directly to the device
+    \a dev. Make sure that the \a dev pointer is valid for the duration
     of the operation (it is safe to delete it when the
     commandFinished() signal is emitted). In this case the readyRead()
     signal is \e not emitted and you cannot read data with the

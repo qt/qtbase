@@ -1022,8 +1022,8 @@ void QFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metr
     Returns \c true if the font table idetified by \a tag exists in the font;
     returns \c false otherwise.
 
-    If \a buffer is NULL, stores the size of the buffer required for the font table data,
-    in bytes, in \a length. If \a buffer is not NULL and the capacity
+    If \a buffer is \nullptr, stores the size of the buffer required for the font table data,
+    in bytes, in \a length. If \a buffer is not \nullptr and the capacity
     of the buffer, passed in \a length, is sufficient to store the font table data,
     also copies the font table data to \a buffer.
 

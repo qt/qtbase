@@ -1640,15 +1640,14 @@ void tst_QUdpSocket::linkLocalIPv6()
         sockets << s;
     }
 
-    QUdpSocket neutral;
-    QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv6)));
-    QSignalSpy neutralReadSpy(&neutral, SIGNAL(readyRead()));
-
     QByteArray testData("hello");
     foreach (QUdpSocket *s, sockets) {
+        QUdpSocket neutral;
+        QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv6)));
+        QSignalSpy neutralReadSpy(&neutral, SIGNAL(readyRead()));
+
         QSignalSpy spy(s, SIGNAL(readyRead()));
 
-        neutralReadSpy.clear();
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QTRY_VERIFY(neutralReadSpy.count() > 0); //note may need to accept a firewall prompt
 

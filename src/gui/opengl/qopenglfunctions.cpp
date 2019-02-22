@@ -206,7 +206,8 @@ QOpenGLFunctions::QOpenGLFunctions()
 
 /*!
     Constructs a function resolver for \a context.  If \a context
-    is null, then the resolver will be created for the current QOpenGLContext.
+    is \nullptr, then the resolver will be created for the current
+    QOpenGLContext.
 
     The context or another context in the group must be current.
 
@@ -5035,8 +5036,8 @@ QOpenGLExtraFunctions::QOpenGLExtraFunctions()
 }
 
 /*!
-    Constructs a function resolver for context. If \a context is null, then
-    the resolver will be created for the current QOpenGLContext.
+    Constructs a function resolver for context. If \a context is \nullptr,
+    then the resolver will be created for the current QOpenGLContext.
 
     The context or another context in the group must be current.
 

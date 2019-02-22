@@ -2129,8 +2129,8 @@ QString QFileDialog::labelText(DialogLabel label) const
     \snippet code/src_gui_dialogs_qfiledialog.cpp 8
 
     The function creates a modal file dialog with the given \a parent widget.
-    If \a parent is not 0, the dialog will be shown centered over the parent
-    widget.
+    If \a parent is not \nullptr, the dialog will be shown centered over the
+    parent widget.
 
     The file dialog's working directory will be set to \a dir. If \a dir
     includes a file name, the file will be selected. Only files that match the
@@ -2152,8 +2152,8 @@ QString QFileDialog::labelText(DialogLabel label) const
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
-    dispatch any QTimers, and if \a parent is not 0 then it will position the
-    dialog just below the parent's title bar.
+    dispatch any QTimers, and if \a parent is not \nullptr then it will position
+    the dialog just below the parent's title bar.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
     follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
@@ -2242,8 +2242,8 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     \snippet code/src_gui_dialogs_qfiledialog.cpp 9
 
     This function creates a modal file dialog with the given \a parent widget.
-    If \a parent is not 0, the dialog will be shown centered over the parent
-    widget.
+    If \a parent is not \nullptr, the dialog will be shown centered over the
+    parent widget.
 
     The file dialog's working directory will be set to \a dir. If \a dir
     includes a file name, the file will be selected. The filter is set to
@@ -2261,8 +2261,8 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
-    dispatch any QTimers, and if \a parent is not 0 then it will position the
-    dialog just below the parent's title bar.
+    dispatch any QTimers, and if \a parent is not \nullptr then it will position
+    the dialog just below the parent's title bar.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
     follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
@@ -2434,8 +2434,8 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
     by the user. The file does not have to exist.
 
     It creates a modal file dialog with the given \a parent widget. If
-    \a parent is not 0, the dialog will be shown centered over the parent
-    widget.
+    \a parent is not \nullptr, the dialog will be shown centered over the
+    parent widget.
 
     \snippet code/src_gui_dialogs_qfiledialog.cpp 11
 
@@ -2461,9 +2461,9 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
-    dispatch any QTimers, and if \a parent is not 0 then it will position the
-    dialog just below the parent's title bar. On \macos, with its native file
-    dialog, the filter argument is ignored.
+    dispatch any QTimers, and if \a parent is not \nullptr then it will
+    position the  dialog just below the parent's title bar. On \macos, with its
+    native file dialog, the filter argument is ignored.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
     follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
@@ -2553,8 +2553,8 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     \snippet code/src_gui_dialogs_qfiledialog.cpp 12
 
     This function creates a modal file dialog with the given \a parent widget.
-    If \a parent is not 0, the dialog will be shown centered over the parent
-    widget.
+    If \a parent is not \nullptr, the dialog will be shown centered over the
+    parent widget.
 
     The dialog's working directory is set to \a dir, and the caption is set to
     \a caption. Either of these may be an empty string in which case the
@@ -2578,8 +2578,8 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     symlinks as regular directories.
 
     On Windows, the dialog will spin a blocking modal event loop that will not
-    dispatch any QTimers, and if \a parent is not 0 then it will position the
-    dialog just below the parent's title bar.
+    dispatch any QTimers, and if \a parent is not \nullptr then it will position
+    the dialog just below the parent's title bar.
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the

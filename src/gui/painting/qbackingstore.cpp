@@ -208,7 +208,7 @@ static bool isRasterSurface(QWindow *window)
 
     The \a window must either be the top level window represented by
     this backingstore, or a non-transient child of that window. Passing
-    \c nullptr falls back to using the backingstore's top level window.
+    \nullptr falls back to using the backingstore's top level window.
 
     If the \a window is a child window, the \a region should be in child window
     coordinates, and the \a offset should be the child window's offset in relation

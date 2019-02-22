@@ -53,7 +53,7 @@
 
 extern "C" {
 
-// Equivalent to dbus-arch-deps.h
+// Equivalent to dbus-arch-deps.h (generated from dbus-arch-deps.h.in)
 typedef qint64 dbus_int64_t;
 typedef quint64 dbus_uint64_t;
 typedef qint32 dbus_int32_t;
@@ -78,7 +78,7 @@ struct DBusWatch;
 // which carry the following copyright:
 /*
  * Copyright (C) 2002, 2003  CodeFactory AB
- * Copyright (C) 2004, 2005 Red Hat, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2005 Red Hat, Inc.
  *
  * Licensed under the Academic Free License version 2.1
  *
@@ -103,6 +103,20 @@ typedef dbus_uint32_t  dbus_unichar_t;
 typedef dbus_uint32_t  dbus_bool_t;
 
 /* dbus-shared.h */
+typedef enum
+{
+  DBUS_BUS_SESSION,    /**< The login session bus */
+  DBUS_BUS_SYSTEM,     /**< The systemwide bus */
+  DBUS_BUS_STARTER     /**< The bus that started us, if any */
+} DBusBusType;
+
+typedef enum
+{
+  DBUS_HANDLER_RESULT_HANDLED,         /**< Message has had its effect - no need to run more handlers. */
+  DBUS_HANDLER_RESULT_NOT_YET_HANDLED, /**< Message has not had any effect - see if other handlers want it. */
+  DBUS_HANDLER_RESULT_NEED_MEMORY      /**< Need more memory in order to return #DBUS_HANDLER_RESULT_HANDLED or #DBUS_HANDLER_RESULT_NOT_YET_HANDLED. Please try again later with more memory. */
+} DBusHandlerResult;
+
 #define DBUS_SERVICE_DBUS      "org.freedesktop.DBus"
 #define DBUS_PATH_DBUS  "/org/freedesktop/DBus"
 #define DBUS_PATH_LOCAL "/org/freedesktop/DBus/Local"
@@ -123,20 +137,6 @@ typedef dbus_uint32_t  dbus_bool_t;
 #define DBUS_RELEASE_NAME_REPLY_RELEASED        1 /**< Service was released from the given name */
 #define DBUS_RELEASE_NAME_REPLY_NON_EXISTENT    2 /**< The given name does not exist on the bus */
 #define DBUS_RELEASE_NAME_REPLY_NOT_OWNER       3 /**< Service is not an owner of the given name */
-
-typedef enum
-{
-  DBUS_BUS_SESSION,    /**< The login session bus */
-  DBUS_BUS_SYSTEM,     /**< The systemwide bus */
-  DBUS_BUS_STARTER     /**< The bus that started us, if any */
-} DBusBusType;
-
-typedef enum
-{
-  DBUS_HANDLER_RESULT_HANDLED,         /**< Message has had its effect - no need to run more handlers. */
-  DBUS_HANDLER_RESULT_NOT_YET_HANDLED, /**< Message has not had any effect - see if other handlers want it. */
-  DBUS_HANDLER_RESULT_NEED_MEMORY      /**< Need more memory in order to return #DBUS_HANDLER_RESULT_HANDLED or #DBUS_HANDLER_RESULT_NOT_YET_HANDLED. Please try again later with more memory. */
-} DBusHandlerResult;
 
 /* dbus-memory.h */
 typedef void (* DBusFreeFunction) (void *memory);

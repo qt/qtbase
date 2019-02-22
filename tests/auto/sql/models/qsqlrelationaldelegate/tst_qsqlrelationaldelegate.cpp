@@ -158,12 +158,13 @@ void tst_QSqlRelationalDelegate::comboBoxEditor()
     QTest::keyClick(editor, Qt::Key_Down);
     QTest::keyClick(editor, Qt::Key_Enter);
     QCOMPARE(editor->currentText(), "mister");
+    QTest::keyClick(tv.viewport(), Qt::Key_Tab);
     QVERIFY_SQL(model, submitAll());
 
     QSqlQuery qry(db);
     QVERIFY_SQL(qry, exec("SELECT title_key FROM " + reltest1 + " WHERE id=1"));
     QVERIFY(qry.next());
-    QCOMPARE(qry.value(0).toString(), "mister");
+    QCOMPARE(qry.value(0).toString(), "2");
 }
 
 QTEST_MAIN(tst_QSqlRelationalDelegate)
