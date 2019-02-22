@@ -197,6 +197,11 @@
         return NO;
     if ([self isTransparentForUserInput])
         return NO;
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint: &windowPoint andScreenPoint: &screenPoint];
+    if (!qt_window_private(m_platformWindow->window())->allowClickThrough(screenPoint.toPoint()))
+        return NO;
     return YES;
 }
 

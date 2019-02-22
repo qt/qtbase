@@ -164,6 +164,8 @@ public:
 
     static Qt::WindowState effectiveState(Qt::WindowStates);
 
+    virtual bool allowClickThrough(const QPoint &) const { return true; }
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;

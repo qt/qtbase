@@ -106,6 +106,7 @@ public:
         if (QWidget *widget = q->widget())
             QWidgetPrivate::get(widget)->updateContentsRect();
     }
+    bool allowClickThrough(const QPoint &) const override;
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -219,6 +220,12 @@ static inline bool shouldBePropagatedToWidget(QEvent *event)
     default:
         return true;
     }
+}
+
+bool QWidgetWindowPrivate::allowClickThrough(const QPoint &globalPos) const
+{
+    QWidget *w = QApplication::widgetAt(globalPos);
+    return w && !w->testAttribute(Qt::WA_MacNoClickThrough);
 }
 
 bool QWidgetWindow::event(QEvent *event)
