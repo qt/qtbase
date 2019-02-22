@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the utils of the Qt Toolkit.
@@ -28,33 +28,66 @@
 
 #include <QtCore>
 
+const QString quadQuote = QStringLiteral("\"\""); // Closes one string, opens a new one.
+
 static QString utf8encode(const QByteArray &array) // turns e.g. tranøy.no to tran\xc3\xb8y.no
 {
     QString result;
     result.reserve(array.length() + array.length() / 3);
+    bool wasHex = false;
     for (int i = 0; i < array.length(); ++i) {
         char c = array.at(i);
         // if char is non-ascii, escape it
         if (c < 0x20 || uchar(c) >= 0x7f) {
             result += "\\x" + QString::number(uchar(c), 16);
+            wasHex = true;
         } else {
             // if previous char was escaped, we need to make sure the next char is not
             // interpreted as part of the hex value, e.g. "äc.com" -> "\xabc.com"; this
             // should be "\xab""c.com"
-            QRegExp hexEscape("\\\\x[a-fA-F0-9][a-fA-F0-9]$");
             bool isHexChar = ((c >= '0' && c <= '9') ||
-                             (c >= 'a' && c <= 'f') ||
-                             (c >= 'A' && c <= 'F'));
-            if (result.contains(hexEscape) && isHexChar)
-                result += "\"\"";
+                              (c >= 'a' && c <= 'f') ||
+                              (c >= 'A' && c <= 'F'));
+            if (wasHex && isHexChar)
+                result += quadQuote;
             result += c;
+            wasHex = false;
         }
     }
     return result;
 }
 
-int main(int argc, char **argv) {
+/*
+    Digest public suffix data into efficiently-searchable form.
 
+    Takes the public suffix list (see usage message), a list of DNS domains
+    whose child domains should not be presumed to trust one another, and
+    converts it to a form that lets qtbase/src/corelib/io/qtldurl.cpp's query
+    functions find entries efficiently.
+
+    Each line of the suffix file (aside from comments and blanks) gives a suffix
+    (starting with a dot) with an optional prefix of '*' (to include every
+    immediate child) or of '!'  (to exclude the suffix, e.g. from a '*' line for
+    a tail of it).  A line with neither of these prefixes is an exact match.
+
+    Each line is hashed and the hash is reduced modulo the number of lines
+    (tldCount); lines are grouped by reduced hash and separated by '\0' bytes
+    within each group. Conceptually, the groups are then emitted to a single
+    huge string, along with a table (tldIndices[tldCount]) of indices into that
+    string of the starts of the the various groups.
+
+    However, that huge string would exceed the 64k limit at least one compiler
+    imposes on a single string literal, so we actually split up the huge string
+    into an array of chunks, each less than 64k in size. Each group is written
+    to a single chunk (so we start a new chunk if the next group would take the
+    present chunk over the limit). There are tldChunkCount chunks; their lengths
+    are saved in tldChunks[tldChunkCount]; the chunks themselves in
+    tldData[tldChunkCount]. See qtldurl.cpp's containsTLDEntry() for how to
+    search for a string in the resulting data.
+*/
+
+int main(int argc, char **argv)
+{
     QCoreApplication app(argc, argv);
     if (argc < 3) {
         printf("\nusage: %s inputFile outputFile\n\n", argv[0]);
@@ -68,14 +101,20 @@ int main(int argc, char **argv) {
         exit(1);
     }
     QFile file(argv[1]);
+    if (!file.open(QIODevice::ReadOnly)) {
+        fprintf("Failed to open input file (%s); see %s -usage", argv[1], argv[0]);
+        return 1;
+    }
+
     QFile outFile(argv[2]);
-    file.open(QIODevice::ReadOnly);
-    outFile.open(QIODevice::WriteOnly);
+    if (!outFile.open(QIODevice::WriteOnly)) {
+        file.close()
+        fprintf("Failed to open output file (%s); see %s -usage", argv[2], argv[0]);
+        return 1;
+    }
 
-    QByteArray outIndicesBufferBA;
-    QBuffer outIndicesBuffer(&outIndicesBufferBA);
-    outIndicesBuffer.open(QIODevice::WriteOnly);
-
+    // Write tldData[] and tldIndices[] in one scan of the (input) file, but
+    // buffer tldData[] so we don'te interleave them in the outFile.
     QByteArray outDataBufferBA;
     QBuffer outDataBuffer(&outDataBufferBA);
     outDataBuffer.open(QIODevice::WriteOnly);
@@ -85,75 +124,65 @@ int main(int argc, char **argv) {
         file.readLine();
         lineCount++;
     }
+    outFile.write("static const quint16 tldCount = ");
+    outFile.write(QByteArray::number(lineCount));
+    outFile.write(";\n");
+
     file.reset();
     QVector<QString> strings(lineCount);
     while (!file.atEnd()) {
-        QString s = QString::fromUtf8(file.readLine());
-        QString st = s.trimmed();
+        QString st = QString::fromUtf8(file.readLine()).trimmed();
         int num = qt_hash(st) % lineCount;
+        QString &entry = strings[num];
+        st = utf8encode(st.toUtf8());
 
-        QString utf8String = utf8encode(st.toUtf8());
+        // For domain 1.com, we could get something like a.com\01.com, which
+        // would be misinterpreted as octal 01, so we need to separate such
+        // strings with quotes:
+        if (!entry.isEmpty() && st.at(0).isDigit())
+            entry.append(quadQuote);
 
-        // for domain 1.com, we could get something like
-        // a.com\01.com, which would be interpreted as octal 01,
-        // so we need to separate those strings with quotes
-        QRegExp regexpOctalEscape(QLatin1String("^[0-9]"));
-        if (!strings.at(num).isEmpty() && st.contains(regexpOctalEscape))
-            strings[num].append("\"\"");
-
-        strings[num].append(utf8String);
-        strings[num].append("\\0");
+        entry.append(st);
+        entry.append("\\0");
     }
-
-    outIndicesBuffer.write("static const quint16 tldCount = ");
-    outIndicesBuffer.write(QByteArray::number(lineCount));
-    outIndicesBuffer.write(";\n");
-    outIndicesBuffer.write("static const quint32 tldIndices[");
-//    outIndicesBuffer.write(QByteArray::number(lineCount+1)); // not needed
-    outIndicesBuffer.write("] = {\n");
+    outFile.write("static const quint32 tldIndices[] = {\n");
+    outDataBuffer.write("\nstatic const char *tldData[] = {\n");
 
     int totalUtf8Size = 0;
     int chunkSize = 0; // strlen of the current chunk (sizeof is bigger by 1)
-    int stringUtf8Size = 0;
     QStringList chunks;
     for (int a = 0; a < lineCount; a++) {
-        bool lineIsEmpty = strings.at(a).isEmpty();
-        if (!lineIsEmpty) {
-            strings[a].prepend("\"");
-            strings[a].append("\"");
-        }
-        int zeroCount = strings.at(a).count(QLatin1String("\\0"));
-        int utf8CharsCount = strings.at(a).count(QLatin1String("\\x"));
-        int quoteCount = strings.at(a).count('"');
-        stringUtf8Size = strings.at(a).count() - (zeroCount + quoteCount + utf8CharsCount * 3);
-        chunkSize += stringUtf8Size;
-        // MSVC 2015 chokes if sizeof(a single string) > 0xffff
-        if (chunkSize >= 0xffff) {
-            static int chunkCount = 0;
-            qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
-            outDataBuffer.write(",\n\n");
-            chunks.append(QByteArray::number(totalUtf8Size));
-            chunkSize = 0;
-        }
-        outDataBuffer.write(strings.at(a).toUtf8());
-        if (!lineIsEmpty)
-            outDataBuffer.write("\n");
-        outIndicesBuffer.write(QByteArray::number(totalUtf8Size));
-        outIndicesBuffer.write(",\n");
-        totalUtf8Size += stringUtf8Size;
-    }
-    chunks.append(QByteArray::number(totalUtf8Size));
-    outIndicesBuffer.write(QByteArray::number(totalUtf8Size));
-    outIndicesBuffer.write("};\n");
-    outIndicesBuffer.close();
-    outFile.write(outIndicesBufferBA);
+        outFile.write(QByteArray::number(totalUtf8Size));
+        outFile.write(",\n");
+        const QString &entry = strings.at(a);
+        if (!entry.isEmpty()) {
+            const int zeroCount = entry.count(QLatin1String("\\0"));
+            const int utf8CharsCount = entry.count(QLatin1String("\\x"));
+            const int quoteCount = entry.count('"');
+            const int stringUtf8Size = entry.count() - (zeroCount + quoteCount + utf8CharsCount * 3);
+            chunkSize += stringUtf8Size;
+            // MSVC 2015 chokes if sizeof(a single string) > 0xffff
+            if (chunkSize >= 0xffff) {
+                static int chunkCount = 0;
+                qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
+                outDataBuffer.write(",\n\n");
+                chunks.append(QString::number(totalUtf8Size));
+                chunkSize = 0;
+            }
+            totalUtf8Size += stringUtf8Size;
 
-    outDataBuffer.close();
-    outFile.write("\nstatic const char *tldData[");
-//    outFile.write(QByteArray::number(charSize)); // not needed
-    outFile.write("] = {\n");
-    outFile.write(outDataBufferBA);
+            outDataBuffer.write("\"");
+            outDataBuffer.write(entry.toUtf8());
+            outDataBuffer.write("\"\n");
+        }
+    }
+    chunks.append(QString::number(totalUtf8Size));
+    outFile.write(QByteArray::number(totalUtf8Size));
     outFile.write("};\n");
+
+    outDataBuffer.write("};\n");
+    outDataBuffer.close();
+    outFile.write(outDataBufferBA);
 
     // write chunk information
     outFile.write("\nstatic const quint16 tldChunkCount = ");
@@ -162,6 +191,6 @@ int main(int argc, char **argv) {
     outFile.write(chunks.join(", ").toLatin1());
     outFile.write("};\n");
     outFile.close();
-    printf("data generated to %s . Now copy the data from this file to src/corelib/io/qurltlds_p.h in your Qt repo\n", argv[2]);
-    exit(0);
+    printf("Data generated to %s - now revise qtbase/src/corelib/io/qurltlds_p.h to use this data.\n", argv[2]);
+    return 0;
 }
