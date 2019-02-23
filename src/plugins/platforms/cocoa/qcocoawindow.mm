@@ -401,6 +401,11 @@ void QCocoaWindow::setVisible(bool visible)
                 }
             }
 
+            // Note: We do not guard the order out by checking NSWindow.visible, as AppKit will
+            // in some cases, such as when hiding the application, order out and make a window
+            // invisible, but keep it in a list of "hidden windows", that it then restores again
+            // when the application is unhidden. We need to call orderOut explicitly, to bring
+            // the window out of this "hidden list".
             [m_view.window orderOut:nil];
 
             if (m_view.window == [NSApp keyWindow] && !eventDispatcher()->hasModalSession()) {
@@ -1540,7 +1545,8 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         // Deferring window creation breaks OpenGL (the GL context is
         // set up before the window is shown and needs a proper window)
         backing:NSBackingStoreBuffered defer:NO
-        screen:cocoaScreen->nativeScreen()];
+        screen:cocoaScreen->nativeScreen()
+        platformWindow:this];
 
     Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
         "Resulting NSScreen should match the requested NSScreen");

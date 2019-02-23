@@ -136,7 +136,7 @@ QSslDiffieHellmanParameters QSslDiffieHellmanParameters::fromEncoded(const QByte
     to check whether the Diffie-Hellman parameters were valid
     and loaded correctly.
 
-    In particular, if \a device is \c nullptr or not open for reading, an invalid
+    In particular, if \a device is \nullptr or not open for reading, an invalid
     object will be returned.
 
     \sa isValid()

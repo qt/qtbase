@@ -3,4 +3,5 @@
     <string name="ministro_not_found_msg">De Ministro service is niet gevonden.\nDe applicatie kan niet starten.</string>
     <string name="ministro_needed_msg">Deze applicatie maakt gebruik van de Ministro service. Wilt u deze installeren?</string>
     <string name="fatal_error_msg">Er is een fatale fout in de applicatie opgetreden. De applicatie kan niet verder gaan.</string>
+    <string name="unsupported_android_version">Deze versie van Android wordt niet ondersteund.</string>
 </resources>

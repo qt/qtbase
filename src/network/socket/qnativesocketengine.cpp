@@ -999,8 +999,8 @@ void QNativeSocketEngine::close()
 
 /*!
     Waits for \a msecs milliseconds or until the socket is ready for
-    reading. If \a timedOut is not 0 and \a msecs milliseconds have
-    passed, the value of \a timedOut is set to true.
+    reading. If \a timedOut is not \nullptr and \a msecs milliseconds
+    have passed, the value of \a timedOut is set to true.
 
     Returns \c true if data is available for reading; otherwise returns
     false.
@@ -1039,8 +1039,8 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
 
 /*!
     Waits for \a msecs milliseconds or until the socket is ready for
-    writing. If \a timedOut is not 0 and \a msecs milliseconds have
-    passed, the value of \a timedOut is set to true.
+    writing. If \a timedOut is not \nullptr and \a msecs milliseconds
+    have passed, the value of \a timedOut is set to true.
 
     Returns \c true if data is available for writing; otherwise returns
     false.

@@ -198,8 +198,10 @@ void QWasmWindow::injectMouseReleased(const QPoint &local, const QPoint &global,
     if (!hasTitleBar() || button != Qt::LeftButton)
         return;
 
-    if (closeButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarCloseButton)
+    if (closeButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarCloseButton) {
         window()->close();
+        return;
+    }
 
     if (maxButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarMaxButton) {
         window()->setWindowState(Qt::WindowMaximized);

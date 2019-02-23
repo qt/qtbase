@@ -40,6 +40,7 @@
 #include "qandroidsystemlocale.h"
 #include "androidjnimain.h"
 #include <QtCore/private/qjni_p.h>
+#include <QtCore/private/qjnihelpers_p.h>
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
@@ -162,6 +163,23 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
         return m_locale.createSeparatedList(in.value<QStringList>());
     case LocaleChanged:
         Q_ASSERT_X(false, Q_FUNC_INFO, "This can't happen.");
+    case UILanguages: {
+        if (QtAndroidPrivate::androidSdkVersion() >= 24) {
+            QJNIObjectPrivate localeListObject =
+                QJNIObjectPrivate::callStaticObjectMethod("android/os/LocaleList", "getDefault",
+                                                          "()Landroid/os/LocaleList;");
+            if (localeListObject.isValid()) {
+                QString lang = localeListObject.callObjectMethod("toLanguageTags",
+                                                                 "()Ljava/lang/String;").toString();
+                // Some devices return with it enclosed in []'s so check if both exists before
+                // removing to ensure it is formatted correctly
+                if (lang.startsWith(QChar('[')) && lang.endsWith(QChar(']')))
+                    lang = lang.mid(1, lang.length() - 2);
+                return lang.split(QChar(','));
+            }
+        }
+        return QVariant();
+    }
     default:
         break;
     }

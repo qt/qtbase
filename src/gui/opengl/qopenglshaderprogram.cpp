@@ -3667,7 +3667,8 @@ QVector<float> QOpenGLShaderProgram::defaultInnerTessellationLevels() const
     Language (GLSL) are supported on this system; false otherwise.
 
     The \a context is used to resolve the GLSL extensions.
-    If \a context is null, then QOpenGLContext::currentContext() is used.
+    If \a context is \nullptr, then QOpenGLContext::currentContext()
+    is used.
 */
 bool QOpenGLShaderProgram::hasOpenGLShaderPrograms(QOpenGLContext *context)
 {
@@ -3694,7 +3695,8 @@ void QOpenGLShaderProgram::shaderDestroyed()
     this system; false otherwise.
 
     The \a context is used to resolve the GLSL extensions.
-    If \a context is null, then QOpenGLContext::currentContext() is used.
+    If \a context is \nullptr, then QOpenGLContext::currentContext()
+    is used.
 */
 bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
 {

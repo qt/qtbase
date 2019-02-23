@@ -3169,7 +3169,8 @@ GLenum QGLShaderProgram::geometryOutputType() const
     Language (GLSL) are supported on this system; false otherwise.
 
     The \a context is used to resolve the GLSL extensions.
-    If \a context is null, then QGLContext::currentContext() is used.
+    If \a context is \nullptr, then QGLContext::currentContext() is
+    used.
 */
 bool QGLShaderProgram::hasOpenGLShaderPrograms(const QGLContext *context)
 {
@@ -3207,7 +3208,8 @@ void QGLShaderProgram::shaderDestroyed()
     this system; false otherwise.
 
     The \a context is used to resolve the GLSL extensions.
-    If \a context is null, then QGLContext::currentContext() is used.
+    If \a context is \nullptr, then QGLContext::currentContext() is
+    used.
 
     \since 4.7
 */
