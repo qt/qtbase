@@ -832,6 +832,14 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
         return 0;
 
     QFlags<Qt::KeyboardModifier> mods = translateKeyboardEventModifier(keyEvent);
+
+    // Clipboard fallback path: cut/copy/paste are handled by clipboard event
+    // handlers if direct clipboard access is not available.
+    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi && modifiers & Qt::ControlModifier &&
+        (qtKey == Qt::Key_X || qtKey == Qt::Key_C || qtKey == Qt::Key_V)) {
+            return 0;
+    }
+
     bool accepted = false;
 
     if (keyType == QEvent::KeyPress &&

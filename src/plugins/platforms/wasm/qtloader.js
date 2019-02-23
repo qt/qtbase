@@ -168,7 +168,14 @@ function QtLoader(config)
             removeChildren(container);
             var canvas = document.createElement("canvas");
             canvas.className = "QtCanvas"
-            canvas.style = "height: 100%; width: 100%;"
+            canvas.style.height = "100%"
+            canvas.style.width = "100%"
+
+            // Set contentEditable in order to enable clipboard events; hide the resulting focus frame.
+            canvas.contentEditable = true;
+            canvas.style.outline = "0px solid transparent";
+            canvas.style.cursor = "default";
+
             return canvas;
         }
 
