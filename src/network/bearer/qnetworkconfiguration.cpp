@@ -518,7 +518,7 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerTypeFamily() cons
 /*!
     Returns the type of bearer used by this network configuration as a string.
 
-    The string is not translated and therefore can not be shown to the user. The subsequent table
+    The string is not translated and therefore cannot be shown to the user. The subsequent table
     shows the fixed mappings between BearerType and the bearer type name for known types.  If the
     BearerType is unknown this function may return additional information if it is available;
     otherwise an empty string will be returned.

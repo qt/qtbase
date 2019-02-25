@@ -963,7 +963,7 @@ bool QTextOdfWriter::writeAll()
         m_strategy = new QXmlStreamStrategy(m_device);
 
     if (!m_device->isWritable() && ! m_device->open(QIODevice::WriteOnly)) {
-        qWarning("QTextOdfWriter::writeAll: the device can not be opened for writing");
+        qWarning("QTextOdfWriter::writeAll: the device cannot be opened for writing");
         return false;
     }
     QXmlStreamWriter writer(m_strategy->contentStream);

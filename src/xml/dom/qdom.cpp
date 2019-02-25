@@ -5183,7 +5183,7 @@ QDomNodePrivate* QDomTextPrivate::cloneNode(bool deep)
 QDomTextPrivate* QDomTextPrivate::splitText(int offset)
 {
     if (!parent()) {
-        qWarning("QDomText::splitText  The node has no parent. So I can not split");
+        qWarning("QDomText::splitText  The node has no parent. So I cannot split");
         return 0;
     }
 

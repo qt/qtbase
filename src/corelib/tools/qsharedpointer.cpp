@@ -379,7 +379,7 @@
     You can inherit this class when you need to create a QSharedPointer
     from any instance of a class; for instance, from within the
     object itself. The key point is that the technique of
-    just returning QSharedPointer<T>(this) can not be used, because
+    just returning QSharedPointer<T>(this) cannot be used, because
     this winds up creating multiple distinct QSharedPointer objects
     with separate reference counts. For this reason you must never
     create more than one QSharedPointer from the same raw pointer.

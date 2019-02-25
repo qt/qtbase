@@ -194,7 +194,7 @@ QIODevicePrivate::~QIODevicePrivate()
     QIODevice provides both a common implementation and an abstract
     interface for devices that support reading and writing of blocks
     of data, such as QFile, QBuffer and QTcpSocket. QIODevice is
-    abstract and can not be instantiated, but it is common to use the
+    abstract and cannot be instantiated, but it is common to use the
     interface it defines to provide device-independent I/O features.
     For example, Qt's XML classes operate on a QIODevice pointer,
     allowing them to be used with various devices (such as files and

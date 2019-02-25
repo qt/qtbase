@@ -1923,7 +1923,7 @@ void QGraphicsScene::setBspTreeDepth(int depth)
 
     QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
     if (!bspTree) {
-        qWarning("QGraphicsScene::setBspTreeDepth: can not apply if indexing method is not BSP");
+        qWarning("QGraphicsScene::setBspTreeDepth: cannot apply if indexing method is not BSP");
         return;
     }
     bspTree->setBspTreeDepth(depth);

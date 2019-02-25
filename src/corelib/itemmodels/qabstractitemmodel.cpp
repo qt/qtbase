@@ -2329,7 +2329,7 @@ QModelIndex QAbstractItemModel::buddy(const QModelIndex &index) const
     The way the search is performed is defined by the \a flags given. The list
     that is returned may be empty. Note also that the order of results in the
     list may not correspond to the order in the model, if for example a proxy
-    model is used. The order of the results can not be relied upon.
+    model is used. The order of the results cannot be relied upon.
 
     The search begins from the \a start index, and continues until the number
     of matching data items equals \a hits, the search reaches the last row, or
@@ -2903,7 +2903,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 
             Note that other rows may be displaced accordingly. Note also that when moving
             items within the same parent you should not attempt invalid or no-op moves. In
-            the above example, item 2 is at row 2 before the move, so it can not be moved
+            the above example, item 2 is at row 2 before the move, so it cannot be moved
             to row 2 (where it is already) or row 3 (no-op as row 3 means above row 3, where
             it is already)
 
