@@ -94,7 +94,7 @@ load(qt_common)
         }
 
         load(resolve_target)
-        TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
+        isEmpty(IMPORT_NAME): IMPORT_NAME = $$replace(TARGETPATH, \\.\\d+\$, )
 
         !qml1_target {
             isEmpty(QMAKE_PLUGINDUMP_DEPENDENCIES_FILE):exists($$_PRO_FILE_PWD_/dependencies.json): \
@@ -104,7 +104,7 @@ load(qt_common)
         }
 
         qmltypes.target = qmltypes
-        qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$QMAKE_QMLPLUGINDUMP_FLAGS $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
+        qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$QMAKE_QMLPLUGINDUMP_FLAGS $$replace(IMPORT_NAME, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
         qmltypes.depends = $$QMAKE_RESOLVED_TARGET
     } else {
         qmltypes.CONFIG += recursive
