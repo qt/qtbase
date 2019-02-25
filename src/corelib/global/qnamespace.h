@@ -500,7 +500,9 @@ public:
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
         AA_PluginApplication = 5,
-        AA_MacPluginApplication = AA_PluginApplication,  // ### Qt 6: remove me
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
+        AA_MacPluginApplication Q_DECL_ENUMERATOR_DEPRECATED = AA_PluginApplication,
+#endif
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
@@ -1504,12 +1506,12 @@ public:
         // Metadata
         FontRole = 6,
         TextAlignmentRole = 7,
-#if QT_DEPRECATED_SINCE(5, 13)
-        BackgroundColorRole = 8,
-        TextColorRole = 9,
-#endif
         BackgroundRole = 8,
         ForegroundRole = 9,
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
+        BackgroundColorRole Q_DECL_ENUMERATOR_DEPRECATED = BackgroundRole,
+        TextColorRole Q_DECL_ENUMERATOR_DEPRECATED = ForegroundRole,
+#endif
         CheckStateRole = 10,
         // Accessibility
         AccessibleTextRole = 11,
