@@ -131,6 +131,7 @@ private:
     ProString firstInputFileName(const ProString &extraCompilerName) const;
     QString firstExpandedOutputFileName(const ProString &extraCompilerName);
     void createCustomBuildToolFakeFile(const QString &cbtFilePath, const QString &realOutFilePath);
+    bool otherFiltersContain(const QString &fileName) const;
     friend class VCFilter;
 };
 

@@ -1570,7 +1570,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
                 const ProStringList &tmp_in = project->values(project->first(ProKey(*it + ".input")).toKey());
                 for (int i = 0; i < tmp_in.count(); ++i) {
                     const QString &filename = tmp_in.at(i).toQString();
-                    if (extraCompilerSources.contains(filename))
+                    if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                         extraCompile.addFile(Option::fixPathToTargetOS(
                                 replaceExtraCompilerVariables(filename, tmp_out, QString(), NoShell), false));
                 }
@@ -1586,7 +1586,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
                     const ProStringList &tmp_in = project->values(inputVar.toKey());
                     for (int i = 0; i < tmp_in.count(); ++i) {
                         const QString &filename = tmp_in.at(i).toQString();
-                        if (extraCompilerSources.contains(filename))
+                        if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                             extraCompile.addFile(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(filename, QString(), QString(), NoShell), false));
                     }
@@ -1598,6 +1598,28 @@ void VcprojGenerator::initExtraCompilerOutputs()
 
         vcProject.ExtraCompilersFiles.append(extraCompile);
     }
+}
+
+bool VcprojGenerator::otherFiltersContain(const QString &fileName) const
+{
+    auto filterFileMatches = [&fileName] (const VCFilterFile &ff)
+    {
+        return ff.file == fileName;
+    };
+    for (const VCFilter *filter : { &vcProject.RootFiles,
+                                    &vcProject.SourceFiles,
+                                    &vcProject.HeaderFiles,
+                                    &vcProject.GeneratedFiles,
+                                    &vcProject.LexYaccFiles,
+                                    &vcProject.TranslationFiles,
+                                    &vcProject.FormFiles,
+                                    &vcProject.ResourceFiles,
+                                    &vcProject.DeploymentFiles,
+                                    &vcProject.DistributionFiles}) {
+        if (std::any_of(filter->Files.cbegin(), filter->Files.cend(), filterFileMatches))
+            return true;
+    }
+    return false;
 }
 
 // ------------------------------------------------------------------------------------------------
