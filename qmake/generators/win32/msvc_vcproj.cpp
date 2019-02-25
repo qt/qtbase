@@ -1447,6 +1447,7 @@ void VcprojGenerator::initTranslationFiles()
     vcProject.TranslationFiles.Guid = _GUIDTranslationFiles;
 
     vcProject.TranslationFiles.addFiles(project->values("TRANSLATIONS"));
+    vcProject.TranslationFiles.addFiles(project->values("EXTRA_TRANSLATIONS"));
 
     vcProject.TranslationFiles.Project = this;
     vcProject.TranslationFiles.Config = &(vcProject.Configuration);
