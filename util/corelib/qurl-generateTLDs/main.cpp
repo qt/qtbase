@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
     outIndicesBuffer.write("] = {\n");
 
     int totalUtf8Size = 0;
-    int chunkSize = 0;
+    int chunkSize = 0; // strlen of the current chunk (sizeof is bigger by 1)
     int stringUtf8Size = 0;
     QStringList chunks;
     for (int a = 0; a < lineCount; a++) {
@@ -127,7 +127,8 @@ int main(int argc, char **argv) {
         int quoteCount = strings.at(a).count('"');
         stringUtf8Size = strings.at(a).count() - (zeroCount + quoteCount + utf8CharsCount * 3);
         chunkSize += stringUtf8Size;
-        if (chunkSize > 65535) {
+        // MSVC 2015 chokes if sizeof(a single string) > 0xffff
+        if (chunkSize >= 0xffff) {
             static int chunkCount = 0;
             qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
             outDataBuffer.write(",\n\n");
