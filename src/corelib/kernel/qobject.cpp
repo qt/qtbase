@@ -3593,6 +3593,10 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
     const QSignalSpyCallbackSet *signal_spy_set = callbacks_enabled ? qt_signal_spy_callback_set.load() : nullptr;
 
+    void *empty_argv[] = { nullptr };
+    if (!argv)
+        argv = empty_argv;
+
     if (!sp->isSignalConnected(signal_index, false)) {
         // The possible declarative connection is done, and nothing else is connected
         if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
@@ -3603,10 +3607,6 @@ void doActivate(QObject *sender, int signal_index, void **argv)
             signal_spy_set->signal_end_callback(sender, signal_index);
         return;
     }
-
-    void *empty_argv[] = { nullptr };
-    if (!argv)
-        argv = empty_argv;
 
     if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
         signal_spy_set->signal_begin_callback(sender, signal_index, argv);
