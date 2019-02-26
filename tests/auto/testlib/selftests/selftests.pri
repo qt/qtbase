@@ -37,6 +37,7 @@ SUBPROGRAMS = \
      printdatatagswithglobaltags \
      qexecstringlist \
      silent \
+     signaldumper \
      singleskip \
      skip \
      skipcleanup \

@@ -488,6 +488,7 @@ void tst_Selftests::runSubTest_data()
         << "printdatatags"
         << "printdatatagswithglobaltags"
         << "qexecstringlist"
+        << "signaldumper"
         << "silent"
         << "singleskip"
         << "skip"
@@ -552,6 +553,9 @@ void tst_Selftests::runSubTest_data()
             }
             else if (subtest == "printdatatagswithglobaltags") {
                 arguments << "-datatags";
+            }
+            else if (subtest == "signaldumper") {
+                arguments << "-vs";
             }
             else if (subtest == "silent") {
                 arguments << "-silent";
@@ -952,6 +956,29 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
 
     if (actualLine.startsWith(QLatin1String("Totals:")) && expectedLine.startsWith(QLatin1String("Totals:")))
         return true;
+
+    const QLatin1String pointerPlaceholder("_POINTER_");
+    if (expectedLine.contains(pointerPlaceholder)
+        && (expectedLine.contains(QLatin1String("Signal: "))
+            || expectedLine.contains(QLatin1String("Slot: ")))) {
+        QString actual = actualLine;
+        // We don't care about the pointer of the object to whom the signal belongs, so we
+        // replace it with _POINTER_, e.g.:
+        // Signal: SignalSlotClass(7ffd72245410) signalWithoutParameters ()
+        // Signal: QThread(7ffd72245410) started ()
+        // After this instance pointer we may have further pointers and
+        // references (with an @ prefix) as parameters of the signal or
+        // slot being invoked.
+        // Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@55f5fbb8dd40)
+        actual.replace(QRegularExpression("\\b[a-f0-9]{8,}\\b"), pointerPlaceholder);
+        // Also change QEventDispatcher{Glib,Win32,etc.} to QEventDispatcherPlatform
+        actual.replace(QRegularExpression("\\b(QEventDispatcher)\\w+\\b"), QLatin1String("\\1Platform"));
+        if (actual != expectedLine) {
+          *errorMessage = msgMismatch(actual, expectedLine);
+          return false;
+        }
+        return true;
+    }
 
     *errorMessage = msgMismatch(actualLine, expectedLine);
     return false;
