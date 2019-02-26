@@ -53,7 +53,6 @@
 
 #include <qcolorspace.h>
 #include <private/qcolorspace_p.h>
-#include <private/qicc_p.h>
 
 #include <png.h>
 #include <pngconf.h>
@@ -681,10 +680,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         // This configuration forces gamma correction and
         // thus changes the output colorspace
         png_set_gamma(png_ptr, 1.0f / gamma, fileGamma);
-        QColorSpacePrivate *csPrivate = QColorSpacePrivate::getWritable(colorSpace);
-        csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
-        csPrivate->gamma = 1.0f / gamma;
-        csPrivate->setTransferFunction();
+        colorSpace = colorSpace.withTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
         colorSpaceState = GammaChrm;
     }
 
@@ -984,14 +980,8 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
     if (image.colorSpace().isValid()) {
         QColorSpace cs = image.colorSpace();
         // Support the old gamma making it override transferfunction.
-        if (gamma != 0.0 && !qFuzzyCompare(cs.gamma(), 1.0f / gamma)) {
-            QColorSpacePrivate *csPrivate = QColorSpacePrivate::getWritable(cs);
-            csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
-            csPrivate->gamma = 1.0f / gamma;
-            csPrivate->setTransferFunction();
-            csPrivate->iccProfile.clear();
-            csPrivate->description.clear();
-        }
+        if (gamma != 0.0 && !qFuzzyCompare(cs.gamma(), 1.0f / gamma))
+            cs = cs.withTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
         QByteArray iccProfileName = QColorSpacePrivate::get(cs)->description.toLatin1();
         if (iccProfileName.isEmpty())
             iccProfileName = QByteArrayLiteral("Custom");

@@ -103,6 +103,13 @@ public:
     TransferFunction transferFunction() const noexcept;
     float gamma() const noexcept;
 
+    void setTransferFunction(TransferFunction transferFunction, float gamma = 0.0f);
+    QColorSpace withTransferFunction(TransferFunction transferFunction, float gamma = 0.0f) const;
+
+    void setPrimaries(Primaries primariesId);
+    void setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
+                      const QPointF &greenPoint, const QPointF &bluePoint);
+
     bool isValid() const noexcept;
 
     friend Q_GUI_EXPORT bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2);

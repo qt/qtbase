@@ -163,24 +163,22 @@ QColorSpacePrivate::QColorSpacePrivate()
 
 QColorSpacePrivate::QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId)
         : id(colorSpaceId)
+        , gamma(0.0f)
 {
     switch (colorSpaceId) {
     case QColorSpace::Undefined:
         primaries = QColorSpace::Primaries::Custom;
         transferFunction = QColorSpace::TransferFunction::Custom;
-        gamma = 0.0f;
         description = QStringLiteral("Undefined");
         break;
     case QColorSpace::SRgb:
         primaries = QColorSpace::Primaries::SRgb;
         transferFunction = QColorSpace::TransferFunction::SRgb;
-        gamma = 2.31f; // ?
         description = QStringLiteral("sRGB");
         break;
     case QColorSpace::SRgbLinear:
         primaries = QColorSpace::Primaries::SRgb;
         transferFunction = QColorSpace::TransferFunction::Linear;
-        gamma = 1.0f;
         description = QStringLiteral("Linear sRGB");
         break;
     case QColorSpace::AdobeRgb:
@@ -192,19 +190,16 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId)
     case QColorSpace::DisplayP3:
         primaries = QColorSpace::Primaries::DciP3D65;
         transferFunction = QColorSpace::TransferFunction::SRgb;
-        gamma = 2.31f; // ?
         description = QStringLiteral("Display P3");
         break;
     case QColorSpace::ProPhotoRgb:
         primaries = QColorSpace::Primaries::ProPhotoRgb;
         transferFunction = QColorSpace::TransferFunction::ProPhotoRgb;
-        gamma = 1.8f;
         description = QStringLiteral("ProPhoto RGB");
         break;
     case QColorSpace::Bt2020:
         primaries = QColorSpace::Primaries::Bt2020;
         transferFunction = QColorSpace::TransferFunction::Bt2020;
-        gamma = 2.1f; // ?
         description = QStringLiteral("BT.2020");
         break;
     case QColorSpace::Unknown:
@@ -236,8 +231,7 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
     Q_ASSERT(primaries.areValid());
     toXyz = primaries.toXyzMatrix();
     whitePoint = QColorVector(primaries.whitePoint);
-    if (!identifyColorSpace())
-        id = QColorSpace::Unknown;
+    identifyColorSpace();
     setTransferFunction();
 }
 
@@ -304,6 +298,7 @@ bool QColorSpacePrivate::identifyColorSpace()
     default:
         break;
     }
+    id = QColorSpace::Unknown;
     return false;
 }
 
@@ -331,6 +326,8 @@ void QColorSpacePrivate::setTransferFunction()
     case QColorSpace::TransferFunction::Linear:
         trc[0].m_type = QColorTrc::Type::Function;
         trc[0].m_fun = QColorTransferFunction();
+        if (qFuzzyIsNull(gamma))
+            gamma = 1.0f;
         break;
     case QColorSpace::TransferFunction::Gamma:
         trc[0].m_type = QColorTrc::Type::Function;
@@ -339,14 +336,20 @@ void QColorSpacePrivate::setTransferFunction()
     case QColorSpace::TransferFunction::SRgb:
         trc[0].m_type = QColorTrc::Type::Function;
         trc[0].m_fun = QColorTransferFunction::fromSRgb();
+        if (qFuzzyIsNull(gamma))
+            gamma = 2.31f;
         break;
     case QColorSpace::TransferFunction::ProPhotoRgb:
         trc[0].m_type = QColorTrc::Type::Function;
         trc[0].m_fun = QColorTransferFunction::fromProPhotoRgb();
+        if (qFuzzyIsNull(gamma))
+            gamma = 1.8f;
         break;
     case QColorSpace::TransferFunction::Bt2020:
         trc[0].m_type = QColorTrc::Type::Function;
         trc[0].m_fun = QColorTransferFunction::fromBt2020();
+        if (qFuzzyIsNull(gamma))
+            gamma = 1.961f;
         break;
     case QColorSpace::TransferFunction::Custom:
         break;
@@ -564,7 +567,7 @@ QColorSpace::Primaries QColorSpace::primaries() const noexcept
     Returns the predefined transfer function of the color space
     or \c TransferFunction::Custom if it doesn't match any of them.
 
-    \sa gamma()
+    \sa gamma(), setTransferFunction(), withTransferFunction()
 */
 QColorSpace::TransferFunction QColorSpace::transferFunction() const noexcept
 {
@@ -581,6 +584,91 @@ QColorSpace::TransferFunction QColorSpace::transferFunction() const noexcept
 float QColorSpace::gamma() const noexcept
 {
     return d_ptr->gamma;
+}
+
+/*!
+    Sets the transfer function to \a transferFunction and \a gamma.
+
+    \note This also changes colorSpaceId().
+
+    \sa transferFunction(), gamma(), withTransferFunction()
+*/
+void QColorSpace::setTransferFunction(QColorSpace::TransferFunction transferFunction, float gamma)
+{
+    if (!isValid() || transferFunction == QColorSpace::TransferFunction::Custom)
+        return;
+    if (d_ptr->transferFunction == transferFunction && d_ptr->gamma == gamma)
+        return;
+    d_ptr.detach();
+    d_ptr->description.clear();
+    d_ptr->transferFunction = transferFunction;
+    d_ptr->gamma = gamma;
+    d_ptr->identifyColorSpace();
+    d_ptr->setTransferFunction();
+}
+
+/*!
+    Returns a copy of this color space, except using the transfer function
+    \a transferFunction and \a gamma.
+
+    \sa transferFunction(), gamma(), setTransferFunction()
+*/
+QColorSpace QColorSpace::withTransferFunction(QColorSpace::TransferFunction transferFunction, float gamma) const
+{
+    if (!isValid() || transferFunction == QColorSpace::TransferFunction::Custom)
+        return *this;
+    if (d_ptr->transferFunction == transferFunction && d_ptr->gamma == gamma)
+        return *this;
+    QColorSpace out(*this);
+    out.setTransferFunction(transferFunction, gamma);
+    return out;
+}
+
+/*!
+    Sets the primaries to those of the \a primariesId set.
+
+    \note This also changes colorSpaceId().
+
+    \sa primaries()
+*/
+void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
+{
+    if (!isValid() || primariesId == QColorSpace::Primaries::Custom)
+        return;
+    if (d_ptr->primaries == primariesId)
+        return;
+    d_ptr.detach();
+    d_ptr->description.clear();
+    d_ptr->primaries = primariesId;
+    d_ptr->identifyColorSpace();
+    d_ptr->setToXyzMatrix();
+}
+
+/*!
+    Set primaries to the chromaticities of \a whitePoint, \a redPoint, \a greenPoint
+    and \a bluePoint.
+
+    \note This also changes colorSpaceId().
+
+    \sa primaries()
+*/
+void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
+                               const QPointF &greenPoint, const QPointF &bluePoint)
+{
+    if (!isValid())
+        return;
+    QColorSpacePrimaries primaries(whitePoint, redPoint, greenPoint, bluePoint);
+    if (!primaries.areValid())
+        return;
+    QColorMatrix toXyz = primaries.toXyzMatrix();
+    if (QColorVector(primaries.whitePoint) == d_ptr->whitePoint && toXyz == d_ptr->toXyz)
+        return;
+    d_ptr.detach();
+    d_ptr->description.clear();
+    d_ptr->primaries = QColorSpace::Primaries::Custom;
+    d_ptr->toXyz = toXyz;
+    d_ptr->whitePoint = QColorVector(primaries.whitePoint);
+    d_ptr->identifyColorSpace();
 }
 
 /*!

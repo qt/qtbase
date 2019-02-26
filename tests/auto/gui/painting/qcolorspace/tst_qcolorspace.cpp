@@ -66,6 +66,9 @@ private slots:
     void primaries2_data();
     void primaries2();
     void invalidPrimaries();
+
+    void changeTransferFunction();
+    void changePrimaries();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -373,6 +376,50 @@ void tst_QColorSpace::invalidPrimaries()
     QColorSpace custom(QPointF(), QPointF(), QPointF(), QPointF(), QColorSpace::TransferFunction::Linear);
     QVERIFY(!custom.isValid());
     QCOMPARE(custom.colorSpaceId(), QColorSpace::Undefined);
+}
+
+void tst_QColorSpace::changeTransferFunction()
+{
+    QColorSpace sRgb = QColorSpace::SRgb;
+
+    QColorSpace sRgbLinear = sRgb.withTransferFunction(QColorSpace::TransferFunction::Linear);
+    QCOMPARE(sRgbLinear.transferFunction(), QColorSpace::TransferFunction::Linear);
+    QCOMPARE(sRgbLinear.gamma(), 1.0f);
+    QCOMPARE(sRgbLinear.primaries(), QColorSpace::Primaries::SRgb);
+    QCOMPARE(sRgbLinear.colorSpaceId(), QColorSpace::SRgbLinear);
+    QCOMPARE(sRgbLinear, QColorSpace(QColorSpace::SRgbLinear));
+    QVERIFY(sRgbLinear != sRgb);
+    QCOMPARE(sRgbLinear.withTransferFunction(QColorSpace::TransferFunction::SRgb), sRgb);
+
+    QColorSpace aRgb = QColorSpace::AdobeRgb;
+    aRgb.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(aRgb.transferFunction(), QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(aRgb.primaries(), QColorSpace::Primaries::AdobeRgb);
+    QCOMPARE(aRgb.colorSpaceId(), QColorSpace::Unknown);
+    QVERIFY(aRgb != QColorSpace(QColorSpace::AdobeRgb));
+    QVERIFY(aRgb != sRgb);
+    QCOMPARE(aRgb.withTransferFunction(QColorSpace::TransferFunction::Gamma, 2.2f),
+             QColorSpace(QColorSpace::AdobeRgb));
+    QVERIFY(aRgb != QColorSpace(QColorSpace::AdobeRgb));
+    aRgb.setTransferFunction(QColorSpace::TransferFunction::Gamma, 2.2f);
+    QVERIFY(aRgb == QColorSpace(QColorSpace::AdobeRgb));
+
+    QColorSpace undefined;
+    QCOMPARE(undefined.withTransferFunction(QColorSpace::TransferFunction::Linear), undefined);
+    undefined.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(undefined, QColorSpace());
+}
+
+void tst_QColorSpace::changePrimaries()
+{
+    QColorSpace cs = QColorSpace::SRgb;
+    cs.setPrimaries(QColorSpace::Primaries::DciP3D65);
+    QVERIFY(cs.isValid());
+    QCOMPARE(cs, QColorSpace(QColorSpace::DisplayP3));
+    cs.setTransferFunction(QColorSpace::TransferFunction::Linear);
+    cs.setPrimaries(QPointF(0.3127, 0.3290), QPointF(0.640, 0.330),
+                    QPointF(0.3000, 0.6000), QPointF(0.150, 0.060));
+    QCOMPARE(cs, QColorSpace(QColorSpace::SRgbLinear));
 }
 
 QTEST_MAIN(tst_QColorSpace)
