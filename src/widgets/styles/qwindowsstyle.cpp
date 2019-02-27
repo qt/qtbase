@@ -554,7 +554,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
     case SH_MenuBar_MouseTracking:
     case SH_Menu_MouseTracking:
     case SH_ComboBox_ListMouseTracking:
-    case SH_ScrollBar_StopMouseOverSlider:
+    case SH_Slider_StopMouseOverSlider:
     case SH_MainWindow_SpaceBelowMenuBar:
         ret = 1;
 
@@ -827,13 +827,13 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             p->setPen(opt->palette.text().color());
         }
         Q_FALLTHROUGH();
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
         if (!doRestore) {
             p->save();
             doRestore = true;
         }
 #if QT_CONFIG(itemviews)
-        if (pe == PE_IndicatorViewItemCheck) {
+        if (pe == PE_IndicatorItemViewItemCheck) {
             const QStyleOptionViewItem *itemViewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt);
             p->setPen(itemViewOpt
                       && itemViewOpt->showDecorationSelected

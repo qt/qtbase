@@ -789,7 +789,7 @@ void QItemDelegate::drawCheck(QPainter *painter,
 
     const QWidget *widget = d->widget(option);
     QStyle *style = widget ? widget->style() : QApplication::style();
-    style->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &opt, painter, widget);
+    style->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &opt, painter, widget);
 }
 
 /*!

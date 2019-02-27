@@ -164,13 +164,9 @@ public:
 
     QDir::Filters filterForMode(QDir::Filters filters) const
     {
-        const QFileDialog::FileMode fileMode = q_func()->fileMode();
-        if (fileMode == QFileDialog::DirectoryOnly) {
-            filters |= QDir::Drives | QDir::AllDirs | QDir::Dirs;
+        filters |= QDir::Drives | QDir::AllDirs | QDir::Dirs | QDir::Files;
+        if (q_func()->testOption(QFileDialog::ShowDirsOnly))
             filters &= ~QDir::Files;
-        } else {
-            filters |= QDir::Drives | QDir::AllDirs | QDir::Files | QDir::Dirs;
-        }
         return filters;
     }
 

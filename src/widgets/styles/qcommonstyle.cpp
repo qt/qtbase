@@ -194,7 +194,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                         opt->state & (State_Sunken | State_On), 1,
                         &opt->palette.brush(QPalette::Button));
         break;
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
         proxy()->drawPrimitive(PE_IndicatorCheckBox, opt, p, widget);
         break;
     case PE_IndicatorCheckBox:
@@ -2283,7 +2283,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     option.state |= QStyle::State_On;
                     break;
                 }
-                proxy()->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &option, p, widget);
+                proxy()->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &option, p, widget);
             }
 
             // draw the icon

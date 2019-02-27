@@ -1383,7 +1383,10 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     const QString text = itemText(index);
     emit q->currentIndexChanged(index.row());
 #if QT_DEPRECATED_SINCE(5, 13)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     emit q->currentIndexChanged(text);
+    QT_WARNING_POP
 #endif
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
