@@ -1,5 +1,9 @@
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs" DESTINATION ${INSTALL_DATADIR})
 
+find_library(FWApplicationServices ApplicationServices)
+find_library(FWCoreServices CoreServices)
+find_library(FWFoundation Foundation)
+
 add_qt_tool(qmake
     SOURCES
         meta.cpp
@@ -123,13 +127,11 @@ extend_target(qmake CONDITION UNIX
 extend_target(qmake CONDITION APPLE_OSX
     SOURCES
         ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qcore_foundation.mm
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qcore_mac_objc.mm
+        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qcore_mac.cpp
         ${PROJECT_SOURCE_DIR}/src/corelib/global/qoperatingsystemversion_darwin.mm
         ${PROJECT_SOURCE_DIR}/src/corelib/io/qsettings_mac.cpp
     LIBRARIES
-        -framework ApplicationServices
-        -framework CoreServices
-        -framework Foundation
+        ${FWApplicationServices} ${FWCoreServices} ${FWFoundation}
 )
 # TODO: Windows support, cf. qmake.pro
 
