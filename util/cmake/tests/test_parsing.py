@@ -281,3 +281,9 @@ def test_realworld_complex_condition():
 
     assert len(else_branch) == 0
 
+
+def test_realworld_sql():
+    result = parse_file(_tests_path + '/data/sql.pro')
+    assert len(result) == 2
+    validate_op('TEMPLATE', '=', ['subdirs'], result[0])
+    validate_op('SUBDIRS', '=', ['kernel'], result[1])

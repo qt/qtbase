@@ -518,7 +518,7 @@ class QmakeParser:
         pp.ParserElement.setDefaultWhitespaceChars(' \t')
 
         LC = pp.Suppress(pp.Literal('\\\n'))
-        EOL = pp.Suppress(pp.Literal('\n'))
+        EOL = pp.Suppress(pp.Literal('\n') ^ pp.LineEnd())
         Else = pp.Keyword('else')
         Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
         BracedValue = pp.nestedExpr(ignoreExpr=pp.quotedString \
