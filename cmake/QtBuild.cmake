@@ -200,6 +200,19 @@ function(qt_internal_add_link_flags target to_add)
     set_target_properties("${target}" PROPERTIES LINK_FLAGS "${flags}")
 endfunction()
 
+function(qt_internal_add_link_flags_no_undefined target)
+    if (GCC OR CLANG)
+        if(APPLE)
+            set(no_undefined_flag "-Wl,-undefined,error")
+        elseif(LINUX)
+            set(no_undefined_flag "-Wl,--no-undefined")
+        else()
+            message(FATAL_ERROR "Platform linker doesn't support erroring upon encountering undefined symbols. Target:\"${target}\".")
+        endif()
+        qt_internal_add_link_flags("${target}" "${no_undefined_flag}")
+    endif()
+endfunction()
+
 function(qt_internal_add_linker_version_script target)
     qt_parse_all_arguments(arg "qt_internal_add_linker" "INTERNAL" "" "PRIVATE_HEADERS" ${ARGN})
 
@@ -562,9 +575,7 @@ function(add_qt_module target)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
-    if (GCC OR CLANG)
-        qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
-    endif()
+    qt_internal_add_link_flags_no_undefined("${target}")
 
     # When a public module depends on private, also make its private depend on the other's private
     set(qt_libs_private "")
@@ -680,9 +691,7 @@ function(add_qt_plugin target)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
-    if (GCC OR CLANG)
-        qt_internal_add_link_flags("${target}" "-Wl,--no-undefined")
-    endif()
+    qt_internal_add_link_flags_no_undefined("${target}")
 
     qt_internal_add_linker_version_script(${target})
 endfunction()
