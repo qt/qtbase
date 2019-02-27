@@ -102,7 +102,7 @@ public:
     static void initHighDpiScaling();
     static void updateHighDpiScaling();
     static void setGlobalFactor(qreal factor);
-    static void setScreenFactor(QScreen *window, qreal factor);
+    static void setScreenFactor(QScreen *screen, qreal factor);
 
     static bool isActive() { return m_active; }
 

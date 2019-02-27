@@ -63,6 +63,12 @@ static const char scaleFactorRoundingPolicyEnvVar[] = "QT_SCALE_FACTOR_ROUNDING_
 static const char dpiAdjustmentPolicyEnvVar[] = "QT_DPI_ADJUSTMENT_POLICY";
 static const char usePhysicalDpiEnvVar[] = "QT_USE_PHYSICAL_DPI";
 
+// Per-screen scale factors for named screens set with QT_SCREEN_SCALE_FACTORS
+// are stored here. Use a global hash to keep the factor across screen
+// disconnect/connect cycles where the screen object may be deleted.
+typedef QHash<QString, qreal> QScreenScaleFactorHash;
+Q_GLOBAL_STATIC(QScreenScaleFactorHash, qNamedScreenScaleFactors);
+
 // Reads and interprets the given environment variable as a bool,
 // returns the default value if not set.
 static bool qEnvironmentVariableAsBool(const char *name, bool defaultValue)
@@ -480,20 +486,19 @@ void QHighDpiScaling::updateHighDpiScaling()
         int i = 0;
         const auto specs = qgetenv(screenFactorsEnvVar).split(';');
         for (const QByteArray &spec : specs) {
-            QScreen *screen = 0;
             int equalsPos = spec.lastIndexOf('=');
-            double factor = 0;
+            qreal factor = 0;
             if (equalsPos > 0) {
                 // support "name=factor"
                 QByteArray name = spec.mid(0, equalsPos);
                 QByteArray f = spec.mid(equalsPos + 1);
                 bool ok;
                 factor = f.toDouble(&ok);
-                if (ok) {
+                if (ok && factor > 0 ) {
                     const auto screens = QGuiApplication::screens();
                     for (QScreen *s : screens) {
                         if (s->name() == QString::fromLocal8Bit(name)) {
-                            screen = s;
+                            setScreenFactor(s, factor);
                             break;
                         }
                     }
@@ -502,11 +507,11 @@ void QHighDpiScaling::updateHighDpiScaling()
                 // listing screens in order
                 bool ok;
                 factor = spec.toDouble(&ok);
-                if (ok && i < QGuiApplication::screens().count())
-                    screen = QGuiApplication::screens().at(i);
+                if (ok && factor > 0 && i < QGuiApplication::screens().count()) {
+                    QScreen *screen = QGuiApplication::screens().at(i);
+                    setScreenFactor(screen, factor);
+                }
             }
-            if (screen)
-                setScreenFactor(screen, factor);
             ++i;
         }
     }
@@ -542,7 +547,14 @@ void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
         m_screenFactorSet = true;
         m_active = true;
     }
-    screen->setProperty(scaleFactorProperty, QVariant(factor));
+
+    // Prefer associating the factor with screen name over the object
+    // since the screen object may be deleted on screen disconnects.
+    const QString name = screen->name();
+    if (name.isEmpty())
+        screen->setProperty(scaleFactorProperty, QVariant(factor));
+    else
+        qNamedScreenScaleFactors()->insert(name, factor);
 
     // hack to force re-evaluation of screen geometry
     if (screen->handle())
@@ -610,15 +622,32 @@ QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &w
 qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
     qreal factor = qreal(1.0);
-    if (screen) {
-        if (m_usePixelDensity)
-            factor *= roundScaleFactor(rawScaleFactor(screen));
-        if (m_screenFactorSet) {
-            QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
-            if (screenFactor.isValid())
-                factor *= screenFactor.toReal();
+    if (!screen)
+        return factor;
+
+    // Unlike the other code where factors are combined by multiplication,
+    // factors from QT_SCREEN_SCALE_FACTORS takes precedence over the factor
+    // computed from platform plugin DPI. The rationale is that the user is
+    // setting the factor to override erroneous DPI values.
+    bool screenPropertyUsed = false;
+    if (m_screenFactorSet) {
+        // Check if there is a factor set on the screen object or associated
+        // with the screen name. These are mutually exclusive, so checking
+        // order is not significant.
+        QVariant byIndex = screen->screen()->property(scaleFactorProperty);
+        auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
+        if (byIndex.isValid()) {
+            screenPropertyUsed = true;
+            factor = byIndex.toReal();
+        } else if (byNameIt != qNamedScreenScaleFactors()->cend()) {
+            screenPropertyUsed = true;
+            factor = *byNameIt;
         }
     }
+
+    if (!screenPropertyUsed && m_usePixelDensity)
+        factor = roundScaleFactor(rawScaleFactor(screen));
+
     return factor;
 }
 
