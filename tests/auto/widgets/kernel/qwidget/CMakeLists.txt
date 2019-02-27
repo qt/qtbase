@@ -12,5 +12,5 @@ add_qt_test("tst_qwidget"
 
 extend_target("tst_qwidget" CONDITION APPLE_OSX
     SOURCES tst_qwidget_mac_helpers.mm
-    LIBRARIES FWSecurity FWAppKit
+    LIBRARIES ${FWSecurity} ${FWAppKit}
 )

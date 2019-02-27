@@ -8,4 +8,4 @@ add_qt_test("tst_qmdiarea" RUN_SERIAL SOURCES tst_qmdiarea.cpp
 )
 
 extend_target("tst_qmdiarea" CONDITION TARGET Qt::OpenGL LIBRARIES Qt::OpenGL)
-extend_target("tst_qmdiarea" CONDITION APPLE_OSX LIBRARIES FWSecurity)
+extend_target("tst_qmdiarea" CONDITION APPLE_OSX LIBRARIES ${FWSecurity})
