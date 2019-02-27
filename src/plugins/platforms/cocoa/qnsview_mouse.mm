@@ -153,6 +153,19 @@
 
 - (void)initMouse
 {
+    m_buttons = Qt::NoButton;
+    m_acceptedMouseDowns = Qt::NoButton;
+    m_frameStrutButtons = Qt::NoButton;
+
+    m_scrolling = false;
+    self.cursor = nil;
+
+    m_sendUpAsRightButton = false;
+    m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, m_platformWindow->window(),
+            "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
+
+    m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
+
     NSUInteger trackingOptions = NSTrackingActiveInActiveApp
         | NSTrackingMouseEnteredAndExited | NSTrackingCursorUpdate;
 
