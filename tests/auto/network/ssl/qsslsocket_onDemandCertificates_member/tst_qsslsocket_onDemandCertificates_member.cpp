@@ -102,7 +102,15 @@ void tst_QSslSocket_onDemandCertificates_member::initTestCase_data()
 
 void tst_QSslSocket_onDemandCertificates_member::initTestCase()
 {
+#ifdef QT_TEST_SERVER
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1081));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3129));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3130));
+#else
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+#endif // QT_TEST_SERVER
 }
 
 void tst_QSslSocket_onDemandCertificates_member::init()
@@ -110,28 +118,29 @@ void tst_QSslSocket_onDemandCertificates_member::init()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
-        QString testServer = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
+        const auto socksAddr = QtNetworkSettings::socksProxyServerIp().toString();
+        const auto squidAddr = QtNetworkSettings::httpProxyServerIp().toString();
         QNetworkProxy proxy;
 
         switch (proxyType) {
         case Socks5Proxy:
-            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, testServer, 1080);
+            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, socksAddr, 1080);
             break;
 
         case Socks5Proxy | AuthBasic:
-            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, testServer, 1081);
+            proxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, socksAddr, 1081);
             break;
 
         case HttpProxy | NoAuth:
-            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, testServer, 3128);
+            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, squidAddr, 3128);
             break;
 
         case HttpProxy | AuthBasic:
-            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, testServer, 3129);
+            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, squidAddr, 3129);
             break;
 
         case HttpProxy | AuthNtlm:
-            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, testServer, 3130);
+            proxy = QNetworkProxy(QNetworkProxy::HttpProxy, squidAddr, 3130);
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
