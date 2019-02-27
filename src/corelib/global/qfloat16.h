@@ -67,10 +67,14 @@ QT_BEGIN_NAMESPACE
 class qfloat16
 {
 public:
-    Q_DECL_CONSTEXPR inline qfloat16() Q_DECL_NOTHROW : b16(0) { }
+    constexpr inline qfloat16() Q_DECL_NOTHROW : b16(0) {}
     inline qfloat16(float f) Q_DECL_NOTHROW;
     inline operator float() const Q_DECL_NOTHROW;
 
+    // Support for qIs{Inf,NaN,Finite}:
+    bool isInf() const Q_DECL_NOTHROW { return ((b16 >> 8) & 0x7e) == 0x7c; }
+    bool isNaN() const Q_DECL_NOTHROW { return ((b16 >> 8) & 0x7e) == 0x7e; }
+    bool isFinite() const Q_DECL_NOTHROW { return ((b16 >> 8) & 0x7c) != 0x7c; }
 private:
     quint16 b16;
 
@@ -89,9 +93,11 @@ Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);
 Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *, const float *, qsizetype length) Q_DECL_NOTHROW;
 Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qsizetype length) Q_DECL_NOTHROW;
 
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsInf(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW; // complements qnumeric.h
+// Complement qnumeric.h:
+Q_REQUIRED_RESULT inline bool qIsInf(qfloat16 f) Q_DECL_NOTHROW { return f.isInf(); }
+Q_REQUIRED_RESULT inline bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW { return f.isNaN(); }
+Q_REQUIRED_RESULT inline bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW { return f.isFinite(); }
+// Q_REQUIRED_RESULT quint32 qFloatDistance(qfloat16 a, qfloat16 b);
 
 // The remainder of these utility functions complement qglobal.h
 Q_REQUIRED_RESULT inline int qRound(qfloat16 d) Q_DECL_NOTHROW

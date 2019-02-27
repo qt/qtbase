@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qfloat16_p.h"
+#include "qfloat16.h"
 #include "private/qsimd_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -65,28 +65,31 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
+    \fn bool qIsInf(qfloat16 f)
     \relates <QFloat16>
+
+    Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
 
     \sa qIsInf
 */
-Q_REQUIRED_RESULT bool qIsInf(qfloat16 f) Q_DECL_NOTHROW { return qt_is_inf(f); }
 
 /*!
-    Returns true if the \c qfloat16 \a {f} is not a number (NaN).
+    \fn bool qIsNaN(qfloat16 f)
     \relates <QFloat16>
+
+    Returns true if the \c qfloat16 \a {f} is not a number (NaN).
 
     \sa qIsNaN
 */
-Q_REQUIRED_RESULT bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW { return qt_is_nan(f); }
 
 /*!
-    Returns true if the \c qfloat16 \a {f} is a finite number.
+    \fn bool qIsFinite(qfloat16 f)
     \relates <QFloat16>
+
+    Returns true if the \c qfloat16 \a {f} is a finite number.
 
     \sa qIsFinite
 */
-Q_REQUIRED_RESULT bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW { return qt_is_finite(f); }
 
 /*! \fn int qRound(qfloat16 value)
     \relates <QFloat16>

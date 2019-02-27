@@ -12,7 +12,6 @@ HEADERS +=  \
         global/qendian_p.h \
         global/qnumeric_p.h \
         global/qnumeric.h \
-        global/qfloat16_p.h \
         global/qfloat16.h \
         global/qglobalstatic.h \
         global/qlibraryinfo.h \
