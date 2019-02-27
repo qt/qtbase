@@ -501,7 +501,7 @@ void qt_apple_check_os_version()
         if (!applicationName)
             applicationName = NSProcessInfo.processInfo.processName;
 
-        fprintf(stderr, "Sorry, \"%s\" can not be run on this version of %s. "
+        fprintf(stderr, "Sorry, \"%s\" cannot be run on this version of %s. "
             "Qt requires %s %ld.%ld.%ld or later, you have %s %ld.%ld.%ld.\n",
             applicationName.UTF8String, os,
             os, long(required.majorVersion), long(required.minorVersion), long(required.patchVersion),

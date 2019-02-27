@@ -557,7 +557,7 @@ bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
         delete [] qmap_keymap;
         delete [] qmap_keycompose;
 
-        qWarning("Keymap file '%s' can not be loaded.", qPrintable(file));
+        qWarning("Keymap file '%s' cannot be loaded.", qPrintable(file));
         return false;
     }
 

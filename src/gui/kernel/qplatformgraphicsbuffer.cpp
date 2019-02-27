@@ -184,7 +184,7 @@ void QPlatformGraphicsBuffer::unlock()
     \fn QPlatformGraphicsBuffer::doLock(AccessTypes access, const QRect &rect = QRect())
 
     This function should be reimplemented by subclasses. If one of the \a
-    access types specified can not be locked, then all should fail and this
+    access types specified cannot be locked, then all should fail and this
     function should return false.
 
     \a rect is the subrect which is desired to be locked. This

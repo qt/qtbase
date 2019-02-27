@@ -95,7 +95,7 @@ class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
     need to implement all data handling in the same class that creates the structure of the model, and can also be used to create
     re-usable components.
 
-    This also provides a way to change the data in the case where a source model is supplied by a third party which can not be modified.
+    This also provides a way to change the data in the case where a source model is supplied by a third party which cannot be modified.
 
     \snippet code/src_gui_itemviews_qidentityproxymodel.cpp 0
 

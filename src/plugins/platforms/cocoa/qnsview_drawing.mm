@@ -106,7 +106,7 @@
             "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
 
         if (wantsLayer != -1 && [self layerEnabledByMacOS]) {
-            qCWarning(lcQpaDrawing) << "Layer-backing can not be explicitly controlled on 10.14 when built against the 10.14 SDK";
+            qCWarning(lcQpaDrawing) << "Layer-backing cannot be explicitly controlled on 10.14 when built against the 10.14 SDK";
             return true;
         }
 

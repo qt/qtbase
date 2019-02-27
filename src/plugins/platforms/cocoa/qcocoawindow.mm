@@ -619,7 +619,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
 
     if (nsWindow.styleMask & NSWindowStyleMaskUtilityWindow
         && newState & (Qt::WindowMinimized | Qt::WindowFullScreen)) {
-        qWarning() << window()->type() << "windows can not be made" << newState;
+        qWarning() << window()->type() << "windows cannot be made" << newState;
         handleWindowStateChanged(HandleUnconditionally);
         return;
     }

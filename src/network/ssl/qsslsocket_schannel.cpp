@@ -615,8 +615,8 @@ bool QSslSocketBackendPrivate::acquireCredentialsHandle()
                                             nullptr);
         if (!chainContext) {
             const QString message = isClient
-                ? QSslSocket::tr("The certificate provided can not be used for a client.")
-                : QSslSocket::tr("The certificate provided can not be used for a server.");
+                ? QSslSocket::tr("The certificate provided cannot be used for a client.")
+                : QSslSocket::tr("The certificate provided cannot be used for a server.");
             setErrorAndEmit(QAbstractSocket::SocketError::SslInvalidUserDataError, message);
             return false;
         }

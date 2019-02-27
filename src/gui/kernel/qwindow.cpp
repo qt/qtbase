@@ -166,7 +166,7 @@ QWindow::QWindow(QScreen *targetScreen)
 static QWindow *nonDesktopParent(QWindow *parent)
 {
     if (parent && parent->type() == Qt::Desktop) {
-        qWarning("QWindows can not be reparented into desktop windows");
+        qWarning("QWindows cannot be reparented into desktop windows");
         return nullptr;
     }
 
@@ -1351,7 +1351,7 @@ void QWindow::setTransientParent(QWindow *parent)
         return;
     }
     if (parent == this) {
-        qWarning() << "transient parent" << parent << "can not be same as window";
+        qWarning() << "transient parent" << parent << "cannot be same as window";
         return;
     }
 

@@ -158,6 +158,7 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QDBusArgument)
 QT_BEGIN_NAMESPACE
 
+// ### Qt6: remove the defaulted T * = nullptr from these two (MSVC6 work-around):
 template<typename T> inline T qdbus_cast(const QDBusArgument &arg, T * = nullptr)
 {
     T item;

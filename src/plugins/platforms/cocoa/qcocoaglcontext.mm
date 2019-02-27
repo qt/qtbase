@@ -86,7 +86,7 @@ QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
         }
         m_context = nativeHandle.value<QCocoaNativeContext>().context();
         if (!m_context) {
-            qCWarning(lcQpaOpenGLContext, "QCocoaNativeContext's NSOpenGLContext can not be null");
+            qCWarning(lcQpaOpenGLContext, "QCocoaNativeContext's NSOpenGLContext cannot be null");
             return;
         }
 

@@ -239,7 +239,7 @@ static bool systemHasStderr()
 
     \note Qt Creator does not implement a pseudo TTY, nor does it launch apps with
     the override environment variable set, but it will read stderr and print it to
-    the user, so in effect this function can not be used to conclude that stderr
+    the user, so in effect this function cannot be used to conclude that stderr
     output will _not_ be visible to the user, as even if this function returns false,
     the output might still end up visible to the user. For this reason, we don't guard
     the stderr output in the default message handler with stderrHasConsoleAttached().

@@ -1562,7 +1562,7 @@ bool QNetworkReplyHttpImplPrivate::sendCacheContents(const QNetworkCacheMetaData
     QIODevice *contents = nc->data(url);
     if (!contents) {
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
-        qDebug() << "Can not send cache, the contents are 0" << url;
+        qDebug() << "Cannot send cache, the contents are 0" << url;
 #endif
         return false;
     }

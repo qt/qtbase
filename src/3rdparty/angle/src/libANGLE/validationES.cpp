@@ -3525,7 +3525,7 @@ bool ValidateGetBufferPointervBase(Context *context,
     if (context->getGLState().getTargetBuffer(target) == nullptr)
     {
         context->handleError(InvalidOperation()
-                             << "Can not get pointer for reserved buffer name zero.");
+                             << "Cannot get pointer for reserved buffer name zero.");
         return false;
     }
 
