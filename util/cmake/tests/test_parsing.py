@@ -173,6 +173,13 @@ def test_definetest():
     assert result[0] == []
 
 
+def test_for():
+    result = parse_file(_tests_path + '/data/for.pro')
+    assert len(result) == 2
+    validate_op('SOURCES', '=', ['main.cpp'], result[0])
+    assert result[1] == []
+
+
 def test_unset():
     result = parse_file(_tests_path + '/data/unset.pro')
     assert len(result) == 1

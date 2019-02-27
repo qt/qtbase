@@ -520,7 +520,6 @@ class QmakeParser:
         LC = pp.Suppress(pp.Literal('\\\n'))
         EOL = pp.Suppress(pp.Literal('\n'))
         Else = pp.Keyword('else')
-        DefineTest = pp.Keyword('defineTest')
         Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
         BracedValue = pp.nestedExpr(ignoreExpr=pp.quotedString \
                                         | pp.QuotedString(quoteChar='$(',
@@ -560,17 +559,15 @@ class QmakeParser:
         Operation = Key('key') + pp.Optional(LC) \
             + Op('operation') + pp.Optional(LC) \
             + Values('value')
-        CallArgs = pp.nestedExpr()
+        CallArgs = pp.Optional(LC) + pp.nestedExpr()
         CallArgs.setParseAction(lambda x: ' '.join(chain(*x)))
         Load = pp.Keyword('load') + CallArgs('loaded')
         Include = pp.Keyword('include') + CallArgs('included')
         Option = pp.Keyword('option') + CallArgs('option')
-        DefineTestDefinition = pp.Suppress(DefineTest + CallArgs \
-             + pp.nestedExpr(opener='{', closer='}'))  # ignore the whole thing...
-        ForLoop = pp.Suppress(pp.Keyword('for') + pp.nestedExpr()
-                              + pp.nestedExpr(opener='{', closer='}',
-                                              ignoreExpr=None)
-                              + pp.LineEnd())  # ignore the whole thing...
+        DefineTestDefinition = pp.Suppress(pp.Keyword('defineTest') + CallArgs
+             + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd()))  # ignore the whole thing...
+        ForLoop = pp.Suppress(pp.Keyword('for') + CallArgs
+             + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd()))  # ignore the whole thing...
         FunctionCall = pp.Suppress(Identifier + pp.nestedExpr())
 
         Scope = pp.Forward()
@@ -617,7 +614,7 @@ class QmakeParser:
                          'Key Op Values Value BracedValue ' \
                          'Scope Block ' \
                          'StatementGroup StatementLine Statement '\
-                         'Load Include Option DefineTest ForLoop ' \
+                         'Load Include Option DefineTestDefinition ForLoop ' \
                          'FunctionCall CallArgs Operation'.split():
                 expr = locals()[ename]
                 expr.setName(ename)
