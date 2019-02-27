@@ -180,6 +180,12 @@ def test_for():
     assert result[1] == []
 
 
+def test_single_line_for():
+    result = parse_file(_tests_path + '/data/single_line_for.pro')
+    assert len(result) == 1
+    assert result[0] == []
+
+
 def test_unset():
     result = parse_file(_tests_path + '/data/unset.pro')
     assert len(result) == 1

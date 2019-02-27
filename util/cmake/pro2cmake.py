@@ -568,11 +568,13 @@ class QmakeParser:
              + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd()))  # ignore the whole thing...
         ForLoop = pp.Suppress(pp.Keyword('for') + CallArgs
              + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd()))  # ignore the whole thing...
+        ForLoopSingleLine = pp.Suppress(pp.Keyword('for') + CallArgs
+             + pp.Literal(':') + pp.SkipTo(EOL, ignore=LC))  # ignore the whole thing...
         FunctionCall = pp.Suppress(Identifier + pp.nestedExpr())
 
         Scope = pp.Forward()
 
-        Statement = pp.Group(Load | Include | Option | ForLoop \
+        Statement = pp.Group(Load | Include | Option | ForLoop | ForLoopSingleLine \
             | DefineTestDefinition | FunctionCall | Operation)
         StatementLine = Statement + (EOL | pp.FollowedBy('}'))
         StatementGroup = pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL))
