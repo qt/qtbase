@@ -300,3 +300,8 @@ def test_realworld_qtconfig():
     assert len(result) == 1
     validate_op('MODULE_AUX_INCLUDES', '=', ['\\$\\$QT_MODULE_INCLUDE_BASE/QtANGLE'], result[0])
 
+
+def test_realworld_lc():
+    result = parse_file(_tests_path + '/data/lc.pro')
+    assert len(result) == 3
+
