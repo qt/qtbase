@@ -287,3 +287,10 @@ def test_realworld_sql():
     assert len(result) == 2
     validate_op('TEMPLATE', '=', ['subdirs'], result[0])
     validate_op('SUBDIRS', '=', ['kernel'], result[1])
+
+
+def test_realworld_qtconfig():
+    result = parse_file(_tests_path + '/data/escaped_value.pro')
+    assert len(result) == 1
+    validate_op('MODULE_AUX_INCLUDES', '=', ['\\$\\$QT_MODULE_INCLUDE_BASE/QtANGLE'], result[0])
+

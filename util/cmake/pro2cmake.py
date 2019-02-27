@@ -544,7 +544,7 @@ class QmakeParser:
         SubstitutionValue \
             = pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart
                                       | pp.Literal('$')))
-        Value = pp.NotAny(Else | pp.Literal('}') | EOL | pp.Literal('\\')) \
+        Value = pp.NotAny(Else | pp.Literal('}') | EOL) \
             + (pp.QuotedString(quoteChar='"', escChar='\\')
                 | SubstitutionValue
                 | BracedValue)
