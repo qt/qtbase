@@ -832,6 +832,13 @@ public:
         SP_MediaVolume,
         SP_MediaVolumeMuted,
         SP_LineEditClearButton,
+        SP_DialogYesToAllButton,
+        SP_DialogNoToAllButton,
+        SP_DialogSaveAllButton,
+        SP_DialogAbortButton,
+        SP_DialogRetryButton,
+        SP_DialogIgnoreButton,
+        SP_RestoreDefaultsButton,
         // do not add any values below/greater than this
         SP_CustomBase = 0xf0000000
     };

@@ -387,12 +387,25 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         icon = QStyle::SP_DialogNoButton;
         break;
     case QDialogButtonBox::YesToAll:
+        icon = QStyle::SP_DialogYesToAllButton;
+        break;
     case QDialogButtonBox::NoToAll:
+        icon = QStyle::SP_DialogNoToAllButton;
+        break;
     case QDialogButtonBox::SaveAll:
+        icon = QStyle::SP_DialogSaveAllButton;
+        break;
     case QDialogButtonBox::Abort:
+        icon = QStyle::SP_DialogAbortButton;
+        break;
     case QDialogButtonBox::Retry:
+        icon = QStyle::SP_DialogRetryButton;
+        break;
     case QDialogButtonBox::Ignore:
+        icon = QStyle::SP_DialogIgnoreButton;
+        break;
     case QDialogButtonBox::RestoreDefaults:
+        icon = QStyle::SP_RestoreDefaultsButton;
         break;
     case QDialogButtonBox::NoButton:
         return 0;
