@@ -310,11 +310,15 @@ void QBasicDrag::updateCursor(Qt::DropAction action)
         m_dndHasSetOverrideCursor = true;
     } else {
         QCursor *cursor = QGuiApplication::overrideCursor();
-        if (!pixmap.isNull()) {
-            if (cursor->pixmap().cacheKey() != pixmap.cacheKey())
-                QGuiApplication::changeOverrideCursor(QCursor(pixmap));
-        } else if (cursorShape != cursor->shape()) {
-            QGuiApplication::changeOverrideCursor(QCursor(cursorShape));
+        if (!cursor) {
+            QGuiApplication::changeOverrideCursor(pixmap.isNull() ? QCursor(cursorShape) : QCursor(pixmap));
+        } else {
+            if (!pixmap.isNull()) {
+                if (cursor->pixmap().cacheKey() != pixmap.cacheKey())
+                    QGuiApplication::changeOverrideCursor(QCursor(pixmap));
+            } else if (cursorShape != cursor->shape()) {
+                QGuiApplication::changeOverrideCursor(QCursor(cursorShape));
+            }
         }
     }
 #endif
