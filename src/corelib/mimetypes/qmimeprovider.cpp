@@ -458,6 +458,7 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
 void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
 #ifdef QT_NO_XMLSTREAMREADER
+    Q_UNUSED(data);
     qWarning("Cannot load mime type since QXmlStreamReader is not available.");
     return;
 #else

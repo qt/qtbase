@@ -194,8 +194,9 @@ static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttribute
 bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage)
 {
 #ifdef QT_NO_XMLSTREAMREADER
+    Q_UNUSED(dev);
     if (errorMessage)
-        *errorMessage = QString::fromLatin1("QXmlStreamReader is not available, cannot parse.");
+        *errorMessage = QString::fromLatin1("QXmlStreamReader is not available, cannot parse '%1'.").arg(fileName);
     return false;
 #else
     QMimeTypePrivate data;
