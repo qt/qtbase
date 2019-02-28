@@ -546,6 +546,7 @@ public:
         AA_DontShowShortcutsInContextMenus = 28,
         AA_CompressTabletEvents = 29,
         AA_DisableWindowContextHelpButton = 30, // ### Qt 6: remove me
+        AA_DisableSessionManager = 31,
 
         // Add new attributes before this line
         AA_AttributeCount
