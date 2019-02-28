@@ -2171,13 +2171,12 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     if (found.isEmpty()) {
         const char *testObjectName = QTestResult::currentTestObjectName();
         if (testObjectName) {
-            QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
-            QString candidate = QString::fromLatin1("%1/%2/%3")
+            const QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
+            const QString candidate = QString::fromLatin1("%1/%2/%3")
                 .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
             if (QFileInfo::exists(candidate)) {
                 found = candidate;
-            }
-            else if (QTestLog::verboseLevel() >= 2) {
+            } else if (QTestLog::verboseLevel() >= 2) {
                 QTestLog::info(qPrintable(
                     QString::fromLatin1("testdata %1 not found in tests install path [%2]; "
                                         "checking next location")
@@ -2199,11 +2198,10 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         }
 
         const QString canonicalPath = srcdir.canonicalFilePath();
-        QString candidate = QString::fromLatin1("%1/%2").arg(canonicalPath, base);
+        const QString candidate = QString::fromLatin1("%1/%2").arg(canonicalPath, base);
         if (!canonicalPath.isEmpty() && QFileInfo::exists(candidate)) {
             found = candidate;
-        }
-        else if (QTestLog::verboseLevel() >= 2) {
+        } else if (QTestLog::verboseLevel() >= 2) {
             QTestLog::info(qPrintable(
                 QString::fromLatin1("testdata %1 not found relative to source path [%2]")
                     .arg(base, QDir::toNativeSeparators(candidate))),
@@ -2213,31 +2211,48 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     // 4. Try resources
     if (found.isEmpty()) {
-        QString candidate = QString::fromLatin1(":/%1").arg(base);
-        if (QFileInfo::exists(candidate))
+        const QString candidate = QString::fromLatin1(":/%1").arg(base);
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in resources [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
     }
 
     // 5. Try current directory
     if (found.isEmpty()) {
         const QString candidate = QDir::currentPath() + QLatin1Char('/') + base;
-        if (QFileInfo::exists(candidate))
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in current directory [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
     }
 
     // 6. Try main source directory
     if (found.isEmpty()) {
-        QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
-        if (QFileInfo::exists(candidate))
+        const QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in main source directory [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
     }
 
     if (found.isEmpty()) {
         QTest::qWarn(qPrintable(
             QString::fromLatin1("testdata %1 could not be located!").arg(base)),
             file, line);
-    }
-    else if (QTestLog::verboseLevel() >= 1) {
+    } else if (QTestLog::verboseLevel() >= 1) {
         QTestLog::info(qPrintable(
             QString::fromLatin1("testdata %1 was located at %2").arg(base, QDir::toNativeSeparators(found))),
             file, line);
