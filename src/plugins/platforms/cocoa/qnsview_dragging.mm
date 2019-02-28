@@ -177,17 +177,17 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
-    return [self handleDrag:sender];
+    return [self handleDrag:(QEvent::DragEnter) sender:sender];
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender
 {
     QScopedValueRollback<bool> rollback(m_updatingDrag, true);
-    return [self handleDrag:sender];
+    return [self handleDrag:(QEvent::DragMove) sender:sender];
 }
 
 // Sends drag update to Qt, return the action
-- (NSDragOperation)handleDrag:(id<NSDraggingInfo>)sender
+- (NSDragOperation)handleDrag:(QEvent::Type)dragType sender:(id<NSDraggingInfo>)sender
 {
     if (!m_platformWindow)
         return NSDragOperationNone;
@@ -203,6 +203,11 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     const auto modifiers = [QNSView convertKeyModifiers:NSApp.currentEvent.modifierFlags];
     const auto buttons = currentlyPressedMouseButtons();
     const auto point = mapWindowCoordinates(m_platformWindow->window(), target, windowPoint);
+
+    if (dragType == QEvent::DragEnter)
+        qCDebug(lcQpaMouse) << dragType << self << "at" << windowPoint;
+    else
+        qCDebug(lcQpaMouse) << dragType << "at" << windowPoint << "with" << buttons;
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
@@ -231,6 +236,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
     QPoint windowPoint = QPointF::fromCGPoint([self convertPoint:sender.draggingLocation fromView:nil]).toPoint();
 
+    qCDebug(lcQpaMouse) << QEvent::DragLeave << self << "at" << windowPoint;
+
     // Send 0 mime data to indicate drag exit
     QWindowSystemInterface::handleDrag(target, nullptr,
                                        mapWindowCoordinates(m_platformWindow->window(), target, windowPoint),
@@ -256,6 +263,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     const auto modifiers = [QNSView convertKeyModifiers:NSApp.currentEvent.modifierFlags];
     const auto buttons = currentlyPressedMouseButtons();
     const auto point = mapWindowCoordinates(m_platformWindow->window(), target, windowPoint);
+
+    qCDebug(lcQpaMouse) << QEvent::Drop << "at" << windowPoint << "with" << buttons;
 
     if (nativeDrag->currentDrag()) {
         // The drag was started from within the application
@@ -285,6 +294,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
 
     m_buttons = currentlyPressedMouseButtons();
+
+    qCDebug(lcQpaMouse) << "Drag session" << session << "ended, with" << m_buttons;
 }
 
 @end

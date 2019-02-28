@@ -93,6 +93,7 @@
 
 - (void)resetMouseButtons
 {
+    qCDebug(lcQpaMouse) << "Reseting mouse buttons";
     m_buttons = Qt::NoButton;
     m_frameStrutButtons = Qt::NoButton;
 }
@@ -145,6 +146,9 @@
     QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
 
     ulong timestamp = [theEvent timestamp] * 1000;
+
+    auto eventType = cocoaEvent2QtMouseEvent(theEvent);
+    qCInfo(lcQpaMouse) << "Frame-strut" << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
 }
 @end
@@ -253,6 +257,11 @@
     if (button == Qt::LeftButton && m_sendUpAsRightButton)
         button = Qt::RightButton;
     const auto eventType = cocoaEvent2QtMouseEvent(theEvent);
+
+    if (eventType == QEvent::MouseMove)
+        qCDebug(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << buttons;
+    else
+        qCInfo(lcQpaMouse) << eventType << "of" << button << "at" << qtWindowPoint << "with" << buttons;
 
     QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(),
                                              timestamp, qtWindowPoint, qtScreenPoint,
@@ -459,16 +468,16 @@
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    qCDebug(lcQpaMouse) << "Updating cursor for" << self << "to" << self.cursor;
-
     // Note: We do not get this callback when moving from a subview that
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
     // cursor. See rdar://34183708
 
-    if (self.cursor)
+    if (self.cursor && self.cursor != NSCursor.currentCursor) {
+        qCInfo(lcQpaMouse) << "Updating cursor for" << self << "to" << self.cursor;
         [self.cursor set];
-    else
+    } else {
         [super cursorUpdate:theEvent];
+    }
 }
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent
@@ -523,6 +532,8 @@
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     m_platformWindow->m_enterLeaveTargetWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
+
+    qCInfo(lcQpaMouse) << QEvent::Enter << self << "at" << windowPoint << "with" << currentlyPressedMouseButtons();
     QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
 }
 
@@ -541,6 +552,7 @@
     if (!m_platformWindow->isContentView())
         return;
 
+    qCInfo(lcQpaMouse) << QEvent::Leave << self;
     QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);
     m_platformWindow->m_enterLeaveTargetWindow = 0;
 }
@@ -639,8 +651,10 @@
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
-    qCDebug(lcQpaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta
-            << "angle" << angleDelta << "phase" << phase << (isInverted ? "inverted" : "");
+    qCInfo(lcQpaMouse).nospace() << phase << " at " << qt_windowPoint
+        << " pixelDelta=" << pixelDelta << " angleDelta=" << angleDelta
+        << (isInverted ? " inverted=true" : "");
+
     QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint,
             qt_screenPoint, pixelDelta, angleDelta, m_currentWheelModifiers, phase, source, isInverted);
 }
