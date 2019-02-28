@@ -695,11 +695,27 @@ QList<QTouchEvent::TouchPoint>
     }
 
     if (states == Qt::TouchPointReleased) {
-        g_nextPointId = 1;
-        g_pointIdMap->clear();
+        // All points on deviceId have been released.
+        // Remove all points associated with that device from g_pointIdMap.
+        // (On other devices, some touchpoints might still be pressed.
+        // But this function is only called with points from one device at a time.)
+        for (auto it = g_pointIdMap->begin(); it != g_pointIdMap->end();) {
+            if (it.key() >> 32 == quint64(deviceId))
+                it = g_pointIdMap->erase(it);
+            else
+                ++it;
+        }
+        if (g_pointIdMap->isEmpty())
+            g_nextPointId = 1;
     }
 
     return touchPoints;
+}
+
+void QWindowSystemInterfacePrivate::clearPointIdMap()
+{
+    g_pointIdMap->clear();
+    g_nextPointId = 1;
 }
 
 QList<QWindowSystemInterface::TouchPoint>
