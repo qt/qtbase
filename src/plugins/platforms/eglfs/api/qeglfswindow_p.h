@@ -116,6 +116,7 @@ public:
 protected:
 #ifndef QT_NO_OPENGL
     QOpenGLCompositorBackingStore *m_backingStore;
+    QOpenGLContext *m_rasterCompositingContext;
 #endif
     bool m_raster;
     WId m_winId;
