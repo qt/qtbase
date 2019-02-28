@@ -292,7 +292,7 @@
             "label": "DTLS",
             "purpose": "Provides a DTLS implementation",
             "section": "Networking",
-            "condition": "features.openssl && tests.dtls",
+            "condition": "features.openssl && features.udpsocket && tests.dtls",
             "output": [ "publicFeature" ]
         },
         "ocsp": {
