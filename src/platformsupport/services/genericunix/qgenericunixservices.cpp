@@ -206,8 +206,8 @@ static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
                                                               QLatin1String("org.freedesktop.portal.OpenURI"),
                                                               QLatin1String("OpenFile"));
 
-        QDBusUnixFileDescriptor descriptor(fd);
-        qt_safe_close(fd);
+        QDBusUnixFileDescriptor descriptor;
+        descriptor.giveFileDescriptor(fd);
 
         // FIXME parent_window_id and handle writable option
         message << QString() << QVariant::fromValue(descriptor) << QVariantMap();
