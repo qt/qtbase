@@ -193,7 +193,6 @@ init_context:
         minVersion = TLS1_2_VERSION;
         maxVersion = 0;
         break;
-#if QT_CONFIG(dtls)
     case QSsl::DtlsV1_0:
         minVersion = DTLS1_VERSION;
         maxVersion = DTLS1_VERSION;
@@ -210,7 +209,6 @@ init_context:
         minVersion = DTLS1_2_VERSION;
         maxVersion = DTLS_MAX_VERSION;
         break;
-#endif // dtls
     case QSsl::TlsV1_3OrLater:
 #ifdef TLS1_3_VERSION
         minVersion = TLS1_3_VERSION;
