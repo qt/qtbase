@@ -173,6 +173,8 @@ public:
     bool updateDynamicTableSize(quint32 size);
     void setMaxDynamicTableSize(quint32 size);
 
+    static const std::vector<HeaderField> &staticPart();
+
 private:
     // Table's maximum size is controlled
     // by SETTINGS_HEADER_TABLE_SIZE (HTTP/2, 6.5.2).
@@ -225,9 +227,16 @@ private:
     quint32 indexOfChunk(const Chunk *chunk) const;
     quint32 keyToIndex(const SearchEntry &key) const;
 
+    enum class CompareMode {
+        nameOnly,
+        nameAndValue
+    };
+
+    static std::vector<HeaderField>::const_iterator findInStaticPart(const HeaderField &field, CompareMode mode);
+
     mutable QByteArray dummyDst;
 
-    Q_DISABLE_COPY(FieldLookupTable);
+    Q_DISABLE_COPY(FieldLookupTable)
 };
 
 }
