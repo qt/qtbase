@@ -1099,6 +1099,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
     case QtWindows::ClipboardEvent:
         return false;
+    case QtWindows::CursorEvent: // Sent to windows that do not have capture (see QTBUG-58590).
+        if (QWindowsCursor::hasOverrideCursor()) {
+            QWindowsCursor::enforceOverrideCursor();
+            return true;
+        }
+        break;
     case QtWindows::UnknownEvent:
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:

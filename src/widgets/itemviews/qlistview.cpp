@@ -1315,8 +1315,8 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
             if (tl.isValid() && br.isValid()
                 && d->isIndexEnabled(tl)
                 && d->isIndexEnabled(br)) {
-                QRect first = rectForIndex(tl);
-                QRect last = rectForIndex(br);
+                QRect first = d->cellRectForIndex(tl);
+                QRect last = d->cellRectForIndex(br);
                 QRect middle;
                 if (d->flow == LeftToRight) {
                     QRect &top = first;

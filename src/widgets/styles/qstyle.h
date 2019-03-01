@@ -141,8 +141,10 @@ public:
         PE_FrameGroupBox,
         PE_FrameLineEdit,
         PE_FrameMenu,
-        PE_FrameStatusBar, // ### Qt 6: remove
-        PE_FrameStatusBarItem = PE_FrameStatusBar,
+        PE_FrameStatusBarItem,
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
+        PE_FrameStatusBar Q_DECL_ENUMERATOR_DEPRECATED = PE_FrameStatusBarItem,
+#endif
         PE_FrameTabWidget,
         PE_FrameWindow,
         PE_FrameButtonBevel,
@@ -162,8 +164,10 @@ public:
         PE_IndicatorArrowUp,
         PE_IndicatorBranch,
         PE_IndicatorButtonDropDown,
-        PE_IndicatorViewItemCheck, // ### Qt 6: remove
-        PE_IndicatorItemViewItemCheck = PE_IndicatorViewItemCheck,
+        PE_IndicatorItemViewItemCheck,
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
+        PE_IndicatorViewItemCheck Q_DECL_ENUMERATOR_DEPRECATED = PE_IndicatorItemViewItemCheck,
+#endif
         PE_IndicatorCheckBox,
         PE_IndicatorDockWidgetResizeHandle,
         PE_IndicatorHeaderArrow,
@@ -309,8 +313,9 @@ public:
         SE_TabWidgetRightCorner,
 
         SE_ItemViewItemCheckIndicator,
-        SE_ViewItemCheckIndicator = SE_ItemViewItemCheckIndicator, // ### Qt 6: remove
-
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
+        SE_ViewItemCheckIndicator Q_DECL_ENUMERATOR_DEPRECATED = SE_ItemViewItemCheckIndicator,
+#endif
         SE_TabBarTearIndicator,
         SE_TabBarTearIndicatorLeft = SE_TabBarTearIndicator,
 
@@ -506,9 +511,11 @@ public:
         PM_DialogButtonsButtonHeight,
 
         PM_MdiSubWindowFrameWidth,
-        PM_MDIFrameWidth = PM_MdiSubWindowFrameWidth,         // ### Qt 6: remove
         PM_MdiSubWindowMinimizedWidth,
-        PM_MDIMinimizedWidth = PM_MdiSubWindowMinimizedWidth, // ### Qt 6: remove
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
+        PM_MDIFrameWidth Q_DECL_ENUMERATOR_DEPRECATED = PM_MdiSubWindowFrameWidth,
+        PM_MDIMinimizedWidth Q_DECL_ENUMERATOR_DEPRECATED = PM_MdiSubWindowMinimizedWidth,
+#endif
 
         PM_HeaderMargin,
         PM_HeaderMarkSize,
@@ -649,7 +656,9 @@ public:
         SH_ComboBox_Popup,
         SH_TitleBar_NoBorder,
         SH_Slider_StopMouseOverSlider,
-        SH_ScrollBar_StopMouseOverSlider = SH_Slider_StopMouseOverSlider, // ### Qt 6: remove
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
+        SH_ScrollBar_StopMouseOverSlider Q_DECL_ENUMERATOR_DEPRECATED = SH_Slider_StopMouseOverSlider,
+#endif
         SH_BlinkCursorWhenTextSelected,
         SH_RichText_FullWidthSelection,
         SH_Menu_Scrollable,

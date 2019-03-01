@@ -297,7 +297,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
 QSyntaxHighlighter::QSyntaxHighlighter(QObject *parent)
     : QObject(*new QSyntaxHighlighterPrivate, parent)
 {
-    if (parent->inherits("QTextEdit")) {
+    if (parent && parent->inherits("QTextEdit")) {
         QTextDocument *doc = parent->property("document").value<QTextDocument *>();
         if (doc)
             setDocument(doc);

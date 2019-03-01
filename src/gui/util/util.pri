@@ -19,7 +19,8 @@ HEADERS += \
         util/qtexturefilereader_p.h \
         util/qtexturefilehandler_p.h \
         util/qpkmhandler_p.h \
-        util/qktxhandler_p.h
+        util/qktxhandler_p.h \
+        util/qastchandler_p.h
 
 SOURCES += \
         util/qdesktopservices.cpp \
@@ -38,4 +39,5 @@ SOURCES += \
         util/qtexturefiledata.cpp \
         util/qtexturefilereader.cpp \
         util/qpkmhandler.cpp \
-        util/qktxhandler.cpp
+        util/qktxhandler.cpp \
+        util/qastchandler.cpp

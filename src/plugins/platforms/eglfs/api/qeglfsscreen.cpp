@@ -62,9 +62,6 @@ QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
 QEglFSScreen::~QEglFSScreen()
 {
     delete m_cursor;
-#ifndef QT_NO_OPENGL
-    QOpenGLCompositor::destroy();
-#endif
 }
 
 QRect QEglFSScreen::geometry() const

@@ -15,6 +15,17 @@ defineTest(qtConfLibrary_freetype) {
     return(true)
 }
 
+defineTest(qtConfLibrary_openglMakeSpec) {
+    darwin:sdk {
+        sysrootified =
+        for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
+        QMAKE_INCDIR_OPENGL = $$sysrootified
+    }
+    $${1}.spec = OPENGL
+    !qtConfLibrary_makeSpec($$1, $$2): return(false)
+    return(true)
+}
+
 # Check for Direct X shader compiler 'fxc'.
 # Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
 # DXSDK_DIR variable. Starting with Windows Kit 8, it is included in
