@@ -1,3 +1,9 @@
+# Generated from concurrent.pro.
+
+#####################################################################
+## Concurrent Module:
+#####################################################################
+
 add_qt_module(Concurrent
     SOURCES
         qtconcurrent_global.h
@@ -18,8 +24,21 @@ add_qt_module(Concurrent
     DEFINES
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
-    LIBRARIES Qt::CorePrivate
-    PUBLIC_LIBRARIES Qt::Core
+    LIBRARIES
+        Qt::CorePrivate
+    PUBLIC_LIBRARIES  # special case
+        Qt::Core
+    # CONFIG = "exceptions"
+    # PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
+    # _LOADED = "qt_module"
+)
+
+## Scopes:
+#####################################################################
+
+extend_target(Concurrent CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+    LINK_OPTIONS
+        "/BASE:0x66000000"
 )
 
 add_qt_docs(./doc/qtconcurrent.qdocconf)

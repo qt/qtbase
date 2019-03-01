@@ -24,6 +24,20 @@ add_qt_module(Sql
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
+    PUBLIC_LIBRARIES  # special case
+        Qt::Core
+    # MODULE_PLUGIN_TYPES = "sqldrivers"
+    # PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
+    # SQL_P = "sql"
+    # _LOADED = "qt_module"
+)
+
+## Scopes:
+#####################################################################
+
+extend_target(Sql CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+    LINK_OPTIONS
+        "/BASE:0x62000000"
 )
 
 extend_target(Sql CONDITION QT_FEATURE_sqlmodel
