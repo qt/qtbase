@@ -89,6 +89,8 @@ private slots:
     void readback_data();
     void readback();
 
+    void python();
+
     void cleanupTestCase();
 
 private:
@@ -107,6 +109,12 @@ void tst_rcc::initTestCase()
     QVERIFY(!m_dataPath.isEmpty());
 }
 
+
+static inline bool isPythonComment(const QString &line)
+{
+    return line.startsWith(QLatin1Char('#'));
+}
+
 static QString doCompare(const QStringList &actual, const QStringList &expected,
                          const QString &timeStampPath)
 {
@@ -116,9 +124,12 @@ static QString doCompare(const QStringList &actual, const QStringList &expected,
     }
 
     QByteArray ba;
+    const bool isPython = isPythonComment(expected.constFirst());
     for (int i = 0, n = expected.size(); i != n; ++i) {
         QString expectedLine = expected.at(i);
         if (expectedLine.startsWith("IGNORE:"))
+            continue;
+        if (isPython && isPythonComment(expectedLine) && isPythonComment(actual.at(i)))
             continue;
         if (expectedLine.startsWith("TIMESTAMP:")) {
             const QString relativePath = expectedLine.mid(strlen("TIMESTAMP:"));
@@ -403,6 +414,36 @@ void tst_rcc::readback()
     fileSystemFile.close();
 
     QCOMPARE(resourceData, fileSystemData);
+}
+
+void tst_rcc::python()
+{
+    const QString path = m_dataPath + QLatin1String("/sizes");
+    const QString testFileRoot = path + QLatin1String("/size-2-0-35-1");
+    const QString qrcFile = testFileRoot + QLatin1String(".qrc");
+    const QString expectedFile = testFileRoot + QLatin1String("_python.expected");
+    const QString actualFile = testFileRoot + QLatin1String(".rcc");
+
+    QProcess process;
+    process.setWorkingDirectory(path);
+    process.start(m_rcc, { "-g", "python", "-o", actualFile, qrcFile});
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(process).constData());
+    if (!process.waitForFinished()) {
+        process.kill();
+        QFAIL(msgProcessTimeout(process).constData());
+    }
+    QVERIFY2(process.exitStatus() == QProcess::NormalExit,
+             msgProcessCrashed(process).constData());
+    QVERIFY2(process.exitCode() == 0,
+             msgProcessFailed(process).constData());
+
+    const auto actualLines = readLinesFromFile(actualFile, QString::KeepEmptyParts);
+    QVERIFY(!actualLines.isEmpty());
+    const auto expectedLines = readLinesFromFile(expectedFile, QString::KeepEmptyParts);
+    QVERIFY(!expectedLines.isEmpty());
+    const QString diff = doCompare(actualLines, expectedLines, path);
+    if (!diff.isEmpty())
+        QFAIL(qPrintable(diff));
 }
 
 void tst_rcc::cleanupTestCase()

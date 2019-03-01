@@ -58,7 +58,7 @@ public:
 
     bool readFiles(bool listMode, QIODevice &errorDevice);
 
-    enum Format { Binary, C_Code, Pass1, Pass2 };
+    enum Format { Binary, C_Code, Pass1, Pass2, Python3_Code, Python2_Code };
     void setFormat(Format f) { m_format = f; }
     Format format() const { return m_format; }
 
@@ -136,6 +136,7 @@ private:
     void writeAddNamespaceFunction(const QByteArray &name);
     void writeDecimal(int value);
     void writeHex(quint8 number);
+    void write2HexDigits(quint8 number);
     void writeNumber2(quint16 number);
     void writeNumber4(quint32 number);
     void writeNumber8(quint64 number);
