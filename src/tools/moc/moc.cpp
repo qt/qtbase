@@ -285,6 +285,7 @@ bool Moc::parseEnum(EnumDef *def)
             break;
         next(IDENTIFIER);
         def->values += lexem();
+        skipCxxAttributes();
     } while (test(EQ) ? until(COMMA) : test(COMMA));
     next(RBRACE);
     if (isTypdefEnum) {

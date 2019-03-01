@@ -3926,6 +3926,23 @@ void tst_Moc::cxxAttributes()
                   }) {
         QVERIFY(so.indexOfSlot(a) != 1);
     }
+
+    QCOMPARE(TestQNamespaceDeprecated::staticMetaObject.enumeratorCount(), 2);
+    checkEnum(TestQNamespaceDeprecated::staticMetaObject.enumerator(0), "TestEnum1",
+                {{"Key1", 11}, {"Key2", 12}, {"Key3", 13}, {"Key4", 14}, {"Key5", 15}, {"Key6", 16},
+                 {"Key7", 17}});
+    checkEnum(TestQNamespaceDeprecated::staticMetaObject.enumerator(1), "TestFlag1",
+                {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Flag3", 3}, {"Any", 1 | 2 | 3}});
+
+    QCOMPARE(TestQNamespaceDeprecated::TestGadget::staticMetaObject.enumeratorCount(), 1);
+    checkEnum(TestQNamespaceDeprecated::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
+                {{"Key1", 13}, {"Key2", 14}, {"Key3", 15}});
+
+    QMetaEnum meta = QMetaEnum::fromType<TestQNamespaceDeprecated::TestEnum1>();
+    QVERIFY(meta.isValid());
+    QCOMPARE(meta.name(), "TestEnum1");
+    QCOMPARE(meta.enclosingMetaObject(), &TestQNamespaceDeprecated::staticMetaObject);
+    QCOMPARE(meta.keyCount(), 7);
 }
 
 QTEST_MAIN(tst_Moc)

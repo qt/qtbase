@@ -57,4 +57,47 @@ public slots:
 #endif
 };
 
+#ifdef Q_MOC_RUN
+#  define TEST_COMPILER_DEPRECATION [[deprecated]]
+#  define TEST_COMPILER_DEPRECATION_X(x) [[deprecated(x)]]
+#else
+#  define TEST_COMPILER_DEPRECATION Q_DECL_ENUMERATOR_DEPRECATED
+#  define TEST_COMPILER_DEPRECATION_X(x) Q_DECL_ENUMERATOR_DEPRECATED_X(x)
+#endif
+
+namespace TestQNamespaceDeprecated {
+    Q_NAMESPACE
+    enum class TestEnum1 {
+        Key1 = 11,
+        Key2 TEST_COMPILER_DEPRECATION,
+        Key3 TEST_COMPILER_DEPRECATION_X("reason"),
+        Key4 TEST_COMPILER_DEPRECATION_X("reason["),
+        Key5 TEST_COMPILER_DEPRECATION_X("reason[["),
+        Key6 TEST_COMPILER_DEPRECATION_X("reason]"),
+        Key7 TEST_COMPILER_DEPRECATION_X("reason]]"),
+    };
+    Q_ENUM_NS(TestEnum1)
+
+    // try to dizzy moc by adding a struct in between
+    struct TestGadget {
+        Q_GADGET
+    public:
+        enum class TestGEnum1 {
+            Key1 = 13,
+            Key2 TEST_COMPILER_DEPRECATION,
+            Key3 TEST_COMPILER_DEPRECATION_X("reason")
+        };
+        Q_ENUM(TestGEnum1)
+    };
+
+    enum class TestFlag1 {
+        None = 0,
+        Flag1 = 1,
+        Flag2 TEST_COMPILER_DEPRECATION = 2,
+        Flag3 TEST_COMPILER_DEPRECATION_X("reason") = 3,
+        Any = Flag1 | Flag2 | Flag3
+    };
+    Q_FLAG_NS(TestFlag1)
+}
+
 #endif // CXXATTRIBUTE_H
