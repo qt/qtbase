@@ -1,3 +1,9 @@
+# Generated from qlalr.pro.
+
+#####################################################################
+## qlalr Tool:
+#####################################################################
+
 add_qt_tool(qlalr
     SOURCES
         compress.cpp compress.h
@@ -10,4 +16,8 @@ add_qt_tool(qlalr
         recognizer.cpp recognizer.h
     DEFINES
         QT_NO_FOREACH
+    # OTHER_FILES = "lalr.g"
+    # QMAKE_TARGET_DESCRIPTION = "Qt Look Ahead LR Parser Generator"
+    # _LOADED = "qt_tool"
+    # _OPTION = "host_build"
 )
