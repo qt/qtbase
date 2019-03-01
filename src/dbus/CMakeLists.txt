@@ -1,7 +1,7 @@
 # Generated from dbus.pro.
 
 #####################################################################
-## QtDBus Module:
+## DBus Module:
 #####################################################################
 
 add_qt_module(DBus
@@ -21,7 +21,7 @@ add_qt_module(DBus
         qdbusinterface.cpp qdbusinterface.h qdbusinterface_p.h
         qdbusinternalfilters.cpp
         qdbusintrospection.cpp qdbusintrospection_p.h
-# FIXME: this file is included in qdbusargument.cpp: qdbusmarshaller.cpp
+        qdbusmarshaller.cpp
         qdbusmessage.cpp qdbusmessage.h qdbusmessage_p.h
         qdbusmetaobject.cpp
         qdbusmetatype.cpp qdbusmetatype.h
@@ -42,17 +42,31 @@ add_qt_module(DBus
         DBUS_API_SUBJECT_TO_CHANGE
         QT_NO_FOREACH
     LIBRARIES
-        Qt::Core
         Qt::CorePrivate
+    # MODULE_CONFIG = "dbusadaptors" "dbusinterfaces"
+    # _LOADED = "qt_module"
 )
+
+set_source_files_properties(qdbusmarshaller.cpp
+    PROPERTIES HEADER_FILE_ONLY ON)  # special case: This file is included by qdbusargument.cpp
+
 
 ## Scopes:
 #####################################################################
 
 extend_target(DBus CONDITION QT_FEATURE_dbus_linked
-    DEFINES QT_LINKED_LIBDBUS LIBRARIES dbus
+    DEFINES
+        QT_LINKED_LIBDBUS
+    LIBRARIES
+        dbus
 )
 
-extend_target(DBus CONDITION WIN32 LIBRARIES ws2_32 advapi32 netapi32 user32)
+extend_target(DBus CONDITION WIN32
+    LIBRARIES
+        ws2_32
+        advapi32
+        netapi32
+        user32
+)
 
 add_qt_docs(./doc/qtdbus.qdocconf)
