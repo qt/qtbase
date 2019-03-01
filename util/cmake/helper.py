@@ -220,6 +220,7 @@ libray_mapping = {
     'icu': 'ICU::i18n ICU::uc ICU::data',
     'libatomic': 'Atomic',
     'libdl': '${CMAKE_DL_LIBS}',
+    'libpng' : 'PNG::PNG',
     'libproxy': 'LibProxy::LibProxy',
     'librt': 'WrapRt',
     'pcre2': 'PCRE2',
