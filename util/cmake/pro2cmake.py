@@ -1197,8 +1197,11 @@ def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
                indent: int = 0) -> None:
     tool_name = scope.TARGET
 
+    extra = ['BOOTSTRAP'] if 'force_bootstrap' in scope.get('CONFIG', []) else []
+
     write_main_part(cm_fh, tool_name, 'Tool', 'add_qt_tool', scope,
-                    indent=indent, known_libraries={'Qt::Core', })
+                    indent=indent, known_libraries={'Qt::Core', },
+                    extra_lines=extra)
 
 
 def write_test(cm_fh: typing.IO[str], scope: Scope, *,
