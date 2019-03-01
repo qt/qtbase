@@ -1,7 +1,7 @@
 # Generated from xml.pro.
 
 #####################################################################
-## QtXml Module:
+## Xml Module:
 #####################################################################
 
 add_qt_module(Xml
@@ -14,17 +14,16 @@ add_qt_module(Xml
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
+    # PRECOMPILED_HEADER = <EMPTY>
+    # _LOADED = "qt_module"
 )
 
 ## Scopes:
 #####################################################################
 
-### FIXME
-# extend_target(Xml CONDITION (MSVC) AND (TEST_architecture_arch STREQUAL i386))
-#     SOURCES
-#     ### FIXME: QMAKE_LFLAGS += /BASE:0x61000000
-# )
+extend_target(Xml CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+    LINK_OPTIONS
+        "/BASE:0x61000000"
+)
 
 add_qt_docs(./doc/qtxml.qdocconf)
