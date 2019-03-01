@@ -114,6 +114,18 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             externalFormat = GL_BGRA;
             internalFormat = GL_RGBA;
             pixelType = GL_UNSIGNED_INT_8_8_8_8_REV;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        // Without GL_UNSIGNED_INT_8_8_8_8_REV, BGRA only matches ARGB on little endian:
+        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::BGRATextureFormat) && !sRgbBinding) {
+            // The GL_EXT_texture_format_BGRA8888 extension requires the internal format to match the external.
+            externalFormat = internalFormat = GL_BGRA;
+            pixelType = GL_UNSIGNED_BYTE;
+        } else if (context->isOpenGLES() && context->hasExtension(QByteArrayLiteral("GL_APPLE_texture_format_BGRA8888"))) {
+            // Is only allowed as an external format like OpenGL.
+            externalFormat = GL_BGRA;
+            internalFormat = GL_RGBA;
+            pixelType = GL_UNSIGNED_BYTE;
+#endif
         } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
             GLint swizzle[4] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
@@ -125,25 +137,8 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             externalFormat = internalFormat = GL_RGBA;
             pixelType = GL_UNSIGNED_BYTE;
         } else {
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-            // Without GL_UNSIGNED_INT_8_8_8_8_REV, BGRA only matches ARGB on little endian.
-            if (funcs->hasOpenGLExtension(QOpenGLExtensions::BGRATextureFormat) && !sRgbBinding) {
-                // The GL_EXT_texture_format_BGRA8888 extension requires the internal format to match the external.
-                externalFormat = internalFormat = GL_BGRA;
-                pixelType = GL_UNSIGNED_BYTE;
-            } else if (context->isOpenGLES() && context->hasExtension(QByteArrayLiteral("GL_APPLE_texture_format_BGRA8888"))) {
-                // Is only allowed as an external format like OpenGL.
-                externalFormat = GL_BGRA;
-                internalFormat = GL_RGBA;
-                pixelType = GL_UNSIGNED_BYTE;
-            } else {
-                // No support for direct ARGB32 upload.
-                break;
-            }
-#else
-            // Big endian requires GL_UNSIGNED_INT_8_8_8_8_REV for ARGB to match BGRA
+            // No support for direct ARGB32 upload.
             break;
-#endif
         }
         targetFormat = image.format();
         break;
