@@ -13,7 +13,14 @@ equals(TEMPLATE, app): TEMPLATE = aux
 
 isEmpty(TARGETPATH): error("Must set TARGETPATH (QML import name)")
 
-qmldir_file = $$_PRO_FILE_PWD_/qmldir
+!isEmpty(DYNAMIC_QMLDIR) {
+    qmldir_path = $$OUT_PWD
+    write_file($${qmldir_path}/qmldir, DYNAMIC_QMLDIR)|error("Aborting.")
+} else {
+    qmldir_path = $$_PRO_FILE_PWD_
+}
+
+qmldir_file = $${qmldir_path}/qmldir
 
 fq_qml_files =
 for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
@@ -42,12 +49,19 @@ builtin_resources {
 }
 
 # Install rules
-qmldir.base = $$_PRO_FILE_PWD_
+qmldir.base = $$qmldir_path
 # Tools need qmldir and plugins.qmltypes always installed on the file system
-qmldir.files = $$qmldir_file $$fq_aux_qml_files
+
+qmldir.files = $$qmldir_file
 install_qml_files: qmldir.files += $$fq_qml_files
 qmldir.path = $$[QT_INSTALL_QML]/$$TARGETPATH
 INSTALLS += qmldir
+
+qmlfiles.base = $$_PRO_FILE_PWD_
+qmlfiles.files = $$fq_aux_qml_files
+install_qml_files: qmlfiles.files += $$fq_qml_files
+qmlfiles.path = $${qmldir.path}
+INSTALLS += qmlfiles
 
 !debug_and_release|!build_all|CONFIG(release, debug|release) {
     !prefix_build {
