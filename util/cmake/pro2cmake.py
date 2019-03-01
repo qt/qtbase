@@ -656,9 +656,9 @@ def parseProFile(file: str, *, debug=False):
 def map_condition(condition: str) -> str:
     condition = re.sub(r'\bif\s*\((.*?)\)', r'\1', condition)
     condition = re.sub(r'\bisEmpty\s*\((.*?)\)', r'\1_ISEMPTY', condition)
-    condition = re.sub(r'\bcontains\s*\((.*?), (.*)?\)',
+    condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)',
                        r'\1___contains___\2', condition)
-    condition = re.sub(r'\bequals\s*\((.*?), (.*)?\)',
+    condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)',
                        r'\1___equals___\2', condition)
     condition = re.sub(r'\s*==\s*', '___STREQUAL___', condition)
 
@@ -1070,6 +1070,14 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
     return current_condition
 
 
+def map_to_cmake_condition(condition: str) -> str:
+    condition = re.sub(r'\bQT_ARCH___equals___([a-zA-Z_0-9]*)',
+                       r'(TEST_architecture STREQUAL "\1")', condition)
+    condition = re.sub(r'\bQT_ARCH___contains___([a-zA-Z_0-9]*)',
+                       r'(TEST_architecture STREQUAL "\1")', condition)
+    return condition
+
+
 def write_extend_target(cm_fh: typing.IO[str], target: str,
                         scope: Scope, indent: int = 0):
     extend_qt_io_string = io.StringIO()
@@ -1083,7 +1091,7 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
 
     extend_scope = '\n{}extend_target({} CONDITION {}\n' \
                    '{}{})\n'.format(spaces(indent), target,
-                                    scope.total_condition,
+                                    map_to_cmake_condition(scope.total_condition),
                                     extend_qt_string, ignored_keys_report)
 
     if not extend_qt_string:
