@@ -200,7 +200,9 @@ CMAKE_QT5_MODULE_DEPS = $$join(lib_deps, ";")
 CMAKE_INTERFACE_MODULE_DEPS = $$join(aux_mod_deps, ";")
 CMAKE_INTERFACE_QT5_MODULE_DEPS = $$join(aux_lib_deps, ";")
 
-CMAKE_QT_STEM = Qt$$QT_MAJOR_VERSION$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
+# TARGET here is the one changed at the end of qt_module.prf,
+# which already contains the Qt5 prefix and QT_LIBINFIX suffix
+CMAKE_QT_STEM = $${TARGET}
 
 mac {
     !isEmpty(CMAKE_STATIC_TYPE) {
