@@ -482,8 +482,8 @@ private slots:
     void indexOf2();
     void indexOf3_data();
 //  void indexOf3();
-    void sprintf();
-    void sprintfS();
+    void asprintf();
+    void asprintfS();
     void fill();
     void truncate();
     void chop_data();
@@ -612,7 +612,7 @@ QString verifyZeroTermination(const QString &str)
     int strSize = str.size();
     QChar strTerminator = str.constData()[strSize];
     if (QChar('\0') != strTerminator)
-        return QString::fromAscii(
+        return QString::fromLatin1(
             "*** Result ('%1') not null-terminated: 0x%2 ***").arg(str)
                 .arg(strTerminator.unicode(), 4, 16, QChar('0'));
 
@@ -625,11 +625,11 @@ QString verifyZeroTermination(const QString &str)
 
     const_cast<QChar *>(strData)[strSize] = QChar('x');
     if (QChar('x') != str.constData()[strSize]) {
-        return QString::fromAscii("*** Failed to replace null-terminator in "
+        return QString::fromLatin1("*** Failed to replace null-terminator in "
                 "result ('%1') ***").arg(str);
     }
     if (str != strCopy) {
-        return QString::fromAscii( "*** Result ('%1') differs from its copy "
+        return QString::fromLatin1( "*** Result ('%1') differs from its copy "
                 "after null-terminator was replaced ***").arg(str);
     }
     const_cast<QChar *>(strData)[strSize] = QChar('\0'); // Restore sanity
@@ -1075,9 +1075,8 @@ void tst_QString::isNull()
     QString a;
     QVERIFY(a.isNull());
 
-    const char *zero = 0;
-    a.sprintf( zero );
-    QVERIFY(!a.isNull());
+    const char *zero = nullptr;
+    QVERIFY(!QString::asprintf(zero).isNull());
 }
 
 QT_WARNING_POP
@@ -1263,75 +1262,66 @@ static inline const void *ptrValue(quintptr v)
     return reinterpret_cast<const void *>(v);
 }
 
-void tst_QString::sprintf()
+void tst_QString::asprintf()
 {
     QString a;
-    a.sprintf("COMPARE");
-    QCOMPARE(a, QLatin1String("COMPARE"));
-    a.sprintf("%%%d",1);
-    QCOMPARE(a, QLatin1String("%1"));
-    QCOMPARE(a.sprintf("X%dY",2), QLatin1String("X2Y"));
-    QCOMPARE(a.sprintf("X%9iY", 50000 ), QLatin1String("X    50000Y"));
-    QCOMPARE(a.sprintf("X%-9sY","hello"), QLatin1String("Xhello    Y"));
-    QCOMPARE(a.sprintf("X%-9iY", 50000 ), QLatin1String("X50000    Y"));
-    QCOMPARE(a.sprintf("%lf", 1.23), QLatin1String("1.230000"));
-    QCOMPARE(a.sprintf("%lf", 1.23456789), QLatin1String("1.234568"));
-    QCOMPARE(a.sprintf("%p", ptrValue(0xbfffd350)), QLatin1String("0xbfffd350"));
-    QCOMPARE(a.sprintf("%p", ptrValue(0)), QLatin1String("0x0"));
+    QCOMPARE(QString::asprintf("COMPARE"), QLatin1String("COMPARE"));
+    QCOMPARE(QString::asprintf("%%%d", 1), QLatin1String("%1"));
+    QCOMPARE(QString::asprintf("X%dY",2), QLatin1String("X2Y"));
+    QCOMPARE(QString::asprintf("X%9iY", 50000 ), QLatin1String("X    50000Y"));
+    QCOMPARE(QString::asprintf("X%-9sY","hello"), QLatin1String("Xhello    Y"));
+    QCOMPARE(QString::asprintf("X%-9iY", 50000 ), QLatin1String("X50000    Y"));
+    QCOMPARE(QString::asprintf("%lf", 1.23), QLatin1String("1.230000"));
+    QCOMPARE(QString::asprintf("%lf", 1.23456789), QLatin1String("1.234568"));
+    QCOMPARE(QString::asprintf("%p", ptrValue(0xbfffd350)), QLatin1String("0xbfffd350"));
+    QCOMPARE(QString::asprintf("%p", ptrValue(0)), QLatin1String("0x0"));
 
     int i = 6;
     long l = -2;
     float f = 4.023f;
-    QString S1;
-    S1.sprintf("%d %ld %f",i,l,f);
-    QCOMPARE(S1, QLatin1String("6 -2 4.023000"));
+    QCOMPARE(QString::asprintf("%d %ld %f", i, l, f), QLatin1String("6 -2 4.023000"));
 
     double d = -514.25683;
-    S1.sprintf("%f",d);
-    QCOMPARE(S1, QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%f", d), QLatin1String("-514.256830"));
 }
 
-void tst_QString::sprintfS()
+void tst_QString::asprintfS()
 {
-    QString a;
-    QCOMPARE(a.sprintf("%.3s", "Hello" ), QLatin1String("Hel"));
-    QCOMPARE(a.sprintf("%10.3s", "Hello" ), QLatin1String("       Hel"));
-    QCOMPARE(a.sprintf("%.10s", "Hello" ), QLatin1String("Hello"));
-    QCOMPARE(a.sprintf("%10.10s", "Hello" ), QLatin1String("     Hello"));
-    QCOMPARE(a.sprintf("%-10.10s", "Hello" ), QLatin1String("Hello     "));
-    QCOMPARE(a.sprintf("%-10.3s", "Hello" ), QLatin1String("Hel       "));
-    QCOMPARE(a.sprintf("%-5.5s", "Hello" ), QLatin1String("Hello"));
+    QCOMPARE(QString::asprintf("%.3s", "Hello" ), QLatin1String("Hel"));
+    QCOMPARE(QString::asprintf("%10.3s", "Hello" ), QLatin1String("       Hel"));
+    QCOMPARE(QString::asprintf("%.10s", "Hello" ), QLatin1String("Hello"));
+    QCOMPARE(QString::asprintf("%10.10s", "Hello" ), QLatin1String("     Hello"));
+    QCOMPARE(QString::asprintf("%-10.10s", "Hello" ), QLatin1String("Hello     "));
+    QCOMPARE(QString::asprintf("%-10.3s", "Hello" ), QLatin1String("Hel       "));
+    QCOMPARE(QString::asprintf("%-5.5s", "Hello" ), QLatin1String("Hello"));
 
     // Check utf8 conversion for %s
-    QCOMPARE(a.sprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305"));
+    QCOMPARE(QString::asprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
     int n1;
-    a.sprintf("%s%n%s", "hello", &n1, "goodbye");
+    QCOMPARE(QString::asprintf("%s%n%s", "hello", &n1, "goodbye"), QString("hellogoodbye"));
     QCOMPARE(n1, 5);
-    QCOMPARE(a, QString("hellogoodbye"));
     qlonglong n2;
-    a.sprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz");
+    QCOMPARE(QString::asprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz"), QString("foobarwhiz"));
     QCOMPARE((int)n2, 6);
-    QCOMPARE(a, QString("foobarwhiz"));
 
     { // %ls
-        QCOMPARE(a.sprintf("%.3ls",     qUtf16Printable("Hello")), QLatin1String("Hel"));
-        QCOMPARE(a.sprintf("%10.3ls",   qUtf16Printable("Hello")), QLatin1String("       Hel"));
-        QCOMPARE(a.sprintf("%.10ls",    qUtf16Printable("Hello")), QLatin1String("Hello"));
-        QCOMPARE(a.sprintf("%10.10ls",  qUtf16Printable("Hello")), QLatin1String("     Hello"));
-        QCOMPARE(a.sprintf("%-10.10ls", qUtf16Printable("Hello")), QLatin1String("Hello     "));
-        QCOMPARE(a.sprintf("%-10.3ls",  qUtf16Printable("Hello")), QLatin1String("Hel       "));
-        QCOMPARE(a.sprintf("%-5.5ls",   qUtf16Printable("Hello")), QLatin1String("Hello"));
+        QCOMPARE(QString::asprintf("%.3ls",     qUtf16Printable("Hello")), QLatin1String("Hel"));
+        QCOMPARE(QString::asprintf("%10.3ls",   qUtf16Printable("Hello")), QLatin1String("       Hel"));
+        QCOMPARE(QString::asprintf("%.10ls",    qUtf16Printable("Hello")), QLatin1String("Hello"));
+        QCOMPARE(QString::asprintf("%10.10ls",  qUtf16Printable("Hello")), QLatin1String("     Hello"));
+        QCOMPARE(QString::asprintf("%-10.10ls", qUtf16Printable("Hello")), QLatin1String("Hello     "));
+        QCOMPARE(QString::asprintf("%-10.3ls",  qUtf16Printable("Hello")), QLatin1String("Hel       "));
+        QCOMPARE(QString::asprintf("%-5.5ls",   qUtf16Printable("Hello")), QLatin1String("Hello"));
 
         // Check utf16 is preserved for %ls
-        QCOMPARE(a.sprintf("%ls",
+        QCOMPARE(QString::asprintf("%ls",
                            qUtf16Printable("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")),
                  QLatin1String("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
         int n;
-        a.sprintf("%ls%n%s", qUtf16Printable("hello"), &n, "goodbye");
+        QCOMPARE(QString::asprintf("%ls%n%s", qUtf16Printable("hello"), &n, "goodbye"), QLatin1String("hellogoodbye"));
         QCOMPARE(n, 5);
-        QCOMPARE(a, QLatin1String("hellogoodbye"));
     }
 }
 
@@ -3789,7 +3779,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith("C") );
     QVERIFY( !a.startsWith("ABCDEF") );
     QVERIFY( a.startsWith("") );
-    QVERIFY( a.startsWith(QString::null) );
+    QVERIFY( a.startsWith(QString()) );
     QVERIFY( a.startsWith('A') );
     QVERIFY( a.startsWith(QLatin1Char('A')) );
     QVERIFY( a.startsWith(QChar('A')) );
@@ -3816,7 +3806,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith("c", Qt::CaseInsensitive) );
     QVERIFY( !a.startsWith("abcdef", Qt::CaseInsensitive) );
     QVERIFY( a.startsWith("", Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith(QString::null, Qt::CaseInsensitive) );
+    QVERIFY( a.startsWith(QString(), Qt::CaseInsensitive) );
     QVERIFY( a.startsWith('a', Qt::CaseInsensitive) );
     QVERIFY( a.startsWith('A', Qt::CaseInsensitive) );
     QVERIFY( a.startsWith(QLatin1Char('a'), Qt::CaseInsensitive) );
@@ -3855,7 +3845,7 @@ void tst_QString::startsWith()
 
     a = "";
     QVERIFY( a.startsWith("") );
-    QVERIFY( a.startsWith(QString::null) );
+    QVERIFY( a.startsWith(QString()) );
     QVERIFY( !a.startsWith("ABC") );
 
     QVERIFY( a.startsWith(QLatin1String("")) );
@@ -3868,7 +3858,7 @@ void tst_QString::startsWith()
 
     a = QString();
     QVERIFY( !a.startsWith("") );
-    QVERIFY( a.startsWith(QString::null) );
+    QVERIFY( a.startsWith(QString()) );
     QVERIFY( !a.startsWith("ABC") );
 
     QVERIFY( !a.startsWith(QLatin1String("")) );
@@ -3897,7 +3887,7 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith("C") );
     QVERIFY( !a.endsWith("ABCDEF") );
     QVERIFY( a.endsWith("") );
-    QVERIFY( a.endsWith(QString::null) );
+    QVERIFY( a.endsWith(QString()) );
     QVERIFY( a.endsWith('B') );
     QVERIFY( a.endsWith(QLatin1Char('B')) );
     QVERIFY( a.endsWith(QChar('B')) );
@@ -3924,7 +3914,7 @@ void tst_QString::endsWith()
     QVERIFY( !a.endsWith("c", Qt::CaseInsensitive) );
     QVERIFY( !a.endsWith("abcdef", Qt::CaseInsensitive) );
     QVERIFY( a.endsWith("", Qt::CaseInsensitive) );
-    QVERIFY( a.endsWith(QString::null, Qt::CaseInsensitive) );
+    QVERIFY( a.endsWith(QString(), Qt::CaseInsensitive) );
     QVERIFY( a.endsWith('b', Qt::CaseInsensitive) );
     QVERIFY( a.endsWith('B', Qt::CaseInsensitive) );
     QVERIFY( a.endsWith(QLatin1Char('b'), Qt::CaseInsensitive) );
@@ -3966,7 +3956,7 @@ void tst_QString::endsWith()
 
     a = "";
     QVERIFY( a.endsWith("") );
-    QVERIFY( a.endsWith(QString::null) );
+    QVERIFY( a.endsWith(QString()) );
     QVERIFY( !a.endsWith("ABC") );
     QVERIFY( !a.endsWith(QLatin1Char(0)) );
     QVERIFY( !a.endsWith(QLatin1Char('x')) );
@@ -3978,7 +3968,7 @@ void tst_QString::endsWith()
 
     a = QString();
     QVERIFY( !a.endsWith("") );
-    QVERIFY( a.endsWith(QString::null) );
+    QVERIFY( a.endsWith(QString()) );
     QVERIFY( !a.endsWith("ABC") );
 
     QVERIFY( !a.endsWith(QLatin1String("")) );
@@ -4838,7 +4828,7 @@ void tst_QString::arg()
     QCOMPARE( QString("%1").arg("hello", 10), QLatin1String("     hello") );
     QCOMPARE( QString("%1%1").arg("hello"), QLatin1String("hellohello") );
     QCOMPARE( QString("%2%1").arg("hello"), QLatin1String("%2hello") );
-    QCOMPARE( QString("%1%1").arg(QString::null), QLatin1String("") );
+    QCOMPARE( QString("%1%1").arg(QString()), QLatin1String("") );
     QCOMPARE( QString("%2%1").arg(""), QLatin1String("%2") );
 
     QCOMPARE( QString("%2 %L1").arg(12345.6789).arg(12345.6789),
@@ -4934,9 +4924,7 @@ void tst_QString::doubleOut()
     QCOMPARE(QString::number(micro), expect);
     QCOMPARE(QString("%1").arg(micro), expect);
     {
-        QString text;
-        text.sprintf("%g", micro);
-        QCOMPARE(text, expect);
+        QCOMPARE(QString::asprintf("%g", micro), expect);
     }
     {
         QString text;
@@ -5480,8 +5468,6 @@ void tst_QString::tortureSprintfDouble()
 {
     const SprintfDoubleData *data = g_sprintf_double_data;
 
-    QString s;
-
     for (; data->fmt != 0; ++data) {
         double d;
         char *buff = (char *)&d;
@@ -5496,7 +5482,7 @@ void tst_QString::tortureSprintfDouble()
         for (uint i = 0; i < 8; ++i)
             buff[7 - i] = data->bytes[i];
 #        endif
-        s.sprintf(data->fmt, d);
+        const QString s = QString::asprintf(data->fmt, d);
 #ifdef QT_NO_FPU // reduced precision when running with hardfloats in qemu
         if (d - 0.1 < 1e12)
             QSKIP("clib sprintf doesn't fill with 0's on this platform");
@@ -6450,32 +6436,24 @@ void tst_QString::QCharRefDetaching() const
 void tst_QString::sprintfZU() const
 {
     {
-        QString string;
         size_t s = 6;
-        string.sprintf("%zu", s);
-        QCOMPARE(string, QString::fromLatin1("6"));
+        QCOMPARE(QString::asprintf("%zu", s), QString::fromLatin1("6"));
     }
 
     {
-        QString string;
-        string.sprintf("%s\n", "foo");
-        QCOMPARE(string, QString::fromLatin1("foo\n"));
+        QCOMPARE(QString::asprintf("%s\n", "foo"), QString::fromLatin1("foo\n"));
     }
 
     {
         /* This code crashed. I don't know how to reduce it further. In other words,
          * both %zu and %s needs to be present. */
         size_t s = 6;
-        QString string;
-        string.sprintf("%zu%s", s, "foo");
-        QCOMPARE(string, QString::fromLatin1("6foo"));
+        QCOMPARE(QString::asprintf("%zu%s", s, "foo"), QString::fromLatin1("6foo"));
     }
 
     {
         size_t s = 6;
-        QString string;
-        string.sprintf("%zu %s\n", s, "foo");
-        QCOMPARE(string, QString::fromLatin1("6 foo\n"));
+        QCOMPARE(QString::asprintf("%zu %s\n", s, "foo"), QString::fromLatin1("6 foo\n"));
     }
 }
 

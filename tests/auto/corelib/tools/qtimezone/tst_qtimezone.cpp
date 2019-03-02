@@ -480,11 +480,10 @@ void tst_QTimeZone::transitionEachZone_data()
         { 1288488600, -4, 8, 2010 } // 2010-10-31 01:30 UTC; Europe, Russia
     };
 
-    QString name;
     const auto zones = QTimeZone::availableTimeZoneIds();
     for (int k = sizeof(table) / sizeof(table[0]); k-- > 0; ) {
         for (const QByteArray &zone : zones) {
-            name.sprintf("%s@%d", zone.constData(), table[k].year);
+            const QString name = QString::asprintf("%s@%d", zone.constData(), table[k].year);
             QTest::newRow(name.toUtf8().constData())
                 << zone
                 << table[k].baseSecs
