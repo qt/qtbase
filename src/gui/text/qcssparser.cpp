@@ -443,6 +443,7 @@ void ValueExtractor::lengthValues(const Declaration &decl, int *m)
 {
     if (decl.d->parsed.isValid()) {
         QList<QVariant> v = decl.d->parsed.toList();
+        Q_ASSERT(v.size() == 4);
         for (int i = 0; i < 4; i++)
             m[i] = lengthValueFromData(qvariant_cast<LengthData>(v.at(i)), f);
         return;
