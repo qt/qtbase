@@ -564,9 +564,7 @@ void GradientRenderer::paint(QPainter *p)
 
     } else {
         QLineF l(pts.at(0), pts.at(1));
-        qreal angle = l.angle(QLineF(0, 0, 1, 0));
-        if (l.dy() > 0)
-            angle = 360 - angle;
+        qreal angle = QLineF(0, 0, 1, 0).angleTo(l);
         g = QConicalGradient(pts.at(0), angle);
     }
 

@@ -251,7 +251,10 @@ public:
     // ### Qt 6: rename intersects() or intersection() and rename IntersectType IntersectionType
     IntersectType intersect(const QLineF &l, QPointF *intersectionPoint) const;
 
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("Use angleTo() instead, take care that the return value is between 0 and 360 degree.")
     qreal angle(const QLineF &l) const;
+#endif
 
     Q_DECL_CONSTEXPR inline QPointF pointAt(qreal t) const;
     inline void translate(const QPointF &p);

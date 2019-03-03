@@ -160,10 +160,7 @@ void XFormView::updateCtrlPoints(const QPolygonF &points)
     ctrlPoints = points;
 
     QLineF line(ctrlPoints.at(0), ctrlPoints.at(1));
-    m_rotation = line.angle(QLineF(0, 0, 1, 0));
-    if (line.dy() < 0)
-        m_rotation = 360 - m_rotation;
-
+    m_rotation = 360 - QLineF(0, 0, 1, 0).angleTo(line);
     if (trans.isNull())
         emit rotationChanged(int(m_rotation*10));
 }

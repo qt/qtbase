@@ -805,6 +805,7 @@ qreal QLineF::angleTo(const QLineF &l) const
         return delta_normalized;
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
   \fn qreal QLineF::angle(const QLineF &line) const
 
@@ -837,6 +838,7 @@ qreal QLineF::angle(const QLineF &l) const
     if (cos_line >= -1.0 && cos_line <= 1.0) rad = qAcos( cos_line );
     return rad * 360 / M_2PI;
 }
+#endif
 
 
 #ifndef QT_NO_DEBUG_STREAM
