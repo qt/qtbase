@@ -473,7 +473,7 @@ void MainWindow::createToolbars()
         fontSizeCombo->addItem(QString().setNum(i));
     QIntValidator *validator = new QIntValidator(2, 64, this);
     fontSizeCombo->setValidator(validator);
-    connect(fontSizeCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+    connect(fontSizeCombo, &QComboBox::currentTextChanged,
             this, &MainWindow::fontSizeChanged);
 
     fontColorToolButton = new QToolButton;
@@ -536,7 +536,7 @@ void MainWindow::createToolbars()
     scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
     sceneScaleCombo->addItems(scales);
     sceneScaleCombo->setCurrentIndex(2);
-    connect(sceneScaleCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+    connect(sceneScaleCombo, &QComboBox::currentTextChanged,
             this, &MainWindow::sceneScaleChanged);
 
     pointerToolbar = addToolBar(tr("Pointer type"));

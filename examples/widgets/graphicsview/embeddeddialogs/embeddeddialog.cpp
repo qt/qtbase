@@ -73,7 +73,7 @@ EmbeddedDialog::EmbeddedDialog(QWidget *parent)
             this, &EmbeddedDialog::spacingChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged,
             this, &EmbeddedDialog::fontChanged);
-    connect(ui->style, QOverload<const QString &>::of(&QComboBox::activated),
+    connect(ui->style, &QComboBox::textActivated,
             this, &EmbeddedDialog::styleChanged);
 }
 

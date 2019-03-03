@@ -114,9 +114,9 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::findSizes);
     connect(fontCombo, &QFontComboBox::currentFontChanged,
             characterWidget, &CharacterWidget::updateFont);
-    connect(sizeCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+    connect(sizeCombo, &QComboBox::currentTextChanged,
             characterWidget, &CharacterWidget::updateSize);
-    connect(styleCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+    connect(styleCombo, &QComboBox::currentTextChanged,
             characterWidget, &CharacterWidget::updateStyle);
 //! [4] //! [5]
     connect(characterWidget, &CharacterWidget::characterSelected,

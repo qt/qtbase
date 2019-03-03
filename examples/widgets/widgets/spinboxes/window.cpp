@@ -176,7 +176,7 @@ void Window::createDateTimeEdits()
     formatComboBox->addItem("hh:mm ap");
 //! [9] //! [10]
 
-    connect(formatComboBox, QOverload<const QString &>::of(&QComboBox::activated),
+    connect(formatComboBox, &QComboBox::textActivated,
             this, &Window::setFormatString);
 //! [10]
 

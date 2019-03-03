@@ -79,7 +79,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [0]
 
 //! [1]
-    connect(styleComboBox, QOverload<const QString &>::of(&QComboBox::activated),
+    connect(styleComboBox, &QComboBox::textActivated,
 //! [1] //! [2]
             this, &WidgetGallery::changeStyle);
     connect(useStylePaletteCheckBox, &QCheckBox::toggled,
