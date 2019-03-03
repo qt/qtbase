@@ -780,7 +780,10 @@ void QDialog::setVisible(bool visible)
 
         QWidget::setVisible(visible);
 #if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         showExtension(d->doShowExtension);
+QT_WARNING_POP
 #endif
         QWidget *fw = window()->focusWidget();
         if (!fw)

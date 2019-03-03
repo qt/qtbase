@@ -587,10 +587,13 @@ void QFileDialogPrivate::retranslateWindowTitle()
         return;
     if (q->acceptMode() == QFileDialog::AcceptOpen) {
         const QFileDialog::FileMode fileMode = q->fileMode();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (fileMode == QFileDialog::DirectoryOnly || fileMode == QFileDialog::Directory)
             q->setWindowTitle(QFileDialog::tr("Find Directory"));
         else
             q->setWindowTitle(QFileDialog::tr("Open"));
+QT_WARNING_POP
     } else
         q->setWindowTitle(QFileDialog::tr("Save As"));
 
@@ -614,7 +617,10 @@ void QFileDialogPrivate::updateFileNameLabel()
         setLabelTextControl(QFileDialog::FileName, options->labelText(QFileDialogOptions::FileName));
     } else {
         switch (q_func()->fileMode()) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         case QFileDialog::DirectoryOnly:
+QT_WARNING_POP
         case QFileDialog::Directory:
             setLabelTextControl(QFileDialog::FileName, QFileDialog::tr("Directory:"));
             break;
@@ -642,7 +648,10 @@ void QFileDialogPrivate::updateOkButtonText(bool saveAsOnFolder)
         return;
     } else {
         switch (q->fileMode()) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         case QFileDialog::DirectoryOnly:
+QT_WARNING_POP
         case QFileDialog::Directory:
             setLabelTextControl(QFileDialog::Accept, QFileDialog::tr("&Choose"));
             break;
@@ -1709,7 +1718,10 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
     d->options->setFileMode(static_cast<QFileDialogOptions::FileMode>(mode));
 
     // keep ShowDirsOnly option in sync with fileMode (BTW, DirectoryOnly is obsolete)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     setOption(ShowDirsOnly, mode == DirectoryOnly);
+QT_WARNING_POP
 
     if (!d->usingWidgets())
         return;
@@ -1727,11 +1739,14 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
     // set filter
     d->model->setFilter(d->filterForMode(filter()));
     // setup file type for directory
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (mode == DirectoryOnly || mode == Directory) {
         d->qFileDialogUi->fileTypeCombo->clear();
         d->qFileDialogUi->fileTypeCombo->addItem(tr("Directories"));
         d->qFileDialogUi->fileTypeCombo->setEnabled(false);
     }
+QT_WARNING_POP
     d->updateFileNameLabel();
     d->updateOkButtonText();
     d->qFileDialogUi->fileTypeCombo->setEnabled(!testOption(ShowDirsOnly));
@@ -2634,7 +2649,10 @@ QUrl QFileDialog::getExistingDirectoryUrl(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     args.mode = (options & ShowDirsOnly ? DirectoryOnly : Directory);
+QT_WARNING_POP
     args.options = options;
 
     QFileDialog dialog(args);
@@ -2747,7 +2765,10 @@ void QFileDialog::accept()
     }
 
     switch (fileMode()) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case DirectoryOnly:
+QT_WARNING_POP
     case Directory: {
         QString fn = files.first();
         QFileInfo info(fn);
@@ -2783,7 +2804,7 @@ void QFileDialog::accept()
         }
 
         // check if we have to ask for permission to overwrite the file
-        if (!info.exists() || !confirmOverwrite() || acceptMode() == AcceptOpen) {
+        if (!info.exists() || testOption(DontConfirmOverwrite) || acceptMode() == AcceptOpen) {
             d->emitFilesSelected(QStringList(fn));
             QDialog::accept();
 #if QT_CONFIG(messagebox)
@@ -3651,7 +3672,10 @@ void QFileDialogPrivate::_q_updateOkButton()
         isOpenDirectory = true;
     } else {
         switch (fileMode) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         case QFileDialog::DirectoryOnly:
+QT_WARNING_POP
         case QFileDialog::Directory: {
             QString fn = files.first();
             QModelIndex idx = model->index(fn);
@@ -3743,12 +3767,15 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
         const QFileDialog::FileMode fileMode = q->fileMode();
         q->setDirectory(path);
         emit q->directoryEntered(path);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (fileMode == QFileDialog::Directory
                 || fileMode == QFileDialog::DirectoryOnly) {
             // ### find out why you have to do both of these.
             lineEdit()->setText(QString());
             lineEdit()->clear();
         }
+QT_WARNING_POP
     } else {
         // Do not accept when shift-clicking to multi-select a file in environments with single-click-activation (KDE)
         if (!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, qFileDialogUi->treeView)
@@ -3840,7 +3867,10 @@ void QFileDialogPrivate::_q_selectionChanged()
 {
     const QFileDialog::FileMode fileMode = q_func()->fileMode();
     const QModelIndexList indexes = qFileDialogUi->listView->selectionModel()->selectedRows();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     bool stripDirs = (fileMode != QFileDialog::DirectoryOnly && fileMode != QFileDialog::Directory);
+QT_WARNING_POP
 
     QStringList allFiles;
     for (const auto &index : indexes) {
@@ -3892,10 +3922,13 @@ void QFileDialogPrivate::_q_rowsInserted(const QModelIndex &parent)
 void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString &oldName, const QString &newName)
 {
     const QFileDialog::FileMode fileMode = q_func()->fileMode();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (fileMode == QFileDialog::Directory || fileMode == QFileDialog::DirectoryOnly) {
         if (path == rootPath() && lineEdit()->text() == oldName)
             lineEdit()->setText(newName);
     }
+QT_WARNING_POP
 }
 
 void QFileDialogPrivate::_q_emitUrlSelected(const QUrl &file)

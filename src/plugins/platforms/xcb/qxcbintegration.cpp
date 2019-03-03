@@ -357,6 +357,8 @@ void QXcbIntegration::initialize()
     m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
     if (!m_inputContext && icStr != defaultInputContext && icStr != QLatin1String("none"))
         m_inputContext.reset(QPlatformInputContextFactory::create(defaultInputContext));
+
+    defaultConnection()->keyboard()->initialize();
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)

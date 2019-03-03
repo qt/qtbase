@@ -558,7 +558,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         qt_fusion_draw_arrow(arrow, painter, option, option->rect, arrowColor);
     }
         break;
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
     {
         QStyleOptionButton button;
         button.QStyleOption::operator=(*option);
@@ -3673,7 +3673,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_FontDialog_SelectAssociatedText:
     case SH_MenuBar_AltKeyNavigation:
     case SH_ComboBox_ListMouseTracking:
-    case SH_ScrollBar_StopMouseOverSlider:
+    case SH_Slider_StopMouseOverSlider:
     case SH_ScrollBar_MiddleClickAbsolutePosition:
     case SH_EtchDisabledText:
     case SH_TitleBar_AutoRaise:

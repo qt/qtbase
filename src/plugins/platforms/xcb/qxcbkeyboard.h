@@ -50,15 +50,11 @@
 #endif
 
 #include <xkbcommon/xkbcommon.h>
-#if QT_CONFIG(xkb)
-#include <xkbcommon/xkbcommon-x11.h>
-#endif
+#include <QtXkbCommonSupport/private/qxkbcommon_p.h>
 
 #include <QEvent>
 
 QT_BEGIN_NAMESPACE
-
-class QWindow;
 
 class QXcbKeyboard : public QXcbObject
 {
@@ -67,6 +63,7 @@ public:
 
     ~QXcbKeyboard();
 
+    void initialize();
     void selectEvents();
 
     void handleKeyPressEvent(const xcb_key_press_event_t *event);
@@ -75,7 +72,7 @@ public:
     Qt::KeyboardModifiers translateModifiers(int s) const;
     void updateKeymap(xcb_mapping_notify_event_t *event);
     void updateKeymap();
-    QList<int> possibleKeys(const QKeyEvent *e) const;
+    QList<int> possibleKeys(const QKeyEvent *event) const;
 
     // when XKEYBOARD not present on the X server
     void updateXKBMods();
@@ -96,10 +93,6 @@ protected:
                         quint16 state, xcb_timestamp_t time, bool fromSendEvent);
 
     void resolveMaskConflicts();
-    QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
-    QString lookupStringNoKeysymTransformations(xkb_keysym_t keysym) const;
-    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
-                      struct xkb_state *state, xcb_keycode_t code) const;
 
     typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
     struct xkb_keymap *keymapFromCore(const KeysymModifierMap &keysymMods);
@@ -110,9 +103,6 @@ protected:
     // when XKEYBOARD is present on the X server
     void updateVModMapping();
     void updateVModToRModMapping();
-
-    xkb_keysym_t lookupLatinKeysym(xkb_keycode_t keycode) const;
-    void checkForLatinLayout() const;
 
 private:
     bool m_config = false;
@@ -148,22 +138,12 @@ private:
     int core_device_id;
 #endif
 
-    struct XKBStateDeleter {
-        void operator()(struct xkb_state *state) const { return xkb_state_unref(state); }
-    };
-    struct XKBKeymapDeleter {
-        void operator()(struct xkb_keymap *keymap) const { return xkb_keymap_unref(keymap); }
-    };
-    struct XKBContextDeleter {
-        void operator()(struct xkb_context *context) const { return xkb_context_unref(context); }
-    };
-    using ScopedXKBState = std::unique_ptr<struct xkb_state, XKBStateDeleter>;
-    using ScopedXKBKeymap = std::unique_ptr<struct xkb_keymap, XKBKeymapDeleter>;
-    using ScopedXKBContext = std::unique_ptr<struct xkb_context, XKBContextDeleter>;
+    QXkbCommon::ScopedXKBState m_xkbState;
+    QXkbCommon::ScopedXKBKeymap m_xkbKeymap;
+    QXkbCommon::ScopedXKBContext m_xkbContext;
 
-    ScopedXKBState m_xkbState;
-    ScopedXKBKeymap m_xkbKeymap;
-    ScopedXKBContext m_xkbContext;
+    bool m_superAsMeta = false;
+    bool m_hyperAsMeta = false;
 };
 
 QT_END_NAMESPACE

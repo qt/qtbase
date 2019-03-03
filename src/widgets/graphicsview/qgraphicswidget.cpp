@@ -2306,7 +2306,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     QStyleHintReturnMask mask;
     bool setMask = style()->styleHint(QStyle::SH_WindowFrame_Mask, &bar, widget, &mask) && !mask.region.isEmpty();
     bool hasBorder = !style()->styleHint(QStyle::SH_TitleBar_NoBorder, &bar, widget);
-    int frameWidth = style()->pixelMetric(QStyle::PM_MDIFrameWidth, &bar, widget);
+    int frameWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, &bar, widget);
     if (setMask) {
         painter->save();
         painter->setClipRegion(mask.region, Qt::IntersectClip);

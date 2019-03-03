@@ -47,6 +47,7 @@
 
 #include <QSurfaceFormat>
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/qguiapplication.h>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
@@ -121,7 +122,7 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
-    if (QAndroidEventDispatcherStopper::stopped())
+    if (QAndroidEventDispatcherStopper::stopped() || QGuiApplication::applicationState() == Qt::ApplicationSuspended)
         return m_eglSurface;
 
     QMutexLocker lock(&m_surfaceMutex);

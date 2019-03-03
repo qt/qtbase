@@ -532,7 +532,7 @@ MakefileGenerator::init()
                     QStack<int> state;
                     enum { IN_CONDITION, MET_CONDITION, PENDING_CONDITION };
                     for (int count = 1; !in.atEnd(); ++count) {
-                        QString line = QString::fromUtf8(in.readLine());
+                        QString line = QString::fromLatin1(in.readLine());
                         if (line.startsWith("!!IF ")) {
                             if (state.isEmpty() || state.top() == IN_CONDITION) {
                                 QString test = line.mid(5, line.length()-(5+1));
@@ -578,7 +578,7 @@ MakefileGenerator::init()
                             contents += project->expand(line, in.fileName(), count);
                         }
                     }
-                    contentBytes = contents.toUtf8();
+                    contentBytes = contents.toLatin1();
                 }
                 QFile out(outn);
                 QFileInfo outfi(out);
