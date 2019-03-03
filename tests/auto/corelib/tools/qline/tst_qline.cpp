@@ -205,7 +205,7 @@ void tst_QLine::testIntersection()
 
 
     QPointF ip;
-    QLineF::IntersectType itype = a.intersect(b, &ip);
+    QLineF::IntersectionType itype = a.intersect(b, &ip);
 
     QCOMPARE(int(itype), type);
     if (type != QLineF::NoIntersection) {

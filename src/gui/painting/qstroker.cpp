@@ -456,7 +456,7 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
     QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
                     qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
     QPointF isect;
-    QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
+    QLineF::IntersectionType type = prevLine.intersects(nextLine, &isect);
 
     if (join == FlatJoin) {
         QLineF shortCut(prevLine.p2(), nextLine.p1());
