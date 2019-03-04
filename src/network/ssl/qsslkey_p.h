@@ -105,7 +105,10 @@ public:
     enum Cipher {
         DesCbc,
         DesEde3Cbc,
-        Rc2Cbc
+        Rc2Cbc,
+        Aes128Cbc,
+        Aes192Cbc,
+        Aes256Cbc
     };
 
     Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);

@@ -66,7 +66,13 @@ static QByteArray wrapCCCrypt(CCOperation ccOp,
         blockSize = kCCBlockSizeRC2;
         ccAlgorithm = kCCAlgorithmRC2;
         break;
-    };
+    case QSslKeyPrivate::Aes128Cbc:
+    case QSslKeyPrivate::Aes192Cbc:
+    case QSslKeyPrivate::Aes256Cbc:
+        blockSize = kCCBlockSizeAES128;
+        ccAlgorithm = kCCAlgorithmAES;
+        break;
+    }
     size_t plainLength = 0;
     QByteArray plain(data.size() + blockSize, 0);
     CCCryptorStatus status = CCCrypt(

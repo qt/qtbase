@@ -466,15 +466,25 @@ void tst_QSslKey::toEncryptedPemOrDer()
 void tst_QSslKey::passphraseChecks_data()
 {
     QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QByteArray>("passphrase");
 
-    QTest::newRow("DES") << (testDataDir + "rsa-with-passphrase-des.pem");
-    QTest::newRow("3DES") << (testDataDir + "rsa-with-passphrase-3des.pem");
-    QTest::newRow("RC2") << (testDataDir + "rsa-with-passphrase-rc2.pem");
+    const QByteArray pass("123");
+    const QByteArray aesPass("1234");
+
+    QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem") << pass;
+    QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem") << pass;
+    QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem") << pass;
+#if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || defined(QT_SECURETRANSPORT)
+    QTest::newRow("AES128") << QString(testDataDir + "rsa-with-passphrase-aes128.pem") << aesPass;
+    QTest::newRow("AES192") << QString(testDataDir + "rsa-with-passphrase-aes192.pem") << aesPass;
+    QTest::newRow("AES256") << QString(testDataDir + "rsa-with-passphrase-aes256.pem") << aesPass;
+#endif
 }
 
 void tst_QSslKey::passphraseChecks()
 {
     QFETCH(QString, fileName);
+    QFETCH(QByteArray, passphrase);
 
     QFile keyFile(fileName);
     QVERIFY(keyFile.exists());
@@ -507,7 +517,7 @@ void tst_QSslKey::passphraseChecks()
             keyFile.open(QIODevice::ReadOnly);
         else
             keyFile.reset();
-        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "123");
+        QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, passphrase);
         QVERIFY(!key.isNull()); // correct passphrase
     }
 }

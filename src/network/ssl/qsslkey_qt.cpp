@@ -124,6 +124,37 @@ static int numberOfBits(const QByteArray &modulus)
     return bits;
 }
 
+static QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase, const QByteArray &iv)
+{
+    // This is somewhat simplified and shortened version of what OpenSSL does.
+    // See, for example, EVP_BytesToKey for the "algorithm" itself and elsewhere
+    // in their code for what they pass as arguments to EVP_BytesToKey when
+    // deriving encryption keys (when reading/writing pems files with encrypted
+    // keys).
+
+    Q_ASSERT(iv.size() >= 8);
+
+    QCryptographicHash hash(QCryptographicHash::Md5);
+
+    QByteArray data(passPhrase);
+    data.append(iv.data(), 8); // AKA PKCS5_SALT_LEN in OpenSSL.
+
+    hash.addData(data);
+
+    if (cipher == QSslKeyPrivate::Aes128Cbc)
+        return hash.result();
+
+    QByteArray key(hash.result());
+    hash.reset();
+    hash.addData(key);
+    hash.addData(data);
+
+    if (cipher == QSslKeyPrivate::Aes192Cbc)
+        return key.append(hash.result().constData(), 8);
+
+    return key.append(hash.result());
+}
+
 static QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase, const QByteArray &iv)
 {
     QByteArray key;
@@ -145,6 +176,10 @@ static QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &pas
     case QSslKeyPrivate::Rc2Cbc:
         key = hash.result();
         break;
+    case QSslKeyPrivate::Aes128Cbc:
+    case QSslKeyPrivate::Aes192Cbc:
+    case QSslKeyPrivate::Aes256Cbc:
+        return deriveAesKey(cipher, passPhrase, iv);
     }
     return key;
 }
@@ -378,6 +413,15 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
             cipher = DesEde3Cbc;
         } else if (dekInfo.first() == "RC2-CBC") {
             cipher = Rc2Cbc;
+// TODO: Add SChannel version too!
+#ifdef QT_SECURETRANSPORT
+        } else if (dekInfo.first() == "AES-128-CBC") {
+            cipher = Aes128Cbc;
+        } else if (dekInfo.first() == "AES-192-CBC") {
+            cipher = Aes192Cbc;
+        } else if (dekInfo.first() == "AES-256-CBC") {
+            cipher = Aes256Cbc;
+#endif // QT_SECURETRANSPORT
         } else {
             clear(deepClear);
             return;
@@ -554,6 +598,10 @@ static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByt
             return {};
         break;
     } // @todo(?): case (RC5 , AES)
+    case QSslKeyPrivate::Cipher::Aes128Cbc:
+    case QSslKeyPrivate::Cipher::Aes192Cbc:
+    case QSslKeyPrivate::Cipher::Aes256Cbc:
+        Q_UNREACHABLE();
     }
 
     if (Q_LIKELY(keyDerivationAlgorithm == PKCS5_PBKDF2_ENCRYPTION_OID)) {
