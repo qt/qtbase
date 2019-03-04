@@ -349,21 +349,21 @@ void tst_QDir::mkdirRmdir_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("recurse");
 
-    QStringList dirs;
-    dirs << "testdir/one"
-         << "testdir/two/three/four"
-         << "testdir/../testdir/three";
-    QTest::newRow("plain") << QDir::currentPath() + "/" + dirs.at(0) << false;
-    QTest::newRow("recursive") << QDir::currentPath() + "/" + dirs.at(1) << true;
-    QTest::newRow("with-..") << QDir::currentPath() + "/" + dirs.at(2) << false;
+    const struct {
+        const char *name; // shall have a prefix added
+        const char *path; // relative
+        bool recurse;
+    } cases[] = {
+        { "plain", "testdir/one", false },
+        { "recursive", "testdir/two/three/four", true },
+        { "with-..", "testdir/../testdir/three", false },
+    };
 
-    QTest::newRow("relative-plain") << dirs.at(0) << false;
-    QTest::newRow("relative-recursive") << dirs.at(1) << true;
-    QTest::newRow("relative-with-..") << dirs.at(2) << false;
-
-    // Ensure that none of these directories already exist
-    for (int i = 0; i < dirs.count(); ++i)
-        QVERIFY(!QFile::exists(dirs.at(i)));
+    for (const auto &it : cases) {
+        QVERIFY(!QFile::exists(it.path));
+        QTest::addRow("absolute-%s", it.name) << (QDir::currentPath() + "/") + it.path << it.recurse;
+        QTest::addRow("relative-%s", it.name) << QString::fromLatin1(it.path) << it.recurse;
+    }
 }
 
 void tst_QDir::mkdirRmdir()
