@@ -66,6 +66,7 @@ private slots:
 
 private:
     QString m_rcc;
+    QString m_dataPath;
 };
 
 void tst_rcc::initTestCase()
@@ -74,6 +75,9 @@ void tst_rcc::initTestCase()
     // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
     QVERIFY(qputenv("QT_RCC_TEST", "1"));
     m_rcc = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/rcc");
+
+    m_dataPath = QFINDTESTDATA("data");
+    QVERIFY(!m_dataPath.isEmpty());
 }
 
 QString findExpectedFile(const QString &base)
@@ -126,14 +130,10 @@ void tst_rcc::rcc_data()
     QTest::addColumn<QString>("qrcfile");
     QTest::addColumn<QString>("expected");
 
-    QString dataPath = QFINDTESTDATA("data/images/");
-    if (dataPath.isEmpty())
-        QFAIL("data path not found");
-    QTest::newRow("images") << dataPath << "images.qrc" << "images.expected";
+    const QString imagesPath = m_dataPath + QLatin1String("/images/");
+    QTest::newRow("images") << imagesPath << "images.qrc" << "images.expected";
 
-    QString sizesPath = QFINDTESTDATA("data/sizes/");
-    if (sizesPath.isEmpty())
-        QFAIL("data path not found");
+    const QString sizesPath = m_dataPath + QLatin1String("/sizes/");
     QTest::newRow("size-0") << sizesPath << "size-0.qrc" << "size-0.expected";
     QTest::newRow("size-1") << sizesPath << "size-1.qrc" << "size-1.expected";
     QTest::newRow("size-2-0-35-1") << sizesPath << "size-2-0-35-1.qrc" << "size-2-0-35-1.expected";
@@ -268,9 +268,7 @@ void tst_rcc::binary_data()
     QTest::addColumn<QString>("baseDirectory");
     QTest::addColumn<QStringMap>("expectedFiles");
 
-    QString dataPath = QFINDTESTDATA("data/binary/");
-    if (dataPath.isEmpty())
-        QFAIL("data path not found");
+    QString dataPath = m_dataPath + QLatin1String("/binary/");
 
     QDirIterator iter(dataPath, QStringList() << QLatin1String("*.qrc"));
     while (iter.hasNext())
@@ -386,16 +384,12 @@ void tst_rcc::readback()
     QFETCH(QString, resourceName);
     QFETCH(QString, fileSystemName);
 
-    QString dataPath = QFINDTESTDATA("data/");
-    if (dataPath.isEmpty())
-        QFAIL("data path not found");
-
     QFile resourceFile(resourceName);
     QVERIFY(resourceFile.open(QIODevice::ReadOnly));
     QByteArray resourceData = resourceFile.readAll();
     resourceFile.close();
 
-    QFile fileSystemFile(dataPath + fileSystemName);
+    QFile fileSystemFile(m_dataPath + QLatin1Char('/') + fileSystemName);
     QVERIFY(fileSystemFile.open(QIODevice::ReadOnly));
     QByteArray fileSystemData = fileSystemFile.readAll();
     fileSystemFile.close();
@@ -405,10 +399,7 @@ void tst_rcc::readback()
 
 void tst_rcc::cleanupTestCase()
 {
-    QString dataPath = QFINDTESTDATA("data/binary/");
-    if (dataPath.isEmpty())
-        return;
-    QDir dataDir(dataPath);
+    QDir dataDir(m_dataPath + QLatin1String("/binary"));
     QFileInfoList entries = dataDir.entryInfoList(QStringList() << QLatin1String("*.rcc"));
     foreach (const QFileInfo &entry, entries)
         QFile::remove(entry.absoluteFilePath());
