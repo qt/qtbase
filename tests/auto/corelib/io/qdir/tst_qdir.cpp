@@ -2045,7 +2045,7 @@ void tst_QDir::detachingOperations()
         QCOMPARE(dir2.nameFilters(), nameFilters);
         QCOMPARE(dir2.sorting(), sorting);
 
-        dir2 = path1;
+        dir2.setPath(path1);
         QCOMPARE(dir2.path(), path1);
         QCOMPARE(dir2.filter(), filter);
         QCOMPARE(dir2.nameFilters(), nameFilters);
