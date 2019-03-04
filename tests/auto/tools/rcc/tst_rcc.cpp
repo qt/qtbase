@@ -46,6 +46,33 @@
 typedef QMap<QString, QString> QStringMap;
 Q_DECLARE_METATYPE(QStringMap)
 
+static QByteArray msgProcessStartFailed(const QProcess &p)
+{
+    const QString result = QLatin1String("Could not start \"")
+        + QDir::toNativeSeparators(p.program()) + QLatin1String("\": ")
+        + p.errorString();
+    return result.toLocal8Bit();
+}
+
+static QByteArray msgProcessTimeout(const QProcess &p)
+{
+    return '"' + QDir::toNativeSeparators(p.program()).toLocal8Bit()
+        + "\" timed out.";
+}
+
+static QByteArray msgProcessCrashed(QProcess &p)
+{
+    return '"' + QDir::toNativeSeparators(p.program()).toLocal8Bit()
+        + "\" crashed.\n" + p.readAllStandardError();
+}
+
+static QByteArray msgProcessFailed(QProcess &p)
+{
+    return '"' + QDir::toNativeSeparators(p.program()).toLocal8Bit()
+        + "\" returned " + QByteArray::number(p.exitCode()) + ":\n"
+        + p.readAllStandardError();
+}
+
 class tst_rcc : public QObject
 {
     Q_OBJECT
@@ -163,12 +190,16 @@ void tst_rcc::rcc()
     // depending on the compression algorithm we're using
     QProcess process;
     process.start(m_rcc, { "-no-compress", qrcfile });
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(process).constData());
     if (!process.waitForFinished()) {
-        const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
-        QString message = QString::fromLatin1("'%1' could not be found when run from '%2'. Path: '%3' ").
-                          arg(m_rcc, QDir::currentPath(), path);
-        QFAIL(qPrintable(message));
+        process.kill();
+        QFAIL(msgProcessTimeout(process).constData());
     }
+    QVERIFY2(process.exitStatus() == QProcess::NormalExit,
+             msgProcessCrashed(process).constData());
+    QVERIFY2(process.exitCode() == 0,
+             msgProcessFailed(process).constData());
+
     const QChar cr = QLatin1Char('\r');
     const QString err = QString::fromLocal8Bit(process.readAllStandardError()).remove(cr);
     const QString out = QString::fromLatin1(process.readAllStandardOutput()).remove(cr);
@@ -187,38 +218,6 @@ void tst_rcc::rcc()
     const QString diff = doCompare(actualLines, expectedLines);
     if (diff.size())
         QFAIL(qPrintable(diff));
-}
-
-
-
-static void createRccBinaryData(const QString &rcc, const QString &baseDir,
-    const QString &qrcFileName, const QString &rccFileName)
-{
-    QString currentDir = QDir::currentPath();
-    QDir::setCurrent(baseDir);
-
-    // same as above: force no compression
-    QProcess rccProcess;
-    rccProcess.start(rcc, { "-binary", "-no-compress", "-o", rccFileName, qrcFileName });
-    bool ok = rccProcess.waitForFinished();
-    if (!ok) {
-        QString errorString = QString::fromLatin1("Could not start rcc (is it in PATH?): %1").arg(rccProcess.errorString());
-        QFAIL(qPrintable(errorString));
-    }
-
-    QByteArray output = rccProcess.readAllStandardOutput();
-    if (!output.isEmpty()) {
-        QString errorMessage = QString::fromLatin1("rcc stdout: %1").arg(QString::fromLocal8Bit(output));
-        QWARN(qPrintable(errorMessage));
-    }
-
-    output = rccProcess.readAllStandardError();
-    if (!output.isEmpty()) {
-        QString errorMessage = QString::fromLatin1("rcc stderr: %1").arg(QString::fromLocal8Bit(output));
-        QWARN(qPrintable(errorMessage));
-    }
-
-    QDir::setCurrent(currentDir);
 }
 
 static QStringList readLinesFromFile(const QString &fileName)
@@ -277,7 +276,28 @@ void tst_rcc::binary_data()
         QFileInfo qrcFileInfo = iter.fileInfo();
         QString absoluteBaseName = QFileInfo(qrcFileInfo.absolutePath(), qrcFileInfo.baseName()).absoluteFilePath();
         QString rccFileName = absoluteBaseName + QLatin1String(".rcc");
-        createRccBinaryData(m_rcc, dataPath, qrcFileInfo.absoluteFilePath(), rccFileName);
+
+        // same as above: force no compression
+        QProcess rccProcess;
+        rccProcess.setWorkingDirectory(dataPath);
+        rccProcess.start(m_rcc, { "-binary", "-no-compress", "-o", rccFileName, qrcFileInfo.absoluteFilePath() });
+        QVERIFY2(rccProcess.waitForStarted(), msgProcessStartFailed(rccProcess).constData());
+        if (!rccProcess.waitForFinished()) {
+            rccProcess.kill();
+            QFAIL(msgProcessTimeout(rccProcess).constData());
+        }
+        QVERIFY2(rccProcess.exitStatus() == QProcess::NormalExit,
+                 msgProcessCrashed(rccProcess).constData());
+        QVERIFY2(rccProcess.exitCode() == 0,
+                 msgProcessFailed(rccProcess).constData());
+
+        QByteArray output = rccProcess.readAllStandardOutput();
+        if (!output.isEmpty())
+            qWarning("rcc stdout: %s", output.constData());
+
+        output = rccProcess.readAllStandardError();
+        if (!output.isEmpty())
+            qWarning("rcc stderr: %s", output.constData());
 
         QString localeFileName = absoluteBaseName + QLatin1String(".locale");
         QFile localeFile(localeFileName);
