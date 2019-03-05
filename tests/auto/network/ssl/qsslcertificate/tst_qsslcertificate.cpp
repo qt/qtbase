@@ -814,7 +814,7 @@ void tst_QSslCertificate::task256066toPem()
 
 void tst_QSslCertificate::nulInCN()
 {
-#if defined(QT_SECURETRANSPORT) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
+#if QT_CONFIG(securetransport) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
@@ -833,7 +833,7 @@ void tst_QSslCertificate::nulInCN()
 
 void tst_QSslCertificate::nulInSan()
 {
-#if defined(QT_SECURETRANSPORT) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
+#if QT_CONFIG(securetransport) || defined(Q_OS_WINRT) || QT_CONFIG(schannel)
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
@@ -968,7 +968,7 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 
 void tst_QSslCertificate::verify()
 {
-#ifdef QT_SECURETRANSPORT
+#if QT_CONFIG(securetransport)
     QSKIP("Not implemented in SecureTransport");
 #endif
     QList<QSslError> errors;

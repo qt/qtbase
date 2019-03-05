@@ -270,7 +270,7 @@
             "disable": "input.securetransport == 'no' || input.ssl == 'no'",
             "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
             "output": [
-                "privateFeature",
+                "publicFeature",
                 { "type": "define", "name": "QT_SECURETRANSPORT" }
             ]
         },

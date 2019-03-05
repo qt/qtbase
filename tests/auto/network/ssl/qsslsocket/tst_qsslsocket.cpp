@@ -3255,14 +3255,14 @@ void tst_QSslSocket::verifyClientCertificate_data()
 
 void tst_QSslSocket::verifyClientCertificate()
 {
-#ifdef QT_SECURETRANSPORT
+#if QT_CONFIG(securetransport)
     // We run both client and server on the same machine,
     // this means, client can update keychain with client's certificates,
     // and server later will use the same certificates from the same
     // keychain thus making tests fail (wrong number of certificates,
     // success instead of failure etc.).
     QSKIP("This test can not work with Secure Transport");
-#endif
+#endif // QT_CONFIG(securetransport)
 #ifdef Q_OS_WINRT
     QSKIP("Server-side encryption is not implemented on WinRT.");
 #endif
@@ -3344,7 +3344,7 @@ void tst_QSslSocket::verifyClientCertificate()
 
 void tst_QSslSocket::readBufferMaxSize()
 {
-#if defined(QT_SECURETRANSPORT) || QT_CONFIG(schannel)
+#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
     // QTBUG-55170:
     // SecureTransport back-end was ignoring read-buffer
     // size limit, resulting (potentially) in a constantly
@@ -3401,7 +3401,7 @@ void tst_QSslSocket::readBufferMaxSize()
     QCOMPARE(client->bytesAvailable() + readSoFar, message.size());
 #else
     // Not needed, QSslSocket works correctly with other back-ends.
-#endif
+#endif // QT_CONFIG(securetransport) || QT_CONFIG(schannel)
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects
