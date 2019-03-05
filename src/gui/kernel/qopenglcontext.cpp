@@ -313,7 +313,7 @@ QOpenGLContext *qt_gl_global_share_context()
 
     \section1 Context Resource Sharing
 
-    Resources, such as framebuffer objects, textures, and vertex buffer objects
+    Resources such as textures and vertex buffer objects
     can be shared between contexts.  Use setShareContext() before calling
     create() to specify that the contexts should share these resources.
     QOpenGLContext internally keeps track of a QOpenGLContextGroup object which
