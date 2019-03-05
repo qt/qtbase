@@ -412,12 +412,15 @@ void *QXcbNativeInterface::atspiBus()
         auto reply = Q_XCB_REPLY(xcb_get_property, defaultConnection->xcb_connection(),
                                      false, defaultConnection->rootWindow(),
                                      atspiBusAtom, XCB_ATOM_STRING, 0, 128);
-        Q_ASSERT(!reply->bytes_after);
+        if (!reply)
+            return nullptr;
+
         char *data = (char *)xcb_get_property_value(reply.get());
         int length = xcb_get_property_value_length(reply.get());
         return new QByteArray(data, length);
     }
-    return 0;
+
+    return nullptr;
 }
 
 void QXcbNativeInterface::setAppTime(QScreen* screen, xcb_timestamp_t time)
