@@ -107,18 +107,8 @@ void tst_rcc::initTestCase()
     QVERIFY(!m_dataPath.isEmpty());
 }
 
-QString findExpectedFile(const QString &base)
-{
-    QString expectedrccfile = base;
-
-    // Must be updated with each minor release.
-    if (QFileInfo(expectedrccfile + QLatin1String(".450")).exists())
-        expectedrccfile += QLatin1String(".450");
-
-    return expectedrccfile;
-}
-
-static QString doCompare(const QStringList &actual, const QStringList &expected)
+static QString doCompare(const QStringList &actual, const QStringList &expected,
+                         const QString &timeStampPath)
 {
     if (actual.size() != expected.size()) {
         return QString("Length count different: actual: %1, expected: %2")
@@ -132,7 +122,12 @@ static QString doCompare(const QStringList &actual, const QStringList &expected)
             continue;
         if (expectedLine.startsWith("TIMESTAMP:")) {
             const QString relativePath = expectedLine.mid(strlen("TIMESTAMP:"));
-            const quint64 timeStamp = QFileInfo(relativePath).lastModified().toMSecsSinceEpoch();
+            const QFileInfo fi(timeStampPath + QLatin1Char('/') + relativePath);
+            if (!fi.isFile()) {
+                ba.append("File " + fi.absoluteFilePath().toUtf8() + " does not exist!");
+                break;
+            }
+            const quint64 timeStamp = quint64(fi.lastModified().toMSecsSinceEpoch());
             expectedLine.clear();
             for (int shift = 56; shift >= 0; shift -= 8) {
                 expectedLine.append(QLatin1String("0x"));
@@ -141,7 +136,7 @@ static QString doCompare(const QStringList &actual, const QStringList &expected)
             }
         }
         if (expectedLine != actual.at(i)) {
-            qDebug() << "LINES" << i << "DIFFER";
+            qDebug() << "LINES" << (i + 1) << "DIFFER";
             ba.append(
              "\n<<<<<< actual\n" + actual.at(i) + "\n======\n" + expectedLine
                 + "\n>>>>>> expected\n"
@@ -157,13 +152,27 @@ void tst_rcc::rcc_data()
     QTest::addColumn<QString>("qrcfile");
     QTest::addColumn<QString>("expected");
 
-    const QString imagesPath = m_dataPath + QLatin1String("/images/");
+    const QString imagesPath = m_dataPath + QLatin1String("/images");
     QTest::newRow("images") << imagesPath << "images.qrc" << "images.expected";
 
-    const QString sizesPath = m_dataPath + QLatin1String("/sizes/");
+    const QString sizesPath = m_dataPath + QLatin1String("/sizes");
     QTest::newRow("size-0") << sizesPath << "size-0.qrc" << "size-0.expected";
     QTest::newRow("size-1") << sizesPath << "size-1.qrc" << "size-1.expected";
     QTest::newRow("size-2-0-35-1") << sizesPath << "size-2-0-35-1.qrc" << "size-2-0-35-1.expected";
+}
+
+static QStringList readLinesFromFile(const QString &fileName,
+                                     QString::SplitBehavior splitBehavior)
+{
+    QFile file(fileName);
+
+    bool ok = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!ok) {
+        QWARN(qPrintable(QString::fromLatin1("Could not open testdata file %1: %2")
+                         .arg(fileName, file.errorString())));
+    }
+
+    return QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'), splitBehavior);
 }
 
 void tst_rcc::rcc()
@@ -172,23 +181,13 @@ void tst_rcc::rcc()
     QFETCH(QString, qrcfile);
     QFETCH(QString, expected);
 
-    if (!QDir::setCurrent(directory)) {
-        QString message = QString::fromLatin1("Unable to cd from '%1' to '%2'").arg(QDir::currentPath(), directory);
-        QFAIL(qPrintable(message));
-    }
-
     // If the file expectedoutput.txt exists, compare the
     // console output with the content of that file
-    const QString expected2 = findExpectedFile(expected);
-    QFile expectedFile(expected2);
-    if (!expectedFile.exists()) {
-        qDebug() << "NO EXPECTATIONS? " << expected2;
-        return;
-    }
 
     // Launch; force no compression, otherwise the output would be different
     // depending on the compression algorithm we're using
     QProcess process;
+    process.setWorkingDirectory(directory);
     process.start(m_rcc, { "-no-compress", qrcfile });
     QVERIFY2(process.waitForStarted(), msgProcessStartFailed(process).constData());
     if (!process.waitForFinished()) {
@@ -212,31 +211,20 @@ void tst_rcc::rcc()
     const QChar nl = QLatin1Char('\n');
     const QStringList actualLines = out.split(nl);
 
-    QVERIFY(expectedFile.open(QIODevice::ReadOnly|QIODevice::Text));
-    const QStringList expectedLines = QString::fromLatin1(expectedFile.readAll()).split(nl);
+    const QStringList expectedLines =
+        readLinesFromFile(directory + QLatin1Char('/') + expected, QString::KeepEmptyParts);
+    QVERIFY(!expectedLines.isEmpty());
 
-    const QString diff = doCompare(actualLines, expectedLines);
+    const QString diff = doCompare(actualLines, expectedLines, directory);
     if (diff.size())
         QFAIL(qPrintable(diff));
-}
-
-static QStringList readLinesFromFile(const QString &fileName)
-{
-    QFile file(fileName);
-
-    bool ok = file.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (!ok)
-        QWARN(qPrintable(QString::fromLatin1("Could not open testdata file %1: %2").arg(fileName, file.errorString())));
-
-    QStringList lines = QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'), QString::SkipEmptyParts);
-    return lines;
 }
 
 static QStringMap readExpectedFiles(const QString &fileName)
 {
     QStringMap expectedFiles;
 
-    QStringList lines = readLinesFromFile(fileName);
+    QStringList lines = readLinesFromFile(fileName, QString::SkipEmptyParts);
     foreach (const QString &line, lines) {
         QString resourceFileName = line.section(QLatin1Char(' '), 0, 0, QString::SectionSkipEmpty);
         QString actualFileName = line.section(QLatin1Char(' '), 1, 1, QString::SectionSkipEmpty);
@@ -302,7 +290,7 @@ void tst_rcc::binary_data()
         QString localeFileName = absoluteBaseName + QLatin1String(".locale");
         QFile localeFile(localeFileName);
         if (localeFile.exists()) {
-            QStringList locales = readLinesFromFile(localeFileName);
+            QStringList locales = readLinesFromFile(localeFileName, QString::SkipEmptyParts);
             foreach (const QString &locale, locales) {
                 QString expectedFileName = QString::fromLatin1("%1.%2.%3").arg(absoluteBaseName, locale, QLatin1String("expected"));
                 QStringMap expectedFiles = readExpectedFiles(expectedFileName);
