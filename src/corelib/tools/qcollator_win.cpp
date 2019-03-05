@@ -72,6 +72,8 @@ void QCollatorPrivate::init()
     if (caseSensitivity == Qt::CaseInsensitive)
         collator |= NORM_IGNORECASE;
 
+    // WINE does not support SORT_DIGITSASNUMBERS :-(
+    // (and its std::sort() crashes on bad comparisons, QTBUG-74209)
     if (numericMode)
         collator |= SORT_DIGITSASNUMBERS;
 
@@ -98,16 +100,36 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
     // Returns one of the following values if successful. To maintain the C runtime convention of
     // comparing strings, the value 2 can be subtracted from a nonzero return value. Then, the
     // meaning of <0, ==0, and >0 is consistent with the C runtime.
+    // [...] The function returns 0 if it does not succeed.
+    // https://docs.microsoft.com/en-us/windows/desktop/api/stringapiset/nf-stringapiset-comparestringex#return-value
 
 #ifndef USE_COMPARESTRINGEX
-    return CompareString(d->localeID, d->collator,
-                         reinterpret_cast<const wchar_t*>(s1), len1,
-                         reinterpret_cast<const wchar_t*>(s2), len2) - 2;
+    const int ret = CompareString(d->localeID, d->collator,
+                                  reinterpret_cast<const wchar_t*>(s1), len1,
+                                  reinterpret_cast<const wchar_t*>(s2), len2);
 #else
-    return CompareStringEx(LPCWSTR(d->localeName.utf16()), d->collator,
-                           reinterpret_cast<LPCWSTR>(s1), len1,
-                           reinterpret_cast<LPCWSTR>(s2), len2, NULL, NULL, 0) - 2;
+    const int ret = CompareStringEx(LPCWSTR(d->localeName.utf16()), d->collator,
+                                    reinterpret_cast<LPCWSTR>(s1), len1,
+                                    reinterpret_cast<LPCWSTR>(s2), len2,
+                                    nullptr, nullptr, 0);
 #endif
+    if (Q_LIKELY(ret))
+        return ret - 2;
+
+    switch (DWORD error = GetLastError()) {
+    case ERROR_INVALID_FLAGS:
+        qWarning("Unsupported flags (%d) used in QCollator", int(d->collator));
+        break;
+    case ERROR_INVALID_PARAMETER:
+        qWarning("Invalid parameter for QCollator::compare()");
+        break;
+    default:
+        qWarning("Failed (%ld) comparison in QCollator::compare()", long(error));
+        break;
+    }
+    // We have no idea what to return, so pretend we think they're equal.
+    // At least that way we'll be consistent if we get the same values swapped ...
+    return 0;
 }
 
 int QCollator::compare(const QString &str1, const QString &str2) const
