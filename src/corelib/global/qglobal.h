@@ -307,6 +307,14 @@ typedef double qreal;
 #  define QT_DEPRECATED_CONSTRUCTOR
 #endif
 
+#ifndef QT_DEPRECATED_WARNINGS_SINCE
+# ifdef QT_DISABLE_DEPRECATED_BEFORE
+#  define QT_DEPRECATED_WARNINGS_SINCE QT_DISABLE_DEPRECATED_BEFORE
+# else
+#  define QT_DEPRECATED_WARNINGS_SINCE QT_VERSION
+# endif
+#endif
+
 #ifndef QT_DISABLE_DEPRECATED_BEFORE
 #define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
 #endif
@@ -328,6 +336,51 @@ typedef double qreal;
 #else
 #define QT_DEPRECATED_SINCE(major, minor) 0
 #endif
+
+/*
+  QT_DEPRECATED_VERSION(major, minor) and QT_DEPRECATED_VERSION_X(major, minor, text)
+  outputs a deprecation warning if QT_DEPRECATED_WARNINGS_SINCE is equal or greater
+  than the version specified as major, minor. This makes it possible to deprecate a
+  function without annoying a user who needs to stick at a specified minimum version
+  and therefore can't use the new function.
+*/
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 12, 0)
+# define QT_DEPRECATED_VERSION_X_5_12(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_12         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_12(text)
+# define QT_DEPRECATED_VERSION_5_12
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 13, 0)
+# define QT_DEPRECATED_VERSION_X_5_13(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_13         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_13(text)
+# define QT_DEPRECATED_VERSION_5_13
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 14, 0)
+# define QT_DEPRECATED_VERSION_X_5_14(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_14         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_14(text)
+# define QT_DEPRECATED_VERSION_5_14
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 15, 0)
+# define QT_DEPRECATED_VERSION_X_5_15(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_15         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_15(text)
+# define QT_DEPRECATED_VERSION_5_15
+#endif
+
+#define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
+#define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major(minor, text)
+
+#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor()
+#define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
 
 /*
    The Qt modules' export macros.
