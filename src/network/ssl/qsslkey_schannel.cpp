@@ -57,7 +57,10 @@ const wchar_t *getName(QSslKeyPrivate::Cipher cipher)
         return BCRYPT_3DES_ALGORITHM;
     case QSslKeyPrivate::Cipher::Rc2Cbc:
         return BCRYPT_RC2_ALGORITHM;
-    default:;
+    case QSslKeyPrivate::Cipher::Aes128Cbc:
+    case QSslKeyPrivate::Cipher::Aes192Cbc:
+    case QSslKeyPrivate::Cipher::Aes256Cbc:
+        return BCRYPT_AES_ALGORITHM;
     }
     Q_UNREACHABLE();
 }

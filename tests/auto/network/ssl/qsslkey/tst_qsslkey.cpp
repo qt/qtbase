@@ -474,7 +474,7 @@ void tst_QSslKey::passphraseChecks_data()
     QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem") << pass;
     QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem") << pass;
     QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem") << pass;
-#if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || defined(QT_SECURETRANSPORT)
+#if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || defined(QT_SECURETRANSPORT) || QT_CONFIG(schannel)
     QTest::newRow("AES128") << QString(testDataDir + "rsa-with-passphrase-aes128.pem") << aesPass;
     QTest::newRow("AES192") << QString(testDataDir + "rsa-with-passphrase-aes192.pem") << aesPass;
     QTest::newRow("AES256") << QString(testDataDir + "rsa-with-passphrase-aes256.pem") << aesPass;

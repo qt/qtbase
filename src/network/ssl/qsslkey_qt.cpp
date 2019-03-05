@@ -413,15 +413,14 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
             cipher = DesEde3Cbc;
         } else if (dekInfo.first() == "RC2-CBC") {
             cipher = Rc2Cbc;
-// TODO: Add SChannel version too!
-#ifdef QT_SECURETRANSPORT
+#if defined(QT_SECURETRANSPORT) || QT_CONFIG(schannel)
         } else if (dekInfo.first() == "AES-128-CBC") {
             cipher = Aes128Cbc;
         } else if (dekInfo.first() == "AES-192-CBC") {
             cipher = Aes192Cbc;
         } else if (dekInfo.first() == "AES-256-CBC") {
             cipher = Aes256Cbc;
-#endif // QT_SECURETRANSPORT
+#endif // QT_SECURETRANSPORT || schannel
         } else {
             clear(deepClear);
             return;
