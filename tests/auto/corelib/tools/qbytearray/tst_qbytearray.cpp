@@ -1361,6 +1361,9 @@ void tst_QByteArray::toDouble_data()
     QTest::newRow("trailing spaces") << QByteArray("1.2345 \n\r\t") << 1.2345 << true;
     QTest::newRow("leading junk") << QByteArray("x1.2345") << 0.0 << false;
     QTest::newRow("trailing junk") << QByteArray("1.2345x") << 0.0 << false;
+
+    QTest::newRow("raw, null plus junk") << QByteArray::fromRawData("1.2\0 junk", 9) << 0.0 << false;
+    QTest::newRow("raw, null-terminator not included") << QByteArray::fromRawData("2.3", 3) << 2.3 << true;
 }
 
 void tst_QByteArray::toDouble()

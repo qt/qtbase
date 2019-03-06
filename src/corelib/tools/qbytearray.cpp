@@ -4135,10 +4135,9 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 
 double QByteArray::toDouble(bool *ok) const
 {
-    QByteArray nulled = nulTerminated();
     bool nonNullOk = false;
     int processed = 0;
-    double d = qt_asciiToDouble(nulled.constData(), nulled.length(),
+    double d = qt_asciiToDouble(constData(), size(),
                                 nonNullOk, processed, WhitespacesAllowed);
     if (ok)
         *ok = nonNullOk;
