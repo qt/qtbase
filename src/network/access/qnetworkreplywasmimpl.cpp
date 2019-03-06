@@ -265,7 +265,7 @@ qint64 QNetworkReplyWasmImpl::readData(char *data, qint64 maxlen)
     Q_D(QNetworkReplyWasmImpl);
 
     qint64 howMuch = qMin(maxlen, (d->downloadBuffer.size() - d->downloadBufferReadPosition));
-    memcpy(data, d->downloadBuffer.constData(), howMuch);
+    memcpy(data, d->downloadBuffer.constData() + d->downloadBufferReadPosition, howMuch);
     d->downloadBufferReadPosition += howMuch;
 
     return howMuch;

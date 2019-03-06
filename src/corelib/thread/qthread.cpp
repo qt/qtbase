@@ -818,6 +818,16 @@ void QThread::quit()
 
 }
 
+void QThread::exit(int returnCode)
+{
+    Q_D(QThread);
+    d->data->quitNow = true;
+    for (int i = 0; i < d->data->eventLoops.size(); ++i) {
+        QEventLoop *eventLoop = d->data->eventLoops.at(i);
+        eventLoop->exit(returnCode);
+    }
+}
+
 bool QThread::wait(unsigned long time)
 {
     Q_UNUSED(time);

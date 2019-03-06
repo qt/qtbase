@@ -10,7 +10,7 @@ SUBDIRS = lib \
     tst.depends += almostplugin
     SUBDIRS += almostplugin
 }
-macos:qtConfig(private_tests) {
+macos:qtConfig(private_tests):qtHaveModule(gui) {
     tst.depends += machtest
     SUBDIRS += machtest
 }

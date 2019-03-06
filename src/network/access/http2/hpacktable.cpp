@@ -42,6 +42,7 @@
 #include <QtCore/qdebug.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <limits>
 
@@ -61,7 +62,7 @@ HeaderSize entry_size(const QByteArray &name, const QByteArray &value)
     // for counting the number of references to the name and value would have
     // 32 octets of overhead."
 
-    const unsigned sum = unsigned(name.size()) + value.size();
+    const unsigned sum = unsigned(name.size() + value.size());
     if (std::numeric_limits<unsigned>::max() - 32 < sum)
         return HeaderSize();
     return HeaderSize(true, quint32(sum + 32));
@@ -75,7 +76,7 @@ int compare(const QByteArray &lhs, const QByteArray &rhs)
     if (const int minLen = std::min(lhs.size(), rhs.size())) {
         // We use memcmp, since strings in headers are allowed
         // to contain '\0'.
-        const int cmp = std::memcmp(lhs.constData(), rhs.constData(), minLen);
+        const int cmp = std::memcmp(lhs.constData(), rhs.constData(), std::size_t(minLen));
         if (cmp)
             return cmp;
     }
@@ -136,82 +137,6 @@ bool FieldLookupTable::SearchEntry::operator < (const SearchEntry &rhs)const
 
     // Later added - smaller is offset.
     return offset > rhs.offset;
-}
-
-// This data is from HPACK's specs and it's quite
-// conveniently sorted == works with binary search as it is.
-// Later this can probably change and instead of simple
-// vector we'll just reuse FieldLookupTable.
-// TODO: it makes sense to generate this table while ...
-// configuring/building Qt (some script downloading/parsing/generating
-// would be quite handy).
-const std::vector<HeaderField> &staticTable()
-{
-    static std::vector<HeaderField> table = {
-    {":authority", ""},
-    {":method", "GET"},
-    {":method", "POST"},
-    {":path", "/"},
-    {":path", "/index.html"},
-    {":scheme", "http"},
-    {":scheme", "https"},
-    {":status", "200"},
-    {":status", "204"},
-    {":status", "206"},
-    {":status", "304"},
-    {":status", "400"},
-    {":status", "404"},
-    {":status", "500"},
-    {"accept-charset", ""},
-    {"accept-encoding", "gzip, deflate"},
-    {"accept-language", ""},
-    {"accept-ranges", ""},
-    {"accept", ""},
-    {"access-control-allow-origin", ""},
-    {"age", ""},
-    {"allow", ""},
-    {"authorization", ""},
-    {"cache-control", ""},
-    {"content-disposition", ""},
-    {"content-encoding", ""},
-    {"content-language", ""},
-    {"content-length", ""},
-    {"content-location", ""},
-    {"content-range", ""},
-    {"content-type", ""},
-    {"cookie", ""},
-    {"date", ""},
-    {"etag", ""},
-    {"expect", ""},
-    {"expires", ""},
-    {"from", ""},
-    {"host", ""},
-    {"if-match", ""},
-    {"if-modified-since", ""},
-    {"if-none-match", ""},
-    {"if-range", ""},
-    {"if-unmodified-since", ""},
-    {"last-modified", ""},
-    {"link", ""},
-    {"location", ""},
-    {"max-forwards", ""},
-    {"proxy-authenticate", ""},
-    {"proxy-authorization", ""},
-    {"range", ""},
-    {"referer", ""},
-    {"refresh", ""},
-    {"retry-after", ""},
-    {"server", ""},
-    {"set-cookie", ""},
-    {"strict-transport-security", ""},
-    {"transfer-encoding", ""},
-    {"user-agent", ""},
-    {"vary", ""},
-    {"via", ""},
-    {"www-authenticate", ""}
-    };
-
-    return table;
 }
 
 FieldLookupTable::FieldLookupTable(quint32 maxSize, bool use)
@@ -296,12 +221,12 @@ void FieldLookupTable::evictEntry()
 
 quint32 FieldLookupTable::numberOfEntries() const
 {
-    return quint32(staticTable().size()) + nDynamic;
+    return quint32(staticPart().size()) + nDynamic;
 }
 
 quint32 FieldLookupTable::numberOfStaticEntries() const
 {
-    return quint32(staticTable().size());
+    return quint32(staticPart().size());
 }
 
 quint32 FieldLookupTable::numberOfDynamicEntries() const
@@ -326,24 +251,18 @@ void FieldLookupTable::clearDynamicTable()
 
 bool FieldLookupTable::indexIsValid(quint32 index) const
 {
-    return index && index <= staticTable().size() + nDynamic;
+    return index && index <= staticPart().size() + nDynamic;
 }
 
 quint32 FieldLookupTable::indexOf(const QByteArray &name, const QByteArray &value)const
 {
     // Start from the static part first:
-    const auto &table = staticTable();
+    const auto &table = staticPart();
     const HeaderField field(name, value);
-    const auto staticPos = std::lower_bound(table.begin(), table.end(), field,
-                                            [](const HeaderField &lhs, const HeaderField &rhs) {
-                                                int cmp = compare(lhs.name, rhs.name);
-                                                if (cmp)
-                                                    return cmp < 0;
-                                                return compare(lhs.value, rhs.value) < 0;
-                                            });
+    const auto staticPos = findInStaticPart(field, CompareMode::nameAndValue);
     if (staticPos != table.end()) {
         if (staticPos->name == name && staticPos->value == value)
-            return staticPos - table.begin() + 1;
+            return quint32(staticPos - table.begin() + 1);
     }
 
     // Now we have to lookup in our dynamic part ...
@@ -366,15 +285,12 @@ quint32 FieldLookupTable::indexOf(const QByteArray &name, const QByteArray &valu
 quint32 FieldLookupTable::indexOf(const QByteArray &name) const
 {
     // Start from the static part first:
-    const auto &table = staticTable();
+    const auto &table = staticPart();
     const HeaderField field(name, QByteArray());
-    const auto staticPos = std::lower_bound(table.begin(), table.end(), field,
-                                            [](const HeaderField &lhs, const HeaderField &rhs) {
-                                                return compare(lhs.name, rhs.name) < 0;
-                                            });
+    const auto staticPos = findInStaticPart(field, CompareMode::nameOnly);
     if (staticPos != table.end()) {
         if (staticPos->name == name)
-            return staticPos - table.begin() + 1;
+            return quint32(staticPos - table.begin() + 1);
     }
 
     // Now we have to lookup in our dynamic part ...
@@ -402,7 +318,7 @@ bool FieldLookupTable::field(quint32 index, QByteArray *name, QByteArray *value)
     if (!indexIsValid(index))
         return false;
 
-    const auto &table = staticTable();
+    const auto &table = staticPart();
     if (index - 1 < table.size()) {
         *name = table[index - 1].name;
         *value = table[index - 1].value;
@@ -477,7 +393,7 @@ quint32 FieldLookupTable::keyToIndex(const SearchEntry &key) const
     Q_ASSERT(offset < ChunkSize);
     Q_ASSERT(chunkIndex || offset >= begin);
 
-    return quint32(offset + chunkIndex * ChunkSize - begin + 1 + staticTable().size());
+    return quint32(offset + chunkIndex * ChunkSize - begin + 1 + staticPart().size());
 }
 
 FieldLookupTable::SearchEntry FieldLookupTable::frontKey() const
@@ -524,6 +440,103 @@ void FieldLookupTable::setMaxDynamicTableSize(quint32 size)
     // items evicted or even dynamic table completely cleared).
     maxTableSize = size;
     updateDynamicTableSize(size);
+}
+
+// This data is from the HPACK's specs and it's quite conveniently sorted,
+// except ... 'accept' is in the wrong position, see how we handle it below.
+const std::vector<HeaderField> &FieldLookupTable::staticPart()
+{
+    static std::vector<HeaderField> table = {
+    {":authority", ""},
+    {":method", "GET"},
+    {":method", "POST"},
+    {":path", "/"},
+    {":path", "/index.html"},
+    {":scheme", "http"},
+    {":scheme", "https"},
+    {":status", "200"},
+    {":status", "204"},
+    {":status", "206"},
+    {":status", "304"},
+    {":status", "400"},
+    {":status", "404"},
+    {":status", "500"},
+    {"accept-charset", ""},
+    {"accept-encoding", "gzip, deflate"},
+    {"accept-language", ""},
+    {"accept-ranges", ""},
+    {"accept", ""},
+    {"access-control-allow-origin", ""},
+    {"age", ""},
+    {"allow", ""},
+    {"authorization", ""},
+    {"cache-control", ""},
+    {"content-disposition", ""},
+    {"content-encoding", ""},
+    {"content-language", ""},
+    {"content-length", ""},
+    {"content-location", ""},
+    {"content-range", ""},
+    {"content-type", ""},
+    {"cookie", ""},
+    {"date", ""},
+    {"etag", ""},
+    {"expect", ""},
+    {"expires", ""},
+    {"from", ""},
+    {"host", ""},
+    {"if-match", ""},
+    {"if-modified-since", ""},
+    {"if-none-match", ""},
+    {"if-range", ""},
+    {"if-unmodified-since", ""},
+    {"last-modified", ""},
+    {"link", ""},
+    {"location", ""},
+    {"max-forwards", ""},
+    {"proxy-authenticate", ""},
+    {"proxy-authorization", ""},
+    {"range", ""},
+    {"referer", ""},
+    {"refresh", ""},
+    {"retry-after", ""},
+    {"server", ""},
+    {"set-cookie", ""},
+    {"strict-transport-security", ""},
+    {"transfer-encoding", ""},
+    {"user-agent", ""},
+    {"vary", ""},
+    {"via", ""},
+    {"www-authenticate", ""}
+    };
+
+    return table;
+}
+
+std::vector<HeaderField>::const_iterator FieldLookupTable::findInStaticPart(const HeaderField &field, CompareMode mode)
+{
+    const auto &table = staticPart();
+    const auto acceptPos = table.begin() + 18;
+    if (field.name == "accept") {
+        if (mode == CompareMode::nameAndValue && field.value != "")
+            return table.end();
+        return acceptPos;
+    }
+
+    auto predicate = [mode](const HeaderField &lhs, const HeaderField &rhs) {
+        const int cmp = compare(lhs.name, rhs.name);
+        if (cmp)
+            return cmp < 0;
+        else if (mode == CompareMode::nameAndValue)
+            return compare(lhs.value, rhs.value) < 0;
+        return false;
+    };
+
+    const auto staticPos = std::lower_bound(table.begin(), acceptPos, field, predicate);
+    if (staticPos != acceptPos)
+        return staticPos;
+
+    return std::lower_bound(acceptPos + 1, table.end(), field, predicate);
 }
 
 }

@@ -333,7 +333,9 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
     *shifted = QBezier::fromPoints(points_shifted[map[0]], points_shifted[map[1]],
                                    points_shifted[map[2]], points_shifted[map[3]]);
 
-    return good_offset(orig, shifted, offset, threshold);
+    if (np > 2)
+        return good_offset(orig, shifted, offset, threshold);
+    return Ok;
 }
 
 // This value is used to determine the length of control point vectors
@@ -432,7 +434,6 @@ redo:
         } else if (res == Ok) {
             ++o;
             --b;
-            continue;
         } else if (res == Circle && maxSegments - (o - curveSegments) >= 2) {
             // add semi circle
             if (addCircle(b, offset, o))

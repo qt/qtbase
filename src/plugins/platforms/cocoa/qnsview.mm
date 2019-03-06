@@ -137,22 +137,13 @@
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
         m_platformWindow = platformWindow;
-        m_buttons = Qt::NoButton;
-        m_acceptedMouseDowns = Qt::NoButton;
-        m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
-        m_sendUpAsRightButton = false;
         m_inputSource = nil;
-        m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
-        m_scrolling = false;
         m_updatingDrag = false;
         m_currentlyInterpretedKeyEvent = nil;
-        m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(),
-            "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
 
         self.focusRingType = NSFocusRingTypeNone;
-        self.cursor = nil;
 
         self.previousSuperview = nil;
         self.previousWindow = nil;

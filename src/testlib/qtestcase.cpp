@@ -78,6 +78,10 @@
 #include <QtTest/private/qtestutil_macos_p.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#include <QtTest/private/qappletestlogger_p.h>
+#endif
+
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -511,7 +515,7 @@ static int qToInt(const char *str)
 
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool qml)
 {
-    QTestLog::LogMode logFormat = QTestLog::Plain;
+    int logFormat = -1; // Not set
     const char *logFilename = 0;
 
     QTest::testFunctions.clear();
@@ -679,7 +683,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                     fprintf(stderr, "only one logger can log to stdout\n");
                     exit(1);
                 }
-                QTestLog::addLogger(logFormat, filename);
+                QTestLog::addLogger(QTestLog::LogMode(logFormat), filename);
             }
             delete [] filename;
             delete [] format;
@@ -841,10 +845,25 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     QTestLog::setInstalledTestCoverage(installedTestCoverage);
 
     // If no loggers were created by the long version of the -o command-line
-    // option, create a logger using whatever filename and format were
-    // set using the old-style command-line options.
-    if (QTestLog::loggerCount() == 0)
-        QTestLog::addLogger(logFormat, logFilename);
+    // option, but a logger was requested via the old-style option, add it.
+    const bool explicitLoggerRequested = logFormat != -1;
+    if (QTestLog::loggerCount() == 0 && explicitLoggerRequested)
+        QTestLog::addLogger(QTestLog::LogMode(logFormat), logFilename);
+
+    bool addFallbackLogger = !explicitLoggerRequested;
+
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    // Any explicitly requested loggers will be added by now, so we can check if they use stdout
+    const bool safeToAddAppleLogger = !AppleUnifiedLogger::willMirrorToStderr() || !QTestLog::loggerUsingStdout();
+    if (safeToAddAppleLogger && QAppleTestLogger::debugLoggingEnabled()) {
+        QTestLog::addLogger(QTestLog::Apple, nullptr);
+        if (AppleUnifiedLogger::willMirrorToStderr() && !logFilename)
+            addFallbackLogger = false; // Prevent plain test logger fallback below
+    }
+#endif
+
+    if (addFallbackLogger)
+        QTestLog::addLogger(QTestLog::Plain, logFilename);
 }
 
 // Temporary, backwards compatibility, until qtdeclarative's use of it is converted
