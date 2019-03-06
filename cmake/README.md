@@ -4,9 +4,12 @@ Initial port is on-going. Some modules of QtBase are ported, incl. some of the p
 
 Basic functionality is there (moc, uic, etc.), but documentation, translations, qdbusxml2cpp, etc. are missing.
 
-NOTE: YOU WILL NEED CMAKE 3.14 or later (for example, master branch,
-after a1b3d79f728f2c626d3aac2e68dbab524baa4634, for more details see
-https://gitlab.kitware.com/cmake/cmake/merge_requests/2679 ).
+NOTE: YOU WILL NEED CMAKE 3.15 or later (for example, master branch,
+after 168c11f70e52f9b4f00ef289a95023be3f273d2d, for more details see
+https://gitlab.kitware.com/cmake/cmake/merge_requests/2679
+and
+https://gitlab.kitware.com/cmake/cmake/merge_requests/3049
+).
 
 # Intro
 
