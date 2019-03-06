@@ -292,11 +292,41 @@ function(qt_internal_module_info result target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS;DISABLE_AUTOGEN_TOOLS")
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
 
 
 option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
+
+# This function checks which autotools should be used: AUTOMOC/UIC/RCC
+function(qt_autogen_tools target)
+  qt_parse_all_arguments(arg "qt_autogen_tools" "" "" "${__default_private_args}" ${ARGN})
+
+  set_property(TARGET "${target}" PROPERTY INTERFACE_QT_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
+  set_property(TARGET "${target}" APPEND PROPERTY
+    COMPATIBLE_INTERFACE_STRING QT_MAJOR_VERSION
+  )
+
+  list(APPEND autogen_tools "moc" "uic" "rcc")
+  if (arg_DISABLE_AUTOGEN_TOOLS)
+    foreach(disable_tool ${arg_DISABLE_AUTOGEN_TOOLS})
+      list(REMOVE_ITEM autogen_tools "${disable_tool}")
+    endforeach()
+  endif()
+
+  foreach(autogen_tool ${autogen_tools})
+    string(TOUPPER "${autogen_tool}" captitalAutogenTool)
+
+    set_target_properties("${target}"
+                          PROPERTIES
+                          AUTO${captitalAutogenTool} ON
+                          AUTO${captitalAutogenTool}_EXECUTABLE "$<TARGET_FILE:Qt::${autogen_tool}>")
+  endforeach()
+
+  set_directory_properties(PROPERTIES
+                           QT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}
+                           QT_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+endfunction()
 
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
@@ -325,15 +355,6 @@ function(extend_target target)
             qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE BASENAME "${arg_DBUS_INTERFACE_BASENAME}" FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
             list(APPEND dbus_sources "${sources}")
         endforeach()
-
-        set_target_properties("${target}" PROPERTIES
-            AUTOMOC ON
-            AUTOMOC_EXECUTABLE "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::moc>"
-            AUTORCC ON
-            AUTORCC_EXECUTABLE "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::rcc>"
-            AUTOUIC ON
-            AUTOUIC_EXECUTABLE "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::uic>"
-        )
 
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
         if (arg_COMPILE_FLAGS)
@@ -498,6 +519,10 @@ function(add_qt_module target)
 
     qt_internal_library_deprecation_level(deprecation_define)
 
+    qt_autogen_tools("${target}"
+      DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+    )
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         PUBLIC_INCLUDE_DIRECTORIES
@@ -660,6 +685,10 @@ function(add_qt_plugin target)
 
     qt_internal_library_deprecation_level(deprecation_define)
 
+    qt_autogen_tools("${target}"
+      DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+    )
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -718,6 +747,11 @@ function(add_qt_executable name)
     endif()
 
     add_executable("${name}" ${arg_EXE_FLAGS})
+
+    qt_autogen_tools("${name}"
+      DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+    )
+
     extend_target("${name}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -759,6 +793,7 @@ function(add_qt_test name)
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
+        DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -798,8 +833,10 @@ function(add_qt_tool name)
 
     qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP" "" "${__default_private_args}" ${ARGN})
 
+    set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
     if (arg_BOOTSTRAP)
         set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Bootstrap)
+        list(APPEND disable_autogen_tools "uic" "moc" "rcc")
     else()
         set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
     endif()
@@ -813,6 +850,7 @@ function(add_qt_tool name)
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
+        DISABLE_AUTOGEN_TOOLS ${disable_autogen_tools}
     )
     qt_internal_add_target_aliases("${name}")
 

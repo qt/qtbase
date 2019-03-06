@@ -238,10 +238,13 @@ add_qt_module(Core
         tinycbor Threads::Threads ZLIB::ZLIB
         QtHarfBuzz
         Qt::GlobalConfigPrivate
-    PUBLIC_LIBRARIES Qt::Platform
+    PUBLIC_LIBRARIES
+        Qt::Platform
     DEFINES
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
+    DISABLE_AUTOGEN_TOOLS
+        uic
 )
 
 add_dependencies(Core Qt::moc)
