@@ -272,6 +272,8 @@ public:
     Q_REQUIRED_RESULT bool isRightToLeft() const Q_DECL_NOTHROW
     { return QtPrivate::isRightToLeft(*this); }
 
+    Q_REQUIRED_RESULT Q_CORE_EXPORT int toWCharArray(wchar_t *array) const;
+
     //
     // STL compatibility API:
     //

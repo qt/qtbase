@@ -2086,7 +2086,7 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 
   \note This function does not append a null character to the array.
 
-  \sa utf16(), toUcs4(), toLatin1(), toUtf8(), toLocal8Bit(), toStdWString()
+  \sa utf16(), toUcs4(), toLatin1(), toUtf8(), toLocal8Bit(), toStdWString(), QStringView::toWCharArray()
 */
 
 /*! \fn QString::QString(const QString &other)

@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qstringview.h"
+#include "qstring.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -793,5 +794,35 @@ QT_BEGIN_NAMESPACE
 
     \sa QString::isRightToLeft()
 */
+
+/*!
+    \since 5.14
+
+    Transcribes this string into the given \a array.
+
+    Caller is responsible for ensuring \a array is large enough to hold the \t
+    wchar_t encoding of this string (allocating the array with the same length
+    as the string is always sufficient). The array is encoded in UTF-16 on
+    platforms where \t wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
+    systems), \t wchar_t is assumed to be 4 bytes wide and the data is written
+    in UCS-4.
+
+    \note This function writes no null terminator to the end of \a array.
+
+    Returns the number of \t wchar_t entries written to \a array.
+
+    \sa QString::toWCharArray()
+*/
+
+int QStringView::toWCharArray(wchar_t *array) const
+{
+    if (sizeof(wchar_t) == sizeof(QChar)) {
+        memcpy(array, data(), sizeof(QChar) * size());
+        return size();
+    } else {
+        return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), int(size()),
+                                      reinterpret_cast<uint *>(array));
+    }
+}
 
 QT_END_NAMESPACE

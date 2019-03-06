@@ -1021,12 +1021,7 @@ QT_WARNING_DISABLE_INTEL(111)   // "statement is unreachable"
 
 inline int QString::toWCharArray(wchar_t *array) const
 {
-    if (sizeof(wchar_t) == sizeof(QChar)) {
-        memcpy(array, d->data(), sizeof(QChar) * size());
-        return size();
-    } else {
-        return toUcs4_helper(d->data(), size(), reinterpret_cast<uint *>(array));
-    }
+    return QStringView(*this).toWCharArray(array);
 }
 
 QT_WARNING_POP
