@@ -60,6 +60,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QVariant>
+#include <QtCore/qvector.h>
 #if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
 #endif
@@ -97,6 +98,8 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
 
 static QElapsedTimer elapsedFunctionTime;
 static QElapsedTimer elapsedTotalTime;
+
+#define FOREACH_TEST_LOGGER for (QAbstractTestLogger *logger : QTest::loggers)
 
 namespace QTest {
 
@@ -165,109 +168,7 @@ namespace QTest {
 
     static IgnoreResultList *ignoreResultList = 0;
 
-    struct LoggerList
-    {
-        QAbstractTestLogger *logger;
-        LoggerList *next;
-    };
-
-    class TestLoggers
-    {
-    public:
-        static void addLogger(QAbstractTestLogger *logger)
-        {
-            LoggerList *l = new LoggerList;
-            l->logger = logger;
-            l->next = loggers;
-            loggers = l;
-        }
-
-        static void destroyLoggers()
-        {
-            while (loggers) {
-                LoggerList *l = loggers;
-                loggers = loggers->next;
-                delete l->logger;
-                delete l;
-            }
-        }
-
-#define FOREACH_LOGGER(operation) \
-        LoggerList *l = loggers; \
-        while (l) { \
-            QAbstractTestLogger *logger = l->logger; \
-            Q_UNUSED(logger); \
-            operation; \
-            l = l->next; \
-        }
-
-        static void startLogging()
-        {
-            FOREACH_LOGGER(logger->startLogging());
-        }
-
-        static void stopLogging()
-        {
-            FOREACH_LOGGER(logger->stopLogging());
-        }
-
-        static void enterTestFunction(const char *function)
-        {
-            FOREACH_LOGGER(logger->enterTestFunction(function));
-        }
-
-        static void leaveTestFunction()
-        {
-            FOREACH_LOGGER(logger->leaveTestFunction());
-        }
-
-        static void enterTestData(QTestData *data)
-        {
-            FOREACH_LOGGER(logger->enterTestData(data));
-        }
-
-        static void addIncident(QAbstractTestLogger::IncidentTypes type, const char *description,
-                                const char *file = 0, int line = 0)
-        {
-            FOREACH_LOGGER(logger->addIncident(type, description, file, line));
-        }
-
-        static void addBenchmarkResult(const QBenchmarkResult &result)
-        {
-            FOREACH_LOGGER(logger->addBenchmarkResult(result));
-        }
-
-        static void addMessage(QtMsgType type, const QMessageLogContext &context,
-                               const QString &message)
-        {
-            FOREACH_LOGGER(logger->addMessage(type, context, message));
-        }
-
-        static void addMessage(QAbstractTestLogger::MessageTypes type, const QString &message,
-                               const char *file = 0, int line = 0)
-        {
-            FOREACH_LOGGER(logger->addMessage(type, message, file, line));
-        }
-
-        static void outputString(const char *msg)
-        {
-            FOREACH_LOGGER(logger->outputString(msg));
-        }
-
-        static int loggerCount()
-        {
-            int count = 0;
-            FOREACH_LOGGER(++count);
-            return count;
-        }
-
-    private:
-        static LoggerList *loggers;
-    };
-
-#undef FOREACH_LOGGER
-
-    LoggerList *TestLoggers::loggers = 0;
+    static QVector<QAbstractTestLogger*> loggers;
     static bool loggerUsingStdout = false;
 
     static int verbosity = 0;
@@ -306,10 +207,10 @@ namespace QTest {
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
-        if (QTest::TestLoggers::loggerCount() == 0) {
+        if (QTestLog::loggerCount() == 0) {
             // if this goes wrong, something is seriously broken.
             qInstallMessageHandler(oldMessageHandler);
-            QTEST_ASSERT(QTest::TestLoggers::loggerCount() != 0);
+            QTEST_ASSERT(QTestLog::loggerCount() != 0);
         }
 
         if (handleIgnoredMessage(type, message)) {
@@ -322,13 +223,16 @@ namespace QTest {
                 return;
 
             if (!counter.deref()) {
-                QTest::TestLoggers::addMessage(QAbstractTestLogger::QSystem,
+                FOREACH_TEST_LOGGER {
+                    logger->addMessage(QAbstractTestLogger::QSystem,
                         QStringLiteral("Maximum amount of warnings exceeded. Use -maxwarnings to override."));
+                }
                 return;
             }
         }
 
-        QTest::TestLoggers::addMessage(type, context, message);
+        FOREACH_TEST_LOGGER
+            logger->addMessage(type, context, message);
 
         if (type == QtFatalMsg) {
              /* Right now, we're inside the custom message handler and we're
@@ -351,13 +255,16 @@ void QTestLog::enterTestFunction(const char* function)
 
     QTEST_ASSERT(function);
 
-    QTest::TestLoggers::enterTestFunction(function);
+    FOREACH_TEST_LOGGER
+        logger->enterTestFunction(function);
 }
 
 void QTestLog::enterTestData(QTestData *data)
 {
     QTEST_ASSERT(data);
-    QTest::TestLoggers::enterTestData(data);
+
+    FOREACH_TEST_LOGGER
+        logger->enterTestData(data);
 }
 
 int QTestLog::unhandledIgnoreMessages()
@@ -376,7 +283,8 @@ void QTestLog::leaveTestFunction()
     if (printAvailableTags)
         return;
 
-    QTest::TestLoggers::leaveTestFunction();
+    FOREACH_TEST_LOGGER
+        logger->leaveTestFunction();
 }
 
 void QTestLog::printUnhandledIgnoreMessages()
@@ -391,7 +299,8 @@ void QTestLog::printUnhandledIgnoreMessages()
             message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + QLatin1Char('"');
 #endif
         }
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, message);
+        FOREACH_TEST_LOGGER
+            logger->addMessage(QAbstractTestLogger::Info, message);
 
         list = list->next;
     }
@@ -411,7 +320,8 @@ void QTestLog::addPass(const char *msg)
 
     ++QTest::passes;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::Pass, msg);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::Pass, msg);
 }
 
 void QTestLog::addFail(const char *msg, const char *file, int line)
@@ -420,7 +330,8 @@ void QTestLog::addFail(const char *msg, const char *file, int line)
 
     ++QTest::fails;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::Fail, msg, file, line);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::Fail, msg, file, line);
 }
 
 void QTestLog::addXFail(const char *msg, const char *file, int line)
@@ -428,7 +339,8 @@ void QTestLog::addXFail(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::XFail, msg, file, line);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::XFail, msg, file, line);
 }
 
 void QTestLog::addXPass(const char *msg, const char *file, int line)
@@ -438,7 +350,8 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
 
     ++QTest::fails;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::XPass, msg, file, line);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
 
 void QTestLog::addBPass(const char *msg)
@@ -447,7 +360,8 @@ void QTestLog::addBPass(const char *msg)
 
     ++QTest::blacklists;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedPass, msg);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::BlacklistedPass, msg);
 }
 
 void QTestLog::addBFail(const char *msg, const char *file, int line)
@@ -457,7 +371,8 @@ void QTestLog::addBFail(const char *msg, const char *file, int line)
 
     ++QTest::blacklists;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedFail, msg, file, line);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::BlacklistedFail, msg, file, line);
 }
 
 void QTestLog::addBXPass(const char *msg, const char *file, int line)
@@ -467,7 +382,8 @@ void QTestLog::addBXPass(const char *msg, const char *file, int line)
 
     ++QTest::blacklists;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedXPass, msg, file, line);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::BlacklistedXPass, msg, file, line);
 }
 
 void QTestLog::addBXFail(const char *msg, const char *file, int line)
@@ -477,7 +393,8 @@ void QTestLog::addBXFail(const char *msg, const char *file, int line)
 
     ++QTest::blacklists;
 
-    QTest::TestLoggers::addIncident(QAbstractTestLogger::BlacklistedXFail, msg, file, line);
+    FOREACH_TEST_LOGGER
+        logger->addIncident(QAbstractTestLogger::BlacklistedXFail, msg, file, line);
 }
 
 void QTestLog::addSkip(const char *msg, const char *file, int line)
@@ -487,27 +404,33 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
 
     ++QTest::skips;
 
-    QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, QString::fromUtf8(msg), file, line);
+    FOREACH_TEST_LOGGER
+        logger->addMessage(QAbstractTestLogger::Skip, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
 {
-    QTest::TestLoggers::addBenchmarkResult(result);
+    FOREACH_TEST_LOGGER
+        logger->addBenchmarkResult(result);
 }
 
 void QTestLog::startLogging()
 {
     elapsedTotalTime.start();
     elapsedFunctionTime.start();
-    QTest::TestLoggers::startLogging();
+    FOREACH_TEST_LOGGER
+        logger->startLogging();
     QTest::oldMessageHandler = qInstallMessageHandler(QTest::messageHandler);
 }
 
 void QTestLog::stopLogging()
 {
     qInstallMessageHandler(QTest::oldMessageHandler);
-    QTest::TestLoggers::stopLogging();
-    QTest::TestLoggers::destroyLoggers();
+    FOREACH_TEST_LOGGER {
+        logger->stopLogging();
+        delete logger;
+    }
+    QTest::loggers.clear();
     QTest::loggerUsingStdout = false;
     saveCoverageTool(QTestResult::currentAppName(), failCount() != 0, QTestLog::installedTestCoverage());
 }
@@ -542,6 +465,11 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
     case QTestLog::TAP:
         logger = new QTapTestLogger(filename);
         break;
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    case QTestLog::Apple:
+        logger = new QAppleTestLogger;
+        break;
+#endif
 #if defined(HAVE_XCTEST)
     case QTestLog::XCTest:
         logger = new QXcodeTestLogger;
@@ -549,21 +477,13 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
 #endif
     }
 
-#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
-    // Logger that also feeds messages to AUL. It needs to wrap the existing
-    // logger, as it needs to be able to short circuit the existing logger
-    // in case AUL prints to stderr.
-    if (QAppleTestLogger::debugLoggingEnabled())
-        logger = new QAppleTestLogger(logger);
-#endif
-
     QTEST_ASSERT(logger);
-    QTest::TestLoggers::addLogger(logger);
+    QTest::loggers.append(logger);
 }
 
 int QTestLog::loggerCount()
 {
-    return QTest::TestLoggers::loggerCount();
+    return QTest::loggers.size();
 }
 
 bool QTestLog::loggerUsingStdout()
@@ -575,15 +495,16 @@ void QTestLog::warn(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    if (QTest::TestLoggers::loggerCount() > 0)
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, QString::fromUtf8(msg), file, line);
+    FOREACH_TEST_LOGGER
+        logger->addMessage(QAbstractTestLogger::Warn, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::info(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(msg), file, line);
+    FOREACH_TEST_LOGGER
+        logger->addMessage(QAbstractTestLogger::Info, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::setVerboseLevel(int level)
