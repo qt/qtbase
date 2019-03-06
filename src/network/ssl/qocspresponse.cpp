@@ -126,14 +126,14 @@ QOcspResponse::QOcspResponse()
 
     Creates a new response, the copy of \a other.
 */
-QOcspResponse::QOcspResponse(const QOcspResponse &other) = default;
+QOcspResponse::QOcspResponse(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
     Move-constructs a QOcspResponse instance from \a other.
 */
-QOcspResponse::QOcspResponse(QOcspResponse &&other) Q_DECL_NOTHROW = default;
+QOcspResponse::QOcspResponse(QOcspResponse &&) Q_DECL_NOTHROW = default;
 
 /*!
     \since 5.13
@@ -147,14 +147,14 @@ QOcspResponse::~QOcspResponse() = default;
 
     Assigns \a other to the response and returns a reference to this response.
 */
-QOcspResponse &QOcspResponse::operator=(const QOcspResponse &other) = default;
+QOcspResponse &QOcspResponse::operator=(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
     Move-assigns \a other to this QOcspResponse instance.
 */
-QOcspResponse &QOcspResponse::operator=(QOcspResponse &&other) Q_DECL_NOTHROW = default;
+QOcspResponse &QOcspResponse::operator=(QOcspResponse &&) Q_DECL_NOTHROW = default;
 
 /*!
     \fn void QOcspResponse::swap(QOcspResponse &other)
