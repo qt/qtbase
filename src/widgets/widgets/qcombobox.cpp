@@ -1366,7 +1366,10 @@ void QComboBoxPrivate::emitActivated(const QModelIndex &index)
     emit q->activated(index.row());
     emit q->textActivated(text);
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     emit q->activated(text);
+QT_WARNING_POP
 #endif
 }
 
@@ -1379,7 +1382,10 @@ void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
     emit q->highlighted(index.row());
     emit q->textHighlighted(text);
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     emit q->highlighted(text);
+QT_WARNING_POP
 #endif
 }
 
