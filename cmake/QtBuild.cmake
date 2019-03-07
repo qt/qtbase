@@ -870,27 +870,43 @@ endfunction()
 
 
 function(add_qt_resource target resourceName)
-    qt_parse_all_arguments(rcc "add_qt_resource" "" "PREFIX;BASE" "FILES" ${ARGN})
+    qt_parse_all_arguments(rcc "add_qt_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
 
-    set(qrcContents "<RCC>")
-    if (${rcc_PREFIX})
-        string(APPEND qrcContents "  <qresource>\n")
-    else()
-        string(APPEND qrcContents "  <qresource prefix=\"${rcc_PREFIX}\">\n")
+    # Generate .qrc file:
+
+    # <RCC><qresource ...>
+    set(qrcContents "<RCC>\n  <qresource")
+    if (rcc_PREFIX)
+        string(APPEND qrcContents " prefix=\"${rcc_PREFIX}\"")
     endif()
+    if (rcc_LANG)
+        string(APPEND qrcContents " lang=\"${rcc_LANG}\"")
+    endif()
+    string(APPEND qrcContents ">\n")
 
     foreach(file ${rcc_FILES})
-        get_property(alias SOURCE ${file} PROPERTY alias)
+        if(rcc_BASE)
+            set(based_file "${rcc_BASE}/${file}")
+        else()
+            set(based_file "${file}")
+        endif()
+        get_property(alias SOURCE ${based_file} PROPERTY alias)
         if (NOT alias)
             set(alias "${file}")
         endif()
         ### FIXME: escape file paths to be XML conform
-        string(APPEND qrcContents "    <file alias=\"${alias}\">${CMAKE_CURRENT_SOURCE_DIR}/${file}</file>\n")
+        # <file ...>...</file>
+        string(APPEND qrcContents "    <file alias=\"${alias}\">")
+        string(APPEND qrcContents "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}</file>\n")
     endforeach()
 
+    # </qresource></RCC>
     string(APPEND qrcContents "  </qresource>\n</RCC>\n")
+
     set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/${resourceName}.qrc")
     file(GENERATE OUTPUT "${generatedResourceFile}" CONTENT "${qrcContents}")
+
+    # Process .qrc file:
 
     set(generatedSourceCode "${CMAKE_CURRENT_BINARY_DIR}/qrc_${resourceName}.cpp")
     add_custom_command(OUTPUT "${generatedSourceCode}"
