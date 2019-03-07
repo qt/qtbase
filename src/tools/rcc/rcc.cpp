@@ -68,17 +68,6 @@ enum {
 
 #define writeString(s) write(s, sizeof(s))
 
-static const char pythonHeader1[] =
-R"(# Created by: object code
-# Created by: The Resource Compiler for Qt version )";
-
-static const char pythonHeader2[] = R"(
-# WARNING! All changes made in this file will be lost!
-
-from PySide2 import QtCore
-
-)";
-
 void RCCResourceLibrary::write(const char *str, int len)
 {
     --len; // trailing \0 on string literals...
@@ -1111,9 +1100,12 @@ bool RCCResourceLibrary::writeHeader()
         writeString("# Resource object code (Python ");
         writeChar(m_format == Python3_Code ? '3' : '2');
         writeString(")\n");
-        writeString(pythonHeader1);
+        writeString("# Created by: object code\n");
+        writeString("# Created by: The Resource Compiler for Qt version ");
         writeByteArray(QT_VERSION_STR);
-        writeString(pythonHeader2);
+        writeString("\n");
+        writeString("# WARNING! All changes made in this file will be lost!\n\n");
+        writeString("from PySide2 import QtCore\n\n");
         break;
     case Binary:
         writeString("qres");
@@ -1526,18 +1518,15 @@ bool RCCResourceLibrary::writeInitializer()
             p[i++] = (m_overallFlags >>  0) & 0xff;
         }
     } else if (m_format == Python3_Code || m_format == Python2_Code) {
-        writeString(R"(def qInitResources():
-    QtCore.qRegisterResourceData(0x)");
+        writeString("def qInitResources():\n");
+        writeString("    QtCore.qRegisterResourceData(0x");
         write2HexDigits(m_formatVersion);
-        writeString(R"(, qt_resource_struct, qt_resource_name, qt_resource_data)
-
-def qCleanupResources():
-    QtCore.qUnregisterResourceData(0x)");
+        writeString(", qt_resource_struct, qt_resource_name, qt_resource_data)\n\n");
+        writeString("def qCleanupResources():\n");
+        writeString("    QtCore.qUnregisterResourceData(0x");
         write2HexDigits(m_formatVersion);
-        writeString(R"(, qt_resource_struct, qt_resource_name, qt_resource_data)
-
-qInitResources()
-)");
+        writeString(", qt_resource_struct, qt_resource_name, qt_resource_data)\n\n");
+        writeString("qInitResources()\n");
     }
     return true;
 }
