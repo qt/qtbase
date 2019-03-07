@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QOcspResponse
-    \brief This class represents Online Certificate Status Protocol response
+    \brief This class represents Online Certificate Status Protocol response.
     \since 5.13
 
     \ingroup network
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     received by the client-side socket during the TLS handshake. QSslSocket must be
     configured with OCSP stapling enabled.
 
-    \sa QSslSocket, QSslSocket::ocspResponse(), certificateStatus(),
+    \sa QSslSocket, QSslSocket::ocspResponses(), certificateStatus(),
     revocationReason(), responder(), subject(), QOcspCertificateStatus, QOcspRevocationReason,
     QSslConfiguration::setOcspStaplingEnabled(), QSslConfiguration::ocspStaplingEnabled(),
     QSslConfiguration::peerCertificate()

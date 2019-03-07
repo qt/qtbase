@@ -2255,16 +2255,16 @@ bool QImage::reinterpretAsFormat(Format format)
     \sa convertToFormat()
 */
 
-void QImage::convertTo(Format f, Qt::ImageConversionFlags flags)
+void QImage::convertTo(Format format, Qt::ImageConversionFlags flags)
 {
-    if (!d || f == QImage::Format_Invalid)
+    if (!d || format == QImage::Format_Invalid)
         return;
 
     detach();
-    if (convertToFormat_inplace(f, flags))
+    if (convertToFormat_inplace(format, flags))
         return;
 
-    *this = convertToFormat_helper(f, flags);
+    *this = convertToFormat_helper(format, flags);
 }
 
 /*!

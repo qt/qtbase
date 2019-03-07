@@ -103,7 +103,7 @@ QConcatenateTablesProxyModelPrivate::QConcatenateTablesProxyModelPrivate()
     \since 5.13
     \class QConcatenateTablesProxyModel
     \inmodule QtCore
-    \brief The QConcatenateTablesProxyModel class proxies multiple source models, concatenating their rows
+    \brief The QConcatenateTablesProxyModel class proxies multiple source models, concatenating their rows.
 
     \ingroup model-view
 
@@ -163,7 +163,7 @@ QModelIndex QConcatenateTablesProxyModel::mapFromSource(const QModelIndex &sourc
 }
 
 /*!
-    Returns the source index for a given proxy index.
+    Returns the source index for a given \a proxyIndex.
 */
 QModelIndex QConcatenateTablesProxyModel::mapToSource(const QModelIndex &proxyIndex) const
 {
@@ -232,8 +232,8 @@ bool QConcatenateTablesProxyModel::setItemData(const QModelIndex &proxyIndex, co
 
 /*!
   Returns the flags for the given index.
-  If the index is valid, the flags come from the source model for this index.
-  If the index is invalid (as used to determine if dropping onto an empty area
+  If the \a index is valid, the flags come from the source model for this \a index.
+  If the \a index is invalid (as used to determine if dropping onto an empty area
   in the view is allowed, for instance), the flags from the first model are returned.
 */
 Qt::ItemFlags QConcatenateTablesProxyModel::flags(const QModelIndex &index) const
