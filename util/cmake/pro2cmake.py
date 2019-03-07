@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import copy
+import xml.etree.ElementTree as ET
 from itertools import chain
 import os.path
 import re
@@ -70,6 +71,61 @@ def _parse_commandline():
                         nargs='+', help='The .pro/.pri file to process')
 
     return parser.parse_args()
+
+
+def process_qrc_file(target: str, filepath: str, base_dir: str = '') -> str:
+    assert(target)
+    resource_name = os.path.splitext(os.path.basename(filepath))[0]
+    base_dir = os.path.join('' if base_dir == '.' else base_dir, os.path.dirname(filepath))
+
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+    assert(root.tag == 'RCC')
+
+    output = ''
+
+    resource_count = 0
+    for resource in root:
+        assert(resource.tag == 'qresource')
+        lang = resource.get('lang', '')
+        prefix = resource.get('prefix', '')
+
+        full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else '')
+
+        files: Dict[str, str] = {}
+        for file in resource:
+            path = file.text
+            assert path
+
+            # Get alias:
+            alias = file.get('alias', '')
+            files[path] = alias
+
+        sorted_files = sorted(files.keys())
+
+        assert(sorted_files)
+
+        for source in sorted_files:
+            alias = files[source]
+            if alias:
+                full_source = os.path.join(base_dir, source)
+                output += 'set_source_files_properties("{}"\n' \
+                          '    PROPERTIES alias "{}")\n'.format(full_source, alias)
+
+        params = ''
+        if lang:
+            params += ' LANG "{}"'.format(lang)
+        if prefix:
+            params += ' PREFIX "{}"'.format(prefix)
+        if base_dir:
+            params += ' BASE "{}"'.format(base_dir)
+        output += 'add_qt_resource({} "{}"{} FILES\n    {})\n'.format(target, full_resource_name,
+                                                                      params,
+                                                                      '\n    '.join(sorted_files))
+
+        resource_count += 1
+
+    return output
 
 
 def fixup_linecontinuation(contents: str) -> str:
@@ -778,28 +834,19 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     ind = spaces(indent)
     scope.reset_visited_keys()
 
+    # mark RESOURCES as visited:
+    scope.get('RESOURCES', '')
+
     plugin_type = scope.get('PLUGIN_TYPE')
 
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
+    vpath = scope.expand('VPATH')
+
     sources = scope.expand('SOURCES') + scope.expand('HEADERS') \
         + scope.expand('OBJECTIVE_SOURCES') + scope.expand('NO_PCH_SOURCES') \
         + scope.expand('FORMS')
-    resources = scope.expand('RESOURCES')
-    if resources:
-        qrc_only = True
-        for r in resources:
-            if not r.endswith('.qrc'):
-                qrc_only = False
-                break
-
-        if not qrc_only:
-            print('     XXXX Ignoring non-QRC file resources.')
-        else:
-            sources += resources
-
-    vpath = scope.expand('VPATH')
 
     sources = [map_source_to_cmake(s, scope.basedir, vpath) for s in sources]
     if sources:
@@ -1078,6 +1125,31 @@ def map_to_cmake_condition(condition: str) -> str:
     return condition
 
 
+def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0):
+    vpath = scope.expand('VPATH')
+
+    # Handle QRC files by turning them into add_qt_resource:
+    resources = scope.expand('RESOURCES')
+    qrc_output = ''
+    if resources:
+        qrc_only = True
+        for r in resources:
+            if r.endswith('.qrc'):
+                qrc_output += process_qrc_file(target,
+                                               map_source_to_cmake(r, scope.basedir, vpath),
+                                               scope.basedir)
+            else:
+                qrc_only = False
+
+        if not qrc_only:
+            print('     XXXX Ignoring non-QRC file resources.')
+
+    if qrc_output:
+        cm_fh.write('\n# Resources:\n')
+        for line in qrc_output.split('\n'):
+            cm_fh.write(' ' * indent + line + '\n')
+
+
 def write_extend_target(cm_fh: typing.IO[str], target: str,
                         scope: Scope, indent: int = 0):
     extend_qt_io_string = io.StringIO()
@@ -1105,6 +1177,8 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
             extend_scope = ''  # Nothing to report, so don't!
 
     cm_fh.write(extend_scope)
+
+    write_resources(cm_fh, target, scope, indent)
 
 
 def flatten_scopes(scope: Scope) -> typing.List[Scope]:
@@ -1137,8 +1211,7 @@ def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     cmake_function: str, scope: Scope, *,
                     extra_lines: typing.List[str] = [],
-                    indent: int = 0,
-                    **kwargs: typing.Any):
+                    indent: int = 0, **kwargs: typing.Any):
     # Evaluate total condition of all scopes:
     recursive_evaluate_scope(scope)
 
@@ -1167,6 +1240,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
     # Footer:
     cm_fh.write('{})\n'.format(spaces(indent)))
+
+    write_resources(cm_fh, name, scope, indent)
 
     # Scopes:
     if len(scopes) == 1:
