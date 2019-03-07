@@ -968,7 +968,6 @@ extend_target(Core CONDITION QT_FEATURE_qeventtransition
 
 extend_target(Core CONDITION QT_FEATURE_mimetype
     SOURCES
-        mimetypes/mimetypes.qrc
         mimetypes/qmimedatabase.cpp mimetypes/qmimedatabase.h mimetypes/qmimedatabase_p.h
         mimetypes/qmimeglobpattern.cpp mimetypes/qmimeglobpattern_p.h
         mimetypes/qmimemagicrule.cpp mimetypes/qmimemagicrule_p.h
@@ -977,6 +976,12 @@ extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetype.cpp mimetypes/qmimetype.h mimetypes/qmimetype_p.h
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
+
+# Resources:
+set_source_files_properties("mimetypes/mime/packages/freedesktop.org.xml"
+    PROPERTIES alias "freedesktop.org.xml")
+add_qt_resource(Core "mimetypes" PREFIX "/qt-project.org/qmime/packages" BASE "mimetypes" FILES
+    mime/packages/freedesktop.org.xml)
 
 
 # special case:
