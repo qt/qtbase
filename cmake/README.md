@@ -44,7 +44,7 @@ vcpkg doesn't support clang on macOS, see https://github.com/Microsoft/vcpkg/iss
 
   * Install homebrew: ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
   * Build Qt dependencies:  ``brew install pcre2 harfbuzz``
-  * Build cmake from HEAD (or you can build your own):  ``brew --HEAD install cmake``
+  * Build cmake from HEAD (or you can build your own):  ``brew install --HEAD cmake``
   * When running cmake in qtbase, pass ``-DCMAKE_PREFIX_PATH=/usr/local``
 
 
