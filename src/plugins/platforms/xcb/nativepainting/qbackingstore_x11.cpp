@@ -192,6 +192,10 @@ bool QXcbNativeBackingStore::scroll(const QRegion &area, int dx, int dy)
 
 void QXcbNativeBackingStore::beginPaint(const QRegion &region)
 {
+    QX11PlatformPixmap *x11pm = qt_x11Pixmap(m_pixmap);
+    if (x11pm)
+        x11pm->setIsBackingStore(true);
+
 #if QT_CONFIG(xrender)
     if (m_translucentBackground) {
         const QVector<XRectangle> xrects = qt_region_to_xrectangles(region);

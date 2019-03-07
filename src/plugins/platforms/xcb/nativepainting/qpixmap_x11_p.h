@@ -90,6 +90,8 @@ public:
     void convertToARGB32(bool preserveContents = true);
 #endif
 
+    bool isBackingStore() const;
+    void setIsBackingStore(bool on);
 private:
     friend class QX11PaintEngine;
     friend const QXcbX11Info &qt_x11Info(const QPixmap &pixmap);
@@ -110,7 +112,8 @@ private:
         Uninitialized = 0x1,
         Readonly = 0x2,
         InvertedWhenBoundToTexture = 0x4,
-        GlSurfaceCreatedWithAlpha = 0x8
+        GlSurfaceCreatedWithAlpha = 0x8,
+        IsBackingStore = 0x10
     };
     uint flags;
 
