@@ -79,6 +79,7 @@ public:
     void swap(QVector<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
+    QVector<T> &operator=(std::initializer_list<T> args);
 #endif
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
@@ -542,10 +543,19 @@ QVector<T>::QVector(std::initializer_list<T> args)
         d = Data::sharedNull();
     }
 }
+
+template <typename T>
+QVector<T> &QVector<T>::operator=(std::initializer_list<T> args)
+{
+    QVector<T> tmp(args);
+    tmp.swap(*this);
+    return *this;
+}
+
 # if defined(Q_CC_MSVC)
 QT_WARNING_POP
 # endif // Q_CC_MSVC
-#endif // Q_COMPILER_INITALIZER_LISTS
+#endif // Q_COMPILER_INITIALIZER_LISTS
 
 template <typename T>
 void QVector<T>::freeData(Data *x)
