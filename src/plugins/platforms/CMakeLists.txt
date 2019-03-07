@@ -23,7 +23,7 @@ if(APPLE_OSX)
 endif()
 
 if(WIN32 AND NOT WINRT)
-#    TODO   add_subdirectory(windows)
+    add_subdirectory(windows)
 endif()
 
 if(WINRT)
