@@ -97,6 +97,11 @@ struct QPair
     T2 second;
 };
 
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+template<class T1, class T2>
+QPair(T1, T2) -> QPair<T1, T2>;
+#endif
+
 template <typename T1, typename T2>
 void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs) Q_DECL_NOEXCEPT_EXPR(noexcept(lhs.swap(rhs)))
 { lhs.swap(rhs); }
