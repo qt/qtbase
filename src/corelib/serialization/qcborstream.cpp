@@ -1934,7 +1934,7 @@ inline void QCborStreamReader::preparse()
             // for negative integer and we don't have separate types for Boolean,
             // Null and Undefined).
             if (type_ == CborBooleanType || type_ == CborNullType || type_ == CborUndefinedType) {
-                type_ = SimpleType;
+                type_ = CborSimpleType;
                 value64 = quint8(d->buffer.at(d->bufferStart)) - CborSimpleType;
             } else {
                 // Using internal TinyCBOR API!
