@@ -413,6 +413,24 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
                             support (internal limitation, but the error is not recoverable).
  */
 
+// Convert from CborError to QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static QCborError fromCborError(CborError err)
+{
+    return { QCborError::Code(int(err)) };
+}
+
+// Convert to CborError from QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static CborError toCborError(QCborError c)
+{
+    return CborError(int(c.c));
+}
+
 /*!
    \variable QCborError::c
    \internal
@@ -483,8 +501,8 @@ QString QCborError::toString() const
         return QStringLiteral("Internal limitation: unsupported type");
     }
 
-    // get the error from TinyCBOR
-    CborError err = CborError(int(c));
+    // get the error string from TinyCBOR
+    CborError err = toCborError(*this);
     return QString::fromLatin1(cbor_error_string(err));
 }
 
@@ -1823,8 +1841,7 @@ public:
         if (err != CborErrorUnexpectedEOF)
             corrupt = true;
 
-        // our error codes are the same (for now)
-        lastError = { QCborError::Code(err) };
+        lastError = fromCborError(err);
     }
 
     void updateBufferAfterString(qsizetype offset, qsizetype size)
