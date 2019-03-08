@@ -57,7 +57,7 @@ void myComplexCodeWithMultipleReturnPoints(int v)
     if (v == -1)
         return;
 
-    int v2 = code_that_might_through_exceptions();
+    int v2 = code_that_might_throw_exceptions();
 
     if (v2 == -1)
         return;
