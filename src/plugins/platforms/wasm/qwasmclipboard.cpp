@@ -67,23 +67,42 @@ static void qClipboardPromiseResolve(emscripten::val something)
     pasteClipboardData(emscripten::val("text/plain"), something);
 }
 
-static void qClipboardCopyTo(val event)
+static void qClipboardCutTo(val event)
 {
-    val target = event["target"];
-    val clipboard = event["clipboardData"];
+    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
+        // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
+        QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+            0, QEvent::KeyPress, Qt::Key_X,  Qt::ControlModifier, "X");
+    }
 
     val module = val::global("Module");
     val clipdata = module.call<val>("getClipboardData");
     val clipFormat = module.call<val>("getClipboardFormat");
-    clipboard.call<void>("setData", clipFormat, clipdata);
-    target.call<void>("preventDefault");
+    event["clipboardData"].call<void>("setData", clipFormat, clipdata);
+    event.call<void>("preventDefault");
+}
+
+static void qClipboardCopyTo(val event)
+{
+    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
+        // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
+        QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+            0, QEvent::KeyPress, Qt::Key_C,  Qt::ControlModifier, "C");
+    }
+
+    val module = val::global("Module");
+    val clipdata = module.call<val>("getClipboardData");
+    val clipFormat = module.call<val>("getClipboardFormat");
+    event["clipboardData"].call<void>("setData", clipFormat, clipdata);
+    event.call<void>("preventDefault");
 }
 
 static void qClipboardPasteTo(val event)
 {
-    val target = event["clipboardData"];
-    val module = val::global("Module");
-    val clipdata = module.call<val>("getClipboardData");
+    bool hasClipboardApi = QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi;
+    val clipdata = hasClipboardApi ?
+        val::global("Module").call<val>("getClipboardData") :
+        event["clipboardData"].call<val>("getData", std::string("text"));
 
     const std::string data = clipdata.as<std::string>();
     if (data.length() > 0) {
@@ -99,13 +118,16 @@ EMSCRIPTEN_BINDINGS(clipboard_module) {
     function("getClipboardFormat", &getClipboardFormat);
     function("pasteClipboardData", &pasteClipboardData);
     function("qClipboardPromiseResolve", &qClipboardPromiseResolve);
+    function("qClipboardCutTo", &qClipboardCutTo);
     function("qClipboardCopyTo", &qClipboardCopyTo);
     function("qClipboardPasteTo", &qClipboardPasteTo);
 }
 
-QWasmClipboard::QWasmClipboard() :
-    hasClipboardApi(false)
+QWasmClipboard::QWasmClipboard()
 {
+    val clipboard = val::global("navigator")["clipboard"];
+    hasClipboardApi = (!clipboard.isUndefined() && !clipboard["readText"].isUndefined());
+
     initClipboardEvents();
 }
 
@@ -157,29 +179,32 @@ void QWasmClipboard::qWasmClipboardPaste(QMimeData *mData)
 
 void QWasmClipboard::initClipboardEvents()
 {
-    val navigator = val::global("navigator");
-    val permissions = navigator["permissions"];
-    val clipboard = navigator["clipboard"];
+    if (!hasClipboardApi)
+        return;
 
-    hasClipboardApi = (!clipboard.isUndefined());
-    if (hasClipboardApi) {
-        val readPermissionsMap = val::object();
-        readPermissionsMap.set("name", val("clipboard-read"));
-        permissions.call<val>("query", readPermissionsMap);
+    val permissions = val::global("navigator")["permissions"];
+    val readPermissionsMap = val::object();
+    readPermissionsMap.set("name", val("clipboard-read"));
+    permissions.call<val>("query", readPermissionsMap);
 
-        val writePermissionsMap = val::object();
-        writePermissionsMap.set("name", val("clipboard-write"));
-        permissions.call<val>("query", writePermissionsMap);
+    val writePermissionsMap = val::object();
+    writePermissionsMap.set("name", val("clipboard-write"));
+    permissions.call<val>("query", writePermissionsMap);
+}
 
-    } else {
+void QWasmClipboard::installEventHandlers(const QString &canvasId)
+{
+    if (hasClipboardApi)
+        return;
 
-        val window = val::global("window");
-        window.call<void>("addEventListener", std::string("paste"),
-                          val::module_property("qClipboardPasteTo"));
-
-        window.call<void>("addEventListener", std::string("copy"),
-                          val::module_property("qClipboardCopyTo"));
-    }
+    // Fallback path for browsers which do not support direct clipboard access
+    val canvas = val::global(canvasId.toUtf8().constData());
+    canvas.call<void>("addEventListener", std::string("cut"),
+                      val::module_property("qClipboardCutTo"));
+    canvas.call<void>("addEventListener", std::string("copy"),
+                      val::module_property("qClipboardCopyTo"));
+    canvas.call<void>("addEventListener", std::string("paste"),
+                      val::module_property("qClipboardPasteTo"));
 }
 
 void QWasmClipboard::readTextFromClipboard()

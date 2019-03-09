@@ -82,6 +82,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.hardware.display.DisplayManager;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -667,6 +668,28 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener() {
+            @Override
+            public void onDisplayAdded(int displayId) { }
+
+            @Override
+            public void onDisplayChanged(int displayId) {
+                m_currentRotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
+                QtNative.handleOrientationChanged(m_currentRotation, m_nativeOrientation);
+            }
+
+            @Override
+            public void onDisplayRemoved(int displayId) { }
+        };
+
+        try {
+            DisplayManager displayManager = (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
+            displayManager.registerDisplayListener(displayListener, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         m_mainLib = QtNative.loadMainLibrary(m_mainLib, nativeLibsDir);
         return m_mainLib != null;
     }
@@ -856,13 +879,6 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
-        if (rotation != m_currentRotation) {
-            QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
-        }
-
-        m_currentRotation = rotation;
     }
 
     public void onDestroy()

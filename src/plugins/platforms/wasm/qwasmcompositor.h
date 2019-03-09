@@ -62,7 +62,7 @@ class QWasmCompositor : public QObject
 {
     Q_OBJECT
 public:
-    QWasmCompositor();
+    QWasmCompositor(QWasmScreen *screen);
     ~QWasmCompositor();
 
     enum QWasmSubControl {
@@ -103,7 +103,6 @@ public:
 
     void addWindow(QWasmWindow *window, QWasmWindow *parentWindow = nullptr);
     void removeWindow(QWasmWindow *window);
-    void setScreen(QWasmScreen *screen);
 
     void setVisible(QWasmWindow *window, bool visible);
     void raise(QWasmWindow *window);
@@ -129,8 +128,7 @@ private slots:
     void frame();
 
 private:
-    void createFrameBuffer();
-    void flushCompletedCallback(int32_t);
+    QWasmScreen *screen();
     void notifyTopWindowChanged(QWasmWindow *window);
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
@@ -142,7 +140,6 @@ private:
     QImage *m_frameBuffer;
     QScopedPointer<QOpenGLContext> m_context;
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;
-    QWasmScreen *m_screen;
 
     QHash<QWasmWindow *, QWasmCompositedWindow> m_compositedWindows;
     QList<QWasmWindow *> m_windowStack;

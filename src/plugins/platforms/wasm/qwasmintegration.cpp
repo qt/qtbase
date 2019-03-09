@@ -70,29 +70,35 @@ QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
-      m_compositor(new QWasmCompositor),
-      m_screen(new QWasmScreen(m_compositor)),
       m_eventDispatcher(nullptr),
       m_clipboard(new QWasmClipboard)
 {
     s_instance = this;
 
-    updateQScreenAndCanvasRenderSize();
-    screenAdded(m_screen);
-    emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
+    // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
+    // Also check Module.canvas, which may be set if the emscripen or a custom loader is used.
+    emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
+    emscripten::val canvas = val::module_property("canvas");
 
-    m_eventTranslator = new QWasmEventTranslator;
+    if (!qtCanvaseElements.isUndefined()) {
+        int screenCount = qtCanvaseElements["length"].as<int>();
+        for (int i = 0; i < screenCount; ++i) {
+            emscripten::val canvas = qtCanvaseElements[i].as<emscripten::val>();
+            QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+            addScreen(canvasId);
+        }
+    } else if (!canvas.isUndefined()){
+        QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+        addScreen(canvasId);
+    }
 
     emscripten::val::global("window").set("onbeforeunload", val::module_property("browserBeforeUnload"));
-
 }
 
 QWasmIntegration::~QWasmIntegration()
 {
-    delete m_compositor;
-    destroyScreen(m_screen);
     delete m_fontDb;
-    delete m_eventTranslator;
+    qDeleteAll(m_screens);
     s_instance = nullptr;
 }
 
@@ -117,13 +123,15 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QPlatformWindow *QWasmIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QWasmWindow(window, m_compositor, m_backingStores.value(window));
+    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
+    return new QWasmWindow(window, compositor, m_backingStores.value(window));
 }
 
 QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *window) const
 {
 #ifndef QT_NO_OPENGL
-    QWasmBackingStore *backingStore = new QWasmBackingStore(m_compositor, window);
+    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
+    QWasmBackingStore *backingStore = new QWasmBackingStore(compositor, window);
     m_backingStores.insert(window, backingStore);
     return backingStore;
 #else
@@ -168,55 +176,22 @@ QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
     return QPlatformIntegration::createPlatformTheme(name);
 }
 
-int QWasmIntegration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
-{
-    Q_UNUSED(e)
-    Q_UNUSED(userData)
-
-    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
-        // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas might also have been resized, so we
-        // update the Qt screen size (and canvas render size).
-        updateQScreenAndCanvasRenderSize();
-    }
-
-    return 0;
-}
-
-static void set_canvas_size(double width, double height)
-{
-    emscripten::val canvas = emscripten::val::global("canvas");
-    canvas.set("width", width);
-    canvas.set("height", height);
-}
-
-void QWasmIntegration::updateQScreenAndCanvasRenderSize()
-{
-    // The HTML canvas has two sizes: the CSS size and the canvas render size.
-    // The CSS size is determined according to standard CSS rules, while the
-    // render size is set using the "width" and "height" attributes. The render
-    // size must be set manually and is not auto-updated on CSS size change.
-    // Setting the render size to a value larger than the CSS size enables high-dpi
-    // rendering.
-
-    double css_width;
-    double css_height;
-    emscripten_get_element_css_size(0, &css_width, &css_height);
-    QSizeF cssSize(css_width, css_height);
-
-    QWasmScreen *screen = QWasmIntegration::get()->m_screen;
-    QSizeF canvasSize = cssSize * screen->devicePixelRatio();
-
-    set_canvas_size(canvasSize.width(), canvasSize.height());
-    screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
-    QWasmIntegration::get()->m_compositor->redrawWindowContent();
-}
-
 QPlatformClipboard* QWasmIntegration::clipboard() const
 {
-    if (!m_clipboard)
-        m_clipboard = new QWasmClipboard;
     return m_clipboard;
+}
+
+QVector<QWasmScreen *> QWasmIntegration::screens()
+{
+    return m_screens;
+}
+
+void QWasmIntegration::addScreen(const QString &canvasId)
+{
+    QWasmScreen *screen = new QWasmScreen(canvasId);
+    m_clipboard->installEventHandlers(canvasId);
+    m_screens.append(screen);
+    screenAdded(screen);
 }
 
 QT_END_NAMESPACE

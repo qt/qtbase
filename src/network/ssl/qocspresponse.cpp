@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QOcspResponse
-    \brief This class represents Online Certificate Status Protocol response
+    \brief This class represents Online Certificate Status Protocol response.
     \since 5.13
 
     \ingroup network
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     received by the client-side socket during the TLS handshake. QSslSocket must be
     configured with OCSP stapling enabled.
 
-    \sa QSslSocket, QSslSocket::ocspResponse(), certificateStatus(),
+    \sa QSslSocket, QSslSocket::ocspResponses(), certificateStatus(),
     revocationReason(), responder(), subject(), QOcspCertificateStatus, QOcspRevocationReason,
     QSslConfiguration::setOcspStaplingEnabled(), QSslConfiguration::ocspStaplingEnabled(),
     QSslConfiguration::peerCertificate()
@@ -126,14 +126,14 @@ QOcspResponse::QOcspResponse()
 
     Creates a new response, the copy of \a other.
 */
-QOcspResponse::QOcspResponse(const QOcspResponse &other) = default;
+QOcspResponse::QOcspResponse(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
     Move-constructs a QOcspResponse instance from \a other.
 */
-QOcspResponse::QOcspResponse(QOcspResponse &&other) Q_DECL_NOTHROW = default;
+QOcspResponse::QOcspResponse(QOcspResponse &&) Q_DECL_NOTHROW = default;
 
 /*!
     \since 5.13
@@ -147,14 +147,14 @@ QOcspResponse::~QOcspResponse() = default;
 
     Assigns \a other to the response and returns a reference to this response.
 */
-QOcspResponse &QOcspResponse::operator=(const QOcspResponse &other) = default;
+QOcspResponse &QOcspResponse::operator=(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
     Move-assigns \a other to this QOcspResponse instance.
 */
-QOcspResponse &QOcspResponse::operator=(QOcspResponse &&other) Q_DECL_NOTHROW = default;
+QOcspResponse &QOcspResponse::operator=(QOcspResponse &&) Q_DECL_NOTHROW = default;
 
 /*!
     \fn void QOcspResponse::swap(QOcspResponse &other)

@@ -51,6 +51,7 @@ public:
 
     static void qWasmClipboardPaste(QMimeData *mData);
     void initClipboardEvents();
+    void installEventHandlers(const QString &canvasId);
     bool hasClipboardApi;
     void readTextFromClipboard();
     void writeTextToClipboard();

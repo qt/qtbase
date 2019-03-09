@@ -78,6 +78,10 @@
 #include <QtTest/private/qtestutil_macos_p.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#include <QtTest/private/qappletestlogger_p.h>
+#endif
+
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -511,7 +515,7 @@ static int qToInt(const char *str)
 
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool qml)
 {
-    QTestLog::LogMode logFormat = QTestLog::Plain;
+    int logFormat = -1; // Not set
     const char *logFilename = 0;
 
     QTest::testFunctions.clear();
@@ -679,7 +683,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                     fprintf(stderr, "only one logger can log to stdout\n");
                     exit(1);
                 }
-                QTestLog::addLogger(logFormat, filename);
+                QTestLog::addLogger(QTestLog::LogMode(logFormat), filename);
             }
             delete [] filename;
             delete [] format;
@@ -841,10 +845,25 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     QTestLog::setInstalledTestCoverage(installedTestCoverage);
 
     // If no loggers were created by the long version of the -o command-line
-    // option, create a logger using whatever filename and format were
-    // set using the old-style command-line options.
-    if (QTestLog::loggerCount() == 0)
-        QTestLog::addLogger(logFormat, logFilename);
+    // option, but a logger was requested via the old-style option, add it.
+    const bool explicitLoggerRequested = logFormat != -1;
+    if (QTestLog::loggerCount() == 0 && explicitLoggerRequested)
+        QTestLog::addLogger(QTestLog::LogMode(logFormat), logFilename);
+
+    bool addFallbackLogger = !explicitLoggerRequested;
+
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    // Any explicitly requested loggers will be added by now, so we can check if they use stdout
+    const bool safeToAddAppleLogger = !AppleUnifiedLogger::willMirrorToStderr() || !QTestLog::loggerUsingStdout();
+    if (safeToAddAppleLogger && QAppleTestLogger::debugLoggingEnabled()) {
+        QTestLog::addLogger(QTestLog::Apple, nullptr);
+        if (AppleUnifiedLogger::willMirrorToStderr() && !logFilename)
+            addFallbackLogger = false; // Prevent plain test logger fallback below
+    }
+#endif
+
+    if (addFallbackLogger)
+        QTestLog::addLogger(QTestLog::Plain, logFilename);
 }
 
 // Temporary, backwards compatibility, until qtdeclarative's use of it is converted
@@ -2171,13 +2190,12 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     if (found.isEmpty()) {
         const char *testObjectName = QTestResult::currentTestObjectName();
         if (testObjectName) {
-            QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
-            QString candidate = QString::fromLatin1("%1/%2/%3")
+            const QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
+            const QString candidate = QString::fromLatin1("%1/%2/%3")
                 .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
             if (QFileInfo::exists(candidate)) {
                 found = candidate;
-            }
-            else if (QTestLog::verboseLevel() >= 2) {
+            } else if (QTestLog::verboseLevel() >= 2) {
                 QTestLog::info(qPrintable(
                     QString::fromLatin1("testdata %1 not found in tests install path [%2]; "
                                         "checking next location")
@@ -2199,11 +2217,10 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         }
 
         const QString canonicalPath = srcdir.canonicalFilePath();
-        QString candidate = QString::fromLatin1("%1/%2").arg(canonicalPath, base);
+        const QString candidate = QString::fromLatin1("%1/%2").arg(canonicalPath, base);
         if (!canonicalPath.isEmpty() && QFileInfo::exists(candidate)) {
             found = candidate;
-        }
-        else if (QTestLog::verboseLevel() >= 2) {
+        } else if (QTestLog::verboseLevel() >= 2) {
             QTestLog::info(qPrintable(
                 QString::fromLatin1("testdata %1 not found relative to source path [%2]")
                     .arg(base, QDir::toNativeSeparators(candidate))),
@@ -2213,31 +2230,48 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     // 4. Try resources
     if (found.isEmpty()) {
-        QString candidate = QString::fromLatin1(":/%1").arg(base);
-        if (QFileInfo::exists(candidate))
+        const QString candidate = QString::fromLatin1(":/%1").arg(base);
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in resources [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
     }
 
     // 5. Try current directory
     if (found.isEmpty()) {
         const QString candidate = QDir::currentPath() + QLatin1Char('/') + base;
-        if (QFileInfo::exists(candidate))
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in current directory [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
     }
 
     // 6. Try main source directory
     if (found.isEmpty()) {
-        QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
-        if (QFileInfo::exists(candidate))
+        const QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
+        if (QFileInfo::exists(candidate)) {
             found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in main source directory [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
     }
 
     if (found.isEmpty()) {
         QTest::qWarn(qPrintable(
             QString::fromLatin1("testdata %1 could not be located!").arg(base)),
             file, line);
-    }
-    else if (QTestLog::verboseLevel() >= 1) {
+    } else if (QTestLog::verboseLevel() >= 1) {
         QTestLog::info(qPrintable(
             QString::fromLatin1("testdata %1 was located at %2").arg(base, QDir::toNativeSeparators(found))),
             file, line);

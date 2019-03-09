@@ -286,7 +286,7 @@ static inline QStringList *resourceSearchPaths()
                             decompress, use the \c{ZSTD_decompress} function from the zstd
                             library.
 
-    \sa compressionAlgorithm(), isCopressed()
+    \sa compressionAlgorithm(), isCompressed()
 */
 
 class QResourcePrivate {
@@ -558,7 +558,7 @@ bool QResource::isValid() const
     check compressionAlgorithm() to verify what algorithm to use to decompress
     the data.
 
-    \sa data(), compressionType(), isFile()
+    \sa data(), compressionAlgorithm(), isFile()
 */
 
 bool QResource::isCompressed() const

@@ -320,41 +320,35 @@ EMSCRIPTEN_BINDINGS(mouse_module) {
     function("mouseWheelEvent", &mouseWheelEvent);
 }
 
-QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
-    : QObject(parent)
+QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
+    : QObject(screen)
     , draggedWindow(nullptr)
     , lastWindow(nullptr)
     , pressedButtons(Qt::NoButton)
     , resizeMode(QWasmWindow::ResizeNone)
 {
-    emscripten_set_keydown_callback(0, (void *)this, 1, &keyboard_cb);
-    emscripten_set_keyup_callback(0, (void *)this, 1, &keyboard_cb);
-
-    emscripten_set_mousedown_callback(0, (void *)this, 1, &mouse_cb);
-    emscripten_set_mouseup_callback(0, (void *)this, 1, &mouse_cb);
-    emscripten_set_mousemove_callback(0, (void *)this, 1, &mouse_cb);
-
-    emscripten_set_focus_callback(0, (void *)this, 1, &focus_cb);
-
-    emscripten_set_wheel_callback(0, (void *)this, 1, &wheel_cb);
-
     touchDevice = new QTouchDevice;
     touchDevice->setType(QTouchDevice::TouchScreen);
     touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
     QWindowSystemInterface::registerTouchDevice(touchDevice);
 
-    emscripten_set_touchstart_callback("#canvas", (void *)this, 1, &touchCallback);
-    emscripten_set_touchend_callback("#canvas", (void *)this, 1, &touchCallback);
-    emscripten_set_touchmove_callback("#canvas", (void *)this, 1, &touchCallback);
-    emscripten_set_touchcancel_callback("#canvas", (void *)this, 1, &touchCallback);
+    initEventHandlers();
+}
+
+void QWasmEventTranslator::initEventHandlers()
+{
+    qDebug() << "QWasmEventTranslator::initEventHandlers";
+
+    QByteArray _canvasId = screen()->canvasId().toUtf8();
+    const char *canvasId = _canvasId.constData();
 
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
         GenericPlatform,
         MacOSPlatform
     };
-  Platform platform = Platform(emscripten::val::global("navigator")["platform"]
-          .call<bool>("includes", emscripten::val("Mac")));
+    Platform platform = Platform(emscripten::val::global("navigator")["platform"]
+            .call<bool>("includes", emscripten::val("Mac")));
     g_usePlatformMacCtrlMetaSwitching = (platform == MacOSPlatform);
 
     if (platform == MacOSPlatform) {
@@ -362,11 +356,30 @@ QWasmEventTranslator::QWasmEventTranslator(QObject *parent)
 
         if (emscripten::val::global("window")["safari"].isUndefined()) {
 
-            emscripten::val::global("canvas").call<void>("addEventListener",
+            emscripten::val::global(canvasId).call<void>("addEventListener",
                                                          std::string("wheel"),
                                                          val::module_property("mouseWheelEvent"));
         }
     }
+
+    emscripten_set_keydown_callback(canvasId, (void *)this, 1, &keyboard_cb);
+    emscripten_set_keyup_callback(canvasId, (void *)this, 1, &keyboard_cb);
+
+    emscripten_set_mousedown_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mouseup_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mousemove_callback(canvasId, (void *)this, 1, &mouse_cb);
+
+    emscripten_set_focus_callback(canvasId, (void *)this, 1, &focus_cb);
+
+    emscripten_set_wheel_callback(canvasId, (void *)this, 1, &wheel_cb);
+
+    emscripten_set_touchstart_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchend_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
+
+    emscripten_set_resize_callback(nullptr, (void *)this, 1, uiEvent_cb); // Note: handles browser window resize
+
 }
 
 template <typename Event>
@@ -413,6 +426,11 @@ int QWasmEventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEve
     bool accepted = wasmTranslator->processKeyboard(eventType, keyEvent);
 
     return accepted ? 1 : 0;
+}
+
+QWasmScreen *QWasmEventTranslator::screen()
+{
+    return static_cast<QWasmScreen *>(parent());
 }
 
 Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey)
@@ -531,14 +549,14 @@ void resizeWindow(QWindow *window, QWasmWindow::ResizeMode mode,
 void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
 {
     auto timestamp = mouseEvent->timestamp;
-    QPoint point(mouseEvent->canvasX, mouseEvent->canvasY);
+    QPoint point(mouseEvent->targetX, mouseEvent->targetY);
 
     QEvent::Type buttonEventType = QEvent::None;
 
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
-    QWindow *window2 = QWasmIntegration::get()->compositor()->windowAt(point, 5);
+    QWindow *window2 = screen()->compositor()->windowAt(point, 5);
     if (window2 != nullptr)
         lastWindow = window2;
 
@@ -635,6 +653,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 {
     Q_UNUSED(eventType)
 
+    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
     EmscriptenMouseEvent mouseEvent = wheelEvent->mouse;
 
     int scrollFactor = 0;
@@ -658,7 +677,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
     auto timestamp = mouseEvent.timestamp;
     QPoint globalPoint(mouseEvent.canvasX, mouseEvent.canvasY);
 
-    QWindow *window2 = QWasmIntegration::get()->compositor()->windowAt(globalPoint, 5);
+    QWindow *window2 = eventTranslator->screen()->compositor()->windowAt(globalPoint, 5);
 
     QPoint localPoint(globalPoint.x() - window2->geometry().x(), globalPoint.y() - window2->geometry().y());
 
@@ -676,6 +695,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 
 int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
+    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
     QList<QWindowSystemInterface::TouchPoint> touchPointList;
     touchPointList.reserve(touchEvent->numTouches);
     QWindow *window2;
@@ -685,7 +705,7 @@ int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEven
         const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
 
         QPoint point(touches->canvasX, touches->canvasY);
-        window2 = QWasmIntegration::get()->compositor()->windowAt(point, 5);
+        window2 = eventTranslator->screen()->compositor()->windowAt(point, 5);
 
         QWindowSystemInterface::TouchPoint touchPoint;
 
@@ -832,6 +852,14 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
         return 0;
 
     QFlags<Qt::KeyboardModifier> mods = translateKeyboardEventModifier(keyEvent);
+
+    // Clipboard fallback path: cut/copy/paste are handled by clipboard event
+    // handlers if direct clipboard access is not available.
+    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi && modifiers & Qt::ControlModifier &&
+        (qtKey == Qt::Key_X || qtKey == Qt::Key_C || qtKey == Qt::Key_V)) {
+            return 0;
+    }
+
     bool accepted = false;
 
     if (keyType == QEvent::KeyPress &&
@@ -855,6 +883,21 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     QWasmEventDispatcher::maintainTimers();
 
     return accepted;
+}
+
+int QWasmEventTranslator::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
+{
+    Q_UNUSED(e)
+    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
+
+    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
+        // This resize event is called when the HTML window is resized. Depending
+        // on the page layout the the canvas might also have been resized, so we
+        // update the Qt screen size (and canvas render size).
+        eventTranslator->screen()->updateQScreenAndCanvasRenderSize();
+    }
+
+    return 0;
 }
 
 QT_END_NAMESPACE

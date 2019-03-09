@@ -148,7 +148,7 @@ bool QDialogPrivate::canBeNativeDialog() const
 /*!
     \internal
 
-    Properly hides dialog and sets the \p resultCode
+    Properly hides dialog and sets the \a resultCode.
  */
 void QDialogPrivate::hide(int resultCode)
 {
@@ -164,8 +164,8 @@ void QDialogPrivate::hide(int resultCode)
 /*!
     \internal
 
-    Emits finished() signal with \p resultCode. If the \p dialogCode
-    is equal to 0 emits rejected(), if the \p dialogCode is equal to
+    Emits finished() signal with \a resultCode. If the \a dialogCode
+    is equal to 0 emits rejected(), if the \a dialogCode is equal to
     1 emits accepted().
  */
 void QDialogPrivate::finalize(int resultCode, int dialogCode)

@@ -1421,7 +1421,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
     \fn void QTextCharFormat::setFontStyleName(const QString &styleName)
     \since 5.13
 
-    Sets the text format's font \a style name.
+    Sets the text format's font \a styleName.
 
     \sa setFont(), QFont::setStyleName()
 */

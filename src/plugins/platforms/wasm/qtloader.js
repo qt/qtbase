@@ -50,6 +50,7 @@
 // External mode.usage:
 //
 //    var config = {
+//        canvasElements : [$("canvas-id")],
 //        showLoader: function() {
 //            loader.style.display = 'block'
 //            canvas.style.display = 'hidden'
@@ -69,6 +70,8 @@
 //      One or more HTML elements. QtLoader will display loader elements
 //      on these while loading the applicaton, and replace the loader with a
 //      canvas on load complete.
+//  canvasElements : [canvas-element, ...]
+//      One or more canvas elements.
 //  showLoader : function(status, containerElement)
 //      Optional loading element constructor function. Implement to create
 //      a custom loading screen. This function may be called multiple times,
@@ -146,8 +149,25 @@ function QtLoader(config)
         while (element.firstChild) element.removeChild(element.firstChild);
     }
 
-    // Set default state handler functions if needed
+    function createCanvas() {
+        var canvas = document.createElement("canvas");
+        canvas.className = "QtCanvas";
+        canvas.style.height = "100%";
+        canvas.style.width = "100%";
+
+        // Set contentEditable in order to enable clipboard events; hide the resulting focus frame.
+        canvas.contentEditable = true;
+        canvas.style.outline = "0px solid transparent";
+        canvas.style.cursor = "default";
+
+        return canvas;
+    }
+
+    // Set default state handler functions and create canvases if needed
     if (config.containerElements !== undefined) {
+
+        config.canvasElements = config.containerElements.map(createCanvas);
+
         config.showError = config.showError || function(errorText, container) {
             removeChildren(container);
             var errorTextElement = document.createElement("text");
@@ -164,12 +184,8 @@ function QtLoader(config)
             return loadingText;
         };
 
-        config.showCanvas = config.showCanvas || function(container) {
+        config.showCanvas = config.showCanvas || function(canvas, container) {
             removeChildren(container);
-            var canvas = document.createElement("canvas");
-            canvas.className = "QtCanvas"
-            canvas.style = "height: 100%; width: 100%;"
-            return canvas;
         }
 
         config.showExit = config.showExit || function(crashed, exitCode, container) {
@@ -384,6 +400,8 @@ function QtLoader(config)
 
         Module.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
 
+        Module.qtCanvasElements = config.canvasElements;
+
         config.restart = function() {
 
             // Restart by reloading the page. This will wipe all state which means
@@ -438,19 +456,17 @@ function QtLoader(config)
     }
 
     function setCanvasContent() {
-        var firstCanvas;
         if (config.containerElements === undefined) {
-            firstCanvas = config.showCanvas();
-        } else {
-            for (container of config.containerElements) {
-                var canvasElement = config.showCanvas(container);
-                container.appendChild(canvasElement);
-            }
-            firstCanvas = config.containerElements[0].firstChild;
+            if (config.showCanvas !== undefined)
+                config.showCanvas();
+            return;
         }
 
-        if (Module.canvas === undefined) {
-            Module.canvas = firstCanvas;
+        for (var i = 0; i < config.containerElements.length; ++i) {
+            var container = config.containerElements[i];
+            var canvas = config.canvasElements[i];
+            config.showCanvas(canvas, container);
+            container.appendChild(canvas);
         }
     }
 

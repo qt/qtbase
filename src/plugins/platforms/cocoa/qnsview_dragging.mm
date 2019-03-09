@@ -57,9 +57,9 @@
                    NSFilesPromisePboardType, NSInkTextPboardType,
                    NSMultipleTextSelectionPboardType, mimeTypeGeneric]];
 
-    // Add custom types supported by the application.
+    // Add custom types supported by the application
     for (const QString &customType : qt_mac_enabledDraggedTypes())
-       [supportedTypes addObject:customType.toNSString()];
+        [supportedTypes addObject:customType.toNSString()];
 
     [self registerForDraggedTypes:supportedTypes];
 }
@@ -79,11 +79,11 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     return target->mapFromGlobal(source->mapToGlobal(point));
 }
 
-- (NSDragOperation)draggingSession:(NSDraggingSession *)session
-  sourceOperationMaskForDraggingContext:(NSDraggingContext)context
+- (NSDragOperation)draggingSession:(NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context
 {
     Q_UNUSED(session);
     Q_UNUSED(context);
+
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     return qt_mac_mapDropActions(nativeDrag->currentDrag()->supportedActions());
 }
@@ -134,30 +134,29 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
     if (pixmapCursor.isNull()) {
         switch (response.acceptedAction()) {
-            case Qt::CopyAction:
-                nativeCursor = [NSCursor dragCopyCursor];
-                break;
-            case Qt::LinkAction:
-                nativeCursor = [NSCursor dragLinkCursor];
-                break;
-            case Qt::IgnoreAction:
-                // Uncomment the next lines if forbiden cursor wanted on non droppable targets.
-                /*nativeCursor = [NSCursor operationNotAllowedCursor];
-                break;*/
-            case Qt::MoveAction:
-            default:
-                nativeCursor = [NSCursor arrowCursor];
-                break;
+        case Qt::CopyAction:
+            nativeCursor = [NSCursor dragCopyCursor];
+            break;
+        case Qt::LinkAction:
+            nativeCursor = [NSCursor dragLinkCursor];
+            break;
+        case Qt::IgnoreAction:
+            // Uncomment the next lines if forbidden cursor is wanted on undroppable targets.
+            /*nativeCursor = [NSCursor operationNotAllowedCursor];
+            break;*/
+        case Qt::MoveAction:
+        default:
+            nativeCursor = [NSCursor arrowCursor];
+            break;
         }
-    }
-    else {
+    } else {
         NSImage *nsimage = qt_mac_create_nsimage(pixmapCursor);
         nsimage.size = NSSizeFromCGSize((pixmapCursor.size() / pixmapCursor.devicePixelRatioF()).toCGSize());
         nativeCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSZeroPoint];
         [nsimage release];
     }
 
-    // change the cursor
+    // Change the cursor
     [nativeCursor set];
 
     // Make sure the cursor is updated correctly if the mouse does not move and window is under cursor
@@ -169,39 +168,33 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     if (m_updatingDrag)
         return;
 
-    const QPoint mousePos(QCursor::pos());
-    CGEventRef moveEvent(CGEventCreateMouseEvent(
-        NULL, kCGEventMouseMoved,
-        CGPointMake(mousePos.x(), mousePos.y()),
+    QCFType<CGEventRef> moveEvent = CGEventCreateMouseEvent(
+        nullptr, kCGEventMouseMoved, QCursor::pos().toCGPoint(),
         kCGMouseButtonLeft // ignored
-    ));
+    );
     CGEventPost(kCGHIDEventTap, moveEvent);
-    CFRelease(moveEvent);
 }
 
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
-    return [self handleDrag : sender];
+    return [self handleDrag:(QEvent::DragEnter) sender:sender];
 }
 
-- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender
 {
-    m_updatingDrag = true;
-    const NSDragOperation ret([self handleDrag : sender]);
-    m_updatingDrag = false;
-
-    return ret;
+    QScopedValueRollback<bool> rollback(m_updatingDrag, true);
+    return [self handleDrag:(QEvent::DragMove) sender:sender];
 }
 
 // Sends drag update to Qt, return the action
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender
+- (NSDragOperation)handleDrag:(QEvent::Type)dragType sender:(id<NSDraggingInfo>)sender
 {
     if (!m_platformWindow)
         return NSDragOperationNone;
 
-    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
-    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
-    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
+    QPoint windowPoint = QPointF::fromCGPoint([self convertPoint:sender.draggingLocation fromView:nil]).toPoint();
+
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(sender.draggingSourceOperationMask);
 
     QWindow *target = findEventTargetWindow(m_platformWindow->window());
     if (!target)
@@ -209,7 +202,12 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
     const auto modifiers = [QNSView convertKeyModifiers:NSApp.currentEvent.modifierFlags];
     const auto buttons = currentlyPressedMouseButtons();
-    const auto point = mapWindowCoordinates(m_platformWindow->window(), target, qt_windowPoint);
+    const auto point = mapWindowCoordinates(m_platformWindow->window(), target, windowPoint);
+
+    if (dragType == QEvent::DragEnter)
+        qCDebug(lcQpaMouse) << dragType << self << "at" << windowPoint;
+    else
+        qCDebug(lcQpaMouse) << dragType << "at" << windowPoint << "with" << buttons;
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
@@ -219,7 +217,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
                                                       point, qtAllowed, buttons, modifiers);
         [self updateCursorFromDragResponse:response drag:nativeDrag];
     } else {
-        QCocoaDropData mimeData([sender draggingPasteboard]);
+        QCocoaDropData mimeData(sender.draggingPasteboard);
         response = QWindowSystemInterface::handleDrag(target, &mimeData,
                                                       point, qtAllowed, buttons, modifiers);
     }
@@ -227,7 +225,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     return qt_mac_mapDropAction(response.acceptedAction());
 }
 
-- (void)draggingExited:(id <NSDraggingInfo>)sender
+- (void)draggingExited:(id<NSDraggingInfo>)sender
 {
     if (!m_platformWindow)
         return;
@@ -236,17 +234,18 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     if (!target)
         return;
 
-    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
-    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+    QPoint windowPoint = QPointF::fromCGPoint([self convertPoint:sender.draggingLocation fromView:nil]).toPoint();
+
+    qCDebug(lcQpaMouse) << QEvent::DragLeave << self << "at" << windowPoint;
 
     // Send 0 mime data to indicate drag exit
     QWindowSystemInterface::handleDrag(target, nullptr,
-                                       mapWindowCoordinates(m_platformWindow->window(), target, qt_windowPoint),
+                                       mapWindowCoordinates(m_platformWindow->window(), target, windowPoint),
                                        Qt::IgnoreAction, Qt::NoButton, Qt::NoModifier);
 }
 
-// called on drop, send the drop to Qt and return if it was accepted.
-- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+// Called on drop, send the drop to Qt and return if it was accepted
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
     if (!m_platformWindow)
         return false;
@@ -255,31 +254,31 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     if (!target)
         return false;
 
-    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
-    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
-    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
+    QPoint windowPoint = QPointF::fromCGPoint([self convertPoint:sender.draggingLocation fromView:nil]).toPoint();
+
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(sender.draggingSourceOperationMask);
 
     QPlatformDropQtResponse response(false, Qt::IgnoreAction);
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     const auto modifiers = [QNSView convertKeyModifiers:NSApp.currentEvent.modifierFlags];
     const auto buttons = currentlyPressedMouseButtons();
-    const auto point = mapWindowCoordinates(m_platformWindow->window(), target, qt_windowPoint);
+    const auto point = mapWindowCoordinates(m_platformWindow->window(), target, windowPoint);
+
+    qCDebug(lcQpaMouse) << QEvent::Drop << "at" << windowPoint << "with" << buttons;
 
     if (nativeDrag->currentDrag()) {
         // The drag was started from within the application
         response = QWindowSystemInterface::handleDrop(target, nativeDrag->dragMimeData(),
                                                       point, qtAllowed, buttons, modifiers);
     } else {
-        QCocoaDropData mimeData([sender draggingPasteboard]);
+        QCocoaDropData mimeData(sender.draggingPasteboard);
         response = QWindowSystemInterface::handleDrop(target, &mimeData,
                                                       point, qtAllowed, buttons, modifiers);
     }
     return response.isAccepted();
 }
 
-- (void)draggingSession:(NSDraggingSession *)session
-           endedAtPoint:(NSPoint)screenPoint
-              operation:(NSDragOperation)operation
+- (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
 {
     Q_UNUSED(session);
     Q_UNUSED(screenPoint);
@@ -295,6 +294,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
 
     m_buttons = currentlyPressedMouseButtons();
+
+    qCDebug(lcQpaMouse) << "Drag session" << session << "ended, with" << m_buttons;
 }
 
 @end

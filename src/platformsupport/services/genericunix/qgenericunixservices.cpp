@@ -179,7 +179,15 @@ static inline bool checkNeedPortalSupport()
     return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 }
 
-static inline bool xdgDesktopPortalOpenFile(const QUrl &url)
+static inline bool isPortalReturnPermanent(const QDBusError &error)
+{
+    // A service unknown error isn't permanent, it just indicates that we
+    // should fall back to the regular way. This check includes
+    // QDBusError::NoError.
+    return error.type() != QDBusError::ServiceUnknown;
+}
+
+static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
 {
     // DBus signature:
     // OpenFile (IN   s      parent_window,
@@ -198,23 +206,22 @@ static inline bool xdgDesktopPortalOpenFile(const QUrl &url)
                                                               QLatin1String("org.freedesktop.portal.OpenURI"),
                                                               QLatin1String("OpenFile"));
 
-        QDBusUnixFileDescriptor descriptor(fd);
-        qt_safe_close(fd);
+        QDBusUnixFileDescriptor descriptor;
+        descriptor.giveFileDescriptor(fd);
 
         // FIXME parent_window_id and handle writable option
         message << QString() << QVariant::fromValue(descriptor) << QVariantMap();
 
-        QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
-        return !reply.isError();
+        return QDBusConnection::sessionBus().call(message);
     }
 #else
     Q_UNUSED(url)
 #endif
 
-    return false;
+    return QDBusMessage::createError(QDBusError::InternalError, qt_error_string());
 }
 
-static inline bool xdgDesktopPortalOpenUrl(const QUrl &url)
+static inline QDBusMessage xdgDesktopPortalOpenUrl(const QUrl &url)
 {
     // DBus signature:
     // OpenURI (IN   s      parent_window,
@@ -234,11 +241,10 @@ static inline bool xdgDesktopPortalOpenUrl(const QUrl &url)
     // FIXME parent_window_id and handle writable option
     message << QString() << url.toString() << QVariantMap();
 
-    QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
-    return !reply.isError();
+    return QDBusConnection::sessionBus().call(message);
 }
 
-static inline bool xdgDesktopPortalSendEmail(const QUrl &url)
+static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url)
 {
     // DBus signature:
     // ComposeEmail (IN   s      parent_window,
@@ -281,8 +287,7 @@ static inline bool xdgDesktopPortalSendEmail(const QUrl &url)
     // FIXME parent_window_id
     message << QString() << options;
 
-    QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
-    return !reply.isError();
+    return QDBusConnection::sessionBus().call(message);
 }
 #endif // QT_CONFIG(dbus)
 
@@ -296,15 +301,23 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 {
     if (url.scheme() == QLatin1String("mailto")) {
 #if QT_CONFIG(dbus)
-        if (checkNeedPortalSupport())
-            return xdgDesktopPortalSendEmail(url);
+        if (checkNeedPortalSupport()) {
+            QDBusError error = xdgDesktopPortalSendEmail(url);
+            if (isPortalReturnPermanent(error))
+                return !error.isValid();
+
+            // service not running, fall back
+        }
 #endif
         return openDocument(url);
     }
 
 #if QT_CONFIG(dbus)
-    if (checkNeedPortalSupport())
-        return xdgDesktopPortalOpenUrl(url);
+    if (checkNeedPortalSupport()) {
+        QDBusError error = xdgDesktopPortalOpenUrl(url);
+        if (isPortalReturnPermanent(error))
+            return !error.isValid();
+    }
 #endif
 
     if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
@@ -317,8 +330,11 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
 #if QT_CONFIG(dbus)
-    if (checkNeedPortalSupport())
-        return xdgDesktopPortalOpenFile(url);
+    if (checkNeedPortalSupport()) {
+        QDBusError error = xdgDesktopPortalOpenFile(url);
+        if (isPortalReturnPermanent(error))
+            return !error.isValid();
+    }
 #endif
 
     if (m_documentLauncher.isEmpty() && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {

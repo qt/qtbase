@@ -51,7 +51,7 @@ public:
 
 private:
     void maybeRecreateEmscriptenContext(QPlatformSurface *surface);
-    static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE createEmscriptenContext(const char *canvasId, QSurfaceFormat format);
+    static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE createEmscriptenContext(const QString &canvasId, QSurfaceFormat format);
 
     bool m_contextLost = false;
     QSurfaceFormat m_requestedFormat;
