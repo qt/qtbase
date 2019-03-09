@@ -404,7 +404,7 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value IllegalSimpleType The CBOR stream contains a Simple Type encoded incorrectly (data is
                             corrupt and the error is not recoverable).
    \value InvalidUtf8String The CBOR stream contains a text string that does not decode properly
-                            as UTF (data is corrupt and the error is not recoverable).
+                            as UTF-8 (data is corrupt and the error is not recoverable).
    \value DataTooLarge      CBOR string, map or array is too big and cannot be parsed by Qt
                             (internal limitation, but the error is not recoverable).
    \value NestingTooDeep    Too many levels of arrays or maps encountered while processing the
