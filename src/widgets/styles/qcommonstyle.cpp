@@ -846,11 +846,14 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 }
 #endif // QT_CONFIG(toolbutton)
 
-static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
+static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth, int maxHeight = -1, int *lastVisibleLine = nullptr)
 {
+    if (lastVisibleLine)
+        *lastVisibleLine = -1;
     qreal height = 0;
     qreal widthUsed = 0;
     textLayout.beginLayout();
+    int i = 0;
     while (true) {
         QTextLine line = textLayout.createLine();
         if (!line.isValid())
@@ -859,6 +862,13 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
         line.setPosition(QPointF(0, height));
         height += line.height();
         widthUsed = qMax(widthUsed, line.naturalTextWidth());
+        // we assume that the height of the next line is the same as the current one
+        if (maxHeight > 0 && lastVisibleLine && height + line.height() > maxHeight) {
+            const QTextLine nextLine = textLayout.createLine();
+            *lastVisibleLine = nextLine.isValid() ? i : -1;
+            break;
+        }
+        ++i;
     }
     textLayout.endLayout();
     return QSizeF(widthUsed, height);
@@ -872,7 +882,13 @@ QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTex
     QTextLayout textLayout(text, font);
     textLayout.setTextOption(textOption);
 
-    viewItemTextLayout(textLayout, textRect.width());
+    // In AlignVCenter mode when more than one line is displayed and the height only allows
+    // some of the lines it makes no sense to display those. From a users perspective it makes
+    // more sense to see the start of the text instead something inbetween.
+    const bool vAlignmentOptimization = paintStartPosition && valign.testFlag(Qt::AlignVCenter);
+
+    int lastVisibleLine = -1;
+    viewItemTextLayout(textLayout, textRect.width(), vAlignmentOptimization ? textRect.height() : -1, &lastVisibleLine);
 
     const QRectF boundingRect = textLayout.boundingRect();
     // don't care about LTR/RTL here, only need the height
@@ -899,7 +915,7 @@ QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTex
         const int start = line.textStart();
         const int length = line.textLength();
         const bool drawElided = line.naturalTextWidth() > textRect.width();
-        bool elideLastVisibleLine = false;
+        bool elideLastVisibleLine = lastVisibleLine == i;
         if (!drawElided && i + 1 < lineCount && lastVisibleLineShouldBeElided) {
             const QTextLine nextLine = textLayout.lineAt(i + 1);
             const int nextHeight = height + nextLine.height() / 2;
@@ -930,7 +946,8 @@ QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTex
         }
 
         // below visible text, can stop
-        if (height + layoutRect.top() >= textRect.bottom())
+        if ((height + layoutRect.top() >= textRect.bottom()) ||
+                (lastVisibleLine >= 0 && lastVisibleLine == i))
             break;
     }
     return ret;
