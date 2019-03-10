@@ -53,6 +53,7 @@
 #include <qlocale.h>
 #include <QtSql/private/qsqlresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
+#include <QtCore/private/qlocale_tools_p.h>
 
 #include <queue>
 
@@ -663,27 +664,30 @@ QVariant QPSQLResult::data(int i)
         return atoi(val);
     case QVariant::Double: {
         if (ptype == QNUMERICOID) {
-            if (numericalPrecisionPolicy() != QSql::HighPrecision) {
-                QVariant retval;
-                bool convert;
-                double dbl=QString::fromLatin1(val).toDouble(&convert);
-                if (numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
-                    retval = (qlonglong)dbl;
-                else if (numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
-                    retval = (int)dbl;
-                else if (numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
-                    retval = dbl;
-                if (!convert)
-                    return QVariant();
-                return retval;
-            }
-            return QString::fromLatin1(val);
+            if (numericalPrecisionPolicy() == QSql::HighPrecision)
+                return QString::fromLatin1(val);
         }
-        if (qstricmp(val, "Infinity") == 0)
-            return qInf();
-        if (qstricmp(val, "-Infinity") == 0)
-            return -qInf();
-        return QString::fromLatin1(val).toDouble();
+        bool ok;
+        double dbl = qstrtod(val, nullptr, &ok);
+        if (!ok) {
+            if (qstricmp(val, "NaN") == 0)
+                dbl = qQNaN();
+            else if (qstricmp(val, "Infinity") == 0)
+                dbl = qInf();
+            else if (qstricmp(val, "-Infinity") == 0)
+                dbl = -qInf();
+            else
+                return QVariant();
+        }
+        if (ptype == QNUMERICOID) {
+            if (numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+                return QVariant((qlonglong)dbl);
+            else if (numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+                return QVariant((int)dbl);
+            else if (numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
+                return QVariant(dbl);
+        }
+        return dbl;
     }
     case QVariant::Date:
         if (val[0] == '\0') {
