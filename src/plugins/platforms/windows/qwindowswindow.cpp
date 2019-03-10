@@ -746,7 +746,8 @@ QWindowsWindowData
     const QWindowCreationContextPtr context(new QWindowCreationContext(w, data.geometry, rect, data.customMargins, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
-    QMargins invMargins = topLevel && !(result.flags & Qt::FramelessWindowHint) && QWindowsGeometryHint::positionIncludesFrame(w)
+    const bool hasFrame = (style & (WS_DLGFRAME | WS_THICKFRAME));
+    QMargins invMargins = topLevel && hasFrame && QWindowsGeometryHint::positionIncludesFrame(w)
             ? invisibleMargins(QPoint(context->frameX, context->frameY)) : QMargins();
 
     qCDebug(lcQpaWindows).nospace()
@@ -777,6 +778,7 @@ QWindowsWindowData
     result.geometry = context->obtainedGeometry;
     result.fullFrameMargins = context->margins;
     result.embedded = embedded;
+    result.hasFrame = hasFrame;
     result.customMargins = context->customMargins;
 
     return result;
@@ -2232,7 +2234,7 @@ void QWindowsWindow::setFullFrameMargins(const QMargins &newMargins)
 QMargins QWindowsWindow::frameMargins() const
 {
     QMargins result = fullFrameMargins();
-    if (isTopLevel() && !(m_data.flags & Qt::FramelessWindowHint))
+    if (isTopLevel() && m_data.hasFrame)
         result -= invisibleMargins(geometry().topLeft());
     return result;
 }
