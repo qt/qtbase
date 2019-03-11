@@ -16,6 +16,7 @@ function(qt_internal_create_depends_files)
     message("Generating depends files for ${KNOWN_QT_MODULES}...")
     foreach (target ${KNOWN_QT_MODULES})
         get_target_property(depends "${target}" LINK_LIBRARIES)
+        set(qtdeps "")
         foreach (dep ${depends})
             # Normalize module by stripping leading "Qt::" and trailing "Private"
             if (dep MATCHES "Qt::(.*)")
