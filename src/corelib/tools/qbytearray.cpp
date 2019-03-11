@@ -523,7 +523,7 @@ int qstrnicmp(const char *str1, const char *str2, uint len)
 
     A helper for QByteArray::compare. Compares \a len1 bytes from \a str1 to \a
     len2 bytes from \a str2. If \a len2 is -1, then \a str2 is expected to be
-    null-terminated.
+    '\\0'-terminated.
  */
 int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2)
 {
@@ -1765,9 +1765,10 @@ void QByteArray::chop(int n)
 
     If \a data is 0, a null byte array is constructed.
 
-    If \a size is negative, \a data is assumed to point to a nul-terminated
-    string and its length is determined dynamically. The terminating
-    nul-character is not considered part of the byte array.
+    If \a size is negative, \a data is assumed to point to a
+    '\\0'-terminated string and its length is determined dynamically.
+    The terminating \\0 character is not considered part of the
+    byte array.
 
     QByteArray makes a deep copy of the string data.
 
@@ -1924,7 +1925,7 @@ void QByteArray::expand(int i)
 
 /*!
    \internal
-   Return a QByteArray that is sure to be NUL-terminated.
+   Return a QByteArray that is sure to be '\\0'-terminated.
 
    By default, all QByteArray have an extra NUL at the end,
    guaranteeing that assumption. However, if QByteArray::fromRawData
@@ -2336,8 +2337,8 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
 
     \overload
 
-    Replaces \a len bytes from index position \a pos with the zero terminated
-    string \a after.
+    Replaces \a len bytes from index position \a pos with the
+    '\\0'-terminated string \a after.
 
     Notice: this can change the length of the byte array.
 */
@@ -2415,7 +2416,7 @@ QByteArray &QByteArray::replace(const char *c, const QByteArray &after)
 
     Replaces every occurrence of the string \a before with the string \a after.
     Since the sizes of the strings are given by \a bsize and \a asize, they
-    may contain zero characters and do not need to be zero-terminated.
+    may contain zero characters and do not need to be '\\0'-terminated.
 */
 
 QByteArray &QByteArray::replace(const char *before, int bsize, const char *after, int asize)
@@ -4541,7 +4542,7 @@ QByteArray QByteArray::number(double n, char f, int prec)
     \snippet code/src_corelib_tools_qbytearray.cpp 43
 
     \warning A byte array created with fromRawData() is \e not
-    null-terminated, unless the raw data contains a 0 character at
+    '\\0'-terminated, unless the raw data contains a 0 character at
     position \a size. While that does not matter for QDataStream or
     functions like indexOf(), passing the byte array to a function
     accepting a \c{const char *} expected to be '\\0'-terminated will
