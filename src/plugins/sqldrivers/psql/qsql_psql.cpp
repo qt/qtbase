@@ -321,7 +321,7 @@ public:
 };
 
 static QSqlError qMakeError(const QString &err, QSqlError::ErrorType type,
-                            const QPSQLDriverPrivate *p, PGresult *result = 0)
+                            const QPSQLDriverPrivate *p, PGresult *result = nullptr)
 {
     const char *s = PQerrorMessage(p->connection);
     QString msg = p->isUtf8 ? QString::fromUtf8(s) : QString::fromLocal8Bit(s);
@@ -1249,7 +1249,7 @@ bool QPSQLDriver::open(const QString &db,
         setLastError(qMakeError(tr("Unable to connect"), QSqlError::ConnectionError, d));
         setOpenError(true);
         PQfinish(d->connection);
-        d->connection = 0;
+        d->connection = nullptr;
         return false;
     }
 
@@ -1273,12 +1273,12 @@ void QPSQLDriver::close()
         if (d->sn) {
             disconnect(d->sn, SIGNAL(activated(int)), this, SLOT(_q_handleNotification(int)));
             delete d->sn;
-            d->sn = 0;
+            d->sn = nullptr;
         }
 
         if (d->connection)
             PQfinish(d->connection);
-        d->connection = 0;
+        d->connection = nullptr;
         setOpen(false);
         setOpenError(false);
     }
@@ -1663,7 +1663,7 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
     if (d->seid.isEmpty()) {
         disconnect(d->sn, SIGNAL(activated(int)), this, SLOT(_q_handleNotification(int)));
         delete d->sn;
-        d->sn = 0;
+        d->sn = nullptr;
     }
 
     return true;
@@ -1681,8 +1681,8 @@ void QPSQLDriver::_q_handleNotification(int)
     d->pendingNotifyCheck = false;
     PQconsumeInput(d->connection);
 
-    PGnotify *notify = 0;
-    while ((notify = PQnotifies(d->connection)) != 0) {
+    PGnotify *notify = nullptr;
+    while ((notify = PQnotifies(d->connection)) != nullptr) {
         QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name)) {
             QString payload;
