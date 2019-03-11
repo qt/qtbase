@@ -2649,3 +2649,5 @@ bool QODBCDriver::isIdentifierEscaped(const QString &identifier, IdentifierType)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsql_odbc_p.cpp"

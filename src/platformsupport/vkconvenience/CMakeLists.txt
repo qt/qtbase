@@ -4,6 +4,9 @@
 ## VulkanSupport Module:
 #####################################################################
 
+# Special case.
+find_package(Vulkan)
+
 add_qt_module(VulkanSupport
     STATIC
     SOURCES
@@ -13,4 +16,5 @@ add_qt_module(VulkanSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+        Vulkan::Vulkan
 )

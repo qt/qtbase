@@ -134,6 +134,21 @@ extend_target(qmake CONDITION APPLE_OSX
         ${FWApplicationServices} ${FWCoreServices} ${FWFoundation}
 )
 # TODO: Windows support, cf. qmake.pro
+extend_target(qmake CONDITION WIN32
+    SOURCES
+        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemengine_win.cpp
+        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemiterator_win.cpp
+        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfsfileengine_win.cpp
+        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlocale_win.cpp
+        ${PROJECT_SOURCE_DIR}/src/corelib/global/qoperatingsystemversion_win.cpp
+        ${PROJECT_SOURCE_DIR}/src/corelib/io/qsettings_win.cpp
+        ${PROJECT_SOURCE_DIR}/src/corelib/plugin/qsystemlibrary.cpp
+        generators/win32/registry.cpp
+    DEFINES
+        UNICODE _ENABLE_EXTENDED_ALIGNED_STORAGE _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS
+    LIBRARIES
+        ole32 advapi32 kernel32 netapi32
+)
 
 set_target_properties(qmake PROPERTIES
     AUTOMOC OFF

@@ -560,8 +560,6 @@ extend_target(Core CONDITION UNIX
         kernel/qpoll_p.h
         kernel/qtimerinfo_unix.cpp kernel/qtimerinfo_unix_p.h
         thread/qthread_unix.cpp
-    DEFINES
-        QT_NO_CAST_TO_ASCII  # special case: Add that here instead of removing it in WIN32!
 )
 
 extend_target(Core CONDITION QT_FEATURE_thread
@@ -999,6 +997,14 @@ set_source_files_properties(
     thread/qmutex_unix.cpp
     thread/qmutex_win.cpp
     PROPERTIES HEADER_FILE_ONLY ON)  # special case: These files are included by qmutex.cpp!
+
+# special case
+# Remove QT_NO_CAST_TO_ASCII to ensure that the symbols are included in the library.
+if(WIN32)
+    get_target_property(defines Core COMPILE_DEFINITIONS)
+    list(REMOVE_ITEM defines QT_NO_CAST_TO_ASCII)
+    set_target_properties(Core PROPERTIES COMPILE_DEFINITIONS "${defines}")
+endif()
 
 qt_internal_add_link_flags_gc_sections(Core PRIVATE)  # special case
 

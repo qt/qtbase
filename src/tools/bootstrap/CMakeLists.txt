@@ -97,6 +97,7 @@ extend_target(Bootstrap
         $<TARGET_PROPERTY:XmlPrivate,INTERFACE_INCLUDE_DIRECTORIES>
     PUBLIC_LIBRARIES  # special case
         ZLIB::ZLIB
+        Qt::Platform
     # CONFIG = "minimal_syncqt" "internal_module" "force_bootstrap" "gc_binaries"
     # INSTALLS = "lib"
     # MODULE_CONFIG = "gc_binaries"
