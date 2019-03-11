@@ -764,7 +764,7 @@ QList<QByteArray> QTextCodec::aliases() const
     encoding of the subclass to Unicode, and returns the result in a
     QString.
 
-    \a state can be 0, in which case the conversion is stateless and
+    \a state can be \nullptr, in which case the conversion is stateless and
     default conversion rules should be used. If state is not 0, the
     codec should save the state after the conversion in \a state, and
     adjust the \c remainingChars and \c invalidChars members of the struct.
@@ -780,7 +780,7 @@ QList<QByteArray> QTextCodec::aliases() const
     from Unicode to the encoding of the subclass, and returns the result
     in a QByteArray.
 
-    \a state can be 0 in which case the conversion is stateless and
+    \a state can be \nullptr in which case the conversion is stateless and
     default conversion rules should be used. If state is not 0, the
     codec should save the state after the conversion in \a state, and
     adjust the \c remainingChars and \c invalidChars members of the struct.

@@ -2934,8 +2934,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     0 may be used as a wildcard, meaning "any signal", "any receiving
     object", or "any slot in the receiving object", respectively.
 
-    The \a sender may never be 0. (You cannot disconnect signals from
-    more than one object in a single call.)
+    The \a sender may never be \nullptr. (You cannot disconnect signals
+    from more than one object in a single call.)
 
     If \a signal is 0, it disconnects \a receiver and \a method from
     any signal. If not, only the specified signal is disconnected.
@@ -2946,8 +2946,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
     If \a method is 0, it disconnects anything that is connected to \a
     receiver. If not, only slots named \a method will be disconnected,
-    and all other slots are left alone. The \a method must be 0 if \a
-    receiver is left out, so you cannot disconnect a
+    and all other slots are left alone. The \a method must be \nullptr
+    if \a receiver is left out, so you cannot disconnect a
     specifically-named slot on all objects.
 
     \sa connect()
@@ -4991,8 +4991,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     0 may be used as a wildcard, meaning "any signal", "any receiving
     object", or "any slot in the receiving object", respectively.
 
-    The \a sender may never be 0. (You cannot disconnect signals from
-    more than one object in a single call.)
+    The \a sender may never be \nullptr. (You cannot disconnect signals
+    from more than one object in a single call.)
 
     If \a signal is 0, it disconnects \a receiver and \a method from
     any signal. If not, only the specified signal is disconnected.
@@ -5003,8 +5003,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
     If \a method is 0, it disconnects anything that is connected to \a
     receiver. If not, only slots named \a method will be disconnected,
-    and all other slots are left alone. The \a method must be 0 if \a
-    receiver is left out, so you cannot disconnect a
+    and all other slots are left alone. The \a method must be \nullptr
+    if \a receiver is left out, so you cannot disconnect a
     specifically-named slot on all objects.
 
     \note It is not possible to use this overload to diconnect signals

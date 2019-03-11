@@ -5552,8 +5552,8 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
     is a pointer to the item that gained input focus, or \nullptr if focus was lost.
     \a reason is the reason for the focus change (e.g., if the scene was
     deactivated while an input field had focus, \a oldFocusItem would point
-    to the input field item, \a newFocusItem would be 0, and \a reason would be
-    Qt::ActiveWindowFocusReason.
+    to the input field item, \a newFocusItem would be \nullptr, and \a reason
+    would be Qt::ActiveWindowFocusReason.
 */
 
 /*!
