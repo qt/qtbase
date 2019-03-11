@@ -68,7 +68,6 @@ public:
 
 private slots:
     void initTestCase();
-    void cleanupTestCase();
 #if defined(Q_OS_WIN)
     void windowsDefaultLocale();
 #endif
@@ -217,9 +216,6 @@ void tst_QLocale::initTestCase()
     }
 #endif // QT_CONFIG(process)
 }
-
-void tst_QLocale::cleanupTestCase()
-{}
 
 void tst_QLocale::ctor()
 {
