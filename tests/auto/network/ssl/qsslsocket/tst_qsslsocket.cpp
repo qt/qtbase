@@ -2139,7 +2139,7 @@ protected:
 
         // delayed reading data
         QTest::qSleep(100);
-        if (!socket->waitForReadyRead(2000))
+        if (!socket->waitForReadyRead(2000) && socket->bytesAvailable() == 0)
             return;             // error
         socket->readAll();
         dataReadSemaphore.release();
@@ -2210,7 +2210,7 @@ void tst_QSslSocket::waitForMinusOne()
     socket.write("How are you doing?");
     QVERIFY(socket.bytesToWrite() != 0);
     QVERIFY(socket.waitForBytesWritten(-1));
-    QVERIFY(server.dataReadSemaphore.tryAcquire(1, 2000));
+    QVERIFY(server.dataReadSemaphore.tryAcquire(1, 2500));
 
     // third verification: it should wait for 100 ms:
     QVERIFY(socket.waitForReadyRead(-1));
