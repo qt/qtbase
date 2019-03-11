@@ -138,7 +138,7 @@ def map_tests(test: str) -> str:
         'bmi': 'TEST_subarch_bmi',
         'bmi2': 'TEST_subarch_bmi2',
         'cx16': 'TEST_subarch_cx16',
-        'f16c': 'TEST_subarch_c16c',
+        'f16c': 'TEST_subarch_f16c',
         'fma': 'TEST_subarch_fma',
         'fma4': 'TEST_subarch_fma4',
         'fsgsbase': 'TEST_subarch_fsgsbase',
