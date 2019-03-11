@@ -919,6 +919,58 @@ function(add_qt_resource target resourceName)
     target_sources(${target} PRIVATE "${generatedSourceCode}")
 endfunction()
 
+
+# Handle files that need special SIMD-related flags.
+# This creates an object library and makes target link
+# to it (privately).
+function(add_qt_simd_part target)
+    qt_parse_all_arguments(arg "add_qt_simd_part" "" ""
+       "NAME;SIMD;${__default_private_args};COMPILE_FLAGS" ${ARGN})
+    if ("x${arg_SIMD}" STREQUAL x)
+        message(FATAL_ERROR "add_qt_simd_part needs a SIMD type to be set.")
+    endif()
+
+    set(condition "QT_FEATURE_${arg_SIMD}")
+    if("${arg_SIMD}" STREQUAL arch_haswell)
+        set(condition "TEST_subarch_avx2 AND TEST_subarch_bmi AND TEST_subarch_bmi2 AND TEST_subarch_f16c AND TEST_subarch_fma AND TEST_subarch_lzcnt AND TEST_subarch_popcnt")
+    elseif("${arg_SIMD}" STREQUAL avx512common)
+        set(condition "TEST_subarch_avx512cd")
+    elseif("${arg_SIMD}" STREQUAL avx512core)
+        set(condition "TEST_subarch_avx512cd AND TEST_subarch_avx512bw AND TEST_subarch_avx512dq AND TEST_subarch_avx512vl")
+    endif()
+
+    set(name "${arg_NAME}")
+    if("x${name}" STREQUAL x)
+        set(name "${target}_simd_${arg_SIMD}")
+    endif()
+
+    qt_evaluate_config_expression(result ${condition})
+    if(${result})
+        if(QT_CMAKE_DEBUG_EXTEND_TARGET)
+            message("add_qt_simd_part(${target} SIMD ${arg_SIMD} ...): Evaluated")
+        endif()
+        string(TOUPPER "QT_CFLAGS_${arg_SIMD}" simd_flags)
+
+        add_library("${name}" OBJECT)
+        target_sources("${name}" PRIVATE ${arg_SOURCES})
+        target_include_directories("${name}" PRIVATE
+            ${arg_INCLUDE_DIRECTORIES}
+            $<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>)
+        target_compile_options("${name}" PRIVATE
+            ${${simd_flags}}
+            ${arg_COMPILE_FLAGS}
+            $<TARGET_PROPERTY:${target},COMPILE_OPTIONS>)
+            target_compile_definitions("${name}" PRIVATE
+            $<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>)
+
+        target_link_libraries("${target}" PRIVATE "${name}")
+    else()
+        if(QT_CMAKE_DEBUG_EXTEND_TARGET)
+            message("add_qt_simd_part(${target} SIMD ${arg_SIMD} ...): Skipped")
+        endif()
+    endif()
+endfunction()
+
 # From Qt5CoreMacros
 # Function used to create the names of output files preserving relative dirs
 function(qt_make_output_file infile prefix suffix source_dir binary_dir result)

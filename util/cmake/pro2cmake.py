@@ -1208,6 +1208,30 @@ def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
     return result
 
 
+def write_simd_part(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0):
+    simd_options = [ 'sse2', 'sse3', 'ssse3', 'sse4_1', 'sse4_2', 'aesni', 'shani', 'avx', 'avx2',
+                     'avx512f', 'avx512cd', 'avx512er', 'avx512pf', 'avx512dq', 'avx512bw',
+                     'avx512vl', 'avx512ifma', 'avx512vbmi', 'f16c', 'rdrnd', 'neon', 'mips_dsp',
+                     'mips_dspr2',
+                     'arch_haswell', 'avx512common', 'avx512core'];
+    ind = spaces(indent)
+
+    for simd in simd_options:
+        SIMD = simd.upper();
+        sources = scope.get('{}_HEADERS'.format(SIMD), []) \
+            + scope.get('{}_SOURCES'.format(SIMD), []) \
+            + scope.get('{}_C_SOURCES'.format(SIMD), []) \
+            + scope.get('{}_ASM'.format(SIMD), [])
+
+        if not sources:
+            continue
+
+        cm_fh.write('{}add_qt_simd_part({} SIMD {}\n'.format(ind, target, simd))
+        cm_fh.write('{}    SOURCES\n'.format(ind))
+        cm_fh.write('{}        {}\n'.format(ind, '\n{}        '.format(ind).join(sources)))
+        cm_fh.write('{})\n\n'.format(ind))
+
+
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     cmake_function: str, scope: Scope, *,
                     extra_lines: typing.List[str] = [],
@@ -1242,6 +1266,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     cm_fh.write('{})\n'.format(spaces(indent)))
 
     write_resources(cm_fh, name, scope, indent)
+
+    write_simd_part(cm_fh, name, scope, indent)
 
     # Scopes:
     if len(scopes) == 1:
