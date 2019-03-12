@@ -281,6 +281,11 @@ const EVP_CIPHER *q_EVP_des_ede3_cbc();
 #ifndef OPENSSL_NO_RC2
 const EVP_CIPHER *q_EVP_rc2_cbc();
 #endif
+#ifndef OPENSSL_NO_AES
+const EVP_CIPHER *q_EVP_aes_128_cbc();
+const EVP_CIPHER *q_EVP_aes_192_cbc();
+const EVP_CIPHER *q_EVP_aes_256_cbc();
+#endif
 Q_AUTOTEST_EXPORT const EVP_MD *q_EVP_sha1();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);

@@ -359,6 +359,11 @@ DEFINEFUNC(const EVP_CIPHER *, EVP_des_ede3_cbc, DUMMYARG, DUMMYARG, return null
 #ifndef OPENSSL_NO_RC2
 DEFINEFUNC(const EVP_CIPHER *, EVP_rc2_cbc, DUMMYARG, DUMMYARG, return nullptr, return)
 #endif
+#ifndef OPENSSL_NO_AES
+DEFINEFUNC(const EVP_CIPHER *, EVP_aes_128_cbc, DUMMYARG, DUMMYARG, return nullptr, return)
+DEFINEFUNC(const EVP_CIPHER *, EVP_aes_192_cbc, DUMMYARG, DUMMYARG, return nullptr, return)
+DEFINEFUNC(const EVP_CIPHER *, EVP_aes_256_cbc, DUMMYARG, DUMMYARG, return nullptr, return)
+#endif
 DEFINEFUNC(const EVP_MD *, EVP_sha1, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, char *c, c, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_RSA, EVP_PKEY *a, a, RSA *b, b, return -1, return)
@@ -1178,6 +1183,11 @@ bool q_resolveOpenSslSymbols()
 #endif
 #ifndef OPENSSL_NO_RC2
     RESOLVEFUNC(EVP_rc2_cbc)
+#endif
+#ifndef OPENSSL_NO_AES
+    RESOLVEFUNC(EVP_aes_128_cbc)
+    RESOLVEFUNC(EVP_aes_192_cbc)
+    RESOLVEFUNC(EVP_aes_256_cbc)
 #endif
     RESOLVEFUNC(EVP_sha1)
     RESOLVEFUNC(EVP_PKEY_assign)
