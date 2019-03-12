@@ -161,6 +161,8 @@ if "%PLATFORM%" == "" (
         set PLATFORM=win32-msvc
     ) else if not "%clang-cl.exe%" == "" (
         set PLATFORM=win32-clang-msvc
+    ) else if not "%clang.exe%" == "" (
+        set PLATFORM=win32-clang-g++
     ) else if not "%g++.exe%" == "" (
         set PLATFORM=win32-g++
     ) else (
@@ -172,7 +174,7 @@ if not exist "%QTSRC%\mkspecs\%PLATFORM%\qmake.conf" (
     echo Host platform '%PLATFORM%' is invalid. Aborting. >&2
     exit /b 1
 )
-if "%PLATFORM:win32-g++=%" == "%PLATFORM%" (
+if "%PLATFORM:g++=%" == "%PLATFORM%" (
     if "%MAKE%" == "" (
         if not "%jom.exe%" == "" (
             set MAKE=jom
