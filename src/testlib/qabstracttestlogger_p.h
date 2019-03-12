@@ -97,14 +97,14 @@ public:
     virtual void enterTestData(QTestData *) {}
 
     virtual void addIncident(IncidentTypes type, const char *description,
-                             const char *file = 0, int line = 0) = 0;
+                             const char *file = nullptr, int line = 0) = 0;
     virtual void addBenchmarkResult(const QBenchmarkResult &result) = 0;
 
     virtual void addMessage(QtMsgType, const QMessageLogContext &,
                             const QString &);
 
     virtual void addMessage(MessageTypes type, const QString &message,
-                            const char *file = 0, int line = 0) = 0;
+                            const char *file = nullptr, int line = 0) = 0;
 
     void outputString(const char *msg);
 
@@ -151,7 +151,7 @@ struct QTestCharBuffer
 
     inline bool reset(int newSize)
     {
-        char *newBuf = 0;
+        char *newBuf = nullptr;
         if (buf == staticBuf) {
             // if we point to our internal buffer, we need to malloc first
             newBuf = reinterpret_cast<char *>(malloc(newSize));

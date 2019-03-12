@@ -72,7 +72,7 @@ int Q_GUI_EXPORT QT_DISTANCEFIELD_HIGHGLYPHCOUNT();
 class Q_GUI_EXPORT QDistanceFieldData : public QSharedData
 {
 public:
-    QDistanceFieldData() : glyph(0), width(0), height(0), nbytes(0), data(0) {}
+    QDistanceFieldData() : glyph(0), width(0), height(0), nbytes(0), data(nullptr) {}
     QDistanceFieldData(const QDistanceFieldData &other);
     ~QDistanceFieldData();
 

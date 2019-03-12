@@ -73,9 +73,9 @@ class QDragPrivate : public QObjectPrivate
 {
 public:
     QDragPrivate()
-        : source(0)
-        , target(0)
-        , data(0)
+        : source(nullptr)
+        , target(nullptr)
+        , data(nullptr)
     { }
     QObject *source;
     QObject *target;

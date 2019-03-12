@@ -71,7 +71,7 @@ class Q_WIDGETS_EXPORT QCommonStylePrivate : public QStylePrivate
 public:
     inline QCommonStylePrivate() :
 #if QT_CONFIG(itemviews)
-    cachedOption(0),
+    cachedOption(nullptr),
 #endif
     animationFps(30)
     { }

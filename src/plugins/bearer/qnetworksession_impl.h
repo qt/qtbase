@@ -66,7 +66,7 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 
 public:
     QNetworkSessionPrivateImpl()
-        : engine(0), startTime(0), lastError(QNetworkSession::UnknownSessionError), sessionTimeout(-1), currentPolicies(QNetworkSession::NoPolicy), opened(false)
+        : engine(nullptr), startTime(0), lastError(QNetworkSession::UnknownSessionError), sessionTimeout(-1), currentPolicies(QNetworkSession::NoPolicy), opened(false)
     {}
     ~QNetworkSessionPrivateImpl()
     {}

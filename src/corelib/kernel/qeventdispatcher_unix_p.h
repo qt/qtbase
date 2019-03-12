@@ -102,7 +102,7 @@ class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
     Q_DECLARE_PRIVATE(QEventDispatcherUNIX)
 
 public:
-    explicit QEventDispatcherUNIX(QObject *parent = 0);
+    explicit QEventDispatcherUNIX(QObject *parent = nullptr);
     ~QEventDispatcherUNIX();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
@@ -123,7 +123,7 @@ public:
     void flush() override;
 
 protected:
-    QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObject *parent = 0);
+    QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObject *parent = nullptr);
 };
 
 class Q_CORE_EXPORT QEventDispatcherUNIXPrivate : public QAbstractEventDispatcherPrivate
@@ -152,9 +152,9 @@ public:
 
 inline QSocketNotifierSetUNIX::QSocketNotifierSetUNIX() Q_DECL_NOTHROW
 {
-    notifiers[0] = 0;
-    notifiers[1] = 0;
-    notifiers[2] = 0;
+    notifiers[0] = nullptr;
+    notifiers[1] = nullptr;
+    notifiers[2] = nullptr;
 }
 
 inline bool QSocketNotifierSetUNIX::isEmpty() const Q_DECL_NOTHROW

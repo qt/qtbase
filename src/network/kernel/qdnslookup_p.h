@@ -95,7 +95,7 @@ public:
     QDnsLookupPrivate()
         : isFinished(false)
         , type(QDnsLookup::A)
-        , runnable(0)
+        , runnable(nullptr)
     { }
 
     void _q_lookupFinished(const QDnsLookupReply &reply);

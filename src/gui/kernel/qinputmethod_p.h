@@ -67,7 +67,7 @@ class QInputMethodPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QInputMethod)
 
 public:
-    inline QInputMethodPrivate() : testContext(0)
+    inline QInputMethodPrivate() : testContext(nullptr)
     {}
     QPlatformInputContext *platformInputContext() const
     {

@@ -106,7 +106,7 @@ public:
     // ### Falcon: introduca a struct XY for points so lars is not so confused...
     QVectorPath(const qreal *points,
                 int count,
-                const QPainterPath::ElementType *elements = 0,
+                const QPainterPath::ElementType *elements = nullptr,
                 uint hints = ArbitraryShapeHint)
         : m_elements(elements),
           m_points(points),
@@ -128,12 +128,12 @@ public:
     inline bool hasExplicitOpen() const { return m_hints & ExplicitOpen; }
     inline bool hasWindingFill() const { return m_hints & WindingFill; }
 
-    inline void makeCacheable() const { m_hints |= ShouldUseCacheHint; m_cache = 0; }
+    inline void makeCacheable() const { m_hints |= ShouldUseCacheHint; m_cache = nullptr; }
     inline uint hints() const { return m_hints; }
 
     inline const QPainterPath::ElementType *elements() const { return m_elements; }
     inline const qreal *points() const { return m_points; }
-    inline bool isEmpty() const { return m_points == 0; }
+    inline bool isEmpty() const { return m_points == nullptr; }
 
     inline int elementCount() const { return m_count; }
     inline const QPainterPath convertToPainterPath() const;
@@ -165,7 +165,7 @@ public:
                 return e;
             e = e->next;
         }
-        return 0;
+        return nullptr;
     }
 
     template <typename T> static inline bool isRect(const T *pts, int elementCount) {

@@ -69,7 +69,7 @@ inline
 T *&qThreadStorage_localData(QThreadStorageData &d, T **)
 {
     void **v = d.get();
-    if (!v) v = d.set(0);
+    if (!v) v = d.set(nullptr);
     return *(reinterpret_cast<T**>(v));
 }
 
@@ -139,7 +139,7 @@ public:
     inline ~QThreadStorage() { }
 
     inline bool hasLocalData() const
-    { return d.get() != 0; }
+    { return d.get() != nullptr; }
 
     inline T& localData()
     { return qThreadStorage_localData(d, reinterpret_cast<T*>(0)); }

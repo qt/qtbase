@@ -78,7 +78,7 @@ public:
           hasRegisteredTimer(false),
           isPause(false),
           isGroup(false),
-          group(0)
+          group(nullptr)
     {
     }
 

@@ -79,8 +79,8 @@ public:
         : QObjectPrivate()
         , surfaceType(QWindow::RasterSurface)
         , windowFlags(Qt::Window)
-        , parentWindow(0)
-        , platformWindow(0)
+        , parentWindow(nullptr)
+        , platformWindow(nullptr)
         , visible(false)
         , visibilityOnDestroy(false)
         , exposed(false)
@@ -97,8 +97,8 @@ public:
         , modality(Qt::NonModal)
         , blockedByModalWindow(false)
         , updateRequestPending(false)
-        , transientParent(0)
-        , topLevelScreen(0)
+        , transientParent(nullptr)
+        , topLevelScreen(nullptr)
 #ifndef QT_NO_CURSOR
         , cursor(Qt::ArrowCursor)
         , hasCursor(false)
@@ -119,7 +119,7 @@ public:
 
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
-    void setCursor(const QCursor *c = 0);
+    void setCursor(const QCursor *c = nullptr);
     bool applyCursor();
 #endif
 

@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 class QHttpPartPrivate: public QSharedData, public QNetworkHeadersPrivate
 {
 public:
-    inline QHttpPartPrivate() : bodyDevice(0), headerCreated(false), readPointer(0)
+    inline QHttpPartPrivate() : bodyDevice(nullptr), headerCreated(false), readPointer(0)
     {
     }
     ~QHttpPartPrivate()

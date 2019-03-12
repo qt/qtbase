@@ -63,7 +63,7 @@ class QSequentialAnimationGroupPrivate : public QAnimationGroupPrivate
     Q_DECLARE_PUBLIC(QSequentialAnimationGroup)
 public:
     QSequentialAnimationGroupPrivate()
-        : currentAnimation(0), currentAnimationIndex(-1), lastLoop(0)
+        : currentAnimation(nullptr), currentAnimationIndex(-1), lastLoop(0)
     { }
 
 

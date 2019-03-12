@@ -89,9 +89,9 @@ public:
     void createAutoBulletList();
 
     void init(Qt::TextFormat format = Qt::RichText, const QString &text = QString(),
-              QTextDocument *document = 0);
+              QTextDocument *document = nullptr);
     void setContent(Qt::TextFormat format = Qt::RichText, const QString &text = QString(),
-                    QTextDocument *document = 0);
+                    QTextDocument *document = nullptr);
     void startDrag();
 
     void paste(const QMimeData *source);

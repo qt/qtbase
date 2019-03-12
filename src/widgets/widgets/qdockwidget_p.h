@@ -82,11 +82,11 @@ class QDockWidgetPrivate : public QWidgetPrivate
 
 public:
     inline QDockWidgetPrivate()
-        : QWidgetPrivate(), state(0),
+        : QWidgetPrivate(), state(nullptr),
           features(QDockWidget::DockWidgetClosable
                    | QDockWidget::DockWidgetMovable
                    | QDockWidget::DockWidgetFloatable),
-          allowedAreas(Qt::AllDockWidgetAreas), resizer(0)
+          allowedAreas(Qt::AllDockWidgetAreas), resizer(nullptr)
     { }
 
     void init();
@@ -136,7 +136,7 @@ class Q_WIDGETS_EXPORT QDockWidgetLayout : public QLayout
 {
     Q_OBJECT
 public:
-    QDockWidgetLayout(QWidget *parent = 0);
+    QDockWidgetLayout(QWidget *parent = nullptr);
     ~QDockWidgetLayout();
     void addItem(QLayoutItem *item) override;
     QLayoutItem *itemAt(int index) const override;
@@ -194,15 +194,15 @@ inline QLayoutItem *QDockWidgetItem::dockWidgetChildItem() const
 {
     if (QDockWidgetLayout *layout = dockWidgetLayout())
         return layout->itemForRole(QDockWidgetLayout::Content);
-    return 0;
+    return nullptr;
 }
 
 inline QDockWidgetLayout *QDockWidgetItem::dockWidgetLayout() const
 {
     QWidget *w = const_cast<QDockWidgetItem*>(this)->widget();
-    if (w != 0)
+    if (w != nullptr)
         return qobject_cast<QDockWidgetLayout*>(w->layout());
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

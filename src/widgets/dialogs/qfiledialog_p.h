@@ -98,7 +98,7 @@ class QPlatformDialogHelper;
 
 struct QFileDialogArgs
 {
-    QFileDialogArgs() : parent(0), mode(QFileDialog::AnyFile) {}
+    QFileDialogArgs() : parent(nullptr), mode(QFileDialog::AnyFile) {}
 
     QWidget *parent;
     QString caption;
@@ -292,7 +292,7 @@ private:
 class QFileDialogLineEdit : public QLineEdit
 {
 public:
-    QFileDialogLineEdit(QWidget *parent = 0) : QLineEdit(parent), d_ptr(0){}
+    QFileDialogLineEdit(QWidget *parent = nullptr) : QLineEdit(parent), d_ptr(nullptr){}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer) {d_ptr = d_pointer; }
     void keyPressEvent(QKeyEvent *e) override;
     bool hideOnEsc;
@@ -303,7 +303,7 @@ private:
 class QFileDialogComboBox : public QComboBox
 {
 public:
-    QFileDialogComboBox(QWidget *parent = 0) : QComboBox(parent), urlModel(0) {}
+    QFileDialogComboBox(QWidget *parent = nullptr) : QComboBox(parent), urlModel(nullptr) {}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     void showPopup() override;
     void setHistory(const QStringList &paths);
@@ -319,7 +319,7 @@ private:
 class QFileDialogListView : public QListView
 {
 public:
-    QFileDialogListView(QWidget *parent = 0);
+    QFileDialogListView(QWidget *parent = nullptr);
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     QSize sizeHint() const override;
 protected:

@@ -88,7 +88,7 @@ inline T *v_cast(const QVariant::Private *nd, T * = 0)
 #else // every other compiler in this world
 
 template <typename T>
-inline const T *v_cast(const QVariant::Private *d, T * = 0)
+inline const T *v_cast(const QVariant::Private *d, T * = nullptr)
 {
     return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<const T *>(d->data.shared->ptr)
@@ -96,7 +96,7 @@ inline const T *v_cast(const QVariant::Private *d, T * = 0)
 }
 
 template <typename T>
-inline T *v_cast(QVariant::Private *d, T * = 0)
+inline T *v_cast(QVariant::Private *d, T * = nullptr)
 {
     return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<T *>(d->data.shared->ptr)
@@ -154,7 +154,7 @@ inline void v_construct(QVariant::Private *x, const T &t)
 
 // constructs a new variant if copy is 0, otherwise copy-constructs
 template <class T>
-inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
+inline void v_construct(QVariant::Private *x, const void *copy, T * = nullptr)
 {
     if (copy)
         v_construct<T>(x, *static_cast<const T *>(copy));
@@ -164,7 +164,7 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 
 // deletes the internal structures
 template <class T>
-inline void v_clear(QVariant::Private *d, T* = 0)
+inline void v_clear(QVariant::Private *d, T* = nullptr)
 {
 
     if (!QVariantIntegrator<T>::CanUseInternalSpace) {
@@ -264,7 +264,7 @@ class QVariantIsNull
         struct No { char unused[2]; };
         Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
 
-        template<class C> static decltype(static_cast<const C*>(0)->isNull(), Yes()) test(int);
+        template<class C> static decltype(static_cast<const C*>(nullptr)->isNull(), Yes()) test(int);
         template<class C> static No test(...);
     public:
         static const bool Value = (sizeof(test<T>(0)) == sizeof(Yes));

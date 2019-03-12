@@ -67,9 +67,9 @@ class Q_GUI_EXPORT QRawFontPrivate
 {
 public:
     QRawFontPrivate()
-        : fontEngine(0)
+        : fontEngine(nullptr)
         , hintingPreference(QFont::PreferDefaultHinting)
-        , thread(0)
+        , thread(nullptr)
     {}
 
     QRawFontPrivate(const QRawFontPrivate &other)
@@ -78,9 +78,9 @@ public:
         , thread(other.thread)
     {
 #ifndef QT_NO_DEBUG
-        Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+        Q_ASSERT(fontEngine == nullptr || thread == QThread::currentThread());
 #endif
-        if (fontEngine != 0)
+        if (fontEngine != nullptr)
             fontEngine->ref.ref();
     }
 
@@ -94,37 +94,37 @@ public:
 
     inline void cleanUp()
     {
-        setFontEngine(0);
+        setFontEngine(nullptr);
         hintingPreference = QFont::PreferDefaultHinting;
     }
 
     inline bool isValid() const
     {
 #ifndef QT_NO_DEBUG
-        Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+        Q_ASSERT(fontEngine == nullptr || thread == QThread::currentThread());
 #endif
-        return fontEngine != 0;
+        return fontEngine != nullptr;
     }
 
     inline void setFontEngine(QFontEngine *engine)
     {
 #ifndef QT_NO_DEBUG
-        Q_ASSERT(fontEngine == 0 || thread == QThread::currentThread());
+        Q_ASSERT(fontEngine == nullptr || thread == QThread::currentThread());
 #endif
         if (fontEngine == engine)
             return;
 
-        if (fontEngine != 0) {
+        if (fontEngine != nullptr) {
             if (!fontEngine->ref.deref())
                 delete fontEngine;
 #ifndef QT_NO_DEBUG
-            thread = 0;
+            thread = nullptr;
 #endif
         }
 
         fontEngine = engine;
 
-        if (fontEngine != 0) {
+        if (fontEngine != nullptr) {
             fontEngine->ref.ref();
 #ifndef QT_NO_DEBUG
             thread = QThread::currentThread();

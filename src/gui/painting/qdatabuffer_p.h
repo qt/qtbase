@@ -69,7 +69,7 @@ public:
             buffer = (Type*) malloc(capacity * sizeof(Type));
             Q_CHECK_PTR(buffer);
         } else {
-            buffer = 0;
+            buffer = nullptr;
         }
         siz = 0;
     }
@@ -128,7 +128,7 @@ public:
             Q_CHECK_PTR(buffer);
         } else {
             free(buffer);
-            buffer = 0;
+            buffer = nullptr;
         }
     }
 

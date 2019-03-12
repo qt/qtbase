@@ -131,8 +131,8 @@ struct QGlobalStatic
 
     bool isDestroyed() const { return guard.load() <= QtGlobalStatic::Destroyed; }
     bool exists() const { return guard.load() == QtGlobalStatic::Initialized; }
-    operator Type *() { if (isDestroyed()) return 0; return innerFunction(); }
-    Type *operator()() { if (isDestroyed()) return 0; return innerFunction(); }
+    operator Type *() { if (isDestroyed()) return nullptr; return innerFunction(); }
+    Type *operator()() { if (isDestroyed()) return nullptr; return innerFunction(); }
     Type *operator->()
     {
       Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC", "The global static was used after being destroyed");

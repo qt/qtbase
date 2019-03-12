@@ -84,7 +84,7 @@ public:
 
     virtual void invalidate() override
     {
-        m_style = 0;
+        m_style = nullptr;
         QAbstractLayoutStyleInfo::invalidate();
     }
 

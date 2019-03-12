@@ -105,7 +105,7 @@ class QConnmanManagerInterface : public  QDBusAbstractInterface
 
 public:
 
-    QConnmanManagerInterface( QObject *parent = 0);
+    QConnmanManagerInterface( QObject *parent = nullptr);
     ~QConnmanManagerInterface();
 
     QDBusObjectPath path() const;
@@ -155,7 +155,7 @@ class QConnmanServiceInterface : public QDBusAbstractInterface
 
 public:
 
-    explicit QConnmanServiceInterface(const QString &dbusPathName,QObject *parent = 0);
+    explicit QConnmanServiceInterface(const QString &dbusPathName,QObject *parent = nullptr);
     ~QConnmanServiceInterface();
 
     QVariantMap getProperties();
@@ -202,7 +202,7 @@ class QConnmanTechnologyInterface : public QDBusAbstractInterface
 
 public:
 
-    explicit QConnmanTechnologyInterface(const QString &dbusPathName,QObject *parent = 0);
+    explicit QConnmanTechnologyInterface(const QString &dbusPathName,QObject *parent = nullptr);
     ~QConnmanTechnologyInterface();
 
     QString type();

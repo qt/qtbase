@@ -75,15 +75,15 @@ public:
     QDialogPrivate()
         :
 #if QT_CONFIG(pushbutton)
-          mainDef(0),
+          mainDef(nullptr),
 #endif
-          orientation(Qt::Horizontal),extension(0), doShowExtension(false),
+          orientation(Qt::Horizontal),extension(nullptr), doShowExtension(false),
 #if QT_CONFIG(sizegrip)
-          resizer(0),
+          resizer(nullptr),
           sizeGripEnabled(false),
 #endif
-          rescode(0), resetModalityTo(-1), wasModalitySet(true), eventLoop(0),
-          nativeDialogInUse(false), m_platformHelper(0), m_platformHelperCreated(false)
+          rescode(0), resetModalityTo(-1), wasModalitySet(true), eventLoop(nullptr),
+          nativeDialogInUse(false), m_platformHelper(nullptr), m_platformHelperCreated(false)
         {}
     ~QDialogPrivate();
 

@@ -106,7 +106,7 @@ class QDBusCallDeliveryEvent: public QMetaCallEvent
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
                            const QDBusMessage &msg, const QVector<int> &types, int f = 0)
-        : QMetaCallEvent(0, id, 0, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
+        : QMetaCallEvent(0, id, nullptr, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
         { }
 
     void placeMetaCall(QObject *object) override
@@ -126,8 +126,8 @@ class QDBusActivateObjectEvent: public QMetaCallEvent
 public:
     QDBusActivateObjectEvent(const QDBusConnection &c, QObject *sender,
                              const QDBusConnectionPrivate::ObjectTreeNode &n,
-                             int p, const QDBusMessage &m, QSemaphore *s = 0)
-        : QMetaCallEvent(0, ushort(-1), 0, sender, -1, 0, 0, 0, s), connection(c), node(n),
+                             int p, const QDBusMessage &m, QSemaphore *s = nullptr)
+        : QMetaCallEvent(0, ushort(-1), nullptr, sender, -1, 0, nullptr, nullptr, s), connection(c), node(n),
           pathStartPos(p), message(m), handled(false)
         { }
     ~QDBusActivateObjectEvent();

@@ -83,7 +83,7 @@ public:
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
 
-    static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = 0);
+    static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = nullptr);
 
 #ifndef QT_NO_CURSOR
     xcb_cursor_t xcbCursor(const QCursor &c) const

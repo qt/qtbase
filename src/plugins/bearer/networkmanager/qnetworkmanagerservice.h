@@ -152,7 +152,7 @@ public:
         NM_STATE_CONNECTED_GLOBAL = 70
     } NMState;
 
-    QNetworkManagerInterface(QObject *parent = 0);
+    QNetworkManagerInterface(QObject *parent = nullptr);
     ~QNetworkManagerInterface();
 
     QList <QDBusObjectPath> getDevices();
@@ -228,7 +228,7 @@ public:
 
     Q_DECLARE_FLAGS(ApSecurityFlags, ApSecurityFlag)
 
-    explicit QNetworkManagerInterfaceAccessPoint(const QString &dbusPathName, QObject *parent = 0);
+    explicit QNetworkManagerInterfaceAccessPoint(const QString &dbusPathName, QObject *parent = nullptr);
     ~QNetworkManagerInterfaceAccessPoint();
 
     quint32 flags() const;
@@ -259,7 +259,7 @@ class QNetworkManagerInterfaceDevice : public QDBusAbstractInterface
 
 public:
 
-    explicit QNetworkManagerInterfaceDevice(const QString &deviceObjectPath, QObject *parent = 0);
+    explicit QNetworkManagerInterfaceDevice(const QString &deviceObjectPath, QObject *parent = nullptr);
     ~QNetworkManagerInterfaceDevice();
 
     QString udi() const;
@@ -288,7 +288,7 @@ class QNetworkManagerInterfaceDeviceWired : public QDBusAbstractInterface
 public:
 
     explicit QNetworkManagerInterfaceDeviceWired(const QString &ifaceDevicePath,
-                                                 QObject *parent = 0);
+                                                 QObject *parent = nullptr);
     ~QNetworkManagerInterfaceDeviceWired();
 
     QString hwAddress() const;
@@ -325,7 +325,7 @@ public:
        };
 
     explicit QNetworkManagerInterfaceDeviceWireless(const QString &ifaceDevicePath,
-                                                    QObject *parent = 0);
+                                                    QObject *parent = nullptr);
     ~QNetworkManagerInterfaceDeviceWireless();
 
     QList <QDBusObjectPath> getAccessPoints();
@@ -367,7 +367,7 @@ public:
     Q_DECLARE_FLAGS(ModemCapabilities, ModemCapability)
 
     explicit QNetworkManagerInterfaceDeviceModem(const QString &ifaceDevicePath,
-                                                    QObject *parent = 0);
+                                                    QObject *parent = nullptr);
     ~QNetworkManagerInterfaceDeviceModem();
 
     ModemCapabilities modemCapabilities() const;
@@ -392,7 +392,7 @@ class QNetworkManagerSettings : public QDBusAbstractInterface
 
 public:
 
-    explicit QNetworkManagerSettings(const QString &settingsService, QObject *parent = 0);
+    explicit QNetworkManagerSettings(const QString &settingsService, QObject *parent = nullptr);
     ~QNetworkManagerSettings();
 
     QList <QDBusObjectPath> listConnections();
@@ -413,7 +413,7 @@ class QNetworkManagerSettingsConnection : public QDBusAbstractInterface
 
 public:
 
-    QNetworkManagerSettingsConnection(const QString &settingsService, const QString &connectionObjectPath, QObject *parent = 0);
+    QNetworkManagerSettingsConnection(const QString &settingsService, const QString &connectionObjectPath, QObject *parent = nullptr);
     ~QNetworkManagerSettingsConnection();
 
     QNmSettingsMap getSettings();
@@ -451,7 +451,7 @@ public:
         Activated = 2
        };
 
-    explicit QNetworkManagerConnectionActive(const QString &dbusPathName, QObject *parent = 0);
+    explicit QNetworkManagerConnectionActive(const QString &dbusPathName, QObject *parent = nullptr);
     ~ QNetworkManagerConnectionActive();
 
     QDBusObjectPath connection() const;
@@ -478,7 +478,7 @@ class QNetworkManagerIp4Config : public QDBusAbstractInterface
     Q_OBJECT
 
 public:
-    explicit QNetworkManagerIp4Config(const QString &dbusPathName, QObject *parent = 0);
+    explicit QNetworkManagerIp4Config(const QString &dbusPathName, QObject *parent = nullptr);
     ~QNetworkManagerIp4Config();
 
     QStringList domains() const;
@@ -489,7 +489,7 @@ class PropertiesDBusInterface : public QDBusAbstractInterface
 public:
     PropertiesDBusInterface(const QString &service, const QString &path,
                             const QString &interface, const QDBusConnection &connection,
-                            QObject *parent = 0)
+                            QObject *parent = nullptr)
         : QDBusAbstractInterface(service, path, interface.toLatin1().data(), connection, parent)
     {}
 };

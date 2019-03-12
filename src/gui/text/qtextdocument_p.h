@@ -101,10 +101,10 @@ class QTextBlockData : public QFragment<3>
 {
 public:
     inline void initialize()
-        { layout = 0; userData = 0; userState = -1; revision = 0; hidden = 0; }
+        { layout = nullptr; userData = nullptr; userState = -1; revision = 0; hidden = 0; }
     void invalidate() const;
     inline void free()
-    { delete layout; layout = 0; delete userData; userData = 0; }
+    { delete layout; layout = nullptr; delete userData; userData = nullptr; }
 
     mutable int format;
     // ##### probably store a QTextEngine * here!

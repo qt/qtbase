@@ -166,7 +166,7 @@ Q_SIGNALS:
     void directoryLoaded(const QString &path);
 
 public:
-    explicit QFileInfoGatherer(QObject *parent = 0);
+    explicit QFileInfoGatherer(QObject *parent = nullptr);
     ~QFileInfoGatherer();
 
 #if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)

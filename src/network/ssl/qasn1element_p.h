@@ -156,10 +156,10 @@ public:
     static QAsn1Element fromVector(const QVector<QAsn1Element> &items);
     static QAsn1Element fromObjectId(const QByteArray &id);
 
-    bool toBool(bool *ok = 0) const;
+    bool toBool(bool *ok = nullptr) const;
     QDateTime toDateTime() const;
     QMultiMap<QByteArray, QString> toInfo() const;
-    qint64 toInteger(bool *ok = 0) const;
+    qint64 toInteger(bool *ok = nullptr) const;
     QVector<QAsn1Element> toVector() const;
     QByteArray toObjectId() const;
     QByteArray toObjectName() const;

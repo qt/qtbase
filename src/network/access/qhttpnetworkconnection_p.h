@@ -101,10 +101,10 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
                                     ConnectionType connectionType = ConnectionTypeHTTP,
-                                    QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession
+                                    QObject *parent = nullptr, QSharedPointer<QNetworkSession> networkSession
                                     = QSharedPointer<QNetworkSession>());
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
-                           bool encrypt = false, QObject *parent = 0,
+                           bool encrypt = false, QObject *parent = nullptr,
                            QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>(),
                            ConnectionType connectionType = ConnectionTypeHTTP);
 #else

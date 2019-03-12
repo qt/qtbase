@@ -72,7 +72,7 @@ public:
 
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions iconOptions = 0) const override;
+                   QPlatformTheme::IconOptions iconOptions = nullptr) const override;
 
     QIconEngine *createIconEngine(const QString &iconName) const override;
 

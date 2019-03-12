@@ -65,7 +65,7 @@ class QDeviceDiscovery;
 class QEvdevMouseManager : public QObject
 {
 public:
-    QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
+    QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = nullptr);
     ~QEvdevMouseManager();
 
     void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,

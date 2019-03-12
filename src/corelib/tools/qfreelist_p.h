@@ -249,11 +249,11 @@ inline int QFreeList<T, ConstantsType>::next()
 
         if (!v) {
             v = allocate((id & ConstantsType::IndexMask) - at, ConstantsType::Sizes[block]);
-            if (!_v[block].testAndSetRelease(0, v)) {
+            if (!_v[block].testAndSetRelease(nullptr, v)) {
                 // race with another thread lost
                 delete [] v;
                 v = _v[block].loadAcquire();
-                Q_ASSERT(v != 0);
+                Q_ASSERT(v != nullptr);
             }
         }
 

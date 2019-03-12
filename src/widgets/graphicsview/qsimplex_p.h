@@ -82,7 +82,7 @@ struct QSimplexVariable
 */
 struct QSimplexConstraint
 {
-    QSimplexConstraint() : constant(0), ratio(Equal), artificial(0) {}
+    QSimplexConstraint() : constant(0), ratio(Equal), artificial(nullptr) {}
 
     enum Ratio {
         LessOrEqual = 0,

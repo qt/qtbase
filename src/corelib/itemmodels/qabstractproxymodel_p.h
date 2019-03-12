@@ -62,7 +62,7 @@ class Q_CORE_EXPORT QAbstractProxyModelPrivate : public QAbstractItemModelPrivat
 {
     Q_DECLARE_PUBLIC(QAbstractProxyModel)
 public:
-    QAbstractProxyModelPrivate() : QAbstractItemModelPrivate(), model(0) {}
+    QAbstractProxyModelPrivate() : QAbstractItemModelPrivate(), model(nullptr) {}
     QAbstractItemModel *model;
     virtual void _q_sourceModelDestroyed();
     void mapDropCoordinatesToSource(int row, int column, const QModelIndex &parent,

@@ -63,7 +63,7 @@ class QEvdevTouchScreenHandlerThread;
 class QEvdevTouchManager : public QObject
 {
 public:
-    QEvdevTouchManager(const QString &key, const QString &spec, QObject *parent = 0);
+    QEvdevTouchManager(const QString &key, const QString &spec, QObject *parent = nullptr);
     ~QEvdevTouchManager();
 
     void addDevice(const QString &deviceNode);

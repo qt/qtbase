@@ -128,10 +128,10 @@ public:
     void notifyWindowIconChanged() override;
 
     //modality
-    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const override;
+    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const override;
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
-    static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);
+    static bool tryModalHelper(QWidget *widget, QWidget **rettop = nullptr);
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
     static QWidget *tryModalHelper_sys(QWidget *top);
     bool canQuit();
@@ -157,7 +157,7 @@ public:
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
     static QWidget *focusNextPrevChild_helper(QWidget *toplevel, bool next,
-                                              bool *wrappingOccurred = 0);
+                                              bool *wrappingOccurred = nullptr);
 
 #if QT_CONFIG(graphicsview)
     // Maintain a list of all scenes to ensure font and palette propagation to
@@ -238,7 +238,7 @@ public:
             return window;
         if (const QWidget *nativeParent = widget->nativeParentWidget())
             return nativeParent->windowHandle();
-        return 0;
+        return nullptr;
     }
 
 #ifdef Q_OS_WIN

@@ -64,7 +64,7 @@ class QPropertyAnimationPrivate : public QVariantAnimationPrivate
    Q_DECLARE_PUBLIC(QPropertyAnimation)
 public:
     QPropertyAnimationPrivate()
-        : targetValue(0), propertyType(0), propertyIndex(-1)
+        : targetValue(nullptr), propertyType(0), propertyIndex(-1)
     {
     }
 

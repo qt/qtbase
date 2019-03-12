@@ -65,8 +65,8 @@ class QScreenPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QScreen)
 public:
     QScreenPrivate()
-        : platformScreen(0)
-        , orientationUpdateMask(0)
+        : platformScreen(nullptr)
+        , orientationUpdateMask(nullptr)
     {
     }
 

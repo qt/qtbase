@@ -63,7 +63,7 @@ class QShapedPixmapWindow : public QRasterWindow
 {
     Q_OBJECT
 public:
-    explicit QShapedPixmapWindow(QScreen *screen = 0);
+    explicit QShapedPixmapWindow(QScreen *screen = nullptr);
     ~QShapedPixmapWindow();
 
     void setUseCompositing(bool on) { m_useCompositing = on; }

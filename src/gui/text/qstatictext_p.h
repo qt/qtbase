@@ -80,7 +80,7 @@ class Q_GUI_EXPORT QStaticTextItem
 public:
     QStaticTextItem() : useBackendOptimizations(false),
                         userDataNeedsUpdate(0), usesRawFont(0),
-                        m_fontEngine(0), m_userData(0) {}
+                        m_fontEngine(nullptr), m_userData(nullptr) {}
 
     void setUserData(QStaticTextUserData *newUserData)
     {

@@ -65,7 +65,7 @@ class QSpiDBusCache : public QObject
     Q_OBJECT
 
 public:
-    explicit QSpiDBusCache(QDBusConnection c, QObject* parent = 0);
+    explicit QSpiDBusCache(QDBusConnection c, QObject* parent = nullptr);
     void emitAddAccessible(const QSpiAccessibleCacheItem& item);
     void emitRemoveAccessible(const QSpiObjectReference& item);
 

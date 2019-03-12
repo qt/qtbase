@@ -93,7 +93,7 @@ public:
     QSqlTableModel::EditStrategy strategy;
     bool busyInsertingRows;
 
-    QSqlQuery editQuery = { QSqlQuery(0) };
+    QSqlQuery editQuery = { QSqlQuery(nullptr) };
     QSqlIndex primaryIndex;
     QString tableName;
     QString filter;

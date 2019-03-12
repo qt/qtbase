@@ -686,7 +686,7 @@ public:
     {
     }
     inline Data(int reserved, QJsonValue::Type valueType)
-        : rawData(0), compactionCounter(0), ownsData(true)
+        : rawData(nullptr), compactionCounter(0), ownsData(true)
     {
         Q_ASSERT(valueType == QJsonValue::Array || valueType == QJsonValue::Object);
 
@@ -728,7 +728,7 @@ public:
             size = qMax(size + reserve, qMin(size *2, (int)Value::MaxSize));
             if (size > Value::MaxSize) {
                 qWarning("QJson: Document too large to store in data structure");
-                return 0;
+                return nullptr;
             }
         }
         char *raw = (char *)malloc(size);

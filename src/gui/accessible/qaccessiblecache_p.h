@@ -73,7 +73,7 @@ public:
     QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
     QAccessible::Id idForInterface(QAccessibleInterface *iface) const;
     QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
-    void deleteInterface(QAccessible::Id id, QObject *obj = 0);
+    void deleteInterface(QAccessible::Id id, QObject *obj = nullptr);
 
 #ifdef Q_OS_MAC
     QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *elementForId(QAccessible::Id axid) const;

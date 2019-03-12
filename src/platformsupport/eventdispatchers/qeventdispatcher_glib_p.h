@@ -64,7 +64,7 @@ class QPAEventDispatcherGlib : public QEventDispatcherGlib
     Q_DECLARE_PRIVATE(QPAEventDispatcherGlib)
 
 public:
-    explicit QPAEventDispatcherGlib(QObject *parent = 0);
+    explicit QPAEventDispatcherGlib(QObject *parent = nullptr);
     ~QPAEventDispatcherGlib();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
@@ -77,7 +77,7 @@ class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
 {
     Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
 public:
-    QPAEventDispatcherGlibPrivate(GMainContext *context = 0);
+    QPAEventDispatcherGlibPrivate(GMainContext *context = nullptr);
     GUserEventSource *userEventSource;
 };
 

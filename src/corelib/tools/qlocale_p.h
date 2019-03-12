@@ -249,7 +249,7 @@ public:
         if (qIsInf(d))
             return float(d);
         if (std::fabs(d) > std::numeric_limits<float>::max()) {
-            if (ok != 0)
+            if (ok != nullptr)
                 *ok = false;
             const float huge = std::numeric_limits<float>::infinity();
             return d < 0 ? -huge : huge;

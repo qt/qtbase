@@ -67,7 +67,7 @@ class Q_OPENGL_EXPORT QGraphicsShaderEffect : public QGraphicsEffect
 {
     Q_OBJECT
 public:
-    QGraphicsShaderEffect(QObject *parent = 0);
+    QGraphicsShaderEffect(QObject *parent = nullptr);
     virtual ~QGraphicsShaderEffect();
 
     QByteArray pixelShaderFragment() const;

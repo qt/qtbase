@@ -66,8 +66,8 @@ class Q_CORE_EXPORT QEventDispatcherGlib : public QAbstractEventDispatcher
     Q_DECLARE_PRIVATE(QEventDispatcherGlib)
 
 public:
-    explicit QEventDispatcherGlib(QObject *parent = 0);
-    explicit QEventDispatcherGlib(GMainContext *context, QObject *parent = 0);
+    explicit QEventDispatcherGlib(QObject *parent = nullptr);
+    explicit QEventDispatcherGlib(GMainContext *context, QObject *parent = nullptr);
     ~QEventDispatcherGlib();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
@@ -102,7 +102,7 @@ class Q_CORE_EXPORT QEventDispatcherGlibPrivate : public QAbstractEventDispatche
 {
 
 public:
-    QEventDispatcherGlibPrivate(GMainContext *context = 0);
+    QEventDispatcherGlibPrivate(GMainContext *context = nullptr);
     GMainContext *mainContext;
     GPostEventSource *postEventSource;
     GSocketNotifierSource *socketNotifierSource;

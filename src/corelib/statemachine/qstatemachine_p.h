@@ -108,7 +108,7 @@ public:
     ~QStateMachinePrivate();
 
     static QStateMachinePrivate *get(QStateMachine *q)
-    { return q ? q->d_func() : 0; }
+    { return q ? q->d_func() : nullptr; }
 
     QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
     QState *findLCCA(const QList<QAbstractState*> &states) const;
@@ -313,7 +313,7 @@ public:
         DelayedEvent(QEvent *e, int tid)
             : event(e), timerId(tid) {}
         DelayedEvent()
-            : event(0), timerId(0) {}
+            : event(nullptr), timerId(0) {}
     };
     QHash<int, DelayedEvent> delayedEvents;
     QHash<int, int> timerIdToDelayedEventId;

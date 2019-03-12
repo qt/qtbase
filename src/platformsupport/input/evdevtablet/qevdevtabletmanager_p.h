@@ -63,7 +63,7 @@ class QEvdevTabletHandlerThread;
 class QEvdevTabletManager : public QObject
 {
 public:
-    QEvdevTabletManager(const QString &key, const QString &spec, QObject *parent = 0);
+    QEvdevTabletManager(const QString &key, const QString &spec, QObject *parent = nullptr);
     ~QEvdevTabletManager();
 
     void addDevice(const QString &deviceNode);

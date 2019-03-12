@@ -76,7 +76,7 @@ class AtSpiAdaptor :public QDBusVirtualObject
     Q_OBJECT
 
 public:
-    explicit AtSpiAdaptor(DBusConnection *connection, QObject *parent = 0);
+    explicit AtSpiAdaptor(DBusConnection *connection, QObject *parent = nullptr);
     ~AtSpiAdaptor();
 
     void registerApplication();

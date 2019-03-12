@@ -138,7 +138,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
             { "struct ", 7 },
             { "class ", 6 },
             { "enum ", 5 },
-            { 0, 0 }
+            { nullptr, 0 }
         };
         int i = 0;
         do {
@@ -146,7 +146,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
                 t += optional[i].len;
                 break;
             }
-        } while (optional[++i].keyword != 0);
+        } while (optional[++i].keyword != nullptr);
     }
 
     bool star = false;

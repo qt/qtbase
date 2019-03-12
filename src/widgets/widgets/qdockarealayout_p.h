@@ -89,7 +89,7 @@ struct QDockAreaLayoutItem
 {
     enum ItemFlags { NoFlags = 0, GapItem = 1, KeepSize = 2 };
 
-    explicit QDockAreaLayoutItem(QLayoutItem *_widgetItem = 0);
+    explicit QDockAreaLayoutItem(QLayoutItem *_widgetItem = nullptr);
     explicit QDockAreaLayoutItem(QDockAreaLayoutInfo *_subinfo);
     explicit QDockAreaLayoutItem(QPlaceHolderItem *_placeHolderItem);
     QDockAreaLayoutItem(const QDockAreaLayoutItem &other);

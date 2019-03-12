@@ -135,7 +135,7 @@ public:
 #if QT_CONFIG(timezone)
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
                                         DaylightStatus hint = UnknownDaylightTime,
-                                        QDate *localDate = 0, QTime *localTime = 0);
+                                        QDate *localDate = nullptr, QTime *localTime = nullptr);
 
     // Inlined for its one caller in qdatetime.cpp
     inline void setUtcOffsetByTZ(qint64 atMSecsSinceEpoch);

@@ -65,7 +65,7 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
         return --_q_value != 0;
     }
 
-    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue = nullptr) Q_DECL_NOTHROW
     {
         if (currentValue)
             *currentValue = _q_value;

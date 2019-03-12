@@ -86,7 +86,7 @@ public:
     Q_ENUM(QDeviceType)
     Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)
 
-    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = 0);
+    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = nullptr);
 
     virtual QStringList scanConnectedDevices() = 0;
 

@@ -166,7 +166,7 @@ public:
     bool needsSync() const;
 
     void postSyncWindowRequest();
-    void clearSyncWindowRequest() { m_pendingSyncRequest = 0; }
+    void clearSyncWindowRequest() { m_pendingSyncRequest = nullptr; }
 
     QXcbScreen *xcbScreen() const;
 

@@ -194,7 +194,7 @@ public:
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat,
                                            const QTransform &t = QTransform(),
-                                           QPoint *offset = 0);
+                                           QPoint *offset = nullptr);
     virtual void unlockAlphaMapForGlyph();
     virtual bool hasInternalCaching() const { return false; }
 
@@ -224,7 +224,7 @@ public:
     virtual qreal minLeftBearing() const;
     virtual qreal minRightBearing() const;
 
-    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
+    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = nullptr, qreal *rightBearing = nullptr);
 
     inline bool canRender(uint ucs4) const { return glyphIndex(ucs4) != 0; }
     virtual bool canRender(const QChar *str, int len) const;
@@ -234,7 +234,7 @@ public:
     virtual int glyphCount() const;
     virtual int glyphMargin(GlyphFormat format) { return format == Format_A32 ? 2 : 0; }
 
-    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
+    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return nullptr; }
 
     virtual Qt::HANDLE handle() const;
 
@@ -458,7 +458,7 @@ public:
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const override;
     virtual void doKerning(QGlyphLayout *, ShaperFlags) const override;
     virtual void addOutlineToPath(qreal, qreal, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags flags) override;
-    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0) override;
+    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = nullptr, qreal *rightBearing = nullptr) override;
 
     virtual QFixed ascent() const override;
     virtual QFixed capHeight() const override;

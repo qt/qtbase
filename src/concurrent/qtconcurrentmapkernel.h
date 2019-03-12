@@ -74,7 +74,7 @@ public:
         Iterator it = sequenceBeginIterator;
         std::advance(it, beginIndex);
         for (int i = beginIndex; i < endIndex; ++i) {
-            runIteration(it, i, 0);
+            runIteration(it, i, nullptr);
             std::advance(it, 1);
         }
 

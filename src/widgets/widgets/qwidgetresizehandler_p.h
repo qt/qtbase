@@ -73,7 +73,7 @@ public:
         Any        = Move|Resize
     };
 
-    explicit QWidgetResizeHandler(QWidget *parent, QWidget *cw = 0);
+    explicit QWidgetResizeHandler(QWidget *parent, QWidget *cw = nullptr);
     void setActive(bool b) { setActive(Any, b); }
     void setActive(Action ac, bool b);
     bool isActive() const { return isActive(Any); }

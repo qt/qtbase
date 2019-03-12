@@ -203,7 +203,7 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *);
 class QGLTemporaryContextPrivate;
 class QGLTemporaryContext {
 public:
-    explicit QGLTemporaryContext(bool directRendering = true, QWidget *parent = 0);
+    explicit QGLTemporaryContext(bool directRendering = true, QWidget *parent = nullptr);
     ~QGLTemporaryContext();
 
 private:
@@ -302,7 +302,7 @@ class Q_OPENGL_EXPORT QGLShareContextScope
 {
 public:
     QGLShareContextScope(const QGLContext *ctx)
-        : m_oldContext(0)
+        : m_oldContext(nullptr)
     {
         QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
         if (currentContext != ctx && !QGLContext::areSharing(ctx, currentContext)) {
@@ -367,7 +367,7 @@ Q_SIGNALS:
 
 class QGLTexture {
 public:
-    explicit QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
+    explicit QGLTexture(QGLContext *ctx = nullptr, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
                QGLContext::BindOptions opt = QGLContext::DefaultBindOption)
         : context(ctx),
           id(tx_id),
@@ -378,7 +378,7 @@ public:
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
-            QPlatformPixmap *boundPixmap = 0;
+            QPlatformPixmap *boundPixmap = nullptr;
             context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
      }
@@ -392,9 +392,9 @@ public:
     bool canBindCompressedTexture
         (const char *buf, int len, const char *format, bool *hasAlpha);
     QSize bindCompressedTexture
-        (const QString& fileName, const char *format = 0);
+        (const QString& fileName, const char *format = nullptr);
     QSize bindCompressedTexture
-        (const char *buf, int len, const char *format = 0);
+        (const char *buf, int len, const char *format = nullptr);
     QSize bindCompressedTextureDDS(const char *buf, int len);
     QSize bindCompressedTexturePVR(const char *buf, int len);
 };

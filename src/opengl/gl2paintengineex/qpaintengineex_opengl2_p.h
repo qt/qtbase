@@ -175,9 +175,9 @@ public:
 
     QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
             q(q_ptr),
-            shaderManager(0),
+            shaderManager(nullptr),
             width(0), height(0),
-            ctx(0),
+            ctx(nullptr),
             useSystemClip(true),
             elementIndicesVBOId(0),
             opacityArray(0),

@@ -266,7 +266,7 @@ public:
         if (keep(*it))
             this->reportResult(&(*it), index);
         else
-            this->reportResult(0, index);
+            this->reportResult(nullptr, index);
         return false;
     }
 

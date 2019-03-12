@@ -122,7 +122,7 @@ template <typename Layout>
 QCursor QMainWindowLayoutSeparatorHelper<Layout>::separatorCursor(const QList<int> &path)
 {
     const QDockAreaLayoutInfo *info = layout()->dockAreaLayoutInfo()->info(path);
-    Q_ASSERT(info != 0);
+    Q_ASSERT(info != nullptr);
     if (path.size() == 1) { // is this the "top-level" separator which separates a dock area
                             // from the central widget?
         switch (path.first()) {
@@ -334,7 +334,7 @@ class QDockWidgetGroupWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit QDockWidgetGroupWindow(QWidget* parent = 0, Qt::WindowFlags f = 0)
+    explicit QDockWidgetGroupWindow(QWidget* parent = nullptr, Qt::WindowFlags f = nullptr)
         : QWidget(parent, f) {}
     QDockAreaLayoutInfo *layoutInfo() const;
     const QDockAreaLayoutInfo *tabLayoutInfo() const;
@@ -430,7 +430,7 @@ public:
     bool isValid() const;
 
     QLayoutItem *plug(const QList<int> &path);
-    QLayoutItem *unplug(const QList<int> &path, QMainWindowLayoutState *savedState = 0);
+    QLayoutItem *unplug(const QList<int> &path, QMainWindowLayoutState *savedState = nullptr);
 
     void saveState(QDataStream &stream) const;
     bool checkFormat(QDataStream &stream);

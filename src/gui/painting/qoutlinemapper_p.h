@@ -180,13 +180,13 @@ public:
     QT_FT_Outline *outline() {
         if (m_valid)
             return &m_outline;
-        return 0;
+        return nullptr;
     }
 
     QT_FT_Outline *convertPath(const QPainterPath &path);
     QT_FT_Outline *convertPath(const QVectorPath &path);
 
-    inline QPainterPath::ElementType *elementTypes() const { return m_element_types.size() == 0 ? 0 : m_element_types.data(); }
+    inline QPainterPath::ElementType *elementTypes() const { return m_element_types.size() == 0 ? nullptr : m_element_types.data(); }
 
 public:
     QDataBuffer<QPainterPath::ElementType> m_element_types;

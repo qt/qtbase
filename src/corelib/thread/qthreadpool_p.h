@@ -162,7 +162,7 @@ public:
     void tryToStartMoreThreads();
     bool tooManyThreadsActive() const;
 
-    void startThread(QRunnable *runnable = 0);
+    void startThread(QRunnable *runnable = nullptr);
     void reset();
     bool waitForDone(int msecs);
     bool waitForDone(const QDeadlineTimer &timer);

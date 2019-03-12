@@ -168,7 +168,7 @@ public:
         fillRule(Qt::OddEvenFill),
         dirtyBounds(false),
         dirtyControlBounds(false),
-        pathConverter(0)
+        pathConverter(nullptr)
     {
         require_moveTo = false;
         convex = false;
@@ -181,7 +181,7 @@ public:
         dirtyBounds(other.dirtyBounds),
         dirtyControlBounds(other.dirtyControlBounds),
         convex(other.convex),
-        pathConverter(0)
+        pathConverter(nullptr)
     {
         require_moveTo = false;
         elements = other.elements;

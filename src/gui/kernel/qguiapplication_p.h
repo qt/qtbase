@@ -115,7 +115,7 @@ public:
         if (QCoreApplication::instance())
             return QCoreApplication::instance()->d_func()->threadData->eventDispatcher.load();
         else
-            return 0;
+            return nullptr;
     }
 
     static void processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e);
@@ -205,7 +205,7 @@ public:
     static void showModalWindow(QWindow *window);
     static void hideModalWindow(QWindow *window);
     static void updateBlockedStatus(QWindow *window);
-    virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
+    virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const;
     virtual bool popupActive() { return false; }
 
     static ulong mousePressTime;

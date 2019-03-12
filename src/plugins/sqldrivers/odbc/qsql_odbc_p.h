@@ -89,8 +89,8 @@ class Q_EXPORT_SQLDRIVER_ODBC QODBCDriver : public QSqlDriver
     friend class QODBCResultPrivate;
 
 public:
-    explicit QODBCDriver(QObject *parent=0);
-    QODBCDriver(SQLHANDLE env, SQLHANDLE con, QObject * parent=0);
+    explicit QODBCDriver(QObject *parent=nullptr);
+    QODBCDriver(SQLHANDLE env, SQLHANDLE con, QObject * parent=nullptr);
     virtual ~QODBCDriver();
     bool hasFeature(DriverFeature f) const override;
     void close() override;

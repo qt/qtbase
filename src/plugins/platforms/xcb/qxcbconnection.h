@@ -108,7 +108,7 @@ public:
     virtual void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource = Qt::MouseEventNotSynthesized) {}
     virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
 #endif
-    virtual QXcbWindow *toWindow() { return 0; }
+    virtual QXcbWindow *toWindow() { return nullptr; }
 };
 
 typedef QHash<xcb_window_t, QXcbWindowEventListener *> WindowMapper;
@@ -364,7 +364,7 @@ private:
 
     WindowMapper m_mapper;
 
-    Qt::MouseButtons m_buttonState = 0;
+    Qt::MouseButtons m_buttonState = nullptr;
     Qt::MouseButton m_button = Qt::NoButton;
 
     QXcbWindow *m_focusWindow = nullptr;

@@ -71,11 +71,11 @@ public:
     void leaveTestFunction() override;
 
     void addIncident(IncidentTypes type, const char *description,
-                     const char *file = 0, int line = 0) override;
+                     const char *file = nullptr, int line = 0) override;
     void addBenchmarkResult(const QBenchmarkResult &result) override;
 
     void addMessage(MessageTypes type, const QString &message,
-                    const char *file = 0, int line = 0) override;
+                    const char *file = nullptr, int line = 0) override;
 
     static int xmlCdata(QTestCharBuffer *dest, char const* src);
     static int xmlQuote(QTestCharBuffer *dest, char const* src);

@@ -156,7 +156,7 @@ public:
     {
         Q_STATIC_ASSERT_X(Index >= 0 && Index < Count, "Index out of bounds");
         typedef typename Select<Index>::Type ResultType;
-        return qdbus_cast<ResultType>(argumentAt(Index), 0);
+        return qdbus_cast<ResultType>(argumentAt(Index), nullptr);
     }
 #endif
 

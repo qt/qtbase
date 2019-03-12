@@ -71,7 +71,7 @@ class QDBusArgumentPrivate
 {
 public:
     inline QDBusArgumentPrivate(int flags = 0)
-        : message(0), ref(1), capabilities(flags)
+        : message(nullptr), ref(1), capabilities(flags)
     { }
     virtual ~QDBusArgumentPrivate();
 
@@ -104,7 +104,7 @@ public:
 class QDBusMarshaller: public QDBusArgumentPrivate
 {
 public:
-    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags), parent(0), ba(0), closeCode(0), ok(true), skipSignature(false)
+    QDBusMarshaller(int flags) : QDBusArgumentPrivate(flags), parent(nullptr), ba(nullptr), closeCode(0), ok(true), skipSignature(false)
     { direction = Marshalling; }
     ~QDBusMarshaller();
 
@@ -161,7 +161,7 @@ private:
 class QDBusDemarshaller: public QDBusArgumentPrivate
 {
 public:
-    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags), parent(0)
+    inline QDBusDemarshaller(int flags) : QDBusArgumentPrivate(flags), parent(nullptr)
     { direction = Demarshalling; }
     ~QDBusDemarshaller();
 

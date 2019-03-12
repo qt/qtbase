@@ -85,7 +85,7 @@ class Q_AUTOTEST_EXPORT QLineEditIconButton : public QToolButton
     Q_OBJECT
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
 public:
-    explicit QLineEditIconButton(QWidget *parent =  0);
+    explicit QLineEditIconButton(QWidget *parent =  nullptr);
 
     qreal opacity() const { return m_opacity; }
     void setOpacity(qreal value);
@@ -134,7 +134,7 @@ public:
     };
 
     struct SideWidgetEntry {
-        explicit SideWidgetEntry(QWidget *w = 0, QAction *a = 0, int _flags = 0) : widget(w), action(a), flags(_flags) {}
+        explicit SideWidgetEntry(QWidget *w = nullptr, QAction *a = nullptr, int _flags = 0) : widget(w), action(a), flags(_flags) {}
 
         QWidget *widget;
         QAction *action;

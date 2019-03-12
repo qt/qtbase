@@ -266,7 +266,7 @@ public:
 
     // QFontEngine cache
     struct Engine {
-        Engine() : data(0), timestamp(0), hits(0) { }
+        Engine() : data(nullptr), timestamp(0), hits(0) { }
         Engine(QFontEngine *d) : data(d), timestamp(0), hits(0) { }
 
         QFontEngine *data;

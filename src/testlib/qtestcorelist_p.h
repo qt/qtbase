@@ -73,8 +73,8 @@ class QTestCoreList
 
 template <class T>
 QTestCoreList<T>::QTestCoreList()
-    : next(0)
-    , prev(0)
+    : next(nullptr)
+    , prev(nullptr)
 {
 }
 
@@ -82,12 +82,12 @@ template <class T>
 QTestCoreList<T>::~QTestCoreList()
 {
     if (prev) {
-        prev->next = 0;
+        prev->next = nullptr;
     }
     delete prev;
 
     if (next) {
-        next->prev = 0;
+        next->prev = nullptr;
     }
     delete next;
 }
