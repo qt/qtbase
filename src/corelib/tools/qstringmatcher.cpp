@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -175,13 +176,26 @@ QStringMatcher::QStringMatcher(const QString &pattern, Qt::CaseSensitivity cs)
     by \a uc with the given \a length and case sensitivity specified by \a cs.
 */
 QStringMatcher::QStringMatcher(const QChar *uc, int len, Qt::CaseSensitivity cs)
-    : d_ptr(0), q_cs(cs)
+    : QStringMatcher(QStringView(uc, len), cs)
 {
-    p.uc = uc;
-    p.len = len;
-    bm_init_skiptable((const ushort *)p.uc, len, p.q_skiptable, cs);
 }
 
+/*!
+    \fn QStringMatcher::QStringMatcher(QStringView str, Qt::CaseSensitivity cs)
+    \since 5.14
+
+    Constructs a string matcher that will search for \a pattern, with
+    case sensitivity \a cs.
+
+    Call indexIn() to perform a search.
+*/
+QStringMatcher::QStringMatcher(QStringView str, Qt::CaseSensitivity cs)
+    : d_ptr(nullptr), q_cs(cs)
+{
+    p.uc = str.data();
+    p.len = int(str.size());
+    bm_init_skiptable((const ushort *)p.uc, p.len, p.q_skiptable, cs);
+}
 /*!
     Copies the \a other string matcher to this string matcher.
 */
@@ -267,11 +281,7 @@ void QStringMatcher::setCaseSensitivity(Qt::CaseSensitivity cs)
 */
 int QStringMatcher::indexIn(const QString &str, int from) const
 {
-    if (from < 0)
-        from = 0;
-    return bm_find((const ushort *)str.unicode(), str.size(), from,
-                   (const ushort *)p.uc, p.len,
-                   p.q_skiptable, q_cs);
+    return int(indexIn(QStringView(str), from));
 }
 
 /*!
@@ -288,9 +298,25 @@ int QStringMatcher::indexIn(const QString &str, int from) const
 */
 int QStringMatcher::indexIn(const QChar *str, int length, int from) const
 {
+    return int(indexIn(QStringView(str, length), from));
+}
+
+/*!
+    \since 5.14
+
+    Searches the string \a str from character position \a from
+    (default 0, i.e. from the first character), for the string
+    pattern() that was set in the constructor or in the most recent
+    call to setPattern(). Returns the position where the pattern()
+    matched in \a str, or -1 if no match was found.
+
+    \sa setPattern(), setCaseSensitivity()
+*/
+qsizetype QStringMatcher::indexIn(QStringView str, qsizetype from) const
+{
     if (from < 0)
         from = 0;
-    return bm_find((const ushort *)str, length, from,
+    return bm_find((const ushort *)str.data(), str.size(), from,
                    (const ushort *)p.uc, p.len,
                    p.q_skiptable, q_cs);
 }

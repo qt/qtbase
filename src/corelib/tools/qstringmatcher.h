@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,6 +42,7 @@
 #define QSTRINGMATCHER_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qstringview.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +57,8 @@ public:
                    Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QStringMatcher(const QChar *uc, int len,
                    Qt::CaseSensitivity cs = Qt::CaseSensitive);
+    QStringMatcher(QStringView pattern,
+                   Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QStringMatcher(const QStringMatcher &other);
     ~QStringMatcher();
 
@@ -65,6 +69,7 @@ public:
 
     int indexIn(const QString &str, int from = 0) const;
     int indexIn(const QChar *str, int length, int from = 0) const;
+    qsizetype indexIn(QStringView str, qsizetype from = 0) const;
     QString pattern() const;
     inline Qt::CaseSensitivity caseSensitivity() const { return q_cs; }
 

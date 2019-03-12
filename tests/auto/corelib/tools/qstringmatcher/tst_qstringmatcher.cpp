@@ -100,6 +100,11 @@ void tst_QStringMatcher::indexIn()
     matcher.setPattern(needle);
 
     QCOMPARE(matcher.indexIn(haystack, from), indexIn);
+
+    const auto needleSV = QStringView(needle);
+    QStringMatcher matcherSV(needleSV);
+
+    QCOMPARE(matcherSV.indexIn(QStringView(haystack), from), indexIn);
 }
 
 void tst_QStringMatcher::setCaseSensitivity_data()
@@ -128,6 +133,7 @@ void tst_QStringMatcher::setCaseSensitivity()
     matcher.setCaseSensitivity(static_cast<Qt::CaseSensitivity> (cs));
 
     QCOMPARE(matcher.indexIn(haystack, from), indexIn);
+    QCOMPARE(matcher.indexIn(QStringView(haystack), from), indexIn);
 }
 
 void tst_QStringMatcher::assignOperator()
