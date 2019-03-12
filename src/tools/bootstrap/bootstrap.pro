@@ -91,6 +91,7 @@ SOURCES += \
            ../../corelib/tools/qstringbuilder.cpp \
            ../../corelib/tools/qstring_compat.cpp \
            ../../corelib/tools/qstringlist.cpp \
+           ../../corelib/tools/qstringview.cpp \
            ../../corelib/tools/qversionnumber.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
            ../../xml/dom/qdom.cpp \
