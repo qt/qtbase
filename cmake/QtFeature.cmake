@@ -413,17 +413,16 @@ function(qt_config_compile_test name)
 endfunction()
 
 function(qt_config_compile_test_x86simd extension label)
-    string(TOUPPER ${extension} extension_uppercase)
     if (DEFINED TEST_X86SIMD_${extension})
         return()
     endif()
 
-    try_compile(TEST_X86SIMD_${extension} "${CMAKE_CURRENT_BINARY_DIR}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd/main.cpp"
-        COMPILE_DEFINITIONS -DQT_COMPILER_SUPPORTS_${extension_uppercase}
-        OUTPUT_VARIABLE foo
-    )
-    set(TEST_subarch_${extension} "${TEST_X86SIMD_${extension}}" CACHE INTERNAL "${label}" )
+    try_compile("TEST_X86SIMD_${extension}"
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/x86_simd_${extension}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd"
+        x86_simd
+        CMAKE_FLAGS "-DSIMD:string=${extension}")
+    set(TEST_subarch_${extension} "${TEST_X86SIMD_${extension}}" CACHE INTERNAL "${label}")
 endfunction()
 
 function(qt_make_features_available target)
