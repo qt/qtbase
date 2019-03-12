@@ -829,10 +829,8 @@ def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
 
 
 def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
-                          indent: int = 0, known_libraries=set()) \
-        -> typing.Set[str]:
+                          indent: int = 0, known_libraries=set()):
     ind = spaces(indent)
-    scope.reset_visited_keys()
 
     # mark RESOURCES as visited:
     scope.get('RESOURCES', '')
@@ -912,25 +910,28 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         for mo in moc_options:
             cm_fh.write('{}        "{}"\n'.format(ind, mo))
 
-    return set(scope.keys) - scope.visited_keys
-
 
 def is_simple_condition(condition: str) -> bool:
     return ' ' not in condition \
         or (condition.startswith('NOT ') and ' ' not in condition[4:])
 
 
-def write_ignored_keys(scope: Scope, ignored_keys, indent) -> str:
+def write_ignored_keys(scope: Scope, indent: str) -> str:
     result = ''
+    ignored_keys = scope.keys - scope.visited_keys
     for k in sorted(ignored_keys):
         if k == '_INCLUDED' or k == 'TARGET' or k == 'QMAKE_DOCS' or k == 'QT_SOURCE_TREE' \
-                or k == 'QT_BUILD_TREE':
+                or k == 'QT_BUILD_TREE' or k == 'TRACEPOINT_PROVIDER':
             # All these keys are actually reported already
             continue
         values = scope.get(k)
         value_string = '<EMPTY>' if not values \
             else '"' + '" "'.join(scope.get(k)) + '"'
         result += '{}# {} = {}\n'.format(indent, k, value_string)
+
+    if result:
+        result = '\n#### Keys ignored in scope {}:\n{}'.format(scope, result)
+
     return result
 
 
@@ -1152,29 +1153,18 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
 
 def write_extend_target(cm_fh: typing.IO[str], target: str,
                         scope: Scope, indent: int = 0):
+    ind = spaces(indent)
     extend_qt_io_string = io.StringIO()
-    ignored_keys = write_sources_section(extend_qt_io_string, scope)
+    write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
 
-    ignored_keys_report = write_ignored_keys(scope, ignored_keys,
-                                             spaces(indent + 1))
-    if extend_qt_string and ignored_keys_report:
-        ignored_keys_report = '\n' + ignored_keys_report
-
     extend_scope = '\n{}extend_target({} CONDITION {}\n' \
-                   '{}{})\n'.format(spaces(indent), target,
+                   '{}{})\n'.format(ind, target,
                                     map_to_cmake_condition(scope.total_condition),
-                                    extend_qt_string, ignored_keys_report)
+                                    extend_qt_string, ind)
 
     if not extend_qt_string:
-        if ignored_keys_report:
-            # Comment out the generated extend_target call because there
-            # no sources were found, but keep it commented for
-            # informational purposes.
-            extend_scope = ''.join(['#' + line for line in
-                                    extend_scope.splitlines(keepends=True)])
-        else:
-            extend_scope = ''  # Nothing to report, so don't!
+        extend_scope = ''  # Nothing to report, so don't!
 
     cm_fh.write(extend_scope)
 
@@ -1249,6 +1239,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     assert len(scopes)
     assert scopes[0].total_condition == 'ON'
 
+    scopes[0].reset_visited_keys()
+
     # Now write out the scopes:
     write_header(cm_fh, name, typename, indent=indent)
 
@@ -1256,11 +1248,7 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     for extra_line in extra_lines:
         cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
 
-    ignored_keys = write_sources_section(cm_fh, scopes[0], indent=indent, **kwargs)
-    ignored_keys_report = write_ignored_keys(scopes[0], ignored_keys,
-                                             spaces(indent + 1))
-    if ignored_keys_report:
-        cm_fh.write(ignored_keys_report)
+    write_sources_section(cm_fh, scopes[0], indent=indent, **kwargs)
 
     # Footer:
     cm_fh.write('{})\n'.format(spaces(indent)))
@@ -1269,6 +1257,11 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
     write_simd_part(cm_fh, name, scope, indent)
 
+    ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
+    if ignored_keys_report:
+        cm_fh.write(ignored_keys_report)
+
+
     # Scopes:
     if len(scopes) == 1:
         return
@@ -1276,7 +1269,11 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     write_scope_header(cm_fh, indent=indent)
 
     for c in scopes[1:]:
+        c.reset_visited_keys()
         write_extend_target(cm_fh, name, c, indent=indent)
+        ignored_keys_report = write_ignored_keys(c, spaces(indent))
+        if ignored_keys_report:
+            cm_fh.write(ignored_keys_report)
 
 
 def write_module(cm_fh: typing.IO[str], scope: Scope, *,
