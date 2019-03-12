@@ -67,7 +67,9 @@ static QString targetName( BuildType buildMode, const QString& target, const QSt
         break;
     case Dll: // dll
         targetName.prepend("lib");
-        targetName.append("." + version + ".dylib");
+        if (!version.isEmpty())
+            targetName.append('.' + version);
+        targetName.append(".dylib");
         break;
     case Lib: // lib
         targetName.prepend("lib");
