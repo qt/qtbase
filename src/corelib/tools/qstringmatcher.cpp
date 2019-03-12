@@ -42,43 +42,43 @@
 
 QT_BEGIN_NAMESPACE
 
-static void bm_init_skiptable(const ushort *uc, int len, uchar *skiptable, Qt::CaseSensitivity cs)
+static void bm_init_skiptable(const ushort *uc, qsizetype len, uchar *skiptable, Qt::CaseSensitivity cs)
 {
-    int l = qMin(len, 255);
-    memset(skiptable, l, 256*sizeof(uchar));
+    int l = int(qMin(len, qsizetype(255)));
+    memset(skiptable, l, 256 * sizeof(uchar));
     uc += len - l;
     if (cs == Qt::CaseSensitive) {
         while (l--) {
             skiptable[*uc & 0xff] = l;
-            uc++;
+            ++uc;
         }
     } else {
         const ushort *start = uc;
         while (l--) {
             skiptable[foldCase(uc, start) & 0xff] = l;
-            uc++;
+            ++uc;
         }
     }
 }
 
-static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc, uint pl,
+static inline qsizetype bm_find(const ushort *uc, qsizetype l, qsizetype index, const ushort *puc, qsizetype pl,
                           const uchar *skiptable, Qt::CaseSensitivity cs)
 {
     if (pl == 0)
-        return index > (int)l ? -1 : index;
-    const uint pl_minus_one = pl - 1;
+        return index > l ? -1 : index;
+    const qsizetype pl_minus_one = pl - 1;
 
     const ushort *current = uc + index + pl_minus_one;
     const ushort *end = uc + l;
     if (cs == Qt::CaseSensitive) {
         while (current < end) {
-            uint skip = skiptable[*current & 0xff];
+            qsizetype skip = skiptable[*current & 0xff];
             if (!skip) {
                 // possible match
                 while (skip < pl) {
                     if (*(current - skip) != puc[pl_minus_one-skip])
                         break;
-                    skip++;
+                    ++skip;
                 }
                 if (skip > pl_minus_one) // we have a match
                     return (current - uc) - pl_minus_one;
@@ -96,13 +96,13 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
         }
     } else {
         while (current < end) {
-            uint skip = skiptable[foldCase(current, uc) & 0xff];
+            qsizetype skip = skiptable[foldCase(current, uc) & 0xff];
             if (!skip) {
                 // possible match
                 while (skip < pl) {
                     if (foldCase(current - skip, uc) != foldCase(puc + pl_minus_one - skip, puc))
                         break;
-                    skip++;
+                    ++skip;
                 }
                 if (skip > pl_minus_one) // we have a match
                     return (current - uc) - pl_minus_one;
@@ -333,16 +333,16 @@ qsizetype QStringMatcher::indexIn(QStringView str, qsizetype from) const
     \internal
 */
 
-int qFindStringBoyerMoore(
-    const QChar *haystack, int haystackLen, int haystackOffset,
-    const QChar *needle, int needleLen, Qt::CaseSensitivity cs)
+qsizetype qFindStringBoyerMoore(
+    QStringView haystack, qsizetype haystackOffset,
+    QStringView needle, Qt::CaseSensitivity cs)
 {
     uchar skiptable[256];
-    bm_init_skiptable((const ushort *)needle, needleLen, skiptable, cs);
+    bm_init_skiptable((const ushort *)needle.data(), needle.size(), skiptable, cs);
     if (haystackOffset < 0)
         haystackOffset = 0;
-    return bm_find((const ushort *)haystack, haystackLen, haystackOffset,
-                   (const ushort *)needle, needleLen, skiptable, cs);
+    return bm_find((const ushort *)haystack.data(), haystack.size(), haystackOffset,
+                   (const ushort *)needle.data(), needle.size(), skiptable, cs);
 }
 
 QT_END_NAMESPACE

@@ -58,9 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-int qFindString(const QChar *haystack, int haystackLen, int from,
-    const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
-
 // error strings for the regexp parser
 #define RXERR_OK         QT_TRANSLATE_NOOP("QRegExp", "no error occurred")
 #define RXERR_DISABLED   QT_TRANSLATE_NOOP("QRegExp", "disabled feature used")
@@ -1423,7 +1420,8 @@ void QRegExpMatchState::match(const QChar *str0, int len0, int pos0,
 
 #ifndef QT_NO_REGEXP_OPTIM
     if (eng->trivial && !oneTest) {
-        pos = qFindString(str0, len0, pos0, eng->goodStr.unicode(), eng->goodStr.length(), eng->cs);
+        // ### Qt6: qsize
+        pos = int(QtPrivate::findString(QStringView(str0, len0), pos0, QStringView(eng->goodStr.unicode(), eng->goodStr.length()), eng->cs));
         matchLen = eng->goodStr.length();
         matched = (pos != -1);
     } else

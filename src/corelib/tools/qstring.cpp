@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -142,19 +143,11 @@ extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int leng
 #endif
 
 // internal
-int qFindString(const QChar *haystack, int haystackLen, int from,
-    const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
-int qFindStringBoyerMoore(const QChar *haystack, int haystackLen, int from,
-    const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
-static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar needle,
-                                   int from, Qt::CaseSensitivity cs);
-static inline int qt_string_count(const QChar *haystack, int haystackLen,
-                                  const QChar *needle, int needleLen,
-                                  Qt::CaseSensitivity cs);
-static inline int qt_string_count(const QChar *haystack, int haystackLen,
-                                  QChar needle, Qt::CaseSensitivity cs);
-static inline int qt_find_latin1_string(const QChar *hay, int size, QLatin1String needle,
-                                        int from, Qt::CaseSensitivity cs);
+qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs);
+static inline qsizetype qt_last_index_of(QStringView haystack, QChar needle, qsizetype from, Qt::CaseSensitivity cs);
+static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
+static inline qsizetype qt_string_count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
+
 static inline bool qt_starts_with(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
@@ -1283,42 +1276,9 @@ int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
     return qt_compare_strings(lhs, rhs, cs);
 }
 
-/*!
-    \internal
-
-    Returns the index position of the first occurrence of the
-    character \a ch in the string given by \a str and \a len,
-    searching forward from index
-    position \a from. Returns -1 if \a ch could not be found.
-*/
-static int findChar(const QChar *str, int len, QChar ch, int from,
-    Qt::CaseSensitivity cs)
-{
-    const ushort *s = (const ushort *)str;
-    ushort c = ch.unicode();
-    if (from < 0)
-        from = qMax(from + len, 0);
-    if (from < len) {
-        const ushort *n = s + from;
-        const ushort *e = s + len;
-        if (cs == Qt::CaseSensitive) {
-            n = QtPrivate::qustrchr(QStringView(n, e), c);
-            if (n != e)
-                return n - s;
-        } else {
-            c = foldCase(c);
-            --n;
-            while (++n != e)
-                if (foldCase(*n) == c)
-                    return  n - s;
-        }
-    }
-    return -1;
-}
-
 #define REHASH(a) \
-    if (sl_minus_1 < sizeof(uint) * CHAR_BIT)  \
-        hashHaystack -= uint(a) << sl_minus_1; \
+    if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)  \
+        hashHaystack -= std::size_t(a) << sl_minus_1; \
     hashHaystack <<= 1
 
 inline bool qIsUpper(char ch)
@@ -3735,7 +3695,8 @@ bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
 */
 int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    return qFindString(unicode(), length(), from, str.unicode(), str.length(), cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
 
 /*!
@@ -3759,85 +3720,8 @@ int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 
 int QString::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    return qt_find_latin1_string(unicode(), size(), str, from, cs);
-}
-
-int qFindString(
-    const QChar *haystack0, int haystackLen, int from,
-    const QChar *needle0, int needleLen, Qt::CaseSensitivity cs)
-{
-    const int l = haystackLen;
-    const int sl = needleLen;
-    if (from < 0)
-        from += l;
-    if (uint(sl + from) > (uint)l)
-        return -1;
-    if (!sl)
-        return from;
-    if (!l)
-        return -1;
-
-    if (sl == 1)
-        return findChar(haystack0, haystackLen, needle0[0], from, cs);
-
-    /*
-        We use the Boyer-Moore algorithm in cases where the overhead
-        for the skip table should pay off, otherwise we use a simple
-        hash function.
-    */
-    if (l > 500 && sl > 5)
-        return qFindStringBoyerMoore(haystack0, haystackLen, from,
-            needle0, needleLen, cs);
-
-    auto sv = [sl](const ushort *v) { return QStringView(v, sl); };
-    /*
-        We use some hashing for efficiency's sake. Instead of
-        comparing strings, we compare the hash value of str with that
-        of a part of this QString. Only if that matches, we call
-        qt_string_compare().
-    */
-    const ushort *needle = (const ushort *)needle0;
-    const ushort *haystack = (const ushort *)haystack0 + from;
-    const ushort *end = (const ushort *)haystack0 + (l-sl);
-    const uint sl_minus_1 = sl - 1;
-    uint hashNeedle = 0, hashHaystack = 0;
-    int idx;
-
-    if (cs == Qt::CaseSensitive) {
-        for (idx = 0; idx < sl; ++idx) {
-            hashNeedle = ((hashNeedle<<1) + needle[idx]);
-            hashHaystack = ((hashHaystack<<1) + haystack[idx]);
-        }
-        hashHaystack -= haystack[sl_minus_1];
-
-        while (haystack <= end) {
-            hashHaystack += haystack[sl_minus_1];
-            if (hashHaystack == hashNeedle
-                 && qt_compare_strings(sv(needle), sv(haystack), Qt::CaseSensitive) == 0)
-                return haystack - (const ushort *)haystack0;
-
-            REHASH(*haystack);
-            ++haystack;
-        }
-    } else {
-        const ushort *haystack_start = (const ushort *)haystack0;
-        for (idx = 0; idx < sl; ++idx) {
-            hashNeedle = (hashNeedle<<1) + foldCase(needle + idx, needle);
-            hashHaystack = (hashHaystack<<1) + foldCase(haystack + idx, haystack_start);
-        }
-        hashHaystack -= foldCase(haystack + sl_minus_1, haystack_start);
-
-        while (haystack <= end) {
-            hashHaystack += foldCase(haystack + sl_minus_1, haystack_start);
-            if (hashHaystack == hashNeedle
-                 && qt_compare_strings(sv(needle), sv(haystack), Qt::CaseInsensitive) == 0)
-                return haystack - (const ushort *)haystack0;
-
-            REHASH(foldCase(haystack, haystack_start));
-            ++haystack;
-        }
-    }
-    return -1;
+    // ### Qt6: qsize
+    return int(QtPrivate::findString(QStringView(unicode(), size()), from, str, cs));
 }
 
 /*!
@@ -3849,7 +3733,8 @@ int qFindString(
 */
 int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    return findChar(unicode(), length(), ch, from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findChar(QStringView(unicode(), length()), ch, from, cs));
 }
 
 /*!
@@ -3866,7 +3751,8 @@ int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    return qFindString(unicode(), length(), from, str.unicode(), str.length(), cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
 
 static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *needle, int sl, Qt::CaseSensitivity cs)
@@ -3989,7 +3875,8 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
 */
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    return qt_last_index_of(unicode(), size(), ch, from, cs);
+    // ### Qt6: qsize
+    return int(qt_last_index_of(QStringView(unicode(), size()), ch, from, cs));
 }
 
 /*!
@@ -4322,7 +4209,8 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
 int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 {
-    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+    // ### Qt6: qsize
+    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -4338,8 +4226,9 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 {
-    return qt_string_count(unicode(), size(), ch, cs);
-    }
+    // ### Qt6: qsize
+    return int(qt_string_count(QStringView(unicode(), size()), ch, cs));
+}
 
 /*!
     \since 4.8
@@ -4354,7 +4243,8 @@ int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 */
 int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
-    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+    // ### Qt6: qsize
+    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 
@@ -7782,10 +7672,10 @@ static ResultList splitString(const StringSource &source, const QChar *sep,
                               QString::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
 {
     ResultList list;
-    int start = 0;
-    int end;
-    int extra = 0;
-    while ((end = qFindString(source.constData(), source.size(), start + extra, sep, separatorSize, cs)) != -1) {
+    typename StringSource::size_type start = 0;
+    typename StringSource::size_type end;
+    typename StringSource::size_type extra = 0;
+    while ((end = QtPrivate::findString(QStringView(source.constData(), source.size()), start + extra, QStringView(sep, separatorSize), cs)) != -1) {
         if (start != end || behavior == QString::KeepEmptyParts)
             list.append(source.mid(start, end - start));
         start = end + separatorSize;
@@ -11158,7 +11048,8 @@ QStringRef QString::midRef(int position, int n) const
 */
 int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    return qFindString(unicode(), length(), from, str.unicode(), str.length(), cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
 
 /*!
@@ -11173,7 +11064,8 @@ int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) co
 */
 int QStringRef::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    return findChar(unicode(), length(), ch, from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findChar(QStringView(unicode(), length()), ch, from, cs));
 }
 
 /*!
@@ -11193,7 +11085,8 @@ int QStringRef::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QStringRef::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    return qt_find_latin1_string(unicode(), size(), str, from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findString(QStringView(unicode(), size()), from, str, cs));
 }
 
 /*!
@@ -11212,7 +11105,8 @@ int QStringRef::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) con
 */
 int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    return qFindString(unicode(), size(), from, str.unicode(), str.size(), cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::findString(QStringView(unicode(), size()), from, QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -11245,7 +11139,8 @@ int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs
 */
 int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    return qt_last_index_of(unicode(), size(), ch, from, cs);
+    // ### Qt6: qsize
+    return int(qt_last_index_of(QStringView(unicode(), size()), ch, from, cs));
 }
 
 template<typename T>
@@ -11321,7 +11216,8 @@ int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity
 */
 int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
 {
-    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+    // ### Qt6: qsize
+    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -11338,7 +11234,8 @@ int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
 */
 int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 {
-    return qt_string_count(unicode(), size(), ch, cs);
+    // ### Qt6: qsize
+    return int(qt_string_count(QStringView(unicode(), size()), ch, cs));
 }
 
 /*!
@@ -11355,7 +11252,8 @@ int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 */
 int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
-    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+    // ### Qt6: qsize
+    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -11592,16 +11490,16 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
     \sa indexOf(), count()
 */
 
-static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar needle,
-                                   int from, Qt::CaseSensitivity cs)
+static inline qsizetype qt_last_index_of(QStringView haystack, QChar needle,
+                                   qsizetype from, Qt::CaseSensitivity cs)
 {
-    ushort c = needle.unicode();
     if (from < 0)
-        from += haystackLen;
-    if (uint(from) >= uint(haystackLen))
+        from += haystack.size();
+    if (std::size_t(from) >= std::size_t(haystack.size()))
         return -1;
     if (from >= 0) {
-        const ushort *b = reinterpret_cast<const ushort*>(haystack);
+        ushort c = needle.unicode();
+        const ushort *b = reinterpret_cast<const ushort*>(haystack.data());
         const ushort *n = b + from;
         if (cs == Qt::CaseSensitive) {
             for (; n >= b; --n)
@@ -11619,30 +11517,28 @@ static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar
 
 }
 
-static inline int qt_string_count(const QChar *haystack, int haystackLen,
-                                  const QChar *needle, int needleLen,
-                                  Qt::CaseSensitivity cs)
+static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
 {
-    int num = 0;
-    int i = -1;
-    if (haystackLen > 500 && needleLen > 5) {
-        QStringMatcher matcher(needle, needleLen, cs);
-        while ((i = matcher.indexIn(haystack, haystackLen, i + 1)) != -1)
+    qsizetype num = 0;
+    qsizetype i = -1;
+    if (haystack.size() > 500 && needle.size() > 5) {
+        QStringMatcher matcher(needle, cs);
+        while ((i = matcher.indexIn(haystack, i + 1)) != -1)
             ++num;
     } else {
-        while ((i = qFindString(haystack, haystackLen, i + 1, needle, needleLen, cs)) != -1)
+        while ((i = QtPrivate::findString(haystack, i + 1, needle, cs)) != -1)
             ++num;
     }
     return num;
 }
 
-static inline int qt_string_count(const QChar *unicode, int size, QChar ch,
+static inline qsizetype qt_string_count(QStringView haystack, QChar ch,
                                   Qt::CaseSensitivity cs)
 {
     ushort c = ch.unicode();
-    int num = 0;
-    const ushort *b = reinterpret_cast<const ushort*>(unicode);
-    const ushort *i = b + size;
+    qsizetype num = 0;
+    const ushort *b = reinterpret_cast<const ushort*>(haystack.data());
+    const ushort *i = b + haystack.size();
     if (cs == Qt::CaseSensitive) {
         while (i != b)
             if (*--i == c)
@@ -11654,22 +11550,6 @@ static inline int qt_string_count(const QChar *unicode, int size, QChar ch,
                 ++num;
     }
     return num;
-}
-
-static inline int qt_find_latin1_string(const QChar *haystack, int size,
-                                        QLatin1String needle,
-                                        int from, Qt::CaseSensitivity cs)
-{
-    if (size < needle.size())
-        return -1;
-
-    const char *latin1 = needle.latin1();
-    int len = needle.size();
-    QVarLengthArray<ushort> s(len);
-    qt_from_latin1(s.data(), latin1, len);
-
-    return qFindString(haystack, size, from,
-                       reinterpret_cast<const QChar*>(s.constData()), len, cs);
 }
 
 template <typename Haystack, typename Needle>
@@ -11816,6 +11696,127 @@ bool QtPrivate::endsWith(QLatin1String haystack, QStringView needle, Qt::CaseSen
 bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_ends_with_impl(haystack, needle, cs);
+}
+
+/*!
+    \internal
+
+    Returns the index position of the first occurrence of the
+    character \a ch in the string given by \a str and \a len,
+    searching forward from index
+    position \a from. Returns -1 if \a ch could not be found.
+*/
+
+qsizetype QtPrivate::findChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    if (from < 0)
+        from = qMax(from + str.size(), qsizetype(0));
+    if (from < str.size()) {
+        const ushort *s = (const ushort *)str.data();
+        ushort c = ch.unicode();
+        const ushort *n = s + from;
+        const ushort *e = s + str.size();
+        if (cs == Qt::CaseSensitive) {
+            n = QtPrivate::qustrchr(QStringView(n, e), c);
+            if (n != e)
+                return n - s;
+        } else {
+            c = foldCase(c);
+            --n;
+            while (++n != e)
+                if (foldCase(*n) == c)
+                    return n - s;
+        }
+    }
+    return -1;
+}
+
+qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringView needle0, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    const qsizetype l = haystack0.size();
+    const qsizetype sl = needle0.size();
+    if (from < 0)
+        from += l;
+    if (std::size_t(sl + from) > std::size_t(l))
+        return -1;
+    if (!sl)
+        return from;
+    if (!l)
+        return -1;
+
+    if (sl == 1)
+        return QtPrivate::findChar(haystack0, needle0[0], from, cs);
+
+    /*
+        We use the Boyer-Moore algorithm in cases where the overhead
+        for the skip table should pay off, otherwise we use a simple
+        hash function.
+    */
+    if (l > 500 && sl > 5)
+        return qFindStringBoyerMoore(haystack0, from, needle0, cs);
+
+    auto sv = [sl](const ushort *v) { return QStringView(v, sl); };
+    /*
+        We use some hashing for efficiency's sake. Instead of
+        comparing strings, we compare the hash value of str with that
+        of a part of this QString. Only if that matches, we call
+        qt_string_compare().
+    */
+    const ushort *needle = (const ushort *)needle0.data();
+    const ushort *haystack = (const ushort *)(haystack0.data()) + from;
+    const ushort *end = (const ushort *)(haystack0.data()) + (l - sl);
+    const std::size_t sl_minus_1 = sl - 1;
+    std::size_t hashNeedle = 0, hashHaystack = 0;
+    qsizetype idx;
+
+    if (cs == Qt::CaseSensitive) {
+        for (idx = 0; idx < sl; ++idx) {
+            hashNeedle = ((hashNeedle<<1) + needle[idx]);
+            hashHaystack = ((hashHaystack<<1) + haystack[idx]);
+        }
+        hashHaystack -= haystack[sl_minus_1];
+
+        while (haystack <= end) {
+            hashHaystack += haystack[sl_minus_1];
+            if (hashHaystack == hashNeedle
+                 && qt_compare_strings(needle0, sv(haystack), Qt::CaseSensitive) == 0)
+                return haystack - (const ushort *)haystack0.data();
+
+            REHASH(*haystack);
+            ++haystack;
+        }
+    } else {
+        const ushort *haystack_start = (const ushort *)haystack0.data();
+        for (idx = 0; idx < sl; ++idx) {
+            hashNeedle = (hashNeedle<<1) + foldCase(needle + idx, needle);
+            hashHaystack = (hashHaystack<<1) + foldCase(haystack + idx, haystack_start);
+        }
+        hashHaystack -= foldCase(haystack + sl_minus_1, haystack_start);
+
+        while (haystack <= end) {
+            hashHaystack += foldCase(haystack + sl_minus_1, haystack_start);
+            if (hashHaystack == hashNeedle
+                 && qt_compare_strings(needle0, sv(haystack), Qt::CaseInsensitive) == 0)
+                return haystack - (const ushort *)haystack0.data();
+
+            REHASH(foldCase(haystack, haystack_start));
+            ++haystack;
+        }
+    }
+    return -1;
+}
+
+qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    if (haystack.size() < needle.size())
+        return -1;
+
+    const char *latin1 = needle.latin1();
+    const qsizetype len = needle.size();
+    QVarLengthArray<ushort> s(len);
+    qt_from_latin1(s.data(), latin1, len);
+
+    return QtPrivate::findString(haystack, from, QStringView(reinterpret_cast<const QChar*>(s.constData()), len), cs);
 }
 
 /*!
