@@ -448,7 +448,9 @@ defineTest(reloadSpec) {
             $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
             $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
 
-        _SAVED_CONFIG = $$CONFIG
+        saved_variables = CONFIG QMAKE_CXXFLAGS
+        for (name, saved_variables): \
+            _SAVED_$$name = $$eval($$name)
         load(spec_pre)
         # qdevice.pri gets written too late (and we can't write it early
         # enough, as it's populated in stages, with later ones depending
@@ -457,7 +459,8 @@ defineTest(reloadSpec) {
             eval($$l)
         include($$QMAKESPEC/qmake.conf)
         load(spec_post)
-        CONFIG += $$_SAVED_CONFIG
+        for (name, saved_variables): \
+            $$name += $$eval(_SAVED_$$name)
         load(default_pre)
 
         # ensure pristine environment for configuration. again.
