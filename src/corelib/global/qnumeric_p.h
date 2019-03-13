@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -85,9 +85,11 @@ namespace qnumeric_std_wrapper {
 Q_DECL_CONST_FUNCTION static inline bool math_h_isnan(double d) { using namespace std; return isnan(d); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isinf(double d) { using namespace std; return isinf(d); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isfinite(double d) { using namespace std; return isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline int math_h_fpclassify(double d) { using namespace std; return fpclassify(d); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isnan(float f) { using namespace std; return isnan(f); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isinf(float f) { using namespace std; return isinf(f); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isfinite(float f) { using namespace std; return isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline int math_h_fpclassify(float f) { using namespace std; return fpclassify(f); }
 }
 QT_END_NAMESPACE
 // These macros from math.h conflict with the real functions in the std namespace.
@@ -95,6 +97,7 @@ QT_END_NAMESPACE
 #    undef isnan
 #    undef isinf
 #    undef isfinite
+#    undef fpclassify
 #  endif // defined(isnan)
 #endif
 
@@ -106,16 +109,20 @@ namespace qnumeric_std_wrapper {
 Q_DECL_CONST_FUNCTION static inline bool isnan(double d) { return math_h_isnan(d); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(double d) { return math_h_isinf(d); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(double d) { return math_h_isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(double d) { return math_h_fpclassify(d); }
 Q_DECL_CONST_FUNCTION static inline bool isnan(float f) { return math_h_isnan(f); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(float f) { return math_h_isinf(f); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(float f) { return math_h_isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return math_h_fpclassify(f); }
 #else
 Q_DECL_CONST_FUNCTION static inline bool isnan(double d) { return std::isnan(d); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(double d) { return std::isinf(d); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(double d) { return std::isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(double d) { return std::fpclassify(d); }
 Q_DECL_CONST_FUNCTION static inline bool isnan(float f) { return std::isnan(f); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(float f) { return std::isinf(f); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(float f) { return std::isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return std::fpclassify(f); }
 #endif
 }
 
@@ -157,6 +164,11 @@ Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(double d)
     return qnumeric_std_wrapper::isfinite(d);
 }
 
+Q_DECL_CONST_FUNCTION static inline int qt_fpclassify(double d)
+{
+    return qnumeric_std_wrapper::fpclassify(d);
+}
+
 Q_DECL_CONST_FUNCTION static inline bool qt_is_inf(float f)
 {
     return qnumeric_std_wrapper::isinf(f);
@@ -170,6 +182,11 @@ Q_DECL_CONST_FUNCTION static inline bool qt_is_nan(float f)
 Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(float f)
 {
     return qnumeric_std_wrapper::isfinite(f);
+}
+
+Q_DECL_CONST_FUNCTION static inline int qt_fpclassify(float f)
+{
+    return qnumeric_std_wrapper::fpclassify(f);
 }
 
 #ifndef Q_CLANG_QDOC

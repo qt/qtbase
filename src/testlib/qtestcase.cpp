@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -2522,12 +2522,12 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
 template <typename T>
 static bool floatingCompare(const T &t1, const T &t2)
 {
-    switch (std::fpclassify(t1))
+    switch (qFpClassify(t1))
     {
     case FP_INFINITE:
-        return (t1 < 0) == (t2 < 0) && std::fpclassify(t2) == FP_INFINITE;
+        return (t1 < 0) == (t2 < 0) && qFpClassify(t2) == FP_INFINITE;
     case FP_NAN:
-        return std::fpclassify(t2) == FP_NAN;
+        return qFpClassify(t2) == FP_NAN;
     default:
         return qFuzzyCompare(t1, t2);
     }
@@ -2631,7 +2631,7 @@ static void massageExponent(char *text)
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE>(const TYPE &t) \
 { \
     char *msg = new char[128]; \
-    switch (std::fpclassify(t)) { \
+    switch (qFpClassify(t)) { \
     case FP_INFINITE: \
         qstrncpy(msg, (t < 0 ? "-inf" : "inf"), 128); \
         break; \

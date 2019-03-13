@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -48,9 +48,11 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsInf(double d);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsNaN(double d);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsFinite(double d);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION int qFpClassify(double val);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsInf(float f);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsNaN(float f);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsFinite(float f);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION int qFpClassify(float val);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qSNaN();
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qQNaN();
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qInf();

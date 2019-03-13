@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
@@ -4002,8 +4002,8 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
         return 0;
 
     // only do fuzzy comparisons for finite, non-zero numbers
-    int c1 = std::fpclassify(r1);
-    int c2 = std::fpclassify(r2);
+    int c1 = qFpClassify(r1);
+    int c2 = qFpClassify(r2);
     if ((c1 == FP_NORMAL || c1 == FP_SUBNORMAL) && (c2 == FP_NORMAL || c2 == FP_SUBNORMAL)) {
         if (qFuzzyCompare(r1, r2))
             return 0;

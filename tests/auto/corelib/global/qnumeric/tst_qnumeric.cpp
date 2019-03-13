@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -43,6 +43,7 @@ private slots:
     void fuzzyCompare_data();
     void fuzzyCompare();
     void qNanInf();
+    void classifyfp();
     void floatDistance_data();
     void floatDistance();
     void floatDistance_double_data();
@@ -123,6 +124,7 @@ void tst_QNumeric::qNanInf()
     QVERIFY(qIsNaN(-nan));
     QVERIFY(!(nan == nan));
     QVERIFY(qIsNaN(0.0 * nan));
+    QCOMPARE(qFpClassify(nan), FP_NAN);
     QCOMPARE(nan, nan);
     QCOMPARE(nan, -nan);
     QCOMPARE(nan, qQNaN());
@@ -141,6 +143,34 @@ void tst_QNumeric::qNanInf()
     QVERIFY(qFuzzyCompare(1.0 / inf, 0.0));
     QCOMPARE(1.0 / inf, 0.0);
     QVERIFY(qIsNaN(0.0 * inf));
+}
+
+void tst_QNumeric::classifyfp()
+{
+    QCOMPARE(qFpClassify(qQNaN()), FP_NAN);
+
+    QCOMPARE(qFpClassify(qInf()), FP_INFINITE);
+    QCOMPARE(qFpClassify(-qInf()), FP_INFINITE);
+    QCOMPARE(qFpClassify(DBL_MAX * 2.0), FP_INFINITE);
+    QCOMPARE(qFpClassify(FLT_MAX * 2.f), FP_INFINITE);
+    QCOMPARE(qFpClassify(DBL_MAX * -2.0), FP_INFINITE);
+    QCOMPARE(qFpClassify(FLT_MAX * -2.f), FP_INFINITE);
+
+    QCOMPARE(qFpClassify(1.0), FP_NORMAL);
+    QCOMPARE(qFpClassify(DBL_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(-DBL_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(DBL_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(-DBL_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(DBL_MIN / 2.0), FP_SUBNORMAL);
+    QCOMPARE(qFpClassify(DBL_MIN / -2.0), FP_SUBNORMAL);
+
+    QCOMPARE(qFpClassify(1.f), FP_NORMAL);
+    QCOMPARE(qFpClassify(FLT_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(-FLT_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(FLT_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(-FLT_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(FLT_MIN / 2.f), FP_SUBNORMAL);
+    QCOMPARE(qFpClassify(FLT_MIN / -2.f), FP_SUBNORMAL);
 }
 
 void tst_QNumeric::floatDistance_data()
