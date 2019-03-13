@@ -161,11 +161,10 @@ Qt::Orientation QSplitterHandle::orientation() const
 
 
 /*!
-    Returns \c true if widgets are resized dynamically (opaquely), otherwise
-    returns \c false. This value is controlled by the QSplitter.
+    Returns \c true if widgets are resized dynamically (opaquely) while interactively moving the
+    splitter. Otherwise returns \c false. This value is controlled by the QSplitter.
 
     \sa QSplitter::opaqueResize()
-
 */
 bool QSplitterHandle::opaqueResize() const
 {
@@ -1483,7 +1482,8 @@ int QSplitter::closestLegalPosition(int pos, int index)
 
 /*!
     \property QSplitter::opaqueResize
-    \brief whether resizing is opaque
+    Returns \c true if widgets are resized dynamically (opaquely) while interactively moving the
+    splitter. Otherwise returns \c false.
 
     The default resize behavior is style dependent (determined by the
     SH_Splitter_OpaqueResize style hint). However, you can override it
