@@ -708,10 +708,11 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QScreen *screen = effectiveScreen(w);
     if (!screen)
         return initialGeometry;
+    const auto *wp = qt_window_private(const_cast<QWindow*>(w));
     QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
-    rect.setSize(fixInitialSize(rect.size(), w, defaultWidth, defaultHeight));
-    if (qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
-            && w->type() != Qt::Popup) {
+    if (wp->resizeAutomatic)
+        rect.setSize(fixInitialSize(rect.size(), w, defaultWidth, defaultHeight));
+    if (wp->positionAutomatic && w->type() != Qt::Popup) {
         const QRect availableGeometry = screen->availableGeometry();
         // Center unless the geometry ( + unknown window frame) is too large for the screen).
         if (rect.height() < (availableGeometry.height() * 8) / 9

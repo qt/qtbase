@@ -90,6 +90,7 @@ public:
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
         , positionAutomatic(true)
+        , resizeAutomatic(true)
         , contentOrientation(Qt::PrimaryOrientation)
         , opacity(qreal(1.0))
         , minimumSize(0, 0)
@@ -155,6 +156,8 @@ public:
     virtual void processSafeAreaMarginsChanged() {};
 
     bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
+    void setAutomaticPositionAndResizeEnabled(bool a)
+    { positionAutomatic = resizeAutomatic = a; }
 
     static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
 
@@ -178,6 +181,7 @@ public:
     bool receivedExpose;
     PositionPolicy positionPolicy;
     bool positionAutomatic;
+    bool resizeAutomatic;
     Qt::ScreenOrientation contentOrientation;
     qreal opacity;
     QRegion mask;
