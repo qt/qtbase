@@ -289,4 +289,13 @@ QVariant QWindowsNativeInterface::gpu() const
     return GpuDescription::detect().toVariant();
 }
 
+QVariant QWindowsNativeInterface::gpuList() const
+{
+    QVariantList result;
+    const auto gpus = GpuDescription::detectAll();
+    for (const auto &gpu : gpus)
+        result.append(gpu.toVariant());
+    return result;
+}
+
 QT_END_NAMESPACE
