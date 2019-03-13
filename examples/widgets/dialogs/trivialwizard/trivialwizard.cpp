@@ -123,6 +123,8 @@ QWizardPage *createConclusionPage()
 int main(int argc, char *argv[])
 //! [9] //! [11]
 {
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
     QApplication app(argc, argv);
 
 #ifndef QT_NO_TRANSLATION
