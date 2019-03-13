@@ -42,7 +42,7 @@ class tst_QNumeric: public QObject
 private slots:
     void fuzzyCompare_data();
     void fuzzyCompare();
-    void qNan();
+    void qNanInf();
     void floatDistance_data();
     void floatDistance();
     void floatDistance_double_data();
@@ -91,7 +91,7 @@ void tst_QNumeric::fuzzyCompare()
 #  pragma GCC optimize "no-fast-math"
 #endif
 
-void tst_QNumeric::qNan()
+void tst_QNumeric::qNanInf()
 {
 #if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
     QSKIP("Non-conformant fast math mode is enabled, cannot run test");
@@ -99,9 +99,16 @@ void tst_QNumeric::qNan()
     double nan = qQNaN();
     QVERIFY(!(0 > nan));
     QVERIFY(!(0 < nan));
+    QVERIFY(!(0 == nan));
+    QVERIFY(!(nan == nan));
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1));
     QVERIFY(qIsNaN(-nan));
+    QVERIFY(qIsNaN(1.0 / nan));
+    QVERIFY(qIsNaN(0.0 / nan));
+    QVERIFY(qIsNaN(0.0 * nan));
+    QCOMPARE(nan, nan);
+    QCOMPARE(nan, -nan);
 
     Q_STATIC_ASSERT(sizeof(double) == 8);
 #ifdef Q_LITTLE_ENDIAN
@@ -113,17 +120,27 @@ void tst_QNumeric::qNan()
     QVERIFY(!qIsFinite(nan));
     QVERIFY(!qIsInf(nan));
     QVERIFY(qIsNaN(nan));
+    QVERIFY(qIsNaN(-nan));
+    QVERIFY(!(nan == nan));
+    QVERIFY(qIsNaN(0.0 * nan));
+    QCOMPARE(nan, nan);
+    QCOMPARE(nan, -nan);
+    QCOMPARE(nan, qQNaN());
 
     double inf = qInf();
     QVERIFY(inf > 0);
     QVERIFY(-inf < 0);
     QVERIFY(qIsInf(inf));
+    QCOMPARE(inf, inf);
+    QCOMPARE(-inf, -inf);
     QVERIFY(qIsInf(-inf));
-    QVERIFY(qIsInf(2*inf));
-    QCOMPARE(1/inf, 0.0);
-    QVERIFY(qIsNaN(0*nan));
-    QVERIFY(qIsNaN(0*inf));
-    QVERIFY(qFuzzyCompare(1/inf, 0.0));
+    QVERIFY(qIsInf(inf + 1));
+    QVERIFY(qIsInf(inf - 1));
+    QVERIFY(qIsInf(inf * 2.0));
+    QVERIFY(qIsInf(inf / 2.0));
+    QVERIFY(qFuzzyCompare(1.0 / inf, 0.0));
+    QCOMPARE(1.0 / inf, 0.0);
+    QVERIFY(qIsNaN(0.0 * inf));
 }
 
 void tst_QNumeric::floatDistance_data()
