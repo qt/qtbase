@@ -78,7 +78,7 @@ QWasmIntegration::QWasmIntegration()
     globalHtml5Integration = this;
 
     updateQScreenAndCanvasRenderSize();
-    screenAdded(m_screen);
+    QWindowSystemInterface::handleScreenAdded(m_screen);
     emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
 
     m_eventTranslator = new QWasmEventTranslator;
@@ -93,7 +93,7 @@ QWasmIntegration::QWasmIntegration()
 QWasmIntegration::~QWasmIntegration()
 {
     delete m_compositor;
-    destroyScreen(m_screen);
+    QWindowSystemInterface::handleScreenRemoved(m_screen);
     delete m_fontDb;
     delete m_eventTranslator;
 }

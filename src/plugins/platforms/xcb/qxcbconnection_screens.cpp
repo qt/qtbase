@@ -44,6 +44,8 @@
 #include <QtCore/QString>
 #include <QtCore/QList>
 
+#include <qpa/qwindowsysteminterface.h>
+
 #include <xcb/xinerama.h>
 
 void QXcbConnection::xrandrSelectEvents()
@@ -211,7 +213,7 @@ void QXcbConnection::updateScreen(QXcbScreen *screen, const xcb_randr_output_cha
                 m_screens.swap(0, idx);
             }
             screen->virtualDesktop()->setPrimaryScreen(screen);
-            QXcbIntegration::instance()->setPrimaryScreen(screen);
+            QWindowSystemInterface::handlePrimaryScreenChanged(screen);
         }
     }
 }
@@ -234,7 +236,7 @@ QXcbScreen *QXcbConnection::createScreen(QXcbVirtualDesktop *virtualDesktop,
         m_screens.append(screen);
     }
     virtualDesktop->addScreen(screen);
-    QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
+    QWindowSystemInterface::handleScreenAdded(screen, screen->isPrimary());
 
     return screen;
 }
@@ -261,10 +263,10 @@ void QXcbConnection::destroyScreen(QXcbScreen *screen)
             const int idx = m_screens.indexOf(newPrimary);
             if (idx > 0)
                 m_screens.swap(0, idx);
-            QXcbIntegration::instance()->setPrimaryScreen(newPrimary);
+            QWindowSystemInterface::handlePrimaryScreenChanged(newPrimary);
         }
 
-        QXcbIntegration::instance()->destroyScreen(screen);
+        QWindowSystemInterface::handleScreenRemoved(screen);
     }
 }
 
@@ -406,7 +408,7 @@ void QXcbConnection::initializeScreens()
         // Push the screens to QGuiApplication
         for (QXcbScreen *screen : qAsConst(m_screens)) {
             qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
-            QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
+            QWindowSystemInterface::handleScreenAdded(screen, screen->isPrimary());
         }
 
         qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();

@@ -244,7 +244,7 @@ QCocoaIntegration::~QCocoaIntegration()
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {
-        destroyScreen(mScreens.takeLast());
+        QWindowSystemInterface::handleScreenRemoved(mScreens.takeLast());
     }
 
     clearToolbars();
@@ -304,7 +304,7 @@ void QCocoaIntegration::updateScreens()
             screen = new QCocoaScreen(i);
             mScreens.append(screen);
             qCDebug(lcQpaScreen) << "Adding" << screen;
-            screenAdded(screen);
+            QWindowSystemInterface::handleScreenAdded(screen);
         }
         siblings << screen;
     }
@@ -321,7 +321,7 @@ void QCocoaIntegration::updateScreens()
         // Prevent stale references to NSScreen during destroy
         screen->m_screenIndex = -1;
         qCDebug(lcQpaScreen) << "Removing" << screen;
-        destroyScreen(screen);
+        QWindowSystemInterface::handleScreenRemoved(screen);
     }
 }
 

@@ -190,7 +190,9 @@ public:
 #endif
     virtual void setApplicationIcon(const QIcon &icon) const;
 
-    void removeScreen(QScreen *screen);
+#if QT_DEPRECATED_SINCE(5, 12)
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handleScreenRemoved") void removeScreen(QScreen *screen);
+#endif
 
     virtual void beep() const;
 
@@ -199,9 +201,11 @@ public:
 #endif
 
 protected:
-    void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
-    void destroyScreen(QPlatformScreen *screen);
-    void setPrimaryScreen(QPlatformScreen *newPrimary);
+#if QT_DEPRECATED_SINCE(5, 12)
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handleScreenAdded") void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handleScreenRemoved") void destroyScreen(QPlatformScreen *screen);
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handlePrimaryScreenChanged") void setPrimaryScreen(QPlatformScreen *newPrimary);
+#endif
 };
 
 QT_END_NAMESPACE

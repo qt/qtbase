@@ -780,6 +780,70 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *window, ulong
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
+/*!
+    Should be called by the implementation whenever a new screen is added.
+
+    The first screen added will be the primary screen, used for default-created
+    windows, GL contexts, and other resources unless otherwise specified.
+
+    This adds the screen to QGuiApplication::screens(), and emits the
+    QGuiApplication::screenAdded() signal.
+
+    The screen should be deleted by calling QWindowSystemInterface::handleScreenRemoved().
+*/
+void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrimary)
+{
+    QScreen *screen = new QScreen(ps);
+
+    if (isPrimary)
+        QGuiApplicationPrivate::screen_list.prepend(screen);
+    else
+        QGuiApplicationPrivate::screen_list.append(screen);
+
+    emit qGuiApp->screenAdded(screen);
+
+    if (isPrimary)
+        emit qGuiApp->primaryScreenChanged(screen);
+}
+
+/*!
+    Should be called by the implementation whenever a screen is removed.
+
+    This removes the screen from QGuiApplication::screens(), and deletes it.
+
+    Failing to call this and manually deleting the QPlatformScreen instead may
+    lead to a crash due to a pure virtual call.
+*/
+void QWindowSystemInterface::handleScreenRemoved(QPlatformScreen *platformScreen)
+{
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    QGuiApplicationPrivate::platformIntegration()->removeScreen(platformScreen->screen());
+QT_WARNING_POP
+
+    // Important to keep this order since the QSceen doesn't own the platform screen
+    delete platformScreen->screen();
+    delete platformScreen;
+}
+
+/*!
+    Should be called whenever the primary screen changes.
+
+    When the screen specified as primary changes, this method will notify
+    QGuiApplication and emit the QGuiApplication::primaryScreenChanged signal.
+ */
+void QWindowSystemInterface::handlePrimaryScreenChanged(QPlatformScreen *newPrimary)
+{
+    QScreen *newPrimaryScreen = newPrimary->screen();
+    int indexOfScreen = QGuiApplicationPrivate::screen_list.indexOf(newPrimaryScreen);
+    Q_ASSERT(indexOfScreen >= 0);
+    if (indexOfScreen == 0)
+        return;
+
+    QGuiApplicationPrivate::screen_list.swap(0, indexOfScreen);
+    emit qGuiApp->primaryScreenChanged(newPrimaryScreen);
+}
+
 void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation orientation)
 {
     QWindowSystemInterfacePrivate::ScreenOrientationEvent *e =

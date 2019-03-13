@@ -146,10 +146,9 @@ QXcbConnection::~QXcbConnection()
     if (m_eventQueue)
         delete m_eventQueue;
 
-    QXcbIntegration *integration = QXcbIntegration::instance();
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
-        integration->destroyScreen(m_screens.takeLast());
+        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
 
     while (!m_virtualDesktops.isEmpty())
         delete m_virtualDesktops.takeLast();
