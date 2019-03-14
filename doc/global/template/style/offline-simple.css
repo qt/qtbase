@@ -1,5 +1,4 @@
 pre, .LegaleseLeft {
-  background-color: #f0f0f0;
   font-family: Courier, monospace;
   font-weight: 600;
   vertical-align: top;
@@ -40,7 +39,6 @@ h1.title {
 }
 
 h2, p.h2 {
-  background-color: #F2F3F4;
   padding: 4px;
   margin: 30px 0px 20px 10px;
 }
@@ -67,10 +65,6 @@ ul li, ol li {
 }
 
 h3.fn, span.fn {
-  border-width: 3px;
-  border-style: solid;
-  border-color: #aaaaaa;
-  background-color: #eeeeee;
   word-spacing: 3px;
   padding: 5px;
   text-decoration: none;
@@ -92,10 +86,6 @@ table th {
 
 table td {
   padding: 6px 10px 6px 10px;
-}
-
-table tr.odd {
-  background-color: #eeeeee;
 }
 
 table.qmlname td {
@@ -144,19 +134,10 @@ span.naviSeparator {
   margin: 0;
 }
 
-.navigationbar table tr {
-  background-color: #eeeeee;
-}
-
-td#buildversion {
-  background-color: #ffffff;
-}
-
 .footer, .footer p {
   padding: 5px 0px 5px 0px;
   margin: 45px 15px 5px 15px;
   font-size: 8.5pt;
-  background-color: #cccccc;
 }
 
 .footer p {

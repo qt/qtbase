@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
     mainWindow.setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
     EventReportWidget *widget = new EventReportWidget;
     QObject::connect(proximityEventFilter, &ProximityEventFilter::proximityChanged,
-                     widget, QOverload<void>::of(&QWidget::update));
+                     widget, QOverload<>::of(&QWidget::update));
     widget->setMinimumSize(640, 480);
     QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
     fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);

@@ -235,6 +235,7 @@ void QNetworkReplyWasmImpl::close()
 void QNetworkReplyWasmImpl::abort()
 {
     Q_D(const QNetworkReplyWasmImpl);
+    setError( QNetworkReply::OperationCanceledError, "Operation canceled" );
     d->doAbort();
 
     close();

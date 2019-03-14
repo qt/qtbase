@@ -1,4 +1,3 @@
 QT += widgets
-CONFIG += c++11
 SOURCES += main.cpp
-LIBS += -lFuzzer
+LIBS += -fsanitize=fuzzer

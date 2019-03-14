@@ -1468,7 +1468,7 @@ const QString::Null QString::null = { };
     In all of the QString functions that take \c{const char *}
     parameters, the \c{const char *} is interpreted as a classic
     C-style '\\0'-terminated string encoded in UTF-8. It is legal for
-    the \c{const char *} parameter to be 0.
+    the \c{const char *} parameter to be \nullptr.
 
     You can also provide string data as an array of \l{QChar}s:
 
@@ -2041,7 +2041,7 @@ const QString::Null QString::null = { };
     the size of wchar. If wchar is 4 bytes, the \a string is interpreted as UCS-4,
     if wchar is 2 bytes it is interpreted as UTF-16.
 
-    If \a size is -1 (default), the \a string has to be 0 terminated.
+    If \a size is -1 (default), the \a string has to be \\0'-terminated.
 
     \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(), fromStdWString()
 */
@@ -2107,7 +2107,7 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 
     If \a unicode is 0, a null string is constructed.
 
-    If \a size is negative, \a unicode is assumed to point to a nul-terminated
+    If \a size is negative, \a unicode is assumed to point to a \\0'-terminated
     array and its length is determined dynamically. The terminating
     nul-character is not considered part of the string.
 
@@ -5448,7 +5448,7 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string);
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not NUL terminated.
+    The returned vector is not \\0'-terminated.
 
     \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -5480,7 +5480,7 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string)
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not NUL terminated.
+    The returned vector is not \\0'-terminated.
 
     \sa QString::toUcs4(), QStringView::toUcs4(), QtPrivate::convertToLatin1(),
     QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUtf8()
@@ -5638,8 +5638,7 @@ QString QString::fromUtf8_helper(const char *str, int size)
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a unicode (ISO-10646-UTF-16 encoded).
 
-    If \a size is -1 (default), \a unicode must be terminated
-    with a 0.
+    If \a size is -1 (default), \a unicode must be \\0'-terminated.
 
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
@@ -5670,8 +5669,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a str (ISO-10646-UTF-16 encoded).
 
-    If \a size is -1 (default), \a str must be terminated
-    with a 0.
+    If \a size is -1 (default), \a str must be \\0'-terminated.
 
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
@@ -5691,8 +5689,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a str (ISO-10646-UCS-4 encoded).
 
-    If \a size is -1 (default), \a str must be terminated
-    with a 0.
+    If \a size is -1 (default), \a str must be \\0'-terminated.
 
     \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
 */
@@ -5703,8 +5700,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a unicode (ISO-10646-UCS-4 encoded).
 
-    If \a size is -1 (default), \a unicode must be terminated
-    with a 0.
+    If \a size is -1 (default), \a unicode must be \\0'-terminated.
 
     \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
 */
@@ -10358,7 +10354,7 @@ ownership of it, no memory is freed when instances are destroyed.
 
     Returns a Unicode representation of the string reference. Since
     the data stems directly from the referenced string, it is not
-    null-terminated unless the string reference includes the string's
+    \\0'-terminated unless the string reference includes the string's
     null terminator.
 
     \sa string()
@@ -11900,7 +11896,7 @@ QByteArray QStringRef::toUtf8() const
     this string is replaced by the Unicode's replacement character
     (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
 
-    The returned vector is not NUL terminated.
+    The returned vector is not \\0'-terminated.
 
     \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */

@@ -133,8 +133,8 @@ QT_BEGIN_NAMESPACE
     The following code snippet loads a library, resolves the symbol
     "mysymbol", and calls the function if everything succeeded. If
     something goes wrong, e.g. the library file does not exist or the
-    symbol is not defined, the function pointer will be 0 and won't be
-    called.
+    symbol is not defined, the function pointer will be \nullptr and
+    won't be called.
 
     \snippet code/src_corelib_plugin_qlibrary.cpp 0
 

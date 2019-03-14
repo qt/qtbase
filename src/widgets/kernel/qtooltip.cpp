@@ -482,8 +482,8 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 
     The \a rect is in the coordinates of the widget you specify with
     \a w. If the \a rect is not empty you must specify a widget.
-    Otherwise this argument can be 0 but it is used to determine the
-    appropriate screen on multi-head systems.
+    Otherwise this argument can be \nullptr but it is used to
+    determine the appropriate screen on multi-head systems.
 
     If \a text is empty the tool tip is hidden. If the text is the
     same as the currently shown tooltip, the tip will \e not move.

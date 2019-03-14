@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
     set or the system default cursor should take effect.
 
     \a window is a pointer to the window currently displayed at QCursor::pos(). Note
-    that this may be 0 if the current position is not occupied by a displayed widget.
+    that this may be \nullptr if the current position is not occupied by a displayed widget.
 
     \sa QCursor::pos()
 */
