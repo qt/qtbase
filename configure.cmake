@@ -192,8 +192,12 @@ qt_feature("android_style_assets" PRIVATE
     LABEL "Android Style Assets"
     CONDITION ANDROID
 )
-qt_feature("developer_build" PUBLIC PRIVATE
+qt_feature("developer_build"
     LABEL "Developer build"
+    AUTODETECT OFF
+)
+qt_feature("private_tests" PRIVATE
+    LABEL "Developer build: private_tests"
     AUTODETECT OFF
 )
 qt_feature_definition("developer_build" "QT_BUILD_INTERNAL")
@@ -215,132 +219,132 @@ qt_feature("framework" PUBLIC
     CONDITION APPLE AND BUILD_SHARED_LIBS
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
-qt_feature("largefile" PUBLIC
+qt_feature("largefile"
     LABEL "Large file support"
     CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT WINRT
 )
 qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
-qt_feature("reduce_exports" PUBLIC PRIVATE
+qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
 )
 qt_feature_definition("reduce_exports" "QT_VISIBILITY_AVAILABLE")
-qt_feature("sse2" PUBLIC PRIVATE
+qt_feature("sse2" PRIVATE
     LABEL "SSE2"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2
 )
 qt_feature_definition("sse2" "QT_COMPILER_SUPPORTS_SSE2" VALUE "1")
-qt_feature("sse3" PUBLIC
+qt_feature("sse3"
     LABEL "SSE3"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_sse3
 )
 qt_feature_definition("sse3" "QT_COMPILER_SUPPORTS_SSE3" VALUE "1")
-qt_feature("ssse3" PUBLIC
+qt_feature("ssse3"
     LABEL "SSSE3"
     CONDITION QT_FEATURE_sse3 AND TEST_subarch_ssse3
 )
 qt_feature_definition("ssse3" "QT_COMPILER_SUPPORTS_SSSE3" VALUE "1")
-qt_feature("sse4_1" PUBLIC
+qt_feature("sse4_1"
     LABEL "SSE4.1"
     CONDITION QT_FEATURE_ssse3 AND TEST_subarch_sse4_1
 )
 qt_feature_definition("sse4_1" "QT_COMPILER_SUPPORTS_SSE4_1" VALUE "1")
-qt_feature("sse4_2" PUBLIC
+qt_feature("sse4_2"
     LABEL "SSE4.2"
     CONDITION QT_FEATURE_sse4_1 AND TEST_subarch_sse4_2
 )
 qt_feature_definition("sse4_2" "QT_COMPILER_SUPPORTS_SSE4_2" VALUE "1")
-qt_feature("avx" PUBLIC
+qt_feature("avx"
     LABEL "AVX"
     CONDITION QT_FEATURE_sse4_2 AND TEST_subarch_avx
 )
 qt_feature_definition("avx" "QT_COMPILER_SUPPORTS_AVX" VALUE "1")
-qt_feature("f16c" PUBLIC
+qt_feature("f16c"
     LABEL "F16C"
-    CONDITION QT_FEATURE_avx AND TEST_subarch_c16c
+    CONDITION QT_FEATURE_avx AND TEST_subarch_f16c
 )
 qt_feature_definition("f16c" "QT_COMPILER_SUPPORTS_F16C" VALUE "1")
-qt_feature("avx2" PUBLIC PRIVATE
+qt_feature("avx2" PRIVATE
     LABEL "AVX2"
     CONDITION QT_FEATURE_avx AND TEST_subarch_avx2
 )
 qt_feature_definition("avx2" "QT_COMPILER_SUPPORTS_AVX2" VALUE "1")
-qt_feature("avx512f" PUBLIC
+qt_feature("avx512f"
     LABEL "F"
     CONDITION QT_FEATURE_avx2 AND TEST_subarch_avx512f
 )
 qt_feature_definition("avx512f" "QT_COMPILER_SUPPORTS_AVX512F" VALUE "1")
-qt_feature("avx512er" PUBLIC
+qt_feature("avx512er"
     LABEL "ER"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512er
 )
 qt_feature_definition("avx512er" "QT_COMPILER_SUPPORTS_AVX512ER" VALUE "1")
-qt_feature("avx512cd" PUBLIC
+qt_feature("avx512cd"
     LABEL "CD"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512cd
 )
 qt_feature_definition("avx512cd" "QT_COMPILER_SUPPORTS_AVX512CD" VALUE "1")
-qt_feature("avx512pf" PUBLIC
+qt_feature("avx512pf"
     LABEL "PF"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512pf
 )
 qt_feature_definition("avx512pf" "QT_COMPILER_SUPPORTS_AVX512PF" VALUE "1")
-qt_feature("avx512dq" PUBLIC
+qt_feature("avx512dq"
     LABEL "DQ"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512dq
 )
 qt_feature_definition("avx512dq" "QT_COMPILER_SUPPORTS_AVX512DQ" VALUE "1")
-qt_feature("avx512bw" PUBLIC
+qt_feature("avx512bw"
     LABEL "BW"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512bw
 )
 qt_feature_definition("avx512bw" "QT_COMPILER_SUPPORTS_AVX512BW" VALUE "1")
-qt_feature("avx512vl" PUBLIC
+qt_feature("avx512vl"
     LABEL "VL"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vl
 )
 qt_feature_definition("avx512vl" "QT_COMPILER_SUPPORTS_AVX512VL" VALUE "1")
-qt_feature("avx512ifma" PUBLIC
+qt_feature("avx512ifma"
     LABEL "IFMA"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512ifma
 )
 qt_feature_definition("avx512ifma" "QT_COMPILER_SUPPORTS_AVX512IFMA" VALUE "1")
-qt_feature("avx512vbmi" PUBLIC
+qt_feature("avx512vbmi"
     LABEL "VBMI"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vbmi
 )
 qt_feature_definition("avx512vbmi" "QT_COMPILER_SUPPORTS_AVX512VBMI" VALUE "1")
-qt_feature("aesni" PUBLIC
+qt_feature("aesni"
     LABEL "AES"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_aes
 )
 qt_feature_definition("aesni" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
-qt_feature("rdrnd" PUBLIC
+qt_feature("rdrnd"
     LABEL "RDRAND"
     CONDITION TEST_subarch_rdseed
 )
 qt_feature_definition("rdrnd" "QT_COMPILER_SUPPORTS_RDRND" VALUE "1")
-qt_feature("shani" PUBLIC
+qt_feature("shani"
     LABEL "SHA"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_sha
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
-qt_feature("x86SimdAlways" PUBLIC
+qt_feature("x86SimdAlways"
     LABEL "Intrinsics without -mXXX option"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND ON
 )
 qt_feature_definition("x86SimdAlways" "QT_COMPILER_SUPPORTS_SIMD_ALWAYS" VALUE "1")
-qt_feature("mips_dsp" PUBLIC
+qt_feature("mips_dsp"
     LABEL "DSP"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_subarch_dsp
 )
 qt_feature_definition("mips_dsp" "QT_COMPILER_SUPPORTS_MIPS_DSP" VALUE "1")
-qt_feature("mips_dspr2" PUBLIC
+qt_feature("mips_dspr2"
     LABEL "DSPr2"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_subarch_dspr2
 )
 qt_feature_definition("mips_dspr2" "QT_COMPILER_SUPPORTS_MIPS_DSPR2" VALUE "1")
-qt_feature("neon" PUBLIC
+qt_feature("neon"
     LABEL "NEON"
     CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_subarch_neon
 )
@@ -400,7 +404,7 @@ qt_feature("sql" PRIVATE
 qt_feature("testlib" PRIVATE
     LABEL "Qt Testlib"
 )
-qt_feature("widgets" PUBLIC PRIVATE
+qt_feature("widgets" PRIVATE
     LABEL "Qt Widgets"
     AUTODETECT NOT APPLE_TVOS AND NOT APPLE_WATCHOS
     CONDITION QT_FEATURE_gui

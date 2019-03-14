@@ -562,8 +562,14 @@ qt_feature("opengl_desktop"
     ENABLE INPUT_opengl STREQUAL 'desktop'
     DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
-qt_feature("opengl_dynamic" PUBLIC
+qt_feature("opengl_dynamic"
     LABEL "Dynamic OpenGL"
+    AUTODETECT OFF
+    CONDITION WIN32 AND NOT WINRT
+    ENABLE INPUT_opengl STREQUAL 'dynamic'
+)
+qt_feature("dynamicgl" PUBLIC
+    LABEL "Dynamic OpenGL: dynamicgl"
     AUTODETECT OFF
     CONDITION WIN32 AND NOT WINRT
     ENABLE INPUT_opengl STREQUAL 'dynamic'
@@ -632,7 +638,7 @@ qt_feature("eglfs_openwfd" PRIVATE
     LABEL "EGLFS OpenWFD"
     CONDITION INTEGRITY AND QT_FEATURE_eglfs AND TEST_egl_openwfd
 )
-qt_feature("gif" PUBLIC PRIVATE
+qt_feature("gif" PRIVATE
     LABEL "GIF"
     CONDITION QT_FEATURE_imageformatplugin
 )
@@ -642,13 +648,13 @@ qt_feature("ico" PUBLIC PRIVATE
     CONDITION QT_FEATURE_imageformatplugin
 )
 qt_feature_definition("ico" "QT_NO_ICO" NEGATE VALUE "1")
-qt_feature("jpeg" PUBLIC PRIVATE
+qt_feature("jpeg" PRIVATE
     LABEL "JPEG"
     CONDITION QT_FEATURE_imageformatplugin AND JPEG_FOUND
     DISABLE INPUT_libjpeg STREQUAL 'no'
 )
 qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE)
-qt_feature("png" PUBLIC PRIVATE
+qt_feature("png" PRIVATE
     LABEL "PNG"
     DISABLE INPUT_libpng STREQUAL 'no'
 )

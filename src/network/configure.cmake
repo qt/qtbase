@@ -156,7 +156,7 @@ qt_feature("linux_netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
     CONDITION LINUX AND TEST_linux_netlink
 )
-qt_feature("openssl" PUBLIC PRIVATE
+qt_feature("openssl" PRIVATE
     LABEL "OpenSSL"
     AUTODETECT NOT WINRT AND NOT WASM
     CONDITION NOT QT_FEATURE_securetransport AND ( QT_FEATURE_openssl_linked OR OPENSSL_INCLUDE_DIR )
@@ -164,14 +164,14 @@ qt_feature("openssl" PUBLIC PRIVATE
     DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
 )
 qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
-qt_feature("openssl_linked" PUBLIC PRIVATE
+qt_feature("openssl_linked" PRIVATE
     LABEL "  Qt directly linked to OpenSSL"
     CONDITION NOT QT_FEATURE_securetransport AND OpenSSL_FOUND
     ENABLE INPUT_openssl STREQUAL 'linked'
     DISABLE ( NOT INPUT_openssl STREQUAL 'linked' )
 )
 qt_feature_definition("openssl_linked" "QT_LINKED_OPENSSL")
-qt_feature("securetransport" PUBLIC PRIVATE
+qt_feature("securetransport" PRIVATE
     LABEL "SecureTransport"
     CONDITION APPLE AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
     DISABLE INPUT_securetransport STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'

@@ -403,9 +403,9 @@ qt_feature("iconv" PUBLIC PRIVATE
 qt_feature_definition("iconv" "QT_NO_ICONV" NEGATE VALUE "1")
 qt_feature("posix_libiconv" PRIVATE
     LABEL "POSIX iconv"
-    CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv
-    ENABLE INPUT_iconv STREQUAL 'posix'
-    DISABLE INPUT_iconv STREQUAL 'sun' OR INPUT_iconv STREQUAL 'gnu' OR INPUT_iconv STREQUAL 'no'
+    CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib
+    ENABLE TEST_posix_iconv AND TEST_iconv_needlib
+    DISABLE NOT TEST_posix_iconv OR NOT TEST_iconv_needlib
 )
 qt_feature("sun_libiconv"
     LABEL "SUN iconv"
@@ -429,7 +429,7 @@ qt_feature("inotify" PUBLIC PRIVATE
     CONDITION TEST_inotify
 )
 qt_feature_definition("inotify" "QT_NO_INOTIFY" NEGATE VALUE "1")
-qt_feature("ipc_posix" PUBLIC
+qt_feature("ipc_posix"
     LABEL "Using POSIX IPC"
     AUTODETECT NOT WIN32
     CONDITION NOT TEST_ipc_sysv AND TEST_ipc_posix
@@ -472,7 +472,7 @@ qt_feature("poll_poll" PRIVATE
     CONDITION NOT QT_FEATURE_poll_ppoll AND NOT QT_FEATURE_poll_pollts AND TEST_poll
     EMIT_IF NOT WIN32
 )
-qt_feature("poll_select" PUBLIC PRIVATE
+qt_feature("poll_select" PRIVATE
     LABEL "Emulated poll()"
     CONDITION NOT QT_FEATURE_poll_ppoll AND NOT QT_FEATURE_poll_pollts AND NOT QT_FEATURE_poll_poll
     EMIT_IF NOT WIN32
@@ -500,7 +500,7 @@ qt_feature("syslog" PRIVATE
     AUTODETECT OFF
     CONDITION TEST_syslog
 )
-qt_feature("threadsafe_cloexec" PUBLIC
+qt_feature("threadsafe_cloexec"
     LABEL "Threadsafe pipe creation"
     CONDITION TEST_cloexec
 )
@@ -587,7 +587,7 @@ qt_feature("library" PUBLIC
     SECTION "File I/O"
     LABEL "QLibrary"
     PURPOSE "Provides a wrapper for dynamically loaded libraries."
-    CONDITION WIN32 OR HPUX OR ( NOT NACL AND UNIX )
+    CONDITION WIN32 OR HPUX OR ( NOT NACL AND ON )
 )
 qt_feature_definition("library" "QT_NO_LIBRARY" NEGATE VALUE "1")
 qt_feature("settings" PUBLIC
