@@ -1153,8 +1153,9 @@ void QAction::activate(ActionEvent event)
     if(event == Trigger) {
         QPointer<QObject> guard = this;
         if(d->checkable) {
-            // the checked action of an exclusive group cannot be  unchecked
-            if (d->checked && (d->group && d->group->isExclusive()
+            // the checked action of an exclusive group may not be unchecked
+            if (d->checked && (d->group
+                               && d->group->exclusionPolicy() == QActionGroup::ExclusionPolicy::Exclusive
                                && d->group->checkedAction() == this)) {
                 if (!guard.isNull())
                     emit triggered(true);
