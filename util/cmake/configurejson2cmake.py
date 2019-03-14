@@ -802,9 +802,11 @@ def parseFeature(ctx, feature, data, cm_fh):
         # feature that is only used in the conditions of other features
         output = ["internalFeature"]
 
-    publicInfo = False
-    privateInfo = False
-    internalFeature = False
+    publicFeature = False # #define QT_FEATURE_featurename in public header
+    privateFeature = False # #define QT_FEATURE_featurename in private header
+    negativeFeature = False # #define QT_NO_featurename in public header
+    internalFeature = False # No custom or QT_FEATURE_ defines
+    publicDefine = False # #define MY_CUSTOM_DEFINE in public header
 
     for o in output:
         outputType = o
@@ -815,44 +817,84 @@ def parseFeature(ctx, feature, data, cm_fh):
 
         if outputType in ['varAssign', 'varAppend', 'varRemove', 'publicQtConfig', 'privateConfig', 'publicConfig']:
             continue
-
-        elif outputType in ['feature', 'publicFeature', 'define']:
-            publicInfo = True
+        elif outputType == 'define':
+            publicDefine = True
+        elif outputType == 'feature':
+            negativeFeature = True
+        elif outputType == 'publicFeature':
+            publicFeature = True
         elif outputType == 'privateFeature':
-            privateInfo = True
+            privateFeature = True
         elif outputType == 'internalFeature':
             internalFeature = True
         else:
             print('    XXXX UNHANDLED OUTPUT TYPE {} in feature {}.'.format(outputType, feature))
             continue
 
-    if not publicInfo and not privateInfo and not internalFeature:
+    if not any([publicFeature, privateFeature, internalFeature, publicDefine, negativeFeature]):
         print('    **** Skipping feature {}: Not relevant for C++.'.format(feature))
         return
 
-    # write feature:
     cxxFeature = featureName(feature)
-    if comment:
-        cm_fh.write('# {}\n'.format(comment))
 
-    cm_fh.write('qt_feature("{}"'.format(cxxFeature))
-    if publicInfo:
-        cm_fh.write(' PUBLIC')
-    if privateInfo:
-        cm_fh.write(' PRIVATE')
-    cm_fh.write('\n')
+    def writeFeature(name, publicFeature=False, privateFeature=False, labelAppend=''):
+        if comment:
+            cm_fh.write('# {}\n'.format(comment))
 
-    cm_fh.write(lineify('SECTION', section))
-    cm_fh.write(lineify('LABEL', label))
-    if purpose != label:
-        cm_fh.write(lineify('PURPOSE', purpose))
-    cm_fh.write(lineify('AUTODETECT', autoDetect, quote=False))
-    cm_fh.write(lineify('CONDITION', condition, quote=False))
-    cm_fh.write(lineify('ENABLE', enable, quote=False))
-    cm_fh.write(lineify('DISABLE', disable, quote=False))
-    cm_fh.write(lineify('EMIT_IF', emitIf, quote=False))
-    cm_fh.write(')\n')
+        cm_fh.write('qt_feature("{}"'.format(name))
+        if publicFeature:
+            cm_fh.write(' PUBLIC')
+        if privateFeature:
+            cm_fh.write(' PRIVATE')
+        cm_fh.write('\n')
 
+        cm_fh.write(lineify('SECTION', section))
+        cm_fh.write(lineify('LABEL', label + labelAppend))
+        if purpose != label:
+            cm_fh.write(lineify('PURPOSE', purpose))
+        cm_fh.write(lineify('AUTODETECT', autoDetect, quote=False))
+        cm_fh.write(lineify('CONDITION', condition, quote=False))
+        cm_fh.write(lineify('ENABLE', enable, quote=False))
+        cm_fh.write(lineify('DISABLE', disable, quote=False))
+        cm_fh.write(lineify('EMIT_IF', emitIf, quote=False))
+        cm_fh.write(')\n')
+
+    # Write qt_feature() calls before any qt_feature_definition() calls
+
+    # Default internal feature case.
+    featureCalls = {}
+    featureCalls[cxxFeature] = {'name': cxxFeature, 'labelAppend': ''}
+
+    # Go over all outputs to compute the number of features that have to be declared
+    for o in output:
+        outputType = o
+        name = cxxFeature
+
+        # The label append is to provide a unique label for features that have more than one output
+        # with different names.
+        labelAppend = ''
+
+        if isinstance(o, dict):
+            outputType = o['type']
+            if 'name' in o:
+                name = o['name']
+                labelAppend = ': {}'.format(o['name'])
+
+        if outputType not in ['feature', 'publicFeature', 'privateFeature']:
+            continue
+        if name not in featureCalls:
+            featureCalls[name] = {'name': name, 'labelAppend': labelAppend}
+
+        if outputType in ['feature', 'publicFeature']:
+            featureCalls[name]['publicFeature'] = True
+        elif outputType == 'privateFeature':
+            featureCalls[name]['privateFeature'] = True
+
+    # Write the qt_feature() calls from the computed feature map
+    for _, args in featureCalls.items():
+        writeFeature(**args)
+
+    # Write qt_feature_definition() calls
     for o in output:
         outputType = o
         outputArgs = {}
@@ -860,7 +902,7 @@ def parseFeature(ctx, feature, data, cm_fh):
             outputType = o['type']
             outputArgs = o
 
-        # Map feature to define:
+        # Map negative feature to define:
         if outputType == 'feature':
             outputType = 'define'
             outputArgs = {'name': 'QT_NO_{}'.format(cxxFeature.upper()),
