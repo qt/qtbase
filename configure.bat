@@ -125,11 +125,8 @@ goto doneargs
 
 :platform
     shift
-    if "%~1" == "win32-msvc2012" goto msvc
-    if "%~1" == "win32-msvc2013" goto msvc
-    if "%~1" == "win32-msvc2015" goto msvc
-    if "%~1" == "win32-msvc2017" goto msvc
     set PLATFORM=%~1
+    if "%PLATFORM:~0,10%" == "win32-msvc" goto msvc
     goto nextarg
 :msvc
     echo. >&2
