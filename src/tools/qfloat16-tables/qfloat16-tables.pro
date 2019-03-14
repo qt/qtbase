@@ -1,6 +1,6 @@
 option(host_build)
 
-CONFIG += force_bootstrap
+CONFIG -= qt
 SOURCES += gen_qfloat16_tables.cpp
 
 load(qt_tool)

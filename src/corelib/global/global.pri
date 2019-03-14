@@ -129,7 +129,7 @@ QMAKE_QFLOAT16_TABLES_GENERATE = global/qfloat16.h
 
 qtPrepareTool(QMAKE_QFLOAT16_TABLES, qfloat16-tables)
 
-qfloat16_tables.commands = $$QMAKE_QFLOAT16_TABLES ${QMAKE_FILE_OUT}
+qfloat16_tables.commands = $$QMAKE_QFLOAT16_TABLES > ${QMAKE_FILE_OUT}
 qfloat16_tables.output = global/qfloat16tables.cpp
 qfloat16_tables.depends = $$QMAKE_QFLOAT16_TABLES_EXE
 qfloat16_tables.input = QMAKE_QFLOAT16_TABLES_GENERATE
