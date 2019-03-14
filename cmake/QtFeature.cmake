@@ -21,6 +21,8 @@ function(qt_feature_module_begin)
 
     set(__QtFeature_private_extra "" PARENT_SCOPE)
     set(__QtFeature_public_extra "" PARENT_SCOPE)
+
+    set(__QtFeature_define_definitions "" PARENT_SCOPE)
 endfunction()
 
 function(qt_feature feature)
@@ -252,31 +254,44 @@ endfunction()
 function(qt_feature_definition feature name)
     qt_parse_all_arguments(arg "qt_feature_definition" "NEGATE" "VALUE" "" ${ARGN})
 
-    # Generate code:
-    set(expected 1)
-    if (arg_NEGATE)
-        set(expected -1)
-    endif()
-    set(msg "\n#if defined(QT_FEATURE_${feature}) && QT_FEATURE_${feature} == ${expected}\n")
-    if (arg_VALUE)
-        string(APPEND msg "#  define ${name} ${arg_VALUE}\n")
-    else()
-        string(APPEND msg "#  define ${name}\n")
-    endif()
-    string(APPEND msg "#endif\n")
+    # Store all the define related info in a unique variable key.
+    set(key_name "_QT_FEATURE_DEFINE_DEFINITION_${feature}_${name}")
+    set(${key_name} "FEATURE;${feature};NAME;${name};${ARGN}" PARENT_SCOPE)
 
-    # Store for later use:
-    list(FIND __QtFeature_public_features "${feature}" public_index)
-    if (public_index GREATER -1)
-        string(APPEND __QtFeature_public_extra "${msg}")
+    # Store the key for later evaluation and subsequent define generation:
+    list(APPEND __QtFeature_define_definitions "${key_name}")
+
+    set(__QtFeature_define_definitions ${__QtFeature_define_definitions} PARENT_SCOPE)
+endfunction()
+
+function(qt_evaluate_feature_definition key)
+    if(NOT DEFINED ${key})
+        qt_debug_print_variables(DEDUP MATCH "^_QT_FEATURE_DEFINE_DEFINITION")
+        message(FATAL_ERROR "Attempting to evaluate feature define ${key} but its definition is missing. ")
     endif()
-    list(FIND __QtFeature_private_features "${feature}" private_index)
-    if (private_index GREATER -1)
-        string(APPEND __QtFeature_private_extra "${msg}")
+
+    cmake_parse_arguments(arg
+        "NEGATE;"
+        "FEATURE;NAME;VALUE;" "" ${${key}})
+
+    set(expected ON)
+    if (arg_NEGATE)
+        set(expected OFF)
+    endif()
+
+    set(msg "")
+
+    if(QT_FEATURE_${arg_FEATURE} STREQUAL expected)
+        if (arg_VALUE)
+            string(APPEND msg "#define ${arg_NAME} ${arg_VALUE}\n")
+        else()
+            string(APPEND msg "#define ${arg_NAME}\n")
+        endif()
+
+        string(APPEND __QtFeature_public_extra "${msg}")
     endif()
 
     set(__QtFeature_public_extra ${__QtFeature_public_extra} PARENT_SCOPE)
-    set(__QtFeature_private_extra ${__QtFeature_private_extra} PARENT_SCOPE)
 endfunction()
 
 function(qt_extra_definition name value)
@@ -345,6 +360,11 @@ function(qt_feature_module_end target)
        endif()
     endforeach()
 
+    foreach(key ${__QtFeature_define_definitions})
+        qt_evaluate_feature_definition(${key})
+        unset(${key} PARENT_SCOPE)
+    endforeach()
+
     foreach(feature ${all_features})
         unset(_QT_FEATURE_DEFINITION_${feature} PARENT_SCOPE)
     endforeach()
@@ -386,6 +406,8 @@ function(qt_feature_module_end target)
 
     unset(__QtFeature_private_extra PARENT_SCOPE)
     unset(__QtFeature_public_extra PARENT_SCOPE)
+
+    unset(__QtFeature_define_definitions PARENT_SCOPE)
 endfunction()
 
 function(qt_config_compile_test name)
