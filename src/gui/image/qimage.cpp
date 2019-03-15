@@ -124,7 +124,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
     int height = size.height();
     int depth = qt_depthForFormat(format);
     auto params = calculateImageParameters(width, height, depth);
-    if (params.bytesPerLine < 0)
+    if (!params.isValid())
         return nullptr;
 
     QScopedPointer<QImageData> d(new QImageData);
@@ -781,7 +781,7 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
 
     const int depth = qt_depthForFormat(format);
     auto params = calculateImageParameters(width, height, depth);
-    if (params.totalSize < 0)
+    if (!params.isValid())
         return nullptr;
 
     if (bpl > 0) {
@@ -1484,10 +1484,17 @@ qsizetype QImage::sizeInBytes() const
 
     \sa scanLine()
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+qsizetype QImage::bytesPerLine() const
+{
+    return d ? d->bytes_per_line : 0;
+}
+#else
 int QImage::bytesPerLine() const
 {
     return d ? d->bytes_per_line : 0;
 }
+#endif
 
 
 /*!

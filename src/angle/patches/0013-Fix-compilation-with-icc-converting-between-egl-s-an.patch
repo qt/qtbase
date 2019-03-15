@@ -1,0 +1,93 @@
+From 2d8118620d4871f74a3ddca233529ff540384477 Mon Sep 17 00:00:00 2001
+From: Yuhang Zhao <2546789017@qq.com>
+Date: Wed, 13 Feb 2019 23:26:55 +0800
+Subject: [PATCH] Fix compilation with icc, converting between egl's and gl's
+ Error types
+
+Each has two constructors from the other, one copying the other
+moving; and this leads to an ambiguous overload when converting
+Texture::onDestroy()'s gl::error to the egl::Error that
+gl::Context::onDestroy() returns.  Passing the value through a
+temporary prevents the move-constructor from being attempted and saves
+the day.  Thanks to Ville Voutilainen for suggesting the fix.
+
+Fixes: QTBUG-73698
+Change-Id: I628173399a73cee2e253201bc3e8d3e6477a2fbf
+---
+ src/3rdparty/angle/src/libANGLE/Context.cpp               | 3 ++-
+ src/3rdparty/angle/src/libANGLE/Stream.cpp                | 8 +++++---
+ src/3rdparty/angle/src/libANGLE/Texture.cpp               | 3 ++-
+ .../angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp    | 3 ++-
+ 4 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/Context.cpp b/src/3rdparty/angle/src/libANGLE/Context.cpp
+index f638beda58..84f7936feb 100644
+--- a/src/3rdparty/angle/src/libANGLE/Context.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Context.cpp
+@@ -451,7 +451,8 @@ egl::Error Context::onDestroy(const egl::Display *display)
+ 
+     for (auto &zeroTexture : mZeroTextures)
+     {
+-        ANGLE_TRY(zeroTexture.second->onDestroy(this));
++        auto result = zeroTexture.second->onDestroy(this);
++        ANGLE_TRY(egl::Error(result));
+         zeroTexture.second.set(this, nullptr);
+     }
+     mZeroTextures.clear();
+diff --git a/src/3rdparty/angle/src/libANGLE/Stream.cpp b/src/3rdparty/angle/src/libANGLE/Stream.cpp
+index 68279976b7..e384c7d486 100644
+--- a/src/3rdparty/angle/src/libANGLE/Stream.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Stream.cpp
+@@ -192,8 +192,9 @@ Error Stream::consumerAcquire(const gl::Context *context)
+     {
+         if (mPlanes[i].texture != nullptr)
+         {
+-            ANGLE_TRY(mPlanes[i].texture->acquireImageFromStream(
+-                context, mProducerImplementation->getGLFrameDescription(i)));
++            auto result = mPlanes[i].texture->acquireImageFromStream(
++                context, mProducerImplementation->getGLFrameDescription(i));
++            ANGLE_TRY(Error(result));
+         }
+     }
+ 
+@@ -213,7 +214,8 @@ Error Stream::consumerRelease(const gl::Context *context)
+     {
+         if (mPlanes[i].texture != nullptr)
+         {
+-            ANGLE_TRY(mPlanes[i].texture->releaseImageFromStream(context));
++            auto result = mPlanes[i].texture->releaseImageFromStream(context);
++            ANGLE_TRY(Error(result));
+         }
+     }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/Texture.cpp b/src/3rdparty/angle/src/libANGLE/Texture.cpp
+index da92e65916..7447604fe6 100644
+--- a/src/3rdparty/angle/src/libANGLE/Texture.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Texture.cpp
+@@ -550,7 +550,8 @@ Error Texture::onDestroy(const Context *context)
+ {
+     if (mBoundSurface)
+     {
+-        ANGLE_TRY(mBoundSurface->releaseTexImage(context, EGL_BACK_BUFFER));
++        auto result = mBoundSurface->releaseTexImage(context, EGL_BACK_BUFFER);
++        ANGLE_TRY(Error(result));
+         mBoundSurface = nullptr;
+     }
+     if (mBoundStream)
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
+index 75c6298868..b583273641 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
+@@ -376,7 +376,8 @@ egl::Error Renderer9::initializeDevice()
+ 
+     ASSERT(!mBlit);
+     mBlit = new Blit9(this);
+-    ANGLE_TRY(mBlit->initialize());
++    auto result = mBlit->initialize();
++    ANGLE_TRY(egl::Error(result));
+ 
+     ASSERT(!mVertexDataManager && !mIndexDataManager);
+     mVertexDataManager = new VertexDataManager(this);
+-- 
+2.20.1.windows.1
+

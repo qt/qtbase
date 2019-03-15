@@ -227,7 +227,11 @@ public:
     uchar *scanLine(int);
     const uchar *scanLine(int) const;
     const uchar *constScanLine(int) const;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    qsizetype bytesPerLine() const;
+#else
     int bytesPerLine() const;
+#endif
 
     bool valid(int x, int y) const;
     bool valid(const QPoint &pt) const;
