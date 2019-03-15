@@ -76,8 +76,8 @@ static void qClipboardCutTo(val event)
     }
 
     val module = val::global("Module");
-    val clipdata = module.call<val>("getClipboardData");
-    val clipFormat = module.call<val>("getClipboardFormat");
+    val clipdata = module.call<val>("qtGetClipboardData");
+    val clipFormat = module.call<val>("qtGetClipboardFormat");
     event["clipboardData"].call<void>("setData", clipFormat, clipdata);
     event.call<void>("preventDefault");
 }
@@ -91,8 +91,8 @@ static void qClipboardCopyTo(val event)
     }
 
     val module = val::global("Module");
-    val clipdata = module.call<val>("getClipboardData");
-    val clipFormat = module.call<val>("getClipboardFormat");
+    val clipdata = module.call<val>("qtGetClipboardData");
+    val clipFormat = module.call<val>("qtGetClipboardFormat");
     event["clipboardData"].call<void>("setData", clipFormat, clipdata);
     event.call<void>("preventDefault");
 }
@@ -101,7 +101,7 @@ static void qClipboardPasteTo(val event)
 {
     bool hasClipboardApi = QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi;
     val clipdata = hasClipboardApi ?
-        val::global("Module").call<val>("getClipboardData") :
+        val::global("Module").call<val>("qtGetClipboardData") :
         event["clipboardData"].call<val>("getData", std::string("text"));
 
     const std::string data = clipdata.as<std::string>();
@@ -113,14 +113,14 @@ static void qClipboardPasteTo(val event)
     }
 }
 
-EMSCRIPTEN_BINDINGS(clipboard_module) {
-    function("getClipboardData", &getClipboardData);
-    function("getClipboardFormat", &getClipboardFormat);
-    function("pasteClipboardData", &pasteClipboardData);
-    function("qClipboardPromiseResolve", &qClipboardPromiseResolve);
-    function("qClipboardCutTo", &qClipboardCutTo);
-    function("qClipboardCopyTo", &qClipboardCopyTo);
-    function("qClipboardPasteTo", &qClipboardPasteTo);
+EMSCRIPTEN_BINDINGS(qtClipboardModule) {
+    function("qtGetClipboardData", &getClipboardData);
+    function("qtGetClipboardFormat", &getClipboardFormat);
+    function("qtPasteClipboardData", &pasteClipboardData);
+    function("qtClipboardPromiseResolve", &qClipboardPromiseResolve);
+    function("qtClipboardCutTo", &qClipboardCutTo);
+    function("qtClipboardCopyTo", &qClipboardCopyTo);
+    function("qtClipboardPasteTo", &qClipboardPasteTo);
 }
 
 QWasmClipboard::QWasmClipboard()
@@ -200,11 +200,11 @@ void QWasmClipboard::installEventHandlers(const QString &canvasId)
     // Fallback path for browsers which do not support direct clipboard access
     val canvas = val::global(canvasId.toUtf8().constData());
     canvas.call<void>("addEventListener", std::string("cut"),
-                      val::module_property("qClipboardCutTo"));
+                      val::module_property("qtClipboardCutTo"));
     canvas.call<void>("addEventListener", std::string("copy"),
-                      val::module_property("qClipboardCopyTo"));
+                      val::module_property("qtClipboardCopyTo"));
     canvas.call<void>("addEventListener", std::string("paste"),
-                      val::module_property("qClipboardPasteTo"));
+                      val::module_property("qtClipboardPasteTo"));
 }
 
 void QWasmClipboard::readTextFromClipboard()
@@ -212,7 +212,7 @@ void QWasmClipboard::readTextFromClipboard()
     if (QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
         val navigator = val::global("navigator");
         val textPromise = navigator["clipboard"].call<val>("readText");
-        val readTextResolve = val::global("Module")["qClipboardPromiseResolve"];
+        val readTextResolve = val::global("Module")["qtClipboardPromiseResolve"];
         textPromise.call<val>("then", readTextResolve);
     }
 }
@@ -221,8 +221,8 @@ void QWasmClipboard::writeTextToClipboard()
 {
     if (QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
         val module = val::global("Module");
-        val txt = module.call<val>("getClipboardData");
-        val format =  module.call<val>("getClipboardFormat");
+        val txt = module.call<val>("qtGetClipboardData");
+        val format =  module.call<val>("qtGetClipboardFormat");
         val navigator = val::global("navigator");
         navigator["clipboard"].call<void>("writeText", txt.as<std::string>());
     }

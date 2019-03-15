@@ -227,7 +227,7 @@ std::string EventCallback::contextPropertyName(const std::string &eventName)
     return std::string("data-qtEventCallbackContext") + eventName;
 }
 
-EMSCRIPTEN_BINDINGS(QtStdwebCalback) {
+EMSCRIPTEN_BINDINGS(qtStdwebCalback) {
     emscripten::function("qtStdWebEventCallbackActivate", &EventCallback::activate);
 }
 

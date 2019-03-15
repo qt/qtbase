@@ -56,14 +56,14 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
-void browserBeforeUnload(emscripten::val)
+static void browserBeforeUnload(emscripten::val)
 {
     QWasmIntegration::QWasmBrowserExit();
 }
 
-EMSCRIPTEN_BINDINGS(my_module)
+EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
-    function("browserBeforeUnload", &browserBeforeUnload);
+    function("qtBrowserBeforeUnload", &browserBeforeUnload);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
@@ -92,7 +92,7 @@ QWasmIntegration::QWasmIntegration()
         addScreen(canvasId);
     }
 
-    emscripten::val::global("window").set("onbeforeunload", val::module_property("browserBeforeUnload"));
+    emscripten::val::global("window").set("onbeforeunload", val::module_property("qtBrowserBeforeUnload"));
 }
 
 QWasmIntegration::~QWasmIntegration()
