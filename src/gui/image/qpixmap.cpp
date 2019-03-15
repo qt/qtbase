@@ -1543,6 +1543,11 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
+    if (Q_UNLIKELY(!qobject_cast<QGuiApplication *>(QCoreApplication::instance()))) {
+        qWarning("QPixmap::fromImage: QPixmap cannot be created without a QGuiApplication");
+        return QPixmap();
+    }
+
     QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     data->fromImage(image, flags);
     return QPixmap(data.take());
@@ -1565,6 +1570,11 @@ QPixmap QPixmap::fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
+    if (Q_UNLIKELY(!qobject_cast<QGuiApplication *>(QCoreApplication::instance()))) {
+        qWarning("QPixmap::fromImageInPlace: QPixmap cannot be created without a QGuiApplication");
+        return QPixmap();
+    }
+
     QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     data->fromImageInPlace(image, flags);
     return QPixmap(data.take());
@@ -1584,6 +1594,11 @@ QPixmap QPixmap::fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags)
 {
+    if (Q_UNLIKELY(!qobject_cast<QGuiApplication *>(QCoreApplication::instance()))) {
+        qWarning("QPixmap::fromImageReader: QPixmap cannot be created without a QGuiApplication");
+        return QPixmap();
+    }
+
     QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     data->fromImageReader(imageReader, flags);
     return QPixmap(data.take());
