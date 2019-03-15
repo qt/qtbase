@@ -2476,10 +2476,6 @@ static QByteArray createPropertyInfo()
         out += ", ";
         out += QByteArray::number( p.lowerCaseDiff );
         out += ", ";
-        out += "#ifdef Q_OS_WASM \n";
-//     "        unsigned char    : 0; //wasm 64 packing trick QTBUG-65259\n"
-        out += "#endif \n";
-        out += ", ";
 //     "        ushort upperCaseSpecial    : 1;\n"
 //     "        signed short upperCaseDiff : 15;\n"
         out += QByteArray::number( p.upperCaseSpecial );
@@ -2503,10 +2499,6 @@ static QByteArray createPropertyInfo()
         out += ", ";
 //     "    ushort nfQuickCheck        : 8;\n"
         out += QByteArray::number( p.nfQuickCheck );
-        out += ", ";
-        out += "#ifdef Q_OS_WASM \n";
-//     "        unsigned char    : 0; //wasm 64 packing trick QTBUG-65259\n"
-        out += "#endif \n";
         out += ", ";
 //     "        ushort graphemeBreakClass  : 5; /* 5 used */\n"
 //     "        ushort wordBreakClass      : 5; /* 5 used */\n"
