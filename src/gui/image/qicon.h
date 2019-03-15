@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QIconPrivate;
 class QIconEngine;
+class QPainter;
 
 class Q_GUI_EXPORT QIcon
 {
