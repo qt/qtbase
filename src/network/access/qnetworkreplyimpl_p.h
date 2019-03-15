@@ -209,7 +209,6 @@ public:
 };
 Q_DECLARE_TYPEINFO(QNetworkReplyImplPrivate::InternalNotifications, Q_PRIMITIVE_TYPE);
 
-#ifndef QT_NO_BEARERMANAGEMENT
 class QDisabledNetworkReply : public QNetworkReply
 {
     Q_OBJECT
@@ -223,7 +222,6 @@ public:
 protected:
     qint64 readData(char *, qint64) override { return -1; }
 };
-#endif
 
 QT_END_NAMESPACE
 

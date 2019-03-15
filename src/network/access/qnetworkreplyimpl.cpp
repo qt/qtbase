@@ -1117,7 +1117,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     return true;
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
 QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
                                              const QNetworkRequest &req,
                                              QNetworkAccessManager::Operation op)
@@ -1142,7 +1141,6 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
 QDisabledNetworkReply::~QDisabledNetworkReply()
 {
 }
-#endif
 
 QT_END_NAMESPACE
 
