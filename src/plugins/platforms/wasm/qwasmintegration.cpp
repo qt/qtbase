@@ -61,9 +61,23 @@ static void browserBeforeUnload(emscripten::val)
     QWasmIntegration::QWasmBrowserExit();
 }
 
+static void addCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->addScreen(canvasId);
+}
+
+static void removeCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->removeScreen(canvasId);
+}
+
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
     function("qtBrowserBeforeUnload", &browserBeforeUnload);
+    function("qtAddCanvasElement", &addCanvasElement);
+    function("qtRemoveCanvasElement", &removeCanvasElement);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
@@ -99,8 +113,9 @@ QWasmIntegration::~QWasmIntegration()
 {
     delete m_fontDb;
 
-    while (!m_screens.isEmpty())
-        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
+    for (auto it = m_screens.constBegin(); it != m_screens.constEnd(); ++it)
+        QWindowSystemInterface::handleScreenRemoved(*it);
+    m_screens.clear();
 
     s_instance = nullptr;
 }
@@ -184,17 +199,17 @@ QPlatformClipboard* QWasmIntegration::clipboard() const
     return m_clipboard;
 }
 
-QVector<QWasmScreen *> QWasmIntegration::screens()
-{
-    return m_screens;
-}
-
 void QWasmIntegration::addScreen(const QString &canvasId)
 {
     QWasmScreen *screen = new QWasmScreen(canvasId);
     m_clipboard->installEventHandlers(canvasId);
-    m_screens.append(screen);
+    m_screens.insert(canvasId, screen);
     QWindowSystemInterface::handleScreenAdded(screen);
+}
+
+void QWasmIntegration::removeScreen(const QString &canvasId)
+{
+    QWindowSystemInterface::handleScreenRemoved(m_screens.take(canvasId));
 }
 
 QT_END_NAMESPACE
