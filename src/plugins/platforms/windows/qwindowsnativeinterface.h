@@ -66,6 +66,7 @@ class QWindowsNativeInterface : public QPlatformNativeInterface
     Q_OBJECT
     Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
     Q_PROPERTY(QVariant gpu READ gpu STORED false)
+    Q_PROPERTY(QVariant gpuList READ gpuList STORED false)
 
 public:
     void *nativeResourceForIntegration(const QByteArray &resource) override;
@@ -91,6 +92,7 @@ public:
     void setAsyncExpose(bool value);
 
     QVariant gpu() const;
+    QVariant gpuList() const;
 
     QVariantMap windowProperties(QPlatformWindow *window) const override;
     QVariant windowProperty(QPlatformWindow *window, const QString &name) const override;

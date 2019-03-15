@@ -1722,7 +1722,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
     QStringList importPaths;
     importPaths += shellQuote(options->qtInstallDirectory + QLatin1String("/qml"));
-    importPaths += rootPath;
+    importPaths += shellQuote(rootPath);
     for (const QString &qmlImportPath : qAsConst(options->qmlImportPaths))
         importPaths += shellQuote(qmlImportPath);
 

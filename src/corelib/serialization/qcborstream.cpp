@@ -420,7 +420,7 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value IllegalSimpleType The CBOR stream contains a Simple Type encoded incorrectly (data is
                             corrupt and the error is not recoverable).
    \value InvalidUtf8String The CBOR stream contains a text string that does not decode properly
-                            as UTF (data is corrupt and the error is not recoverable).
+                            as UTF-8 (data is corrupt and the error is not recoverable).
    \value DataTooLarge      CBOR string, map or array is too big and cannot be parsed by Qt
                             (internal limitation, but the error is not recoverable).
    \value NestingTooDeep    Too many levels of arrays or maps encountered while processing the
@@ -428,6 +428,24 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value UnsupportedType   The CBOR stream contains a known type that the implementation does not
                             support (internal limitation, but the error is not recoverable).
  */
+
+// Convert from CborError to QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static QCborError fromCborError(CborError err)
+{
+    return { QCborError::Code(int(err)) };
+}
+
+// Convert to CborError from QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static CborError toCborError(QCborError c)
+{
+    return CborError(int(c.c));
+}
 
 /*!
    \variable QCborError::c
@@ -499,8 +517,8 @@ QString QCborError::toString() const
         return QStringLiteral("Internal limitation: unsupported type");
     }
 
-    // get the error from TinyCBOR
-    CborError err = CborError(int(c));
+    // get the error string from TinyCBOR
+    CborError err = toCborError(*this);
     return QString::fromLatin1(cbor_error_string(err));
 }
 
@@ -1839,8 +1857,7 @@ public:
         if (err != CborErrorUnexpectedEOF)
             corrupt = true;
 
-        // our error codes are the same (for now)
-        lastError = { QCborError::Code(err) };
+        lastError = fromCborError(err);
     }
 
     void updateBufferAfterString(qsizetype offset, qsizetype size)

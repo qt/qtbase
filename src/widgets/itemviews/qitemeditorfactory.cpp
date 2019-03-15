@@ -244,6 +244,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
     case QVariant::Bool: {
         QBooleanComboBox *cb = new QBooleanComboBox(parent);
         cb->setFrame(false);
+        cb->setSizePolicy(QSizePolicy::Ignored, cb->sizePolicy().verticalPolicy());
         return cb; }
 #endif
 #if QT_CONFIG(spinbox)
@@ -252,12 +253,14 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         sb->setFrame(false);
         sb->setMinimum(0);
         sb->setMaximum(INT_MAX);
+        sb->setSizePolicy(QSizePolicy::Ignored, sb->sizePolicy().verticalPolicy());
         return sb; }
     case QVariant::Int: {
         QSpinBox *sb = new QSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(INT_MIN);
         sb->setMaximum(INT_MAX);
+        sb->setSizePolicy(QSizePolicy::Ignored, sb->sizePolicy().verticalPolicy());
         return sb; }
 #endif
 #if QT_CONFIG(datetimeedit)
@@ -284,6 +287,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         sb->setFrame(false);
         sb->setMinimum(-DBL_MAX);
         sb->setMaximum(DBL_MAX);
+        sb->setSizePolicy(QSizePolicy::Ignored, sb->sizePolicy().verticalPolicy());
         return sb; }
 #endif
 #if QT_CONFIG(lineedit)

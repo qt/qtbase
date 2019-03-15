@@ -42,6 +42,7 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qflags.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
@@ -52,6 +53,7 @@ class QVariant;
 struct GpuDescription
 {
     static GpuDescription detect();
+    static QVector<GpuDescription> detectAll();
     QString toString() const;
     QVariant toVariant() const;
 
