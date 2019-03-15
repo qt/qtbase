@@ -1128,8 +1128,8 @@ QList<QSslCertificate> QSslSocket::peerCertificateChain() const
     handshake phase begins.
 
     \sa QSslConfiguration::ciphers(), QSslConfiguration::setCiphers(),
-        QSslConfiguration::setDefaultCiphers(),
-        QSslConfiguration::defaultCiphers(),
+        QSslConfiguration::setCiphers(),
+        QSslConfiguration::ciphers(),
         QSslConfiguration::supportedCiphers()
 */
 QSslCipher QSslSocket::sessionCipher() const
@@ -1489,7 +1489,7 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
 
-    \sa QSslConfiguration::defaultCaCertificates(), addCaCertificates(),
+    \sa QSslConfiguration::caCertificates(), addCaCertificates(),
         addDefaultCaCertificate()
 */
 bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat encoding,
@@ -1515,7 +1515,7 @@ void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa QSslConfiguration::defaultCaCertificates(), addCaCertificates()
+    \sa QSslConfiguration::caCertificates(), addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificates(const QList<QSslCertificate> &certificates)
 {

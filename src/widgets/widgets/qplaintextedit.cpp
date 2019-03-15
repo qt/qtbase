@@ -2930,7 +2930,7 @@ bool QPlainTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
 #endif
 
 /*!
-    \fn bool QTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
+    \fn bool QPlainTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
 
     \since 5.13
     \overload

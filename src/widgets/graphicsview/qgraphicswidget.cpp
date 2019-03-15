@@ -1232,6 +1232,9 @@ QVariant QGraphicsWidget::propertyChange(const QString &propertyName, const QVar
     event() or in any of the convenience functions; you should not have to
     reimplement this function in a subclass of QGraphicsWidget.
 
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
+
     \sa QGraphicsItem::sceneEvent()
 */
 bool QGraphicsWidget::sceneEvent(QEvent *event)

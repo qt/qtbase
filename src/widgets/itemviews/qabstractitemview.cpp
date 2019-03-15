@@ -1689,6 +1689,9 @@ bool QAbstractItemView::event(QEvent *event)
     This? mode, if the given \a event is a QEvent::ToolTip,or a
     QEvent::WhatsThis. It passes all other
     events on to its base class viewportEvent() handler.
+
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
 */
 bool QAbstractItemView::viewportEvent(QEvent *event)
 {

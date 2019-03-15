@@ -3436,7 +3436,7 @@ bool QRasterPaintEngine::requiresPretransformedGlyphPositions(QFontEngine *fontE
 }
 
 /*!
-   Indicates whether glyph caching is supported by the font engine
+   Returns whether glyph caching is supported by the font engine
    \a fontEngine with the given transform \a m applied.
 */
 bool QRasterPaintEngine::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
