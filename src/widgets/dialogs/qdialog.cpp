@@ -246,6 +246,13 @@ void QDialogPrivate::deletePlatformHelper()
     window-system properties for the widget (in particular it will
     reset the Qt::Dialog flag).
 
+    \note The parent relationship of the dialog does \e{not} imply
+    that the dialog will always be stacked on top of the parent
+    window. To ensure that the dialog is always on top, make the
+    dialog modal. This also applies for child windows of the dialog
+    itself. To ensure that child windows of the dialog stay on top
+    of the dialog, make the child windows modal as well.
+
     \section1 Modal Dialogs
 
     A \b{modal} dialog is a dialog that blocks input to other

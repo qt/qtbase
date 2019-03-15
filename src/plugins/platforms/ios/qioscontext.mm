@@ -306,7 +306,7 @@ bool QIOSContext::verifyGraphicsHardwareAvailability()
                 Q_UNUSED(oldState);
                 if (applicationBackgrounded && newState != Qt::ApplicationSuspended) {
                     qCDebug(lcQpaGLContext) << "app no longer backgrounded, rendering enabled";
-                    applicationBackgrounded = true;
+                    applicationBackgrounded = false;
                 }
             }
         );
@@ -317,6 +317,7 @@ bool QIOSContext::verifyGraphicsHardwareAvailability()
                     return;
 
                 qCDebug(lcQpaGLContext) << "app backgrounded, rendering disabled";
+                applicationBackgrounded = true;
 
                 // By the time we receive this signal the application has moved into
                 // Qt::ApplactionStateSuspended, and all windows have been obscured,

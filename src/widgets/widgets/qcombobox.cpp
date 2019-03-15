@@ -2046,7 +2046,7 @@ QAbstractItemModel *QComboBox::model() const
 }
 
 /*!
-    Sets the model to be \a model. \a model must not be 0.
+    Sets the model to be \a model. \a model must not be \nullptr.
     If you want to clear the contents of a model, call clear().
 
     \sa clear()

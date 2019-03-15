@@ -44,11 +44,13 @@ QGestureRecognizer::Result ThreeFingerSlideGestureRecognizer::recognize(QGesture
     switch (event->type()) {
     case QEvent::TouchBegin:
         result = QGestureRecognizer::MayBeGesture;
+        break;
     case QEvent::TouchEnd:
         if (d->gestureFired)
             result = QGestureRecognizer::FinishGesture;
         else
             result = QGestureRecognizer::CancelGesture;
+        break;
     case QEvent::TouchUpdate:
         if (d->state() != Qt::NoGesture) {
             QTouchEvent *ev = static_cast<QTouchEvent*>(event);

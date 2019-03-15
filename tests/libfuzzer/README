@@ -12,7 +12,9 @@ data which triggered the crash. You can then use this to debug and fix the calle
 
 To run a test with libFuzzer:
 
-1. Install libFuzzer, e.g. from the repositories of the Linux distribution you are using.
+1. Install clang 5.0 or later, e.g. from the repositories of the Linux distribution you are using.
+   Depending on the version of clang and the source you are installing from, you might have to
+   install libFuzzer for this version of clang explicitly.
 2. Make sure clang and clang++ from this version of clang are found in PATH.
 3. Configure Qt with
     -platform linux-clang -coverage trace-pc-guard

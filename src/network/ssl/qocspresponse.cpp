@@ -124,14 +124,14 @@ QOcspResponse::QOcspResponse()
 /*!
     \since 5.13
 
-    Creates a new response, the copy of \a other.
+    Copy-constructs a QOcspResponse instance.
 */
 QOcspResponse::QOcspResponse(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
-    Move-constructs a QOcspResponse instance from \a other.
+    Move-constructs a QOcspResponse instance.
 */
 QOcspResponse::QOcspResponse(QOcspResponse &&) Q_DECL_NOTHROW = default;
 
@@ -145,14 +145,14 @@ QOcspResponse::~QOcspResponse() = default;
 /*!
     \since 5.13
 
-    Assigns \a other to the response and returns a reference to this response.
+    Copy-assigns and returns a reference to this response.
 */
 QOcspResponse &QOcspResponse::operator=(const QOcspResponse &) = default;
 
 /*!
     \since 5.13
 
-    Move-assigns \a other to this QOcspResponse instance.
+    Move-assigns to this QOcspResponse instance.
 */
 QOcspResponse &QOcspResponse::operator=(QOcspResponse &&) Q_DECL_NOTHROW = default;
 

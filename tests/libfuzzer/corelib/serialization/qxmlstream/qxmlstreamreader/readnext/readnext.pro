@@ -1,5 +1,5 @@
 QT -= gui
-CONFIG += c++11 console
+CONFIG += console
 CONFIG -= app_bundle
 SOURCES += main.cpp
-LIBS += -lFuzzer
+LIBS += -fsanitize=fuzzer

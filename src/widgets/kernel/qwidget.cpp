@@ -1009,8 +1009,8 @@ struct QWidgetExceptionCleaner
     deleted.
 
     The widget flags argument, \a f, is normally 0, but it can be set
-    to customize the frame of a window (i.e. \a
-    parent must be 0). To customize the frame, use a value composed
+    to customize the frame of a window (i.e. \a parent must be
+    \nullptr). To customize the frame, use a value composed
     from the bitwise OR of any of the \l{Qt::WindowFlags}{window flags}.
 
     If you add a child widget to an already visible widget you must
@@ -4227,7 +4227,7 @@ void QWidget::setFixedHeight(int h)
 
 /*!
     Translates the widget coordinate \a pos to the coordinate system
-    of \a parent. The \a parent must not be 0 and must be a parent
+    of \a parent. The \a parent must not be \nullptr and must be a parent
     of the calling widget.
 
     \sa mapFrom(), mapToParent(), mapToGlobal(), underMouse()
@@ -4252,7 +4252,7 @@ QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
 /*!
     Translates the widget coordinate \a pos from the coordinate system
     of \a parent to this widget's coordinate system. The \a parent
-    must not be 0 and must be a parent of the calling widget.
+    must not be \nullptr and must be a parent of the calling widget.
 
     \sa mapTo(), mapFromParent(), mapFromGlobal(), underMouse()
 */

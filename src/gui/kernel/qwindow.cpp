@@ -688,7 +688,8 @@ QWindow *QWindow::parent() const
     Sets the \a parent Window. This will lead to the windowing system managing
     the clip of the window, so it will be clipped to the \a parent window.
 
-    Setting \a parent to be 0 will make the window become a top level window.
+    Setting \a parent to be \nullptr will make the window become a top level
+    window.
 
     If \a parent is a window created by fromWinId(), then the current window
     will be embedded inside \a parent, if the platform supports it.
