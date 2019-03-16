@@ -48,21 +48,23 @@
 
 QT_REQUIRE_CONFIG(processenvironment);
 
+#ifdef Q_OS_WIN
+typedef struct _PROCESS_INFORMATION *Q_PID;
+#endif
+
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+typedef struct _SECURITY_ATTRIBUTES Q_SECURITY_ATTRIBUTES;
+typedef struct _STARTUPINFOW Q_STARTUPINFO;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QProcessPrivate;
-
-#if !defined(Q_OS_WIN)
-typedef qint64 Q_PID;
-#else
-QT_END_NAMESPACE
-typedef struct _PROCESS_INFORMATION *Q_PID;
-typedef struct _SECURITY_ATTRIBUTES Q_SECURITY_ATTRIBUTES;
-typedef struct _STARTUPINFOW Q_STARTUPINFO;
-QT_BEGIN_NAMESPACE
-#endif
-
 class QProcessEnvironmentPrivate;
+
+#ifndef Q_OS_WIN
+typedef qint64 Q_PID;
+#endif
 
 class Q_CORE_EXPORT QProcessEnvironment
 {

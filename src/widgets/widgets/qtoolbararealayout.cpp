@@ -1078,7 +1078,11 @@ bool QToolBarAreaLayout::insertGap(const QList<int> &path, QLayoutItem *item)
 void QToolBarAreaLayout::remove(const QList<int> &path)
 {
     Q_ASSERT(path.count() == 3);
-    docks[path.at(0)].lines[path.at(1)].toolBarItems.removeAt(path.at(2));
+    QToolBarAreaLayoutInfo &dock = docks[path.at(0)];
+    QToolBarAreaLayoutLine &line = dock.lines[path.at(1)];
+    line.toolBarItems.removeAt(path.at(2));
+    if (line.toolBarItems.isEmpty())
+        dock.lines.removeAt(path.at(1));
 }
 
 void QToolBarAreaLayout::remove(QLayoutItem *item)

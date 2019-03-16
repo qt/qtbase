@@ -62,19 +62,70 @@ QT_BEGIN_NAMESPACE
 
 static const DWORD VENDOR_ID_AMD = 0x1002;
 
+static GpuDescription adapterIdentifierToGpuDescription(const D3DADAPTER_IDENTIFIER9 &adapterIdentifier)
+{
+    GpuDescription result;
+    result.vendorId = adapterIdentifier.VendorId;
+    result.deviceId = adapterIdentifier.DeviceId;
+    result.revision = adapterIdentifier.Revision;
+    result.subSysId = adapterIdentifier.SubSysId;
+    QVector<int> version(4, 0);
+    version[0] = HIWORD(adapterIdentifier.DriverVersion.HighPart); // Product
+    version[1] = LOWORD(adapterIdentifier.DriverVersion.HighPart); // Version
+    version[2] = HIWORD(adapterIdentifier.DriverVersion.LowPart); // Sub version
+    version[3] = LOWORD(adapterIdentifier.DriverVersion.LowPart); // build
+    result.driverVersion = QVersionNumber(version);
+    result.driverName = adapterIdentifier.Driver;
+    result.description = adapterIdentifier.Description;
+    return result;
+}
+
+class QDirect3D9Handle
+{
+public:
+    Q_DISABLE_COPY(QDirect3D9Handle)
+
+    QDirect3D9Handle();
+    ~QDirect3D9Handle();
+
+    bool isValid() const { return m_direct3D9 != nullptr; }
+
+    UINT adapterCount() const { return m_direct3D9 ? m_direct3D9->GetAdapterCount() : 0u; }
+    bool retrieveAdapterIdentifier(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const;
+
+private:
+    QSystemLibrary m_d3d9lib;
+    IDirect3D9 *m_direct3D9 = nullptr;
+};
+
+QDirect3D9Handle::QDirect3D9Handle() :
+    m_d3d9lib(QStringLiteral("d3d9"))
+{
+    using PtrDirect3DCreate9 = IDirect3D9 *(WINAPI *)(UINT);
+
+    if (m_d3d9lib.load()) {
+        if (auto direct3DCreate9 = (PtrDirect3DCreate9)m_d3d9lib.resolve("Direct3DCreate9"))
+            m_direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
+    }
+}
+
+QDirect3D9Handle::~QDirect3D9Handle()
+{
+    if (m_direct3D9)
+       m_direct3D9->Release();
+}
+
+bool QDirect3D9Handle::retrieveAdapterIdentifier(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const
+{
+    return m_direct3D9
+        && SUCCEEDED(m_direct3D9->GetAdapterIdentifier(n, 0, adapterIdentifier));
+}
+
 GpuDescription GpuDescription::detect()
 {
-    typedef IDirect3D9 * (WINAPI *PtrDirect3DCreate9)(UINT);
-
     GpuDescription result;
-    QSystemLibrary d3d9lib(QStringLiteral("d3d9"));
-    if (!d3d9lib.load())
-        return result;
-    PtrDirect3DCreate9 direct3DCreate9 = (PtrDirect3DCreate9)d3d9lib.resolve("Direct3DCreate9");
-    if (!direct3DCreate9)
-        return result;
-    IDirect3D9 *direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
-    if (!direct3D9)
+    QDirect3D9Handle direct3D9;
+    if (!direct3D9.isValid())
         return result;
 
     D3DADAPTER_IDENTIFIER9 adapterIdentifier;
@@ -85,20 +136,8 @@ GpuDescription GpuDescription::detect()
     // and D3D uses by default. Therefore querying any additional adapters is
     // futile and not useful for our purposes in general, except for
     // identifying a few special cases later on.
-    HRESULT hr = direct3D9->GetAdapterIdentifier(0, 0, &adapterIdentifier);
-    if (SUCCEEDED(hr)) {
-        result.vendorId = adapterIdentifier.VendorId;
-        result.deviceId = adapterIdentifier.DeviceId;
-        result.revision = adapterIdentifier.Revision;
-        result.subSysId = adapterIdentifier.SubSysId;
-        QVector<int> version(4, 0);
-        version[0] = HIWORD(adapterIdentifier.DriverVersion.HighPart); // Product
-        version[1] = LOWORD(adapterIdentifier.DriverVersion.HighPart); // Version
-        version[2] = HIWORD(adapterIdentifier.DriverVersion.LowPart); // Sub version
-        version[3] = LOWORD(adapterIdentifier.DriverVersion.LowPart); // build
-        result.driverVersion = QVersionNumber(version);
-        result.driverName = adapterIdentifier.Driver;
-        result.description = adapterIdentifier.Description;
+    if (direct3D9.retrieveAdapterIdentifier(0, &adapterIdentifier)) {
+        result = adapterIdentifierToGpuDescription(adapterIdentifier);
         isAMD = result.vendorId == VENDOR_ID_AMD;
     }
 
@@ -106,30 +145,41 @@ GpuDescription GpuDescription::detect()
     // when starting apps on a screen connected to the Intel card) by looking
     // for a default AMD adapter and an additional non-AMD one.
     if (isAMD) {
-        const UINT adapterCount = direct3D9->GetAdapterCount();
+        const UINT adapterCount = direct3D9.adapterCount();
         for (UINT adp = 1; adp < adapterCount; ++adp) {
-            hr = direct3D9->GetAdapterIdentifier(adp, 0, &adapterIdentifier);
-            if (SUCCEEDED(hr)) {
-                if (adapterIdentifier.VendorId != VENDOR_ID_AMD) {
-                    // Bingo. Now figure out the display for the AMD card.
-                    DISPLAY_DEVICE dd;
-                    memset(&dd, 0, sizeof(dd));
-                    dd.cb = sizeof(dd);
-                    for (int dev = 0; EnumDisplayDevices(nullptr, dev, &dd, 0); ++dev) {
-                        if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
-                            // DeviceName is something like \\.\DISPLAY1 which can be used to
-                            // match with the MONITORINFOEX::szDevice queried by QWindowsScreen.
-                            result.gpuSuitableScreen = QString::fromWCharArray(dd.DeviceName);
-                            break;
-                        }
+            if (direct3D9.retrieveAdapterIdentifier(adp, &adapterIdentifier)
+                && adapterIdentifier.VendorId != VENDOR_ID_AMD) {
+                // Bingo. Now figure out the display for the AMD card.
+                DISPLAY_DEVICE dd;
+                memset(&dd, 0, sizeof(dd));
+                dd.cb = sizeof(dd);
+                for (int dev = 0; EnumDisplayDevices(nullptr, dev, &dd, 0); ++dev) {
+                    if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+                        // DeviceName is something like \\.\DISPLAY1 which can be used to
+                        // match with the MONITORINFOEX::szDevice queried by QWindowsScreen.
+                        result.gpuSuitableScreen = QString::fromWCharArray(dd.DeviceName);
+                        break;
                     }
-                    break;
                 }
+                break;
             }
         }
     }
 
-    direct3D9->Release();
+    return result;
+}
+
+QVector<GpuDescription> GpuDescription::detectAll()
+{
+    QVector<GpuDescription> result;
+    QDirect3D9Handle direct3D9;
+    if (const UINT adapterCount = direct3D9.adapterCount()) {
+        for (UINT adp = 0; adp < adapterCount; ++adp) {
+            D3DADAPTER_IDENTIFIER9 adapterIdentifier;
+            if (direct3D9.retrieveAdapterIdentifier(adp, &adapterIdentifier))
+                result.append(adapterIdentifierToGpuDescription(adapterIdentifier));
+        }
+    }
     return result;
 }
 

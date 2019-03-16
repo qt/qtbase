@@ -695,7 +695,12 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 
 int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
-    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
+    auto translator = reinterpret_cast<QWasmEventTranslator*>(userData);
+    return translator->handleTouch(eventType, touchEvent);
+}
+
+int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent)
+{
     QList<QWindowSystemInterface::TouchPoint> touchPointList;
     touchPointList.reserve(touchEvent->numTouches);
     QWindow *window2;
@@ -704,50 +709,68 @@ int QWasmEventTranslator::touchCallback(int eventType, const EmscriptenTouchEven
 
         const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
 
-        QPoint point(touches->canvasX, touches->canvasY);
-        window2 = eventTranslator->screen()->compositor()->windowAt(point, 5);
-
+        QPoint point(touches->targetX, touches->targetY);
+        window2 = this->screen()->compositor()->windowAt(point, 5);
         QWindowSystemInterface::TouchPoint touchPoint;
 
-        auto cX = point.x();
-        auto cY = point.y();
         touchPoint.area = QRect(0, 0, 8, 8);
-        touchPoint.area.moveCenter(QPointF(cX,cY)); // simulate area
-
         touchPoint.id = touches->identifier;
-        touchPoint.normalPosition = QPointF(cX / window2->width(), cY / window2->height());
+        touchPoint.pressure = 1.0;
+
+        const QPointF screenPos(point);
+
+        touchPoint.area.moveCenter(screenPos);
+
+        const auto tp = pressedTouchIds.constFind(touchPoint.id);
+        if (tp != pressedTouchIds.constEnd())
+            touchPoint.normalPosition = tp.value();
+
+        QPointF normalPosition(screenPos.x() / window2->width(),
+                               screenPos.y() / window2->height());
+
+        const bool stationaryTouchPoint = (normalPosition == touchPoint.normalPosition);
+        touchPoint.normalPosition = normalPosition;
 
         switch (eventType) {
         case EMSCRIPTEN_EVENT_TOUCHSTART:
-            touchPoint.state = Qt::TouchPointPressed;
+            if (tp != pressedTouchIds.constEnd()) {
+                touchPoint.state = (stationaryTouchPoint
+                                    ? Qt::TouchPointStationary
+                                    : Qt::TouchPointMoved);
+            } else {
+                touchPoint.state = Qt::TouchPointPressed;
+            }
+            pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
+
             break;
         case EMSCRIPTEN_EVENT_TOUCHEND:
             touchPoint.state = Qt::TouchPointReleased;
+            pressedTouchIds.remove(touchPoint.id);
             break;
         case EMSCRIPTEN_EVENT_TOUCHMOVE:
-            touchPoint.state = Qt::TouchPointMoved;
+            touchPoint.state = (stationaryTouchPoint
+                                ? Qt::TouchPointStationary
+                                : Qt::TouchPointMoved);
+
+            pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
             break;
         default:
-            Q_UNREACHABLE();
+            break;
         }
 
         touchPointList.append(touchPoint);
     }
 
-    QWasmEventTranslator *wasmEventTranslator = (QWasmEventTranslator*)userData;
-    QFlags<Qt::KeyboardModifier> keyModifier = wasmEventTranslator->translatKeyModifier(touchEvent);
+    QFlags<Qt::KeyboardModifier> keyModifier = translatKeyModifier(touchEvent);
 
-    if (eventType != EMSCRIPTEN_EVENT_TOUCHCANCEL)
-        QWindowSystemInterface::handleTouchEvent
-                <QWindowSystemInterface::SynchronousDelivery>(window2, wasmEventTranslator->getTimestamp(),
-                                                              wasmEventTranslator->touchDevice,
-                                                              touchPointList, keyModifier);
-    else
-        QWindowSystemInterface::handleTouchCancelEvent(window2, wasmEventTranslator->getTimestamp(),
-                                                       wasmEventTranslator->touchDevice, keyModifier);
+    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
+                window2, getTimestamp(), touchDevice, touchPointList, keyModifier);
+
+    if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL)
+        QWindowSystemInterface::handleTouchCancelEvent(window2, getTimestamp(), touchDevice, keyModifier);
 
     QWasmEventDispatcher::maintainTimers();
-    return 1;
+    return 0;
 }
 
 quint64 QWasmEventTranslator::getTimestamp()

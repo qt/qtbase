@@ -112,6 +112,7 @@ struct QWindowsWindowData
     QMargins customMargins;    // User-defined, additional frame for NCCALCSIZE
     HWND hwnd = 0;
     bool embedded = false;
+    bool hasFrame = false;
 
     static QWindowsWindowData create(const QWindow *w,
                                      const QWindowsWindowData &parameters,

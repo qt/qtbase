@@ -125,11 +125,8 @@ goto doneargs
 
 :platform
     shift
-    if "%~1" == "win32-msvc2012" goto msvc
-    if "%~1" == "win32-msvc2013" goto msvc
-    if "%~1" == "win32-msvc2015" goto msvc
-    if "%~1" == "win32-msvc2017" goto msvc
     set PLATFORM=%~1
+    if "%PLATFORM:~0,10%" == "win32-msvc" goto msvc
     goto nextarg
 :msvc
     echo. >&2
@@ -150,7 +147,7 @@ goto doneargs
 :doneargs
 
 rem Find various executables
-for %%C in (clang-cl.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
+for %%C in (clang-cl.exe clang.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
 
 rem Determine host spec
 
@@ -161,6 +158,8 @@ if "%PLATFORM%" == "" (
         set PLATFORM=win32-msvc
     ) else if not "%clang-cl.exe%" == "" (
         set PLATFORM=win32-clang-msvc
+    ) else if not "%clang.exe%" == "" (
+        set PLATFORM=win32-clang-g++
     ) else if not "%g++.exe%" == "" (
         set PLATFORM=win32-g++
     ) else (
@@ -172,7 +171,7 @@ if not exist "%QTSRC%\mkspecs\%PLATFORM%\qmake.conf" (
     echo Host platform '%PLATFORM%' is invalid. Aborting. >&2
     exit /b 1
 )
-if "%PLATFORM:win32-g++=%" == "%PLATFORM%" (
+if "%PLATFORM:g++=%" == "%PLATFORM%" (
     if "%MAKE%" == "" (
         if not "%jom.exe%" == "" (
             set MAKE=jom

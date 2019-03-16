@@ -120,15 +120,30 @@ private:
         return category; \
     }
 
-#define qCDebug(category, ...) \
+#if !defined(QT_NO_DEBUG_OUTPUT)
+#  define qCDebug(category, ...) \
     for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).debug(__VA_ARGS__)
-#define qCInfo(category, ...) \
+#else
+#  define qCDebug(category, ...) QT_NO_QDEBUG_MACRO()
+#endif
+
+#if !defined(QT_NO_INFO_OUTPUT)
+#  define qCInfo(category, ...) \
     for (bool qt_category_enabled = category().isInfoEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).info(__VA_ARGS__)
-#define qCWarning(category, ...) \
+#else
+#  define qCInfo(category, ...) QT_NO_QDEBUG_MACRO()
+#endif
+
+#if !defined(QT_NO_WARNING_OUTPUT)
+#  define qCWarning(category, ...) \
     for (bool qt_category_enabled = category().isWarningEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).warning(__VA_ARGS__)
+#else
+#  define qCWarning(category, ...) QT_NO_QDEBUG_MACRO()
+#endif
+
 #define qCCritical(category, ...) \
     for (bool qt_category_enabled = category().isCriticalEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).critical(__VA_ARGS__)
@@ -144,25 +159,27 @@ private:
     }
 
 // check for enabled category inside QMessageLogger.
-#define qCDebug qDebug
-#define qCInfo qInfo
-#define qCWarning qWarning
+#if !defined(QT_NO_DEBUG_OUTPUT)
+#  define qCDebug qDebug
+#else
+#  define qCDebug(category) QT_NO_QDEBUG_MACRO()
+#endif
+
+#if !defined(QT_NO_INFO_OUTPUT)
+#  define qCInfo qInfo
+#else
+#  define qCInfo(category) QT_NO_QDEBUG_MACRO()
+#endif
+
+#if !defined(QT_NO_WARNING_OUTPUT)
+#  define qCWarning qWarning
+#else
+#  define qCWarning(category) QT_NO_QDEBUG_MACRO()
+#endif
+
 #define qCCritical qCritical
 
 #endif // Q_COMPILER_VARIADIC_MACROS || defined(Q_MOC_RUN)
-
-#if defined(QT_NO_DEBUG_OUTPUT)
-#  undef qCDebug
-#  define qCDebug(category) QT_NO_QDEBUG_MACRO()
-#endif
-#if defined(QT_NO_INFO_OUTPUT)
-#  undef qCInfo
-#  define qCInfo(category) QT_NO_QDEBUG_MACRO()
-#endif
-#if defined(QT_NO_WARNING_OUTPUT)
-#  undef qCWarning
-#  define qCWarning(category) QT_NO_QDEBUG_MACRO()
-#endif
 
 QT_END_NAMESPACE
 

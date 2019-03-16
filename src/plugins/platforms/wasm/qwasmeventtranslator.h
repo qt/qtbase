@@ -61,6 +61,7 @@ public:
 
     void processEvents();
     void initEventHandlers();
+    int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
 
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
@@ -113,6 +114,8 @@ private:
         { Qt::Key_O, Qt::Key_Ocircumflex},
         { Qt::Key_U, Qt::Key_Ucircumflex}
      };
+
+    QMap <int, QPointF> pressedTouchIds;
 
 private:
     QWindow *draggedWindow;

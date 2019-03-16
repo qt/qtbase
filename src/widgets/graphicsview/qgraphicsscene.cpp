@@ -3324,6 +3324,9 @@ void QGraphicsScene::advance()
     \l{QWidget::}{enterEvent()} and \l{QWidget::}{leaveEvent()}. Use this
     function to obtain those events instead.
 
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
+
     \sa contextMenuEvent(), keyPressEvent(), keyReleaseEvent(),
     mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(),
     mouseDoubleClickEvent(), focusInEvent(), focusOutEvent()

@@ -53,6 +53,7 @@ void tst_QNoDebug::noDebugOutput() const
     // should do nothing
     qDebug() << "foo";
     qCDebug(cat) << "foo";
+    qCDebug(cat, "foo");
 
     // qWarning still works, though
     QTest::ignoreMessage(QtWarningMsg, "bar");

@@ -4348,7 +4348,7 @@ QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
 
 */
 
-/*
+/*!
     \since 5.5
 
     Sets the texture comparison function on this texture to \a function. The texture

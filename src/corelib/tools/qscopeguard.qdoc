@@ -37,6 +37,12 @@ QT_BEGIN_NAMESPACE
            a scope.
 */
 
+/*! \fn template <typename F> void QScopeGuard<F>::dismiss()
+
+    Disarms the scope guard, so that the function \e F will not be called at
+    the end of the scope.
+*/
+
 /*!
     \fn template <typename F> const QScopeGuard<F> qScopeGuard(F f)
     \inmodule QtCore
