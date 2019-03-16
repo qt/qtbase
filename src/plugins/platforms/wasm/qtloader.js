@@ -122,6 +122,8 @@
 //      Add canvas at run-time. Adds a corresponding QScreen,
 // removeCanvasElement
 //      Remove canvas at run-time. Removes the corresponding QScreen.
+// resizeCanvasElement
+//      Signals to the application that a canvas has been resized.
 
 
 var Module = {}
@@ -233,6 +235,7 @@ function QtLoader(config)
     publicAPI.loadEmscriptenModule = loadEmscriptenModule;
     publicAPI.addCanvasElement = addCanvasElement;
     publicAPI.removeCanvasElement = removeCanvasElement;
+    publicAPI.resizeCanvasElement = resizeCanvasElement;
 
     restartCount = 0;
 
@@ -546,6 +549,11 @@ function QtLoader(config)
             Module.qtRemoveCanvasElement(element);
         else
             console.log("Error: removeCanvasElement can only be called in the Running state");
+    }
+
+    function resizeCanvasElement(element) {
+        if (publicAPI.status == "Running")
+            Module.qtResizeCanvasElement(element);
     }
 
     setStatus("Created");

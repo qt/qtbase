@@ -73,11 +73,18 @@ static void removeCanvasElement(emscripten::val canvas)
     QWasmIntegration::get()->removeScreen(canvasId);
 }
 
+static void resizeCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->resizeScreen(canvasId);
+}
+
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
     function("qtBrowserBeforeUnload", &browserBeforeUnload);
     function("qtAddCanvasElement", &addCanvasElement);
     function("qtRemoveCanvasElement", &removeCanvasElement);
+    function("qtResizeCanvasElement", &resizeCanvasElement);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
@@ -210,6 +217,11 @@ void QWasmIntegration::addScreen(const QString &canvasId)
 void QWasmIntegration::removeScreen(const QString &canvasId)
 {
     QWindowSystemInterface::handleScreenRemoved(m_screens.take(canvasId));
+}
+
+void QWasmIntegration::resizeScreen(const QString &canvasId)
+{
+    m_screens.value(canvasId)->updateQScreenAndCanvasRenderSize();
 }
 
 QT_END_NAMESPACE
