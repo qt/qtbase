@@ -191,6 +191,7 @@ public:
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
     static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
+    bool sendQueuedUserInputEvents();
     void processPostedEvents();
 };
 
