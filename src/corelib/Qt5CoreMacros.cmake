@@ -321,10 +321,10 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE} ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
-        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOMOC ON)
-        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOUIC ON)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
+        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
+        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE}
