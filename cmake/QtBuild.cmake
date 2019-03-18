@@ -752,6 +752,9 @@ function(add_qt_executable name)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
     endif()
 
+    get_filename_component(arg_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
+        ABSOLUTE BASE_DIR "${CMAKE_BINARY_DIR}")
+
     add_executable("${name}" ${arg_EXE_FLAGS})
 
     qt_autogen_tools("${name}"
