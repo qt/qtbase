@@ -349,7 +349,7 @@ class Scope(object):
         return child_count == 1 or self._children[1]._condition == 'else'
 
     def settle_condition(self):
-        new_children: typing.List[scope] = []
+        new_children: typing.List[Scope] = []
         for c in self._children:
             c.settle_condition()
 
