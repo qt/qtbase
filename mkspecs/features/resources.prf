@@ -75,9 +75,11 @@ for(resource, RESOURCES) {
 }
 
 !isEmpty(RESOURCES):contains(TEMPLATE, .*lib):plugin:static {
-    resource_init_function = $$lower($$basename(TARGET))_plugin_resource_init
+    pluginBaseName = $$basename(TARGET)
+    pluginName = $$lower($$replace(pluginBaseName, [-], _))
+    resource_init_function = $${pluginName}_plugin_resource_init
     DEFINES += "QT_PLUGIN_RESOURCE_INIT_FUNCTION=$$resource_init_function"
-    RESOURCE_INIT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_plugin_resources.cpp
+    RESOURCE_INIT_CPP = $$OUT_PWD/$${pluginName}_plugin_resources.cpp
 
     GENERATED_SOURCES += $$RESOURCE_INIT_CPP
     QMAKE_DISTCLEAN += $$RESOURCE_INIT_CPP
