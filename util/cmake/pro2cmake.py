@@ -852,6 +852,18 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     for l in sort_sources(sources):
         cm_fh.write('{}        {}\n'.format(ind, l))
 
+    dbus_adaptors = scope.expand('DBUS_ADAPTORS')
+    if dbus_adaptors:
+        cm_fh.write('{}    DBUS_ADAPTOR_SOURCES\n'.format(ind))
+    for d in sort_sources(dbus_adaptors):
+        cm_fh.write('{}        {}\n'.format(ind, d))
+
+    dbus_interfaces = scope.expand('DBUS_INTERFACES')
+    if dbus_interfaces:
+        cm_fh.write('{}    DBUS_INTERFACE_SOURCES\n'.format(ind))
+    for d in sort_sources(dbus_interfaces):
+        cm_fh.write('{}        {}\n'.format(ind, d))
+
     defines = scope.expand('DEFINES')
     if defines:
         cm_fh.write('{}    DEFINES\n'.format(ind))
