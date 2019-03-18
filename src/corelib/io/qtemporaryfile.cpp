@@ -908,8 +908,8 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
         qint64 old_off = 0;
         if(wasOpen)
             old_off = file.pos();
-        else
-            file.open(QIODevice::ReadOnly);
+        else if (!file.open(QIODevice::ReadOnly))
+            return nullptr;
         //dump data
         QTemporaryFile *ret = new QTemporaryFile;
         if (ret->open()) {
