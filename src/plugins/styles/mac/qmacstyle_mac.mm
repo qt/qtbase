@@ -1227,11 +1227,17 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         Q_UNREACHABLE();
     }
 
-    const auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
+    auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
+    if (!qt_mac_applicationIsInDarkMode()) {
+        // This color already has alpha ~ 0.25, this value is too small - the ring is
+        // very pale and nothing like the native one. 0.39 makes it better (not ideal
+        // anyway). The color seems to be correct in dark more without any modification.
+        focusRingColor.setAlphaF(0.39);
+    }
 
     p->save();
     p->setRenderHint(QPainter::Antialiasing);
-    p->setOpacity(0.5);
+
     if (cw.type == SegmentedControl_First) {
         // TODO Flip left-right
     }
