@@ -1,16 +1,16 @@
-# Generated from rasterwindow.pro.
+# Generated from openglwindow.pro.
 
 #####################################################################
-## rasterwindow Binary:
+## openglwindow Binary:
 #####################################################################
 
-add_qt_executable(rasterwindow
+add_qt_executable(openglwindow
     GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/rasterwindow"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/rasterwindow"
+    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/openglwindow"
+    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/openglwindow"
     SOURCES
         main.cpp
-        rasterwindow.cpp rasterwindow.h
+        openglwindow.cpp openglwindow.h
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES # special case

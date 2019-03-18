@@ -1,0 +1,42 @@
+# Generated from torrent.pro.
+
+#####################################################################
+## torrent Binary:
+#####################################################################
+
+add_qt_executable(torrent
+    GUI
+    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/torrent"
+    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/torrent"
+    SOURCES
+        addtorrentdialog.cpp addtorrentdialog.h
+        bencodeparser.cpp bencodeparser.h
+        connectionmanager.cpp connectionmanager.h
+        filemanager.cpp filemanager.h
+        forms/addtorrentform.ui
+        main.cpp
+        mainwindow.cpp mainwindow.h
+        metainfo.cpp metainfo.h
+        peerwireclient.cpp peerwireclient.h
+        ratecontroller.cpp ratecontroller.h
+        torrentclient.cpp torrentclient.h
+        torrentserver.cpp torrentserver.h
+        trackerclient.cpp trackerclient.h
+    INCLUDE_DIRECTORIES
+        forms # special case
+    LIBRARIES
+        Qt::Network
+        Qt::Widgets
+)
+
+# Resources:
+add_qt_resource(torrent "icons" PREFIX "/" FILES
+    icons/1downarrow.png
+    icons/1uparrow.png
+    icons/bottom.png
+    icons/exit.png
+    icons/peertopeer.png
+    icons/player_pause.png
+    icons/player_play.png
+    icons/player_stop.png)
+
