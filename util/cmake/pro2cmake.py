@@ -1237,7 +1237,8 @@ def write_simd_part(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     cmake_function: str, scope: Scope, *,
                     extra_lines: typing.List[str] = [],
-                    indent: int = 0, **kwargs: typing.Any):
+                    indent: int = 0, extra_keys: typing.List[str],
+                    **kwargs: typing.Any):
     # Evaluate total condition of all scopes:
     recursive_evaluate_scope(scope)
 
@@ -1252,6 +1253,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     assert scopes[0].total_condition == 'ON'
 
     scopes[0].reset_visited_keys()
+    for k in extra_keys:
+        scopes[0].get(k)
 
     # Now write out the scopes:
     write_header(cm_fh, name, typename, indent=indent)
@@ -1302,7 +1305,7 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
 
     write_main_part(cm_fh, module_name[2:], 'Module', 'add_qt_module', scope,
                     extra_lines=extra, indent=indent,
-                    known_libraries={'Qt::Core', })
+                    known_libraries={'Qt::Core', }, extra_keys=[])
 
     if 'qt_tracepoints' in scope.get('CONFIG'):
         tracepoints = map_to_file(scope.getString('TRACEPOINT_PROVIDER'),
@@ -1319,7 +1322,7 @@ def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
 
     write_main_part(cm_fh, tool_name, 'Tool', 'add_qt_tool', scope,
                     indent=indent, known_libraries={'Qt::Core', },
-                    extra_lines=extra)
+                    extra_lines=extra, extra_keys=['CONFIG'])
 
 
 def write_test(cm_fh: typing.IO[str], scope: Scope, *,
@@ -1328,7 +1331,8 @@ def write_test(cm_fh: typing.IO[str], scope: Scope, *,
     assert test_name
 
     write_main_part(cm_fh, test_name, 'Test', 'add_qt_test', scope,
-                    indent=indent, known_libraries={'Qt::Core', 'Qt::Test', })
+                    indent=indent, known_libraries={'Qt::Core', 'Qt::Test',},
+                    extra_keys=[])
 
 
 def write_binary(cm_fh: typing.IO[str], scope: Scope,
@@ -1347,7 +1351,7 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
 
     write_main_part(cm_fh, binary_name, 'Binary', 'add_qt_executable', scope,
                     extra_lines=extra, indent=indent,
-                    known_libraries={'Qt::Core', })
+                    known_libraries={'Qt::Core', }, extra_keys=['target.path', 'INSTALLS'])
 
 
 def write_plugin(cm_fh, scope, *, indent: int = 0):
@@ -1355,7 +1359,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
     assert plugin_name
 
     write_main_part(cm_fh, plugin_name, 'Plugin', 'add_qt_plugin', scope,
-                    indent=indent, known_libraries={'QtCore', })
+                    indent=indent, known_libraries={'QtCore', }, extra_keys=[])
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
