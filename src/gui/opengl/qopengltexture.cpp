@@ -3530,6 +3530,35 @@ void QOpenGLTexture::setData(int xOffset, int yOffset, int zOffset,
     This overload is to be used to update a part of the texture. Parameters \a
     xOffset, \a yOffset, \a zOffset specify the texel offsets within the
     texture. Parameters \a width, \a height and \a depth specify the dimensions
+    of the sub image. The mip map level the sub image we want to
+    update is specified with \a mipLevel.
+
+    The structure of the pixel data pointed to by \a data is specified by \a
+    sourceFormat and \a sourceType. The pixel data upload can optionally be
+    controlled by \a options.
+*/
+void QOpenGLTexture::setData(int xOffset, int yOffset, int zOffset,
+                             int width, int height, int depth,
+                             int mipLevel,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(xOffset, yOffset, zOffset,
+               width, height, depth,
+               mipLevel, 0, 1,
+               QOpenGLTexture::CubeMapPositiveX, sourceFormat,
+               sourceType, data, options);
+}
+
+/*!
+    \since 5.14
+    \overload
+
+    This overload is to be used to update a part of the texture. Parameters \a
+    xOffset, \a yOffset, \a zOffset specify the texel offsets within the
+    texture. Parameters \a width, \a height and \a depth specify the dimensions
     of the sub image. The mip map level and layerof the sub image we want to
     update are specified with \a mipLevel and \a layer.
 
