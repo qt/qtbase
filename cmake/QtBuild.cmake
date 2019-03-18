@@ -746,7 +746,7 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI" "OUTPUT_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -754,6 +754,10 @@ function(add_qt_executable name)
 
     get_filename_component(arg_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
         ABSOLUTE BASE_DIR "${CMAKE_BINARY_DIR}")
+
+    if ("x${arg_INSTALL_DIRECTORY}" STREQUAL "x")
+        set(arg_INSTALL_DIRECTORY "${INSTALL_BINDIR}")
+    endif()
 
     add_executable("${name}" ${arg_EXE_FLAGS})
 
@@ -782,6 +786,10 @@ function(add_qt_executable name)
         WIN32_EXECUTABLE "${arg_GUI}"
         MACOSX_BUNDLE "${arg_GUI}"
     )
+
+    install(TARGETS "${name}"
+        RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
+        BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}")
 endfunction()
 
 
