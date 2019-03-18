@@ -1043,7 +1043,22 @@ function(qt_create_qdbusxml2cpp_command target infile)
     endif()
 
     if ("${arg_BASENAME}" STREQUAL "")
-        get_filename_component(file_name "${infile}" NAME_WE)
+        get_filename_component(file_dir "${infile}" DIRECTORY)
+        get_filename_component(file_name "${infile}" NAME_WLE)
+        get_filename_component(file_ext "${infile}" LAST_EXT)
+
+        if("${file_ext}" STREQUAL ".xml")
+        else()
+            message(FATAL_ERROR "DBUS ${type} input file is not xml.")
+        endif()
+
+        # use last part of io.qt.something.xml!
+        get_filename_component(file_ext "${file_name}" LAST_EXT)
+        if("x${file_ext}" STREQUAL "x")
+        else()
+            string(SUBSTRING "${file_ext}" 1 -1 file_name) # cut of leading '.'
+        endif()
+
         string(TOLOWER "${file_name}" file_name)
         set(file_name "${file_name}_${type}")
     else()
