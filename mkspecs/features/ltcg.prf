@@ -2,7 +2,7 @@ CONFIG(release, debug|release) {
     # We need fat object files when creating static libraries on some platforms
     # so the linker will know to load a particular object from the library
     # in the first place. On others, we have special ar and nm to create the symbol
-    # tables so the linker will know  better. For other compilers, we disable LTCG
+    # tables so the linker will know better. For other compilers, we disable LTCG
     # for static libraries.
     msvc {
         # Nothing to do
