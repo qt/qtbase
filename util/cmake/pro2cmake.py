@@ -1336,7 +1336,15 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
     binary_name = scope.TARGET
     assert binary_name
 
-    extra = ['GUI', ] if gui else []
+    extra = ['GUI',] if gui else[]
+
+    target_path = scope.getString('target.path')
+    if target_path:
+        target_path = target_path.replace('$$[QT_INSTALL_EXAMPLES]', '${INSTALL_EXAMPLESDIR}')
+        extra.append('OUTPUT_DIRECTORY "{}"'.format(target_path))
+        if 'target' in scope.get('INSTALLS'):
+            extra.append('INSTALL_DIRECTORY "{}"'.format(target_path))
+
     write_main_part(cm_fh, binary_name, 'Binary', 'add_qt_executable', scope,
                     extra_lines=extra, indent=indent,
                     known_libraries={'Qt::Core', })
