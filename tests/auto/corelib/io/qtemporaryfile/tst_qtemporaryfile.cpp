@@ -215,7 +215,7 @@ void tst_QTemporaryFile::fileTemplate()
     if (!fileTemplate.isEmpty())
         file.setFileTemplate(fileTemplate);
 
-    QCOMPARE(file.open(), true);
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QString fileName = QFileInfo(file).fileName();
     if (prefix.length())
