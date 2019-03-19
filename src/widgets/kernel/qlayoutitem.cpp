@@ -502,6 +502,17 @@ void QWidgetItem::setGeometry(const QRect &rect)
     else if (!(align & Qt::AlignTop))
         y = y + (r.height() - s.height()) / 2;
 
+    // Make sure we don't move outside of the parent, e.g when styles demand
+    // surplus space that exceeds the available margins (f.ex macOS with QGroupBox)
+    if (x < 0) {
+        s.rwidth() += x;
+        x = 0;
+    }
+    if (y < 0) {
+        s.rheight() += y;
+        y = 0;
+    }
+
     wid->setGeometry(x, y, s.width(), s.height());
 }
 
