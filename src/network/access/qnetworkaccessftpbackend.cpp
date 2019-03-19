@@ -99,6 +99,8 @@ public:
         connect(this, SIGNAL(done(bool)), this, SLOT(deleteLater()));
         close();
     }
+
+    using QFtp::clearError;
 };
 
 QNetworkAccessFtpBackend::QNetworkAccessFtpBackend()
@@ -282,7 +284,10 @@ void QNetworkAccessFtpBackend::ftpDone()
     }
 
     // check for errors:
-    if (ftp->error() != QFtp::NoError) {
+    if (state == CheckingFeatures && ftp->error() == QFtp::UnknownError) {
+        qWarning("QNetworkAccessFtpBackend: HELP command failed, ignoring it");
+        ftp->clearError();
+    } else if (ftp->error() != QFtp::NoError) {
         QString msg;
         if (operation() == QNetworkAccessManager::GetOperation)
             msg = tr("Error while downloading %1: %2");

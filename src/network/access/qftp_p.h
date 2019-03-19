@@ -157,6 +157,9 @@ Q_SIGNALS:
     void commandFinished(int, bool);
     void done(bool);
 
+protected:
+    void clearError();
+
 private:
     Q_DISABLE_COPY_MOVE(QFtp)
     Q_DECLARE_PRIVATE(QFtp)
