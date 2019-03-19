@@ -908,7 +908,7 @@ QFont QFontconfigDatabase::defaultFont() const
 void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef &fontDef) const
 {
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    bool forcedAntialiasSetting = !antialias;
+    bool forcedAntialiasSetting = !antialias || QHighDpiScaling::isActive();
 
     const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
     bool useXftConf = false;
