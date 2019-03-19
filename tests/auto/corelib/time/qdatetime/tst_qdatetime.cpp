@@ -956,11 +956,13 @@ void tst_QDateTime::toString_textDate()
 
 void tst_QDateTime::toString_textDate_extra()
 {
-    QLatin1String GMT("GMT");
+    auto endsWithGmt = [](const QDateTime &dt) {
+        return dt.toString().endsWith(QLatin1String("GMT"));
+    };
     QDateTime dt = QDateTime::fromMSecsSinceEpoch(0, Qt::LocalTime);
-    QVERIFY(!dt.toString().endsWith(GMT));
+    QVERIFY(!endsWithGmt(dt));
     dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC).toLocalTime();
-    QVERIFY(!dt.toString().endsWith(GMT));
+    QVERIFY(!endsWithGmt(dt));
 
 #if QT_CONFIG(timezone)
 # if defined Q_OS_UNIX && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
@@ -980,7 +982,7 @@ void tst_QDateTime::toString_textDate_extra()
         QVERIFY(dt.toString().startsWith(QLatin1String("Wed Dec 31 16:00:00 1969 ")));
 # endif
         dt = dt.toLocalTime();
-        QVERIFY(!dt.toString().endsWith(GMT));
+        QVERIFY(!endsWithGmt(dt));
     } else {
         qDebug("Missed zone test: no America/Vancouver zone available");
     }
@@ -993,7 +995,7 @@ void tst_QDateTime::toString_textDate_extra()
         QVERIFY(dt.toString().startsWith(QLatin1String("Thu Jan 1 01:00:00 1970 ")));
 # endif
         dt = dt.toLocalTime();
-        QVERIFY(!dt.toString().endsWith(GMT));
+        QVERIFY(!endsWithGmt(dt));
     } else {
         qDebug("Missed zone test: no Europe/Berlin zone available");
     }
@@ -1004,7 +1006,7 @@ void tst_QDateTime::toString_textDate_extra()
         QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 00:00:00 1970"));
 #endif
     dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
-    QVERIFY(dt.toString().endsWith(GMT));
+    QVERIFY(endsWithGmt(dt));
 }
 #endif // datestring
 
