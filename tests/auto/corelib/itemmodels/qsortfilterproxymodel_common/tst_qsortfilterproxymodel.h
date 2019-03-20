@@ -186,4 +186,6 @@ private:
 
 Q_DECLARE_METATYPE(QAbstractItemModel::LayoutChangeHint)
 
+Q_DECLARE_LOGGING_CATEGORY(lcItemModels)
+
 #endif // TST_QSORTFILTERPROXYMODEL_H

@@ -125,6 +125,7 @@ private:
 tst_QItemModel::tst_QItemModel()
 {
     qRegisterMetaType<QAbstractItemModel::LayoutChangeHint>();
+    qRegisterMetaType<QList<QPersistentModelIndex>>();
 }
 
 void tst_QItemModel::init()
@@ -181,7 +182,7 @@ void tst_QItemModel::nonDestructiveBasicTest()
     currentModel->hasChildren(QModelIndex());
     currentModel->hasIndex(0, 0);
     currentModel->headerData(0, Qt::Horizontal);
-    currentModel->index(0,0), QModelIndex();
+    currentModel->index(0,0);
     currentModel->itemData(QModelIndex());
     QVariant cache;
     currentModel->match(QModelIndex(), -1, cache);

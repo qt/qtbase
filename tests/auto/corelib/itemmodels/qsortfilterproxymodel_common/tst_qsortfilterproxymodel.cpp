@@ -38,6 +38,8 @@
 
 #include <qdebug.h>
 
+Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
+
 // Testing get/set functions
 void tst_QSortFilterProxyModel::getSetCheck()
 {
@@ -4277,7 +4279,7 @@ public:
     QModelIndex index(int, int, const QModelIndex& parent = QModelIndex()) const override
     {
         // QTBUG-44962: Would we always expect the parent to belong to the model
-        qDebug() << parent.model() << this;
+        qCDebug(lcItemModels) << parent.model() << this;
         Q_ASSERT(!parent.isValid() || parent.model() == this);
 
         quintptr parentId = (parent.isValid()) ? parent.internalId() : 0;
@@ -4363,7 +4365,7 @@ void tst_QSortFilterProxyModel::sourceLayoutChangeLeavesValidPersistentIndexes()
     // The use of qDebug here makes sufficient use of the heap to
     // cause corruption at runtime with normal use on linux (before
     // the fix). valgrind confirms the fix.
-    qDebug() << persistentIndex.parent();
+    qCDebug(lcItemModels) << persistentIndex.parent();
     QVERIFY(persistentIndex.parent().isValid());
 }
 
