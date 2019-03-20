@@ -1156,6 +1156,66 @@ static QStyleHelper::WidgetSizePolicy qt_aqua_guess_size(const QWidget *widg, QS
 }
 #endif
 
+static NSColor *qt_convertColorForContext(CGContextRef context, NSColor *color)
+{
+    Q_ASSERT(color);
+    Q_ASSERT(context);
+
+    CGColorSpaceRef targetCGColorSpace = CGBitmapContextGetColorSpace(context);
+    NSColorSpace *targetNSColorSpace = [[NSColorSpace alloc] initWithCGColorSpace:targetCGColorSpace];
+    NSColor *adjusted = [color colorUsingColorSpace:targetNSColorSpace];
+    [targetNSColorSpace release];
+
+    return adjusted;
+}
+
+static NSColor *qt_colorForContext(CGContextRef context, const CGFloat (&rgba)[4])
+{
+    Q_ASSERT(context);
+
+    auto colorSpace = CGBitmapContextGetColorSpace(context);
+    if (!colorSpace)
+        return nil;
+
+    return qt_convertColorForContext(context, [NSColor colorWithSRGBRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:rgba[3]]);
+}
+
+static void qt_drawDisclosureButton(CGContextRef context, NSInteger state, bool selected, CGRect rect)
+{
+    Q_ASSERT(context);
+
+    static const CGFloat gray[] = {0.55, 0.55, 0.55, 0.97};
+    static const CGFloat white[] = {1.0, 1.0, 1.0, 0.9};
+
+    NSColor *fillColor = qt_colorForContext(context, selected ? white : gray);
+    [fillColor setFill];
+
+    if (state == NSOffState) {
+        static NSBezierPath *triangle = [[NSBezierPath alloc] init];
+        [triangle removeAllPoints];
+        // In off state, a disclosure button is an equilateral triangle
+        // ('pointing' to the right) with a bound rect that can be described
+        // as NSMakeRect(0, 0, 8, 9). Inside the 'rect' it's translated by
+        //  (2, 4).
+        [triangle moveToPoint:NSMakePoint(rect.origin.x + 2, rect.origin.y + 4)];
+        [triangle lineToPoint:NSMakePoint(rect.origin.x + 2, rect.origin.y + 4 + 9)];
+        [triangle lineToPoint:NSMakePoint(rect.origin.x + 2 + 8, rect.origin.y + 4 + 4.5)];
+        [triangle closePath];
+        [triangle fill];
+    } else {
+        static NSBezierPath *openTriangle = [[NSBezierPath alloc] init];
+        [openTriangle removeAllPoints];
+        // In 'on' state, the button is an equilateral triangle (looking down)
+        // with the bounding rect NSMakeRect(0, 0, 9, 8). Inside the 'rect'
+        // it's translated by (1, 4).
+        [openTriangle moveToPoint:NSMakePoint(rect.origin.x + 1, rect.origin.y + 4 + 8)];
+        [openTriangle lineToPoint:NSMakePoint(rect.origin.x + 1 + 9, rect.origin.y + 4 + 8)];
+        [openTriangle lineToPoint:NSMakePoint(rect.origin.x + 1 + 4.5, rect.origin.y + 4)];
+        [openTriangle closePath];
+        [openTriangle fill];
+    }
+}
+
 void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
 {
     QPainterPath focusRingPath;
@@ -3241,8 +3301,15 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         CGContextScaleCTM(cg, 1, -1);
         CGContextTranslateCTM(cg, -rect.origin.x, -rect.origin.y);
 
-        [triangleCell drawBezelWithFrame:NSRectFromCGRect(rect) inView:[triangleCell controlView]];
-
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave && !qt_mac_applicationIsInDarkMode()) {
+            // When the real system theme is one of the 'Dark' themes, and an application forces the 'Aqua' theme,
+            // under some conditions (see QTBUG-74515 for more details) NSButtonCell seems to select the 'Dark'
+            // code path and is becoming transparent, thus 'invisible' on the white background. To workaround this,
+            // we draw the disclose triangle manually:
+            qt_drawDisclosureButton(cg, triangleCell.state, (opt->state & State_Selected) && viewHasFocus, rect);
+        } else {
+            [triangleCell drawBezelWithFrame:NSRectFromCGRect(rect) inView:[triangleCell controlView]];
+        }
         d->restoreNSGraphicsContext(cg);
         break; }
 
