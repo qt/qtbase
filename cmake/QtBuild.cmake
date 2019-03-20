@@ -746,7 +746,7 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -765,6 +765,11 @@ function(add_qt_executable name)
       DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
+    set(extra_libraries "")
+    if(NOT arg_BOOTSTRAP)
+        set(extra_libraries "Qt::Core")
+    endif()
+
     extend_target("${name}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -772,7 +777,7 @@ function(add_qt_executable name)
             "${CMAKE_CURRENT_BINARY_DIR}"
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
-        LIBRARIES ${arg_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} ${extra_libraries}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
@@ -858,7 +863,13 @@ function(add_qt_tool name)
         set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
     endif()
 
+    set(bootstrap "")
+    if(arg_BOOTSTRAP)
+        set(bootstrap BOOTSTRAP)
+    endif()
+
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
+        ${bootstrap}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
