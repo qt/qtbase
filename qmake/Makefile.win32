@@ -24,10 +24,8 @@ LINKER            = link
 CFLAGS_EXTRA      = /MP /wd4577 $(CFLAGS_CRT)
 !endif  # !win32-icc
 
-!if "$(QMAKESPEC)" != "win32-clang-msvc"
 CFLAGS_PCH        = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch
 PCH_OBJECT        = qmake_pch.obj
-!endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -W2 -nologo -O2 \
