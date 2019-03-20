@@ -223,6 +223,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
                     continue;
             }
 
+            QXlibPointer<XVisualInfo> visual(glXGetVisualFromFBConfig(display, candidate));
             int actualRed;
             int actualGreen;
             int actualBlue;
@@ -231,7 +232,8 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
             glXGetFBConfigAttrib(display, candidate, GLX_GREEN_SIZE, &actualGreen);
             glXGetFBConfigAttrib(display, candidate, GLX_BLUE_SIZE, &actualBlue);
             glXGetFBConfigAttrib(display, candidate, GLX_ALPHA_SIZE, &actualAlpha);
-
+            // Sometimes the visuals don't have a depth that includes the alpha channel.
+            actualAlpha = qMin(actualAlpha, visual->depth - actualRed - actualGreen - actualBlue);
 
             if (requestedRed && actualRed < requestedRed)
                 continue;
