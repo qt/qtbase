@@ -1,0 +1,20 @@
+# Generated from graphicsview.pro.
+
+add_subdirectory(chip)
+add_subdirectory(elasticnodes)
+add_subdirectory(embeddeddialogs)
+add_subdirectory(collidingmice)
+add_subdirectory(padnavigator)
+add_subdirectory(basicgraphicslayouts)
+add_subdirectory(diagramscene)
+if(QT_FEATURE_cursor AND QT_FEATURE_draganddrop)
+    add_subdirectory(dragdroprobot)
+endif()
+add_subdirectory(flowlayout)
+add_subdirectory(anchorlayout)
+add_subdirectory(simpleanchorlayout)
+add_subdirectory(weatheranchorlayout)
+
+if(TARGET Qt::OpenGL AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_dynamicgl)
+   add_subdirectory(boxes)
+endif()
