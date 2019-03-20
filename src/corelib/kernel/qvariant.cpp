@@ -1462,6 +1462,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
     if (size <= sizeof(QVariant::Private::Data)
             && (type.flags() & (QMetaType::MovableType | QMetaType::IsEnumeration))) {
         type.construct(&d->data.ptr, copy);
+        d->is_null = d->data.ptr == nullptr;
         d->is_shared = false;
     } else {
         // Private::Data contains long long, and long double is the biggest standard type.
@@ -1472,6 +1473,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         void *data = operator new(offset + size);
         void *ptr = static_cast<char *>(data) + offset;
         type.construct(ptr, copy);
+        d->is_null = ptr == nullptr;
         d->is_shared = true;
         d->data.shared = new (data) QVariant::PrivateShared(ptr);
     }

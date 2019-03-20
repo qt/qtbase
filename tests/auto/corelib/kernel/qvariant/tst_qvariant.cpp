@@ -2761,6 +2761,14 @@ void tst_QVariant::qvariant_cast_QObject_derived()
         QCOMPARE(data.value<CustomQObjectDerived *>(), object);
         QCOMPARE(data.value<CustomQObject *>(), object);
     }
+    {
+        QObject *object = new CustomQObjectDerivedNoMetaType(this);
+        QVariant data = QVariant::fromValue(object);
+        QVERIFY(data.canConvert<CustomQObjectDerivedNoMetaType*>());
+        QVERIFY(data.convert(qMetaTypeId<CustomQObjectDerivedNoMetaType*>()));
+        QCOMPARE(data.value<CustomQObjectDerivedNoMetaType*>(), object);
+        QCOMPARE(data.isNull(), false);
+    }
 }
 
 struct QObjectWrapper
