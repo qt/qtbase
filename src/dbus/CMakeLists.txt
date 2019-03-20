@@ -43,6 +43,8 @@ add_qt_module(DBus
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Core # special case
     # MODULE_CONFIG = "dbusadaptors" "dbusinterfaces"
     # _LOADED = "qt_module"
 )
