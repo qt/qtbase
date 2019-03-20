@@ -120,16 +120,6 @@ QEglFSIntegration::QEglFSIntegration()
     initResources();
 }
 
-void QEglFSIntegration::addScreen(QPlatformScreen *screen, bool isPrimary)
-{
-    screenAdded(screen, isPrimary);
-}
-
-void QEglFSIntegration::removeScreen(QPlatformScreen *screen)
-{
-    destroyScreen(screen);
-}
-
 void QEglFSIntegration::initialize()
 {
     qt_egl_device_integration()->platformInit();
@@ -147,7 +137,7 @@ void QEglFSIntegration::initialize()
     m_vtHandler.reset(new QFbVtHandler);
 
     if (qt_egl_device_integration()->usesDefaultScreen())
-        addScreen(new QEglFSScreen(display()));
+        QWindowSystemInterface::handleScreenAdded(new QEglFSScreen(display()));
     else
         qt_egl_device_integration()->screenInit();
 

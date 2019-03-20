@@ -173,7 +173,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         qFatal("Could not bind GL_ES API");
 
     m_primaryScreen = new QAndroidPlatformScreen();
-    screenAdded(m_primaryScreen);
+    QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight));
     m_primaryScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
     m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));

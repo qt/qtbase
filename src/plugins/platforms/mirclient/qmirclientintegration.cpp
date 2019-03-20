@@ -58,6 +58,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtEglSupport/private/qeglconvenience_p.h>
 #include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
@@ -149,12 +150,12 @@ void QMirClientClientIntegration::initialize()
     // Init the ScreenObserver
     mScreenObserver.reset(new QMirClientScreenObserver(mMirConnection));
     connect(mScreenObserver.data(), &QMirClientScreenObserver::screenAdded,
-            [this](QMirClientScreen *screen) { this->screenAdded(screen); });
+            [this](QMirClientScreen *screen) { QWindowSystemInterface::handleScreenAdded(screen); });
     connect(mScreenObserver.data(), &QMirClientScreenObserver::screenRemoved,
                      this, &QMirClientClientIntegration::destroyScreen);
 
     Q_FOREACH (auto screen, mScreenObserver->screens()) {
-        screenAdded(screen);
+        QWindowSystemInterface::handleScreenAdded(screen);
     }
 
     // Initialize input.
@@ -392,7 +393,7 @@ void QMirClientClientIntegration::destroyScreen(QMirClientScreen *screen)
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
     delete screen;
 #else
-    QPlatformIntegration::destroyScreen(screen);
+    QWindowSystemInterface::handleScreenRemoved(screen);
 #endif
 }
 

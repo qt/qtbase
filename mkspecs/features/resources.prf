@@ -28,6 +28,7 @@ for(resource, RESOURCES) {
             !exists($$absolute_path($$resource, $$_PRO_FILE_PWD_)): \
                 warning("Failure to find: $$resource")
             qmake_immediate.files += $$resource
+            OTHER_FILES *= $$resource
         }
         RESOURCES -= $$resource
         next()
@@ -57,6 +58,7 @@ for(resource, RESOURCES) {
                 alias = $$relative_path($$file, $$abs_base)
                 resource_file_content += \
                     "<file alias=\"$$xml_escape($$alias)\">$$xml_escape($$file)</file>"
+                OTHER_FILES *= $$file
             }
         }
 
@@ -73,9 +75,11 @@ for(resource, RESOURCES) {
 }
 
 !isEmpty(RESOURCES):contains(TEMPLATE, .*lib):plugin:static {
-    resource_init_function = $$lower($$basename(TARGET))_plugin_resource_init
+    pluginBaseName = $$basename(TARGET)
+    pluginName = $$lower($$replace(pluginBaseName, [-], _))
+    resource_init_function = $${pluginName}_plugin_resource_init
     DEFINES += "QT_PLUGIN_RESOURCE_INIT_FUNCTION=$$resource_init_function"
-    RESOURCE_INIT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_plugin_resources.cpp
+    RESOURCE_INIT_CPP = $$OUT_PWD/$${pluginName}_plugin_resources.cpp
 
     GENERATED_SOURCES += $$RESOURCE_INIT_CPP
     QMAKE_DISTCLEAN += $$RESOURCE_INIT_CPP

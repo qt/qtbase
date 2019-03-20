@@ -192,8 +192,9 @@ Error Stream::consumerAcquire(const gl::Context *context)
     {
         if (mPlanes[i].texture != nullptr)
         {
-            ANGLE_TRY(mPlanes[i].texture->acquireImageFromStream(
-                context, mProducerImplementation->getGLFrameDescription(i)));
+            auto result = mPlanes[i].texture->acquireImageFromStream(
+                context, mProducerImplementation->getGLFrameDescription(i));
+            ANGLE_TRY(Error(result));
         }
     }
 
@@ -213,7 +214,8 @@ Error Stream::consumerRelease(const gl::Context *context)
     {
         if (mPlanes[i].texture != nullptr)
         {
-            ANGLE_TRY(mPlanes[i].texture->releaseImageFromStream(context));
+            auto result = mPlanes[i].texture->releaseImageFromStream(context);
+            ANGLE_TRY(Error(result));
         }
     }
 

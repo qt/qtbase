@@ -98,7 +98,10 @@ QWasmIntegration::QWasmIntegration()
 QWasmIntegration::~QWasmIntegration()
 {
     delete m_fontDb;
-    qDeleteAll(m_screens);
+
+    while (!m_screens.isEmpty())
+        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
+
     s_instance = nullptr;
 }
 
@@ -191,7 +194,7 @@ void QWasmIntegration::addScreen(const QString &canvasId)
     QWasmScreen *screen = new QWasmScreen(canvasId);
     m_clipboard->installEventHandlers(canvasId);
     m_screens.append(screen);
-    screenAdded(screen);
+    QWindowSystemInterface::handleScreenAdded(screen);
 }
 
 QT_END_NAMESPACE

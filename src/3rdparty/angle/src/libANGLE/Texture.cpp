@@ -550,7 +550,8 @@ Error Texture::onDestroy(const Context *context)
 {
     if (mBoundSurface)
     {
-        ANGLE_TRY(mBoundSurface->releaseTexImage(context, EGL_BACK_BUFFER));
+        auto result = mBoundSurface->releaseTexImage(context, EGL_BACK_BUFFER);
+        ANGLE_TRY(Error(result));
         mBoundSurface = nullptr;
     }
     if (mBoundStream)
