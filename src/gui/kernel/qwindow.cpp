@@ -1922,9 +1922,6 @@ void QWindowPrivate::destroy()
     resizeEventPending = true;
     receivedExpose = false;
     exposed = false;
-
-    if (wasVisible)
-        maybeQuitOnLastWindowClosed();
 }
 
 /*!
@@ -2313,8 +2310,17 @@ bool QWindow::event(QEvent *ev)
 #endif
 
     case QEvent::Close:
-        if (ev->isAccepted())
+        if (ev->isAccepted()) {
+            Q_D(QWindow);
+            bool wasVisible = isVisible();
             destroy();
+            if (wasVisible) {
+                // FIXME: This check for visibility is a workaround for both QWidgetWindow
+                // and QWindow having logic to emit lastWindowClosed, and possibly quit the
+                // application. We should find a better way to handle this.
+                d->maybeQuitOnLastWindowClosed();
+            }
+        }
         break;
 
     case QEvent::Expose:

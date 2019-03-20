@@ -133,7 +133,7 @@ void QOpenWFDPort::attach()
     wfdBindPipelineToPort(mDevice->handle(),mPort,mPipeline);
 
     mScreen = new QOpenWFDScreen(this);
-    mDevice->integration()->addScreen(mScreen);
+    QWindowSystemInterface::handleScreenAdded(mScreen);
     mAttached = true;
 }
 
@@ -145,7 +145,7 @@ void QOpenWFDPort::detach()
     mAttached = false;
     mOn = false;
 
-    mDevice->integration()->destroyScreen(mScreen);
+    QWindowSystemInterface::handleScreenRemoved(mScreen);
 
     wfdDestroyPipeline(mDevice->handle(),mPipeline);
     mPipelineId = WFD_INVALID_PIPELINE_ID;

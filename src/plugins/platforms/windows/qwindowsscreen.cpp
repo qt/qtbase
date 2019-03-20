@@ -121,7 +121,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     QWindowsScreenData data;
     if (monitorData(hMonitor, &data)) {
         WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
-        // QPlatformIntegration::screenAdded() documentation specifies that first
+        // QWindowSystemInterface::handleScreenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
         // screen reported by Qt, unless we want to delete all existing screens and add them
@@ -521,7 +521,7 @@ void QWindowsScreenManager::removeScreen(int index)
         if (movedWindowCount)
             QWindowSystemInterface::flushWindowSystemEvents();
     }
-    QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeAt(index));
+    QWindowSystemInterface::handleScreenRemoved(m_screens.takeAt(index));
 }
 
 /*!
@@ -541,7 +541,7 @@ bool QWindowsScreenManager::handleScreenChanges()
         } else {
             QWindowsScreen *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
-            QWindowsIntegration::instance()->emitScreenAdded(newScreen,
+            QWindowSystemInterface::handleScreenAdded(newScreen,
                                                              newData.flags & QWindowsScreenData::PrimaryScreen);
             qCDebug(lcQpaWindows) << "New Monitor: " << newData;
         }    // exists
@@ -561,7 +561,7 @@ void QWindowsScreenManager::clearScreens()
 {
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
-        QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeLast());
+        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
 }
 
 const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const

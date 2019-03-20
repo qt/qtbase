@@ -126,6 +126,10 @@ void MainWindow::aboutDialog()
 
 int main(int argc, char *argv[])
 {
+#if QT_VERSION >= 0x050600
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+
     for (int a = 1; a < argc; ++a) {
         if (!qstrcmp(argv[a], "-n")) {
             qDebug("AA_DontUseNativeDialogs");

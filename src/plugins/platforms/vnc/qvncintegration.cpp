@@ -52,6 +52,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <private/qinputdevicemanager_p_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QRegularExpression>
 
@@ -77,13 +78,13 @@ QVncIntegration::QVncIntegration(const QStringList &paramList)
 QVncIntegration::~QVncIntegration()
 {
     delete m_server;
-    destroyScreen(m_primaryScreen);
+    QWindowSystemInterface::handleScreenRemoved(m_primaryScreen);
 }
 
 void QVncIntegration::initialize()
 {
     if (m_primaryScreen->initialize())
-        screenAdded(m_primaryScreen);
+        QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     else
         qWarning("vnc: Failed to initialize screen");
 
