@@ -465,16 +465,6 @@ void tst_qstandardpaths::testRuntimeDirectory()
 #ifdef Q_XDG_PLATFORM
     const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     QVERIFY(!runtimeDir.isEmpty());
-
-    // Check that it can automatically fix permissions
-    QFile file(runtimeDir);
-    const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
-    const QFile::Permissions additionalPerms = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
-    QCOMPARE(file.permissions(), wantedPerms | additionalPerms);
-    QVERIFY(file.setPermissions(wantedPerms | QFile::ExeGroup));
-    const QString runtimeDirAgain = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    QCOMPARE(runtimeDirAgain, runtimeDir);
-    QCOMPARE(QFile(runtimeDirAgain).permissions(), wantedPerms | additionalPerms);
 #endif
 }
 
@@ -516,11 +506,27 @@ void tst_qstandardpaths::testCustomRuntimeDirectory()
     const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     QVERIFY2(runtimeDir.isEmpty(), qPrintable(runtimeDir));
 
-    // When $XDG_RUNTIME_DIR points to a non-existing directory, QStandardPaths should warn (QTBUG-48771)
-    qputenv("XDG_RUNTIME_DIR", "does_not_exist");
-    QTest::ignoreMessage(QtWarningMsg, "QStandardPaths: XDG_RUNTIME_DIR points to non-existing path 'does_not_exist', please create it with 0700 permissions.");
+    // When $XDG_RUNTIME_DIR points to a directory with wrong permissions, QStandardPaths should warn
+    const QByteArray wrongPermissionFileName = "wrong_permissions";
+    QDir::current().mkdir(wrongPermissionFileName);
+    QFile wrongPermissionFile(wrongPermissionFileName);
+    const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
+    QVERIFY(wrongPermissionFile.setPermissions(wantedPerms | QFile::ExeGroup));
+
+    qputenv("XDG_RUNTIME_DIR", wrongPermissionFileName);
+    QTest::ignoreMessage(QtWarningMsg,
+           qPrintable(QString::fromLatin1("QStandardPaths: wrong permissions on runtime directory " + wrongPermissionFileName + ", 7710 instead of 7700")));
+    const QString wrongPermissionRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    QVERIFY(wrongPermissionRuntimeDir.isEmpty());
+    QDir::current().rmdir(wrongPermissionFileName);
+
+    // When $XDG_RUNTIME_DIR points to a non-existing directory, QStandardPaths should create it first
+    const QByteArray nonExistingDir = "does_not_exist";
+    qputenv("XDG_RUNTIME_DIR", nonExistingDir);
     const QString nonExistingRuntimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-    QVERIFY2(nonExistingRuntimeDir.isEmpty(), qPrintable(nonExistingRuntimeDir));
+    QVERIFY2(!nonExistingRuntimeDir.compare(nonExistingDir), qPrintable(nonExistingRuntimeDir));
+    QVERIFY(QDir::current().exists(nonExistingRuntimeDir));
+    QDir::current().rmdir(nonExistingRuntimeDir);
 
     // When $XDG_RUNTIME_DIR points to a file, QStandardPaths should warn
     const QString file = QFINDTESTDATA("tst_qstandardpaths.cpp");
