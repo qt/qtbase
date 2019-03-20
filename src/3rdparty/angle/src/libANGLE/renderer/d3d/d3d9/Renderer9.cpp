@@ -376,8 +376,7 @@ egl::Error Renderer9::initializeDevice()
 
     ASSERT(!mBlit);
     mBlit = new Blit9(this);
-    auto result = mBlit->initialize();
-    ANGLE_TRY(egl::Error(result));
+    ANGLE_TRY(mBlit->initialize());
 
     ASSERT(!mVertexDataManager && !mIndexDataManager);
     mVertexDataManager = new VertexDataManager(this);
