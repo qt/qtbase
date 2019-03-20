@@ -13,8 +13,9 @@ function(qt_feature_module_begin)
     endif()
 
     set(__QtFeature_library "${arg_LIBRARY}" PARENT_SCOPE)
-    set(__QtFeature_private_features "" PARENT_SCOPE)
     set(__QtFeature_public_features "" PARENT_SCOPE)
+    set(__QtFeature_private_features "" PARENT_SCOPE)
+    set(__QtFeature_internal_features "" PARENT_SCOPE)
 
     set(__QtFeature_private_file "${arg_PRIVATE_FILE}" PARENT_SCOPE)
     set(__QtFeature_public_file "${arg_PUBLIC_FILE}" PARENT_SCOPE)
@@ -39,9 +40,14 @@ function(qt_feature feature)
     if (arg_PRIVATE)
         list(APPEND __QtFeature_private_features "${feature}")
     endif()
+    if (NOT arg_PUBLIC AND NOT arg_PRIVATE)
+        list(APPEND __QtFeature_internal_features "${feature}")
+    endif()
+
 
     set(__QtFeature_public_features ${__QtFeature_public_features} PARENT_SCOPE)
     set(__QtFeature_private_features ${__QtFeature_private_features} PARENT_SCOPE)
+    set(__QtFeature_internal_features ${__QtFeature_internal_features} PARENT_SCOPE)
 endfunction()
 
 function(qt_evaluate_to_boolean expressionVar)
@@ -332,7 +338,7 @@ function(qt_internal_feature_write_file file features extra)
 endfunction()
 
 function(qt_feature_module_end target)
-    set(all_features ${__QtFeature_public_features} ${__QtFeature_private_features})
+    set(all_features ${__QtFeature_public_features} ${__QtFeature_private_features} ${__QtFeature_internal_features})
     list(REMOVE_DUPLICATES all_features)
 
     foreach(feature ${all_features})
@@ -398,8 +404,9 @@ function(qt_feature_module_end target)
     endif()
 
     unset(__QtFeature_library PARENT_SCOPE)
-    unset(__QtFeature_private_features PARENT_SCOPE)
     unset(__QtFeature_public_features PARENT_SCOPE)
+    unset(__QtFeature_private_features PARENT_SCOPE)
+    unset(__QtFeature_internal_features PARENT_SCOPE)
 
     unset(__QtFeature_private_file PARENT_SCOPE)
     unset(__QtFeature_public_file PARENT_SCOPE)
