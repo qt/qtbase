@@ -109,6 +109,7 @@ private slots:
     void selectionFilteredOut();
     void match_data();
     void match();
+    void matchTree();
     void insertIntoChildrenlessItem();
     void invalidateMappedChildren();
     void insertRowIntoFilteredParent();
