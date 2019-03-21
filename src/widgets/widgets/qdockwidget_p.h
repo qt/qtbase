@@ -57,6 +57,10 @@
 #include "QtWidgets/qboxlayout.h"
 #include "QtWidgets/qdockwidget.h"
 
+#if QT_CONFIG(tabwidget)
+#  include "QtWidgets/qtabwidget.h"
+#endif
+
 QT_REQUIRE_CONFIG(dockwidget);
 
 QT_BEGIN_NAMESPACE
@@ -86,6 +90,11 @@ public:
     void _q_toggleTopLevel(); // private slot
 
     void updateButtons();
+
+#if QT_CONFIG(tabwidget)
+    QTabWidget::TabPosition tabPosition = QTabWidget::North;
+#endif
+
     DragState *state = nullptr;
 
     QDockWidget::DockWidgetFeatures features = QDockWidget::DockWidgetClosable
