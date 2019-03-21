@@ -343,6 +343,7 @@ public:
     void updateActionRects(const QRect &screen) const;
     QRect popupGeometry() const;
     QRect popupGeometry(int screen) const;
+    bool useFullScreenForPopup() const;
     int getLastVisibleAction() const;
 
     //selection
