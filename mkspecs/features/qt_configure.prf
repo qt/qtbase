@@ -544,7 +544,15 @@ defineTest(qtConfResolveLibs) {
         } else: contains(l, "^-l.*") {
             lib = $$replace(l, "^-l", )
             lcan =
-            unix {
+            integrity:contains(lib, "^.*\\.a") {
+                # INTEGRITY compiler searches for exact filename
+                # if -l argument has .a suffix
+                lcan += $${lib}
+            } else: contains(lib, "^:.*") {
+                # Use exact filename when -l:filename syntax is used.
+                lib ~= s/^://
+                lcan += $${lib}
+            } else: unix {
                 # Under UNIX, we look for actual shared libraries, in addition
                 # to static ones.
                 shexts = $$QMAKE_EXTENSION_SHLIB $$QMAKE_EXTENSIONS_AUX_SHLIB
