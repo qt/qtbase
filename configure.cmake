@@ -336,17 +336,17 @@ qt_feature("x86SimdAlways"
 qt_feature_definition("x86SimdAlways" "QT_COMPILER_SUPPORTS_SIMD_ALWAYS" VALUE "1")
 qt_feature("mips_dsp"
     LABEL "DSP"
-    CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_subarch_dsp
+    CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dsp
 )
 qt_feature_definition("mips_dsp" "QT_COMPILER_SUPPORTS_MIPS_DSP" VALUE "1")
 qt_feature("mips_dspr2"
     LABEL "DSPr2"
-    CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_subarch_dspr2
+    CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dspr2
 )
 qt_feature_definition("mips_dspr2" "QT_COMPILER_SUPPORTS_MIPS_DSPR2" VALUE "1")
 qt_feature("neon"
     LABEL "NEON"
-    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_subarch_neon
+    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_neon
 )
 qt_feature_definition("neon" "QT_COMPILER_SUPPORTS_NEON" VALUE "1")
 qt_feature("alloca_h" PRIVATE

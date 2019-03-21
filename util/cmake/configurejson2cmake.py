@@ -117,7 +117,7 @@ def map_tests(test: str) -> str:
         'c99': '$<COMPILE_FEATURES:c_std_99>',
         'c11': '$<COMPILE_FEATURES:c_std_11>',
 
-        'x86SimdAlways': 'ON',  # FIXME: Is this the right thing?
+        'x86SimdAlways': 'ON',  # FIXME: Make this actually do a compile test.
 
         'aesni': 'TEST_subarch_aes',
         'avx': 'TEST_subarch_avx',
@@ -333,7 +333,8 @@ def map_condition(condition):
                 substitution = 'QT_FEATURE_{}'.format(featureName(match.group(2)))
 
         elif match.group(1) == 'subarch':
-            substitution = 'TEST_subarch_{}'.format(match.group(2))
+            substitution = 'TEST_arch_{}_subarch_{}'.format("${TEST_architecture_arch}",
+                                                            match.group(2))
 
         elif match.group(1) == 'call':
             if match.group(2) == 'crossCompile':
