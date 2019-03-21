@@ -415,6 +415,22 @@ bool QObjectPrivate::isSignalConnected(uint signalIndex, bool checkDeclarative) 
     return false;
 }
 
+bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
+{
+    ConnectionData *cd = connections.load();
+    if (!cd)
+        return false;
+
+    if (cd->allsignals.first)
+        return true;
+
+    if (signalIndex < uint(cd->signalVector.count())) {
+        const QObjectPrivate::Connection *c = cd->signalVector.at(signalIndex).first;
+        return c != nullptr;
+    }
+    return false;
+}
+
 
 /*!
     \internal
@@ -3599,7 +3615,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     if (!argv)
         argv = empty_argv;
 
-    if (!sp->isSignalConnected(signal_index, false)) {
+    if (!sp->maybeSignalConnected(signal_index)) {
         // The possible declarative connection is done, and nothing else is connected
         if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
             signal_spy_set->signal_begin_callback(sender, signal_index, argv);

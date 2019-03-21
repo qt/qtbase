@@ -254,6 +254,7 @@ public:
 
     int signalIndex(const char *signalName, const QMetaObject **meta = nullptr) const;
     bool isSignalConnected(uint signalIdx, bool checkDeclarative = true) const;
+    bool maybeSignalConnected(uint signalIndex) const;
     inline bool isDeclarativeSignalConnected(uint signalIdx) const;
 
     // To allow abitrary objects to call connectNotify()/disconnectNotify() without making
