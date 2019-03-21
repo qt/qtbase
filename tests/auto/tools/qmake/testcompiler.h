@@ -60,7 +60,8 @@ public:
     // executes a make in the specified workPath, with an optional target (eg. install)
     bool make( const QString &workPath, const QString &target = QString(), bool expectFail = false );
     // checks if the executable exists in destDir
-    bool exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version );
+    bool exists(const QString &destDir, const QString &exeName, BuildType buildType,
+                const QString &version = QString());
     // removes the makefile
     bool removeMakefile( const QString &workPath );
     // removes the project file specified by 'project' on the 'workPath'

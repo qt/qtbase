@@ -765,11 +765,19 @@ public class QtActivityDelegate
         }
         m_layout = new QtLayout(m_activity, startApplication);
 
+        int orientation = m_activity.getResources().getConfiguration().orientation;
+
         try {
             ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
-            if (info.metaData.containsKey("android.app.splash_screen_drawable")) {
+
+            String splashScreenKey = "android.app.splash_screen_drawable_"
+                + (orientation == Configuration.ORIENTATION_LANDSCAPE ? "landscape" : "portrait");
+            if (!info.metaData.containsKey(splashScreenKey))
+                splashScreenKey = "android.app.splash_screen_drawable";
+
+            if (info.metaData.containsKey(splashScreenKey)) {
                 m_splashScreenSticky = info.metaData.containsKey("android.app.splash_screen_sticky") && info.metaData.getBoolean("android.app.splash_screen_sticky");
-                int id = info.metaData.getInt("android.app.splash_screen_drawable");
+                int id = info.metaData.getInt(splashScreenKey);
                 m_splashScreen = new ImageView(m_activity);
                 m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(id));
                 m_splashScreen.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -789,7 +797,6 @@ public class QtActivityDelegate
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
 
-        int orientation = m_activity.getResources().getConfiguration().orientation;
         int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
         boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
         boolean currentlyLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);

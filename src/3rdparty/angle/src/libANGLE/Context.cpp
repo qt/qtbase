@@ -451,8 +451,7 @@ egl::Error Context::onDestroy(const egl::Display *display)
 
     for (auto &zeroTexture : mZeroTextures)
     {
-        auto result = zeroTexture.second->onDestroy(this);
-        ANGLE_TRY(egl::Error(result));
+        ANGLE_TRY(zeroTexture.second->onDestroy(this));
         zeroTexture.second.set(this, nullptr);
     }
     mZeroTextures.clear();
