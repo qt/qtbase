@@ -1022,8 +1022,10 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
                                        [beforeMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
                                        });
-        Q_ASSERT(it > posixTrans.cbegin());
-        return *--it;
+        if (it > posixTrans.cbegin())
+            return *--it;
+        // else: it fell between the last transition and the first of the POSIX rule.
+        return dataForTzTransition(m_tranTimes.last());
     }
 
     // Otherwise if we can find a valid tran then use its rule
