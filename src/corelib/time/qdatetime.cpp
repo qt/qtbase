@@ -2420,10 +2420,7 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     local.tm_mday = dd;
     local.tm_mon = mm - 1;
     local.tm_year = yy - 1900;
-    if (daylightStatus)
-        local.tm_isdst = int(*daylightStatus);
-    else
-        local.tm_isdst = -1;
+    local.tm_isdst = daylightStatus ? int(*daylightStatus) : -1;
 
 #if defined(Q_OS_WIN)
     int hh = local.tm_hour;
@@ -2791,7 +2788,6 @@ static void refreshDateTime(QDateTimeData &d)
     const auto spec = extractSpec(status);
     const qint64 msecs = getMSecs(d);
     qint64 epochMSecs = 0;
-    int offsetFromUtc = 0;
     QDate testDate;
     QTime testTime;
     Q_ASSERT(spec == Qt::TimeZone || spec == Qt::LocalTime);
@@ -2828,6 +2824,7 @@ static void refreshDateTime(QDateTimeData &d)
         epochMSecs = localMSecsToEpochMSecs(msecs, &dstStatus, &testDate, &testTime);
         status = mergeDaylightStatus(status, dstStatus);
     }
+    int offsetFromUtc = 0;
     if (timeToMSecs(testDate, testTime) == msecs) {
         status |= QDateTimePrivate::ValidDateTime;
         // Cache the offset to use in offsetFromUtc()
@@ -2883,7 +2880,7 @@ static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
             spec = Qt::UTC;
         break;
     case Qt::TimeZone:
-        // Use system time zone instead
+        qWarning("Using TimeZone in setTimeSpec() is unsupported"); // Use system time zone instead
         spec = Qt::LocalTime;
         Q_FALLTHROUGH();
     case Qt::UTC:
@@ -4260,8 +4257,6 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 }
 
 /*!
-    \fn QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
-
     Returns a copy of this datetime converted to the given time
     \a spec.
 
