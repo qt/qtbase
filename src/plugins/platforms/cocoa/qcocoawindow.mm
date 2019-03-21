@@ -1209,17 +1209,17 @@ void QCocoaWindow::windowDidChangeScreen()
         return;
 
     // Note: When a window is resized to 0x0 Cocoa will report the window's screen as nil
-    auto *currentScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen);
+    auto *currentScreen = QCocoaScreen::get(m_view.window.screen);
     auto *previousScreen = static_cast<QCocoaScreen*>(screen());
 
     Q_ASSERT_X(!m_view.window.screen || currentScreen,
         "QCocoaWindow", "Failed to get QCocoaScreen for NSScreen");
 
     // Note: The previous screen may be the same as the current screen, either because
-    // the screen was just reconfigured, which still results in AppKit sending an
-    // NSWindowDidChangeScreenNotification, because the previous screen was removed,
+    // a) the screen was just reconfigured, which still results in AppKit sending an
+    // NSWindowDidChangeScreenNotification, b) because the previous screen was removed,
     // and we ended up calling QWindow::setScreen to move the window, which doesn't
-    // actually move the window to the new screen, or because we've delivered the
+    // actually move the window to the new screen, or c) because we've delivered the
     // screen change to the top level window, which will make all the child windows
     // of that window report the new screen when requested via QWindow::screen().
     // We still need to deliver the screen change in all these cases, as the
