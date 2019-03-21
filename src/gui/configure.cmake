@@ -535,7 +535,7 @@ qt_feature("mtdev" PRIVATE
 )
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"
-    CONDITION WIN32 OR ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
+    CONDITION NOT WIN32 AND ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
     ENABLE INPUT_opengl STREQUAL 'es2'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )

@@ -726,6 +726,9 @@ def parseFeature(ctx, feature, data, cm_fh):
         'msvc_mp': None,
         'optimize_debug': None,
         'optimize_size': None,
+        'opengles2': { # special case to disable implicit feature on WIN32, until ANGLE is ported
+            'condition': 'NOT WIN32 AND ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )'
+        },
         'pkg-config': None,
         'posix_fallocate': None,  # Only needed for sqlite, which we do not want to build
         'posix-libiconv': {
