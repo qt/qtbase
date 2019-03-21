@@ -2826,6 +2826,7 @@ static void refreshDateTime(QDateTimeData &d)
     if (spec == Qt::LocalTime) {
         auto dstStatus = extractDaylightStatus(status);
         epochMSecs = localMSecsToEpochMSecs(msecs, &dstStatus, &testDate, &testTime);
+        status = mergeDaylightStatus(status, dstStatus);
     }
     if (timeToMSecs(testDate, testTime) == msecs) {
         status |= QDateTimePrivate::ValidDateTime;
