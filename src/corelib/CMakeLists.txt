@@ -485,14 +485,20 @@ extend_target(Core CONDITION INTEGRITY
 #    # f16c_cxx = "false"
 #)
 
-extend_target(Core CONDITION _ss_f16c_cxx
-    DEFINES
-        QFLOAT16_INCLUDE_FAST
-)
-#
-#extend_target(Core CONDITION NOT _ss_f16c_cxx
-#    # F16C_SOURCES = "global/qfloat16_f16c.c"
-#)
+# special case
+# needs refinement for the other compiler specific cases.
+if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
+    # Equivalent to contains(QT_CPU_FEATURES.$$QT_ARCH, f16c)
+    extend_target(Core
+        DEFINES
+            QFLOAT16_INCLUDE_FAST
+    )
+else()
+    add_qt_simd_part(Core SIMD f16c
+        SOURCES
+            global/qfloat16_f16c.c
+    )
+endif()
 
 extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
     DEFINES

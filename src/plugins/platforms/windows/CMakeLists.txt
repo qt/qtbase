@@ -94,7 +94,7 @@ extend_target(qwindows CONDITION QT_FEATURE_vulkan
     SOURCES
         qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
     LIBRARIES
-        vulkan_supportPrivate
+         Qt::VulkanSupportPrivate
 )
 
 #extend_target(qwindows CONDITION NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN
@@ -126,7 +126,7 @@ extend_target(qwindows CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
         qwindowsglcontext.cpp qwindowsglcontext.h
 )
 
-extend_target(qwindows CONDITION QT_FEATURE_opengl_dynamic
+extend_target(qwindows CONDITION QT_FEATURE_dynamicgl
     SOURCES
         qwindowseglcontext.cpp qwindowseglcontext.h
 )

@@ -579,9 +579,14 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
-    LIBRARIES
-        vulkan/nolink
 )
+
+# special case to include only headers aka QMAKE_USE += vulkan/nolink
+if(QT_FEATURE_vulkan)
+    # Can't use generator expressions https://gitlab.kitware.com/cmake/cmake/issues/19072
+    get_target_property(vulkan_includes Vulkan::Vulkan INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(Gui PUBLIC ${vulkan_includes})
+endif()
 
 #### Keys ignored in scope 61:.:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # CONFIG = "generated_privates"
@@ -630,7 +635,6 @@ if (QT_FEATURE_vulkan)
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun}"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p}"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p_cpp}"
-        LIBRARIES Vulkan::Vulkan
     )
 endif()
 
