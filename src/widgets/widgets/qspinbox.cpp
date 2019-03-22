@@ -728,6 +728,10 @@ void QDoubleSpinBox::setPrefix(const QString &prefix)
 
     d->prefix = prefix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    d->cachedMinimumSizeHint = QSize(); // minimumSizeHint cares about the prefix
+    updateGeometry();
 }
 
 /*!
