@@ -116,7 +116,7 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     switch (cap) {
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
-    case ThreadedOpenGL: return true;
+    case ThreadedOpenGL: return false;
     case RasterGLSurface: return false; // to enable this you need to fix qopenglwidget and quickwidget for wasm
     case MultipleWindows: return true;
     case WindowManagement: return true;
