@@ -390,12 +390,15 @@ void tst_qfloat16::limits()
     QVERIFY(qIsFinite(zero));
     QVERIFY(!qIsInf(zero));
     QVERIFY(!qIsNaN(zero));
+    QCOMPARE(qFpClassify(zero), FP_ZERO);
     QVERIFY(qIsFinite(one));
     QVERIFY(!qIsInf(one));
+    QCOMPARE(qFpClassify(one), FP_NORMAL);
     QVERIFY(!qIsNaN(one));
     QVERIFY(qIsFinite(ten));
     QVERIFY(!qIsInf(ten));
     QVERIFY(!qIsNaN(ten));
+    QCOMPARE(qFpClassify(ten), FP_NORMAL);
 
     // digits in the mantissa, including the implicit 1 before the binary dot at its left:
     QVERIFY(qfloat16(1 << (Bounds::digits - 1)) + one > qfloat16(1 << (Bounds::digits - 1)));
@@ -409,7 +412,9 @@ void tst_qfloat16::limits()
     QVERIFY(qIsInf(bit * two));
     bit = powf16(two, Bounds::min_exponent - 1);
     QVERIFY(bit.isNormal());
+    QCOMPARE(qFpClassify(bit), FP_NORMAL);
     QVERIFY(!(bit / two).isNormal());
+    QCOMPARE(qFpClassify(bit / two), FP_SUBNORMAL);
     QVERIFY(bit / two > zero);
 
     // Base ten (with no matching off-by-one idiocy):
@@ -424,6 +429,7 @@ void tst_qfloat16::limits()
     QVERIFY(high10 > zero);
     QVERIFY(qIsFinite(high10));
     QVERIFY(!qIsFinite(high10 * ten));
+    QCOMPARE(qFpClassify(high10), FP_NORMAL);
 
     // How many digits are significant ?  (Casts avoid linker errors ...)
     QCOMPARE(int(Bounds::digits10), 3); // 9.79e-4 has enough sigificant digits:
@@ -449,34 +455,46 @@ void tst_qfloat16::limits()
     QVERIFY(!qIsNaN(Bounds::infinity()));
     QVERIFY(!qIsFinite(Bounds::infinity()));
     // QCOMPARE(Bounds::infinity(), Bounds::infinity());
+    QCOMPARE(qFpClassify(Bounds::infinity()), FP_INFINITE);
+
     QVERIFY(Bounds::infinity() > -Bounds::infinity());
     QVERIFY(Bounds::infinity() > zero);
     QVERIFY(qIsInf(-Bounds::infinity()));
     QVERIFY(!qIsNaN(-Bounds::infinity()));
     QVERIFY(!qIsFinite(-Bounds::infinity()));
     // QCOMPARE(-Bounds::infinity(), -Bounds::infinity());
+    QCOMPARE(qFpClassify(-Bounds::infinity()), FP_INFINITE);
+
     QVERIFY(-Bounds::infinity() < zero);
     QVERIFY(qIsNaN(Bounds::quiet_NaN()));
     QVERIFY(!qIsInf(Bounds::quiet_NaN()));
     QVERIFY(!qIsFinite(Bounds::quiet_NaN()));
     QVERIFY(!(Bounds::quiet_NaN() == Bounds::quiet_NaN()));
     // QCOMPARE(Bounds::quiet_NaN(), Bounds::quiet_NaN());
+    QCOMPARE(qFpClassify(Bounds::quiet_NaN()), FP_NAN);
+
     QVERIFY(Bounds::max() > zero);
     QVERIFY(qIsFinite(Bounds::max()));
     QVERIFY(!qIsInf(Bounds::max()));
     QVERIFY(!qIsNaN(Bounds::max()));
     QVERIFY(qIsInf(Bounds::max() * rose));
+    QCOMPARE(qFpClassify(Bounds::max()), FP_NORMAL);
+
     QVERIFY(Bounds::lowest() < zero);
     QVERIFY(qIsFinite(Bounds::lowest()));
     QVERIFY(!qIsInf(Bounds::lowest()));
     QVERIFY(!qIsNaN(Bounds::lowest()));
     QVERIFY(qIsInf(Bounds::lowest() * rose));
+    QCOMPARE(qFpClassify(Bounds::lowest()), FP_NORMAL);
+
     QVERIFY(Bounds::min() > zero);
     QVERIFY(Bounds::min().isNormal());
     QVERIFY(!(Bounds::min() / rose).isNormal());
     QVERIFY(qIsFinite(Bounds::min()));
     QVERIFY(!qIsInf(Bounds::min()));
     QVERIFY(!qIsNaN(Bounds::min()));
+    QCOMPARE(qFpClassify(Bounds::min()), FP_NORMAL);
+
     QVERIFY(Bounds::denorm_min() > zero);
     QVERIFY(!Bounds::denorm_min().isNormal());
     QVERIFY(qIsFinite(Bounds::denorm_min()));
@@ -485,6 +503,7 @@ void tst_qfloat16::limits()
     if (overOptimised)
         QEXPECT_FAIL("", "Over-optimised on QEMU", Continue);
     QCOMPARE(Bounds::denorm_min() / rose, zero);
+    QCOMPARE(qFpClassify(Bounds::denorm_min()), FP_SUBNORMAL);
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)

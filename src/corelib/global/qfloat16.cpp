@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: http://www.qt-project.org/legal
 **
@@ -39,6 +40,7 @@
 
 #include "qfloat16.h"
 #include "private/qsimd_p.h"
+#include <cmath> // for fpclassify()'s return values
 
 QT_BEGIN_NAMESPACE
 
@@ -90,6 +92,17 @@ QT_BEGIN_NAMESPACE
 
     \sa qIsFinite
 */
+
+/*!
+  \internal
+  Implements qFpClassify() for qfloat16.
+ */
+
+int qfloat16::fpClassify() const noexcept
+{
+    return isInf() ? FP_INFINITE : isNaN() ? FP_NAN
+        : !b16 ? FP_ZERO : isNormal() ? FP_NORMAL : FP_SUBNORMAL;
+}
 
 /*! \fn int qRound(qfloat16 value)
     \relates <QFloat16>

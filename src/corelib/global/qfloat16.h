@@ -83,6 +83,7 @@ public:
     bool isInf() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7c; }
     bool isNaN() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7e; }
     bool isFinite() const noexcept { return ((b16 >> 8) & 0x7c) != 0x7c; }
+    Q_CORE_EXPORT int fpClassify() const noexcept;
     // Support for std::numeric_limits<qfloat16>
     static constexpr qfloat16 _limit_epsilon()    noexcept { return qfloat16(Wrap(0x1400)); }
     static constexpr qfloat16 _limit_min()        noexcept { return qfloat16(Wrap(0x400)); }
@@ -117,6 +118,7 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qsizetype length
 Q_REQUIRED_RESULT inline bool qIsInf(qfloat16 f) noexcept { return f.isInf(); }
 Q_REQUIRED_RESULT inline bool qIsNaN(qfloat16 f) noexcept { return f.isNaN(); }
 Q_REQUIRED_RESULT inline bool qIsFinite(qfloat16 f) noexcept { return f.isFinite(); }
+Q_REQUIRED_RESULT inline int qFpClassify(qfloat16 f) noexcept { return f.fpClassify(); }
 // Q_REQUIRED_RESULT quint32 qFloatDistance(qfloat16 a, qfloat16 b);
 
 // The remainder of these utility functions complement qglobal.h
