@@ -134,7 +134,9 @@ QString QStandardPaths::writableLocation(StandardLocation type)
                     return QString();
                 }
             }
+#ifndef Q_OS_WASM
             qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%s'", qPrintable(xdgRuntimeDir));
+#endif
         } else {
             fileInfo.setFile(xdgRuntimeDir);
             if (!fileInfo.exists()) {
