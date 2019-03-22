@@ -10149,7 +10149,11 @@ void QWidget::hideEvent(QHideEvent *)
     \endtable
 */
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QWidget::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+#else
 bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
+#endif
 {
     Q_UNUSED(eventType);
     Q_UNUSED(message);

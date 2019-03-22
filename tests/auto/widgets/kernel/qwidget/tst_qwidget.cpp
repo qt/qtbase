@@ -6146,7 +6146,11 @@ public:
         return false;
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *) override
+#else
     bool nativeEvent(const QByteArray &eventType, void *message, long *) override
+#endif
     {
         if (isMapNotify(eventType, message))
             gotExpectedMapNotify = true;
@@ -6154,7 +6158,11 @@ public:
     }
 
     // QAbstractNativeEventFilter interface
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *) override
+#else
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override
+#endif
     {
         if (isMapNotify(eventType, message))
             gotExpectedGlobalEvent = true;

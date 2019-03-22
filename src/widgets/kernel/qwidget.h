@@ -648,7 +648,12 @@ protected:
 
     virtual void showEvent(QShowEvent *event);
     virtual void hideEvent(QHideEvent *event);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result);
+#else
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+#endif
 
     // Misc. protected functions
     virtual void changeEvent(QEvent *);

@@ -230,7 +230,11 @@ public:
                                               Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
 #endif // QT_CONFIG(draganddrop)
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result);
+#else
     static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
+#endif
 
     // Changes to the screen
     static void handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation newOrientation);
