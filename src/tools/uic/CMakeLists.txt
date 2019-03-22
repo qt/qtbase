@@ -27,6 +27,8 @@ add_qt_tool(uic
         QT_UIC_CPP_GENERATOR
     INCLUDE_DIRECTORIES
         cpp
+    DISABLE_AUTOGEN_TOOLS # special case:
+        uic rcc
     # QMAKE_TARGET_DESCRIPTION = "Qt User Interface Compiler"
     # _LOADED = "qt_tool"
     # _OPTION = "host_build"

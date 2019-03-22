@@ -242,6 +242,8 @@ add_qt_module(Core
         ZLIB::ZLIB
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform
+    DISABLE_AUTOGEN_TOOLS # special case:
+        uic
     # ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroid.jar"
     # ANDROID_LIB_DEPENDENCIES = "plugins/platforms/android/libqtforandroid.so"
     # ANDROID_PERMISSIONS = "android.permission.INTERNET" "android.permission.WRITE_EXTERNAL_STORAGE"

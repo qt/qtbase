@@ -321,6 +321,7 @@ function(qt_autogen_tools target)
                           PROPERTIES
                           AUTO${captitalAutogenTool} ON
                           AUTO${captitalAutogenTool}_EXECUTABLE "$<TARGET_FILE:Qt::${autogen_tool}>")
+    set_property(TARGET ${target} APPEND PROPERTY AUTOGEN_TARGET_DEPENDS Qt::${autogen_tool})
   endforeach()
 
   set_directory_properties(PROPERTIES
