@@ -39,7 +39,7 @@ target_include_directories(GlobalConfig INTERFACE
     $<INSTALL_INTERFACE:include>
     $<INSTALL_INTERFACE:include/QtCore>
 )
-qt_feature_module_begin(LIBRARY GlobalConfig
+qt_feature_module_begin(LIBRARY Core
     PUBLIC_FILE src/corelib/global/qconfig.h
     PRIVATE_FILE src/corelib/global/qconfig_p.h
 )
