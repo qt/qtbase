@@ -48,10 +48,10 @@ public:
 
     static QString str( int y, int month, int d, int h, int min, int s );
     static QDateTime dt( const QString& str );
-public slots:
+public Q_SLOTS:
     void initTestCase();
     void init();
-private slots:
+private Q_SLOTS:
     void ctor();
     void operator_eq();
     void isNull();

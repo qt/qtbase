@@ -35,7 +35,7 @@
 class tst_QDate : public QObject
 {
     Q_OBJECT
-private slots:
+private Q_SLOTS:
     void isNull_data();
     void isNull();
     void isValid_data();

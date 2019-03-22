@@ -48,7 +48,7 @@ public:
     }
 #endif // remove for ### Qt 6
 
-private slots:
+private Q_SLOTS:
     void msecsTo_data();
     void msecsTo();
     void secsTo_data();

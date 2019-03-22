@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -42,7 +42,7 @@ class tst_QTimeZone : public QObject
 public:
     tst_QTimeZone();
 
-private slots:
+private Q_SLOTS:
     // Public class default system tests
     void createTest();
     void nullTest();
@@ -385,8 +385,8 @@ void tst_QTimeZone::dataStreamTest()
 
 void tst_QTimeZone::isTimeZoneIdAvailable()
 {
-    QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
-    foreach (const QByteArray &id, available) {
+    const QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
+    for (const QByteArray &id : available) {
         QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
         QVERIFY(QTimeZone(id).isValid());
     }
@@ -701,8 +701,8 @@ void tst_QTimeZone::availableTimeZoneIds()
 
 void tst_QTimeZone::stressTest()
 {
-    QList<QByteArray> idList = QTimeZone::availableTimeZoneIds();
-    foreach (const QByteArray &id, idList) {
+    const QList<QByteArray> idList = QTimeZone::availableTimeZoneIds();
+    for (const QByteArray &id : idList) {
         QTimeZone testZone = QTimeZone(id);
         QCOMPARE(testZone.isValid(), true);
         QCOMPARE(testZone.id(), id);

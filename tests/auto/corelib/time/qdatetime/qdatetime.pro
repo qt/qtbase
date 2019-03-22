@@ -2,6 +2,7 @@ CONFIG += testcase
 TARGET = tst_qdatetime
 QT = core-private testlib
 SOURCES = tst_qdatetime.cpp
+DEFINES += QT_NO_KEYWORDS QT_NO_FOREACH
 
 # For some reason using optimization here triggers a compiler issue, which causes an exception
 # However, the code is correct
