@@ -2,7 +2,7 @@
 
 defineTest(qtConfLibrary_psqlConfig) {
     pg_config = $$config.input.psql_config
-    isEmpty(pg_config): \
+    isEmpty(pg_config):!cross_compile: \
         pg_config = $$qtConfFindInPath("pg_config")
     !win32:!isEmpty(pg_config) {
         qtRunLoggedCommand("$$pg_config --libdir", libdir)|return(false)
@@ -33,7 +33,7 @@ defineTest(qtConfLibrary_psqlEnv) {
 
 defineTest(qtConfLibrary_mysqlConfig) {
     mysql_config = $$config.input.mysql_config
-    isEmpty(mysql_config): \
+    isEmpty(mysql_config):!cross_compile: \
         mysql_config = $$qtConfFindInPath("mysql_config")
     !isEmpty(mysql_config) {
         qtRunLoggedCommand("$$mysql_config --version", version)|return(false)
