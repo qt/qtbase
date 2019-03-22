@@ -6680,13 +6680,13 @@ void tst_QStateMachine::dontProcessSlotsWhenMachineIsNotRunning()
     } emitter;
 
     initialState.addTransition(&emitter, &Emitter::signalWithNoArg, &finalState);
-    QTimer::singleShot(0, [&]() {
-        metaObject()->invokeMethod(&emitter, "emitSignalWithNoArg");
-        metaObject()->invokeMethod(&emitter, "emitSignalWithNoArg");
-    });
     machine.addState(&initialState);
     machine.addState(&finalState);
     machine.setInitialState(&initialState);
+    connect(&machine, &QStateMachine::started, &emitter, [&]() {
+        metaObject()->invokeMethod(&emitter, "emitSignalWithNoArg");
+        metaObject()->invokeMethod(&emitter, "emitSignalWithNoArg");
+    });
     connect(&machine, &QStateMachine::finished, &emitter.thread, &QThread::quit);
     machine.start();
     QSignalSpy emittedSpy(&emitter, &SignalEmitter::signalWithNoArg);
