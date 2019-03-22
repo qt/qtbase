@@ -365,7 +365,7 @@ QString QSqlError::nativeErrorCode() const
 QString QSqlError::text() const
 {
     QString result = d->databaseError;
-    if (!d->databaseError.endsWith(QLatin1String("\n")))
+    if (!d->databaseError.isEmpty() && !d->driverError.isEmpty() && !d->databaseError.endsWith(QLatin1String("\n")))
         result += QLatin1Char(' ');
     result += d->driverError;
     return result;
