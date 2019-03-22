@@ -11,6 +11,7 @@
             "icu": "boolean",
             "inotify": "boolean",
             "journald": "boolean",
+            "mimetype-database": "boolean",
             "pcre": { "type": "enum", "values": [ "qt", "system" ] },
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
             "pps": { "type": "boolean", "name": "qqnx_pps" },
@@ -678,6 +679,11 @@
             "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
         },
+        "mimetype-database": {
+            "label": "Built-in copy of the MIME database",
+            "condition": "features.mimetype",
+            "output": [ "privateFeature" ]
+        },
         "system-pcre2": {
             "label": "Using system PCRE2",
             "disable": "input.pcre == 'qt'",
@@ -1048,6 +1054,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 "glib",
                 "iconv",
                 "icu",
+                "mimetype-database",
                 {
                     "message": "Tracing backend",
                     "type": "firstAvailableFeature",
