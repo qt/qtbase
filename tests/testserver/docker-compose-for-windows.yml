@@ -16,16 +16,18 @@ services:
         domainname: ${TEST_DOMAIN}
         build:
             context: .
+            dockerfile: ${SHARED_DATA}/Dockerfile
             args:
                 provisioningImage: qt-test-server-apache2:537fe302f61851d1663f41495230d8e3554a4a13
-                servicedir: ./apache2
-        entrypoint: common/startup.sh
-        command: [common/ssl.sh, service/apache2.sh]
+                shareDir: ./common
+                serviceDir: ./apache2
+                test_domain: ${TEST_DOMAIN}
+        entrypoint: service/startup.sh
+        command: [service/ssl.sh, service/apache2.sh]
         network_mode: "host"
         extra_hosts:
             - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
         environment:
-            - test_domain=${TEST_DOMAIN}
             - test_cert="qt-test-server-host-network-cacert.pem"
 
     squid:
@@ -35,32 +37,34 @@ services:
             - apache2
         build:
             context: .
+            dockerfile: ${SHARED_DATA}/Dockerfile
             args:
                 provisioningImage: qt-test-server-squid:9c32f41b19aca3d778733c4d8fb0ecc5955e893c
-                servicedir: ./squid
-        entrypoint: common/startup.sh
+                shareDir: ./common
+                serviceDir: ./squid
+                test_domain: ${TEST_DOMAIN}
+        entrypoint: service/startup.sh
         command: service/squid.sh
         network_mode: "host"
         extra_hosts:
             - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
-        environment:
-            - test_domain=${TEST_DOMAIN}
 
     vsftpd:
         container_name: qt-test-server-vsftpd
         domainname: ${TEST_DOMAIN}
         build:
             context: .
+            dockerfile: ${SHARED_DATA}/Dockerfile
             args:
                 provisioningImage: qt-test-server-vsftpd:f3a9c8d793a77cc007c0e4e481bec01f9e3eeb7e
-                servicedir: ./vsftpd
-        entrypoint: common/startup.sh
+                shareDir: ./common
+                serviceDir: ./vsftpd
+                test_domain: ${TEST_DOMAIN}
+        entrypoint: service/startup.sh
         command: service/vsftpd.sh
         network_mode: "host"
         extra_hosts:
             - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
-        environment:
-            - test_domain=${TEST_DOMAIN}
 
     ftp-proxy:
         container_name: qt-test-server-ftp-proxy
@@ -69,16 +73,17 @@ services:
             - vsftpd
         build:
             context: .
+            dockerfile: ${SHARED_DATA}/Dockerfile
             args:
                 provisioningImage: qt-test-server-ftp-proxy:d7de8b28392d173db512a558ccc84ead8bece2ae
-                servicedir: ./ftp-proxy
-        entrypoint: common/startup.sh
+                shareDir: ./common
+                serviceDir: ./ftp-proxy
+                test_domain: ${TEST_DOMAIN}
+        entrypoint: service/startup.sh
         command: service/ftp-proxy.sh
         network_mode: "host"
         extra_hosts:
             - "qt-test-server.${TEST_DOMAIN}:${MACHINE_IP}"
-        environment:
-            - test_domain=${TEST_DOMAIN}
 
     danted:
         container_name: qt-test-server-danted
@@ -89,10 +94,13 @@ services:
             - ftp-proxy
         build:
             context: .
+            dockerfile: ${SHARED_DATA}/Dockerfile
             args:
                 provisioningImage: qt-test-server-danted:35607f9b790524cf9690c7d12a9a401696b7b6b5
-                servicedir: ./danted
-        entrypoint: common/startup.sh
+                shareDir: ./common
+                serviceDir: ./danted
+                test_domain: ${TEST_DOMAIN}
+        entrypoint: service/startup.sh
         command: service/danted.sh
         network_mode: "host"
         extra_hosts:
@@ -102,4 +110,4 @@ services:
             - danted_external=${MACHINE_IP}
             - danted_auth_internal=${MACHINE_IP}
             - danted_auth_external=${MACHINE_IP}
-            - test_domain=${TEST_DOMAIN}
+

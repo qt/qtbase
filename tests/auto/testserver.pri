@@ -102,6 +102,7 @@ isEmpty(TESTSERVER_VERSION) {
         # The environment variables passed to the docker-compose file
         TEST_ENV = 'MACHINE_IP=$(shell docker-machine ip qt-test-server)'
         TEST_ENV += 'TEST_DOMAIN=$$DNSDOMAIN'
+        TEST_ENV += 'SHARED_DATA=$$PWD'
         TEST_CMD = env
     } else:equals(QMAKE_HOST.os, Windows) {
         # There is no docker bridge on Windows. It is impossible to ping a container.
@@ -115,6 +116,7 @@ isEmpty(TESTSERVER_VERSION) {
         # The environment variables passed to the docker-compose file
         TEST_ENV = '\$\$env:MACHINE_IP = docker-machine ip qt-test-server;'
         TEST_ENV += '\$\$env:TEST_DOMAIN = $$shell_quote(\"$$DNSDOMAIN\");'
+        TEST_ENV += '\$\$env:SHARED_DATA = $$shell_quote(\"$$PWD\");'
 
         # Docker-compose CLI environment variables:
         # Enable path conversion from Windows-style to Unix-style in volume definitions.
@@ -127,6 +129,7 @@ isEmpty(TESTSERVER_VERSION) {
             $$dirname(_QMAKE_CONF_)/tests/testserver/docker-compose.yml
         # The environment variables passed to the docker-compose file
         TEST_ENV = 'TEST_DOMAIN=$$DNSDOMAIN'
+        TEST_ENV += 'SHARED_DATA=$$PWD'
         TEST_CMD = env
     }
     !exists($$TESTSERVER_COMPOSE_FILE): error("Invalid TESTSERVER_COMPOSE_FILE specified")
@@ -200,7 +203,7 @@ isEmpty(TESTSERVER_VERSION) {
     # Bring up test servers and make sure the services are ready.
     !isEmpty(TEST_CMD): testserver_test.commands = $$TEST_CMD $$TEST_ENV
     testserver_test.commands += docker-compose $$MACHINE_CONFIG -f $$TESTSERVER_COMPOSE_FILE up \
-                                --detach --force-recreate --timeout 1 $${QT_TEST_SERVER_LIST} &&
+                                --build -d --force-recreate --timeout 1 $${QT_TEST_SERVER_LIST} &&
 
     # Check test cases with docker-based test servers.
     testserver_test.commands += $(MAKE) -f $(MAKEFILE) check_network &&

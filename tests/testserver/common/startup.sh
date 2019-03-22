@@ -34,7 +34,7 @@ set -ex
 # export variables
 export USER=qt-test-server
 export PASS=password
-export CONFIG=common/testdata
+export CONFIG=service/testdata
 export TESTDATA=service/testdata
 
 # add users
@@ -43,17 +43,4 @@ useradd -m -s /bin/bash $USER; echo "$USER:$PASS" | chpasswd
 # install configurations and test data
 su $USER -c "cp $CONFIG/system/passwords ~/"
 
-# modules initialization (apache2.sh, ftp-proxy.sh ...)
-for RUN_CMD
-do $RUN_CMD
-done
-
-# start multicast DNS service discovery (mDNS)
-sed -i -e "s,#domain-name=local,domain-name=${test_domain:-test-net.qt.local}," \
-    -e "s,#publish-aaaa-on-ipv4=yes,publish-aaaa-on-ipv4=no," \
-    /etc/avahi/avahi-daemon.conf
-service dbus restart
-service avahi-daemon restart
-
-# keep-alive in docker detach mode
-sleep infinity
+./startup.sh "$@"
