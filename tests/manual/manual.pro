@@ -53,7 +53,8 @@ shortcuts \
 dialogs \
 windowtransparency \
 unc \
-qtabbar
+qtabbar \
+rhi
 
 !qtConfig(openssl): SUBDIRS -= qssloptions
 
