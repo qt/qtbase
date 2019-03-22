@@ -181,6 +181,10 @@ public:
     bool receivedExpose;
     PositionPolicy positionPolicy;
     bool positionAutomatic;
+    // resizeAutomatic suppresses resizing by QPlatformWindow::initialGeometry().
+    // It also indicates that width/height=0 is acceptable (for example, for
+    // the QRollEffect widget) and is thus not cleared in setGeometry().
+    // An alternative approach might be using -1,-1 as a default size.
     bool resizeAutomatic;
     Qt::ScreenOrientation contentOrientation;
     qreal opacity;
