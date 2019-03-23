@@ -133,11 +133,11 @@ public:
     bool useDesignMetrics() const { return design; }
 
 private:
-    uint align : 8;
+    uint align : 9;
     uint wordWrap : 4;
     uint design : 1;
     uint direction : 2;
-    uint unused : 17;
+    uint unused : 16;
     uint unused2; // ### Qt 6: remove unnecessary, extra 32 bits
     uint f;
     qreal tab;
