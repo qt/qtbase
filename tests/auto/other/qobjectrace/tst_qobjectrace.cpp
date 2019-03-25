@@ -378,6 +378,10 @@ public:
         connect(timer, &QTimer::timeout, this, &DeleteReceiverRaceReceiver::onTimeout);
         timer->start(1);
     }
+    ~DeleteReceiverRaceReceiver()
+    {
+        delete receiver;
+    }
 
     void onTimeout()
     {
@@ -428,12 +432,12 @@ void tst_QObjectRace::disconnectRace()
 
         for (int i = 0; i < ThreadCount; ++i) {
             threads[i]->requestInterruption();
-            QVERIFY(threads[i]->wait(300));
+            QVERIFY(threads[i]->wait());
             delete threads[i];
         }
 
         senderThread->quit();
-        QVERIFY(senderThread->wait(300));
+        QVERIFY(senderThread->wait());
     }
 
     QCOMPARE(countedStructObjectsCount.load(), 0u);
@@ -453,11 +457,11 @@ void tst_QObjectRace::disconnectRace()
         QTest::qWait(TimeLimit);
 
         senderThread->requestInterruption();
-        QVERIFY(senderThread->wait(300));
+        QVERIFY(senderThread->wait());
 
         for (int i = 0; i < ThreadCount; ++i) {
             threads[i]->quit();
-            QVERIFY(threads[i]->wait(300));
+            QVERIFY(threads[i]->wait());
             delete threads[i];
         }
     }
