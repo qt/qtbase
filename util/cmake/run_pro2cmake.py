@@ -41,9 +41,33 @@ pro2cmake = os.path.join(script_path, 'pro2cmake.py')
 if len(sys.argv) > 1:
     base_path = os.path.abspath(sys.argv[1])
 
-failed_files = []
 
-all_files = glob.glob(os.path.join(base_path, '**/*.pro'), recursive=True)
+def find_all_pro_files():
+
+    def sorter(pro_file: str) -> str:
+        """ Sorter that tries to prioritize main pro files in a directory. """
+        pro_file_without_suffix = pro_file.rsplit('/', 1)[-1][:-4]
+        dir_name = os.path.dirname(pro_file)
+        if dir_name.endswith('/' + pro_file_without_suffix):
+            return dir_name
+        return dir_name + "/__" + pro_file
+
+    all_files = []
+    previous_dir_name: str = None
+    for pro_file in sorted(glob.glob(os.path.join(base_path, '**/*.pro'),
+                                     recursive=True),
+                           key=sorter):
+        dir_name = os.path.dirname(pro_file)
+        if dir_name == previous_dir_name:
+            print("Skipping:", pro_file)
+        else:
+            all_files.append(pro_file)
+            previous_dir_name = dir_name
+    return all_files
+
+
+failed_files = []
+all_files = find_all_pro_files()
 files_count = len(all_files)
 
 with concurrent.futures.ThreadPoolExecutor(initializer=os.nice, initargs=(10,)) as pool:
