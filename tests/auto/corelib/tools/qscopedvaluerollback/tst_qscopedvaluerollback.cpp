@@ -46,6 +46,7 @@ private Q_SLOTS:
     void rollbackToPreviousCommit();
     void exceptions();
     void earlyExitScope();
+    void moveOnly();
 private:
     void earlyExitScope_helper(int exitpoint, int &member);
 };
@@ -188,6 +189,18 @@ void tst_QScopedValueRollback::earlyExitScope_helper(int exitpoint, int& member)
     if (exitpoint == 3)
         return;
     r.commit();
+}
+
+void tst_QScopedValueRollback::moveOnly()
+{
+    std::unique_ptr<int> uniquePtr;
+    std::unique_ptr<int> newVal(new int(5));
+    QVERIFY(!uniquePtr);
+    {
+        QScopedValueRollback<std::unique_ptr<int>> r(uniquePtr, std::move(newVal));
+        QVERIFY(uniquePtr);
+    }
+    QVERIFY(!uniquePtr);
 }
 
 QTEST_MAIN(tst_QScopedValueRollback)
