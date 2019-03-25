@@ -186,7 +186,19 @@ QAbstractEventDispatcher *QWasmIntegration::createEventDispatcher() const
 
 QVariant QWasmIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
+    if (hint == ShowIsFullScreen)
+        return true;
+
     return QPlatformIntegration::styleHint(hint);
+}
+
+Qt::WindowState QWasmIntegration::defaultWindowState(Qt::WindowFlags flags) const
+{
+    // Don't maximize dialogs
+    if (flags & Qt::Dialog & ~Qt::Window)
+        return Qt::WindowNoState;
+
+    return QPlatformIntegration::defaultWindowState(flags);
 }
 
 QStringList QWasmIntegration::themeNames() const

@@ -67,6 +67,7 @@ public:
     QPlatformFontDatabase *fontDatabase() const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const override;
+    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const override;
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
     QPlatformClipboard *clipboard() const override;
