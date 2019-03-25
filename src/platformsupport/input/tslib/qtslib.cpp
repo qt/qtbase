@@ -129,7 +129,9 @@ void QTsLibMouseHandler::readMouseData()
         }
         QPoint pos(x, y);
 
-        QWindowSystemInterface::handleMouseEvent(0, pos, pos, pressed ? Qt::LeftButton : Qt::NoButton);
+        QWindowSystemInterface::handleMouseEvent(nullptr, pos, pos,
+                                                 pressed ? Qt::LeftButton : Qt::NoButton,
+                                                 Qt::NoButton, QEvent::None);
 
         m_x = x;
         m_y = y;
