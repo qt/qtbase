@@ -721,6 +721,25 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn qsizetype QStringView::indexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::indexOf(QLatin1String l1, qsizetype from Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::indexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns the index position of the first occurrence of the string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively, in this string-view,
+    searching forward from index position \a from. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    If \a from is -1, the search starts at the last character; if it is
+    -2, at the next to last character and so on.
+
+    \sa QString::indexOf()
+*/
+
+/*!
     \fn QByteArray QStringView::toLatin1() const
 
     Returns a Latin-1 representation of the string as a QByteArray.

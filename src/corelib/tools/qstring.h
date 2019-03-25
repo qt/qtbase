@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -130,6 +131,13 @@ public:
     Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
+    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
+    Q_REQUIRED_RESULT int indexOf(QLatin1String s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
+    Q_REQUIRED_RESULT inline int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, QStringView(&c, 1), cs)); } // ### Qt6: qsize
+
     using value_type = const char;
     using reference = value_type&;
     using const_reference = reference;
@@ -214,6 +222,8 @@ bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const noex
 { return QtPrivate::startsWith(*this, s, cs); }
 bool QStringView::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::endsWith(*this, s, cs); }
+qsizetype QStringView::indexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::findString(*this, from, s, cs); }
 
 class Q_CORE_EXPORT QString
 {
@@ -328,9 +338,13 @@ public:
     static QString asprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
     int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(QLatin1String s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#if QT_STRINGVIEW_LEVEL < 2
+    int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(const QStringRef &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#endif
+    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
     int lastIndexOf(QChar c, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QString &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QLatin1String s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -1451,10 +1465,14 @@ public:
     inline int count() const { return m_size; }
     inline int length() const { return m_size; }
 
+#if QT_STRINGVIEW_LEVEL < 2
     int indexOf(const QString &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int indexOf(const QStringRef &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#endif
+    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
     int indexOf(QChar ch, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(QLatin1String str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int indexOf(const QStringRef &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QString &str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QChar ch, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QLatin1String str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;

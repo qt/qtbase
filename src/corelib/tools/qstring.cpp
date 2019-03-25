@@ -144,6 +144,7 @@ extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int leng
 
 // internal
 qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs);
+static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept;
 static inline qsizetype qt_last_index_of(QStringView haystack, QChar needle, qsizetype from, Qt::CaseSensitivity cs);
 static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline qsizetype qt_string_count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
@@ -3680,6 +3681,7 @@ bool QString::operator>(QLatin1String other) const noexcept
     \sa QT_NO_CAST_FROM_ASCII
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
   Returns the index position of the first occurrence of the string \a
   str in this string, searching forward from index position \a
@@ -3702,6 +3704,25 @@ int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
     // ### Qt6: qsize
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
+#endif  // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \fn int QString::indexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
+    \since 5.14
+    \overload indexOf()
+
+    Returns the index position of the first occurrence of the string view \a str
+    in this string, searching forward from index position \a from.
+    Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    If \a from is -1, the search starts at the last character; if it is
+    -2, at the next to last character and so on.
+
+    \sa QStringView::indexOf(), lastIndexOf(), contains(), count()
+*/
 
 /*!
   \since 4.5
@@ -3738,9 +3759,10 @@ int QString::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsize
-    return int(QtPrivate::findChar(QStringView(unicode(), length()), ch, from, cs));
+    return int(qFindChar(QStringView(unicode(), length()), ch, from, cs));
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 4.8
 
@@ -3758,6 +3780,7 @@ int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) co
     // ### Qt6: qsize
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *needle, int sl, Qt::CaseSensitivity cs)
 {
@@ -9481,6 +9504,25 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn int QLatin1String::indexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::indexOf(QLatin1String l1, int from Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::indexOf(QChar c, int from, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns the index position of the first occurrence of the string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively, in this Latin-1 string,
+    searching forward from index position \a from. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    If \a from is -1, the search starts at the last character; if it is
+    -2, at the next to last character and so on.
+
+    \sa QString::indexOf()
+*/
+
+/*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
@@ -11035,6 +11077,7 @@ QStringRef QString::midRef(int position, int n) const
     \sa QString::chop(), truncate()
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
   \since 4.8
 
@@ -11055,6 +11098,25 @@ int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) co
     // ### Qt6: qsize
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \fn int QStringRef::indexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
+    \since 5.14
+    \overload indexOf()
+
+    Returns the index position of the first occurrence of the string view \a str
+    in this string reference, searching forward from index position \a from.
+    Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    If \a from is -1, the search starts at the last character; if it is
+    -2, at the next to last character and so on.
+
+    \sa QString::indexOf(), QStringView::indexOf(), lastIndexOf(), contains(), count()
+*/
 
 /*!
     \since 4.8
@@ -11069,7 +11131,7 @@ int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) co
 int QStringRef::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsize
-    return int(QtPrivate::findChar(QStringView(unicode(), length()), ch, from, cs));
+    return int(qFindChar(QStringView(unicode(), length()), ch, from, cs));
 }
 
 /*!
@@ -11093,6 +11155,7 @@ int QStringRef::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) con
     return int(QtPrivate::findString(QStringView(unicode(), size()), from, str, cs));
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 4.8
 
@@ -11112,6 +11175,7 @@ int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs)
     // ### Qt6: qsize
     return int(QtPrivate::findString(QStringView(unicode(), size()), from, QStringView(str.unicode(), str.size()), cs));
 }
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
   \since 4.8
@@ -11711,7 +11775,7 @@ bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseS
     position \a from. Returns -1 if \a ch could not be found.
 */
 
-qsizetype QtPrivate::findChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
+static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
 {
     if (from < 0)
         from = qMax(from + str.size(), qsizetype(0));
@@ -11749,7 +11813,7 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
         return -1;
 
     if (sl == 1)
-        return QtPrivate::findChar(haystack0, needle0[0], from, cs);
+        return qFindChar(haystack0, needle0[0], from, cs);
 
     /*
         We use the Boyer-Moore algorithm in cases where the overhead
@@ -11815,12 +11879,32 @@ qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1Str
     if (haystack.size() < needle.size())
         return -1;
 
-    const char *latin1 = needle.latin1();
-    const qsizetype len = needle.size();
-    QVarLengthArray<ushort> s(len);
-    qt_from_latin1(s.data(), latin1, len);
+    QVarLengthArray<ushort> s(needle.size());
+    qt_from_latin1(s.data(), needle.latin1(), needle.size());
+    return QtPrivate::findString(haystack, from, QStringView(reinterpret_cast<const QChar*>(s.constData()), s.size()), cs);
+}
 
-    return QtPrivate::findString(haystack, from, QStringView(reinterpret_cast<const QChar*>(s.constData()), len), cs);
+qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs) noexcept
+{
+    if (haystack.size() < needle.size())
+        return -1;
+
+    QVarLengthArray<ushort> s(haystack.size());
+    qt_from_latin1(s.data(), haystack.latin1(), haystack.size());
+    return QtPrivate::findString(QStringView(reinterpret_cast<const QChar*>(s.constData()), s.size()), from, needle, cs);
+}
+
+qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
+{
+    if (haystack.size() < needle.size())
+        return -1;
+
+    QVarLengthArray<ushort> h(haystack.size());
+    qt_from_latin1(h.data(), haystack.latin1(), haystack.size());
+    QVarLengthArray<ushort> n(needle.size());
+    qt_from_latin1(n.data(), needle.latin1(), needle.size());
+    return QtPrivate::findString(QStringView(reinterpret_cast<const QChar*>(h.constData()), h.size()), from,
+                                 QStringView(reinterpret_cast<const QChar*>(n.constData()), n.size()), cs);
 }
 
 /*!
