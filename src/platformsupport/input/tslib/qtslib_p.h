@@ -71,11 +71,12 @@ private slots:
     void readMouseData();
 
 private:
-    QSocketNotifier * m_notify;
+    QSocketNotifier * m_notify = nullptr;
     tsdev *m_dev;
-    int m_x, m_y;
-    bool m_pressed;
-    bool m_rawMode;
+    int m_x = 0;
+    int m_y = 0;
+    bool m_pressed = false;
+    const bool m_rawMode;
 };
 
 QT_END_NAMESPACE
