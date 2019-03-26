@@ -713,6 +713,11 @@ function(add_qt_plugin target)
       DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
+    set(static_plugin_define "")
+    if (arg_STATIC OR NOT QT_BUILD_SHARED_LIBS)
+        set(static_plugin_define "QT_STATICPLUGIN")
+    endif()
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -731,6 +736,7 @@ function(add_qt_plugin target)
             QT_BUILDING_QT
             QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
+            "${static_plugin_define}"
             QT_PLUGIN
         PUBLIC_DEFINES
             QT_${module_upper}_LIB
@@ -746,10 +752,6 @@ function(add_qt_plugin target)
         PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
-
-    if(NOT ${QT_BUILD_SHARED_LIBS})
-        extend_target("${target}" DEFINES QT_STATICPLUGIN)
-    endif()
 
     install(TARGETS "${target}" EXPORT "${target}Targets"
         LIBRARY DESTINATION "${install_directory}"
