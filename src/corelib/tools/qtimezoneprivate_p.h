@@ -331,6 +331,7 @@ public:
 
 private:
     void init(const QByteArray &ianaId);
+    QVector<QTimeZonePrivate::Data> getPosixTransitions(qint64 msNear) const;
 
     Data dataForTzTransition(QTzTransitionTime tran) const;
     QVector<QTzTransitionTime> m_tranTimes;

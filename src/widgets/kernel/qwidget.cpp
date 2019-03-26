@@ -1543,14 +1543,19 @@ void QWidgetPrivate::createTLSysExtra()
             extra->topextra->window->setMaximumSize(QSize(extra->maxw, extra->maxh));
         if (extra->topextra->opacity != 255 && q->isWindow())
             extra->topextra->window->setOpacity(qreal(extra->topextra->opacity) / qreal(255));
+
+        const bool isTipLabel = q->inherits("QTipLabel");
+        const bool isAlphaWidget = !isTipLabel && q->inherits("QAlphaWidget");
 #ifdef Q_OS_WIN
         // Pass on native parent handle for Widget embedded into Active X.
         const QVariant activeXNativeParentHandle = q->property(activeXNativeParentHandleProperty);
         if (activeXNativeParentHandle.isValid())
             extra->topextra->window->setProperty(activeXNativeParentHandleProperty, activeXNativeParentHandle);
-        if (q->inherits("QTipLabel") || q->inherits("QAlphaWidget"))
+        if (isTipLabel || isAlphaWidget)
             extra->topextra->window->setProperty("_q_windowsDropShadow", QVariant(true));
 #endif
+        if (isTipLabel || isAlphaWidget || q->inherits("QRollEffect"))
+            qt_window_private(extra->topextra->window)->setAutomaticPositionAndResizeEnabled(false);
     }
 
 }

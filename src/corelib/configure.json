@@ -374,6 +374,16 @@
                 ]
             }
         },
+        "glibc": {
+            "label": "GNU libc",
+            "type": "compile",
+            "test": {
+                "include": "stdlib.h",
+                "main": [
+                    "return __GLIBC__;"
+                ]
+            }
+        },
         "inotify": {
             "label": "inotify",
             "type": "compile",
@@ -592,6 +602,12 @@
             "autoDetect": "!config.win32",
             "condition": "libs.glib",
             "output": [ "privateFeature", "feature" ]
+        },
+        "glibc": {
+            "label": "GNU libc",
+            "autoDetect": "config.linux",
+            "condition": "tests.glibc",
+            "output": [ "privateFeature" ]
         },
         "iconv": {
             "label": "iconv",
