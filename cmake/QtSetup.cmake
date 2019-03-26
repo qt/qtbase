@@ -10,6 +10,14 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo") # Set the possible values of build type for cmake-gui
 endif()
 
+# Appends a 'debug postfix' to library targets (not executables)
+# e.g. lib/libQt5DBus_debug.5.12.0.dylib
+if(WIN32)
+    set(CMAKE_DEBUG_POSTFIX "d")
+elseif(APPLE)
+    set(CMAKE_DEBUG_POSTFIX "_debug")
+endif()
+
 ## Force C++ standard, do not fall back, do not use compiler extensions
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
