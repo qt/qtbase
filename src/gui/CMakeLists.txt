@@ -230,6 +230,7 @@ add_qt_module(Gui
     DEFINES
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
+        QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
     LIBRARIES
         Qt::CorePrivate
         ZLIB::ZLIB

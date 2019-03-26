@@ -930,5 +930,3 @@ qt_feature("whatsthis" PUBLIC
     PURPOSE "Supports displaying \"What's this\" help."
 )
 qt_feature_definition("whatsthis" "QT_NO_WHATSTHIS" NEGATE VALUE "1")
-
-qt_extra_definition("QT_QPA_DEFAULT_PLATFORM" "${QT_QPA_DEFAULT_PLATFORM}" PUBLIC)

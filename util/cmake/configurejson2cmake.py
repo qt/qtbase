@@ -1008,9 +1008,6 @@ def processJson(dir, ctx, data):
             cm_fh.write('qt_extra_definition("QT_VERSION_MINOR" ${PROJECT_VERSION_MINOR} PUBLIC)\n')
             cm_fh.write('qt_extra_definition("QT_VERSION_PATCH" ${PROJECT_VERSION_PATCH} PUBLIC)\n')
 
-        if ctx.get('module') == 'gui':
-            cm_fh.write('\nqt_extra_definition("QT_QPA_DEFAULT_PLATFORM" "${QT_QPA_DEFAULT_PLATFORM}" PUBLIC)\n')
-
     # do this late:
     processSubconfigs(dir, ctx, data)
 
