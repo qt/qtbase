@@ -61,6 +61,13 @@ defineTest(qtConfCommandlineSetInput) {
     val = $${2}
     !isEmpty($${currentConfig}.commandline.options.$${arg}.name): \
         arg = $$eval($${currentConfig}.commandline.options.$${arg}.name)
+    !isEmpty(config.input.$$arg) {
+        oldval = $$eval(config.input.$$arg)
+        equals(oldval, $$val): \
+            qtConfAddNote("Option '$$arg' with value '$$val' was specified twice")
+        else: \
+            qtConfAddNote("Overriding option '$$arg' with '$$val' (was: '$$oldval')")
+    }
 
     config.input.$$arg = $$val
     export(config.input.$$arg)
