@@ -1464,9 +1464,8 @@ bool QDate::isLeapYear(int y)
 /*!
     \fn QTime::QTime()
 
-    Constructs a null time object. A null time can be a QTime(0, 0, 0, 0)
-    (i.e., midnight) object, except that isNull() returns \c true and isValid()
-    returns \c false.
+    Constructs a null time object. For a null time, isNull() returns \c true and
+    isValid() returns \c false. If you need a zero time, use QTime(0, 0).
 
     \sa isNull(), isValid()
 */
@@ -3143,7 +3142,7 @@ QDateTime::QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall)
 */
 
 QDateTime::QDateTime(const QDate &date)
-    : d(QDateTimePrivate::create(date, QTime(0, 0, 0), Qt::LocalTime, 0))
+    : d(QDateTimePrivate::create(date, QTime(0, 0), Qt::LocalTime, 0))
 {
 }
 

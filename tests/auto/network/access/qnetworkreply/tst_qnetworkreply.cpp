@@ -123,7 +123,7 @@ class tst_QNetworkReply: public QObject
         if (!seedCreated) {
             seedCreated = true; // not thread-safe, but who cares
         }
-        return QString::number(QTime(0, 0, 0).msecsTo(QTime::currentTime()))
+        return QString::number(QTime::currentTime().msecsSinceStartOfDay())
             + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid())
             + QLatin1Char('-') + QString::number(QRandomGenerator::global()->generate());
     }

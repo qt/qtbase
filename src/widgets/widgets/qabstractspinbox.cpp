@@ -2030,8 +2030,8 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
 #if QT_CONFIG(datetimeparser)
     case QVariant::DateTime: {
         QDateTime a2 = arg2.toDateTime();
-        QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATETIME_MIN.daysTo(a2));
-        a1.setTime(a1.time().addMSecs(QTime().msecsTo(a2.time())));
+        QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATE_MIN.daysTo(a2.date()));
+        a1.setTime(a1.time().addMSecs(a2.time().msecsSinceStartOfDay()));
         ret = QVariant(a1);
         break;
     }
@@ -2093,11 +2093,11 @@ QVariant operator*(const QVariant &arg1, double multiplier)
 #if QT_CONFIG(datetimeparser)
     case QVariant::DateTime: {
         double days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
-        int daysInt = (int)days;
+        const qint64 daysInt = qint64(days);
         days -= daysInt;
-        long msecs = (long)((QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) * multiplier)
-                            + (days * (24 * 3600 * 1000)));
-        ret = QDateTime(QDate().addDays(int(days)), QTime().addMSecs(msecs));
+        qint64 msecs = qint64(arg1.toDateTime().time().msecsSinceStartOfDay() * multiplier
+                              + days * (24 * 3600 * 1000));
+        ret = QDateTime(QDATETIMEEDIT_DATE_MIN.addDays(daysInt), QTime::fromMSecsSinceStartOfDay(msecs));
         break;
     }
 #endif // datetimeparser
@@ -2127,8 +2127,8 @@ double operator/(const QVariant &arg1, const QVariant &arg2)
     case QVariant::DateTime:
         a1 = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDate());
         a2 = QDATETIMEEDIT_DATE_MIN.daysTo(arg2.toDate());
-        a1 += (double)QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) / (long)(3600 * 24 * 1000);
-        a2 += (double)QDATETIMEEDIT_TIME_MIN.msecsTo(arg2.toDateTime().time()) / (long)(3600 * 24 * 1000);
+        a1 += arg1.toDateTime().time().msecsSinceStartOfDay() / (36e5 * 24);
+        a2 += arg2.toDateTime().time().msecsSinceStartOfDay() / (36e5 * 24);
         break;
 #endif // datetimeparser
     default: break;
