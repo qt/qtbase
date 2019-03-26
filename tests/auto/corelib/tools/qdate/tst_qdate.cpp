@@ -83,6 +83,7 @@ private slots:
     void negativeYear() const;
     void printNegativeYear() const;
     void roundtripGermanLocale() const;
+#if QT_CONFIG(textdate)
     void shortDayName() const;
     void standaloneShortDayName() const;
     void longDayName() const;
@@ -91,6 +92,7 @@ private slots:
     void standaloneShortMonthName() const;
     void longMonthName() const;
     void standaloneLongMonthName() const;
+#endif // textdate
     void roundtrip() const;
     void qdebug() const;
 private:
@@ -1038,18 +1040,18 @@ void tst_QDate::fromStringFormat_data()
 
     // Undo this (inline the C-locale versions) for ### Qt 6
     // Get localized names:
-    QString january = QDate::longMonthName(1);
-    QString february = QDate::longMonthName(2);
-    QString march = QDate::longMonthName(3);
-    QString august = QDate::longMonthName(8);
-    QString mon = QDate::shortDayName(1);
-    QString monday = QDate::longDayName(1);
-    QString tuesday = QDate::longDayName(2);
-    QString wednesday = QDate::longDayName(3);
-    QString thursday = QDate::longDayName(4);
-    QString friday = QDate::longDayName(5);
-    QString saturday = QDate::longDayName(6);
-    QString sunday = QDate::longDayName(7);
+    QString january = QLocale::system().monthName(1, QLocale::LongFormat);
+    QString february = QLocale::system().monthName(2, QLocale::LongFormat);
+    QString march = QLocale::system().monthName(3, QLocale::LongFormat);
+    QString august = QLocale::system().monthName(8, QLocale::LongFormat);
+    QString mon = QLocale::system().dayName(1, QLocale::ShortFormat);
+    QString monday = QLocale::system().dayName(1, QLocale::LongFormat);
+    QString tuesday = QLocale::system().dayName(2, QLocale::LongFormat);
+    QString wednesday = QLocale::system().dayName(3, QLocale::LongFormat);
+    QString thursday = QLocale::system().dayName(4, QLocale::LongFormat);
+    QString friday = QLocale::system().dayName(5, QLocale::LongFormat);
+    QString saturday = QLocale::system().dayName(6, QLocale::LongFormat);
+    QString sunday = QLocale::system().dayName(7, QLocale::LongFormat);
 
     QTest::newRow("data0") << QString("") << QString("") << defDate();
     QTest::newRow("data1") << QString(" ") << QString("") << invalidDate();
@@ -1305,6 +1307,10 @@ void tst_QDate::roundtripGermanLocale() const
     theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
 }
 
+#if QT_CONFIG(textdate)
+QT_WARNING_PUSH // the methods tested here are all deprecated
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+
 void tst_QDate::shortDayName() const
 {
     QCOMPARE(QDate::shortDayName(0), QString());
@@ -1432,6 +1438,8 @@ void tst_QDate::standaloneLongMonthName() const
         QCOMPARE(QDate::longMonthName(i, QDate::StandaloneFormat), locale.standaloneMonthName(i, QLocale::LongFormat));
     }
 }
+QT_WARNING_POP
+#endif // textdate
 
 void tst_QDate::roundtrip() const
 {
