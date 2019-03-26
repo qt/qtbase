@@ -1,3 +1,9 @@
+{
+QT_BEGIN_NAMESPACE
+class QEvent;
+QT_END_NAMESPACE
+}
+
 QCoreApplicationPrivate_init_entry()
 QCoreApplicationPrivate_init_exit()
 
