@@ -8,6 +8,7 @@ add_qt_plugin(pnp_basictools # special case
     STATIC # special case
     OUTPUT_DIRECTORY ../../plugins # special case
     INSTALL_DIRECTORY ../../plugins # special case
+    ARCHIVE_INSTALL_DIRECTORY ../../plugins # special case
     SOURCES
         basictoolsplugin.cpp basictoolsplugin.h
     INCLUDE_DIRECTORIES

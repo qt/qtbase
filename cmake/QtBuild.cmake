@@ -665,6 +665,17 @@ function(add_qt_module target)
     )
 endfunction()
 
+function(qt_internal_check_directory_or_type name dir type default result_var)
+    if ("x${dir}" STREQUAL x)
+        if("x${type}" STREQUAL x)
+            message(FATAL_ERROR "add_qt_plugin called without setting either TYPE or ${name}.")
+        endif()
+        set(${result_var} "${default}" PARENT_SCOPE)
+    else()
+        set(${result_var} "${dir}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
@@ -672,18 +683,29 @@ endfunction()
 function(add_qt_plugin target)
     qt_internal_module_info(module "${target}")
 
-    qt_parse_all_arguments(arg "add_qt_plugin" "" "TYPE" "${__default_private_args};${__default_public_args}" ${ARGN})
-    if (NOT DEFINED arg_TYPE)
-        message(FATAL_ERROR "add_qt_plugin called without setting a TYPE.")
-    endif()
+    qt_parse_all_arguments(arg "add_qt_plugin" "STATIC"
+        "TYPE;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
+        "${__default_private_args};${__default_public_args}" ${ARGN})
 
-    add_library("${target}")
+    qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
+        "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}" output_directory)
+    qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
+        "${INSTALL_PLUGINSDIR}/${arg_TYPE}" install_directory)
+    qt_internal_check_directory_or_type(ARCHIVE_INSTALL_DIRECTORY
+        "${arg_ARCHIVE_INSTALL_DIRECTORY}" "${arg_TYPE}"
+        "${INSTALL_LIBDIR}/${arg_TYPE}" archive_install_directory)
+
+    if(arg_STATIC)
+        add_library("${target}" STATIC)
+    else()
+        add_library("${target}")
+    endif()
     qt_internal_add_target_aliases("${target}")
 
     set_target_properties("${target}" PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}"
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
+        LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
+        RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
+        ARCHIVE_OUTPUT_DIRECTORY "${output_directory}")
 
     qt_internal_library_deprecation_level(deprecation_define)
 
@@ -730,9 +752,8 @@ function(add_qt_plugin target)
     endif()
 
     install(TARGETS "${target}" EXPORT "${target}Targets"
-        LIBRARY DESTINATION ${INSTALL_PLUGINSDIR}/${arg_TYPE}
-        ARCHIVE DESTINATION ${INSTALL_LIBDIR}/${arg_TYPE}
-        )
+        LIBRARY DESTINATION "${install_directory}"
+        ARCHIVE DESTINATION "${archive_install_directory}")
     install(EXPORT "${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${INSTALL_LIBDIR}/cmake)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
