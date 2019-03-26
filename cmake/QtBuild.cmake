@@ -826,6 +826,7 @@ endfunction()
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test" "RUN_SERIAL" "" "${__default_private_args}" ${ARGN})
     set(path "${CMAKE_CURRENT_BINARY_DIR}")
+    file(RELATIVE_PATH test_relative_src_dir ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_qt_executable("${name}"
         OUTPUT_DIRECTORY "${path}"
@@ -840,6 +841,7 @@ function(add_qt_test name)
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        INSTALL_DIRECTORY ${test_relative_src_dir}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
