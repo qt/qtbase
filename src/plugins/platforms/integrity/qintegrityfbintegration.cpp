@@ -51,7 +51,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
-
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,13 +64,13 @@ QIntegrityFbIntegration::QIntegrityFbIntegration(const QStringList &paramList)
 
 QIntegrityFbIntegration::~QIntegrityFbIntegration()
 {
-    destroyScreen(m_primaryScreen);
+    QWindowSystemInterface::handleScreenRemoved(m_primaryScreen);
 }
 
 void QIntegrityFbIntegration::initialize()
 {
     if (m_primaryScreen->initialize())
-        screenAdded(m_primaryScreen);
+        QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     else
         qWarning("integrityfb: Failed to initialize screen");
 

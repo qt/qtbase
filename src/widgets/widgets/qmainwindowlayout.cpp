@@ -2525,6 +2525,30 @@ void QMainWindowLayout::updateGapIndicator()
 #endif // QT_CONFIG(rubberband)
 }
 
+static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
+{
+    QTabBar::Shape result = QTabBar::RoundedSouth;
+#if QT_CONFIG(tabwidget)
+    if (qobject_cast<QDockWidget *>(w)) {
+        switch (static_cast<QDockWidgetPrivate *>(qt_widget_private(w))->tabPosition) {
+        case QTabWidget::North:
+            result = QTabBar::RoundedNorth;
+            break;
+        case QTabWidget::South:
+            result = QTabBar::RoundedSouth;
+            break;
+        case QTabWidget::West:
+            result = QTabBar::RoundedWest;
+            break;
+        case QTabWidget::East:
+            result = QTabBar::RoundedEast;
+            break;
+        }
+    }
+#endif // tabwidget
+    return result;
+}
+
 void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
 {
     if (!parentWidget()->isVisible() || parentWidget()->isMinimized()
@@ -2573,8 +2597,9 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 QDockWidgetGroupWindow *floatingTabs = createTabbedDockWindow(); // FIXME
                 floatingTabs->setGeometry(dropTo->geometry());
                 QDockAreaLayoutInfo *info = floatingTabs->layoutInfo();
+                const QTabBar::Shape shape = tabwidgetPositionToTabBarShape(dropTo);
                 *info = QDockAreaLayoutInfo(&layoutState.dockAreaLayout.sep, QInternal::LeftDock,
-                                            Qt::Horizontal, QTabBar::RoundedSouth,
+                                            Qt::Horizontal, shape,
                                             static_cast<QMainWindow *>(parentWidget()));
                 info->tabbed = true;
                 QLayout *parentLayout = dropTo->parentWidget()->layout();

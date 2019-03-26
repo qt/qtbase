@@ -33,6 +33,7 @@ SOURCES += main.mm \
     qcocoaintrospection.mm \
     qcocoakeymapper.mm \
     qcocoamimetypes.mm \
+    qiosurfacegraphicsbuffer.mm \
     messages.cpp
 
 HEADERS += qcocoaintegration.h \
@@ -67,6 +68,7 @@ HEADERS += qcocoaintegration.h \
     qcocoaintrospection.h \
     qcocoakeymapper.h \
     messages.h \
+    qiosurfacegraphicsbuffer.h \
     qcocoamimetypes.h
 
 qtConfig(opengl.*) {
@@ -81,7 +83,7 @@ qtConfig(vulkan) {
 
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -lcups
+LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -framework IOSurface -lcups
 
 QT += \
     core-private gui-private \

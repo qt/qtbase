@@ -62,6 +62,7 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
         set(_search_paths)
         string(REPLACE \"\\$\\$[QT_INSTALL_LIBS]\" \"${_qt5_install_libs}\" _static_depends \"${_static_depends}\")
         foreach(_flag ${_static_depends})
+            string(REPLACE \"\\\"\" \"\" _flag ${_flag})
             if(_flag MATCHES \"^-l(.*)$\")
                 # Handle normal libraries passed as -lfoo
                 set(_lib \"${CMAKE_MATCH_1}\")

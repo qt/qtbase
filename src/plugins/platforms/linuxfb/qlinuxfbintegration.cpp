@@ -54,6 +54,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #if QT_CONFIG(libinput)
 #include <QtInputSupport/private/qlibinputhandler_p.h>
@@ -89,13 +90,13 @@ QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
 
 QLinuxFbIntegration::~QLinuxFbIntegration()
 {
-    destroyScreen(m_primaryScreen);
+    QWindowSystemInterface::handleScreenRemoved(m_primaryScreen);
 }
 
 void QLinuxFbIntegration::initialize()
 {
     if (m_primaryScreen->initialize())
-        screenAdded(m_primaryScreen);
+        QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     else
         qWarning("linuxfb: Failed to initialize screen");
 

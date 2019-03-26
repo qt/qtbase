@@ -1390,7 +1390,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QString scheme = req.url().scheme();
 
 #ifdef Q_OS_WASM
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
+    // Support http, https, and relateive urls
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") || scheme.isEmpty()) {
         QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
         QNetworkReplyWasmImplPrivate *priv = reply->d_func();
         priv->manager = this;

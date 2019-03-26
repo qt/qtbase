@@ -51,6 +51,8 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 
+#include <QtXkbCommonSupport/private/qxkbcommon_p.h>
+
 #include "qibusproxy.h"
 #include "qibusproxyportal.h"
 #include "qibusinputcontextproxy.h"
@@ -335,14 +337,12 @@ void QIBusPlatformInputContext::forwardKeyEvent(uint keyval, uint keycode, uint 
     if (!input)
         return;
 
-    if (debug)
-        qDebug() << "forwardKeyEvent" << keyval << keycode << state;
-
     QEvent::Type type = QEvent::KeyPress;
     if (state & IBUS_RELEASE_MASK)
         type = QEvent::KeyRelease;
 
     state &= ~IBUS_RELEASE_MASK;
+    keycode += 8;
 
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
     if (state & IBUS_SHIFT_MASK)
@@ -354,7 +354,13 @@ void QIBusPlatformInputContext::forwardKeyEvent(uint keyval, uint keycode, uint 
     if (state & IBUS_META_MASK)
         modifiers |= Qt::MetaModifier;
 
-    QKeyEvent event(type, keyval, modifiers, QString(keyval));
+    int qtcode = QXkbCommon::keysymToQtKey(keyval, modifiers);
+    QString text = QXkbCommon::lookupStringNoKeysymTransformations(keyval);
+
+    if (debug)
+        qDebug() << "forwardKeyEvent" << keyval << keycode << state << modifiers << qtcode << text;
+
+    QKeyEvent event(type, qtcode, modifiers, keycode, keyval, state, text);
     QCoreApplication::sendEvent(input, &event);
 }
 
