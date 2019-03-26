@@ -438,9 +438,9 @@ void FileDialogPanel::restoreDefaults()
     setComboBoxValue(m_viewMode, d.viewMode());
     m_showDirsOnly->setChecked(d.testOption(QFileDialog::ShowDirsOnly));
     m_allowedSchemes->setText(QString());
-    m_confirmOverWrite->setChecked(d.confirmOverwrite());
+    m_confirmOverWrite->setChecked(!d.testOption(QFileDialog::DontConfirmOverwrite));
     m_nameFilterDetailsVisible->setChecked(!d.testOption(QFileDialog::HideNameFilterDetails));
-    m_resolveSymLinks->setChecked(d.resolveSymlinks());
+    m_resolveSymLinks->setChecked(!d.testOption(QFileDialog::DontResolveSymlinks));
     m_readOnly->setChecked(d.isReadOnly());
     m_native->setChecked(true);
     m_customDirIcons->setChecked(d.testOption(QFileDialog::DontUseCustomDirectoryIcons));

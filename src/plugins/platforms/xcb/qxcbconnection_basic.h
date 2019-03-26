@@ -40,6 +40,7 @@
 #define QXCBBASICCONNECTION_H
 
 #include "qxcbatom.h"
+#include "qxcbexport.h"
 
 #include <QtCore/QPair>
 #include <QtCore/QObject>
@@ -55,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXcb)
 
-class QXcbBasicConnection : public QObject
+class Q_XCB_EXPORT QXcbBasicConnection : public QObject
 {
     Q_OBJECT
 public:

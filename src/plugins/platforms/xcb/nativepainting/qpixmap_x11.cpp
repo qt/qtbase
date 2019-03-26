@@ -1772,6 +1772,20 @@ XID QX11PlatformPixmap::createBitmapFromImage(const QImage &image)
     return hd;
 }
 
+bool QX11PlatformPixmap::isBackingStore() const
+{
+    return (flags & IsBackingStore);
+}
+
+void QX11PlatformPixmap::setIsBackingStore(bool on)
+{
+    if (on)
+        flags |= IsBackingStore;
+    else {
+        flags &= ~IsBackingStore;
+    }
+}
+
 #if QT_CONFIG(xrender)
 void QX11PlatformPixmap::convertToARGB32(bool preserveContents)
 {

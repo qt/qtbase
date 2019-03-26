@@ -43,6 +43,7 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformwindow.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
 #if defined(Q_OS_WINRT)
@@ -108,7 +109,7 @@ QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
     mPrimaryScreen->mDepth = 32;
     mPrimaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
 
-    screenAdded(mPrimaryScreen);
+    QWindowSystemInterface::handleScreenAdded(mPrimaryScreen);
 }
 
 QMinimalIntegration::~QMinimalIntegration()

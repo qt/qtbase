@@ -1971,8 +1971,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_Widget_Animate Deprecated. Use \l{SH_Widget_Animation_Duration} instead.
 
-    \value SH_Splitter_OpaqueResize Determines if resizing is opaque
-           This enum value has been introduced in Qt 5.2
+    \value SH_Splitter_OpaqueResize Determines if widgets are resized dynamically (opaquely) while
+           interactively moving the splitter. This enum value was introduced in Qt 5.2.
 
     \value SH_TabBar_ChangeCurrentDelay Determines the delay before the current
            tab is changed while dragging over the tabbar, in milliseconds. This

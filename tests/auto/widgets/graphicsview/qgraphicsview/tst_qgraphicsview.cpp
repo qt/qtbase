@@ -4075,6 +4075,8 @@ void tst_QGraphicsView::update()
         QTRY_COMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect) & viewportRect);
     }
     QTRY_VERIFY(!viewPrivate->fullUpdatePending);
+#else
+    Q_UNUSED(updateRect);
 #endif
 }
 

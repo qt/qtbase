@@ -192,8 +192,6 @@ public:
 #endif
     virtual void setApplicationIcon(const QIcon &icon) const;
 
-    void removeScreen(QScreen *screen);
-
     virtual void beep() const;
 
 #if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
@@ -202,10 +200,6 @@ public:
 
 protected:
     QPlatformIntegration() = default;
-
-    void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
-    void destroyScreen(QPlatformScreen *screen);
-    void setPrimaryScreen(QPlatformScreen *newPrimary);
 };
 
 QT_END_NAMESPACE

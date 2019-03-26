@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,46 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENWFDINTEGRATION_H
-#define QOPENWFDINTEGRATION_H
+#ifndef QIOSURFACEGRAPHICSBUFFER_H
+#define QIOSURFACEGRAPHICSBUFFER_H
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformscreen.h>
+#include <qpa/qplatformgraphicsbuffer.h>
+#include <private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenWFDDevice;
-class QOpenWFDScreen;
-
-class QOpenWFDIntegration : public QPlatformIntegration
+class QIOSurfaceGraphicsBuffer : public QPlatformGraphicsBuffer
 {
 public:
-    QOpenWFDIntegration();
-    ~QOpenWFDIntegration();
+    QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace);
+    ~QIOSurfaceGraphicsBuffer();
 
-    bool hasCapability(Capability cap) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    const uchar *data() const override;
+    uchar *data() override;
+    int bytesPerLine() const override;
 
-    //This should not be a factory interface, but rather a accessor
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    IOSurfaceRef surface();
+    bool isInUse() const;
 
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
+protected:
+    bool doLock(AccessTypes access, const QRect &rect) override;
+    void doUnlock() override;
 
 private:
-    QList<QPlatformScreen *> mScreens;
-    QList<QOpenWFDDevice *>mDevices;
+    QCFType<IOSurfaceRef> m_surface;
 
-    QPlatformFontDatabase *mFontDatabase;
-    QPlatformNativeInterface *mNativeInterface;
-    QPlatformPrinterSupport *mPrinterSupport;
+    friend QDebug operator<<(QDebug, const QIOSurfaceGraphicsBuffer *);
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const QIOSurfaceGraphicsBuffer *);
+#endif
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QIOSURFACEGRAPHICSBUFFER_H

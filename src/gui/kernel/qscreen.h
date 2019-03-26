@@ -169,6 +169,7 @@ private:
     friend class QPlatformIntegration;
     friend class QPlatformScreen;
     friend class QHighDpiScaling;
+    friend class QWindowSystemInterface;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
