@@ -38,3 +38,5 @@ QMetaObject_activate_begin_slot_functor(void *slotObject)
 QMetaObject_activate_end_slot_functor(void *slotObject)
 QMetaObject_activate_begin_declarative_signal(QObject *sender, int signalIndex)
 QMetaObject_activate_end_declarative_signal(QObject *sender, int signalIndex)
+
+qt_message_print(int type, const char *category, const char *function, const char *file, int line, const QString &message)

@@ -57,6 +57,7 @@
 #include "private/qloggingregistry_p.h"
 #include "private/qcoreapplication_p.h"
 #include "private/qsimd_p.h"
+#include <qtcore_tracepoints_p.h>
 #endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -1811,6 +1812,8 @@ static void ungrabMessageHandler() { }
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
 #ifndef QT_BOOTSTRAPPED
+    Q_TRACE(qt_message_print, msgType, context.category, context.function, context.file, context.line, message);
+
     // qDebug, qWarning, ... macros do not check whether category is enabled
     if (isDefaultCategory(context.category)) {
         if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
