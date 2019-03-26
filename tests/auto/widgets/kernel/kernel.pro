@@ -22,5 +22,3 @@ SUBDIRS=\
 
 darwin:SUBDIRS -= \ # Uses native recognizers
    qgesturerecognizer \
-
-SUBDIRS -= qsound
