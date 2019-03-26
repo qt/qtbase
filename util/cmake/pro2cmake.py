@@ -239,15 +239,19 @@ class RemoveOperation(Operation):
 
     def process(self, input):
         input_set = set(input)
-        result_set = set(self._value)
+        value_set = set(self._value)
         result = []
-        for v in self._value:
-            if v in input_set:
-                continue
-            if v in result_set:
+
+        # Add everything that is not going to get removed:
+        for v in input:
+            if v not in value_set:
                 result += [v,]
-            else:
+
+        # Add everything else with removal marker:
+        for v in self._value:
+            if v not in input_set:
                 result += ['-{}'.format(v), ]
+
         return result
 
     def __repr__(self):
