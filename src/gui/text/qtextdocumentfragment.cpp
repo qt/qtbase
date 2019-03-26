@@ -576,6 +576,9 @@ bool QTextHtmlImporter::appendNodeText()
             && ch != QChar::Nbsp
             && ch != QChar::ParagraphSeparator) {
 
+            if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == QLatin1Char('\n') || ch == QLatin1Char('\r')))
+                compressNextWhitespace = PreserveWhiteSpace;
+
             if (compressNextWhitespace == CollapseWhiteSpace)
                 compressNextWhitespace = RemoveWhiteSpace; // allow this one, and remove the ones coming next.
             else if(compressNextWhitespace == RemoveWhiteSpace)
@@ -592,7 +595,9 @@ bool QTextHtmlImporter::appendNodeText()
                 }
             } else if (wsm != QTextHtmlParserNode::WhiteSpacePreWrap) {
                 compressNextWhitespace = RemoveWhiteSpace;
-                if (wsm == QTextHtmlParserNode::WhiteSpaceNoWrap)
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == QLatin1Char('\n') || ch == QLatin1Char('\r')))
+                { }
+                else if (wsm == QTextHtmlParserNode::WhiteSpaceNoWrap)
                     ch = QChar::Nbsp;
                 else
                     ch = QLatin1Char(' ');
@@ -605,6 +610,8 @@ bool QTextHtmlImporter::appendNodeText()
             || ch == QChar::ParagraphSeparator) {
 
             if (!textToInsert.isEmpty()) {
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == QChar(' '))
+                    textToInsert = textToInsert.chopped(1);
                 cursor.insertText(textToInsert, format);
                 textToInsert.clear();
             }

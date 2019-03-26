@@ -205,6 +205,7 @@ enum KnownValue {
     Value_Normal,
     Value_Pre,
     Value_NoWrap,
+    Value_PreLine,
     Value_PreWrap,
     Value_Small,
     Value_Medium,

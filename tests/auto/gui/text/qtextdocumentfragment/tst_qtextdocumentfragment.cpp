@@ -1272,11 +1272,11 @@ void tst_QTextDocumentFragment::html_whitespace_data()
     QTest::newRow("2") << QString("<span>  </span><span>nowhitespacehereplease</span>")
                        << QString::fromLatin1("nowhitespacehereplease");
 
-    QTest::newRow("3") << QString("<span style=\"white-space: pre;\">  white  space  here  </span>")
-                       << QString::fromLatin1("  white  space  here  ");
+    QTest::newRow("3") << QString("<span style=\"white-space: pre;\">  white  space  \n\n  here  </span>")
+                       << QString::fromLatin1("  white  space  \n\n  here  ");
 
-    QTest::newRow("4") << QString("<span style=\"white-space: pre-wrap;\">  white  space  here  </span>")
-                       << QString::fromLatin1("  white  space  here  ");
+    QTest::newRow("4") << QString("<span style=\"white-space: pre-wrap;\">  white  space  \n\n  here  </span>")
+                       << QString::fromLatin1("  white  space  \n\n  here  ");
 
     QTest::newRow("5") << QString("<a href=\"One.html\">One</a> <a href=\"Two.html\">Two</a> <b>Three</b>\n"
                                   "<b>Four</b>")
@@ -1290,6 +1290,12 @@ void tst_QTextDocumentFragment::html_whitespace_data()
 
     QTest::newRow("8") << QString("<table><tr><td><i>Blah</i></td></tr></table> <i>Blub</i>")
                        << QString("\nBlah\nBlub");
+
+    QTest::newRow("9") << QString("<span style=\"white-space: nowrap;\">  white  space  \n\n  here  </span>")
+                       << QString::fromLatin1("white space here ");
+
+    QTest::newRow("10") << QString("<span style=\"white-space: pre-line;\">  white  space  \n\n  here  </span>")
+                        << QString::fromLatin1("white space\n\nhere ");
 
     QTest::newRow("task116492") << QString("<p>a<font=\"Times\"> b </font>c</p>")
                                 << QString("a b c");

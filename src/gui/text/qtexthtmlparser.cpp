@@ -649,7 +649,7 @@ void QTextHtmlParser::parseTag()
         parseExclamationTag();
         if (nodes.last().wsm != QTextHtmlParserNode::WhiteSpacePre
             && nodes.last().wsm != QTextHtmlParserNode::WhiteSpacePreWrap
-            && !textEditMode)
+                && !textEditMode)
             eatSpace();
         return;
     }
@@ -717,7 +717,8 @@ void QTextHtmlParser::parseTag()
     // in a white-space preserving environment strip off a initial newline
     // since the element itself already generates a newline
     if ((node->wsm == QTextHtmlParserNode::WhiteSpacePre
-         || node->wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
+         || node->wsm == QTextHtmlParserNode::WhiteSpacePreWrap
+         || node->wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && node->isBlock()) {
         if (pos < len - 1 && txt.at(pos) == QLatin1Char('\n'))
             ++pos;
@@ -761,7 +762,8 @@ void QTextHtmlParser::parseCloseTag()
     // in a new block for elements following the <pre>
     // ...foo\n</pre><p>blah -> foo</pre><p>blah
     if ((at(p).wsm == QTextHtmlParserNode::WhiteSpacePre
-         || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
+         || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreWrap
+         || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && at(p).isBlock()) {
         if (at(last()).text.endsWith(QLatin1Char('\n')))
             nodes[last()].text.chop(1);
@@ -1278,6 +1280,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             case QCss::Value_Pre: wsm = QTextHtmlParserNode::WhiteSpacePre; break;
             case QCss::Value_NoWrap: wsm = QTextHtmlParserNode::WhiteSpaceNoWrap; break;
             case QCss::Value_PreWrap: wsm = QTextHtmlParserNode::WhiteSpacePreWrap; break;
+            case QCss::Value_PreLine: wsm = QTextHtmlParserNode::WhiteSpacePreLine; break;
             default: break;
             }
             break;

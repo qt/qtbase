@@ -78,6 +78,8 @@ private slots:
     void extractBorder();
     void noTextDecoration();
     void quotedAndUnquotedIdentifiers();
+    void whitespaceValues_data();
+    void whitespaceValues();
 };
 
 void tst_QCssParser::scanner_data()
@@ -1744,6 +1746,33 @@ void tst_QCssParser::quotedAndUnquotedIdentifiers()
     QCOMPARE(decls.at(1).d->values.first().type, QCss::Value::KnownIdentifier);
     QCOMPARE(decls.at(1).d->property, QLatin1String("font-weight"));
     QCOMPARE(decls.at(1).d->values.first().toString(), QLatin1String("bold"));
+}
+
+void tst_QCssParser::whitespaceValues_data()
+{
+    QTest::addColumn<QString>("value");
+
+    QTest::newRow("normal") << "normal";
+    QTest::newRow("inherit") << "inherit";
+    QTest::newRow("nowrap") << "nowrap";
+    QTest::newRow("pre") << "pre";
+    QTest::newRow("pre-wrap") << "pre-wrap";
+    QTest::newRow("pre-line") << "pre-line";
+}
+
+void tst_QCssParser::whitespaceValues()
+{
+    QFETCH(QString, value);
+    QCss::Parser parser(QString("foo { white-space: %1 }").arg(value));
+    QCss::StyleSheet sheet;
+    QVERIFY(parser.parse(&sheet));
+
+    QCss::StyleRule rule = (!sheet.styleRules.isEmpty()) ?
+           sheet.styleRules.at(0) : *sheet.nameIndex.begin();
+    QCOMPARE(rule.declarations.size(), 1);
+
+    QCOMPARE(rule.declarations.at(0).d->property, QLatin1String("white-space"));
+    QCOMPARE(rule.declarations.at(0).d->values.first().toString(), value);
 }
 
 QTEST_MAIN(tst_QCssParser)
