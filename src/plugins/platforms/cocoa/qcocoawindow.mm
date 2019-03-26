@@ -1207,23 +1207,34 @@ void QCocoaWindow::windowDidChangeScreen()
     if (!window())
         return;
 
-    const bool wasRunningDisplayLink = static_cast<QCocoaScreen *>(screen())->isRunningDisplayLink();
+    // Note: When a window is resized to 0x0 Cocoa will report the window's screen as nil
+    auto *currentScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen);
+    auto *previousScreen = static_cast<QCocoaScreen*>(screen());
 
-    if (QCocoaScreen *newScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen)) {
-        if (newScreen == screen()) {
-            // Screen properties have changed. Will be handled by
-            // NSApplicationDidChangeScreenParametersNotification
-            // in QCocoaIntegration::updateScreens().
-            return;
-        }
+    Q_ASSERT_X(!m_view.window.screen || currentScreen,
+        "QCocoaWindow", "Failed to get QCocoaScreen for NSScreen");
 
-        qCDebug(lcQpaWindow) << window() << "moved to" << newScreen;
-        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), newScreen->screen());
+    // Note: The previous screen may be the same as the current screen, either because
+    // the screen was just reconfigured, which still results in AppKit sending an
+    // NSWindowDidChangeScreenNotification, because the previous screen was removed,
+    // and we ended up calling QWindow::setScreen to move the window, which doesn't
+    // actually move the window to the new screen, or because we've delivered the
+    // screen change to the top level window, which will make all the child windows
+    // of that window report the new screen when requested via QWindow::screen().
+    // We still need to deliver the screen change in all these cases, as the
+    // device-pixel ratio may have changed, and needs to be delivered to all
+    // windows, both top level and child windows.
 
-        if (hasPendingUpdateRequest() && wasRunningDisplayLink)
-            requestUpdate(); // Restart display-link on new screen
-    } else {
-        qCWarning(lcQpaWindow) << "Failed to get QCocoaScreen for" << m_view.window.screen;
+    qCDebug(lcQpaWindow) << "Screen changed for" << window() << "from" << previousScreen << "to" << currentScreen;
+    QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(
+        window(), currentScreen ? currentScreen->screen() : nullptr);
+
+    if (currentScreen && hasPendingUpdateRequest()) {
+        // Restart display-link on new screen. We need to do this unconditionally,
+        // since we can't rely on the previousScreen reflecting whether or not the
+        // window actually moved from one screen to another, or just stayed on the
+        // same screen.
+        currentScreen->requestUpdate();
     }
 }
 
