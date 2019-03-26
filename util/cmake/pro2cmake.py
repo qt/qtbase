@@ -239,10 +239,13 @@ class RemoveOperation(Operation):
 
     def process(self, input):
         input_set = set(input)
+        result_set = set(self._value)
         result = []
         for v in self._value:
             if v in input_set:
                 continue
+            if v in result_set:
+                result += [v,]
             else:
                 result += ['-{}'.format(v), ]
         return result
