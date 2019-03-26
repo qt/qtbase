@@ -60,11 +60,12 @@ qt*-config.pri
 
 /src/corelib/global/qfloat16tables.cpp
 
-/examples/*/*/*
-!/examples/*/*/*[.]*
-!/examples/*/*/README
-!/examples/*/doc/*
-!/examples/*/doc/*/*
+# FIXME: Ignore these again?
+# /examples/*/*/*
+# !/examples/*/*/*[.]*
+# !/examples/*/*/README
+# !/examples/*/doc/*
+# !/examples/*/doc/*/*
 
 /translations/*.qm
 /translations/*_en.ts
