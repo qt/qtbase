@@ -1,1 +1,3 @@
+add_subdirectory(testhelper)
+
 add_qt_test(tst_qcommandlineparser SOURCES tst_qcommandlineparser.cpp)
