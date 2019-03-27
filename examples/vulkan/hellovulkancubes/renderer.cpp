@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include "renderer.h"
+#include "qrandom.h"
 #include <QVulkanFunctions>
 #include <QtConcurrentRun>
 #include <QTime>
@@ -77,8 +78,6 @@ Renderer::Renderer(VulkanWindow *w, int initialCount)
       m_cam(QVector3D(0.0f, 0.0f, 20.0f)), // starting camera position
       m_instCount(initialCount)
 {
-    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
-
     m_floorModel.translate(0, -5, 0);
     m_floorModel.rotate(-90, 1, 0, 0);
     m_floorModel.scale(20, 100, 1);
@@ -793,7 +792,9 @@ void Renderer::ensureInstanceBuffer()
             qDebug("Preparing instances %d..%d", m_preparedInstCount, m_instCount - 1);
         char *p = m_instData.data();
         p += m_preparedInstCount * PER_INSTANCE_DATA_SIZE;
-        auto gen = [](float a, float b) { return float((qrand() % int(b - a + 1)) + a); };
+        auto gen = [](int a, int b) {
+            return float(QRandomGenerator::global()->bounded(double(b - a)) + a);
+        };
         for (int i = m_preparedInstCount; i < m_instCount; ++i) {
             // Apply a random translation to each instance of the mesh.
             float t[] = { gen(-5, 5), gen(-4, 6), gen(-30, 5) };
