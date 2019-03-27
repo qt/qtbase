@@ -1421,7 +1421,7 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
-    Q_TRACE(QGuiApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QGuiApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -1585,8 +1585,6 @@ void QGuiApplicationPrivate::init()
     if (!QGuiApplicationPrivate::displayName)
         QObject::connect(q, &QGuiApplication::applicationNameChanged,
                          q, &QGuiApplication::applicationDisplayNameChanged);
-
-    Q_TRACE(QGuiApplicationPrivate_init_exit);
 }
 
 extern void qt_cleanupFontDatabase();
@@ -1830,7 +1828,7 @@ bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArra
 
 void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
 {
-    Q_TRACE(QGuiApplicationPrivate_processWindowSystemEvent_entry, e->type);
+    Q_TRACE_SCOPE(QGuiApplicationPrivate_processWindowSystemEvent, e->type);
 
     switch(e->type) {
     case QWindowSystemInterfacePrivate::Mouse:
@@ -1940,8 +1938,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         qWarning() << "Unknown user input event type:" << e->type;
         break;
     }
-
-    Q_TRACE(QGuiApplicationPrivate_processWindowSystemEvent_exit, e->type);
 }
 
 /*! \internal

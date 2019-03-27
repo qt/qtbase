@@ -778,7 +778,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
-    Q_TRACE(QCoreApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QCoreApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -883,8 +883,6 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
 #endif
-
-    Q_TRACE(QCoreApplicationPrivate_init_exit);
 }
 
 /*!
