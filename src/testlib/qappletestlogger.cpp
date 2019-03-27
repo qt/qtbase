@@ -83,61 +83,117 @@ void QAppleTestLogger::leaveTestFunction()
     testFunctionActivity.leave();
 }
 
-typedef QPair<QtMsgType, const char *> IncidentClassification;
-static IncidentClassification incidentTypeToClassification(QAbstractTestLogger::IncidentTypes type)
+struct MessageData
 {
-    switch (type) {
-    case QAbstractTestLogger::Pass:
-        return IncidentClassification(QtInfoMsg, "pass");
-    case QAbstractTestLogger::XFail:
-        return IncidentClassification(QtInfoMsg, "xfail");
-    case QAbstractTestLogger::Fail:
-        return IncidentClassification(QtCriticalMsg, "fail");
-    case QAbstractTestLogger::XPass:
-        return IncidentClassification(QtInfoMsg, "xpass");
-    case QAbstractTestLogger::BlacklistedPass:
-        return IncidentClassification(QtWarningMsg, "bpass");
-    case QAbstractTestLogger::BlacklistedFail:
-        return IncidentClassification(QtInfoMsg, "bfail");
-    case QAbstractTestLogger::BlacklistedXPass:
-        return IncidentClassification(QtWarningMsg, "bxpass");
-    case QAbstractTestLogger::BlacklistedXFail:
-        return IncidentClassification(QtInfoMsg, "bxfail");
+    QtMsgType messageType = QtFatalMsg;
+    const char *categorySuffix = nullptr;
+
+    void generateCategory(QTestCharBuffer *category)
+    {
+        if (categorySuffix)
+            QTest::qt_asprintf(category, "qt.test.%s", categorySuffix);
+        else
+            QTest::qt_asprintf(category, "qt.test");
     }
-    return IncidentClassification(QtFatalMsg, nullptr);
-}
+};
+
 
 void QAppleTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-
-    IncidentClassification incidentClassification = incidentTypeToClassification(type);
+    MessageData messageData = [=]() {
+        switch (type) {
+        case QAbstractTestLogger::Pass:
+            return MessageData{QtInfoMsg, "pass"};
+        case QAbstractTestLogger::XFail:
+            return MessageData{QtInfoMsg, "xfail"};
+        case QAbstractTestLogger::Fail:
+            return MessageData{QtCriticalMsg, "fail"};
+        case QAbstractTestLogger::XPass:
+            return MessageData{QtInfoMsg, "xpass"};
+        case QAbstractTestLogger::BlacklistedPass:
+            return MessageData{QtWarningMsg, "bpass"};
+        case QAbstractTestLogger::BlacklistedFail:
+            return MessageData{QtInfoMsg, "bfail"};
+        case QAbstractTestLogger::BlacklistedXPass:
+            return MessageData{QtWarningMsg, "bxpass"};
+        case QAbstractTestLogger::BlacklistedXFail:
+            return MessageData{QtInfoMsg, "bxfail"};
+        }
+        Q_UNREACHABLE();
+    }();
 
     QTestCharBuffer category;
-    QTest::qt_asprintf(&category, "qt.test.%s", incidentClassification.second);
+    messageData.generateCategory(&category);
+
     QMessageLogContext context(file, line, /* function = */ nullptr, category.data());
 
-    QTestCharBuffer subsystemBuffer;
-    // It would be nice to have the data tag as part of the subsystem too, but that
-    // will for some tests results in hundreds of thousands of log objects being
-    // created, so we limit the subsystem to test functions, which we can hope
-    // are reasonably limited.
-    generateTestIdentifier(&subsystemBuffer, TestObject | TestFunction);
-    QString subsystem = QString::fromLatin1(subsystemBuffer.data());
-
-    // We still want the full identifier as part of the message though
-    QTestCharBuffer testIdentifier;
-    generateTestIdentifier(&testIdentifier);
-    QString message = QString::fromLatin1(testIdentifier.data());
+    QString message = testIdentifier();
     if (qstrlen(description))
         message += QLatin1Char('\n') % QString::fromLatin1(description);
 
-    AppleUnifiedLogger::messageHandler(incidentClassification.first, context, message, subsystem);
+    AppleUnifiedLogger::messageHandler(messageData.messageType, context, message, subsystem());
 }
 
 void QAppleTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     AppleUnifiedLogger::messageHandler(type, context, message);
+}
+
+void QAppleTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
+{
+    MessageData messageData = [=]() {
+        switch (type) {
+        case QAbstractTestLogger::Warn:
+        case QAbstractTestLogger::QWarning:
+            return MessageData{QtWarningMsg, nullptr};
+        case QAbstractTestLogger::QDebug:
+            return MessageData{QtDebugMsg, nullptr};
+        case QAbstractTestLogger::QSystem:
+            return MessageData{QtWarningMsg, "system"};
+        case QAbstractTestLogger::QFatal:
+            return MessageData{QtFatalMsg, nullptr};
+        case QAbstractTestLogger::Skip:
+            return MessageData{QtInfoMsg, "skip"};
+        case QAbstractTestLogger::Info:
+        case QAbstractTestLogger::QInfo:
+            return MessageData{QtInfoMsg, nullptr};
+        }
+        Q_UNREACHABLE();
+    }();
+
+    QTestCharBuffer category;
+    messageData.generateCategory(&category);
+
+    QMessageLogContext context(file, line, /* function = */ nullptr, category.data());
+    QString msg = message;
+
+    if (type == Skip) {
+        if (!message.isNull())
+            msg.prepend(testIdentifier() + QLatin1Char('\n'));
+        else
+            msg = testIdentifier();
+    }
+
+    AppleUnifiedLogger::messageHandler(messageData.messageType, context, msg, subsystem());
+}
+
+QString QAppleTestLogger::subsystem() const
+{
+    QTestCharBuffer buffer;
+    // It would be nice to have the data tag as part of the subsystem too, but that
+    // will for some tests result in hundreds of thousands of log objects being
+    // created, so we limit the subsystem to test functions, which we can hope
+    // are reasonably limited.
+    generateTestIdentifier(&buffer, TestObject | TestFunction);
+    return QString::fromLatin1(buffer.data());
+}
+
+QString QAppleTestLogger::testIdentifier() const
+{
+    QTestCharBuffer buffer;
+    generateTestIdentifier(&buffer);
+    return QString::fromLatin1(buffer.data());
 }
 
 #endif // QT_USE_APPLE_UNIFIED_LOGGING
