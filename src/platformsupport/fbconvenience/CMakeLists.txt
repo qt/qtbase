@@ -18,3 +18,9 @@ add_qt_module(FbSupport
         Qt::CorePrivate
         Qt::GuiPrivate
 )
+
+#### Keys ignored in scope 1:.:fbconvenience.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "fb_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
