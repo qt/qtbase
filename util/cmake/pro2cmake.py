@@ -885,6 +885,10 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         cm_fh.write('{}    DBUS_ADAPTOR_SOURCES\n'.format(ind))
     for d in sort_sources(dbus_adaptors):
         cm_fh.write('{}        {}\n'.format(ind, d))
+    dbus_adaptor_flags = scope.expand('QDBUSXML2CPP_ADAPTOR_HEADER_FLAGS')
+    if dbus_adaptor_flags:
+        cm_fh.write('{}    DBUS_ADAPTOR_FLAGS\n'.format(ind))
+        cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_adaptor_flags)))
 
     dbus_interfaces = scope.expand('DBUS_INTERFACES')
     if dbus_interfaces:
@@ -892,6 +896,10 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         cm_fh.write('{}    DBUS_INTERFACE_SOURCES\n'.format(ind))
     for d in sort_sources(dbus_interfaces):
         cm_fh.write('{}        {}\n'.format(ind, d))
+    dbus_interface_flags = scope.expand('QDBUSXML2CPP_INTERFACE_HEADER_FLAGS')
+    if dbus_interface_flags:
+        cm_fh.write('{}    DBUS_INTERFACE_FLAGS\n'.format(ind))
+        cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_interface_flags)))
 
     defines = scope.expand('DEFINES')
     if defines:
