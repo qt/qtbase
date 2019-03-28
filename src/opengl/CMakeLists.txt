@@ -1,7 +1,7 @@
 # Generated from opengl.pro.
 
 #####################################################################
-## QtOpenGL Module:
+## OpenGL Module:
 #####################################################################
 
 add_qt_module(OpenGL
@@ -30,28 +30,31 @@ add_qt_module(OpenGL
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::WidgetsPrivate
+        WrapOpenGL # special case
     PUBLIC_LIBRARIES # special case
         Qt::Core
         Qt::Gui
 )
 
+#### Keys ignored in scope 1:.:opengl.pro:<NONE>:
+# _LOADED = "qt_module"
+
 ## Scopes:
 #####################################################################
-#
-#extend_target(OpenGL CONDITION MSVC
-#)
-#
-#extend_target(OpenGL CONDITION (MSVC) AND (equals(QT_ARCH, i386))
-#)
-#
-#extend_target(OpenGL CONDITION solaris-cc*
-#)
-#
-#extend_target(OpenGL CONDITION QT_FEATURE_opengl
-#)
-#
-#extend_target(OpenGL CONDITION QT_FEATURE_opengles2
-#)
+
+extend_target(OpenGL CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+    LINK_OPTIONS
+        "/BASE:0x63000000"
+)
+
+#### Keys ignored in scope 3:.:opengl.pro:solaris-cc_x_:
+# QMAKE_CXXFLAGS_RELEASE = "--O2"
+
+#### Keys ignored in scope 4:.:opengl.pro:QT_FEATURE_opengl:
+# CONFIG = "opengl"
+
+#### Keys ignored in scope 5:.:opengl.pro:QT_FEATURE_opengles2:
+# CONFIG = "opengles2"
 
 extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
     SOURCES
