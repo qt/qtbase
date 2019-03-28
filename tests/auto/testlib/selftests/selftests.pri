@@ -1,5 +1,4 @@
 SUBPROGRAMS = \
-     #alive \
      assert \
      badxml \
      benchlibcallgrind \

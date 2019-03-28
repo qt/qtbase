@@ -439,7 +439,6 @@ void tst_Selftests::runSubTest_data()
     QTest::addColumn<bool>("crashes");
 
     QStringList tests = QStringList()
-//        << "alive"    // timer dependent
 #if !defined(Q_OS_WIN)
         // On windows, assert does nothing in release mode and blocks execution
         // with a popup window in debug mode.
