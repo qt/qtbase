@@ -1,16 +1,7 @@
-# Generated from input.pro.
-
-find_package(Libinput)
-set_package_properties(Libinput PROPERTIES TYPE OPTIONAL)
-
-find_package(XKB)
-set_package_properties(XKB PROPERTIES TYPE OPTIONAL)
-
-find_package(Tslib)
-set_package_properties(Tslib PROPERTIES TYPE OPTIONAL)
-
-find_package(Mtdev)
-set_package_properties(Mtdev PROPERTIES TYPE OPTIONAL)
+find_package(Libinput) # special case
+find_package(XKB) # special case
+find_package(Tslib) # special case
+find_package(Mtdev) # special case
 
 #####################################################################
 ## InputSupport Module:
@@ -22,13 +13,15 @@ add_qt_module(InputSupport
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
         Qt::DeviceDiscoverySupportPrivate
-    # CONFIG = "static" "internal_module"
-    # MODULE = "input_support"
-    # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
-    # _LOADED = "qt_module"
+        Qt::GuiPrivate
 )
+
+#### Keys ignored in scope 1:.:input.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "input_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -83,8 +76,8 @@ extend_target(InputSupport CONDITION QT_FEATURE_libinput
     INCLUDE_DIRECTORIES
         libinput/../shared
     LIBRARIES
-        PkgConfig::Libudev
         Libinput::Libinput
+        PkgConfig::Libudev
 )
 
 extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon_evdev
