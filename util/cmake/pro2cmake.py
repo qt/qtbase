@@ -550,6 +550,9 @@ class Scope(object):
         return [result]
 
     def expand(self, key: str) -> typing.List[str]:
+        if key == 'PWD':
+            return os.path.relpath(self.currentdir, self.basedir)
+
         value = self.get(key, [])
         result: typing.List[str] = []
         assert isinstance(value, list)
