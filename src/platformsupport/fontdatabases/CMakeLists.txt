@@ -1,10 +1,9 @@
-# Generated from fontdatabases.pro.
+find_package(Freetype) # special case
+find_package(Fontconfig) # special case
 
 #####################################################################
 ## FontDatabaseSupport Module:
 #####################################################################
-
-find_package(Freetype) # Special case
 
 add_qt_module(FontDatabaseSupport
     STATIC
@@ -13,11 +12,13 @@ add_qt_module(FontDatabaseSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    # CONFIG = "static" "internal_module"
-    # MODULE = "fontdatabase_support"
-    # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
-    # _LOADED = "qt_module"
 )
+
+#### Keys ignored in scope 1:.:fontdatabases.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "fontdatabase_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -31,16 +32,22 @@ extend_target(FontDatabaseSupport CONDITION APPLE
         ${FWCoreGraphics}
         ${FWCoreText}
         ${FWFoundation}
-        ${FWAppKit} # Special case
-
-    # CONFIG = "watchos_coretext"
+        ${FWUIKit}
 )
+
+#### Keys ignored in scope 2:.:fontdatabases.pro:APPLE:
+# CONFIG = "watchos_coretext"
 
 extend_target(FontDatabaseSupport CONDITION APPLE AND QT_FEATURE_freetype
     SOURCES
         freetype/qfontengine_ft.cpp freetype/qfontengine_ft_p.h
     LIBRARIES
         Freetype::Freetype
+)
+
+extend_target(FontDatabaseSupport CONDITION APPLE_OSX
+    LIBRARIES
+        ${FWAppKit}
 )
 
 extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
@@ -61,7 +68,7 @@ extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig AND UNIX
         fontconfig/qfontconfigdatabase.cpp fontconfig/qfontconfigdatabase_p.h
         fontconfig/qfontenginemultifontconfig.cpp fontconfig/qfontenginemultifontconfig_p.h
     LIBRARIES
-        fontconfig
+        Fontconfig::Fontconfig
 )
 
 extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
@@ -71,10 +78,10 @@ extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
         windows/qwindowsnativeimage.cpp windows/qwindowsnativeimage_p.h
     LIBRARIES
         Qt::GuiPrivate
-        ole32
-        gdi32
-        user32
         advapi32
+        gdi32
+        ole32
+        user32
 )
 
 extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
@@ -109,6 +116,6 @@ extend_target(FontDatabaseSupport CONDITION WINRT
         __WRL_NO_DEFAULT_LIB__
     LIBRARIES
         Qt::GuiPrivate
-        ws2_32
         dwrite
+        ws2_32
 )
