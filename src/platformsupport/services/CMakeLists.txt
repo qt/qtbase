@@ -1,7 +1,7 @@
 # Generated from services.pro.
 
 #####################################################################
-## QtServiceSupport Module:
+## ServiceSupport Module:
 #####################################################################
 
 add_qt_module(ServiceSupport
@@ -14,6 +14,12 @@ add_qt_module(ServiceSupport
         Qt::CorePrivate
         Qt::GuiPrivate
 )
+
+#### Keys ignored in scope 1:.:services.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "service_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
