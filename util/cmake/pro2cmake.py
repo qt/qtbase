@@ -910,8 +910,9 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     dependencies += scope.expand('QMAKE_USE_PRIVATE') + scope.expand('QMAKE_USE') \
         + scope.expand('LIBS_PRIVATE') + scope.expand('LIBS')
     if dependencies:
-        cm_fh.write('{}    LIBRARIES\n'.format(ind))
+        dependencies_to_print = []
         is_framework = False
+
         for d in dependencies:
             if d == '-framework':
                 is_framework = True
@@ -925,8 +926,13 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                 d = '# Remove: {}'.format(d[1:])
             else:
                 d = substitute_libs(d)
-            cm_fh.write('{}        {}\n'.format(ind, d))
+            dependencies_to_print.append(d)
             is_framework = False
+
+        if dependencies_to_print:
+            cm_fh.write('{}    LIBRARIES\n'.format(ind))
+            for d in sorted(list(set(dependencies_to_print))):
+                cm_fh.write('{}        {}\n'.format(ind, d))
 
     compile_options = scope.get('QMAKE_CXXFLAGS')
     if compile_options:
