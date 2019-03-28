@@ -629,8 +629,18 @@ class QmakeParser:
         Operation = Key('key') + pp.Optional(LC) \
             + Op('operation') + pp.Optional(LC) \
             + Values('value')
-        CallArgs = pp.Optional(LC) + pp.nestedExpr()
-        CallArgs.setParseAction(lambda x: ' '.join(chain(*x)))
+        CallArgs = pp.Optional(LC) + pp.nestedExpr()\
+
+        def parse_call_args(results):
+            out = ''
+            for item in chain(*results):
+                if isinstance(item, str):
+                    out += item
+                else:
+                    out += "(" + parse_call_args(item) + ")"
+            return out
+
+        CallArgs.setParseAction(parse_call_args)
         Load = pp.Keyword('load') + CallArgs('loaded')
         Include = pp.Keyword('include') + CallArgs('included')
         Option = pp.Keyword('option') + CallArgs('option')
