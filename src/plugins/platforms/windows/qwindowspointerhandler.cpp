@@ -548,7 +548,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
     if (!QWindowsContext::user32dll.getPointerDeviceRects(penInfo->pointerInfo.sourceDevice, &pRect, &dRect))
         return false;
 
-    const quint32 pointerId = penInfo->pointerInfo.pointerId;
+    const qint64 sourceDevice = (qint64)penInfo->pointerInfo.sourceDevice;
     const QPoint globalPos = QPoint(penInfo->pointerInfo.ptPixelLocation.x, penInfo->pointerInfo.ptPixelLocation.y);
     const QPoint localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPos);
     const QPointF hiResGlobalPos = QPointF(dRect.left + qreal(penInfo->pointerInfo.ptHimetricLocation.x - pRect.left)
@@ -564,7 +564,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaEvents).noquote().nospace() << showbase
-            << __FUNCTION__ << " pointerId=" << pointerId
+            << __FUNCTION__ << " sourceDevice=" << sourceDevice
             << " globalPos=" << globalPos << " localPos=" << localPos << " hiResGlobalPos=" << hiResGlobalPos
             << " message=" << hex << msg.message
             << " flags=" << hex << penInfo->pointerInfo.pointerFlags;
@@ -587,7 +587,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 
     switch (msg.message) {
     case WM_POINTERENTER: {
-        QWindowSystemInterface::handleTabletEnterProximityEvent(device, type, pointerId);
+        QWindowSystemInterface::handleTabletEnterProximityEvent(device, type, sourceDevice);
         m_windowUnderPointer = window;
         // The local coordinates may fall outside the window.
         // Wait until the next update to send the enter event.
@@ -600,12 +600,12 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
             m_windowUnderPointer = nullptr;
             m_currentWindow = nullptr;
         }
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(device, type, pointerId);
+        QWindowSystemInterface::handleTabletLeaveProximityEvent(device, type, sourceDevice);
         break;
     case WM_POINTERDOWN:
     case WM_POINTERUP:
     case WM_POINTERUPDATE: {
-        QWindow *target = QGuiApplicationPrivate::tabletDevicePoint(pointerId).target; // Pass to window that grabbed it.
+        QWindow *target = QGuiApplicationPrivate::tabletDevicePoint(sourceDevice).target; // Pass to window that grabbed it.
         if (!target && m_windowUnderPointer)
             target = m_windowUnderPointer;
         if (!target)
@@ -624,7 +624,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 
         QWindowSystemInterface::handleTabletEvent(target, localPos, hiResGlobalPos, device, type, mouseButtons,
                                                   pressure, xTilt, yTilt, tangentialPressure, rotation, z,
-                                                  pointerId, keyModifiers);
+                                                  sourceDevice, keyModifiers);
         return false;  // Allow mouse messages to be generated.
     }
     }
