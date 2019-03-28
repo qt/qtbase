@@ -223,6 +223,7 @@ libray_mapping = {
     'libpng' : 'PNG::PNG',
     'libproxy': 'LibProxy::LibProxy',
     'librt': 'WrapRt',
+    'libudev': 'PkgConfig::Libudev',
     'pcre2': 'PCRE2',
     'sqlite': 'SQLite3',
     'x11sm': '${X11_SM_LIB} ${X11_ICE_LIB}',
