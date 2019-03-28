@@ -59,6 +59,9 @@ const bool clearTextHTTP2 = false;
 const bool clearTextHTTP2 = true;
 #endif
 
+Q_DECLARE_METATYPE(H2Type)
+Q_DECLARE_METATYPE(QNetworkRequest::Attribute)
+
 QT_BEGIN_NAMESPACE
 
 class tst_Http2 : public QObject
@@ -69,6 +72,7 @@ public:
     ~tst_Http2();
 private slots:
     // Tests:
+    void singleRequest_data();
     void singleRequest();
     void multipleRequests();
     void flowControlClientSide();
@@ -100,13 +104,13 @@ private:
     // small payload.
     void runEventLoop(int ms = 5000);
     void stopEventLoop();
-    Http2Server *newServer(const Http2::RawSettings &serverSettings,
+    Http2Server *newServer(const Http2::RawSettings &serverSettings, H2Type connectionType,
                            const Http2::ProtocolParameters &clientSettings = {});
     // Send a get or post request, depending on a payload (empty or not).
     void sendRequest(int streamNumber,
                      QNetworkRequest::Priority priority = QNetworkRequest::NormalPriority,
                      const QByteArray &payload = QByteArray());
-    QUrl requestUrl() const;
+    QUrl requestUrl(H2Type connnectionType) const;
 
     quint16 serverPort = 0;
     QThread *workerThread = nullptr;
@@ -143,6 +147,11 @@ struct ServerDeleter
 
 using ServerPtr = QScopedPointer<Http2Server, ServerDeleter>;
 
+H2Type defaultConnectionType()
+{
+    return clearTextHTTP2 ? H2Type::h2c : H2Type::h2Alpn;
+}
+
 } // unnamed namespace
 
 tst_Http2::tst_Http2()
@@ -164,25 +173,59 @@ tst_Http2::~tst_Http2()
     }
 }
 
+void tst_Http2::singleRequest_data()
+{
+    QTest::addColumn<QNetworkRequest::Attribute>("h2Attribute");
+    QTest::addColumn<H2Type>("connectionType");
+
+    // 'Clear text' that should always work, either via the protocol upgrade
+    // or as direct.
+    QTest::addRow("h2c-upgrade") << QNetworkRequest::HTTP2AllowedAttribute << H2Type::h2c;
+    QTest::addRow("h2c-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2cDirect;
+
+    if (!clearTextHTTP2) {
+        // Qt with TLS where TLS-backend supports ALPN.
+        QTest::addRow("h2-ALPN") << QNetworkRequest::HTTP2AllowedAttribute << H2Type::h2Alpn;
+    }
+
+#if QT_CONFIG(ssl)
+    QTest::addRow("h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+#endif
+}
+
 void tst_Http2::singleRequest()
 {
     clearHTTP2State();
 
+#if QT_CONFIG(securetransport)
+    // Normally on macOS we use plain text only for SecureTransport
+    // does not support ALPN on the server side. With 'direct encrytped'
+    // we have to use TLS sockets (== private key) and thus suppress a
+    // keychain UI asking for permission to use a private key.
+    // Our CI has this, but somebody testing locally - will have a problem.
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    auto envRollback = qScopeGuard([](){
+        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
+    });
+#endif
+
     serverPort = 0;
     nRequests = 1;
 
-    ServerPtr srv(newServer(defaultServerSettings));
+    QFETCH(const H2Type, connectionType);
+    ServerPtr srv(newServer(defaultServerSettings, connectionType));
 
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
 
     QVERIFY(serverPort != 0);
 
-    auto url = requestUrl();
+    auto url = requestUrl(connectionType);
     url.setPath("/index.html");
 
     QNetworkRequest request(url);
-    request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    QFETCH(const QNetworkRequest::Attribute, h2Attribute);
+    request.setAttribute(h2Attribute, QVariant(true));
 
     auto reply = manager.get(request);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
@@ -207,7 +250,7 @@ void tst_Http2::multipleRequests()
     serverPort = 0;
     nRequests = 10;
 
-    ServerPtr srv(newServer(defaultServerSettings));
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
 
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
 
@@ -258,7 +301,7 @@ void tst_Http2::flowControlClientSide()
     manager.setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
 
     const Http2::RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, quint32(3)}};
-    ServerPtr srv(newServer(serverSettings, params));
+    ServerPtr srv(newServer(serverSettings, defaultConnectionType(), params));
 
 
     const QByteArray respond(int(Http2::defaultSessionWindowSize * 10), 'x');
@@ -300,7 +343,7 @@ void tst_Http2::flowControlServerSide()
 
     const Http2::RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, 7}};
 
-    ServerPtr srv(newServer(serverSettings));
+    ServerPtr srv(newServer(serverSettings, defaultConnectionType()));
 
     const QByteArray payload(int(Http2::defaultSessionWindowSize * 500), 'x');
 
@@ -335,7 +378,7 @@ void tst_Http2::pushPromise()
     params.settingsFrameData[Settings::ENABLE_PUSH_ID] = 1;
     manager.setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
 
-    ServerPtr srv(newServer(defaultServerSettings, params));
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType(), params));
     srv->enablePushPromise(true, QByteArray("/script.js"));
 
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
@@ -343,7 +386,7 @@ void tst_Http2::pushPromise()
 
     QVERIFY(serverPort != 0);
 
-    auto url = requestUrl();
+    auto url = requestUrl(defaultConnectionType());
     url.setPath("/index.html");
 
     QNetworkRequest request(url);
@@ -409,14 +452,14 @@ void tst_Http2::goaway()
     serverPort = 0;
     nRequests = 3;
 
-    ServerPtr srv(newServer(defaultServerSettings));
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
     srv->emulateGOAWAY(responseTimeoutMS);
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
 
     QVERIFY(serverPort != 0);
 
-    auto url = requestUrl();
+    auto url = requestUrl(defaultConnectionType());
     // We have to store these replies, so that we can check errors later.
     std::vector<QNetworkReply *> replies(nRequests);
     for (int i = 0; i < nRequests; ++i) {
@@ -456,7 +499,7 @@ void tst_Http2::earlyResponse()
     serverPort = 0;
     nRequests = 1;
 
-    ServerPtr targetServer(newServer(defaultServerSettings));
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
 
     QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
@@ -466,7 +509,7 @@ void tst_Http2::earlyResponse()
     const quint16 targetPort = serverPort;
     serverPort = 0;
 
-    ServerPtr redirector(newServer(defaultServerSettings));
+    ServerPtr redirector(newServer(defaultServerSettings, defaultConnectionType()));
     redirector->redirectOpenStream(targetPort);
 
     QMetaObject::invokeMethod(redirector.data(), "startServer", Qt::QueuedConnection);
@@ -506,11 +549,11 @@ void tst_Http2::stopEventLoop()
     eventLoop.exitLoop();
 }
 
-Http2Server *tst_Http2::newServer(const Http2::RawSettings &serverSettings,
+Http2Server *tst_Http2::newServer(const Http2::RawSettings &serverSettings, H2Type connectionType,
                                   const Http2::ProtocolParameters &clientSettings)
 {
     using namespace Http2;
-    auto srv = new Http2Server(clearTextHTTP2, serverSettings,
+    auto srv = new Http2Server(connectionType, serverSettings,
                                clientSettings.settingsFrameData);
 
     using Srv = Http2Server;
@@ -535,7 +578,7 @@ void tst_Http2::sendRequest(int streamNumber,
                             QNetworkRequest::Priority priority,
                             const QByteArray &payload)
 {
-    auto url = requestUrl();
+    auto url = requestUrl(defaultConnectionType());
     url.setPath(QString("/stream%1.html").arg(streamNumber));
 
     QNetworkRequest request(url);
@@ -554,10 +597,24 @@ void tst_Http2::sendRequest(int streamNumber,
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
 }
 
-QUrl tst_Http2::requestUrl() const
+QUrl tst_Http2::requestUrl(H2Type connectionType) const
 {
+#if !QT_CONFIG(ssl)
+    Q_ASSERT(connectionType != H2Type::h2Alpn && connectionType != H2Type::h2Direct);
+#endif
     static auto url = QUrl(QLatin1String(clearTextHTTP2 ? "http://127.0.0.1" : "https://127.0.0.1"));
     url.setPort(serverPort);
+    // Clear text may mean no-TLS-at-all or crappy-TLS-without-ALPN.
+    switch (connectionType) {
+    case H2Type::h2Alpn:
+    case H2Type::h2Direct:
+        url.setScheme(QStringLiteral("https"));
+        break;
+    case H2Type::h2c:
+    case H2Type::h2cDirect:
+        url.setScheme(QStringLiteral("http"));
+        break;
+    }
 
     return url;
 }
