@@ -1,5 +1,3 @@
-# Generated from network.pro.
-
 #####################################################################
 ## Network Module:
 #####################################################################
@@ -55,15 +53,16 @@ add_qt_module(Network
         kernel
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB  # special case
-    PUBLIC_LIBRARIES  # special case
+        ZLIB::ZLIB # special case
+    PUBLIC_LIBRARIES
         Qt::Core
-    # MODULE_PLUGIN_TYPES = "bearer"
-    # MODULE_WINRT_CAPABILITIES = "internetClient" "internetClientServer" "privateNetworkClientServer"
-    # PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
-    # QMAKE_LIBS = "$$QMAKE_LIBS_NETWORK"
-    # _LOADED = "qt_module"
 )
+
+#### Keys ignored in scope 1:.:.:network.pro:<TRUE>:
+# MODULE_PLUGIN_TYPES = "bearer"
+# MODULE_WINRT_CAPABILITIES = "internetClient" "internetClientServer" "privateNetworkClientServer"
+# QMAKE_LIBS = "$$QMAKE_LIBS_NETWORK"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -72,13 +71,12 @@ extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386"
     LINK_OPTIONS
         "/BASE:0x64000000"
 )
-#
-#extend_target(Network CONDITION QT_FEATURE_bearermanagement
-#    # ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroidBearer.jar"
-#    # ANDROID_LIB_DEPENDENCIES = "plugins/bearer/libqandroidbearer.so"
-#    # ANDROID_PERMISSIONS = "android.permission.ACCESS_NETWORK_STATE"
-#    # MODULE_PLUGIN_TYPES = "bearer"
-#)
+
+#### Keys ignored in scope 3:.:.:network.pro:QT_FEATURE_bearermanagement:
+# ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroidBearer.jar"
+# ANDROID_LIB_DEPENDENCIES = "plugins/bearer/libqandroidbearer.so"
+# ANDROID_PERMISSIONS = "android.permission.ACCESS_NETWORK_STATE"
+# MODULE_PLUGIN_TYPES = "bearer"
 
 extend_target(Network CONDITION QT_FEATURE_ftp
     SOURCES
@@ -101,8 +99,8 @@ extend_target(Network CONDITION APPLE_OSX
     SOURCES
         kernel/qnetworkproxy_mac.cpp
     LIBRARIES
-        ${FWSecurity}
         ${FWCoreFoundation}
+        ${FWSecurity}
 )
 
 extend_target(Network CONDITION WASM
@@ -168,6 +166,7 @@ extend_target(Network CONDITION UNIX AND NOT QT_FEATURE_linux_netlink
 
 extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
     SOURCES
+        # kernel/qdnslookup_unix.cpp # special case: No more need to remove this
         kernel/qdnslookup_android.cpp
 )
 
@@ -182,9 +181,9 @@ extend_target(Network CONDITION WIN32 AND NOT WINRT
         kernel/qnetworkproxy_win.cpp
         socket/qnativesocketengine_win.cpp
     LIBRARIES
+        advapi32
         dnsapi
         iphlpapi
-        advapi32
 )
 
 extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32 AND NOT WINRT
@@ -218,8 +217,8 @@ extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_OSX AND (UNIX 
     SOURCES
         kernel/qnetworkproxy_libproxy.cpp
     LIBRARIES
-        LibProxy::LibProxy
         ${CMAKE_DL_LIBS}
+        LibProxy::LibProxy
 )
 
 extend_target(Network CONDITION NOT APPLE_OSX AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
@@ -343,8 +342,8 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_opensslv11 AND
         ssl/qsslcontext_openssl11.cpp
         ssl/qsslsocket_openssl11.cpp
         ssl/qsslsocket_openssl11_symbols_p.h
-    DEFINES  # special case
-        "OPENSSL_API_COMPAT=0x10100000L"
+    DEFINES
+        OPENSSL_API_COMPAT=0x10100000L
 )
 
 extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_opensslv11
@@ -363,14 +362,16 @@ extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_ss
     SOURCES
         ssl/qsslsocket_openssl_android.cpp
 )
-#
-#extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl
-#    # QMAKE_USE_FOR_PRIVATE = "openssl"
-#)
-#
-#extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked
-#    # QMAKE_USE_FOR_PRIVATE = "openssl/nolink"
-#)
+
+extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl
+    LIBRARIES
+        OpenSSL::SSL
+)
+
+extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked
+    LIBRARIES
+        OpenSSL::SSL_nolink
+)
 
 extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
     SOURCES
@@ -379,10 +380,8 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
         crypt32
 )
 
-# Special case, from mkspecs/common/msvc-desktop.conf
-extend_target(Network CONDITION WIN32
-    LIBRARIES
-        ws2_32
-)
+extend_target(Network CONDITION WIN32 LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
 
-add_qt_docs(./doc/qtnetwork.qdocconf)
+add_qt_docs(
+    ./doc/qtnetwork.qdocconf
+)

@@ -156,6 +156,37 @@ macro(assert)
 endmacro()
 
 
+function(qt_create_nolink_target target)
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "${target} does not exist when trying to build a nolink target.")
+    endif()
+    get_target_property(type "${target}" TYPE)
+    if(type STREQUAL EXECUTABLE)
+        message(FATAL_ERROR "${target} must be a library of some kind.")
+    endif()
+    if(type STREQUAL OBJECT_LIBRARY)
+        message(FATAL_ERROR "${target} must not be an object library.")
+    endif()
+
+    set(nolink_target "${target}_nolink")
+    if(NOT TARGET "${nolink_target}")
+        string(REPLACE ":" "_" base_target "__${nolink_target}")
+        add_library("${base_target}" INTERFACE)
+        target_include_directories("${base_target}" INTERFACE
+                                   $<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>)
+        target_include_directories("${base_target}" INTERFACE SYSTEM
+                                   $<TARGET_PROPERTY:${target},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>)
+        target_compile_definitions("${base_target}" INTERFACE
+                                   $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS>)
+        target_compile_options("${base_target}" INTERFACE
+                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_OPTIONS>)
+        target_compile_features("${base_target}" INTERFACE
+                                $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
+
+        add_library("${nolink_target}" ALIAS "${base_target}")
+    endif()
+endfunction()
+
 function(qt_ensure_perl)
     if(DEFINED HOST_PERL)
         return()
@@ -355,6 +386,13 @@ function(extend_target target)
         foreach(interface ${arg_DBUS_INTERFACE_SOURCES})
             qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE BASENAME "${arg_DBUS_INTERFACE_BASENAME}" FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
             list(APPEND dbus_sources "${sources}")
+        endforeach()
+
+        foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
+            string(REGEX REPLACE "_nolink$" "" base_lib "${lib}")
+            if(NOT base_lib STREQUAL lib)
+                qt_create_nolink_target("${base_lib}")
+            endif()
         endforeach()
 
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})

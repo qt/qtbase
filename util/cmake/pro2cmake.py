@@ -1012,7 +1012,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
 
     write_library_section(cm_fh, scope,
                           ['QMAKE_USE', 'LIBS'],
-                          ['QT_FOR_PRIVATE', 'QMAKE_USE_PRIVATE', 'LIBS_PRIVATE'],
+                          ['QT_FOR_PRIVATE', 'QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE'],
                           ['QT',],
                           indent=indent, known_libraries=known_libraries)
 

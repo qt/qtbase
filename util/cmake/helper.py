@@ -232,6 +232,7 @@ libray_mapping = {
     'libudev': 'PkgConfig::Libudev',
     'mtdev': 'PkgConfig::Mtdev',
     'odbc': 'ODBC::ODBC',
+    'openssl': 'OpenSSL::SSL',
     'pcre2': 'PCRE2',
     'psql': 'PostgreSQL::PostgreSQL',
     'sqlite': 'SQLite::SQLite3',
@@ -263,4 +264,8 @@ libray_mapping = {
 
 
 def substitute_libs(lib: str) -> str:
-    return libray_mapping.get(lib, lib)
+    libpostfix = ''
+    if lib.endswith('/nolink'):
+        lib = lib[:-7]
+        libpostfix = '_nolink'
+    return libray_mapping.get(lib, lib) + libpostfix
