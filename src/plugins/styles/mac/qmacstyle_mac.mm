@@ -4323,7 +4323,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     d->setupNSGraphicsContext(cgCtx, YES);
 
                     [s.toNSString() drawInRect:textRect
-                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
+                                                  NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
 
                     d->restoreNSGraphicsContext(cgCtx);
                 } else {
