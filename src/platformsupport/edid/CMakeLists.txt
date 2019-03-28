@@ -1,7 +1,7 @@
 # Generated from edid.pro.
 
 #####################################################################
-## QtEdidSupport Module:
+## EdidSupport Module:
 #####################################################################
 
 add_qt_module(EdidSupport
@@ -13,3 +13,9 @@ add_qt_module(EdidSupport
     LIBRARIES
         Qt::CorePrivate
 )
+
+#### Keys ignored in scope 1:.:edid.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "edid_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
