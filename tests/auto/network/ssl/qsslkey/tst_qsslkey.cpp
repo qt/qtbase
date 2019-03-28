@@ -42,7 +42,7 @@
 #include <QtCore/qlist.h>
 
 #ifdef QT_BUILD_INTERNAL
-    #ifndef QT_NO_SSL
+    #if QT_CONFIG(ssl)
         #include "private/qsslkey_p.h"
         #define TEST_CRYPTO
     #endif
@@ -79,7 +79,7 @@ public:
 public slots:
     void initTestCase();
 
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
 
 private slots:
     void emptyConstructor();
@@ -107,7 +107,7 @@ private slots:
     void encrypt();
 #endif
 
-#endif
+#endif // ssl
 private:
     QString testDataDir;
 
@@ -182,7 +182,7 @@ void tst_QSslKey::initTestCase()
     }
 }
 
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
 
 static QByteArray readFile(const QString &absFilePath)
 {
@@ -225,7 +225,7 @@ void tst_QSslKey::createPlainTestRows(bool pemOnly)
         if (keyInfo.fileInfo.fileName().contains("RC2-64"))
             continue; // Schannel treats RC2 as 128 bit
 #endif
-#if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) // generic backend
+#if QT_CONFIG(ssl) && defined(QT_NO_OPENSSL) // generic backend
         if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
             continue; // No AES support in the generic back-end
         if (keyInfo.fileInfo.fileName().contains("pkcs8-pkcs12"))
@@ -331,7 +331,7 @@ void tst_QSslKey::constructorHandle()
 #endif
 }
 
-#endif
+#endif // !QT_NO_OPENSSL
 
 void tst_QSslKey::copyAndAssign_data()
 {
@@ -527,11 +527,11 @@ void tst_QSslKey::passphraseChecks_data()
     QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem") << pass;
     QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem") << pass;
     QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem") << pass;
-#if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || (defined(QT_NO_OPENSSL) && QT_CONFIG(ssl))
+#if defined(QT_NO_OPENSSL) || !defined(OPENSSL_NO_AES)
     QTest::newRow("AES128") << QString(testDataDir + "rsa-with-passphrase-aes128.pem") << aesPass;
     QTest::newRow("AES192") << QString(testDataDir + "rsa-with-passphrase-aes192.pem") << aesPass;
     QTest::newRow("AES256") << QString(testDataDir + "rsa-with-passphrase-aes256.pem") << aesPass;
-#endif // (OpenSSL && AES) || generic backend
+#endif // Generic backend || OpenSSL built with AES
 }
 
 void tst_QSslKey::passphraseChecks()
@@ -713,7 +713,7 @@ void tst_QSslKey::encrypt_data()
         << QByteArray::fromHex("5AEC1A5B295660B02613454232F7DECE")
         << iv;
 
-#if (!defined(QT_NO_OPENSSL) && !defined(OPENSSL_NO_AES)) || (defined(QT_NO_OPENSSL) && QT_CONFIG(ssl))
+#if defined(QT_NO_OPENSSL) || !defined(OPENSSL_NO_AES)
     // AES needs a longer IV
     iv = QByteArray("abcdefghijklmnop");
     QTest::newRow("AES-128-CBC, length 0")
@@ -748,7 +748,7 @@ void tst_QSslKey::encrypt_data()
         << QByteArray(8, 'a')
         << QByteArray::fromHex("879C8C25EC135CDF0B14490A0A7C2F67")
         << iv;
-#endif // (OpenSSL && AES) || generic backend
+#endif // Generic backend || OpenSSL built with AES
 }
 
 void tst_QSslKey::encrypt()
@@ -771,9 +771,9 @@ void tst_QSslKey::encrypt()
     QByteArray decrypted = QSslKeyPrivate::decrypt(cipher, cipherText, key, iv);
     QCOMPARE(decrypted, plainText);
 }
-#endif
+#endif // TEST_CRYPTO
 
-#endif
+#endif // ssl
 
 QTEST_MAIN(tst_QSslKey)
 #include "tst_qsslkey.moc"
