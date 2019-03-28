@@ -1,7 +1,7 @@
 # Generated from accessibility.pro.
 
 #####################################################################
-## QtAccessibilitySupport Module:
+## AccessibilitySupport Module:
 #####################################################################
 
 add_qt_module(AccessibilitySupport
@@ -14,3 +14,8 @@ add_qt_module(AccessibilitySupport
         Qt::CorePrivate
         Qt::GuiPrivate
 )
+
+#### Keys ignored in scope 1:.:accessibility.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "accessibility_support"
+# _LOADED = "qt_module"
