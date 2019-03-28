@@ -1,4 +1,8 @@
-find_package(ATSPI2 REQUIRED)
+find_package(ATSPI2 REQUIRED) # special case
+
+#####################################################################
+## LinuxAccessibilitySupport Module:
+#####################################################################
 
 add_qt_module(LinuxAccessibilitySupport
     STATIC
@@ -10,6 +14,16 @@ add_qt_module(LinuxAccessibilitySupport
         constant_mappings.cpp constant_mappings_p.h
         dbusconnection.cpp dbusconnection_p.h
         struct_marshallers.cpp struct_marshallers_p.h
+    DBUS_ADAPTOR_SOURCES
+        dbusxml/Cache.xml
+        dbusxml/DeviceEventController.xml
+    DBUS_ADAPTOR_FLAGS
+        "-i" "struct_marshallers_p.h"
+    DBUS_INTERFACE_SOURCES
+        dbusxml/Bus.xml
+        dbusxml/Socket.xml
+    DBUS_INTERFACE_FLAGS
+        "-i" "struct_marshallers_p.h"
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
@@ -18,9 +32,10 @@ add_qt_module(LinuxAccessibilitySupport
         Qt::DBus
         Qt::GuiPrivate
         PkgConfig::ATSPI2
-    DBUS_ADAPTOR_SOURCES dbusxml/Cache.xml dbusxml/DeviceEventController.xml
-    DBUS_ADAPTOR_FLAGS -i struct_marshallers_p.h
-    DBUS_INTERFACE_SOURCES dbusxml/Socket.xml dbusxml/Bus.xml
-    DBUS_INTERFACE_FLAGS -i struct_marshallers_p.h
 )
 
+#### Keys ignored in scope 1:.:linuxaccessibility.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "linuxaccessibility_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
