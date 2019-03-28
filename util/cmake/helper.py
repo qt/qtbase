@@ -213,6 +213,7 @@ def substitute_platform(platform: str) -> str:
 libray_mapping = {
     'drm': 'Libdrm::Libdrm',
     'doubleconversion': 'double-conversion',
+    'fontconfig': 'Fontconfig::Fontconfig',
     'freetype': 'Freetype::Freetype',
     'gbm': 'gbm::gbm',
     'glib': 'GLIB2::GLIB2',
