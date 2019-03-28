@@ -166,6 +166,13 @@ def map_source_to_cmake(source: str, base_dir: str,
     if os.path.exists(os.path.join(base_dir, source)):
         return source
 
+    variable_pattern = re.compile(r'\$\{[A-Za-z0-9_]+\}')
+    match = re.match(variable_pattern, source)
+    if match:
+        # a complex, variable based path, skipping validation
+        # or resolving
+        return source
+
     for v in vpath:
         fullpath = os.path.join(v, source)
         if os.path.exists(fullpath):
