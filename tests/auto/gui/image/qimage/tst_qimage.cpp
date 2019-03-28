@@ -3260,11 +3260,46 @@ void tst_QImage::metadataPassthrough()
     QCOMPARE(mirrored.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(mirrored.devicePixelRatio(), a.devicePixelRatio());
 
+    QTransform t;
+    t.rotate(90);
+    QImage rotated = a.transformed(t);
+    QCOMPARE(rotated.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(rotated.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(rotated.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(rotated.devicePixelRatio(), a.devicePixelRatio());
+
     QImage swapped = a.rgbSwapped();
     QCOMPARE(swapped.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(swapped.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(swapped.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(swapped.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage converted = a.convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(converted.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(converted.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(converted.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(converted.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage copied = a.copy(0, 0, a.width() / 2, a.height() / 2);
+    QCOMPARE(copied.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(copied.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(copied.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(copied.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage alphaMask = a.createAlphaMask();
+    QCOMPARE(alphaMask.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(alphaMask.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(alphaMask.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage heuristicMask = a.createHeuristicMask();
+    QCOMPARE(heuristicMask.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(heuristicMask.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(heuristicMask.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage maskFromColor = a.createMaskFromColor(qRgb(0, 0, 0));
+    QCOMPARE(maskFromColor.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(maskFromColor.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(maskFromColor.devicePixelRatio(), a.devicePixelRatio());
 }
 
 void tst_QImage::pixelColor()
