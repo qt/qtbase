@@ -2342,7 +2342,7 @@ static void err_info_about_objects(const char * func,
 
 /*!
     Returns a pointer to the object that sent the signal, if called in
-    a slot activated by a signal; otherwise it returns 0. The pointer
+    a slot activated by a signal; otherwise it returns \nullptr. The pointer
     is valid only during the execution of the slot that calls this
     function from this object's thread context.
 

@@ -162,7 +162,7 @@ QAbstractEventDispatcher::~QAbstractEventDispatcher()
     Returns a pointer to the event dispatcher object for the specified
     \a thread. If \a thread is zero, the current thread is used. If no
     event dispatcher exists for the specified thread, this function
-    returns 0.
+    returns \nullptr.
 
     \b{Note:} If Qt is built without thread support, the \a thread
     argument is ignored.

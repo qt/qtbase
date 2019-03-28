@@ -1083,7 +1083,7 @@ QAbstractAnimation::State QAbstractAnimation::state() const
 
 /*!
     If this animation is part of a QAnimationGroup, this function returns a
-    pointer to the group; otherwise, it returns 0.
+    pointer to the group; otherwise, it returns \nullptr.
 
     \sa QAnimationGroup::addAnimation()
 */
