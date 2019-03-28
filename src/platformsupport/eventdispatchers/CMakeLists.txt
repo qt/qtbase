@@ -1,10 +1,8 @@
-# Generated from eventdispatchers.pro.
-
-find_package(GLIB2)
-set_package_properties(GLib PROPERTIES TYPE OPTIONAL)
+find_package(GLIB2) # special case
+set_package_properties(GLib PROPERTIES TYPE OPTIONAL) # special case
 
 #####################################################################
-## QtEventDispatcherSupport Module:
+## EventDispatcherSupport Module:
 #####################################################################
 
 add_qt_module(EventDispatcherSupport
@@ -16,6 +14,12 @@ add_qt_module(EventDispatcherSupport
         Qt::GuiPrivate
 )
 
+#### Keys ignored in scope 1:.:eventdispatchers.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "eventdispatcher_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
+
 ## Scopes:
 #####################################################################
 
@@ -26,7 +30,7 @@ extend_target(EventDispatcherSupport CONDITION UNIX
         qunixeventdispatcher_qpa_p.h
 )
 
-extend_target(EventDispatcherSupport CONDITION NOT UNIX
+extend_target(EventDispatcherSupport CONDITION WIN32
     SOURCES
         qwindowsguieventdispatcher.cpp qwindowsguieventdispatcher_p.h
 )
