@@ -14,6 +14,12 @@ add_qt_module(DeviceDiscoverySupport
         Qt::CorePrivate
 )
 
+#### Keys ignored in scope 1:.:devicediscovery.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "devicediscovery_support"
+# QT_FOR_CONFIG = "gui-private"
+# _LOADED = "qt_module"
+
 ## Scopes:
 #####################################################################
 
