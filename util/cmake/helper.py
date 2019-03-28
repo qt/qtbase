@@ -211,6 +211,7 @@ def substitute_platform(platform: str) -> str:
 
 
 libray_mapping = {
+    'atspi': 'PkgConfig::ATSPI2',
     'drm': 'Libdrm::Libdrm',
     'doubleconversion': 'double-conversion',
     'fontconfig': 'Fontconfig::Fontconfig',
