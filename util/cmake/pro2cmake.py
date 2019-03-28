@@ -139,29 +139,28 @@ def spaces(indent: int) -> str:
     return '    ' * indent
 
 
-def map_to_file(f: str, top_dir: str, current_dir: str,
-                want_absolute_path: bool = False) -> typing.Optional[str]:
-    if f.startswith('$$PWD/') or f == '$$PWD':  # INCLUDEPATH += $$PWD
-        return os.path.join(os.path.relpath(current_dir, top_dir), f[6:])
-    if f.startswith('$$OUT_PWD/'):
-        return "${CMAKE_CURRENT_BUILD_DIR}/" + f[10:]
-    if f.startswith("./"):
-        return os.path.join(current_dir, f) if current_dir != '.' else f[2:]
-    if want_absolute_path and not os.path.isabs(f):
-        return os.path.join(current_dir, f)
+def map_to_file(f: str, scope: Scope, *, is_include: bool = False) -> str:
+    assert('$$' not in f)
+
+    if f.startswith('${'): # Some cmake variable is prepended
+        return f
+
+    base_dir = scope.currentdir if is_include else scope.basedir
+    f = os.path.join(base_dir, f)
+
+    while f.startswith('./'):
+        f = f[2:]
     return f
 
 
-def map_source_to_cmake(source: str, base_dir: str,
-                        vpath: typing.List[str]) -> str:
-    if not source or source == '$$NO_PCH_SOURCES':
+def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
+    assert('$$' not in source)
+
+    if not source:
         return ''
-    if source.startswith('$$PWD/'):
-        return source[6:]
-    if source.startswith('./'):
-        return source[2:]
-    if source == '.':
-        return "${CMAKE_CURRENT_SOURCE_DIR}"
+
+    if not vpath:
+        return source
 
     if os.path.exists(os.path.join(base_dir, source)):
         return source
@@ -190,7 +189,7 @@ class Operation:
         else:
             self._value = [str(value), ]
 
-    def process(self, input):
+    def process(self, input, transformer):
         assert(False)
 
     def __repr__(self):
@@ -213,19 +212,19 @@ class Operation:
 
 
 class AddOperation(Operation):
-    def process(self, input):
-        return input + self._value
+    def process(self, input, transformer):
+        return input + transformer(self._value)
 
     def __repr__(self):
         return '+({})'.format(self._dump())
 
 
 class UniqueAddOperation(Operation):
-    def process(self, input):
+    def process(self, input, transformer):
         result = input
-        for v in self._value:
+        for v in transformer(self._value):
             if v not in result:
-                result += [v, ]
+                result.append(v)
         return result
 
     def __repr__(self):
@@ -233,8 +232,11 @@ class UniqueAddOperation(Operation):
 
 
 class SetOperation(Operation):
-    def process(self, input):
-        return self._value
+    def process(self, input, transformer):
+        if transformer:
+            return list(transformer(self._value))
+        else:
+            return self._value
 
     def __repr__(self):
         return '=({})'.format(self._dump())
@@ -244,7 +246,7 @@ class RemoveOperation(Operation):
     def __init__(self, value):
         super().__init__(value)
 
-    def process(self, input):
+    def process(self, input, transformer):
         input_set = set(input)
         value_set = set(self._value)
         result = []
@@ -255,7 +257,7 @@ class RemoveOperation(Operation):
                 result += [v,]
 
         # Add everything else with removal marker:
-        for v in self._value:
+        for v in transformer(self._value):
             if v not in input_set:
                 result += ['-{}'.format(v), ]
 
@@ -295,51 +297,26 @@ class Scope(object):
         self._file = file
         self._condition = map_condition(condition)
         self._children = []  # type: typing.List[Scope]
+        self._included_children = []  # type: typing.List[Scope]
         self._operations = copy.deepcopy(operations)
         self._visited_keys = set()  # type: typing.Set[str]
         self._total_condition = None  # type: typing.Optional[str]
 
     def __repr__(self):
-        debug_mark = ' [MERGE_DEBUG]' if self.merge_debug else ''
         return '{}:{}:{}:{}:{}'.format(self._scope_id,
                                        self._basedir, self._currentdir,
-                                       self._file, self._condition or '<TRUE>',
-                                       debug_mark)
+                                       self._file, self._condition or '<TRUE>')
 
     def reset_visited_keys(self):
         self._visited_keys = set()
 
     def merge(self, other: 'Scope') -> None:
         assert self != other
-        merge_debug = self.merge_debug or other.merge_debug
-        if merge_debug:
-            print('..... [MERGE_DEBUG]: Merging scope {}:'.format(other))
-            other.dump(indent=1)
-            print('..... [MERGE_DEBUG]: ... into scope {}:'.format(self))
-            self.dump(indent=1)
-
-        for c in other._children:
-            self._add_child(c)
-
-        for key in other._operations.keys():
-            if key in self._operations:
-                self._operations[key] += other._operations[key]
-            else:
-                self._operations[key] = other._operations[key]
-
-        if merge_debug:
-            print('..... [MERGE_DEBUG]: Result scope {}:'.format(self))
-            self.dump(indent=1)
-            print('..... [MERGE_DEBUG]: <<END OF MERGE>>')
-
-    @property
-    def merge_debug(self) -> bool:
-        merge = self.getString('PRO2CMAKE_MERGE_DEBUG').lower()
-        return merge and (merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true')
+        self._included_children.append(other)
 
     @property
     def scope_debug(self) -> bool:
-        merge = self.getString('PRO2CMAKE_SCOPE_DEBUG').lower()
+        merge = self.get_string('PRO2CMAKE_SCOPE_DEBUG').lower()
         return merge and (merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true')
 
     @property
@@ -394,12 +371,6 @@ class Scope(object):
                 value = statement.get('value', [])
                 assert key != ''
 
-                if key in ('HEADERS', 'SOURCES', 'INCLUDEPATH', 'RESOURCES',) \
-                        or key.endswith('_HEADERS') \
-                        or key.endswith('_SOURCES'):
-                    value = [map_to_file(v, scope.basedir,
-                                         scope.currentdir) for v in value]
-
                 if operation == '=':
                     scope._append_operation(key, SetOperation(value))
                 elif operation == '-=':
@@ -440,10 +411,7 @@ class Scope(object):
             included = statement.get('included', None)
             if included:
                 scope._append_operation('_INCLUDED',
-                                        UniqueAddOperation(
-                                            map_to_file(included,
-                                                        scope.basedir,
-                                                        scope.currentdir)))
+                                        UniqueAddOperation(included))
                 continue
 
         scope.settle_condition()
@@ -487,7 +455,10 @@ class Scope(object):
 
     @property
     def children(self) -> typing.List['Scope']:
-        return self._children
+        result = list(self._children)
+        for include_scope in self._included_children:
+            result += include_scope._children
+        return result
 
     def dump(self, *, indent: int = 0) -> None:
         ind = '    ' * indent
@@ -508,6 +479,19 @@ class Scope(object):
         else:
             for c in self._children:
                 c.dump(indent=indent + 1)
+        print('{}  Includes:'.format(ind))
+        if not self._included_children:
+            print('{}    -- NONE --'.format(ind))
+        else:
+            for c in self._included_children:
+                c.dump(indent=indent + 1)
+
+    def dump_structure(self, *, type: str = 'ROOT', indent: int = 0) -> None:
+        print('{}{}: {}'.format(spaces(indent), type, self))
+        for i in self._included_children:
+            i.dump_structure(type='INCL', indent=indent + 1)
+        for i in self._children:
+            i.dump_structure(type='CHLD', indent=indent + 1)
 
     @property
     def keys(self):
@@ -517,20 +501,63 @@ class Scope(object):
     def visited_keys(self):
         return self._visited_keys
 
-    def get(self, key: str, default=None) -> typing.List[str]:
+    def _evalOps(self, key: str,
+                 transformer: typing.Optional[typing.Callable[[Scope, typing.List[str]], typing.List[str]]],
+                 result: typing.List[str]) \
+            -> typing.List[str]:
         self._visited_keys.add(key)
-        result = []  # type: typing.List[str]
+
+        if transformer:
+            op_transformer = lambda files: transformer(self, files)
+        else:
+            op_transformer = lambda files: files
 
         for op in self._operations.get(key, []):
-            result = op.process(result)
+            result = op.process(result, op_transformer)
+
+        for ic in self._included_children:
+            result = list(ic._evalOps(key, transformer, result))
+
         return result
 
-    def getString(self, key: str, default: str = '') -> str:
-        v = self.get(key, default)
+    def get(self, key: str, *, ignore_includes: bool = False) -> typing.List[str]:
+        if key == 'PWD':
+            return ['${CMAKE_CURRENT_SOURCE_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
+        if key == 'OUT_PWD':
+            return ['${CMAKE_CURRENT_BUILD_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
+
+        return self._evalOps(key, None, [])
+
+    def get_string(self, key: str, default: str = '') -> str:
+        v = self.get(key)
         if len(v) == 0:
             return default
         assert len(v) == 1
         return v[0]
+
+    def _map_files(self, files: typing.List[str], *,
+                   use_vpath: bool = True, is_include: bool = False) -> typing.List[str]:
+
+        expanded_files = []  # typing.List[str]
+        for f in files:
+            expanded_files += self._expand_value(f)
+
+        mapped_files = list(map(lambda f: map_to_file(f, self, is_include=is_include), expanded_files))
+
+        if use_vpath:
+            result = list(map(lambda f: handle_vpath(f, self.basedir, self.get('VPATH')), mapped_files))
+        else:
+            result = mapped_files
+
+        # strip ${CMAKE_CURRENT_SOURCE_DIR}:
+        result = list(map(lambda f: f[28:] if f.startswith('${CMAKE_CURRENT_SOURCE_DIR}/') else f, result))
+
+        return result
+
+    def get_files(self, key: str, *, use_vpath: bool = False,
+                  is_include: bool = False) -> typing.List[str]:
+        transformer = lambda scope, files: scope._map_files(files, use_vpath=use_vpath, is_include=is_include)
+        return list(self._evalOps(key, transformer, []))
 
     def _expand_value(self, value: str) -> typing.List[str]:
         result = value
@@ -539,7 +566,7 @@ class Scope(object):
         while match:
             old_result = result
             if match.group(0) == value:
-                return self.get(match.group(1), [])
+                return self.get(match.group(1))
 
             replacement = self.expand(match.group(1))
             replacement_str = replacement[0] if replacement else ''
@@ -548,16 +575,13 @@ class Scope(object):
                      + result[match.end():]
 
             if result == old_result:
-                return result # Do not go into infinite loop
+                return [result,] # Do not go into infinite loop
 
             match = re.search(pattern, result)
-        return [result]
+        return [result,]
 
     def expand(self, key: str) -> typing.List[str]:
-        if key == 'PWD':
-            return os.path.relpath(self.currentdir, self.basedir)
-
-        value = self.get(key, [])
+        value = self.get(key)
         result: typing.List[str] = []
         assert isinstance(value, list)
         for v in value:
@@ -565,25 +589,25 @@ class Scope(object):
         return result
 
     def expandString(self, key: str) -> str:
-        result = self._expand_value(self.getString(key))
+        result = self._expand_value(self.get_string(key))
         assert len(result) == 1
         return result[0]
 
     @property
     def TEMPLATE(self) -> str:
-        return self.getString('TEMPLATE', 'app')
+        return self.get_string('TEMPLATE', 'app')
 
     def _rawTemplate(self) -> str:
-        return self.getString('TEMPLATE')
+        return self.get_string('TEMPLATE')
 
     @property
     def TARGET(self) -> str:
-        return self.getString('TARGET') \
+        return self.get_string('TARGET') \
             or os.path.splitext(os.path.basename(self.file))[0]
 
     @property
     def _INCLUDED(self) -> typing.List[str]:
-        return self.get('_INCLUDED', [])
+        return self.get('_INCLUDED')
 
 
 class QmakeParser:
@@ -765,8 +789,7 @@ def map_condition(condition: str) -> str:
                            part)
         if feature:
             if (feature.group(1) == "qtHaveModule"):
-                part = 'TARGET {}'.format(map_qt_library(
-                                            feature.group(2)))
+                part = 'TARGET {}'.format(map_qt_library(feature.group(2)))
             else:
                 feature = featureName(feature.group(2))
                 if feature.startswith('system_') and substitute_libs(feature[7:]) != feature[7:]:
@@ -788,14 +811,13 @@ def map_condition(condition: str) -> str:
 def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
                   indent: int = 0) -> None:
     ind = '    ' * indent
-    for sd in scope.get('SUBDIRS', []):
-        full_sd = os.path.join(scope.basedir, sd)
-        if os.path.isdir(full_sd):
+    for sd in scope.get_files('SUBDIRS'):
+        if os.path.isdir(sd):
             cm_fh.write('{}add_subdirectory({})\n'.format(ind, sd))
-        elif os.path.isfile(full_sd):
-            subdir_result = parseProFile(full_sd, debug=False)
+        elif os.path.isfile(sd):
+            subdir_result = parseProFile(sd, debug=False)
             subdir_scope \
-                = Scope.FromDict(scope, full_sd,
+                = Scope.FromDict(scope, sd,
                                  subdir_result.asDict().get('statements'),
                                  '', scope.basedir)
 
@@ -820,7 +842,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
             cm_fh.write('{}endif()\n'.format(ind))
 
 
-def sort_sources(sources) -> typing.List[str]:
+def sort_sources(sources: typing.List[str]) -> typing.List[str]:
     to_sort = {}  # type: typing.Dict[str, typing.List[str]]
     for s in sources:
         if s is None:
@@ -859,47 +881,53 @@ def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
                 '##########################\n'.format(spaces(indent)))
 
 
+def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
+                           keys: typing.List[str], indent: int = 0, *,
+                           header: str = '', footer: str = ''):
+    ind = spaces(indent)
+
+    # collect sources
+    sources: typing.List[str] = []
+    for key in keys:
+        sources += scope.get_files(key, use_vpath=True)
+
+    if not sources:
+        return
+
+    cm_fh.write(header)
+    extra_indent = ''
+    if cmake_parameter:
+        cm_fh.write('{}    {}\n'.format(ind, cmake_parameter))
+        extra_indent = '    '
+    for s in sort_sources(sources):
+        cm_fh.write('{}    {}{}\n'.format(ind, extra_indent, s))
+    cm_fh.write(footer)
+
+
 def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                           indent: int = 0, known_libraries=set()):
     ind = spaces(indent)
 
     # mark RESOURCES as visited:
-    scope.get('RESOURCES', '')
+    scope.get('RESOURCES')
 
-    plugin_type = scope.get('PLUGIN_TYPE')
+    plugin_type = scope.get_string('PLUGIN_TYPE')
 
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
 
-    vpath = scope.expand('VPATH')
+    source_keys: typing.List[str] = []
+    write_source_file_list(cm_fh, scope, 'SOURCES',
+                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'],
+                           indent)
 
-    sources = scope.expand('SOURCES') + scope.expand('HEADERS') \
-        + scope.expand('OBJECTIVE_SOURCES') + scope.expand('NO_PCH_SOURCES') \
-        + scope.expand('FORMS')
-
-    sources = [map_source_to_cmake(s, scope.basedir, vpath) for s in sources]
-    if sources:
-        cm_fh.write('{}    SOURCES\n'.format(ind))
-    for l in sort_sources(sources):
-        cm_fh.write('{}        {}\n'.format(ind, l))
-
-    dbus_adaptors = scope.expand('DBUS_ADAPTORS')
-    if dbus_adaptors:
-        dbus_adaptors = [map_source_to_cmake(s, scope.basedir, vpath) for s in dbus_adaptors]
-        cm_fh.write('{}    DBUS_ADAPTOR_SOURCES\n'.format(ind))
-    for d in sort_sources(dbus_adaptors):
-        cm_fh.write('{}        {}\n'.format(ind, d))
+    write_source_file_list(cm_fh, scope, 'DBUS_ADAPTOR_SOURCES', ['DBUS_ADAPTORS',], indent)
     dbus_adaptor_flags = scope.expand('QDBUSXML2CPP_ADAPTOR_HEADER_FLAGS')
     if dbus_adaptor_flags:
         cm_fh.write('{}    DBUS_ADAPTOR_FLAGS\n'.format(ind))
         cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_adaptor_flags)))
 
-    dbus_interfaces = scope.expand('DBUS_INTERFACES')
-    if dbus_interfaces:
-        dbus_interfaces = [map_source_to_cmake(s, scope.basedir, vpath) for s in dbus_interfaces]
-        cm_fh.write('{}    DBUS_INTERFACE_SOURCES\n'.format(ind))
-    for d in sort_sources(dbus_interfaces):
-        cm_fh.write('{}        {}\n'.format(ind, d))
+    write_source_file_list(cm_fh, scope, 'DBUS_INTERFACE_SOURCES', ['DBUS_INTERFACES',], indent)
     dbus_interface_flags = scope.expand('QDBUSXML2CPP_INTERFACE_HEADER_FLAGS')
     if dbus_interface_flags:
         cm_fh.write('{}    DBUS_INTERFACE_FLAGS\n'.format(ind))
@@ -912,12 +940,11 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
             d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
                           '="${CMAKE_CURRENT_SOURCE_DIR}/"')
             cm_fh.write('{}        {}\n'.format(ind, d))
-    includes = scope.expand('INCLUDEPATH')
+    includes = scope.get_files('INCLUDEPATH')
     if includes:
         cm_fh.write('{}    INCLUDE_DIRECTORIES\n'.format(ind))
         for i in includes:
             i = i.rstrip('/') or ('/')
-            i = map_source_to_cmake(i, scope.basedir, vpath)
             cm_fh.write('{}        {}\n'.format(ind, i))
 
     dependencies = [map_qt_library(q) for q in scope.expand('QT')
@@ -1189,15 +1216,13 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
     vpath = scope.expand('VPATH')
 
     # Handle QRC files by turning them into add_qt_resource:
-    resources = scope.expand('RESOURCES')
+    resources = scope.get_files('RESOURCES')
     qrc_output = ''
     if resources:
         qrc_only = True
         for r in resources:
             if r.endswith('.qrc'):
-                qrc_output += process_qrc_file(target,
-                                               map_source_to_cmake(r, scope.basedir, vpath),
-                                               scope.basedir)
+                qrc_output += process_qrc_file(target, r, scope.basedir)
             else:
                 qrc_only = False
 
@@ -1267,18 +1292,14 @@ def write_simd_part(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
 
     for simd in simd_options:
         SIMD = simd.upper();
-        sources = scope.get('{}_HEADERS'.format(SIMD), []) \
-            + scope.get('{}_SOURCES'.format(SIMD), []) \
-            + scope.get('{}_C_SOURCES'.format(SIMD), []) \
-            + scope.get('{}_ASM'.format(SIMD), [])
-
-        if not sources:
-            continue
-
-        cm_fh.write('{}add_qt_simd_part({} SIMD {}\n'.format(ind, target, simd))
-        cm_fh.write('{}    SOURCES\n'.format(ind))
-        cm_fh.write('{}        {}\n'.format(ind, '\n{}        '.format(ind).join(sources)))
-        cm_fh.write('{})\n\n'.format(ind))
+        write_source_file_list(cm_fh, scope, 'SOURCES',
+                           ['{}_HEADERS'.format(SIMD),
+                            '{}_SOURCES'.format(SIMD),
+                            '{}_C_SOURCES'.format(SIMD),
+                            '{}_ASM'.format(SIMD)],
+                           indent,
+                           header = '{}add_qt_simd_part({} SIMD {}\n'.format(ind, target, simd),
+                           footer = '{})\n\n'.format(ind))
 
 
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
@@ -1294,7 +1315,6 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     total_scopes = len(scopes)
     # Merge scopes based on their conditions:
     scopes = merge_scopes(scopes)
-    print("xxxxxx {} scopes, {} after merging!".format(total_scopes, len(scopes)))
 
     assert len(scopes)
     assert scopes[0].total_condition == 'ON'
@@ -1355,10 +1375,9 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
                     known_libraries={'Qt::Core', }, extra_keys=[])
 
     if 'qt_tracepoints' in scope.get('CONFIG'):
-        tracepoints = map_to_file(scope.getString('TRACEPOINT_PROVIDER'),
-                                  scope.basedir, scope.currentdir)
+        tracepoints = scope.get_files('TRACEPOINT_PROVIDER')
         cm_fh.write('\n\n{}qt_create_tracepoints({} {})\n'
-                    .format(spaces(indent), module_name[2:], tracepoints))
+                    .format(spaces(indent), module_name[2:], ' '.join(tracepoints)))
 
 
 def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
@@ -1389,7 +1408,7 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
 
     extra = ['GUI',] if gui else[]
 
-    target_path = scope.getString('target.path')
+    target_path = scope.get_string('target.path')
     if target_path:
         target_path = target_path.replace('$$[QT_INSTALL_EXAMPLES]', '${INSTALL_EXAMPLESDIR}')
         extra.append('OUTPUT_DIRECTORY "{}"'.format(target_path))
@@ -1414,13 +1433,13 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
     assert scope.TEMPLATE in ('app', 'lib')
 
     is_lib = scope.TEMPLATE == 'lib'
-    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED', []))
+    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED'))
 
-    if is_lib or 'qt_module' in scope.get('_LOADED', []):
+    if is_lib or 'qt_module' in scope.get('_LOADED'):
         write_module(cm_fh, scope, indent=indent)
     elif is_plugin:
         write_plugin(cm_fh, scope, indent=indent)
-    elif 'qt_tool' in scope.get('_LOADED', []):
+    elif 'qt_tool' in scope.get('_LOADED'):
         write_tool(cm_fh, scope, indent=indent)
     else:
         if 'testcase' in scope.get('CONFIG') \
@@ -1430,12 +1449,12 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
             gui = 'console' not in scope.get('CONFIG')
             write_binary(cm_fh, scope, gui, indent=indent)
 
-    docs = scope.getString("QMAKE_DOCS")
-    if docs:
-        cm_fh.write("\n{}add_qt_docs({})\n"
-                    .format(spaces(indent),
-                            map_to_file(docs, scope.basedir,
-                                        scope.currentdir)))
+    ind = spaces(indent)
+    write_source_file_list(cm_fh, scope, '',
+                           ['QMAKE_DOCS',],
+                           indent,
+                           header = '{}add_qt_docs(\n'.format(ind),
+                           footer = '{})\n'.format(ind))
 
 
 def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
@@ -1462,9 +1481,7 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
     for c in scope.children:
         do_include(c)
 
-    for i in scope._INCLUDED:
-        dir = scope.basedir
-        include_file = i
+    for include_file in scope.get_files('_INCLUDED', is_include=True):
         if not include_file:
             continue
         if not os.path.isfile(include_file):
@@ -1475,7 +1492,7 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         include_scope \
             = Scope.FromDict(None, include_file,
                              include_result.asDict().get('statements'),
-                             '', dir)  # This scope will be merged into scope!
+                             '', scope.basedir)  # This scope will be merged into scope!
 
         do_include(include_scope)
 
