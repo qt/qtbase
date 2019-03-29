@@ -545,9 +545,11 @@ QBrush::QBrush(const QBrush &other)
 */
 QBrush::QBrush(const QGradient &gradient)
 {
-    Q_ASSERT_X(gradient.type() != QGradient::NoGradient, "QBrush::QBrush",
-               "QGradient should not be used directly, use the linear, radial\n"
-               "or conical gradients instead");
+    if (Q_UNLIKELY(gradient.type() == QGradient::NoGradient)) {
+        d.reset(nullBrushInstance());
+        d->ref.ref();
+        return;
+    }
 
     const Qt::BrushStyle enum_table[] = {
         Qt::LinearGradientPattern,
@@ -1376,8 +1378,10 @@ QGradient::QGradient(Preset preset)
         }();
 
         const QJsonValue presetData = jsonPresets[preset - 1];
-        if (!presetData.isObject())
+        if (!presetData.isObject()) {
+            qWarning("QGradient: Undefined preset %i", preset);
             return;
+        }
 
         m_type = LinearGradient;
         setCoordinateMode(ObjectMode);
