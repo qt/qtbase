@@ -462,6 +462,44 @@ QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
     return QList<int>();
 }
 
+/*!
+  \deprecated Use QWindowSystemInterface::handleScreenAdded instead.
+*/
+void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
+{
+    QWindowSystemInterface::handleScreenAdded(ps, isPrimary);
+}
+
+/*!
+  \deprecated Use QWindowSystemInterface::handleScreenRemoved instead.
+*/
+void QPlatformIntegration::removeScreen(QScreen *screen)
+{
+    const bool wasPrimary = (!QGuiApplicationPrivate::screen_list.isEmpty() && QGuiApplicationPrivate::screen_list.at(0) == screen);
+    QGuiApplicationPrivate::screen_list.removeOne(screen);
+
+    QGuiApplicationPrivate::resetCachedDevicePixelRatio();
+
+    if (wasPrimary && qGuiApp && !QGuiApplicationPrivate::screen_list.isEmpty())
+        emit qGuiApp->primaryScreenChanged(QGuiApplicationPrivate::screen_list.at(0));
+}
+
+/*!
+  \deprecated Use QWindowSystemInterface::handleScreenRemoved instead.
+*/
+void QPlatformIntegration::destroyScreen(QPlatformScreen *platformScreen)
+{
+    QWindowSystemInterface::handleScreenRemoved(platformScreen);
+}
+
+/*!
+  \deprecated Use QWindowSystemInterface::handlePrimaryScreenChanged instead.
+*/
+void QPlatformIntegration::setPrimaryScreen(QPlatformScreen *newPrimary)
+{
+    QWindowSystemInterface::handlePrimaryScreenChanged(newPrimary);
+}
+
 QStringList QPlatformIntegration::themeNames() const
 {
     return QStringList();

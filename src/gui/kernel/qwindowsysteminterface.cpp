@@ -818,6 +818,11 @@ void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrima
 */
 void QWindowSystemInterface::handleScreenRemoved(QPlatformScreen *platformScreen)
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    QGuiApplicationPrivate::platformIntegration()->removeScreen(platformScreen->screen());
+QT_WARNING_POP
+
     // Important to keep this order since the QSceen doesn't own the platform screen
     delete platformScreen->screen();
     delete platformScreen;

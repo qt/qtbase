@@ -62,6 +62,10 @@ QPlatformScreen::~QPlatformScreen()
     Q_D(QPlatformScreen);
     if (d->screen) {
         qWarning("Manually deleting a QPlatformScreen. Call QWindowSystemInterface::handleScreenRemoved instead.");
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+        QGuiApplicationPrivate::platformIntegration()->removeScreen(d->screen);
+QT_WARNING_POP
         delete d->screen;
     }
 }

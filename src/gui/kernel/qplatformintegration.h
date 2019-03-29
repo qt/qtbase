@@ -192,6 +192,10 @@ public:
 #endif
     virtual void setApplicationIcon(const QIcon &icon) const;
 
+#if QT_DEPRECATED_SINCE(5, 12)
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handleScreenRemoved") void removeScreen(QScreen *screen);
+#endif
+
     virtual void beep() const;
 
 #if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
@@ -200,6 +204,12 @@ public:
 
 protected:
     QPlatformIntegration() = default;
+
+#if QT_DEPRECATED_SINCE(5, 12)
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handleScreenAdded") void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handleScreenRemoved") void destroyScreen(QPlatformScreen *screen);
+    QT_DEPRECATED_X("Use QWindowSystemInterface::handlePrimaryScreenChanged") void setPrimaryScreen(QPlatformScreen *newPrimary);
+#endif
 };
 
 QT_END_NAMESPACE

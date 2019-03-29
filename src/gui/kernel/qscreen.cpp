@@ -106,17 +106,8 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
  */
 QScreen::~QScreen()
 {
-    // Remove screen
-    const bool wasPrimary = QGuiApplication::primaryScreen() == this;
-    QGuiApplicationPrivate::screen_list.removeOne(this);
-    QGuiApplicationPrivate::resetCachedDevicePixelRatio();
-
-    if (!qGuiApp)
+    if (!qApp)
         return;
-
-    QScreen *newPrimaryScreen = QGuiApplication::primaryScreen();
-    if (wasPrimary && newPrimaryScreen)
-        emit qGuiApp->primaryScreenChanged(newPrimaryScreen);
 
     // Allow clients to manage windows that are affected by the screen going
     // away, before we fall back to moving them to the primary screen.
@@ -125,8 +116,11 @@ QScreen::~QScreen()
     if (QGuiApplication::closingDown())
         return;
 
-    bool movingFromVirtualSibling = newPrimaryScreen
-        && newPrimaryScreen->handle()->virtualSiblings().contains(handle());
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    if (this == primaryScreen)
+        return;
+
+    bool movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
 
     // Move any leftover windows to the primary screen
     const auto allWindows = QGuiApplication::allWindows();
@@ -135,7 +129,7 @@ QScreen::~QScreen()
             continue;
 
         const bool wasVisible = window->isVisible();
-        window->setScreen(newPrimaryScreen);
+        window->setScreen(primaryScreen);
 
         // Re-show window if moved from a virtual sibling screen. Otherwise
         // leave it up to the application developer to show the window.
