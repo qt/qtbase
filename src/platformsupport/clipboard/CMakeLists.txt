@@ -1,12 +1,8 @@
 # Generated from clipboard.pro.
 
 #####################################################################
-## QtClipboardSupport Module:
+## ClipboardSupport Module:
 #####################################################################
-
-find_library(FWAppKit AppKit)
-find_library(FWImageIO ImageIO)
-find_library(FWCoreFoundation CoreFoundation)
 
 add_qt_module(ClipboardSupport
     STATIC
@@ -15,13 +11,20 @@ add_qt_module(ClipboardSupport
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
+        ${FWImageIO}
         Qt::CorePrivate
         Qt::Gui
 )
 
+#### Keys ignored in scope 1:.:clipboard.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "clipboard_support"
+# _LOADED = "qt_module"
+
 ## Scopes:
 #####################################################################
 
-extend_target(ClipboardSupport CONDITION APPLE
-    LIBRARIES ${FWAppKit} ${FWImageIO} ${FWCoreFoundation}
+extend_target(ClipboardSupport CONDITION APPLE_OSX
+    LIBRARIES
+        ${FWAppKit}
 )
