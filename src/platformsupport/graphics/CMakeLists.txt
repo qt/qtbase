@@ -1,7 +1,7 @@
 # Generated from graphics.pro.
 
 #####################################################################
-## QtGraphicsSupport Module:
+## GraphicsSupport Module:
 #####################################################################
 
 add_qt_module(GraphicsSupport
@@ -14,3 +14,8 @@ add_qt_module(GraphicsSupport
         Qt::CorePrivate
         Qt::GuiPrivate
 )
+
+#### Keys ignored in scope 1:.:graphics.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "graphics_support"
+# _LOADED = "qt_module"
