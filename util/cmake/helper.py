@@ -230,6 +230,7 @@ libray_mapping = {
     'librt': 'WrapRt',
     'libudev': 'PkgConfig::Libudev',
     'mtdev': 'PkgConfig::Mtdev',
+    'odbc': 'ODBC::ODBC',
     'pcre2': 'PCRE2',
     'psql': 'PostgreSQL::PostgreSQL',
     'sqlite': 'SQLite::SQLite3',
