@@ -21,7 +21,9 @@ add_qt_module(WindowsUIAutomationSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    # CONFIG = "static" "internal_module"
-    # MODULE = "windowsuiautomation_support"
-    # _LOADED = "qt_module"
 )
+
+#### Keys ignored in scope 1:.:windowsuiautomation.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "windowsuiautomation_support"
+# _LOADED = "qt_module"
