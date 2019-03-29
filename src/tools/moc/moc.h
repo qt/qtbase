@@ -167,6 +167,7 @@ struct ClassDef : BaseDef {
 
     struct PluginData {
         QByteArray iid;
+        QByteArray uri;
         QMap<QString, QJsonArray> metaArgs;
         QJsonDocument metaData;
     } pluginData;

@@ -1311,6 +1311,9 @@ void Moc::parsePluginData(ClassDef *def)
         if (l == "IID") {
             next(STRING_LITERAL);
             def->pluginData.iid = unquotedLexem();
+        } else if (l == "URI") {
+            next(STRING_LITERAL);
+            def->pluginData.uri = unquotedLexem();
         } else if (l == "FILE") {
             next(STRING_LITERAL);
             QByteArray metaDataFile = unquotedLexem();
@@ -1351,6 +1354,7 @@ void Moc::parsePluginData(ClassDef *def)
                     + " does not contain a valid JSON object. Declaration will be ignored";
             warning(msg.constData());
             def->pluginData.iid = QByteArray();
+            def->pluginData.uri = QByteArray();
             return;
         }
     }
