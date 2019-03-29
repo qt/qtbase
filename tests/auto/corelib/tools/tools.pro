@@ -46,6 +46,7 @@ SUBDIRS=\
     qringbuffer \
     qscopedpointer \
     qscopedvaluerollback \
+    qscopeguard \
     qset \
     qsharedpointer \
     qsize \
