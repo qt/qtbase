@@ -1,6 +1,4 @@
-# Generated from eglconvenience.pro.
-
-find_package(EGL)
+find_package(EGL) # special case
 
 #####################################################################
 ## EglSupport Module:
@@ -16,15 +14,17 @@ add_qt_module(EglSupport
         QT_NO_CAST_FROM_ASCII
         QT_EGL_NO_X11
     LIBRARIES
+        ${CMAKE_DL_LIBS}
         Qt::CorePrivate
         Qt::GuiPrivate
-        EGL::EGL
-        ${CMAKE_DL_LIBS}
-    # CONFIG = "static" "internal_module" "egl"
-    # MODULE = "egl_support"
-    # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
-    # _LOADED = "qt_module"
+        EGL::EGL # special case
 )
+
+#### Keys ignored in scope 1:.:eglconvenience.pro:<NONE>:
+# CONFIG = "static" "internal_module" "egl"
+# MODULE = "egl_support"
+# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
