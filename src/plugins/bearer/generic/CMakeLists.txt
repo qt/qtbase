@@ -15,10 +15,12 @@ add_qt_plugin(qgenericbearer
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    # OTHER_FILES = "generic.json"
-    # PLUGIN_CLASS_NAME = "QGenericEnginePlugin"
-    # _LOADED = "qt_plugin"
 )
+
+#### Keys ignored in scope 1:.:generic.pro:<NONE>:
+# OTHER_FILES = "generic.json"
+# PLUGIN_CLASS_NAME = "QGenericEnginePlugin"
+# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
