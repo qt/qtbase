@@ -229,6 +229,7 @@ libray_mapping = {
     'libudev': 'PkgConfig::Libudev',
     'mtdev': 'PkgConfig::Mtdev',
     'pcre2': 'PCRE2',
+    'psql': 'PostgreSQL::PostgreSQL',
     'sqlite': 'SQLite3',
     'tslib': 'PkgConfig::Tslib',
     'x11sm': '${X11_SM_LIB} ${X11_ICE_LIB}',
