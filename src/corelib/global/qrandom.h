@@ -122,14 +122,16 @@ public:
         return quint32(value);
     }
 
-    int bounded(int highest)
-    {
-        return int(bounded(quint32(highest)));
-    }
-
     quint32 bounded(quint32 lowest, quint32 highest)
     {
+        Q_ASSERT(highest > lowest);
         return bounded(highest - lowest) + lowest;
+    }
+
+    int bounded(int highest)
+    {
+        Q_ASSERT(highest > 0);
+        return int(bounded(0U, quint32(highest)));
     }
 
     int bounded(int lowest, int highest)
