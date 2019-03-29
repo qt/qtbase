@@ -15,9 +15,11 @@ add_qt_plugin(qconnmanbearer
         qconnmanservice_linux.cpp qconnmanservice_linux_p.h
     LIBRARIES
         Qt::Core
-        Qt::NetworkPrivate
         Qt::DBus
-    # OTHER_FILES = "connman.json"
-    # PLUGIN_CLASS_NAME = "QConnmanEnginePlugin"
-    # _LOADED = "qt_plugin"
+        Qt::NetworkPrivate
 )
+
+#### Keys ignored in scope 1:.:connman.pro:<NONE>:
+# OTHER_FILES = "connman.json"
+# PLUGIN_CLASS_NAME = "QConnmanEnginePlugin"
+# _LOADED = "qt_plugin"
