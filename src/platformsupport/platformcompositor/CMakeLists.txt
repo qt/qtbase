@@ -15,3 +15,8 @@ add_qt_module(PlatformCompositorSupport
         Qt::CorePrivate
         Qt::GuiPrivate
 )
+
+#### Keys ignored in scope 1:.:platformcompositor.pro:<NONE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "platformcompositor_support"
+# _LOADED = "qt_module"
