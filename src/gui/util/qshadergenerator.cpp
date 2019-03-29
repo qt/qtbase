@@ -56,7 +56,10 @@ namespace
             case QShaderLanguage::Const:
                 return "const";
             case QShaderLanguage::Input:
-                return "varying";
+                if (format.shaderType() == QShaderFormat::Vertex)
+                    return "attribute";
+                else
+                    return "varying";
             case QShaderLanguage::Output:
                 return ""; // Although fragment shaders for <=2 only have fixed outputs
             case QShaderLanguage::Uniform:

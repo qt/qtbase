@@ -35,11 +35,13 @@
 
 namespace
 {
-    QShaderFormat createFormat(QShaderFormat::Api api, int majorVersion, int minorVersion)
+    QShaderFormat createFormat(QShaderFormat::Api api, int majorVersion, int minorVersion,
+                               QShaderFormat::ShaderType shaderType= QShaderFormat::Fragment)
     {
         auto format = QShaderFormat();
         format.setApi(api);
         format.setVersion(QVersionNumber(majorVersion, minorVersion));
+        format.setShaderType(shaderType);
         return format;
     }
 
@@ -74,7 +76,7 @@ namespace
         return edge;
     }
 
-    QShaderGraph createGraph()
+    QShaderGraph createFragmentShaderGraph()
     {
         const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
         const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
@@ -213,7 +215,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
     QTest::addColumn<QShaderFormat>("format");
     QTest::addColumn<QByteArray>("expectedCode");
 
-    const auto graph = createGraph();
+    const auto graph = createFragmentShaderGraph();
 
     const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
     const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
@@ -580,120 +582,195 @@ void tst_QShaderGenerator::shouldProcessLanguageQualifierAndTypeEnums_data()
     QTest::addColumn<QShaderFormat>("format");
     QTest::addColumn<QByteArray>("expectedCode");
 
-    const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
-    const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0);
-    const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0);
-    const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
-    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+    {
+        const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
+        const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0);
+        const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0);
+        const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
+        const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
 
-    const auto qualifierEnum = QMetaEnum::fromType<QShaderLanguage::StorageQualifier>();
-    const auto typeEnum = QMetaEnum::fromType<QShaderLanguage::VariableType>();
+        const auto qualifierEnum = QMetaEnum::fromType<QShaderLanguage::StorageQualifier>();
+        const auto typeEnum = QMetaEnum::fromType<QShaderLanguage::VariableType>();
 
-    for (int qualifierIndex = 0; qualifierIndex < qualifierEnum.keyCount(); qualifierIndex++) {
-        const auto qualifierName = qualifierEnum.key(qualifierIndex);
-        const auto qualifierValue = static_cast<QShaderLanguage::StorageQualifier>(qualifierEnum.value(qualifierIndex));
+        for (int qualifierIndex = 0; qualifierIndex < qualifierEnum.keyCount(); qualifierIndex++) {
+            const auto qualifierName = qualifierEnum.key(qualifierIndex);
+            const auto qualifierValue = static_cast<QShaderLanguage::StorageQualifier>(qualifierEnum.value(qualifierIndex));
 
-        for (int typeIndex = 0; typeIndex < typeEnum.keyCount(); typeIndex++) {
-            const auto typeName = typeEnum.key(typeIndex);
-            const auto typeValue = static_cast<QShaderLanguage::VariableType>(typeEnum.value(typeIndex));
+            for (int typeIndex = 0; typeIndex < typeEnum.keyCount(); typeIndex++) {
+                const auto typeName = typeEnum.key(typeIndex);
+                const auto typeValue = static_cast<QShaderLanguage::VariableType>(typeEnum.value(typeIndex));
+
+                auto graph = QShaderGraph();
+
+                auto worldPosition = createNode({
+                    createPort(QShaderNodePort::Output, "value")
+                });
+                worldPosition.setParameter("name", "worldPosition");
+                worldPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(qualifierValue));
+                worldPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(typeValue));
+                worldPosition.addRule(es2, QShaderNode::Rule("highp $type $value = $name;",
+                                                             QByteArrayList() << "$qualifier highp $type $name;"));
+                worldPosition.addRule(gl2, QShaderNode::Rule("$type $value = $name;",
+                                                             QByteArrayList() << "$qualifier $type $name;"));
+                worldPosition.addRule(gl3, QShaderNode::Rule("$type $value = $name;",
+                                                             QByteArrayList() << "$qualifier $type $name;"));
+
+                auto fragColor = createNode({
+                    createPort(QShaderNodePort::Input, "fragColor")
+                });
+                fragColor.addRule(es2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+                fragColor.addRule(gl2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+                fragColor.addRule(gl3, QShaderNode::Rule("fragColor = $fragColor;",
+                                                         QByteArrayList() << "out vec4 fragColor;"));
+
+                graph.addNode(worldPosition);
+                graph.addNode(fragColor);
+
+                graph.addEdge(createEdge(worldPosition.uuid(), "value", fragColor.uuid(), "fragColor"));
+
+                const auto gl2Code = (QByteArrayList() << "#version 110"
+                                                       << ""
+                                                       << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl2))
+                                                                                                .arg(toGlsl(typeValue))
+                                                                                                .toUtf8()
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                       << "    gl_fragColor = v0;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto gl3Code = (QByteArrayList() << "#version 130"
+                                                       << ""
+                                                       << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl3))
+                                                                                                .arg(toGlsl(typeValue))
+                                                                                                .toUtf8()
+                                                       << "out vec4 fragColor;"
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                       << "    fragColor = v0;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto gl4Code = (QByteArrayList() << "#version 400 core"
+                                                       << ""
+                                                       << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl4))
+                                                                                                .arg(toGlsl(typeValue))
+                                                                                                .toUtf8()
+                                                       << "out vec4 fragColor;"
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                       << "    fragColor = v0;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto es2Code = (QByteArrayList() << "#version 100"
+                                                       << ""
+                                                       << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es2))
+                                                                                                      .arg(toGlsl(typeValue))
+                                                                                                      .toUtf8()
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                       << "    gl_fragColor = v0;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto es3Code = (QByteArrayList() << "#version 300 es"
+                                                       << ""
+                                                       << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es3))
+                                                                                                      .arg(toGlsl(typeValue))
+                                                                                                      .toUtf8()
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                       << "    gl_fragColor = v0;"
+                                                       << "}"
+                                                       << "").join("\n");
+
+                QTest::addRow("%s %s ES2", qualifierName, typeName) << graph << es2 << es2Code;
+                QTest::addRow("%s %s ES3", qualifierName, typeName) << graph << es3 << es3Code;
+                QTest::addRow("%s %s GL2", qualifierName, typeName) << graph << gl2 << gl2Code;
+                QTest::addRow("%s %s GL3", qualifierName, typeName) << graph << gl3 << gl3Code;
+                QTest::addRow("%s %s GL4", qualifierName, typeName) << graph << gl4 << gl4Code;
+            }
+        }
+    }
+
+    {
+            const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0, QShaderFormat::Vertex);
+            const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0, QShaderFormat::Vertex);
+            const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0, QShaderFormat::Vertex);
+            const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0, QShaderFormat::Vertex);
+            const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0, QShaderFormat::Vertex);
 
             auto graph = QShaderGraph();
 
-            auto worldPosition = createNode({
+            auto vertexPosition = createNode({
                 createPort(QShaderNodePort::Output, "value")
             });
-            worldPosition.setParameter("name", "worldPosition");
-            worldPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(qualifierValue));
-            worldPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(typeValue));
-            worldPosition.addRule(es2, QShaderNode::Rule("highp $type $value = $name;",
+            vertexPosition.setParameter("name", "vertexPosition");
+            vertexPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(QShaderLanguage::Input));
+            vertexPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(QShaderLanguage::Vec4));
+
+            vertexPosition.addRule(es2, QShaderNode::Rule("",
                                                          QByteArrayList() << "$qualifier highp $type $name;"));
-            worldPosition.addRule(gl2, QShaderNode::Rule("$type $value = $name;",
+            vertexPosition.addRule(gl2, QShaderNode::Rule("",
                                                          QByteArrayList() << "$qualifier $type $name;"));
-            worldPosition.addRule(gl3, QShaderNode::Rule("$type $value = $name;",
+            vertexPosition.addRule(gl3, QShaderNode::Rule("",
                                                          QByteArrayList() << "$qualifier $type $name;"));
 
-            auto fragColor = createNode({
-                createPort(QShaderNodePort::Input, "fragColor")
-            });
-            fragColor.addRule(es2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
-            fragColor.addRule(gl2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
-            fragColor.addRule(gl3, QShaderNode::Rule("fragColor = $fragColor;",
-                                                     QByteArrayList() << "out vec4 fragColor;"));
-
-            graph.addNode(worldPosition);
-            graph.addNode(fragColor);
-
-            graph.addEdge(createEdge(worldPosition.uuid(), "value", fragColor.uuid(), "fragColor"));
+            graph.addNode(vertexPosition);
 
             const auto gl2Code = (QByteArrayList() << "#version 110"
                                                    << ""
-                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl2))
-                                                                                            .arg(toGlsl(typeValue))
-                                                                                            .toUtf8()
+                                                   << "attribute vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    gl_fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto gl3Code = (QByteArrayList() << "#version 130"
                                                    << ""
-                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl3))
-                                                                                            .arg(toGlsl(typeValue))
-                                                                                            .toUtf8()
-                                                   << "out vec4 fragColor;"
+                                                   << "in vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto gl4Code = (QByteArrayList() << "#version 400 core"
                                                    << ""
-                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl4))
-                                                                                            .arg(toGlsl(typeValue))
-                                                                                            .toUtf8()
-                                                   << "out vec4 fragColor;"
+                                                   << "in vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto es2Code = (QByteArrayList() << "#version 100"
                                                    << ""
-                                                   << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es2))
-                                                                                                  .arg(toGlsl(typeValue))
-                                                                                                  .toUtf8()
+                                                   << "attribute highp vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    gl_fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto es3Code = (QByteArrayList() << "#version 300 es"
                                                    << ""
-                                                   << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es3))
-                                                                                                  .arg(toGlsl(typeValue))
-                                                                                                  .toUtf8()
+                                                   << "in highp vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    gl_fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
 
-            QTest::addRow("%s %s ES2", qualifierName, typeName) << graph << es2 << es2Code;
-            QTest::addRow("%s %s ES3", qualifierName, typeName) << graph << es3 << es3Code;
-            QTest::addRow("%s %s GL2", qualifierName, typeName) << graph << gl2 << gl2Code;
-            QTest::addRow("%s %s GL3", qualifierName, typeName) << graph << gl3 << gl3Code;
-            QTest::addRow("%s %s GL4", qualifierName, typeName) << graph << gl4 << gl4Code;
-        }
+            QTest::addRow("Attribute header substitution ES2") << graph << es2 << es2Code;
+            QTest::addRow("Attribute header substitution ES3") << graph << es3 << es3Code;
+            QTest::addRow("Attribute header substitution GL2") << graph << gl2 << gl2Code;
+            QTest::addRow("Attribute header substitution GL3") << graph << gl3 << gl3Code;
+            QTest::addRow("Attribute header substitution GL4") << graph << gl4 << gl4Code;
     }
 }
 

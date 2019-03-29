@@ -251,6 +251,17 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
                     break;
                 }
 
+                // We default out to a Fragment ShaderType if nothing is specified
+                // as that was the initial behavior we introduced
+                const QString shaderType = formatObject.value(QStringLiteral("shaderType")).toString();
+                format.setShaderType(shaderType == QStringLiteral("Fragment") ? QShaderFormat::Fragment
+                                   : shaderType == QStringLiteral("Vertex") ? QShaderFormat::Vertex
+                                   : shaderType == QStringLiteral("TessellationControl") ? QShaderFormat::TessellationControl
+                                   : shaderType == QStringLiteral("TessellationEvaluation") ? QShaderFormat::TessellationEvaluation
+                                   : shaderType == QStringLiteral("Geometry") ? QShaderFormat::Geometry
+                                   : shaderType == QStringLiteral("Compute") ? QShaderFormat::Compute
+                                   : QShaderFormat::Fragment);
+
                 const QByteArray substitution = substitutionValue.toString().toUtf8();
 
                 const QJsonValue snippetsValue = ruleObject.value(QStringLiteral("headerSnippets"));

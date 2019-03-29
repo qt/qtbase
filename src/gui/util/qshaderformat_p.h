@@ -69,6 +69,15 @@ public:
         OpenGLES
     };
 
+    enum ShaderType : int {
+        Vertex = 0,
+        TessellationControl,
+        TessellationEvaluation,
+        Geometry,
+        Fragment,
+        Compute
+    };
+
     Q_GUI_EXPORT QShaderFormat() Q_DECL_NOTHROW;
 
     Q_GUI_EXPORT Api api() const Q_DECL_NOTHROW;
@@ -86,11 +95,15 @@ public:
     Q_GUI_EXPORT bool isValid() const Q_DECL_NOTHROW;
     Q_GUI_EXPORT bool supports(const QShaderFormat &other) const Q_DECL_NOTHROW;
 
+    Q_GUI_EXPORT ShaderType shaderType() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT void setShaderType(ShaderType shaderType) Q_DECL_NOTHROW;
+
 private:
     Api m_api;
     QVersionNumber m_version;
     QStringList m_extensions;
     QString m_vendor;
+    ShaderType m_shaderType;
 };
 
 Q_GUI_EXPORT bool operator==(const QShaderFormat &lhs, const QShaderFormat &rhs) Q_DECL_NOTHROW;
