@@ -218,6 +218,8 @@ libray_mapping = {
     'freetype': 'Freetype::Freetype',
     'gbm': 'gbm::gbm',
     'glib': 'GLIB2::GLIB2',
+    'glx_support': 'Qt::GlxSupport',
+    'glx_supportPrivate': 'Qt::GlxSupportPrivate',
     'harfbuzz': 'harfbuzz::harfbuzz',
     'icu': 'ICU::i18n ICU::uc ICU::data',
     'libatomic': 'Atomic',
