@@ -1,6 +1,4 @@
-# Generated from odbc.pro.
-
-find_package(ODBC)
+find_package(ODBC) # special case
 
 #####################################################################
 ## qsqlodbc Plugin:
@@ -15,13 +13,16 @@ add_qt_plugin(qsqlodbc
         QT_NO_CAST_TO_ASCII
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
+        ODBC::ODBC
+        Qt::Core
         Qt::CorePrivate
         Qt::SqlPrivate
-        ODBC::ODBC
-    # OTHER_FILES = "odbc.json"
-    # PLUGIN_CLASS_NAME = "QODBCDriverPlugin"
-    # _LOADED = "qt_plugin"
 )
+
+#### Keys ignored in scope 1:.:odbc.pro:<NONE>:
+# OTHER_FILES = "odbc.json"
+# PLUGIN_CLASS_NAME = "QODBCDriverPlugin"
+# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
