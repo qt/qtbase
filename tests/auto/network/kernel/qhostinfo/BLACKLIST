@@ -4,3 +4,5 @@
 windows ci
 [blockingLookup:a-plus-aaaa]
 windows ci
+[reverseLookup:google-public-dns-a.google.com]
+ci

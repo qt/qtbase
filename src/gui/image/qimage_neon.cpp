@@ -52,65 +52,41 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, cons
 
     const quint32 *const end = dst + len;
 
-    // align dst on 64 bits
-    const int offsetToAlignOn8Bytes = (reinterpret_cast<quintptr>(dst) >> 2) & 0x1;
-    for (int i = 0; i < offsetToAlignOn8Bytes; ++i) {
+    // align dst on 128 bits
+    const int offsetToAlignOn16Bytes = (reinterpret_cast<quintptr>(dst) >> 2) & 0x3;
+    for (int i = 0; i < offsetToAlignOn16Bytes; ++i) {
         *dst++ = qRgb(src[0], src[1], src[2]);
         src += 3;
     }
 
-    if ((len - offsetToAlignOn8Bytes) >= 8) {
-        const quint32 *const simdEnd = end - 7;
-#if !defined(Q_PROCESSOR_ARM_64)
-        register uint8x8_t fullVector asm ("d3") = vdup_n_u8(0xff);
-        do {
+    if ((len - offsetToAlignOn16Bytes) >= 16) {
+        const quint32 *const simdEnd = end - 15;
+        uint8x16x4_t dstVector;
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-            asm volatile (
-                "vld3.8     { d4, d5, d6 }, [%[SRC]] !\n\t"
-                "vst4.8     { d3, d4, d5, d6 }, [%[DST],:64] !\n\t"
-                : [DST]"+r" (dst), [SRC]"+r" (src)
-                : "w"(fullVector)
-                : "memory", "d4", "d5", "d6"
-            );
+        dstVector.val[0] = vdupq_n_u8(0xff);
 #else
-            asm volatile (
-                "vld3.8     { d0, d1, d2 }, [%[SRC]] !\n\t"
-                "vswp d0, d2\n\t"
-                "vst4.8     { d0, d1, d2, d3 }, [%[DST],:64] !\n\t"
-                : [DST]"+r" (dst), [SRC]"+r" (src)
-                : "w"(fullVector)
-                : "memory", "d0", "d1", "d2"
-            );
+        dstVector.val[3] = vdupq_n_u8(0xff);
 #endif
-        } while (dst < simdEnd);
-#else
-        register uint8x8_t fullVector asm ("v3") = vdup_n_u8(0xff);
         do {
+            uint8x16x3_t srcVector = vld3q_u8(src);
+            src += 3 * 16;
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-            asm volatile (
-                "ld3     { v4.8b, v5.8b, v6.8b }, [%[SRC]], #24 \n\t"
-                "st4     { v3.8b, v4.8b, v5.8b, v6.8b }, [%[DST]], #32 \n\t"
-                : [DST]"+r" (dst), [SRC]"+r" (src)
-                : "w"(fullVector)
-                : "memory", "v4", "v5", "v6"
-            );
+            dstVector.val[1] = srcVector.val[0];
+            dstVector.val[2] = srcVector.val[1];
+            dstVector.val[3] = srcVector.val[2];
 #else
-            asm volatile (
-                "ld3     { v0.8b, v1.8b, v2.8b }, [%[SRC]], #24 \n\t"
-                "mov v4.8b, v2.8b\n\t"
-                "mov v2.8b, v0.8b\n\t"
-                "mov v0.8b, v4.8b\n\t"
-                "st4     { v0.8b, v1.8b, v2.8b, v3.8b }, [%[DST]], #32 \n\t"
-                : [DST]"+r" (dst), [SRC]"+r" (src)
-                : "w"(fullVector)
-                : "memory", "v0", "v1", "v2", "v4"
-            );
+            dstVector.val[0] = srcVector.val[2];
+            dstVector.val[1] = srcVector.val[1];
+            dstVector.val[2] = srcVector.val[0];
 #endif
+            vst4q_u8(reinterpret_cast<uint8_t*>(dst), dstVector);
+            dst += 16;
         } while (dst < simdEnd);
-#endif
     }
 
-    while (dst != end) {
+    int i = 0;
+    int length = end - dst;
+    SIMD_EPILOGUE(i, length, 15) {
         *dst++ = qRgb(src[0], src[1], src[2]);
         src += 3;
     }
