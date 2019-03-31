@@ -1343,8 +1343,10 @@ void tst_QMainWindow::restoreState()
 {
     QMainWindow mw;
     QToolBar tb(&mw);
+    tb.setObjectName(QLatin1String("toolBar"));
     mw.addToolBar(Qt::TopToolBarArea, &tb);
     QDockWidget dw(&mw);
+    dw.setObjectName(QLatin1String("dock"));
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
 
     QByteArray state;

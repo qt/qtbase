@@ -250,6 +250,9 @@ void QCocoaMenu::syncMenuItem_helper(QPlatformMenuItem *menuItem, bool menubarUp
             if (wasMerged) {
                 oldItem.enabled = NO;
                 oldItem.hidden = YES;
+                oldItem.keyEquivalent = @"";
+                oldItem.keyEquivalentModifierMask = NSEventModifierFlagCommand;
+
             } else {
                 [m_nativeMenu removeItem:oldItem];
             }

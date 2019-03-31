@@ -943,19 +943,21 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::dataForTzTransition(QTzTransitionTime
     return data;
 }
 
+QVector<QTimeZonePrivate::Data> QTzTimeZonePrivate::getPosixTransitions(qint64 msNear) const
+{
+    const int year = QDateTime::fromMSecsSinceEpoch(msNear, Qt::UTC).date().year();
+    // The Data::atMSecsSinceEpoch of the single entry if zone is constant:
+    qint64 atTime = m_tranTimes.isEmpty() ? msNear : m_tranTimes.last().atMSecsSinceEpoch;
+    return calculatePosixTransitions(m_posixRule, year - 1, year + 1, atTime);
+}
+
 QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
-    // If we have no rules (so probably an invalid tz), return invalid data:
-    if (!m_tranTimes.size())
-        return invalidData();
-
-    // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch
+    // If the required time is after the last transition (or there were none)
+    // and we have a POSIX rule then use it:
+    if ((m_tranTimes.isEmpty() || m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch)
         && !m_posixRule.isEmpty() && forMSecsSinceEpoch >= 0) {
-        const int year = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch, Qt::UTC).date().year();
-        QVector<QTimeZonePrivate::Data> posixTrans =
-            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
-                                      m_tranTimes.last().atMSecsSinceEpoch);
+        QVector<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(forMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
                                        [forMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
@@ -986,13 +988,11 @@ bool QTzTimeZonePrivate::hasTransitions() const
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
-    // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < afterMSecsSinceEpoch
+    // If the required time is after the last transition (or there were none)
+    // and we have a POSIX rule then use it:
+    if ((m_tranTimes.isEmpty() || m_tranTimes.last().atMSecsSinceEpoch < afterMSecsSinceEpoch)
         && !m_posixRule.isEmpty() && afterMSecsSinceEpoch >= 0) {
-        const int year = QDateTime::fromMSecsSinceEpoch(afterMSecsSinceEpoch, Qt::UTC).date().year();
-        QVector<QTimeZonePrivate::Data> posixTrans =
-            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
-                                      m_tranTimes.last().atMSecsSinceEpoch);
+        QVector<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(afterMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
                                        [afterMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch <= afterMSecsSinceEpoch;
@@ -1011,19 +1011,19 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
-    // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < beforeMSecsSinceEpoch
+    // If the required time is after the last transition (or there were none)
+    // and we have a POSIX rule then use it:
+    if ((m_tranTimes.isEmpty() || m_tranTimes.last().atMSecsSinceEpoch < beforeMSecsSinceEpoch)
         && !m_posixRule.isEmpty() && beforeMSecsSinceEpoch > 0) {
-        const int year = QDateTime::fromMSecsSinceEpoch(beforeMSecsSinceEpoch, Qt::UTC).date().year();
-        QVector<QTimeZonePrivate::Data> posixTrans =
-            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
-                                      m_tranTimes.last().atMSecsSinceEpoch);
+        QVector<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(beforeMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
                                        [beforeMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
                                        });
-        Q_ASSERT(it > posixTrans.cbegin());
-        return *--it;
+        if (it > posixTrans.cbegin())
+            return *--it;
+        // It fell between the last transition (if any) and the first of the POSIX rule:
+        return m_tranTimes.isEmpty() ? invalidData() : dataForTzTransition(m_tranTimes.last());
     }
 
     // Otherwise if we can find a valid tran then use its rule

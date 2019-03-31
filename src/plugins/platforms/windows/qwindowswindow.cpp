@@ -1132,7 +1132,8 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
     // TODO: No concept of WA_wasMoved yet that would indicate a
     // CW_USEDEFAULT unless set. For now, assume that 0,0 means 'default'
     // for toplevels.
-    if (geometry.isValid()) {
+    if (geometry.isValid()
+        || !qt_window_private(const_cast<QWindow *>(w))->resizeAutomatic) {
         frameX = geometry.x();
         frameY = geometry.y();
         const QMargins effectiveMargins = margins + customMargins;

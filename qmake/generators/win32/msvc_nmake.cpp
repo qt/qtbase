@@ -254,7 +254,7 @@ void NmakeMakefileGenerator::init()
 
     ProString tgt = project->first("DESTDIR")
                     + project->first("TARGET") + project->first("TARGET_VERSION_EXT");
-    if(project->isActiveConfig("shared")) {
+    if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("shared")) {
         project->values("QMAKE_CLEAN").append(tgt + ".exp");
         project->values("QMAKE_DISTCLEAN").append(tgt + ".lib");
     }

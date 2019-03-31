@@ -87,15 +87,16 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
 
     // set the raw headers
-    QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
-    QNetworkCacheMetaData::RawHeaderList::ConstIterator it = rawHeaders.constBegin(),
-                                                       end = rawHeaders.constEnd();
-    for ( ; it != end; ++it) {
-        if (it->first.toLower() == "cache-control" &&
-            it->second.toLower().contains("must-revalidate")) {
-            return false;
+    const QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
+    for (const auto &header : rawHeaders) {
+        if (header.first.toLower() == "cache-control") {
+            const QByteArray cacheControlValue = header.second.toLower();
+            if (cacheControlValue.contains("must-revalidate")
+                || cacheControlValue.contains("no-cache")) {
+                return false;
+            }
         }
-        setRawHeader(it->first, it->second);
+        setRawHeader(header.first, header.second);
     }
 
     // handle a possible redirect

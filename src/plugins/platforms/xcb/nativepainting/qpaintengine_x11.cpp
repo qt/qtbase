@@ -2645,6 +2645,13 @@ bool QXRenderGlyphCache::addGlyphs(const QTextItemInt &ti,
         if (glyph == 0 || glyph->format != glyphFormat())
             return false;
 
+        if (glyph->format == QFontEngine::Format_Mono) {
+            // Must convert bitmap from msb to lsb bit order
+            QImage img(glyph->data, glyph->width, glyph->height, QImage::Format_Mono);
+            img = img.convertToFormat(QImage::Format_MonoLSB);
+            memcpy(glyph->data, img.constBits(), static_cast<size_t>(img.sizeInBytes()));
+        }
+
         set->setGlyph(glyphs[i], spp, glyph);
         Q_ASSERT(glyph->data || glyph->width == 0 || glyph->height == 0);
 

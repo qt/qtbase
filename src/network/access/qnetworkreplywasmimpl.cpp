@@ -117,7 +117,7 @@ static void q_loadCallback(val event)
             val blob = xhr["response"];
 
             val reader = val::global("FileReader").new_();
-            reader.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_readBinary"));
+            reader.set("onload", val::module_property("qt_QNetworkReplyWasmImplPrivate_readBinary"));
             reader.set("data-handler", xhr["data-handler"]);
 
             reader.call<void>("readAsArrayBuffer", blob);
@@ -174,12 +174,12 @@ static void q_readBinary(val event)
     QCoreApplication::processEvents();
 }
 
-EMSCRIPTEN_BINDINGS(network_module) {
-    function("QNetworkReplyWasmImplPrivate_requestErrorCallback", q_requestErrorCallback);
-    function("QNetworkReplyWasmImplPrivate_progressCallback", q_progressCallback);
-    function("QNetworkReplyWasmImplPrivate_loadCallback", q_loadCallback);
-    function("QNetworkReplyWasmImplPrivate_responseHeadersCallback", q_responseHeadersCallback);
-    function("QNetworkReplyWasmImplPrivate_readBinary", q_readBinary);
+EMSCRIPTEN_BINDINGS(qtNetworkModule) {
+    function("qt_QNetworkReplyWasmImplPrivate_requestErrorCallback", q_requestErrorCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_progressCallback", q_progressCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_loadCallback", q_loadCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_responseHeadersCallback", q_responseHeadersCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_readBinary", q_readBinary);
 }
 
 QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
@@ -332,10 +332,10 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
 
     m_xhr.call<void>("open", verb, request.url().toString().toStdString());
 
-    m_xhr.set("onerror", val::module_property("QNetworkReplyWasmImplPrivate_requestErrorCallback"));
-    m_xhr.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_loadCallback"));
-    m_xhr.set("onprogress", val::module_property("QNetworkReplyWasmImplPrivate_progressCallback"));
-    m_xhr.set("onreadystatechange", val::module_property("QNetworkReplyWasmImplPrivate_responseHeadersCallback"));
+    m_xhr.set("onerror", val::module_property("qt_QNetworkReplyWasmImplPrivate_requestErrorCallback"));
+    m_xhr.set("onload", val::module_property("qt_QNetworkReplyWasmImplPrivate_loadCallback"));
+    m_xhr.set("onprogress", val::module_property("qt_QNetworkReplyWasmImplPrivate_progressCallback"));
+    m_xhr.set("onreadystatechange", val::module_property("qt_QNetworkReplyWasmImplPrivate_responseHeadersCallback"));
 
     m_xhr.set("data-handler", val(quintptr(reinterpret_cast<void *>(this))));
 

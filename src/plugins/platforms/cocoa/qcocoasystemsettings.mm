@@ -158,10 +158,13 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setColor(QPalette::Inactive, QPalette::WindowText, qc);
             pal.setColor(QPalette::Active, QPalette::HighlightedText, qc);
             pal.setColor(QPalette::Inactive, QPalette::HighlightedText, qc);
+            pal.setColor(QPalette::Active, QPalette::ButtonText, qc);
+            pal.setColor(QPalette::Inactive, QPalette::ButtonText, qc);
             qc = qt_mac_toQColor(mac_widget_colors[i].inactive);
             pal.setColor(QPalette::Disabled, QPalette::Text, qc);
             pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
             pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
+            pal.setColor(QPalette::Disabled, QPalette::ButtonText, qc);
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
                 || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {
