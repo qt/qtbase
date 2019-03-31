@@ -5,3 +5,8 @@ SOURCES		= test_file.cpp \
 RESOURCES = test.qrc
 TARGET	= "simple app"
 DESTDIR	= "dest dir"
+
+target.path = $$OUT_PWD/dist
+INSTALLS += target
+
+!build_pass:msvc:CONFIG(debug, debug|release):message("check for pdb, please")

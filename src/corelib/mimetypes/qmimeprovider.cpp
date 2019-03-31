@@ -54,7 +54,9 @@
 
 static void initResources()
 {
+#if QT_CONFIG(mimetype_database)
     Q_INIT_RESOURCE(mimetypes);
+#endif
 }
 
 QT_BEGIN_NAMESPACE

@@ -11,6 +11,7 @@
             "icu": "boolean",
             "inotify": "boolean",
             "journald": "boolean",
+            "mimetype-database": "boolean",
             "pcre": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
             "pps": { "type": "boolean", "name": "qqnx_pps" },
@@ -374,6 +375,16 @@
                 ]
             }
         },
+        "glibc": {
+            "label": "GNU libc",
+            "type": "compile",
+            "test": {
+                "include": "stdlib.h",
+                "main": [
+                    "return __GLIBC__;"
+                ]
+            }
+        },
         "inotify": {
             "label": "inotify",
             "type": "compile",
@@ -593,6 +604,12 @@
             "condition": "libs.glib",
             "output": [ "privateFeature", "feature" ]
         },
+        "glibc": {
+            "label": "GNU libc",
+            "autoDetect": "config.linux",
+            "condition": "tests.glibc",
+            "output": [ "privateFeature" ]
+        },
         "iconv": {
             "label": "iconv",
             "purpose": "Provides internationalization on Unix.",
@@ -661,6 +678,11 @@
             "section": "Utilities",
             "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
+        },
+        "mimetype-database": {
+            "label": "Built-in copy of the MIME database",
+            "condition": "features.mimetype",
+            "output": [ "privateFeature" ]
         },
         "pcre2": {
             "label": "PCRE2",
@@ -1036,6 +1058,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 "glib",
                 "iconv",
                 "icu",
+                "mimetype-database",
                 {
                     "message": "Tracing backend",
                     "type": "firstAvailableFeature",

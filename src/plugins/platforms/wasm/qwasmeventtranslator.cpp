@@ -316,8 +316,8 @@ static void mouseWheelEvent(emscripten::val event) {
     }
 }
 
-EMSCRIPTEN_BINDINGS(mouse_module) {
-    function("mouseWheelEvent", &mouseWheelEvent);
+EMSCRIPTEN_BINDINGS(qtMouseModule) {
+    function("qtMouseWheelEvent", &mouseWheelEvent);
 }
 
 QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
@@ -358,7 +358,7 @@ void QWasmEventTranslator::initEventHandlers()
 
             emscripten::val::global(canvasId).call<void>("addEventListener",
                                                          std::string("wheel"),
-                                                         val::module_property("mouseWheelEvent"));
+                                                         val::module_property("qtMouseWheelEvent"));
         }
     }
 

@@ -538,6 +538,8 @@ void tst_QTimeZone::checkOffset_data()
         int year, month, day, hour, min, sec;
         int std, dst;
     } table[] = {
+        // Zone with no transitions (QTBUG-74614, when TZ backend uses minimalist data)
+        { "Etc/UTC", "epoch", 1970, 1, 1, 0, 0, 0, 0, 0 },
         // Kiev: regression test for QTBUG-64122 (on MS):
         { "Europe/Kiev", "summer", 2017, 10, 27, 12, 0, 0, 2 * 3600, 3600 },
         { "Europe/Kiev", "winter", 2017, 10, 29, 12, 0, 0, 2 * 3600, 0 }
@@ -550,6 +552,8 @@ void tst_QTimeZone::checkOffset_data()
                 << QDateTime(QDate(entry.year, entry.month, entry.day),
                              QTime(entry.hour, entry.min, entry.sec), zone)
                 << entry.dst + entry.std << entry.std << entry.dst;
+        } else {
+            qWarning("Skipping %s@%s test as zone is invalid", entry.zone, entry.nick);
         }
     }
 }

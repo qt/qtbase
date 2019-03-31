@@ -50,7 +50,18 @@ QT_BEGIN_NAMESPACE
 void qt_memfill32(quint32 *dest, quint32 value, qsizetype count)
 {
     const int epilogueSize = count % 16;
-#if !defined(Q_PROCESSOR_ARM_64)
+#if defined(Q_CC_GHS) || defined(Q_CC_MSVC)
+    // inline assembler free version:
+    if (count >= 16) {
+        quint32 *const neonEnd = dest + count - epilogueSize;
+        const uint32x4_t valueVector1 = vdupq_n_u32(value);
+        const uint32x4x4_t valueVector4 = { valueVector1, valueVector1, valueVector1, valueVector1 };
+        do {
+            vst4q_u32(dest, valueVector4);
+            dest += 16;
+        } while (dest != neonEnd);
+    }
+#elif !defined(Q_PROCESSOR_ARM_64)
     if (count >= 16) {
         quint32 *const neonEnd = dest + count - epilogueSize;
         register uint32x4_t valueVector1 asm ("q0") = vdupq_n_u32(value);

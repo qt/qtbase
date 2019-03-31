@@ -31,7 +31,7 @@
 #include <QProcess>
 #include <QDir>
 
-static QString targetName( BuildType buildMode, const QString& target, const QString& version )
+QString TestCompiler::targetName(BuildType buildMode, const QString& target, const QString& version)
 {
     Q_UNUSED(version);
     QString targetName = target;
@@ -257,7 +257,8 @@ bool TestCompiler::qmakeProject( const QString &workDir, const QString &proName 
     return runCommand(qmakeCmd_, QStringList() << "-project" << "-o" << projectFile << "DESTDIR=./");
 }
 
-bool TestCompiler::qmake( const QString &workDir, const QString &proName, const QString &buildDir )
+bool TestCompiler::qmake(const QString &workDir, const QString &proName, const QString &buildDir,
+                         const QStringList &additionalArguments)
 {
     QDir D;
     D.setCurrent( workDir );
@@ -274,7 +275,8 @@ bool TestCompiler::qmake( const QString &workDir, const QString &proName, const 
     makeFile += "Makefile";
 
     // Now start qmake and generate the makefile
-    return runCommand(qmakeCmd_, QStringList(qmakeArgs_) << projectFile << "-o" << makeFile);
+    return runCommand(qmakeCmd_, QStringList(qmakeArgs_) << projectFile << "-o" << makeFile
+                      << additionalArguments);
 }
 
 bool TestCompiler::make( const QString &workPath, const QString &target, bool expectFail )
