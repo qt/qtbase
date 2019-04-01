@@ -1325,7 +1325,7 @@ QRect QImage::rect() const
     The image depth is the number of bits used to store a single
     pixel, also called bits per pixel (bpp).
 
-    The supported depths are 1, 8, 16, 24 and 32.
+    The supported depths are 1, 8, 16, 24, 32 and 64.
 
     \sa bitPlaneCount(), convertToFormat(), {QImage#Image Formats}{Image Formats},
     {QImage#Image Information}{Image Information}
