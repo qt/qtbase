@@ -7,4 +7,5 @@ include(html-footer-online.qdocconf)
 #uncomment if navigation bar is not wanted
 #HTML.nonavigationbar      = "true"
 
-sourcedirs += includes-online
+sourcedirs += includes-online \
+              includes

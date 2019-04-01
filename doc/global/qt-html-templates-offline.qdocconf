@@ -16,6 +16,8 @@ HTML.extraimages += template/images/ico_out.png \
                     template/images/bullet_sq.png \
                     template/images/bgrContent.png
 
+sourcedirs += includes
+
 #specify which files in the output directory should be packed into the qch file.
 qhp.extraFiles +=   style/offline.css \
                     images/ico_out.png \
