@@ -34,6 +34,7 @@
 #include "qwasmopenglcontext.h"
 #include "qwasmtheme.h"
 #include "qwasmclipboard.h"
+#include "qwasmservices.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -91,7 +92,7 @@ QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
-      m_eventDispatcher(nullptr),
+      m_desktopServices(nullptr),
       m_clipboard(new QWasmClipboard)
 {
     s_instance = this;
@@ -119,6 +120,7 @@ QWasmIntegration::QWasmIntegration()
 QWasmIntegration::~QWasmIntegration()
 {
     delete m_fontDb;
+    delete m_desktopServices;
 
     for (auto it = m_screens.constBegin(); it != m_screens.constEnd(); ++it)
         QWindowSystemInterface::handleScreenRemoved(*it);
@@ -211,6 +213,13 @@ QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
     if (name == QLatin1String("webassembly"))
         return new QWasmTheme;
     return QPlatformIntegration::createPlatformTheme(name);
+}
+
+QPlatformServices *QWasmIntegration::services() const
+{
+    if (m_desktopServices == nullptr)
+        m_desktopServices = new QWasmServices();
+    return m_desktopServices;
 }
 
 QPlatformClipboard* QWasmIntegration::clipboard() const

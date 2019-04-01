@@ -50,6 +50,7 @@ class QWasmScreen;
 class QWasmCompositor;
 class QWasmBackingStore;
 class QWasmClipboard;
+class QWasmServices;
 
 class QWasmIntegration : public QObject, public QPlatformIntegration
 {
@@ -70,6 +71,7 @@ public:
     Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const override;
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
+    QPlatformServices *services() const override;
     QPlatformClipboard *clipboard() const override;
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
 
@@ -82,7 +84,7 @@ public:
 
 private:
     mutable QWasmFontDatabase *m_fontDb;
-    mutable QWasmEventDispatcher *m_eventDispatcher;
+    mutable QWasmServices *m_desktopServices;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
 
     QHash<QString, QWasmScreen *> m_screens;
