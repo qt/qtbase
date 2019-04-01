@@ -3411,18 +3411,20 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorTabClose: {
         // Make close button visible only on the hovered tab.
         QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget());
+        const QWidget *closeBtn = w;
         if (!tabBar) {
             // QStyleSheetStyle instead of CloseButton (which has
             // a QTabBar as a parent widget) uses the QTabBar itself:
             tabBar = qobject_cast<QTabBar *>(const_cast<QWidget*>(w));
+            closeBtn = decltype(closeBtn)(property("_q_styleSheetRealCloseButton").value<void *>());
         }
         if (tabBar) {
             const bool documentMode = tabBar->documentMode();
             const QTabBarPrivate *tabBarPrivate = static_cast<QTabBarPrivate *>(QObjectPrivate::get(tabBar));
             const int hoveredTabIndex = tabBarPrivate->hoveredTabIndex();
             if (!documentMode ||
-                (hoveredTabIndex != -1 && ((w == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
-                                           (w == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide))))) {
+                (hoveredTabIndex != -1 && ((closeBtn == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
+                                           (closeBtn == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide))))) {
                 const bool hover = (opt->state & State_MouseOver);
                 const bool selected = (opt->state & State_Selected);
                 const bool pressed = (opt->state & State_Sunken);
@@ -4323,7 +4325,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     d->setupNSGraphicsContext(cgCtx, YES);
 
                     [s.toNSString() drawInRect:textRect
-                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
+                                                  NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
 
                     d->restoreNSGraphicsContext(cgCtx);
                 } else {
