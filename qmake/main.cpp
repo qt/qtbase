@@ -260,31 +260,25 @@ static int installFile(const QString &source, const QString &target, bool exe = 
         return 3;
     }
 
+    QFileDevice::Permissions targetPermissions = QFileDevice::ReadOwner | QFileDevice::WriteOwner
+            | QFileDevice::ReadUser | QFileDevice::WriteUser
+            | QFileDevice::ReadGroup | QFileDevice::ReadOther;
     if (exe) {
-        if (!targetFile.setPermissions(sourceFile.permissions() | QFileDevice::ExeOwner | QFileDevice::ExeUser |
-                                       QFileDevice::ExeGroup | QFileDevice::ExeOther)) {
-            fprintf(stderr, "Error setting execute permissions on %s: %s\n",
-                    qPrintable(target), qPrintable(targetFile.errorString()));
-            return 3;
-        }
+        targetPermissions |= QFileDevice::ExeOwner | QFileDevice::ExeUser |
+                QFileDevice::ExeGroup | QFileDevice::ExeOther;
+    }
+    if (!targetFile.setPermissions(targetPermissions)) {
+        fprintf(stderr, "Error setting permissions on %s: %s\n",
+                qPrintable(target), qPrintable(targetFile.errorString()));
+        return 3;
     }
 
     // Copy file times
     QString error;
-#ifdef Q_OS_WIN
-    const QFile::Permissions permissions = targetFile.permissions();
-    const bool readOnly = !(permissions & QFile::WriteUser);
-    if (readOnly)
-        targetFile.setPermissions(permissions | QFile::WriteUser);
-#endif
     if (!IoUtils::touchFile(target, sourceFile.fileName(), &error)) {
         fprintf(stderr, "%s", qPrintable(error));
         return 3;
     }
-#ifdef Q_OS_WIN
-    if (readOnly)
-        targetFile.setPermissions(permissions);
-#endif
     return 0;
 }
 

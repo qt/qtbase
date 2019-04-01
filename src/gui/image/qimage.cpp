@@ -1091,13 +1091,29 @@ void QImage::detach()
 }
 
 
-static void copyMetadata(QImageData *dst, const QImageData *src)
+static void copyPhysicalMetadata(QImageData *dst, const QImageData *src)
 {
-    // Doesn't copy colortable and alpha_clut, or offset.
     dst->dpmx = src->dpmx;
     dst->dpmy = src->dpmy;
     dst->devicePixelRatio = src->devicePixelRatio;
+}
+
+static void copyMetadata(QImageData *dst, const QImageData *src)
+{
+    // Doesn't copy colortable and alpha_clut, or offset.
+    copyPhysicalMetadata(dst, src);
     dst->text = src->text;
+}
+
+static void copyMetadata(QImage *dst, const QImage &src)
+{
+    dst->setDotsPerMeterX(src.dotsPerMeterX());
+    dst->setDotsPerMeterY(src.dotsPerMeterY());
+    dst->setDevicePixelRatio(src.devicePixelRatio());
+    const auto textKeys = src.textKeys();
+    for (const auto &key: textKeys)
+        dst->setText(key, src.text(key));
+
 }
 
 /*!
@@ -2951,8 +2967,10 @@ QImage QImage::createAlphaMask(Qt::ImageConversionFlags flags) const
     }
 
     QImage mask(d->width, d->height, Format_MonoLSB);
-    if (!mask.isNull())
+    if (!mask.isNull()) {
         dither_to_Mono(mask.d, d, flags, true);
+        copyPhysicalMetadata(mask.d, d);
+    }
     return mask;
 }
 
@@ -3070,6 +3088,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
 
 #undef PIX
 
+    copyPhysicalMetadata(m.d, d);
     return m;
 }
 #endif //QT_NO_IMAGE_HEURISTIC_MASK
@@ -3113,6 +3132,8 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
     }
     if  (mode == Qt::MaskOutColor)
         maskImage.invertPixels();
+
+    copyPhysicalMetadata(maskImage.d, d);
     return maskImage;
 }
 
@@ -4684,8 +4705,7 @@ QImage QImage::smoothScaled(int w, int h) const {
 static QImage rotated90(const QImage &image)
 {
     QImage out(image.height(), image.width(), image.format());
-    out.setDotsPerMeterX(image.dotsPerMeterY());
-    out.setDotsPerMeterY(image.dotsPerMeterX());
+    copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4713,8 +4733,7 @@ static QImage rotated180(const QImage &image)
         return image.mirrored(true, true);
 
     QImage out(image.width(), image.height(), image.format());
-    out.setDotsPerMeterX(image.dotsPerMeterY());
-    out.setDotsPerMeterY(image.dotsPerMeterX());
+    copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4726,8 +4745,7 @@ static QImage rotated180(const QImage &image)
 static QImage rotated270(const QImage &image)
 {
     QImage out(image.height(), image.width(), image.format());
-    out.setDotsPerMeterX(image.dotsPerMeterY());
-    out.setDotsPerMeterY(image.dotsPerMeterX());
+    copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();

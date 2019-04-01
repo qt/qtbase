@@ -121,6 +121,7 @@ private slots:
 
     void copy();
     void deepCopyPreservesDpr();
+    void dprPassthrough();
     void depthOfNullObjects();
 
     void transformed();
@@ -1167,6 +1168,39 @@ void tst_QPixmap::deepCopyPreservesDpr()
     QPainter painter(&src);
     const QPixmap dest = src.copy();
     QCOMPARE(dest.devicePixelRatio(), dpr);
+}
+
+void tst_QPixmap::dprPassthrough()
+{
+    const qreal dpr = 2;
+    QPixmap src(32, 32);
+    src.setDevicePixelRatio(dpr);
+    src.fill(Qt::transparent);
+    QCOMPARE(src.devicePixelRatio(), dpr);
+
+    QImage img = src.toImage();
+    QCOMPARE(img.devicePixelRatio(), dpr);
+
+    QPixmap pm(1, 1);
+    pm.convertFromImage(img);
+    QCOMPARE(pm.devicePixelRatio(), dpr);
+
+    QBitmap heuristicMask = src.createHeuristicMask();
+    QCOMPARE(heuristicMask.devicePixelRatio(), dpr);
+
+    QBitmap maskFromColor = src.createMaskFromColor(Qt::white);
+    QCOMPARE(maskFromColor.devicePixelRatio(), dpr);
+
+    QBitmap mask = src.mask();
+    QCOMPARE(mask.devicePixelRatio(), dpr);
+
+    QPixmap scaled = src.scaled(16, 16);
+    QCOMPARE(scaled.devicePixelRatio(), dpr);
+
+    QTransform t;
+    t.rotate(90);
+    QPixmap transformed = src.transformed(t);
+    QCOMPARE(transformed.devicePixelRatio(), dpr);
 }
 
 void tst_QPixmap::depthOfNullObjects()
