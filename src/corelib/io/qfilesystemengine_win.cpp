@@ -555,7 +555,7 @@ typedef struct _FILE_ID_INFO {
 
 #endif // if defined (Q_CC_MINGW) && WINVER < 0x0602
 
-// File ID for Windows up to version 7.
+// File ID for Windows up to version 7 and FAT32 drives
 static inline QByteArray fileId(HANDLE handle)
 {
 #ifndef Q_OS_WINRT
@@ -588,6 +588,8 @@ QByteArray fileIdWin8(HANDLE handle)
         result += ':';
         // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
         result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId), int(sizeof(infoEx.FileId))).toHex();
+    } else {
+        result = fileId(handle); // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
     }
     return result;
 #else // !QT_BOOTSTRAPPED && !QT_BUILD_QMAKE
