@@ -549,22 +549,22 @@ void resizeWindow(QWindow *window, QWasmWindow::ResizeMode mode,
 void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
 {
     auto timestamp = mouseEvent->timestamp;
-    QPoint point(mouseEvent->targetX, mouseEvent->targetY);
+    QPoint targetPoint(mouseEvent->targetX, mouseEvent->targetY);
+    QPoint globalPoint = screen()->geometry().topLeft() + targetPoint;
 
     QEvent::Type buttonEventType = QEvent::None;
-
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
-    QWindow *window2 = screen()->compositor()->windowAt(point, 5);
-    if (window2 != nullptr)
-        lastWindow = window2;
+    QWindow *window2 = screen()->compositor()->windowAt(globalPoint, 5);
+    if (window2 == nullptr)
+        return;
+    lastWindow = window2;
+
+    QPoint localPoint = window2->mapFromGlobal(globalPoint);
+    bool interior = window2->geometry().contains(globalPoint);
 
     QWasmWindow *htmlWindow = static_cast<QWasmWindow*>(window2->handle());
-
-    bool interior = window2 && window2->geometry().contains(point);
-
-    QPoint localPoint(point.x() - window2->geometry().x(), point.y() - window2->geometry().y());
     switch (eventType) {
     case EMSCRIPTEN_EVENT_MOUSEDOWN:
     {
@@ -580,18 +580,18 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
             pressedWindow = window2;
             buttonEventType = QEvent::MouseButtonPress;
             if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
-                if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(point))
+                if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(globalPoint))
                     draggedWindow = window2;
-                else if (htmlWindow && htmlWindow->isPointOnResizeRegion(point)) {
+                else if (htmlWindow && htmlWindow->isPointOnResizeRegion(globalPoint)) {
                     draggedWindow = window2;
-                    resizeMode = htmlWindow->resizeModeAtPoint(point);
-                    resizePoint = point;
+                    resizeMode = htmlWindow->resizeModeAtPoint(globalPoint);
+                    resizePoint = globalPoint;
                     resizeStartRect = window2->geometry();
                 }
             }
         }
 
-        htmlWindow->injectMousePressed(localPoint, point, button, modifiers);
+        htmlWindow->injectMousePressed(localPoint, globalPoint, button, modifiers);
         break;
     }
     case EMSCRIPTEN_EVENT_MOUSEUP:
@@ -611,7 +611,7 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
         }
 
         if (oldWindow)
-            oldWindow->injectMouseReleased(localPoint, point, button, modifiers);
+            oldWindow->injectMouseReleased(localPoint, globalPoint, button, modifiers);
         break;
     }
     case EMSCRIPTEN_EVENT_MOUSEMOVE: // drag event
@@ -640,7 +640,7 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     }
     if (window2 && interior) {
         QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
-            window2, timestamp, localPoint, point, pressedButtons, button, buttonEventType, modifiers);
+            window2, timestamp, localPoint, globalPoint, pressedButtons, button, buttonEventType, modifiers);
     }
 }
 
@@ -675,11 +675,13 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
     QWasmEventTranslator *translator = (QWasmEventTranslator*)userData;
     Qt::KeyboardModifiers modifiers = translator->translateMouseEventModifier(&mouseEvent);
     auto timestamp = mouseEvent.timestamp;
-    QPoint globalPoint(mouseEvent.canvasX, mouseEvent.canvasY);
+    QPoint targetPoint(mouseEvent.targetX, mouseEvent.targetY);
+    QPoint globalPoint = eventTranslator->screen()->geometry().topLeft() + targetPoint;
 
     QWindow *window2 = eventTranslator->screen()->compositor()->windowAt(globalPoint, 5);
-
-    QPoint localPoint(globalPoint.x() - window2->geometry().x(), globalPoint.y() - window2->geometry().y());
+    if (!window2)
+        return 0;
+    QPoint localPoint = window2->mapFromGlobal(globalPoint);
 
     QPoint pixelDelta;
 
@@ -709,24 +711,28 @@ int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent 
 
         const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
 
-        QPoint point(touches->targetX, touches->targetY);
-        window2 = this->screen()->compositor()->windowAt(point, 5);
+        QPoint targetPoint(touches->targetX, touches->targetY);
+        QPoint globalPoint = screen()->geometry().topLeft() + targetPoint;
+
+        window2 = this->screen()->compositor()->windowAt(globalPoint, 5);
+        if (window2 == nullptr)
+            continue;
+
         QWindowSystemInterface::TouchPoint touchPoint;
 
         touchPoint.area = QRect(0, 0, 8, 8);
         touchPoint.id = touches->identifier;
         touchPoint.pressure = 1.0;
 
-        const QPointF screenPos(point);
-
-        touchPoint.area.moveCenter(screenPos);
+        touchPoint.area.moveCenter(globalPoint);
 
         const auto tp = pressedTouchIds.constFind(touchPoint.id);
         if (tp != pressedTouchIds.constEnd())
             touchPoint.normalPosition = tp.value();
 
-        QPointF normalPosition(screenPos.x() / window2->width(),
-                               screenPos.y() / window2->height());
+        QPointF localPoint = QPointF(window2->mapFromGlobal(globalPoint));
+        QPointF normalPosition(localPoint.x() / window2->width(),
+                               localPoint.y() / window2->height());
 
         const bool stationaryTouchPoint = (normalPosition == touchPoint.normalPosition);
         touchPoint.normalPosition = normalPosition;

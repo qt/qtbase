@@ -116,7 +116,7 @@ public:
     void redrawWindowContent();
     void requestRedraw();
 
-    QWindow *windowAt(QPoint p, int padding = 0) const;
+    QWindow *windowAt(QPoint globalPoint, int padding = 0) const;
     QWindow *keyWindow() const;
 
     bool event(QEvent *event);
