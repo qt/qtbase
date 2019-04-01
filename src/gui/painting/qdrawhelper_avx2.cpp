@@ -396,6 +396,7 @@ void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixe
         BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(dst, src, length, const_alpha);
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
@@ -453,6 +454,7 @@ void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *dst, const QRgba64 *sr
             blend_pixel(dst[x], src[x], const_alpha);
     }
 }
+#endif
 
 void QT_FASTCALL comp_func_Source_avx2(uint *dst, const uint *src, int length, uint const_alpha)
 {
@@ -485,6 +487,7 @@ void QT_FASTCALL comp_func_Source_avx2(uint *dst, const uint *src, int length, u
     }
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
@@ -517,6 +520,7 @@ void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, i
             dst[x] = interpolate65535(src[x], ca, dst[x], cia);
     }
 }
+#endif
 
 void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha)
 {
@@ -549,6 +553,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, u
     }
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int length, QRgba64 color, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
@@ -579,6 +584,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int 
             destPixels[x] = color + multiplyAlpha65535(destPixels[x], minusAlphaOfColor);
     }
 }
+#endif
 
 #define interpolate_4_pixels_16_avx2(tlr1, tlr2, blr1, blr2, distx, disty, colorMask, v_256, b)  \
 { \

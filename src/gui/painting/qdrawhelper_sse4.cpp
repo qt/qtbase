@@ -399,6 +399,7 @@ void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4(uchar *dest, const uint *src, i
         d[i] = qConvertArgb32ToA2rgb30_sse4<PixelOrder>(src[i]);
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL destStore64ARGB32_sse4(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length)
 {
     uint *dest = (uint*)rasterBuffer->scanLine(y) + x;
@@ -410,6 +411,7 @@ void QT_FASTCALL destStore64RGBA8888_sse4(QRasterBuffer *rasterBuffer, int x, in
     uint *dest = (uint*)rasterBuffer->scanLine(y) + x;
     convertARGBFromRGBA64PM_sse4<true>(dest, buffer, length);
 }
+#endif
 
 void QT_FASTCALL storeARGB32FromRGBA64PM_sse4(uchar *dest, const QRgba64 *src, int index, int count,
                                               const QVector<QRgb> *, QDitherInfo *)

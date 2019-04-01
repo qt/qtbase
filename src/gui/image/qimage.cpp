@@ -4690,12 +4690,14 @@ QImage QImage::smoothScaled(int w, int h) const {
     case QImage::Format_RGBX8888:
 #endif
     case QImage::Format_RGBA8888_Premultiplied:
+#if QT_CONFIG(raster_64bit)
     case QImage::Format_RGBX64:
     case QImage::Format_RGBA64_Premultiplied:
         break;
     case QImage::Format_RGBA64:
         src = src.convertToFormat(QImage::Format_RGBA64_Premultiplied);
         break;
+#endif
     default:
         if (src.hasAlphaChannel())
             src = src.convertToFormat(QImage::Format_ARGB32_Premultiplied);

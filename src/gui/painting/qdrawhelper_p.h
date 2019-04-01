@@ -296,7 +296,9 @@ struct QGradientData
 #define GRADIENT_STOPTABLE_SIZE 1024
 #define GRADIENT_STOPTABLE_SIZE_SHIFT 10
 
+#if QT_CONFIG(raster_64bit)
     const QRgba64 *colorTable64; //[GRADIENT_STOPTABLE_SIZE];
+#endif
     const QRgb *colorTable32; //[GRADIENT_STOPTABLE_SIZE];
 
     uint alphaColor : 1;
@@ -402,11 +404,13 @@ static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
     return data->colorTable32[qt_gradient_clamp(data, ipos)];
 }
 
+#if QT_CONFIG(raster_64bit)
 static inline const QRgba64& qt_gradient_pixel64(const QGradientData *data, qreal pos)
 {
     int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
     return data->colorTable64[qt_gradient_clamp(data, ipos)];
 }
+#endif
 
 static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
 {

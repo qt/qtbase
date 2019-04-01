@@ -1852,7 +1852,9 @@ void tst_QImage::smoothScale4_data()
     QTest::addColumn<QImage::Format>("format");
 
     QTest::newRow("RGB32") << QImage::Format_RGB32;
+#if QT_CONFIG(raster_64bit)
     QTest::newRow("RGBx64") << QImage::Format_RGBX64;
+#endif
 }
 
 void tst_QImage::smoothScale4()
@@ -3412,6 +3414,7 @@ void tst_QImage::ditherGradient_data()
     QTest::newRow("argb32pm -> argb6666pm (no dither)") << rgb32 << QImage::Format_ARGB6666_Premultiplied << 0 << 64;
     QTest::newRow("argb32pm -> argb6666pm (dithering)") << rgb32 << QImage::Format_ARGB6666_Premultiplied << int(Qt::PreferDither | Qt::OrderedDither) << 129;
 
+#if QT_CONFIG(raster_64bit)
     QImage rgb30(1024, 16, QImage::Format_RGB30);
     QLinearGradient gradient30(QRectF(rgb30.rect()).topLeft(), QRectF(rgb30.rect()).topRight());
     gradient30.setColorAt(0.0, QColor(0, 0, 0));
@@ -3424,6 +3427,7 @@ void tst_QImage::ditherGradient_data()
     QTest::newRow("rgb30 -> rgb32 (dithering)") << rgb30 << QImage::Format_RGB32 << int(Qt::PreferDither | Qt::OrderedDither) << 513;
     QTest::newRow("rgb30 -> rgb888 (no dither)") << rgb30 << QImage::Format_RGB888 << 0 << 256;
     QTest::newRow("rgb30 -> rgb888 (dithering)") << rgb30 << QImage::Format_RGB888 << int(Qt::PreferDither | Qt::OrderedDither) << 513;
+#endif
 }
 
 void tst_QImage::ditherGradient()

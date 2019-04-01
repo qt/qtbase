@@ -1775,6 +1775,12 @@
             "purpose": "Supports displaying \"What's this\" help.",
             "section": "Widget Support",
             "output": [ "publicFeature", "feature" ]
+        },
+        "raster-64bit": {
+            "label": "QPainter - 64 bit raster",
+            "purpose": "Internal painting support for 64 bit (16 bpc) rasterization.",
+            "section": "Painting",
+            "output": [ "privateFeature" ]
         }
     },
 

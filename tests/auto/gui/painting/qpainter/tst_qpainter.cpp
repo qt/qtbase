@@ -185,10 +185,12 @@ private slots:
     void gradientPixelFormat_data();
     void gradientPixelFormat();
 
+#if QT_CONFIG(raster_64bit)
     void linearGradientRgb30_data();
     void linearGradientRgb30();
     void radialGradientRgb30_data();
     void radialGradientRgb30();
+#endif
 
     void fpe_pixmapTransform();
     void fpe_zeroLengthLines();
@@ -3946,6 +3948,7 @@ void tst_QPainter::gradientInterpolation()
     }
 }
 
+#if QT_CONFIG(raster_64bit)
 void tst_QPainter::linearGradientRgb30_data()
 {
     QTest::addColumn<QColor>("stop0");
@@ -4004,6 +4007,7 @@ void tst_QPainter::radialGradientRgb30()
         QVERIFY(qGray(p1.rgb()) >= qGray(p2.rgb()));
     }
 }
+#endif
 
 void tst_QPainter::drawPolygon()
 {
@@ -4884,14 +4888,18 @@ void tst_QPainter::blendARGBonRGB_data()
                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB_PM over RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
                                         << QPainter::CompositionMode_SourceOver << qRgba(85, 0, 0, 85) << 85;
+#if QT_CONFIG(raster_64bit)
     QTest::newRow("ARGB source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
                                        << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
                                        << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 120) << 85;
+#endif
     QTest::newRow("ARGB_PM source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
                                           << QPainter::CompositionMode_Source << qRgba(85, 0, 0, 85) << 85;
+#if QT_CONFIG(raster_64bit)
     QTest::newRow("ARGB_PM source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
                                           << QPainter::CompositionMode_Source << qRgba(180, 0, 0, 180) << 170;
+#endif
     QTest::newRow("ARGB source-in RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
                                           << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB_PM source-in RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
