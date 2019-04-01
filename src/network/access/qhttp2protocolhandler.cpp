@@ -198,7 +198,7 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
         }
     }
 
-    if (!channel->ssl) {
+    if (!channel->ssl && m_connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // We upgraded from HTTP/1.1 to HTTP/2. channel->request was already sent
         // as HTTP/1.1 request. The response with status code 101 triggered
         // protocol switch and now we are waiting for the real response, sent

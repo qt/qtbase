@@ -73,11 +73,14 @@ public:
     void addMessage(QtMsgType, const QMessageLogContext &,
             const QString &) override;
     void addMessage(MessageTypes type, const QString &message,
-                            const char *file = 0, int line = 0) override
-    { Q_UNUSED(type); Q_UNUSED(message); Q_UNUSED(file); Q_UNUSED(line); Q_UNREACHABLE(); }
+                            const char *file = 0, int line = 0) override;
 
     void addBenchmarkResult(const QBenchmarkResult &result) override
     { Q_UNUSED(result); }
+
+private:
+    QString subsystem() const;
+    QString testIdentifier() const;
 };
 #endif
 

@@ -58,6 +58,7 @@ private slots:
     void simple_app();
     void simple_app_shadowbuild();
     void simple_app_shadowbuild2();
+    void simple_app_versioned();
     void simple_lib();
     void simple_dll();
     void subdirs();
@@ -173,10 +174,15 @@ void tst_qmake::simple_app()
 {
     QString workDir = base_path + "/testdata/simple_app";
     QString destDir = workDir + "/dest dir";
+    QString installDir = workDir + "/dist";
 
-    QVERIFY( test_compiler.qmake( workDir, "simple_app" ));
+    QVERIFY( test_compiler.qmake( workDir, "simple_app", QString() ));
     QVERIFY( test_compiler.make( workDir ));
     QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" ));
+
+    QVERIFY(test_compiler.make(workDir, "install"));
+    QVERIFY(test_compiler.exists(installDir, "simple app", Exe, "1.0.0"));
+
     QVERIFY( test_compiler.makeClean( workDir ));
     QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( workDir ));
@@ -214,6 +220,40 @@ void tst_qmake::simple_app_shadowbuild2()
     QVERIFY( test_compiler.makeDistClean( buildDir ));
     QVERIFY( !test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( buildDir ) );
+}
+
+void tst_qmake::simple_app_versioned()
+{
+    QString workDir = base_path + "/testdata/simple_app";
+    QString buildDir = base_path + "/testdata/simple_app_versioned_build";
+    QString destDir = buildDir + "/dest dir";
+    QString installDir = buildDir + "/dist";
+
+    QString version = "4.5.6";
+    QVERIFY(test_compiler.qmake(workDir, "simple_app", buildDir, QStringList{ "VERSION=" + version }));
+    QString qmakeOutput = test_compiler.commandOutput();
+    QVERIFY(test_compiler.make(buildDir));
+    QVERIFY(test_compiler.exists(destDir, "simple app", Exe, version));
+
+    QString pdbFilePath;
+    bool checkPdb = qmakeOutput.contains("Project MESSAGE: check for pdb, please");
+    if (checkPdb) {
+        QString targetBase = QFileInfo(TestCompiler::targetName(Exe, "simple app", version))
+                .completeBaseName();
+        pdbFilePath = destDir + '/' + targetBase + ".pdb";
+        QVERIFY2(QFile::exists(pdbFilePath), qPrintable(pdbFilePath));
+        QVERIFY(test_compiler.make(buildDir, "install"));
+        QString installedPdbFilePath = installDir + '/' + targetBase + ".pdb";
+        QVERIFY2(QFile::exists(installedPdbFilePath), qPrintable(installedPdbFilePath));
+    }
+
+    QVERIFY(test_compiler.makeClean(buildDir));
+    QVERIFY(test_compiler.exists(destDir, "simple app", Exe, version));
+    QVERIFY(test_compiler.makeDistClean(buildDir));
+    QVERIFY(!test_compiler.exists(destDir, "simple app", Exe, version));
+    if (checkPdb)
+        QVERIFY(!QFile::exists(pdbFilePath));
+    QVERIFY(test_compiler.removeMakefile(buildDir));
 }
 
 void tst_qmake::simple_dll()
