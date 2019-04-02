@@ -56,8 +56,8 @@ public:
         Key();
         Key(const Key &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-        Key(Key &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
-        Key &operator =(Key &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+        Key(Key &&other) noexcept : d(other.d) { other.d = nullptr; }
+        Key &operator =(Key &&other) noexcept { swap(other); return *this; }
 #endif
         ~Key();
         bool operator ==(const Key &key) const;
@@ -65,8 +65,8 @@ public:
         { return !operator==(key); }
         Key &operator =(const Key &other);
 
-        void swap(Key &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
-        bool isValid() const Q_DECL_NOTHROW;
+        void swap(Key &other) noexcept { qSwap(d, other.d); }
+        bool isValid() const noexcept;
 
     private:
         KeyData *d;

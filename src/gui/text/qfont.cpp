@@ -2083,7 +2083,7 @@ QString QFont::toString() const
     \relates QFont
     \since 5.3
 */
-uint qHash(const QFont &font, uint seed) Q_DECL_NOTHROW
+uint qHash(const QFont &font, uint seed) noexcept
 {
     return qHash(QFontPrivate::get(font)->request, seed);
 }

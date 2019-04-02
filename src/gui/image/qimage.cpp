@@ -741,7 +741,7 @@ bool QImageData::checkForAlphaPixels() const
     \sa isNull()
 */
 
-QImage::QImage() Q_DECL_NOEXCEPT
+QImage::QImage() noexcept
     : QPaintDevice()
 {
     d = 0;
@@ -5552,7 +5552,7 @@ Q_STATIC_ASSERT(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFo
 /*!
     Returns the QImage::Format as a QPixelFormat
 */
-QPixelFormat QImage::pixelFormat() const Q_DECL_NOTHROW
+QPixelFormat QImage::pixelFormat() const noexcept
 {
     return toPixelFormat(format());
 }
@@ -5560,7 +5560,7 @@ QPixelFormat QImage::pixelFormat() const Q_DECL_NOTHROW
 /*!
     Converts \a format into a QPixelFormat
 */
-QPixelFormat QImage::toPixelFormat(QImage::Format format) Q_DECL_NOTHROW
+QPixelFormat QImage::toPixelFormat(QImage::Format format) noexcept
 {
     Q_ASSERT(static_cast<int>(format) < NImageFormats);
     return pixelformats[format];
@@ -5569,7 +5569,7 @@ QPixelFormat QImage::toPixelFormat(QImage::Format format) Q_DECL_NOTHROW
 /*!
     Converts \a format into a QImage::Format
 */
-QImage::Format QImage::toImageFormat(QPixelFormat format) Q_DECL_NOTHROW
+QImage::Format QImage::toImageFormat(QPixelFormat format) noexcept
 {
     for (int i = 0; i < NImageFormats; i++) {
         if (format == pixelformats[i])

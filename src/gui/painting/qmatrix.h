@@ -64,12 +64,12 @@ public:
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // ### Qt 6: remove; the compiler-generated ones are fine!
-    QMatrix &operator=(QMatrix &&other) Q_DECL_NOTHROW // = default
+    QMatrix &operator=(QMatrix &&other) noexcept // = default
     { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QMatrix)); return *this; }
-    QMatrix &operator=(const QMatrix &) Q_DECL_NOTHROW; // = default
-    QMatrix(QMatrix &&other) Q_DECL_NOTHROW // = default
+    QMatrix &operator=(const QMatrix &) noexcept; // = default
+    QMatrix(QMatrix &&other) noexcept // = default
     { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QMatrix)); }
-    QMatrix(const QMatrix &other) Q_DECL_NOTHROW; // = default
+    QMatrix(const QMatrix &other) noexcept; // = default
 #endif
 
     void setMatrix(qreal m11, qreal m12, qreal m21, qreal m22,
@@ -140,7 +140,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(QMatrix, Q_MOVABLE_TYPE);
 
-Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QMatrix &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QMatrix &key, uint seed = 0) noexcept;
 
 // mathematical semantics
 inline QPoint operator*(const QPoint &p, const QMatrix &m)

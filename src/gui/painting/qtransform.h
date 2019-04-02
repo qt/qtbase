@@ -77,13 +77,13 @@ public:
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // ### Qt 6: remove; the compiler-generated ones are fine!
-    QTransform &operator=(QTransform &&other) Q_DECL_NOTHROW // = default
+    QTransform &operator=(QTransform &&other) noexcept // = default
     { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); return *this; }
-    QTransform &operator=(const QTransform &) Q_DECL_NOTHROW; // = default
-    QTransform(QTransform &&other) Q_DECL_NOTHROW // = default
+    QTransform &operator=(const QTransform &) noexcept; // = default
+    QTransform(QTransform &&other) noexcept // = default
         : affine(Qt::Uninitialized)
     { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); }
-    QTransform(const QTransform &other) Q_DECL_NOTHROW // = default
+    QTransform(const QTransform &other) noexcept // = default
         : affine(Qt::Uninitialized)
     { memcpy(static_cast<void *>(this), static_cast<const void *>(&other), sizeof(QTransform)); }
 #endif
@@ -202,7 +202,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
 
-Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QTransform &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QTransform &key, uint seed = 0) noexcept;
 
 /******* inlines *****/
 inline QTransform::TransformationType QTransform::inline_type() const

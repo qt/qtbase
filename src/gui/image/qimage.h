@@ -137,7 +137,7 @@ public:
     };
     Q_ENUM(Format)
 
-    QImage() Q_DECL_NOEXCEPT;
+    QImage() noexcept;
     QImage(const QSize &size, Format format);
     QImage(int width, int height, Format format);
     QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
@@ -152,7 +152,7 @@ public:
 
     QImage(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QImage(QImage &&other) Q_DECL_NOEXCEPT
+    inline QImage(QImage &&other) noexcept
         : QPaintDevice(), d(nullptr)
     { qSwap(d, other.d); }
 #endif
@@ -160,10 +160,10 @@ public:
 
     QImage &operator=(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QImage &operator=(QImage &&other) Q_DECL_NOEXCEPT
+    inline QImage &operator=(QImage &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QImage &other) Q_DECL_NOEXCEPT
+    inline void swap(QImage &other) noexcept
     { qSwap(d, other.d); }
 
     bool isNull() const;
@@ -341,9 +341,9 @@ public:
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
 
-    QPixelFormat pixelFormat() const Q_DECL_NOTHROW;
-    static QPixelFormat toPixelFormat(QImage::Format format) Q_DECL_NOTHROW;
-    static QImage::Format toImageFormat(QPixelFormat format) Q_DECL_NOTHROW;
+    QPixelFormat pixelFormat() const noexcept;
+    static QPixelFormat toPixelFormat(QImage::Format format) noexcept;
+    static QImage::Format toImageFormat(QPixelFormat format) noexcept;
 
     // Platform specific conversion functions
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

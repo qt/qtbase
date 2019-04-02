@@ -66,15 +66,15 @@ public:
         Output
     };
 
-    Q_GUI_EXPORT QShaderNodePort() Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QShaderNodePort() noexcept;
 
     QShaderNodePort::Direction direction;
     QString name;
 };
 
-Q_GUI_EXPORT bool operator==(const QShaderNodePort &lhs, const QShaderNodePort &rhs) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator==(const QShaderNodePort &lhs, const QShaderNodePort &rhs) noexcept;
 
-inline bool operator!=(const QShaderNodePort &lhs, const QShaderNodePort &rhs) Q_DECL_NOTHROW
+inline bool operator!=(const QShaderNodePort &lhs, const QShaderNodePort &rhs) noexcept
 {
     return !(lhs == rhs);
 }

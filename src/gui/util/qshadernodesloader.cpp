@@ -48,28 +48,28 @@
 
 QT_BEGIN_NAMESPACE
 
-QShaderNodesLoader::QShaderNodesLoader() Q_DECL_NOTHROW
+QShaderNodesLoader::QShaderNodesLoader() noexcept
     : m_status(Null),
       m_device(nullptr)
 {
 }
 
-QShaderNodesLoader::Status QShaderNodesLoader::status() const Q_DECL_NOTHROW
+QShaderNodesLoader::Status QShaderNodesLoader::status() const noexcept
 {
     return m_status;
 }
 
-QHash<QString, QShaderNode> QShaderNodesLoader::nodes() const Q_DECL_NOTHROW
+QHash<QString, QShaderNode> QShaderNodesLoader::nodes() const noexcept
 {
     return m_nodes;
 }
 
-QIODevice *QShaderNodesLoader::device() const Q_DECL_NOTHROW
+QIODevice *QShaderNodesLoader::device() const noexcept
 {
     return m_device;
 }
 
-void QShaderNodesLoader::setDevice(QIODevice *device) Q_DECL_NOTHROW
+void QShaderNodesLoader::setDevice(QIODevice *device) noexcept
 {
     m_device = device;
     m_nodes.clear();

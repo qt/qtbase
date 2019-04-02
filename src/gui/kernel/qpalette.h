@@ -68,17 +68,17 @@ public:
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QPalette(QPalette &&other) Q_DECL_NOTHROW
+    QPalette(QPalette &&other) noexcept
         : d(other.d), data(other.data)
     { other.d = nullptr; }
-    inline QPalette &operator=(QPalette &&other) Q_DECL_NOEXCEPT
+    inline QPalette &operator=(QPalette &&other) noexcept
     {
         for_faster_swapping_dont_use = other.for_faster_swapping_dont_use;
         qSwap(d, other.d); return *this;
     }
 #endif
 
-    void swap(QPalette &other) Q_DECL_NOEXCEPT
+    void swap(QPalette &other) noexcept
     {
         qSwap(d, other.d);
         qSwap(for_faster_swapping_dont_use, other.for_faster_swapping_dont_use);

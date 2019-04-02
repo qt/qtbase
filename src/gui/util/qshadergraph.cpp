@@ -118,12 +118,12 @@ namespace
     }
 }
 
-QUuid QShaderGraph::Statement::uuid() const Q_DECL_NOTHROW
+QUuid QShaderGraph::Statement::uuid() const noexcept
 {
     return node.uuid();
 }
 
-int QShaderGraph::Statement::portIndex(QShaderNodePort::Direction direction, const QString &portName) const Q_DECL_NOTHROW
+int QShaderGraph::Statement::portIndex(QShaderNodePort::Direction direction, const QString &portName) const noexcept
 {
     const auto ports = node.ports();
     int index = 0;
@@ -150,7 +150,7 @@ void QShaderGraph::removeNode(const QShaderNode &node)
         m_nodes.erase(it);
 }
 
-QVector<QShaderNode> QShaderGraph::nodes() const Q_DECL_NOTHROW
+QVector<QShaderNode> QShaderGraph::nodes() const noexcept
 {
     return m_nodes;
 }
@@ -167,7 +167,7 @@ void QShaderGraph::removeEdge(const QShaderGraph::Edge &edge)
     m_edges.removeAll(edge);
 }
 
-QVector<QShaderGraph::Edge> QShaderGraph::edges() const Q_DECL_NOTHROW
+QVector<QShaderGraph::Edge> QShaderGraph::edges() const noexcept
 {
     return m_edges;
 }
@@ -244,7 +244,7 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
     return result;
 }
 
-bool operator==(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) noexcept
 {
     return lhs.sourceNodeUuid == rhs.sourceNodeUuid
         && lhs.sourcePortName == rhs.sourcePortName
@@ -252,7 +252,7 @@ bool operator==(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) Q_
         && lhs.targetPortName == rhs.targetPortName;
 }
 
-bool operator==(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) noexcept
 {
     return lhs.inputs == rhs.inputs
         && lhs.outputs == rhs.outputs

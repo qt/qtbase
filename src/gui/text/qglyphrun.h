@@ -67,12 +67,12 @@ public:
     QGlyphRun();
     QGlyphRun(const QGlyphRun &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QGlyphRun &operator=(QGlyphRun &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QGlyphRun &operator=(QGlyphRun &&other) noexcept { swap(other); return *this; }
 #endif
     QGlyphRun &operator=(const QGlyphRun &other);
     ~QGlyphRun();
 
-    void swap(QGlyphRun &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QGlyphRun &other) noexcept { qSwap(d, other.d); }
 
     QRawFont rawFont() const;
     void setRawFont(const QRawFont &rawFont);

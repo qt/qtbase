@@ -58,11 +58,11 @@ public:
     enum Mode { Normal, Disabled, Active, Selected };
     enum State { On, Off };
 
-    QIcon() Q_DECL_NOEXCEPT;
+    QIcon() noexcept;
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QIcon(QIcon &&other) Q_DECL_NOEXCEPT
+    QIcon(QIcon &&other) noexcept
         : d(other.d)
     { other.d = nullptr; }
 #endif
@@ -71,10 +71,10 @@ public:
     ~QIcon();
     QIcon &operator=(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QIcon &operator=(QIcon &&other) Q_DECL_NOEXCEPT
+    inline QIcon &operator=(QIcon &&other) noexcept
     { swap(other); return *this; }
 #endif
-    inline void swap(QIcon &other) Q_DECL_NOEXCEPT
+    inline void swap(QIcon &other) noexcept
     { qSwap(d, other.d); }
 
     operator QVariant() const;

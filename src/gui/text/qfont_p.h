@@ -136,7 +136,7 @@ struct QFontDef
     }
 };
 
-inline uint qHash(const QFontDef &fd, uint seed = 0) Q_DECL_NOTHROW
+inline uint qHash(const QFontDef &fd, uint seed = 0) noexcept
 {
     return qHash(qRound64(fd.pixelSize*10000)) // use only 4 fractional digits
         ^  qHash(fd.weight)

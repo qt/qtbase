@@ -663,7 +663,7 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 /*!
   Constructs a null icon.
 */
-QIcon::QIcon() Q_DECL_NOEXCEPT
+QIcon::QIcon() noexcept
     : d(0)
 {
 }

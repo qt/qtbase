@@ -262,7 +262,7 @@ public:
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QFont &operator=(QFont &&other) Q_DECL_NOEXCEPT
+    inline QFont &operator=(QFont &&other) noexcept
     { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
 #endif
 
@@ -347,7 +347,7 @@ private:
 
 Q_DECLARE_SHARED(QFont)
 
-Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) noexcept;
 
 inline bool QFont::bold() const
 { return weight() > Medium; }

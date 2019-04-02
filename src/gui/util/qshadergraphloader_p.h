@@ -69,16 +69,16 @@ public:
         Error
     };
 
-    Q_GUI_EXPORT QShaderGraphLoader() Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QShaderGraphLoader() noexcept;
 
-    Q_GUI_EXPORT Status status() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT QShaderGraph graph() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT Status status() const noexcept;
+    Q_GUI_EXPORT QShaderGraph graph() const noexcept;
 
-    Q_GUI_EXPORT QIODevice *device() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setDevice(QIODevice *device) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QIODevice *device() const noexcept;
+    Q_GUI_EXPORT void setDevice(QIODevice *device) noexcept;
 
-    Q_GUI_EXPORT QHash<QString, QShaderNode> prototypes() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setPrototypes(const QHash<QString, QShaderNode> &prototypes) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QHash<QString, QShaderNode> prototypes() const noexcept;
+    Q_GUI_EXPORT void setPrototypes(const QHash<QString, QShaderNode> &prototypes) noexcept;
 
     Q_GUI_EXPORT void load();
 

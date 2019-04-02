@@ -434,7 +434,7 @@ struct FallbacksCacheKey {
     QChar::Script script;
 };
 
-inline bool operator==(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) Q_DECL_NOTHROW
+inline bool operator==(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) noexcept
 {
     return lhs.script == rhs.script &&
             lhs.styleHint == rhs.styleHint &&
@@ -442,12 +442,12 @@ inline bool operator==(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rh
             lhs.family == rhs.family;
 }
 
-inline bool operator!=(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) Q_DECL_NOTHROW
+inline bool operator!=(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) noexcept
 {
     return !operator==(lhs, rhs);
 }
 
-inline uint qHash(const FallbacksCacheKey &key, uint seed = 0) Q_DECL_NOTHROW
+inline uint qHash(const FallbacksCacheKey &key, uint seed = 0) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.family);

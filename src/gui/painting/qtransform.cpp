@@ -795,7 +795,7 @@ bool QTransform::operator==(const QTransform &o) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QTransform &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QTransform &key, uint seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.m11());
@@ -1021,7 +1021,7 @@ QTransform QTransform::operator*(const QTransform &m) const
 /*!
     Assigns the given \a matrix's values to this matrix.
 */
-QTransform & QTransform::operator=(const QTransform &matrix) Q_DECL_NOTHROW
+QTransform & QTransform::operator=(const QTransform &matrix) noexcept
 {
     affine._m11 = matrix.affine._m11;
     affine._m12 = matrix.affine._m12;

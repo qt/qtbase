@@ -61,7 +61,7 @@ public:
     QBitmap(const QBitmap &other) : QPixmap(other) {}
     // QBitmap(QBitmap &&other) : QPixmap(std::move(other)) {} // QPixmap doesn't, yet, have a move ctor
     QBitmap &operator=(const QBitmap &other) { QPixmap::operator=(other); return *this; }
-    QBitmap &operator=(QBitmap &&other) Q_DECL_NOTHROW { QPixmap::operator=(std::move(other)); return *this; }
+    QBitmap &operator=(QBitmap &&other) noexcept { QPixmap::operator=(std::move(other)); return *this; }
     ~QBitmap();
 #endif
 

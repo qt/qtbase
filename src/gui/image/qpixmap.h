@@ -74,10 +74,10 @@ public:
 
     QPixmap &operator=(const QPixmap &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPixmap &operator=(QPixmap &&other) Q_DECL_NOEXCEPT
+    inline QPixmap &operator=(QPixmap &&other) noexcept
     { qSwap(data, other.data); return *this; }
 #endif
-    inline void swap(QPixmap &other) Q_DECL_NOEXCEPT
+    inline void swap(QPixmap &other) noexcept
     { qSwap(data, other.data); }
 
     operator QVariant() const;

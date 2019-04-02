@@ -41,12 +41,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QShaderNodePort::QShaderNodePort() Q_DECL_NOTHROW
+QShaderNodePort::QShaderNodePort() noexcept
     : direction(Output)
 {
 }
 
-bool operator==(const QShaderNodePort &lhs, const QShaderNodePort &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderNodePort &lhs, const QShaderNodePort &rhs) noexcept
 {
     return lhs.direction == rhs.direction
         && lhs.name == rhs.name;

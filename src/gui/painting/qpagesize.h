@@ -237,13 +237,13 @@ public:
                        SizeMatchPolicy matchPolicy = FuzzyMatch);
     QPageSize(const QPageSize &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QPageSize &operator=(QPageSize &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QPageSize &operator=(QPageSize &&other) noexcept { swap(other); return *this; }
 #endif
     QPageSize &operator=(const QPageSize &other);
     ~QPageSize();
 
 
-    void swap(QPageSize &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QPageSize &other) noexcept { qSwap(d, other.d); }
 
     friend Q_GUI_EXPORT bool operator==(const QPageSize &lhs, const QPageSize &rhs);
     bool isEquivalentTo(const QPageSize &other) const;

@@ -56,13 +56,13 @@ public:
     QOpenGLPixelTransferOptions();
     QOpenGLPixelTransferOptions(const QOpenGLPixelTransferOptions &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QOpenGLPixelTransferOptions &operator=(QOpenGLPixelTransferOptions &&other) Q_DECL_NOTHROW
+    QOpenGLPixelTransferOptions &operator=(QOpenGLPixelTransferOptions &&other) noexcept
     { swap(other); return *this; }
 #endif
     QOpenGLPixelTransferOptions &operator=(const QOpenGLPixelTransferOptions &);
     ~QOpenGLPixelTransferOptions();
 
-    void swap(QOpenGLPixelTransferOptions &other) Q_DECL_NOTHROW
+    void swap(QOpenGLPixelTransferOptions &other) noexcept
     { data.swap(other.data); }
 
     void setAlignment(int alignment);

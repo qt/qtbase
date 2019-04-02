@@ -69,30 +69,30 @@ public:
     QRegion(const QRect &r, RegionType t = Rectangle);
     QRegion(const QPolygon &pa, Qt::FillRule fillRule = Qt::OddEvenFill);
     QRegion(const QRegion &region);
-    QRegion(QRegion &&other) Q_DECL_NOTHROW
+    QRegion(QRegion &&other) noexcept
         : d(other.d) { other.d = const_cast<QRegionData*>(&shared_empty); }
     QRegion(const QBitmap &bitmap);
     ~QRegion();
     QRegion &operator=(const QRegion &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QRegion &operator=(QRegion &&other) Q_DECL_NOEXCEPT
+    inline QRegion &operator=(QRegion &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QRegion &other) Q_DECL_NOEXCEPT { qSwap(d, other.d); }
+    inline void swap(QRegion &other) noexcept { qSwap(d, other.d); }
     bool isEmpty() const;
     bool isNull() const;
 
     typedef const QRect *const_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-    const_iterator begin()  const Q_DECL_NOTHROW;
-    const_iterator cbegin() const Q_DECL_NOTHROW { return begin(); }
-    const_iterator end()    const Q_DECL_NOTHROW;
-    const_iterator cend()   const Q_DECL_NOTHROW { return end(); }
-    const_reverse_iterator rbegin()  const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
-    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return rbegin(); }
-    const_reverse_iterator rend()    const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crend()   const Q_DECL_NOTHROW { return rend(); }
+    const_iterator begin()  const noexcept;
+    const_iterator cbegin() const noexcept { return begin(); }
+    const_iterator end()    const noexcept;
+    const_iterator cend()   const noexcept { return end(); }
+    const_reverse_iterator rbegin()  const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    const_reverse_iterator rend()    const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crend()   const noexcept { return rend(); }
 
     bool contains(const QPoint &p) const;
     bool contains(const QRect &r) const;
@@ -121,13 +121,13 @@ public:
     bool intersects(const QRegion &r) const;
     bool intersects(const QRect &r) const;
 
-    QRect boundingRect() const Q_DECL_NOTHROW;
+    QRect boundingRect() const noexcept;
 #if QT_DEPRECATED_SINCE(5, 11)
     QT_DEPRECATED_X("Use begin()/end() instead")
     QVector<QRect> rects() const;
 #endif
     void setRects(const QRect *rect, int num);
-    int rectCount() const Q_DECL_NOTHROW;
+    int rectCount() const noexcept;
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
     // ### Qt 6: remove these, they're kept for MSVC compat
     const QRegion operator|(const QRegion &r) const;

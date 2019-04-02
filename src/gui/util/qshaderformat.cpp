@@ -41,58 +41,58 @@
 
 QT_BEGIN_NAMESPACE
 
-QShaderFormat::QShaderFormat() Q_DECL_NOTHROW
+QShaderFormat::QShaderFormat() noexcept
     : m_api(NoApi)
 {
 }
 
-QShaderFormat::Api QShaderFormat::api() const Q_DECL_NOTHROW
+QShaderFormat::Api QShaderFormat::api() const noexcept
 {
     return m_api;
 }
 
-void QShaderFormat::setApi(QShaderFormat::Api api) Q_DECL_NOTHROW
+void QShaderFormat::setApi(QShaderFormat::Api api) noexcept
 {
     m_api = api;
 }
 
-QVersionNumber QShaderFormat::version() const Q_DECL_NOTHROW
+QVersionNumber QShaderFormat::version() const noexcept
 {
     return m_version;
 }
 
-void QShaderFormat::setVersion(const QVersionNumber &version) Q_DECL_NOTHROW
+void QShaderFormat::setVersion(const QVersionNumber &version) noexcept
 {
     m_version = version;
 }
 
-QStringList QShaderFormat::extensions() const Q_DECL_NOTHROW
+QStringList QShaderFormat::extensions() const noexcept
 {
     return m_extensions;
 }
 
-void QShaderFormat::setExtensions(const QStringList &extensions) Q_DECL_NOTHROW
+void QShaderFormat::setExtensions(const QStringList &extensions) noexcept
 {
     m_extensions = extensions;
     m_extensions.sort();
 }
 
-QString QShaderFormat::vendor() const Q_DECL_NOTHROW
+QString QShaderFormat::vendor() const noexcept
 {
     return m_vendor;
 }
 
-void QShaderFormat::setVendor(const QString &vendor) Q_DECL_NOTHROW
+void QShaderFormat::setVendor(const QString &vendor) noexcept
 {
     m_vendor = vendor;
 }
 
-bool QShaderFormat::isValid() const Q_DECL_NOTHROW
+bool QShaderFormat::isValid() const noexcept
 {
     return m_api != NoApi && m_version.majorVersion() > 0;
 }
 
-bool QShaderFormat::supports(const QShaderFormat &other) const Q_DECL_NOTHROW
+bool QShaderFormat::supports(const QShaderFormat &other) const noexcept
 {
     if (!isValid() || !other.isValid())
         return false;
@@ -119,7 +119,7 @@ bool QShaderFormat::supports(const QShaderFormat &other) const Q_DECL_NOTHROW
     return true;
 }
 
-bool operator==(const QShaderFormat &lhs, const QShaderFormat &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderFormat &lhs, const QShaderFormat &rhs) noexcept
 {
     return lhs.api() == rhs.api()
         && lhs.version() == rhs.version()

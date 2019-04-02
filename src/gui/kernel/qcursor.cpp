@@ -494,7 +494,7 @@ QCursor::QCursor(Qt::CursorShape shape)
 
     \sa operator!=(const QCursor &lhs, const QCursor &rhs)
 */
-bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW
+bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept
 {
     if (lhs.d == rhs.d)
         return true; // Copy or same shape

@@ -73,21 +73,21 @@ public:
     class Rule
     {
     public:
-        Q_GUI_EXPORT Rule(const QByteArray &substitution = QByteArray(), const QByteArrayList &headerSnippets = QByteArrayList()) Q_DECL_NOTHROW;
+        Q_GUI_EXPORT Rule(const QByteArray &substitution = QByteArray(), const QByteArrayList &headerSnippets = QByteArrayList()) noexcept;
 
         QByteArray substitution;
         QByteArrayList headerSnippets;
     };
 
-    Q_GUI_EXPORT Type type() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT Type type() const noexcept;
 
-    Q_GUI_EXPORT QUuid uuid() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setUuid(const QUuid &uuid) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QUuid uuid() const noexcept;
+    Q_GUI_EXPORT void setUuid(const QUuid &uuid) noexcept;
 
-    Q_GUI_EXPORT QStringList layers() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setLayers(const QStringList &layers) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QStringList layers() const noexcept;
+    Q_GUI_EXPORT void setLayers(const QStringList &layers) noexcept;
 
-    Q_GUI_EXPORT QVector<QShaderNodePort> ports() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QVector<QShaderNodePort> ports() const noexcept;
     Q_GUI_EXPORT void addPort(const QShaderNodePort &port);
     Q_GUI_EXPORT void removePort(const QShaderNodePort &port);
 
@@ -110,9 +110,9 @@ private:
     QVector<QPair<QShaderFormat, QShaderNode::Rule>> m_rules;
 };
 
-Q_GUI_EXPORT bool operator==(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator==(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) noexcept;
 
-inline bool operator!=(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) Q_DECL_NOTHROW
+inline bool operator!=(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) noexcept
 {
     return !(lhs == rhs);
 }

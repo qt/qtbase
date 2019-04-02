@@ -52,29 +52,29 @@ QT_BEGIN_NAMESPACE
 
 void qt_register_ShaderLanguage_enums();
 
-QShaderGraphLoader::QShaderGraphLoader() Q_DECL_NOTHROW
+QShaderGraphLoader::QShaderGraphLoader() noexcept
     : m_status(Null),
       m_device(nullptr)
 {
     qt_register_ShaderLanguage_enums();
 }
 
-QShaderGraphLoader::Status QShaderGraphLoader::status() const Q_DECL_NOTHROW
+QShaderGraphLoader::Status QShaderGraphLoader::status() const noexcept
 {
     return m_status;
 }
 
-QShaderGraph QShaderGraphLoader::graph() const Q_DECL_NOTHROW
+QShaderGraph QShaderGraphLoader::graph() const noexcept
 {
     return m_graph;
 }
 
-QIODevice *QShaderGraphLoader::device() const Q_DECL_NOTHROW
+QIODevice *QShaderGraphLoader::device() const noexcept
 {
     return m_device;
 }
 
-void QShaderGraphLoader::setDevice(QIODevice *device) Q_DECL_NOTHROW
+void QShaderGraphLoader::setDevice(QIODevice *device) noexcept
 {
     m_device = device;
     m_graph = QShaderGraph();
@@ -83,12 +83,12 @@ void QShaderGraphLoader::setDevice(QIODevice *device) Q_DECL_NOTHROW
              : Error;
 }
 
-QHash<QString, QShaderNode> QShaderGraphLoader::prototypes() const Q_DECL_NOTHROW
+QHash<QString, QShaderNode> QShaderGraphLoader::prototypes() const noexcept
 {
     return m_prototypes;
 }
 
-void QShaderGraphLoader::setPrototypes(const QHash<QString, QShaderNode> &prototypes) Q_DECL_NOTHROW
+void QShaderGraphLoader::setPrototypes(const QHash<QString, QShaderNode> &prototypes) noexcept
 {
     m_prototypes = prototypes;
 }

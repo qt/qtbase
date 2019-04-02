@@ -95,7 +95,7 @@ class QPixelFormat
     Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == uint(TotalFieldWidthByOffsets));
     Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == 8 * sizeof(quint64));
 
-    Q_DECL_CONSTEXPR inline uchar get(Field offset, FieldWidth width) const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR inline uchar get(Field offset, FieldWidth width) const noexcept
     { return uchar((data >> uint(offset)) & ((Q_UINT64_C(1) << uint(width)) - Q_UINT64_C(1))); }
     Q_DECL_CONSTEXPR static inline quint64 set(Field offset, FieldWidth width, uchar value)
     { return (quint64(value) & ((Q_UINT64_C(1) << uint(width)) - Q_UINT64_C(1))) << uint(offset); }
@@ -160,7 +160,7 @@ public:
         CurrentSystemEndian
     };
 
-    Q_DECL_CONSTEXPR inline QPixelFormat() Q_DECL_NOTHROW : data(0) {}
+    Q_DECL_CONSTEXPR inline QPixelFormat() noexcept : data(0) {}
     Q_DECL_CONSTEXPR inline QPixelFormat(ColorModel colorModel,
                                            uchar firstSize,
                                            uchar secondSize,
@@ -173,47 +173,47 @@ public:
                                            AlphaPremultiplied premultiplied,
                                            TypeInterpretation typeInterpretation,
                                            ByteOrder byteOrder = CurrentSystemEndian,
-                                           uchar subEnum = 0) Q_DECL_NOTHROW;
+                                           uchar subEnum = 0) noexcept;
 
-    Q_DECL_CONSTEXPR inline ColorModel colorModel() const  Q_DECL_NOTHROW { return ColorModel(get(ModelField, ModelFieldWidth)); }
-    Q_DECL_CONSTEXPR inline uchar channelCount() const Q_DECL_NOTHROW { return (get(FirstField, FirstFieldWidth) > 0) +
+    Q_DECL_CONSTEXPR inline ColorModel colorModel() const  noexcept { return ColorModel(get(ModelField, ModelFieldWidth)); }
+    Q_DECL_CONSTEXPR inline uchar channelCount() const noexcept { return (get(FirstField, FirstFieldWidth) > 0) +
                                                                                  (get(SecondField, SecondFieldWidth) > 0) +
                                                                                  (get(ThirdField, ThirdFieldWidth) > 0) +
                                                                                  (get(FourthField, FourthFieldWidth) > 0) +
                                                                                  (get(FifthField, FifthFieldWidth) > 0) +
                                                                                  (get(AlphaField, AlphaFieldWidth) > 0); }
 
-    Q_DECL_CONSTEXPR inline uchar redSize() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar greenSize() const Q_DECL_NOTHROW { return get(SecondField, SecondFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar blueSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar redSize() const noexcept { return get(FirstField, FirstFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar greenSize() const noexcept { return get(SecondField, SecondFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar blueSize() const noexcept { return get(ThirdField, ThirdFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar cyanSize() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar magentaSize() const Q_DECL_NOTHROW { return get(SecondField, SecondFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar yellowSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar blackSize() const Q_DECL_NOTHROW { return get(FourthField, FourthFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar cyanSize() const noexcept { return get(FirstField, FirstFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar magentaSize() const noexcept { return get(SecondField, SecondFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar yellowSize() const noexcept { return get(ThirdField, ThirdFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar blackSize() const noexcept { return get(FourthField, FourthFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar hueSize() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar saturationSize() const Q_DECL_NOTHROW { return get(SecondField, SecondFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar lightnessSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
-    Q_DECL_CONSTEXPR inline uchar brightnessSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar hueSize() const noexcept { return get(FirstField, FirstFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar saturationSize() const noexcept { return get(SecondField, SecondFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar lightnessSize() const noexcept { return get(ThirdField, ThirdFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar brightnessSize() const noexcept { return get(ThirdField, ThirdFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar alphaSize() const Q_DECL_NOTHROW { return get(AlphaField, AlphaFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar alphaSize() const noexcept { return get(AlphaField, AlphaFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar bitsPerPixel() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth) +
+    Q_DECL_CONSTEXPR inline uchar bitsPerPixel() const noexcept { return get(FirstField, FirstFieldWidth) +
                                                                                  get(SecondField, SecondFieldWidth) +
                                                                                  get(ThirdField, ThirdFieldWidth) +
                                                                                  get(FourthField, FourthFieldWidth) +
                                                                                  get(FifthField, FifthFieldWidth) +
                                                                                  get(AlphaField, AlphaFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline AlphaUsage alphaUsage() const Q_DECL_NOTHROW { return AlphaUsage(get(AlphaUsageField, AlphaUsageFieldWidth)); }
-    Q_DECL_CONSTEXPR inline AlphaPosition alphaPosition() const Q_DECL_NOTHROW { return AlphaPosition(get(AlphaPositionField, AlphaPositionFieldWidth)); }
-    Q_DECL_CONSTEXPR inline AlphaPremultiplied premultiplied() const Q_DECL_NOTHROW { return AlphaPremultiplied(get(PremulField, PremulFieldWidth)); }
-    Q_DECL_CONSTEXPR inline TypeInterpretation typeInterpretation() const Q_DECL_NOTHROW { return TypeInterpretation(get(TypeInterpretationField, TypeInterpretationFieldWidth)); }
-    Q_DECL_CONSTEXPR inline ByteOrder byteOrder() const Q_DECL_NOTHROW { return ByteOrder(get(ByteOrderField, ByteOrderFieldWidth)); }
+    Q_DECL_CONSTEXPR inline AlphaUsage alphaUsage() const noexcept { return AlphaUsage(get(AlphaUsageField, AlphaUsageFieldWidth)); }
+    Q_DECL_CONSTEXPR inline AlphaPosition alphaPosition() const noexcept { return AlphaPosition(get(AlphaPositionField, AlphaPositionFieldWidth)); }
+    Q_DECL_CONSTEXPR inline AlphaPremultiplied premultiplied() const noexcept { return AlphaPremultiplied(get(PremulField, PremulFieldWidth)); }
+    Q_DECL_CONSTEXPR inline TypeInterpretation typeInterpretation() const noexcept { return TypeInterpretation(get(TypeInterpretationField, TypeInterpretationFieldWidth)); }
+    Q_DECL_CONSTEXPR inline ByteOrder byteOrder() const noexcept { return ByteOrder(get(ByteOrderField, ByteOrderFieldWidth)); }
 
-    Q_DECL_CONSTEXPR inline YUVLayout yuvLayout() const Q_DECL_NOTHROW { return YUVLayout(get(SubEnumField, SubEnumFieldWidth)); }
-    Q_DECL_CONSTEXPR inline uchar subEnum() const Q_DECL_NOTHROW { return get(SubEnumField, SubEnumFieldWidth); }
+    Q_DECL_CONSTEXPR inline YUVLayout yuvLayout() const noexcept { return YUVLayout(get(SubEnumField, SubEnumFieldWidth)); }
+    Q_DECL_CONSTEXPR inline uchar subEnum() const noexcept { return get(SubEnumField, SubEnumFieldWidth); }
 
 private:
     Q_DECL_CONSTEXPR static inline ByteOrder resolveByteOrder(ByteOrder bo)
@@ -255,7 +255,7 @@ QPixelFormat::QPixelFormat(ColorModel mdl,
                            AlphaPremultiplied premult,
                            TypeInterpretation typeInterp,
                            ByteOrder b_order,
-                           uchar s_enum) Q_DECL_NOTHROW
+                           uchar s_enum) noexcept
     : data(set(ModelField, ModelFieldWidth, uchar(mdl)) |
            set(FirstField, FirstFieldWidth, firstSize) |
            set(SecondField, SecondFieldWidth, secondSize) |
@@ -280,7 +280,7 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatRgba(uchar red,
                                                       QPixelFormat::AlphaUsage usage,
                                                       QPixelFormat::AlphaPosition position,
                                                       QPixelFormat::AlphaPremultiplied pmul=QPixelFormat::NotPremultiplied,
-                                                      QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+                                                      QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) noexcept
 {
     return QPixelFormat(QPixelFormat::RGB,
                         red,
@@ -296,7 +296,7 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatRgba(uchar red,
 }
 
 Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatGrayscale(uchar channelSize,
-                                                           QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+                                                           QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) noexcept
 {
     return QPixelFormat(QPixelFormat::Grayscale,
                         channelSize,
@@ -312,7 +312,7 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatGrayscale(uchar channelSize,
 }
 
 Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatAlpha(uchar channelSize,
-                                                       QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+                                                       QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) noexcept
 {
     return QPixelFormat(QPixelFormat::Alpha,
                         0,
@@ -331,7 +331,7 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatCmyk(uchar channelSize,
                                                       uchar alfa=0,
                                                       QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
                                                       QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
-                                                      QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+                                                      QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) noexcept
 {
     return QPixelFormat(QPixelFormat::CMYK,
                         channelSize,
@@ -350,7 +350,7 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatHsl(uchar channelSize,
                                                      uchar alfa=0,
                                                      QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
                                                      QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
-                                                     QPixelFormat::TypeInterpretation typeInt=QPixelFormat::FloatingPoint) Q_DECL_NOTHROW
+                                                     QPixelFormat::TypeInterpretation typeInt=QPixelFormat::FloatingPoint) noexcept
 {
     return QPixelFormat(QPixelFormat::HSL,
                         channelSize,
@@ -369,7 +369,7 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatHsv(uchar channelSize,
                                                      uchar alfa=0,
                                                      QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
                                                      QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
-                                                     QPixelFormat::TypeInterpretation typeInt=QPixelFormat::FloatingPoint) Q_DECL_NOTHROW
+                                                     QPixelFormat::TypeInterpretation typeInt=QPixelFormat::FloatingPoint) noexcept
 {
     return QPixelFormat(QPixelFormat::HSV,
                         channelSize,

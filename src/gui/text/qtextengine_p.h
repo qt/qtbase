@@ -335,7 +335,7 @@ public:
 
 struct QScriptItem
 {
-    Q_DECL_CONSTEXPR QScriptItem(int p, QScriptAnalysis a) Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR QScriptItem(int p, QScriptAnalysis a) noexcept
         : position(p), analysis(a),
           num_glyphs(0), descent(-1), ascent(-1), leading(-1), width(-1),
           glyph_data_offset(0) {}
@@ -348,7 +348,7 @@ struct QScriptItem
     QFixed leading;
     QFixed width;
     int glyph_data_offset;
-    Q_DECL_CONSTEXPR QFixed height() const Q_DECL_NOTHROW { return ascent + descent; }
+    Q_DECL_CONSTEXPR QFixed height() const noexcept { return ascent + descent; }
 private:
     friend class QVector<QScriptItem>;
     QScriptItem() {}; // for QVector, don't use

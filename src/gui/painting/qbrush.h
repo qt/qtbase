@@ -80,10 +80,10 @@ public:
     ~QBrush();
     QBrush &operator=(const QBrush &brush);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QBrush &operator=(QBrush &&other) Q_DECL_NOEXCEPT
+    inline QBrush &operator=(QBrush &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QBrush &other) Q_DECL_NOEXCEPT
+    inline void swap(QBrush &other) noexcept
     { qSwap(d, other.d); }
 
     operator QVariant() const;

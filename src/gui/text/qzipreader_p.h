@@ -79,11 +79,11 @@ public:
 
     struct FileInfo
     {
-        FileInfo() Q_DECL_NOTHROW
+        FileInfo() noexcept
             : isDir(false), isFile(false), isSymLink(false), crc(0), size(0)
         {}
 
-        bool isValid() const Q_DECL_NOTHROW { return isDir || isFile || isSymLink; }
+        bool isValid() const noexcept { return isDir || isFile || isSymLink; }
 
         QString filePath;
         uint isDir : 1;

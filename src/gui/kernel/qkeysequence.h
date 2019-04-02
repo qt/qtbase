@@ -66,7 +66,7 @@ void qt_set_sequence_auto_mnemonic(bool b);
 class QVariant;
 class QKeySequencePrivate;
 
-Q_GUI_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QKeySequence &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QKeySequence &key, uint seed = 0) noexcept;
 
 class Q_GUI_EXPORT QKeySequence
 {
@@ -187,9 +187,9 @@ public:
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QKeySequence &operator=(QKeySequence &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QKeySequence &operator=(QKeySequence &&other) noexcept { swap(other); return *this; }
 #endif
-    void swap(QKeySequence &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QKeySequence &other) noexcept { qSwap(d, other.d); }
 
     bool operator==(const QKeySequence &other) const;
     inline bool operator!= (const QKeySequence &other) const
@@ -214,7 +214,7 @@ private:
 
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QKeySequence &ks);
-    friend Q_GUI_EXPORT uint qHash(const QKeySequence &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_GUI_EXPORT uint qHash(const QKeySequence &key, uint seed) noexcept;
     friend class QShortcutMap;
     friend class QShortcut;
 

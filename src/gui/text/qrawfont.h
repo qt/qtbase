@@ -80,12 +80,12 @@ public:
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QRawFont &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QRawFont &operator=(QRawFont &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QRawFont &operator=(QRawFont &&other) noexcept { swap(other); return *this; }
 #endif
     QRawFont &operator=(const QRawFont &other);
     ~QRawFont();
 
-    void swap(QRawFont &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QRawFont &other) noexcept { qSwap(d, other.d); }
 
     bool isValid() const;
 
@@ -158,7 +158,7 @@ Q_DECLARE_SHARED(QRawFont)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRawFont::LayoutFlags)
 
-Q_GUI_EXPORT uint qHash(const QRawFont &font, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT uint qHash(const QRawFont &font, uint seed = 0) noexcept;
 
 inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, QRawFont::LayoutFlags layoutFlags) const
 {

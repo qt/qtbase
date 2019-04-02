@@ -292,33 +292,33 @@ public:
         Holder() : ptr(nullptr), destroy_func(nullptr) {}
         explicit Holder(void *p, qt_destroy_func_t d) : ptr(p), destroy_func(d) {}
         ~Holder() { if (ptr && destroy_func) destroy_func(ptr); }
-        Holder(Holder &&other) Q_DECL_NOTHROW
+        Holder(Holder &&other) noexcept
             : ptr(other.ptr),
               destroy_func(other.destroy_func)
         {
             other.ptr = nullptr;
             other.destroy_func = nullptr;
         }
-        Holder &operator=(Holder &&other) Q_DECL_NOTHROW
+        Holder &operator=(Holder &&other) noexcept
         { swap(other); return *this; }
 
-        void swap(Holder &other) Q_DECL_NOTHROW
+        void swap(Holder &other) noexcept
         {
             qSwap(ptr, other.ptr);
             qSwap(destroy_func, other.destroy_func);
         }
 
-        void *get() const Q_DECL_NOTHROW { return ptr; }
-        void *release() Q_DECL_NOTHROW {
+        void *get() const noexcept { return ptr; }
+        void *release() noexcept {
             void *result = ptr;
             ptr = nullptr;
             destroy_func = nullptr;
             return result;
         }
-        void reset() Q_DECL_NOTHROW { Holder().swap(*this); }
-        qt_destroy_func_t get_deleter() const Q_DECL_NOTHROW { return destroy_func; }
+        void reset() noexcept { Holder().swap(*this); }
+        qt_destroy_func_t get_deleter() const noexcept { return destroy_func; }
 
-        bool operator!() const Q_DECL_NOTHROW { return !ptr; }
+        bool operator!() const noexcept { return !ptr; }
     };
 
     mutable Holder font_; // \ NOTE: Declared before m_glyphCaches, so font_, face_
@@ -390,7 +390,7 @@ inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId
 }
 
 inline uint qHash(const QFontEngine::FaceId &f, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(f.filename)))
+    noexcept(noexcept(qHash(f.filename)))
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, f.filename);

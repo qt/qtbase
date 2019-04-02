@@ -87,12 +87,12 @@ public:
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QCursor(QCursor &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
-    inline QCursor &operator=(QCursor &&other) Q_DECL_NOTHROW
+    QCursor(QCursor &&other) noexcept : d(other.d) { other.d = nullptr; }
+    inline QCursor &operator=(QCursor &&other) noexcept
     { swap(other); return *this; }
 #endif
 
-    void swap(QCursor &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QCursor &other) noexcept { qSwap(d, other.d); }
 
     operator QVariant() const;
 
@@ -112,13 +112,13 @@ public:
     inline static void setPos(QScreen *screen, const QPoint &p) { setPos(screen, p.x(), p.y()); }
 
 private:
-    friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW;
+    friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
     QCursorData *d;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QCursor)
 
-Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW;
-inline bool operator!=(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
+Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
+inline bool operator!=(const QCursor &lhs, const QCursor &rhs) noexcept { return !(lhs == rhs); }
 
 /*****************************************************************************
   QCursor stream functions

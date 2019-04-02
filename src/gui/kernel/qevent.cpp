@@ -5426,7 +5426,7 @@ QPointingDeviceUniqueId QPointingDeviceUniqueId::fromNumericId(qint64 id)
 
     \sa isValid()
 */
-qint64 QPointingDeviceUniqueId::numericId() const Q_DECL_NOTHROW
+qint64 QPointingDeviceUniqueId::numericId() const noexcept
 {
     return m_numericId;
 }
@@ -5438,7 +5438,7 @@ qint64 QPointingDeviceUniqueId::numericId() const Q_DECL_NOTHROW
     Returns whether the two unique pointer IDs \a lhs and \a rhs identify the same pointer
     (\c true) or not (\c false).
 */
-bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL_NOTHROW
+bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
 {
     return lhs.numericId() == rhs.numericId();
 }
@@ -5458,7 +5458,7 @@ bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL
 
     Returns the hash value for \a key, using \a seed to seed the calculation.
 */
-uint qHash(QPointingDeviceUniqueId key, uint seed) Q_DECL_NOTHROW
+uint qHash(QPointingDeviceUniqueId key, uint seed) noexcept
 {
     return qHash(key.numericId(), seed);
 }

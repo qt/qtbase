@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QShaderNode::Type QShaderNode::type() const Q_DECL_NOTHROW
+QShaderNode::Type QShaderNode::type() const noexcept
 {
     int inputCount = 0;
     int outputCount = 0;
@@ -62,27 +62,27 @@ QShaderNode::Type QShaderNode::type() const Q_DECL_NOTHROW
          : Function;
 }
 
-QUuid QShaderNode::uuid() const Q_DECL_NOTHROW
+QUuid QShaderNode::uuid() const noexcept
 {
     return m_uuid;
 }
 
-void QShaderNode::setUuid(const QUuid &uuid) Q_DECL_NOTHROW
+void QShaderNode::setUuid(const QUuid &uuid) noexcept
 {
     m_uuid = uuid;
 }
 
-QStringList QShaderNode::layers() const Q_DECL_NOTHROW
+QStringList QShaderNode::layers() const noexcept
 {
     return m_layers;
 }
 
-void QShaderNode::setLayers(const QStringList &layers) Q_DECL_NOTHROW
+void QShaderNode::setLayers(const QStringList &layers) noexcept
 {
     m_layers = layers;
 }
 
-QVector<QShaderNodePort> QShaderNode::ports() const Q_DECL_NOTHROW
+QVector<QShaderNodePort> QShaderNode::ports() const noexcept
 {
     return m_ports;
 }
@@ -157,13 +157,13 @@ QShaderNode::Rule QShaderNode::rule(const QShaderFormat &format) const
     return it != m_rules.crend() ? it->second : Rule();
 }
 
-QShaderNode::Rule::Rule(const QByteArray &subs, const QByteArrayList &snippets) Q_DECL_NOTHROW
+QShaderNode::Rule::Rule(const QByteArray &subs, const QByteArrayList &snippets) noexcept
     : substitution(subs),
       headerSnippets(snippets)
 {
 }
 
-bool operator==(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) Q_DECL_NOTHROW
+bool operator==(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rhs) noexcept
 {
     return lhs.substitution == rhs.substitution
         && lhs.headerSnippets == rhs.headerSnippets;

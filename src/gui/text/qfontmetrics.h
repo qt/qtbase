@@ -77,11 +77,11 @@ public:
 
     QFontMetrics &operator=(const QFontMetrics &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QFontMetrics &operator=(QFontMetrics &&other) Q_DECL_NOEXCEPT
+    inline QFontMetrics &operator=(QFontMetrics &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
 
-    void swap(QFontMetrics &other) Q_DECL_NOEXCEPT
+    void swap(QFontMetrics &other) noexcept
     { qSwap(d, other.d); }
 
     int ascent() const;
