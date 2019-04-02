@@ -3017,6 +3017,18 @@ int QMetaProperty::propertyIndex() const
 }
 
 /*!
+  \since 5.14
+
+  Returns this property's index relative within the enclosing meta object.
+*/
+int QMetaProperty::relativePropertyIndex() const
+{
+    if (!mobj)
+        return -1;
+    return idx;
+}
+
+/*!
     Returns \c true if the property's type is an enumeration value that
     is used as a flag; otherwise returns \c false.
 

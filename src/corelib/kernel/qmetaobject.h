@@ -253,6 +253,7 @@ public:
     QVariant::Type type() const;
     int userType() const;
     int propertyIndex() const;
+    int relativePropertyIndex() const;
 
     bool isReadable() const;
     bool isWritable() const;
