@@ -55,7 +55,7 @@ public:
 
     struct SourceModelForRowResult
     {
-        SourceModelForRowResult() : sourceModel(Q_NULLPTR), sourceRow(-1) {}
+        SourceModelForRowResult() : sourceModel(nullptr), sourceRow(-1) {}
         QAbstractItemModel *sourceModel;
         int sourceRow;
     };

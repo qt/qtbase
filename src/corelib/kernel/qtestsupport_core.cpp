@@ -102,7 +102,7 @@ Q_CORE_EXPORT void QTest::qWait(int ms)
     int remaining = ms;
     do {
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-        QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         remaining = timer.remainingTime();
         if (remaining <= 0)
             break;
