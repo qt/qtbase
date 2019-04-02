@@ -1069,7 +1069,7 @@ def _recursive_simplify(expr):
     windowses = ('WIN32', 'WINRT')
     apples = ('APPLE_OSX', 'APPLE_UIKIT', 'APPLE_IOS',
               'APPLE_TVOS', 'APPLE_WATCHOS',)
-    bsds = ('APPLE', 'FREEBSD', 'OPENBSD', 'NETBSD',)
+    bsds = ('FREEBSD', 'OPENBSD', 'NETBSD',)
     androids = ('ANDROID', 'ANDROID_EMBEDDED')
     unixes = ('APPLE', *apples, 'BSD', *bsds, 'LINUX',
               *androids, 'HAIKU',

@@ -32,7 +32,6 @@ extend_target(FontDatabaseSupport CONDITION APPLE
         ${FWCoreGraphics}
         ${FWCoreText}
         ${FWFoundation}
-        ${FWUIKit}
 )
 
 #### Keys ignored in scope 2:.:fontdatabases.pro:APPLE:
@@ -48,6 +47,11 @@ extend_target(FontDatabaseSupport CONDITION APPLE AND QT_FEATURE_freetype
 extend_target(FontDatabaseSupport CONDITION APPLE_OSX
     LIBRARIES
         ${FWAppKit}
+)
+
+extend_target(FontDatabaseSupport CONDITION APPLE AND NOT APPLE_OSX
+    LIBRARIES
+        ${FWUIKit}
 )
 
 extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
