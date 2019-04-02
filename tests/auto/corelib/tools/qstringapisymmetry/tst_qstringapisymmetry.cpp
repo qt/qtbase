@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -526,6 +527,47 @@ private Q_SLOTS:
     void contains_QStringView_QStringRef() { contains_impl<QStringView, QStringRef>(); }
     void contains_QStringView_QStringView_data() { contains_data(); }
     void contains_QStringView_QStringView() { contains_impl<QStringView, QStringView>(); }
+
+private:
+    template <typename Haystack, typename Needle> void lastIndexOf_impl() const;
+    void lastIndexOf_data();
+
+private Q_SLOTS:
+    void lastIndexOf_QString_QString_data() { lastIndexOf_data(); }
+    void lastIndexOf_QString_QString() { lastIndexOf_impl<QString, QString>(); }
+    void lastIndexOf_QString_QLatin1String_data() { lastIndexOf_data(); }
+    void lastIndexOf_QString_QLatin1String() { lastIndexOf_impl<QString, QLatin1String>(); }
+    void lastIndexOf_QString_QStringRef_data() { lastIndexOf_data(); }
+    void lastIndexOf_QString_QStringRef() { lastIndexOf_impl<QString, QStringRef>(); }
+    void lastIndexOf_QString_QStringView_data() { lastIndexOf_data(); }
+    void lastIndexOf_QString_QStringView() { lastIndexOf_impl<QString, QStringView>(); }
+
+    void lastIndexOf_QLatin1String_QString_data() { lastIndexOf_data(); }
+    void lastIndexOf_QLatin1String_QString() { lastIndexOf_impl<QLatin1String, QString>(); }
+    void lastIndexOf_QLatin1String_QLatin1String_data() { lastIndexOf_data(); }
+    void lastIndexOf_QLatin1String_QLatin1String() { lastIndexOf_impl<QLatin1String, QLatin1String>(); }
+    void lastIndexOf_QLatin1String_QStringRef_data() { lastIndexOf_data(); }
+    void lastIndexOf_QLatin1String_QStringRef() { lastIndexOf_impl<QLatin1String, QStringRef>(); }
+    void lastIndexOf_QLatin1String_QStringView_data() { lastIndexOf_data(); }
+    void lastIndexOf_QLatin1String_QStringView() { lastIndexOf_impl<QLatin1String, QStringView>(); }
+
+    void lastIndexOf_QStringRef_QString_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringRef_QString() { lastIndexOf_impl<QStringRef, QString>(); }
+    void lastIndexOf_QStringRef_QLatin1String_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringRef_QLatin1String() { lastIndexOf_impl<QStringRef, QLatin1String>(); }
+    void lastIndexOf_QStringRef_QStringRef_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringRef_QStringRef() { lastIndexOf_impl<QStringRef, QStringRef>(); }
+    void lastIndexOf_QStringRef_QStringView_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringRef_QStringView() { lastIndexOf_impl<QStringRef, QStringView>(); }
+
+    void lastIndexOf_QStringView_QString_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringView_QString() { lastIndexOf_impl<QStringView, QString>(); }
+    void lastIndexOf_QStringView_QLatin1String_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringView_QLatin1String() { lastIndexOf_impl<QStringView, QLatin1String>(); }
+    void lastIndexOf_QStringView_QStringRef_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringView_QStringRef() { lastIndexOf_impl<QStringView, QStringRef>(); }
+    void lastIndexOf_QStringView_QStringView_data() { lastIndexOf_data(); }
+    void lastIndexOf_QStringView_QStringView() { lastIndexOf_impl<QStringView, QStringView>(); }
 };
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
@@ -1623,6 +1665,118 @@ void tst_QStringApiSymmetry::contains_impl() const
         QCOMPARE(haystack.contains(needle[0]), resultCS);
         QCOMPARE(haystack.contains(needle[0], Qt::CaseSensitive), resultCS);
         QCOMPARE(haystack.contains(needle[0], Qt::CaseInsensitive), resultCIS);
+    }
+}
+
+void tst_QStringApiSymmetry::lastIndexOf_data()
+{
+    QTest::addColumn<QString>("haystackU16");
+    QTest::addColumn<QLatin1String>("haystackL1");
+    QTest::addColumn<QString>("needleU16");
+    QTest::addColumn<QLatin1String>("needleL1");
+    QTest::addColumn<qsizetype>("startpos");
+    QTest::addColumn<qsizetype>("resultCS");
+    QTest::addColumn<qsizetype>("resultCIS");
+
+    constexpr qsizetype zeroPos = 0;
+    constexpr qsizetype minus1Pos = -1;
+
+    QTest::addRow("haystack: null, needle: null") << null << QLatin1String()
+                                     << null << QLatin1String() << minus1Pos << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: empty, needle: null")  << empty << QLatin1String("")
+                                     << null << QLatin1String() << minus1Pos << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: a, needle: null") << a << QLatin1String("a")
+                                     << null << QLatin1String() << minus1Pos << zeroPos << zeroPos;
+    QTest::addRow("haystack: null, needle: empty") << null << QLatin1String()
+                                     << empty << QLatin1String("") << minus1Pos << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: a, needle: empty") << a << QLatin1String("a")
+                                     << empty << QLatin1String("") << minus1Pos << zeroPos << zeroPos;
+    QTest::addRow("haystack: empty, needle: empty") << empty << QLatin1String("")
+                                     << empty << QLatin1String("") << minus1Pos << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: empty, needle: a") << empty << QLatin1String("")
+                                     << a << QLatin1String("a") << minus1Pos << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: null, needle: a") << null << QLatin1String()
+                                     << a << QLatin1String("a") << minus1Pos << minus1Pos << minus1Pos;
+
+    QTest::addRow("haystack: a, needle: null")  << a << QLatin1String("a")
+                                     << null << QLatin1String() << qsizetype(1) << qsizetype(1) << qsizetype(1);
+    QTest::addRow("haystack: a, needle: empty")  << a << QLatin1String("a")
+                                     << empty << QLatin1String("") << qsizetype(1) << qsizetype(1) << qsizetype(1);
+    QTest::addRow("haystack: a, needle: null")  << a << QLatin1String("a")
+                                     << null << QLatin1String() << qsizetype(2) << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: a, needle: empty")  << a << QLatin1String("a")
+                                     << empty << QLatin1String("") << qsizetype(2) << minus1Pos << minus1Pos;
+
+#define ROW(h, n, st, cs, cis) \
+    QTest::addRow("haystack: %s, needle: %s", #h, #n) << h << QLatin1String(#h) \
+                                       << n << QLatin1String(#n) \
+                                       << qsizetype(st) << qsizetype(cs) << qsizetype(cis)
+
+    ROW(asd,   asdf, -1, -1, -1);
+
+    ROW(ABCDEFGHIEfGEFG, G,  -1, 14, 14);
+    ROW(ABCDEFGHIEfGEFG, g,  -1, -1, 14);
+    ROW(ABCDEFGHIEfGEFG, G,  -3, 11, 11);
+    ROW(ABCDEFGHIEfGEFG, g,  -3, -1, 11);
+    ROW(ABCDEFGHIEfGEFG, G,  -5,  6,  6);
+    ROW(ABCDEFGHIEfGEFG, g,  -5, -1,  6);
+    ROW(ABCDEFGHIEfGEFG, G,  14, 14, 14);
+    ROW(ABCDEFGHIEfGEFG, g,  14, -1, 14);
+    ROW(ABCDEFGHIEfGEFG, G,  13, 11, 11);
+    ROW(ABCDEFGHIEfGEFG, g,  13, -1, 11);
+    ROW(ABCDEFGHIEfGEFG, G,  15, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, g,  15, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, B,  14,  1,  1);
+    ROW(ABCDEFGHIEfGEFG, b,  14, -1,  1);
+    ROW(ABCDEFGHIEfGEFG, B,  -1,  1,  1);
+    ROW(ABCDEFGHIEfGEFG, b,  -1, -1,  1);
+    ROW(ABCDEFGHIEfGEFG, B,   1,  1,  1);
+    ROW(ABCDEFGHIEfGEFG, b,   1, -1,  1);
+    ROW(ABCDEFGHIEfGEFG, B,   0, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, b,   0, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, A,   0,  0,  0);
+    ROW(ABCDEFGHIEfGEFG, a,   0, -1,  0);
+    ROW(ABCDEFGHIEfGEFG, A, -15,  0,  0);
+    ROW(ABCDEFGHIEfGEFG, a, -15, -1,  0);
+
+    ROW(ABCDEFGHIEfGEFG, efg,   0, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, efg,  15, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, efg, -15, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, efg,  14, -1, 12);
+    ROW(ABCDEFGHIEfGEFG, efg,  12, -1, 12);
+    ROW(ABCDEFGHIEfGEFG, efg, -12, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, efg,  11, -1,  9);
+#undef ROW
+}
+
+template <typename Haystack, typename Needle>
+void tst_QStringApiSymmetry::lastIndexOf_impl() const
+{
+    QFETCH(const QString, haystackU16);
+    QFETCH(const QLatin1String, haystackL1);
+    QFETCH(const QString, needleU16);
+    QFETCH(const QLatin1String, needleL1);
+    QFETCH(const qsizetype, startpos);
+    QFETCH(const qsizetype, resultCS);
+    QFETCH(const qsizetype, resultCIS);
+
+    const auto haystackU8 = haystackU16.toUtf8();
+    const auto needleU8 = needleU16.toUtf8();
+
+    const auto haystack = make<Haystack>(QStringRef(&haystackU16), haystackL1, haystackU8);
+    const auto needle = make<Needle>(QStringRef(&needleU16), needleL1, needleU8);
+
+    using size_type = typename Haystack::size_type;
+
+    QCOMPARE(haystack.lastIndexOf(needle, startpos), size_type(resultCS));
+    QCOMPARE(haystack.lastIndexOf(needle, startpos, Qt::CaseSensitive), size_type(resultCS));
+    QCOMPARE(haystack.lastIndexOf(needle, startpos, Qt::CaseInsensitive), size_type(resultCIS));
+
+    if (needle.size() == 1)
+    {
+        QCOMPARE(haystack.lastIndexOf(needle[0], startpos), size_type(resultCS));
+        QCOMPARE(haystack.lastIndexOf(needle[0], startpos, Qt::CaseSensitive), size_type(resultCS));
+        QCOMPARE(haystack.lastIndexOf(needle[0], startpos, Qt::CaseInsensitive), size_type(resultCIS));
     }
 }
 
