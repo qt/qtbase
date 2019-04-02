@@ -30,7 +30,6 @@
 #define CXX11_ENUMS_H
 #include <QtCore/QObject>
 
-#if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_MOC_RUN)
 class CXX11Enums
 {
     Q_GADGET
@@ -73,21 +72,4 @@ public:
     Q_FLAGS(ClassFlags)
 };
 
-#else
-//workaround to get the moc compiled code to compile
-class CXX11Enums
-{
-    Q_GADGET
-public:
-    struct EnumClass { enum { A0, A1, A2, A3 }; };
-    struct TypedEnumClass { enum { C0, C1, C2, C3 }; };
-    enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
-    enum TypedEnum { B0, B1 , B2, B3 };
-};
-
-class CXX11Enums2 : public CXX11Enums
-{
-    Q_GADGET
-};
-#endif
 #endif // CXX11_ENUMS_H

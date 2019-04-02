@@ -142,7 +142,6 @@ void tst_QFlags::signedness()
                      std::is_signed<Qt::Alignment::Int>::value));
 }
 
-#if defined(Q_COMPILER_CLASS_ENUM)
 enum class MyStrictEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
 Q_DECLARE_FLAGS( MyStrictFlags, MyStrictEnum )
 Q_DECLARE_OPERATORS_FOR_FLAGS( MyStrictFlags )
@@ -154,11 +153,9 @@ Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isComplex );
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isStatic );
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isLarge );
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isPointer );
-#endif
 
 void tst_QFlags::classEnum()
 {
-#if defined(Q_COMPILER_CLASS_ENUM)
     // The main aim of the test is making sure it compiles
     // The QCOMPARE are there as an extra
     MyStrictEnum e1 = MyStrictEnum::StrictOne;
@@ -257,7 +254,6 @@ void tst_QFlags::classEnum()
     // Just to make sure it compiles
     if (false)
         qDebug() << f3;
-#endif
 }
 
 void tst_QFlags::initializerLists()
@@ -268,12 +264,10 @@ void tst_QFlags::initializerLists()
     QVERIFY(bts.testFlag(Qt::RightButton));
     QVERIFY(!bts.testFlag(Qt::MiddleButton));
 
-#if defined(Q_COMPILER_CLASS_ENUM)
     MyStrictNoOpFlags flags = { MyStrictNoOpEnum::StrictOne, MyStrictNoOpEnum::StrictFour };
     QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictOne));
     QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictFour));
     QVERIFY(!flags.testFlag(MyStrictNoOpEnum::StrictTwo));
-#endif // Q_COMPILER_CLASS_ENUM
 
 #else
     QSKIP("This test requires C++11 initializer_list support.");

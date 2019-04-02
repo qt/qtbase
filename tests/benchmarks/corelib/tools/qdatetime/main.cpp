@@ -35,10 +35,7 @@ class tst_QDateTime : public QObject
 {
     Q_OBJECT
 
-    enum
-#if defined(Q_COMPILER_CLASS_ENUM) || (defined(Q_CC_MSVC) && _MSC_VER >= 1700)
-        : qint64
-#endif
+    enum : qint64
     {
         SECS_PER_DAY = 86400,
         MSECS_PER_DAY = 86400000,

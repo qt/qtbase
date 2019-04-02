@@ -59,12 +59,6 @@
 
 class CustomNonQObject;
 
-#if defined(Q_COMPILER_CLASS_ENUM)
-#define ENUM_SIZE(X) : X
-#else
-#define ENUM_SIZE(X)
-#endif
-
 class tst_QVariant : public QObject
 {
     Q_OBJECT
@@ -82,15 +76,15 @@ public:
     enum MetaEnumTest_Enum1 : qint64 { MetaEnumTest_Enum1_value = 42, MetaEnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
     Q_ENUM(MetaEnumTest_Enum1)
 
-    enum MetaEnumTest_Enum3 ENUM_SIZE(qint64) { MetaEnumTest_Enum3_value = -47, MetaEnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5, MetaEnumTest_Enum3_bigNegValue = -(Q_INT64_C(1) << 56) - 3 };
+    enum MetaEnumTest_Enum3 : qint64 { MetaEnumTest_Enum3_value = -47, MetaEnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5, MetaEnumTest_Enum3_bigNegValue = -(Q_INT64_C(1) << 56) - 3 };
     Q_ENUM(MetaEnumTest_Enum3)
-    enum MetaEnumTest_Enum4 ENUM_SIZE(quint64) { MetaEnumTest_Enum4_value = 47, MetaEnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
+    enum MetaEnumTest_Enum4 : quint64 { MetaEnumTest_Enum4_value = 47, MetaEnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
     Q_ENUM(MetaEnumTest_Enum4)
-    enum MetaEnumTest_Enum5 ENUM_SIZE(uint) { MetaEnumTest_Enum5_value = 47 };
+    enum MetaEnumTest_Enum5 : uint { MetaEnumTest_Enum5_value = 47 };
     Q_ENUM(MetaEnumTest_Enum5)
-    enum MetaEnumTest_Enum6 ENUM_SIZE(uchar) { MetaEnumTest_Enum6_value = 47 };
+    enum MetaEnumTest_Enum6 : uchar { MetaEnumTest_Enum6_value = 47 };
     Q_ENUM(MetaEnumTest_Enum6)
-    enum MetaEnumTest_Enum8 ENUM_SIZE(short) { MetaEnumTest_Enum8_value = 47 };
+    enum MetaEnumTest_Enum8 : short { MetaEnumTest_Enum8_value = 47 };
     Q_ENUM(MetaEnumTest_Enum8)
 
 private slots:
@@ -4700,7 +4694,6 @@ Q_DECLARE_METATYPE(EnumTest_Enum0)
 enum EnumTest_Enum1 : qint64 { EnumTest_Enum1_value = 42, EnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
 Q_DECLARE_METATYPE(EnumTest_Enum1)
 
-#if defined(Q_COMPILER_CLASS_ENUM)
 enum EnumTest_Enum3 : qint64 { EnumTest_Enum3_value = -47, EnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5  };
 Q_DECLARE_METATYPE(EnumTest_Enum3)
 enum EnumTest_Enum4 : quint64 { EnumTest_Enum4_value = 47, EnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
@@ -4713,7 +4706,6 @@ enum class EnumTest_Enum7 { EnumTest_Enum7_value = 47, ensureSignedEnum7 = -1 };
 Q_DECLARE_METATYPE(EnumTest_Enum7)
 enum EnumTest_Enum8 : short { EnumTest_Enum8_value = 47 };
 Q_DECLARE_METATYPE(EnumTest_Enum8)
-#endif
 
 template<typename Enum> void testVariant(Enum value, bool *ok)
 {
@@ -4772,7 +4764,6 @@ void tst_QVariant::enums()
     QVERIFY(ok);
     testVariant(EnumTest_Enum1_bigValue, &ok);
     QVERIFY(ok);
-#if defined(Q_COMPILER_CLASS_ENUM)
     testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
     QVERIFY(ok);
     testVariant(EnumTest_Enum3::EnumTest_Enum3_bigValue, &ok);
@@ -4791,7 +4782,6 @@ void tst_QVariant::enums()
     QVERIFY(ok);
     testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
     QVERIFY(ok);
-#endif
 }
 
 template<typename Enum> void testVariantMeta(Enum value, bool *ok, const char *string)
