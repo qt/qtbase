@@ -1,12 +1,10 @@
-find_package(OpenGL)
-find_library(FWAppkit AppKit)
-find_library(FWCoreServices CoreServices)
-find_library(FWCarbon Carbon)
-find_library(FWIOKit IOKit)
-find_library(FWQuartzCore QuartzCore)
-find_library(FWCoreVideo CoreVideo)
-find_library(FWMetal Metal)
-find_library(FWcups cups)
+# special case:
+find_package(Cups)
+find_package(WrapOpenGL)
+
+#####################################################################
+## qcocoa Plugin:
+#####################################################################
 
 add_qt_plugin(qcocoa
     TYPE platforms
@@ -46,70 +44,82 @@ add_qt_plugin(qcocoa
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
     LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
+        ${FWcups}
+        ${FWAppKit}
+        ${FWCarbon}
+        ${FWCoreServices}
+        ${FWCoreVideo}
+        ${FWIOKit}
+        ${FWMetal}
+        ${FWQuartzCore}
+        Cups::Cups
         Qt::AccessibilitySupportPrivate
         Qt::ClipboardSupportPrivate
-        Qt::ThemeSupportPrivate
+        Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate
         Qt::GraphicsSupportPrivate
-        Qt::PlatformHeaders
-        ${FWAppKit}
-        ${FWCoreServices}
-        ${FWCarbon}
-        ${FWIOKit}
-        ${FWQuartzCore}
-        ${FWCoreVideo}
-        ${FWMetal}
-        ${FWcups}
+        Qt::GuiPrivate
+        Qt::ThemeSupportPrivate
 )
 
-add_qt_resource(qcocoa qcocoaresources PREFIX "/qt-project.org/mac/cursors"
-    FILES images/spincursor.png images/waitcursor.png images/sizeallcursor.png
-)
+# Resources:
+add_qt_resource(qcocoa "qcocoaresources" PREFIX "/qt-project.org/mac/cursors" FILES
+    images/sizeallcursor.png
+    images/spincursor.png
+    images/waitcursor.png)
 
-extend_target(qcocoa CONDITION QT_FEATURE_opengl
+
+#### Keys ignored in scope 1:.:cocoa.pro:<NONE>:
+# CONFIG = "no_app_extension_api_only"
+# OTHER_FILES = "cocoa.json"
+# PLUGIN_CLASS_NAME = "QCocoaIntegrationPlugin"
+# _LOADED = "qt_plugin"
+
+## Scopes:
+#####################################################################
+
+extend_target(qcocoa CONDITION QT_FEATURE_opengl # special case
     SOURCES
         qcocoaglcontext.h qcocoaglcontext.mm
     LIBRARIES
-        OpenGL::GL
+        WrapOpenGL
 )
 
 extend_target(qcocoa CONDITION QT_FEATURE_vulkan
     SOURCES
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
-)
-
-extend_target(qcocoa CONDITION QT_FEATURE_vulkan
     LIBRARIES
-        vulkan_support_private
+        Qt::VulkanSupportPrivate
 )
 
-extend_target(qcocoa CONDITION QT_FEATURE_widgets
+extend_target(qcocoa CONDITION TARGET Qt::Widgets
     SOURCES
         qcocoaprintdevice.h qcocoaprintdevice.mm
         qcocoaprintersupport.h qcocoaprintersupport.mm
         qpaintengine_mac.mm qpaintengine_mac_p.h
         qprintengine_mac.mm qprintengine_mac_p.h
     LIBRARIES
-        Qt::WidgetsPrivate
         Qt::PrintSupportPrivate
+        Qt::WidgetsPrivate
 )
 
-extend_target(qcocoa CONDITION (QT_FEATURE_widgets) AND (QT_FEATURE_colordialog)
+#### Keys ignored in scope 5:.:cocoa.pro:TARGET Qt::Widgets:
+# QT_FOR_CONFIG = "widgets"
+
+extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_colordialog)
     SOURCES
         qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
 )
 
-extend_target(qcocoa CONDITION (QT_FEATURE_widgets) AND (QT_FEATURE_filedialog)
+extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_filedialog)
     SOURCES
         qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
 )
 
-extend_target(qcocoa CONDITION (QT_FEATURE_widgets) AND (QT_FEATURE_fontdialog)
+extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_fontdialog)
     SOURCES
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )
 
-#extend_target(qcocoa CONDITION NOT equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN)
-#)
+#### Keys ignored in scope 9:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"
