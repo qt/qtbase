@@ -72,7 +72,7 @@ public:
     QJsonArray(const QJsonArray &other);
     QJsonArray &operator =(const QJsonArray &other);
 
-    QJsonArray(QJsonArray &&other) Q_DECL_NOTHROW
+    QJsonArray(QJsonArray &&other) noexcept
         : d(other.d),
           a(other.a)
     {
@@ -80,7 +80,7 @@ public:
         other.a = nullptr;
     }
 
-    QJsonArray &operator =(QJsonArray &&other) Q_DECL_NOTHROW
+    QJsonArray &operator =(QJsonArray &&other) noexcept
     {
         swap(other);
         return *this;
@@ -115,7 +115,7 @@ public:
     bool operator==(const QJsonArray &other) const;
     bool operator!=(const QJsonArray &other) const;
 
-    void swap(QJsonArray &other) Q_DECL_NOTHROW
+    void swap(QJsonArray &other) noexcept
     {
         qSwap(d, other.d);
         qSwap(a, other.a);

@@ -100,11 +100,11 @@ class QStringList : public QList<QString>
 {
 #endif
 public:
-    inline QStringList() Q_DECL_NOTHROW { }
+    inline QStringList() noexcept { }
     inline explicit QStringList(const QString &i) { append(i); }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QStringList(QList<QString> &&l) Q_DECL_NOTHROW : QList<QString>(std::move(l)) { }
+    inline QStringList(QList<QString> &&l) noexcept : QList<QString>(std::move(l)) { }
 #endif
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
@@ -113,7 +113,7 @@ public:
     QStringList &operator=(const QList<QString> &other)
     { QList<QString>::operator=(other); return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
-    QStringList &operator=(QList<QString> &&other) Q_DECL_NOTHROW
+    QStringList &operator=(QList<QString> &&other) noexcept
     { QList<QString>::operator=(std::move(other)); return *this; }
 #endif
 

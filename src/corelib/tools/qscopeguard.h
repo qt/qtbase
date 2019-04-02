@@ -58,7 +58,7 @@ Q_REQUIRED_RESULT
 QScopeGuard
 {
 public:
-    QScopeGuard(QScopeGuard &&other) Q_DECL_NOEXCEPT
+    QScopeGuard(QScopeGuard &&other) noexcept
         : m_func(std::move(other.m_func))
         , m_invoke(other.m_invoke)
     {
@@ -71,13 +71,13 @@ public:
             m_func();
     }
 
-    void dismiss() Q_DECL_NOEXCEPT
+    void dismiss() noexcept
     {
         m_invoke = false;
     }
 
 private:
-    explicit QScopeGuard(F f) Q_DECL_NOEXCEPT
+    explicit QScopeGuard(F f) noexcept
         : m_func(std::move(f))
     {
     }

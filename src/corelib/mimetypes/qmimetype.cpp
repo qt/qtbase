@@ -192,7 +192,7 @@ bool QMimeType::operator==(const QMimeType &other) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
  */
-uint qHash(const QMimeType &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QMimeType &key, uint seed) noexcept
 {
     return qHash(key.d->name, seed);
 }

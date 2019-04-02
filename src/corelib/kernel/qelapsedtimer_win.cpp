@@ -110,25 +110,25 @@ quint64 qt_msectime()
     return ticksToNanoseconds(getTickCount()) / 1000000;
 }
 
-QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
+QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 {
     resolveCounterFrequency();
 
     return counterFrequency > 0 ? PerformanceCounter : TickCounter;
 }
 
-bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
+bool QElapsedTimer::isMonotonic() noexcept
 {
     return true;
 }
 
-void QElapsedTimer::start() Q_DECL_NOTHROW
+void QElapsedTimer::start() noexcept
 {
     t1 = getTickCount();
     t2 = 0;
 }
 
-qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
+qint64 QElapsedTimer::restart() noexcept
 {
     qint64 oldt1 = t1;
     t1 = getTickCount();
@@ -136,40 +136,40 @@ qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
     return ticksToNanoseconds(t1 - oldt1) / 1000000;
 }
 
-qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::nsecsElapsed() const noexcept
 {
     qint64 elapsed = getTickCount() - t1;
     return ticksToNanoseconds(elapsed);
 }
 
-qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::elapsed() const noexcept
 {
     qint64 elapsed = getTickCount() - t1;
     return ticksToNanoseconds(elapsed) / 1000000;
 }
 
-qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsSinceReference() const noexcept
 {
     return ticksToNanoseconds(t1) / 1000000;
 }
 
-qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const noexcept
 {
     qint64 difference = other.t1 - t1;
     return ticksToNanoseconds(difference) / 1000000;
 }
 
-qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const noexcept
 {
     return msecsTo(other) / 1000;
 }
 
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) noexcept
 {
     return (v1.t1 - v2.t1) < 0;
 }
 
-QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) Q_DECL_NOTHROW
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 {
     Q_STATIC_ASSERT(!QDeadlineTimerNanosecondsInT2);
     QDeadlineTimer result;

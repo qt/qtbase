@@ -201,7 +201,7 @@ class Q_CORE_EXPORT QVariant
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 
-    QVariant() Q_DECL_NOTHROW : d() {}
+    QVariant() noexcept : d() {}
     ~QVariant();
     QVariant(Type type);
     QVariant(int typeId, const void *copy);
@@ -268,13 +268,13 @@ class Q_CORE_EXPORT QVariant
 
     QVariant& operator=(const QVariant &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QVariant(QVariant &&other) Q_DECL_NOTHROW : d(other.d)
+    inline QVariant(QVariant &&other) noexcept : d(other.d)
     { other.d = Private(); }
-    inline QVariant &operator=(QVariant &&other) Q_DECL_NOTHROW
+    inline QVariant &operator=(QVariant &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
 
-    inline void swap(QVariant &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
 
     Type type() const;
     int userType() const;
@@ -387,15 +387,15 @@ class Q_CORE_EXPORT QVariant
     };
     struct Private
     {
-        inline Private() Q_DECL_NOTHROW : type(Invalid), is_shared(false), is_null(true)
+        inline Private() noexcept : type(Invalid), is_shared(false), is_null(true)
         { data.ptr = nullptr; }
 
         // Internal constructor for initialized variants.
-        explicit inline Private(uint variantType) Q_DECL_NOTHROW
+        explicit inline Private(uint variantType) noexcept
             : type(variantType), is_shared(false), is_null(false)
         {}
 
-        inline Private(const Private &other) Q_DECL_NOTHROW
+        inline Private(const Private &other) noexcept
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}

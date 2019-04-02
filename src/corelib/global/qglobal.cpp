@@ -1147,12 +1147,12 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     \sa QT_VERSION_STR, QLibraryInfo::version()
 */
 
-const char *qVersion() Q_DECL_NOTHROW
+const char *qVersion() noexcept
 {
     return QT_VERSION_STR;
 }
 
-bool qSharedBuild() Q_DECL_NOTHROW
+bool qSharedBuild() noexcept
 {
 #ifdef QT_SHARED
     return true;
@@ -3206,7 +3206,7 @@ QByteArray QSysInfo::bootUniqueId()
     The Q_CHECK_PTR macro calls this function if an allocation check
     fails.
 */
-void qt_check_pointer(const char *n, int l) Q_DECL_NOTHROW
+void qt_check_pointer(const char *n, int l) noexcept
 {
     // make separate printing calls so that the first one may flush;
     // the second one could want to allocate memory (fputs prints a
@@ -3233,7 +3233,7 @@ void qBadAlloc()
    Allows you to call std::terminate() without including <exception>.
    Called internally from QT_TERMINATE_ON_EXCEPTION
 */
-Q_NORETURN void qTerminate() Q_DECL_NOTHROW
+Q_NORETURN void qTerminate() noexcept
 {
     std::terminate();
 }
@@ -3242,7 +3242,7 @@ Q_NORETURN void qTerminate() Q_DECL_NOTHROW
 /*
   The Q_ASSERT macro calls this function when the test fails.
 */
-void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
+void qt_assert(const char *assertion, const char *file, int line) noexcept
 {
     QMessageLogger(file, line, nullptr).fatal("ASSERT: \"%s\" in file %s, line %d", assertion, file, line);
 }
@@ -3250,7 +3250,7 @@ void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
 /*
   The Q_ASSERT_X macro calls this function when the test fails.
 */
-void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW
+void qt_assert_x(const char *where, const char *what, const char *file, int line) noexcept
 {
     QMessageLogger(file, line, nullptr).fatal("ASSERT failure in %s: \"%s\", file %s, line %d", where, what, file, line);
 }
@@ -3457,7 +3457,7 @@ QString qEnvironmentVariable(const char *varName)
 
     \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet()
 */
-bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
+bool qEnvironmentVariableIsEmpty(const char *varName) noexcept
 {
     QMutexLocker locker(&environmentMutex);
 #ifdef Q_CC_MSVC
@@ -3492,7 +3492,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 
     \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet()
 */
-int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
+int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
 {
     static const int NumBinaryDigitsPerOctalDigit = 3;
     static const int MaxDigitsForOctalInt =
@@ -3561,7 +3561,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 
     \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsEmpty()
 */
-bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
+bool qEnvironmentVariableIsSet(const char *varName) noexcept
 {
     QMutexLocker locker(&environmentMutex);
 #ifdef Q_CC_MSVC

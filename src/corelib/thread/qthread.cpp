@@ -839,7 +839,7 @@ bool QThread::event(QEvent* event)
     return QObject::event(event);
 }
 
-Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+Qt::HANDLE QThread::currentThreadId() noexcept
 {
     return Qt::HANDLE(currentThread());
 }
@@ -849,7 +849,7 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread;
 }
 
-int QThread::idealThreadCount() Q_DECL_NOTHROW
+int QThread::idealThreadCount() noexcept
 {
     return 1;
 }

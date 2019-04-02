@@ -386,8 +386,8 @@ namespace QtPrivate {
     public:
         explicit QSlotObjectBase(ImplFn fn) : m_ref(1), m_impl(fn) {}
 
-        inline int ref() Q_DECL_NOTHROW { return m_ref.ref(); }
-        inline void destroyIfLastRef() Q_DECL_NOTHROW
+        inline int ref() noexcept { return m_ref.ref(); }
+        inline void destroyIfLastRef() noexcept
         { if (!m_ref.deref()) m_impl(Destroy, this, nullptr, nullptr, nullptr); }
 
         inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, nullptr, a, &ret); return ret; }

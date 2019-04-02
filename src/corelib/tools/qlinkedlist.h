@@ -80,7 +80,7 @@ class QLinkedList
     union { QLinkedListData *d; QLinkedListNode<T> *e; };
 
 public:
-    inline QLinkedList() Q_DECL_NOTHROW : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
+    inline QLinkedList() noexcept : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
 #if defined(Q_COMPILER_INITIALIZER_LISTS)
     inline QLinkedList(std::initializer_list<T> list)
@@ -92,12 +92,12 @@ public:
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QLinkedList(QLinkedList<T> &&other) Q_DECL_NOTHROW
+    QLinkedList(QLinkedList<T> &&other) noexcept
         : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
-    QLinkedList<T> &operator=(QLinkedList<T> &&other) Q_DECL_NOTHROW
+    QLinkedList<T> &operator=(QLinkedList<T> &&other) noexcept
     { QLinkedList moved(std::move(other)); swap(moved); return *this; }
 #endif
-    inline void swap(QLinkedList<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    inline void swap(QLinkedList<T> &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QLinkedList<T> &l) const;
     inline bool operator!=(const QLinkedList<T> &l) const { return !(*this == l); }
 
@@ -137,10 +137,10 @@ public:
         inline iterator() : i(nullptr) {}
         inline iterator(Node *n) : i(n) {}
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        iterator(const iterator &other) Q_DECL_NOTHROW : i(other.i) {}
-        iterator &operator=(const iterator &other) Q_DECL_NOTHROW { i = other.i; return *this; }
-        iterator(iterator &&other) Q_DECL_NOTHROW : i(other.i) {}
-        iterator &operator=(iterator &&other) Q_DECL_NOTHROW { return *this = other; }
+        iterator(const iterator &other) noexcept : i(other.i) {}
+        iterator &operator=(const iterator &other) noexcept { i = other.i; return *this; }
+        iterator(iterator &&other) noexcept : i(other.i) {}
+        iterator &operator=(iterator &&other) noexcept { return *this = other; }
 #endif
         inline T &operator*() const { return i->t; }
         inline T *operator->() const { return &i->t; }
@@ -176,10 +176,10 @@ public:
         inline const_iterator(Node *n) : i(n) {}
         inline const_iterator(iterator ci) : i(ci.i){}
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        const_iterator(const const_iterator &other) Q_DECL_NOTHROW : i(other.i) {}
-        const_iterator &operator=(const const_iterator &other) Q_DECL_NOTHROW { i = other.i; return *this; }
-        const_iterator(const_iterator &&other) Q_DECL_NOTHROW : i(other.i) {}
-        const_iterator &operator=(const_iterator &&other) Q_DECL_NOTHROW { return *this = other; }
+        const_iterator(const const_iterator &other) noexcept : i(other.i) {}
+        const_iterator &operator=(const const_iterator &other) noexcept { i = other.i; return *this; }
+        const_iterator(const_iterator &&other) noexcept : i(other.i) {}
+        const_iterator &operator=(const_iterator &&other) noexcept { return *this = other; }
 #endif
         inline const T &operator*() const { return i->t; }
         inline const T *operator->() const { return &i->t; }
@@ -203,20 +203,20 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     inline iterator begin() { detach(); return e->n; }
-    inline const_iterator begin() const Q_DECL_NOTHROW { return e->n; }
-    inline const_iterator cbegin() const Q_DECL_NOTHROW { return e->n; }
-    inline const_iterator constBegin() const Q_DECL_NOTHROW { return e->n; }
+    inline const_iterator begin() const noexcept { return e->n; }
+    inline const_iterator cbegin() const noexcept { return e->n; }
+    inline const_iterator constBegin() const noexcept { return e->n; }
     inline iterator end() { detach(); return e; }
-    inline const_iterator end() const Q_DECL_NOTHROW { return e; }
-    inline const_iterator cend() const Q_DECL_NOTHROW { return e; }
-    inline const_iterator constEnd() const Q_DECL_NOTHROW { return e; }
+    inline const_iterator end() const noexcept { return e; }
+    inline const_iterator cend() const noexcept { return e; }
+    inline const_iterator constEnd() const noexcept { return e; }
 
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
-    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
-    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
     iterator insert(iterator before, const T &t);
     iterator erase(iterator pos);

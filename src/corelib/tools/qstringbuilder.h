@@ -58,12 +58,12 @@ QT_BEGIN_NAMESPACE
 struct Q_CORE_EXPORT QAbstractConcatenable
 {
 protected:
-    static void convertFromAscii(const char *a, int len, QChar *&out) Q_DECL_NOTHROW;
-    static inline void convertFromAscii(char a, QChar *&out) Q_DECL_NOTHROW
+    static void convertFromAscii(const char *a, int len, QChar *&out) noexcept;
+    static inline void convertFromAscii(char a, QChar *&out) noexcept
     {
         *out++ = QLatin1Char(a);
     }
-    static void appendLatin1To(const char *a, int len, QChar *out) Q_DECL_NOTHROW;
+    static void appendLatin1To(const char *a, int len, QChar *out) noexcept;
 };
 
 template <typename T> struct QConcatenable {};

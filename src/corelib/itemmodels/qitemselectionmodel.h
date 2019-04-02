@@ -61,9 +61,9 @@ public:
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
 # ifdef Q_COMPILER_RVALUE_REFS
-    QItemSelectionRange(QItemSelectionRange &&other) Q_DECL_NOTHROW
+    QItemSelectionRange(QItemSelectionRange &&other) noexcept
         : tl(std::move(other.tl)), br(std::move(other.br)) {}
-    QItemSelectionRange &operator=(QItemSelectionRange &&other) Q_DECL_NOTHROW
+    QItemSelectionRange &operator=(QItemSelectionRange &&other) noexcept
     { tl = std::move(other.tl); br = std::move(other.br); return *this; }
 # endif
     QItemSelectionRange &operator=(const QItemSelectionRange &other)
@@ -72,7 +72,7 @@ public:
     QItemSelectionRange(const QModelIndex &topL, const QModelIndex &bottomR) : tl(topL), br(bottomR) {}
     explicit QItemSelectionRange(const QModelIndex &index) : tl(index), br(tl) {}
 
-    void swap(QItemSelectionRange &other) Q_DECL_NOTHROW
+    void swap(QItemSelectionRange &other) noexcept
     {
         qSwap(tl, other.tl);
         qSwap(br, other.br);
@@ -249,7 +249,7 @@ Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QList<QItemSelectionRange>;
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>
 {
 public:
-    QItemSelection() Q_DECL_NOTHROW : QList<QItemSelectionRange>() {}
+    QItemSelection() noexcept : QList<QItemSelectionRange>() {}
     QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
     // reusing QList::swap() here is OK!

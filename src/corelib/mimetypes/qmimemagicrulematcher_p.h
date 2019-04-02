@@ -66,7 +66,7 @@ class QMimeMagicRuleMatcher
 public:
     explicit QMimeMagicRuleMatcher(const QString &mime, unsigned priority = 65535);
 
-    void swap(QMimeMagicRuleMatcher &other) Q_DECL_NOTHROW
+    void swap(QMimeMagicRuleMatcher &other) noexcept
     {
         qSwap(m_list,     other.m_list);
         qSwap(m_priority, other.m_priority);

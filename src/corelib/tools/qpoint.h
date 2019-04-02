@@ -94,7 +94,7 @@ public:
     friend Q_DECL_CONSTEXPR inline const QPoint operator/(const QPoint &, qreal);
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    Q_REQUIRED_RESULT CGPoint toCGPoint() const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT CGPoint toCGPoint() const noexcept;
 #endif
 
 private:
@@ -256,8 +256,8 @@ public:
     Q_DECL_CONSTEXPR QPoint toPoint() const;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    Q_REQUIRED_RESULT static QPointF fromCGPoint(CGPoint point) Q_DECL_NOTHROW;
-    Q_REQUIRED_RESULT CGPoint toCGPoint() const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT static QPointF fromCGPoint(CGPoint point) noexcept;
+    Q_REQUIRED_RESULT CGPoint toCGPoint() const noexcept;
 #endif
 
 private:

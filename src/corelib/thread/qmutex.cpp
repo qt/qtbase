@@ -82,7 +82,7 @@ public:
     QMutex mutex;
 
     bool lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
-    void unlock() Q_DECL_NOTHROW;
+    void unlock() noexcept;
 };
 
 /*
@@ -329,7 +329,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     \sa lock()
 */
-void QMutex::unlock() Q_DECL_NOTHROW
+void QMutex::unlock() noexcept
 {
     QMutexData *current;
     if (fastTryUnlock(current))
@@ -348,7 +348,7 @@ void QMutex::unlock() Q_DECL_NOTHROW
     Returns \c true if the mutex is recursive.
 */
 
-bool QBasicMutex::isRecursive() Q_DECL_NOTHROW
+bool QBasicMutex::isRecursive() noexcept
 {
     return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
 }
@@ -358,7 +358,7 @@ bool QBasicMutex::isRecursive() Q_DECL_NOTHROW
 
     Returns \c true if the mutex is recursive.
 */
-bool QBasicMutex::isRecursive() const Q_DECL_NOTHROW
+bool QBasicMutex::isRecursive() const noexcept
 {
     return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
 }
@@ -600,7 +600,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 /*!
     \internal
 */
-void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
+void QBasicMutex::unlockInternal() noexcept
 {
     QMutexData *copy = d_ptr.loadAcquire();
     Q_ASSERT(copy); //we must be locked
@@ -675,7 +675,7 @@ void QMutexPrivate::release()
 }
 
 // atomically subtract "value" to the waiters, and remove the QMutexPrivate::BigNumber flag
-void QMutexPrivate::derefWaiters(int value) Q_DECL_NOTHROW
+void QMutexPrivate::derefWaiters(int value) noexcept
 {
     int old_waiters;
     int new_waiters;
@@ -716,7 +716,7 @@ inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 /*!
    \internal
  */
-inline void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
+inline void QRecursiveMutexPrivate::unlock() noexcept
 {
     if (count > 0) {
         count--;

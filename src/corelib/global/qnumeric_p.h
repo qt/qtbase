@@ -126,7 +126,7 @@ Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return std::fpclas
 #endif
 }
 
-Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_infinity,
                       "platform has no definition for infinity for type double");
@@ -134,7 +134,7 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() Q_DECL_NOEX
 }
 
 // Signaling NaN
-Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_signaling_NaN,
                       "platform has no definition for signaling NaN for type double");
@@ -142,7 +142,7 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() Q_DECL_NOE
 }
 
 // Quiet NaN
-Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_quiet_NaN,
                       "platform has no definition for quiet NaN for type double");

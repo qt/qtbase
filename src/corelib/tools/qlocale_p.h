@@ -365,9 +365,9 @@ public:
     static QLatin1String languageToCode(QLocale::Language language);
     static QLatin1String scriptToCode(QLocale::Script script);
     static QLatin1String countryToCode(QLocale::Country country);
-    static QLocale::Language codeToLanguage(QStringView code) Q_DECL_NOTHROW;
-    static QLocale::Script codeToScript(QStringView code) Q_DECL_NOTHROW;
-    static QLocale::Country codeToCountry(QStringView code) Q_DECL_NOTHROW;
+    static QLocale::Language codeToLanguage(QStringView code) noexcept;
+    static QLocale::Script codeToScript(QStringView code) noexcept;
+    static QLocale::Country codeToCountry(QStringView code) noexcept;
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
 

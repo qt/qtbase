@@ -443,7 +443,7 @@ void QThreadPrivate::finish(void *arg)
  ** QThread
  *************************************************************************/
 
-Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+Qt::HANDLE QThread::currentThreadId() noexcept
 {
     // requires a C cast here otherwise we run into trouble on AIX
     return to_HANDLE(pthread_self());
@@ -454,7 +454,7 @@ Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
 #  define _SC_NPROCESSORS_ONLN 84
 #endif
 
-int QThread::idealThreadCount() Q_DECL_NOTHROW
+int QThread::idealThreadCount() noexcept
 {
     int cores = 1;
 

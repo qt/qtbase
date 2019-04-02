@@ -72,8 +72,8 @@ Q_DECLARE_TYPEINFO(Variable, Q_MOVABLE_TYPE);
 struct NameEquals {
     typedef bool result_type;
     const char *name;
-    explicit NameEquals(const char *name) Q_DECL_NOTHROW : name(name) {}
-    result_type operator()(const Variable &other) const Q_DECL_NOTHROW
+    explicit NameEquals(const char *name) noexcept : name(name) {}
+    result_type operator()(const Variable &other) const noexcept
     { return qstrcmp(other.name, name) == 0; }
 };
 

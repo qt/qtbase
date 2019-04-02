@@ -64,10 +64,10 @@ class QEventDispatcherUNIXPrivate;
 
 struct Q_CORE_EXPORT QSocketNotifierSetUNIX final
 {
-    inline QSocketNotifierSetUNIX() Q_DECL_NOTHROW;
+    inline QSocketNotifierSetUNIX() noexcept;
 
-    inline bool isEmpty() const Q_DECL_NOTHROW;
-    inline short events() const Q_DECL_NOTHROW;
+    inline bool isEmpty() const noexcept;
+    inline short events() const noexcept;
 
     QSocketNotifier *notifiers[3];
 };
@@ -150,19 +150,19 @@ public:
     QAtomicInt interrupt; // bool
 };
 
-inline QSocketNotifierSetUNIX::QSocketNotifierSetUNIX() Q_DECL_NOTHROW
+inline QSocketNotifierSetUNIX::QSocketNotifierSetUNIX() noexcept
 {
     notifiers[0] = nullptr;
     notifiers[1] = nullptr;
     notifiers[2] = nullptr;
 }
 
-inline bool QSocketNotifierSetUNIX::isEmpty() const Q_DECL_NOTHROW
+inline bool QSocketNotifierSetUNIX::isEmpty() const noexcept
 {
     return !notifiers[0] && !notifiers[1] && !notifiers[2];
 }
 
-inline short QSocketNotifierSetUNIX::events() const Q_DECL_NOTHROW
+inline short QSocketNotifierSetUNIX::events() const noexcept
 {
     short result = 0;
 

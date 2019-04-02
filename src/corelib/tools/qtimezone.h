@@ -89,7 +89,7 @@ public:
     };
     typedef QVector<OffsetData> OffsetDataList;
 
-    QTimeZone() Q_DECL_NOTHROW;
+    QTimeZone() noexcept;
     explicit QTimeZone(const QByteArray &ianaId);
     explicit QTimeZone(int offsetSeconds);
     /*implicit*/ QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
@@ -100,10 +100,10 @@ public:
 
     QTimeZone &operator=(const QTimeZone &other);
  #ifdef Q_COMPILER_RVALUE_REFS
-    QTimeZone &operator=(QTimeZone &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QTimeZone &operator=(QTimeZone &&other) noexcept { swap(other); return *this; }
 #endif
 
-    void swap(QTimeZone &other) Q_DECL_NOTHROW
+    void swap(QTimeZone &other) noexcept
     { d.swap(other.d); }
 
     bool operator==(const QTimeZone &other) const;

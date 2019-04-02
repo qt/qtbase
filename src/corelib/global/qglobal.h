@@ -411,7 +411,7 @@ typedef double qreal;
 #if !defined(QT_NAMESPACE) && defined(__cplusplus) && !defined(Q_QDOC)
 extern "C"
 #endif
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
 
 #if defined(__cplusplus)
 
@@ -730,7 +730,7 @@ inline void qt_noop(void) {}
 #  define QT_CATCH(A) catch (A)
 #  define QT_THROW(A) throw A
 #  define QT_RETHROW throw
-Q_NORETURN Q_DECL_COLD_FUNCTION Q_CORE_EXPORT void qTerminate() Q_DECL_NOTHROW;
+Q_NORETURN Q_DECL_COLD_FUNCTION Q_CORE_EXPORT void qTerminate() noexcept;
 #  ifdef Q_COMPILER_NOEXCEPT
 #    define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (false)
 #  else
@@ -738,7 +738,7 @@ Q_NORETURN Q_DECL_COLD_FUNCTION Q_CORE_EXPORT void qTerminate() Q_DECL_NOTHROW;
 #  endif
 #endif
 
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 
 #ifndef Q_OUTOFLINE_TEMPLATE
 #  define Q_OUTOFLINE_TEMPLATE
@@ -781,7 +781,7 @@ Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
 Q_NORETURN
 #endif
 Q_DECL_COLD_FUNCTION
-Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW;
+Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) noexcept;
 
 #if !defined(Q_ASSERT)
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
@@ -799,7 +799,7 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) 
 Q_NORETURN
 #endif
 Q_DECL_COLD_FUNCTION
-Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW;
+Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line) noexcept;
 
 #if !defined(Q_ASSERT_X)
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
@@ -809,7 +809,7 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #  endif
 #endif
 
-Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) Q_DECL_NOTHROW;
+Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) noexcept;
 Q_DECL_COLD_FUNCTION
 Q_CORE_EXPORT void qBadAlloc();
 
@@ -968,7 +968,7 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
-Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) Q_DECL_NOTHROW { return t; }
+Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
 // prevent rvalue arguments:
 template <typename T>
 void qAsConst(const T &&) Q_DECL_EQ_DELETE;
@@ -1130,11 +1130,11 @@ template <typename... Args>
 struct QNonConstOverload
 {
     template <typename R, typename T>
-    Q_DECL_CONSTEXPR auto operator()(R (T::*ptr)(Args...)) const Q_DECL_NOTHROW -> decltype(ptr)
+    Q_DECL_CONSTEXPR auto operator()(R (T::*ptr)(Args...)) const noexcept -> decltype(ptr)
     { return ptr; }
 
     template <typename R, typename T>
-    static Q_DECL_CONSTEXPR auto of(R (T::*ptr)(Args...)) Q_DECL_NOTHROW -> decltype(ptr)
+    static Q_DECL_CONSTEXPR auto of(R (T::*ptr)(Args...)) noexcept -> decltype(ptr)
     { return ptr; }
 };
 
@@ -1142,11 +1142,11 @@ template <typename... Args>
 struct QConstOverload
 {
     template <typename R, typename T>
-    Q_DECL_CONSTEXPR auto operator()(R (T::*ptr)(Args...) const) const Q_DECL_NOTHROW -> decltype(ptr)
+    Q_DECL_CONSTEXPR auto operator()(R (T::*ptr)(Args...) const) const noexcept -> decltype(ptr)
     { return ptr; }
 
     template <typename R, typename T>
-    static Q_DECL_CONSTEXPR auto of(R (T::*ptr)(Args...) const) Q_DECL_NOTHROW -> decltype(ptr)
+    static Q_DECL_CONSTEXPR auto of(R (T::*ptr)(Args...) const) noexcept -> decltype(ptr)
     { return ptr; }
 };
 
@@ -1159,11 +1159,11 @@ struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
     using QNonConstOverload<Args...>::operator();
 
     template <typename R>
-    Q_DECL_CONSTEXPR auto operator()(R (*ptr)(Args...)) const Q_DECL_NOTHROW -> decltype(ptr)
+    Q_DECL_CONSTEXPR auto operator()(R (*ptr)(Args...)) const noexcept -> decltype(ptr)
     { return ptr; }
 
     template <typename R>
-    static Q_DECL_CONSTEXPR auto of(R (*ptr)(Args...)) Q_DECL_NOTHROW -> decltype(ptr)
+    static Q_DECL_CONSTEXPR auto of(R (*ptr)(Args...)) noexcept -> decltype(ptr)
     { return ptr; }
 };
 
@@ -1184,9 +1184,9 @@ Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName, const QString &d
 Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray& value);
 Q_CORE_EXPORT bool qunsetenv(const char *varName);
 
-Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT;
-Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT;
-Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nullptr) Q_DECL_NOEXCEPT;
+Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) noexcept;
+Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) noexcept;
+Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nullptr) noexcept;
 
 inline int qIntCast(double f) { return int(f); }
 inline int qIntCast(float f) { return int(f); }

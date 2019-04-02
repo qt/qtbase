@@ -304,7 +304,7 @@ public:
         return *this;
     }
 
-    QLatin1String toQLatin1String() const Q_DECL_NOTHROW {
+    QLatin1String toQLatin1String() const noexcept {
         return QLatin1String(d->latin1, d->length);
     }
 
@@ -339,23 +339,23 @@ public:
 };
 
 #define DEF_OP(op) \
-    inline bool operator op(Latin1String lhs, Latin1String rhs) Q_DECL_NOTHROW \
+    inline bool operator op(Latin1String lhs, Latin1String rhs) noexcept \
     { \
         return lhs.toQLatin1String() op rhs.toQLatin1String(); \
     } \
-    inline bool operator op(QLatin1String lhs, Latin1String rhs) Q_DECL_NOTHROW \
+    inline bool operator op(QLatin1String lhs, Latin1String rhs) noexcept \
     { \
         return lhs op rhs.toQLatin1String(); \
     } \
-    inline bool operator op(Latin1String lhs, QLatin1String rhs) Q_DECL_NOTHROW \
+    inline bool operator op(Latin1String lhs, QLatin1String rhs) noexcept \
     { \
         return lhs.toQLatin1String() op rhs; \
     } \
-    inline bool operator op(const QString &lhs, Latin1String rhs) Q_DECL_NOTHROW \
+    inline bool operator op(const QString &lhs, Latin1String rhs) noexcept \
     { \
         return lhs op rhs.toQLatin1String(); \
     } \
-    inline bool operator op(Latin1String lhs, const QString &rhs) Q_DECL_NOTHROW \
+    inline bool operator op(Latin1String lhs, const QString &rhs) noexcept \
     { \
         return lhs.toQLatin1String() op rhs; \
     } \

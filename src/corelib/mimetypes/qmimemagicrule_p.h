@@ -69,7 +69,7 @@ public:
     QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
                    const QByteArray &mask, QString *errorString);
 
-    void swap(QMimeMagicRule &other) Q_DECL_NOTHROW
+    void swap(QMimeMagicRule &other) noexcept
     {
         qSwap(m_type,          other.m_type);
         qSwap(m_value,         other.m_value);

@@ -50,7 +50,7 @@ class QQueue : public QList<T>
 {
 public:
     // compiler-generated special member functions are fine!
-    inline void swap(QQueue<T> &other) Q_DECL_NOTHROW { QList<T>::swap(other); } // prevent QList<->QQueue swaps
+    inline void swap(QQueue<T> &other) noexcept { QList<T>::swap(other); } // prevent QList<->QQueue swaps
 #ifndef Q_QDOC
     // bring in QList::swap(int, int). We cannot say using QList<T>::swap,
     // because we don't want to make swap(QList&) available.

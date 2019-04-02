@@ -165,7 +165,7 @@ int qFindByteArray(
     This function returns SIZE_MAX (~0) on overflow or if the memory block size
     would not fit an int.
 */
-size_t qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize) Q_DECL_NOTHROW
+size_t qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize) noexcept
 {
     unsigned count = unsigned(elementCount);
     unsigned size = unsigned(elementSize);
@@ -206,7 +206,7 @@ size_t qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t heade
     needed.
 */
 CalculateGrowingBlockSizeResult
-qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize) Q_DECL_NOTHROW
+qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize) noexcept
 {
     CalculateGrowingBlockSizeResult result = {
         std::numeric_limits<size_t>::max(),std::numeric_limits<size_t>::max()
@@ -1281,7 +1281,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     Assigns \a other to this byte array and returns a reference to
     this byte array.
 */
-QByteArray &QByteArray::operator=(const QByteArray & other) Q_DECL_NOTHROW
+QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
 {
     other.d->ref.ref();
     if (!d->ref.deref())

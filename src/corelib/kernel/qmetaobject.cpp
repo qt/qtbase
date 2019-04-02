@@ -335,7 +335,7 @@ const char *QMetaObject::className() const
 
     \since 5.7
 */
-bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
+bool QMetaObject::inherits(const QMetaObject *metaObject) const noexcept
 {
     const QMetaObject *m = this;
     do {

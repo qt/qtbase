@@ -60,16 +60,16 @@ public:
         :m_string(aString.string()?*aString.string():QString()), m_position(aString.position()), m_size(aString.size()){}
     QXmlStreamStringRef(const QString &aString) : m_string(aString), m_position(0), m_size(m_string.size()) {}
 #ifdef Q_COMPILER_RVALUE_REFS
-    QXmlStreamStringRef(QString &&aString) Q_DECL_NOTHROW : m_string(std::move(aString)), m_position(0), m_size(m_string.size()) {}
+    QXmlStreamStringRef(QString &&aString) noexcept : m_string(std::move(aString)), m_position(0), m_size(m_string.size()) {}
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QXmlStreamStringRef(const QXmlStreamStringRef &other) // = default
         : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
 #ifdef Q_COMPILER_RVALUE_REFS
-    QXmlStreamStringRef(QXmlStreamStringRef &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamStringRef(QXmlStreamStringRef &&other) noexcept // = default
         : m_string(std::move(other.m_string)), m_position(other.m_position), m_size(other.m_size) {}
-    QXmlStreamStringRef &operator=(QXmlStreamStringRef &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamStringRef &operator=(QXmlStreamStringRef &&other) noexcept // = default
     { swap(other); return *this; }
 #endif
     QXmlStreamStringRef &operator=(const QXmlStreamStringRef &other) // = default
@@ -79,7 +79,7 @@ public:
                                      // ### Qt 5, since that would change the way its passed to functions. In Qt 6, remove all.
 #endif // Qt < 6.0
 
-    void swap(QXmlStreamStringRef &other) Q_DECL_NOTHROW
+    void swap(QXmlStreamStringRef &other) noexcept
     {
         qSwap(m_string, other.m_string);
         qSwap(m_position, other.m_position);
@@ -112,7 +112,7 @@ public:
     QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value);
     QXmlStreamAttribute(const QXmlStreamAttribute &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QXmlStreamAttribute(QXmlStreamAttribute &&other) Q_DECL_NOTHROW // = default;
+    QXmlStreamAttribute(QXmlStreamAttribute &&other) noexcept // = default;
         : m_name(std::move(other.m_name)),
           m_namespaceUri(std::move(other.m_namespaceUri)),
           m_qualifiedName(std::move(other.m_qualifiedName)),
@@ -122,7 +122,7 @@ public:
     {
         other.reserved = nullptr;
     }
-    QXmlStreamAttribute &operator=(QXmlStreamAttribute &&other) Q_DECL_NOTHROW // = default;
+    QXmlStreamAttribute &operator=(QXmlStreamAttribute &&other) noexcept // = default;
     {
         m_name = std::move(other.m_name);
         m_namespaceUri = std::move(other.m_namespaceUri);
@@ -199,14 +199,14 @@ public:
     QXmlStreamNamespaceDeclaration();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamNamespaceDeclaration(const QXmlStreamNamespaceDeclaration &);
-    QXmlStreamNamespaceDeclaration(QXmlStreamNamespaceDeclaration &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamNamespaceDeclaration(QXmlStreamNamespaceDeclaration &&other) noexcept // = default
         : m_prefix(std::move(other.m_prefix)),
           m_namespaceUri(std::move(other.m_namespaceUri)),
           reserved(other.reserved)
     {
         other.reserved = nullptr;
     }
-    QXmlStreamNamespaceDeclaration &operator=(QXmlStreamNamespaceDeclaration &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamNamespaceDeclaration &operator=(QXmlStreamNamespaceDeclaration &&other) noexcept // = default
     {
         m_prefix = std::move(other.m_prefix);
         m_namespaceUri = std::move(other.m_namespaceUri);
@@ -242,7 +242,7 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     ~QXmlStreamNotationDeclaration();
     QXmlStreamNotationDeclaration(const QXmlStreamNotationDeclaration &);
-    QXmlStreamNotationDeclaration(QXmlStreamNotationDeclaration &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamNotationDeclaration(QXmlStreamNotationDeclaration &&other) noexcept // = default
         : m_name(std::move(other.m_name)),
           m_systemId(std::move(other.m_systemId)),
           m_publicId(std::move(other.m_publicId)),
@@ -251,7 +251,7 @@ public:
         other.reserved = nullptr;
     }
     QXmlStreamNotationDeclaration& operator=(const QXmlStreamNotationDeclaration &);
-    QXmlStreamNotationDeclaration &operator=(QXmlStreamNotationDeclaration &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamNotationDeclaration &operator=(QXmlStreamNotationDeclaration &&other) noexcept // = default
     {
         m_name = std::move(other.m_name);
         m_systemId = std::move(other.m_systemId);
@@ -287,7 +287,7 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     ~QXmlStreamEntityDeclaration();
     QXmlStreamEntityDeclaration(const QXmlStreamEntityDeclaration &);
-    QXmlStreamEntityDeclaration(QXmlStreamEntityDeclaration &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamEntityDeclaration(QXmlStreamEntityDeclaration &&other) noexcept // = default
         : m_name(std::move(other.m_name)),
           m_notationName(std::move(other.m_notationName)),
           m_systemId(std::move(other.m_systemId)),
@@ -298,7 +298,7 @@ public:
         other.reserved = nullptr;
     }
     QXmlStreamEntityDeclaration& operator=(const QXmlStreamEntityDeclaration &);
-    QXmlStreamEntityDeclaration &operator=(QXmlStreamEntityDeclaration &&other) Q_DECL_NOTHROW // = default
+    QXmlStreamEntityDeclaration &operator=(QXmlStreamEntityDeclaration &&other) noexcept // = default
     {
         m_name = std::move(other.m_name);
         m_notationName = std::move(other.m_notationName);

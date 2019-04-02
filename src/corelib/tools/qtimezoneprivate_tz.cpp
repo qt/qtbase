@@ -467,7 +467,7 @@ struct PosixZone
     static PosixZone invalid() { return {QString(), InvalidOffset}; }
     static PosixZone parse(const char *&pos, const char *end);
 
-    bool hasValidOffset() const Q_DECL_NOTHROW { return offset != InvalidOffset; }
+    bool hasValidOffset() const noexcept { return offset != InvalidOffset; }
 };
 
 } // unnamed namespace

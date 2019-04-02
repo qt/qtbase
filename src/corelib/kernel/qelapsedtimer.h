@@ -62,28 +62,28 @@ public:
     {
     }
 
-    static ClockType clockType() Q_DECL_NOTHROW;
-    static bool isMonotonic() Q_DECL_NOTHROW;
+    static ClockType clockType() noexcept;
+    static bool isMonotonic() noexcept;
 
-    void start() Q_DECL_NOTHROW;
-    qint64 restart() Q_DECL_NOTHROW;
-    void invalidate() Q_DECL_NOTHROW;
-    bool isValid() const Q_DECL_NOTHROW;
+    void start() noexcept;
+    qint64 restart() noexcept;
+    void invalidate() noexcept;
+    bool isValid() const noexcept;
 
-    qint64 nsecsElapsed() const Q_DECL_NOTHROW;
-    qint64 elapsed() const Q_DECL_NOTHROW;
-    bool hasExpired(qint64 timeout) const Q_DECL_NOTHROW;
+    qint64 nsecsElapsed() const noexcept;
+    qint64 elapsed() const noexcept;
+    bool hasExpired(qint64 timeout) const noexcept;
 
-    qint64 msecsSinceReference() const Q_DECL_NOTHROW;
-    qint64 msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW;
-    qint64 secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW;
+    qint64 msecsSinceReference() const noexcept;
+    qint64 msecsTo(const QElapsedTimer &other) const noexcept;
+    qint64 secsTo(const QElapsedTimer &other) const noexcept;
 
-    bool operator==(const QElapsedTimer &other) const Q_DECL_NOTHROW
+    bool operator==(const QElapsedTimer &other) const noexcept
     { return t1 == other.t1 && t2 == other.t2; }
-    bool operator!=(const QElapsedTimer &other) const Q_DECL_NOTHROW
+    bool operator!=(const QElapsedTimer &other) const noexcept
     { return !(*this == other); }
 
-    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW;
+    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) noexcept;
 
 private:
     qint64 t1;

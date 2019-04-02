@@ -59,7 +59,7 @@ class QTextStreamPrivate;
 
 class QLocalePrivate;
 
-Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed = 0) noexcept;
 
 class Q_CORE_EXPORT QLocale
 {
@@ -940,12 +940,12 @@ public:
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QLocale &operator=(QLocale &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QLocale &operator=(QLocale &&other) noexcept { swap(other); return *this; }
 #endif
     QLocale &operator=(const QLocale &other);
     ~QLocale();
 
-    void swap(QLocale &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QLocale &other) noexcept { qSwap(d, other.d); }
 
     Language language() const;
     Script script() const;
@@ -1108,7 +1108,7 @@ private:
     QLocale(QLocalePrivate &dd);
     friend class QLocalePrivate;
     friend class QSystemLocale;
-    friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) noexcept;
 
     QSharedDataPointer<QLocalePrivate> d;
 };

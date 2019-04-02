@@ -369,7 +369,7 @@ uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
 
 struct QCoreApplicationData {
-    QCoreApplicationData() Q_DECL_NOTHROW {
+    QCoreApplicationData() noexcept {
         applicationNameSet = false;
         applicationVersionSet = false;
     }

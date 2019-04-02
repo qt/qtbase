@@ -99,7 +99,7 @@ bool QMutexPrivate::wait(int timeout)
     return true;
 }
 
-void QMutexPrivate::wakeUp() Q_DECL_NOTHROW
+void QMutexPrivate::wakeUp() noexcept
 {
     report_error(sem_post(&semaphore), "QMutex::unlock", "sem_post");
 }
@@ -146,7 +146,7 @@ bool QMutexPrivate::wait(int timeout)
     return ret;
 }
 
-void QMutexPrivate::wakeUp() Q_DECL_NOTHROW
+void QMutexPrivate::wakeUp() noexcept
 {
     report_error(pthread_mutex_lock(&mutex), "QMutex::unlock", "mutex lock");
     wakeup = true;

@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
 namespace QtLinuxFutex {
     constexpr inline bool futexAvailable() { return true; }
     inline int _q_futex(int *addr, int op, int val, quintptr val2 = 0,
-                        int *addr2 = nullptr, int val3 = 0) Q_DECL_NOTHROW
+                        int *addr2 = nullptr, int val3 = 0) noexcept
     {
         // we use __NR_futex because some libcs (like Android's bionic) don't
         // provide SYS_futex etc.

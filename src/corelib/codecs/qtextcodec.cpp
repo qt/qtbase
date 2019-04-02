@@ -1061,7 +1061,7 @@ QString QTextDecoder::toUnicode(const char *chars, int len)
 }
 
 // in qstring.cpp:
-void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW;
+void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept;
 
 /*! \overload
 

@@ -236,7 +236,7 @@ static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
 
     \sa isValid(), start(), restart()
 */
-void QElapsedTimer::invalidate() Q_DECL_NOTHROW
+void QElapsedTimer::invalidate() noexcept
 {
      t1 = t2 = invalidData;
 }
@@ -247,7 +247,7 @@ void QElapsedTimer::invalidate() Q_DECL_NOTHROW
 
     \sa invalidate(), start(), restart()
 */
-bool QElapsedTimer::isValid() const Q_DECL_NOTHROW
+bool QElapsedTimer::isValid() const noexcept
 {
     return t1 != invalidData && t2 != invalidData;
 }
@@ -260,7 +260,7 @@ bool QElapsedTimer::isValid() const Q_DECL_NOTHROW
 
     \sa elapsed(), QDeadlineTimer
 */
-bool QElapsedTimer::hasExpired(qint64 timeout) const Q_DECL_NOTHROW
+bool QElapsedTimer::hasExpired(qint64 timeout) const noexcept
 {
     // if timeout is -1, quint64(timeout) is LLINT_MAX, so this will be
     // considered as never expired

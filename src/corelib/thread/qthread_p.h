@@ -187,8 +187,8 @@ public:
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_WIN
-    static unsigned int __stdcall start(void *) Q_DECL_NOEXCEPT;
-    static void finish(void *, bool lockAnyway=true) Q_DECL_NOEXCEPT;
+    static unsigned int __stdcall start(void *) noexcept;
+    static void finish(void *, bool lockAnyway=true) noexcept;
 
     Qt::HANDLE handle;
     unsigned int id;

@@ -57,17 +57,17 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtMiscUtils {
-Q_DECL_CONSTEXPR inline char toHexUpper(uint value) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline char toHexUpper(uint value) noexcept
 {
     return "0123456789ABCDEF"[value & 0xF];
 }
 
-Q_DECL_CONSTEXPR inline char toHexLower(uint value) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline char toHexLower(uint value) noexcept
 {
     return "0123456789abcdef"[value & 0xF];
 }
 
-Q_DECL_CONSTEXPR inline int fromHex(uint c) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline int fromHex(uint c) noexcept
 {
     return ((c >= '0') && (c <= '9')) ? int(c - '0') :
            ((c >= 'A') && (c <= 'F')) ? int(c - 'A' + 10) :
@@ -75,12 +75,12 @@ Q_DECL_CONSTEXPR inline int fromHex(uint c) Q_DECL_NOTHROW
            /* otherwise */              -1;
 }
 
-Q_DECL_CONSTEXPR inline char toOct(uint value) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline char toOct(uint value) noexcept
 {
     return '0' + char(value & 0x7);
 }
 
-Q_DECL_CONSTEXPR inline int fromOct(uint c) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline int fromOct(uint c) noexcept
 {
     return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
 }
@@ -98,9 +98,9 @@ struct CalculateGrowingBlockSizeResult {
 
 // implemented in qbytearray.cpp
 size_t Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
-qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) Q_DECL_NOTHROW;
+qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) noexcept;
 CalculateGrowingBlockSizeResult Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
-qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) Q_DECL_NOTHROW ;
+qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) noexcept ;
 
 QT_END_NAMESPACE
 

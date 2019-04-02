@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 #if QT_CONFIG(thread) || defined(Q_CLANG_QDOC)
 
 #ifdef Q_OS_LINUX
-# define QT_MUTEX_LOCK_NOEXCEPT Q_DECL_NOTHROW
+# define QT_MUTEX_LOCK_NOEXCEPT noexcept
 #else
 # define QT_MUTEX_LOCK_NOEXCEPT
 #endif
@@ -80,39 +80,39 @@ public:
     }
 
     // BasicLockable concept
-    inline void unlock() Q_DECL_NOTHROW {
+    inline void unlock() noexcept {
         Q_ASSERT(d_ptr.load()); //mutex must be locked
         if (!fastTryUnlock())
             unlockInternal();
     }
 
-    bool tryLock() Q_DECL_NOTHROW {
+    bool tryLock() noexcept {
         return fastTryLock();
     }
 
     // Lockable concept
-    bool try_lock() Q_DECL_NOTHROW { return tryLock(); }
+    bool try_lock() noexcept { return tryLock(); }
 
-    bool isRecursive() Q_DECL_NOTHROW; //### Qt6: remove me
-    bool isRecursive() const Q_DECL_NOTHROW;
+    bool isRecursive() noexcept; //### Qt6: remove me
+    bool isRecursive() const noexcept;
 
 private:
-    inline bool fastTryLock() Q_DECL_NOTHROW {
+    inline bool fastTryLock() noexcept {
         return d_ptr.testAndSetAcquire(nullptr, dummyLocked());
     }
-    inline bool fastTryUnlock() Q_DECL_NOTHROW {
+    inline bool fastTryUnlock() noexcept {
         return d_ptr.testAndSetRelease(dummyLocked(), nullptr);
     }
-    inline bool fastTryLock(QMutexData *&current) Q_DECL_NOTHROW {
+    inline bool fastTryLock(QMutexData *&current) noexcept {
         return d_ptr.testAndSetAcquire(nullptr, dummyLocked(), current);
     }
-    inline bool fastTryUnlock(QMutexData *&current) Q_DECL_NOTHROW {
+    inline bool fastTryUnlock(QMutexData *&current) noexcept {
         return d_ptr.testAndSetRelease(dummyLocked(), nullptr, current);
     }
 
     void lockInternal() QT_MUTEX_LOCK_NOEXCEPT;
     bool lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
-    void unlockInternal() Q_DECL_NOTHROW;
+    void unlockInternal() noexcept;
 
     QBasicAtomicPointer<QMutexData> d_ptr;
     static inline QMutexData *dummyLocked() {
@@ -134,7 +134,7 @@ public:
     void lock() QT_MUTEX_LOCK_NOEXCEPT;
     bool tryLock(int timeout = 0) QT_MUTEX_LOCK_NOEXCEPT;
     // BasicLockable concept
-    void unlock() Q_DECL_NOTHROW;
+    void unlock() noexcept;
 
     // Lockable concept
     bool try_lock() QT_MUTEX_LOCK_NOEXCEPT { return tryLock(); }
@@ -158,7 +158,7 @@ public:
     }
 #endif
 
-    bool isRecursive() const Q_DECL_NOTHROW
+    bool isRecursive() const noexcept
     { return QBasicMutex::isRecursive(); }
 
 private:
@@ -212,7 +212,7 @@ public:
 #endif
     inline ~QMutexLocker() { unlock(); }
 
-    inline void unlock() Q_DECL_NOTHROW
+    inline void unlock() noexcept
     {
         if ((val & quintptr(1u)) == quintptr(1u)) {
             val &= ~quintptr(1u);
@@ -257,24 +257,24 @@ class Q_CORE_EXPORT QMutex
 public:
     enum RecursionMode { NonRecursive, Recursive };
 
-    inline Q_DECL_CONSTEXPR explicit QMutex(RecursionMode = NonRecursive) Q_DECL_NOTHROW { }
+    inline Q_DECL_CONSTEXPR explicit QMutex(RecursionMode = NonRecursive) noexcept { }
 
-    inline void lock() Q_DECL_NOTHROW {}
-    inline bool tryLock(int timeout = 0) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
-    inline bool try_lock() Q_DECL_NOTHROW { return true; }
-    inline void unlock() Q_DECL_NOTHROW {}
-    inline bool isRecursive() const Q_DECL_NOTHROW { return true; }
+    inline void lock() noexcept {}
+    inline bool tryLock(int timeout = 0) noexcept { Q_UNUSED(timeout); return true; }
+    inline bool try_lock() noexcept { return true; }
+    inline void unlock() noexcept {}
+    inline bool isRecursive() const noexcept { return true; }
 
 #if QT_HAS_INCLUDE(<chrono>)
     template <class Rep, class Period>
-    inline bool try_lock_for(std::chrono::duration<Rep, Period> duration) Q_DECL_NOTHROW
+    inline bool try_lock_for(std::chrono::duration<Rep, Period> duration) noexcept
     {
         Q_UNUSED(duration);
         return true;
     }
 
     template<class Clock, class Duration>
-    inline bool try_lock_until(std::chrono::time_point<Clock, Duration> timePoint) Q_DECL_NOTHROW
+    inline bool try_lock_until(std::chrono::time_point<Clock, Duration> timePoint) noexcept
     {
         Q_UNUSED(timePoint);
         return true;
@@ -288,12 +288,12 @@ private:
 class Q_CORE_EXPORT QMutexLocker
 {
 public:
-    inline explicit QMutexLocker(QMutex *) Q_DECL_NOTHROW {}
-    inline ~QMutexLocker() Q_DECL_NOTHROW {}
+    inline explicit QMutexLocker(QMutex *) noexcept {}
+    inline ~QMutexLocker() noexcept {}
 
-    inline void unlock() Q_DECL_NOTHROW {}
-    void relock() Q_DECL_NOTHROW {}
-    inline QMutex *mutex() const Q_DECL_NOTHROW { return nullptr; }
+    inline void unlock() noexcept {}
+    void relock() noexcept {}
+    inline QMutex *mutex() const noexcept { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QMutexLocker)

@@ -129,7 +129,7 @@ public:
     }
     inline ~QBasicMutexLocker() { if (isLocked) unlock(); }
 
-    inline void unlock() Q_DECL_NOTHROW
+    inline void unlock() noexcept
     {
         isLocked = false;
         m->unlock();

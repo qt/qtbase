@@ -119,13 +119,13 @@ class QString;
 #define Q_ENUMS(x) QT_ANNOTATE_CLASS(qt_enums, x)
 #define Q_FLAGS(x) QT_ANNOTATE_CLASS(qt_enums, x)
 #define Q_ENUM_IMPL(ENUM) \
-    friend Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return &staticMetaObject; } \
-    friend Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+    friend Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return &staticMetaObject; } \
+    friend Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
 #define Q_ENUM(x) Q_ENUMS(x) Q_ENUM_IMPL(x)
 #define Q_FLAG(x) Q_FLAGS(x) Q_ENUM_IMPL(x)
 #define Q_ENUM_NS_IMPL(ENUM) \
-    inline Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return &staticMetaObject; } \
-    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+    inline Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return &staticMetaObject; } \
+    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
 #define Q_ENUM_NS(x) Q_ENUMS(x) Q_ENUM_NS_IMPL(x)
 #define Q_FLAG_NS(x) Q_FLAGS(x) Q_ENUM_NS_IMPL(x)
 #define Q_SCRIPTABLE QT_ANNOTATE_FUNCTION(qt_scriptable)
@@ -340,7 +340,7 @@ struct Q_CORE_EXPORT QMetaObject
     const char *className() const;
     const QMetaObject *superClass() const;
 
-    bool inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT;
+    bool inherits(const QMetaObject *metaObject) const noexcept;
     QObject *cast(QObject *obj) const;
     const QObject *cast(const QObject *obj) const;
 
@@ -605,8 +605,8 @@ public:
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : nullptr; }
 #endif
 
-    Connection(Connection &&o) Q_DECL_NOTHROW : d_ptr(o.d_ptr) { o.d_ptr = nullptr; }
-    Connection &operator=(Connection &&other) Q_DECL_NOTHROW
+    Connection(Connection &&o) noexcept : d_ptr(o.d_ptr) { o.d_ptr = nullptr; }
+    Connection &operator=(Connection &&other) noexcept
     { qSwap(d_ptr, other.d_ptr); return *this; }
 };
 

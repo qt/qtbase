@@ -254,7 +254,7 @@ namespace {
         typedef QString argument_type;
 
         Q_NEVER_INLINE
-        result_type operator()(const QString &name) const Q_DECL_NOEXCEPT
+        result_type operator()(const QString &name) const noexcept
         {
             if (Q_UNLIKELY(name.isEmpty()))
                 return warn("be empty");
@@ -271,7 +271,7 @@ namespace {
         }
 
         Q_NEVER_INLINE
-        static bool warn(const char *what) Q_DECL_NOEXCEPT
+        static bool warn(const char *what) noexcept
         {
             qWarning("QCommandLineOption: Option names cannot %s", what);
             return true;

@@ -1427,7 +1427,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
     \sa signalsBlocked(), QSignalBlocker
 */
 
-bool QObject::blockSignals(bool block) Q_DECL_NOTHROW
+bool QObject::blockSignals(bool block) noexcept
 {
     Q_D(QObject);
     bool previous = d->blockSig;
