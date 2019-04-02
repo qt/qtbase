@@ -644,7 +644,7 @@ public:
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
                    QGraphicsEffect::PixmapPadMode mode) const override;
-    QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
+    QRectF paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
