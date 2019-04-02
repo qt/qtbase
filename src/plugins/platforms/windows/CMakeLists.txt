@@ -7,14 +7,17 @@
 add_qt_plugin(qwindows
     TYPE platforms
     SOURCES
-        openglblacklists.qrc
+        main.cpp
         qtwindowsglobal.h
         qwin10helpers.cpp qwin10helpers.h
+        qwindowsbackingstore.cpp qwindowsbackingstore.h
         qwindowscombase.h
         qwindowscontext.cpp qwindowscontext.h
         qwindowscursor.cpp qwindowscursor.h
         qwindowsdialoghelpers.cpp qwindowsdialoghelpers.h
         qwindowsdropdataobject.cpp qwindowsdropdataobject.h
+        qwindowsgdiintegration.cpp qwindowsgdiintegration.h
+        qwindowsgdinativeinterface.cpp qwindowsgdinativeinterface.h
         qwindowsinputcontext.cpp qwindowsinputcontext.h
         qwindowsintegration.cpp qwindowsintegration.h
         qwindowsinternalmimedata.cpp qwindowsinternalmimedata.h
@@ -31,41 +34,45 @@ add_qt_plugin(qwindows
         qwindowstheme.cpp qwindowstheme.h
         qwindowsthreadpoolrunner.h
         qwindowswindow.cpp qwindowswindow.h
-        main.cpp
-        qwindowsbackingstore.cpp qwindowsbackingstore.h
-        qwindowsgdiintegration.cpp qwindowsgdiintegration.h
-        qwindowsgdinativeinterface.cpp qwindowsgdinativeinterface.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
+        Qt::GuiPrivate
         Qt::ThemeSupportPrivate
-        gdi32
-        dwmapi
-        ole32
-        user32
-        winspool
-        imm32
-        winmm
-        oleaut32
-        shlwapi
-        shell32
         advapi32
+        dwmapi
+        gdi32
+        imm32
+        ole32
+        oleaut32
+        shell32
+        shlwapi
+        user32
+        winmm
+        winspool
         wtsapi32
-    # OTHER_FILES = "windows.json"
-    # PLUGIN_CLASS_NAME = "QWindowsIntegrationPlugin"
-    # QT_FOR_CONFIG = "gui"
-    # _LOADED = "qt_plugin"
 )
+
+# Resources:
+set_source_files_properties("openglblacklists/default.json"
+    PROPERTIES alias "default.json")
+add_qt_resource(qwindows "openglblacklists" PREFIX "/qt-project.org/windows/openglblacklists" FILES
+    openglblacklists/default.json)
+
+
+#### Keys ignored in scope 1:.:windows.pro:<NONE>:
+# OTHER_FILES = "windows.json"
+# PLUGIN_CLASS_NAME = "QWindowsIntegrationPlugin"
+# QT_FOR_CONFIG = "gui"
+# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
 
-# TODO
 extend_target(qwindows CONDITION QT_FEATURE_accessibility
     SOURCES
         uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
@@ -89,17 +96,15 @@ extend_target(qwindows CONDITION QT_FEATURE_accessibility
         Qt::AccessibilitySupportPrivate
 )
 
-# Special case, disable vulkan for now because headers can't be found.
 extend_target(qwindows CONDITION QT_FEATURE_vulkan
     SOURCES
         qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
     LIBRARIES
-         Qt::VulkanSupportPrivate
+        Qt::VulkanSupportPrivate
 )
 
-#extend_target(qwindows CONDITION NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN
-#    # PLUGIN_EXTENDS = "-"
-#)
+#### Keys ignored in scope 4:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"
 
 extend_target(qwindows CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2
     LIBRARIES
@@ -158,15 +163,34 @@ extend_target(qwindows CONDITION QT_FEATURE_sessionmanager
         qwindowssessionmanager.cpp qwindowssessionmanager.h
 )
 
-extend_target(qwindows CONDITION QT_FEATURE_imageformat_png
-    SOURCES
-        cursors.qrc
-)
+# Resources:
+add_qt_resource(qwindows "cursors" PREFIX "/qt-project.org/windows/cursors" FILES
+    images/closedhandcursor_32.png
+    images/closedhandcursor_48.png
+    images/closedhandcursor_64.png
+    images/dragcopycursor_32.png
+    images/dragcopycursor_48.png
+    images/dragcopycursor_64.png
+    images/draglinkcursor_32.png
+    images/draglinkcursor_48.png
+    images/draglinkcursor_64.png
+    images/dragmovecursor_32.png
+    images/dragmovecursor_48.png
+    images/dragmovecursor_64.png
+    images/openhandcursor_32.png
+    images/openhandcursor_48.png
+    images/openhandcursor_64.png
+    images/splithcursor_32.png
+    images/splithcursor_48.png
+    images/splithcursor_64.png
+    images/splitvcursor_32.png
+    images/splitvcursor_48.png
+    images/splitvcursor_64.png)
 
-# TODO
-extend_target(qwindows CONDITION (QT_FEATURE_accessibility)
+
+extend_target(qwindows CONDITION (QT_FEATURE_accessibility) AND (TARGET windowsuiautomation_supportPrivate)
     LIBRARIES
-        Qt::WindowsUIAutomationSupportPrivate
+        windowsuiautomation_supportPrivate
 )
 
 extend_target(qwindows CONDITION QT_FEATURE_accessibility AND mingw
@@ -174,14 +198,6 @@ extend_target(qwindows CONDITION QT_FEATURE_accessibility AND mingw
         uuid
 )
 
-#extend_target(qwindows CONDITION QT_FEATURE_combined_angle_lib
-#    DEFINES
-#        LIBEGL_NAME=
-#        LIBGLESV2_NAME=
-#)
-
-#extend_target(qwindows CONDITION NOT QT_FEATURE_combined_angle_lib
-#    DEFINES
-#        LIBEGL_NAME=
-#        LIBGLESV2_NAME=
-#)
+# special case:
+# extend_target(qwindows CONDITION QT_FEATURE_combined_angle_lib ...
+# extend_target(qwindows CONDITION NOT QT_FEATURE_combined_angle_lib ...
