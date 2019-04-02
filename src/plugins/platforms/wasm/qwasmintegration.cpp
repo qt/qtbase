@@ -34,6 +34,7 @@
 #include "qwasmopenglcontext.h"
 #include "qwasmtheme.h"
 #include "qwasmclipboard.h"
+#include "qwasmservices.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -61,16 +62,37 @@ static void browserBeforeUnload(emscripten::val)
     QWasmIntegration::QWasmBrowserExit();
 }
 
+static void addCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->addScreen(canvasId);
+}
+
+static void removeCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->removeScreen(canvasId);
+}
+
+static void resizeCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->resizeScreen(canvasId);
+}
+
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
     function("qtBrowserBeforeUnload", &browserBeforeUnload);
+    function("qtAddCanvasElement", &addCanvasElement);
+    function("qtRemoveCanvasElement", &removeCanvasElement);
+    function("qtResizeCanvasElement", &resizeCanvasElement);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
-      m_eventDispatcher(nullptr),
+      m_desktopServices(nullptr),
       m_clipboard(new QWasmClipboard)
 {
     s_instance = this;
@@ -98,9 +120,11 @@ QWasmIntegration::QWasmIntegration()
 QWasmIntegration::~QWasmIntegration()
 {
     delete m_fontDb;
+    delete m_desktopServices;
 
-    while (!m_screens.isEmpty())
-        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
+    for (auto it = m_screens.constBegin(); it != m_screens.constEnd(); ++it)
+        QWindowSystemInterface::handleScreenRemoved(*it);
+    m_screens.clear();
 
     s_instance = nullptr;
 }
@@ -164,7 +188,19 @@ QAbstractEventDispatcher *QWasmIntegration::createEventDispatcher() const
 
 QVariant QWasmIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
+    if (hint == ShowIsFullScreen)
+        return true;
+
     return QPlatformIntegration::styleHint(hint);
+}
+
+Qt::WindowState QWasmIntegration::defaultWindowState(Qt::WindowFlags flags) const
+{
+    // Don't maximize dialogs
+    if (flags & Qt::Dialog & ~Qt::Window)
+        return Qt::WindowNoState;
+
+    return QPlatformIntegration::defaultWindowState(flags);
 }
 
 QStringList QWasmIntegration::themeNames() const
@@ -179,22 +215,34 @@ QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
     return QPlatformIntegration::createPlatformTheme(name);
 }
 
+QPlatformServices *QWasmIntegration::services() const
+{
+    if (m_desktopServices == nullptr)
+        m_desktopServices = new QWasmServices();
+    return m_desktopServices;
+}
+
 QPlatformClipboard* QWasmIntegration::clipboard() const
 {
     return m_clipboard;
-}
-
-QVector<QWasmScreen *> QWasmIntegration::screens()
-{
-    return m_screens;
 }
 
 void QWasmIntegration::addScreen(const QString &canvasId)
 {
     QWasmScreen *screen = new QWasmScreen(canvasId);
     m_clipboard->installEventHandlers(canvasId);
-    m_screens.append(screen);
+    m_screens.insert(canvasId, screen);
     QWindowSystemInterface::handleScreenAdded(screen);
+}
+
+void QWasmIntegration::removeScreen(const QString &canvasId)
+{
+    QWindowSystemInterface::handleScreenRemoved(m_screens.take(canvasId));
+}
+
+void QWasmIntegration::resizeScreen(const QString &canvasId)
+{
+    m_screens.value(canvasId)->updateQScreenAndCanvasRenderSize();
 }
 
 QT_END_NAMESPACE

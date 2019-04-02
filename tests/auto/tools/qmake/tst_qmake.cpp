@@ -244,7 +244,6 @@ void tst_qmake::simple_app_versioned()
         QVERIFY2(QFile::exists(pdbFilePath), qPrintable(pdbFilePath));
         QVERIFY(test_compiler.make(buildDir, "install"));
         QString installedPdbFilePath = installDir + '/' + targetBase + ".pdb";
-        QEXPECT_FAIL("", "QTBUG-74265", Continue);
         QVERIFY2(QFile::exists(installedPdbFilePath), qPrintable(installedPdbFilePath));
     }
 
@@ -252,10 +251,8 @@ void tst_qmake::simple_app_versioned()
     QVERIFY(test_compiler.exists(destDir, "simple app", Exe, version));
     QVERIFY(test_compiler.makeDistClean(buildDir));
     QVERIFY(!test_compiler.exists(destDir, "simple app", Exe, version));
-    if (checkPdb) {
-        QEXPECT_FAIL("", "QTBUG-74265", Continue);
+    if (checkPdb)
         QVERIFY(!QFile::exists(pdbFilePath));
-    }
     QVERIFY(test_compiler.removeMakefile(buildDir));
 }
 

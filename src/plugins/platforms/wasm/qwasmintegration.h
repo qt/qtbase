@@ -50,6 +50,7 @@ class QWasmScreen;
 class QWasmCompositor;
 class QWasmBackingStore;
 class QWasmClipboard;
+class QWasmServices;
 
 class QWasmIntegration : public QObject, public QPlatformIntegration
 {
@@ -67,24 +68,26 @@ public:
     QPlatformFontDatabase *fontDatabase() const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const override;
+    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const override;
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
+    QPlatformServices *services() const override;
     QPlatformClipboard *clipboard() const override;
-
-    QVector<QWasmScreen *>screens();
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
 
     static QWasmIntegration *get() { return s_instance; }
     static void QWasmBrowserExit();
 
-private:
     void addScreen(const QString &canvasId);
+    void removeScreen(const QString &canvasId);
+    void resizeScreen(const QString &canvasId);
 
+private:
     mutable QWasmFontDatabase *m_fontDb;
-    mutable QWasmEventDispatcher *m_eventDispatcher;
+    mutable QWasmServices *m_desktopServices;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
 
-    QVector<QWasmScreen *> m_screens;
+    QHash<QString, QWasmScreen *> m_screens;
     mutable QWasmClipboard *m_clipboard;
     static QWasmIntegration *s_instance;
 };
