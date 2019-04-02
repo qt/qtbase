@@ -266,7 +266,7 @@ add_qt_resource(Widgets "qstyle1" PREFIX "/qt-project.org/styles/macstyle" BASE 
 ## Scopes:
 #####################################################################
 
-extend_target(Widgets CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch  STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x65000000"
 )

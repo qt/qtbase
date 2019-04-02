@@ -529,7 +529,7 @@ extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5
 #### Keys ignored in scope 43:.:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
 
-extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT (TEST_architecture STREQUAL "arm64")
+extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT (TEST_architecture_arch  STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )

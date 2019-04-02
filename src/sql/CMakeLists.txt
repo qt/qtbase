@@ -35,7 +35,7 @@ add_qt_module(Sql
 ## Scopes:
 #####################################################################
 
-extend_target(Sql CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+extend_target(Sql CONDITION MSVC AND (TEST_architecture_arch  STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x62000000"
 )

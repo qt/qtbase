@@ -366,7 +366,7 @@ endif()
 #    # MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
 #)
 
-extend_target(Core CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x67000000"
 )

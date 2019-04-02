@@ -1175,9 +1175,9 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
 
 def map_to_cmake_condition(condition: str) -> str:
     condition = re.sub(r'\bQT_ARCH___equals___([a-zA-Z_0-9]*)',
-                       r'(TEST_architecture STREQUAL "\1")', condition)
+                       r'(TEST_architecture_arch STREQUAL "\1")', condition)
     condition = re.sub(r'\bQT_ARCH___contains___([a-zA-Z_0-9]*)',
-                       r'(TEST_architecture STREQUAL "\1")', condition)
+                       r'(TEST_architecture_arch STREQUAL "\1")', condition)
     return condition
 
 

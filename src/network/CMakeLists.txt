@@ -68,7 +68,7 @@ add_qt_module(Network
 ## Scopes:
 #####################################################################
 
-extend_target(Network CONDITION MSVC AND (TEST_architecture STREQUAL "i386")
+extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x64000000"
 )
