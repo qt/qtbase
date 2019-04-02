@@ -1012,7 +1012,8 @@ static bool addFontToDatabase(QString familyName,
                               const LOGFONT &logFont,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
-                              int type)
+                              int type,
+                              QWindowsFontDatabase *db)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
     if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QLatin1String("WST_")))
@@ -1092,6 +1093,12 @@ static bool addFontToDatabase(QString familyName,
             writingSystems.setSupported(ws);
     }
 
+    // We came here from populating a different font family, so we have
+    // to ensure the entire typographic family is populated before we
+    // mark it as such inside registerFont()
+    if (!subFamilyName.isEmpty() && familyName != subFamilyName && !QPlatformFontDatabase::isFamilyPopulated(familyName))
+        db->populateFamily(familyName);
+
     QPlatformFontDatabase::registerFont(familyName, styleName, foundryName, weight,
                                         style, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
 
@@ -1118,7 +1125,7 @@ static bool addFontToDatabase(QString familyName,
 }
 
 static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *textmetric,
-                                     DWORD type, LPARAM)
+                                     DWORD type, LPARAM lParam)
 {
     const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
@@ -1130,7 +1137,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     const FONTSIGNATURE *signature = nullptr;
     if (type & TRUETYPE_FONTTYPE)
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
-    addFontToDatabase(familyName, styleName, *logFont, textmetric, signature, type);
+    addFontToDatabase(familyName, styleName, *logFont, textmetric, signature, type, reinterpret_cast<QWindowsFontDatabase *>(lParam));
 
     // keep on enumerating
     return 1;
@@ -1149,7 +1156,7 @@ void QWindowsFontDatabase::populateFamily(const QString &familyName)
     familyName.toWCharArray(lf.lfFaceName);
     lf.lfFaceName[familyName.size()] = 0;
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, storeFont, 0, 0);
+    EnumFontFamiliesEx(dummy, &lf, storeFont, reinterpret_cast<LPARAM>(this), 0);
     ReleaseDC(0, dummy);
 }
 
@@ -1590,7 +1597,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             GetTextMetrics(hdc, &textMetrics);
 
             addFontToDatabase(familyName, styleName, lf, &textMetrics, &signatures.at(j),
-                              TRUETYPE_FONTTYPE);
+                              TRUETYPE_FONTTYPE, this);
 
             SelectObject(hdc, oldobj);
             DeleteObject(hfont);
