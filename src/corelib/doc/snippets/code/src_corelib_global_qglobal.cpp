@@ -773,16 +773,16 @@ bool readConfiguration(const QFile &file)
 
 //! [qdecloverride]
     // generate error if this doesn't actually override anything:
-    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
+    virtual void MyWidget::paintEvent(QPaintEvent*) override;
 //! [qdecloverride]
 
 //! [qdeclfinal-1]
     // more-derived classes no longer permitted to override this:
-    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_FINAL;
+    virtual void MyWidget::paintEvent(QPaintEvent*) final;
 //! [qdeclfinal-1]
 
 //! [qdeclfinal-2]
-    class QRect Q_DECL_FINAL { // cannot be derived from
+    class QRect final { // cannot be derived from
         // ...
     };
 //! [qdeclfinal-2]
