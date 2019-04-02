@@ -65,11 +65,11 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
                           const QRect &clip,
                           T blender)
 {
-    qreal sx = targetRect.width() / (qreal) srcRect.width();
-    qreal sy = targetRect.height() / (qreal) srcRect.height();
+    qreal sx = srcRect.width() / (qreal) targetRect.width();
+    qreal sy = srcRect.height() / (qreal) targetRect.height();
 
-    int ix = 0x00010000 / sx;
-    int iy = 0x00010000 / sy;
+    const int ix = 0x00010000 * sx;
+    const int iy = 0x00010000 * sy;
 
 //     qDebug() << "scale:" << endl
 //              << " - target" << targetRect << endl
@@ -77,59 +77,30 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
 //              << " - clip" << clip << endl
 //              << " - sx=" << sx << " sy=" << sy << " ix=" << ix << " iy=" << iy;
 
-    int cx1 = clip.x();
-    int cx2 = clip.x() + clip.width();
-    int cy1 = clip.top();
-    int cy2 = clip.y() + clip.height();
-
-    int tx1 = qRound(targetRect.left());
-    int tx2 = qRound(targetRect.right());
-    int ty1 = qRound(targetRect.top());
-    int ty2 = qRound(targetRect.bottom());
-
-    if (tx2 < tx1)
-        qSwap(tx2, tx1);
-
-    if (ty2 < ty1)
-        qSwap(ty2, ty1);
-
-    if (tx1 < cx1)
-        tx1 = cx1;
-
-    if (tx2 >= cx2)
-        tx2 = cx2;
-
-    if (tx1 >= tx2)
+    QRect tr = targetRect.normalized().toRect();
+    tr = tr.intersected(clip);
+    if (tr.isEmpty())
         return;
-
-    if (ty1 < cy1)
-        ty1 = cy1;
-
-    if (ty2 >= cy2)
-       ty2 = cy2;
-
-    if (ty1 >= ty2)
-        return;
-
-    int h = ty2 - ty1;
-    int w = tx2 - tx1;
-
+    const int tx1 = tr.left();
+    const int ty1 = tr.top();
+    int h = tr.height();
+    int w = tr.width();
 
     quint32 basex;
     quint32 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
         basex = quint32(srcRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
         basex = quint32(srcRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
         srcy = quint32(srcRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
         srcy = quint32(srcRect.top() * 65536) + dsty;
     }
 
@@ -185,11 +156,11 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
                                                 const QRect &clip,
                                                 T blender)
 {
-    qreal sx = targetRect.width() / (qreal) srcRect.width();
-    qreal sy = targetRect.height() / (qreal) srcRect.height();
+    qreal sx = srcRect.width() / (qreal) targetRect.width();
+    qreal sy = srcRect.height() / (qreal) targetRect.height();
 
-    int ix = 0x00010000 / sx;
-    int iy = 0x00010000 / sy;
+    const int ix = 0x00010000 * sx;
+    const int iy = 0x00010000 * sy;
 
 //     qDebug() << "scale:" << endl
 //              << " - target" << targetRect << endl
@@ -197,60 +168,30 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
 //              << " - clip" << clip << endl
 //              << " - sx=" << sx << " sy=" << sy << " ix=" << ix << " iy=" << iy;
 
-    int cx1 = clip.x();
-    int cx2 = clip.x() + clip.width();
-    int cy1 = clip.top();
-    int cy2 = clip.y() + clip.height();
-
-    int tx1 = qRound(targetRect.left());
-    int tx2 = qRound(targetRect.right());
-    int ty1 = qRound(targetRect.top());
-    int ty2 = qRound(targetRect.bottom());
-
-    if (tx2 < tx1)
-        qSwap(tx2, tx1);
-
-    if (ty2 < ty1)
-        qSwap(ty2, ty1);
-
-    if (tx1 < cx1)
-        tx1 = cx1;
-
-    if (tx2 >= cx2)
-        tx2 = cx2;
-
-    if (tx1 >= tx2)
+    QRect tr = targetRect.normalized().toRect();
+    tr = tr.intersected(clip);
+    if (tr.isEmpty())
         return;
-
-    if (ty1 < cy1)
-        ty1 = cy1;
-
-    if (ty2 >= cy2)
-       ty2 = cy2;
-
-    if (ty1 >= ty2)
-        return;
-
-    int h = ty2 - ty1;
-    int w = tx2 - tx1;
-    if (!w || !h)
-        return;
+    const int tx1 = tr.left();
+    const int ty1 = tr.top();
+    int h = tr.height();
+    int w = tr.width();
 
     quint32 basex;
     quint32 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * sx * 65536) + 1;
         basex = quint32(srcRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * sx * 65536) - 1;
         basex = quint32(srcRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * sy * 65536) + 1;
         srcy = quint32(srcRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * sy * 65536) - 1;
         srcy = quint32(srcRect.top() * 65536) + dsty;
     }
 
