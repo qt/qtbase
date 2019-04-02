@@ -141,6 +141,7 @@ def map_qt_base_library(lib: str) -> str:
         'uitools': 'Qt::UiTools',
         'virtualkeyboard': 'Qt::VirtualKeyboard',
         'vkconvenience': 'Qt::VulkanSupport',
+        'vulkan_supportPrivate': 'Qt::VulkanSupportPrivate',
         'webchannel': 'Qt::WebChannel',
         'webengine': 'Qt::WebEngine',
         'webenginewidgets': 'Qt::WebEngineWidgets',
@@ -212,6 +213,7 @@ def substitute_platform(platform: str) -> str:
 
 libray_mapping = {
     'atspi': 'PkgConfig::ATSPI2',
+    'cups': 'Cups::Cups',
     'drm': 'Libdrm::Libdrm',
     'doubleconversion': 'double-conversion',
     'fontconfig': 'Fontconfig::Fontconfig',
@@ -236,6 +238,7 @@ libray_mapping = {
     'sqlite': 'SQLite::SQLite3',
     'SQLite3': 'SQLite::SQLite3',
     'tslib': 'PkgConfig::Tslib',
+    'vulkan_supportPrivate': 'Qt::VulkanSupportPrivate',
     'x11sm': '${X11_SM_LIB} ${X11_ICE_LIB}',
     'xcb_icccm': 'XCB::ICCCM',
     'xcb_image': 'XCB::IMAGE',
