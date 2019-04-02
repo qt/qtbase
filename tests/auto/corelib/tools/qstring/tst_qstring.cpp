@@ -578,7 +578,7 @@ private slots:
 #ifdef QT_USE_ICU
     void toUpperLower_icu();
 #endif
-#if !defined(QT_NO_UNICODE_LITERAL) && defined(Q_COMPILER_LAMBDA)
+#if !defined(QT_NO_UNICODE_LITERAL)
     void literals();
 #endif
     void eightBitLiterals_data();
@@ -6621,7 +6621,7 @@ void tst_QString::toUpperLower_icu()
 }
 #endif
 
-#if !defined(QT_NO_UNICODE_LITERAL) && defined(Q_COMPILER_LAMBDA)
+#if !defined(QT_NO_UNICODE_LITERAL)
 // Only tested on c++0x compliant compiler or gcc
 void tst_QString::literals()
 {

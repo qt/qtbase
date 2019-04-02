@@ -201,7 +201,7 @@ qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
     return result;
 }
 
-#if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
+#if !defined(__OPTIMIZE_SIZE__)
 namespace {
 template <uint MaxCount> struct UnrollTailLoop
 {
@@ -627,7 +627,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept
     size = size % 8;
     dst += offset;
     str += offset;
-#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
+#  if !defined(__OPTIMIZE_SIZE__)
     return UnrollTailLoop<7>::exec(int(size), [=](int i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif

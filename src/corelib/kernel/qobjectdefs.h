@@ -64,11 +64,7 @@ class QString;
 // The following macros can be defined by tools that understand Qt
 // to have the information from the macro.
 #ifndef QT_ANNOTATE_CLASS
-# ifndef Q_COMPILER_VARIADIC_MACROS
-#  define QT_ANNOTATE_CLASS(type, x)
-# else
-#  define QT_ANNOTATE_CLASS(type, ...)
-# endif
+# define QT_ANNOTATE_CLASS(type, ...)
 #endif
 #ifndef QT_ANNOTATE_CLASS2
 # define QT_ANNOTATE_CLASS2(type, a1, a2)
@@ -105,11 +101,7 @@ class QString;
 #endif
 #define Q_PLUGIN_METADATA(x) QT_ANNOTATE_CLASS(qt_plugin_metadata, x)
 #define Q_INTERFACES(x) QT_ANNOTATE_CLASS(qt_interfaces, x)
-#ifdef Q_COMPILER_VARIADIC_MACROS
-# define Q_PROPERTY(...) QT_ANNOTATE_CLASS(qt_property, __VA_ARGS__)
-#else
-# define Q_PROPERTY(text) QT_ANNOTATE_CLASS(qt_property, text)
-#endif
+#define Q_PROPERTY(...) QT_ANNOTATE_CLASS(qt_property, __VA_ARGS__)
 #define Q_PRIVATE_PROPERTY(d, text) QT_ANNOTATE_CLASS2(qt_private_property, d, text)
 #ifndef Q_REVISION
 # define Q_REVISION(v)

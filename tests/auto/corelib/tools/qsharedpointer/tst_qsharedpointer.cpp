@@ -89,9 +89,7 @@ private slots:
 #endif
     void constCorrectness();
     void customDeleter();
-#ifdef Q_COMPILER_LAMBDA
     void lambdaCustomDeleter();
-#endif
     void creating();
     void creatingCvQualified();
     void creatingVariadic();
@@ -1670,7 +1668,6 @@ void tst_QSharedPointer::customDeleter()
     safetyCheck();
 }
 
-#ifdef Q_COMPILER_LAMBDA
 // The compiler needs to be in C++11 mode and to support lambdas
 void tst_QSharedPointer::lambdaCustomDeleter()
 {
@@ -1698,7 +1695,6 @@ void tst_QSharedPointer::lambdaCustomDeleter()
     }
     safetyCheck();
 }
-#endif
 
 void customQObjectDeleterFn(QObject *obj)
 {
@@ -2233,11 +2229,9 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "struct IncompatibleCustomDeleter { void operator()(int *); };\n"
            "QSharedPointer<Data> ptr(new Data, IncompatibleCustomDeleter());\n";
-#ifdef Q_COMPILER_LAMBDA
     QTest::newRow("incompatible-custom-lambda-deleter")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr(new Data, [](int *) {});\n";
-#endif
 }
 
 void tst_QSharedPointer::invalidConstructs()

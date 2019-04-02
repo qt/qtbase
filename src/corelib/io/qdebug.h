@@ -161,9 +161,7 @@ public:
     inline QDebug &operator<<(QLatin1String t) { putByteArray(t.latin1(), t.size(), ContainsLatin1); return maybeSpace(); }
     inline QDebug &operator<<(const QByteArray & t) { putByteArray(t.constData(), t.size(), ContainsBinary); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
-#ifdef Q_COMPILER_NULLPTR
     inline QDebug &operator<<(std::nullptr_t) { stream->ts << "(nullptr)"; return maybeSpace(); }
-#endif
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
         return *this;

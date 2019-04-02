@@ -138,9 +138,7 @@ private slots:
     void reserveExtended();
     void movablity_data();
     void movablity();
-#if defined(Q_COMPILER_LAMBDA)
     void literals();
-#endif
     void toUpperLower_data();
     void toUpperLower();
     void isUpper();
@@ -2192,7 +2190,6 @@ void tst_QByteArray::movablity()
     QVERIFY(true);
 }
 
-#if defined(Q_COMPILER_LAMBDA)
 // Only tested on c++0x compliant compiler or gcc
 void tst_QByteArray::literals()
 {
@@ -2213,7 +2210,6 @@ void tst_QByteArray::literals()
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
 }
-#endif
 
 void tst_QByteArray::toUpperLower_data()
 {

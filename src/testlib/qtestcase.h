@@ -189,15 +189,7 @@ do {\
     return;\
 } while (false)
 
-#ifdef Q_COMPILER_VARIADIC_MACROS
-
 #define QSKIP(statement, ...) QSKIP_INTERNAL(statement)
-
-#else
-
-#define QSKIP(statement) QSKIP_INTERNAL(statement)
-
-#endif
 
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\

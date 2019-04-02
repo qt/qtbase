@@ -306,8 +306,6 @@ struct QArrayDataPointerRef
 // accomplished by hiding a static const instance of QStaticArrayData, which is
 // POD.
 
-#if defined(Q_COMPILER_VARIADIC_MACROS)
-#if defined(Q_COMPILER_LAMBDA)
 // Hide array inside a lambda
 #define Q_ARRAY_LITERAL(Type, ...)                                              \
     ([]() -> QArrayDataPointerRef<Type> {                                       \
@@ -324,10 +322,7 @@ struct QArrayDataPointerRef
             return StaticWrapper::get();                                        \
         }())                                                                    \
     /**/
-#endif
-#endif // defined(Q_COMPILER_VARIADIC_MACROS)
 
-#if defined(Q_ARRAY_LITERAL)
 #define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
     union { Type type_must_be_POD; } dummy; Q_UNUSED(dummy)                     \
                                                                                 \
@@ -342,31 +337,6 @@ struct QArrayDataPointerRef
         { static_cast<QTypedArrayData<Type> *>(                                 \
             const_cast<QArrayData *>(&literal.header)) };                       \
     /**/
-#else
-// As a fallback, memory is allocated and data copied to the heap.
-
-// The fallback macro does NOT use variadic macros and does NOT support
-// variable number of arguments. It is suitable for char arrays.
-
-namespace QtPrivate {
-    template <class T, size_t N>
-    inline QArrayDataPointerRef<T> qMakeArrayLiteral(const T (&array)[N])
-    {
-        union { T type_must_be_POD; } dummy; Q_UNUSED(dummy)
-
-        QArrayDataPointerRef<T> result = { QTypedArrayData<T>::allocate(N) };
-        Q_CHECK_PTR(result.ptr);
-
-        ::memcpy(result.ptr->data(), array, N * sizeof(T));
-        result.ptr->size = N;
-
-        return result;
-    }
-}
-
-#define Q_ARRAY_LITERAL(Type, Array) \
-    QT_PREPEND_NAMESPACE(QtPrivate::qMakeArrayLiteral)<Type>( Array )
-#endif // !defined(Q_ARRAY_LITERAL)
 
 namespace QtPrivate {
 struct Q_CORE_EXPORT QContainerImplHelper

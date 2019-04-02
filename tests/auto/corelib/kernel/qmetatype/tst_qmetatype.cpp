@@ -1499,7 +1499,7 @@ public:
 typedef MyObject* MyObjectPtr;
 Q_DECLARE_METATYPE(MyObjectPtr)
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
+#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
 static QByteArray createTypeName(const char *begin, const char *va)
 {
     QByteArray tn(begin);
@@ -1697,7 +1697,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
+#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
     #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F) \
         F(bool) \
@@ -1776,7 +1776,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     CREATE_AND_VERIFY_CONTAINER(QHash, void*, void*)
     CREATE_AND_VERIFY_CONTAINER(QHash, const void*, const void*)
 
-#endif // Q_COMPILER_VARIADIC_MACROS
+#endif // !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
 #define TEST_OWNING_SMARTPOINTER(SMARTPOINTER, ELEMENT_TYPE, FLAG_TEST, FROMVARIANTFUNCTION) \
     { \
@@ -2565,9 +2565,7 @@ Q_DECLARE_METATYPE(UndefinedFunction0);
 Q_DECLARE_METATYPE(UndefinedFunction1);
 Q_DECLARE_METATYPE(UndefinedFunction2);
 Q_DECLARE_METATYPE(UndefinedFunction3);
-#ifdef Q_COMPILER_VARIADIC_TEMPLATES
 Q_DECLARE_METATYPE(UndefinedFunction4);
-#endif
 
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"

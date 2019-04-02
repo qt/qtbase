@@ -6029,7 +6029,6 @@ void tst_QObject::connectFunctorArgDifference()
     QStringListModel model;
     connect(&model, &QStringListModel::rowsInserted, SlotFunctor());
 
-#if defined(Q_COMPILER_LAMBDA)
     connect(&timer, &QTimer::timeout, [=](){});
     connect(&timer, &QTimer::objectNameChanged, [=](const QString &){});
     connect(qApp, &QCoreApplication::aboutToQuit, [=](){});
@@ -6037,7 +6036,6 @@ void tst_QObject::connectFunctorArgDifference()
     connect(&timer, &QTimer::objectNameChanged, [=](){});
     connect(&model, &QStringListModel::rowsInserted, [=](){});
     connect(&model, &QStringListModel::rowsInserted, [=](const QModelIndex &){});
-#endif
 
     QVERIFY(true);
 }
@@ -6075,7 +6073,6 @@ void tst_QObject::connectFunctorQueued()
     e.exec();
     QCOMPARE(status, 2);
 
-#if defined(Q_COMPILER_LAMBDA)
     status = 1;
     connect(&obj, &SenderObject::signal1, this, [&status] { status = 2; }, Qt::QueuedConnection);
 
@@ -6083,7 +6080,6 @@ void tst_QObject::connectFunctorQueued()
     QCOMPARE(status, 1);
     e.exec();
     QCOMPARE(status, 2);
-#endif
 }
 
 void tst_QObject::connectFunctorWithContext()
@@ -6117,7 +6113,6 @@ void tst_QObject::connectFunctorWithContext()
     e.exec();
     QCOMPARE(status, 2);
 
-#if defined(Q_COMPILER_LAMBDA)
     status = 1;
     connect(&obj, &SenderObject::signal1, this, [this, &status, &obj] { status = 2; QCOMPARE(sender(), &obj); }, Qt::QueuedConnection);
 
@@ -6125,7 +6120,6 @@ void tst_QObject::connectFunctorWithContext()
     QCOMPARE(status, 1);
     e.exec();
     QCOMPARE(status, 2);
-#endif
 
     // Free
     context->deleteLater();
@@ -6435,7 +6429,7 @@ void connectFunctorOverload_impl(Signal signal, int expOverload, QList<QVariant>
 
 void tst_QObject::connectFunctorOverloads()
 {
-#if defined (Q_COMPILER_DECLTYPE) && defined (Q_COMPILER_VARIADIC_TEMPLATES)
+#if defined (Q_COMPILER_VARIADIC_TEMPLATES)
     connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_ii, 1,
                                 (QList<QVariant>() << 1 << 2));
     connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_iiS, 1,
@@ -6609,7 +6603,6 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
     }
     QCOMPARE(countedStructObjectsCount, 0);
     {
-#if defined(Q_COMPILER_LAMBDA)
         CountedStruct s;
         QCOMPARE(countedStructObjectsCount, 1);
         QTimer timer;
@@ -6619,7 +6612,6 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
         QCOMPARE(countedStructObjectsCount, 2);
         QVERIFY(QObject::disconnect(c));
         QCOMPARE(countedStructObjectsCount, 1);
-#endif // Q_COMPILER_LAMBDA
     }
     QCOMPARE(countedStructObjectsCount, 0);
 }
@@ -6667,7 +6659,6 @@ void tst_QObject::contextDoesNotLeakFunctor()
     }
     QCOMPARE(countedStructObjectsCount, 0);
     {
-#if defined(Q_COMPILER_LAMBDA)
         CountedStruct s;
         QEventLoop e;
         ContextObject *context = new ContextObject;
@@ -6680,7 +6671,6 @@ void tst_QObject::contextDoesNotLeakFunctor()
         context->deleteLater();
         e.exec();
         QCOMPARE(countedStructObjectsCount, 1);
-#endif // Q_COMPILER_LAMBDA
     }
     QCOMPARE(countedStructObjectsCount, 0);
 }

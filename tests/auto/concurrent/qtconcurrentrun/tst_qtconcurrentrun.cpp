@@ -48,12 +48,8 @@ private slots:
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
-#ifdef Q_COMPILER_DECLTYPE
     void functor();
-#endif
-#ifdef Q_COMPILER_LAMBDA
     void lambda();
-#endif
 };
 
 void light()
@@ -648,7 +644,6 @@ void tst_QtConcurrentRun::exceptions()
 }
 #endif
 
-#ifdef Q_COMPILER_DECLTYPE
 // Compiler supports decltype
 struct Functor {
     int operator()() { return 42; }
@@ -706,9 +701,7 @@ void tst_QtConcurrentRun::functor()
         QtConcurrent::run(&pool, f, 1,2,3,4,5).waitForFinished();
     }
 }
-#endif
 
-#ifdef Q_COMPILER_LAMBDA
 // Compiler supports lambda
 void tst_QtConcurrentRun::lambda()
 {
@@ -742,7 +735,6 @@ void tst_QtConcurrentRun::lambda()
     }
 #endif
 }
-#endif
 
 QTEST_MAIN(tst_QtConcurrentRun)
 #include "tst_qtconcurrentrun.moc"

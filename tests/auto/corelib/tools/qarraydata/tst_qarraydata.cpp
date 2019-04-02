@@ -78,9 +78,7 @@ private slots:
     void fromRawData_data();
     void fromRawData();
     void literals();
-#if defined(Q_COMPILER_VARIADIC_MACROS) && defined(Q_COMPILER_LAMBDA)
     void variadicLiterals();
-#endif
 #ifdef Q_COMPILER_RVALUE_REFS
     void rValueReferences();
 #endif
@@ -1618,9 +1616,7 @@ void tst_QArrayData::literals()
         QCOMPARE(v.size(), size_t(11));
         // v.capacity() is unspecified, for now
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) && defined(Q_COMPILER_LAMBDA)
         QVERIFY(v.isStatic());
-#endif
 
 #if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         QVERIFY(v.isSharable());
@@ -1633,7 +1629,6 @@ void tst_QArrayData::literals()
     }
 }
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) && defined(Q_COMPILER_LAMBDA)
 // Variadic Q_ARRAY_LITERAL need to be available in the current configuration.
 void tst_QArrayData::variadicLiterals()
 {
@@ -1682,7 +1677,6 @@ void tst_QArrayData::variadicLiterals()
             QCOMPARE(const_(v)[i], i);
     }
 }
-#endif
 
 #ifdef Q_COMPILER_RVALUE_REFS
 // std::remove_reference is in C++11, but requires library support
