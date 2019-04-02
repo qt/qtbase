@@ -1566,7 +1566,9 @@ void QImage::setColor(int i, QRgb c)
     Returns a pointer to the pixel data at the scanline with index \a
     i. The first scanline is at index 0.
 
-    The scanline data is aligned on a 32-bit boundary.
+    The scanline data is as minimum 32-bit aligned. For 64-bit formats
+    it follows the native alignment of 64-bit integers (64-bit for most
+    platforms, but notably 32-bit on i386).
 
     \warning If you are accessing 32-bpp image data, cast the returned
     pointer to \c{QRgb*} (QRgb has a 32-bit size) and use it to
