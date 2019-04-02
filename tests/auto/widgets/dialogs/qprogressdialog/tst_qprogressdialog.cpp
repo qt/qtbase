@@ -252,7 +252,7 @@ class QTestTranslator : public QTranslator
 {
     const QString m_str;
 public:
-    explicit QTestTranslator(QString str) : m_str(qMove(str)) {}
+    explicit QTestTranslator(QString str) : m_str(std::move(str)) {}
 
     QString translate(const char *, const char *sourceText, const char *, int) const override
     { return m_str + sourceText + m_str; }
@@ -265,7 +265,7 @@ class QTranslatorGuard {
     Translator t;
 public:
     template <typename Arg>
-    explicit QTranslatorGuard(Arg a) : t(qMove(a))
+    explicit QTranslatorGuard(Arg a) : t(std::move(a))
     { qApp->installTranslator(&t); }
     ~QTranslatorGuard()
     { qApp->removeTranslator(&t); }

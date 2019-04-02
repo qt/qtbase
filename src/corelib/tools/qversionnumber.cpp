@@ -482,7 +482,7 @@ QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex
     if (suffixIndex)
         *suffixIndex = int(lastGoodEnd - string.begin());
 
-    return QVersionNumber(qMove(seg));
+    return QVersionNumber(std::move(seg));
 }
 
 void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)

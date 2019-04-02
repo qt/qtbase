@@ -4458,7 +4458,7 @@ int QString::indexOf(const QRegularExpression &re, int from, QRegularExpressionM
     if (match.hasMatch()) {
         const int ret = match.capturedStart();
         if (rmatch)
-            *rmatch = qMove(match);
+            *rmatch = std::move(match);
         return ret;
     }
 
@@ -4514,7 +4514,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from, QRegularExpress
         if (start < endpos) {
             lastIndex = start;
             if (rmatch)
-                *rmatch = qMove(match);
+                *rmatch = std::move(match);
         } else {
             break;
         }
@@ -4557,7 +4557,7 @@ bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *ma
     QRegularExpressionMatch m = re.match(*this);
     bool hasMatch = m.hasMatch();
     if (hasMatch && match)
-        *match = qMove(m);
+        *match = std::move(m);
     return hasMatch;
 }
 
@@ -4717,7 +4717,7 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 class qt_section_chunk {
 public:
     qt_section_chunk() {}
-    qt_section_chunk(int l, QStringRef s) : length(l), string(qMove(s)) {}
+    qt_section_chunk(int l, QStringRef s) : length(l), string(std::move(s)) {}
     int length;
     QStringRef string;
 };
@@ -6609,7 +6609,7 @@ Q_NEVER_INLINE
 static QString detachAndConvertCase(T &str, QStringIterator it)
 {
     Q_ASSERT(!str.isEmpty());
-    QString s = qMove(str);             // will copy if T is const QString
+    QString s = std::move(str);             // will copy if T is const QString
     QChar *pp = s.begin() + it.index(); // will detach if necessary
 
     do {
@@ -6667,7 +6667,7 @@ static QString convertCase(T &str)
             return detachAndConvertCase<Traits>(str, it);
         }
     }
-    return qMove(str);
+    return std::move(str);
 }
 } // namespace QUnicodeTables
 

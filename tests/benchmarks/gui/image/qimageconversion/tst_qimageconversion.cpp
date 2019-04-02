@@ -357,10 +357,10 @@ void tst_QImageConversion::convertGenericInplace()
     QFETCH(QImage::Format, outputFormat);
 
     QImage::Format inputFormat = inputImage.format();
-    QImage tmpImage = qMove(inputImage);
+    QImage tmpImage = std::move(inputImage);
 
     QBENCHMARK {
-        tmpImage = (qMove(tmpImage).convertToFormat(outputFormat)).convertToFormat(inputFormat);
+        tmpImage = (std::move(tmpImage).convertToFormat(outputFormat)).convertToFormat(inputFormat);
     }
 }
 

@@ -227,7 +227,7 @@ public:
         friend bool operator!=(const RestorableId &lhs, const RestorableId &rhs) noexcept
         { return !operator==(lhs, rhs); }
     public:
-        explicit RestorableId(QObject *o, QByteArray p) noexcept : guard(o), obj(o), prop(qMove(p)) {}
+        explicit RestorableId(QObject *o, QByteArray p) noexcept : guard(o), obj(o), prop(std::move(p)) {}
         QObject *object() const noexcept { return guard; }
         QByteArray propertyName() const noexcept { return prop; }
     };

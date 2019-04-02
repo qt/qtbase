@@ -1396,7 +1396,7 @@ void QImage::setColorTable(const QVector<QRgb> colors)
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     d->colortable = colors;
 #else
-    d->colortable = qMove(const_cast<QVector<QRgb>&>(colors));
+    d->colortable = std::move(const_cast<QVector<QRgb>&>(colors));
 #endif
     d->has_alpha_clut = false;
     for (int i = 0; i < d->colortable.size(); ++i) {
@@ -5587,7 +5587,7 @@ Q_GUI_EXPORT void qt_imageTransform(QImage &src, QImageIOHandler::Transformation
     if (orient == QImageIOHandler::TransformationRotate270) {
         src = rotated270(src);
     } else {
-        src = qMove(src).mirrored(orient & QImageIOHandler::TransformationMirror,
+        src = std::move(src).mirrored(orient & QImageIOHandler::TransformationMirror,
                                   orient & QImageIOHandler::TransformationFlip);
         if (orient & QImageIOHandler::TransformationRotate90)
             src = rotated90(src);

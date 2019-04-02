@@ -333,7 +333,7 @@ template <class C>
 C sorted(C c)
 {
     std::sort(c.begin(), c.end());
-    return qMove(c);
+    return std::move(c);
 }
 
 void tst_QStringListModel::setData_emits_both_roles()

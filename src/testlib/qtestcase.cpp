@@ -2148,7 +2148,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           }
       }
 
-      result = qMove(tempDir);
+      result = std::move(tempDir);
 
       return result;
 }

@@ -189,7 +189,7 @@ public:
                                        QHttpNetworkConnection::ConnectionType connectionType,
                                        QSharedPointer<QNetworkSession> networkSession)
         : QHttpNetworkConnection(hostName, port, encrypt, connectionType, /*parent=*/0,
-                                 qMove(networkSession))
+                                 std::move(networkSession))
 #endif
     {
         setExpires(true);

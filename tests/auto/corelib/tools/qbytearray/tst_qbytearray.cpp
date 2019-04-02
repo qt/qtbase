@@ -2245,28 +2245,28 @@ void tst_QByteArray::toUpperLower()
     QCOMPARE(input.toLower(), lower);
 
     QByteArray copy = input;
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
     copy = input;
     copy.detach();
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
 
     copy = input;
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
     copy = input;
     copy.detach();
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
 
     copy = lower;
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
     copy = lower;
     copy.detach();
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
 
     copy = upper;
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
     copy = upper;
     copy.detach();
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
 }
 
 void tst_QByteArray::isUpper()

@@ -1196,7 +1196,7 @@ void QDBusConnectionPrivate::doDispatch()
             PendingMessageList::Iterator end = pendingMessages.end();
             for ( ; it != end; ++it) {
                 qDBusDebug() << this << "dequeueing message" << *it;
-                handleMessage(qMove(*it));
+                handleMessage(std::move(*it));
             }
             pendingMessages.clear();
         }

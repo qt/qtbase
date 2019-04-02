@@ -95,7 +95,7 @@ void tst_QPen::move()
     QPen p1(Qt::black);
 
     // check that moving does the right thing:
-    QPen p2 = qMove(p1); // could be move or copy construction, so don't check p1's state
+    QPen p2 = std::move(p1); // could be move or copy construction, so don't check p1's state
     QCOMPARE(p2.color(), QColor(Qt::black));
 
     // this, executed ehre, would crash:
@@ -110,7 +110,7 @@ void tst_QPen::move()
     QCOMPARE(p1.color(), QColor(Qt::yellow));
 
     // check that moved-from QPens p2, p3 can still be safely destroyed:
-    QPen p5 = qMove(p2);
+    QPen p5 = std::move(p2);
 
     // intentionally no more statements beyond this point
 }
@@ -120,7 +120,7 @@ void tst_QPen::move_assign()
     QPen p1(Qt::black), p2(Qt::white);
 
     // check that moving does the right thing:
-    p2 = qMove(p1); // could be move or copy assignment, so don't check p1's state
+    p2 = std::move(p1); // could be move or copy assignment, so don't check p1's state
     QCOMPARE(p2.color(), QColor(Qt::black));
 
     // check that move-assigned-from QPen p1 can still be used, albeit
@@ -137,7 +137,7 @@ void tst_QPen::move_assign()
 
     // check that moved-from QPens p2, p3 can still be safely destroyed:
     QPen p5;
-    p5 = qMove(p2);
+    p5 = std::move(p2);
 
     // intentionally no more statements beyond this point
 }

@@ -77,7 +77,7 @@ template <typename StringType> struct QStringAlgorithms
         if (begin != data)
             memmove(data, begin, (end - begin) * sizeof(Char));
         str.resize(end - begin);
-        return qMove(str);
+        return std::move(str);
     }
 
     static inline StringType trimmed_helper_inplace(const NakedStringType &, const Char *, const Char *)
@@ -118,7 +118,7 @@ template <typename StringType> struct QStringAlgorithms
         const Char *end = str.cend();
         NakedStringType result = isConst || !str.isDetached() ?
                                      StringType(str.size(), Qt::Uninitialized) :
-                                     qMove(str);
+                                     std::move(str);
 
         Char *dst = const_cast<Char *>(result.cbegin());
         Char *ptr = dst;

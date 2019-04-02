@@ -1140,11 +1140,11 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
         if (s.version() >= QDataStream::Qt_5_5) {
             QImage img;
             s >> img;
-            b.setTextureImage(qMove(img));
+            b.setTextureImage(std::move(img));
         } else {
             QPixmap pm;
             s >> pm;
-            b.setTexture(qMove(pm));
+            b.setTexture(std::move(pm));
         }
     } else if (style == Qt::LinearGradientPattern
                || style == Qt::RadialGradientPattern

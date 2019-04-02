@@ -3282,10 +3282,10 @@ static QByteArray toCase_template(T &input, const uchar * table)
     }
 
     if (firstBad == e)
-        return qMove(input);
+        return std::move(input);
 
     // transform the rest
-    QByteArray s = qMove(input);    // will copy if T is const QByteArray
+    QByteArray s = std::move(input);    // will copy if T is const QByteArray
     char *b = s.begin();            // will detach if necessary
     char *p = b + (firstBad - orig_begin);
     e = b + s.size();

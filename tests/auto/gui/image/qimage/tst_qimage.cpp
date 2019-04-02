@@ -3403,7 +3403,7 @@ void tst_QImage::ditherGradient_data()
     QTest::newRow("rgb32 -> rgb666 (dithering)") << rgb32 << QImage::Format_RGB666 << int(Qt::PreferDither | Qt::OrderedDither) << 129;
 
     // Test we get the same results for opaque input in the ARGBPM implementation.
-    rgb32 = qMove(rgb32).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    rgb32 = std::move(rgb32).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     QTest::newRow("argb32pm -> argb4444pm (no dither)") << rgb32 << QImage::Format_ARGB4444_Premultiplied << 0 << 16;
     QTest::newRow("argb32pm -> rgb444 (dithering)") << rgb32 << QImage::Format_RGB444 << int(Qt::PreferDither | Qt::OrderedDither) << 33;
     QTest::newRow("argb32pm -> argb4444pm (dithering)") << rgb32 << QImage::Format_ARGB4444_Premultiplied << int(Qt::PreferDither | Qt::OrderedDither) << 33;

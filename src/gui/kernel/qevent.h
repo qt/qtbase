@@ -549,7 +549,7 @@ public:
     };
     class Attribute {
     public:
-        Attribute(AttributeType typ, int s, int l, QVariant val) : type(typ), start(s), length(l), value(qMove(val)) {}
+        Attribute(AttributeType typ, int s, int l, QVariant val) : type(typ), start(s), length(l), value(std::move(val)) {}
         Attribute(AttributeType typ, int s, int l) : type(typ), start(s), length(l), value() {}
 
         AttributeType type;

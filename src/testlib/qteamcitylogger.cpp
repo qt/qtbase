@@ -251,7 +251,7 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
         }
     }
 
-    return qMove(formattedString).simplified();
+    return std::move(formattedString).simplified();
 }
 
 QString QTeamCityLogger::escapedTestFuncName() const

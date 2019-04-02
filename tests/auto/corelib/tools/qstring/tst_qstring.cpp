@@ -2202,12 +2202,12 @@ void tst_QString::toUpper()
 
         // call rvalue-ref while shared (the original mustn't change)
         QString copy = s;
-        QCOMPARE(qMove(copy).toUpper(), QString("GROSSSTRASSE"));
+        QCOMPARE(std::move(copy).toUpper(), QString("GROSSSTRASSE"));
         QCOMPARE(s, QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e"));
 
         // call rvalue-ref version on detached case
         copy.clear();
-        QCOMPARE(qMove(s).toUpper(), QString("GROSSSTRASSE"));
+        QCOMPARE(std::move(s).toUpper(), QString("GROSSSTRASSE"));
     }
 
     QString lower, upper;
@@ -2417,11 +2417,11 @@ void tst_QString::trimmed()
     QCOMPARE(a.trimmed(), QLatin1String("a"));
 
     a="Text";
-    QCOMPARE(qMove(a).trimmed(), QLatin1String("Text"));
+    QCOMPARE(std::move(a).trimmed(), QLatin1String("Text"));
     a=" ";
-    QCOMPARE(qMove(a).trimmed(), QLatin1String(""));
+    QCOMPARE(std::move(a).trimmed(), QLatin1String(""));
     a=" a   ";
-    QCOMPARE(qMove(a).trimmed(), QLatin1String("a"));
+    QCOMPARE(std::move(a).trimmed(), QLatin1String("a"));
 }
 
 void tst_QString::simplified_data()
@@ -2476,13 +2476,13 @@ void tst_QString::simplified()
 
     // without detaching:
     QString copy1 = full;
-    QCOMPARE(qMove(full).simplified(), simple);
+    QCOMPARE(std::move(full).simplified(), simple);
     QCOMPARE(full, orig_full);
 
     // force a detach
     if (!full.isEmpty())
         full[0] = full[0];
-    QCOMPARE(qMove(full).simplified(), simple);
+    QCOMPARE(std::move(full).simplified(), simple);
 }
 
 void tst_QString::insert_data(bool emptyIsNoop)
@@ -4524,7 +4524,7 @@ void tst_QString::toLatin1Roundtrip()
 
     // try the rvalue version of toLatin1()
     QString s = unicodesrc;
-    QCOMPARE(qMove(s).toLatin1(), latin1);
+    QCOMPARE(std::move(s).toLatin1(), latin1);
 
     // and verify that the moved-from object can still be used
     s = "foo";

@@ -407,7 +407,7 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
         stopStream();
         if (!startStream()) {
             // ok, something went wrong, let's try to restore the previous state
-            watchingState = qMove(oldState);
+            watchingState = std::move(oldState);
             // and because we don't know which path caused the issue (if any), fail on all of them
             p = paths;
 
@@ -474,7 +474,7 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
 
     if (needsRestart) {
         if (!restartStream()) {
-            watchingState = qMove(oldState);
+            watchingState = std::move(oldState);
             startStream();
         }
     }

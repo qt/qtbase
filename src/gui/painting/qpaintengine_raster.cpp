@@ -4244,7 +4244,7 @@ public:
     struct CacheInfo : QSpanData::Pinnable
     {
         inline CacheInfo(QGradientStops s, int op, QGradient::InterpolationMode mode) :
-            stops(qMove(s)), opacity(op), interpolationMode(mode) {}
+            stops(std::move(s)), opacity(op), interpolationMode(mode) {}
         QRgba64 buffer64[GRADIENT_STOPTABLE_SIZE];
         QRgb buffer32[GRADIENT_STOPTABLE_SIZE];
         QGradientStops stops;

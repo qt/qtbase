@@ -573,10 +573,10 @@ void tst_QSharedPointer::useOfForwardDeclared()
 
     // move assignment:
     QSharedPointer<ForwardDeclared> sp4;
-    sp4 = qMove(sp);
+    sp4 = std::move(sp);
 
     // and move constuction:
-    QSharedPointer<ForwardDeclared> sp5 = qMove(sp2);
+    QSharedPointer<ForwardDeclared> sp5 = std::move(sp2);
 
     // swapping:
     sp4.swap(sp3);

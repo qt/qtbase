@@ -59,7 +59,7 @@ void QRingChunk::detach()
     const int chunkSize = size();
     QByteArray x(chunkSize, Qt::Uninitialized);
     ::memcpy(x.data(), chunk.constData() + headOffset, chunkSize);
-    chunk = qMove(x);
+    chunk = std::move(x);
     headOffset = 0;
     tailOffset = chunkSize;
 }

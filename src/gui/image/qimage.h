@@ -291,11 +291,11 @@ public:
     QImage mirrored(bool horizontally = false, bool vertically = true) const &
         { return mirrored_helper(horizontally, vertically); }
     QImage &&mirrored(bool horizontally = false, bool vertically = true) &&
-        { mirrored_inplace(horizontally, vertically); return qMove(*this); }
+        { mirrored_inplace(horizontally, vertically); return std::move(*this); }
     QImage rgbSwapped() const &
         { return rgbSwapped_helper(); }
     QImage &&rgbSwapped() &&
-        { rgbSwapped_inplace(); return qMove(*this); }
+        { rgbSwapped_inplace(); return std::move(*this); }
 #else
     QImage mirrored(bool horizontally = false, bool vertically = true) const;
     QImage rgbSwapped() const;

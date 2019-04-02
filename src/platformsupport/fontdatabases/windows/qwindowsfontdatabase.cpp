@@ -1512,7 +1512,7 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
         if (names.name.isEmpty())
             continue;
 
-        families->append(qMove(names));
+        families->append(std::move(names));
 
         if (values || signatures)
             getFontTable(data, font, MAKE_TAG('O', 'S', '/', '2'), &table, &length);

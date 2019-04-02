@@ -148,14 +148,14 @@ void tst_QPalette::moveSemantics()
     QCOMPARE(src, control);
     QVERIFY(!dst.isCopyOf(src));
     QVERIFY(!dst.isCopyOf(control));
-    dst = qMove(src); // move assignment
+    dst = std::move(src); // move assignment
     QVERIFY(!dst.isCopyOf(src)); // isCopyOf() works on moved-from palettes, too
     QVERIFY(dst.isCopyOf(control));
     QCOMPARE(dst, control);
     src = control; // check moved-from 'src' can still be assigned to (doesn't crash)
     QVERIFY(src.isCopyOf(dst));
     QVERIFY(src.isCopyOf(control));
-    QPalette dst2(qMove(src)); // move construction
+    QPalette dst2(std::move(src)); // move construction
     QVERIFY(!src.isCopyOf(dst));
     QVERIFY(!src.isCopyOf(dst2));
     QVERIFY(!src.isCopyOf(control));

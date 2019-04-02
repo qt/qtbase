@@ -773,9 +773,9 @@ void QVector<T>::append(const T &t)
         realloc(isTooSmall ? d->size + 1 : d->alloc, opt);
 
         if (QTypeInfo<T>::isComplex)
-            new (d->end()) T(qMove(copy));
+            new (d->end()) T(std::move(copy));
         else
-            *d->end() = qMove(copy);
+            *d->end() = std::move(copy);
 
     } else {
         if (QTypeInfo<T>::isComplex)

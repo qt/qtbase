@@ -194,22 +194,22 @@ void tst_QByteArrayList::operator_plus() const
     {
         QByteArrayList bal1 = lhs;
         const QByteArrayList bal2 = rhs;
-        QCOMPARE(qMove(bal1) + bal2, expectedResult);
+        QCOMPARE(std::move(bal1) + bal2, expectedResult);
     }
     {
         QList<QByteArray> lba1 = lhs;
         const QByteArrayList bal2 = rhs;
-        QCOMPARE(qMove(lba1) + bal2, expectedResult);
+        QCOMPARE(std::move(lba1) + bal2, expectedResult);
     }
     {
         QByteArrayList bal1 = lhs;
         const QList<QByteArray> lba2 = rhs;
-        QCOMPARE(qMove(bal1) + lba2, expectedResult);
+        QCOMPARE(std::move(bal1) + lba2, expectedResult);
     }
     {
         QList<QByteArray> lba1 = lhs;
         const QList<QByteArray> lba2 = rhs;
-        QCOMPARE(qMove(lba1) + lba2, QList<QByteArray>(expectedResult)); // check we don't mess with old code
+        QCOMPARE(std::move(lba1) + lba2, QList<QByteArray>(expectedResult)); // check we don't mess with old code
     }
 
     // operator += for const lvalues
@@ -232,7 +232,7 @@ void tst_QByteArrayList::operator_plus() const
     QByteArrayList t1 = lhs;
     QByteArrayList t2 = rhs;
 
-    QCOMPARE(qMove(t1) + t2, expectedResult);
+    QCOMPARE(std::move(t1) + t2, expectedResult);
 }
 
 void tst_QByteArrayList::operator_plus_data() const
