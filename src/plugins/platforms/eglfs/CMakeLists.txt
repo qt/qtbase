@@ -1,5 +1,3 @@
-# Generated from eglfs.pro.
-
 find_package(EGL)
 find_package(WrapOpenGL)
 
@@ -23,20 +21,22 @@ add_qt_module(EglFSDeviceIntegration
         api
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
         Qt::DeviceDiscoverySupportPrivate
+        Qt::EglSupportPrivate
         Qt::EventDispatcherSupportPrivate
+        Qt::FbSupportPrivate
+        Qt::FontDatabaseSupportPrivate
+        Qt::GuiPrivate
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::FbSupportPrivate
-        Qt::EglSupportPrivate
-        EGL::EGL
-        WrapOpenGL
-    # CONFIG = "internal_module" "egl"
-    # MODULE = "eglfsdeviceintegration"
-    # _LOADED = "qt_module"
+        EGL::EGL # special case
+        WrapOpenGL # special case
 )
+
+#### Keys ignored in scope 2:.:./eglfsdeviceintegration.pro:<NONE>:
+# CONFIG = "internal_module" "egl"
+# MODULE = "eglfsdeviceintegration"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -51,26 +51,18 @@ extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupp
         Qt::PlatformCompositorSupportPrivate
 )
 
-# TODO
-# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
-#     DEFINES
-#         EGLFS_PLATFORM_HOOKS
-# )
+# special case:
+# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY ...
+# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY ...
 
-# TODO
-# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
-#     DEFINES
-#         EGLFS_PREFERRED_PLUGIN=
-# )
-#
-#extend_target(EglFSDeviceIntegration CONDITION use_gold_linker
-#    # CONFIG = "no_linker_version_script"
-#)
+#### Keys ignored in scope 7:.:./eglfsdeviceintegration.pro:use_gold_linker:
+# CONFIG = "no_linker_version_script"
 
-extend_target(EglFSDeviceIntegration CONDITION NOT DEFINES___contains___QT_NO_CURSOR
-    SOURCES
-        cursor.qrc
-)
+# Resources:
+add_qt_resource(EglFSDeviceIntegration "cursor" FILES
+    cursor-atlas.png
+    cursor.json)
+
 
 extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES
@@ -90,20 +82,21 @@ add_qt_plugin(qeglfs
     INCLUDE_DIRECTORIES
         api
     LIBRARIES
-        Qt::CorePrivate
+        Qt::CorePrivate # special case
         Qt::EglFSDeviceIntegrationPrivate
-        EGL::EGL
-    # CONFIG = "egl"
-    # OTHER_FILES = "$$PWD/eglfs.json"
-    # PLUGIN_CLASS_NAME = "QEglFSIntegrationPlugin"
-    # _LOADED = "qt_plugin"
+        EGL::EGL # special case
 )
+
+#### Keys ignored in scope 11:.:./eglfs-plugin.pro:<NONE>:
+# CONFIG = "egl"
+# OTHER_FILES = "$$PWD/eglfs.json"
+# PLUGIN_CLASS_NAME = "QEglFSIntegrationPlugin"
+# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
-#
-#extend_target(qeglfs CONDITION NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN
-#    # PLUGIN_EXTENDS = "-"
-#)
 
+#### Keys ignored in scope 12:.:./eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)
+
