@@ -1968,7 +1968,9 @@ const QCharAttributes *QTextEngine::attributes() const
     QUnicodeTools::initCharAttributes(reinterpret_cast<const ushort *>(layoutData->string.constData()),
                                       layoutData->string.length(),
                                       scriptItems.data(), scriptItems.size(),
-                                      (QCharAttributes *)layoutData->memory);
+                                      (QCharAttributes *)layoutData->memory,
+                                      QUnicodeTools::CharAttributeOptions(QUnicodeTools::DefaultOptionsCompat
+                                                                          | QUnicodeTools::HangulLineBreakTailoring));
 
 
     layoutData->haveCharAttributes = true;

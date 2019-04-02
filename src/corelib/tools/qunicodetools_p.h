@@ -88,6 +88,7 @@ enum CharAttributeOption {
     SentenceBreaks = 0x04,
     LineBreaks = 0x08,
     WhiteSpaces = 0x10,
+    HangulLineBreakTailoring = 0x20,
     DefaultOptionsCompat = GraphemeBreaks | LineBreaks | WhiteSpaces, // ### remove
 
     DontClearAttributes = 0x1000

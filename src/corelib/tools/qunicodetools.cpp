@@ -542,7 +542,7 @@ static const uchar breakTable[QUnicodeTables::LineBreak_SA][QUnicodeTables::Line
 
 } // namespace LB
 
-static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
+static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *attributes, QUnicodeTools::CharAttributeOptions options)
 {
     quint32 nestart = 0;
     LB::NS::Class nelast = LB::NS::XX;
@@ -563,6 +563,31 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::LineBreakClass ncls = (QUnicodeTables::LineBreakClass) prop->lineBreakClass;
         QUnicodeTables::LineBreakClass tcls;
+
+        if (options & QUnicodeTools::HangulLineBreakTailoring) {
+            if (Q_UNLIKELY((ncls >= QUnicodeTables::LineBreak_H2
+                        &&  ncls <= QUnicodeTables::LineBreak_JT)
+                        || (ucs4 >= 0x3130 && ucs4 <= 0x318F && ncls == QUnicodeTables::LineBreak_ID))
+                    ) {
+                // LB27: use SPACE for line breaking
+                // "When Korean uses SPACE for line breaking, the classes in rule LB26,
+                // as well as characters of class ID, are often tailored to AL; see Section 8, Customization."
+                // In case of Korean syllables: "3130..318F  HANGUL COMPATIBILITY JAMO"
+                ncls = QUnicodeTables::LineBreak_AL;
+            } else {
+                if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_SA)) {
+                    // LB1: resolve SA to AL, except of those that have Category Mn or Mc be resolved to CM
+                    static const int test = FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining);
+                    if (FLAG(prop->category) & test)
+                        ncls = QUnicodeTables::LineBreak_CM;
+                }
+                if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_CM)) {
+                    // LB10: treat CM that follows SP, BK, CR, LF, NL, or ZW as AL
+                    if (lcls == QUnicodeTables::LineBreak_ZW || lcls >= QUnicodeTables::LineBreak_SP)
+                        ncls = QUnicodeTables::LineBreak_AL;
+                }
+            }
+        }
 
         if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_SA)) {
             // LB1: resolve SA to AL, except of those that have Category Mn or Mc be resolved to CM
@@ -716,7 +741,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
     if (options & SentenceBreaks)
         getSentenceBreaks(string, length, attributes);
     if (options & LineBreaks)
-        getLineBreaks(string, length, attributes);
+        getLineBreaks(string, length, attributes, options);
     if (options & WhiteSpaces)
         getWhiteSpaces(string, length, attributes);
 
