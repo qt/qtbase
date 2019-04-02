@@ -71,9 +71,7 @@ public:
     ~QCommandLineOption();
 
     QCommandLineOption &operator=(const QCommandLineOption &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QCommandLineOption &operator=(QCommandLineOption &&other) noexcept { swap(other); return *this; }
-#endif
 
     void swap(QCommandLineOption &other) noexcept
     { qSwap(d, other.d); }

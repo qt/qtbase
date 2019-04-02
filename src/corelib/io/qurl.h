@@ -182,12 +182,10 @@ public:
     QUrl(const QString &url, ParsingMode mode = TolerantMode);
     QUrl &operator=(const QString &url);
 #endif
-#ifdef Q_COMPILER_RVALUE_REFS
     QUrl(QUrl &&other) noexcept : d(other.d)
     { other.d = nullptr; }
     inline QUrl &operator=(QUrl &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     ~QUrl();
 
     inline void swap(QUrl &other) noexcept { qSwap(d, other.d); }

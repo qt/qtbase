@@ -60,12 +60,10 @@ public:
     // ### Qt 6: remove them all, the compiler-generated ones are fine
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
-# ifdef Q_COMPILER_RVALUE_REFS
     QItemSelectionRange(QItemSelectionRange &&other) noexcept
         : tl(std::move(other.tl)), br(std::move(other.br)) {}
     QItemSelectionRange &operator=(QItemSelectionRange &&other) noexcept
     { tl = std::move(other.tl); br = std::move(other.br); return *this; }
-# endif
     QItemSelectionRange &operator=(const QItemSelectionRange &other)
     { tl = other.tl; br = other.br; return *this; }
 #endif // Qt < 6

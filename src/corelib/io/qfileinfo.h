@@ -67,9 +67,7 @@ public:
     ~QFileInfo();
 
     QFileInfo &operator=(const QFileInfo &fileinfo);
-#ifdef Q_COMPILER_RVALUE_REFS
     QFileInfo &operator=(QFileInfo &&other) noexcept { swap(other); return *this; }
-#endif
 
     void swap(QFileInfo &other) noexcept
     { qSwap(d_ptr, other.d_ptr); }

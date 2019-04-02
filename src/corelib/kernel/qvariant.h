@@ -267,12 +267,10 @@ class Q_CORE_EXPORT QVariant
 #endif
 
     QVariant& operator=(const QVariant &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QVariant(QVariant &&other) noexcept : d(other.d)
     { other.d = Private(); }
     inline QVariant &operator=(QVariant &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
 
     inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
 

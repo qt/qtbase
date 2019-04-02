@@ -70,9 +70,7 @@ public:
 
     QUrlQuery(const QUrlQuery &other);
     QUrlQuery &operator=(const QUrlQuery &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QUrlQuery &operator=(QUrlQuery &&other) noexcept { swap(other); return *this; }
-#endif
     ~QUrlQuery();
 
     bool operator==(const QUrlQuery &other) const;

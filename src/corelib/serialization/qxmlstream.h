@@ -59,19 +59,15 @@ public:
     inline QXmlStreamStringRef(const QStringRef &aString)
         :m_string(aString.string()?*aString.string():QString()), m_position(aString.position()), m_size(aString.size()){}
     QXmlStreamStringRef(const QString &aString) : m_string(aString), m_position(0), m_size(m_string.size()) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QXmlStreamStringRef(QString &&aString) noexcept : m_string(std::move(aString)), m_position(0), m_size(m_string.size()) {}
-#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QXmlStreamStringRef(const QXmlStreamStringRef &other) // = default
         : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QXmlStreamStringRef(QXmlStreamStringRef &&other) noexcept // = default
         : m_string(std::move(other.m_string)), m_position(other.m_position), m_size(other.m_size) {}
     QXmlStreamStringRef &operator=(QXmlStreamStringRef &&other) noexcept // = default
     { swap(other); return *this; }
-#endif
     QXmlStreamStringRef &operator=(const QXmlStreamStringRef &other) // = default
     { m_string = other.m_string; m_position = other.m_position; m_size = other.m_size; return *this; }
     inline ~QXmlStreamStringRef() {} // ### this prevents (or deprecates) all the move/copy special member functions,
@@ -111,7 +107,6 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value);
     QXmlStreamAttribute(const QXmlStreamAttribute &);
-#ifdef Q_COMPILER_RVALUE_REFS
     QXmlStreamAttribute(QXmlStreamAttribute &&other) noexcept // = default;
         : m_name(std::move(other.m_name)),
           m_namespaceUri(std::move(other.m_namespaceUri)),
@@ -132,7 +127,6 @@ public:
         m_isDefault = other.m_isDefault;
         return *this;
     }
-#endif
     QXmlStreamAttribute& operator=(const QXmlStreamAttribute &);
     ~QXmlStreamAttribute();
 #endif // < Qt 6

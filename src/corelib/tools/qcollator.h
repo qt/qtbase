@@ -57,10 +57,8 @@ public:
     QCollatorSortKey(const QCollatorSortKey &other);
     ~QCollatorSortKey();
     QCollatorSortKey &operator=(const QCollatorSortKey &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QCollatorSortKey &operator=(QCollatorSortKey &&other) noexcept
     { swap(other); return *this; }
-#endif
     void swap(QCollatorSortKey &other) noexcept
     { d.swap(other.d); }
 
@@ -87,12 +85,10 @@ public:
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
-#ifdef Q_COMPILER_RVALUE_REFS
     QCollator(QCollator &&other) noexcept
         : d(other.d) { other.d = nullptr; }
     QCollator &operator=(QCollator &&other) noexcept
     { swap(other); return *this; }
-#endif
 
     void swap(QCollator &other) noexcept
     { qSwap(d, other.d); }

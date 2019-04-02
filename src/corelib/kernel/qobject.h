@@ -544,10 +544,8 @@ public:
     inline explicit QSignalBlocker(QObject &o) noexcept;
     inline ~QSignalBlocker();
 
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QSignalBlocker(QSignalBlocker &&other) noexcept;
     inline QSignalBlocker &operator=(QSignalBlocker &&other) noexcept;
-#endif
 
     inline void reblock() noexcept;
     inline void unblock() noexcept;
@@ -570,7 +568,6 @@ QSignalBlocker::QSignalBlocker(QObject &o) noexcept
       m_inhibited(false)
 {}
 
-#ifdef Q_COMPILER_RVALUE_REFS
 QSignalBlocker::QSignalBlocker(QSignalBlocker &&other) noexcept
     : m_o(other.m_o),
       m_blocked(other.m_blocked),
@@ -594,7 +591,6 @@ QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other) noexcept
     }
     return *this;
 }
-#endif
 
 QSignalBlocker::~QSignalBlocker()
 {

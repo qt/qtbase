@@ -117,12 +117,10 @@ public:
     inline bool operator!=(const QPersistentModelIndex &other) const
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QPersistentModelIndex(QPersistentModelIndex &&other) noexcept
         : d(other.d) { other.d = nullptr; }
     inline QPersistentModelIndex &operator=(QPersistentModelIndex &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QPersistentModelIndex &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QModelIndex &other) const;
     bool operator!=(const QModelIndex &other) const;

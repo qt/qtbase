@@ -177,11 +177,9 @@ public:
 
     QByteArray &operator=(const QByteArray &) noexcept;
     QByteArray &operator=(const char *str);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QByteArray(QByteArray && other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
     inline QByteArray &operator=(QByteArray &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
 
     inline void swap(QByteArray &other) noexcept
     { qSwap(d, other.d); }

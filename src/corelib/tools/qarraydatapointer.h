@@ -82,7 +82,6 @@ public:
         return *this;
     }
 
-#ifdef Q_COMPILER_RVALUE_REFS
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
         : d(other.d)
     {
@@ -95,7 +94,6 @@ public:
         this->swap(moved);
         return *this;
     }
-#endif
 
     DataOps &operator*() const
     {

@@ -62,9 +62,7 @@ public:
     ~QStorageInfo();
 
     QStorageInfo &operator=(const QStorageInfo &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QStorageInfo &operator=(QStorageInfo &&other) noexcept { swap(other); return *this; }
-#endif
 
     inline void swap(QStorageInfo &other) noexcept
     { qSwap(d, other.d); }

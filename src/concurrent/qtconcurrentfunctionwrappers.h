@@ -225,13 +225,11 @@ struct PushBackWrapper
         return c.push_back(u);
     }
 
-#ifdef Q_COMPILER_RVALUE_REFS
     template <class C, class U>
     inline void operator()(C &c, U &&u) const
     {
         return c.push_back(u);
     }
-#endif
 };
 
 template <typename Functor, bool foo = HasResultType<Functor>::Value>

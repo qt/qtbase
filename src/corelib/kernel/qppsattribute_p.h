@@ -96,10 +96,8 @@ public:
     bool operator==(const QPpsAttribute &other) const;
     bool operator!=(const QPpsAttribute &other) const;
 
-#ifdef Q_COMPILER_RVALUE_REFS
     QPpsAttribute(QPpsAttribute &&other);
     QPpsAttribute &operator=(QPpsAttribute &&other);
-#endif
 
     bool isValid() const;
     Type type() const;

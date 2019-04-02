@@ -78,9 +78,7 @@ public:
     QMimeType();
     QMimeType(const QMimeType &other);
     QMimeType &operator=(const QMimeType &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QMimeType &operator=(QMimeType &&other) noexcept { swap(other); return *this; }
-#endif
     void swap(QMimeType &other) noexcept
     {
         qSwap(d, other.d);

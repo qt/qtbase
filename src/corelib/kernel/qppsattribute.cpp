@@ -145,7 +145,6 @@ QPpsAttribute &QPpsAttribute::operator=(const QPpsAttribute &other)
     return *this;
 }
 
-#ifdef Q_COMPILER_RVALUE_REFS
 QPpsAttribute::QPpsAttribute(QPpsAttribute &&other) : d(other.d)
 {
     other.d->type = QPpsAttribute::None;
@@ -156,7 +155,6 @@ QPpsAttribute &QPpsAttribute::operator=(QPpsAttribute &&other)
     qSwap(d, other.d);
     return *this;
 }
-#endif
 
 bool QPpsAttribute::operator==(const QPpsAttribute &other) const
 {

@@ -109,9 +109,7 @@ public:
     QT_DEPRECATED_X("Use QDir::setPath() instead")
     QDir &operator=(const QString &path);
 #endif
-#ifdef Q_COMPILER_RVALUE_REFS
     QDir &operator=(QDir &&other) noexcept { swap(other); return *this; }
-#endif
 
     void swap(QDir &other) noexcept
     { qSwap(d_ptr, other.d_ptr); }
