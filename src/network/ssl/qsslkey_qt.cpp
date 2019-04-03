@@ -48,6 +48,8 @@
 
 #include <QtNetwork/qpassworddigestor.h>
 
+#include <cstring>
+
 QT_USE_NAMESPACE
 
 static const quint8 bits_table[256] = {
@@ -186,8 +188,9 @@ static QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &pas
 
 void QSslKeyPrivate::clear(bool deep)
 {
-    Q_UNUSED(deep);
     isNull = true;
+    if (deep)
+        std::memset(derData.data(), 0, derData.size());
     derData.clear();
     keyLength = -1;
 }
