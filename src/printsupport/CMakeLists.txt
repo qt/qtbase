@@ -29,6 +29,7 @@ add_qt_module(PrintSupport
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES # special case
         Qt::Gui
+        Qt::Widgets
 )
 
 #### Keys ignored in scope 1:.:printsupport.pro:<NONE>:
