@@ -1453,26 +1453,41 @@ static QString createTemporaryItemCopy(QWindowsShellItem &qItem, QString *errorM
     return result;
 }
 
+static QUrl itemToDialogUrl(QWindowsShellItem &qItem, QString *errorMessage)
+{
+    QUrl url = qItem.url();
+    if (url.isLocalFile() || url.scheme().startsWith(QLatin1String("http")))
+        return url;
+    const QString path = qItem.path();
+    if (path.isEmpty() && !qItem.isDir() && qItem.canStream()) {
+        const QString temporaryCopy = createTemporaryItemCopy(qItem, errorMessage);
+        if (temporaryCopy.isEmpty()) {
+            QDebug(errorMessage).noquote() << "Unable to create a local copy of"
+                << qItem << ": " << errorMessage;
+            return QUrl();
+        }
+        return QUrl::fromLocalFile(temporaryCopy);
+    }
+    if (!url.isValid())
+        QDebug(errorMessage).noquote() << "Invalid URL obtained from" << qItem;
+    return url;
+}
+
 QList<QUrl> QWindowsNativeOpenFileDialog::dialogResult() const
 {
     QList<QUrl> result;
     IShellItemArray *items = nullptr;
     if (SUCCEEDED(openFileDialog()->GetResults(&items)) && items) {
+        QString errorMessage;
         for (IShellItem *item : QWindowsShellItem::itemsFromItemArray(items)) {
             QWindowsShellItem qItem(item);
-            const QString path = qItem.path();
-            if (path.isEmpty() && !qItem.isDir()) {
-                QString errorMessage;
-                const QString temporaryCopy = createTemporaryItemCopy(qItem, &errorMessage);
-                if (temporaryCopy.isEmpty()) {
-                    qWarning().noquote() << "Unable to create a local copy of" << qItem
-                        << ": " << errorMessage;
-                } else {
-                    result.append(QUrl::fromLocalFile(temporaryCopy));
-                }
-            } else {
-                result.append(qItem.url());
+            const QUrl url = itemToDialogUrl(qItem, &errorMessage);
+            if (!url.isValid()) {
+                qWarning("%s", qPrintable(errorMessage));
+                result.clear();
+                break;
             }
+            result.append(url);
         }
     }
     return result;
