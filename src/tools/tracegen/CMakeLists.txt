@@ -6,6 +6,7 @@
 
 add_qt_tool(tracegen
     BOOTSTRAP
+    NO_INSTALL
     SOURCES
         etw.cpp etw.h
         helpers.cpp helpers.h

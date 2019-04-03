@@ -770,7 +770,7 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_INSTALL" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -816,9 +816,11 @@ function(add_qt_executable name)
         MACOSX_BUNDLE "${arg_GUI}"
     )
 
-    install(TARGETS "${name}"
-        RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
-        BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}")
+    if(NOT arg_NO_INSTALL)
+        install(TARGETS "${name}"
+            RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
+            BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}")
+    endif()
 endfunction()
 
 
@@ -826,9 +828,9 @@ endfunction()
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test" "RUN_SERIAL" "" "${__default_private_args}" ${ARGN})
     set(path "${CMAKE_CURRENT_BINARY_DIR}")
-    file(RELATIVE_PATH test_relative_src_dir ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_qt_executable("${name}"
+        NO_INSTALL
         OUTPUT_DIRECTORY "${path}"
         SOURCES "${arg_SOURCES}"
         INCLUDE_DIRECTORIES
@@ -841,7 +843,6 @@ function(add_qt_test name)
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        INSTALL_DIRECTORY ${test_relative_src_dir}
     )
 
     add_test(NAME "${name}" COMMAND "${name}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -879,7 +880,7 @@ function(add_qt_tool name)
         return()
     endif()
 
-    qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP" "" "${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP;NO_INSTALL" "" "${__default_private_args}" ${ARGN})
 
     set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
     if (arg_BOOTSTRAP)
@@ -894,8 +895,14 @@ function(add_qt_tool name)
         set(bootstrap BOOTSTRAP)
     endif()
 
+    set(no_install "")
+    if(arg_NO_INSTALL)
+        set(no_install NO_INSTALL)
+    endif()
+
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
+        ${no_install}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
@@ -908,7 +915,9 @@ function(add_qt_tool name)
     )
     qt_internal_add_target_aliases("${name}")
 
-    install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+    if(NOT arg_NO_INSTALL)
+        install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+    endif()
 endfunction()
 
 
