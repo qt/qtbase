@@ -250,6 +250,23 @@ static Qt::MouseButtons mouseButtonsFromKeyState(WPARAM keyState)
     return result;
 }
 
+static Qt::MouseButtons queryMouseButtons()
+{
+    Qt::MouseButtons result = Qt::NoButton;
+    const bool mouseSwapped = GetSystemMetrics(SM_SWAPBUTTON);
+    if (GetAsyncKeyState(VK_LBUTTON) < 0)
+        result |= mouseSwapped ? Qt::RightButton: Qt::LeftButton;
+    if (GetAsyncKeyState(VK_RBUTTON) < 0)
+        result |= mouseSwapped ? Qt::LeftButton : Qt::RightButton;
+    if (GetAsyncKeyState(VK_MBUTTON) < 0)
+        result |= Qt::MidButton;
+    if (GetAsyncKeyState(VK_XBUTTON1) < 0)
+        result |= Qt::XButton1;
+    if (GetAsyncKeyState(VK_XBUTTON2) < 0)
+        result |= Qt::XButton2;
+    return result;
+}
+
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
 {
     QWindow *currentWindowUnderPointer = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
@@ -681,7 +698,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     }
 
     const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
-    const Qt::MouseButtons mouseButtons = mouseButtonsFromKeyState(msg.wParam);
     QWindow *currentWindowUnderPointer = getWindowUnderPointer(window, globalPos);
 
     if (et == QtWindows::MouseWheelEvent)
@@ -709,7 +725,8 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     const MouseEvent mouseEvent = eventFromMsg(msg);
 
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons,
+        const Qt::MouseButtons nonclientButtons = queryMouseButtons();
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, nonclientButtons,
                                                            mouseEvent.button, mouseEvent.type, keyModifiers, source);
         return false; // Allow further event processing
     }
@@ -724,6 +741,8 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
         }
         return true;
     }
+
+    const Qt::MouseButtons mouseButtons = mouseButtonsFromKeyState(msg.wParam);
 
     handleCaptureRelease(window, currentWindowUnderPointer, hwnd, mouseEvent.type, mouseButtons);
     handleEnterLeave(window, currentWindowUnderPointer, globalPos);
