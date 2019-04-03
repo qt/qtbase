@@ -60,12 +60,18 @@
 # undef _POSIX_
 #endif
 #include <qcoreapplication.h>
+#include <qcoreevent.h>
+#include <qiodevice.h>
 #include <qlist.h>
 #include <qvariant.h>  /* All moc genereated code has this include */
 #include <qobject.h>
 #include <qregexp.h>
+#include <qscopedpointer.h>
+#include <qshareddata.h>
 #include <qstring.h>
 #include <qstringlist.h>
+#include <qtimer.h>
+#include <qvector.h>
 #if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
 #endif
