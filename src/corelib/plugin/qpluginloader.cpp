@@ -174,7 +174,7 @@ QPluginLoader::~QPluginLoader()
 
 /*!
     Returns the root component object of the plugin. The plugin is
-    loaded if necessary. The function returns 0 if the plugin could
+    loaded if necessary. The function returns \nullptr if the plugin could
     not be loaded or if the root component object could not be
     instantiated.
 

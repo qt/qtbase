@@ -1145,6 +1145,15 @@ bool QTextCursor::isNull() const
     \a pos using a \c MoveMode specified by \a m. The cursor is positioned
     between characters.
 
+    \note The "characters" in this case refer to the string of QChar
+    objects, i.e. 16-bit Unicode characters, and \a pos is considered
+    an index into this string. This does not necessarily correspond to
+    individual graphemes in the writing system, as a single grapheme may
+    be represented by multiple Unicode characters, such as in the case
+    of surrogate pairs, linguistic ligatures or diacritics. For a more
+    generic approach to navigating the document, use movePosition(),
+    which will respect the actual grapheme boundaries in the text.
+
     \sa position(), movePosition(), anchor()
 */
 void QTextCursor::setPosition(int pos, MoveMode m)
@@ -1176,6 +1185,13 @@ void QTextCursor::setPosition(int pos, MoveMode m)
     Returns the absolute position of the cursor within the document.
     The cursor is positioned between characters.
 
+    \note The "characters" in this case refer to the string of QChar
+    objects, i.e. 16-bit Unicode characters, and the position is considered
+    an index into this string. This does not necessarily correspond to
+    individual graphemes in the writing system, as a single grapheme may
+    be represented by multiple Unicode characters, such as in the case
+    of surrogate pairs, linguistic ligatures or diacritics.
+
     \sa setPosition(), movePosition(), anchor(), positionInBlock()
 */
 int QTextCursor::position() const
@@ -1191,6 +1207,13 @@ int QTextCursor::position() const
     The cursor is positioned between characters.
 
     This is equivalent to \c{ position() - block().position()}.
+
+    \note The "characters" in this case refer to the string of QChar
+    objects, i.e. 16-bit Unicode characters, and the position is considered
+    an index into this string. This does not necessarily correspond to
+    individual graphemes in the writing system, as a single grapheme may
+    be represented by multiple Unicode characters, such as in the case
+    of surrogate pairs, linguistic ligatures or diacritics.
 
     \sa position()
 */

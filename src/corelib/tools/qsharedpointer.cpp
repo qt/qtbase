@@ -875,7 +875,7 @@
     \b without ensuring that it cannot get deleted. To have that guarantee,
     use toStrongRef(), which returns a QSharedPointer object. If this
     function can determine that the pointer has already been deleted, it
-    returns 0.
+    returns \nullptr.
 
     It is ok to obtain the value of the pointer and using that value itself,
     like for example in debugging statements:
