@@ -1,8 +1,6 @@
 # special case:
 set(OpenGL_GL_PREFERENCE GLVND)
 
-find_package(WrapOpenGL) # special case
-
 #####################################################################
 ## Gui Module:
 #####################################################################
@@ -440,6 +438,14 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qshapedpixmapdndwindow.cpp kernel/qshapedpixmapdndwindow_p.h
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
+
+# With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
+# acted like WrapOpenGL: direct linkage against either libGLESv2 or
+# libGL, depending on the opengl _feature_. This is done by hand now
+# here (where the feature is available).
+# DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
+# available until the add_qt_module call.
+find_package(WrapOpenGL) # special case
 
 extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
