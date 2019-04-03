@@ -164,6 +164,7 @@ function QtLoader(config)
         // Set contentEditable in order to enable clipboard events; hide the resulting focus frame.
         canvas.contentEditable = true;
         canvas.style.outline = "0px solid transparent";
+        canvas.style.caretColor = "transparent";
         canvas.style.cursor = "default";
 
         return canvas;
