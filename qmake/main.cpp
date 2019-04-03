@@ -306,7 +306,7 @@ static int installFileOrDirectory(const QString &source, const QString &target,
     } else if (fi.isDir()) {
         QDir::current().mkpath(target);
 
-        QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot);
+        QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
         while (it.hasNext()) {
             it.next();
             const QFileInfo &entry = it.fileInfo();
