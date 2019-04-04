@@ -42,6 +42,7 @@
 
 #include <qdebug.h>
 #include <qdir.h>
+#include <qscopedvaluerollback.h>
 #if defined(Q_OS_WIN)
 #include <qtimer.h>
 #endif
@@ -1062,9 +1063,8 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     if (currentReadChannel == channelIdx) {
         didRead = true;
         if (!emittedReadyRead) {
-            emittedReadyRead = true;
+            QScopedValueRollback<bool> guard(emittedReadyRead, true);
             emit q->readyRead();
-            emittedReadyRead = false;
         }
     }
     emit q->channelReadyRead(int(channelIdx));

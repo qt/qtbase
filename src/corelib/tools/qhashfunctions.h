@@ -67,49 +67,49 @@ class QLatin1String;
 Q_CORE_EXPORT int qGlobalQHashSeed();
 Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
 
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHashBits(const void *p, size_t size, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHashBits(const void *p, size_t size, uint seed = 0) noexcept;
 
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uchar key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(signed char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ushort key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(short key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uint key, uint seed = 0) Q_DECL_NOTHROW { return key ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(int key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ulong key, uint seed = 0) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(char key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uchar key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(signed char key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ushort key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(short key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uint key, uint seed = 0) noexcept { return key ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(int key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ulong key, uint seed = 0) noexcept
 {
     return (sizeof(ulong) > sizeof(uint))
         ? (uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed)
         : (uint(key & (~0U)) ^ seed);
 }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(long key, uint seed = 0) Q_DECL_NOTHROW { return qHash(ulong(key), seed); }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(long key, uint seed = 0) noexcept { return qHash(ulong(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(quint64 key, uint seed = 0) noexcept
 {
     return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
 }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(qint64 key, uint seed = 0) Q_DECL_NOTHROW { return qHash(quint64(key), seed); }
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(float key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(double key, uint seed = 0) Q_DECL_NOTHROW;
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(qint64 key, uint seed = 0) noexcept { return qHash(quint64(key), seed); }
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(float key, uint seed = 0) noexcept;
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(double key, uint seed = 0) noexcept;
 #if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(long double key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(long double key, uint seed = 0) noexcept;
 #endif
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(const QChar key, uint seed = 0) Q_DECL_NOTHROW { return qHash(key.unicode(), seed); }
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QByteArray &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(const QChar key, uint seed = 0) noexcept { return qHash(key.unicode(), seed); }
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QByteArray &key, uint seed = 0) noexcept;
 #if QT_STRINGVIEW_LEVEL < 2
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QString &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QStringRef &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QString &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QStringRef &key, uint seed = 0) noexcept;
 #endif
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QStringView key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QBitArray &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QLatin1String key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(QStringView key, uint chained = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QStringView key, uint seed = 0) noexcept;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QBitArray &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QLatin1String key, uint seed = 0) noexcept;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(QStringView key, uint chained = 0) noexcept;
 
-Q_DECL_CONST_FUNCTION inline uint qHash(std::nullptr_t, uint seed = 0) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION inline uint qHash(std::nullptr_t, uint seed = 0) noexcept
 {
     return qHash(reinterpret_cast<quintptr>(nullptr), seed);
 }
 
-template <class T> inline uint qHash(const T *key, uint seed = 0) Q_DECL_NOTHROW
+template <class T> inline uint qHash(const T *key, uint seed = 0) noexcept
 {
     return qHash(reinterpret_cast<quintptr>(key), seed);
 }

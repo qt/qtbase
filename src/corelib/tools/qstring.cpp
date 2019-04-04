@@ -155,7 +155,7 @@ static inline bool qt_ends_with(QStringView haystack, QStringView needle, Qt::Ca
 static inline bool qt_ends_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
-qsizetype QtPrivate::qustrlen(const ushort *str) Q_DECL_NOTHROW
+qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
 {
     qsizetype result = 0;
 
@@ -453,7 +453,7 @@ static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
 
 // Note: ptr on output may be off by one and point to a preceding US-ASCII
 // character. Usually harmless.
-bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
+bool qt_is_ascii(const char *&ptr, const char *end) noexcept
 {
 #if defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
@@ -509,7 +509,7 @@ bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
     return true;
 }
 
-bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
+bool QtPrivate::isAscii(QLatin1String s) noexcept
 {
     const char *ptr = s.begin();
     const char *end = s.end();
@@ -536,7 +536,7 @@ static bool isAscii(const QChar *&ptr, const QChar *end)
     return true;
 }
 
-bool QtPrivate::isAscii(QStringView s) Q_DECL_NOTHROW
+bool QtPrivate::isAscii(QStringView s) noexcept
 {
     const QChar *ptr = s.begin();
     const QChar *end = s.end();
@@ -544,7 +544,7 @@ bool QtPrivate::isAscii(QStringView s) Q_DECL_NOTHROW
     return isAscii(ptr, end);
 }
 
-bool QtPrivate::isLatin1(QStringView s) Q_DECL_NOTHROW
+bool QtPrivate::isLatin1(QStringView s) noexcept
 {
     const QChar *ptr = s.begin();
     const QChar *end = s.end();
@@ -584,7 +584,7 @@ bool QtPrivate::isLatin1(QStringView s) Q_DECL_NOTHROW
 }
 
 // conversion between Latin 1 and UTF-16
-void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW
+void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept
 {
     /* SIMD:
      * Unpacking with SSE has been shown to improve performance on recent CPUs
@@ -1141,7 +1141,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
 }
 
 template <typename Number>
-Q_DECL_CONSTEXPR int lencmp(Number lhs, Number rhs) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR int lencmp(Number lhs, Number rhs) noexcept
 {
     return lhs == rhs ? 0 :
            lhs >  rhs ? 1 :
@@ -1165,7 +1165,7 @@ static int ucstrcmp(const QChar *a, size_t alen, const char *b, size_t blen)
     return cmp ? cmp : lencmp(alen, blen);
 }
 
-static int qt_compare_strings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+static int qt_compare_strings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
@@ -1173,7 +1173,7 @@ static int qt_compare_strings(QStringView lhs, QStringView rhs, Qt::CaseSensitiv
         return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
-static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
@@ -1181,12 +1181,12 @@ static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
         return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
-static int qt_compare_strings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+static int qt_compare_strings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     return -qt_compare_strings(rhs, lhs, cs);
 }
 
-static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (cs == Qt::CaseInsensitive)
         return qstrnicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
@@ -1211,7 +1211,7 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
@@ -1231,7 +1231,7 @@ int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitiv
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
@@ -1251,7 +1251,7 @@ int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
@@ -1271,7 +1271,7 @@ int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensit
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
@@ -2367,7 +2367,7 @@ void QString::expand(int i)
     string.
 */
 
-QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
+QString &QString::operator=(const QString &other) noexcept
 {
     other.d->ref.ref();
     if (!d->ref.deref())
@@ -3353,7 +3353,7 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
   expect. Consider sorting user-interface strings with
   localeAwareCompare().
 */
-bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW
+bool operator==(const QString &s1, const QString &s2) noexcept
 {
     if (s1.d->size != s2.d->size)
         return false;
@@ -3366,7 +3366,7 @@ bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW
     Returns \c true if this string is equal to \a other; otherwise
     returns \c false.
 */
-bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
+bool QString::operator==(QLatin1String other) const noexcept
 {
     if (d->size != other.size())
         return false;
@@ -3418,7 +3418,7 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 */
-bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW
+bool operator<(const QString &s1, const QString &s2) noexcept
 {
     return qt_compare_strings(s1, s2, Qt::CaseSensitive) < 0;
 }
@@ -3429,7 +3429,7 @@ bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW
     Returns \c true if this string is lexically less than the parameter
     string called \a other; otherwise returns \c false.
 */
-bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
+bool QString::operator<(QLatin1String other) const noexcept
 {
     return qt_compare_strings(*this, other, Qt::CaseSensitive) < 0;
 }
@@ -3538,7 +3538,7 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
     Returns \c true if this string is lexically greater than the parameter
     string \a other; otherwise returns \c false.
 */
-bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
+bool QString::operator>(QLatin1String other) const noexcept
 {
     return qt_compare_strings(*this, other, Qt::CaseSensitive) > 0;
 }
@@ -5668,7 +5668,7 @@ QString QString::simplified_helper(QString &str)
 
 namespace {
     template <typename StringView>
-    StringView qt_trimmed(StringView s) Q_DECL_NOTHROW
+    StringView qt_trimmed(StringView s) noexcept
     {
         auto begin = s.begin();
         auto end = s.end();
@@ -5692,12 +5692,12 @@ namespace {
 
     \sa QString::trimmed(), QStringView::trimmed(), QLatin1String::trimmed()
 */
-QStringView QtPrivate::trimmed(QStringView s) Q_DECL_NOTHROW
+QStringView QtPrivate::trimmed(QStringView s) noexcept
 {
     return qt_trimmed(s);
 }
 
-QLatin1String QtPrivate::trimmed(QLatin1String s) Q_DECL_NOTHROW
+QLatin1String QtPrivate::trimmed(QLatin1String s) noexcept
 {
     return qt_trimmed(s);
 }
@@ -6235,7 +6235,7 @@ QString& QString::fill(QChar ch, int size)
 
     Same as compare(*this, \a other, \a cs).
 */
-int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+int QString::compare(const QString &other, Qt::CaseSensitivity cs) const noexcept
 {
     return qt_compare_strings(*this, other, cs);
 }
@@ -6246,7 +6246,7 @@ int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_
     \since 4.5
 */
 int QString::compare_helper(const QChar *data1, int length1, const QChar *data2, int length2,
-                            Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+                            Qt::CaseSensitivity cs) noexcept
 {
     Q_ASSERT(length1 >= 0);
     Q_ASSERT(length2 >= 0);
@@ -6261,7 +6261,7 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
 
     Same as compare(*this, \a other, \a cs).
 */
-int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const noexcept
 {
     return qt_compare_strings(*this, other, cs);
 }
@@ -6307,7 +6307,7 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
     \since 4.5
 */
 int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
-                            Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+                            Qt::CaseSensitivity cs) noexcept
 {
     Q_ASSERT(length1 >= 0);
     Q_ASSERT(data1 || length1 == 0);
@@ -6801,7 +6801,7 @@ static void append_utf8(QString &qs, const char *cs, int len)
     qs.resize(newEnd - qs.constData());
 }
 
-static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
+static uint parse_flag_characters(const char * &c) noexcept
 {
     uint flags = QLocaleData::ZeroPadExponent;
     while (true) {
@@ -6838,7 +6838,7 @@ static int parse_field_width(const char * &c)
 
 enum LengthMod { lm_none, lm_hh, lm_h, lm_l, lm_ll, lm_L, lm_j, lm_z, lm_t };
 
-static inline bool can_consume(const char * &c, char ch) Q_DECL_NOTHROW
+static inline bool can_consume(const char * &c, char ch) noexcept
 {
     if (*c == ch) {
         ++c;
@@ -6847,7 +6847,7 @@ static inline bool can_consume(const char * &c, char ch) Q_DECL_NOTHROW
     return false;
 }
 
-static LengthMod parse_length_modifier(const char * &c) Q_DECL_NOTHROW
+static LengthMod parse_length_modifier(const char * &c) noexcept
 {
     switch (*c++) {
     case 'h': return can_consume(c, 'h') ? lm_hh : lm_h;
@@ -8810,7 +8810,7 @@ namespace {
 struct Part
 {
     Part() : stringRef(), number(0) {}
-    Part(const QString &s, int pos, int len, int num = -1) Q_DECL_NOTHROW
+    Part(const QString &s, int pos, int len, int num = -1) noexcept
         : stringRef(&s, pos, len), number(num) {}
 
     QStringRef stringRef;
@@ -10379,7 +10379,7 @@ QString QStringRef::toString() const {
    Returns \c true if string reference \a s1 is lexically equal to string reference \a s2; otherwise
    returns \c false.
 */
-bool operator==(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
+bool operator==(const QStringRef &s1,const QStringRef &s2) noexcept
 {
     return s1.size() == s2.size() && qt_compare_strings(s1, s2, Qt::CaseSensitive) == 0;
 }
@@ -10389,7 +10389,7 @@ bool operator==(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
    Returns \c true if string \a s1 is lexically equal to string reference \a s2; otherwise
    returns \c false.
 */
-bool operator==(const QString &s1,const QStringRef &s2) Q_DECL_NOTHROW
+bool operator==(const QString &s1,const QStringRef &s2) noexcept
 {
     return s1.size() == s2.size() && qt_compare_strings(s1, s2, Qt::CaseSensitive) == 0;
 }
@@ -10399,7 +10399,7 @@ bool operator==(const QString &s1,const QStringRef &s2) Q_DECL_NOTHROW
    Returns \c true if string  \a s1 is lexically equal to string reference \a s2; otherwise
    returns \c false.
 */
-bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
+bool operator==(QLatin1String s1, const QStringRef &s2) noexcept
 {
     if (s1.size() != s2.size())
         return false;
@@ -10418,7 +10418,7 @@ bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 */
-bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
+bool operator<(const QStringRef &s1,const QStringRef &s2) noexcept
 {
     return qt_compare_strings(s1, s2, Qt::CaseSensitive) < 0;
 }
@@ -11553,7 +11553,7 @@ static inline qsizetype qt_string_count(QStringView haystack, QChar ch,
 }
 
 template <typename Haystack, typename Needle>
-bool qt_starts_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool qt_starts_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) noexcept
 {
     if (haystack.isNull())
         return needle.isNull(); // historical behavior, consider changing in ### Qt 6.
@@ -11605,28 +11605,28 @@ static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSe
     \sa QtPrivate::endsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
 */
 
-bool QtPrivate::startsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
-bool QtPrivate::startsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
-bool QtPrivate::startsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
-bool QtPrivate::startsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
 template <typename Haystack, typename Needle>
-bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) noexcept
 {
     if (haystack.isNull())
         return needle.isNull(); // historical behavior, consider changing in ### Qt 6.
@@ -11678,22 +11678,22 @@ static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSens
     \sa QtPrivate::startsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
 */
 
-bool QtPrivate::endsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-bool QtPrivate::endsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-bool QtPrivate::endsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
@@ -11707,7 +11707,7 @@ bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseS
     position \a from. Returns -1 if \a ch could not be found.
 */
 
-qsizetype QtPrivate::findChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+qsizetype QtPrivate::findChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
 {
     if (from < 0)
         from = qMax(from + str.size(), qsizetype(0));
@@ -11731,7 +11731,7 @@ qsizetype QtPrivate::findChar(QStringView str, QChar ch, qsizetype from, Qt::Cas
     return -1;
 }
 
-qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringView needle0, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringView needle0, Qt::CaseSensitivity cs) noexcept
 {
     const qsizetype l = haystack0.size();
     const qsizetype sl = needle0.size();
@@ -11806,7 +11806,7 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
     return -1;
 }
 
-qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
 {
     if (haystack.size() < needle.size())
         return -1;
@@ -12271,7 +12271,7 @@ QString QString::toHtmlEscaped() const
 /*!
     \internal
  */
-void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) Q_DECL_NOTHROW
+void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) noexcept
 {
     qt_from_latin1(reinterpret_cast<ushort *>(out), a, uint(len));
 }

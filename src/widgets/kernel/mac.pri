@@ -1,4 +1,1 @@
-macos {
-   LIBS_PRIVATE += -framework AppKit -lz
-   *-mwerks:INCLUDEPATH += compat
-}
+macos: LIBS_PRIVATE += -framework AppKit -lz

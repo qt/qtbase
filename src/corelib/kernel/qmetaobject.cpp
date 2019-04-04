@@ -335,7 +335,7 @@ const char *QMetaObject::className() const
 
     \since 5.7
 */
-bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
+bool QMetaObject::inherits(const QMetaObject *metaObject) const noexcept
 {
     const QMetaObject *m = this;
     do {
@@ -349,7 +349,7 @@ bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
     \internal
 
     Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
+    meta-object; otherwise returns \nullptr.
 */
 QObject *QMetaObject::cast(QObject *obj) const
 {
@@ -361,7 +361,7 @@ QObject *QMetaObject::cast(QObject *obj) const
     \internal
 
     Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
+    meta-object; otherwise returns \nullptr.
 */
 const QObject *QMetaObject::cast(const QObject *obj) const
 {

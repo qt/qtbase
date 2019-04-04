@@ -79,7 +79,7 @@ enum GuardValues {
     Q_GLOBAL_STATIC_INTERNAL_DECORATION Type *innerFunction()   \
     {                                                           \
         struct HolderBase {                                     \
-            ~HolderBase() Q_DECL_NOTHROW                        \
+            ~HolderBase() noexcept                        \
             { if (guard.load() == QtGlobalStatic::Initialized)  \
                   guard.store(QtGlobalStatic::Destroyed); }     \
         };                                                      \

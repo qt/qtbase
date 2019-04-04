@@ -508,13 +508,13 @@ template <typename Int> static void mulOverflow_template()
     QCOMPARE(mul_overflow(Int(max / 2), Int(3), &r), true);
     QCOMPARE(mul_overflow(mid1, Int(mid2 + 1), &r), true);
     QCOMPARE(mul_overflow(Int(max / 2 + 2), Int(2), &r), true);
+    QCOMPARE(mul_overflow(Int(max - max / 2), Int(2), &r), true);
     QCOMPARE(mul_overflow(Int(1ULL << (std::numeric_limits<Int>::digits - 1)), Int(2), &r), true);
 
     if (min) {
         QCOMPARE(mul_overflow(min, Int(2), &r), true);
         QCOMPARE(mul_overflow(Int(min / 2), Int(3), &r), true);
         QCOMPARE(mul_overflow(Int(min / 2 - 1), Int(2), &r), true);
-        QCOMPARE(mul_overflow(Int(min + min/2), Int(2), &r), true);
     }
 #endif
 }

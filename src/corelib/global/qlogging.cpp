@@ -346,7 +346,7 @@ using namespace QtPrivate;
 */
 
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
-static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
+static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) noexcept
 {
     size_t len = qstrlen(s);
     if (len + 1 > space) {
@@ -529,7 +529,7 @@ QDebug QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc) const
 
     \sa QNoDebug, qDebug()
 */
-QNoDebug QMessageLogger::noDebug() const Q_DECL_NOTHROW
+QNoDebug QMessageLogger::noDebug() const noexcept
 {
     return QNoDebug();
 }
@@ -875,7 +875,7 @@ QDebug QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc) const
 
     \sa qFatal()
 */
-void QMessageLogger::fatal(const char *msg, ...) const Q_DECL_NOTHROW
+void QMessageLogger::fatal(const char *msg, ...) const noexcept
 {
     QString message;
 

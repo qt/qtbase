@@ -291,7 +291,7 @@ enum DataEndianness
 
 struct QUtf8
 {
-    static QChar *convertToUnicode(QChar *, const char *, int) Q_DECL_NOTHROW;
+    static QChar *convertToUnicode(QChar *, const char *, int) noexcept;
     static QString convertToUnicode(const char *, int);
     static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *);
     static QByteArray convertFromUnicode(const QChar *, int);

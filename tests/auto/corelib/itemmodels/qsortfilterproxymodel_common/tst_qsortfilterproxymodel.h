@@ -109,6 +109,7 @@ private slots:
     void selectionFilteredOut();
     void match_data();
     void match();
+    void matchTree();
     void insertIntoChildrenlessItem();
     void invalidateMappedChildren();
     void insertRowIntoFilteredParent();
@@ -185,5 +186,7 @@ private:
 };
 
 Q_DECLARE_METATYPE(QAbstractItemModel::LayoutChangeHint)
+
+Q_DECLARE_LOGGING_CATEGORY(lcItemModels)
 
 #endif // TST_QSORTFILTERPROXYMODEL_H

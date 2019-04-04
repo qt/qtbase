@@ -100,10 +100,10 @@ struct Q_CORE_EXPORT QMapNodeBase
 
     template <typename T>
     static typename std::enable_if<QTypeInfo<T>::isComplex>::type
-    callDestructorIfNecessary(T &t) Q_DECL_NOTHROW { Q_UNUSED(t); t.~T(); } // Q_UNUSED: silence MSVC unused 't' warning
+    callDestructorIfNecessary(T &t) noexcept { Q_UNUSED(t); t.~T(); } // Q_UNUSED: silence MSVC unused 't' warning
     template <typename T>
     static typename std::enable_if<!QTypeInfo<T>::isComplex>::type
-    callDestructorIfNecessary(T &) Q_DECL_NOTHROW {}
+    callDestructorIfNecessary(T &) noexcept {}
 };
 
 template <class Key, class T>
@@ -325,7 +325,7 @@ class QMap
     QMapData<Key, T> *d;
 
 public:
-    inline QMap() Q_DECL_NOTHROW : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null))) { }
+    inline QMap() noexcept : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null))) { }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMap(std::initializer_list<std::pair<Key,T> > list)
         : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null)))
@@ -340,17 +340,17 @@ public:
 
     QMap<Key, T> &operator=(const QMap<Key, T> &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QMap(QMap<Key, T> &&other) Q_DECL_NOTHROW
+    inline QMap(QMap<Key, T> &&other) noexcept
         : d(other.d)
     {
         other.d = static_cast<QMapData<Key, T> *>(
                 const_cast<QMapDataBase *>(&QMapDataBase::shared_null));
     }
 
-    inline QMap<Key, T> &operator=(QMap<Key, T> &&other) Q_DECL_NOTHROW
+    inline QMap<Key, T> &operator=(QMap<Key, T> &&other) noexcept
     { QMap moved(std::move(other)); swap(moved); return *this; }
 #endif
-    inline void swap(QMap<Key, T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    inline void swap(QMap<Key, T> &other) noexcept { qSwap(d, other.d); }
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
 
@@ -1187,7 +1187,7 @@ template <class Key, class T>
 class QMultiMap : public QMap<Key, T>
 {
 public:
-    QMultiMap() Q_DECL_NOTHROW {}
+    QMultiMap() noexcept {}
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMultiMap(std::initializer_list<std::pair<Key,T> > list)
     {
@@ -1197,9 +1197,9 @@ public:
 #endif
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
 #ifdef Q_COMPILER_RVALUE_REFS
-    QMultiMap(QMap<Key, T> &&other) Q_DECL_NOTHROW : QMap<Key, T>(std::move(other)) {}
+    QMultiMap(QMap<Key, T> &&other) noexcept : QMap<Key, T>(std::move(other)) {}
 #endif
-    void swap(QMultiMap<Key, T> &other) Q_DECL_NOTHROW { QMap<Key, T>::swap(other); }
+    void swap(QMultiMap<Key, T> &other) noexcept { QMap<Key, T>::swap(other); }
 
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)
     { return QMap<Key, T>::insert(key, value); }

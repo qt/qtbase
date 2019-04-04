@@ -113,14 +113,14 @@ struct Q_CORE_EXPORT QArrayData
     }
 
     Q_REQUIRED_RESULT static QArrayData *allocate(size_t objectSize, size_t alignment,
-            size_t capacity, AllocationOptions options = Default) Q_DECL_NOTHROW;
+            size_t capacity, AllocationOptions options = Default) noexcept;
     Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
-            size_t newCapacity, AllocationOptions newOptions = Default) Q_DECL_NOTHROW;
+            size_t newCapacity, AllocationOptions newOptions = Default) noexcept;
     static void deallocate(QArrayData *data, size_t objectSize,
-            size_t alignment) Q_DECL_NOTHROW;
+            size_t alignment) noexcept;
 
     static const QArrayData shared_null[2];
-    static QArrayData *sharedNull() Q_DECL_NOTHROW { return const_cast<QArrayData*>(shared_null); }
+    static QArrayData *sharedNull() noexcept { return const_cast<QArrayData*>(shared_null); }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
@@ -254,7 +254,7 @@ struct QTypedArrayData
         return result;
     }
 
-    static QTypedArrayData *sharedNull() Q_DECL_NOTHROW
+    static QTypedArrayData *sharedNull() noexcept
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::sharedNull());

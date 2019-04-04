@@ -629,7 +629,10 @@ void QIconLoaderEngine::ensureLoaded()
 void QIconLoaderEngine::paint(QPainter *painter, const QRect &rect,
                              QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size();
+    const qreal dpr = !qApp->testAttribute(Qt::AA_UseHighDpiPixmaps) ?
+                qreal(1.0) : painter->device()->devicePixelRatioF();
+
+    QSize pixmapSize = rect.size() * dpr;
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
 

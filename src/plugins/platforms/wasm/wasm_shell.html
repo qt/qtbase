@@ -11,7 +11,7 @@
       /* The contenteditable property is set to true for the canvas in order to support
          clipboard events. Hide the resulting focus frame and set the cursor back to
          the default cursor. */
-      canvas { outline: 0px solid transparent; cursor:default }
+      canvas { outline: 0px solid transparent; caret-color: transparent; cursor:default }
     </style>
   </head>
   <body onload="init()">
@@ -27,9 +27,9 @@
 
     <script type='text/javascript'>
         function init() {
-          var spinner = document.getElementById('qtspinner');
-          var canvas = document.getElementById('qtcanvas');
-          var status = document.getElementById('qtstatus')
+          var spinner = document.querySelector('#qtspinner');
+          var canvas = document.querySelector('#qtcanvas');
+          var status = document.querySelector('#qtstatus')
 
           var qtLoader = QtLoader({
               canvasElements : [canvas],

@@ -197,8 +197,8 @@ public:
         return std::pair<Key, T>(i.key(), i.value());
     }
 
-    friend bool operator==(QKeyValueIterator lhs, QKeyValueIterator rhs) Q_DECL_NOEXCEPT { return lhs.i == rhs.i; }
-    friend bool operator!=(QKeyValueIterator lhs, QKeyValueIterator rhs) Q_DECL_NOEXCEPT { return lhs.i != rhs.i; }
+    friend bool operator==(QKeyValueIterator lhs, QKeyValueIterator rhs) noexcept { return lhs.i == rhs.i; }
+    friend bool operator!=(QKeyValueIterator lhs, QKeyValueIterator rhs) noexcept { return lhs.i != rhs.i; }
 
     inline QKeyValueIterator &operator++() { ++i; return *this; }
     inline QKeyValueIterator operator++(int) { return QKeyValueIterator(i++);}

@@ -50,7 +50,7 @@ class QStack : public QVector<T>
 {
 public:
     // compiler-generated special member functions are fine!
-    inline void swap(QStack<T> &other) Q_DECL_NOTHROW { QVector<T>::swap(other); } // prevent QVector<->QStack swaps
+    inline void swap(QStack<T> &other) noexcept { QVector<T>::swap(other); } // prevent QVector<->QStack swaps
     inline void push(const T &t) { QVector<T>::append(t); }
     T pop();
     T &top();

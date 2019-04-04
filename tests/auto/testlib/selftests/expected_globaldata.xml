@@ -14,174 +14,195 @@
 </TestFunction>
 <TestFunction name="testGlobal">
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
-    <Description><![CDATA[init testGlobal local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
+    <Description><![CDATA[init testGlobal local=false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
     <Description><![CDATA[global: false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
     <Description><![CDATA[local: false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
-    <Description><![CDATA[cleanup testGlobal local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local=false]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
 </Incident>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[init testGlobal local 2]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[init testGlobal local=true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
     <Description><![CDATA[global: false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
     <Description><![CDATA[local: true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[cleanup testGlobal local 2]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local=true]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
 </Incident>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
-    <Description><![CDATA[init testGlobal local 1]]></Description>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[init testGlobal local=false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
     <Description><![CDATA[global: true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
     <Description><![CDATA[local: false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
-    <Description><![CDATA[cleanup testGlobal local 1]]></Description>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local=false]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
 </Incident>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
-    <Description><![CDATA[init testGlobal local 2]]></Description>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[init testGlobal local=true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
     <Description><![CDATA[global: true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
     <Description><![CDATA[local: true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
-    <Description><![CDATA[cleanup testGlobal local 2]]></Description>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local=true]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skip">
 <Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
-    <DataTag><![CDATA[1]]></DataTag>
+    <DataTag><![CDATA[global=false]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skipLocal">
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
-    <Description><![CDATA[init skipLocal local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
+    <Description><![CDATA[init skipLocal local=false]]></Description>
 </Message>
 <Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
-    <Description><![CDATA[cleanup skipLocal local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
+    <Description><![CDATA[cleanup skipLocal local=false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[init skipLocal local 2]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[init skipLocal local=true]]></Description>
 </Message>
 <Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[cleanup skipLocal local 2]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[cleanup skipLocal local=true]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[init skipLocal local=false]]></Description>
+</Message>
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[skipping]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[cleanup skipLocal local=false]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[init skipLocal local=true]]></Description>
+</Message>
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[skipping]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[cleanup skipLocal local=true]]></Description>
 </Message>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skipSingle">
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
-    <Description><![CDATA[init skipSingle local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
+    <Description><![CDATA[init skipSingle local=false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
     <Description><![CDATA[global: false local: false]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
-    <Description><![CDATA[cleanup skipSingle local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local=false]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <DataTag><![CDATA[global=false:local=false]]></DataTag>
 </Incident>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[init skipSingle local 2]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[global: false local: true]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-    <Description><![CDATA[cleanup skipSingle local 2]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[1:local 2]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
-    <Description><![CDATA[init skipSingle local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[init skipSingle local=true]]></Description>
 </Message>
 <Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
-    <Description><![CDATA[skipping]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[Skipping]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 1]]></DataTag>
-    <Description><![CDATA[cleanup skipSingle local 1]]></Description>
+    <DataTag><![CDATA[global=false:local=true]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local=true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
-    <Description><![CDATA[init skipSingle local 2]]></Description>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[init skipSingle local=false]]></Description>
+</Message>
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[Skipping]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <DataTag><![CDATA[global=true:local=false]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local=false]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[init skipSingle local=true]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
     <Description><![CDATA[global: true local: true]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
-    <Description><![CDATA[cleanup skipSingle local 2]]></Description>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local=true]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <DataTag><![CDATA[global=true:local=true]]></DataTag>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

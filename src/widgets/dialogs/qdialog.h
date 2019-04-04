@@ -70,10 +70,10 @@ public:
     void setVisible(bool visible) override;
 
 #if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED void setOrientation(Qt::Orientation orientation);
-    QT_DEPRECATED Qt::Orientation orientation() const;
-    QT_DEPRECATED void setExtension(QWidget* extension);
-    QT_DEPRECATED QWidget* extension() const;
+    QT_DEPRECATED_X("Use show/hide on the affected widget instead") void setOrientation(Qt::Orientation orientation);
+    QT_DEPRECATED_X("Use show/hide on the affected widget instead") Qt::Orientation orientation() const;
+    QT_DEPRECATED_X("Use show/hide on the affected widget instead") void setExtension(QWidget* extension);
+    QT_DEPRECATED_X("Use show/hide on the affected widget instead") QWidget* extension() const;
 #endif
 
     QSize sizeHint() const override;
@@ -98,7 +98,7 @@ public Q_SLOTS:
     virtual void reject();
 
 #if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED void showExtension(bool);
+    QT_DEPRECATED_X("Use show/hide on the affected widget instead") void showExtension(bool);
 #endif
 
 protected:

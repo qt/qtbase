@@ -137,8 +137,6 @@ private:
 
     QScopedPointer<QPlatformServices> m_services;
 
-    friend class QXcbConnection; // access QPlatformIntegration::screenAdded()
-
     mutable QByteArray m_wmClass;
     const char *m_instanceName;
     bool m_canGrab;

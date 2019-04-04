@@ -42,6 +42,7 @@
 #include "qbezier_p.h"
 #include "qmath.h"
 #include "qpainterpath_p.h"
+#include "qscopedvaluerollback.h"
 
 #include <stdlib.h>
 
@@ -354,7 +355,7 @@ void QOutlineMapper::clipElements(const QPointF *elements,
     // instead of going through convenience functionallity, but since
     // this part of code hardly every used, it shouldn't matter.
 
-    m_in_clip_elements = true;
+    QScopedValueRollback<bool> in_clip_elements(m_in_clip_elements, true);
 
     QPainterPath path;
 
@@ -397,8 +398,6 @@ void QOutlineMapper::clipElements(const QPointF *elements,
         convertPath(clippedPath);
         m_transform = oldTransform;
     }
-
-    m_in_clip_elements = false;
 }
 
 QT_END_NAMESPACE

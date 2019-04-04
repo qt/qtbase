@@ -73,11 +73,11 @@ public:
     QProcessEnvironment(const QProcessEnvironment &other);
     ~QProcessEnvironment();
 #ifdef Q_COMPILER_RVALUE_REFS
-    QProcessEnvironment &operator=(QProcessEnvironment && other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QProcessEnvironment &operator=(QProcessEnvironment && other) noexcept { swap(other); return *this; }
 #endif
     QProcessEnvironment &operator=(const QProcessEnvironment &other);
 
-    void swap(QProcessEnvironment &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QProcessEnvironment &other) noexcept { qSwap(d, other.d); }
 
     bool operator==(const QProcessEnvironment &other) const;
     inline bool operator!=(const QProcessEnvironment &other) const

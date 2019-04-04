@@ -4282,6 +4282,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa fromValue()
 */
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
     \fn template<typename T> QVariant qVariantFromValue(const T &value)
     \relates QVariant
@@ -4319,6 +4320,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa QVariant::setValue()
 */
+#endif
 
 /*!
     \fn template<typename T> T qvariant_cast(const QVariant &value)

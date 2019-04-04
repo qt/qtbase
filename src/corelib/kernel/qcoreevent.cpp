@@ -421,7 +421,7 @@ struct QBasicAtomicBitField {
     QBasicAtomicInteger<uint> next;
     QBasicAtomicInteger<uint> data[NumInts];
 
-    bool allocateSpecific(int which) Q_DECL_NOTHROW
+    bool allocateSpecific(int which) noexcept
     {
         QBasicAtomicInteger<uint> &entry = data[which / BitsPerInt];
         const uint old = entry.load();
@@ -437,7 +437,7 @@ struct QBasicAtomicBitField {
         // loop.
     }
 
-    int allocateNext() Q_DECL_NOTHROW
+    int allocateNext() noexcept
     {
         // Unroll loop to iterate over ints, then bits? Would save
         // potentially a lot of cmpxchgs, because we can scan the
@@ -463,7 +463,7 @@ typedef QBasicAtomicBitField<QEvent::MaxUser - QEvent::User + 1> UserEventTypeRe
 
 static UserEventTypeRegistry userEventTypeRegistry;
 
-static inline int registerEventTypeZeroBased(int id) Q_DECL_NOTHROW
+static inline int registerEventTypeZeroBased(int id) noexcept
 {
     // if the type hint hasn't been registered yet, take it:
     if (id < UserEventTypeRegistry::NumBits && id >= 0 && userEventTypeRegistry.allocateSpecific(id))
@@ -486,7 +486,7 @@ static inline int registerEventTypeZeroBased(int id) Q_DECL_NOTHROW
     Returns -1 if all available values are already taken or the
     program is shutting down.
 */
-int QEvent::registerEventType(int hint) Q_DECL_NOTHROW
+int QEvent::registerEventType(int hint) noexcept
 {
     const int result = registerEventTypeZeroBased(QEvent::MaxUser - hint);
     return result < 0 ? -1 : QEvent::MaxUser - result ;

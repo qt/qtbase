@@ -254,10 +254,8 @@ public:
             const float huge = std::numeric_limits<float>::infinity();
             return d < 0 ? -huge : huge;
         }
-        if (std::fabs(d) >= std::numeric_limits<double>::min() // i.e. d != 0
-            && std::fabs(d) < std::numeric_limits<float>::min()) {
-            // Values smaller than std::numeric_limits<double>::min() have
-            // failed already; match them.
+        if (d != 0 && float(d) == 0) {
+            // Values that underflow double already failed. Match them:
             if (ok != 0)
                 *ok = false;
             return 0;
@@ -367,9 +365,9 @@ public:
     static QLatin1String languageToCode(QLocale::Language language);
     static QLatin1String scriptToCode(QLocale::Script script);
     static QLatin1String countryToCode(QLocale::Country country);
-    static QLocale::Language codeToLanguage(QStringView code) Q_DECL_NOTHROW;
-    static QLocale::Script codeToScript(QStringView code) Q_DECL_NOTHROW;
-    static QLocale::Country codeToCountry(QStringView code) Q_DECL_NOTHROW;
+    static QLocale::Language codeToLanguage(QStringView code) noexcept;
+    static QLocale::Script codeToScript(QStringView code) noexcept;
+    static QLocale::Country codeToCountry(QStringView code) noexcept;
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
 

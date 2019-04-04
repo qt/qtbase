@@ -63,7 +63,7 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 
 #define QT_UNICODE_LITERAL(str) u"" str
 #define QStringLiteral(str) \
-    ([]() Q_DECL_NOEXCEPT -> QString { \
+    ([]() noexcept -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \

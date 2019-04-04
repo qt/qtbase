@@ -92,10 +92,6 @@ public:
     QPlatformAccessibility *accessibility() const override;
 #endif
 
-    // Called from Objective-C class QIOSScreenTracker, which can't be friended
-    void addScreen(QPlatformScreen *screen) { screenAdded(screen); }
-    void destroyScreen(QPlatformScreen *screen) { QPlatformIntegration::destroyScreen(screen); }
-
     void beep() const override;
 
     static QIOSIntegration *instance();

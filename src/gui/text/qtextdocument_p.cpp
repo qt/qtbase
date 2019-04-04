@@ -40,6 +40,7 @@
 #include <private/qtools_p.h>
 #include <qdebug.h>
 
+#include <qscopedvaluerollback.h>
 #include "qtextdocument_p.h"
 #include "qtextdocument.h"
 #include <qtextformat.h>
@@ -274,9 +275,10 @@ void QTextDocumentPrivate::clear()
         rtFrame = 0;
         init();
         cursors = oldCursors;
-        inContentsChange = true;
-        emit q->contentsChange(0, len, 0);
-        inContentsChange = false;
+        {
+            QScopedValueRollback<bool> bg(inContentsChange, true);
+            emit q->contentsChange(0, len, 0);
+        }
         if (lout)
             lout->documentChanged(0, len, 0);
     } QT_CATCH(...) {
@@ -309,9 +311,10 @@ void QTextDocumentPrivate::setLayout(QAbstractTextDocumentLayout *layout)
             it->free();
 
     emit q->documentLayoutChanged();
-    inContentsChange = true;
-    emit q->contentsChange(0, 0, length());
-    inContentsChange = false;
+    {
+        QScopedValueRollback<bool> bg(inContentsChange, true);
+        emit q->contentsChange(0, 0, length());
+    }
     if (lout)
         lout->documentChanged(0, 0, length());
 }
@@ -1213,9 +1216,8 @@ void QTextDocumentPrivate::finishEdit()
 
     if (lout && docChangeFrom >= 0) {
         if (!inContentsChange) {
-            inContentsChange = true;
+            QScopedValueRollback<bool> bg(inContentsChange, true);
             emit q->contentsChange(docChangeFrom, docChangeOldLength, docChangeLength);
-            inContentsChange = false;
         }
         lout->documentChanged(docChangeFrom, docChangeOldLength, docChangeLength);
     }

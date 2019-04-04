@@ -62,12 +62,12 @@ public:
 #endif // QT_DEPRECATED_SINCE(5, 5)
 #endif // datestring
 
-    static const char * build() Q_DECL_NOTHROW;
+    static const char * build() noexcept;
 
     static bool isDebugBuild();
 
 #ifndef QT_BOOTSTRAPPED
-    static QVersionNumber version() Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
+    static QVersionNumber version() noexcept Q_DECL_CONST_FUNCTION;
 #endif
 
     enum LibraryLocation

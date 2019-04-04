@@ -88,7 +88,7 @@ public:
     {
     }
 
-    void swap(QMimeGlobPattern &other) Q_DECL_NOTHROW
+    void swap(QMimeGlobPattern &other) noexcept
     {
         qSwap(m_pattern,         other.m_pattern);
         qSwap(m_mimeType,        other.m_mimeType);

@@ -57,12 +57,12 @@ class Q_CORE_EXPORT QModelIndex
 {
     friend class QAbstractItemModel;
 public:
-    Q_DECL_CONSTEXPR inline QModelIndex() Q_DECL_NOTHROW : r(-1), c(-1), i(0), m(nullptr) {}
+    Q_DECL_CONSTEXPR inline QModelIndex() noexcept : r(-1), c(-1), i(0), m(nullptr) {}
     // compiler-generated copy/move ctors/assignment operators are fine!
-    Q_DECL_CONSTEXPR inline int row() const Q_DECL_NOTHROW { return r; }
-    Q_DECL_CONSTEXPR inline int column() const Q_DECL_NOTHROW { return c; }
-    Q_DECL_CONSTEXPR inline quintptr internalId() const Q_DECL_NOTHROW { return i; }
-    inline void *internalPointer() const Q_DECL_NOTHROW { return reinterpret_cast<void*>(i); }
+    Q_DECL_CONSTEXPR inline int row() const noexcept { return r; }
+    Q_DECL_CONSTEXPR inline int column() const noexcept { return c; }
+    Q_DECL_CONSTEXPR inline quintptr internalId() const noexcept { return i; }
+    inline void *internalPointer() const noexcept { return reinterpret_cast<void*>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex siblingAtColumn(int column) const;
@@ -72,13 +72,13 @@ public:
 #endif
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
-    Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const Q_DECL_NOTHROW { return m; }
-    Q_DECL_CONSTEXPR inline bool isValid() const Q_DECL_NOTHROW { return (r >= 0) && (c >= 0) && (m != nullptr); }
-    Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const noexcept { return m; }
+    Q_DECL_CONSTEXPR inline bool isValid() const noexcept { return (r >= 0) && (c >= 0) && (m != nullptr); }
+    Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const noexcept
         { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
-    Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const noexcept
         { return !(*this == other); }
-    Q_DECL_CONSTEXPR inline bool operator<(const QModelIndex &other) const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR inline bool operator<(const QModelIndex &other) const noexcept
         {
             return  r <  other.r
                 || (r == other.r && (c <  other.c
@@ -86,9 +86,9 @@ public:
                                                   || (i == other.i && std::less<const QAbstractItemModel *>()(m, other.m))))));
         }
 private:
-    inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel) Q_DECL_NOTHROW
+    inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
-    Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel) Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(id), m(amodel) {}
     int r, c;
     quintptr i;
@@ -103,7 +103,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QModelIndex &);
 class QPersistentModelIndexData;
 
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-uint qHash(const QPersistentModelIndex &index, uint seed = 0) Q_DECL_NOTHROW;
+uint qHash(const QPersistentModelIndex &index, uint seed = 0) noexcept;
 
 class Q_CORE_EXPORT QPersistentModelIndex
 {
@@ -118,12 +118,12 @@ public:
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPersistentModelIndex(QPersistentModelIndex &&other) Q_DECL_NOTHROW
+    inline QPersistentModelIndex(QPersistentModelIndex &&other) noexcept
         : d(other.d) { other.d = nullptr; }
-    inline QPersistentModelIndex &operator=(QPersistentModelIndex &&other) Q_DECL_NOTHROW
+    inline QPersistentModelIndex &operator=(QPersistentModelIndex &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QPersistentModelIndex &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    inline void swap(QPersistentModelIndex &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QModelIndex &other) const;
     bool operator!=(const QModelIndex &other) const;
     QPersistentModelIndex &operator=(const QModelIndex &other);
@@ -143,14 +143,14 @@ public:
     bool isValid() const;
 private:
     QPersistentModelIndexData *d;
-    friend uint qHash(const QPersistentModelIndex &, uint seed) Q_DECL_NOTHROW;
+    friend uint qHash(const QPersistentModelIndex &, uint seed) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
 };
 Q_DECLARE_SHARED(QPersistentModelIndex)
 
-inline uint qHash(const QPersistentModelIndex &index, uint seed) Q_DECL_NOTHROW
+inline uint qHash(const QPersistentModelIndex &index, uint seed) noexcept
 { return qHash(index.d, seed); }
 
 
@@ -464,7 +464,7 @@ inline QVariant QModelIndex::data(int arole) const
 inline Qt::ItemFlags QModelIndex::flags() const
 { return m ? m->flags(*this) : Qt::ItemFlags(); }
 
-inline uint qHash(const QModelIndex &index) Q_DECL_NOTHROW
+inline uint qHash(const QModelIndex &index) noexcept
 { return uint((uint(index.row()) << 4) + index.column() + index.internalId()); }
 
 QT_END_NAMESPACE

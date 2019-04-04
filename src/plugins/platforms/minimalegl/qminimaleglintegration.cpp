@@ -58,6 +58,7 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <qpa/qwindowsysteminterface.h>
 
 // this is where EGL headers are pulled in, make sure it is last
 #include "qminimaleglscreen.h"
@@ -90,7 +91,7 @@ protected:
 QMinimalEglIntegration::QMinimalEglIntegration()
     : mFontDb(new QGenericUnixFontDatabase()), mScreen(new QMinimalEglScreen(EGL_DEFAULT_DISPLAY))
 {
-    screenAdded(mScreen);
+    QWindowSystemInterface::handleScreenAdded(mScreen);
 
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QMinimalEglIntegration\n");
@@ -99,7 +100,7 @@ QMinimalEglIntegration::QMinimalEglIntegration()
 
 QMinimalEglIntegration::~QMinimalEglIntegration()
 {
-    destroyScreen(mScreen);
+    QWindowSystemInterface::handleScreenRemoved(mScreen);
     delete mFontDb;
 }
 

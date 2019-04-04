@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 by Southwest Research Institute (R)
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,59 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef QFLOAT16_P_H
-#define QFLOAT16_P_H
+#ifndef QIOSURFACEGRAPHICSBUFFER_H
+#define QIOSURFACEGRAPHICSBUFFER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qfloat16.h>
-#include <QtCore/qsysinfo.h>
+#include <qpa/qplatformgraphicsbuffer.h>
+#include <private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
-static inline bool qt_is_inf(qfloat16 d) Q_DECL_NOTHROW
+class QIOSurfaceGraphicsBuffer : public QPlatformGraphicsBuffer
 {
-    bool is_inf;
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-        is_inf = (ch[0] & 0x7c) == 0x7c && (ch[0] & 0x02) == 0;
-    else
-        is_inf = (ch[1] & 0x7c) == 0x7c && (ch[1] & 0x02) == 0;
-    return is_inf;
-}
+public:
+    QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace);
+    ~QIOSurfaceGraphicsBuffer();
 
-static inline bool qt_is_nan(qfloat16 d) Q_DECL_NOTHROW
-{
-    bool is_nan;
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-        is_nan = (ch[0] & 0x7c) == 0x7c && (ch[0] & 0x02) != 0;
-    else
-        is_nan = (ch[1] & 0x7c) == 0x7c && (ch[1] & 0x02) != 0;
-    return is_nan;
-}
+    const uchar *data() const override;
+    uchar *data() override;
+    int bytesPerLine() const override;
 
-static inline bool qt_is_finite(qfloat16 d) Q_DECL_NOTHROW
-{
-    bool is_finite;
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-        is_finite = (ch[0] & 0x7c) != 0x7c;
-    else
-        is_finite = (ch[1] & 0x7c) != 0x7c;
-    return is_finite;
-}
+    IOSurfaceRef surface();
+    bool isInUse() const;
 
+protected:
+    bool doLock(AccessTypes access, const QRect &rect) override;
+    void doUnlock() override;
+
+private:
+    QCFType<IOSurfaceRef> m_surface;
+
+    friend QDebug operator<<(QDebug, const QIOSurfaceGraphicsBuffer *);
+};
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const QIOSurfaceGraphicsBuffer *);
+#endif
 
 QT_END_NAMESPACE
 
-#endif // QFLOAT16_P_H
+#endif // QIOSURFACEGRAPHICSBUFFER_H

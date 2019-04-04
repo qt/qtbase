@@ -90,6 +90,7 @@ public:
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
         , positionAutomatic(true)
+        , resizeAutomatic(true)
         , contentOrientation(Qt::PrimaryOrientation)
         , opacity(qreal(1.0))
         , minimumSize(0, 0)
@@ -156,10 +157,14 @@ public:
     virtual void processSafeAreaMarginsChanged() {};
 
     bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
+    void setAutomaticPositionAndResizeEnabled(bool a)
+    { positionAutomatic = resizeAutomatic = a; }
 
     static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
 
     static Qt::WindowState effectiveState(Qt::WindowStates);
+
+    virtual bool allowClickThrough(const QPoint &) const { return true; }
 
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
@@ -179,6 +184,11 @@ public:
     bool receivedExpose;
     PositionPolicy positionPolicy;
     bool positionAutomatic;
+    // resizeAutomatic suppresses resizing by QPlatformWindow::initialGeometry().
+    // It also indicates that width/height=0 is acceptable (for example, for
+    // the QRollEffect widget) and is thus not cleared in setGeometry().
+    // An alternative approach might be using -1,-1 as a default size.
+    bool resizeAutomatic;
     Qt::ScreenOrientation contentOrientation;
     qreal opacity;
     QRegion mask;

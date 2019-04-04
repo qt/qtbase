@@ -269,24 +269,24 @@ template <> struct QAtomicWindowsType<4> { typedef long Type; };
 
 template <int N> struct QAtomicOpsBySize : QGenericAtomicOps<QAtomicOpsBySize<N> >
 {
-    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return true; }
-    template <typename T> static bool ref(T &_q_value) Q_DECL_NOTHROW;
-    template <typename T> static bool deref(T &_q_value) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() noexcept { return true; }
+    template <typename T> static bool ref(T &_q_value) noexcept;
+    template <typename T> static bool deref(T &_q_value) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() noexcept { return true; }
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) noexcept;
     template <typename T>
-    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW;
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
-    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() noexcept { return true; }
+    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
-    template <typename T> static T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() noexcept { return true; }
+    template <typename T> static T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) noexcept;
 
 private:
     typedef typename QAtomicWindowsType<N>::Type Type;
@@ -303,76 +303,76 @@ struct QAtomicOps : QAtomicOpsBySize<sizeof(T)>
 };
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<4>::ref(T &_q_value) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<4>::ref(T &_q_value) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Increment)(atomic(&_q_value)) != 0;
 }
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<4>::deref(T &_q_value) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<4>::deref(T &_q_value) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Decrement)(atomic(&_q_value)) != 0;
 }
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(CompareExchange)(atomic(&_q_value), value(newValue), value(expectedValue)) == value(expectedValue);
 }
 
 template<> template <typename T>
-inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) noexcept
 {
     *currentValue = T(QT_INTERLOCKED_FUNCTION(CompareExchange)(atomic(&_q_value), newValue, expectedValue));
     return *currentValue == expectedValue;
 }
 
 template<> template<typename T>
-inline T QAtomicOpsBySize<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
+inline T QAtomicOpsBySize<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Exchange)(atomic(&_q_value), value(newValue));
 }
 
 template<> template<typename T>
-inline T QAtomicOpsBySize<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+inline T QAtomicOpsBySize<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(ExchangeAdd)(atomic(&_q_value), value<T>(valueToAdd * QAtomicAdditiveType<T>::AddScale));
 }
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
 template<> template<typename T>
-inline bool QAtomicOpsBySize<2>::ref(T &_q_value) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<2>::ref(T &_q_value) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Increment16)(atomic(&_q_value)) != 0;
 }
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<2>::deref(T &_q_value) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<2>::deref(T &_q_value) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Decrement16)(atomic(&_q_value)) != 0;
 }
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(CompareExchange16)(atomic(&_q_value), value(newValue), value(expectedValue)) == value(expectedValue);
 }
 
 template<> template <typename T>
-inline bool QAtomicOpsBySize<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) noexcept
 {
     *currentValue = T(QT_INTERLOCKED_FUNCTION(CompareExchange16)(atomic(&_q_value), newValue, expectedValue));
     return *currentValue == expectedValue;
 }
 
 template<> template<typename T>
-inline T QAtomicOpsBySize<2>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
+inline T QAtomicOpsBySize<2>::fetchAndStoreRelaxed(T &_q_value, T newValue) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Exchange16)(atomic(&_q_value), value(newValue));
 }
 
 template<> template<typename T>
-inline T QAtomicOpsBySize<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+inline T QAtomicOpsBySize<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(ExchangeAdd16)(atomic(&_q_value), value<T>(valueToAdd * QAtomicAdditiveType<T>::AddScale));
 }
@@ -380,38 +380,38 @@ inline T QAtomicOpsBySize<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAd
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
 template<> template<typename T>
-inline bool QAtomicOpsBySize<8>::ref(T &_q_value) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<8>::ref(T &_q_value) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Increment64)(atomic(&_q_value)) != 0;
 }
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<8>::deref(T &_q_value) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<8>::deref(T &_q_value) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Decrement64)(atomic(&_q_value)) != 0;
 }
 
 template<> template<typename T>
-inline bool QAtomicOpsBySize<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(CompareExchange64)(atomic(&_q_value), value(newValue), value(expectedValue)) == value(expectedValue);
 }
 
 template<> template <typename T>
-inline bool QAtomicOpsBySize<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+inline bool QAtomicOpsBySize<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) noexcept
 {
     *currentValue = T(QT_INTERLOCKED_FUNCTION(CompareExchange64)(atomic(&_q_value), newValue, expectedValue));
     return *currentValue == expectedValue;
 }
 
 template<> template<typename T>
-inline T QAtomicOpsBySize<8>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
+inline T QAtomicOpsBySize<8>::fetchAndStoreRelaxed(T &_q_value, T newValue) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(Exchange64)(atomic(&_q_value), value(newValue));
 }
 
 template<> template<typename T>
-inline T QAtomicOpsBySize<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+inline T QAtomicOpsBySize<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) noexcept
 {
     return QT_INTERLOCKED_FUNCTION(ExchangeAdd64)(atomic(&_q_value), value<T>(valueToAdd * QAtomicAdditiveType<T>::AddScale));
 }
@@ -423,41 +423,41 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
 {
     typedef T *Type;
 
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
-    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW;
-    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() noexcept { return true; }
+    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) noexcept;
+    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
-    static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() noexcept { return true; }
+    static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue) noexcept;
 
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
-    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return true; }
-    static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) Q_DECL_NOTHROW;
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() noexcept { return true; }
+    static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() noexcept { return true; }
+    static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) noexcept;
 };
 
 template <typename T>
-inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) Q_DECL_NOTHROW
+inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue) noexcept
 {
     return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue) == expectedValue;
 }
 
 template <typename T>
-inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) Q_DECL_NOTHROW
+inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue, T **currentValue) noexcept
 {
     *currentValue = reinterpret_cast<T *>(QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue));
     return *currentValue == expectedValue;
 }
 
 template <typename T>
-inline T *QAtomicOps<T *>::fetchAndStoreRelaxed(T *&_q_value, T *newValue) Q_DECL_NOTHROW
+inline T *QAtomicOps<T *>::fetchAndStoreRelaxed(T *&_q_value, T *newValue) noexcept
 {
     return reinterpret_cast<T *>(QT_INTERLOCKED_EXCHANGE_POINTER(&_q_value, newValue));
 }
 
 template <typename T>
-inline T *QAtomicOps<T *>::fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) Q_DECL_NOTHROW
+inline T *QAtomicOps<T *>::fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd) noexcept
 {
     return reinterpret_cast<T *>(QT_INTERLOCKED_EXCHANGE_ADD_POINTER(&_q_value, valueToAdd * sizeof(T)));
 }

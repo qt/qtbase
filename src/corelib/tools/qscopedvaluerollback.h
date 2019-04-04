@@ -48,20 +48,20 @@ template <typename T>
 class QScopedValueRollback
 {
 public:
-    explicit QScopedValueRollback(T &var) :
-        varRef(var), oldValue(var)
+    explicit QScopedValueRollback(T &var)
+        : varRef(var), oldValue(var)
     {
     }
 
-    explicit QScopedValueRollback(T &var, T value) :
-        varRef(var), oldValue(var)
+    explicit QScopedValueRollback(T &var, T value)
+        : varRef(var), oldValue(std::move(var))
     {
-        varRef = qMove(value);
+        varRef = std::move(value);
     }
 
     ~QScopedValueRollback()
     {
-        varRef = qMove(oldValue);
+        varRef = std::move(oldValue);
     }
 
     void commit()
@@ -70,7 +70,7 @@ public:
     }
 
 private:
-    T& varRef;
+    T &varRef;
     T oldValue;
 
     Q_DISABLE_COPY(QScopedValueRollback)

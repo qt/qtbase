@@ -890,7 +890,7 @@ static bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key
            && key1.cs == key2.cs;
 }
 
-static uint qHash(const QRegExpEngineKey &key, uint seed = 0) Q_DECL_NOTHROW
+static uint qHash(const QRegExpEngineKey &key, uint seed = 0) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.pattern);
@@ -4046,7 +4046,7 @@ bool QRegExp::operator==(const QRegExp &rx) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QRegExp &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QRegExp &key, uint seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.priv->engineKey);

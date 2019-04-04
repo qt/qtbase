@@ -334,12 +334,13 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
 #endif
         break;
     case QSslKeyPrivate::Aes128Cbc:
+        type = q_EVP_aes_128_cbc();
+        break;
     case QSslKeyPrivate::Aes192Cbc:
+        type = q_EVP_aes_192_cbc();
+        break;
     case QSslKeyPrivate::Aes256Cbc:
-        // Just to avoid compiler warnings/errors. OpenSSL uses a different
-        // codepath when reading encrypted keys, and they all correctly
-        // deduce the cipher and know how to derive a key.
-        Q_UNREACHABLE();
+        type = q_EVP_aes_256_cbc();
         break;
     }
 

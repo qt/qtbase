@@ -95,8 +95,9 @@ void tst_QTime::addSecs_data()
 
     QTest::newRow("Data0") << QTime(0,0,0) << 200 << QTime(0,3,20);
     QTest::newRow("Data1") << QTime(0,0,0) << 20 << QTime(0,0,20);
-    QTest::newRow("overflow") << QTime(0,0,0) << (INT_MAX / 1000 + 1)
-                              << QTime(0,0,0).addSecs((INT_MAX / 1000 + 1) % 86400);
+    QTest::newRow("overflow")
+        << QTime(0,0,0) << (INT_MAX / 1000 + 1)
+        << QTime::fromMSecsSinceStartOfDay(((INT_MAX / 1000 + 1) % 86400) * 1000);
 }
 
 void tst_QTime::addSecs()

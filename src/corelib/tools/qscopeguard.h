@@ -50,10 +50,15 @@ template <typename F> class QScopeGuard;
 template <typename F> QScopeGuard<F> qScopeGuard(F f);
 
 template <typename F>
-class QScopeGuard
+class
+#ifndef __INTEL_COMPILER
+// error #2621: attribute "__warn_unused_result__" does not apply here
+Q_REQUIRED_RESULT
+#endif
+QScopeGuard
 {
 public:
-    QScopeGuard(QScopeGuard &&other) Q_DECL_NOEXCEPT
+    QScopeGuard(QScopeGuard &&other) noexcept
         : m_func(std::move(other.m_func))
         , m_invoke(other.m_invoke)
     {
@@ -66,13 +71,13 @@ public:
             m_func();
     }
 
-    void dismiss() Q_DECL_NOEXCEPT
+    void dismiss() noexcept
     {
         m_invoke = false;
     }
 
 private:
-    explicit QScopeGuard(F f) Q_DECL_NOEXCEPT
+    explicit QScopeGuard(F f) noexcept
         : m_func(std::move(f))
     {
     }
@@ -86,6 +91,10 @@ private:
 
 
 template <typename F>
+#ifndef __INTEL_COMPILER
+// Causes "error #3058: GNU attributes on a template redeclaration have no effect"
+Q_REQUIRED_RESULT
+#endif
 QScopeGuard<F> qScopeGuard(F f)
 {
     return QScopeGuard<F>(std::move(f));

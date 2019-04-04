@@ -222,14 +222,14 @@ public:
         { return qHash(qMakePair(key.obj, key.prop), seed); }
         friend uint qHash(const RestorableId &key) noexcept(noexcept(qHash(key, 0U)))
         { return qHash(key, 0U); }
-        friend bool operator==(const RestorableId &lhs, const RestorableId &rhs) Q_DECL_NOTHROW
+        friend bool operator==(const RestorableId &lhs, const RestorableId &rhs) noexcept
         { return lhs.obj == rhs.obj && lhs.prop == rhs.prop; }
-        friend bool operator!=(const RestorableId &lhs, const RestorableId &rhs) Q_DECL_NOTHROW
+        friend bool operator!=(const RestorableId &lhs, const RestorableId &rhs) noexcept
         { return !operator==(lhs, rhs); }
     public:
-        explicit RestorableId(QObject *o, QByteArray p) Q_DECL_NOTHROW : guard(o), obj(o), prop(qMove(p)) {}
-        QObject *object() const Q_DECL_NOTHROW { return guard; }
-        QByteArray propertyName() const Q_DECL_NOTHROW { return prop; }
+        explicit RestorableId(QObject *o, QByteArray p) noexcept : guard(o), obj(o), prop(qMove(p)) {}
+        QObject *object() const noexcept { return guard; }
+        QByteArray propertyName() const noexcept { return prop; }
     };
     QHash<QAbstractState*, QHash<RestorableId, QVariant> > registeredRestorablesForState;
     bool hasRestorable(QAbstractState *state, QObject *object, const QByteArray &propertyName) const;
@@ -271,7 +271,7 @@ public:
         QList<QAbstractAnimation*> handledAnimations;
         QList<QAbstractAnimation*> localResetEndValues;
 
-        void swap(InitializeAnimationResult &other) Q_DECL_NOTHROW
+        void swap(InitializeAnimationResult &other) noexcept
         {
             qSwap(handledAnimations,   other.handledAnimations);
             qSwap(localResetEndValues, other.localResetEndValues);

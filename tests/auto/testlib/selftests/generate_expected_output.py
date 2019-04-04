@@ -92,6 +92,17 @@ class Cleaner (object):
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt
             (r'(\[Loc: [^[\]()]+)\(\d+\)', r'\1(0)'), # teamcity
             (r'(<(?:Incident|Message)\b.*\bfile=.*\bline=)"\d+"', r'\1"0"'), # lightxml, xml
+            # Pointers printed by signal dumper:
+            (r'\(\b[a-f0-9]{8,}\b\)', r'(_POINTER_)'),
+            # Example/for reference:
+            # ((QString&)@55f5fbb8dd40)
+            # ((const QVector<int>*)7ffd671d4558)
+            (r'\((\((?:const )?\w+(?:<[^>]+>)?[*&]*\)@?)\b[a-f\d]{8,}\b\)', r'(\1_POINTER_)'),
+            # For xml output there is no '<', '>' or '&', so we need an alternate version for that:
+            # ((QVector&lt;int&gt;&amp;)@5608b455e640)
+            (r'\((\((?:const )?\w+(?:&lt;(?:[^&]|&(?!gt;))*&gt;)?(?:\*|&amp;)?\)@?)[a-z\d]+\b\)', r'(\1_POINTER_)'),
+            # QEventDispatcher{Glib,Win32,etc.}
+            (r'\bQEventDispatcher\w+\b', r'QEventDispatcherPlatform'),
             ),
                       precook = re.compile):
         """Private implementation details of __init__()."""
@@ -296,6 +307,7 @@ def generateTestData(testname, clean,
         "benchlibcounting": "-eventcounter",
         "printdatatags": "-datatags",
         "printdatatagswithglobaltags": "-datatags",
+        "signaldumper": "-vs",
         "silent": "-silent",
         "verbose1": "-v1",
         "verbose2": "-v2",

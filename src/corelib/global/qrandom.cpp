@@ -91,7 +91,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
+static qsizetype qt_random_cpu(void *buffer, qsizetype count) noexcept;
 
 #  ifdef Q_PROCESSOR_X86_64
 #    define _rdrandXX_step _rdrand64_step
@@ -99,7 +99,7 @@ static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
 #    define _rdrandXX_step _rdrand32_step
 #  endif
 
-static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW
+static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) noexcept
 {
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
@@ -134,7 +134,7 @@ enum {
 struct QRandomGenerator::SystemGenerator
 {
 #if QT_CONFIG(getentropy)
-    static qsizetype fillBuffer(void *buffer, qsizetype count) Q_DECL_NOTHROW
+    static qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         // getentropy can read at most 256 bytes, so break the reading
         qsizetype read = 0;
@@ -204,13 +204,13 @@ struct QRandomGenerator::SystemGenerator
     }
 
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    qsizetype fillBuffer(void *buffer, qsizetype count) Q_DECL_NOTHROW
+    qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
     }
 #elif defined(Q_OS_WINRT)
-    qsizetype fillBuffer(void *, qsizetype) Q_DECL_NOTHROW
+    qsizetype fillBuffer(void *, qsizetype) noexcept
     {
         // always use the fallback
         return 0;
@@ -242,7 +242,7 @@ struct QRandomGenerator::SystemGenerator
 
 #if defined(Q_OS_WIN)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
     // on Windows, rand_s is a high-quality random number generator
     // and it requires no seeding
@@ -254,14 +254,14 @@ static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
 }
 #elif QT_CONFIG(getentropy)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *, qsizetype) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *, qsizetype) noexcept
 {
     // no fallback necessary, getentropy cannot fail under normal circumstances
     Q_UNREACHABLE();
 }
 #elif defined(Q_OS_BSD4) && !defined(__GLIBC__)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
     // BSDs have arc4random(4) and these work even in chroot(2)
     arc4random_buf(ptr, left * sizeof(*ptr));
@@ -280,7 +280,7 @@ Q_NEVER_INLINE
 #ifdef Q_CC_GNU
 __attribute__((cold))   // this function is pretty big, so optimize for size
 #endif
-static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
     quint32 scratch[12];    // see element count below
     quint32 *end = scratch;
@@ -930,7 +930,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int highest)
+    \fn int QRandomGenerator::bounded(int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
@@ -957,7 +957,6 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     \snippet code/src_corelib_global_qrandom.cpp 14
 
-
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
@@ -965,7 +964,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int lowest, int highest)
+    \fn int QRandomGenerator::bounded(int lowest, int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between \a lowest
@@ -1168,7 +1167,7 @@ QRandomGenerator &QRandomGenerator::operator=(const QRandomGenerator &other)
     return *this;
 }
 
-QRandomGenerator::QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW
+QRandomGenerator::QRandomGenerator(std::seed_seq &sseq) noexcept
     : type(MersenneTwister)
 {
     Q_ASSERT(this != system());

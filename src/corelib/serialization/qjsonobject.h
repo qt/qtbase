@@ -74,20 +74,20 @@ public:
     QJsonObject(const QJsonObject &other);
     QJsonObject &operator =(const QJsonObject &other);
 
-    QJsonObject(QJsonObject &&other) Q_DECL_NOTHROW
+    QJsonObject(QJsonObject &&other) noexcept
         : d(other.d), o(other.o)
     {
         other.d = nullptr;
         other.o = nullptr;
     }
 
-    QJsonObject &operator =(QJsonObject &&other) Q_DECL_NOTHROW
+    QJsonObject &operator =(QJsonObject &&other) noexcept
     {
         swap(other);
         return *this;
     }
 
-    void swap(QJsonObject &other) Q_DECL_NOTHROW
+    void swap(QJsonObject &other) noexcept
     {
         qSwap(d, other.d);
         qSwap(o, other.o);

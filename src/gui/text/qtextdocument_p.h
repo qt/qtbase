@@ -339,6 +339,7 @@ private:
     int lastBlockCount;
 
 public:
+    bool inContentsChange;
     QTextOption defaultTextOption;
     Qt::CursorMoveStyle defaultCursorMoveStyle;
 #ifndef QT_NO_CSSPARSER
@@ -346,7 +347,6 @@ public:
 #endif
     int maximumBlockCount;
     uint needsEnsureMaximumBlockCount : 1;
-    uint inContentsChange : 1;
     uint blockCursorAdjustment : 1;
     QSizeF pageSize;
     QString title;

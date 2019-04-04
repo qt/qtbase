@@ -49,7 +49,6 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <stdio.h>
 
 //! [0]
 class Factorial : public QObject
@@ -143,7 +142,7 @@ public:
 
     void onTransition(QEvent *) override
     {
-        fprintf(stdout, "%d\n", m_fact->property("fac").toInt());
+        qInfo() << m_fact->property("fac").toInt();
     }
 
 private:

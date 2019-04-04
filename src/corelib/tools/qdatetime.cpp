@@ -256,7 +256,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
 
 #if QT_CONFIG(datestring)
 // Parse offset in [+-]HH[[:]mm] format
-static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_NOTHROW
+static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcept
 {
     *valid = false;
 
@@ -1464,9 +1464,8 @@ bool QDate::isLeapYear(int y)
 /*!
     \fn QTime::QTime()
 
-    Constructs a null time object. A null time can be a QTime(0, 0, 0, 0)
-    (i.e., midnight) object, except that isNull() returns \c true and isValid()
-    returns \c false.
+    Constructs a null time object. For a null time, isNull() returns \c true and
+    isValid() returns \c false. If you need a zero time, use QTime(0, 0).
 
     \sa isNull(), isValid()
 */
@@ -3143,7 +3142,7 @@ QDateTime::QDateTime() noexcept(Data::CanBeSmall)
 */
 
 QDateTime::QDateTime(const QDate &date)
-    : d(QDateTimePrivate::create(date, QTime(0, 0, 0), Qt::LocalTime, 0))
+    : d(QDateTimePrivate::create(date, QTime(0, 0), Qt::LocalTime, 0))
 {
 }
 
@@ -3211,7 +3210,7 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, const QTimeZone &time
 /*!
     Constructs a copy of the \a other datetime.
 */
-QDateTime::QDateTime(const QDateTime &other) Q_DECL_NOTHROW
+QDateTime::QDateTime(const QDateTime &other) noexcept
     : d(other.d)
 {
 }
@@ -3221,7 +3220,7 @@ QDateTime::QDateTime(const QDateTime &other) Q_DECL_NOTHROW
     Moves the content of the temporary \a other datetime to this object and
     leaves \a other in an unspecified (but proper) state.
 */
-QDateTime::QDateTime(QDateTime &&other) Q_DECL_NOTHROW
+QDateTime::QDateTime(QDateTime &&other) noexcept
     : d(std::move(other.d))
 {
 }
@@ -3238,7 +3237,7 @@ QDateTime::~QDateTime()
     copy.
 */
 
-QDateTime &QDateTime::operator=(const QDateTime &other) Q_DECL_NOTHROW
+QDateTime &QDateTime::operator=(const QDateTime &other) noexcept
 {
     d = other.d;
     return *this;
@@ -4466,7 +4465,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return QDateTime(d, t, Qt::UTC);
 }
 
-qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -4477,7 +4476,7 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
                    - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400000);
 }
 
-qint64 QDateTime::currentSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -4509,7 +4508,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), Qt::UTC);
 }
 
-qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
     // posix compliant system
     // we have milliseconds
@@ -4518,7 +4517,7 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
     return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
 }
 
-qint64 QDateTime::currentSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
     struct timeval tv;
     gettimeofday(&tv, 0);
@@ -5415,7 +5414,7 @@ uint qHash(const QDateTime &key, uint seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QDate &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QDate &key, uint seed) noexcept
 {
     return qHash(key.toJulianDay(), seed);
 }
@@ -5426,7 +5425,7 @@ uint qHash(const QDate &key, uint seed) Q_DECL_NOTHROW
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QTime &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QTime &key, uint seed) noexcept
 {
     return qHash(key.msecsSinceStartOfDay(), seed);
 }

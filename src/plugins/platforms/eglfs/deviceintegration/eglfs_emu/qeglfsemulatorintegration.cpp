@@ -45,6 +45,8 @@
 #include <QtEglSupport/private/qeglconvenience_p.h>
 #include <QtEglSupport/private/qeglplatformcontext_p.h>
 
+#include <qpa/qwindowsysteminterface.h>
+
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonParseError>
@@ -80,8 +82,6 @@ bool QEglFSEmulatorIntegration::usesDefaultScreen()
 
 void QEglFSEmulatorIntegration::screenInit()
 {
-    QEglFSIntegration *integration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-
     // Use qgsGetDisplays() call to retrieve the available screens from the Emulator
     if (getDisplays) {
         QByteArray displaysInfo = getDisplays();
@@ -93,7 +93,7 @@ void QEglFSEmulatorIntegration::screenInit()
                 QJsonArray screenArray = displaysDocument.array();
                 for (auto screenValue : screenArray) {
                     if (screenValue.isObject())
-                        integration->addScreen(new QEglFSEmulatorScreen(screenValue.toObject()));
+                        QWindowSystemInterface::handleScreenAdded(new QEglFSEmulatorScreen(screenValue.toObject()));
                 }
             }
         } else {

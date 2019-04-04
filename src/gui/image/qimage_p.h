@@ -113,6 +113,7 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     struct ImageSizeParameters {
         qsizetype bytesPerLine;
         qsizetype totalSize;
+        bool isValid() const { return bytesPerLine > 0 && totalSize > 0; }
     };
     static ImageSizeParameters calculateImageParameters(qsizetype width, qsizetype height, qsizetype depth);
 };
@@ -139,6 +140,11 @@ QImageData::calculateImageParameters(qsizetype width, qsizetype height, qsizetyp
     qsizetype dummy;
     if (mul_overflow(height, qsizetype(sizeof(uchar *)), &dummy))
         return invalid;                                 // why is this here?
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // Disallow images where width * depth calculations might overflow
+    if (width > (INT_MAX - 31) / depth)
+        return invalid;
+#endif
 
     return { bytes_per_line, total_size };
 }

@@ -72,7 +72,7 @@ public:
 
     QList<QPlatformScreen *> screens() const;
 
-    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+    QFunctionPointer platformFunction(const QByteArray &function) const override;
 
 private:
     void createInputHandlers();

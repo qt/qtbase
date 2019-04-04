@@ -1754,7 +1754,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 
 #ifdef Q_OS_DARWIN
         if (actualFontEngine->type() == QFontEngine::Mac) {
-            if (actualFontEngine->fontDef.stretch != 100) {
+            if (actualFontEngine->fontDef.stretch != 100 && actualFontEngine->fontDef.stretch != QFont::AnyStretch) {
                 QFixed stretch = QFixed(int(actualFontEngine->fontDef.stretch)) / QFixed(100);
                 for (uint i = 0; i < num_glyphs; ++i)
                     g.advances[i] *= stretch;

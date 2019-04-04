@@ -237,6 +237,10 @@ public:
 #endif
 
     // Changes to the screen
+    static void handleScreenAdded(QPlatformScreen *screen, bool isPrimary = false);
+    static void handleScreenRemoved(QPlatformScreen *screen);
+    static void handlePrimaryScreenChanged(QPlatformScreen *newPrimary);
+
     static void handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation newOrientation);
     static void handleScreenGeometryChange(QScreen *screen, const QRect &newGeometry, const QRect &newAvailableGeometry);
     static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);

@@ -124,7 +124,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
  */
-void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out) Q_DECL_NOTHROW
+void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out) noexcept
 {
     if (Q_UNLIKELY(len == -1)) {
         if (!a)

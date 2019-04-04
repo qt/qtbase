@@ -350,7 +350,7 @@ QLibraryInfo::buildDate()
   \since 5.3
 */
 
-const char *QLibraryInfo::build() Q_DECL_NOTHROW
+const char *QLibraryInfo::build() noexcept
 {
     return QT_BUILD_STR;
 }
@@ -377,7 +377,7 @@ QLibraryInfo::isDebugBuild()
 
     \sa qVersion()
 */
-QVersionNumber QLibraryInfo::version() Q_DECL_NOTHROW
+QVersionNumber QLibraryInfo::version() noexcept
 {
     return QVersionNumber(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH);
 }

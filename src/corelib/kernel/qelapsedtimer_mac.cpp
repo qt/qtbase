@@ -58,12 +58,12 @@ typedef __int128_t LargeInt;
 typedef qint64 LargeInt;
 #endif
 
-QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
+QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 {
     return MachAbsoluteTime;
 }
 
-bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
+bool QElapsedTimer::isMonotonic() noexcept
 {
     return true;
 }
@@ -87,7 +87,7 @@ static qint64 absoluteToMSecs(qint64 cpuTime)
     return absoluteToNSecs(cpuTime) / 1000000;
 }
 
-timespec qt_gettime() Q_DECL_NOTHROW
+timespec qt_gettime() noexcept
 {
     timespec tv;
 
@@ -107,13 +107,13 @@ void qt_nanosleep(timespec amount)
     EINTR_LOOP(r, nanosleep(&amount, &amount));
 }
 
-void QElapsedTimer::start() Q_DECL_NOTHROW
+void QElapsedTimer::start() noexcept
 {
     t1 = mach_absolute_time();
     t2 = 0;
 }
 
-qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
+qint64 QElapsedTimer::restart() noexcept
 {
     qint64 old = t1;
     t1 = mach_absolute_time();
@@ -122,39 +122,39 @@ qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
     return absoluteToMSecs(t1 - old);
 }
 
-qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::nsecsElapsed() const noexcept
 {
     uint64_t cpu_time = mach_absolute_time();
     return absoluteToNSecs(cpu_time - t1);
 }
 
-qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::elapsed() const noexcept
 {
     uint64_t cpu_time = mach_absolute_time();
     return absoluteToMSecs(cpu_time - t1);
 }
 
-qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsSinceReference() const noexcept
 {
     return absoluteToMSecs(t1);
 }
 
-qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const noexcept
 {
     return absoluteToMSecs(other.t1 - t1);
 }
 
-qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const noexcept
 {
     return msecsTo(other) / 1000;
 }
 
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) noexcept
 {
     return v1.t1 < v2.t1;
 }
 
-QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) Q_DECL_NOTHROW
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 {
     Q_STATIC_ASSERT(!QDeadlineTimerNanosecondsInT2);
     QDeadlineTimer result;

@@ -68,7 +68,7 @@ public:
     QRandomGenerator(const quint32 *seedBuffer, qsizetype len)
         : QRandomGenerator(seedBuffer, seedBuffer + len)
     {}
-    Q_CORE_EXPORT QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW;
+    Q_CORE_EXPORT QRandomGenerator(std::seed_seq &sseq) noexcept;
     Q_CORE_EXPORT QRandomGenerator(const quint32 *begin, const quint32 *end);
 
     // copy constructor & assignment operator (move unnecessary)
@@ -165,7 +165,7 @@ public:
     typedef quint32 result_type;
     result_type operator()() { return generate(); }
     void seed(quint32 s = 1) { *this = { s }; }
-    void seed(std::seed_seq &sseq) Q_DECL_NOTHROW { *this = { sseq }; }
+    void seed(std::seed_seq &sseq) noexcept { *this = { sseq }; }
     Q_CORE_EXPORT void discard(unsigned long long z);
     static Q_DECL_CONSTEXPR result_type min() { return std::numeric_limits<result_type>::min(); }
     static Q_DECL_CONSTEXPR result_type max() { return std::numeric_limits<result_type>::max(); }
@@ -228,7 +228,7 @@ public:
     QRandomGenerator64(const quint32 *seedBuffer, qsizetype len)
         : QRandomGenerator(seedBuffer, len)
     {}
-    QRandomGenerator64(std::seed_seq &sseq) Q_DECL_NOTHROW
+    QRandomGenerator64(std::seed_seq &sseq) noexcept
         : QRandomGenerator(sseq)
     {}
     QRandomGenerator64(const quint32 *begin, const quint32 *end)

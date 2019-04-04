@@ -839,7 +839,7 @@ bool QThread::event(QEvent* event)
     return QObject::event(event);
 }
 
-Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+Qt::HANDLE QThread::currentThreadId() noexcept
 {
     return Qt::HANDLE(currentThread());
 }
@@ -849,7 +849,7 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread;
 }
 
-int QThread::idealThreadCount() Q_DECL_NOTHROW
+int QThread::idealThreadCount() noexcept
 {
     return 1;
 }
@@ -920,7 +920,7 @@ QThreadPrivate::~QThreadPrivate()
     \since 5.0
 
     Returns a pointer to the event dispatcher object for the thread. If no event
-    dispatcher exists for the thread, this function returns 0.
+    dispatcher exists for the thread, this function returns \nullptr.
 */
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {

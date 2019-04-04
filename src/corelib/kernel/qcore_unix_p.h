@@ -347,7 +347,7 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 #endif
 
 // in qelapsedtimer_mac.cpp or qtimestamp_unix.cpp
-timespec qt_gettime() Q_DECL_NOTHROW;
+timespec qt_gettime() noexcept;
 void qt_nanosleep(timespec amount);
 QByteArray qt_readlink(const char *path);
 

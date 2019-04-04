@@ -50,10 +50,10 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(Q_QDOC) && !defined(Q_MOC_RUN)
 struct QMetaObject;
-const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT; // defined in qobject.h (which can't be included here)
+const QMetaObject *qt_getQtMetaObject() noexcept; // defined in qobject.h (which can't be included here)
 #define QT_Q_ENUM(ENUM) \
-    inline const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return qt_getQtMetaObject(); } \
-    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+    inline const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return qt_getQtMetaObject(); } \
+    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
 #define QT_Q_FLAG(ENUM) QT_Q_ENUM(ENUM)
 #else
 #define QT_Q_ENUM Q_ENUM

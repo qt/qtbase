@@ -93,19 +93,19 @@ public:
     QJsonDocument(const QJsonDocument &other);
     QJsonDocument &operator =(const QJsonDocument &other);
 
-    QJsonDocument(QJsonDocument &&other) Q_DECL_NOTHROW
+    QJsonDocument(QJsonDocument &&other) noexcept
         : d(other.d)
     {
         other.d = nullptr;
     }
 
-    QJsonDocument &operator =(QJsonDocument &&other) Q_DECL_NOTHROW
+    QJsonDocument &operator =(QJsonDocument &&other) noexcept
     {
         swap(other);
         return *this;
     }
 
-    void swap(QJsonDocument &other) Q_DECL_NOTHROW
+    void swap(QJsonDocument &other) noexcept
     {
         qSwap(d, other.d);
     }

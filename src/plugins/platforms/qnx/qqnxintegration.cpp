@@ -649,7 +649,7 @@ void QQnxIntegration::createDisplay(screen_display_t display, bool isPrimary)
 {
     QQnxScreen *screen = new QQnxScreen(m_screenContext, display, isPrimary);
     m_screens.append(screen);
-    screenAdded(screen);
+    QWindowSystemInterface::handleScreenAdded(screen);
     screen->adjustOrientation();
 
     QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void*)),
@@ -669,14 +669,14 @@ void QQnxIntegration::removeDisplay(QQnxScreen *screen)
     Q_CHECK_PTR(screen);
     Q_ASSERT(m_screens.contains(screen));
     m_screens.removeAll(screen);
-    destroyScreen(screen);
+    QWindowSystemInterface::handleScreenRemoved(screen);
 }
 
 void QQnxIntegration::destroyDisplays()
 {
     qIntegrationDebug();
     Q_FOREACH (QQnxScreen *screen, m_screens) {
-        QPlatformIntegration::destroyScreen(screen);
+        QWindowSystemInterface::handleScreenRemoved(screen);
     }
     m_screens.clear();
 }

@@ -56,6 +56,7 @@
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -113,7 +114,7 @@ void QDirectFbIntegration::initializeDirectFB()
 void QDirectFbIntegration::initializeScreen()
 {
     m_primaryScreen.reset(new QDirectFbScreen(0));
-    screenAdded(m_primaryScreen.data());
+    QWindowSystemInterface::handleScreenAdded(m_primaryScreen.data());
 }
 
 void QDirectFbIntegration::initializeInput()

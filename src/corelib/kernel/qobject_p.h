@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -124,45 +124,76 @@ public:
     };
 
     typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
-    struct Connection
+    struct Connection;
+    struct SignalVector;
+
+    struct ConnectionOrSignalVector {
+        union {
+            // linked list of orphaned connections that need cleaning up
+            ConnectionOrSignalVector *nextInOrphanList;
+            // linked list of connections connected to slots in this object
+            Connection *next;
+        };
+
+        static SignalVector *asSignalVector(ConnectionOrSignalVector *c) {
+            if (reinterpret_cast<quintptr>(c) & 1)
+                return reinterpret_cast<SignalVector *>(reinterpret_cast<quintptr>(c) & ~quintptr(1u));
+            return nullptr;
+        }
+        static Connection *fromSignalVector(SignalVector *v) {
+            return reinterpret_cast<Connection *>(reinterpret_cast<quintptr>(v) | quintptr(1u));
+        }
+    };
+
+    struct Connection : public ConnectionOrSignalVector
     {
+        // linked list of connections connected to slots in this object, next is in base class
+        Connection **prev;
+        // linked list of connections connected to signals in this object
+        QAtomicPointer<Connection> nextConnectionList;
+        Connection *prevConnectionList;
+
         QObject *sender;
-        QObject *receiver;
+        QAtomicPointer<QObject> receiver;
+        QAtomicPointer<QThreadData> receiverThreadData;
         union {
             StaticMetaCallFunction callFunction;
             QtPrivate::QSlotObjectBase *slotObj;
         };
-        // The next pointer for the singly-linked ConnectionList
-        Connection *nextConnectionList;
-        //senders linked list
-        Connection *next;
-        Connection **prev;
         QAtomicPointer<const int> argumentTypes;
         QAtomicInt ref_;
+        uint id = 0;
         ushort method_offset;
         ushort method_relative;
-        uint signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
+        int signal_index : 27; // In signal range (see QObjectPrivate::signalIndex())
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
-        Connection() : nextConnectionList(nullptr), ref_(2), ownArgumentTypes(true) {
+        Connection() : ref_(2), ownArgumentTypes(true) {
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
         ~Connection();
         int method() const { Q_ASSERT(!isSlotObject); return method_offset + method_relative; }
         void ref() { ref_.ref(); }
+        void freeSlotObject()
+        {
+            if (isSlotObject) {
+                slotObj->destroyIfLastRef();
+                isSlotObject = false;
+            }
+        }
         void deref() {
             if (!ref_.deref()) {
-                Q_ASSERT(!receiver);
+                Q_ASSERT(!receiver.load());
+                Q_ASSERT(!isSlotObject);
                 delete this;
             }
         }
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {
-        ConnectionList() : first(nullptr), last(nullptr) {}
-        Connection *first;
-        Connection *last;
+        QAtomicPointer<Connection> first;
+        QAtomicPointer<Connection> last;
     };
 
     struct Sender
@@ -195,6 +226,22 @@ public:
         int signal;
     };
 
+    struct SignalVector : public ConnectionOrSignalVector {
+        quintptr allocated;
+        // ConnectionList signals[]
+        ConnectionList &at(int i)
+        {
+            return reinterpret_cast<ConnectionList *>(this + 1)[i + 1];
+        }
+        const ConnectionList &at(int i) const
+        {
+            return reinterpret_cast<const ConnectionList *>(this + 1)[i + 1];
+        }
+        int count() { return static_cast<int>(allocated); }
+    };
+
+
+
     /*
         This contains the all connections from and to an object.
 
@@ -210,25 +257,65 @@ public:
         linked list.
     */
     struct ConnectionData {
-        bool objectDeleted = false; //the QObject owner of this vector has been destroyed while the vector was inUse
-        struct Ref {
-            int _ref = 0;
-            void ref() { ++_ref; }
-            int deref() { return --_ref; }
-            operator int() const { return _ref; }
-        };
-
-        Ref ref;
-        bool dirty = false; //some Connection have been disconnected (their receiver is 0) but not removed from the list yet
-        ConnectionList allsignals;
-        QVector<ConnectionList> signalVector;
+        // the id below is used to avoid activating new connections. When the object gets
+        // deleted it's set to 0, so that signal emission stops
+        QAtomicInteger<uint> currentConnectionId;
+        QAtomicInt ref;
+        QAtomicPointer<SignalVector> signalVector;
         Connection *senders = nullptr;
         Sender *currentSender = nullptr;   // object currently activating the object
+        QAtomicPointer<Connection> orphaned;
+
+        ~ConnectionData()
+        {
+            deleteOrphaned(orphaned.load());
+            SignalVector *v = signalVector.load();
+            if (v)
+                free(v);
+        }
+
+        // must be called on the senders connection data
+        // assumes the senders and receivers lock are held
+        void removeConnection(Connection *c);
+        void cleanOrphanedConnections(QObject *sender)
+        {
+            if (orphaned.load() && ref == 1)
+                cleanOrphanedConnectionsImpl(sender);
+        }
+        void cleanOrphanedConnectionsImpl(QObject *sender);
 
         ConnectionList &connectionsForSignal(int signal)
         {
-            return signal < 0 ? allsignals : signalVector[signal];
+            return signalVector.load()->at(signal);
         }
+
+        void resizeSignalVector(uint size) {
+            SignalVector *vector = this->signalVector.load();
+            if (vector && vector->allocated > size)
+                return;
+            size = (size + 7) & ~7;
+            SignalVector *newVector = reinterpret_cast<SignalVector *>(malloc(sizeof(SignalVector) + (size + 1) * sizeof(ConnectionList)));
+            int start = -1;
+            if (vector) {
+                memcpy(newVector, vector, sizeof(SignalVector) + (vector->allocated + 1) * sizeof(ConnectionList));
+                start = vector->count();
+            }
+            for (int i = start; i < int(size); ++i)
+                newVector->at(i) = ConnectionList();
+            newVector->next = nullptr;
+            newVector->allocated = size;
+
+            signalVector.store(newVector);
+            if (vector) {
+                vector->nextInOrphanList = orphaned.load();
+                orphaned.store(ConnectionOrSignalVector::fromSignalVector(vector));
+            }
+        }
+        int signalVectorCount() const {
+            return  signalVector ? signalVector.load()->count() : -1;
+        }
+
+        static void deleteOrphaned(ConnectionOrSignalVector *c);
     };
 
     QObjectPrivate(int version = QObjectPrivateVersion);
@@ -245,7 +332,6 @@ public:
     QObjectList senderList() const;
 
     void addConnection(int signal, Connection *c);
-    void cleanConnectionLists();
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();
@@ -396,7 +482,26 @@ Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);
 
 class QSemaphore;
-class Q_CORE_EXPORT QMetaCallEvent : public QEvent
+class Q_CORE_EXPORT QAbstractMetaCallEvent : public QEvent
+{
+public:
+    QAbstractMetaCallEvent(const QObject *sender, int signalId, QSemaphore *semaphore = nullptr)
+        : QEvent(MetaCall), signalId_(signalId), sender_(sender), semaphore_(semaphore)
+    {}
+    ~QAbstractMetaCallEvent();
+
+    virtual void placeMetaCall(QObject *object) = 0;
+
+    inline const QObject *sender() const { return sender_; }
+    inline int signalId() const { return signalId_; }
+
+private:
+    int signalId_;
+    const QObject *sender_;
+    QSemaphore *semaphore_;
+};
+
+class Q_CORE_EXPORT QMetaCallEvent : public QAbstractMetaCallEvent
 {
 public:
     QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
@@ -407,23 +512,18 @@ public:
     QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
                    int nargs = 0, int *types = nullptr, void **args = nullptr, QSemaphore *semaphore = nullptr);
 
-    ~QMetaCallEvent();
+    ~QMetaCallEvent() override;
 
     inline int id() const { return method_offset_ + method_relative_; }
-    inline const QObject *sender() const { return sender_; }
-    inline int signalId() const { return signalId_; }
     inline void **args() const { return args_; }
 
-    virtual void placeMetaCall(QObject *object);
+    virtual void placeMetaCall(QObject *object) override;
 
 private:
     QtPrivate::QSlotObjectBase *slotObj_;
-    const QObject *sender_;
-    int signalId_;
     int nargs_;
     int *types_;
     void **args_;
-    QSemaphore *semaphore_;
     QObjectPrivate::StaticMetaCallFunction callFunction_;
     ushort method_offset_;
     ushort method_relative_;

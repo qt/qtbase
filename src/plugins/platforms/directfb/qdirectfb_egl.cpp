@@ -44,6 +44,7 @@
 
 #include <QtGui/QOpenGLContext>
 #include <qpa/qplatformopenglcontext.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QScreen>
 
 #include <QtEglSupport/private/qeglplatformcontext_p.h>
@@ -248,7 +249,7 @@ QPlatformOpenGLContext *QDirectFbIntegrationEGL::createPlatformOpenGLContext(QOp
 void QDirectFbIntegrationEGL::initializeScreen()
 {
     m_primaryScreen.reset(new QDirectFbScreenEGL(0));
-    screenAdded(m_primaryScreen.data());
+    QWindowSystemInterface::handleScreenAdded(m_primaryScreen.data());
 }
 
 bool QDirectFbIntegrationEGL::hasCapability(QPlatformIntegration::Capability cap) const

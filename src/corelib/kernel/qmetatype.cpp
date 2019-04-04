@@ -915,7 +915,7 @@ template <int... TypeIds> struct MetaTypeOffsets<QtPrivate::IndexesList<TypeIds.
     short offsets[sizeof...(TypeIds)];
     constexpr MetaTypeOffsets() : offsets{calculateOffsetForTypeId(TypeIds)...} {}
 
-    const char *operator[](int typeId) const Q_DECL_NOTHROW
+    const char *operator[](int typeId) const noexcept
     {
         short o = offsets[typeId];
         return o < 0 ? nullptr : metaTypeStrings + o;

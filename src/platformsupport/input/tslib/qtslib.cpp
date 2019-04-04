@@ -57,7 +57,7 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
                                        const QString &specification,
                                        QObject *parent)
     : QObject(parent),
-    m_notify(0), m_x(0), m_y(0), m_pressed(0), m_rawMode(false)
+    m_rawMode(!key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive))
 {
     qCDebug(qLcTsLib) << "Initializing tslib plugin" << key << specification;
     setObjectName(QLatin1String("TSLib Mouse Handler"));
@@ -79,13 +79,11 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
     if (ts_config(m_dev))
         qErrnoWarning(errno, "ts_config() failed");
 
-    m_rawMode = !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive);
-
     int fd = ts_fd(m_dev);
     if (fd >= 0) {
         qCDebug(qLcTsLib) << "tslib device is" << device;
         m_notify = new QSocketNotifier(fd, QSocketNotifier::Read, this);
-        connect(m_notify, SIGNAL(activated(int)), this, SLOT(readMouseData()));
+        connect(m_notify, &QSocketNotifier::activated, this, &QTsLibMouseHandler::readMouseData);
     } else {
         qErrnoWarning(errno, "tslib: Cannot open input device %s", device.constData());
     }
@@ -129,7 +127,9 @@ void QTsLibMouseHandler::readMouseData()
         }
         QPoint pos(x, y);
 
-        QWindowSystemInterface::handleMouseEvent(0, pos, pos, pressed ? Qt::LeftButton : Qt::NoButton);
+        QWindowSystemInterface::handleMouseEvent(nullptr, pos, pos,
+                                                 pressed ? Qt::LeftButton : Qt::NoButton,
+                                                 Qt::NoButton, QEvent::None);
 
         m_x = x;
         m_y = y;

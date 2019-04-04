@@ -51,6 +51,17 @@ static inline QString actionClass()      { return QStringLiteral("QAction"); }
 static inline QString buttonGroupClass() { return QStringLiteral("QButtonGroup"); }
 
 template <class DomClass>
+const DomClass *Driver::findByAttributeName(const DomObjectHash<DomClass> &domHash,
+                                            const QString &name) const
+{
+    for (auto it = domHash.cbegin(), end = domHash.cend(); it != end; ++it) {
+        if (it.key()->attributeName() == name)
+            return it.key();
+   }
+    return nullptr;
+}
+
+template <class DomClass>
 QString Driver::findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom,
                              const QString &className)
 {
@@ -111,11 +122,7 @@ QString Driver::findOrInsertButtonGroup(const DomButtonGroup *ui_group)
 // Find a group by its non-uniqified name
 const DomButtonGroup *Driver::findButtonGroup(const QString &attributeName) const
 {
-    for (auto it = m_buttonGroups.cbegin(), end = m_buttonGroups.cend(); it != end; ++it) {
-        if (it.key()->attributeName() == attributeName)
-            return it.key();
-    }
-    return nullptr;
+    return findByAttributeName(m_buttonGroups, attributeName);
 }
 
 
@@ -288,17 +295,17 @@ bool Driver::uic(const QString &fileName, QTextStream *out)
 
 const DomWidget *Driver::widgetByName(const QString &name) const
 {
-    return m_widgets.key(name);
+    return findByAttributeName(m_widgets, name);
 }
 
 const DomActionGroup *Driver::actionGroupByName(const QString &name) const
 {
-    return m_actionGroups.key(name);
+    return findByAttributeName(m_actionGroups, name);
 }
 
 const DomAction *Driver::actionByName(const QString &name) const
 {
-    return m_actions.key(name);
+    return findByAttributeName(m_actions, name);
 }
 
 QT_END_NAMESPACE

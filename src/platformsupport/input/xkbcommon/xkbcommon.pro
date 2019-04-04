@@ -7,7 +7,7 @@ CONFIG += static internal_module
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../../../corelib/global/qt_pch.h
 
-QMAKE_USE_PRIVATE += xkbcommon
+QMAKE_USE += xkbcommon
 
 HEADERS += \
     qxkbcommon_p.h

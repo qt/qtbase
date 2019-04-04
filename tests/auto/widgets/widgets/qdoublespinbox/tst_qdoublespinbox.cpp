@@ -326,14 +326,26 @@ void tst_QDoubleSpinBox::setPrefixSuffix()
 
     QDoubleSpinBox spin(0);
     spin.setDecimals(decimals);
+    const QSize size1 = spin.sizeHint();
     spin.setPrefix(prefix);
+    const QSize size2 = spin.sizeHint();
     spin.setSuffix(suffix);
+    const QSize size3 = spin.sizeHint();
     spin.setValue(value);
     if (show)
         spin.show();
 
     QCOMPARE(spin.text(), expectedText);
     QCOMPARE(spin.cleanText(), expectedCleanText);
+
+    if (!prefix.isEmpty() && !suffix.isEmpty()) {
+        QVERIFY(size1.width() < size2.width());
+        QVERIFY(size2.width() < size3.width());
+        spin.setSuffix(QString());
+        QCOMPARE(spin.sizeHint(), size2);
+        spin.setPrefix(QString());
+        QCOMPARE(spin.sizeHint(), size1);
+    }
 }
 
 void tst_QDoubleSpinBox::valueChangedHelper(const QString &text)

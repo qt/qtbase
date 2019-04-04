@@ -2,51 +2,56 @@ TAP version 13
 # tst_globaldata
 # initTestCase initTestCase (null)
 ok 1 - initTestCase()
-# init testGlobal local 1
+# init testGlobal local=false
 # global: false
 # local: false
-# cleanup testGlobal local 1
-ok 2 - testGlobal(1:local 1)
-# init testGlobal local 2
+# cleanup testGlobal local=false
+ok 2 - testGlobal(global=false:local=false)
+# init testGlobal local=true
 # global: false
 # local: true
-# cleanup testGlobal local 2
-ok 3 - testGlobal(1:local 2)
-# init testGlobal local 1
+# cleanup testGlobal local=true
+ok 3 - testGlobal(global=false:local=true)
+# init testGlobal local=false
 # global: true
 # local: false
-# cleanup testGlobal local 1
-ok 4 - testGlobal(2:local 1)
-# init testGlobal local 2
+# cleanup testGlobal local=false
+ok 4 - testGlobal(global=true:local=false)
+# init testGlobal local=true
 # global: true
 # local: true
-# cleanup testGlobal local 2
-ok 5 - testGlobal(2:local 2)
-ok 6 - skip(1) # SKIP skipping
-# init skipLocal local 1
-ok 7 - skipLocal(1:local 1) # SKIP skipping
-# cleanup skipLocal local 1
-# init skipLocal local 2
-ok 8 - skipLocal(1:local 2) # SKIP skipping
-# cleanup skipLocal local 2
-# init skipSingle local 1
+# cleanup testGlobal local=true
+ok 5 - testGlobal(global=true:local=true)
+ok 6 - skip(global=false) # SKIP skipping
+# init skipLocal local=false
+ok 7 - skipLocal(global=false:local=false) # SKIP skipping
+# cleanup skipLocal local=false
+# init skipLocal local=true
+ok 8 - skipLocal(global=false:local=true) # SKIP skipping
+# cleanup skipLocal local=true
+# init skipLocal local=false
+ok 9 - skipLocal(global=true:local=false) # SKIP skipping
+# cleanup skipLocal local=false
+# init skipLocal local=true
+ok 10 - skipLocal(global=true:local=true) # SKIP skipping
+# cleanup skipLocal local=true
+# init skipSingle local=false
 # global: false local: false
-# cleanup skipSingle local 1
-ok 9 - skipSingle(1:local 1)
-# init skipSingle local 2
-# global: false local: true
-# cleanup skipSingle local 2
-ok 10 - skipSingle(1:local 2)
-# init skipSingle local 1
-ok 11 - skipSingle(2:local 1) # SKIP skipping
-# cleanup skipSingle local 1
-# init skipSingle local 2
+# cleanup skipSingle local=false
+ok 11 - skipSingle(global=false:local=false)
+# init skipSingle local=true
+ok 12 - skipSingle(global=false:local=true) # SKIP Skipping
+# cleanup skipSingle local=true
+# init skipSingle local=false
+ok 13 - skipSingle(global=true:local=false) # SKIP Skipping
+# cleanup skipSingle local=false
+# init skipSingle local=true
 # global: true local: true
-# cleanup skipSingle local 2
-ok 12 - skipSingle(2:local 2)
+# cleanup skipSingle local=true
+ok 14 - skipSingle(global=true:local=true)
 # cleanupTestCase cleanupTestCase (null)
-ok 13 - cleanupTestCase()
-1..13
-# tests 13
-# pass 9
+ok 15 - cleanupTestCase()
+1..15
+# tests 15
+# pass 8
 # fail 0

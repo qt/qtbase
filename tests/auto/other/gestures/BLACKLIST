@@ -1,5 +1,6 @@
 []
 rhel-7.4
+rhel-7.6
 ubuntu-18.04
 [customGesture]
 # QTBUG-67254

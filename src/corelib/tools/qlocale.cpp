@@ -94,7 +94,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) Q_DECL_NOTHROW
+QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
@@ -138,7 +138,7 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) Q_DECL_NOTHRO
     return QLocale::C;
 }
 
-QLocale::Script QLocalePrivate::codeToScript(QStringView code) Q_DECL_NOTHROW
+QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 4)
@@ -158,7 +158,7 @@ QLocale::Script QLocalePrivate::codeToScript(QStringView code) Q_DECL_NOTHROW
     return QLocale::AnyScript;
 }
 
-QLocale::Country QLocalePrivate::codeToCountry(QStringView code) Q_DECL_NOTHROW
+QLocale::Country QLocalePrivate::codeToCountry(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
@@ -982,7 +982,7 @@ bool QLocale::operator!=(const QLocale &other) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QLocale &key, uint seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.d->m_data);

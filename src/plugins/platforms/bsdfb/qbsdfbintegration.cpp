@@ -53,6 +53,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
@@ -69,13 +70,13 @@ QBsdFbIntegration::QBsdFbIntegration(const QStringList &paramList)
 
 QBsdFbIntegration::~QBsdFbIntegration()
 {
-    destroyScreen(m_primaryScreen.take());
+    QWindowSystemInterface::handleScreenRemoved(m_primaryScreen.take());
 }
 
 void QBsdFbIntegration::initialize()
 {
     if (m_primaryScreen->initialize())
-        screenAdded(m_primaryScreen.data());
+        QWindowSystemInterface::handleScreenAdded(m_primaryScreen.data());
     else
         qWarning("bsdfb: Failed to initialize screen");
 

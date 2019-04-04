@@ -692,7 +692,7 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
 }
 
 // qstring.cpp
-bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW;
+bool qt_is_ascii(const char *&ptr, const char *end) noexcept;
 
 /*!
     \internal

@@ -70,9 +70,9 @@ class Q_CORE_EXPORT QThread : public QObject
 {
     Q_OBJECT
 public:
-    static Qt::HANDLE currentThreadId() Q_DECL_NOTHROW Q_DECL_PURE_FUNCTION;
+    static Qt::HANDLE currentThreadId() noexcept Q_DECL_PURE_FUNCTION;
     static QThread *currentThread();
-    static int idealThreadCount() Q_DECL_NOTHROW;
+    static int idealThreadCount() noexcept;
     static void yieldCurrentThread();
 
     explicit QThread(QObject *parent = nullptr);

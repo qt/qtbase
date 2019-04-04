@@ -197,7 +197,7 @@ static uint crc32(...)
 }
 #endif
 
-static inline uint hash(const uchar *p, size_t len, uint seed) Q_DECL_NOTHROW
+static inline uint hash(const uchar *p, size_t len, uint seed) noexcept
 {
     uint h = seed;
 
@@ -210,12 +210,12 @@ static inline uint hash(const uchar *p, size_t len, uint seed) Q_DECL_NOTHROW
     return h;
 }
 
-uint qHashBits(const void *p, size_t len, uint seed) Q_DECL_NOTHROW
+uint qHashBits(const void *p, size_t len, uint seed) noexcept
 {
     return hash(static_cast<const uchar*>(p), int(len), seed);
 }
 
-static inline uint hash(const QChar *p, size_t len, uint seed) Q_DECL_NOTHROW
+static inline uint hash(const QChar *p, size_t len, uint seed) noexcept
 {
     uint h = seed;
 
@@ -228,29 +228,29 @@ static inline uint hash(const QChar *p, size_t len, uint seed) Q_DECL_NOTHROW
     return h;
 }
 
-uint qHash(const QByteArray &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QByteArray &key, uint seed) noexcept
 {
     return hash(reinterpret_cast<const uchar *>(key.constData()), size_t(key.size()), seed);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-uint qHash(const QString &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QString &key, uint seed) noexcept
 {
     return hash(key.unicode(), size_t(key.size()), seed);
 }
 
-uint qHash(const QStringRef &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QStringRef &key, uint seed) noexcept
 {
     return hash(key.unicode(), size_t(key.size()), seed);
 }
 #endif
 
-uint qHash(QStringView key, uint seed) Q_DECL_NOTHROW
+uint qHash(QStringView key, uint seed) noexcept
 {
     return hash(key.data(), key.size(), seed);
 }
 
-uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
+uint qHash(const QBitArray &bitArray, uint seed) noexcept
 {
     int m = bitArray.d.size() - 1;
     uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()),
@@ -264,7 +264,7 @@ uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
     return result;
 }
 
-uint qHash(QLatin1String key, uint seed) Q_DECL_NOTHROW
+uint qHash(QLatin1String key, uint seed) noexcept
 {
     return hash(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
 }
@@ -398,7 +398,7 @@ void qSetGlobalQHashSeed(int newSeed)
     This function can hash discontiguous memory by invoking it on each chunk,
     passing the previous's result in the next call's \a chained argument.
 */
-uint qt_hash(QStringView key, uint chained) Q_DECL_NOTHROW
+uint qt_hash(QStringView key, uint chained) noexcept
 {
     auto n = key.size();
     auto p = key.utf16();
@@ -938,7 +938,7 @@ void QHashData::checkSanity()
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(float key, uint seed) Q_DECL_NOTHROW
+uint qHash(float key, uint seed) noexcept
 {
     return key != 0.0f ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }
@@ -948,7 +948,7 @@ uint qHash(float key, uint seed) Q_DECL_NOTHROW
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(double key, uint seed) Q_DECL_NOTHROW
+uint qHash(double key, uint seed) noexcept
 {
     return key != 0.0  ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }
@@ -959,7 +959,7 @@ uint qHash(double key, uint seed) Q_DECL_NOTHROW
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(long double key, uint seed) Q_DECL_NOTHROW
+uint qHash(long double key, uint seed) noexcept
 {
     return key != 0.0L ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }

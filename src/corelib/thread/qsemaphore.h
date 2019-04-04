@@ -75,14 +75,14 @@ class QSemaphoreReleaser
 {
 public:
     QSemaphoreReleaser() = default;
-    explicit QSemaphoreReleaser(QSemaphore &sem, int n = 1) Q_DECL_NOTHROW
+    explicit QSemaphoreReleaser(QSemaphore &sem, int n = 1) noexcept
         : m_sem(&sem), m_n(n) {}
-    explicit QSemaphoreReleaser(QSemaphore *sem, int n = 1) Q_DECL_NOTHROW
+    explicit QSemaphoreReleaser(QSemaphore *sem, int n = 1) noexcept
         : m_sem(sem), m_n(n) {}
-    QSemaphoreReleaser(QSemaphoreReleaser &&other) Q_DECL_NOTHROW
+    QSemaphoreReleaser(QSemaphoreReleaser &&other) noexcept
         : m_sem(other.m_sem), m_n(other.m_n)
     { other.m_sem = nullptr; }
-    QSemaphoreReleaser &operator=(QSemaphoreReleaser &&other) Q_DECL_NOTHROW
+    QSemaphoreReleaser &operator=(QSemaphoreReleaser &&other) noexcept
     { QSemaphoreReleaser moved(std::move(other)); swap(moved); return *this; }
 
     ~QSemaphoreReleaser()
@@ -91,16 +91,16 @@ public:
             m_sem->release(m_n);
     }
 
-    void swap(QSemaphoreReleaser &other) Q_DECL_NOTHROW
+    void swap(QSemaphoreReleaser &other) noexcept
     {
         qSwap(m_sem, other.m_sem);
         qSwap(m_n, other.m_n);
     }
 
-    QSemaphore *semaphore() const Q_DECL_NOTHROW
+    QSemaphore *semaphore() const noexcept
     { return m_sem; }
 
-    QSemaphore *cancel() Q_DECL_NOTHROW
+    QSemaphore *cancel() noexcept
     {
         QSemaphore *old = m_sem;
         m_sem = nullptr;

@@ -404,7 +404,7 @@ int qFindByteArray(
 /*!
     \internal
 */
-int QStaticByteArrayMatcherBase::indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const Q_DECL_NOTHROW
+int QStaticByteArrayMatcherBase::indexOfIn(const char *needle, uint nlen, const char *haystack, int hlen, int from) const noexcept
 {
     if (from < 0)
         from = 0;

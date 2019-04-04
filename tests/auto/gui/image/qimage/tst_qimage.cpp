@@ -230,6 +230,8 @@ private slots:
 
     void convertColorTable();
 
+    void wideImage();
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
@@ -3282,11 +3284,46 @@ void tst_QImage::metadataPassthrough()
     QCOMPARE(mirrored.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(mirrored.devicePixelRatio(), a.devicePixelRatio());
 
+    QTransform t;
+    t.rotate(90);
+    QImage rotated = a.transformed(t);
+    QCOMPARE(rotated.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(rotated.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(rotated.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(rotated.devicePixelRatio(), a.devicePixelRatio());
+
     QImage swapped = a.rgbSwapped();
     QCOMPARE(swapped.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(swapped.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(swapped.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(swapped.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage converted = a.convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(converted.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(converted.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(converted.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(converted.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage copied = a.copy(0, 0, a.width() / 2, a.height() / 2);
+    QCOMPARE(copied.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(copied.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(copied.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(copied.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage alphaMask = a.createAlphaMask();
+    QCOMPARE(alphaMask.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(alphaMask.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(alphaMask.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage heuristicMask = a.createHeuristicMask();
+    QCOMPARE(heuristicMask.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(heuristicMask.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(heuristicMask.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage maskFromColor = a.createMaskFromColor(qRgb(0, 0, 0));
+    QCOMPARE(maskFromColor.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(maskFromColor.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(maskFromColor.devicePixelRatio(), a.devicePixelRatio());
 }
 
 void tst_QImage::pixelColor()
@@ -3557,6 +3594,24 @@ void tst_QImage::convertColorTable()
     QCOMPARE(argb32pm.pixel(0,0), 0x80808080);
     QImage rgb32 = image.convertToFormat(QImage::Format_RGB32);
     QCOMPARE(rgb32.pixel(0,0), 0xffffffff);
+}
+
+void tst_QImage::wideImage()
+{
+    // QTBUG-73731 and QTBUG-73732
+    QImage i(538994187, 2, QImage::Format_ARGB32);
+    QImage i2(32, 32, QImage::Format_ARGB32);
+    i2.fill(Qt::white);
+
+    // Test that it doesn't crash:
+    QPainter painter(&i);
+    // With the composition mode is SourceOver out it's an invalid write
+    // With the composition mode is Source it's an invalid read
+    painter.drawImage(0, 0, i2);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.drawImage(0, 0, i2);
+
+    // Qt6: Test that it actually works on 64bit architectures.
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
