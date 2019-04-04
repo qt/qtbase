@@ -44,6 +44,7 @@ private slots:
 
     // In-process tests
     void testInvalidOptions();
+    void testDuplicateOption();
     void testPositionalArguments();
     void testBooleanOption_data();
     void testBooleanOption();
@@ -102,6 +103,15 @@ void tst_QCommandLineParser::testInvalidOptions()
     QCommandLineParser parser;
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineOption: Option names cannot start with a '-'");
     QVERIFY(!parser.addOption(QCommandLineOption(QStringLiteral("-v"), QStringLiteral("Displays version information."))));
+}
+
+void tst_QCommandLineParser::testDuplicateOption()
+{
+    QCoreApplication app(empty_argc, empty_argv);
+    QCommandLineParser parser;
+    QVERIFY(parser.addOption(QCommandLineOption(QStringLiteral("h"), QStringLiteral("Hostname."), QStringLiteral("hostname"))));
+    QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: already having an option named \"h\"");
+    parser.addHelpOption();
 }
 
 void tst_QCommandLineParser::testPositionalArguments()

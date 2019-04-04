@@ -362,8 +362,10 @@ bool QCommandLineParser::addOption(const QCommandLineOption &option)
 
     if (!optionNames.isEmpty()) {
         for (const QString &name : optionNames) {
-            if (d->nameHash.contains(name))
+            if (d->nameHash.contains(name)) {
+                qWarning() << "QCommandLineParser: already having an option named" << name;
                 return false;
+            }
         }
 
         d->commandLineOptionList.append(option);
