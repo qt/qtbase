@@ -45,14 +45,12 @@
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qcontainertools_impl.h>
 
+#include <algorithm>
+#include <initializer_list>
+#include <iterator>
 #include <new>
 #include <string.h>
 #include <stdlib.h>
-#include <algorithm>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
-#include <iterator>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,12 +68,10 @@ public:
         append(other.constData(), other.size());
     }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QVarLengthArray(std::initializer_list<T> args)
         : QVarLengthArray(args.begin(), args.end())
     {
     }
-#endif
 
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QVarLengthArray(InputIterator first, InputIterator last)
@@ -103,7 +99,6 @@ public:
         return *this;
     }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QVarLengthArray<T, Prealloc> &operator=(std::initializer_list<T> list)
     {
         resize(list.size());
@@ -111,7 +106,6 @@ public:
                   QT_MAKE_CHECKED_ARRAY_ITERATOR(this->begin(), this->size()));
         return *this;
     }
-#endif
 
     inline void removeLast() {
         Q_ASSERT(s > 0);

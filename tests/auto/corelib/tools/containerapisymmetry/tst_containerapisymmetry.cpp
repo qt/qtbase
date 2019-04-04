@@ -233,12 +233,10 @@ public:
     {
     }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     VarLengthArray(std::initializer_list<T> args)
         : QVarLengthArray<T>(args)
     {
     }
-#endif
 #endif
 };
 
@@ -614,7 +612,6 @@ struct ContainerDuplicatedValuesStrategy<std::unordered_multiset<T...>> : Contai
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<QSet<T...>> : ContainerRejectsDuplicateValues {};
 
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
 template<typename Container>
 void non_associative_container_check_duplicates_impl(const std::initializer_list<DuplicateStrategyTestType> &reference, const Container &c, ContainerAcceptsDuplicateValues)
 {
@@ -716,13 +713,6 @@ void tst_ContainerApiSymmetry::non_associative_container_duplicates_strategy() c
     Container<DuplicateStrategyTestType> c2{reference.begin(), reference.end()};
     non_associative_container_check_duplicates(reference, c2);
 }
-#else
-template<template<class ... T> class Container>
-void tst_ContainerApiSymmetry::non_associative_container_duplicates_strategy() const
-{
-    QSKIP("Test requires a better compiler");
-}
-#endif // Q_COMPILER_INITIALIZER_LISTS
 
 template <typename Container>
 void tst_ContainerApiSymmetry::ranged_ctor_associative_impl() const

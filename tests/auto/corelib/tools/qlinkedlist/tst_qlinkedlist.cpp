@@ -1005,7 +1005,6 @@ void tst_QLinkedList::testSTLIteratorsComplex() const
 
 void tst_QLinkedList::initializeList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QLinkedList<int> v1 { 2, 3, 4 };
     QCOMPARE(v1, QLinkedList<int>() << 2 << 3 << 4);
     QCOMPARE(v1, (QLinkedList<int> { 2, 3, 4}));
@@ -1014,7 +1013,6 @@ void tst_QLinkedList::initializeList() const
     QLinkedList<QLinkedList<int>> v3;
     v3 << v1 << (QLinkedList<int>() << 1) << QLinkedList<int>() << v1;
     QCOMPARE(v3, v2);
-#endif
 }
 
 

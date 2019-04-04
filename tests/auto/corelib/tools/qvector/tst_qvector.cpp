@@ -549,7 +549,6 @@ void tst_QVector::assignmentCustom() const
 template<typename T>
 void tst_QVector::assignFromInitializerList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     T val1(SimpleValue<T>::at(1));
     T val2(SimpleValue<T>::at(2));
     T val3(SimpleValue<T>::at(3));
@@ -560,9 +559,6 @@ void tst_QVector::assignFromInitializerList() const
 
     v1 = {};
     QCOMPARE(v1.size(), 0);
-#else
-    QSKIP("This test requires support for C++11 initializer lists.");
-#endif
 }
 
 void tst_QVector::assignFromInitializerListInt() const
@@ -2553,7 +2549,6 @@ void tst_QVector::reallocAfterCopy()
 template<typename T>
 void tst_QVector::initializeList()
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     T val1(SimpleValue<T>::at(1));
     T val2(SimpleValue<T>::at(2));
     T val3(SimpleValue<T>::at(3));
@@ -2570,7 +2565,6 @@ void tst_QVector::initializeList()
 
     QVector<T> v4({});
     QCOMPARE(v4.size(), 0);
-#endif
 }
 
 void tst_QVector::initializeListInt()

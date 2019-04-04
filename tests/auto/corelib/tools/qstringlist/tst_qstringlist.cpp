@@ -63,9 +63,7 @@ private slots:
     void joinChar() const;
     void joinChar_data() const;
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     void initializeList() const;
-#endif
 };
 
 extern const char email[];
@@ -519,8 +517,6 @@ void tst_QStringList::joinEmptiness() const
     QVERIFY(string.isNull());
 }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-// C++0x support is required
 void tst_QStringList::initializeList() const
 {
 
@@ -528,7 +524,6 @@ void tst_QStringList::initializeList() const
     QCOMPARE(v1, (QStringList() << "hello" << "world" << "plop"));
     QCOMPARE(v1, (QStringList{"hello","world","plop"}));
 }
-#endif
 
 QTEST_APPLESS_MAIN(tst_QStringList)
 #include "tst_qstringlist.moc"

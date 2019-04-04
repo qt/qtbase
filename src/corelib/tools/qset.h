@@ -43,10 +43,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qcontainertools_impl.h>
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
-#endif
-
 #include <iterator>
 
 QT_BEGIN_NAMESPACE
@@ -59,10 +56,8 @@ class QSet
 
 public:
     inline QSet() noexcept {}
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QSet(std::initializer_list<T> list)
         : QSet(list.begin(), list.end()) {}
-#endif
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QSet(InputIterator first, InputIterator last)
     {

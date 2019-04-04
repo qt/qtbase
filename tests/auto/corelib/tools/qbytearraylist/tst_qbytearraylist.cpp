@@ -287,7 +287,6 @@ void tst_QByteArrayList::indexOf() const
 
 void tst_QByteArrayList::initializerList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     // constructor
     QByteArrayList v1 = {QByteArray("hello"),"world",QByteArray("plop")};
     QCOMPARE(v1, (QByteArrayList() << "hello" << "world" << "plop"));
@@ -296,9 +295,6 @@ void tst_QByteArrayList::initializerList() const
     QByteArrayList v2;
     v2 = {QByteArray("hello"),"world",QByteArray("plop")};
     QCOMPARE(v2, v1);
-#else
-    QSKIP("This test requires C++11 initializer_list support in the compiler.");
-#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QByteArrayList)

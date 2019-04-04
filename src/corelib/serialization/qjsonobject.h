@@ -42,10 +42,8 @@
 
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qiterator.h>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <QtCore/qpair.h>
 #include <initializer_list>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -60,14 +58,12 @@ class Q_CORE_EXPORT QJsonObject
 public:
     QJsonObject();
 
-#if defined(Q_COMPILER_INITIALIZER_LISTS) || defined(Q_QDOC)
     QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
     {
         initialize();
         for (std::initializer_list<QPair<QString, QJsonValue> >::const_iterator i = args.begin(); i != args.end(); ++i)
             insert(i->first, i->second);
     }
-#endif
 
     ~QJsonObject();
 

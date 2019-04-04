@@ -2754,9 +2754,6 @@ void tst_QtJson::testJsonValueRefDefault()
 
 void tst_QtJson::arrayInitializerList()
 {
-#ifndef Q_COMPILER_INITIALIZER_LISTS
-    QSKIP("initializer_list is enabled only with c++11 support");
-#else
     QVERIFY(QJsonArray{}.isEmpty());
     QCOMPARE(QJsonArray{"one"}.count(), 1);
     QCOMPARE(QJsonArray{1}.count(), 1);
@@ -2802,14 +2799,10 @@ void tst_QtJson::arrayInitializerList()
             QCOMPARE(QJsonValue(a43["one"]), QJsonValue(1));
         }
     }
-#endif
 }
 
 void tst_QtJson::objectInitializerList()
 {
-#ifndef Q_COMPILER_INITIALIZER_LISTS
-    QSKIP("initializer_list is enabled only with c++11 support");
-#else
     QVERIFY(QJsonObject{}.isEmpty());
 
     {   // one property
@@ -2849,7 +2842,6 @@ void tst_QtJson::objectInitializerList()
         QCOMPARE(QJsonValue(nested[0]), QJsonValue("innerValue"));
         QCOMPARE(QJsonValue(nested[1]), QJsonValue(2.1));
     }
-#endif
 }
 
 void tst_QtJson::unicodeKeys()

@@ -1871,7 +1871,6 @@ void tst_QList::testSTLIteratorsComplex() const
 
 void tst_QList::initializeList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QList<int> v1{2,3,4};
     QCOMPARE(v1, QList<int>() << 2 << 3 << 4);
     QCOMPARE(v1, (QList<int>{2,3,4}));
@@ -1880,7 +1879,6 @@ void tst_QList::initializeList() const
     QList<QList<int>> v3;
     v3 << v1 << (QList<int>() << 1) << QList<int>() << v1;
     QCOMPARE(v3, v2);
-#endif
 }
 
 template<typename T>

@@ -105,9 +105,7 @@ public:
     inline explicit QStringList(const QString &i) { append(i); }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
     inline QStringList(QList<QString> &&l) noexcept : QList<QString>(std::move(l)) { }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
-#endif
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QStringList(InputIterator first, InputIterator last)
         : QList<QString>(first, last) { }

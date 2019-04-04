@@ -48,12 +48,10 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qcontainertools_impl.h>
 
+#include <algorithm>
+#include <initializer_list>
 #include <iterator>
 #include <list>
-#include <algorithm>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
 
 #include <stdlib.h>
 #include <new>
@@ -166,13 +164,10 @@ public:
     inline QList &operator=(QList<T> &&other) noexcept
     { QList moved(std::move(other)); swap(moved); return *this; }
     inline void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args)
         : QList(args.begin(), args.end()) {}
-#endif
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     QList(InputIterator first, InputIterator last);
-
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 

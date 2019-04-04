@@ -908,7 +908,6 @@ void tst_QVarLengthArray::initializeListComplex()
 template<typename T>
 void tst_QVarLengthArray::initializeList()
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     T val1(110);
     T val2(105);
     T val3(101);
@@ -945,9 +944,6 @@ void tst_QVarLengthArray::initializeList()
 
     v6 = {}; // assign empty
     QCOMPARE(v6.size(), 0);
-#else
-    QSKIP("This tests requires a compiler that supports initializer lists.");
-#endif
 }
 
 void tst_QVarLengthArray::insertMove()

@@ -48,11 +48,8 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qcontainertools_impl.h>
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
-
 #include <algorithm>
+#include <initializer_list>
 
 #if defined(Q_CC_MSVC)
 #pragma warning( push )
@@ -242,7 +239,6 @@ class QHash
 
 public:
     inline QHash() noexcept : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QHash(std::initializer_list<std::pair<Key,T> > list)
         : d(const_cast<QHashData *>(&QHashData::shared_null))
     {
@@ -250,7 +246,6 @@ public:
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
-#endif
     QHash(const QHash &other) : d(other.d) { d->ref.ref(); if (!d->sharable) detach(); }
     ~QHash() { if (!d->ref.deref()) freeData(d); }
 
@@ -1042,14 +1037,12 @@ class QMultiHash : public QHash<Key, T>
 {
 public:
     QMultiHash() noexcept {}
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMultiHash(std::initializer_list<std::pair<Key,T> > list)
     {
         this->reserve(int(list.size()));
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
-#endif
 #ifdef Q_QDOC
     template <typename InputIterator>
     QMultiHash(InputIterator f, InputIterator l);

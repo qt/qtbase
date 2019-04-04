@@ -710,14 +710,12 @@ void tst_QtConcurrentRun::lambda()
     QCOMPARE(QtConcurrent::run([](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
     QCOMPARE(QtConcurrent::run([](int a , int, int, int, int b){ return a + b; }, 1, 2, 3, 4, 5).result(), 1 + 5);
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     {
         QString str { "Hello World Foo" };
         QFuture<QStringList> f1 = QtConcurrent::run([&](){ return str.split(' '); });
         auto r = f1.result();
         QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
     }
-#endif
 
     // and now with explicit pool:
     QThreadPool pool;
@@ -726,14 +724,12 @@ void tst_QtConcurrentRun::lambda()
     QCOMPARE(QtConcurrent::run(&pool, [](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
     QCOMPARE(QtConcurrent::run(&pool, [](int a , int, int, int, int b){ return a + b; }, 1, 2, 3, 4, 5).result(), 1 + 5);
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     {
         QString str { "Hello World Foo" };
         QFuture<QStringList> f1 = QtConcurrent::run(&pool, [&](){ return str.split(' '); });
         auto r = f1.result();
         QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
     }
-#endif
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)

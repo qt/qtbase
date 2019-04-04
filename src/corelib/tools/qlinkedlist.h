@@ -44,14 +44,10 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qcontainertools_impl.h>
 
+#include <algorithm>
+#include <initializer_list>
 #include <iterator>
 #include <list>
-
-#include <algorithm>
-
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
-# include <initializer_list>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -83,10 +79,8 @@ class QLinkedList
 public:
     inline QLinkedList() noexcept : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
     inline QLinkedList(std::initializer_list<T> list)
         : QLinkedList(list.begin(), list.end()) {}
-#endif
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QLinkedList(InputIterator first, InputIterator last)
         : QLinkedList()

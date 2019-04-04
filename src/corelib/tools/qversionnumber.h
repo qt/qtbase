@@ -138,7 +138,6 @@ class QVersionNumber
             else
                 pointer_segments = new QVector<int>(std::move(seg));
         }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
         SegmentStorage(std::initializer_list<int> args)
         {
             if (dataFitsInline(args.begin(), int(args.size()))) {
@@ -147,7 +146,6 @@ class QVersionNumber
                 pointer_segments = new QVector<int>(args);
             }
         }
-#endif
 
         ~SegmentStorage() { if (isUsingPointer()) delete pointer_segments; }
 
@@ -229,11 +227,9 @@ public:
         : m_segments(std::move(seg))
     {}
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVersionNumber(std::initializer_list<int> args)
         : m_segments(args)
     {}
-#endif
 
     inline explicit QVersionNumber(int maj)
     { m_segments.setSegments(1, maj); }

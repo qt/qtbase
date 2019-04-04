@@ -499,7 +499,7 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
 
 void tst_QCommandLineParser::testCpp11StyleInitialization()
 {
-#if defined(Q_COMPILER_INITIALIZER_LISTS) && defined(Q_COMPILER_UNIFORM_INIT)
+#if defined(Q_COMPILER_UNIFORM_INIT)
     QCoreApplication app(empty_argc, empty_argv);
 
     QCommandLineParser parser;

@@ -260,12 +260,10 @@ void tst_QVersionNumber::constructorExplicit()
 
     QCOMPARE(v5.segments(), v6.segments());
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QVersionNumber v7(4, 5, 6);
     QVersionNumber v8 = {4, 5, 6};
 
     QCOMPARE(v7.segments(), v8.segments());
-#endif
 }
 
 void tst_QVersionNumber::constructorCopy_data()

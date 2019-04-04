@@ -48,12 +48,10 @@
 #include <QtCore/qcontainertools_impl.h>
 
 #include <iterator>
+#include <initializer_list>
 #include <vector>
 #include <stdlib.h>
 #include <string.h>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
 
 #include <algorithm>
 
@@ -76,10 +74,8 @@ public:
     QVector<T> &operator=(QVector<T> &&other) noexcept
     { QVector moved(std::move(other)); swap(moved); return *this; }
     void swap(QVector<T> &other) noexcept { qSwap(d, other.d); }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
     QVector<T> &operator=(std::initializer_list<T> args);
-#endif
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QVector(InputIterator first, InputIterator last);
 
@@ -521,11 +517,10 @@ QVector<T>::QVector(int asize, const T &t)
     }
 }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-# if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4127) // conditional expression is constant
-# endif // Q_CC_MSVC
+#endif // Q_CC_MSVC
 
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
@@ -550,10 +545,9 @@ QVector<T> &QVector<T>::operator=(std::initializer_list<T> args)
     return *this;
 }
 
-# if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC)
 QT_WARNING_POP
-# endif // Q_CC_MSVC
-#endif // Q_COMPILER_INITIALIZER_LISTS
+#endif // Q_CC_MSVC
 
 template <typename T>
 template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator>>
