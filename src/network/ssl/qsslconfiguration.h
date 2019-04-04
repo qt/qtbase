@@ -86,11 +86,11 @@ public:
     QSslConfiguration(const QSslConfiguration &other);
     ~QSslConfiguration();
 #ifdef Q_COMPILER_RVALUE_REFS
-    QSslConfiguration &operator=(QSslConfiguration &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QSslConfiguration &operator=(QSslConfiguration &&other) noexcept { swap(other); return *this; }
 #endif
     QSslConfiguration &operator=(const QSslConfiguration &other);
 
-    void swap(QSslConfiguration &other) Q_DECL_NOTHROW
+    void swap(QSslConfiguration &other) noexcept
     { qSwap(d, other.d); }
 
     bool operator==(const QSslConfiguration &other) const;

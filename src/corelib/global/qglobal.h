@@ -910,14 +910,14 @@ namespace SwapExceptionTester { // insulate users from the "using std::swap" bel
     using std::swap; // import std::swap
     template <typename T>
     void checkSwap(T &t)
-        Q_DECL_NOEXCEPT_EXPR(noexcept(swap(t, t)));
+        noexcept(noexcept(swap(t, t)));
     // declared, but not implemented (only to be used in unevaluated contexts (noexcept operator))
 }
 } // namespace QtPrivate
 
 template <typename T>
 inline void qSwap(T &value1, T &value2)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(QtPrivate::SwapExceptionTester::checkSwap(value1)))
+    noexcept(noexcept(QtPrivate::SwapExceptionTester::checkSwap(value1)))
 {
     using std::swap;
     swap(value1, value2);

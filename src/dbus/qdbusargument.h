@@ -77,13 +77,13 @@ public:
     QDBusArgument();
     QDBusArgument(const QDBusArgument &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QDBusArgument(QDBusArgument &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
-    QDBusArgument &operator=(QDBusArgument &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QDBusArgument(QDBusArgument &&other) noexcept : d(other.d) { other.d = nullptr; }
+    QDBusArgument &operator=(QDBusArgument &&other) noexcept { swap(other); return *this; }
 #endif
     QDBusArgument &operator=(const QDBusArgument &other);
     ~QDBusArgument();
 
-    void swap(QDBusArgument &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QDBusArgument &other) noexcept { qSwap(d, other.d); }
 
     // used for marshalling (Qt -> D-BUS)
     QDBusArgument &operator<<(uchar arg);

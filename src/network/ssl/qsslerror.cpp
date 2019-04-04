@@ -361,7 +361,7 @@ QSslCertificate QSslError::certificate() const
     \since 5.4
     \relates QHash
 */
-uint qHash(const QSslError &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslError &key, uint seed) noexcept
 {
     // 2x boost::hash_combine inlined:
     seed ^= qHash(key.error())       + 0x9e3779b9 + (seed << 6) + (seed >> 2);

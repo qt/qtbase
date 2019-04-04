@@ -134,13 +134,13 @@ class QFdContainer
     int m_fd;
     Q_DISABLE_COPY_MOVE(QFdContainer);
 public:
-    explicit QFdContainer(int fd = -1) Q_DECL_NOTHROW : m_fd(fd) {}
+    explicit QFdContainer(int fd = -1) noexcept : m_fd(fd) {}
     ~QFdContainer() { reset(); }
 
-    int get() const Q_DECL_NOTHROW { return m_fd; }
+    int get() const noexcept { return m_fd; }
 
-    int release() Q_DECL_NOTHROW { int result = m_fd; m_fd = -1; return result; }
-    void reset() Q_DECL_NOTHROW;
+    int release() noexcept { int result = m_fd; m_fd = -1; return result; }
+    void reset() noexcept;
 };
 
 class QEvdevKeyboardHandler : public QObject

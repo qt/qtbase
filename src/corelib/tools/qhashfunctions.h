@@ -114,7 +114,7 @@ template <class T> inline uint qHash(const T *key, uint seed = 0) Q_DECL_NOTHROW
     return qHash(reinterpret_cast<quintptr>(key), seed);
 }
 template<typename T> inline uint qHash(const T &t, uint seed)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    noexcept(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
 
 namespace QtPrivate {
@@ -122,7 +122,7 @@ namespace QtPrivate {
 struct QHashCombine {
     typedef uint result_type;
     template <typename T>
-    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const noexcept(noexcept(qHash(t)))
     // combiner taken from N3876 / boost::hash_combine
     { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
 };
@@ -135,7 +135,7 @@ struct QHashCombineCommutative {
     // QHash). Therefore, provide a commutative combiner, too.
     typedef uint result_type;
     template <typename T>
-    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const noexcept(noexcept(qHash(t)))
     { return seed + qHash(t); } // don't use xor!
 };
 
@@ -143,20 +143,20 @@ struct QHashCombineCommutative {
 
 template <typename InputIterator>
 inline uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(*first))) // assume iterator operations don't throw
+    noexcept(noexcept(qHash(*first))) // assume iterator operations don't throw
 {
     return std::accumulate(first, last, seed, QtPrivate::QHashCombine());
 }
 
 template <typename InputIterator>
 inline uint qHashRangeCommutative(InputIterator first, InputIterator last, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(*first))) // assume iterator operations don't throw
+    noexcept(noexcept(qHash(*first))) // assume iterator operations don't throw
 {
     return std::accumulate(first, last, seed, QtPrivate::QHashCombineCommutative());
 }
 
 template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
+    noexcept(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
 {
     uint h1 = qHash(key.first, seed);
     uint h2 = qHash(key.second, seed);
@@ -164,7 +164,7 @@ template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key, 
 }
 
 template <typename T1, typename T2> inline uint qHash(const std::pair<T1, T2> &key, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
+    noexcept(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.first);

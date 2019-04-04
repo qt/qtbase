@@ -267,7 +267,7 @@ private:
 
 template <typename T>
 uint qHash(const QSet<T> &key, uint seed = 0)
-Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
+noexcept(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
 {
     return qHashRangeCommutative(key.begin(), key.end(), seed);
 }

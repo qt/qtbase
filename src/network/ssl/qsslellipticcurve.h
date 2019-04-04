@@ -52,11 +52,11 @@ QT_BEGIN_NAMESPACE
 
 class QSslEllipticCurve;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed = 0) Q_DECL_NOTHROW;
+Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed = 0) noexcept;
 
 class QSslEllipticCurve {
 public:
-    Q_DECL_CONSTEXPR QSslEllipticCurve() Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR QSslEllipticCurve() noexcept
         : id(0)
     {
     }
@@ -67,18 +67,18 @@ public:
     Q_REQUIRED_RESULT Q_NETWORK_EXPORT QString shortName() const;
     Q_REQUIRED_RESULT Q_NETWORK_EXPORT QString longName() const;
 
-    Q_DECL_CONSTEXPR bool isValid() const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR bool isValid() const noexcept
     {
         return id != 0;
     }
 
-    Q_NETWORK_EXPORT bool isTlsNamedCurve() const Q_DECL_NOTHROW;
+    Q_NETWORK_EXPORT bool isTlsNamedCurve() const noexcept;
 
 private:
     int id;
 
-    friend Q_DECL_CONSTEXPR bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW;
-    friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW;
+    friend Q_DECL_CONSTEXPR bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept;
+    friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) noexcept;
 
     friend class QSslContext;
     friend class QSslSocketPrivate;
@@ -87,13 +87,13 @@ private:
 
 Q_DECLARE_TYPEINFO(QSslEllipticCurve, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline uint qHash(QSslEllipticCurve curve, uint seed) noexcept
 { return qHash(curve.id, seed); }
 
-Q_DECL_CONSTEXPR inline bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept
 { return lhs.id == rhs.id; }
 
-Q_DECL_CONSTEXPR inline bool operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline bool operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept
 { return !operator==(lhs, rhs); }
 
 #ifndef QT_NO_DEBUG_STREAM

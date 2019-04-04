@@ -61,7 +61,7 @@ inline bool operator==(const QWindowsPixmapCursorCacheKey &k1, const QWindowsPix
     return k1.bitmapCacheKey == k2.bitmapCacheKey && k1.maskCacheKey == k2.maskCacheKey;
 }
 
-inline uint qHash(const QWindowsPixmapCursorCacheKey &k, uint seed) Q_DECL_NOTHROW
+inline uint qHash(const QWindowsPixmapCursorCacheKey &k, uint seed) noexcept
 {
     return (uint(k.bitmapCacheKey) + uint(k.maskCacheKey)) ^ seed;
 }

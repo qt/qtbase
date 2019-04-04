@@ -68,11 +68,11 @@ public:
     ~QNetworkCacheMetaData();
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    QNetworkCacheMetaData &operator=(QNetworkCacheMetaData &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QNetworkCacheMetaData &operator=(QNetworkCacheMetaData &&other) noexcept { swap(other); return *this; }
 #endif
     QNetworkCacheMetaData &operator=(const QNetworkCacheMetaData &other);
 
-    void swap(QNetworkCacheMetaData &other) Q_DECL_NOTHROW
+    void swap(QNetworkCacheMetaData &other) noexcept
     { qSwap(d, other.d); }
 
     bool operator==(const QNetworkCacheMetaData &other) const;

@@ -258,7 +258,7 @@ class Q_CORE_EXPORT QDateTime
     };
 
 public:
-    QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall);
+    QDateTime() noexcept(Data::CanBeSmall);
     explicit QDateTime(const QDate &);
     QDateTime(const QDate &, const QTime &, Qt::TimeSpec spec = Qt::LocalTime);
     // ### Qt 6: Merge with above with default offsetSeconds = 0

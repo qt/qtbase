@@ -170,7 +170,7 @@ static const int tlsNamedCurveNIDs[] = {
 
 static const size_t tlsNamedCurveNIDCount = sizeof(tlsNamedCurveNIDs) / sizeof(tlsNamedCurveNIDs[0]);
 
-bool QSslEllipticCurve::isTlsNamedCurve() const Q_DECL_NOTHROW
+bool QSslEllipticCurve::isTlsNamedCurve() const noexcept
 {
     const int * const tlsNamedCurveNIDsEnd = tlsNamedCurveNIDs + tlsNamedCurveNIDCount;
     return std::find(tlsNamedCurveNIDs, tlsNamedCurveNIDsEnd, id) != tlsNamedCurveNIDsEnd;

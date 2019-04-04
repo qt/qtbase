@@ -133,7 +133,7 @@ QOcspResponse::QOcspResponse(const QOcspResponse &) = default;
 
     Move-constructs a QOcspResponse instance.
 */
-QOcspResponse::QOcspResponse(QOcspResponse &&) Q_DECL_NOTHROW = default;
+QOcspResponse::QOcspResponse(QOcspResponse &&) noexcept = default;
 
 /*!
     \since 5.13
@@ -154,7 +154,7 @@ QOcspResponse &QOcspResponse::operator=(const QOcspResponse &) = default;
 
     Move-assigns to this QOcspResponse instance.
 */
-QOcspResponse &QOcspResponse::operator=(QOcspResponse &&) Q_DECL_NOTHROW = default;
+QOcspResponse &QOcspResponse::operator=(QOcspResponse &&) noexcept = default;
 
 /*!
     \fn void QOcspResponse::swap(QOcspResponse &other)

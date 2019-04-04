@@ -150,7 +150,7 @@ public:
         return !d;
     }
 
-    void reset(T *other = nullptr) Q_DECL_NOEXCEPT_EXPR(noexcept(Cleanup::cleanup(std::declval<T *>())))
+    void reset(T *other = nullptr) noexcept(noexcept(Cleanup::cleanup(std::declval<T *>())))
     {
         if (d == other)
             return;

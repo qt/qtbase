@@ -64,8 +64,8 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 namespace {
 struct ToBeLookedUpEquals {
     typedef bool result_type;
-    explicit ToBeLookedUpEquals(const QString &toBeLookedUp) Q_DECL_NOTHROW : m_toBeLookedUp(toBeLookedUp) {}
-    result_type operator()(QHostInfoRunnable* lookup) const Q_DECL_NOTHROW
+    explicit ToBeLookedUpEquals(const QString &toBeLookedUp) noexcept : m_toBeLookedUp(toBeLookedUp) {}
+    result_type operator()(QHostInfoRunnable* lookup) const noexcept
     {
         return m_toBeLookedUp == lookup->toBeLookedUp;
     }

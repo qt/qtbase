@@ -64,7 +64,7 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
     return d->derData == other.d->derData;
 }
 
-uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslCertificate &key, uint seed) noexcept
 {
     // DER is the native encoding here, so toDer() is just "return d->derData":
     return qHash(key.toDer(), seed);

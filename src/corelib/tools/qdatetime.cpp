@@ -3132,7 +3132,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     \sa isValid()
 */
-QDateTime::QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall)
+QDateTime::QDateTime() noexcept(Data::CanBeSmall)
 {
 }
 

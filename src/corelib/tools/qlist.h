@@ -1121,14 +1121,14 @@ Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(List)
 
 template <typename T>
 uint qHash(const QList<T> &key, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
+    noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);
 }
 
 template <typename T>
 bool operator<(const QList<T> &lhs, const QList<T> &rhs)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
+    noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
                                                                rhs.begin(), rhs.end())))
 {
     return std::lexicographical_compare(lhs.begin(), lhs.end(),
@@ -1137,21 +1137,21 @@ bool operator<(const QList<T> &lhs, const QList<T> &rhs)
 
 template <typename T>
 inline bool operator>(const QList<T> &lhs, const QList<T> &rhs)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(lhs < rhs))
+    noexcept(noexcept(lhs < rhs))
 {
     return rhs < lhs;
 }
 
 template <typename T>
 inline bool operator<=(const QList<T> &lhs, const QList<T> &rhs)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(lhs < rhs))
+    noexcept(noexcept(lhs < rhs))
 {
     return !(lhs > rhs);
 }
 
 template <typename T>
 inline bool operator>=(const QList<T> &lhs, const QList<T> &rhs)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(lhs < rhs))
+    noexcept(noexcept(lhs < rhs))
 {
     return !(lhs < rhs);
 }

@@ -66,7 +66,7 @@ typedef QIPv6Address Q_IPV6ADDR;
 
 class QHostAddress;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0) noexcept;
 
 class Q_NETWORK_EXPORT QHostAddress
 {
@@ -103,7 +103,7 @@ public:
     ~QHostAddress();
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    QHostAddress &operator=(QHostAddress &&other) Q_DECL_NOTHROW
+    QHostAddress &operator=(QHostAddress &&other) noexcept
     { swap(other); return *this; }
 #endif
 
@@ -114,7 +114,7 @@ public:
 #endif
     QHostAddress &operator=(SpecialAddress address);
 
-    void swap(QHostAddress &other) Q_DECL_NOTHROW { d.swap(other.d); }
+    void swap(QHostAddress &other) noexcept { d.swap(other.d); }
 
     void setAddress(quint32 ip4Addr);
     void setAddress(quint8 *ip6Addr);   // ### Qt 6: remove me
@@ -157,7 +157,7 @@ public:
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
-    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed) noexcept;
 protected:
     friend class QHostAddressPrivate;
     QExplicitlySharedDataPointer<QHostAddressPrivate> d;

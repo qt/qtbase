@@ -82,11 +82,11 @@ public:
 
     QOcspResponse();
     QOcspResponse(const QOcspResponse &other);
-    QOcspResponse(QOcspResponse && other)  Q_DECL_NOEXCEPT;
+    QOcspResponse(QOcspResponse && other)  noexcept;
     ~QOcspResponse();
 
     QOcspResponse &operator = (const QOcspResponse &other);
-    QOcspResponse &operator = (QOcspResponse &&other) Q_DECL_NOTHROW;
+    QOcspResponse &operator = (QOcspResponse &&other) noexcept;
 
     QOcspCertificateStatus certificateStatus() const;
     QOcspRevocationReason revocationReason() const;
@@ -94,7 +94,7 @@ public:
     class QSslCertificate responder() const;
     QSslCertificate subject() const;
 
-    void swap(QOcspResponse &other) Q_DECL_NOTHROW { d.swap(other.d); }
+    void swap(QOcspResponse &other) noexcept { d.swap(other.d); }
 
 private:
 

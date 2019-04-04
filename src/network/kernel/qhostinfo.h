@@ -63,10 +63,10 @@ public:
     explicit QHostInfo(int lookupId = -1);
     QHostInfo(const QHostInfo &d);
     QHostInfo &operator=(const QHostInfo &d);
-    QHostInfo &operator=(QHostInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QHostInfo &operator=(QHostInfo &&other) noexcept { swap(other); return *this; }
     ~QHostInfo();
 
-    void swap(QHostInfo &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QHostInfo &other) noexcept { qSwap(d, other.d); }
 
     QString hostName() const;
     void setHostName(const QString &name);

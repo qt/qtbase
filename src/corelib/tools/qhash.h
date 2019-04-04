@@ -1130,7 +1130,7 @@ Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Hash)
 
 template <class Key, class T>
 uint qHash(const QHash<Key, T> &key, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
+    noexcept(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
 {
     QtPrivate::QHashCombineCommutative hash;
     for (auto it = key.begin(), end = key.end(); it != end; ++it) {
@@ -1143,7 +1143,7 @@ uint qHash(const QHash<Key, T> &key, uint seed = 0)
 
 template <class Key, class T>
 inline uint qHash(const QMultiHash<Key, T> &key, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
+    noexcept(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
 {
     const QHash<Key, T> &key2 = key;
     return qHash(key2, seed);

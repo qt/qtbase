@@ -86,7 +86,7 @@ enum GuardValues {
         static struct Holder : public HolderBase {              \
             Type value;                                         \
             Holder()                                            \
-                Q_DECL_NOEXCEPT_EXPR(noexcept(Type ARGS))       \
+                noexcept(noexcept(Type ARGS))       \
                 : value ARGS                                    \
             { guard.store(QtGlobalStatic::Initialized); }       \
         } holder;                                               \

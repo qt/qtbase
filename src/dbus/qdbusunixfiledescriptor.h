@@ -62,12 +62,12 @@ public:
     explicit QDBusUnixFileDescriptor(int fileDescriptor);
     QDBusUnixFileDescriptor(const QDBusUnixFileDescriptor &other);
 #if defined(Q_COMPILER_RVALUE_REFS)
-    QDBusUnixFileDescriptor &operator=(QDBusUnixFileDescriptor &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QDBusUnixFileDescriptor &operator=(QDBusUnixFileDescriptor &&other) noexcept { swap(other); return *this; }
 #endif
     QDBusUnixFileDescriptor &operator=(const QDBusUnixFileDescriptor &other);
     ~QDBusUnixFileDescriptor();
 
-    void swap(QDBusUnixFileDescriptor &other) Q_DECL_NOTHROW
+    void swap(QDBusUnixFileDescriptor &other) noexcept
     { qSwap(d, other.d); }
 
     bool isValid() const;

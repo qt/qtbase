@@ -103,12 +103,12 @@ public:
 
     QSslError(const QSslError &other);
 
-    void swap(QSslError &other) Q_DECL_NOTHROW
+    void swap(QSslError &other) noexcept
     { qSwap(d, other.d); }
 
     ~QSslError();
 #ifdef Q_COMPILER_RVALUE_REFS
-    QSslError &operator=(QSslError &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QSslError &operator=(QSslError &&other) noexcept { swap(other); return *this; }
 #endif
     QSslError &operator=(const QSslError &other);
     bool operator==(const QSslError &other) const;
@@ -124,7 +124,7 @@ private:
 };
 Q_DECLARE_SHARED(QSslError)
 
-Q_NETWORK_EXPORT uint qHash(const QSslError &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_NETWORK_EXPORT uint qHash(const QSslError &key, uint seed = 0) noexcept;
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

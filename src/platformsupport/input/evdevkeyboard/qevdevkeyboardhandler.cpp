@@ -66,7 +66,7 @@ Q_LOGGING_CATEGORY(qLcEvdevKeyMap, "qt.qpa.input.keymap")
 // simple builtin US keymap
 #include "qevdevkeyboard_defaultmap_p.h"
 
-void QFdContainer::reset() Q_DECL_NOTHROW
+void QFdContainer::reset() noexcept
 {
     if (m_fd >= 0)
         qt_safe_close(m_fd);

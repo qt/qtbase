@@ -118,14 +118,14 @@ public:
     QXmlAttributes();
 #ifdef Q_COMPILER_DEFAULT_MEMBERS
     QXmlAttributes(const QXmlAttributes &) = default;
-    QXmlAttributes(QXmlAttributes &&) Q_DECL_NOTHROW = default;
+    QXmlAttributes(QXmlAttributes &&) noexcept = default;
     QXmlAttributes &operator=(const QXmlAttributes &) = default;
-    QXmlAttributes &operator=(QXmlAttributes &&) Q_DECL_NOTHROW = default;
+    QXmlAttributes &operator=(QXmlAttributes &&) noexcept = default;
 #endif // default members
 
     QT6_NOT_VIRTUAL ~QXmlAttributes();
 
-    void swap(QXmlAttributes &other) Q_DECL_NOTHROW
+    void swap(QXmlAttributes &other) noexcept
     {
         qSwap(attList, other.attList);
         qSwap(d, other.d);

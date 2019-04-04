@@ -65,7 +65,7 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
     return false;
 }
 
-uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslCertificate &key, uint seed) noexcept
 {
     if (X509 * const x509 = key.d->x509) {
         const EVP_MD *sha1 = q_EVP_sha1();
