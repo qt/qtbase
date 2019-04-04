@@ -92,7 +92,7 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '') -> str:
 
         full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else '')
 
-        files: Dict[str, str] = {}
+        files: typing.Dict[str, str] = {}
         for file in resource:
             path = file.text
             assert path
