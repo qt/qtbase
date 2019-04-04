@@ -1870,7 +1870,7 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         visualColumn = d->nextActiveVisualColumn(visualRow, right, -1,
                                                  QTableViewPrivate::SearchDirection::Decreasing);
         if (modifiers & Qt::ControlModifier)
-            visualRow = d->nextActiveVisualRow(bottom, current.column(), -1,
+            visualRow = d->nextActiveVisualRow(bottom, visualColumn, -1,
                                                QTableViewPrivate::SearchDirection::Decreasing);
         break;
     case MovePageUp: {
