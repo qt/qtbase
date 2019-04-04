@@ -407,7 +407,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         const ProStringList &l = project->values("QMAKE_PRL_INTERNAL_FILES");
         ProStringList::ConstIterator it;
         for(it = l.begin(); it != l.end(); ++it) {
-            QMakeMetaInfo libinfo(project);
+            QMakeMetaInfo libinfo;
             if (libinfo.readLib((*it).toQString()) && !libinfo.isEmpty("QMAKE_PRL_BUILD_DIR")) {
                 ProString dir;
                 int slsh = (*it).lastIndexOf(Option::dir_sep);

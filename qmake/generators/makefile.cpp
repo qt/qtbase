@@ -912,7 +912,7 @@ MakefileGenerator::processPrlFileCore(QString &origFile, const QStringRef &origN
     const QString meta_file = QMakeMetaInfo::checkLib(fixedFile);
     if (meta_file.isEmpty())
         return false;
-    QMakeMetaInfo libinfo(project);
+    QMakeMetaInfo libinfo;
     debug_msg(1, "Processing PRL file: %s", meta_file.toLatin1().constData());
     if (!libinfo.readLib(meta_file)) {
         fprintf(stderr, "Error processing meta file %s\n", meta_file.toLatin1().constData());
