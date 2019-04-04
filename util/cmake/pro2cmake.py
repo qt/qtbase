@@ -332,11 +332,13 @@ class Scope(object):
 
     @property
     def merge_debug(self) -> bool:
-        return self.getString('PRO2CMAKE_MERGE_DEBUG', None) != None
+        merge = self.getString('PRO2CMAKE_MERGE_DEBUG').lower()
+        return merge and (merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true')
 
     @property
     def scope_debug(self) -> bool:
-        return self.getString('PRO2CMAKE_SCOPE_DEBUG', None) != None
+        merge = self.getString('PRO2CMAKE_SCOPE_DEBUG').lower()
+        return merge and (merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true')
 
     @property
     def parent(self) -> typing.Optional[Scope]:
