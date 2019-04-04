@@ -1149,6 +1149,8 @@ void QDashStroker::processCurrentSubpath()
 
     QSubpathFlatIterator it(&m_elements, m_dashThreshold);
     qfixed2d prev = it.next();
+    if (!prev.isFinite())
+        return;
 
     bool clipping = !m_clip_rect.isEmpty();
     qfixed2d move_to_pos = prev;
@@ -1164,6 +1166,8 @@ void QDashStroker::processCurrentSubpath()
     bool hasMoveTo = false;
     while (it.hasNext()) {
         QStrokerOps::Element e = it.next();
+        if (!qfixed2d(e).isFinite())
+            continue;
 
         Q_ASSERT(e.isLineTo());
         cline = QLineF(qt_fixed_to_real(prev.x),
