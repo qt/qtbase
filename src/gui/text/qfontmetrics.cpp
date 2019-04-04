@@ -1036,8 +1036,15 @@ int QFontMetrics::lineWidth() const
     return qRound(engine->lineThickness());
 }
 
+/*!
+    \since 5.14
 
-
+    Returns the font DPI.
+*/
+qreal QFontMetrics::fontDpi() const
+{
+    return d->dpi;
+}
 
 /*****************************************************************************
   QFontMetricsF member functions
@@ -1911,6 +1918,16 @@ qreal QFontMetricsF::lineWidth() const
     QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->lineThickness().toReal();
+}
+
+/*!
+    \since 5.14
+
+    Returns the font DPI.
+*/
+qreal QFontMetricsF::fontDpi() const
+{
+    return d->dpi;
 }
 
 QT_END_NAMESPACE
