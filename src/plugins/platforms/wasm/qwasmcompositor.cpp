@@ -193,7 +193,7 @@ void QWasmCompositor::requestRedraw()
     QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
 
-QWindow *QWasmCompositor::windowAt(QPoint p, int padding) const
+QWindow *QWasmCompositor::windowAt(QPoint globalPoint, int padding) const
 {
     int index = m_windowStack.count() - 1;
     // qDebug() << "window at" << "point" << p << "window count" << index;
@@ -205,7 +205,7 @@ QWindow *QWasmCompositor::windowAt(QPoint p, int padding) const
         QRect geometry = compositedWindow.window->windowFrameGeometry()
                          .adjusted(-padding, -padding, padding, padding);
 
-        if (compositedWindow.visible && geometry.contains(p))
+        if (compositedWindow.visible && geometry.contains(globalPoint))
             return m_windowStack.at(index)->window();
         --index;
     }

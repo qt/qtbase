@@ -920,7 +920,7 @@ QThreadPrivate::~QThreadPrivate()
     \since 5.0
 
     Returns a pointer to the event dispatcher object for the thread. If no event
-    dispatcher exists for the thread, this function returns 0.
+    dispatcher exists for the thread, this function returns \nullptr.
 */
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {

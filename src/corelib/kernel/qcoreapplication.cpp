@@ -2917,7 +2917,7 @@ bool QCoreApplication::hasPendingEvents()
 
 /*!
     Returns a pointer to the event dispatcher object for the main thread. If no
-    event dispatcher exists for the thread, this function returns 0.
+    event dispatcher exists for the thread, this function returns \nullptr.
 */
 QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {
