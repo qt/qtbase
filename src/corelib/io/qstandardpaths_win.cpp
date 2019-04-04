@@ -86,15 +86,6 @@ static void appendOrganizationAndApp(QString &path) // Courtesy qstandardpaths_u
 #endif
 }
 
-static inline QString displayName(QStandardPaths::StandardLocation type)
-{
-#ifndef QT_BOOTSTRAPPED
-    return QStandardPaths::displayName(type);
-#else
-    return QString::number(type);
-#endif
-}
-
 static inline void appendTestMode(QString &path)
 {
     if (QStandardPaths::isTestModeEnabled())
