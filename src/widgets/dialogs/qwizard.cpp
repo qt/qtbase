@@ -1595,23 +1595,25 @@ bool QWizardPrivate::handleAeroStyleChange()
     bool vistaMargins = false;
 
     if (isVistaThemeEnabled()) {
+        const int topOffset = vistaHelper->topOffset();
+        const int topPadding = vistaHelper->topPadding();
         if (isVistaThemeEnabled(QVistaHelper::VistaAero)) {
             if (isWindow) {
                 vistaHelper->setDWMTitleBar(QVistaHelper::ExtendedTitleBar);
                 q->installEventFilter(vistaHelper);
             }
             q->setMouseTracking(true);
-            antiFlickerWidget->move(0, vistaHelper->titleBarSize() + vistaHelper->topOffset());
+            antiFlickerWidget->move(0, vistaHelper->titleBarSize() + topOffset);
             vistaHelper->backButton()->move(
-                0, vistaHelper->topOffset() // ### should ideally work without the '+ 1'
-                - qMin(vistaHelper->topOffset(), vistaHelper->topPadding() + 1));
+                0, topOffset // ### should ideally work without the '+ 1'
+                - qMin(topOffset, topPadding + 1));
             vistaMargins = true;
             vistaHelper->backButton()->show();
         } else {
             if (isWindow)
                 vistaHelper->setDWMTitleBar(QVistaHelper::NormalTitleBar);
             q->setMouseTracking(true);
-            antiFlickerWidget->move(0, vistaHelper->topOffset());
+            antiFlickerWidget->move(0, topOffset);
             vistaHelper->backButton()->move(0, -1); // ### should ideally work with (0, 0)
         }
         if (isWindow)

@@ -802,8 +802,10 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         QPen oldPen = p->pen();
         p->setPen(QPen(opt->palette.shadow().color(), 0));
         QRectF rect = opt->rect;
-        rect.adjust(QStyleHelper::dpiScaled(0.5), QStyleHelper::dpiScaled(0.5),
-                    QStyleHelper::dpiScaled(-1.5), QStyleHelper::dpiScaled(-1.5));
+        const qreal topLevelAdjustment = QStyleHelper::dpiScaled(0.5);
+        const qreal bottomRightAdjustment = QStyleHelper::dpiScaled(-1.5);
+        rect.adjust(topLevelAdjustment, topLevelAdjustment,
+                    bottomRightAdjustment, bottomRightAdjustment);
         p->drawRect(rect);
         p->setPen(oldPen);
         break;

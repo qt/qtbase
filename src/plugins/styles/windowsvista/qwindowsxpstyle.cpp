@@ -1486,11 +1486,13 @@ case PE_Frame:
 
                 // Inner white border
                 p->setPen(QPen(option->palette.base().color(), 0));
-                p->drawRect(QRectF(option->rect).adjusted(QStyleHelper::dpiScaled(0.5), QStyleHelper::dpiScaled(0.5),
-                                                          QStyleHelper::dpiScaled(-1), QStyleHelper::dpiScaled(-1)));
+                const auto topLevelAdjustment = QStyleHelper::dpiScaled(0.5);
+                const auto bottomRightAdjustment = QStyleHelper::dpiScaled(-1);
+                p->drawRect(QRectF(option->rect).adjusted(topLevelAdjustment, topLevelAdjustment,
+                                                          bottomRightAdjustment, bottomRightAdjustment));
                 // Outer dark border
                 p->setPen(QPen(bordercolor, 0));
-                p->drawRect(QRectF(option->rect).adjusted(0, 0, QStyleHelper::dpiScaled(-0.5), QStyleHelper::dpiScaled(-0.5)));
+                p->drawRect(QRectF(option->rect).adjusted(0, 0, -topLevelAdjustment, -topLevelAdjustment));
                 p->setPen(oldPen);
                 return;
             } else if (fillType == BT_NONE) {
@@ -3534,9 +3536,12 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                              qRound(QStyleHelper::dpiScaled(16)), he - qRound(QStyleHelper::dpiScaled(2)));
                 break;
 
-            case SC_ComboBoxEditField:
-                rect = QRect(x + qRound(QStyleHelper::dpiScaled(2)), y + qRound(QStyleHelper::dpiScaled(2)),
-                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)), he - qRound(QStyleHelper::dpiScaled(4)));
+            case SC_ComboBoxEditField: {
+                const int frame = qRound(QStyleHelper::dpiScaled(2));
+                rect = QRect(x + frame, y + frame,
+                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)),
+                             he - qRound(QStyleHelper::dpiScaled(4)));
+            }
                 break;
 
             case SC_ComboBoxListBoxPopup:

@@ -293,9 +293,9 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     int glowOffset = 0;
 
     if (vistaState() == VistaAero) {
-        textHeight += 2 * glowSize();
-        textWidth += 2 * glowSize();
         glowOffset = glowSize();
+        textHeight += 2 * glowOffset;
+        textWidth += 2 * glowOffset;
     }
 
     const int titleLeft = (wizard->layoutDirection() == Qt::LeftToRight
