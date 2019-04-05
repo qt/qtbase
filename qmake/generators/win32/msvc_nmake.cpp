@@ -171,15 +171,7 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
                     .arg(precompH_f, precompH_f, escapeFilePath(isRunC ? precompPchC : precompPch));
             QString p = MakefileGenerator::var(value);
             p.replace(QLatin1String("-c"), precompRule);
-            // Cannot use -Gm with -FI & -Yu, as this gives an
-            // internal compiler error, on the newer compilers
-            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-            p.remove("-Gm");
             return p;
-        } else if (value == "QMAKE_CXXFLAGS") {
-            // Remove internal compiler error option
-            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-            return MakefileGenerator::var(value).remove("-Gm");
         }
     }
 
