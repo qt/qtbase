@@ -856,7 +856,7 @@ endfunction()
 # This function creates an executable for use as helper program with tests. Some
 # tests launch separate programs to test certainly input/output behavior.
 function(add_qt_test_helper name)
-    add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." ${ARGN})
+    add_qt_executable("${name}" NO_INSTALL OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." ${ARGN})
 endfunction()
 
 
