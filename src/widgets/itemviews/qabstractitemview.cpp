@@ -4461,15 +4461,8 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     if (paintPairs.isEmpty())
         return QPixmap();
 
-    qreal scale = 1.0f;
-
-    Q_Q(const QAbstractItemView);
-    QWidget *window = q->window();
-    if (window) {
-        QWindow *windowHandle = window->windowHandle();
-        if (windowHandle)
-            scale = windowHandle->devicePixelRatio();
-    }
+    QWindow *window = windowHandle(WindowHandleMode::Closest);
+    const qreal scale = window ? window->devicePixelRatio() : qreal(1);
 
     QPixmap pixmap(r->size() * scale);
     pixmap.setDevicePixelRatio(scale);

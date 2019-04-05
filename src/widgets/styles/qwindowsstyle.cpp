@@ -380,23 +380,12 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     return QWindowsStylePrivate::InvalidMetric;
 }
 
-static QWindow *windowOf(const QWidget *w)
-{
-    QWindow *result = nullptr;
-    if (w) {
-        result = w->windowHandle();
-        if (!result) {
-            if (const QWidget *np = w->nativeParentWidget())
-                result = np->windowHandle();
-        }
-    }
-    return result;
-}
-
 static QScreen *screenOf(const QWidget *w)
 {
-    if (const QWindow *window = windowOf(w))
-        return window->screen();
+    if (w) {
+        if (auto screen = qt_widget_private(const_cast<QWidget *>(w))->associatedScreen())
+            return screen;
+    }
     return QGuiApplication::primaryScreen();
 }
 

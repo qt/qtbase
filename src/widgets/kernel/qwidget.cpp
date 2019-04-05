@@ -1252,6 +1252,33 @@ void QWidgetPrivate::createRecursively()
     }
 }
 
+QWindow *QWidgetPrivate::windowHandle(WindowHandleMode mode) const
+{
+    if (mode == WindowHandleMode::Direct || mode == WindowHandleMode::Closest) {
+        if (QTLWExtra *x = maybeTopData())
+            return x->window;
+    }
+    if (mode == WindowHandleMode::Closest) {
+        if (auto nativeParent = q_func()->nativeParentWidget()) {
+            if (auto window = nativeParent->windowHandle())
+                return window;
+        }
+    }
+    if (mode == WindowHandleMode::TopLevel || mode == WindowHandleMode::Closest) {
+        if (auto topLevel = q_func()->topLevelWidget()) {
+            if (auto window = topLevel ->windowHandle())
+                return window;
+        }
+    }
+    return nullptr;
+}
+
+QScreen *QWidgetPrivate::associatedScreen() const
+{
+    if (auto window = windowHandle(WindowHandleMode::Closest))
+        return window->screen();
+    return nullptr;
+}
 
 // ### fixme: Qt 6: Remove parameter window from QWidget::create()
 
@@ -8103,7 +8130,7 @@ void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
 
-    QWidgetWindow *window = windowHandle();
+    auto window = qobject_cast<QWidgetWindow *>(windowHandle());
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBackingStore(q->rect());
@@ -8242,7 +8269,7 @@ void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
 
-    QWidgetWindow *window = windowHandle();
+    auto window = qobject_cast<QWidgetWindow *>(windowHandle());
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         q->setAttribute(Qt::WA_Mapped, false);

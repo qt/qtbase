@@ -342,7 +342,15 @@ public:
     QPainter *sharedPainter() const;
     void setSharedPainter(QPainter *painter);
     QWidgetBackingStore *maybeBackingStore() const;
-    QWidgetWindow *windowHandle() const;
+
+    enum class WindowHandleMode {
+        Direct,
+        Closest,
+        TopLevel
+    };
+    QWindow *windowHandle(WindowHandleMode mode = WindowHandleMode::Direct) const;
+
+    QScreen *associatedScreen() const;
 
     template <typename T>
     void repaint(T t);
@@ -1012,13 +1020,6 @@ inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
     Q_Q(const QWidget);
     QTLWExtra *x = q->window()->d_func()->maybeTopData();
     return x ? x->backingStoreTracker.data() : nullptr;
-}
-
-inline QWidgetWindow *QWidgetPrivate::windowHandle() const
-{
-    if (QTLWExtra *x = maybeTopData())
-        return x->window;
-    return nullptr;
 }
 
 QT_END_NAMESPACE

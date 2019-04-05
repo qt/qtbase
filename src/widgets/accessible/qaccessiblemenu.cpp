@@ -47,6 +47,7 @@
 #endif
 #include <QtWidgets/QAction>
 #include <qstyle.h>
+#include <private/qwidget_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -241,15 +242,9 @@ QObject *QAccessibleMenuItem::object() const
 /*! \reimp */
 QWindow *QAccessibleMenuItem::window() const
 {
-    QWindow *result = nullptr;
-    if (!m_owner.isNull()) {
-        result = m_owner->windowHandle();
-        if (!result) {
-            if (const QWidget *nativeParent = m_owner->nativeParentWidget())
-                result = nativeParent->windowHandle();
-        }
-    }
-    return result;
+    return m_owner.isNull()
+        ? nullptr
+        : qt_widget_private(m_owner.data())->windowHandle(QWidgetPrivate::WindowHandleMode::Closest);
 }
 
 QRect QAccessibleMenuItem::rect() const
