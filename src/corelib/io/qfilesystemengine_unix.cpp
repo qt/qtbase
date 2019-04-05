@@ -805,11 +805,11 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 }
 
 //static
-QByteArray QFileSystemEngine::id(int id)
+QByteArray QFileSystemEngine::id(int fd)
 {
     QT_STATBUF statResult;
-    if (QT_FSTAT(id, &statResult)) {
-        qErrnoWarning("fstat() failed for fd %d", id);
+    if (QT_FSTAT(fd, &statResult)) {
+        qErrnoWarning("fstat() failed for fd %d", fd);
         return QByteArray();
     }
     QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);

@@ -33,8 +33,6 @@ SOURCES += \
 
 RESOURCES += styles/qstyle.qrc
 
-include($$OUT_PWD/qtwidgets-config.pri)
-
 qtConfig(animation) {
     HEADERS += styles/qstyleanimation_p.h
     SOURCES += styles/qstyleanimation.cpp
