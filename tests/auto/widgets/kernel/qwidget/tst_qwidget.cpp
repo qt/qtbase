@@ -1139,6 +1139,7 @@ void tst_QWidget::visible()
     QVERIFY( !childWidget->isVisible() );
 
     testWidget->show();
+    QVERIFY(testWidget->screen());
     QVERIFY( testWidget->isVisible() );
     QVERIFY( childWidget->isVisible() );
 

@@ -2445,12 +2445,35 @@ WId QWidget::effectiveWinId() const
 
     \since 5.0
 
-    \sa winId()
+    \sa winId(), screen()
 */
 QWindow *QWidget::windowHandle() const
 {
     Q_D(const QWidget);
     return d->windowHandle();
+}
+
+/*!
+    Returns the screen the widget is on.
+
+    \since 5.14
+
+    \sa windowHandle()
+*/
+QScreen *QWidget::screen() const
+{
+    Q_D(const QWidget);
+    if (auto associatedScreen = d->associatedScreen())
+        return associatedScreen;
+    if (auto topLevel = window()) {
+        if (auto topData = qt_widget_private(topLevel)->topData()) {
+            if (auto initialScreen = QGuiApplicationPrivate::screen_list.value(topData->initialScreenIndex))
+                return initialScreen;
+        }
+        if (auto screenByPos = QGuiApplication::screenAt(topLevel->geometry().center()))
+            return screenByPos;
+    }
+    return QGuiApplication::primaryScreen();
 }
 
 #ifndef QT_NO_STYLE_STYLESHEET

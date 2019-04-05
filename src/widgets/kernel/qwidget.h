@@ -85,6 +85,7 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 class QDropEvent;
+class QScreen;
 class QShowEvent;
 class QHideEvent;
 class QIcon;
@@ -601,6 +602,7 @@ public:
     QBackingStore *backingStore() const;
 
     QWindow *windowHandle() const;
+    QScreen *screen() const;
 
     static QWidget *createWindowContainer(QWindow *window, QWidget *parent=nullptr, Qt::WindowFlags flags=Qt::WindowFlags());
 
