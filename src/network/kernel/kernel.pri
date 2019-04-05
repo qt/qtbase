@@ -38,7 +38,11 @@ qtConfig(dnslookup) {
 }
 
 unix {
-    !integrity:qtConfig(dnslookup): SOURCES += kernel/qdnslookup_unix.cpp
+    !integrity:qtConfig(dnslookup) {
+        SOURCES += kernel/qdnslookup_unix.cpp
+        qtConfig(dlopen): QMAKE_USE_PRIVATE += libdl
+    }
+
     SOURCES += kernel/qhostinfo_unix.cpp
 
     qtConfig(linux-netlink): SOURCES += kernel/qnetworkinterface_linux.cpp
