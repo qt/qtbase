@@ -501,7 +501,11 @@ bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
     while (ptr + 4 <= end) {
         quint32 data = qFromUnaligned<quint32>(ptr);
         if (data &= 0x80808080U) {
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+            uint idx = qCountLeadingZeroBits(data);
+#else
             uint idx = qCountTrailingZeroBits(data);
+#endif
             ptr += idx / 8;
             return false;
         }

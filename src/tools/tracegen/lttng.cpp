@@ -104,16 +104,21 @@ static void writeCtfMacro(QTextStream &stream, const Tracepoint::Field &field)
     }
 }
 
-static void writePrologue(QTextStream &stream, const QString &fileName, const QString &providerName)
+static void writePrologue(QTextStream &stream, const QString &fileName, const Provider &provider)
 {
-    stream << "#undef TRACEPOINT_PROVIDER\n";
-    stream << "#define TRACEPOINT_PROVIDER " << providerName << "\n\n";
-
-    stream << qtHeaders();
-
     const QString guard = includeGuard(fileName);
 
+    stream << "#undef TRACEPOINT_PROVIDER\n";
+    stream << "#define TRACEPOINT_PROVIDER " << provider.name << "\n";
     stream << "\n";
+
+    // include prefix text or qt headers only once
+    stream << "#if !defined(" << guard << ")\n";
+    stream << qtHeaders();
+    stream << "\n";
+    if (!provider.prefixText.isEmpty())
+        stream << provider.prefixText.join(QLatin1Char('\n')) << "\n\n";
+    stream << "#endif\n\n";
 
     /* the first guard is the usual one, the second is required
      * by LTTNG to force the re-evaluation of TRACEPOINT_* macros
@@ -213,7 +218,7 @@ void writeLttng(QFile &file, const Provider &provider)
 
     const QString fileName = QFileInfo(file.fileName()).fileName();
 
-    writePrologue(stream, fileName, provider.name);
+    writePrologue(stream, fileName, provider);
     writeTracepoints(stream, provider);
     writeEpilogue(stream, fileName);
 }

@@ -778,7 +778,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
-    Q_TRACE(QCoreApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QCoreApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -883,8 +883,6 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
 #endif
-
-    Q_TRACE(QCoreApplicationPrivate_init_exit);
 }
 
 /*!
@@ -1199,7 +1197,7 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
     // Note: when adjusting the tracepoints in here
     // consider adjusting QApplicationPrivate::notify_helper too.
-    Q_TRACE(QCoreApplication_notify_entry, receiver, event, event->type());
+    Q_TRACE_SCOPE(QCoreApplication_notify, receiver, event, event->type());
 
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
@@ -1498,7 +1496,7 @@ bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 */
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
-    Q_TRACE(QCoreApplication_postEvent_entry, receiver, event, event->type());
+    Q_TRACE_SCOPE(QCoreApplication_postEvent, receiver, event, event->type());
 
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
