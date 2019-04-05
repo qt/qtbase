@@ -967,7 +967,9 @@ void QWindowsNativeFileDialogBase::doExec(HWND owner)
     const HRESULT hr = m_fileDialog->Show(owner);
     QWindowsDialogs::eatMouseMove();
     qCDebug(lcQpaDialogs) << '<' << __FUNCTION__ << " returns " << hex << hr;
-    if (hr == S_OK) {
+    // Emit accepted() only if there is a result as otherwise UI hangs occur.
+    // For example, typing in invalid URLs results in empty result lists.
+    if (hr == S_OK && !m_data.selectedFiles().isEmpty()) {
         emit accepted();
     } else {
         emit rejected();
