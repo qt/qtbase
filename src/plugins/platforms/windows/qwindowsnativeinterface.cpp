@@ -143,7 +143,7 @@ QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const 
 {
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window);
     if (name == QLatin1String(customMarginPropertyC))
-        return qVariantFromValue(platformWindow->customMargins());
+        return QVariant::fromValue(platformWindow->customMargins());
     return QVariant();
 }
 

@@ -172,7 +172,7 @@ void QVistaHelper::updateCustomMargins(bool vistaMargins)
         const QMargins customMarginsDp = vistaMargins
             ? QMargins(0, -titleBarSizeDp(), 0, 0)
             : QMargins();
-        const QVariant customMarginsV = qVariantFromValue(customMarginsDp);
+        const QVariant customMarginsV = QVariant::fromValue(customMarginsDp);
         // The dynamic property takes effect when creating the platform window.
         window->setProperty("_q_windowsCustomMargins", customMarginsV);
         // If a platform window exists, change via native interface.

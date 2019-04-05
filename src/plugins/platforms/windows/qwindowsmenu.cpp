@@ -784,7 +784,7 @@ void QWindowsMenuBar::handleReparent(QWindow *newParentWindow)
     if (QPlatformWindow *platWin = newParentWindow->handle())
         install(static_cast<QWindowsWindow *>(platWin));
     else // Store for later creation, see menuBarOf()
-        newParentWindow->setProperty(menuBarPropertyName, qVariantFromValue<QObject *>(this));
+        newParentWindow->setProperty(menuBarPropertyName, QVariant::fromValue<QObject *>(this));
 }
 
 QWindowsMenuBar *QWindowsMenuBar::menuBarOf(const QWindow *notYetCreatedWindow)
