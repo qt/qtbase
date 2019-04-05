@@ -824,7 +824,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &dire
     data += MagicLength;
 
     QStringList dependencies;
-    while (data < end - 4) {
+    while (data < end - 5) {
         quint8 tag = read8(data++);
         quint32 blockLen = read32(data);
         data += 4;
