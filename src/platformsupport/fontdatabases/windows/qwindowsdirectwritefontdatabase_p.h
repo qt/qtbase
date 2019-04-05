@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSFONTDATABASE_H
-#define QWINDOWSFONTDATABASE_H
+#ifndef QWINDOWSDIRECTWRITEFONTDATABASE_P_H
+#define QWINDOWSDIRECTWRITEFONTDATABASE_P_H
 
 //
 //  W A R N I N G
@@ -54,109 +54,43 @@
 #include "qwindowsfontdatabasebase_p.h"
 
 #include <qpa/qplatformfontdatabase.h>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/qt_windows.h>
+#include <QtCore/qloggingcategory.h>
+
+struct IDWriteFactory;
+struct IDWriteFont;
+struct IDWriteFontFamily;
+struct IDWriteLocalizedStrings;
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsFontDatabase : public QWindowsFontDatabaseBase
+#ifdef QT_USE_DIRECTWRITE3
+
+class QWindowsDirectWriteFontDatabase : public QWindowsFontDatabaseBase
 {
-    Q_DISABLE_COPY_MOVE(QWindowsFontDatabase)
+    Q_DISABLE_COPY_MOVE(QWindowsDirectWriteFontDatabase)
 public:
-    enum FontOptions {
-        // Relevant bits from QWindowsIntegration::Options
-        DontUseDirectWriteFonts = 0x40,
-        DontUseColorFonts = 0x80
-    };
-
-    QWindowsFontDatabase();
-    ~QWindowsFontDatabase() override;
-
-    void ensureFamilyPopulated(const QString &familyName);
+    QWindowsDirectWriteFontDatabase();
+    ~QWindowsDirectWriteFontDatabase() override;
 
     void populateFontDatabase() override;
     void populateFamily(const QString &familyName) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
-    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) override;
     void releaseHandle(void *handle) override;
-    QString fontDir() const override;
+    QFont defaultFont() const override;
 
-    QFont defaultFont() const  override { return systemDefaultFont(); }
     bool fontsAlwaysScalable() const override;
-    void derefUniqueFont(const QString &uniqueFont);
-    void refUniqueFont(const QString &uniqueFont);
     bool isPrivateFontFamily(const QString &family) const override;
 
-    static QFontEngine *createEngine(const QFontDef &request, const QString &faceName,
-                                     int dpi,
-                                     const QSharedPointer<QWindowsFontEngineData> &data);
-
-    static qreal fontSmoothingGamma();
-
-    static QStringList extraTryFontsForFamily(const QString &family);
-    static QString familyForStyleHint(QFont::StyleHint styleHint);
-
-    static void setFontOptions(unsigned options);
-    static unsigned fontOptions();
-
 private:
-    void removeApplicationFonts();
-    void addDefaultEUDCFont();
+    static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
 
-    struct WinApplicationFont {
-        HANDLE handle;
-        QString fileName;
-    };
-
-    QList<WinApplicationFont> m_applicationFonts;
-
-    struct UniqueFontData {
-        HANDLE handle;
-        QAtomicInt refCount;
-    };
-
-    QMap<QString, UniqueFontData> m_uniqueFontData;
-
-    static unsigned m_fontOptions;
-    QStringList m_eudcFonts;
+    QHash<QString, IDWriteFontFamily *> m_populatedFonts;
 };
 
-#ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug, const QFontDef &def);
-#endif
-
-inline quint16 qt_getUShort(const unsigned char *p)
-{
-    quint16 val;
-    val = *p++ << 8;
-    val |= *p;
-
-    return val;
-}
-
-struct QFontNames
-{
-    QString name;   // e.g. "DejaVu Sans Condensed"
-    QString style;  // e.g. "Italic"
-    QString preferredName;  // e.g. "DejaVu Sans"
-    QString preferredStyle; // e.g. "Condensed Italic"
-};
-
-struct QFontValues
-{
-    quint16 weight = 0;
-    bool isItalic = false;
-    bool isOverstruck = false;
-    bool isUnderlined = false;
-};
-
-bool qt_localizedName(const QString &name);
-QString qt_getEnglishName(const QString &familyName, bool includeStyle = false);
-QFontNames qt_getCanonicalFontNames(const LOGFONT &lf);
+#endif // QT_USE_DIRECTWRITE3
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSFONTDATABASE_H
+#endif // QWINDOWSDIRECTWRITEFONTDATABASE_P_H

@@ -613,6 +613,13 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c {dpiawareness=[0|1|2} Sets the DPI awareness of the process
                (see \l{High DPI Displays}, since Qt 5.4).
         \li \c {fontengine=freetype}, uses the FreeType font engine.
+        \li \c {fontengine=directwrite}, uses the experimental DirectWrite
+               font database and defaults to using the DirectWrite font
+               engine (which is otherwise only used for some font types
+               or font properties.) This affects font selection and aims
+               to provide font naming more consistent with other platforms,
+               but does not support all font formats, such as Postscript
+               Type-1 or Microsoft FNT fonts.
         \li \c {menus=[native|none]}, controls the use of native menus.
 
                Native menus are implemented using Win32 API and are simpler than

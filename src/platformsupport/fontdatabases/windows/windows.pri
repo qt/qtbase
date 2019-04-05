@@ -2,11 +2,13 @@ QT *= gui-private
 
 SOURCES += \
     $$PWD/qwindowsfontdatabase.cpp \
+    $$PWD/qwindowsfontdatabasebase.cpp \
     $$PWD/qwindowsfontengine.cpp \
     $$PWD/qwindowsnativeimage.cpp
 
 HEADERS += \
     $$PWD/qwindowsfontdatabase_p.h \
+    $$PWD/qwindowsfontdatabasebase_p.h \
     $$PWD/qwindowsfontengine_p.h \
     $$PWD/qwindowsnativeimage_p.h
 
@@ -16,7 +18,13 @@ qtConfig(freetype) {
 }
 
 qtConfig(directwrite):qtConfig(direct2d) {
-    qtConfig(directwrite2) {
+    qtConfig(directwrite3) {
+        QMAKE_USE_PRIVATE += dwrite_3
+        DEFINES *= QT_USE_DIRECTWRITE3 QT_USE_DIRECTWRITE2
+
+        SOURCES += $$PWD/qwindowsdirectwritefontdatabase.cpp
+        HEADERS += $$PWD/qwindowsdirectwritefontdatabase_p.h
+    } else: qtConfig(directwrite2) {
         QMAKE_USE_PRIVATE += dwrite_2
         DEFINES *= QT_USE_DIRECTWRITE2
     } else {

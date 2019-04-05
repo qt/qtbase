@@ -48,6 +48,9 @@
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 #include "qwindowsservices.h"
+#ifdef QT_USE_DIRECTWRITE3
+#include <QtFontDatabaseSupport/private/qwindowsdirectwritefontdatabase_p.h>
+#endif
 #ifndef QT_NO_FREETYPE
 #  include <QtFontDatabaseSupport/private/qwindowsfontdatabase_ft_p.h>
 #endif
@@ -187,7 +190,9 @@ static inline unsigned parseOptions(const QStringList &paramList,
     unsigned options = 0;
     for (const QString &param : paramList) {
         if (param.startsWith(u"fontengine=")) {
-            if (param.endsWith(u"freetype")) {
+            if (param.endsWith(u"directwrite")) {
+                options |= QWindowsIntegration::FontDatabaseDirectWrite;
+            } else if (param.endsWith(u"freetype")) {
                 options |= QWindowsIntegration::FontDatabaseFreeType;
             } else if (param.endsWith(u"native")) {
                 options |= QWindowsIntegration::FontDatabaseNative;
@@ -504,14 +509,17 @@ QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
-#ifdef QT_NO_FREETYPE
-        d->m_fontDatabase = new QWindowsFontDatabase();
-#else // QT_NO_FREETYPE
+#ifdef QT_USE_DIRECTWRITE3
+        if (d->m_options & QWindowsIntegration::FontDatabaseDirectWrite)
+            d->m_fontDatabase = new QWindowsDirectWriteFontDatabase;
+        else
+#endif
+#ifndef QT_NO_FREETYPE
         if (d->m_options & QWindowsIntegration::FontDatabaseFreeType)
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
         else
-            d->m_fontDatabase = new QWindowsFontDatabase;
 #endif // QT_NO_FREETYPE
+        d->m_fontDatabase = new QWindowsFontDatabase();
     }
     return d->m_fontDatabase;
 }

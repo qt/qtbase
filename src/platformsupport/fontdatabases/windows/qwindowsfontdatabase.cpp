@@ -51,7 +51,6 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QtEndian>
-#include <QtCore/QThreadStorage>
 #include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/private/qwinregistry_p.h>
 
@@ -64,6 +63,7 @@
 #    include <dwrite.h>
 #  endif
 #  include <d2d1.h>
+#  include "qwindowsdirectwritefontdatabase_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -74,40 +74,6 @@ Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 // ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
 
 typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
-
-static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
-{
-    QSystemLibrary library(QStringLiteral("dwrite"));
-    QFunctionPointer result = library.resolve("DWriteCreateFactory");
-    if (Q_UNLIKELY(!result)) {
-        qWarning("Unable to load dwrite.dll");
-        return nullptr;
-    }
-    return reinterpret_cast<DWriteCreateFactoryType>(result);
-}
-
-static void createDirectWriteFactory(IDWriteFactory **factory)
-{
-    *factory = nullptr;
-
-    static const DWriteCreateFactoryType dWriteCreateFactory = resolveDWriteCreateFactory();
-    if (!dWriteCreateFactory)
-        return;
-
-    IUnknown *result = NULL;
-#if defined(QT_USE_DIRECTWRITE2)
-    dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
-#endif
-
-    if (result == NULL) {
-        if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
-            qErrnoWarning("DWriteCreateFactory failed");
-            return;
-        }
-    }
-
-    *factory = static_cast<IDWriteFactory *>(result);
-}
 
 static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
                                   const QString &familyName = QString(),
@@ -130,459 +96,6 @@ static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
         || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
 }
 #endif // !QT_NO_DIRECTWRITE
-
-// Helper classes for creating font engines directly from font data
-namespace {
-
-#   pragma pack(1)
-
-    // Common structure for all formats of the "name" table
-    struct NameTable
-    {
-        quint16 format;
-        quint16 count;
-        quint16 stringOffset;
-    };
-
-    struct NameRecord
-    {
-        quint16 platformID;
-        quint16 encodingID;
-        quint16 languageID;
-        quint16 nameID;
-        quint16 length;
-        quint16 offset;
-    };
-
-    struct OffsetSubTable
-    {
-        quint32 scalerType;
-        quint16 numTables;
-        quint16 searchRange;
-        quint16 entrySelector;
-        quint16 rangeShift;
-    };
-
-    struct TableDirectory
-    {
-        quint32 identifier;
-        quint32 checkSum;
-        quint32 offset;
-        quint32 length;
-    };
-
-    struct OS2Table
-    {
-        quint16 version;
-        qint16  avgCharWidth;
-        quint16 weightClass;
-        quint16 widthClass;
-        quint16 type;
-        qint16  subscriptXSize;
-        qint16  subscriptYSize;
-        qint16  subscriptXOffset;
-        qint16  subscriptYOffset;
-        qint16  superscriptXSize;
-        qint16  superscriptYSize;
-        qint16  superscriptXOffset;
-        qint16  superscriptYOffset;
-        qint16  strikeOutSize;
-        qint16  strikeOutPosition;
-        qint16  familyClass;
-        quint8  panose[10];
-        quint32 unicodeRanges[4];
-        quint8  vendorID[4];
-        quint16 selection;
-        quint16 firstCharIndex;
-        quint16 lastCharIndex;
-        qint16  typoAscender;
-        qint16  typoDescender;
-        qint16  typoLineGap;
-        quint16 winAscent;
-        quint16 winDescent;
-        quint32 codepageRanges[2];
-        qint16  height;
-        qint16  capHeight;
-        quint16 defaultChar;
-        quint16 breakChar;
-        quint16 maxContext;
-    };
-
-#   pragma pack()
-
-    class EmbeddedFont
-    {
-    public:
-        EmbeddedFont(const QByteArray &fontData) : m_fontData(fontData) {}
-
-        QString changeFamilyName(const QString &newFamilyName);
-        QByteArray data() const { return m_fontData; }
-        TableDirectory *tableDirectoryEntry(const QByteArray &tagName);
-        QString familyName(TableDirectory *nameTableDirectory = 0);
-
-    private:
-        QByteArray m_fontData;
-    };
-
-    TableDirectory *EmbeddedFont::tableDirectoryEntry(const QByteArray &tagName)
-    {
-        Q_ASSERT(tagName.size() == 4);
-        quint32 tagId = *(reinterpret_cast<const quint32 *>(tagName.constData()));
-        const size_t fontDataSize = m_fontData.size();
-        if (Q_UNLIKELY(fontDataSize < sizeof(OffsetSubTable)))
-            return 0;
-
-        OffsetSubTable *offsetSubTable = reinterpret_cast<OffsetSubTable *>(m_fontData.data());
-        TableDirectory *tableDirectory = reinterpret_cast<TableDirectory *>(offsetSubTable + 1);
-
-        const size_t tableCount = qFromBigEndian<quint16>(offsetSubTable->numTables);
-        if (Q_UNLIKELY(fontDataSize < sizeof(OffsetSubTable) + sizeof(TableDirectory) * tableCount))
-            return 0;
-
-        TableDirectory *tableDirectoryEnd = tableDirectory + tableCount;
-        for (TableDirectory *entry = tableDirectory; entry < tableDirectoryEnd; ++entry) {
-            if (entry->identifier == tagId)
-                return entry;
-        }
-
-        return 0;
-    }
-
-    QString EmbeddedFont::familyName(TableDirectory *nameTableDirectoryEntry)
-    {
-        QString name;
-
-        if (nameTableDirectoryEntry == 0)
-            nameTableDirectoryEntry = tableDirectoryEntry("name");
-
-        if (nameTableDirectoryEntry != 0) {
-            quint32 offset = qFromBigEndian<quint32>(nameTableDirectoryEntry->offset);
-            if (Q_UNLIKELY(quint32(m_fontData.size()) < offset + sizeof(NameTable)))
-                return QString();
-
-            NameTable *nameTable = reinterpret_cast<NameTable *>(m_fontData.data() + offset);
-            NameRecord *nameRecord = reinterpret_cast<NameRecord *>(nameTable + 1);
-
-            quint16 nameTableCount = qFromBigEndian<quint16>(nameTable->count);
-            if (Q_UNLIKELY(quint32(m_fontData.size()) < offset + sizeof(NameRecord) * nameTableCount))
-                return QString();
-
-            for (int i = 0; i < nameTableCount; ++i, ++nameRecord) {
-                if (qFromBigEndian<quint16>(nameRecord->nameID) == 1
-                 && qFromBigEndian<quint16>(nameRecord->platformID) == 3 // Windows
-                 && qFromBigEndian<quint16>(nameRecord->languageID) == 0x0409) { // US English
-                    quint16 stringOffset = qFromBigEndian<quint16>(nameTable->stringOffset);
-                    quint16 nameOffset = qFromBigEndian<quint16>(nameRecord->offset);
-                    quint16 nameLength = qFromBigEndian<quint16>(nameRecord->length);
-
-                    if (Q_UNLIKELY(quint32(m_fontData.size()) < offset + stringOffset + nameOffset + nameLength))
-                        return QString();
-
-                    const void *ptr = reinterpret_cast<const quint8 *>(nameTable)
-                                                        + stringOffset
-                                                        + nameOffset;
-
-                    const quint16 *s = reinterpret_cast<const quint16 *>(ptr);
-                    const quint16 *e = s + nameLength / sizeof(quint16);
-                    while (s != e)
-                        name += QChar( qFromBigEndian<quint16>(*s++));
-                    break;
-                }
-            }
-        }
-
-        return name;
-    }
-
-    QString EmbeddedFont::changeFamilyName(const QString &newFamilyName)
-    {
-        TableDirectory *nameTableDirectoryEntry = tableDirectoryEntry("name");
-        if (nameTableDirectoryEntry == 0)
-            return QString();
-
-        QString oldFamilyName = familyName(nameTableDirectoryEntry);
-
-        // Reserve size for name table header, five required name records and string
-        const int requiredRecordCount = 5;
-        quint16 nameIds[requiredRecordCount] = { 1, 2, 3, 4, 6 };
-
-        int sizeOfHeader = sizeof(NameTable) + sizeof(NameRecord) * requiredRecordCount;
-        int newFamilyNameSize = newFamilyName.size() * int(sizeof(quint16));
-
-        const QString regularString = QString::fromLatin1("Regular");
-        int regularStringSize = regularString.size() * int(sizeof(quint16));
-
-        // Align table size of table to 32 bits (pad with 0)
-        int fullSize = ((sizeOfHeader + newFamilyNameSize + regularStringSize) & ~3) + 4;
-
-        QByteArray newNameTable(fullSize, char(0));
-
-        {
-            NameTable *nameTable = reinterpret_cast<NameTable *>(newNameTable.data());
-            nameTable->count = qbswap<quint16>(requiredRecordCount);
-            nameTable->stringOffset = qbswap<quint16>(sizeOfHeader);
-
-            NameRecord *nameRecord = reinterpret_cast<NameRecord *>(nameTable + 1);
-            for (int i = 0; i < requiredRecordCount; ++i, nameRecord++) {
-                nameRecord->nameID = qbswap<quint16>(nameIds[i]);
-                nameRecord->encodingID = qbswap<quint16>(1);
-                nameRecord->languageID = qbswap<quint16>(0x0409);
-                nameRecord->platformID = qbswap<quint16>(3);
-                nameRecord->length = qbswap<quint16>(newFamilyNameSize);
-
-                // Special case for sub-family
-                if (nameIds[i] == 4) {
-                    nameRecord->offset = qbswap<quint16>(newFamilyNameSize);
-                    nameRecord->length = qbswap<quint16>(regularStringSize);
-                }
-            }
-
-            // nameRecord now points to string data
-            quint16 *stringStorage = reinterpret_cast<quint16 *>(nameRecord);
-            const quint16 *sourceString = newFamilyName.utf16();
-            for (int i = 0; i < newFamilyName.size(); ++i)
-                stringStorage[i] = qbswap<quint16>(sourceString[i]);
-            stringStorage += newFamilyName.size();
-
-            sourceString = regularString.utf16();
-            for (int i = 0; i < regularString.size(); ++i)
-                stringStorage[i] = qbswap<quint16>(sourceString[i]);
-        }
-
-        quint32 *p = reinterpret_cast<quint32 *>(newNameTable.data());
-        quint32 *tableEnd = reinterpret_cast<quint32 *>(newNameTable.data() + fullSize);
-
-        quint32 checkSum = 0;
-        while (p < tableEnd)
-            checkSum +=  qFromBigEndian<quint32>(*(p++));
-
-        nameTableDirectoryEntry->checkSum = qbswap<quint32>(checkSum);
-        nameTableDirectoryEntry->offset = qbswap<quint32>(m_fontData.size());
-        nameTableDirectoryEntry->length = qbswap<quint32>(fullSize);
-
-        m_fontData.append(newNameTable);
-
-        return oldFamilyName;
-    }
-
-#if !defined(QT_NO_DIRECTWRITE)
-
-    class DirectWriteFontFileStream: public IDWriteFontFileStream
-    {
-        Q_DISABLE_COPY(DirectWriteFontFileStream)
-    public:
-        DirectWriteFontFileStream(const QByteArray &fontData)
-            : m_fontData(fontData)
-            , m_referenceCount(0)
-        {
-        }
-        virtual ~DirectWriteFontFileStream()
-        {
-        }
-
-        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **object);
-        ULONG STDMETHODCALLTYPE AddRef();
-        ULONG STDMETHODCALLTYPE Release();
-
-        HRESULT STDMETHODCALLTYPE ReadFileFragment(const void **fragmentStart, UINT64 fileOffset,
-                                                   UINT64 fragmentSize, OUT void **fragmentContext);
-        void STDMETHODCALLTYPE ReleaseFileFragment(void *fragmentContext);
-        HRESULT STDMETHODCALLTYPE GetFileSize(OUT UINT64 *fileSize);
-        HRESULT STDMETHODCALLTYPE GetLastWriteTime(OUT UINT64 *lastWriteTime);
-
-    private:
-        QByteArray m_fontData;
-        ULONG m_referenceCount;
-    };
-
-    HRESULT STDMETHODCALLTYPE DirectWriteFontFileStream::QueryInterface(REFIID iid, void **object)
-    {
-        if (iid == IID_IUnknown || iid == __uuidof(IDWriteFontFileStream)) {
-            *object = this;
-            AddRef();
-            return S_OK;
-        } else {
-            *object = NULL;
-            return E_NOINTERFACE;
-        }
-    }
-
-    ULONG STDMETHODCALLTYPE DirectWriteFontFileStream::AddRef()
-    {
-        return InterlockedIncrement(&m_referenceCount);
-    }
-
-    ULONG STDMETHODCALLTYPE DirectWriteFontFileStream::Release()
-    {
-        ULONG newCount = InterlockedDecrement(&m_referenceCount);
-        if (newCount == 0)
-            delete this;
-        return newCount;
-    }
-
-    HRESULT STDMETHODCALLTYPE DirectWriteFontFileStream::ReadFileFragment(
-        const void **fragmentStart,
-        UINT64 fileOffset,
-        UINT64 fragmentSize,
-        OUT void **fragmentContext)
-    {
-        *fragmentContext = NULL;
-        if (fileOffset + fragmentSize <= quint64(m_fontData.size())) {
-            *fragmentStart = m_fontData.data() + fileOffset;
-            return S_OK;
-        } else {
-            *fragmentStart = NULL;
-            return E_FAIL;
-        }
-    }
-
-    void STDMETHODCALLTYPE DirectWriteFontFileStream::ReleaseFileFragment(void *)
-    {
-    }
-
-    HRESULT STDMETHODCALLTYPE DirectWriteFontFileStream::GetFileSize(UINT64 *fileSize)
-    {
-        *fileSize = m_fontData.size();
-        return S_OK;
-    }
-
-    HRESULT STDMETHODCALLTYPE DirectWriteFontFileStream::GetLastWriteTime(UINT64 *lastWriteTime)
-    {
-        *lastWriteTime = 0;
-        return E_NOTIMPL;
-    }
-
-    class DirectWriteFontFileLoader: public IDWriteFontFileLoader
-    {
-    public:
-        DirectWriteFontFileLoader() : m_referenceCount(0) {}
-        virtual ~DirectWriteFontFileLoader()
-        {
-        }
-
-        inline void addKey(const void *key, const QByteArray &fontData)
-        {
-            Q_ASSERT(!m_fontDatas.contains(key));
-            m_fontDatas.insert(key, fontData);
-        }
-
-        inline void removeKey(const void *key)
-        {
-            m_fontDatas.remove(key);
-        }
-
-        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **object);
-        ULONG STDMETHODCALLTYPE AddRef();
-        ULONG STDMETHODCALLTYPE Release();
-
-        HRESULT STDMETHODCALLTYPE CreateStreamFromKey(void const *fontFileReferenceKey,
-                                                      UINT32 fontFileReferenceKeySize,
-                                                      OUT IDWriteFontFileStream **fontFileStream);
-
-    private:
-        ULONG m_referenceCount;
-        QHash<const void *, QByteArray> m_fontDatas;
-    };
-
-    HRESULT STDMETHODCALLTYPE DirectWriteFontFileLoader::QueryInterface(const IID &iid,
-                                                                        void **object)
-    {
-        if (iid == IID_IUnknown || iid == __uuidof(IDWriteFontFileLoader)) {
-            *object = this;
-            AddRef();
-            return S_OK;
-        } else {
-            *object = NULL;
-            return E_NOINTERFACE;
-        }
-    }
-
-    ULONG STDMETHODCALLTYPE DirectWriteFontFileLoader::AddRef()
-    {
-        return InterlockedIncrement(&m_referenceCount);
-    }
-
-    ULONG STDMETHODCALLTYPE DirectWriteFontFileLoader::Release()
-    {
-        ULONG newCount = InterlockedDecrement(&m_referenceCount);
-        if (newCount == 0)
-            delete this;
-        return newCount;
-    }
-
-    HRESULT STDMETHODCALLTYPE DirectWriteFontFileLoader::CreateStreamFromKey(
-        void const *fontFileReferenceKey,
-        UINT32 fontFileReferenceKeySize,
-        IDWriteFontFileStream **fontFileStream)
-    {
-        Q_UNUSED(fontFileReferenceKeySize);
-
-        if (fontFileReferenceKeySize != sizeof(const void *)) {
-            qWarning("%s: Wrong key size", __FUNCTION__);
-            return E_FAIL;
-        }
-
-        const void *key = *reinterpret_cast<void * const *>(fontFileReferenceKey);
-        *fontFileStream = NULL;
-        auto it = m_fontDatas.constFind(key);
-        if (it == m_fontDatas.constEnd())
-            return E_FAIL;
-
-        QByteArray fontData = it.value();
-        DirectWriteFontFileStream *stream = new DirectWriteFontFileStream(fontData);
-        stream->AddRef();
-        *fontFileStream = stream;
-
-        return S_OK;
-    }
-
-    class CustomFontFileLoader
-    {
-    public:
-        CustomFontFileLoader() : m_directWriteFontFileLoader(nullptr)
-        {
-            createDirectWriteFactory(&m_directWriteFactory);
-
-            if (m_directWriteFactory) {
-                m_directWriteFontFileLoader = new DirectWriteFontFileLoader();
-                m_directWriteFactory->RegisterFontFileLoader(m_directWriteFontFileLoader);
-            }
-        }
-
-        ~CustomFontFileLoader()
-        {
-            if (m_directWriteFactory != 0 && m_directWriteFontFileLoader != 0)
-                m_directWriteFactory->UnregisterFontFileLoader(m_directWriteFontFileLoader);
-
-            if (m_directWriteFactory != 0)
-                m_directWriteFactory->Release();
-        }
-
-        void addKey(const void *key, const QByteArray &fontData)
-        {
-            if (m_directWriteFontFileLoader != 0)
-                m_directWriteFontFileLoader->addKey(key, fontData);
-        }
-
-        void removeKey(const void *key)
-        {
-            if (m_directWriteFontFileLoader != 0)
-                m_directWriteFontFileLoader->removeKey(key);
-        }
-
-        IDWriteFontFileLoader *loader() const
-        {
-            return m_directWriteFontFileLoader;
-        }
-
-    private:
-        IDWriteFactory *m_directWriteFactory;
-        DirectWriteFontFileLoader *m_directWriteFontFileLoader;
-    };
-
-#endif
-
-} // Anonymous namespace
 
 /*!
     \struct QWindowsFontEngineData
@@ -620,18 +133,6 @@ unsigned QWindowsFontDatabase::fontOptions()
     return m_fontOptions;
 }
 
-QWindowsFontEngineData::~QWindowsFontEngineData()
-{
-    if (hdc)
-        DeleteDC(hdc);
-#if !defined(QT_NO_DIRECTWRITE)
-    if (directWriteGdiInterop)
-        directWriteGdiInterop->Release();
-    if (directWriteFactory)
-        directWriteFactory->Release();
-#endif
-}
-
 qreal QWindowsFontDatabase::fontSmoothingGamma()
 {
     int winSmooth;
@@ -644,26 +145,6 @@ qreal QWindowsFontDatabase::fontSmoothingGamma()
         result = qreal(1.4);
     return result;
 }
-
-#if !defined(QT_NO_DIRECTWRITE)
-static inline bool initDirectWrite(QWindowsFontEngineData *d)
-{
-    if (!d->directWriteFactory) {
-        createDirectWriteFactory(&d->directWriteFactory);
-        if (!d->directWriteFactory)
-            return false;
-    }
-    if (!d->directWriteGdiInterop) {
-        const HRESULT  hr = d->directWriteFactory->GetGdiInterop(&d->directWriteGdiInterop);
-        if (FAILED(hr)) {
-            qErrnoWarning("%s: GetGdiInterop failed", __FUNCTION__);
-            return false;
-        }
-    }
-    return true;
-}
-
-#endif // !defined(QT_NO_DIRECTWRITE)
 
 /*!
     \class QWindowsFontDatabase
@@ -1239,20 +720,6 @@ void QWindowsFontDatabase::populateFontDatabase()
     addDefaultEUDCFont();
 }
 
-typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
-
-typedef QThreadStorage<QWindowsFontEngineDataPtr> FontEngineThreadLocalData;
-
-Q_GLOBAL_STATIC(FontEngineThreadLocalData, fontEngineThreadLocalData)
-
-QSharedPointer<QWindowsFontEngineData> sharedFontData()
-{
-    FontEngineThreadLocalData *data = fontEngineThreadLocalData();
-    if (!data->hasLocalData())
-        data->setLocalData(QSharedPointer<QWindowsFontEngineData>::create());
-    return data->localData();
-}
-
 QWindowsFontDatabase::QWindowsFontDatabase()
 {
     // Properties accessed by QWin32PrintEngine (Qt Print Support)
@@ -1262,9 +729,9 @@ QWindowsFontDatabase::QWindowsFontDatabase()
     Q_UNUSED(logFontMetaTypeId)
 
     if (lcQpaFonts().isDebugEnabled()) {
-        const QWindowsFontEngineDataPtr data = sharedFontData();
+        QSharedPointer<QWindowsFontEngineData> d = data();
         qCDebug(lcQpaFonts) << __FUNCTION__ << "Clear type: "
-            << data->clearTypeEnabled << "gamma: " << data->fontSmoothingGamma;
+            << d->clearTypeEnabled << "gamma: " << d->fontSmoothingGamma;
     }
 }
 
@@ -1278,7 +745,7 @@ QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *ha
     const QString faceName(static_cast<const QChar*>(handle));
     QFontEngine *fe = QWindowsFontDatabase::createEngine(fontDef, faceName,
                                                          defaultVerticalDPI(),
-                                                         sharedFontData());
+                                                         data());
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << fe << handle;
     return fe;
 }
@@ -1332,7 +799,7 @@ QT_WARNING_POP
 
             fontEngine = QWindowsFontDatabase::createEngine(request, QString(),
                                                             defaultVerticalDPI(),
-                                                            sharedFontData());
+                                                            data());
 
             if (fontEngine) {
                 if (request.family != fontEngine->fontDef.family) {
@@ -1371,86 +838,16 @@ QT_WARNING_POP
                 RemoveFontMemResourceEx(fontHandle);
             }
         }
+
+        // Get style and weight info
+        if (fontEngine != nullptr)
+            font.updateFromOS2Table(fontEngine);
     }
 #if !defined(QT_NO_DIRECTWRITE)
     else {
-        CustomFontFileLoader fontFileLoader;
-        fontFileLoader.addKey(this, fontData);
-
-        QSharedPointer<QWindowsFontEngineData> fontEngineData = sharedFontData();
-        if (!initDirectWrite(fontEngineData.data()))
-            return 0;
-
-        IDWriteFontFile *fontFile = 0;
-        void *key = this;
-
-        HRESULT hres = fontEngineData->directWriteFactory->CreateCustomFontFileReference(&key,
-                                                                                         sizeof(void *),
-                                                                                         fontFileLoader.loader(),
-                                                                                         &fontFile);
-        if (FAILED(hres)) {
-            qErrnoWarning(hres, "%s: CreateCustomFontFileReference failed", __FUNCTION__);
-            return 0;
-        }
-
-        BOOL isSupportedFontType;
-        DWRITE_FONT_FILE_TYPE fontFileType;
-        DWRITE_FONT_FACE_TYPE fontFaceType;
-        UINT32 numberOfFaces;
-        fontFile->Analyze(&isSupportedFontType, &fontFileType, &fontFaceType, &numberOfFaces);
-        if (!isSupportedFontType) {
-            fontFile->Release();
-            return 0;
-        }
-
-        IDWriteFontFace *directWriteFontFace = 0;
-        hres = fontEngineData->directWriteFactory->CreateFontFace(fontFaceType,
-                                                                  1,
-                                                                  &fontFile,
-                                                                  0,
-                                                                  DWRITE_FONT_SIMULATIONS_NONE,
-                                                                  &directWriteFontFace);
-        if (FAILED(hres)) {
-            qErrnoWarning(hres, "%s: CreateFontFace failed", __FUNCTION__);
-            fontFile->Release();
-            return 0;
-        }
-
-        fontFile->Release();
-
-        fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace,
-                                                       pixelSize,
-                                                       fontEngineData);
-
-        // Get font family from font data
-        fontEngine->fontDef.family = font.familyName();
-        fontEngine->fontDef.hintingPreference = hintingPreference;
-
-        directWriteFontFace->Release();
+        fontEngine = QWindowsFontDatabaseBase::fontEngine(fontData, pixelSize, hintingPreference);
     }
 #endif
-
-    // Get style and weight info
-    if (fontEngine != 0) {
-        TableDirectory *os2TableEntry = font.tableDirectoryEntry("OS/2");
-        if (os2TableEntry != 0) {
-            const OS2Table *os2Table =
-                    reinterpret_cast<const OS2Table *>(fontData.constData()
-                                                       + qFromBigEndian<quint32>(os2TableEntry->offset));
-
-            bool italic = qFromBigEndian<quint16>(os2Table->selection)  & (1 << 0);
-            bool oblique = qFromBigEndian<quint16>(os2Table->selection) & (1 << 9);
-
-            if (italic)
-                fontEngine->fontDef.style = QFont::StyleItalic;
-            else if (oblique)
-                fontEngine->fontDef.style = QFont::StyleOblique;
-            else
-                fontEngine->fontDef.style = QFont::StyleNormal;
-
-            fontEngine->fontDef.weight = QPlatformFontDatabase::weightFromInteger(qFromBigEndian<quint16>(os2Table->weightClass));
-        }
-    }
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fontEngine;
     return fontEngine;
@@ -1683,14 +1080,6 @@ void QWindowsFontDatabase::refUniqueFont(const QString &uniqueFont)
         m_uniqueFontData[uniqueFont].refCount.ref();
 }
 
-// ### fixme Qt 6 (QTBUG-58610): See comment at QWindowsFontDatabase::systemDefaultFont()
-HFONT QWindowsFontDatabase::systemFont()
-{
-    static const auto stock_sysfont =
-        reinterpret_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
-    return stock_sysfont;
-}
-
 // Creation functions
 
 static const char *other_tryFonts[] = {
@@ -1744,101 +1133,6 @@ static const char *kr_tryFonts[] = {
 };
 
 static const char **tryFonts = 0;
-
-LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request, const QString &faceName)
-{
-    LOGFONT lf;
-    memset(&lf, 0, sizeof(LOGFONT));
-
-    lf.lfHeight = -qRound(request.pixelSize);
-    lf.lfWidth                = 0;
-    lf.lfEscapement        = 0;
-    lf.lfOrientation        = 0;
-    if (request.weight == 50)
-        lf.lfWeight = FW_DONTCARE;
-    else
-        lf.lfWeight = (request.weight*900)/99;
-    lf.lfItalic         = request.style != QFont::StyleNormal;
-    lf.lfCharSet        = DEFAULT_CHARSET;
-
-    int strat = OUT_DEFAULT_PRECIS;
-    if (request.styleStrategy & QFont::PreferBitmap) {
-        strat = OUT_RASTER_PRECIS;
-    } else if (request.styleStrategy & QFont::PreferDevice) {
-        strat = OUT_DEVICE_PRECIS;
-    } else if (request.styleStrategy & QFont::PreferOutline) {
-        strat = OUT_OUTLINE_PRECIS;
-    } else if (request.styleStrategy & QFont::ForceOutline) {
-        strat = OUT_TT_ONLY_PRECIS;
-    }
-
-    lf.lfOutPrecision   = strat;
-
-    int qual = DEFAULT_QUALITY;
-
-    if (request.styleStrategy & QFont::PreferMatch)
-        qual = DRAFT_QUALITY;
-    else if (request.styleStrategy & QFont::PreferQuality)
-        qual = PROOF_QUALITY;
-
-    if (request.styleStrategy & QFont::PreferAntialias) {
-        qual = (request.styleStrategy & QFont::NoSubpixelAntialias) == 0
-            ? CLEARTYPE_QUALITY : ANTIALIASED_QUALITY;
-    } else if (request.styleStrategy & QFont::NoAntialias) {
-        qual = NONANTIALIASED_QUALITY;
-    } else if ((request.styleStrategy & QFont::NoSubpixelAntialias) && sharedFontData()->clearTypeEnabled) {
-        qual = ANTIALIASED_QUALITY;
-    }
-
-    lf.lfQuality        = qual;
-
-    lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-
-    int hint = FF_DONTCARE;
-    switch (request.styleHint) {
-        case QFont::Helvetica:
-            hint = FF_SWISS;
-            break;
-        case QFont::Times:
-            hint = FF_ROMAN;
-            break;
-        case QFont::Courier:
-            hint = FF_MODERN;
-            break;
-        case QFont::OldEnglish:
-            hint = FF_DECORATIVE;
-            break;
-        case QFont::System:
-            hint = FF_MODERN;
-            break;
-        default:
-            break;
-    }
-
-    lf.lfPitchAndFamily = DEFAULT_PITCH | hint;
-
-    QString fam = faceName;
-    if (fam.isEmpty())
-        fam = request.families.size() > 0 ? request.families.at(0) : request.family;
-    if (Q_UNLIKELY(fam.size() >= LF_FACESIZE)) {
-        qCritical("%s: Family name '%s' is too long.", __FUNCTION__, qPrintable(fam));
-        fam.truncate(LF_FACESIZE - 1);
-    }
-
-    if (fam.isEmpty())
-        fam = QStringLiteral("MS Sans Serif");
-
-    if (fam == QLatin1String("MS Sans Serif")
-        && (request.style == QFont::StyleItalic || (-lf.lfHeight > 18 && -lf.lfHeight != 24))) {
-        fam = QStringLiteral("Arial"); // MS Sans Serif has bearing problems in italic, and does not scale
-    }
-    if (fam == QLatin1String("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
-        fam = QStringLiteral("Courier New");
-
-    memcpy(lf.lfFaceName, fam.utf16(), fam.size() * sizeof(wchar_t));
-
-    return lf;
-}
 
 QStringList QWindowsFontDatabase::extraTryFontsForFamily(const QString &family)
 {
@@ -1947,7 +1241,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
     }
 
 #if !defined(QT_NO_DIRECTWRITE)
-    if (initDirectWrite(data.data())) {
+    if (data->directWriteFactory != nullptr) {
         const QString fam = QString::fromWCharArray(lf.lfFaceName);
         const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
         if (nameSubstitute != fam) {
@@ -2021,62 +1315,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
     }
 
     return fe;
-}
-
-QFont QWindowsFontDatabase::systemDefaultFont()
-{
-#if QT_VERSION >= 0x060000
-    // Qt 6: Obtain default GUI font (typically "Segoe UI, 9pt", see QTBUG-58610)
-    NONCLIENTMETRICS ncm;
-    ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
-    SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);
-    const QFont systemFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
-#else
-    LOGFONT lf;
-    GetObject(QWindowsFontDatabase::systemFont(), sizeof(lf), &lf);
-    QFont systemFont =  QWindowsFontDatabase::LOGFONT_to_QFont(lf);
-    // "MS Shell Dlg 2" is the correct system font >= Win2k
-    if (systemFont.family() == QLatin1String("MS Shell Dlg"))
-        systemFont.setFamily(QStringLiteral("MS Shell Dlg 2"));
-    // Qt 5 by (Qt 4) legacy uses GetStockObject(DEFAULT_GUI_FONT) to
-    // obtain the default GUI font (typically "MS Shell Dlg 2, 8pt"). This has been
-    // long deprecated; the message font of the NONCLIENTMETRICS structure obtained by
-    // SystemParametersInfo(SPI_GETNONCLIENTMETRICS) should be used instead (see
-    // QWindowsTheme::refreshFonts(), typically "Segoe UI, 9pt"), which is larger.
-#endif // Qt 5
-    qCDebug(lcQpaFonts) << __FUNCTION__ << systemFont;
-    return systemFont;
-}
-
-QFont QWindowsFontDatabase::LOGFONT_to_QFont(const LOGFONT& logFont, int verticalDPI_In)
-{
-    if (verticalDPI_In <= 0)
-        verticalDPI_In = defaultVerticalDPI();
-    QFont qFont(QString::fromWCharArray(logFont.lfFaceName));
-    qFont.setItalic(logFont.lfItalic);
-    if (logFont.lfWeight != FW_DONTCARE)
-        qFont.setWeight(QPlatformFontDatabase::weightFromInteger(logFont.lfWeight));
-    const qreal logFontHeight = qAbs(logFont.lfHeight);
-    qFont.setPointSizeF(logFontHeight * 72.0 / qreal(verticalDPI_In));
-    qFont.setUnderline(logFont.lfUnderline);
-    qFont.setOverline(false);
-    qFont.setStrikeOut(logFont.lfStrikeOut);
-    return qFont;
-}
-
-int QWindowsFontDatabase::defaultVerticalDPI()
-{
-    static int vDPI = -1;
-    if (vDPI == -1) {
-        if (HDC defaultDC = GetDC(0)) {
-            vDPI = GetDeviceCaps(defaultDC, LOGPIXELSY);
-            ReleaseDC(0, defaultDC);
-        } else {
-            // FIXME: Resolve now or return 96 and keep unresolved?
-            vDPI = 96;
-        }
-    }
-    return vDPI;
 }
 
 bool QWindowsFontDatabase::isPrivateFontFamily(const QString &family) const
