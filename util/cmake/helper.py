@@ -231,6 +231,7 @@ libray_mapping = {
     'libproxy': 'LibProxy::LibProxy',
     'librt': 'WrapRt',
     'libudev': 'PkgConfig::Libudev',
+    'linuxaccessibility_supportPrivate': 'Qt::LinuxAccessibilitySupportPrivate',
     'mtdev': 'PkgConfig::Mtdev',
     'odbc': 'ODBC::ODBC',
     'pcre2': 'PCRE2',
