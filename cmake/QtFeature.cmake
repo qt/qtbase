@@ -360,6 +360,14 @@ function(qt_feature_module_end)
         qt_evaluate_feature(${feature})
     endforeach()
 
+    # Evaluate custom cache assignments.
+    foreach(cache_var_name ${__QtFeature_custom_enabled_cache_variables})
+        set(${cache_var_name} ON CACHE BOOL "Force enabled by platform." FORCE)
+    endforeach()
+    foreach(cache_var_name ${__QtFeature_custom_disabled_cache_variables})
+        set(${cache_var_name} OFF CACHE BOOL "Force disabled by platform." FORCE)
+    endforeach()
+
     set(enabled_public_features "")
     set(disabled_public_features "")
     set(enabled_private_features "")
@@ -445,6 +453,8 @@ function(qt_feature_module_end)
     unset(__QtFeature_public_extra PARENT_SCOPE)
 
     unset(__QtFeature_define_definitions PARENT_SCOPE)
+    unset(__QtFeature_custom_enabled_features PARENT_SCOPE)
+    unset(__QtFeature_custom_disabled_features PARENT_SCOPE)
 endfunction()
 
 function(qt_feature_copy_global_config_features_to_core target)
@@ -527,18 +537,65 @@ function(qt_config_compile_test name)
     set(TEST_${name} "${HAVE_${name}}" CACHE INTERNAL "${arg_LABEL}")
 endfunction()
 
+# This function should be used for passing required try compile platform variables to the
+# project-based try_compile() call.
+# out_var will be a list of -Dfoo=bar strings, suitable to pass to CMAKE_FLAGS.
+function(qt_get_platform_try_compile_vars out_var)
+    # Use the regular variables that are used for source-based try_compile() calls.
+    set(flags "${CMAKE_TRY_COMPILE_PLATFORM_VARIABLES}")
+
+    # Pass toolchain files.
+    if(CMAKE_TOOLCHAIN_FILE)
+        list(APPEND flags "CMAKE_TOOLCHAIN_FILE")
+    endif()
+    if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
+        list(APPEND flags "VCPKG_CHAINLOAD_TOOLCHAIN_FILE")
+    endif()
+
+    # Assemble the list with regular options.
+    set(flags_cmd_line "")
+    foreach(flag ${flags})
+        if(${flag})
+            list(APPEND flags_cmd_line "-D${flag}=${${flag}}")
+        endif()
+    endforeach()
+
+    # Pass darwin specific options.
+    if(APPLE_UIKIT)
+        if(CMAKE_OSX_ARCHITECTURES)
+            list(GET CMAKE_OSX_ARCHITECTURES 0 osx_first_arch)
+
+            # Do what qmake does, aka when doing a simulator_and_device build, build the
+            # target architecture test only with the first given architecture, which should be the
+            # device architecture, aka some variation of "arm" (armv7, arm64).
+            list(APPEND flags_cmd_line "-DCMAKE_OSX_ARCHITECTURES:STRING=${osx_first_arch}")
+        endif()
+        # Also specify the sysroot, but only if not doing a simulator_and_device build.
+        # So keep the sysroot empty for simulator_and_device builds.
+        if(QT_UIKIT_SDK)
+            list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_UIKIT_SDK}")
+        endif()
+    endif()
+
+    set("${out_var}" "${flags_cmd_line}" PARENT_SCOPE)
+endfunction()
+
 function(qt_config_compile_test_x86simd extension label)
     if (DEFINED TEST_X86SIMD_${extension})
         return()
     endif()
+
+    set(flags "-DSIMD:string=${extension}")
+
+    qt_get_platform_try_compile_vars(platform_try_compile_vars)
+    list(APPEND flags ${platform_try_compile_vars})
 
     message(STATUS "Performing SIMD Test ${label}")
     try_compile("TEST_X86SIMD_${extension}"
         "${CMAKE_CURRENT_BINARY_DIR}/config.tests/x86_simd_${extension}"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd"
         x86_simd
-        CMAKE_FLAGS "-DSIMD:string=${extension}")
-
+        CMAKE_FLAGS ${flags})
     if(${TEST_X86SIMD_${extension}})
         set(status_label "Success")
     else()

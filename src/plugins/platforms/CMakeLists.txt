@@ -13,7 +13,7 @@ if(QT_FEATURE_xcb)
     add_subdirectory(xcb)
 endif()
 if(APPLE_UIKIT AND NOT APPLE_WATCHOS)
-    # add_subdirectory(ios) special case TODO
+    add_subdirectory(ios)
 endif()
 if(APPLE_OSX)
     add_subdirectory(cocoa)

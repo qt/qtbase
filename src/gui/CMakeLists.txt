@@ -594,6 +594,16 @@ qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz
         WrapHarfbuzz::WrapHarfbuzz
 )
 
+# special case begin
+# Replicate what src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro does, which is link CoreText
+# when targeting uikit.
+
+qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz AND APPLE_UIKIT
+    LIBRARIES
+        ${FWCoreText}
+)
+# special case end
+
 qt_extend_target(Gui CONDITION QT_FEATURE_textodfwriter
     SOURCES
         text/qtextodfwriter.cpp text/qtextodfwriter_p.h

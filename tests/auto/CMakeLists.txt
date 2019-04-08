@@ -1,8 +1,6 @@
 # Generated from auto.pro.
 
-if (NOT APPLE_UIKIT)
-    add_subdirectory(corelib)
-endif()
+add_subdirectory(corelib)
 if (QT_FEATURE_dbus)
     set(run_dbus_tests ON)
     if(NOT CMAKE_CROSSCOMPILING AND TARGET Qt::DBus)
@@ -22,9 +20,18 @@ if (QT_FEATURE_dbus)
         add_subdirectory(dbus)
     endif()
 endif()
-if (NOT APPLE_UIKIT AND TARGET Qt::Gui)
+if (TARGET Qt::Gui)
     add_subdirectory(gui)
 endif()
+
+# special case begin
+# Build only corelib and gui tests when targeting uikit (iOS),
+# because the script can't handle the SUBDIRS assignment well.
+if (APPLE_UIKIT)
+    return()
+endif()
+# special case end
+
 if (TARGET Qt::Network AND NOT WINRT)
      add_subdirectory(network)
 endif()

@@ -333,7 +333,7 @@ qt_feature("appstore_compliant" PUBLIC
 )
 qt_feature("simulator_and_device" PUBLIC
     LABEL "Build for both simulator and device"
-    CONDITION APPLE_UIKIT AND INPUT_sdk STREQUAL ''
+    CONDITION APPLE_UIKIT AND NOT QT_UIKIT_SDK
 )
 qt_feature("force_asserts" PUBLIC
     LABEL "Force assertions"

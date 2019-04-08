@@ -100,3 +100,15 @@ endif()
 if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
     target_compile_definitions(PlatformCommonInternal INTERFACE QT_NO_DEBUG)
 endif()
+
+if(APPLE_UIKIT)
+    # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
+    # simulator_and_device_builds.
+    if(FEATURE_simulator_and_device)
+        # Setting the definition on PlatformCommonInternal behaves slightly differently from what
+        # is done in qmake land. This way the define is not propagated to tests, examples, or
+        # user projects built with qmake, but only modules, plugins and tools.
+        # TODO: Figure out if this ok or not (sounds ok to me).
+        target_compile_definitions(PlatformCommonInternal INTERFACE QT_COMPILER_SUPPORTS_SSE2)
+    endif()
+endif()

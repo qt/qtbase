@@ -59,6 +59,103 @@ function(qt_auto_detect_vpckg)
     endif()
 endfunction()
 
+function(qt_auto_detect_ios)
+    if(CMAKE_SYSTEM_NAME STREQUAL iOS
+            OR CMAKE_SYSTEM_NAME STREQUAL watchOS
+            OR CMAKE_SYSTEM_NAME STREQUAL tvOS)
+        message(STATUS "Using internal CMake ${CMAKE_SYSTEM_NAME} toolchain file.")
 
+        # The QT_UIKIT_SDK check simulates the input.sdk condition for simulator_and_device in
+        # configure.json.
+        # If the variable is explicitly provided, assume simulator_and_device to be off.
+        if(QT_UIKIT_SDK)
+            set(simulator_and_device OFF)
+        elseif(QT_FORCE_SIMULATOR_AND_DEVICE)
+            # TODO: Once we get simulator_and_device support in upstream CMake, only then allow
+            # usage of simulator_and_device without forcing.
+            set(simulator_and_device ON)
+        else()
+            # If QT_UIKIT_SDK is not provided, default to simulator.
+            set(simulator_and_device OFF)
+            set(QT_UIKIT_SDK "iphonesimulator" CACHE "STRING" "Chosen uikit SDK.")
+        endif()
+
+        message(STATUS "simulator_and_device set to: \"${simulator_and_device}\".")
+
+        # Choose relevant architectures.
+        # Using a non xcode generator requires explicit setting of the
+        # architectures, otherwise compilation fails with unknown defines.
+        if(CMAKE_SYSTEM_NAME STREQUAL iOS)
+            if(simulator_and_device)
+                set(osx_architectures "arm64;x86_64")
+            elseif(QT_UIKIT_SDK STREQUAL "iphoneos")
+                set(osx_architectures "arm64")
+            elseif(QT_UIKIT_SDK STREQUAL "iphonesimulator")
+                set(osx_architectures "x86_64")
+            else()
+                if(NOT DEFINED QT_UIKIT_SDK)
+                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
+                        " Possible values: iphoneos, iphonesimulator.")
+                else()
+                    message(FATAL_ERROR
+                            "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
+                endif()
+            endif()
+        elseif(CMAKE_SYSTEM_NAME STREQUAL tvOS)
+            if(simulator_and_device)
+                set(osx_architectures "arm64;x86_64")
+            elseif(QT_UIKIT_SDK STREQUAL "appletvos")
+                set(osx_architectures "arm64")
+            elseif(QT_UIKIT_SDK STREQUAL "appletvsimulator")
+                set(osx_architectures "x86_64")
+            else()
+                if(NOT DEFINED QT_UIKIT_SDK)
+                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
+                        " Possible values: appletvos, appletvsimulator.")
+                else()
+                    message(FATAL_ERROR
+                            "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
+                endif()
+            endif()
+        elseif(CMAKE_SYSTEM_NAME STREQUAL watchOS)
+            if(simulator_and_device)
+                set(osx_architectures "armv7k;i386")
+            elseif(QT_UIKIT_SDK STREQUAL "watchos")
+                set(osx_architectures "armv7k")
+            elseif(QT_UIKIT_SDK STREQUAL "watchsimulator")
+                set(osx_architectures "i386")
+            else()
+                if(NOT DEFINED QT_UIKIT_SDK)
+                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
+                        " Possible values: watchos, watchsimulator.")
+                else()
+                    message(FATAL_ERROR
+                            "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
+                endif()
+            endif()
+        endif()
+
+        # For non simulator_and_device builds, we need to explicitly set the SYSROOT aka the sdk
+        # value.
+        if(QT_UIKIT_SDK)
+            set(CMAKE_OSX_SYSROOT "${QT_UIKIT_SDK}" CACHE STRING "")
+        endif()
+        message(STATUS "CMAKE_OSX_SYSROOT set to: \"${CMAKE_OSX_SYSROOT}\".")
+
+        message(STATUS "CMAKE_OSX_ARCHITECTURES set to: \"${osx_architectures}\".")
+        set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
+
+        if(NOT DEFINED BUILD_SHARED_LIBS)
+            set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
+        endif()
+
+        if(BUILD_SHARED_LIBS)
+            message(FATAL_ERROR
+                "Building Qt for ${CMAKE_SYSTEM_NAME} as shared libraries is not supported.")
+        endif()
+    endif()
+endfunction()
+
+qt_auto_detect_ios()
 qt_auto_detect_android()
 qt_auto_detect_vpckg()

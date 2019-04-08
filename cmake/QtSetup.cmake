@@ -75,6 +75,12 @@ if(FEATURE_developer_build)
     set(QT_BUILD_TESTING ON)
     set(__build_benchmarks ON)
 
+    # Tests are not built by default with qmake for iOS and friends, and thus the overall build
+    # tends to fail. Disable them by default when targeting uikit.
+    if(APPLE_UIKIT)
+        set(QT_BUILD_TESTING OFF)
+    endif()
+
     # Disable benchmarks for single configuration generators which do not build
     # with release configuration.
     if (CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL Release)
@@ -104,7 +110,14 @@ include(CTest)
 enable_testing()
 
 # Set up building of examples.
-option(BUILD_EXAMPLES "Build Qt examples" ON)
+set(QT_BUILD_EXAMPLES ON)
+# Examples are not built by default with qmake for iOS and friends, and thus the overall build
+# tends to fail. Disable them by default when targeting uikit.
+if(APPLE_UIKIT)
+    set(QT_BUILD_EXAMPLES OFF)
+endif()
+
+option(BUILD_EXAMPLES "Build Qt examples" ${QT_BUILD_EXAMPLES})
 option(QT_NO_MAKE_EXAMPLES "Should examples be built as part of the default 'all' target." OFF)
 
 # Build Benchmarks

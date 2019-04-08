@@ -1,26 +1,40 @@
 include(CheckCXXSourceCompiles)
+
 function(qt_run_config_test_architecture)
     set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT
         "" CACHE INTERNAL "Test variables that should be exported" FORCE)
-    # Test architecture
-    set(_arch_file "${CMAKE_CURRENT_BINARY_DIR}/architecture_test")
-    set(saved_executable_suffix "${CMAKE_EXECUTABLE_SUFFIX}")
 
-    # With emscripten the application entry point is a .js file (to be run with node for example), but the
-    # real "data" is in the .wasm file, so that's where we need to look for the ABI, etc. information.
-    if (EMSCRIPTEN)
-        set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
-    endif()
+    # Compile test to find the target architecture and sub-architectures.
+    set(flags "")
+    qt_get_platform_try_compile_vars(platform_try_compile_vars)
+    list(APPEND flags ${platform_try_compile_vars})
 
-    try_compile(_arch_result "${CMAKE_CURRENT_BINARY_DIR}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/arch/arch.cpp"
-        COPY_FILE "${_arch_file}")
-
-    set(CMAKE_EXECUTABLE_SUFFIX "${saved_executable_suffix}")
+    try_compile(
+        _arch_result
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/arch"
+        "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/arch"
+        arch
+        CMAKE_FLAGS ${flags}
+        )
 
     if (NOT _arch_result)
         message(FATAL_ERROR "Failed to compile architecture detection file.")
     endif()
+
+    set(_arch_file_suffix "${CMAKE_EXECUTABLE_SUFFIX}")
+    # With emscripten the application entry point is a .js file (to be run with node for example),
+    # but the real "data" is in the .wasm file, so that's where we need to look for the ABI, etc.
+    # information.
+    if (EMSCRIPTEN)
+        set(_arch_file_suffix ".wasm")
+    endif()
+    set(_arch_file
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/arch/architecture_test${_arch_file_suffix}")
+    if (NOT EXISTS "${_arch_file}")
+        message(FATAL_ERROR
+                "Failed to find compiled architecture detection executable at ${_arch_file}.")
+    endif()
+    message(STATUS "Extracting architecture info from ${_arch_file}.")
 
     file(STRINGS "${_arch_file}" _arch_lines LENGTH_MINIMUM 16 LENGTH_MAXIMUM 1024 ENCODING UTF-8)
 
@@ -60,6 +74,9 @@ function(qt_run_config_test_architecture)
     set(TEST_buildAbi "${_build_abi}" CACHE INTERNAL "Target machine buildAbi")
     list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_buildAbi)
     set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT ${QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT} CACHE INTERNAL "Test variables that should be exported")
+
+    list(JOIN _sub_architecture " " subarch_summary)
+    message(STATUS "Building for: ${QT_QMAKE_TARGET_MKSPEC} (${TEST_architecture_arch}, CPU features: ${subarch_summary})")
 endfunction()
 
 

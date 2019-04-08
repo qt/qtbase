@@ -91,11 +91,27 @@ list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACH
 list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
 
 if(APPLE)
-    if(CMAKE_OSX_SYSROOT)
+    # For simulator_and_device build, we should not explicitly set the sysroot.
+    list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
+    if(CMAKE_OSX_SYSROOT AND NOT _qt_osx_architectures_count GREATER 1 AND APPLE_UIKIT)
         list(APPEND init_platform "set(CMAKE_OSX_SYSROOT \"${CMAKE_OSX_SYSROOT}\" CACHE PATH \"\")")
     endif()
+    unset(_qt_osx_architectures_count)
+
     if(CMAKE_OSX_DEPLOYMENT_TARGET)
-        list(APPEND init_platform "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
+        list(APPEND init_platform
+            "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
+    endif()
+
+    if(APPLE_UIKIT)
+        list(APPEND init_platform
+            "set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")")
+        set(_qt_osx_architectures_escaped "${CMAKE_OSX_ARCHITECTURES}")
+        string(REPLACE ";" "LITERAL_SEMICOLON"
+            _qt_osx_architectures_escaped "${_qt_osx_architectures_escaped}")
+        list(APPEND init_platform
+            "set(CMAKE_OSX_ARCHITECTURES \"${_qt_osx_architectures_escaped}\" CACHE STRING \"\")")
+        unset(_qt_osx_architectures_escaped)
     endif()
 elseif(ANDROID)
     list(APPEND init_platform "set(ANDROID_NATIVE_API_LEVEL \"${ANDROID_NATIVE_API_LEVEL}\" CACHE STRING \"\")")
@@ -108,6 +124,7 @@ endif()
 
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
 string(REPLACE ";" "\n" init_platform "${init_platform}")
+string(REPLACE "LITERAL_SEMICOLON" ";" init_platform "${init_platform}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt.toolchain.cmake.in" "${__GlobalConfig_build_dir}/qt.toolchain.cmake" @ONLY)
 qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "${__GlobalConfig_install_dir}" COMPONENT Devel)
 
@@ -135,6 +152,16 @@ qt_feature_module_begin(NO_MODULE
     PRIVATE_FILE src/corelib/global/qconfig_p.h
 )
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+
+# Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
+# simulator_and_device_builds.
+if(APPLE_UIKIT AND NOT QT_UIKIT_SDK)
+    set(__QtFeature_custom_enabled_cache_variables
+        TEST_subarch_sse2
+        FEATURE_sse2
+        QT_FEATURE_sse2)
+endif()
+
 qt_feature_module_end(GlobalConfig OUT_VAR_PREFIX "__GlobalConfig_")
 
 qt_generate_global_config_pri_file()

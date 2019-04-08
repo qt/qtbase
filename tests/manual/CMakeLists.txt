@@ -1,5 +1,12 @@
 # Generated from manual.pro.
 
+# special case begn
+# Don't build manual tests when targeting iOS.
+if(APPLE_UIKIT)
+    return()
+endif()
+# special case end
+
 add_subdirectory(bearerex)
 add_subdirectory(filetest)
 add_subdirectory(embeddedintoforeignwindow)

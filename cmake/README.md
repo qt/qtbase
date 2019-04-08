@@ -201,13 +201,64 @@ When running cmake in qtbase, pass
 ``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
 
 If you don't supply the configuration argument ``-DANDROID_ABI=...``, it will default to
-``armeabi-v7a``. To target other architectures, use on of the following values:
+``armeabi-v7a``. To target other architectures, use one of the following values:
   * arm64: ``-DANDROID_ABI=arm64-v8``
   * x86: ``-DANDROID_ABI=x86``
   * x86_64: ``-DANDROID_ABI=x86_64``
 
 By default we set the android API level to 21. Should you need to change this supply the following
 configuration argument to the above CMake call: ``-DANDROID_NATIVE_API_LEVEL=${API_LEVEL}``
+
+### Cross compiling for iOS
+
+In order to cross-compile Qt to iOS, you need a host macOS build.
+In addition, it is necessary to install a custom version of vcpkg. Vcpkg is
+needed to supply third-party libraries that Qt requires, but that are not part of the iOS SDK.
+
+Vcpkg for iOS can be set up using the following steps:
+
+  * ```git clone -b qt https://github.com/alcroito/vcpkg```
+  * Run ```bootstrap-vcpkg.sh```
+  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to one of the following values:
+    * ``x64-ios``   (simulator x86_64)
+    * ``x86-ios``   (simulator i386)
+    * ``arm64-ios`` (device arm64)
+    * ``arm-ios``   (device armv7)
+    * ``fat-ios``   (simulator_and_device x86_64 and arm64* - special considedrations)
+  * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
+  * Build Qt dependencies:  ``vcpkg install @qt-packages-ios.txt``
+
+When running cmake in qtbase, pass
+``-DCMAKE_SYSTEM_NAME=iOS -DQT_HOST_PATH=/path/to/your/host/build -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
+
+If you don't supply the configuration argument ``-DQT_UIKIT_SDK=...``, it will default to
+``iphonesimulator``. To target another SDK / device type, use one of the following values:
+  * iphonesimulator: ``-DQT_UIKIT_SDK=iphonesimulator``
+  * iphoneos: ``-DQT_UIKIT_SDK=iphoneos``
+  * simulator_and_device: ``-DQT_FORCE_SIMULATOR_AND_DEVICE=ON -DQT_UIKIT_SDK=``
+
+Depending on what value you pass to ``-DQT_UIKIT_SDK=`` a list of target architectures is chosen
+by default:
+  * iphonesimulator: ``x86_64``
+  * iphoneos: ``arm64``
+  * simulator_and_device: ``arm64;x86_64``
+
+You can try choosing a different list of architectures by passing
+``-DCMAKE_OSX_ARCHITECTURES=x86_64;i386``.
+Note that if you choose different architectures compared to the default ones, the build might fail.
+Only do it if you know what you are doing.
+
+####  simulator_and_device special considerations
+To do a simulator_and_device build, a custom version of CMake is required in addition to the vcpkg
+fork. The merge request can be found here:
+https://gitlab.kitware.com/cmake/cmake/merge_requests/3617
+
+After you build your own copy of CMake using this merge request, you need to use it for both
+vcpkg and Qt.
+
+Note that vcpkg prefers its own version of CMake when building packages.
+Make sure to put your custom built CMake in PATH, and force vcpkg to use this CMake by running
+``export VCPKG_FORCE_SYSTEM_BINARIES=1`` in your shell.
 
 # Debugging CMake files
 
