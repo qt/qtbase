@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPAGEDPAINTDEVICE_P_H
-#define QPAGEDPAINTDEVICE_P_H
+#ifndef QRANGECOLLECTION_P_H
+#define QRANGECOLLECTION_P_H
 
 //
 //  W A R N I N G
@@ -51,43 +51,26 @@
 // We mean it.
 //
 
+
 #include <QtGui/private/qtguiglobal_p.h>
-#include <qpagedpaintdevice.h>
-#include <qrangecollection.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QPagedPaintDevicePrivate
+class Q_GUI_EXPORT QRangeCollectionPrivate
 {
+    Q_DECLARE_PUBLIC(QRangeCollection)
 public:
-    QPagedPaintDevicePrivate()
-        : rangeCollection(new QRangeCollection),
-          pageOrderAscending(true),
-          printSelectionOnly(false)
+    QRangeCollectionPrivate(QRangeCollection *rangeCollection)
+        : q_ptr(rangeCollection)
     {
     }
 
-    virtual ~QPagedPaintDevicePrivate();
+    void mergeIntervals();
 
-
-    virtual bool setPageLayout(const QPageLayout &newPageLayout) = 0;
-
-    virtual bool setPageSize(const QPageSize &pageSize) = 0;
-
-    virtual bool setPageOrientation(QPageLayout::Orientation orientation) = 0;
-
-    virtual bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) = 0;
-
-    virtual QPageLayout pageLayout() const = 0;
-
-    static inline QPagedPaintDevicePrivate *get(QPagedPaintDevice *pd) { return pd->d; }
-
-    // These are currently required to keep QPrinter functionality working in QTextDocument::print()
-    QRangeCollection *rangeCollection;
-    bool pageOrderAscending;
-    bool printSelectionOnly;
+    QVector<QPair<int, int>> intervals;
+    QRangeCollection *q_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QRANGECOLLECTION_P_H

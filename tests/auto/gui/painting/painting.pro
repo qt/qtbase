@@ -13,6 +13,7 @@ SUBDIRS=\
    qpdfwriter \
    qpen \
    qpaintengine \
+   qrangecollection \
    qtransform \
    qpolygon \
 

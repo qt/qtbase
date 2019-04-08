@@ -186,6 +186,7 @@ qt_add_module(Gui
         painting/qplatformbackingstore.cpp painting/qplatformbackingstore.h
         painting/qpolygon.cpp painting/qpolygon.h
         painting/qpolygonclipper_p.h
+        painting/qrangecollection.cpp painting/qrangecollection.h painting/qrangecollection_p.h
         painting/qrasterdefs_p.h
         painting/qrasterizer.cpp painting/qrasterizer_p.h
         painting/qrbtree_p.h

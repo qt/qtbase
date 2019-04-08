@@ -49,6 +49,7 @@
 #include "qlist.h"
 #include <qcoreapplication.h>
 #include <qfileinfo.h>
+#include <QtGui/qrangecollection.h>
 
 #include <private/qpagedpaintdevice_p.h>
 
@@ -1981,12 +1982,12 @@ void QPrinter::setPrinterSelectionOption(const QString &option)
     \note If fromPage() and toPage() both return 0, this indicates that
     \e{the whole document will be printed}.
 
-    \sa setFromTo(), toPage()
+    \sa setFromTo(), toPage(), rangeCollection()
 */
 
 int QPrinter::fromPage() const
 {
-    return d->fromPage;
+    return d->rangeCollection->firstPage();
 }
 
 /*!
@@ -2005,12 +2006,12 @@ int QPrinter::fromPage() const
     The programmer is responsible for reading this setting and
     printing accordingly.
 
-    \sa setFromTo(), fromPage()
+    \sa setFromTo(), fromPage(), rangeCollection()
 */
 
 int QPrinter::toPage() const
 {
-    return d->toPage;
+    return d->rangeCollection->lastPage();
 }
 
 /*!
@@ -2027,17 +2028,25 @@ int QPrinter::toPage() const
     This function is mostly used to set a default value that the user can
     override in the print dialog when you call setup().
 
-    \sa fromPage(), toPage()
+    \sa fromPage(), toPage(), rangeCollection()
 */
 
 void QPrinter::setFromTo(int from, int to)
 {
-    if (from > to) {
-        qWarning("QPrinter::setFromTo: 'from' must be less than or equal to 'to'");
-        from = to;
-    }
-    d->fromPage = from;
-    d->toPage = to;
+    d->rangeCollection->clear();
+    d->rangeCollection->addRange(from, to);
+}
+
+/*!
+    \since 6.0
+
+    Returns the range collection associated with this device.
+
+    \sa QRangeCollection, fromPage(), toPage()
+*/
+QRangeCollection *QPrinter::rangeCollection()
+{
+    return d->rangeCollection;
 }
 
 /*!

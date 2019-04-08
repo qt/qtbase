@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,57 +37,42 @@
 **
 ****************************************************************************/
 
-#ifndef QPAGEDPAINTDEVICE_P_H
-#define QPAGEDPAINTDEVICE_P_H
+#ifndef QRANGECOLLECTION_H
+#define QRANGECOLLECTION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtGui/private/qtguiglobal_p.h>
-#include <qpagedpaintdevice.h>
-#include <qrangecollection.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtCore/qpair.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QPagedPaintDevicePrivate
+class QRangeCollectionPrivate;
+
+class Q_GUI_EXPORT QRangeCollection
 {
+    Q_DECLARE_PRIVATE(QRangeCollection)
 public:
-    QPagedPaintDevicePrivate()
-        : rangeCollection(new QRangeCollection),
-          pageOrderAscending(true),
-          printSelectionOnly(false)
-    {
-    }
+    explicit QRangeCollection();
+    ~QRangeCollection();
 
-    virtual ~QPagedPaintDevicePrivate();
+    void addPage(int pageNumber);
+    void addRange(int from, int to);
+    QList<QPair<int, int>> toList() const;
+    void clear();
 
+    bool parse(const QString &ranges);
+    QString toString() const;
 
-    virtual bool setPageLayout(const QPageLayout &newPageLayout) = 0;
+    bool contains(const int pageNumber) const;
+    bool isEmpty() const;
+    int firstPage() const;
+    int lastPage() const;
 
-    virtual bool setPageSize(const QPageSize &pageSize) = 0;
-
-    virtual bool setPageOrientation(QPageLayout::Orientation orientation) = 0;
-
-    virtual bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) = 0;
-
-    virtual QPageLayout pageLayout() const = 0;
-
-    static inline QPagedPaintDevicePrivate *get(QPagedPaintDevice *pd) { return pd->d; }
-
-    // These are currently required to keep QPrinter functionality working in QTextDocument::print()
-    QRangeCollection *rangeCollection;
-    bool pageOrderAscending;
-    bool printSelectionOnly;
+private:
+    QScopedPointer<QRangeCollectionPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QRANGECOLLECTION_H

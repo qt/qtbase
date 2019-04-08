@@ -80,6 +80,7 @@ class QDummyPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
 
 QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
 {
+    delete rangeCollection;
 }
 
 /*!

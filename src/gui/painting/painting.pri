@@ -49,6 +49,8 @@ HEADERS += \
         painting/qpen.h \
         painting/qpolygon.h \
         painting/qpolygonclipper_p.h \
+        painting/qrangecollection.h \
+        painting/qrangecollection_p.h \
         painting/qrasterdefs_p.h \
         painting/qrasterizer_p.h \
         painting/qrbtree_p.h \
@@ -99,6 +101,7 @@ SOURCES += \
         painting/qpdfwriter.cpp \
         painting/qpen.cpp \
         painting/qpolygon.cpp \
+        painting/qrangecollection.cpp \
         painting/qrasterizer.cpp \
         painting/qregion.cpp \
         painting/qstroker.cpp \

@@ -1928,8 +1928,9 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         clonedDoc->setPageSize(body.size());
     }
 
-    int fromPage = pd->fromPage;
-    int toPage = pd->toPage;
+    QRangeCollection *rangeCollection = pd->rangeCollection;
+    int fromPage = rangeCollection->firstPage();
+    int toPage = rangeCollection->lastPage();
 
     if (fromPage == 0 && toPage == 0) {
         fromPage = 1;
@@ -1955,7 +1956,8 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 
     int page = fromPage;
     while (true) {
-        printPage(page, &p, doc, body, pageNumberPos);
+        if (rangeCollection->isEmpty() || rangeCollection->contains(page))
+            printPage(page, &p, doc, body, pageNumberPos);
 
         if (page == toPage)
             break;
