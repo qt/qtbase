@@ -60,7 +60,6 @@ void qt_registerFont(const QString &familyname, const QString &stylename,
 
 void qt_registerFontFamily(const QString &familyName);
 void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
-bool qt_isFontFamilyPopulated(const QString &familyName);
 
 /*!
     Registers the pre-rendered QPF2 font contained in the given \a dataArray.
@@ -664,16 +663,6 @@ QFont::Weight QPlatformFontDatabase::weightFromInteger(int weight)
 void QPlatformFontDatabase::registerAliasToFontFamily(const QString &familyName, const QString &alias)
 {
     qt_registerAliasToFontFamily(familyName, alias);
-}
-
-/*!
-    Helper function that returns true if the font family has already been registered and populated.
-
-    \since 5.14
-*/
-bool QPlatformFontDatabase::isFamilyPopulated(const QString &familyName)
-{
-    return qt_isFontFamilyPopulated(familyName);
 }
 
 /*!
