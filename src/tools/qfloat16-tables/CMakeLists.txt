@@ -6,7 +6,6 @@
 
 add_qt_tool(qfloat16-tables
     BOOTSTRAP
-    NO_INSTALL
     SOURCES
         gen_qfloat16_tables.cpp
     # CONFIG = "force_bootstrap"
