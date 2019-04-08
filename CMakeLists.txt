@@ -53,4 +53,9 @@ endif()
 include(QtPostProcess)
 
 ## Print a feature summary:
-feature_summary(WHAT PACKAGES_FOUND PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)
+feature_summary(WHAT PACKAGES_FOUND
+                     REQUIRED_PACKAGES_NOT_FOUND
+                     RECOMMENDED_PACKAGES_NOT_FOUND
+                     OPTIONAL_PACKAGES_NOT_FOUND
+                     RUNTIME_PACKAGES_NOT_FOUND
+                     FATAL_ON_MISSING_REQUIRED_PACKAGES)
