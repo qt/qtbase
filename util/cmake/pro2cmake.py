@@ -301,8 +301,10 @@ class Scope(object):
 
     def __repr__(self):
         debug_mark = ' [MERGE_DEBUG]' if self.merge_debug else ''
-        return '{}:{}:{}:{}{}'.format(self._scope_id, self._basedir, self._file,
-                                      self._condition or '<NONE>', debug_mark)
+        return '{}:{}:{}:{}:{}'.format(self._scope_id,
+                                       self._basedir, self._currentdir,
+                                       self._file, self._condition or '<TRUE>',
+                                       debug_mark)
 
     def reset_visited_keys(self):
         self._visited_keys = set()
