@@ -904,6 +904,68 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
     cm_fh.write(footer)
 
 
+def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
+                       dependencies: typing.List[str], *, indent: int = 0):
+    dependencies_to_print = []
+    is_framework = False
+
+    for d in dependencies:
+        if d == '-framework':
+            is_framework = True
+            continue
+        if is_framework:
+            d = '${FW%s}' % d
+        if d.startswith('-l'):
+            d = d[2:]
+
+        if d.startswith('-'):
+            d = '# Remove: {}'.format(d[1:])
+        else:
+            d = substitute_libs(d)
+        dependencies_to_print.append(d)
+        is_framework = False
+
+    if dependencies_to_print:
+        ind = spaces(indent)
+        cm_fh.write('{}    {}\n'.format(ind, cmake_keyword))
+        for d in sorted(list(set(dependencies_to_print))):
+            cm_fh.write('{}        {}\n'.format(ind, d))
+
+
+
+def write_library_section(cm_fh: typing.IO[str], scope: Scope,
+                          public: typing.List[str],
+                          private: typing.List[str],
+                          mixed: typing.List[str], *,
+                          indent: int = 0, known_libraries=set()):
+    public_dependencies = []  # typing.List[str]
+    private_dependencies = []  # typing.List[str]
+
+    for key in public:
+        public_dependencies += [map_qt_library(q) for q in scope.expand(key)
+                                if map_qt_library(q) not in known_libraries]
+    for key in private:
+        private_dependencies += [map_qt_library(q) for q in scope.expand(key)
+                                 if map_qt_library(q) not in known_libraries]
+    for key in mixed:
+        for lib in scope.expand(key):
+            if map_qt_library(lib) in known_libraries:
+                continue
+
+            if lib.endswith('-private'):
+                mapped_lib_name = map_qt_base_library(lib[0:-8])
+                if mapped_lib_name:
+                    private_dependencies.append(mapped_lib_name + 'Private')
+                    public_dependencies.append(mapped_lib_name)
+                    continue
+
+            public_dependencies.append(lib)
+
+    write_library_list(cm_fh, 'LIBRARIES', private_dependencies, indent=indent)
+    write_library_list(cm_fh, 'PUBLIC_LIBRARIES', public_dependencies, indent=indent)
+
+
+
 def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                           indent: int = 0, known_libraries=set()):
     ind = spaces(indent)
@@ -947,36 +1009,11 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
             i = i.rstrip('/') or ('/')
             cm_fh.write('{}        {}\n'.format(ind, i))
 
-    dependencies = [map_qt_library(q) for q in scope.expand('QT')
-                    if map_qt_library(q) not in known_libraries]
-    dependencies += [map_qt_library(q) for q in scope.expand('QT_FOR_PRIVATE')
-                     if map_qt_library(q) not in known_libraries]
-    dependencies += scope.expand('QMAKE_USE_PRIVATE') + scope.expand('QMAKE_USE') \
-        + scope.expand('LIBS_PRIVATE') + scope.expand('LIBS')
-    if dependencies:
-        dependencies_to_print = []
-        is_framework = False
-
-        for d in dependencies:
-            if d == '-framework':
-                is_framework = True
-                continue
-            if is_framework:
-                d = '${FW%s}' % d
-            if d.startswith('-l'):
-                d = d[2:]
-
-            if d.startswith('-'):
-                d = '# Remove: {}'.format(d[1:])
-            else:
-                d = substitute_libs(d)
-            dependencies_to_print.append(d)
-            is_framework = False
-
-        if dependencies_to_print:
-            cm_fh.write('{}    LIBRARIES\n'.format(ind))
-            for d in sorted(list(set(dependencies_to_print))):
-                cm_fh.write('{}        {}\n'.format(ind, d))
+    write_library_section(cm_fh, scope,
+                          ['QMAKE_USE', 'LIBS'],
+                          ['QT_FOR_PRIVATE', 'QMAKE_USE_PRIVATE', 'LIBS_PRIVATE'],
+                          ['QT',],
+                          indent=indent, known_libraries=known_libraries)
 
     compile_options = scope.get('QMAKE_CXXFLAGS')
     if compile_options:
