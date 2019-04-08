@@ -982,6 +982,8 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     if compile_options:
         cm_fh.write('{}    COMPILE_OPTIONS\n'.format(ind))
         for co in compile_options:
+            if co.startswith('-D'):
+                co = co[2:]
             cm_fh.write('{}        "{}"\n'.format(ind, co))
 
     link_options = scope.get('QMAKE_LFLAGS')
