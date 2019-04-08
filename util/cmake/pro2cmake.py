@@ -996,6 +996,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_interface_flags)))
 
     defines = scope.expand('DEFINES')
+    defines += [d[2:] for d in scope.expand('QMAKE_CXXFLAGS') if d.startswith('-D')]
     if defines:
         cm_fh.write('{}    DEFINES\n'.format(ind))
         for d in defines:
@@ -1015,12 +1016,10 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                           ['QT',],
                           indent=indent, known_libraries=known_libraries)
 
-    compile_options = scope.get('QMAKE_CXXFLAGS')
+    compile_options = [d for d in scope.expand('QMAKE_CXXFLAGS') if not d.startswith('-D')]
     if compile_options:
         cm_fh.write('{}    COMPILE_OPTIONS\n'.format(ind))
         for co in compile_options:
-            if co.startswith('-D'):
-                co = co[2:]
             cm_fh.write('{}        "{}"\n'.format(ind, co))
 
     link_options = scope.get('QMAKE_LFLAGS')
