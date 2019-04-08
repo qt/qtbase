@@ -121,6 +121,13 @@ VERS_1;
     endif()
     file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
 
+    # For some reason the linker command line written by the XCode generator, which is
+    # subsequently executed by xcodebuild, ignores the linker flag, and thus the test
+    # seemingly succeeds. Explicitly disable the version script test on darwin platforms.
+    if(APPLE)
+        set(HAVE_LD_VERSION_SCRIPT OFF)
+    endif()
+
     set(TEST_ld_version_script "${HAVE_LD_VERSION_SCRIPT}" CACHE INTERNAL "linker version script support")
 endfunction()
 
