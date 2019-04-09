@@ -1440,6 +1440,7 @@ bool QCborStreamWriter::endMap()
 
 /*!
    \class QCborStreamReader::StringResult
+   \inmodule QtCore
 
    This class is returned by readString() and readByteArray(), with either the
    contents of the string that was read or an indication that the parsing is
