@@ -77,43 +77,8 @@ public:
 
     QWindowPrivate()
         : QObjectPrivate()
-        , surfaceType(QWindow::RasterSurface)
-        , windowFlags(Qt::Window)
-        , parentWindow(nullptr)
-        , platformWindow(nullptr)
-        , visible(false)
-        , visibilityOnDestroy(false)
-        , exposed(false)
-        , windowState(Qt::WindowNoState)
-        , visibility(QWindow::Hidden)
-        , resizeEventPending(true)
-        , receivedExpose(false)
-        , positionPolicy(WindowFrameExclusive)
-        , positionAutomatic(true)
-        , resizeAutomatic(true)
-        , contentOrientation(Qt::PrimaryOrientation)
-        , opacity(qreal(1.0))
-        , minimumSize(0, 0)
-        , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
-        , modality(Qt::NonModal)
-        , blockedByModalWindow(false)
-        , updateRequestPending(false)
-        , transientParent(nullptr)
-        , topLevelScreen(nullptr)
-#ifndef QT_NO_CURSOR
-        , cursor(Qt::ArrowCursor)
-        , hasCursor(false)
-#endif
-        , compositing(false)
-#if QT_CONFIG(vulkan)
-        , vulkanInstance(nullptr)
-#endif
     {
         isWindow = true;
-    }
-
-    ~QWindowPrivate()
-    {
     }
 
     void init(QScreen *targetScreen = nullptr);
@@ -166,57 +131,57 @@ public:
 
     virtual bool allowClickThrough(const QPoint &) const { return true; }
 
-    QWindow::SurfaceType surfaceType;
-    Qt::WindowFlags windowFlags;
-    QWindow *parentWindow;
-    QPlatformWindow *platformWindow;
-    bool visible;
-    bool visibilityOnDestroy;
-    bool exposed;
+    QWindow::SurfaceType surfaceType = QWindow::RasterSurface;
+    Qt::WindowFlags windowFlags = Qt::Window;
+    QWindow *parentWindow = nullptr;
+    QPlatformWindow *platformWindow = nullptr;
+    bool visible= false;
+    bool visibilityOnDestroy = false;
+    bool exposed = false;
     QSurfaceFormat requestedFormat;
     QString windowTitle;
     QString windowFilePath;
     QIcon windowIcon;
     QRect geometry;
-    Qt::WindowStates windowState;
-    QWindow::Visibility visibility;
-    bool resizeEventPending;
-    bool receivedExpose;
-    PositionPolicy positionPolicy;
-    bool positionAutomatic;
+    Qt::WindowStates windowState = Qt::WindowNoState;
+    QWindow::Visibility visibility = QWindow::Hidden;
+    bool resizeEventPending = true;
+    bool receivedExpose = false;
+    PositionPolicy positionPolicy = WindowFrameExclusive;
+    bool positionAutomatic = true;
     // resizeAutomatic suppresses resizing by QPlatformWindow::initialGeometry().
     // It also indicates that width/height=0 is acceptable (for example, for
     // the QRollEffect widget) and is thus not cleared in setGeometry().
     // An alternative approach might be using -1,-1 as a default size.
-    bool resizeAutomatic;
-    Qt::ScreenOrientation contentOrientation;
-    qreal opacity;
+    bool resizeAutomatic = true;
+    Qt::ScreenOrientation contentOrientation = Qt::PrimaryOrientation;
+    qreal opacity= 1;
     QRegion mask;
 
-    QSize minimumSize;
-    QSize maximumSize;
+    QSize minimumSize = {0, 0};
+    QSize maximumSize = {QWINDOWSIZE_MAX, QWINDOWSIZE_MAX};
     QSize baseSize;
     QSize sizeIncrement;
 
-    Qt::WindowModality modality;
-    bool blockedByModalWindow;
+    Qt::WindowModality modality = Qt::NonModal;
+    bool blockedByModalWindow = false;
 
-    bool updateRequestPending;
+    bool updateRequestPending = false;
     bool transientParentPropertySet = false;
 
     QPointer<QWindow> transientParent;
     QPointer<QScreen> topLevelScreen;
 
 #ifndef QT_NO_CURSOR
-    QCursor cursor;
-    bool hasCursor;
+    QCursor cursor = {Qt::ArrowCursor};
+    bool hasCursor = false;
 #endif
 
-    bool compositing;
+    bool compositing = false;
     QElapsedTimer lastComposeTime;
 
 #if QT_CONFIG(vulkan)
-    QVulkanInstance *vulkanInstance;
+    QVulkanInstance *vulkanInstance = nullptr;
 #endif
 };
 
