@@ -46,6 +46,9 @@
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformdrag.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 
@@ -87,6 +90,7 @@ private slots:
 #if QT_CONFIG(draganddrop)
     void tst_dnd();
     void tst_dnd_events();
+    void tst_dnd_propagation();
 #endif
 
     void tst_qtbug35600();
@@ -743,6 +747,77 @@ void tst_QWidget_window::tst_dnd_events()
     QTest::mousePress(window, Qt::LeftButton);
 
     QCOMPARE(dndWidget._dndEvents, expectedDndEvents);
+}
+
+class DropTarget : public QWidget
+{
+public:
+    explicit DropTarget()
+    {
+        setAcceptDrops(true);
+
+        const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+        auto width = availableGeometry.width() / 6;
+        auto height = availableGeometry.height() / 4;
+
+        setGeometry(availableGeometry.x() + 200, availableGeometry.y() + 200, width, height);
+
+        QLabel *label = new QLabel(QStringLiteral("Test"), this);
+        label->setGeometry(40, 40, 60, 60);
+        label->setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *event) override
+    {
+        event->accept();
+        mDndEvents.append("enter ");
+    }
+
+    void dragMoveEvent(QDragMoveEvent *event) override
+    {
+        event->acceptProposedAction();
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent *) override
+    {
+        mDndEvents.append("leave ");
+    }
+
+    void dropEvent(QDropEvent *event) override
+    {
+        event->accept();
+        mDndEvents.append("drop ");
+    }
+
+    QString mDndEvents;
+};
+
+void tst_QWidget_window::tst_dnd_propagation()
+{
+    QMimeData mimeData;
+    mimeData.setText(QLatin1String("testmimetext"));
+
+    DropTarget target;
+    target.show();
+    QVERIFY(QTest::qWaitForWindowActive(&target));
+
+    Qt::DropActions supportedActions = Qt::DropAction::CopyAction;
+    QWindow *window = target.windowHandle();
+
+    auto posInsideDropTarget = QHighDpi::toNativePixels(QPoint(20, 20), window->screen());
+    auto posInsideLabel      = QHighDpi::toNativePixels(QPoint(60, 60), window->screen());
+
+    // Enter DropTarget.
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideDropTarget, supportedActions, 0, 0);
+    // Enter QLabel. This will propagate because default QLabel does
+    // not accept the drop event in dragEnterEvent().
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+    // Drop on QLabel. DropTarget will get dropEvent(), because it accepted the event.
+    QWindowSystemInterface::handleDrop(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+
+    QGuiApplication::processEvents();
+
+    QCOMPARE(target.mDndEvents, "enter leave enter drop ");
 }
 #endif
 

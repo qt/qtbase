@@ -381,6 +381,7 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
 */
 
 /*!
+    \since 5.8
     \overload
 
     Sends the datagram \a datagram to the host address and port numbers
@@ -431,6 +432,8 @@ qint64 QUdpSocket::writeDatagram(const QNetworkDatagram &datagram)
 }
 
 /*!
+    \since 5.8
+
     Receives a datagram no larger than \a maxSize bytes and returns it in the
     QNetworkDatagram object, along with the sender's host address and port. If
     possible, this function will also try to determine the datagram's
