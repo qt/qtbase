@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation
+** Copyright (C) 2019 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,21 @@
 ****************************************************************************/
 
 #define _XOPEN_SOURCE 700
+#define  _DARWIN_C_SOURCE 1         /* need MAP_ANON */
 #include <QtTest>
 #include "cbor.h"
 #include <stdio.h>
 #include <stdarg.h>
+
+#if defined(Q_OS_UNIX)
+#  include <sys/mman.h>
+#  include <unistd.h>
+#elif defined(Q_OS_WIN)
+#  define WIN32_LEAN_AND_MEAN 1
+#  define NOMINMAX 1
+#  include <windows.h>
+#endif
+
 
 namespace QTest {
 template<> char *toString<CborError>(const CborError &err)
@@ -44,6 +55,8 @@ private slots:
     // parsing API
     void integers_data();
     void integers();
+    void halfFloat_data();
+    void halfFloat();
     void fixed_data();
     void fixed();
     void strings_data();
@@ -104,6 +117,100 @@ private slots:
     void recursionLimit_data();
     void recursionLimit();
 };
+
+struct ParserWrapper
+{
+    void *realdata = nullptr;
+    uint8_t *data;
+    size_t len;
+    CborParser parser;
+    CborValue first;
+
+    ~ParserWrapper() { freeMemory(); }
+
+    CborError init(const QByteArray &ba, uint32_t flags = 0)
+    {
+        return init(ba.constData(), ba.size(), flags);
+    }
+    CborError init(const char *ptr, int n, uint32_t flags = 0)
+    {
+        freeMemory();
+        data = allocateMemory(n);
+        memcpy(data, ptr, len);
+        return cbor_parser_init(data, len, flags, &parser, &first);
+    }
+    uint8_t *begin() { return data; }
+    uint8_t *end()   { return data + len; }
+
+    uint8_t *allocateMemory(size_t);
+    void freeMemory();
+
+    static const size_t PageSize = 4096;
+    static inline size_t mmapAllocation(size_t n)
+    {
+        // round up and add one page
+        return (n + 2*PageSize) & ~(PageSize - 1);
+    }
+    static bool shouldUseMmap();
+};
+
+bool ParserWrapper::shouldUseMmap()
+{
+    static int v = qEnvironmentVariableIntValue("PARSER_NO_MMAP");
+    return !v;
+}
+
+uint8_t *ParserWrapper::allocateMemory(size_t n)
+{
+    len = n;
+    if (shouldUseMmap()) {
+        size_t alloc = mmapAllocation(n);
+#if defined(Q_OS_UNIX)
+        realdata = mmap(nullptr, alloc, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+        Q_ASSERT_X(realdata != MAP_FAILED, "allocateMemory", "mmap failed!");
+
+        // mark last page inaccessible
+        uint8_t *ptr = static_cast<uint8_t *>(realdata);
+        ptr += alloc - PageSize;
+        mprotect(ptr, PageSize, PROT_NONE);
+
+        ptr -= n;
+        return ptr;
+#elif defined(Q_OS_WIN)
+        DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE;
+        DWORD flProtect = PAGE_READWRITE;
+        realdata = VirtualAlloc(nullptr, alloc, flAllocationType, flProtect);
+        Q_ASSERT_X(realdata, "allocateMemory", "VirtualAlloc failed!");
+
+        // mark last page inaccessible
+        uint8_t *ptr = static_cast<uint8_t *>(realdata);
+        ptr += alloc - PageSize;
+        VirtualProtect(ptr, PageSize, PAGE_NOACCESS, nullptr);
+
+        ptr -= n;
+        return ptr;
+#endif
+    }
+    realdata = malloc(n);
+    return static_cast<uint8_t *>(realdata);
+}
+
+void ParserWrapper::freeMemory()
+{
+    if (shouldUseMmap()) {
+        if (realdata) {
+#if defined(Q_OS_UNIX)
+            size_t alloc = mmapAllocation(len);
+            munmap(realdata, alloc);
+#elif defined(Q_OS_WIN)
+            VirtualFree(realdata, 0, MEM_RELEASE);
+#endif
+        }
+        return;
+    }
+
+    free(realdata);
+}
 
 static CborError qstring_printf(void *out, const char *fmt, ...)
 {
@@ -166,47 +273,46 @@ bool compareFailed = true;
 void compareOne_real(const QByteArray &data, const QString &expected, int line, int n = -1)
 {
     compareFailed = true;
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray::number(line) + ": Got error \"" + cbor_error_string(err) + "\"");
 
-    if (cbor_value_get_type(&first) == CborArrayType) {
+    if (cbor_value_get_type(&w.first) == CborArrayType) {
         size_t len;
         if (n >= 0) {
-            QVERIFY(cbor_value_is_length_known(&first));
-            QCOMPARE(cbor_value_get_array_length(&first, &len), CborNoError);
+            QVERIFY(cbor_value_is_length_known(&w.first));
+            QCOMPARE(cbor_value_get_array_length(&w.first, &len), CborNoError);
             QCOMPARE(len, size_t(len));
         } else {
-            QVERIFY(!cbor_value_is_length_known(&first));
-            QCOMPARE(cbor_value_get_array_length(&first, &len), CborErrorUnknownLength);
+            QVERIFY(!cbor_value_is_length_known(&w.first));
+            QCOMPARE(cbor_value_get_array_length(&w.first, &len), CborErrorUnknownLength);
         }
-    } else if (cbor_value_get_type(&first) == CborMapType) {
+    } else if (cbor_value_get_type(&w.first) == CborMapType) {
         size_t len;
         if (n >= 0) {
-            QVERIFY(cbor_value_is_length_known(&first));
-            QCOMPARE(cbor_value_get_map_length(&first, &len), CborNoError);
+            QVERIFY(cbor_value_is_length_known(&w.first));
+            QCOMPARE(cbor_value_get_map_length(&w.first, &len), CborNoError);
             QCOMPARE(len, size_t(len));
         } else {
-            QVERIFY(!cbor_value_is_length_known(&first));
-            QCOMPARE(cbor_value_get_map_length(&first, &len), CborErrorUnknownLength);
+            QVERIFY(!cbor_value_is_length_known(&w.first));
+            QCOMPARE(cbor_value_get_map_length(&w.first, &len), CborErrorUnknownLength);
         }
-    } else if (cbor_value_is_text_string(&first) || cbor_value_is_byte_string(&first)) {
+    } else if (cbor_value_is_text_string(&w.first) || cbor_value_is_byte_string(&w.first)) {
         size_t len;
-        QCOMPARE(cbor_value_calculate_string_length(&first, &len), CborNoError);
-        if (cbor_value_is_length_known(&first)) {
+        QCOMPARE(cbor_value_calculate_string_length(&w.first, &len), CborNoError);
+        if (cbor_value_is_length_known(&w.first)) {
             size_t len2;
-            QCOMPARE(cbor_value_get_string_length(&first, &len2), CborNoError);
+            QCOMPARE(cbor_value_get_string_length(&w.first, &len2), CborNoError);
             QCOMPARE(len2, len);
         } else {
-            QCOMPARE(cbor_value_get_string_length(&first, &len), CborErrorUnknownLength);
+            QCOMPARE(cbor_value_get_string_length(&w.first, &len), CborErrorUnknownLength);
         }
     }
 
-    CborError err2 = cbor_value_validate_basic(&first);
+    CborError err2 = cbor_value_validate_basic(&w.first);
 
     QString decoded;
-    err = parseOne(&first, &decoded);
+    err = parseOne(&w.first, &decoded);
     QVERIFY2(!err, QByteArray::number(line) + ": Got error \"" + cbor_error_string(err) +
                    "\"; decoded stream:\n" + decoded.toLatin1());
     QCOMPARE(decoded, expected);
@@ -215,7 +321,7 @@ void compareOne_real(const QByteArray &data, const QString &expected, int line, 
     QCOMPARE(err2, err);
 
     // check that we consumed everything
-    QCOMPARE((void*)cbor_value_get_next_byte(&first), (void*)data.constEnd());
+    QCOMPARE((void*)cbor_value_get_next_byte(&w.first), (void*)w.end());
 
     compareFailed = false;
 }
@@ -237,37 +343,110 @@ void tst_Parser::integers()
     QFETCH(qint64, expectedValue);
     QFETCH(bool, inInt64Range);
 
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
-    QVERIFY(cbor_value_is_integer(&first));
+    QVERIFY(cbor_value_is_integer(&w.first));
 
     uint64_t raw;
-    cbor_value_get_raw_integer(&first, &raw);
+    cbor_value_get_raw_integer(&w.first, &raw);
     QCOMPARE(quint64(raw), expectedRaw);
 
     if (isNegative) {
-        QVERIFY(cbor_value_is_negative_integer(&first));
-        QVERIFY(!cbor_value_is_unsigned_integer(&first));
+        QVERIFY(cbor_value_is_negative_integer(&w.first));
+        QVERIFY(!cbor_value_is_unsigned_integer(&w.first));
     } else {
-        QVERIFY(!cbor_value_is_negative_integer(&first));
-        QVERIFY(cbor_value_is_unsigned_integer(&first));
+        QVERIFY(!cbor_value_is_negative_integer(&w.first));
+        QVERIFY(cbor_value_is_unsigned_integer(&w.first));
     }
 
     int64_t value;
     if (inInt64Range) {
-        cbor_value_get_int64(&first, &value);
+        cbor_value_get_int64(&w.first, &value);
         QCOMPARE(qint64(value), expectedValue);
     }
 
-    err = cbor_value_get_int64_checked(&first, &value);
+    err = cbor_value_get_int64_checked(&w.first, &value);
     QCOMPARE(err, inInt64Range ? CborNoError : CborErrorDataTooLarge);
 
     int ivalue;
     bool inIntRange = inInt64Range && (expectedValue == int(expectedValue));
-    err = cbor_value_get_int_checked(&first, &ivalue);
+    err = cbor_value_get_int_checked(&w.first, &ivalue);
     QCOMPARE(err, inIntRange ? CborNoError : CborErrorDataTooLarge);
+}
+
+static void addHalfFloat()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<unsigned>("expectedRaw");
+    QTest::addColumn<double>("expectedValue");
+
+    QTest::newRow("+0") << raw("\x00\x00") << 0U << 0.0;
+    QTest::newRow("-0") << raw("\x80\x00") << 0x8000U << 0.0;
+
+    QTest::newRow("min.denorm") << raw("\x00\x01") << 1U << ldexp(1.0, -14) * ldexp(1.0, -10);
+    QTest::newRow("-min.denorm") << raw("\x80\x01") << 0x8001U << ldexp(-1.0, -14) * ldexp(1.0, -10);
+
+    QTest::newRow("max.denorm") << raw("\x03\xff") << 0x03ffU << ldexp(1.0, -14) * (1.0 - ldexp(1.0, -10));
+    QTest::newRow("-max.denorm") << raw("\x83\xff") << 0x83ffU << ldexp(-1.0, -14) * (1.0 - ldexp(1.0, -10));
+
+    QTest::newRow("min.norm") << raw("\x04\x00") << 0x0400U << ldexp(1.0, -14);
+    QTest::newRow("-min.norm") << raw("\x84\x00") << 0x8400U << ldexp(-1.0, -14);
+
+    QTest::newRow("1.0") << raw("\x3c\x00") << 0x3c00U << 1.0;
+    QTest::newRow("-1.0") << raw("\xbc\x00") << 0xbc00U << -1.0;
+
+    QTest::newRow("1.5") << raw("\x3e\x00") << 0x3e00U << 1.5;
+    QTest::newRow("-1.5") << raw("\xbe\x00") << 0xbe00U << -1.5;
+
+    QTest::newRow("max") << raw("\x7b\xff") << 0x7bffU << ldexp(1.0, 15) * (2.0 - ldexp(1.0, -10));
+    QTest::newRow("-max") << raw("\xfb\xff") << 0xfbffU << ldexp(-1.0, 15) * (2.0 - ldexp(1.0, -10));
+
+    QTest::newRow("inf") << raw("\x7c\x00") << 0x7c00U << double(INFINITY);
+    QTest::newRow("-inf") << raw("\xfc\x00") << 0xfc00U << double(-INFINITY);
+
+    QTest::newRow("nan") << raw("\x7c\x01") << 0x7c01U << double(NAN);
+    QTest::newRow("nan2") << raw("\xfc\x01") << 0xfc01U << double(NAN);
+    QTest::newRow("nan3") << raw("\x7e\x00") << 0x7e00U << double(NAN);
+    QTest::newRow("nan4") << raw("\xfe\x00") << 0xfe00U << double(NAN);
+}
+
+void tst_Parser::halfFloat_data()
+{
+    addHalfFloat();
+}
+
+void tst_Parser::halfFloat()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(unsigned, expectedRaw);
+    QFETCH(double, expectedValue);
+
+    CborParser parser;
+    CborValue first;
+
+    data.prepend('\xf9');
+
+    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
+    QVERIFY(cbor_value_is_half_float(&first));
+
+    uint16_t raw;
+    cbor_value_get_half_float(&first, &raw);
+    QCOMPARE(raw, uint16_t(expectedRaw));
+
+    float value;
+    cbor_value_get_half_float_as_float(&first, &value);
+
+    const double epsilon = ldexp(1.0, -25);
+
+    if (qIsNaN(expectedValue)) {
+        QVERIFY(qIsNaN(value));
+    } else if (qIsInf(expectedValue)) {
+        QVERIFY(value == (float)expectedValue);
+    } else {
+        QVERIFY(qAbs(value - (float)expectedValue) < epsilon);
+    }
 }
 
 void tst_Parser::fixed_data()
@@ -678,14 +857,13 @@ void tst_Parser::chunkedString_data()
 static void chunkedStringTest(const QByteArray &data, const QString &concatenated,
                               QStringList &chunks, CborType ourType)
 {
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
     CborValue value;
-    QVERIFY(cbor_value_is_array(&first));
-    err = cbor_value_enter_container(&first, &value);
+    QVERIFY(cbor_value_is_array(&w.first));
+    err = cbor_value_enter_container(&w.first, &value);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
     QVERIFY(cbor_value_is_byte_string(&value) || cbor_value_is_text_string(&value));
 
@@ -748,9 +926,9 @@ static void chunkedStringTest(const QByteArray &data, const QString &concatenate
     // confirm EOF
     QVERIFY(cbor_value_at_end(&value));
 
-    err = cbor_value_leave_container(&first, &value);
+    err = cbor_value_leave_container(&w.first, &value);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
-    QCOMPARE((void*)cbor_value_get_next_byte(&first), (void*)data.constEnd());
+    QCOMPARE((void*)cbor_value_get_next_byte(&w.first), (void*)w.end());
 }
 
 void tst_Parser::chunkedString()
@@ -840,18 +1018,17 @@ void tst_Parser::stringLength()
     QFETCH(QByteArray, data);
     QFETCH(int, expected);
 
-    CborParser parser;
-    CborValue value;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &value);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
     size_t result;
-    err = cbor_value_calculate_string_length(&value, &result);
+    err = cbor_value_calculate_string_length(&w.first, &result);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
     QCOMPARE(result, size_t(expected));
 
-    if (cbor_value_is_length_known(&value)) {
-        QCOMPARE(cbor_value_get_string_length(&value, &result), CborNoError);
+    if (cbor_value_is_length_known(&w.first)) {
+        QCOMPARE(cbor_value_get_string_length(&w.first, &result), CborNoError);
         QCOMPARE(result, size_t(expected));
     }
 
@@ -935,25 +1112,24 @@ void compareOneString(const QByteArray &data, const QString &string, bool expect
 {
     compareFailed = true;
 
-    CborParser parser;
-    CborValue value;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &value);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray::number(line) + ": Got error \"" + cbor_error_string(err) + "\"");
 
     bool result;
     QByteArray bastring = string.toUtf8();
-    err = cbor_value_text_string_equals(&value, bastring.constData(), &result);
+    err = cbor_value_text_string_equals(&w.first, bastring.constData(), &result);
     QVERIFY2(!err, QByteArray::number(line) + ": Got error \"" + cbor_error_string(err) + "\"");
     QCOMPARE(result, expected);
 
     if (expected) {
         size_t len;
-        cbor_value_skip_tag(&value);
-        if (cbor_value_is_length_known(&value)) {
-            QCOMPARE(cbor_value_get_string_length(&value, &len), CborNoError);
+        cbor_value_skip_tag(&w.first);
+        if (cbor_value_is_length_known(&w.first)) {
+            QCOMPARE(cbor_value_get_string_length(&w.first, &len), CborNoError);
             QCOMPARE(int(len), bastring.size());
         }
-        QCOMPARE(cbor_value_calculate_string_length(&value, &len), CborNoError);
+        QCOMPARE(cbor_value_calculate_string_length(&w.first, &len), CborNoError);
         QCOMPARE(int(len), bastring.size());
     }
 
@@ -1042,13 +1218,12 @@ void tst_Parser::mapFind()
     QFETCH(QByteArray, data);
     QFETCH(bool, expected);
 
-    CborParser parser;
-    CborValue value;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &value);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
     CborValue element;
-    err = cbor_value_map_find_value(&value, "needle", &element);
+    err = cbor_value_map_find_value(&w.first, "needle", &element);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
     if (expected) {
@@ -1119,13 +1294,12 @@ void tst_Parser::checkedIntegers()
     QFETCH(QVariant, result);
     int64_t expected = result.toLongLong();
 
-    CborParser parser;
-    CborValue value;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &value);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
     int64_t v;
-    err = cbor_value_get_int64_checked(&value, &v);
+    err = cbor_value_get_int64_checked(&w.first, &v);
     if (result.isNull()) {
         QCOMPARE(err, CborErrorDataTooLarge);
     } else {
@@ -1133,7 +1307,7 @@ void tst_Parser::checkedIntegers()
     }
 
     int v2;
-    err = cbor_value_get_int_checked(&value, &v2);
+    err = cbor_value_get_int_checked(&w.first, &v2);
     if (result.isNull() || expected < std::numeric_limits<int>::min() || expected > std::numeric_limits<int>::max()) {
         QCOMPARE(err, CborErrorDataTooLarge);
     } else {
@@ -1154,14 +1328,13 @@ void tst_Parser::validation()
     QFETCH(CborError, expectedError);
 
     QString decoded;
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), flags, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data, uint32_t(flags));
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
-    CborError err2 = cbor_value_validate_basic(&first);
-    CborError err3 = cbor_value_validate(&first, CborValidateBasic);
-    err = parseOne(&first, &decoded);
+    CborError err2 = cbor_value_validate_basic(&w.first);
+    CborError err3 = cbor_value_validate(&w.first, CborValidateBasic);
+    err = parseOne(&w.first, &decoded);
     QCOMPARE(err, expectedError);
     if (!QByteArray(QTest::currentDataTag()).contains("utf8")) {
         QCOMPARE(err2, expectedError);
@@ -1352,24 +1525,36 @@ void tst_Parser::strictValidation_data()
     QTest::newRow("overlong-_stringx2-0*8") << raw("\x7f\x60\x7b\0\0\0\0\0\0\0\0\xff") << int(CborValidateShortestNumbers) << CborErrorOverlongEncoding;
 
     // strict mode
-    QTest::newRow("invalid-utf8-1char") << raw("\x61\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-2chars-1") << raw("\x62\xc2\xc0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-2chars-2") << raw("\x62\xc3\xdf") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-2chars-3") << raw("\x62\xc7\xf0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-3chars-1") << raw("\x63\xe0\xa0\xc0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-3chars-2") << raw("\x63\xe0\xc0\xa0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-4chars-1") << raw("\x64\xf0\x90\x80\xc0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-4chars-2") << raw("\x64\xf0\x90\xc0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
-    QTest::newRow("invalid-utf8-4chars-3") << raw("\x64\xf0\xc0\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // UTF-8 sequences with invalid continuation bytes
+    QTest::newRow("invalid-utf8-bad-continuation-1char") << raw("\x61\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-2chars-1") << raw("\x62\xc2\xc0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-2chars-2") << raw("\x62\xc3\xdf") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-2chars-3") << raw("\x62\xc7\xf0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-3chars-1") << raw("\x63\xe0\xa0\xc0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-3chars-2") << raw("\x63\xe0\xc0\xa0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-4chars-1") << raw("\x64\xf0\x90\x80\xc0") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-4chars-2") << raw("\x64\xf0\x90\xc0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-bad-continuation-4chars-3") << raw("\x64\xf0\xc0\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // Too short UTF-8 sequences (in an array so there's a byte after that would make it valid UTF-8 if it were part of the string)
+    QTest::newRow("invalid-utf8-too-short-2chars") << raw("\x82\x61\xc2\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-too-short-3chars-1") << raw("\x82\x61\xe0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-too-short-3chars-2") << raw("\x82\x62\xe0\xa0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-too-short-4chars-1") << raw("\x82\x61\xf0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-too-short-4chars-2") << raw("\x82\x62\xf0\x90\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    QTest::newRow("invalid-utf8-too-short-4chars-3") << raw("\x82\x63\xf0\x90\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // UTF-16 surrogages encoded in UTF-8
     QTest::newRow("invalid-utf8-hi-surrogate") << raw("\x63\xed\xa0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-lo-surrogate") << raw("\x63\xed\xb0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-surrogate-pair") << raw("\x66\xed\xa0\x80\xed\xb0\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // Non-Unicode UTF-8 sequences
     QTest::newRow("invalid-utf8-non-unicode-1") << raw("\x64\xf4\x90\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-non-unicode-2") << raw("\x65\xf8\x88\x80\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-non-unicode-3") << raw("\x66\xfc\x84\x80\x80\x80\x80") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-non-unicode-4") << raw("\x66\xfd\xbf\xbf\xbf\xbf\xbf") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // invalid bytes in UTF-8
     QTest::newRow("invalid-utf8-fe") << raw("\x61\xfe") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-ff") << raw("\x61\xff") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
+    // Overlong sequences
     QTest::newRow("invalid-utf8-overlong-1-2") << raw("\x62\xc1\x81") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-overlong-1-3") << raw("\x63\xe0\x81\x81") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
     QTest::newRow("invalid-utf8-overlong-1-4") << raw("\x64\xf0\x80\x81\x81") << int(CborValidateStrictMode) << CborErrorInvalidUtf8TextString;
@@ -1525,12 +1710,11 @@ void tst_Parser::strictValidation()
     QFETCH(CborError, expectedError);
 
     QString decoded;
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
-    err = cbor_value_validate(&first, flags);
+    err = cbor_value_validate(&w.first, flags);
     QCOMPARE(err, expectedError);
 }
 
@@ -1549,12 +1733,11 @@ void tst_Parser::incompleteData()
     QFETCH(QString, expected);
 
     for (int len = 0; len < data.length() - 1; ++len) {
-        CborParser parser;
-        CborValue first;
-        CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), len, 0, &parser, &first);
+        ParserWrapper w;
+        CborError err = w.init(data.constData(), len);
         if (!err) {
             QString decoded;
-            err = parseOne(&first, &decoded);
+            err = parseOne(&w.first, &decoded);
         }
         if (err != CborErrorUnexpectedEOF)
             qDebug() << "Length is" << len;
@@ -1583,14 +1766,13 @@ void tst_Parser::endPointer()
     QFETCH(int, offset);
 
     QString decoded;
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
-    err = parseOne(&first, &decoded);
+    err = parseOne(&w.first, &decoded);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
-    QCOMPARE(int(cbor_value_get_next_byte(&first) - reinterpret_cast<const quint8 *>(data.constBegin())), offset);
+    QCOMPARE(int(cbor_value_get_next_byte(&w.first) - w.begin()), offset);
 }
 
 void tst_Parser::recursionLimit_data()
@@ -1638,24 +1820,23 @@ void tst_Parser::recursionLimit()
 {
     QFETCH(QByteArray, data);
 
-    CborParser parser;
-    CborValue first;
-    CborError err = cbor_parser_init(reinterpret_cast<const quint8 *>(data.constData()), data.length(), 0, &parser, &first);
+    ParserWrapper w;
+    CborError err = w.init(data);
     QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
     // check that it is valid:
-    CborValue it = first;
+    CborValue it = w.first;
     {
         QString dummy;
         err = parseOne(&it, &dummy);
         QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
     }
 
-    it = first;
+    it = w.first;
     err = cbor_value_advance(&it);
     QCOMPARE(err, CborErrorNestingTooDeep);
 
-    it = first;
+    it = w.first;
     if (cbor_value_is_map(&it)) {
         CborValue dummy;
         err = cbor_value_map_find_value(&it, "foo", &dummy);

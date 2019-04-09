@@ -46,6 +46,7 @@
 #include "qstyleoption.h"
 #include "private/qstyle_p.h"
 #include "private/qguiapplication_p.h"
+#include <qpa/qplatformtheme.h>
 #ifndef QT_NO_DEBUG
 #include "qdebug.h"
 #endif
@@ -2445,6 +2446,13 @@ void QStyle::setProxy(QStyle *style)
 {
     Q_D(QStyle);
     d->proxyStyle = style;
+}
+
+//Windows and KDE allow menus to cover the taskbar, while GNOME and macOS don't
+bool QStylePrivate::useFullScreenForPopup()
+{
+    auto theme = QGuiApplicationPrivate::platformTheme();
+    return theme && theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
 }
 
 QT_END_NAMESPACE

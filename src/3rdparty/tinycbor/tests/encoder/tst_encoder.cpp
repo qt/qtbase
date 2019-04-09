@@ -41,6 +41,13 @@ class tst_Encoder : public QObject
 {
     Q_OBJECT
 private slots:
+    void floatAsHalfFloat_data();
+    void floatAsHalfFloat();
+    void halfFloat_data();
+    void halfFloat();
+    void floatAsHalfFloatCloseToZero_data();
+    void floatAsHalfFloatCloseToZero();
+    void floatAsHalfFloatNaN();
     void fixed_data();
     void fixed();
     void strings_data();
@@ -178,19 +185,125 @@ CborError encodeVariant(CborEncoder *encoder, const QVariant &v)
     return CborErrorUnknownType;
 }
 
-void compare(const QVariant &input, const QByteArray &output)
+template <typename Input, typename FnUnderTest>
+void encodeOne(Input input, FnUnderTest fn_under_test, QByteArray &buffer, CborError &error)
 {
-    QByteArray buffer(output.length(), Qt::Uninitialized);
     uint8_t *bufptr = reinterpret_cast<quint8 *>(buffer.data());
     CborEncoder encoder;
     cbor_encoder_init(&encoder, bufptr, buffer.length(), 0);
 
-    QCOMPARE(encodeVariant(&encoder, input), CborNoError);
-    QCOMPARE(encoder.remaining, size_t(1));
-    QCOMPARE(cbor_encoder_get_extra_bytes_needed(&encoder), size_t(0));
+    error = fn_under_test(&encoder, input);
 
-    buffer.resize(int(cbor_encoder_get_buffer_size(&encoder, bufptr)));
+    if (error == CborNoError) {
+        QCOMPARE(encoder.remaining, size_t(1));
+        QCOMPARE(cbor_encoder_get_extra_bytes_needed(&encoder), size_t(0));
+
+        buffer.resize(int(cbor_encoder_get_buffer_size(&encoder, bufptr)));
+    }
+}
+
+template <typename Input, typename FnUnderTest>
+void compare(Input input, FnUnderTest fn_under_test, const QByteArray &output)
+{
+    QByteArray buffer(output.length(), Qt::Uninitialized);
+    CborError error;
+
+    encodeOne(input, fn_under_test, buffer, error);
+    if (QTest::currentTestFailed())
+        return;
+
+    QCOMPARE(error, CborNoError);
     QCOMPARE(buffer, output);
+}
+
+void compare(const QVariant &input, const QByteArray &output)
+{
+    compare(input, encodeVariant, output);
+}
+
+void tst_Encoder::floatAsHalfFloat_data()
+{
+    addHalfFloat();
+}
+
+void tst_Encoder::floatAsHalfFloat()
+{
+    QFETCH(unsigned, rawInput);
+    QFETCH(double, floatInput);
+    QFETCH(QByteArray, output);
+
+    if (rawInput == 0U || rawInput == 0x8000U)
+        QSKIP("zero values are out of scope of this test case", QTest::SkipSingle);
+
+    if (qIsNaN(floatInput))
+        QSKIP("NaN values are out of scope of this test case", QTest::SkipSingle);
+
+    output.prepend('\xf9');
+
+    compare((float)floatInput, cbor_encode_float_as_half_float, output);
+}
+
+void tst_Encoder::halfFloat_data()
+{
+    addHalfFloat();
+}
+
+void tst_Encoder::halfFloat()
+{
+    QFETCH(unsigned, rawInput);
+    QFETCH(QByteArray, output);
+
+    uint16_t v = (uint16_t)rawInput;
+    output.prepend('\xf9');
+
+    compare(&v, cbor_encode_half_float, output);
+}
+
+void tst_Encoder::floatAsHalfFloatCloseToZero_data()
+{
+    QTest::addColumn<double>("floatInput");
+
+    QTest::newRow("+0") << 0.0;
+    QTest::newRow("-0") << -0.0;
+
+    QTest::newRow("below min.denorm") << ldexp(1.0, -14) * ldexp(1.0, -11);
+    QTest::newRow("above -min.denorm") << ldexp(-1.0, -14) * ldexp(1.0, -11);
+}
+
+void tst_Encoder::floatAsHalfFloatCloseToZero()
+{
+    QFETCH(double, floatInput);
+
+    QByteArray buffer(4, Qt::Uninitialized);
+    CborError error;
+
+    encodeOne((float)floatInput, cbor_encode_float_as_half_float, buffer, error);
+
+    QCOMPARE(error, CborNoError);
+
+    QVERIFY2(
+        buffer == raw("\xf9\x00\x00") || buffer == raw("\xf9\x80\x00"),
+        "Got value " + QByteArray::number(floatInput) + " encoded to: " + buffer);
+}
+
+void tst_Encoder::floatAsHalfFloatNaN()
+{
+    QByteArray buffer(4, Qt::Uninitialized);
+    CborError error;
+
+    encodeOne(myNaNf(), cbor_encode_float_as_half_float, buffer, error);
+
+    QCOMPARE(error, CborNoError);
+    QCOMPARE(buffer.size(), 3);
+
+    uint8_t ini_byte = (uint8_t)buffer[0],
+        exp = (uint8_t)buffer[1] & 0x7cU,
+        manth = (uint8_t)buffer[1] & 0x03U,
+        mantl = (uint8_t)buffer[2];
+
+    QCOMPARE((unsigned)ini_byte, 0xf9U);
+    QCOMPARE((unsigned)exp, 0x7cU);
+    QVERIFY((manth | mantl) != 0);
 }
 
 void tst_Encoder::fixed_data()

@@ -1520,7 +1520,7 @@ error:
  * floating point, this function takes a \c{void *} as a parameter for the
  * storage area, which must be at least 16 bits wide.
  *
- * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_half_float(), cbor_value_get_float()
+ * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_half_float(), cbor_value_get_half_float_as_float(), cbor_value_get_float()
  */
 
 /** @} */

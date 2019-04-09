@@ -76,7 +76,7 @@
  * \code
  *      uint8_t buf[16];
  *      CborEncoder encoder, mapEncoder;
- *      cbor_encoder_init(&encoder, &buf, sizeof(buf), 0);
+ *      cbor_encoder_init(&encoder, buf, sizeof(buf), 0);
  *      cbor_encoder_create_map(&encoder, &mapEncoder, 1);
  *      cbor_encode_text_stringz(&mapEncoder, "foo");
  *      cbor_encode_boolean(&mapEncoder, some_value);
@@ -115,7 +115,7 @@
  *      uint8_t buf[16];
  *      CborError err;
  *      CborEncoder encoder, mapEncoder;
- *      cbor_encoder_init(&encoder, &buf, sizeof(buf), 0);
+ *      cbor_encoder_init(&encoder, buf, sizeof(buf), 0);
  *      err = cbor_encoder_create_map(&encoder, &mapEncoder, 1);
  *      if (!err)
  *          return err;
@@ -155,7 +155,7 @@
  *             goto error;
  *         buf = nbuf;
  *
- *         cbor_encoder_init(&encoder, &buf, size, 0);
+ *         cbor_encoder_init(&encoder, buf, size, 0);
  *         err = cbor_encoder_create_array(&encoder, &arrayEncoder, n);
  *         cbor_assert(err);         // can't fail, the buffer is always big enough
  *
@@ -411,7 +411,7 @@ CborError cbor_encode_simple_value(CborEncoder *encoder, uint8_t value)
  * This function is useful for code that needs to pass through floating point
  * values but does not wish to have the actual floating-point code.
  *
- * \sa cbor_encode_half_float, cbor_encode_float, cbor_encode_double
+ * \sa cbor_encode_half_float, cbor_encode_float_as_half_float, cbor_encode_float, cbor_encode_double
  */
 CborError cbor_encode_floating_point(CborEncoder *encoder, CborType fpType, const void *value)
 {
@@ -622,12 +622,24 @@ CborError cbor_encoder_close_container(CborEncoder *encoder, const CborEncoder *
  */
 
 /**
+ * \fn CborError cbor_encode_float_as_half_float(CborEncoder *encoder, float value)
+ *
+ * Convert the IEEE 754 single-precision (32-bit) floating point value \a value
+ * to the IEEE 754 half-precision (16-bit) floating point value and append it
+ * to the CBOR stream provided by \a encoder.
+ * The \a value should be in the range of the IEEE 754 half-precision floating point type,
+ * INFINITY, -INFINITY, or NAN, otherwise the behavior of this function is undefined.
+ *
+ * \sa cbor_encode_floating_point(), cbor_encode_float(), cbor_encode_double()
+ */
+
+/**
  * \fn CborError cbor_encode_float(CborEncoder *encoder, float value)
  *
  * Appends the IEEE 754 single-precision (32-bit) floating point value \a value
  * to the CBOR stream provided by \a encoder.
  *
- * \sa cbor_encode_floating_point(), cbor_encode_half_float(), cbor_encode_double()
+ * \sa cbor_encode_floating_point(), cbor_encode_half_float(), cbor_encode_float_as_half_float(), cbor_encode_double()
  */
 
 /**
@@ -636,7 +648,7 @@ CborError cbor_encoder_close_container(CborEncoder *encoder, const CborEncoder *
  * Appends the IEEE 754 double-precision (64-bit) floating point value \a value
  * to the CBOR stream provided by \a encoder.
  *
- * \sa cbor_encode_floating_point(), cbor_encode_half_float(), cbor_encode_float()
+ * \sa cbor_encode_floating_point(), cbor_encode_half_float(), cbor_encode_float_as_half_float(), cbor_encode_float()
  */
 
 /**
