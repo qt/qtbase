@@ -976,7 +976,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     plugin_type = scope.get_string('PLUGIN_TYPE')
 
     if plugin_type:
-        cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type[0]))
+        cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type))
 
     source_keys: typing.List[str] = []
     write_source_file_list(cm_fh, scope, 'SOURCES',
