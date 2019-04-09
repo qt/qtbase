@@ -148,7 +148,7 @@ def map_qt_base_library(lib: str) -> str:
         'webview': 'Qt::WebView',
         'widgets': 'Qt::Widgets',
         'window-lib': 'Qt::AppManWindow',
-        'windowsuiautomation': 'Qt::WindowsUIAutomationSupport',
+        'windowsuiautomation_support': 'Qt::WindowsUIAutomationSupport',
         'winextras': 'Qt::WinExtras',
         'x11extras': 'Qt::X11Extras',
         'xcb_qpa_lib': 'Qt::XcbQpa',
