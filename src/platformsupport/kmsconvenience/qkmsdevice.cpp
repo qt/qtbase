@@ -387,23 +387,26 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     if (!cloneSource.isEmpty())
         qCDebug(qLcKmsDebug) << "Output" << connectorName << " clones output " << cloneSource;
 
-    const QByteArray fbsize = userConnectorConfig.value(QStringLiteral("size")).toByteArray().toLower();
     QSize framebufferSize;
-    framebufferSize.setWidth(modes[selected_mode].hdisplay);
-    framebufferSize.setHeight(modes[selected_mode].vdisplay);
-
+    bool framebufferSizeSet = false;
+    const QByteArray fbsize = userConnectorConfig.value(QStringLiteral("size")).toByteArray().toLower();
+    if (!fbsize.isEmpty()) {
+        if (sscanf(fbsize.constData(), "%dx%d", &framebufferSize.rwidth(), &framebufferSize.rheight()) == 2) {
 #if QT_CONFIG(drm_atomic)
-    if (hasAtomicSupport()) {
-        if (sscanf(fbsize.constData(), "%dx%d", &framebufferSize.rwidth(), &framebufferSize.rheight()) != 2) {
-            qWarning("Framebuffer size format is invalid.");
-        }
-    } else {
-        qWarning("Setting framebuffer size is only available with DRM atomic API");
-    }
-#else
-    if (fbsize.size())
-        qWarning("Setting framebuffer size is only available with DRM atomic API");
+            if (hasAtomicSupport())
+                framebufferSizeSet = true;
 #endif
+            if (!framebufferSizeSet)
+                qWarning("Setting framebuffer size is only available with DRM atomic API");
+        } else {
+            qWarning("Invalid framebuffer size '%s'", fbsize.constData());
+        }
+    }
+    if (!framebufferSizeSet) {
+        framebufferSize.setWidth(modes[selected_mode].hdisplay);
+        framebufferSize.setHeight(modes[selected_mode].vdisplay);
+    }
+
     qCDebug(qLcKmsDebug) << "Output" << connectorName << "framebuffer size is " << framebufferSize;
 
     QKmsOutput output;
