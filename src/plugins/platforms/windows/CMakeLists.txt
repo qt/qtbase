@@ -188,9 +188,9 @@ add_qt_resource(qwindows "cursors" PREFIX "/qt-project.org/windows/cursors" FILE
     images/splitvcursor_64.png)
 
 
-extend_target(qwindows CONDITION (QT_FEATURE_accessibility) AND (TARGET windowsuiautomation_supportPrivate)
+extend_target(qwindows CONDITION (QT_FEATURE_accessibility) AND (TARGET WindowsUIAutomationSupportPrivate)
     LIBRARIES
-        windowsuiautomation_supportPrivate
+        Qt::WindowsUIAutomationSupportPrivate
 )
 
 extend_target(qwindows CONDITION QT_FEATURE_accessibility AND mingw
