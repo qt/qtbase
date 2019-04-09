@@ -4794,13 +4794,13 @@ class LotsOfSignalsAndSlots: public QObject
 
     public slots:
         void slot_v() {}
-        void slot_v_noexcept() Q_DECL_NOTHROW {}
+        void slot_v_noexcept() noexcept {}
         void slot_vi(int) {}
-        void slot_vi_noexcept() Q_DECL_NOTHROW {}
+        void slot_vi_noexcept() noexcept {}
         void slot_vii(int, int) {}
         void slot_viii(int, int, int) {}
         int slot_i() { return 0; }
-        int slot_i_noexcept() Q_DECL_NOTHROW { return 0; }
+        int slot_i_noexcept() noexcept { return 0; }
         int slot_ii(int) { return 0; }
         int slot_iii(int, int) { return 0; }
         int slot_iiii(int, int, int) { return 0; }
@@ -4814,18 +4814,18 @@ class LotsOfSignalsAndSlots: public QObject
         void slot_vPFvvE(fptr) {}
 
         void const_slot_v() const {};
-        void const_slot_v_noexcept() const Q_DECL_NOTHROW {}
+        void const_slot_v_noexcept() const noexcept {}
         void const_slot_vi(int) const {};
-        void const_slot_vi_noexcept(int) const Q_DECL_NOTHROW {}
+        void const_slot_vi_noexcept(int) const noexcept {}
 
         static void static_slot_v() {}
-        static void static_slot_v_noexcept() Q_DECL_NOTHROW {}
+        static void static_slot_v_noexcept() noexcept {}
         static void static_slot_vi(int) {}
-        static void static_slot_vi_noexcept(int) Q_DECL_NOTHROW {}
+        static void static_slot_vi_noexcept(int) noexcept {}
         static void static_slot_vii(int, int) {}
         static void static_slot_viii(int, int, int) {}
         static int static_slot_i() { return 0; }
-        static int static_slot_i_noexcept() Q_DECL_NOTHROW { return 0; }
+        static int static_slot_i_noexcept() noexcept { return 0; }
         static int static_slot_ii(int) { return 0; }
         static int static_slot_iii(int, int) { return 0; }
         static int static_slot_iiii(int, int, int) { return 0; }
@@ -4988,11 +4988,11 @@ void tst_QObject::connectCxx0xTypeMatching()
 
 }
 
-void receiverFunction_noexcept() Q_DECL_NOTHROW {}
-struct Functor_noexcept { void operator()() Q_DECL_NOTHROW {} };
+void receiverFunction_noexcept() noexcept {}
+struct Functor_noexcept { void operator()() noexcept {} };
 void tst_QObject::connectCxx17Noexcept()
 {
-    // this is about connecting signals to slots with the Q_DECL_NOTHROW qualifier
+    // this is about connecting signals to slots with the noexcept qualifier
     // as semantics changed due to http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html
     typedef LotsOfSignalsAndSlots Foo;
     Foo obj;

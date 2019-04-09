@@ -501,7 +501,7 @@ NSTimeZone *QTimeZone::toNSTimeZone() const
 
     \sa QRectF::fromCGRect()
 */
-CGRect QRect::toCGRect() const Q_DECL_NOTHROW
+CGRect QRect::toCGRect() const noexcept
 {
     return CGRectMake(x(), y(), width(), height());
 }
@@ -513,7 +513,7 @@ CGRect QRect::toCGRect() const Q_DECL_NOTHROW
 
     \sa fromCGRect()
 */
-CGRect QRectF::toCGRect() const Q_DECL_NOTHROW
+CGRect QRectF::toCGRect() const noexcept
 {
     return CGRectMake(x(), y(), width(), height());
 }
@@ -525,7 +525,7 @@ CGRect QRectF::toCGRect() const Q_DECL_NOTHROW
 
     \sa toCGRect()
 */
-QRectF QRectF::fromCGRect(CGRect rect) Q_DECL_NOTHROW
+QRectF QRectF::fromCGRect(CGRect rect) noexcept
 {
     return QRectF(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
@@ -539,7 +539,7 @@ QRectF QRectF::fromCGRect(CGRect rect) Q_DECL_NOTHROW
 
     \sa QPointF::fromCGPoint()
 */
-CGPoint QPoint::toCGPoint() const Q_DECL_NOTHROW
+CGPoint QPoint::toCGPoint() const noexcept
 {
     return CGPointMake(x(), y());
 }
@@ -551,7 +551,7 @@ CGPoint QPoint::toCGPoint() const Q_DECL_NOTHROW
 
     \sa fromCGPoint()
 */
-CGPoint QPointF::toCGPoint() const Q_DECL_NOTHROW
+CGPoint QPointF::toCGPoint() const noexcept
 {
     return CGPointMake(x(), y());
 }
@@ -563,7 +563,7 @@ CGPoint QPointF::toCGPoint() const Q_DECL_NOTHROW
 
     \sa toCGPoint()
 */
-QPointF QPointF::fromCGPoint(CGPoint point) Q_DECL_NOTHROW
+QPointF QPointF::fromCGPoint(CGPoint point) noexcept
 {
     return QPointF(point.x, point.y);
 }
@@ -577,7 +577,7 @@ QPointF QPointF::fromCGPoint(CGPoint point) Q_DECL_NOTHROW
 
     \sa QSizeF::fromCGSize()
 */
-CGSize QSize::toCGSize() const Q_DECL_NOTHROW
+CGSize QSize::toCGSize() const noexcept
 {
     return CGSizeMake(width(), height());
 }
@@ -589,7 +589,7 @@ CGSize QSize::toCGSize() const Q_DECL_NOTHROW
 
     \sa fromCGSize()
 */
-CGSize QSizeF::toCGSize() const Q_DECL_NOTHROW
+CGSize QSizeF::toCGSize() const noexcept
 {
     return CGSizeMake(width(), height());
 }
@@ -601,7 +601,7 @@ CGSize QSizeF::toCGSize() const Q_DECL_NOTHROW
 
     \sa toCGSize()
 */
-QSizeF QSizeF::fromCGSize(CGSize size) Q_DECL_NOTHROW
+QSizeF QSizeF::fromCGSize(CGSize size) noexcept
 {
     return QSizeF(size.width, size.height);
 }

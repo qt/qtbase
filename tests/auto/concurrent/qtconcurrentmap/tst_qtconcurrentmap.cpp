@@ -2021,12 +2021,12 @@ int fn(int &i)
     return i;
 }
 
-int fnConstNoExcept(const int &i) Q_DECL_NOTHROW
+int fnConstNoExcept(const int &i) noexcept
 {
     return i;
 }
 
-int fnNoExcept(int &i) Q_DECL_NOTHROW
+int fnNoExcept(int &i) noexcept
 {
     return i;
 }
@@ -2041,12 +2041,12 @@ QString changeType(int &)
     return QString();
 }
 
-QString changeTypeConstNoExcept(const int &) Q_DECL_NOTHROW
+QString changeTypeConstNoExcept(const int &) noexcept
 {
     return QString();
 }
 
-QString changeTypeNoExcept(int &) Q_DECL_NOTHROW
+QString changeTypeNoExcept(int &) noexcept
 {
     return QString();
 }
@@ -2061,12 +2061,12 @@ int changeTypeQStringList(QStringList &)
     return 0;
 }
 
-int changeTypeQStringListConstNoExcept(const QStringList &) Q_DECL_NOTHROW
+int changeTypeQStringListConstNoExcept(const QStringList &) noexcept
 {
     return 0;
 }
 
-int changeTypeQStringListNoExcept(QStringList &) Q_DECL_NOTHROW
+int changeTypeQStringListNoExcept(QStringList &) noexcept
 {
     return 0;
 }
@@ -2096,22 +2096,22 @@ public:
         return QString();
     }
 
-    MemFnTester fnNoExcept() Q_DECL_NOTHROW
+    MemFnTester fnNoExcept() noexcept
     {
         return MemFnTester();
     }
 
-    MemFnTester fnConstNoExcept() const Q_DECL_NOTHROW
+    MemFnTester fnConstNoExcept() const noexcept
     {
         return MemFnTester();
     }
 
-    QString changeTypeNoExcept() Q_DECL_NOTHROW
+    QString changeTypeNoExcept() noexcept
     {
         return QString();
     }
 
-    QString changeTypeConstNoExcept() const Q_DECL_NOTHROW
+    QString changeTypeConstNoExcept() const noexcept
     {
         return QString();
     }

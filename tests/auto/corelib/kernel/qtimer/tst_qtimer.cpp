@@ -773,7 +773,7 @@ public:
         quitEventLoop_noexcept();
     }
 
-    static void quitEventLoop_noexcept() Q_DECL_NOTHROW
+    static void quitEventLoop_noexcept() noexcept
     {
         QVERIFY(!_e.isNull());
         _e->quit();

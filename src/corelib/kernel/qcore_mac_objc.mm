@@ -371,7 +371,7 @@ bool operator<(const KeyPair &entry, const Qt::Key &key)
 struct qtKey2CocoaKeySortLessThan
 {
     typedef bool result_type;
-    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const noexcept
     {
         return entry1.qtKey < entry2.qtKey;
     }

@@ -52,7 +52,7 @@ using namespace QTestPrivate;
 Q_CONSTEXPR QFormLayout::ItemRole invalidRole = QFormLayout::ItemRole(3);
 
 struct QFormLayoutTakeRowResultHolder {
-    QFormLayoutTakeRowResultHolder(QFormLayout::TakeRowResult result) Q_DECL_NOTHROW
+    QFormLayoutTakeRowResultHolder(QFormLayout::TakeRowResult result) noexcept
         : labelItem(result.labelItem),
           fieldItem(result.fieldItem)
     {
@@ -66,20 +66,20 @@ struct QFormLayoutTakeRowResultHolder {
         if (fieldItem)
             disposer.setItem(0, QFormLayout::FieldRole, fieldItem);
     }
-    QFormLayoutTakeRowResultHolder(QFormLayoutTakeRowResultHolder &&other) Q_DECL_NOTHROW
+    QFormLayoutTakeRowResultHolder(QFormLayoutTakeRowResultHolder &&other) noexcept
         : labelItem(other.labelItem),
           fieldItem(other.fieldItem)
     {
         other.labelItem = nullptr;
         other.fieldItem = nullptr;
     }
-    QFormLayoutTakeRowResultHolder &operator=(QFormLayoutTakeRowResultHolder &&other) Q_DECL_NOTHROW
+    QFormLayoutTakeRowResultHolder &operator=(QFormLayoutTakeRowResultHolder &&other) noexcept
     {
         swap(other);
         return *this;
     }
 
-    void swap(QFormLayoutTakeRowResultHolder &other) Q_DECL_NOTHROW
+    void swap(QFormLayoutTakeRowResultHolder &other) noexcept
     {
         qSwap(labelItem, other.labelItem);
         qSwap(fieldItem, other.fieldItem);

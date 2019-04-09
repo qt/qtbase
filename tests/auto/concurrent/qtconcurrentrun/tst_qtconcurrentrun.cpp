@@ -122,23 +122,23 @@ public:
 class ANoExcept
 {
 public:
-    int member0() Q_DECL_NOTHROW { return 10; }
-    int member1(int in) Q_DECL_NOTHROW { return in; }
+    int member0() noexcept { return 10; }
+    int member1(int in) noexcept { return in; }
 
     typedef int result_type;
-    int operator()() Q_DECL_NOTHROW { return 10; }
-    int operator()(int in) Q_DECL_NOTHROW { return in; }
+    int operator()() noexcept { return 10; }
+    int operator()(int in) noexcept { return in; }
 };
 
 class AConstNoExcept
 {
 public:
-    int member0() const Q_DECL_NOTHROW { return 10; }
-    int member1(int in) const Q_DECL_NOTHROW { return in; }
+    int member0() const noexcept { return 10; }
+    int member1(int in) const noexcept { return in; }
 
     typedef int result_type;
-    int operator()() const Q_DECL_NOTHROW { return 10; }
-    int operator()(int in) const Q_DECL_NOTHROW { return in; }
+    int operator()() const noexcept { return 10; }
+    int operator()(int in) const noexcept { return in; }
 };
 
 void tst_QtConcurrentRun::returnValue()
