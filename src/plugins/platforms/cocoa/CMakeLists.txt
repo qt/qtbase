@@ -44,7 +44,14 @@ add_qt_plugin(qcocoa
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
     LIBRARIES
-        ${FWcups}
+        Qt::AccessibilitySupportPrivate
+        Qt::ClipboardSupportPrivate
+        Qt::CorePrivate
+        Qt::FontDatabaseSupportPrivate
+        Qt::GraphicsSupportPrivate
+        Qt::GuiPrivate
+        Qt::ThemeSupportPrivate
+    PUBLIC_LIBRARIES
         ${FWAppKit}
         ${FWCarbon}
         ${FWCoreServices}
@@ -53,13 +60,13 @@ add_qt_plugin(qcocoa
         ${FWMetal}
         ${FWQuartzCore}
         Cups::Cups
-        Qt::AccessibilitySupportPrivate
-        Qt::ClipboardSupportPrivate
-        Qt::CorePrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::GraphicsSupportPrivate
-        Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
+        Qt::AccessibilitySupport
+        Qt::ClipboardSupport
+        Qt::Core
+        Qt::FontDatabaseSupport
+        Qt::GraphicsSupport
+        Qt::Gui
+        Qt::ThemeSupport
 )
 
 # Resources:
@@ -69,7 +76,7 @@ add_qt_resource(qcocoa "qcocoaresources" PREFIX "/qt-project.org/mac/cursors" FI
     images/waitcursor.png)
 
 
-#### Keys ignored in scope 1:.:cocoa.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:./cocoa.pro:<TRUE>:
 # CONFIG = "no_app_extension_api_only"
 # OTHER_FILES = "cocoa.json"
 # PLUGIN_CLASS_NAME = "QCocoaIntegrationPlugin"
@@ -90,6 +97,8 @@ extend_target(qcocoa CONDITION QT_FEATURE_vulkan
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
     LIBRARIES
         Qt::VulkanSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::VulkanSupport
 )
 
 extend_target(qcocoa CONDITION TARGET Qt::Widgets
@@ -101,9 +110,12 @@ extend_target(qcocoa CONDITION TARGET Qt::Widgets
     LIBRARIES
         Qt::PrintSupportPrivate
         Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::PrintSupport
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 5:.:cocoa.pro:TARGET Qt::Widgets:
+#### Keys ignored in scope 5:.:.:./cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
 extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_colordialog)
@@ -121,5 +133,5 @@ extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_fontdialog)
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )
 
-#### Keys ignored in scope 9:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 9:.:.:./cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
