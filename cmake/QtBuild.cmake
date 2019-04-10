@@ -170,20 +170,18 @@ function(qt_create_nolink_target target)
 
     set(nolink_target "${target}_nolink")
     if(NOT TARGET "${nolink_target}")
-        string(REPLACE ":" "_" base_target "__${nolink_target}")
-        add_library("${base_target}" INTERFACE)
-        target_include_directories("${base_target}" INTERFACE
-                                   $<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>)
-        target_include_directories("${base_target}" INTERFACE SYSTEM
-                                   $<TARGET_PROPERTY:${target},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>)
-        target_compile_definitions("${base_target}" INTERFACE
-                                   $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS>)
-        target_compile_options("${base_target}" INTERFACE
-                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_OPTIONS>)
-        target_compile_features("${base_target}" INTERFACE
-                                $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
-
-        add_library("${nolink_target}" ALIAS "${base_target}")
+        add_library("${nolink_target}" INTERFACE IMPORTED)
+        set_target_properties("${nolink_target}" PROPERTIES
+                              INTERFACE_INCLUDE_DIRECTORIES
+                              $<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>
+                              INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                              $<TARGET_PROPERTY:${target},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
+                              INTERFACE_COMPILE_DEFINITIONS
+                              $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS>
+                              INTERFACE_COMPILE_OPTIONS
+                              $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_OPTIONS>
+                              INTERFACE_COMPILE_FEATURES
+                              $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
     endif()
 endfunction()
 
