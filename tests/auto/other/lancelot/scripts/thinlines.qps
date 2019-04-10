@@ -1,0 +1,79 @@
+# Version: 1
+# CheckVsReference: 5%
+
+drawRect 0 0 800 800
+
+path_addRect p 0 0 75 75
+path_addEllipse p 25 25 75 75
+
+translate -500 -500
+
+begin_block drawing
+  save
+    drawLine 0 0 100 100
+
+    translate 0 100
+    drawPath p
+
+    translate 0 110
+    drawRect 0 0 100 100
+
+    translate 0 110
+    drawPolyline [0 0 100 0 50 50]
+
+    drawPoint 40 40
+    drawPoint 41 40
+    drawPoint 42 40
+    drawPoint 43 40
+    drawPoint 44 40
+    drawPoint 45 40
+    drawPoint 46 40
+    drawPoint 47 40
+    drawPoint 48 40
+    drawPoint 49 40
+    drawPoint 50 40
+
+  restore
+end_block
+
+begin_block univsnonuni
+  save
+
+    save
+      scale 0.7 0.7
+      repeat_block drawing
+    restore
+
+    translate 100 0
+    save
+      scale 0.7 0.8
+      repeat_block drawing
+    restore
+
+  restore
+end_block
+
+resetMatrix
+translate 20.5 20.5
+
+begin_block row
+save
+  repeat_block univsnonuni
+
+  translate 240 0
+  save
+    rotate 10
+    repeat_block univsnonuni
+  restore
+
+  translate 220 0
+  save
+    rotate_y 30
+    repeat_block univsnonuni
+  restore
+restore
+end_block
+
+translate 0 320
+setRenderHint AntiAliasing
+repeat_block row
