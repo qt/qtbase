@@ -1,3 +1,5 @@
+# Generated from gui.pro.
+
 # special case:
 set(OpenGL_GL_PREFERENCE GLVND)
 
@@ -228,26 +230,26 @@ add_qt_module(Gui
     DEFINES
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
-        QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
+        QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}" # special case
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB
+        ZLIB::ZLIB # special case
     PUBLIC_LIBRARIES
         Qt::Core
 )
 
 # Resources:
-set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
-    PROPERTIES alias "sRGB2014.icc")
-add_qt_resource(Gui "qpdf" PREFIX "qpdf/" BASE "painting" FILES
-    ../../3rdparty/icc/sRGB2014.icc
-    qpdfa_metadata.xml)
-
 # special case:
 # This name is fixed in the code:-/
 add_qt_resource(Gui qmake_webgradients PREFIX "/qgradient" BASE "painting" FILES
     webgradients.binaryjson
 )
+
+set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
+    PROPERTIES alias "sRGB2014.icc")
+add_qt_resource(Gui "qpdf" PREFIX "qpdf/" BASE "painting" FILES
+    ../../3rdparty/icc/sRGB2014.icc
+    qpdfa_metadata.xml)
 
 add_qt_simd_part(Gui SIMD sse2
     SOURCES
@@ -268,20 +270,18 @@ add_qt_simd_part(Gui SIMD sse4_1
 
 add_qt_simd_part(Gui SIMD neon
     SOURCES
-        painting/qdrawhelper_neon_p.h
-        image/qimage_neon.cpp
-        painting/qdrawhelper_neon.cpp
-        painting/qimagescale_neon.cpp
         ../3rdparty/pixman/pixman-arm-neon-asm.S
+        image/qimage_neon.cpp
+        painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
         painting/qdrawhelper_neon_asm.S
+        painting/qimagescale_neon.cpp
 )
 
 add_qt_simd_part(Gui SIMD mips_dsp
     SOURCES
-        painting/qdrawhelper_mips_dsp_p.h
-        painting/qt_mips_asm_dsp_p.h
-        painting/qdrawhelper_mips_dsp.cpp
+        painting/qdrawhelper_mips_dsp.cpp painting/qdrawhelper_mips_dsp_p.h
         painting/qdrawhelper_mips_dsp_asm.S
+        painting/qt_mips_asm_dsp_p.h
 )
 
 add_qt_simd_part(Gui SIMD mips_dspr2
@@ -298,60 +298,29 @@ add_qt_simd_part(Gui SIMD avx2
         painting/qdrawhelper_avx2.cpp
 )
 
-
-#### Keys ignored in scope 1:.:gui.pro:<NONE>:
-# CONFIG = "simd" "optimize_full" "qt_tracepoints"
-# KERNEL_P = "kernel"
-# MODULE_PLUGIN_TYPES = "platforms" "platforms/darwin" "xcbglintegrations" "platformthemes" "platforminputcontexts" "generic" "iconengines" "imageformats" "egldeviceintegrations"
-# PRECOMPILED_HEADER = "kernel/qt_gui_pch.h"
-# QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtGui.dynlist"
-# QMAKE_EXTRA_COMPILERS = "qvkgen_h" "qvkgen_ph" "qvkgen_pimpl"
-# QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
-# QMAKE_QVKGEN_INPUT = "vulkan/vk.xml"
-# QMAKE_QVKGEN_LICENSE_HEADER = "$$QT_SOURCE_TREE/header.LGPL"
-# _LOADED = "qt_module" "cmake_functions"
-# qvkgen_h.commands = "$$QMAKE_QVKGEN" "${QMAKE_FILE_IN}" "$$shell_quote$$QMAKE_QVKGEN_LICENSE_HEADER" "${QMAKE_FILE_OUT_PATH}/${QMAKE_FILE_OUT_BASE}"
-# qvkgen_h.input = "QMAKE_QVKGEN_INPUT"
-# qvkgen_h.output = "$$OUT_PWD/vulkan/qvulkanfunctions.h"
-# qvkgen_ph.commands = "$$escape_expand\\n"
-# qvkgen_ph.depends = "$$OUT_PWD/vulkan/qvulkanfunctions.h"
-# qvkgen_ph.input = "QMAKE_QVKGEN_INPUT"
-# qvkgen_ph.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.h"
-# qvkgen_pimpl.commands = "$$escape_expand\\n"
-# qvkgen_pimpl.depends = "$$OUT_PWD/vulkan/qvulkanfunctions_p.h"
-# qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
-# qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
-# targ_headers.CONFIG = "no_check_exist"
-# webgradients.base = "painting"  # special case
-# webgradients.files = "painting/webgradients.binaryjson"  # special case
-# webgradients.prefix = "qgradient"  # special case
-
 #special case:
 extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
     SOURCES
         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
 )
 
+#### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
+# CONFIG = "simd" "optimize_full" "qt_tracepoints"
+# MODULE_PLUGIN_TYPES = "platforms" "platforms/darwin" "xcbglintegrations" "platformthemes" "platforminputcontexts" "generic" "iconengines" "imageformats" "egldeviceintegrations"
+# QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtGui.dynlist"
+# QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
+# _LOADED = "qt_module" "cmake_functions"
+
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:gui.pro:qtConfig(opengl._x_):
+#### Keys ignored in scope 2:.:.:gui.pro:qtConfig(opengl._x_):
 # MODULE_CONFIG = "opengl"
 
-#### Keys ignored in scope 3:.:gui.pro:QT_FEATURE_angle:
-# CMAKE_ANGLE_EGL_DLL_DEBUG = "libEGLd.dll"
-# CMAKE_ANGLE_EGL_DLL_RELEASE = "libEGL.dll"
-# CMAKE_ANGLE_EGL_IMPLIB_DEBUG = "libEGLd.$${QMAKE_EXTENSION_STATICLIB}"
-# CMAKE_ANGLE_EGL_IMPLIB_RELEASE = "libEGL.$${QMAKE_EXTENSION_STATICLIB}"
-# CMAKE_ANGLE_GLES2_DLL_DEBUG = "libGLESv2d.dll"
-# CMAKE_ANGLE_GLES2_DLL_RELEASE = "libGLESv2.dll"
-# CMAKE_ANGLE_GLES2_IMPLIB_DEBUG = "libGLESv2d.$${QMAKE_EXTENSION_STATICLIB}"
-# CMAKE_ANGLE_GLES2_IMPLIB_RELEASE = "libGLESv2.$${QMAKE_EXTENSION_STATICLIB}"
-# CMAKE_GL_INCDIRS = "$$CMAKE_INCLUDE_DIR"
-# CMAKE_QT_OPENGL_IMPLEMENTATION = "GLESv2"
+#### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
 
-#### Keys ignored in scope 4:.:gui.pro:testcocoon:
+#### Keys ignored in scope 4:.:.:gui.pro:testcocoon:
 # _LOADED = "testcocoon"
 
 extend_target(Gui CONDITION APPLE_OSX
@@ -372,45 +341,45 @@ extend_target(Gui CONDITION WIN32
         kernel/qwindowdefs_win.h
 )
 
-#### Keys ignored in scope 7:.:gui.pro:WIN32:
+#### Keys ignored in scope 7:.:.:gui.pro:WIN32:
 # CMAKE_WINDOWS_BUILD = "True"
 
-#### Keys ignored in scope 10:.:gui.pro:QT_FEATURE_egl:
+#### Keys ignored in scope 10:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_LIBS = "$$cmakeProcessLibs$$QMAKE_LIBS_EGL"
 
-#### Keys ignored in scope 11:.:gui.pro:NOT QMAKE_LIBDIR_EGL_ISEMPTY:
+#### Keys ignored in scope 11:.:.:gui.pro:NOT QMAKE_LIBDIR_EGL_ISEMPTY:
 # CMAKE_EGL_LIBDIR = "$$cmakeTargetPath$$QMAKE_LIBDIR_EGL"
 
-#### Keys ignored in scope 12:.:gui.pro:QT_FEATURE_opengles2:
+#### Keys ignored in scope 12:.:.:gui.pro:QT_FEATURE_opengles2:
 # CMAKE_GL_HEADER_NAME = "GLES2/gl2.h"
 # CMAKE_OPENGL_INCDIRS = "$$cmakePortablePaths$$QMAKE_INCDIR_OPENGL_ES2"
 # CMAKE_OPENGL_LIBS = "$$cmakeProcessLibs$$QMAKE_LIBS_OPENGL_ES2"
 # CMAKE_QT_OPENGL_IMPLEMENTATION = "GLESv2"
 
-#### Keys ignored in scope 13:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ES2_ISEMPTY:
+#### Keys ignored in scope 13:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ES2_ISEMPTY:
 # CMAKE_GL_INCDIRS = "$$cmakeTargetPaths$$QMAKE_INCDIR_OPENGL_ES2"
 
-#### Keys ignored in scope 14:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ES2_ISEMPTY:
+#### Keys ignored in scope 14:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ES2_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths$$QMAKE_LIBDIR_OPENGL_ES2"
 
-#### Keys ignored in scope 16:.:gui.pro:QT_FEATURE_opengl:
+#### Keys ignored in scope 16:.:.:gui.pro:QT_FEATURE_opengl:
 # CMAKE_GL_HEADER_NAME = "GL/gl.h"
 # CMAKE_OPENGL_INCDIRS = "$$cmakePortablePaths$$QMAKE_INCDIR_OPENGL"
 # CMAKE_QT_OPENGL_IMPLEMENTATION = "GL"
 
-#### Keys ignored in scope 17:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ISEMPTY:
+#### Keys ignored in scope 17:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ISEMPTY:
 # CMAKE_GL_INCDIRS = "$$cmakeTargetPaths$$QMAKE_INCDIR_OPENGL"
 
-#### Keys ignored in scope 18:.:gui.pro:NOT QT_FEATURE_dynamicgl:
+#### Keys ignored in scope 18:.:.:gui.pro:NOT QT_FEATURE_dynamicgl:
 # CMAKE_OPENGL_LIBS = "$$cmakeProcessLibs$$QMAKE_LIBS_OPENGL"
 
-#### Keys ignored in scope 19:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
+#### Keys ignored in scope 19:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths$$QMAKE_LIBDIR_OPENGL"
 
-#### Keys ignored in scope 20:.:gui.pro:APPLE_OSX:
+#### Keys ignored in scope 20:.:.:gui.pro:APPLE_OSX:
 # CMAKE_GL_HEADER_NAME = "gl.h"
 
-#### Keys ignored in scope 21:.:gui.pro:QT_FEATURE_egl:
+#### Keys ignored in scope 21:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_INCDIRS = "$$cmakePortablePaths$$QMAKE_INCDIR_EGL"
 
 extend_target(Gui CONDITION QT_FEATURE_accessibility
@@ -439,6 +408,7 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
 
+# special case:
 # With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
 # acted like WrapOpenGL: direct linkage against either libGLESv2 or
 # libGL, depending on the opengl _feature_. This is done by hand now
@@ -483,9 +453,6 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         WrapOpenGL
 )
 
-#### Keys ignored in scope 27:.:kernel/kernel.pri:QT_FEATURE_opengl:
-# CONFIG = "opengl"
-
 extend_target(Gui CONDITION QT_FEATURE_movie
     SOURCES
         image/qmovie.cpp image/qmovie.h
@@ -524,23 +491,18 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-#### Keys ignored in scope 53:.:opengl/opengl.pri:QT_FEATURE_opengles2:
-# CONFIG = "opengles2"
+# special case:
+# extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5 ...
 
-extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5
-    SOURCES
-        painting/qdrawhelper.cpp
-)
-
-#### Keys ignored in scope 43:.:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
+#### Keys ignored in scope 43:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
 
-extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT (TEST_architecture_arch  STREQUAL "arm64")
+extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT (TEST_architecture_arch STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
-#### Keys ignored in scope 53:.:opengl/opengl.pri:QT_FEATURE_opengles2:
+#### Keys ignored in scope 53:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
 # CONFIG = "opengles2"
 
 extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
@@ -586,25 +548,15 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
+    PUBLIC_LIBRARIES
+        vulkan_nolink
 )
 
-# special case to include only headers aka QMAKE_USE += vulkan/nolink
-if(QT_FEATURE_vulkan)
-    # Can't use generator expressions https://gitlab.kitware.com/cmake/cmake/issues/19072
-    get_target_property(vulkan_includes Vulkan::Vulkan INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(Gui PUBLIC ${vulkan_includes})
-endif()
-
-#### Keys ignored in scope 61:.:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 61:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # CONFIG = "generated_privates"
-# qvkgen_h.variable_out = "HEADERS"
-# qvkgen_ph.variable_out = "HEADERS"
-# qvkgen_pimpl.variable_out = "SOURCES"
 
-#### Keys ignored in scope 63:.:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 63:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
-# qvkgen_ph.CONFIG = "target_predeps" "no_link"
-# qvkgen_pimpl.CONFIG = "target_predeps" "no_link"
 
 # special case:
 if (QT_FEATURE_vulkan)
@@ -645,6 +597,7 @@ if (QT_FEATURE_vulkan)
     )
 endif()
 
+# special case:
 # qpa headers are expected to be located right next to QtGui's private
 # headers. So a private QtGui header is #include <private/qfoo_p.h> and
 # a qpa header is #include <qpa/qplatformfoo.h>, both of them implying
@@ -652,6 +605,8 @@ endif()
 qt_read_headers_pri("Gui" "module_headers") # special case
 install(FILES ${module_headers_qpa}
     DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa) # special case
-qt_create_tracepoints(Gui ./qtgui.tracepoints)
 
-add_qt_docs(./doc/qtgui.qdocconf)
+qt_create_tracepoints(Gui ./qtgui.tracepoints)
+add_qt_docs(
+    ./doc/qtgui.qdocconf
+)
