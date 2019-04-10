@@ -66,6 +66,10 @@
 #  include <gnu/lib-names.h>
 #endif
 
+#if defined(Q_OS_FREEBSD) || QT_CONFIG(dlopen)
+#  include <dlfcn.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Almost always the same. If not, specify in qplatformdefs.h.
@@ -115,6 +119,18 @@ struct LibResolv
 };
 }
 
+static QFunctionPointer resolveSymbol(QLibrary &lib, const char *sym)
+{
+    if (lib.isLoaded())
+        return lib.resolve(sym);
+
+#if defined(RTLD_DEFAULT) && (defined(Q_OS_FREEBSD) || QT_CONFIG(dlopen))
+    return reinterpret_cast<QFunctionPointer>(dlsym(RTLD_DEFAULT, sym));
+#else
+    return nullptr;
+#endif
+}
+
 LibResolv::LibResolv()
 {
     QLibrary lib;
@@ -124,31 +140,30 @@ LibResolv::LibResolv()
 #endif
     {
         lib.setFileName(QLatin1String("resolv"));
-        if (!lib.load())
-            return;
+        lib.load();
     }
 
     // res_ninit is required for localDomainName()
-    local_res_ninit = res_ninit_proto(lib.resolve("__res_ninit"));
+    local_res_ninit = res_ninit_proto(resolveSymbol(lib, "__res_ninit"));
     if (!local_res_ninit)
-        local_res_ninit = res_ninit_proto(lib.resolve("res_ninit"));
+        local_res_ninit = res_ninit_proto(resolveSymbol(lib, "res_ninit"));
     if (local_res_ninit) {
         // we must now find res_nclose
-        local_res_nclose = res_nclose_proto(lib.resolve("res_nclose"));
+        local_res_nclose = res_nclose_proto(resolveSymbol(lib, "res_nclose"));
         if (!local_res_nclose)
-            local_res_nclose = res_nclose_proto(lib.resolve("__res_nclose"));
+            local_res_nclose = res_nclose_proto(resolveSymbol(lib, "__res_nclose"));
         if (!local_res_nclose)
             local_res_ninit = nullptr;
     }
 
     if (ReinitNecessary || !local_res_ninit) {
-        local_res_init = res_init_proto(lib.resolve("__res_init"));
+        local_res_init = res_init_proto(resolveSymbol(lib, "__res_init"));
         if (!local_res_init)
-            local_res_init = res_init_proto(lib.resolve("res_init"));
+            local_res_init = res_init_proto(resolveSymbol(lib, "res_init"));
 
         if (local_res_init && !local_res_ninit) {
             // if we can't get a thread-safe context, we have to use the global _res state
-            local_res = res_state_ptr(lib.resolve("_res"));
+            local_res = res_state_ptr(resolveSymbol(lib, "_res"));
         }
     }
 }

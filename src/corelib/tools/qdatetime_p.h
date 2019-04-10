@@ -140,6 +140,10 @@ public:
     // Inlined for its one caller in qdatetime.cpp
     inline void setUtcOffsetByTZ(qint64 atMSecsSinceEpoch);
 #endif // timezone
+
+    // ### Qt 5.14: expose publicly in QDateTime
+    // The first and last years of which QDateTime can represent some part:
+    enum class YearRange : qint32 { First = -292275056,  Last = +292278994 };
 };
 
 QT_END_NAMESPACE

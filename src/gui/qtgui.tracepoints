@@ -1,3 +1,9 @@
+{
+QT_BEGIN_NAMESPACE
+class QImageReader;
+QT_END_NAMESPACE
+}
+
 QGuiApplicationPrivate_init_entry()
 QGuiApplicationPrivate_init_exit()
 

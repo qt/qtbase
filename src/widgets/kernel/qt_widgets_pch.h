@@ -45,41 +45,17 @@
  * UNSUPPORTED.
  */
 
-// from corelib/global/qt_pch.h
+#include "../../gui/kernel/qt_gui_pch.h"
+
 #if defined __cplusplus
 #include <qtwidgetsglobal.h>
-
-
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-# define _POSIX_
-# include <limits.h>
-# undef _POSIX_
-#endif
-
-#include <qcoreapplication.h>
-#include <qlist.h>
-#include <qvariant.h>  // All moc genereated code has this include
-#include <qobject.h>
-#include <qregexp.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#if QT_CONFIG(textcodec)
-#include <qtextcodec.h>
-#endif
-
 #include <qapplication.h>
-#include <qbitmap.h>
-#include <qcursor.h>
-#include <qdesktopwidget.h>
-#include <qevent.h>
-#include <qimage.h>
+#include <qabstractbutton.h>
+#include <qabstractscrollarea.h>
+#include <qabstractslider.h>
+#include <qaction.h>
+#include <qcommonstyle.h>
 #include <qlayout.h>
-#include <qpainter.h>
-#include <qpixmap.h>
 #include <qstyle.h>
-#include <qtimer.h>
 #include <qwidget.h>
-
-#include <stdlib.h>
-
 #endif

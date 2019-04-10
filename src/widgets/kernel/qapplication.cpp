@@ -3696,7 +3696,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     // to the ones in QCoreApplicationPrivate::notify_helper; the reason for their
     // duplication is because tracepoint symbols are not exported by QtCore.
     // If you adjust the tracepoints here, consider adjusting QCoreApplicationPrivate too.
-    Q_TRACE(QApplication_notify_entry, receiver, e, e->type());
+    Q_TRACE_SCOPE(QApplication_notify, receiver, e, e->type());
 
     // send to all application event filters
     if (threadRequiresCoreApplication()

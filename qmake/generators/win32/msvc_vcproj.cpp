@@ -1063,16 +1063,6 @@ void VcprojGenerator::initCompilerTool()
         conf.compiler.PrecompiledHeaderFile    = "$(IntDir)\\" + precompPch;
         conf.compiler.PrecompiledHeaderThrough = project->first("PRECOMPILED_HEADER").toQString();
         conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER").toQStringList();
-
-        if (conf.CompilerVersion <= NET2003) {
-            // Minimal build option triggers an Internal Compiler Error
-            // when used in conjunction with /FI and /Yu, so remove it
-            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-            project->values("QMAKE_CFLAGS_DEBUG").removeAll("-Gm");
-            project->values("QMAKE_CFLAGS_DEBUG").removeAll("/Gm");
-            project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("-Gm");
-            project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("/Gm");
-        }
     }
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));

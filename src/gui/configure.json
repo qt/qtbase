@@ -749,7 +749,8 @@
             },
             "headers": [ "xkbcommon/xkbcommon.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" }
+                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" },
+                "-lxkbcommon"
             ]
         },
         "xkbcommon_x11": {
@@ -759,7 +760,8 @@
             },
             "headers": [ "xkbcommon/xkbcommon-x11.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon-x11" }
+                { "type": "pkgConfig", "args": "xkbcommon-x11" },
+                "-lxkbcommon -lxkbcommon-x11"
             ]
         },
         "xrender": {

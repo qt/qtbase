@@ -41,11 +41,9 @@ class QMakeProject;
 
 class QMakeMetaInfo
 {
-    QMakeProject *conf;
     ProValueMap vars;
     static QHash<QString, ProValueMap> cache_vars;
 public:
-    QMakeMetaInfo(QMakeProject *_conf);
 
     // These functions expect the path to be normalized
     static QString checkLib(const QString &lib);

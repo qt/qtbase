@@ -165,21 +165,17 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
                                || value == "QMAKE_RUN_CXX_IMP"
                                || value == "QMAKE_RUN_CXX");
         if ((isRunCpp && usePCH) || (isRunC && usePCHC)) {
-            QFileInfo precompHInfo(fileInfo(precompH));
-            QString precompH_f = escapeFilePath(precompHInfo.fileName());
+            QString precompH_f = escapeFilePath(fileFixify(precompH, FileFixifyBackwards));
             QString precompRule = QString("-c -FI%1 -Yu%2 -Fp%3")
                     .arg(precompH_f, precompH_f, escapeFilePath(isRunC ? precompPchC : precompPch));
+            // ### For clang_cl 8 we force inline methods to be compiled here instead
+            // linking them from a pch.o file. We do this by pretending we are also doing
+            // the pch.o generation step.
+            if (project->isActiveConfig("clang_cl"))
+                precompRule += QString(" -Xclang -building-pch-with-obj");
             QString p = MakefileGenerator::var(value);
             p.replace(QLatin1String("-c"), precompRule);
-            // Cannot use -Gm with -FI & -Yu, as this gives an
-            // internal compiler error, on the newer compilers
-            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-            p.remove("-Gm");
             return p;
-        } else if (value == "QMAKE_CXXFLAGS") {
-            // Remove internal compiler error option
-            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-            return MakefileGenerator::var(value).remove("-Gm");
         }
     }
 
@@ -238,7 +234,10 @@ void NmakeMakefileGenerator::init()
         precompObj = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch" + Option::obj_ext;
         precompPch = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch.pch";
         // Add linking of precompObj (required for whole precompiled classes)
-        project->values("OBJECTS") += precompObj;
+        // ### For clang_cl we currently let inline methods be generated in the normal objects,
+        // since the PCH object is buggy (as of clang 8.0.0)
+        if (!project->isActiveConfig("clang_cl"))
+            project->values("OBJECTS") += precompObj;
         // Add pch file to cleanup
         project->values("QMAKE_CLEAN") += precompPch;
         // Return to variable pool
@@ -248,7 +247,8 @@ void NmakeMakefileGenerator::init()
     if (usePCHC) {
         precompObjC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c" + Option::obj_ext;
         precompPchC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c.pch";
-        project->values("OBJECTS") += precompObjC;
+        if (!project->isActiveConfig("clang_cl"))
+            project->values("OBJECTS") += precompObjC;
         project->values("QMAKE_CLEAN") += precompPchC;
         project->values("PRECOMPILED_OBJECT_C") = ProStringList(precompObjC);
         project->values("PRECOMPILED_PCH_C")    = ProStringList(precompPchC);

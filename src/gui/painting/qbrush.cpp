@@ -1378,10 +1378,8 @@ QGradient::QGradient(Preset preset)
         }();
 
         const QJsonValue presetData = jsonPresets[preset - 1];
-        if (!presetData.isObject()) {
-            qWarning("QGradient: Undefined preset %i", preset);
+        if (!presetData.isObject())
             return;
-        }
 
         m_type = LinearGradient;
         setCoordinateMode(ObjectMode);
