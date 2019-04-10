@@ -45,7 +45,7 @@ InteractiveWidget::InteractiveWidget()
 
     // create and populate the command toolbox
     m_commandsToolBox = new QToolBox();
-    QListWidget *currentListWidget = 0;
+    QListWidget *currentListWidget = nullptr;
     foreach (PaintCommands::PaintCommandInfos paintCommandInfo, PaintCommands::s_commandInfoTable) {
         if (paintCommandInfo.isSectionHeader()) {
             currentListWidget = new QListWidget();
