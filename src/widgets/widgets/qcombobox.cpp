@@ -80,6 +80,7 @@
 #if QT_CONFIG(effects)
 # include <private/qeffects_p.h>
 #endif
+#include <private/qstyle_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -261,16 +262,11 @@ void QComboBoxPrivate::_q_modelDestroyed()
     model = QAbstractItemModelPrivate::staticEmptyModel();
 }
 
-
-//Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QComboBoxPrivate::popupGeometry(int screen) const
 {
-    bool useFullScreenForPopupMenu = false;
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
-        useFullScreenForPopupMenu = theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
-    return useFullScreenForPopupMenu ?
-           QDesktopWidgetPrivate::screenGeometry(screen) :
-           QDesktopWidgetPrivate::availableGeometry(screen);
+    return QStylePrivate::useFullScreenForPopup()
+        ? QDesktopWidgetPrivate::screenGeometry(screen)
+        : QDesktopWidgetPrivate::availableGeometry(screen);
 }
 
 bool QComboBoxPrivate::updateHoverControl(const QPoint &pos)

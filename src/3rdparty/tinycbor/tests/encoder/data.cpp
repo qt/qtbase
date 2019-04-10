@@ -123,6 +123,42 @@ QVariant make_ilmap(const std::initializer_list<QPair<QVariant, QVariant>> &list
     return QVariant::fromValue(IndeterminateLengthMap(list));
 }
 
+void addHalfFloat()
+{
+    QTest::addColumn<QByteArray>("output");
+    QTest::addColumn<unsigned>("rawInput");
+    QTest::addColumn<double>("floatInput");
+
+    QTest::newRow("+0") << raw("\x00\x00") << 0U << 0.0;
+    QTest::newRow("-0") << raw("\x80\x00") << 0x8000U << 0.0;
+
+    QTest::newRow("min.denorm") << raw("\x00\x01") << 1U << ldexp(1.0, -14) * ldexp(1.0, -10);
+    QTest::newRow("-min.denorm") << raw("\x80\x01") << 0x8001U << ldexp(-1.0, -14) * ldexp(1.0, -10);
+
+    QTest::newRow("max.denorm") << raw("\x03\xff") << 0x03ffU << ldexp(1.0, -14) * (1.0 - ldexp(1.0, -10));
+    QTest::newRow("-max.denorm") << raw("\x83\xff") << 0x83ffU << ldexp(-1.0, -14) * (1.0 - ldexp(1.0, -10));
+
+    QTest::newRow("min.norm") << raw("\x04\x00") << 0x0400U << ldexp(1.0, -14);
+    QTest::newRow("-min.norm") << raw("\x84\x00") << 0x8400U << ldexp(-1.0, -14);
+
+    QTest::newRow("1.0") << raw("\x3c\x00") << 0x3c00U << 1.0;
+    QTest::newRow("-1.0") << raw("\xbc\x00") << 0xbc00U << -1.0;
+
+    QTest::newRow("1.5") << raw("\x3e\x00") << 0x3e00U << 1.5;
+    QTest::newRow("-1.5") << raw("\xbe\x00") << 0xbe00U << -1.5;
+
+    QTest::newRow("max") << raw("\x7b\xff") << 0x7bffU << ldexp(1.0, 15) * (2.0 - ldexp(1.0, -10));
+    QTest::newRow("-max") << raw("\xfb\xff") << 0xfbffU << ldexp(-1.0, 15) * (2.0 - ldexp(1.0, -10));
+
+    QTest::newRow("inf") << raw("\x7c\x00") << 0x7c00U << myInf();
+    QTest::newRow("-inf") << raw("\xfc\x00") << 0xfc00U << myNInf();
+
+    QTest::newRow("nan1") << raw("\x7c\x01") << 0x7c01U << myNaN();
+    QTest::newRow("nan2") << raw("\xfc\x01") << 0xfc01U << myNaN();
+    QTest::newRow("nan3") << raw("\x7e\x00") << 0x7e00U << myNaN();
+    QTest::newRow("nan4") << raw("\xfe\x00") << 0xfe00U << myNaN();
+}
+
 void addColumns()
 {
     QTest::addColumn<QByteArray>("output");

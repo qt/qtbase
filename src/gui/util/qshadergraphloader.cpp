@@ -99,7 +99,7 @@ void QShaderGraphLoader::load()
         return;
 
     auto error = QJsonParseError();
-    const auto document = QJsonDocument::fromJson(m_device->readAll(), &error);
+    const QJsonDocument document = QJsonDocument::fromJson(m_device->readAll(), &error);
 
     if (error.error != QJsonParseError::NoError) {
         qWarning() << "Invalid JSON document:" << error.errorString();
@@ -113,16 +113,16 @@ void QShaderGraphLoader::load()
         return;
     }
 
-    const auto root = document.object();
+    const QJsonObject root = document.object();
 
-    const auto nodesValue = root.value(QStringLiteral("nodes"));
+    const QJsonValue nodesValue = root.value(QStringLiteral("nodes"));
     if (!nodesValue.isArray()) {
         qWarning() << "Invalid nodes property, should be an array";
         m_status = Error;
         return;
     }
 
-    const auto edgesValue = root.value(QStringLiteral("edges"));
+    const QJsonValue edgesValue = root.value(QStringLiteral("edges"));
     if (!edgesValue.isArray()) {
         qWarning() << "Invalid edges property, should be an array";
         m_status = Error;
@@ -131,7 +131,7 @@ void QShaderGraphLoader::load()
 
     bool hasError = false;
 
-    const auto prototypesValue = root.value(QStringLiteral("prototypes"));
+    const QJsonValue prototypesValue = root.value(QStringLiteral("prototypes"));
     if (!prototypesValue.isUndefined()) {
         if (prototypesValue.isObject()) {
             QShaderNodesLoader loader;
@@ -144,60 +144,60 @@ void QShaderGraphLoader::load()
         }
     }
 
-    const auto nodes = nodesValue.toArray();
-    for (const auto &nodeValue : nodes) {
+    const QJsonArray nodes = nodesValue.toArray();
+    for (const QJsonValue &nodeValue : nodes) {
         if (!nodeValue.isObject()) {
             qWarning() << "Invalid node found";
             hasError = true;
             continue;
         }
 
-        const auto nodeObject = nodeValue.toObject();
+        const QJsonObject nodeObject = nodeValue.toObject();
 
-        const auto uuidString = nodeObject.value(QStringLiteral("uuid")).toString();
-        const auto uuid = QUuid(uuidString);
+        const QString uuidString = nodeObject.value(QStringLiteral("uuid")).toString();
+        const QUuid uuid = QUuid(uuidString);
         if (uuid.isNull()) {
             qWarning() << "Invalid UUID found in node:" << uuidString;
             hasError = true;
             continue;
         }
 
-        const auto type = nodeObject.value(QStringLiteral("type")).toString();
+        const QString type = nodeObject.value(QStringLiteral("type")).toString();
         if (!m_prototypes.contains(type)) {
             qWarning() << "Unsupported node type found:" << type;
             hasError = true;
             continue;
         }
 
-        const auto layersArray = nodeObject.value(QStringLiteral("layers")).toArray();
+        const QJsonArray layersArray = nodeObject.value(QStringLiteral("layers")).toArray();
         auto layers = QStringList();
-        for (const auto &layerValue : layersArray) {
+        for (const QJsonValue &layerValue : layersArray) {
             layers.append(layerValue.toString());
         }
 
-        auto node = m_prototypes.value(type);
+        QShaderNode node = m_prototypes.value(type);
         node.setUuid(uuid);
         node.setLayers(layers);
 
-        const auto parametersValue = nodeObject.value(QStringLiteral("parameters"));
+        const QJsonValue parametersValue = nodeObject.value(QStringLiteral("parameters"));
         if (parametersValue.isObject()) {
-            const auto parametersObject = parametersValue.toObject();
-            for (const auto &parameterName : parametersObject.keys()) {
-                const auto parameterValue = parametersObject.value(parameterName);
+            const QJsonObject parametersObject = parametersValue.toObject();
+            for (const QString &parameterName : parametersObject.keys()) {
+                const QJsonValue parameterValue = parametersObject.value(parameterName);
                 if (parameterValue.isObject()) {
-                    const auto parameterObject = parameterValue.toObject();
-                    const auto type = parameterObject.value(QStringLiteral("type")).toString();
-                    const auto typeId = QMetaType::type(type.toUtf8());
+                    const QJsonObject parameterObject = parameterValue.toObject();
+                    const QString type = parameterObject.value(QStringLiteral("type")).toString();
+                    const int typeId = QMetaType::type(type.toUtf8());
 
-                    const auto value = parameterObject.value(QStringLiteral("value")).toString();
+                    const QString value = parameterObject.value(QStringLiteral("value")).toString();
                     auto variant = QVariant(value);
 
                     if (QMetaType::typeFlags(typeId) & QMetaType::IsEnumeration) {
-                        const auto metaObject = QMetaType::metaObjectForType(typeId);
-                        const auto className = metaObject->className();
-                        const auto enumName = type.mid(static_cast<int>(qstrlen(className)) + 2).toUtf8();
-                        const auto metaEnum = metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
-                        const auto enumValue = metaEnum.keyToValue(value.toUtf8());
+                        const QMetaObject *metaObject = QMetaType::metaObjectForType(typeId);
+                        const char *className = metaObject->className();
+                        const QByteArray enumName = type.mid(static_cast<int>(qstrlen(className)) + 2).toUtf8();
+                        const QMetaEnum metaEnum = metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
+                        const int enumValue = metaEnum.keyToValue(value.toUtf8());
                         variant = QVariant(enumValue);
                         variant.convert(typeId);
                     } else {
@@ -213,39 +213,39 @@ void QShaderGraphLoader::load()
         m_graph.addNode(node);
     }
 
-    const auto edges = edgesValue.toArray();
-    for (const auto &edgeValue : edges) {
+    const QJsonArray edges = edgesValue.toArray();
+    for (const QJsonValue &edgeValue : edges) {
         if (!edgeValue.isObject()) {
             qWarning() << "Invalid edge found";
             hasError = true;
             continue;
         }
 
-        const auto edgeObject = edgeValue.toObject();
+        const QJsonObject edgeObject = edgeValue.toObject();
 
-        const auto sourceUuidString = edgeObject.value(QStringLiteral("sourceUuid")).toString();
-        const auto sourceUuid = QUuid(sourceUuidString);
+        const QString sourceUuidString = edgeObject.value(QStringLiteral("sourceUuid")).toString();
+        const QUuid sourceUuid = QUuid(sourceUuidString);
         if (sourceUuid.isNull()) {
             qWarning() << "Invalid source UUID found in edge:" << sourceUuidString;
             hasError = true;
             continue;
         }
 
-        const auto sourcePort = edgeObject.value(QStringLiteral("sourcePort")).toString();
+        const QString sourcePort = edgeObject.value(QStringLiteral("sourcePort")).toString();
 
-        const auto targetUuidString = edgeObject.value(QStringLiteral("targetUuid")).toString();
-        const auto targetUuid = QUuid(targetUuidString);
+        const QString targetUuidString = edgeObject.value(QStringLiteral("targetUuid")).toString();
+        const QUuid targetUuid = QUuid(targetUuidString);
         if (targetUuid.isNull()) {
             qWarning() << "Invalid target UUID found in edge:" << targetUuidString;
             hasError = true;
             continue;
         }
 
-        const auto targetPort = edgeObject.value(QStringLiteral("targetPort")).toString();
+        const QString targetPort = edgeObject.value(QStringLiteral("targetPort")).toString();
 
-        const auto layersArray = edgeObject.value(QStringLiteral("layers")).toArray();
+        const QJsonArray layersArray = edgeObject.value(QStringLiteral("layers")).toArray();
         auto layers = QStringList();
-        for (const auto &layerValue : layersArray) {
+        for (const QJsonValue &layerValue : layersArray) {
             layers.append(layerValue.toString());
         }
 

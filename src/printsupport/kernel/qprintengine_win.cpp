@@ -1105,16 +1105,16 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         if (mode == property(PPK_Duplex).toInt() || !d->m_printDevice.supportedDuplexModes().contains(mode))
             break;
         switch (mode) {
-        case QPrinter::DuplexNone:
+        case QPrint::DuplexNone:
             d->devMode->dmDuplex = DMDUP_SIMPLEX;
             break;
-        case QPrinter::DuplexAuto:
+        case QPrint::DuplexAuto:
             d->devMode->dmDuplex = d->m_pageLayout.orientation() == QPageLayout::Landscape ? DMDUP_HORIZONTAL : DMDUP_VERTICAL;
             break;
-        case QPrinter::DuplexLongSide:
+        case QPrint::DuplexLongSide:
             d->devMode->dmDuplex = DMDUP_VERTICAL;
             break;
-        case QPrinter::DuplexShortSide:
+        case QPrint::DuplexShortSide:
             d->devMode->dmDuplex = DMDUP_HORIZONTAL;
             break;
         default:
