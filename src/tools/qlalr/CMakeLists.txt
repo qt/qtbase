@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_tool(qlalr
+    TOOLS_TARGET Core # special case
     SOURCES
         compress.cpp compress.h
         cppgenerator.cpp cppgenerator.h

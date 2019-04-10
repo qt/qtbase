@@ -6,6 +6,7 @@
 
 add_qt_tool(rcc
     BOOTSTRAP
+    TOOLS_TARGET Core # special case
     SOURCES
         main.cpp
         rcc.cpp rcc.h

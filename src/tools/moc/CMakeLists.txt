@@ -6,6 +6,7 @@
 
 add_qt_tool(moc
     BOOTSTRAP
+    TOOLS_TARGET Core # special case
     SOURCES
         cbordevice.h
         generator.cpp generator.h

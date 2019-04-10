@@ -126,10 +126,10 @@ Yocto based device SDKs come with an environment setup script that needs to be s
 In order to make sure that Qt picks up the code generator tools from the host build, you need to pass an extra parameter to cmake:
 
 ```
-    -DHOST_QT_TOOLS_DIRECTORY=/path/to/your/host_build/bin
+    -DQT_HOST_PATH=/path/to/your/host_build
 ```
 
-The specified path needs to point to a directory that contains all the binaries of the host build of Qt.
+The specified path needs to point to a directory that contains an installed host build of Qt.
 
 # Debugging CMake files
 

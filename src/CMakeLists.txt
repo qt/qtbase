@@ -23,20 +23,13 @@ endif()
 add_subdirectory(3rdparty)
 
 function(find_or_build_bootstrap_names)
-    # Move these into their own folder and move this code in the CMakeLists.txt file there!
-    set01(_build_tools "x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
-
-    if (_build_tools)
+    if (QT_WILL_BUILD_TOOLS)
         add_subdirectory(tools/bootstrap)  # bootstrap library
     endif()
     add_subdirectory(tools/moc)
     add_subdirectory(tools/rcc)
     add_subdirectory(tools/qfloat16-tables)
     add_subdirectory(tools/tracegen)
-
-    if (_build_tools)
-        install(EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::" DESTINATION "${INSTALL_LIBDIR}/cmake/Qt${PROJECT_VERSION_MAJOR}")
-    endif()
 endfunction()
 
 find_or_build_bootstrap_names()
@@ -54,10 +47,14 @@ endif()
 if (QT_FEATURE_xml)
     add_subdirectory(xml)
 endif()
+add_subdirectory(tools)
+
+# Need to build qmake and other Core tools before exporting them.
+qt_export_tools(Core)
+
 if (QT_FEATURE_dbus)
     add_subdirectory(dbus)
 endif()
-add_subdirectory(tools)
 if(QT_FEATURE_gui)
     add_subdirectory(gui)
 

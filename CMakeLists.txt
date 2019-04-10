@@ -33,6 +33,9 @@ include(QtBaseGlobalTargets)
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
 set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
+## Decide whether tools will be built.
+qt_check_if_tools_will_be_built()
+
 ## Visit all the directories:
 add_subdirectory(src)
 
@@ -40,7 +43,7 @@ if (BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-if (NOT CMAKE_CROSSCOMPILING)
+if (QT_WILL_BUILD_TOOLS)
     add_subdirectory(qmake)
 endif()
 

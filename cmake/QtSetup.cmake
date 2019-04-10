@@ -54,18 +54,10 @@ include(QtCompilerOptimization)
 include(QtCompilerFlags)
 
 ## Find host tools (if non native):
-set(HOST_QT_TOOLS_DIRECTORY "" CACHE PATH "Directory with Qt host tools.")
+set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
 
-if (CMAKE_CROSSCOMPILING AND "x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
-    message(FATAL_ERROR "You need to set HOST_QT_TOOLS_DIRECTORY for a cross-complile.")
-endif()
-
-## Find syncqt in HOST TOOLS or locally:
-if("x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
-    set(QT_SYNCQT "${PROJECT_SOURCE_DIR}/bin/syncqt.pl")
-    install(PROGRAMS "${QT_SYNCQT}" DESTINATION "${INSTALL_BINDIR}")
-else()
-    set(QT_SYNCQT "${HOST_QT_TOOLS_DIRECTORY}/syncqt.pl")
+if (CMAKE_CROSSCOMPILING AND NOT IS_DIRECTORY ${QT_HOST_PATH})
+    message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
 endif()
 
 ## Enable support for sanitizers:

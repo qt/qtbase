@@ -6,6 +6,7 @@
 
 add_qt_tool(qfloat16-tables
     BOOTSTRAP
+    TOOLS_TARGET Core # special case
     SOURCES
         gen_qfloat16_tables.cpp
     # CONFIG = "force_bootstrap"

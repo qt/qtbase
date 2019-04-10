@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_tool(uic
+    TOOLS_TARGET Widgets # special case
     SOURCES
         cpp/cppwritedeclaration.cpp cpp/cppwritedeclaration.h
         cpp/cppwriteincludes.cpp cpp/cppwriteincludes.h

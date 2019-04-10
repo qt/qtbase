@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_tool(qdbuscpp2xml
+    TOOLS_TARGET DBus # special case
     SOURCES
         ../moc/cbordevice.h
         ../moc/generator.cpp ../moc/generator.h

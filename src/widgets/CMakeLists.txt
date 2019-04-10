@@ -74,7 +74,7 @@ add_qt_module(Widgets
     # _LOADED = "qt_module"
 )
 
-add_dependencies(Widgets Qt::uic)  # special case
+add_dependencies(Widgets ${QT_CMAKE_EXPORT_NAMESPACE}::uic)  # special case
 
 # Resources:
 add_qt_resource(Widgets "qstyle" PREFIX "/qt-project.org/styles/commonstyle" BASE "styles" FILES

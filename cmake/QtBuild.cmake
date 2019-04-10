@@ -91,12 +91,32 @@ else()
     set(QT_HAS_NAMESPACE ON)
 endif()
 
-macro(qt_internal_set_known_qt_modules)
-    set(KNOWN_QT_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
+macro(qt_internal_set_qt_known_modules)
+    set(QT_KNOWN_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
 endmacro()
 
 # Reset:
-qt_internal_set_known_qt_modules("")
+qt_internal_set_qt_known_modules("")
+
+set(QT_KNOWN_MODULES_WITH_TOOLS "" CACHE INTERNAL "Known Qt modules with tools" FORCE)
+macro(qt_internal_append_known_modules_with_tools module)
+    if(NOT ${module} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+        set(QT_KNOWN_MODULES_WITH_TOOLS "${QT_KNOWN_MODULES_WITH_TOOLS};${module}"
+            CACHE INTERNAL "Known Qt modules with tools" FORCE)
+    endif()
+endmacro()
+
+macro(qt_internal_append_known_module_tool module tool)
+    if(NOT ${tool} IN_LIST QT_KNOWN_MODULE_${module}_TOOLS)
+        list(APPEND QT_KNOWN_MODULE_${module}_TOOLS "${tool}")
+        set(QT_KNOWN_MODULE_${module}_TOOLS "${QT_KNOWN_MODULE_${module}_TOOLS}"
+            CACHE INTERNAL "Known Qt module ${module} tools" FORCE)
+    endif()
+endmacro()
+
+# Reset syncqt cache variable, to make sure it gets recomputed on reconfiguration, otherwise
+# it might not get installed.
+unset(QT_SYNCQT CACHE)
 
 # For adjusting variables when running tests, we need to know what
 # the correct variable is for separating entries in PATH-alike
@@ -202,12 +222,18 @@ function(qt_ensure_sync_qt)
         return()
     endif()
 
-    get_target_property(mocPath "${QT_CMAKE_EXPORT_NAMESPACE}::moc" LOCATION)
-    get_filename_component(binDirectory "${mocPath}" DIRECTORY)
-    # We could put this into the cache, but on the other hand there's no real need to
-    # pollute the app's cache with this. For the first qtbase build, the variable is
-    # set in global scope.
-    set(QT_SYNCQT "${binDirectory}/syncqt.pl" CACHE FILEPATH "syncqt script")
+    # When building qtbase, use the source syncqt, otherwise use the installed one.
+    if(EXISTS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl")
+        set(QT_SYNCQT "${PROJECT_SOURCE_DIR}/bin/syncqt.pl" CACHE FILEPATH "syncqt script")
+        message(STATUS "Using source syncqt found at: ${QT_SYNCQT}")
+        install(PROGRAMS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl" DESTINATION "${INSTALL_LIBEXECDIR}")
+    else()
+        get_filename_component(syncqt_absolute_path
+                               "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
+                               ABSOLUTE)
+        set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
+        message(STATUS "Using installed syncqt found at: ${QT_SYNCQT}")
+    endif()
 endfunction()
 
 # A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
@@ -349,8 +375,11 @@ function(qt_autogen_tools target)
     set_target_properties("${target}"
                           PROPERTIES
                           AUTO${captitalAutogenTool} ON
-                          AUTO${captitalAutogenTool}_EXECUTABLE "$<TARGET_FILE:Qt::${autogen_tool}>")
-    set_property(TARGET ${target} APPEND PROPERTY AUTOGEN_TARGET_DEPENDS Qt::${autogen_tool})
+                          AUTO${captitalAutogenTool}_EXECUTABLE
+                          "$<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::${autogen_tool}>")
+    set_property(TARGET ${target} APPEND PROPERTY
+        AUTOGEN_TARGET_DEPENDS
+        ${QT_CMAKE_EXPORT_NAMESPACE}::${autogen_tool})
   endforeach()
 
   set_directory_properties(PROPERTIES
@@ -506,14 +535,16 @@ function(add_qt_module target)
     qt_internal_module_info(module "${target}")
 
     # Process arguments:
-    qt_parse_all_arguments(arg "add_qt_module" "NO_MODULE_HEADERS;STATIC" "CONFIG_MODULE_NAME"
+    qt_parse_all_arguments(arg "add_qt_module"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT"
+        "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args}" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
 
-    qt_internal_set_known_qt_modules("${KNOWN_QT_MODULES}" "${target}")
+    qt_internal_set_qt_known_modules("${QT_KNOWN_MODULES}" "${target}")
 
     ### Define Targets:
     if(${arg_STATIC})
@@ -651,7 +682,7 @@ function(add_qt_module target)
 
     # When a public module depends on private, also make its private depend on the other's private
     set(qt_libs_private "")
-    foreach(it ${KNOWN_QT_MODULES})
+    foreach(it ${QT_KNOWN_MODULES})
         list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
         if(pos GREATER -1)
             list(APPEND qt_libs_private "Qt::${it}Private")
@@ -699,6 +730,64 @@ function(add_qt_module target)
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
+
+    if(NOT ${arg_DISABLE_TOOLS_EXPORT})
+        qt_export_tools(${target})
+    endif()
+endfunction()
+
+function(qt_export_tools module_name)
+    # If no tools were defined belonging to this module, don't create a config and targets file.
+    # Guards against the case when doing a cross-build and the function is called manually and not
+    # by add_qt_module.
+
+    if(NOT "${module_name}" IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+        return()
+    endif()
+
+    # The tools target name. For example: CoreTools
+    set(target "${module_name}Tools")
+    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
+
+    # Add the extra cmake statements to make the tool targets global, so it doesn't matter where
+    # find_package is called.
+    # Also assemble a list of tool targets to expose in the config file for informational purposes.
+    set(extra_cmake_statements "")
+    set(tool_targets "")
+    foreach(tool_name ${QT_KNOWN_MODULE_${module_name}_TOOLS})
+        set(extra_cmake_statements "${extra_cmake_statements}
+get_property(is_global TARGET ${INSTALL_CMAKE_NAMESPACE}::${tool_name} PROPERTY IMPORTED_GLOBAL)
+if(NOT is_global)
+    set_property(TARGET ${INSTALL_CMAKE_NAMESPACE}::${tool_name} PROPERTY IMPORTED_GLOBAL TRUE)
+endif()
+")
+        list(APPEND tool_targets "${QT_CMAKE_EXPORT_NAMESPACE}::${tool_name}")
+    endforeach()
+
+    string(APPEND extra_cmake_statements
+"set(${QT_CMAKE_EXPORT_NAMESPACE}${module_name}Tools_TARGETS \"${tool_targets}\")")
+
+    configure_package_config_file(
+        "${QT_CMAKE_DIR}/QtModuleToolsConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        INSTALL_DESTINATION "${config_install_dir}"
+    )
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
+
+    install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
+        NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
+        DESTINATION "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
 endfunction()
 
 function(qt_internal_check_directory_or_type name dir type default result_var)
@@ -903,28 +992,68 @@ function(add_qt_test_helper name)
     add_qt_executable("${name}" NO_INSTALL OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." ${ARGN})
 endfunction()
 
+# Sets QT_WILL_BUILD_TOOLS if tools will be built.
+function(qt_check_if_tools_will_be_built)
+    set01(will_build_tools NOT CMAKE_CROSSCOMPILING AND NOT QT_FORCE_FIND_TOOLS)
+    set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
+endfunction()
 
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
 function(add_qt_tool name)
-    set01(_build_tools "x${HOST_QT_TOOLS_DIRECTORY}" STREQUAL "x")
-    if (NOT _build_tools)
-        message("Searching for ${name}.")
-        find_program("_PROG_${name}" "${name}" PATHS "${HOST_QT_TOOLS_DIRECTORY}" NO_DEFAULT_PATH)
-        if (_PROG_${name} STREQUAL "_PROG_${name}-NOTFOUND")
-            message(FATAL_ERROR "The name \"${name}\" was not found in the "
-                                "HOST_QT_TOOLS_DIRECTORY (\"${HOST_QT_TOOLS_DIRECTORY}\").")
-        else()
-            message(STATUS "${name} was found at ${_PROG_${name}}.")
-            add_executable("${name}" IMPORTED GLOBAL)
-            set_target_properties("${name}" PROPERTIES IMPORTED_LOCATION "${_PROG_${name}}")
-            qt_internal_add_target_aliases("${name}")
-        endif()
+    qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP;NO_QT;NO_INSTALL" "TOOLS_TARGET"
+                               "${__default_private_args}" ${ARGN})
+
+    # Handle case when a tool does not belong to a module and it can't be built either (like
+    # during a cross-compile).
+    if(NOT arg_TOOLS_TARGET AND NOT QT_WILL_BUILD_TOOLS)
+        message(FATAL_ERROR "The tool \"${name}\" has not been assigned to a module via"
+                            " TOOLS_TARGET (so it can't be found) and it can't be built"
+                            " (QT_WILL_BUILD_TOOLS is ${QT_WILL_BUILD_TOOLS}).")
+    endif()
+
+    set(full_name "${QT_CMAKE_EXPORT_NAMESPACE}::${name}")
+    if(TARGET ${full_name})
+        get_property(path TARGET ${full_name} PROPERTY LOCATION)
+        message(STATUS "Tool '${full_name}' was found at ${path}.")
         return()
     endif()
 
-    qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP;NO_QT;NO_INSTALL" "" "${__default_private_args}" ${ARGN})
+    if(arg_TOOLS_TARGET AND NOT QT_WILL_BUILD_TOOLS)
+        set(tools_package_name "Qt5${arg_TOOLS_TARGET}Tools")
+        message(STATUS "Searching for tool '${full_name}' in package ${tools_package_name}.")
+
+        # Only search in path provided by QT_HOST_PATH. We need to do it with CMAKE_PREFIX_PATH
+        # instead of PATHS option, because any find_dependency call inside a Tools package would
+        # not get the proper prefix when using PATHS.
+        set(BACKUP_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+        set(CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
+        find_package(
+            ${tools_package_name}
+            ${PROJECT_VERSION}
+            NO_PACKAGE_ROOT_PATH
+            NO_CMAKE_ENVIRONMENT_PATH
+            NO_SYSTEM_ENVIRONMENT_PATH
+            NO_CMAKE_PACKAGE_REGISTRY
+            NO_CMAKE_SYSTEM_PATH
+            NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+        set(CMAKE_PREFIX_PATH ${BACKUP_CMAKE_PREFIX_PATH})
+
+        if(${${tools_package_name}_FOUND} AND TARGET ${full_name})
+            get_property(path TARGET ${full_name} PROPERTY LOCATION)
+            message(STATUS "${full_name} was found at ${path} using package ${tools_package_name}.")
+            return()
+        endif()
+    endif()
+
+    if(NOT QT_WILL_BUILD_TOOLS)
+        message(FATAL_ERROR "The tool \"${full_name}\" was not found in the "
+                           "${tools_package_name} package. "
+                           "Package found: ${${tools_package_name}_FOUND}")
+    else()
+        message(STATUS "Tool '${full_name}' will be built from source.")
+    endif()
 
     set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
     if (arg_NO_QT)
@@ -973,8 +1102,16 @@ function(add_qt_tool name)
     )
     qt_internal_add_target_aliases("${name}")
 
-    if(NOT arg_NO_INSTALL)
-        install(TARGETS "${name}" EXPORT "Qt${PROJECT_VERSION_MAJOR}ToolsTargets" DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+    if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
+        # Assign a tool to an export set, and mark the module to which the tool belongs.
+        qt_internal_append_known_modules_with_tools("${arg_TOOLS_TARGET}")
+
+        # Also append the tool to the module list.
+        qt_internal_append_known_module_tool("${arg_TOOLS_TARGET}" "${name}")
+
+        install(TARGETS "${name}"
+                EXPORT "Qt${PROJECT_VERSION_MAJOR}${arg_TOOLS_TARGET}ToolsTargets"
+                DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
     endif()
 endfunction()
 

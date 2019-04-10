@@ -6,6 +6,7 @@
 
 add_qt_tool(tracegen
     BOOTSTRAP
+    TOOLS_TARGET Core # special case
     SOURCES
         etw.cpp etw.h
         helpers.cpp helpers.h

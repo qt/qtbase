@@ -235,13 +235,14 @@ add_qt_module(Core
         Qt::Platform
     DISABLE_AUTOGEN_TOOLS # special case:
         uic
+    DISABLE_TOOLS_EXPORT # special case:
 )
 
 # special case:
-add_dependencies(Core Qt::moc)
-add_dependencies(Core Qt::rcc)
-add_dependencies(CorePrivate Qt::moc)
-add_dependencies(CorePrivate Qt::rcc)
+add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
+add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
+add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
+add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
 
 if (QT_NAMESPACE STREQUAL "")
 else()
@@ -1030,7 +1031,7 @@ endif()
 
 # special case:
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
-                   COMMAND qfloat16-tables
+                   COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qfloat16-tables
                    ARGS "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
                    DEPENDS global/qfloat16.h
                    COMMENT qfloat16-tables

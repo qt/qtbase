@@ -11,6 +11,7 @@ target_include_directories(Platform
 target_compile_definitions(Platform INTERFACE ${QT_PLATFORM_DEFINITIONS})
 set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}")
 
+# Generate and install Qt5 config file.
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
@@ -28,6 +29,23 @@ install(FILES
     COMPONENT Devel
 )
 
+# Generate and install Qt5Tools config file.
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/QtToolsConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}ToolsConfig.cmake"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}ToolsConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}ToolsConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}ToolsConfigVersion.cmake"
+    DESTINATION "${config_install_dir}Tools"
+    COMPONENT Devel
+)
 
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
