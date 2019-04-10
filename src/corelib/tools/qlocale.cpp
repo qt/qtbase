@@ -2351,6 +2351,17 @@ QString QLocale::toString(double i, char f, int prec) const
 
     Returns a QLocale object initialized to the "C" locale.
 
+    This locale is based on en_US but with various quirks of its own, such as
+    simplified number formatting and its own date formatting. It implements the
+    POSIX standards that describe the behavior of standard library functions of
+    the "C" programming language.
+
+    Among other things, this means its collation order is based on the ASCII
+    values of letters, so that (for case-sensitive sorting) all upper-case
+    letters sort before any lower-case one (rather than each letter's upper- and
+    lower-case forms sorting adjacent to one another, before the next letter's
+    two forms).
+
     \sa system()
 */
 
