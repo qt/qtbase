@@ -16,6 +16,7 @@ endif()
 
 add_qt_module(Core
     SOURCES
+        # special case: remove ../3rdparty/harfbuzz
         animation/qabstractanimation.cpp animation/qabstractanimation.h animation/qabstractanimation_p.h
         animation/qanimationgroup.cpp animation/qanimationgroup.h animation/qanimationgroup_p.h
         animation/qparallelanimationgroup.cpp animation/qparallelanimationgroup.h animation/qparallelanimationgroup_p.h
@@ -232,72 +233,21 @@ add_qt_module(Core
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
     INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_BINARY_DIR}/global  # special case for qconfig.cpp
-    LIBRARIES  # special case:
-        Qt::GlobalConfigPrivate
-        QtHarfBuzz
-        Threads::Threads
-        tinycbor
-        WrapDoubleConversion
+        ${CMAKE_CURRENT_BINARY_DIR}/global # special case
+        # special case: remove ../3rdparty/...
+    LIBRARIES
         ZLIB::ZLIB
+        # double-conversion # special case
+        Qt::GlobalConfigPrivate # special case
+        QtHarfBuzz # special case
+        Threads::Threads # special case
+        tinycbor # special case
+        WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform
     DISABLE_AUTOGEN_TOOLS # special case:
         uic
-    # ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroid.jar"
-    # ANDROID_LIB_DEPENDENCIES = "plugins/platforms/android/libqtforandroid.so"
-    # ANDROID_PERMISSIONS = "android.permission.INTERNET" "android.permission.WRITE_EXTERNAL_STORAGE"
-    # CMAKE_DISABLED_FEATURES = "$$joinQT_DISABLED_FEATURES,"$$escape_expand(\\n)    ""
-    # CMAKE_HOST_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA/src],$$[QT_INSTALL_PREFIX]"
-    # CMAKE_INSTALL_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA],$$[QT_INSTALL_PREFIX]"
-    # CONFIG = "exceptions" "qt_tracepoints" "$$MODULE_CONFIG" "simd" "optimize_full"
-    # HOST_BINS = "$$[QT_HOST_BINS]"
-    # INSTALLS = "ctest_qt5_module_files" "cmake_qt5_umbrella_module_files"
-    # MIPS_DSP_ASM = "tools/qstring_mips_dsp_asm.S"
-    # MIPS_DSP_HEADERS = "../gui/painting/qt_mips_asm_dsp_p.h"
-    # MODULE = "core"
-    # MODULE_CONFIG = "moc" "resources"
-    # PRECOMPILED_HEADER = "global/qt_pch.h"
-    # QMAKE_DSYM_DEBUG_SCRIPT = "$$PWD/debug_script.py"
-    # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtCore.dynlist"
-    # QMAKE_EXTRA_COMPILERS = "qfloat16_tables"
-    # QMAKE_PKGCONFIG_VARIABLES = "host_bins" "qt_conf"
-    # QMAKE_QFLOAT16_TABLES_GENERATE = "global/qfloat16.h"
-    # QMAKE_SUBSTITUTES = "ctest_macros_file" "cmake_umbrella_config_file" "cmake_umbrella_config_module_location" "cmake_umbrella_config_module_location_for_install" "cmake_umbrella_config_version_file" "cmake_extras_mkspec_dir" "cmake_extras_mkspec_dir_for_install"
-    # TRACEPOINT_PROVIDER = "$$PWD/qtcore.tracepoints"
-    # TR_EXCLUDE = "../3rdparty/*"
-    # VERSIONTAGGING_SOURCES = "global/qversiontagging.cpp"
-    # _LOADED = "qt_module" "cmake_functions"
-    # cmake_extras_mkspec_dir.input = "$$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in"
-    # cmake_extras_mkspec_dir.output = "$$DESTDIR/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake"
-    # cmake_extras_mkspec_dir_for_install.input = "$$PWD/Qt5CoreConfigExtrasMkspecDirForInstall.cmake.in"
-    # cmake_extras_mkspec_dir_for_install.output = "$$DESTDIR/cmake/install/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake"
-    # cmake_qt5_umbrella_module_files.files = "$$cmake_umbrella_config_file.output" "$$cmake_umbrella_config_version_file.output" "$$cmake_umbrella_config_module_location_for_install.output"
-    # cmake_qt5_umbrella_module_files.path = "$$[QT_INSTALL_LIBS]/cmake/Qt5"
-    # cmake_umbrella_config_file.input = "$$PWD/Qt5Config.cmake.in"
-    # cmake_umbrella_config_file.output = "$$DESTDIR/cmake/Qt5/Qt5Config.cmake"
-    # cmake_umbrella_config_module_location.input = "$$PWD/Qt5ModuleLocation.cmake.in"
-    # cmake_umbrella_config_module_location.output = "$$DESTDIR/cmake/Qt5/Qt5ModuleLocation.cmake"
-    # cmake_umbrella_config_module_location_for_install.input = "$$PWD/Qt5ModuleLocationForInstall.cmake.in"
-    # cmake_umbrella_config_module_location_for_install.output = "$$DESTDIR/cmake/install/Qt5/Qt5ModuleLocation.cmake"
-    # cmake_umbrella_config_version_file.input = "$$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in"
-    # cmake_umbrella_config_version_file.output = "$$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake"
-    # ctest_macros_file.CONFIG = "verbatim"
-    # ctest_macros_file.input = "$$PWD/Qt5CTestMacros.cmake"
-    # ctest_macros_file.output = "$$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake"
-    # ctest_qt5_module_files.files = "$$ctest_macros_file.output" "$$cmake_extras_mkspec_dir_for_install.output"
-    # ctest_qt5_module_files.path = "$$[QT_INSTALL_LIBS]/cmake/Qt5Core"
-    # host_bins.name = "host_bins"
-    # host_bins.variable = "HOST_BINS"
-    # qfloat16_tables.commands = "$$QMAKE_QFLOAT16_TABLES" "${QMAKE_FILE_OUT}"
-    # qfloat16_tables.depends = "$$QMAKE_QFLOAT16_TABLES"
-    # qfloat16_tables.input = "QMAKE_QFLOAT16_TABLES_GENERATE"
-    # qfloat16_tables.output = "global/qfloat16tables.cpp"
-    # qfloat16_tables.variable_out = "SOURCES"
-    # qt_conf.name = "qt_config"
-    # qt_conf.variable = "QT_CONFIG"
 )
-
 
 # special case:
 add_dependencies(Core Qt::moc)
@@ -355,25 +305,71 @@ if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
 endif()
 
 
+
+add_qt_simd_part(Core SIMD mips_dsp
+    SOURCES
+        ../gui/painting/qt_mips_asm_dsp_p.h
+        tools/qstring_mips_dsp_asm.S
+)
+
+
+#### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
+# ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroid.jar"
+# ANDROID_LIB_DEPENDENCIES = "plugins/platforms/android/libqtforandroid.so"
+# ANDROID_PERMISSIONS = "android.permission.INTERNET" "android.permission.WRITE_EXTERNAL_STORAGE"
+# CMAKE_DISABLED_FEATURES = "$$joinQT_DISABLED_FEATURES,"$$escape_expand(\\n)    ""
+# CMAKE_HOST_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA/src],$$[QT_INSTALL_PREFIX]"
+# CMAKE_INSTALL_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA],$$[QT_INSTALL_PREFIX]"
+# CONFIG = "exceptions" "qt_tracepoints" "$$MODULE_CONFIG" "simd" "optimize_full"
+# HOST_BINS = "$$[QT_HOST_BINS]"
+# INSTALLS = "ctest_qt5_module_files" "cmake_qt5_umbrella_module_files"
+# MODULE = "core"
+# MODULE_CONFIG = "moc" "resources"
+# QMAKE_DSYM_DEBUG_SCRIPT = "$$PWD/debug_script.py"
+# QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtCore.dynlist"
+# QMAKE_PKGCONFIG_VARIABLES = "host_bins" "qt_conf"
+# QMAKE_SUBSTITUTES = "ctest_macros_file" "cmake_umbrella_config_file" "cmake_umbrella_config_module_location" "cmake_umbrella_config_module_location_for_install" "cmake_umbrella_config_version_file" "cmake_extras_mkspec_dir" "cmake_extras_mkspec_dir_for_install"
+# _LOADED = "qt_module" "cmake_functions"
+# cmake_extras_mkspec_dir.input = "$$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in"
+# cmake_extras_mkspec_dir.output = "$$DESTDIR/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake"
+# cmake_extras_mkspec_dir_for_install.input = "$$PWD/Qt5CoreConfigExtrasMkspecDirForInstall.cmake.in"
+# cmake_extras_mkspec_dir_for_install.output = "$$DESTDIR/cmake/install/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake"
+# cmake_qt5_umbrella_module_files.files = "$$cmake_umbrella_config_file.output" "$$cmake_umbrella_config_version_file.output" "$$cmake_umbrella_config_module_location_for_install.output"
+# cmake_qt5_umbrella_module_files.path = "$$[QT_INSTALL_LIBS]/cmake/Qt5"
+# cmake_umbrella_config_file.input = "$$PWD/Qt5Config.cmake.in"
+# cmake_umbrella_config_file.output = "$$DESTDIR/cmake/Qt5/Qt5Config.cmake"
+# cmake_umbrella_config_module_location.input = "$$PWD/Qt5ModuleLocation.cmake.in"
+# cmake_umbrella_config_module_location.output = "$$DESTDIR/cmake/Qt5/Qt5ModuleLocation.cmake"
+# cmake_umbrella_config_module_location_for_install.input = "$$PWD/Qt5ModuleLocationForInstall.cmake.in"
+# cmake_umbrella_config_module_location_for_install.output = "$$DESTDIR/cmake/install/Qt5/Qt5ModuleLocation.cmake"
+# cmake_umbrella_config_version_file.input = "$$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in"
+# cmake_umbrella_config_version_file.output = "$$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake"
+# ctest_macros_file.CONFIG = "verbatim"
+# ctest_macros_file.input = "$$PWD/Qt5CTestMacros.cmake"
+# ctest_macros_file.output = "$$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake"
+# ctest_qt5_module_files.files = "$$ctest_macros_file.output" "$$cmake_extras_mkspec_dir_for_install.output"
+# ctest_qt5_module_files.path = "$$[QT_INSTALL_LIBS]/cmake/Qt5Core"
+# host_bins.name = "host_bins"
+# host_bins.variable = "HOST_BINS"
+# qt_conf.name = "qt_config"
+# qt_conf.variable = "QT_CONFIG"
+
 ## Scopes:
 #####################################################################
-#
-#extend_target(Core CONDITION QT_FEATURE_gc_binaries
-#    # MODULE_CONFIG = "gc_binaries"
-#)
-#
-#extend_target(Core CONDITION NOT QT_NAMESPACE_ISEMPTY
-#    # MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
-#)
+
+#### Keys ignored in scope 2:.:.:corelib.pro:QT_FEATURE_gc_binaries:
+# MODULE_CONFIG = "gc_binaries"
+
+#### Keys ignored in scope 3:.:.:corelib.pro:NOT QT_NAMESPACE_ISEMPTY:
+# MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
 
 extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x67000000"
 )
-#
-#extend_target(Core CONDITION FREEBSD OR OPENBSD
-#    # QMAKE_LFLAGS_NOUNDEF = <EMPTY>
-#)
+
+#### Keys ignored in scope 5:.:.:corelib.pro:FREEBSD OR OPENBSD:
+# QMAKE_LFLAGS_NOUNDEF = <EMPTY>
 
 extend_target(Core CONDITION WIN32
     SOURCES
@@ -389,7 +385,7 @@ extend_target(Core CONDITION WIN32
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
         thread/qatomic_msvc.h
         thread/qthread_win.cpp
-    # special case: DEFINES
+    # DEFINES # special case: remove
     LIBRARIES
         ws2_32
 )
@@ -403,14 +399,15 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
         io/qwindowspipewriter.cpp io/qwindowspipewriter_p.h
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
     LIBRARIES
-        kernel32
-        user32
-        shell32
-        uuid
-        ole32
         advapi32
-        winmm
+        kernel32
+        ole32
+        shell32
+        user32
+        uuid
         version
+        winmm
+    PUBLIC_LIBRARIES
         mpr
         netapi32
         userenv
@@ -435,72 +432,62 @@ extend_target(Core CONDITION APPLE_OSX
         kernel/qcoreapplication_mac.cpp
         kernel/qeventdispatcher_cf.mm kernel/qeventdispatcher_cf_p.h
     LIBRARIES
+        ${FWAppKit}
         ${FWApplicationServices}
         ${FWCoreServices}
         ${FWFoundation}
-        ${FWCoreServices}
-        ${FWAppKit}
         ${FWSecurity}
+    PUBLIC_LIBRARIES
         ${FWDiskArbitration}
         ${FWIOKit}
 )
 
 extend_target(Core CONDITION INTEGRITY
     LIBRARIES
-        posix
         ivfs
-        socket
         net
+        posix
         shm_client
+        socket
     COMPILE_OPTIONS
         "--pending_instantiations=128"
 )
 
-#
-#extend_target(Core CONDITION pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR)
-#    # CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
-#    # CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
-#)
-#
-#extend_target(Core CONDITION pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR)
-#    # CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
-#    # CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
-#)
-#
-#extend_target(Core CONDITION contains(QT_CPU_FEATURES__ss_QT_ARCH, f16c)
-#    # f16c_cxx = "true"
-#)
-#
-#extend_target(Core CONDITION (NOT (contains(QT_CPU_FEATURES__ss_QT_ARCH,f16c))) AND (CLANG OR intel_icl OR ICC)
-#    # f16c_cxx = "false"
-#)
-#
-#extend_target(Core CONDITION ((NOT (contains(QT_CPU_FEATURES__ss_QT_ARCH,f16c))) AND (NOT (CLANG OR intel_icl OR ICC))) AND (GCC AND f16c AND x86SimdAlways)
-#    # f16c_cxx = "true"
-#)
-#
-#extend_target(Core CONDITION (((NOT (contains(QT_CPU_FEATURES__ss_QT_ARCH,f16c))) AND (NOT (CLANG OR intel_icl OR ICC))) AND (NOT (GCC AND f16c AND x86SimdAlways))) AND (MSVC AND contains(QT_CPU_FEATURES__ss_QT_ARCH,avx))
-#    # f16c_cxx = "true"
-#)
-#
-#extend_target(Core CONDITION (((NOT (contains(QT_CPU_FEATURES__ss_QT_ARCH,f16c))) AND (NOT (CLANG OR intel_icl OR ICC))) AND (NOT (GCC AND f16c AND x86SimdAlways))) AND (NOT (MSVC AND contains(QT_CPU_FEATURES__ss_QT_ARCH,avx)))
-#    # f16c_cxx = "false"
-#)
+extend_target(Core CONDITION DEFINES___contains___QT_EVAL
+    SOURCES
+        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qtcore_eval.cpp
+    INCLUDE_DIRECTORIES
+        ${PROJECT_BUILD_DIR}/src/corelib/global
+)
 
-# special case
-# needs refinement for the other compiler specific cases.
-if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
-    # Equivalent to contains(QT_CPU_FEATURES.$$QT_ARCH, f16c)
-    extend_target(Core
-        DEFINES
-            QFLOAT16_INCLUDE_FAST
-    )
-else()
-    add_qt_simd_part(Core SIMD f16c
-        SOURCES
-            global/qfloat16_f16c.c
-    )
-endif()
+#### Keys ignored in scope 13:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
+# CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
+# CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
+
+#### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR):
+# CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
+# CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
+
+#### Keys ignored in scope 18:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
+# f16c_cxx = "true"
+
+#### Keys ignored in scope 20:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
+# f16c_cxx = "false"
+
+#### Keys ignored in scope 22:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
+# f16c_cxx = "true"
+
+#### Keys ignored in scope 24:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
+# f16c_cxx = "true"
+
+#### Keys ignored in scope 25:.:global:global/global.pri:else:
+# f16c_cxx = "false"
+
+# special case: Handled manually:
+# extend_target(Core CONDITION _ss_f16c_cxx ...
+
+#### Keys ignored in scope 27:.:global:global/global.pri:else:
+# F16C_SOURCES = "global/qfloat16_f16c.c"
 
 extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
     DEFINES
@@ -513,20 +500,18 @@ extend_target(Core CONDITION LINUX AND NOT static
     SOURCES
         global/minimum-linux_p.h
 )
-#
-#extend_target(Core CONDITION LINUX AND precompile_header AND NOT static
-#    # NO_PCH_ASM = "global/minimum-linux.S"
-#    # QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
-#    # no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
-#    # no_pch_assembler.dependency_type = "TYPE_C"
-#    # no_pch_assembler.input = "NO_PCH_ASM"
-#    # no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
-#    # no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
-#)
-#
-#extend_target(Core CONDITION LINUX AND precompile_header AND silent AND NOT static
-#    # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&" "$$no_pch_assembler.commands"
-#)
+
+#### Keys ignored in scope 32:.:global:global/global.pri:precompile_header:
+# NO_PCH_ASM = "global/minimum-linux.S"
+# QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
+# no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
+# no_pch_assembler.dependency_type = "TYPE_C"
+# no_pch_assembler.input = "NO_PCH_ASM"
+# no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
+# no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
+
+#### Keys ignored in scope 33:.:global:global/global.pri:silent:
+# no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&" "$$no_pch_assembler.commands"
 
 extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
     SOURCES
@@ -542,20 +527,18 @@ extend_target(Core CONDITION QT_FEATURE_journald
     LIBRARIES
         journald
 )
-#
-#extend_target(Core CONDITION GCC AND ltcg
-#    # QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
-#    # versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
-#    # versiontagging_compiler.dependency_type = "TYPE_C"
-#    # versiontagging_compiler.input = "VERSIONTAGGING_SOURCES"
-#    # versiontagging_compiler.name = "compiling[versiontagging]" "${QMAKE_FILE_IN}"
-#    # versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
-#    # versiontagging_compiler.variable_out = "OBJECTS"
-#)
-#
-#extend_target(Core CONDITION GCC AND ltcg AND silent
-#    # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&" "$$versiontagging_compiler.commands"
-#)
+
+#### Keys ignored in scope 37:.:global:global/global.pri:GCC AND ltcg:
+# QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
+# versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
+# versiontagging_compiler.dependency_type = "TYPE_C"
+# versiontagging_compiler.input = "VERSIONTAGGING_SOURCES"
+# versiontagging_compiler.name = "compiling[versiontagging]" "${QMAKE_FILE_IN}"
+# versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
+# versiontagging_compiler.variable_out = "OBJECTS"
+
+#### Keys ignored in scope 38:.:global:global/global.pri:silent:
+# versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&" "$$versiontagging_compiler.commands"
 
 extend_target(Core CONDITION UNIX
     SOURCES
@@ -625,7 +608,7 @@ extend_target(Core CONDITION QT_FEATURE_future
 )
 
 extend_target(Core CONDITION QT_FEATURE_std_atomic64
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Atomic
 )
 
@@ -835,7 +818,7 @@ extend_target(Core CONDITION HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
     SOURCES
         io/qstandardpaths_haiku.cpp
         io/qstorageinfo_unix.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         be
 )
 
@@ -991,6 +974,21 @@ add_qt_resource(Core "mimetypes" PREFIX "/qt-project.org/qmime/packages" BASE "m
 
 
 # special case:
+# needs refinement for the other compiler specific cases.
+if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
+    # Equivalent to contains(QT_CPU_FEATURES.$$QT_ARCH, f16c)
+    extend_target(Core
+        DEFINES
+            QFLOAT16_INCLUDE_FAST
+    )
+else()
+    add_qt_simd_part(Core SIMD f16c
+        SOURCES
+            global/qfloat16_f16c.c
+    )
+endif()
+
+# special case:
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
                    COMMAND qfloat16-tables
                    ARGS "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
@@ -999,6 +997,7 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp
                    VERBATIM)
 target_sources(Core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp")
 
+# special case:
 set_source_files_properties(
     thread/qmutex_linux.cpp
     thread/qmutex_mac.cpp
@@ -1017,5 +1016,6 @@ endif()
 qt_internal_add_link_flags_gc_sections(Core PRIVATE)  # special case
 
 qt_create_tracepoints(Core ./qtcore.tracepoints)
-
-add_qt_docs(./doc/qtcore.qdocconf)
+add_qt_docs(
+    ./doc/qtcore.qdocconf
+)

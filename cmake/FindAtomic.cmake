@@ -29,7 +29,7 @@ if(NOT HAVE_STDATOMIC)
     set(CMAKE_REQUIRE_LIBRARIES "${_req_libraries}")
 endif()
 
-add_library(Atomic INTERFACE)
+add_library(Atomic INTERFACE IMPORTED)
 if(HAVE_STDATOMIC_WITH_LIB)
     target_link_libraries(Atomic INTERFACE atomic)
 endif()
