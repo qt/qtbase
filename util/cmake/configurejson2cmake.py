@@ -288,10 +288,10 @@ def map_condition(condition):
     assert isinstance(condition, str)
 
     mapped_features = {
-        "dlopen": "ON",
         'gbm': 'gbm_FOUND',
         "system-xcb": "ON",
         "system-freetype": "ON",
+        'system-pcre2': 'ON',
     }
 
     # Turn foo != "bar" into (NOT foo STREQUAL 'bar')
@@ -694,7 +694,9 @@ def parseFeature(ctx, feature, data, cm_fh):
         'cross_compile': None,
         'debug_and_release': None,
         'debug': None,
-        'dlopen': None,  # handled by CMAKE_DL_LIBS
+        'dlopen': {
+            'condition': 'UNIX',
+        },
         'doubleconversion': None,
         'enable_gdb_index': None,
         'enable_new_dtags': None,
