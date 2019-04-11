@@ -71,6 +71,8 @@ enum PropertyFlags  {
     Writable = 0x00000002,
     Resettable = 0x00000004,
     EnumOrFlag = 0x00000008,
+    Alias = 0x00000010,
+    //Reserved for future usage = 0x00000020,
     StdCppSet = 0x00000100,
     Constant = 0x00000400,
     Final = 0x00000800,

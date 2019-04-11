@@ -3033,6 +3033,20 @@ bool QMetaProperty::hasStdCppSet() const
 
 /*!
     \internal
+
+    Returns \c true if the property is an alias.
+    This is for instance true for a property declared in QML
+    as 'property alias'.
+*/
+bool QMetaProperty::isAlias() const
+{
+    if (!mobj)
+        return false;
+    return (data.flags() & Alias);
+}
+
+/*!
+    \internal
     Executes metacall with QMetaObject::RegisterPropertyMetaType flag.
     Returns id of registered type or QMetaType::UnknownType if a type
     could not be registered for any reason.

@@ -314,6 +314,7 @@ public:
     bool resetOnGadget(void *gadget) const;
 
     bool hasStdCppSet() const;
+    bool isAlias() const;
     inline bool isValid() const { return isReadable(); }
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 

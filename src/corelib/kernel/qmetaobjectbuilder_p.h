@@ -262,6 +262,7 @@ public:
     bool isEnumOrFlag() const;
     bool isConstant() const;
     bool isFinal() const;
+    bool isAlias() const;
 
     void setReadable(bool value);
     void setWritable(bool value);
@@ -274,6 +275,7 @@ public:
     void setEnumOrFlag(bool value);
     void setConstant(bool value);
     void setFinal(bool value);
+    void setAlias(bool value);
 
     int revision() const;
     void setRevision(int revision);

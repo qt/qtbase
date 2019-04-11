@@ -2368,6 +2368,19 @@ bool QMetaPropertyBuilder::isFinal() const
 }
 
 /*!
+ * Returns \c true if the property is an alias.
+ * The default value is false
+ */
+bool QMetaPropertyBuilder::isAlias() const
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        return d->flag(Alias);
+    else
+        return false;
+}
+
+/*!
     Sets this property to readable if \a value is true.
 
     \sa isReadable(), setWritable()
@@ -2500,6 +2513,16 @@ void QMetaPropertyBuilder::setFinal(bool value)
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d)
         d->setFlag(Final, value);
+}
+
+/*!
+   Sets the \c ALIAS flag on this property to \a value
+ */
+void QMetaPropertyBuilder::setAlias(bool value)
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        d->setFlag(Alias, value);
 }
 
 /*!
