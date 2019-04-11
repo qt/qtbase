@@ -152,6 +152,7 @@ def map_qt_base_library(lib: str) -> str:
         'winextras': 'Qt::WinExtras',
         'x11extras': 'Qt::X11Extras',
         'xcb_qpa_lib': 'Qt::XcbQpa',
+        'xkbcommon_support': 'Qt::XkbCommonSupport',
         'xmlpatterns': 'Qt::XmlPatterns',
         'xml': 'Qt::Xml',
     }
