@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -287,7 +287,9 @@ class Q_CORE_EXPORT QDateTime
 
 public:
     QDateTime() noexcept(Data::CanBeSmall);
-    explicit QDateTime(const QDate &); // ### Qt 6: plain QDate, QTime
+#if QT_DEPRECATED_SINCE(5, 15) // ### Qt 6: remove
+    QT_DEPRECATED_X("Use QDate::startOfDay()") explicit QDateTime(const QDate &);
+#endif
     QDateTime(const QDate &, const QTime &, Qt::TimeSpec spec = Qt::LocalTime);
     // ### Qt 6: Merge with above with default offsetSeconds = 0
     QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds);

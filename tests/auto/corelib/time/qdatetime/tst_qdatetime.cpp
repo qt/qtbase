@@ -2941,19 +2941,19 @@ void tst_QDateTime::fewDigitsInYear() const
 void tst_QDateTime::printNegativeYear() const
 {
     {
-        QDateTime date(QDate(-20, 10, 11));
+        QDateTime date(QDate(-20, 10, 11).startOfDay());
         QVERIFY(date.isValid());
         QCOMPARE(date.toString(QLatin1String("yyyy")), QString::fromLatin1("-0020"));
     }
 
     {
-        QDateTime date(QDate(-3, 10, 11));
+        QDateTime date(QDate(-3, 10, 11).startOfDay());
         QVERIFY(date.isValid());
         QCOMPARE(date.toString(QLatin1String("yyyy")), QString::fromLatin1("-0003"));
     }
 
     {
-        QDateTime date(QDate(-400, 10, 11));
+        QDateTime date(QDate(-400, 10, 11).startOfDay());
         QVERIFY(date.isValid());
         QCOMPARE(date.toString(QLatin1String("yyyy")), QString::fromLatin1("-0400"));
     }

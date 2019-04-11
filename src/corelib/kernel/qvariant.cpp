@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
@@ -662,7 +662,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
 #  endif
 #endif
         case QMetaType::QDate:
-            *dt = QDateTime(*v_cast<QDate>(d));
+            *dt = v_cast<QDate>(d)->startOfDay();
             break;
         default:
             return false;
@@ -1229,7 +1229,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *static_cast<QCborValue *>(result) = *v_cast<QByteArray>(d);
             break;
         case QMetaType::QDate:
-            *static_cast<QCborValue *>(result) = QCborValue(QDateTime(*v_cast<QDate>(d)));
+            *static_cast<QCborValue *>(result) = QCborValue(v_cast<QDate>(d)->startOfDay());
             break;
         case QMetaType::QDateTime:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QDateTime>(d));

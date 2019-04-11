@@ -3631,15 +3631,18 @@ QDateTime::QDateTime() noexcept(Data::CanBeSmall)
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 17) // ### Qt 6: remove
 /*!
-    Constructs a datetime with the given \a date, a valid
-    time(00:00:00.000), and sets the timeSpec() to Qt::LocalTime.
-*/
+    Constructs a datetime with the given \a date, using Qt::LocalTime as the
+    timeSpec() and the time at the start of that date.
 
+    \sa QDate::startOfDay()
+*/
 QDateTime::QDateTime(const QDate &date)
-    : d(QDateTimePrivate::create(date, QTime(0, 0), Qt::LocalTime, 0))
+    : QDateTime(date.startOfDay(Qt::LocalTime, 0))
 {
 }
+#endif
 
 /*!
     Constructs a datetime with the given \a date and \a time, using
