@@ -188,14 +188,15 @@ static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
                  topLeftRect.width(), topLeftRect.height());
 }
 
-static void clippedBlit(const QPlatformTextureList *textures, int idx, const QRect &targetWindowRect,
+static void clippedBlit(const QPlatformTextureList *textures, int idx, const QRect &sourceWindowRect,
+                        const QRect &targetWindowRect,
                         QOpenGLTextureBlitter *blitter, QMatrix4x4 *rotationMatrix)
 {
     const QRect clipRect = textures->clipRect(idx);
     if (clipRect.isEmpty())
         return;
 
-    const QRect rectInWindow = textures->geometry(idx);
+    const QRect rectInWindow = textures->geometry(idx).translated(sourceWindowRect.topLeft());
     const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
     const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
 
@@ -218,7 +219,7 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
     const QRect targetWindowRect(QPoint(0, 0), m_targetWindow->geometry().size());
     float currentOpacity = 1.0f;
     BlendStateBinder blend;
-
+    const QRect sourceWindowRect = window->sourceWindow()->geometry();
     for (int i = 0; i < textures->count(); ++i) {
         uint textureId = textures->textureId(i);
         const float opacity = window->sourceWindow()->opacity();
@@ -243,16 +244,16 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
                 target = m_rotationMatrix * target;
             m_blitter.blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
         } else if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
-            // Texture from an FBO belonging to a QOpenGLWidget
+            // Texture from an FBO belonging to a QOpenGLWidget or QQuickWidget
             blend.set(false);
-            clippedBlit(textures, i, targetWindowRect, &m_blitter, m_rotation ? &m_rotationMatrix : nullptr);
+            clippedBlit(textures, i, sourceWindowRect, targetWindowRect, &m_blitter, m_rotation ? &m_rotationMatrix : nullptr);
         }
     }
 
     for (int i = 0; i < textures->count(); ++i) {
         if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             blend.set(true);
-            clippedBlit(textures, i, targetWindowRect, &m_blitter, m_rotation ? &m_rotationMatrix : nullptr);
+            clippedBlit(textures, i, sourceWindowRect, targetWindowRect, &m_blitter, m_rotation ? &m_rotationMatrix : nullptr);
         }
     }
 
