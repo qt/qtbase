@@ -276,6 +276,12 @@ public:
     { return QtPrivate::findString(*this, from, s, cs); }
     Q_REQUIRED_RESULT inline qsizetype indexOf(QLatin1String s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
+    Q_REQUIRED_RESULT bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return indexOf(QStringView(&c, 1), 0, cs) != qsizetype(-1); }
+    Q_REQUIRED_RESULT bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return indexOf(s, 0, cs) != qsizetype(-1); }
+    Q_REQUIRED_RESULT inline bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+
     Q_REQUIRED_RESULT bool isRightToLeft() const noexcept
     { return QtPrivate::isRightToLeft(*this); }
 

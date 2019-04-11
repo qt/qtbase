@@ -4273,7 +4273,7 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
     return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
-
+#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn bool QString::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
     Returns \c true if this string contains an occurrence of the string
@@ -4287,6 +4287,7 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 
     \sa indexOf(), count()
 */
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*! \fn bool QString::contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.3
@@ -4305,11 +4306,26 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
     character \a ch; otherwise returns \c false.
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn bool QString::contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 4.8
 
     Returns \c true if this string contains an occurrence of the string
     reference \a str; otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), count()
+*/
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*! \fn bool QString::contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.14
+    \overload contains()
+
+    Returns \c true if this string contains an occurrence of the string view
+    \a str; otherwise returns \c false.
 
     If \a cs is Qt::CaseSensitive (default), the search is
     case sensitive; otherwise the search is case insensitive.
@@ -9531,6 +9547,21 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn bool QLatin1String::contains(QStringView str, Qt::CaseSensitivity cs) const
+    \fn bool QLatin1String::contains(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QLatin1String::contains(QChar c, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns \c true if this Latin-1 string contains an occurrence of the string-view
+    \a str, Latin-1 string \a l1, or character \a ch; otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is
+    case-sensitive; otherwise the search is case-insensitive.
+
+    \sa indexOf(), QStringView::contains(), QStringView::indexOf(), QString::indexOf()
+*/
+
+/*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
@@ -11514,7 +11545,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
     return qt_ends_with(*this, str, cs);
 }
 
-
+#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn bool QStringRef::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
     \since 4.8
@@ -11526,6 +11557,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 
     \sa indexOf(), count()
 */
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*! \fn bool QStringRef::contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
@@ -11540,6 +11572,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn bool QStringRef::contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \overload contains()
     \since 4.8
@@ -11552,6 +11585,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 
     \sa indexOf(), count()
 */
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*! \fn bool QStringRef::contains(QLatin1String str, Qt::CaseSensitivity cs) const
     \since 4.8
@@ -11559,6 +11593,19 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 
     Returns \c true if this string reference contains an occurrence of
     the string \a str; otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), count()
+*/
+
+/*! \fn bool QStringRef::contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.14
+    \overload contains()
+
+    Returns \c true if this string reference contains an occurrence of
+    the string view \a str; otherwise returns \c false.
 
     If \a cs is Qt::CaseSensitive (default), the search is
     case sensitive; otherwise the search is case insensitive.

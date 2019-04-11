@@ -740,6 +740,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn bool QStringView::contains(QStringView str, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::contains(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::contains(QChar c, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns \c true if this string-view contains an occurrence of the string-view
+    \a str, Latin-1 string \a l1, or character \a ch; otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is
+    case-sensitive; otherwise the search is case-insensitive.
+
+    \sa indexOf()
+*/
+
+/*!
     \fn QByteArray QStringView::toLatin1() const
 
     Returns a Latin-1 representation of the string as a QByteArray.
