@@ -21,7 +21,9 @@ RUN echo "#!/usr/bin/env bash\n" \
 RUN chmod +x startup.sh
 
 # rewrite the default configurations of avahi-daemon
+# Disable IPv6 of avahi-daemon to resolve the unstable connections on Windows
 ARG test_domain
 RUN sed -i -e "s,#domain-name=local,domain-name=${test_domain:-test-net.qt.local}," \
         -e "s,#publish-aaaa-on-ipv4=yes,publish-aaaa-on-ipv4=no," \
+        -e "s,use-ipv6=yes,use-ipv6=no," \
         /etc/avahi/avahi-daemon.conf
