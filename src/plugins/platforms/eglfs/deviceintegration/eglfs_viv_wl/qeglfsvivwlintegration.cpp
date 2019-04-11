@@ -66,6 +66,11 @@ void QEglFSVivWaylandIntegration::platformInit()
     mScreenSize.setWidth(width);
 }
 
+void QEglFSVivWaylandIntegration::platformDestroy()
+{
+    wl_display_destroy(mWaylandDisplay);
+}
+
 QSize QEglFSVivWaylandIntegration::screenSize() const
 {
     return mScreenSize;

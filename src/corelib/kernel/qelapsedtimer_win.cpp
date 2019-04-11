@@ -77,15 +77,6 @@ static inline qint64 ticksToNanoseconds(qint64 ticks)
     return ticks * 1000000;
 }
 
-static inline qint64 nanosecondsToTicks(qint64 nsec)
-{
-    if (counterFrequency > 0) {
-        // QueryPerformanceCounter uses an arbitrary frequency
-        return double(nsec) * counterFrequency / 1000000000.;
-    }
-    // GetTickCount(64) uses milliseconds
-    return nsec / 1000000;
-}
 
 static quint64 getTickCount()
 {

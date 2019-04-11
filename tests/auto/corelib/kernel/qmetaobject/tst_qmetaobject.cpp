@@ -40,6 +40,13 @@ struct MyStruct
     int i;
 };
 
+class MyGadget
+{
+    Q_GADGET
+public:
+    Q_INVOKABLE MyGadget() {}
+};
+
 namespace MyNamespace {
     // Used in tst_QMetaObject::checkScope
     class MyClass : public QObject
@@ -1207,6 +1214,12 @@ void tst_QMetaObject::invokeMetaConstructor()
         QVERIFY(obj2 != 0);
         QCOMPARE(obj2->parent(), (QObject*)&obj);
         QVERIFY(qobject_cast<NamespaceWithConstructibleClass::ConstructibleClass*>(obj2) != 0);
+    }
+    // gadget shouldn't return a valid pointer
+    {
+        QCOMPARE(MyGadget::staticMetaObject.constructorCount(), 1);
+        QTest::ignoreMessage(QtWarningMsg, "QMetaObject::newInstance: type MyGadget does not inherit QObject");
+        QVERIFY(!MyGadget::staticMetaObject.newInstance());
     }
 }
 

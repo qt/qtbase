@@ -235,6 +235,12 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    if (!inherits(&QObject::staticMetaObject))
+    {
+        qWarning("QMetaObject::newInstance: type %s does not inherit QObject", className());
+        return nullptr;
+    }
+
     QByteArray constructorName = className();
     {
         int idx = constructorName.lastIndexOf(':');
