@@ -189,7 +189,7 @@ class Operation:
         else:
             self._value = [str(value), ]
 
-    def process(self, input, transformer):
+    def process(self, key, input, transformer):
         assert(False)
 
     def __repr__(self):
@@ -212,7 +212,7 @@ class Operation:
 
 
 class AddOperation(Operation):
-    def process(self, input, transformer):
+    def process(self, key, input, transformer):
         return input + transformer(self._value)
 
     def __repr__(self):
@@ -220,7 +220,7 @@ class AddOperation(Operation):
 
 
 class UniqueAddOperation(Operation):
-    def process(self, input, transformer):
+    def process(self, key, input, transformer):
         result = input
         for v in transformer(self._value):
             if v not in result:
@@ -232,11 +232,18 @@ class UniqueAddOperation(Operation):
 
 
 class SetOperation(Operation):
-    def process(self, input, transformer):
+    def process(self, key, input, transformer):
+        values = []  # typing.List[str]
+        for v in self._value:
+            if v != '$$' + key:
+                values.append(v)
+            else:
+                values += input
+
         if transformer:
-            return list(transformer(self._value))
+            return list(transformer(values))
         else:
-            return self._value
+            return values
 
     def __repr__(self):
         return '=({})'.format(self._dump())
@@ -246,7 +253,7 @@ class RemoveOperation(Operation):
     def __init__(self, value):
         super().__init__(value)
 
-    def process(self, input, transformer):
+    def process(self, key, input, transformer):
         input_set = set(input)
         value_set = set(self._value)
         result = []
@@ -513,7 +520,7 @@ class Scope(object):
             op_transformer = lambda files: files
 
         for op in self._operations.get(key, []):
-            result = op.process(result, op_transformer)
+            result = op.process(key, result, op_transformer)
 
         for ic in self._included_children:
             result = list(ic._evalOps(key, transformer, result))
@@ -540,7 +547,8 @@ class Scope(object):
 
         expanded_files = []  # typing.List[str]
         for f in files:
-            expanded_files += self._expand_value(f)
+            r = self._expand_value(f)
+            expanded_files += r
 
         mapped_files = list(map(lambda f: map_to_file(f, self, is_include=is_include), expanded_files))
 
@@ -568,7 +576,7 @@ class Scope(object):
             if match.group(0) == value:
                 return self.get(match.group(1))
 
-            replacement = self.expand(match.group(1))
+            replacement = self.get(match.group(1))
             replacement_str = replacement[0] if replacement else ''
             result = result[:match.start()] \
                      + replacement_str \
