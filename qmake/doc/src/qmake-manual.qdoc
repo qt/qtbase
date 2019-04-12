@@ -1271,6 +1271,41 @@
 
     \snippet code/doc_src_qmake-manual.pro 36
 
+    \c INSTALLS has a \c{.CONFIG} member that can take several values:
+
+    \table
+        \header
+            \li Value
+            \li Description
+        \row
+            \li no_check_exists
+            \li If not set, qmake looks to see if the files to install actually
+                exist. If these files don't exist, qmake doesn’t create the
+                install rule. Use this config value if you need to install
+                files that are generated as part of your build process, like
+                HTML files created by qdoc.
+        \row
+            \li nostrip
+            \li If set, the typical Unix strip functionality is turned off and
+                the debug information will remain in the binary.
+        \row
+            \li executable
+            \li On Unix, this sets the executable flag.
+        \row
+            \li no_build
+            \li When you do a \c{make install}, and you don't have a build of
+                the project yet, the project is first built, and then installed.
+                If you don't want this behavior, set this config value to ensure
+                that the build target is not added as a dependency to the install
+                target.
+        \row
+            \li no_default_install
+            \li A project has a top-level project target where, when you do a
+                \c{make install}, everything is installed. But, if you have an
+                install target with this config value set, it's not installed by
+                default. You then have to explicitly say \c{make install_<file>}.
+    \endtable
+
     For more information, see \l{Installing Files}.
 
     This variable is also used to specify which additional files will be
