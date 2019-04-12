@@ -581,10 +581,16 @@ void QKmsDevice::createScreens()
 
 #if QT_CONFIG(drm_atomic)
     // check atomic support
-    m_has_atomic_support = !drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_ATOMIC, 1)
-                           && qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ATOMIC");
-    if (m_has_atomic_support)
-        qCDebug(qLcKmsDebug) << "Atomic Support found";
+    m_has_atomic_support = !drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+    if (m_has_atomic_support) {
+        qCDebug(qLcKmsDebug, "Atomic reported as supported");
+        if (qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ATOMIC")) {
+            qCDebug(qLcKmsDebug, "Atomic enabled");
+        } else {
+            qCDebug(qLcKmsDebug, "Atomic disabled");
+            m_has_atomic_support = false;
+        }
+    }
 #endif
 
     drmModeResPtr resources = drmModeGetResources(m_dri_fd);
