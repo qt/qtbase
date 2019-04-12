@@ -961,17 +961,15 @@ def write_library_section(cm_fh: typing.IO[str], scope: Scope,
                                  if map_qt_library(q) not in known_libraries]
     for key in mixed:
         for lib in scope.expand(key):
-            if map_qt_library(lib) in known_libraries:
+            mapped_lib = map_qt_library(lib)
+            if mapped_lib in known_libraries:
                 continue
 
-            if lib.endswith('-private'):
-                mapped_lib_name = map_qt_base_library(lib[0:-8])
-                if mapped_lib_name:
-                    private_dependencies.append(mapped_lib_name + 'Private')
-                    public_dependencies.append(mapped_lib_name)
-                    continue
-
-            public_dependencies.append(lib)
+            if mapped_lib.endswith('Private'):
+                private_dependencies.append(mapped_lib)
+                public_dependencies.append(mapped_lib[:-7])
+            else:
+                public_dependencies.append(mapped_lib)
 
     write_library_list(cm_fh, 'LIBRARIES', private_dependencies, indent=indent)
     write_library_list(cm_fh, 'PUBLIC_LIBRARIES', public_dependencies, indent=indent)
