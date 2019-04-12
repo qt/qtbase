@@ -2061,6 +2061,17 @@
                         "name": "Derived"
                     }
                 ]
+            },
+            {
+                "className": "CRTPDerivedGadget",
+                "gadget": true,
+                "qualifiedClassName": "GrandParentGadget::CRTPDerivedGadget",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "CRTP<CRTPDerivedGadget>"
+                    }
+                ]
             }
         ],
         "inputFile": "grand-parent-gadget-class.h",
