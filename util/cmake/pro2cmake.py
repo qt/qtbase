@@ -510,9 +510,13 @@ class Scope(object):
 
     def _evalOps(self, key: str,
                  transformer: typing.Optional[typing.Callable[[Scope, typing.List[str]], typing.List[str]]],
-                 result: typing.List[str]) \
+                 result: typing.List[str], *, inherrit: bool = False) \
             -> typing.List[str]:
         self._visited_keys.add(key)
+
+        # Inherrit values from above:
+        if self._parent and inherrit:
+            result = self._parent._evalOps(key, transformer, result)
 
         if transformer:
             op_transformer = lambda files: transformer(self, files)
@@ -527,13 +531,13 @@ class Scope(object):
 
         return result
 
-    def get(self, key: str, *, ignore_includes: bool = False) -> typing.List[str]:
+    def get(self, key: str, *, ignore_includes: bool = False, inherrit: bool = False) -> typing.List[str]:
         if key == 'PWD':
             return ['${CMAKE_CURRENT_SOURCE_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
         if key == 'OUT_PWD':
             return ['${CMAKE_CURRENT_BUILD_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
 
-        return self._evalOps(key, None, [])
+        return self._evalOps(key, None, [], inherrit=inherrit)
 
     def get_string(self, key: str, default: str = '') -> str:
         v = self.get(key)
@@ -553,7 +557,7 @@ class Scope(object):
         mapped_files = list(map(lambda f: map_to_file(f, self, is_include=is_include), expanded_files))
 
         if use_vpath:
-            result = list(map(lambda f: handle_vpath(f, self.basedir, self.get('VPATH')), mapped_files))
+            result = list(map(lambda f: handle_vpath(f, self.basedir, self.get('VPATH', inherrit=True)), mapped_files))
         else:
             result = mapped_files
 
