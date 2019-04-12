@@ -4813,6 +4813,7 @@
     \li Unix
         \list
         \li GCC 3.4 and above
+        \li clang
         \endlist
     \endlist
 
