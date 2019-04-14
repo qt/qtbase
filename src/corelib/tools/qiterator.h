@@ -115,11 +115,11 @@ template <class Key, class T> \
 class Q##C##Iterator \
 { \
     typedef typename Q##C<Key,T>::const_iterator const_iterator; \
-    typedef const_iterator Item; \
     Q##C<Key,T> c; \
     const_iterator i, n; \
     inline bool item_exists() const { return n != c.constEnd(); } \
 public: \
+    typedef const_iterator Item; \
     inline Q##C##Iterator(const Q##C<Key,T> &container) \
         : c(container), i(c.constBegin()), n(c.constEnd()) {} \
     inline Q##C##Iterator &operator=(const Q##C<Key,T> &container) \
@@ -148,11 +148,11 @@ class QMutable##C##Iterator \
 { \
     typedef typename Q##C<Key,T>::iterator iterator; \
     typedef typename Q##C<Key,T>::const_iterator const_iterator; \
-    typedef iterator Item; \
     Q##C<Key,T> *c; \
     iterator i, n; \
     inline bool item_exists() const { return const_iterator(n) != c->constEnd(); } \
 public: \
+    typedef iterator Item; \
     inline QMutable##C##Iterator(Q##C<Key,T> &container) \
         : c(&container) \
     { i = c->begin(); n = c->end(); } \
