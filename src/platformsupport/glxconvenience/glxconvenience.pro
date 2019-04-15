@@ -6,7 +6,7 @@ CONFIG += static internal_module
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 
-QMAKE_USE_PRIVATE += xlib
+QMAKE_USE += xlib
 
 HEADERS += qglxconvenience_p.h
 SOURCES += qglxconvenience.cpp
