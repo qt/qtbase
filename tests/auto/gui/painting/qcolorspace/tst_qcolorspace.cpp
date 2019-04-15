@@ -74,6 +74,8 @@ private slots:
 
     void changeTransferFunction();
     void changePrimaries();
+
+    void transferFunctionTable();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -466,6 +468,33 @@ void tst_QColorSpace::changePrimaries()
     cs.setPrimaries(QPointF(0.3127, 0.3290), QPointF(0.640, 0.330),
                     QPointF(0.3000, 0.6000), QPointF(0.150, 0.060));
     QCOMPARE(cs, QColorSpace(QColorSpace::SRgbLinear));
+}
+
+void tst_QColorSpace::transferFunctionTable()
+{
+    QVector<quint16> linearTable = { 0, 65535 };
+
+    // Check linearSRgb is recognized
+    QColorSpace linearSRgb(QColorSpace::Primaries::SRgb, linearTable);
+    QCOMPARE(linearSRgb.primaries(), QColorSpace::Primaries::SRgb);
+    QCOMPARE(linearSRgb.transferFunction(), QColorSpace::TransferFunction::Linear);
+    QCOMPARE(linearSRgb.gamma(), 1.0);
+    QCOMPARE(linearSRgb, QColorSpace::SRgbLinear);
+
+    // Check other linear is recognized
+    QColorSpace linearARgb(QColorSpace::Primaries::AdobeRgb, linearTable);
+    QCOMPARE(linearARgb.primaries(), QColorSpace::Primaries::AdobeRgb);
+    QCOMPARE(linearARgb.transferFunction(), QColorSpace::TransferFunction::Linear);
+    QCOMPARE(linearARgb.gamma(), 1.0);
+
+    // Check custom transfer function.
+    QVector<quint16> customTable = { 0, 10, 100, 10000, 65535 };
+    QColorSpace customSRgb(QColorSpace::Primaries::SRgb, customTable);
+    QCOMPARE(customSRgb.primaries(), QColorSpace::Primaries::SRgb);
+    QCOMPARE(customSRgb.transferFunction(), QColorSpace::TransferFunction::Custom);
+
+    customSRgb.setTransferFunction(linearTable);
+    QCOMPARE(customSRgb, QColorSpace::SRgbLinear);
 }
 
 QTEST_MAIN(tst_QColorSpace)
