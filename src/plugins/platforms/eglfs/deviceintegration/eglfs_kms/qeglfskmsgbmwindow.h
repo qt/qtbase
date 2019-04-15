@@ -55,6 +55,9 @@ public:
         : QEglFSWindow(w),
           m_integration(integration)
     { }
+
+    ~QEglFSKmsGbmWindow() { destroy(); }
+
     void resetSurface() override;
     void invalidateSurface() override;
 
