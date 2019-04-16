@@ -852,6 +852,12 @@ function(add_qt_executable name)
         MACOSX_BUNDLE "${arg_GUI}"
     )
 
+    if(WIN32)
+        # Workaround for not having ported the winmain / qtmain static library
+        # which is always linked in by qmake.
+        set_target_properties("${name}" PROPERTIES WIN32_EXECUTABLE 0)
+    endif()
+
     if(NOT arg_NO_INSTALL)
         install(TARGETS "${name}"
             RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
