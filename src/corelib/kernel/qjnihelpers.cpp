@@ -45,6 +45,7 @@
 #include "qsharedpointer.h"
 #include "qvector.h"
 #include "qthread.h"
+#include "qcoreapplication.h"
 #include <QtCore/qrunnable.h>
 
 #include <deque>
@@ -474,6 +475,17 @@ void QtAndroidPrivate::runOnAndroidThread(const QtAndroidPrivate::Runnable &runn
         env->CallStaticVoidMethod(g_jNativeClass, g_runPendingCppRunnablesMethodID);
 }
 
+static bool waitForSemaphore(int timeoutMs, QSharedPointer<QSemaphore> sem)
+{
+    while (timeoutMs > 0) {
+        if (sem->tryAcquire(1, 10))
+            return true;
+        timeoutMs -= 10;
+        QCoreApplication::processEvents();
+    }
+    return false;
+}
+
 void QtAndroidPrivate::runOnAndroidThreadSync(const QtAndroidPrivate::Runnable &runnable, JNIEnv *env, int timeoutMs)
 {
     QSharedPointer<QSemaphore> sem(new QSemaphore);
@@ -481,7 +493,7 @@ void QtAndroidPrivate::runOnAndroidThreadSync(const QtAndroidPrivate::Runnable &
         runnable();
         sem->release();
     }, env);
-    sem->tryAcquire(1, timeoutMs);
+    waitForSemaphore(timeoutMs, sem);
 }
 
 void QtAndroidPrivate::requestPermissions(JNIEnv *env, const QStringList &permissions, const QtAndroidPrivate::PermissionsResultFunc &callbackFunc, bool directCall)
@@ -524,7 +536,7 @@ QtAndroidPrivate::PermissionsHash QtAndroidPrivate::requestPermissionsSync(JNIEn
         *res = result;
         sem->release();
     }, true);
-    if (sem->tryAcquire(1, timeoutMs))
+    if (waitForSemaphore(timeoutMs, sem))
         return std::move(*res);
     else // mustn't touch *res
         return QHash<QString, QtAndroidPrivate::PermissionsResult>();
