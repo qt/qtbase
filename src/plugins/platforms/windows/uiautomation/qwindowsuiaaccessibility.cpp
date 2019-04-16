@@ -113,6 +113,9 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
     case QAccessible::ValueChanged:
         QWindowsUiaMainProvider::notifyValueChange(static_cast<QAccessibleValueChangeEvent *>(event));
         break;
+    case QAccessible::SelectionAdd:
+        QWindowsUiaMainProvider::notifySelectionChange(event);
+        break;
     case QAccessible::TextAttributeChanged:
     case QAccessible::TextColumnChanged:
     case QAccessible::TextInserted:

@@ -523,7 +523,7 @@ struct Q_CORE_EXPORT QMetaObject
                  Qt::ConnectionType type = Qt::AutoConnection, decltype(function()) *ret = nullptr)
     {
         return invokeMethodImpl(context,
-                                new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(function),
+                                new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(std::move(function)),
                                 type,
                                 ret);
     }
@@ -535,7 +535,7 @@ struct Q_CORE_EXPORT QMetaObject
     invokeMethod(QObject *context, Func function, typename std::result_of<Func()>::type *ret)
     {
         return invokeMethodImpl(context,
-                                new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(function),
+                                new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(std::move(function)),
                                 Qt::AutoConnection,
                                 ret);
     }

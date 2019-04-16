@@ -59,6 +59,7 @@ enum OutputConfiguration {
     OutputConfigOff,
     OutputConfigPreferred,
     OutputConfigCurrent,
+    OutputConfigSkip,
     OutputConfigMode,
     OutputConfigModeline
 };
@@ -191,6 +192,8 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         configuration = OutputConfigPreferred;
     } else if (mode == "current") {
         configuration = OutputConfigCurrent;
+    } else if (mode == "skip") {
+        configuration = OutputConfigSkip;
     } else if (sscanf(mode.constData(), "%dx%d@%d", &configurationSize.rwidth(), &configurationSize.rheight(),
                       &configurationRefresh) == 3)
     {
@@ -226,6 +229,11 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     // Skip disconnected output
     if (configuration == OutputConfigPreferred && connector->connection == DRM_MODE_DISCONNECTED) {
         qCDebug(qLcKmsDebug) << "Skipping disconnected output" << connectorName;
+        return nullptr;
+    }
+
+    if (configuration == OutputConfigSkip) {
+        qCDebug(qLcKmsDebug) << "Skipping output" << connectorName;
         return nullptr;
     }
 

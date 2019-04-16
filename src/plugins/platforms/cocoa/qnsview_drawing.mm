@@ -154,6 +154,7 @@
         << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
             : [self shouldUseMetalLayer] ? "needed by surface type" : "enabled by macOS");
     [super setLayer:layer];
+    layer.delegate = self;
 }
 
 - (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy

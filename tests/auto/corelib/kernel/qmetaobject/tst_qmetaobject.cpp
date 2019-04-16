@@ -816,6 +816,15 @@ void tst_QMetaObject::invokePointer()
         QCOMPARE(obj.slotResult, QString("sl1:bubu"));
     }
     QCOMPARE(countedStructObjectsCount, 0);
+#ifdef __cpp_init_captures
+    {
+        CountedStruct str;
+        std::unique_ptr<int> ptr( new int );
+        QVERIFY(QMetaObject::invokeMethod(&obj, [str, &t1, &obj, p = std::move(ptr)]() { obj.sl1(t1); }));
+        QCOMPARE(obj.slotResult, QString("sl1:1"));
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+#endif
 }
 
 void tst_QMetaObject::invokeQueuedMetaMember()
@@ -1121,6 +1130,15 @@ void tst_QMetaObject::invokeBlockingQueuedPointer()
         QCOMPARE(exp, QString("yessir"));
         QCOMPARE(obj.slotResult, QString("sl1:bubu"));
     }
+#ifdef __cpp_init_captures
+    {
+        std::unique_ptr<int> ptr(new int);
+        QVERIFY(QMetaObject::invokeMethod(&obj,
+                                          [&obj, p = std::move(ptr)]() { return obj.sl1("hehe"); },
+                                          Qt::BlockingQueuedConnection));
+        QCOMPARE(obj.slotResult, QString("sl1:hehe"));
+    }
+#endif
     QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.moveToThread(QThread::currentThread());}, Qt::BlockingQueuedConnection));
     t.quit();
     QVERIFY(t.wait());
