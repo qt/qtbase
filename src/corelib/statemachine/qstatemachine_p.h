@@ -108,7 +108,7 @@ public:
     ~QStateMachinePrivate();
 
     static QStateMachinePrivate *get(QStateMachine *q)
-    { return q ? q->d_func() : 0; }
+    { return q ? q->d_func() : nullptr; }
 
     QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
     QState *findLCCA(const QList<QAbstractState*> &states) const;
@@ -218,18 +218,18 @@ public:
         QByteArray prop;
         // two overloads because friends can't have default arguments
         friend uint qHash(const RestorableId &key, uint seed)
-            Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<QByteArray>())))
+            noexcept(noexcept(qHash(std::declval<QByteArray>())))
         { return qHash(qMakePair(key.obj, key.prop), seed); }
-        friend uint qHash(const RestorableId &key) Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key, 0U)))
+        friend uint qHash(const RestorableId &key) noexcept(noexcept(qHash(key, 0U)))
         { return qHash(key, 0U); }
-        friend bool operator==(const RestorableId &lhs, const RestorableId &rhs) Q_DECL_NOTHROW
+        friend bool operator==(const RestorableId &lhs, const RestorableId &rhs) noexcept
         { return lhs.obj == rhs.obj && lhs.prop == rhs.prop; }
-        friend bool operator!=(const RestorableId &lhs, const RestorableId &rhs) Q_DECL_NOTHROW
+        friend bool operator!=(const RestorableId &lhs, const RestorableId &rhs) noexcept
         { return !operator==(lhs, rhs); }
     public:
-        explicit RestorableId(QObject *o, QByteArray p) Q_DECL_NOTHROW : guard(o), obj(o), prop(qMove(p)) {}
-        QObject *object() const Q_DECL_NOTHROW { return guard; }
-        QByteArray propertyName() const Q_DECL_NOTHROW { return prop; }
+        explicit RestorableId(QObject *o, QByteArray p) noexcept : guard(o), obj(o), prop(std::move(p)) {}
+        QObject *object() const noexcept { return guard; }
+        QByteArray propertyName() const noexcept { return prop; }
     };
     QHash<QAbstractState*, QHash<RestorableId, QVariant> > registeredRestorablesForState;
     bool hasRestorable(QAbstractState *state, QObject *object, const QByteArray &propertyName) const;
@@ -271,7 +271,7 @@ public:
         QList<QAbstractAnimation*> handledAnimations;
         QList<QAbstractAnimation*> localResetEndValues;
 
-        void swap(InitializeAnimationResult &other) Q_DECL_NOTHROW
+        void swap(InitializeAnimationResult &other) noexcept
         {
             qSwap(handledAnimations,   other.handledAnimations);
             qSwap(localResetEndValues, other.localResetEndValues);
@@ -297,7 +297,7 @@ public:
     void initializeAnimations(QAbstractState *state, const QList<QAbstractAnimation*> &selectedAnimations,
                               const QList<QAbstractState *> &exitedStates_sorted,
                               QHash<QAbstractState *, QVector<QPropertyAssignment> > &assignmentsForEnteredStates);
-#endif // QT_NO_ANIMATION
+#endif // animation
 
     QSignalEventGenerator *signalEventGenerator;
 
@@ -313,7 +313,7 @@ public:
         DelayedEvent(QEvent *e, int tid)
             : event(e), timerId(tid) {}
         DelayedEvent()
-            : event(0), timerId(0) {}
+            : event(nullptr), timerId(0) {}
     };
     QHash<int, DelayedEvent> delayedEvents;
     QHash<int, int> timerIdToDelayedEventId;

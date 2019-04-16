@@ -82,11 +82,11 @@ public:
     bool intersect();
     bool contains();
 
-    static bool pathToRect(const QPainterPath &path, QRectF *rect = 0);
+    static bool pathToRect(const QPainterPath &path, QRectF *rect = nullptr);
     static QPainterPath intersect(const QPainterPath &path, const QRectF &rect);
 
 private:
-    Q_DISABLE_COPY(QPathClipper)
+    Q_DISABLE_COPY_MOVE(QPathClipper)
 
     enum ClipperMode {
         ClipMode, // do the full clip
@@ -394,7 +394,7 @@ inline const QPathSegments::Intersection *QPathSegments::intersectionAt(int inde
 {
     const int intersection = m_segments.at(index).intersection;
     if (intersection < 0)
-        return 0;
+        return nullptr;
     else
         return &m_intersections.at(intersection);
 }
@@ -428,12 +428,12 @@ inline int QWingedEdge::edgeCount() const
 
 inline QPathEdge *QWingedEdge::edge(int edge)
 {
-    return edge < 0 ? 0 : &m_edges.at(edge);
+    return edge < 0 ? nullptr : &m_edges.at(edge);
 }
 
 inline const QPathEdge *QWingedEdge::edge(int edge) const
 {
-    return edge < 0 ? 0 : &m_edges.at(edge);
+    return edge < 0 ? nullptr : &m_edges.at(edge);
 }
 
 inline int QWingedEdge::vertexCount() const
@@ -449,12 +449,12 @@ inline int QWingedEdge::addVertex(const QPointF &p)
 
 inline QPathVertex *QWingedEdge::vertex(int vertex)
 {
-    return vertex < 0 ? 0 : &m_vertices.at(vertex);
+    return vertex < 0 ? nullptr : &m_vertices.at(vertex);
 }
 
 inline const QPathVertex *QWingedEdge::vertex(int vertex) const
 {
-    return vertex < 0 ? 0 : &m_vertices.at(vertex);
+    return vertex < 0 ? nullptr : &m_vertices.at(vertex);
 }
 
 inline QPathEdge::Traversal QWingedEdge::flip(QPathEdge::Traversal traversal)

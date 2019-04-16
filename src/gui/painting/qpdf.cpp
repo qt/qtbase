@@ -71,6 +71,11 @@ static const bool do_compress = true;
 // Can't use it though, as gs generates completely wrong images if this is true.
 static const bool interpolateImages = false;
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(qpdf);
+}
+
 QT_BEGIN_NAMESPACE
 
 inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
@@ -851,7 +856,6 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
     if (!d->hasPen && !d->hasBrush)
         return;
 
-    QBrush penBrush = d->pen.brush();
     if (d->simplePen || !d->hasPen) {
         // draw strokes natively in this case for better output
         if(!d->simplePen && !d->stroker.matrix.isIdentity())
@@ -944,11 +948,23 @@ void QPdfEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap, con
     QPixmap pm = sourceRect != pixmap.rect() ? pixmap.copy(sourceRect) : pixmap;
     QImage image = pm.toImage();
     bool bitmap = true;
-    const int object = d->addImage(image, &bitmap, pm.cacheKey());
+    const bool lossless = painter()->testRenderHint(QPainter::LosslessImageRendering);
+    const int object = d->addImage(image, &bitmap, lossless, pm.cacheKey());
     if (object < 0)
         return;
 
-    *d->currentPage << "q\n/GSa gs\n";
+    *d->currentPage << "q\n";
+
+    if ((d->pdfVersion != QPdfEngine::Version_A1b) && (d->opacity != 1.0)) {
+        int stateObject = d->addConstantAlphaObject(qRound(255 * d->opacity), qRound(255 * d->opacity));
+        if (stateObject)
+            *d->currentPage << "/GState" << stateObject << "gs\n";
+        else
+            *d->currentPage << "/GSa gs\n";
+    } else {
+        *d->currentPage << "/GSa gs\n";
+    }
+
     *d->currentPage
         << QPdf::generateMatrix(QTransform(rectangle.width() / sr.width(), 0, 0, rectangle.height() / sr.height(),
                                            rectangle.x(), rectangle.y()) * (d->simplePen ? QTransform() : d->stroker.matrix));
@@ -972,11 +988,23 @@ void QPdfEngine::drawImage(const QRectF &rectangle, const QImage &image, const Q
     QRect sourceRect = sr.toRect();
     QImage im = sourceRect != image.rect() ? image.copy(sourceRect) : image;
     bool bitmap = true;
-    const int object = d->addImage(im, &bitmap, im.cacheKey());
+    const bool lossless = painter()->testRenderHint(QPainter::LosslessImageRendering);
+    const int object = d->addImage(im, &bitmap, lossless, im.cacheKey());
     if (object < 0)
         return;
 
-    *d->currentPage << "q\n/GSa gs\n";
+    *d->currentPage << "q\n";
+
+    if ((d->pdfVersion != QPdfEngine::Version_A1b) && (d->opacity != 1.0)) {
+        int stateObject = d->addConstantAlphaObject(qRound(255 * d->opacity), qRound(255 * d->opacity));
+        if (stateObject)
+            *d->currentPage << "/GState" << stateObject << "gs\n";
+        else
+            *d->currentPage << "/GSa gs\n";
+    } else {
+        *d->currentPage << "/GSa gs\n";
+    }
+
     *d->currentPage
         << QPdf::generateMatrix(QTransform(rectangle.width() / sr.width(), 0, 0, rectangle.height() / sr.height(),
                                            rectangle.x(), rectangle.y()) * (d->simplePen ? QTransform() : d->stroker.matrix));
@@ -1446,6 +1474,7 @@ QPdfEnginePrivate::QPdfEnginePrivate()
       grayscale(false),
       m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(10, 10, 10, 10))
 {
+    initResources();
     resolution = 1200;
     currentObject = 1;
     currentPage = 0;
@@ -1513,7 +1542,7 @@ bool QPdfEngine::end()
     Q_D(QPdfEngine);
     d->writeTail();
 
-    d->stream->unsetDevice();
+    d->stream->setDevice(nullptr);
 
     qDeleteAll(d->fonts);
     d->fonts.clear();
@@ -1541,7 +1570,14 @@ void QPdfEnginePrivate::writeHeader()
 {
     addXrefEntry(0,false);
 
-    xprintf("%%PDF-1.4\n");
+    static const QHash<QPdfEngine::PdfVersion, const char *> mapping {
+        {QPdfEngine::Version_1_4, "1.4"},
+        {QPdfEngine::Version_A1b, "1.4"},
+        {QPdfEngine::Version_1_6, "1.6"}
+    };
+    const char *verStr = mapping.value(pdfVersion, "1.4");
+
+    xprintf("%%PDF-%s\n", verStr);
     xprintf("%%\303\242\303\243\n");
 
     writeInfo();
@@ -1635,19 +1671,19 @@ int QPdfEnginePrivate::writeXmpMetaData()
     const QDateTime now = QDateTime::currentDateTime();
     const QDate date = now.date();
     const QTime time = now.time();
-
-    QString timeStr;
-    timeStr.sprintf("%d-%02d-%02dT%02d:%02d:%02d", date.year(), date.month(), date.day(),
-                                                   time.hour(), time.minute(), time.second());
+    const QString timeStr =
+            QString::asprintf("%d-%02d-%02dT%02d:%02d:%02d",
+                              date.year(), date.month(), date.day(),
+                              time.hour(), time.minute(), time.second());
 
     const int offset = now.offsetFromUtc();
     const int hours  = (offset / 60) / 60;
     const int mins   = (offset / 60) % 60;
     QString tzStr;
     if (offset < 0)
-        tzStr.sprintf("-%02d:%02d", -hours, -mins);
+        tzStr = QString::asprintf("-%02d:%02d", -hours, -mins);
     else if (offset > 0)
-        tzStr.sprintf("+%02d:%02d", hours , mins);
+        tzStr = QString::asprintf("+%02d:%02d", hours , mins);
     else
         tzStr = QLatin1String("Z");
 
@@ -1874,6 +1910,19 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
     }
 }
 
+qreal QPdfEnginePrivate::calcUserUnit() const
+{
+    // PDF standards < 1.6 support max 200x200in pages (no UserUnit)
+    if (pdfVersion < QPdfEngine::Version_1_6)
+        return 1.0;
+
+    const int maxLen = qMax(currentPage->pageSize.width(), currentPage->pageSize.height());
+    if (maxLen <= 14400)
+        return 1.0; // for pages up to 200x200in (14400x14400 units) use default scaling
+
+    // for larger pages, rescale units so we can have up to 381x381km
+    return qMin(maxLen / 14400.0, 75000.0);
+}
 
 void QPdfEnginePrivate::writeFonts()
 {
@@ -1896,6 +1945,8 @@ void QPdfEnginePrivate::writePage()
     uint resources = requestObject();
     uint annots = requestObject();
 
+    qreal userUnit = calcUserUnit();
+
     addXrefEntry(pages.constLast());
     xprintf("<<\n"
             "/Type /Page\n"
@@ -1903,12 +1954,17 @@ void QPdfEnginePrivate::writePage()
             "/Contents %d 0 R\n"
             "/Resources %d 0 R\n"
             "/Annots %d 0 R\n"
-            "/MediaBox [0 0 %d %d]\n"
-            ">>\n"
-            "endobj\n",
+            "/MediaBox [0 0 %s %s]\n",
             pageRoot, pageStream, resources, annots,
             // make sure we use the pagesize from when we started the page, since the user may have changed it
-            currentPage->pageSize.width(), currentPage->pageSize.height());
+            QByteArray::number(currentPage->pageSize.width() / userUnit, 'f').constData(),
+            QByteArray::number(currentPage->pageSize.height() / userUnit, 'f').constData());
+
+    if (pdfVersion >= QPdfEngine::Version_1_6)
+        xprintf("/UserUnit %s\n", QByteArray::number(userUnit, 'f').constData());
+
+    xprintf(">>\n"
+            "endobj\n");
 
     addXrefEntry(resources);
     xprintf("<<\n"
@@ -2578,6 +2634,8 @@ int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
 
 int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, int *gStateObject)
 {
+    Q_Q(QPdfEngine);
+
     int paintType = 2; // Uncolored tiling
     int w = 8;
     int h = 8;
@@ -2607,7 +2665,8 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
             return 0;
         QImage image = brush.textureImage();
         bool bitmap = true;
-        imageObject = addImage(image, &bitmap, image.cacheKey());
+        const bool lossless = q->painter()->testRenderHint(QPainter::LosslessImageRendering);
+        imageObject = addImage(image, &bitmap, lossless, image.cacheKey());
         if (imageObject != -1) {
             QImage::Format f = image.format();
             if (f != QImage::Format_MonoLSB && f != QImage::Format_Mono) {
@@ -2669,7 +2728,7 @@ static inline bool is_monochrome(const QVector<QRgb> &colorTable)
 /*!
  * Adds an image to the pdf and return the pdf-object id. Returns -1 if adding the image failed.
  */
-int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_no)
+int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, qint64 serial_no)
 {
     if (img.isNull())
         return -1;
@@ -2730,7 +2789,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
         bool hasAlpha = false;
         bool hasMask = false;
 
-        if (QImageWriter::supportedImageFormats().contains("jpeg") && !grayscale) {
+        if (QImageWriter::supportedImageFormats().contains("jpeg") && !grayscale && !lossless) {
             QBuffer buffer(&imageData);
             QImageWriter writer(&buffer, "jpeg");
             writer.setQuality(94);
@@ -2977,8 +3036,9 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 
 QTransform QPdfEnginePrivate::pageMatrix() const
 {
-    qreal scale = 72./resolution;
-    QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, m_pageLayout.fullRectPoints().height());
+    qreal userUnit = calcUserUnit();
+    qreal scale = 72. / userUnit / resolution;
+    QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, m_pageLayout.fullRectPoints().height() / userUnit);
     if (m_pageLayout.mode() != QPageLayout::FullPageMode) {
         QRect r = m_pageLayout.paintRectPixels(resolution);
         tmp.translate(r.left(), r.top());

@@ -58,12 +58,12 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
 
-    XFormWidget xformWidget(0);
-    QStyle *arthurStyle = new ArthurStyle();
+    XFormWidget xformWidget(nullptr);
+    QStyle *arthurStyle = new ArthurStyle;
     xformWidget.setStyle(arthurStyle);
 
-    QList<QWidget *> widgets = xformWidget.findChildren<QWidget *>();
-    foreach (QWidget *w, widgets) {
+    const QList<QWidget *> widgets = xformWidget.findChildren<QWidget *>();
+    for (QWidget *w : widgets) {
         w->setStyle(arthurStyle);
         w->setAttribute(Qt::WA_AcceptTouchEvents);
     }

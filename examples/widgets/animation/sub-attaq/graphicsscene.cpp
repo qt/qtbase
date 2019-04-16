@@ -191,15 +191,15 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
     lettersFadingState->setAnimation(lettersGroupFading);
 
     //if new game then we fade out the welcome screen and start playing
-    lettersMovingState->addTransition(newAction, SIGNAL(triggered()), lettersFadingState);
-    lettersFadingState->addTransition(lettersFadingState, SIGNAL(animationFinished()), gameState);
+    lettersMovingState->addTransition(newAction, &QAction::triggered, lettersFadingState);
+    lettersFadingState->addTransition(lettersFadingState, &QAnimationState::animationFinished, gameState);
 
     //New Game is triggered then player start playing
-    gameState->addTransition(newAction, SIGNAL(triggered()), gameState);
+    gameState->addTransition(newAction, &QAction::triggered, gameState);
 
     //Wanna quit, then connect to CTRL+Q
-    gameState->addTransition(quitAction, SIGNAL(triggered()), final);
-    lettersMovingState->addTransition(quitAction, SIGNAL(triggered()), final);
+    gameState->addTransition(quitAction, &QAction::triggered, final);
+    lettersMovingState->addTransition(quitAction, &QAction::triggered, final);
 
     //Welcome screen is the initial state
     machine->setInitialState(lettersMovingState);
@@ -207,27 +207,27 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
     machine->start();
 
     //We reach the final state, then we quit
-    connect(machine, SIGNAL(finished()), qApp, SLOT(quit()));
+    connect(machine, &QStateMachine::finished, qApp, &QApplication::quit);
 }
 
 void GraphicsScene::addItem(Bomb *bomb)
 {
     bombs.insert(bomb);
-    connect(bomb,SIGNAL(bombExecutionFinished()),this, SLOT(onBombExecutionFinished()));
+    connect(bomb,&Bomb::bombExecutionFinished,this, &GraphicsScene::onBombExecutionFinished);
     QGraphicsScene::addItem(bomb);
 }
 
 void GraphicsScene::addItem(Torpedo *torpedo)
 {
     torpedos.insert(torpedo);
-    connect(torpedo,SIGNAL(torpedoExecutionFinished()),this, SLOT(onTorpedoExecutionFinished()));
+    connect(torpedo,&Torpedo::torpedoExecutionFinished,this, &GraphicsScene::onTorpedoExecutionFinished);
     QGraphicsScene::addItem(torpedo);
 }
 
 void GraphicsScene::addItem(SubMarine *submarine)
 {
     submarines.insert(submarine);
-    connect(submarine,SIGNAL(subMarineExecutionFinished()),this, SLOT(onSubMarineExecutionFinished()));
+    connect(submarine,&SubMarine::subMarineExecutionFinished,this, &GraphicsScene::onSubMarineExecutionFinished);
     QGraphicsScene::addItem(submarine);
 }
 
@@ -265,17 +265,17 @@ void GraphicsScene::onSubMarineExecutionFinished()
 
 void GraphicsScene::clearScene()
 {
-    foreach (SubMarine *sub, submarines) {
+    for (SubMarine *sub : qAsConst(submarines)) {
         sub->destroy();
         sub->deleteLater();
     }
 
-    foreach (Torpedo *torpedo, torpedos) {
+    for (Torpedo *torpedo : qAsConst(torpedos)) {
         torpedo->destroy();
         torpedo->deleteLater();
     }
 
-    foreach (Bomb *bomb, bombs) {
+    for (Bomb *bomb : qAsConst(bombs)) {
         bomb->destroy();
         bomb->deleteLater();
     }

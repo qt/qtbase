@@ -242,7 +242,7 @@ void QUndoGroup::setActiveStack(QUndoStack *stack)
     Returns the active stack of this group.
 
     If none of the stacks are active, or if the group is empty, this function
-    returns 0.
+    returns \nullptr.
 
     \sa setActiveStack(), QUndoStack::setActive()
 */

@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'paletteeditor.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -81,7 +81,7 @@ public:
         if (qdesigner_internal__PaletteEditor->objectName().isEmpty())
             qdesigner_internal__PaletteEditor->setObjectName(QString::fromUtf8("qdesigner_internal__PaletteEditor"));
         qdesigner_internal__PaletteEditor->resize(365, 409);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(7));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qdesigner_internal__PaletteEditor->sizePolicy().hasHeightForWidth());
@@ -108,7 +108,7 @@ public:
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         buildButton = new QtColorButton(advancedBox);
         buildButton->setObjectName(QString::fromUtf8("buildButton"));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(13));
+        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(buildButton->sizePolicy().hasHeightForWidth());
@@ -143,7 +143,7 @@ public:
 
         GroupBox126 = new QGroupBox(qdesigner_internal__PaletteEditor);
         GroupBox126->setObjectName(QString::fromUtf8("GroupBox126"));
-        QSizePolicy sizePolicy2(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(7));
+        QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Expanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(GroupBox126->sizePolicy().hasHeightForWidth());
@@ -197,16 +197,16 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__PaletteEditor)
     {
-        qdesigner_internal__PaletteEditor->setWindowTitle(QApplication::translate("qdesigner_internal::PaletteEditor", "Edit Palette", nullptr));
-        advancedBox->setTitle(QApplication::translate("qdesigner_internal::PaletteEditor", "Tune Palette", nullptr));
+        qdesigner_internal__PaletteEditor->setWindowTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Edit Palette", nullptr));
+        advancedBox->setTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Tune Palette", nullptr));
         buildButton->setText(QString());
-        detailsRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Show Details", nullptr));
-        computeRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Compute Details", nullptr));
-        label->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Quick", nullptr));
-        GroupBox126->setTitle(QApplication::translate("qdesigner_internal::PaletteEditor", "Preview", nullptr));
-        disabledRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Disabled", nullptr));
-        inactiveRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Inactive", nullptr));
-        activeRadio->setText(QApplication::translate("qdesigner_internal::PaletteEditor", "Active", nullptr));
+        detailsRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Show Details", nullptr));
+        computeRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Compute Details", nullptr));
+        label->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Quick", nullptr));
+        GroupBox126->setTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Preview", nullptr));
+        disabledRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Disabled", nullptr));
+        inactiveRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Inactive", nullptr));
+        activeRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Active", nullptr));
     } // retranslateUi
 
 };

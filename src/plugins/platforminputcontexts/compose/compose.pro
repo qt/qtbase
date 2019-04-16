@@ -3,22 +3,13 @@ TARGET = composeplatforminputcontextplugin
 QT += core-private gui-private
 
 SOURCES += $$PWD/qcomposeplatforminputcontextmain.cpp \
-           $$PWD/qcomposeplatforminputcontext.cpp \
-           $$PWD/generator/qtablegenerator.cpp \
+           $$PWD/qcomposeplatforminputcontext.cpp
 
-HEADERS += $$PWD/qcomposeplatforminputcontext.h \
-           $$PWD/generator/qtablegenerator.h \
+HEADERS += $$PWD/qcomposeplatforminputcontext.h
 
-# libxkbcommon
-!qtConfig(xkbcommon-system) {
-    include(../../../3rdparty/xkbcommon.pri)
-} else {
-    QMAKE_USE += xkbcommon
-}
+QMAKE_USE_PRIVATE += xkbcommon
 
 include($$OUT_PWD/../../../gui/qtgui-config.pri)
-
-DEFINES += X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
 
 OTHER_FILES += $$PWD/compose.json
 

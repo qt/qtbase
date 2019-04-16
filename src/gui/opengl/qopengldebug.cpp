@@ -89,16 +89,7 @@ QT_BEGIN_NAMESPACE
     call. Moreover, OpenGL errors stack up, therefore glGetError should always
     be used in a loop like this:
 
-    \code
-
-    GLenum error = GL_NO_ERROR;
-    do {
-        error = glGetError();
-        if (error != GL_NO_ERROR)
-            // handle the error
-    } while (error != GL_NO_ERROR);
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 0
 
     If you try to clear the error stack, make sure not just keep going until
     GL_NO_ERROR is returned but also break on GL_CONTEXT_LOST as that error
@@ -125,20 +116,7 @@ QT_BEGIN_NAMESPACE
     to create a debug context from Qt, you must set the QSurfaceFormat::DebugContext
     format option on the QSurfaceFormat used to create the QOpenGLContext object:
 
-    \code
-
-    QSurfaceFormat format;
-    // asks for a OpenGL 3.2 debug context using the Core profile
-    format.setMajorVersion(3);
-    format.setMinorVersion(2);
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    format.setOption(QSurfaceFormat::DebugContext);
-
-    QOpenGLContext *context = new QOpenGLContext;
-    context->setFormat(format);
-    context->create();
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 1
 
     Note that requesting a 3.2 OpenGL Core Profile is just for the example's
     purposes; this class is not tied to any specific OpenGL or OpenGL ES
@@ -152,24 +130,13 @@ QT_BEGIN_NAMESPACE
     object), and like the other OpenGL functions in Qt you \e{must} initialize
     it before usage by calling initialize() whilst there is a current OpenGL context:
 
-    \code
-
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
-
-    logger->initialize(); // initializes in the current context, i.e. ctx
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 2
 
     Note that the \c{GL_KHR_debug} extension \e{must} be available in the context
     in order to access the messages logged by OpenGL. You can check the
     presence of this extension by calling:
 
-    \code
-
-    ctx->hasExtension(QByteArrayLiteral("GL_KHR_debug"))
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 3
 
     where \c{ctx} is a valid QOpenGLContext. If the extension is not available,
     initialize() will return false.
@@ -179,13 +146,7 @@ QT_BEGIN_NAMESPACE
     OpenGL implementations keep an internal log of debug messages. Messages
     stored in this log can be retrieved by using the loggedMessages() function:
 
-    \code
-
-    const QList<QOpenGLDebugMessage> messages = logger->loggedMessages();
-    for (const QOpenGLDebugMessage &message : messages)
-        qDebug() << message;
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 4
 
     The internal log has a limited size; when it fills up, older messages will
     get discarded to make room for the new incoming messages. When you call
@@ -203,12 +164,7 @@ QT_BEGIN_NAMESPACE
     you need to connect a suitable slot to the messageLogged() signal, and
     start logging by calling startLogging():
 
-    \code
-
-    connect(logger, &QOpenGLDebugLogger::messageLogged, receiver, &LogHandler::handleLoggedMessage);
-    logger->startLogging();
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 5
 
     Similarly, logging can be disabled at any time by calling the stopLogging()
     function.
@@ -259,14 +215,7 @@ QT_BEGIN_NAMESPACE
     \l{QOpenGLDebugMessage::}{createThirdPartyMessage()}, and then inserting it
     into the log by calling logMessage():
 
-    \code
-
-    QOpenGLDebugMessage message =
-        QOpenGLDebugMessage::createApplicationMessage(QStringLiteral("Custom message"));
-
-    logger->logMessage(message);
-
-    \endcode
+    \snippet code/src_gui_opengl_qopengldebug.cpp 6
 
     Note that OpenGL implementations have a vendor-specific limit to the length
     of the messages that can be inserted in the debug log. You can retrieve

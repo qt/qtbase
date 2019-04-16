@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -35,6 +36,8 @@
 #include <qhash.h>
 #include <qstring.h>
 
+typedef struct ZSTD_CCtx_s ZSTD_CCtx;
+
 QT_BEGIN_NAMESPACE
 
 class RCCFileInfo;
@@ -55,7 +58,7 @@ public:
 
     bool readFiles(bool listMode, QIODevice &errorDevice);
 
-    enum Format { Binary, C_Code, Pass1, Pass2 };
+    enum Format { Binary, C_Code, Pass1, Pass2, Python3_Code, Python2_Code };
     void setFormat(Format f) { m_format = f; }
     Format format() const { return m_format; }
 
@@ -77,6 +80,19 @@ public:
     void setOutputName(const QString &name) { m_outputName = name; }
     QString outputName() const { return m_outputName; }
 
+    enum class CompressionAlgorithm {
+        Zlib,
+        Zstd,
+
+        Best = 99,
+        None = -1
+    };
+
+    static CompressionAlgorithm parseCompressionAlgorithm(QStringView algo, QString *errorMsg);
+    void setCompressionAlgorithm(CompressionAlgorithm algo) { m_compressionAlgo = algo; }
+    CompressionAlgorithm compressionAlgorithm() const { return m_compressionAlgo; }
+
+    static int parseCompressionLevel(CompressionAlgorithm algo, const QString &level, QString *errorMsg);
     void setCompressLevel(int c) { m_compressLevel = c; }
     int compressLevel() const { return m_compressLevel; }
 
@@ -104,6 +120,7 @@ private:
         const QString ATTRIBUTE_ALIAS;
         const QString ATTRIBUTE_THRESHOLD;
         const QString ATTRIBUTE_COMPRESS;
+        const QString ATTRIBUTE_COMPRESSALGO;
     };
     friend class RCCFileInfo;
     void reset();
@@ -117,13 +134,19 @@ private:
     bool writeInitializer();
     void writeMangleNamespaceFunction(const QByteArray &name);
     void writeAddNamespaceFunction(const QByteArray &name);
+    void writeDecimal(int value);
     void writeHex(quint8 number);
+    void write2HexDigits(quint8 number);
     void writeNumber2(quint16 number);
     void writeNumber4(quint32 number);
     void writeNumber8(quint64 number);
     void writeChar(char c) { m_out.append(c); }
     void writeByteArray(const QByteArray &);
     void write(const char *, int len);
+
+#if QT_CONFIG(zstd)
+    ZSTD_CCtx *m_zstdCCtx;
+#endif
 
     const Strings m_strings;
     RCCFileInfo *m_root;
@@ -133,11 +156,13 @@ private:
     QString m_outputName;
     Format m_format;
     bool m_verbose;
+    CompressionAlgorithm m_compressionAlgo;
     int m_compressLevel;
     int m_compressThreshold;
     int m_treeOffset;
     int m_namesOffset;
     int m_dataOffset;
+    quint32 m_overallFlags;
     bool m_useNameSpace;
     QStringList m_failedResources;
     QIODevice *m_errorDevice;

@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "previewwindow.h"
+
+#include <QtWidgets>
 
 //! [0]
 PreviewWindow::PreviewWindow(QWidget *parent)
@@ -61,7 +61,8 @@ PreviewWindow::PreviewWindow(QWidget *parent)
     textEdit->setLineWrapMode(QTextEdit::NoWrap);
 
     closeButton = new QPushButton(tr("&Close"));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(closeButton, &QPushButton::clicked,
+            this, &PreviewWindow::close);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);

@@ -79,7 +79,7 @@ public:
     QXcbScreen *screenAt(const QPoint &pos) const;
 
     QList<QPlatformScreen *> screens() const { return m_screens; }
-    void setScreens(QList<QPlatformScreen *> sl) { m_screens = sl; }
+    void setScreens(QList<QPlatformScreen *> &&sl) { m_screens = std::move(sl); }
     void removeScreen(QPlatformScreen *s) { m_screens.removeOne(s); }
     void addScreen(QPlatformScreen *s);
     void setPrimaryScreen(QPlatformScreen *s);
@@ -134,7 +134,7 @@ private:
     QString m_windowManagerName;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
-    uint16_t m_rotation = XCB_RANDR_ROTATION_ROTATE_0;
+    uint16_t m_rotation = 0;
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen

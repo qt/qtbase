@@ -180,7 +180,7 @@ GradientEditor::GradientEditor(QWidget *parent)
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->setSpacing(1);
-    vbox->setMargin(1);
+    vbox->setContentsMargins(1, 1, 1, 1);
 
     m_red_shade = new ShadeWidget(ShadeWidget::RedShade, this);
     m_green_shade = new ShadeWidget(ShadeWidget::GreenShade, this);
@@ -317,13 +317,11 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
     enableOpenGLButton->setText(tr("Use OpenGL"));
     enableOpenGLButton->setCheckable(true);
     enableOpenGLButton->setChecked(m_renderer->usesOpenGL());
-    if (!QGLFormat::hasOpenGL())
-        enableOpenGLButton->hide();
 #endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
@@ -343,7 +341,7 @@ GradientWidget::GradientWidget(QWidget *parent)
     mainGroupLayout->addWidget(defaultsGroup);
     mainGroupLayout->addStretch(1);
     mainGroupLayout->addWidget(showSourceButton);
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
     mainGroupLayout->addWidget(whatsThisButton);
@@ -406,7 +404,7 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     connect(showSourceButton, &QPushButton::clicked,
             m_renderer, &GradientRenderer::showSource);
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
     connect(enableOpenGLButton, QOverload<bool>::of(&QPushButton::clicked),
             m_renderer, &ArthurFrame::enableOpenGL);
 #endif
@@ -423,7 +421,7 @@ GradientWidget::GradientWidget(QWidget *parent)
     m_renderer->loadSourceFile(":res/gradients/gradients.cpp");
     m_renderer->loadDescription(":res/gradients/gradients.html");
 
-    QTimer::singleShot(50, this, SLOT(setDefault1()));
+    QTimer::singleShot(50, this, &GradientWidget::setDefault1);
 }
 
 void GradientWidget::setDefault(int config)
@@ -566,9 +564,7 @@ void GradientRenderer::paint(QPainter *p)
 
     } else {
         QLineF l(pts.at(0), pts.at(1));
-        qreal angle = l.angle(QLineF(0, 0, 1, 0));
-        if (l.dy() > 0)
-            angle = 360 - angle;
+        qreal angle = QLineF(0, 0, 1, 0).angleTo(l);
         g = QConicalGradient(pts.at(0), angle);
     }
 

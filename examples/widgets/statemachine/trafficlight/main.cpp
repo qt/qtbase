@@ -132,11 +132,11 @@ QState *createLightState(LightWidget *light, int duration, QState *parent = 0)
     timer->setInterval(duration);
     timer->setSingleShot(true);
     QState *timing = new QState(lightState);
-    QObject::connect(timing, SIGNAL(entered()), light, SLOT(turnOn()));
-    QObject::connect(timing, SIGNAL(entered()), timer, SLOT(start()));
-    QObject::connect(timing, SIGNAL(exited()), light, SLOT(turnOff()));
+    QObject::connect(timing, &QAbstractState::entered, light, &LightWidget::turnOn);
+    QObject::connect(timing, &QAbstractState::entered, timer, QOverload<>::of(&QTimer::start));
+    QObject::connect(timing, &QAbstractState::exited, light, &LightWidget::turnOff);
     QFinalState *done = new QFinalState(lightState);
-    timing->addTransition(timer, SIGNAL(timeout()), done);
+    timing->addTransition(timer, &QTimer::timeout, done);
     lightState->setInitialState(timing);
     return lightState;
 }
@@ -146,27 +146,27 @@ QState *createLightState(LightWidget *light, int duration, QState *parent = 0)
 class TrafficLight : public QWidget
 {
 public:
-    TrafficLight(QWidget *parent = 0)
+    TrafficLight(QWidget *parent = nullptr)
         : QWidget(parent)
     {
         QVBoxLayout *vbox = new QVBoxLayout(this);
-        TrafficLightWidget *widget = new TrafficLightWidget();
+        TrafficLightWidget *widget = new TrafficLightWidget;
         vbox->addWidget(widget);
-        vbox->setMargin(0);
+        vbox->setContentsMargins(QMargins());
 
         QStateMachine *machine = new QStateMachine(this);
         QState *redGoingYellow = createLightState(widget->redLight(), 3000);
         redGoingYellow->setObjectName("redGoingYellow");
         QState *yellowGoingGreen = createLightState(widget->yellowLight(), 1000);
         yellowGoingGreen->setObjectName("yellowGoingGreen");
-        redGoingYellow->addTransition(redGoingYellow, SIGNAL(finished()), yellowGoingGreen);
+        redGoingYellow->addTransition(redGoingYellow, &QState::finished, yellowGoingGreen);
         QState *greenGoingYellow = createLightState(widget->greenLight(), 3000);
         greenGoingYellow->setObjectName("greenGoingYellow");
-        yellowGoingGreen->addTransition(yellowGoingGreen, SIGNAL(finished()), greenGoingYellow);
+        yellowGoingGreen->addTransition(yellowGoingGreen, &QState::finished, greenGoingYellow);
         QState *yellowGoingRed = createLightState(widget->yellowLight(), 1000);
         yellowGoingRed->setObjectName("yellowGoingRed");
-        greenGoingYellow->addTransition(greenGoingYellow, SIGNAL(finished()), yellowGoingRed);
-        yellowGoingRed->addTransition(yellowGoingRed, SIGNAL(finished()), redGoingYellow);
+        greenGoingYellow->addTransition(greenGoingYellow, &QState::finished, yellowGoingRed);
+        yellowGoingRed->addTransition(yellowGoingRed, &QState::finished, redGoingYellow);
 
         machine->addState(redGoingYellow);
         machine->addState(yellowGoingGreen);

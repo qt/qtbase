@@ -323,11 +323,7 @@ void QNetworkSession::open()
 
     The following example waits up to one second for the session to be opened:
 
-    \code
-        session->open();
-        if (session->waitForOpened(1000))
-            qDebug("Open!");
-    \endcode
+    \snippet code/src_network_bearer_qnetworksession.cpp 0
 
     If \a msecs is -1, this function will not time out.
 
@@ -491,20 +487,7 @@ QString QNetworkSession::errorString() const
             The main purpose of this key is to determine which Internet access point is used
             if the session is based on a \l{QNetworkConfiguration::ServiceNetwork}{ServiceNetwork}.
             The following code snippet highlights the difference:
-            \code
-                    QNetworkConfigurationManager mgr;
-                    QNetworkConfiguration ap = mgr.defaultConfiguration();
-                    QNetworkSession *session = new QNetworkSession(ap);
-                    ... //code activates session
-
-                    QString ident = session->sessionProperty("ActiveConfiguration").toString();
-                    if ( ap.type() == QNetworkConfiguration::ServiceNetwork ) {
-                        Q_ASSERT( ap.identifier() != ident );
-                        Q_ASSERT( ap.children().contains( mgr.configurationFromIdentifier(ident) ) );
-                    } else if ( ap.type() == QNetworkConfiguration::InternetAccessPoint ) {
-                        Q_ASSERT( ap.identifier() == ident );
-                    }
-                \endcode
+            \snippet code/src_network_bearer_qnetworksession.cpp 1
         \row
             \li UserChoiceConfiguration
             \li If the session \l isOpen() and is bound to a QNetworkConfiguration of type

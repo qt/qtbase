@@ -99,7 +99,7 @@ public:
     // }
 
     QDBusPendingCallPrivate(const QDBusMessage &sent, QDBusConnectionPrivate *connection)
-        : sentMessage(sent), connection(connection), watcherHelper(0), pending(0)
+        : sentMessage(sent), connection(connection), watcherHelper(nullptr), pending(nullptr)
     { }
     ~QDBusPendingCallPrivate();
     bool setReplyCallback(QObject *target, const char *member);

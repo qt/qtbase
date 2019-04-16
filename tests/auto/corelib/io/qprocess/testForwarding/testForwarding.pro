@@ -1,5 +1,4 @@
 SOURCES = main.cpp
-CONFIG -= app_bundle
-CONFIG += console
+CONFIG += cmdline
 DESTDIR = ./
 QT = core

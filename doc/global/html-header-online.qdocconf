@@ -1,6 +1,7 @@
 # HTML Header with qt.io branding and online links
 
 HTML.stylesheets = template/style/online.css \
+                   template/style/cookie-confirm.css \
                    template/style/gsc.css \
                    template/style/list_arrow.png \
                    template/style/list_expand.png \
@@ -14,6 +15,7 @@ HTML.stylesheets = template/style/online.css \
 
 #for including files into the qch file. Relative to the outputdir of a QDoc build.
 qhp.extraFiles += style/online.css \
+                  style/cookie-confirm.css \
                   style/gsc.css \
                   style/list_arrow.png \
                   style/list_expand.png \
@@ -27,11 +29,13 @@ qhp.extraFiles += style/online.css \
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/online.css\" />\n" \
-    "  <link rel=\"shortcut icon\" href=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/images/favicon.ico.gzip\" />\n"
+    "  <link rel=\"shortcut icon\" href=\"//d33sqmjvzgs8hq.cloudfront.net/wp-content/themes/oneqt/assets/images/favicon.ico.gzip\" />\n"
 
 HTML.headerscripts = \
     "  <script type=\"text/javascript\"> wpThemeFolder = \'http://qt.io/wp-content/themes/oneqt\'; </script>\n" \
-    "  <script type=\"text/javascript\" src=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/js/combo.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-includes/js/jquery/jquery.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-includes/js/jquery/jquery-migrate.min.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d33sqmjvzgs8hq.cloudfront.net/wp-content/themes/oneqt/js/combo.js.gzip\"></script>\n" \
     "  <script type=\"text/javascript\" src=\"scripts/main.js\"></script>\n" \
     "  <script type=\"text/javascript\" src=\"scripts/extras.js\"></script>\n" \
     "  <script type=\"text/javascript\">\n" \
@@ -61,58 +65,25 @@ HTML.endheader = \
 # minimal header
 HTML.postheader = \
     "<body>\n" \
-    "<div class=\"header\" id=\"header\">\n" \
-    "<header id=\"navbar\" class=\"\">\n" \
-    "        <div class=\"cookies_yum\">\n" \
-    "            <div>\n" \
-    "                <img src=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/assets/images/cookie_small.png\" align=\"left\">\n" \
-    "                <p class=\"close_button\">\n" \
-    "                    We bake cookies in your browser for a better experience.  Using this site means that you consent. <a href=\"//qt.io/terms-conditions/\">Read More</a>\n" \
-    "                </p>\n" \
-    "                <a class=\"close\"></a>\n" \
-    "            </div>\n" \
+    "<div class=\"header\" id=\"tmpl_header\">\n" \
+    "<header class=\"\" id=\"navbar\"><div id=\"cookie-confirmation\" style=\"display:none\"><div id=\"cookie-confirmation-inner\"><p>We bake cookies in your browser for a better experience.  Using this site means that you consent.\n" \
+    "<a href=\"https://www1.qt.io/terms-conditions/ \">Read more</a></p><div id=\"cookie-confirmation-buttons-area\"><a href=\"#\" id=\"confirmation-button\">Continue »</a>\n" \
+    "</div></div>\n" \
+    "<script>\n" \
+    "    $('#confirmation-button').on('click', function() { $('#cookie-confirmation').fadeOut(); createCookie(\"cookies_nom\", \"yum\", 180); });\n" \
+    "    if (!(readCookie('cookies_nom') == 'yum')) { $('#cookie-confirmation').fadeIn(); }\n" \
+    "</script>\n" \
+    "</div>\n" \
+    "<div class=\"container\">\n" \
+    "    <div class=\"navbar-header cf\">\n" \
+    "        <div id=\"mm-wrap\">\n" \
+    "            <ul id=\"mm-helper\" class=\"mm-menu\" data-event=\"hover_intent\" data-effect=\"fade\" data-effect-speed=\"200\" data-panel-width=\"#navbar\" data-panel-inner-width=\"1280px\" data-second-click=\"go\" data-document-click=\"collapse\" data-vertical-behaviour=\"accordion\" data-breakpoint=\"0\">\n" \
+    "                <li class=\"mm-item\"><a class=\"mm-link\" href=\"http://blog.qt.io/\" tabindex=\"0\">Blog</a></li>\n" \
+    "                <li class=\"mm-item\"><a class=\"mm-link\" href=\"https://www.qt.io/contact-us/\" tabindex=\"0\">Contact Us</a></li>\n" \
+    "                <li class=\"mm-item\"><a title=\"Qt Account\" class=\"mm-link\" href=\"https://account.qt.io/\" tabindex=\"0\"></a></li>\n" \
+    "            </ul>\n" \
     "        </div>\n" \
-    "        <div class=\"container\">\n" \
-    "                <div class=\"navbar-header clearfix\">\n" \
-    "                    <a href=\"#\" class=\"navbar-toggle\">\n" \
-    "                        <figure>\n" \
-    "                            <span class=\"line\"></span>\n" \
-    "                        </figure>\n" \
-    "                        <span>Menu</span>\n" \
-    "                    </a>\n" \
-    "                    <ul id=\"menuextras\">\n" \
-    "                        <li>\n" \
-    "                            <a href=\"//qt.io/partners/\" data-icon=\"\">\n" \
-    "                                <span>Partners</span>\n" \
-    "                            </a>\n" \
-    "                        </li>\n" \
-    "                        <li>\n" \
-    "                            <a target=\"_blank\" href=\"http://blog.qt.io/\" data-icon=\"\">\n" \
-    "                                <span>Blog</span>\n" \
-    "                            </a>\n" \
-    "                        </li>\n" \
-    "                        <li class=\"sign-in\">\n" \
-    "                             <a data-icon=\"\" class=\"signin\" href=\"https://account.qt.io/login\"><span>Sign in</span></a>\n" \
-    "                        </li>\n" \
-    "                    </ul>\n" \
-    "                    <a href=\"http://qt.io/\" class=\"navbar-oneQt retina\" data-icon=\"\">\n" \
-    "                    </a>\n" \
-    "                    <nav class=\"navbar-menu clearfix\" role=\"navigation\">\n" \
-    "                        <ul id=\"mainmenu\" class=\"menu\"><li id=\"menu-item-18\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-18\"><a href=\"http://qt.io/download/\">Download</a></li>\n" \
-    "<li id=\"menu-item-12207\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-12207\"><a href=\"http://www.qt.io/qt-for-device-creation/\">Device Creation</a></li>\n" \
-    "<li id=\"menu-item-12208\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-12208\"><a href=\"http://www.qt.io/application-development/\">Application Development</a></li>\n" \
-    "<li id=\"menu-item-1381\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1381\"><a href=\"http://www.qt.io/services/\">Services</a></li>\n" \
-    "<li id=\"menu-item-20\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-20\"><a href=\"http://www.qt.io/developers/\">Developers</a></li>\n" \
-    "</ul>                        <ul class=\"menuextraslanguages\">\n" \
-    "                            <li class=\"active dark\"><a class=\"dark\" href=\"http://qt.io/support/\">EN</a></li><li class=\"dark\"><a class=\"dark\" href=\"http://qt.io/ru/\">RU</a></li><li class=\"dark\"><a class=\"dark\" href=\"http://qt.io/zh-hans/\">ZH</a></li></ul>\n" \
-    "                    </nav>\n" \
-    "                </div>\n" \
-    "            </div>\n" \
-    "<div class=\"big_bar account\" style=\"\">\n" \
-    "    <div class=\"container\">\n" \
-    "        <h1><!-- mclude oneqt_no_cache_bMrsJxAh /wp-content/themes/oneqt/php_login_info_bottom_header.php --><!-- /mclude oneqt_no_cache_bMrsJxAh -->\n" \
-    "            <div class=\"col-1 right big_bar_button account\" style=\"margin-top:5px !important;\"></div>\n" \
-    "        </h1>\n" \
+    "        <a class=\"navbar-oneQt retina\" data-icon=\"\" href=\"https://www.qt.io/\"></a>\n" \
     "    </div>\n" \
     "</div>\n" \
     "</header>\n" \

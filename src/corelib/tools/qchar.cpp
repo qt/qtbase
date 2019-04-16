@@ -652,7 +652,7 @@ QT_BEGIN_NAMESPACE
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 
     \note This constructor is not available when \c QT_NO_CAST_FROM_ASCII
-    or QT_RESTRICTED_CAST_FROM_ASCII is defined.
+    or \c QT_RESTRICTED_CAST_FROM_ASCII is defined.
 
     \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
@@ -733,7 +733,7 @@ QT_BEGIN_NAMESPACE
     Note that this gives no indication of whether the character is
     available in a particular font.
 */
-bool QChar::isPrint(uint ucs4) Q_DECL_NOTHROW
+bool QChar::isPrint(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -766,7 +766,7 @@ bool QChar::isPrint(uint ucs4) Q_DECL_NOTHROW
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isSpace_helper(uint ucs4) Q_DECL_NOTHROW
+bool QT_FASTCALL QChar::isSpace_helper(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -792,7 +792,7 @@ bool QT_FASTCALL QChar::isSpace_helper(uint ucs4) Q_DECL_NOTHROW
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a mark (Mark_* categories); otherwise returns \c false.
 */
-bool QChar::isMark(uint ucs4) Q_DECL_NOTHROW
+bool QChar::isMark(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -816,7 +816,7 @@ bool QChar::isMark(uint ucs4) Q_DECL_NOTHROW
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a punctuation mark (Punctuation_* categories); otherwise returns \c false.
 */
-bool QChar::isPunct(uint ucs4) Q_DECL_NOTHROW
+bool QChar::isPunct(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -844,7 +844,7 @@ bool QChar::isPunct(uint ucs4) Q_DECL_NOTHROW
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a symbol (Symbol_* categories); otherwise returns \c false.
 */
-bool QChar::isSymbol(uint ucs4) Q_DECL_NOTHROW
+bool QChar::isSymbol(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -874,7 +874,7 @@ bool QChar::isSymbol(uint ucs4) Q_DECL_NOTHROW
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) Q_DECL_NOTHROW
+bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -909,7 +909,7 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) Q_DECL_NOTHROW
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isNumber_helper(uint ucs4) Q_DECL_NOTHROW
+bool QT_FASTCALL QChar::isNumber_helper(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -938,7 +938,7 @@ bool QT_FASTCALL QChar::isNumber_helper(uint ucs4) Q_DECL_NOTHROW
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) Q_DECL_NOTHROW
+bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -1101,7 +1101,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) Q_DECL_NOTHROW
     Returns the numeric value of the digit specified by the UCS-4-encoded
     character, \a ucs4, or -1 if the character is not a digit.
 */
-int QChar::digitValue(uint ucs4) Q_DECL_NOTHROW
+int QChar::digitValue(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return -1;
@@ -1118,7 +1118,7 @@ int QChar::digitValue(uint ucs4) Q_DECL_NOTHROW
     \overload
     Returns the category of the UCS-4-encoded character specified by \a ucs4.
 */
-QChar::Category QChar::category(uint ucs4) Q_DECL_NOTHROW
+QChar::Category QChar::category(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Other_NotAssigned;
@@ -1135,7 +1135,7 @@ QChar::Category QChar::category(uint ucs4) Q_DECL_NOTHROW
     \overload
     Returns the direction of the UCS-4-encoded character specified by \a ucs4.
 */
-QChar::Direction QChar::direction(uint ucs4) Q_DECL_NOTHROW
+QChar::Direction QChar::direction(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::DirL;
@@ -1158,7 +1158,7 @@ QChar::Direction QChar::direction(uint ucs4) Q_DECL_NOTHROW
     character specified by \a ucs4
     (needed for certain languages such as Arabic or Syriac).
 */
-QChar::JoiningType QChar::joiningType(uint ucs4) Q_DECL_NOTHROW
+QChar::JoiningType QChar::joiningType(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Joining_None;
@@ -1181,7 +1181,7 @@ QChar::JoiningType QChar::joiningType(uint ucs4) Q_DECL_NOTHROW
     Returns information about the joining properties of the UCS-4-encoded
     character specified by \a ucs4 (needed for certain languages such as Arabic).
 */
-QChar::Joining QChar::joining(uint ucs4) Q_DECL_NOTHROW
+QChar::Joining QChar::joining(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::OtherJoining;
@@ -1217,7 +1217,7 @@ QChar::Joining QChar::joining(uint ucs4) Q_DECL_NOTHROW
 
     \sa mirroredChar()
 */
-bool QChar::hasMirrored(uint ucs4) Q_DECL_NOTHROW
+bool QChar::hasMirrored(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -1299,7 +1299,7 @@ bool QChar::hasMirrored(uint ucs4) Q_DECL_NOTHROW
 
     \sa hasMirrored()
 */
-uint QChar::mirroredChar(uint ucs4) Q_DECL_NOTHROW
+uint QChar::mirroredChar(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1383,7 +1383,7 @@ QString QChar::decomposition(uint ucs4)
     Returns the tag defining the composition of the UCS-4-encoded character
     specified by \a ucs4. Returns QChar::NoDecomposition if no decomposition exists.
 */
-QChar::Decomposition QChar::decompositionTag(uint ucs4) Q_DECL_NOTHROW
+QChar::Decomposition QChar::decompositionTag(uint ucs4) noexcept
 {
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount)
         return QChar::Canonical;
@@ -1409,7 +1409,7 @@ QChar::Decomposition QChar::decompositionTag(uint ucs4) Q_DECL_NOTHROW
     Returns the combining class for the UCS-4-encoded character specified by
     \a ucs4, as defined in the Unicode standard.
 */
-unsigned char QChar::combiningClass(uint ucs4) Q_DECL_NOTHROW
+unsigned char QChar::combiningClass(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return 0;
@@ -1430,7 +1430,7 @@ unsigned char QChar::combiningClass(uint ucs4) Q_DECL_NOTHROW
     Returns the Unicode script property value for the character specified in
     its UCS-4-encoded form as \a ucs4.
 */
-QChar::Script QChar::script(uint ucs4) Q_DECL_NOTHROW
+QChar::Script QChar::script(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Script_Unknown;
@@ -1448,7 +1448,7 @@ QChar::Script QChar::script(uint ucs4) Q_DECL_NOTHROW
     Returns the Unicode version that introduced the character specified in
     its UCS-4-encoded form as \a ucs4.
 */
-QChar::UnicodeVersion QChar::unicodeVersion(uint ucs4) Q_DECL_NOTHROW
+QChar::UnicodeVersion QChar::unicodeVersion(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Unicode_Unassigned;
@@ -1458,14 +1458,14 @@ QChar::UnicodeVersion QChar::unicodeVersion(uint ucs4) Q_DECL_NOTHROW
 /*!
     Returns the most recent supported Unicode version.
 */
-QChar::UnicodeVersion QChar::currentUnicodeVersion() Q_DECL_NOTHROW
+QChar::UnicodeVersion QChar::currentUnicodeVersion() noexcept
 {
     return UNICODE_DATA_VERSION;
 }
 
 
 template <typename Traits, typename T>
-Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc) noexcept
 {
     const QUnicodeTables::Properties *prop = qGetProp(uc);
 
@@ -1491,7 +1491,7 @@ Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc) Q_DECL_NOTHROW
     by \a ucs4 if the character is uppercase or titlecase; otherwise returns
     the character itself.
 */
-uint QChar::toLower(uint ucs4) Q_DECL_NOTHROW
+uint QChar::toLower(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1511,7 +1511,7 @@ uint QChar::toLower(uint ucs4) Q_DECL_NOTHROW
     by \a ucs4 if the character is lowercase or titlecase; otherwise returns
     the character itself.
 */
-uint QChar::toUpper(uint ucs4) Q_DECL_NOTHROW
+uint QChar::toUpper(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1531,7 +1531,7 @@ uint QChar::toUpper(uint ucs4) Q_DECL_NOTHROW
     by \a ucs4 if the character is lowercase or uppercase; otherwise returns
     the character itself.
 */
-uint QChar::toTitleCase(uint ucs4) Q_DECL_NOTHROW
+uint QChar::toTitleCase(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1546,7 +1546,7 @@ static inline uint foldCase(const ushort *ch, const ushort *start)
     return convertCase_helper<QUnicodeTables::CasefoldTraits>(ucs4);
 }
 
-static inline uint foldCase(uint ch, uint &last) Q_DECL_NOTHROW
+static inline uint foldCase(uint ch, uint &last) noexcept
 {
     uint ucs4 = ch;
     if (QChar::isLowSurrogate(ucs4) && QChar::isHighSurrogate(last))
@@ -1555,12 +1555,12 @@ static inline uint foldCase(uint ch, uint &last) Q_DECL_NOTHROW
     return convertCase_helper<QUnicodeTables::CasefoldTraits>(ucs4);
 }
 
-static inline ushort foldCase(ushort ch) Q_DECL_NOTHROW
+static inline ushort foldCase(ushort ch) noexcept
 {
     return convertCase_helper<QUnicodeTables::CasefoldTraits>(ch);
 }
 
-static inline QChar foldCase(QChar ch) Q_DECL_NOTHROW
+static inline QChar foldCase(QChar ch) noexcept
 {
     return QChar(foldCase(ch.unicode()));
 }
@@ -1577,7 +1577,7 @@ static inline QChar foldCase(QChar ch) Q_DECL_NOTHROW
     Returns the case folded equivalent of the UCS-4-encoded character specified
     by \a ucs4. For most Unicode characters this is the same as toLower().
 */
-uint QChar::toCaseFolded(uint ucs4) Q_DECL_NOTHROW
+uint QChar::toCaseFolded(uint ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;

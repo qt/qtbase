@@ -126,6 +126,46 @@ void tst_QGlobal::for_each()
         QCOMPARE(i, counter++);
     }
     QCOMPARE(counter, list.count());
+
+    // Should also work with an existing variable
+    int local;
+    counter = 0;
+    foreach (local, list) {
+        QCOMPARE(local, counter++);
+    }
+    QCOMPARE(counter, list.count());
+    QCOMPARE(local, counter - 1);
+
+    // Test the macro does not mess if/else conditions
+    counter = 0;
+    if (true)
+        foreach (int i, list)
+            QCOMPARE(i, counter++);
+    else
+        QFAIL("If/Else mismatch");
+    QCOMPARE(counter, list.count());
+
+    counter = 0;
+    if (false)
+        foreach (int i, list)
+            if (i) QFAIL("If/Else mismatch");
+            else QFAIL("If/Else mismatch");
+    else
+        foreach (int i, list)
+            if (false) { }
+            else QCOMPARE(i, counter++);
+    QCOMPARE(counter, list.count());
+
+    // break and continue
+    counter = 0;
+    foreach (int i, list) {
+        if (i == 0)
+            continue;
+        QCOMPARE(i, (counter++) + 1);
+        if (i == 3)
+            break;
+    }
+    QCOMPARE(counter, 3);
 }
 
 void tst_QGlobal::qassert()

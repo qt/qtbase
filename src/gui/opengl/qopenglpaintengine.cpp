@@ -1574,14 +1574,15 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     case QImage::Format_Alpha8:
         if (ctx->functions()->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats)) {
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::AlphaImageSrc);
-            bindOption = QOpenGLTextureUploader::UseRedFor8BitBindOption;
+            bindOption = QOpenGLTextureUploader::UseRedForAlphaAndLuminanceBindOption;
         } else
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
         break;
     case QImage::Format_Grayscale8:
+    case QImage::Format_Grayscale16:
         if (ctx->functions()->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats)) {
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::GrayscaleImageSrc);
-            bindOption = QOpenGLTextureUploader::UseRedFor8BitBindOption;
+            bindOption = QOpenGLTextureUploader::UseRedForAlphaAndLuminanceBindOption;
         } else
             d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
         break;

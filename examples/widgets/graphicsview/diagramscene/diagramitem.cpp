@@ -111,7 +111,7 @@ void DiagramItem::removeArrow(Arrow *arrow)
 //! [2]
 void DiagramItem::removeArrows()
 {
-    foreach (Arrow *arrow, arrows) {
+    for (Arrow *arrow : qAsConst(arrows)) {
         arrow->startItem()->removeArrow(arrow);
         arrow->endItem()->removeArrow(arrow);
         scene()->removeItem(arrow);
@@ -154,9 +154,8 @@ void DiagramItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemPositionChange) {
-        foreach (Arrow *arrow, arrows) {
+        for (Arrow *arrow : qAsConst(arrows))
             arrow->updatePosition();
-        }
     }
 
     return value;

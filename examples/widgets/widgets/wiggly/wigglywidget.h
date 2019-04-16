@@ -60,7 +60,7 @@ class WigglyWidget : public QWidget
     Q_OBJECT
 
 public:
-    WigglyWidget(QWidget *parent = 0);
+    WigglyWidget(QWidget *parent = nullptr);
 
 public slots:
     void setText(const QString &newText) { text = newText; }

@@ -71,7 +71,7 @@
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
-#ifndef GL_FRAMEBUFFER_SRB
+#ifndef GL_FRAMEBUFFER_SRGB
 #define GL_FRAMEBUFFER_SRGB 0x8DB9
 #endif
 #ifndef GL_FRAMEBUFFER_SRGB_CAPABLE
@@ -411,6 +411,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         } else if (!region.isEmpty()){
             funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
             QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &d_ptr->needsSwizzle, &d_ptr->premultiplied);
+            graphicsBuffer->unlock();
         }
 
         if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)
@@ -444,6 +445,11 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setRedBlueSwizzle(false);
     }
+
+    // There is no way to tell if the OpenGL-rendered content is premultiplied or not.
+    // For compatibility, assume that it is not, and use normal alpha blend always.
+    if (d_ptr->premultiplied)
+        funcs->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
     for (int i = 0; i < textures->count(); ++i) {

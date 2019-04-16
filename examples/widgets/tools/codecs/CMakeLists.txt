@@ -9,12 +9,18 @@ add_qt_executable(codecs
     OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/codecs"
     INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/codecs"
     SOURCES
+        encodingdialog.cpp encodingdialog.h
         main.cpp
         mainwindow.cpp mainwindow.h
         previewform.cpp previewform.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:codecs.pro:<NONE>:
+# Resources:
+add_qt_resource(codecs "codecs" PREFIX "/" FILES
+    images/editcopy.png)
+
+
+#### Keys ignored in scope 1:.:.:codecs.pro:<TRUE>:
 # EXAMPLE_FILES = "encodedfiles"

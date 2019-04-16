@@ -55,6 +55,8 @@
 
 #if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
 #include <variant>
+#elif defined(Q_CLANG_QDOC)
+namespace std { template<typename...> struct variant; }
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -89,9 +91,6 @@ class QTextLength;
 class QUrl;
 class QVariant;
 class QVariantComparisonHelper;
-
-template <typename T>
-inline QVariant qVariantFromValue(const T &);
 
 template<typename T>
 inline T qvariant_cast(const QVariant &);
@@ -202,7 +201,7 @@ class Q_CORE_EXPORT QVariant
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 
-    QVariant() Q_DECL_NOTHROW : d() {}
+    QVariant() noexcept : d() {}
     ~QVariant();
     QVariant(Type type);
     QVariant(int typeId, const void *copy);
@@ -268,14 +267,12 @@ class Q_CORE_EXPORT QVariant
 #endif
 
     QVariant& operator=(const QVariant &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QVariant(QVariant &&other) Q_DECL_NOTHROW : d(other.d)
+    inline QVariant(QVariant &&other) noexcept : d(other.d)
     { other.d = Private(); }
-    inline QVariant &operator=(QVariant &&other) Q_DECL_NOTHROW
+    inline QVariant &operator=(QVariant &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
 
-    inline void swap(QVariant &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
 
     Type type() const;
     int userType() const;
@@ -363,9 +360,9 @@ class Q_CORE_EXPORT QVariant
 
     template<typename T>
     static inline QVariant fromValue(const T &value)
-    { return qVariantFromValue(value); }
+    { return QVariant(qMetaTypeId<T>(), &value, QTypeInfo<T>::isPointer); }
 
-#if defined(Q_CLANG_QDOC) || (QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L)
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
@@ -388,15 +385,15 @@ class Q_CORE_EXPORT QVariant
     };
     struct Private
     {
-        inline Private() Q_DECL_NOTHROW : type(Invalid), is_shared(false), is_null(true)
+        inline Private() noexcept : type(Invalid), is_shared(false), is_null(true)
         { data.ptr = nullptr; }
 
         // Internal constructor for initialized variants.
-        explicit inline Private(uint variantType) Q_DECL_NOTHROW
+        explicit inline Private(uint variantType) noexcept
             : type(variantType), is_shared(false), is_null(false)
         {}
 
-        inline Private(const Private &other) Q_DECL_NOTHROW
+        inline Private(const Private &other) noexcept
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}
@@ -514,49 +511,60 @@ public:
     inline const DataPtr &data_ptr() const { return d; }
 };
 
+#if QT_DEPRECATED_SINCE(5, 14)
 template <typename T>
+QT_DEPRECATED_X("Use QVariant::fromValue() instead.")
 inline QVariant qVariantFromValue(const T &t)
 {
-    return QVariant(qMetaTypeId<T>(), &t, QTypeInfo<T>::isPointer);
+    return QVariant::fromValue(t);
 }
-
-template <>
-inline QVariant qVariantFromValue(const QVariant &t) { return t; }
-
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
-template <>
-inline QVariant qVariantFromValue(const std::monostate &) { return QVariant(); }
-#endif
 
 template <typename T>
+QT_DEPRECATED_X("Use QVariant::setValue() instead.")
 inline void qVariantSetValue(QVariant &v, const T &t)
 {
-    //if possible we reuse the current QVariant private
-    const uint type = qMetaTypeId<T>();
-    QVariant::Private &d = v.data_ptr();
-    if (v.isDetached() && (type == d.type || (type <= uint(QVariant::Char) && d.type <= uint(QVariant::Char)))) {
-        d.type = type;
-        d.is_null = false;
-        T *old = reinterpret_cast<T*>(d.is_shared ? d.data.shared->ptr : &d.data.ptr);
-        if (QTypeInfo<T>::isComplex)
-            old->~T();
-        new (old) T(t); //call the copy constructor
-    } else {
-        v = QVariant(type, &t, QTypeInfo<T>::isPointer);
-    }
+    v.setValue(t);
+}
+#endif
+
+template<>
+inline QVariant QVariant::fromValue(const QVariant &value)
+{
+    return value;
 }
 
-template <>
-inline void qVariantSetValue<QVariant>(QVariant &v, const QVariant &t)
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+template<>
+inline QVariant QVariant::fromValue(const std::monostate &)
 {
-    v = t;
+    return QVariant();
 }
+#endif
 
 inline bool QVariant::isValid() const { return d.type != Invalid; }
 
 template<typename T>
 inline void QVariant::setValue(const T &avalue)
-{ qVariantSetValue(*this, avalue); }
+{
+    // If possible we reuse the current QVariant private.
+    const uint type = qMetaTypeId<T>();
+    if (isDetached() && (type == d.type || (type <= uint(QVariant::Char) && d.type <= uint(QVariant::Char)))) {
+        d.type = type;
+        d.is_null = false;
+        T *old = reinterpret_cast<T*>(d.is_shared ? d.data.shared->ptr : &d.data.ptr);
+        if (QTypeInfo<T>::isComplex)
+            old->~T();
+        new (old) T(avalue); // call the copy constructor
+    } else {
+        *this = QVariant(type, &avalue, QTypeInfo<T>::isPointer);
+    }
+}
+
+template<>
+inline void QVariant::setValue(const QVariant &avalue)
+{
+    *this = avalue;
+}
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream& operator>> (QDataStream& s, QVariant& p);

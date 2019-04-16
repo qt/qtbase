@@ -8,7 +8,7 @@ DEFINES += QT_EGL_NO_X11
 INCLUDEPATH += $$PWD/../../api
 
 CONFIG += egl
-QMAKE_USE += xcb_xlib
+QMAKE_USE += xcb_xlib xcb xlib
 
 SOURCES += $$PWD/qeglfsx11main.cpp \
            $$PWD/qeglfsx11integration.cpp

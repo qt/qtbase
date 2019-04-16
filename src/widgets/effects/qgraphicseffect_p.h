@@ -80,15 +80,15 @@ public:
     QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
     QRect deviceRect() const;
     QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates,
-                   QPoint *offset = 0,
+                   QPoint *offset = nullptr,
                    QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToEffectiveBoundingRect) const;
 
 protected:
-    QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
+    QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = nullptr);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsEffectSource)
-    Q_DISABLE_COPY(QGraphicsEffectSource)
+    Q_DISABLE_COPY_MOVE(QGraphicsEffectSource)
     friend class QGraphicsEffect;
     friend class QGraphicsEffectPrivate;
     friend class QGraphicsScenePrivate;
@@ -125,7 +125,7 @@ public:
     virtual void draw(QPainter *p) = 0;
     virtual void update() = 0;
     virtual bool isPixmap() const = 0;
-    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0,
+    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = nullptr,
                            QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToTransparentBorder) const = 0;
     virtual void effectBoundingRectChanged() = 0;
 
@@ -149,7 +149,7 @@ class Q_WIDGETS_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:
-    QGraphicsEffectPrivate() : source(0), isEnabled(1) {}
+    QGraphicsEffectPrivate() : source(nullptr), isEnabled(1) {}
     ~QGraphicsEffectPrivate();
 
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)

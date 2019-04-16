@@ -252,8 +252,6 @@ struct QBidiAlgorithm {
 
     void initScriptAnalysisAndIsolatePairs(Vector<IsolatePair> &isolatePairs)
     {
-        isolatePairs.append({ -1, length }); // treat the whole string as one isolate
-
         int isolateStack[128];
         int isolateLevel = 0;
         // load directions of string, and determine isolate pairs
@@ -304,6 +302,14 @@ struct QBidiAlgorithm {
             case QChar::DirS:
             case QChar::DirB:
                 analysis[pos].bidiFlags = QScriptAnalysis::BidiResetToParagraphLevel;
+                if (uc == QChar::ParagraphSeparator) {
+                    // close all open isolates as we start a new paragraph
+                    while (isolateLevel > 0) {
+                        --isolateLevel;
+                        if (isolateLevel < 128)
+                            isolatePairs[isolateStack[isolateLevel]].end = pos;
+                    }
+                }
                 break;
             default:
                 break;
@@ -434,21 +440,21 @@ struct QBidiAlgorithm {
                 doEmbed(true, true, false);
                 break;
             case QChar::DirLRI:
-                ++isolatePairPosition;
                 Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(false, false, true);
+                ++isolatePairPosition;
                 break;
             case QChar::DirRLI:
-                ++isolatePairPosition;
                 Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(true, false, true);
+                ++isolatePairPosition;
                 break;
             case QChar::DirFSI: {
-                ++isolatePairPosition;
                 const auto &pair = isolatePairs.at(isolatePairPosition);
                 Q_ASSERT(pair.start == i);
                 bool isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
                 doEmbed(isRtl, false, true);
+                ++isolatePairPosition;
                 break;
             }
 
@@ -492,16 +498,24 @@ struct QBidiAlgorithm {
                     analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
                 break;
             case QChar::DirB:
-                // paragraph separator, go down to base direction
-                appendRun(i - 1);
-                while (stack.counter > 1) {
-                    // there might be remaining isolates on the stack that are missing a PDI. Those need to get
-                    // a continuation indicating to take the eos from the end of the string (ie. the paragraph level)
-                    const auto &t = stack.top();
-                    if (t.isIsolate) {
-                        runs[t.runBeforeIsolate].continuation = -2;
+                // paragraph separator, go down to base direction, reset all state
+                if (text[i].unicode() == QChar::ParagraphSeparator) {
+                    appendRun(i - 1);
+                    while (stack.counter > 1) {
+                        // there might be remaining isolates on the stack that are missing a PDI. Those need to get
+                        // a continuation indicating to take the eos from the end of the string (ie. the paragraph level)
+                        const auto &t = stack.top();
+                        if (t.isIsolate) {
+                            runs[t.runBeforeIsolate].continuation = -2;
+                        }
+                        --stack.counter;
                     }
-                    --stack.counter;
+                    continuationFrom = -1;
+                    lastRunWithContent = -1;
+                    validIsolateCount = 0;
+                    overflowIsolateCount = 0;
+                    overflowEmbeddingCount = 0;
+                    level = baseLevel;
                 }
                 break;
             default:
@@ -1094,6 +1108,22 @@ struct QBidiAlgorithm {
             resolveImplicitLevels(runs);
         }
 
+        BIDI_DEBUG() << "Rule L1:";
+        // Rule L1:
+        bool resetLevel = true;
+        for (int i = length - 1; i >= 0; --i) {
+            if (analysis[i].bidiFlags & QScriptAnalysis::BidiResetToParagraphLevel) {
+                BIDI_DEBUG() << "resetting pos" << i << "to baselevel";
+                analysis[i].bidiLevel = baseLevel;
+                resetLevel = true;
+            } else if (resetLevel && analysis[i].bidiFlags & QScriptAnalysis::BidiMaybeResetToParagraphLevel) {
+                BIDI_DEBUG() << "resetting pos" << i << "to baselevel (maybereset flag)";
+                analysis[i].bidiLevel = baseLevel;
+            } else {
+                resetLevel = false;
+            }
+        }
+
         // set directions for BN to the minimum of adjacent chars
         // This makes is possible to be conformant with the Bidi algorithm even though we don't
         // remove BN and explicit embedding chars from the stream of characters to reorder
@@ -1122,22 +1152,6 @@ struct QBidiAlgorithm {
             while (lastBNPos < length) {
                 analysis[lastBNPos].bidiLevel = baseLevel;
                 ++lastBNPos;
-            }
-        }
-
-        BIDI_DEBUG() << "Rule L1:";
-        // Rule L1:
-        bool resetLevel = true;
-        for (int i = length - 1; i >= 0; --i) {
-            if (analysis[i].bidiFlags & QScriptAnalysis::BidiResetToParagraphLevel) {
-                BIDI_DEBUG() << "resetting pos" << i << "to baselevel";
-                analysis[i].bidiLevel = baseLevel;
-                resetLevel = true;
-            } else if (resetLevel && analysis[i].bidiFlags & QScriptAnalysis::BidiMaybeResetToParagraphLevel) {
-                BIDI_DEBUG() << "resetting pos" << i << "to baselevel (maybereset flag)";
-                analysis[i].bidiLevel = baseLevel;
-            } else {
-                resetLevel = false;
             }
         }
 
@@ -1398,11 +1412,12 @@ void QTextEngine::shapeText(int item) const
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
         QTextCharFormat f = format(&si);
-        kerningEnabled = f.fontKerning();
+        QFont font = f.font();
+        kerningEnabled = font.kerning();
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
-                || (f.fontStyleStrategy() & QFont::PreferNoShaping) == 0;
-        wordSpacing = QFixed::fromReal(f.fontWordSpacing());
-        letterSpacing = QFixed::fromReal(f.fontLetterSpacing());
+                || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
+        wordSpacing = QFixed::fromReal(font.wordSpacing());
+        letterSpacing = QFixed::fromReal(font.letterSpacing());
         letterSpacingIsAbsolute = true;
     } else
 #endif
@@ -1739,7 +1754,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 
 #ifdef Q_OS_DARWIN
         if (actualFontEngine->type() == QFontEngine::Mac) {
-            if (actualFontEngine->fontDef.stretch != 100) {
+            if (actualFontEngine->fontDef.stretch != 100 && actualFontEngine->fontDef.stretch != QFont::AnyStretch) {
                 QFixed stretch = QFixed(int(actualFontEngine->fontDef.stretch)) / QFixed(100);
                 for (uint i = 0; i < num_glyphs; ++i)
                     g.advances[i] *= stretch;
@@ -1953,7 +1968,9 @@ const QCharAttributes *QTextEngine::attributes() const
     QUnicodeTools::initCharAttributes(reinterpret_cast<const ushort *>(layoutData->string.constData()),
                                       layoutData->string.length(),
                                       scriptItems.data(), scriptItems.size(),
-                                      (QCharAttributes *)layoutData->memory);
+                                      (QCharAttributes *)layoutData->memory,
+                                      QUnicodeTools::CharAttributeOptions(QUnicodeTools::DefaultOptionsCompat
+                                                                          | QUnicodeTools::HangulLineBreakTailoring));
 
 
     layoutData->haveCharAttributes = true;
@@ -1962,19 +1979,28 @@ const QCharAttributes *QTextEngine::attributes() const
 
 void QTextEngine::shape(int item) const
 {
-    if (layoutData->items.at(item).analysis.flags == QScriptAnalysis::Object) {
+    auto &li = layoutData->items[item];
+    if (li.analysis.flags == QScriptAnalysis::Object) {
         ensureSpace(1);
         if (block.docHandle()) {
             docLayout()->resizeInlineObject(QTextInlineObject(item, const_cast<QTextEngine *>(this)),
-                                            layoutData->items[item].position + block.position(),
-                                            format(&layoutData->items[item]));
+                                            li.position + block.position(),
+                                            format(&li));
         }
-    } else if (layoutData->items.at(item).analysis.flags == QScriptAnalysis::Tab) {
+        // fix log clusters to point to the previous glyph, as the object doesn't have a glyph of it's own.
+        // This is required so that all entries in the array get initialized and are ordered correctly.
+        if (layoutData->logClustersPtr) {
+            ushort *lc = logClusters(&li);
+            *lc = (lc != layoutData->logClustersPtr) ? lc[-1] : 0;
+        }
+    } else if (li.analysis.flags == QScriptAnalysis::Tab) {
         // set up at least the ascent/descent/leading of the script item for the tab
-        fontEngine(layoutData->items[item],
-                   &layoutData->items[item].ascent,
-                   &layoutData->items[item].descent,
-                   &layoutData->items[item].leading);
+        fontEngine(li, &li.ascent, &li.descent, &li.leading);
+        // see the comment above
+        if (layoutData->logClustersPtr) {
+            ushort *lc = logClusters(&li);
+            *lc = (lc != layoutData->logClustersPtr) ? lc[-1] : 0;
+        }
     } else {
         shapeText(item);
     }
@@ -2063,8 +2089,6 @@ void QTextEngine::itemize() const
             analysis->flags = QScriptAnalysis::Object;
             break;
         case QChar::LineSeparator:
-            if (analysis->bidiLevel % 2)
-                --analysis->bidiLevel;
             analysis->flags = QScriptAnalysis::LineOrParagraphSeparator;
             if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
                 const int offset = uc - string;
@@ -3186,6 +3210,16 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         QFontEngine *engine = fnt.d->engineForScript(QChar::Script_Common);
 
         QChar ellipsisChar(0x2026);
+
+        // We only want to use the ellipsis character if it is from the main
+        // font (not one of the fallbacks), since using a fallback font
+        // will affect the metrics of the text, potentially causing it to shift
+        // when it is being elided.
+        if (engine->type() == QFontEngine::Multi) {
+            QFontEngineMulti *multiEngine = static_cast<QFontEngineMulti *>(engine);
+            multiEngine->ensureEngineAt(0);
+            engine = multiEngine->engine(0);
+        }
 
         glyph_t glyph = engine->glyphIndex(ellipsisChar.unicode());
 

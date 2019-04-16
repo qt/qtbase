@@ -67,11 +67,9 @@ public:
     ~QFileInfo();
 
     QFileInfo &operator=(const QFileInfo &fileinfo);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QFileInfo &operator=(QFileInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-#endif
+    QFileInfo &operator=(QFileInfo &&other) noexcept { swap(other); return *this; }
 
-    void swap(QFileInfo &other) Q_DECL_NOTHROW
+    void swap(QFileInfo &other) noexcept
     { qSwap(d_ptr, other.d_ptr); }
 
     bool operator==(const QFileInfo &fileinfo) const;
@@ -116,8 +114,11 @@ public:
     bool isRoot() const;
     bool isBundle() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QFileInfo::symLinkTarget() instead")
     QString readLink() const;
-    inline QString symLinkTarget() const { return readLink(); }
+#endif
+    QString symLinkTarget() const;
 
     QString owner() const;
     uint ownerId() const;

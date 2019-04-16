@@ -134,7 +134,7 @@ public:
     inline void setAdjustedSliderPosition(int position)
     {
         Q_Q(QAbstractSlider);
-        if (q->style()->styleHint(QStyle::SH_Slider_StopMouseOverSlider, 0, q)) {
+        if (q->style()->styleHint(QStyle::SH_Slider_StopMouseOverSlider, nullptr, q)) {
             if ((position > pressValue - 2 * pageStep) && (position < pressValue + 2 * pageStep)) {
                 repeatAction = QAbstractSlider::SliderNoAction;
                 q->setSliderPosition(pressValue);

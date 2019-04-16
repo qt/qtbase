@@ -108,6 +108,25 @@ socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);
 "# FIXME: use: network
 )
 
+# openssl11
+qt_config_compile_test(openssl11
+    LABEL "OpenSSL 1.1 support"
+"
+#include <openssl/opensslv.h>
+#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
+#  error OpenSSL >= 1.1 is required
+#endif
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: use: openssl
+)
+
 # dtls
 qt_config_compile_test(dtls
     LABEL "DTLS support in OpenSSL"
@@ -125,6 +144,43 @@ int main(int argc, char **argv)
     return 0;
 }
 "# FIXME: use: openssl
+)
+
+# ocsp
+qt_config_compile_test(ocsp
+    LABEL "OCSP stapling support in OpenSSL"
+"
+#include <openssl/ssl.h>
+#include <openssl/ocsp.h>
+#if defined(OPENSSL_NO_OCSP) || defined(OPENSSL_NO_TLSEXT)
+#  error OpenSSL without OCSP stapling
+#endif
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: use: openssl
+)
+
+# gssapi
+qt_config_compile_test(gssapi
+    LABEL "KRB5 GSSAPI support"
+"
+#include <gssapi/gssapi.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+gss_ctx_id_t ctx;
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: LIBS += -lgssapi_krb5
 )
 
 
@@ -158,35 +214,51 @@ qt_feature("linux_netlink" PRIVATE
 )
 qt_feature("openssl" PRIVATE
     LABEL "OpenSSL"
-    AUTODETECT NOT WINRT AND NOT WASM
-    CONDITION NOT QT_FEATURE_securetransport AND ( QT_FEATURE_openssl_linked OR OPENSSL_INCLUDE_DIR )
-    ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'linked' OR INPUT_openssl STREQUAL 'runtime'
-    DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
+    CONDITION QT_FEATURE_openssl_runtime OR QT_FEATURE_openssl_linked
+    ENABLE false
 )
 qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
+qt_feature("openssl_runtime"
+    AUTODETECT NOT WINRT AND NOT WASM
+    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND OPENSSL_INCLUDE_DIR
+    ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
+    DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
+)
 qt_feature("openssl_linked" PRIVATE
     LABEL "  Qt directly linked to OpenSSL"
-    CONDITION NOT QT_FEATURE_securetransport AND OpenSSL_FOUND
+    AUTODETECT OFF
+    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND OpenSSL_FOUND
     ENABLE INPUT_openssl STREQUAL 'linked'
-    DISABLE ( NOT INPUT_openssl STREQUAL 'linked' )
 )
 qt_feature_definition("openssl_linked" "QT_LINKED_OPENSSL")
-qt_feature("securetransport" PRIVATE
+qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
     CONDITION APPLE AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
     DISABLE INPUT_securetransport STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
 )
 qt_feature_definition("securetransport" "QT_SECURETRANSPORT")
+qt_feature("schannel" PUBLIC
+    LABEL "Schannel"
+    CONDITION INPUT_schannel STREQUAL 'yes' AND WIN32 AND NOT WINRT AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
+    DISABLE INPUT_schannel STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
+)
+qt_feature_definition("schannel" "QT_SCHANNEL")
 qt_feature("ssl" PUBLIC
     LABEL "SSL"
-    CONDITION WINRT OR QT_FEATURE_securetransport OR QT_FEATURE_openssl
+    CONDITION WINRT OR QT_FEATURE_securetransport OR QT_FEATURE_openssl OR QT_FEATURE_schannel
 )
 qt_feature_definition("ssl" "QT_NO_SSL" NEGATE VALUE "1")
 qt_feature("dtls" PUBLIC
     SECTION "Networking"
     LABEL "DTLS"
     PURPOSE "Provides a DTLS implementation"
-    CONDITION QT_FEATURE_openssl AND TEST_dtls
+    CONDITION QT_FEATURE_openssl AND QT_FEATURE_udpsocket AND TEST_dtls
+)
+qt_feature("ocsp" PUBLIC
+    SECTION "Networking"
+    LABEL "OCSP-stapling"
+    PURPOSE "Provides OCSP stapling support"
+    CONDITION QT_FEATURE_opensslv11 AND TEST_ocsp
 )
 qt_feature("opensslv11" PUBLIC
     LABEL "OpenSSL 1.1"
@@ -267,3 +339,17 @@ qt_feature("dnslookup" PUBLIC
     LABEL "QDnsLookup"
     PURPOSE "Provides API for DNS lookups."
 )
+qt_feature("gssapi" PUBLIC
+    SECTION "Networking"
+    LABEL "GSSAPI"
+    PURPOSE "Enable SPNEGO authentication through GSSAPI"
+    CONDITION NOT WIN32 AND TEST_gssapi
+)
+qt_feature_definition("gssapi" "QT_NO_GSSAPI" NEGATE VALUE "1")
+qt_feature("sspi" PUBLIC
+    SECTION "Networking"
+    LABEL "SSPI"
+    PURPOSE "Enable NTLM/SPNEGO authentication through SSPI"
+    CONDITION WIN32 AND NOT WINRT
+)
+qt_feature_definition("sspi" "QT_NO_SSPI" NEGATE VALUE "1")

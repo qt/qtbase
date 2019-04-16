@@ -80,7 +80,7 @@ class QUndoStackPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QUndoStack)
 public:
-    QUndoStackPrivate() : index(0), clean_index(0), group(0), undo_limit(0) {}
+    QUndoStackPrivate() : index(0), clean_index(0), group(nullptr), undo_limit(0) {}
 
     QList<QUndoCommand*> command_list;
     QList<QUndoCommand*> macro_stack;
@@ -98,7 +98,7 @@ class QUndoAction : public QAction
 {
     Q_OBJECT
 public:
-    explicit QUndoAction(const QString &prefix, QObject *parent = 0);
+    explicit QUndoAction(const QString &prefix, QObject *parent = nullptr);
     void setTextFormat(const QString &textFormat, const QString &defaultText);
 public Q_SLOTS:
     void setPrefixedText(const QString &text);

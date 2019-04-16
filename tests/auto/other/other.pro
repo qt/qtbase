@@ -30,6 +30,8 @@ SUBDIRS=\
    gestures \
    lancelot \
    languagechange \
+   macgui \
+   macplist \
    qaccessibility \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
@@ -48,13 +50,13 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-winrt|!qtConfig(accessibility): SUBDIRS -= qaccessibility
+winrt|!qtHaveModule(gui)|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 
-!qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
+!qtHaveModule(gui)|!qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
 !qtConfig(process): SUBDIRS -= qprocess_and_guieventloop
 
-!mac: SUBDIRS -= \
+!macos|!qtHaveModule(gui): SUBDIRS -= \
            macgui \
            macnativeevents \
            macplist \
@@ -65,3 +67,8 @@ winrt|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 
 android: SUBDIRS += \
     android
+
+qtConfig(xkbcommon): {
+    SUBDIRS += \
+        xkbkeyboard
+}

@@ -65,7 +65,7 @@ inline bool operator==(const QXcbCursorCacheKey &k1, const QXcbCursorCacheKey &k
     return k1.shape == k2.shape && k1.bitmapCacheKey == k2.bitmapCacheKey && k1.maskCacheKey == k2.maskCacheKey;
 }
 
-inline uint qHash(const QXcbCursorCacheKey &k, uint seed) Q_DECL_NOTHROW
+inline uint qHash(const QXcbCursorCacheKey &k, uint seed) noexcept
 {
     return (uint(k.shape) + uint(k.bitmapCacheKey) + uint(k.maskCacheKey)) ^ seed;
 }
@@ -83,7 +83,7 @@ public:
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
 
-    static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = 0);
+    static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = nullptr);
 
 #ifndef QT_NO_CURSOR
     xcb_cursor_t xcbCursor(const QCursor &c) const

@@ -79,14 +79,14 @@ enum GuardValues {
     Q_GLOBAL_STATIC_INTERNAL_DECORATION Type *innerFunction()   \
     {                                                           \
         struct HolderBase {                                     \
-            ~HolderBase() Q_DECL_NOTHROW                        \
+            ~HolderBase() noexcept                        \
             { if (guard.load() == QtGlobalStatic::Initialized)  \
                   guard.store(QtGlobalStatic::Destroyed); }     \
         };                                                      \
         static struct Holder : public HolderBase {              \
             Type value;                                         \
             Holder()                                            \
-                Q_DECL_NOEXCEPT_EXPR(noexcept(Type ARGS))       \
+                noexcept(noexcept(Type ARGS))       \
                 : value ARGS                                    \
             { guard.store(QtGlobalStatic::Initialized); }       \
         } holder;                                               \
@@ -131,8 +131,8 @@ struct QGlobalStatic
 
     bool isDestroyed() const { return guard.load() <= QtGlobalStatic::Destroyed; }
     bool exists() const { return guard.load() == QtGlobalStatic::Initialized; }
-    operator Type *() { if (isDestroyed()) return 0; return innerFunction(); }
-    Type *operator()() { if (isDestroyed()) return 0; return innerFunction(); }
+    operator Type *() { if (isDestroyed()) return nullptr; return innerFunction(); }
+    Type *operator()() { if (isDestroyed()) return nullptr; return innerFunction(); }
     Type *operator->()
     {
       Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC", "The global static was used after being destroyed");

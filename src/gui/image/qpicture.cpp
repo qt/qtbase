@@ -636,7 +636,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             if (d->formatMajor <= 5) {
                 s >> ia >> i_8;
                 painter->drawPolygon(ia, i_8 ? Qt::WindingFill : Qt::OddEvenFill);
-                a.clear();
+                ia.clear();
             } else {
                 s >> a >> i_8;
                 painter->drawPolygon(a, i_8 ? Qt::WindingFill : Qt::OddEvenFill);
@@ -647,10 +647,10 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             s >> ia;
             QPainterPath path;
             Q_ASSERT(ia.size() == 4);
-            path.moveTo(ia.at(0));
-            path.cubicTo(ia.at(1), ia.at(2), ia.at(3));
+            path.moveTo(ia.value(0));
+            path.cubicTo(ia.value(1), ia.value(2), ia.value(3));
             painter->strokePath(path, painter->pen());
-            a.clear();
+            ia.clear();
         }
             break;
         case QPicturePrivate::PdcDrawText:
@@ -730,7 +730,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                     int index;
                     s >> r >> index >> sr;
                     Q_ASSERT(index < d->pixmap_list.size());
-                    pixmap = d->pixmap_list.at(index);
+                    pixmap = d->pixmap_list.value(index);
                 } else {
                     s >> r >> pixmap >> sr;
                 }
@@ -744,7 +744,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                 int index;
                 s >> r >> index >> p;
                 Q_ASSERT(index < d->pixmap_list.size());
-                pixmap = d->pixmap_list.at(index);
+                pixmap = d->pixmap_list.value(index);
             } else {
                 s >> r >> pixmap >> p;
             }
@@ -765,7 +765,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                     int index;
                     s >> r >> index >> sr >> ul;
                     Q_ASSERT(index < d->image_list.size());
-                    image = d->image_list.at(index);
+                    image = d->image_list.value(index);
                 } else {
                     s >> r >> image >> sr >> ul;
                 }
@@ -817,7 +817,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                 int index;
                 s >> index;
                 Q_ASSERT(index < d->pen_list.size());
-                pen = d->pen_list.at(index);
+                pen = d->pen_list.value(index);
             } else {
                 s >> pen;
             }
@@ -828,7 +828,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                 int index;
                 s >> index;
                 Q_ASSERT(index < d->brush_list.size());
-                brush = d->brush_list.at(index);
+                brush = d->brush_list.value(index);
             } else {
                 s >> brush;
             }
@@ -858,7 +858,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             break;
         case QPicturePrivate::PdcSetWXform:
             s >> i_8;
-            painter->setMatrixEnabled(i_8);
+            painter->setWorldMatrixEnabled(i_8);
             break;
         case QPicturePrivate::PdcSetWMatrix:
             if (d->formatMajor >= 8) {
@@ -910,7 +910,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             break;
         default:
             qWarning("QPicture::play: Invalid command %d", c);
-            if (len)                        // skip unknown command
+            if (len > 0)                    // skip unknown command
                 s.device()->seek(s.device()->pos()+len);
         }
 #if defined(QT_DEBUG)
@@ -1075,7 +1075,8 @@ bool QPicturePrivate::checkFormat()
 
     char mf_id[4];                                // picture header tag
     s.readRawData(mf_id, 4);                        // read actual tag
-    if (memcmp(mf_id, qt_mfhdr_tag, 4) != 0) {         // wrong header id
+    int bufSize = pictb.buffer().size();
+    if (memcmp(mf_id, qt_mfhdr_tag, 4) != 0 || bufSize < 12) {   // wrong header id or size
         qWarning("QPicturePaintEngine::checkFormat: Incorrect header");
         pictb.close();
         return false;
@@ -1199,8 +1200,8 @@ QT_END_INCLUDE_NAMESPACE
     \obsolete
 
     Returns a string that specifies the picture format of the file \a
-    fileName, or 0 if the file cannot be read or if the format is not
-    recognized.
+    fileName, or \nullptr if the file cannot be read or if the format
+    is not recognized.
 
     \sa load(), save()
 */
@@ -1542,7 +1543,7 @@ const QPicture &QPictureIO::picture() const { return d->pi; }
 int QPictureIO::status() const { return d->iostat; }
 
 /*!
-    Returns the picture format string or 0 if no format has been
+    Returns the picture format string or \nullptr if no format has been
     explicitly set.
 */
 const char *QPictureIO::format() const { return d->frmt; }
@@ -1865,7 +1866,7 @@ QList<QByteArray> QPictureIO::outputFormats()
 bool QPictureIO::read()
 {
     QFile           file;
-    const char          *picture_format;
+    QByteArray      picture_format;
     QPictureHandler *h;
 
     if (d->iodev) {                                // read from io device
@@ -1881,7 +1882,7 @@ bool QPictureIO::read()
     if (d->frmt.isEmpty()) {
         // Try to guess format
         picture_format = pictureFormat(d->iodev);        // get picture format
-        if (!picture_format) {
+        if (picture_format.isEmpty()) {
             if (file.isOpen()) {                        // unknown format
                 file.close();
                 d->iodev = 0;

@@ -79,9 +79,9 @@ void tst_QAbstractItemModelTester::treeWidgetModel()
     root->removeChild(remove);
     QTreeWidgetItem *parent = new QTreeWidgetItem(&widget, QStringList("parent"));
     new QTreeWidgetItem(parent, QStringList("child"));
-    widget.setItemHidden(parent, true);
+    parent->setHidden(true);
 
-    widget.sortByColumn(0);
+    widget.sortByColumn(0, Qt::AscendingOrder);
 }
 
 void tst_QAbstractItemModelTester::standardItemModel()

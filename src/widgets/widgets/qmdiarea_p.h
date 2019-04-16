@@ -183,7 +183,7 @@ public:
     int tabToPreviousTimerId;
 
     // Slots.
-    void _q_deactivateAllWindows(QMdiSubWindow *aboutToActivate = 0);
+    void _q_deactivateAllWindows(QMdiSubWindow *aboutToActivate = nullptr);
     void _q_processWindowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);
     void _q_currentTabChanged(int index);
     void _q_closeTab(int index);
@@ -198,7 +198,7 @@ public:
     void activateCurrentWindow();
     void activateHighlightedWindow();
     void emitWindowActivated(QMdiSubWindow *child);
-    void resetActiveWindow(QMdiSubWindow *child = 0);
+    void resetActiveWindow(QMdiSubWindow *child = nullptr);
     void updateActiveWindow(int removedIndex, bool activeRemoved);
     void updateScrollBars();
     void internalRaise(QMdiSubWindow *child) const;

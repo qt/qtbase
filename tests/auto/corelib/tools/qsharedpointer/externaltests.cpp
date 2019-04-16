@@ -470,9 +470,8 @@ namespace QTest {
             "TEMPLATE = app\n"
             "\n"
             "TARGET   = externaltest\n"
-            "CONFIG   -= app_bundle\n"        // for the Mac
             "CONFIG   -= debug_and_release\n"
-            "CONFIG   += console\n"
+            "CONFIG   += cmdline\n"
             "DESTDIR  = .\n"
             "OBJECTS_DIR = .\n"
             "UI_DIR   = .\n"

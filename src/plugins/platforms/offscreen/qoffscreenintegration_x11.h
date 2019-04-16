@@ -52,12 +52,19 @@ QT_BEGIN_NAMESPACE
 class QOffscreenX11Connection;
 class QOffscreenX11Info;
 
-class QOffscreenX11Integration : public QOffscreenIntegration
+class QOffscreenX11Integration : public QOffscreenIntegration,  public QPlatformNativeInterface
 {
 public:
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QPlatformNativeInterface *nativeInterface()const override;
+
+    // QPlatformNativeInterface
+    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) override;
+#ifndef QT_NO_OPENGL
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
+#endif
 
 private:
     mutable QScopedPointer<QOffscreenX11Connection> m_connection;
@@ -96,6 +103,9 @@ public:
     QSurfaceFormat format() const override;
     bool isSharing() const override;
     bool isValid() const override;
+
+    void *glxConfig() const;
+    void *glxContext() const;
 
 private:
     QScopedPointer<QOffscreenX11GLXContextData> d;

@@ -9,9 +9,6 @@
 #ifndef COMMON_MATHUTIL_H_
 #define COMMON_MATHUTIL_H_
 
-#include "common/debug.h"
-#include "common/platform.h"
-
 #include <limits>
 #include <algorithm>
 #include <math.h>
@@ -19,25 +16,27 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <anglebase/numerics/safe_math.h>
+
+#include "common/debug.h"
+#include "common/platform.h"
+
+namespace angle
+{
+using base::CheckedNumeric;
+using base::IsValueInRangeForNumericType;
+}
+
 namespace gl
 {
 
 const unsigned int Float32One = 0x3F800000;
 const unsigned short Float16One = 0x3C00;
 
-struct Vector4
+template<typename T>
+inline bool isPow2(T x)
 {
-    Vector4() {}
-    Vector4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
-
-    float x;
-    float y;
-    float z;
-    float w;
-};
-
-inline bool isPow2(int x)
-{
+    static_assert(std::is_integral<T>::value, "isPow2 must be called on an integer type.");
     return (x & (x - 1)) == 0 && (x != 0);
 }
 
@@ -61,37 +60,52 @@ inline unsigned int ceilPow2(unsigned int x)
     return x;
 }
 
-inline int clampToInt(unsigned int x)
-{
-    return static_cast<int>(std::min(x, static_cast<unsigned int>(std::numeric_limits<int>::max())));
-}
-
 template <typename DestT, typename SrcT>
 inline DestT clampCast(SrcT value)
 {
-    static const DestT destLo = std::numeric_limits<DestT>::min();
-    static const DestT destHi = std::numeric_limits<DestT>::max();
-    static const SrcT srcLo = static_cast<SrcT>(destLo);
-    static const SrcT srcHi = static_cast<SrcT>(destHi);
+    // For floating-point types with denormalization, min returns the minimum positive normalized
+    // value. To find the value that has no values less than it, use numeric_limits::lowest.
+    constexpr const long double destLo =
+        static_cast<long double>(std::numeric_limits<DestT>::lowest());
+    constexpr const long double destHi =
+        static_cast<long double>(std::numeric_limits<DestT>::max());
+    constexpr const long double srcLo =
+        static_cast<long double>(std::numeric_limits<SrcT>::lowest());
+    constexpr long double srcHi = static_cast<long double>(std::numeric_limits<SrcT>::max());
 
-    // When value is outside of or equal to the limits for DestT we use the DestT limit directly.
-    // This avoids undefined behaviors due to loss of precision when converting from floats to
-    // integers:
-    //    destHi for ints is 2147483647 but the closest float number is around 2147483648, so when
-    //  doing a conversion from float to int we run into an UB because the float is outside of the
-    //  range representable by the int.
-    if (value <= srcLo)
+    if (destHi < srcHi)
     {
-        return destLo;
+        DestT destMax = std::numeric_limits<DestT>::max();
+        if (value >= static_cast<SrcT>(destMax))
+        {
+            return destMax;
+        }
     }
-    else if (value >= srcHi)
+
+    if (destLo > srcLo)
     {
-        return destHi;
+        DestT destLow = std::numeric_limits<DestT>::lowest();
+        if (value <= static_cast<SrcT>(destLow))
+        {
+            return destLow;
+        }
     }
-    else
-    {
-        return static_cast<DestT>(value);
-    }
+
+    return static_cast<DestT>(value);
+}
+
+// Specialize clampCast for bool->int conversion to avoid MSVS 2015 performance warning when the max
+// value is casted to the source type.
+template <>
+inline unsigned int clampCast(bool value)
+{
+    return static_cast<unsigned int>(value);
+}
+
+template <>
+inline int clampCast(bool value)
+{
+    return static_cast<int>(value);
 }
 
 template<typename T, typename MIN, typename MAX>
@@ -127,7 +141,7 @@ inline unsigned int unorm(float x)
 
 inline bool supportsSSE2()
 {
-#if defined(ANGLE_PLATFORM_WINDOWS) && !defined(_M_ARM)
+#if defined(ANGLE_USE_SSE)
     static bool checked = false;
     static bool supports = false;
 
@@ -136,21 +150,22 @@ inline bool supportsSSE2()
         return supports;
     }
 
-    int info[4];
-    __cpuid(info, 0);
-
-    if (info[0] >= 1)
+#if defined(ANGLE_PLATFORM_WINDOWS) && !defined(_M_ARM) && !defined(_M_ARM64)
     {
-        __cpuid(info, 1);
+        int info[4];
+        __cpuid(info, 0);
 
-        supports = (info[3] >> 26) & 1;
+        if (info[0] >= 1)
+        {
+            __cpuid(info, 1);
+
+            supports = (info[3] >> 26) & 1;
+        }
     }
-
+#endif  // defined(ANGLE_PLATFORM_WINDOWS) && !defined(_M_ARM) && !defined(_M_ARM64)
     checked = true;
-
     return supports;
-#else
-    UNIMPLEMENTED();
+#else  // defined(ANGLE_USE_SSE)
     return false;
 #endif
 }
@@ -467,6 +482,43 @@ inline T shiftData(T input)
     return (input & mask) << inputBitStart;
 }
 
+inline unsigned int CountLeadingZeros(uint32_t x)
+{
+    // Use binary search to find the amount of leading zeros.
+    unsigned int zeros = 32u;
+    uint32_t y;
+
+    y = x >> 16u;
+    if (y != 0)
+    {
+        zeros = zeros - 16u;
+        x     = y;
+    }
+    y = x >> 8u;
+    if (y != 0)
+    {
+        zeros = zeros - 8u;
+        x     = y;
+    }
+    y = x >> 4u;
+    if (y != 0)
+    {
+        zeros = zeros - 4u;
+        x     = y;
+    }
+    y = x >> 2u;
+    if (y != 0)
+    {
+        zeros = zeros - 2u;
+        x     = y;
+    }
+    y = x >> 1u;
+    if (y != 0)
+    {
+        return zeros - 2u;
+    }
+    return zeros - x;
+}
 
 inline unsigned char average(unsigned char a, unsigned char b)
 {
@@ -520,38 +572,65 @@ inline unsigned int averageFloat10(unsigned int a, unsigned int b)
 }
 
 template <typename T>
-struct Range
+class Range
 {
+  public:
     Range() {}
-    Range(T lo, T hi) : start(lo), end(hi) { ASSERT(lo <= hi); }
+    Range(T lo, T hi) : mLow(lo), mHigh(hi) {}
 
-    T start;
-    T end;
-
-    T length() const { return end - start; }
+    T length() const { return (empty() ? 0 : (mHigh - mLow)); }
 
     bool intersects(Range<T> other)
     {
-        if (start <= other.start)
+        if (mLow <= other.mLow)
         {
-            return other.start < end;
+            return other.mLow < mHigh;
         }
         else
         {
-            return start < other.end;
+            return mLow < other.mHigh;
         }
     }
 
+    // Assumes that end is non-inclusive.. for example, extending to 5 will make "end" 6.
     void extend(T value)
     {
-        start = value > start ? value : start;
-        end = value < end ? value : end;
+        mLow  = value < mLow ? value : mLow;
+        mHigh = value >= mHigh ? (value + 1) : mHigh;
     }
 
-    bool empty() const
+    bool empty() const { return mHigh <= mLow; }
+
+    bool contains(T value) const { return value >= mLow && value < mHigh; }
+
+    class Iterator final
     {
-        return end <= start;
-    }
+      public:
+        Iterator(T value) : mCurrent(value) {}
+
+        Iterator &operator++()
+        {
+            mCurrent++;
+            return *this;
+        }
+        bool operator==(const Iterator &other) const { return mCurrent == other.mCurrent; }
+        bool operator!=(const Iterator &other) const { return mCurrent != other.mCurrent; }
+        T operator*() const { return mCurrent; }
+
+      private:
+        T mCurrent;
+    };
+
+    Iterator begin() const { return Iterator(mLow); }
+
+    Iterator end() const { return Iterator(mHigh); }
+
+    T low() const { return mLow; }
+    T high() const { return mHigh; }
+
+  private:
+    T mLow;
+    T mHigh;
 };
 
 typedef Range<int> RangeI;
@@ -576,6 +655,22 @@ struct IndexRange
     // Number of non-primitive restart indices
     size_t vertexIndexCount;
 };
+
+// Combine a floating-point value representing a mantissa (x) and an integer exponent (exp) into a
+// floating-point value. As in GLSL ldexp() built-in.
+inline float Ldexp(float x, int exp)
+{
+    if (exp > 128)
+    {
+        return std::numeric_limits<float>::infinity();
+    }
+    if (exp < -126)
+    {
+        return 0.0f;
+    }
+    double result = static_cast<double>(x) * std::pow(2.0, static_cast<double>(exp));
+    return static_cast<float>(result);
+}
 
 // First, both normalized floating-point values are converted into 16-bit integer values.
 // Then, the results are packed into the returned 32-bit unsigned integer.
@@ -632,6 +727,86 @@ inline void unpackUnorm2x16(uint32_t u, float *f1, float *f2)
     *f2 = static_cast<float>(mostSignificantBits) / 65535.0f;
 }
 
+// Helper functions intended to be used only here.
+namespace priv
+{
+
+inline uint8_t ToPackedUnorm8(float f)
+{
+    return static_cast<uint8_t>(roundf(clamp(f, 0.0f, 1.0f) * 255.0f));
+}
+
+inline int8_t ToPackedSnorm8(float f)
+{
+    return static_cast<int8_t>(roundf(clamp(f, -1.0f, 1.0f) * 127.0f));
+}
+
+}  // namespace priv
+
+// Packs 4 normalized unsigned floating-point values to a single 32-bit unsigned integer. Works
+// similarly to packUnorm2x16. The floats are clamped to the range 0.0 to 1.0, and written to the
+// unsigned integer starting from the least significant bits.
+inline uint32_t PackUnorm4x8(float f1, float f2, float f3, float f4)
+{
+    uint8_t bits[4];
+    bits[0]         = priv::ToPackedUnorm8(f1);
+    bits[1]         = priv::ToPackedUnorm8(f2);
+    bits[2]         = priv::ToPackedUnorm8(f3);
+    bits[3]         = priv::ToPackedUnorm8(f4);
+    uint32_t result = 0u;
+    for (int i = 0; i < 4; ++i)
+    {
+        int shift = i * 8;
+        result |= (static_cast<uint32_t>(bits[i]) << shift);
+    }
+    return result;
+}
+
+// Unpacks 4 normalized unsigned floating-point values from a single 32-bit unsigned integer into f.
+// Works similarly to unpackUnorm2x16. The floats are unpacked starting from the least significant
+// bits.
+inline void UnpackUnorm4x8(uint32_t u, float *f)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        int shift    = i * 8;
+        uint8_t bits = static_cast<uint8_t>((u >> shift) & 0xFF);
+        f[i]         = static_cast<float>(bits) / 255.0f;
+    }
+}
+
+// Packs 4 normalized signed floating-point values to a single 32-bit unsigned integer. The floats
+// are clamped to the range -1.0 to 1.0, and written to the unsigned integer starting from the least
+// significant bits.
+inline uint32_t PackSnorm4x8(float f1, float f2, float f3, float f4)
+{
+    int8_t bits[4];
+    bits[0]         = priv::ToPackedSnorm8(f1);
+    bits[1]         = priv::ToPackedSnorm8(f2);
+    bits[2]         = priv::ToPackedSnorm8(f3);
+    bits[3]         = priv::ToPackedSnorm8(f4);
+    uint32_t result = 0u;
+    for (int i = 0; i < 4; ++i)
+    {
+        int shift = i * 8;
+        result |= ((static_cast<uint32_t>(bits[i]) & 0xFF) << shift);
+    }
+    return result;
+}
+
+// Unpacks 4 normalized signed floating-point values from a single 32-bit unsigned integer into f.
+// Works similarly to unpackSnorm2x16. The floats are unpacked starting from the least significant
+// bits, and clamped to the range -1.0 to 1.0.
+inline void UnpackSnorm4x8(uint32_t u, float *f)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        int shift   = i * 8;
+        int8_t bits = static_cast<int8_t>((u >> shift) & 0xFF);
+        f[i]        = clamp(static_cast<float>(bits) / 127.0f, -1.0f, 1.0f);
+    }
+}
+
 // Returns an unsigned integer obtained by converting the two floating-point values to the 16-bit
 // floating-point representation found in the OpenGL ES Specification, and then packing these
 // two 16-bit integers into a 32-bit unsigned integer.
@@ -658,6 +833,179 @@ inline void unpackHalf2x16(uint32_t u, float *f1, float *f2)
     *f2 = float16ToFloat32(mostSignificantBits);
 }
 
+inline uint8_t sRGBToLinear(uint8_t srgbValue)
+{
+    float value = srgbValue / 255.0f;
+    if (value <= 0.04045f)
+    {
+        value = value / 12.92f;
+    }
+    else
+    {
+        value = std::pow((value + 0.055f) / 1.055f, 2.4f);
+    }
+    return static_cast<uint8_t>(clamp(value * 255.0f + 0.5f, 0.0f, 255.0f));
+}
+
+inline uint8_t linearToSRGB(uint8_t linearValue)
+{
+    float value = linearValue / 255.0f;
+    if (value <= 0.0f)
+    {
+        value = 0.0f;
+    }
+    else if (value < 0.0031308f)
+    {
+        value = value * 12.92f;
+    }
+    else if (value < 1.0f)
+    {
+        value = std::pow(value, 0.41666f) * 1.055f - 0.055f;
+    }
+    else
+    {
+        value = 1.0f;
+    }
+    return static_cast<uint8_t>(clamp(value * 255.0f + 0.5f, 0.0f, 255.0f));
+}
+
+// Reverse the order of the bits.
+inline uint32_t BitfieldReverse(uint32_t value)
+{
+    // TODO(oetuaho@nvidia.com): Optimize this if needed. There don't seem to be compiler intrinsics
+    // for this, and right now it's not used in performance-critical paths.
+    uint32_t result = 0u;
+    for (size_t j = 0u; j < 32u; ++j)
+    {
+        result |= (((value >> j) & 1u) << (31u - j));
+    }
+    return result;
+}
+
+// Count the 1 bits.
+#if defined(ANGLE_PLATFORM_WINDOWS)
+#if defined(_M_ARM) || defined(_M_ARM64)
+inline int BitCount(uint32_t bits)
+{
+    bits = bits - ((bits >> 1) & 0x55555555);
+    bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
+    return (((bits + (bits >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+}
+#else // _M_ARM || _M_ARM64
+inline int BitCount(uint32_t bits)
+{
+    return static_cast<int>(__popcnt(bits));
+}
+#if defined(ANGLE_IS_64_BIT_CPU)
+inline int BitCount(uint64_t bits)
+{
+    return static_cast<int>(__popcnt64(bits));
+}
+#endif // !_M_ARM
+#endif  // defined(ANGLE_IS_64_BIT_CPU)
+#endif  // defined(ANGLE_PLATFORM_WINDOWS)
+
+#if defined(ANGLE_PLATFORM_POSIX)
+inline int BitCount(uint32_t bits)
+{
+    return __builtin_popcount(bits);
+}
+
+#if defined(ANGLE_IS_64_BIT_CPU)
+inline int BitCount(uint64_t bits)
+{
+    return __builtin_popcountll(bits);
+}
+#endif  // defined(ANGLE_IS_64_BIT_CPU)
+#endif  // defined(ANGLE_PLATFORM_POSIX)
+
+#if defined(ANGLE_PLATFORM_WINDOWS)
+// Return the index of the least significant bit set. Indexing is such that bit 0 is the least
+// significant bit. Implemented for different bit widths on different platforms.
+inline unsigned long ScanForward(uint32_t bits)
+{
+    ASSERT(bits != 0u);
+    unsigned long firstBitIndex = 0ul;
+    unsigned char ret           = _BitScanForward(&firstBitIndex, bits);
+    ASSERT(ret != 0u);
+    return firstBitIndex;
+}
+
+#if defined(ANGLE_IS_64_BIT_CPU)
+inline unsigned long ScanForward(uint64_t bits)
+{
+    ASSERT(bits != 0u);
+    unsigned long firstBitIndex = 0ul;
+    unsigned char ret           = _BitScanForward64(&firstBitIndex, bits);
+    ASSERT(ret != 0u);
+    return firstBitIndex;
+}
+#endif  // defined(ANGLE_IS_64_BIT_CPU)
+#endif  // defined(ANGLE_PLATFORM_WINDOWS)
+
+#if defined(ANGLE_PLATFORM_POSIX)
+inline unsigned long ScanForward(uint32_t bits)
+{
+    ASSERT(bits != 0u);
+    return static_cast<unsigned long>(__builtin_ctz(bits));
+}
+
+#if defined(ANGLE_IS_64_BIT_CPU)
+inline unsigned long ScanForward(uint64_t bits)
+{
+    ASSERT(bits != 0u);
+    return static_cast<unsigned long>(__builtin_ctzll(bits));
+}
+#endif  // defined(ANGLE_IS_64_BIT_CPU)
+#endif  // defined(ANGLE_PLATFORM_POSIX)
+
+// Return the index of the most significant bit set. Indexing is such that bit 0 is the least
+// significant bit.
+inline unsigned long ScanReverse(unsigned long bits)
+{
+    ASSERT(bits != 0u);
+#if defined(ANGLE_PLATFORM_WINDOWS)
+    unsigned long lastBitIndex = 0ul;
+    unsigned char ret          = _BitScanReverse(&lastBitIndex, bits);
+    ASSERT(ret != 0u);
+    return lastBitIndex;
+#elif defined(ANGLE_PLATFORM_POSIX)
+    return static_cast<unsigned long>(sizeof(unsigned long) * CHAR_BIT - 1 - __builtin_clzl(bits));
+#else
+#error Please implement bit-scan-reverse for your platform!
+#endif
+}
+
+// Returns -1 on 0, otherwise the index of the least significant 1 bit as in GLSL.
+template <typename T>
+int FindLSB(T bits)
+{
+    static_assert(std::is_integral<T>::value, "must be integral type.");
+    if (bits == 0u)
+    {
+        return -1;
+    }
+    else
+    {
+        return static_cast<int>(ScanForward(bits));
+    }
+}
+
+// Returns -1 on 0, otherwise the index of the most significant 1 bit as in GLSL.
+template <typename T>
+int FindMSB(T bits)
+{
+    static_assert(std::is_integral<T>::value, "must be integral type.");
+    if (bits == 0u)
+    {
+        return -1;
+    }
+    else
+    {
+        return static_cast<int>(ScanReverse(bits));
+    }
+}
+
 // Returns whether the argument is Not a Number.
 // IEEE 754 single precision NaN representation: Exponent(8 bits) - 255, Mantissa(23 bits) - non-zero.
 inline bool isNaN(float f)
@@ -676,7 +1024,75 @@ inline bool isInf(float f)
     return ((bitCast<uint32_t>(f) & 0x7f800000u) == 0x7f800000u) && !(bitCast<uint32_t>(f) & 0x7fffffu);
 }
 
+namespace priv
+{
+template <unsigned int N, unsigned int R>
+struct iSquareRoot
+{
+    static constexpr unsigned int solve()
+    {
+        return (R * R > N)
+                   ? 0
+                   : ((R * R == N) ? R : static_cast<unsigned int>(iSquareRoot<N, R + 1>::value));
+    }
+    enum Result
+    {
+        value = iSquareRoot::solve()
+    };
+};
+
+template <unsigned int N>
+struct iSquareRoot<N, N>
+{
+    enum result
+    {
+        value = N
+    };
+};
+
+}  // namespace priv
+
+template <unsigned int N>
+constexpr unsigned int iSquareRoot()
+{
+    return priv::iSquareRoot<N, 1>::value;
 }
+
+// Sum, difference and multiplication operations for signed ints that wrap on 32-bit overflow.
+//
+// Unsigned types are defined to do arithmetic modulo 2^n in C++. For signed types, overflow
+// behavior is undefined.
+
+template <typename T>
+inline T WrappingSum(T lhs, T rhs)
+{
+    uint32_t lhsUnsigned = static_cast<uint32_t>(lhs);
+    uint32_t rhsUnsigned = static_cast<uint32_t>(rhs);
+    return static_cast<T>(lhsUnsigned + rhsUnsigned);
+}
+
+template <typename T>
+inline T WrappingDiff(T lhs, T rhs)
+{
+    uint32_t lhsUnsigned = static_cast<uint32_t>(lhs);
+    uint32_t rhsUnsigned = static_cast<uint32_t>(rhs);
+    return static_cast<T>(lhsUnsigned - rhsUnsigned);
+}
+
+inline int32_t WrappingMul(int32_t lhs, int32_t rhs)
+{
+    int64_t lhsWide = static_cast<int64_t>(lhs);
+    int64_t rhsWide = static_cast<int64_t>(rhs);
+    // The multiplication is guaranteed not to overflow.
+    int64_t resultWide = lhsWide * rhsWide;
+    // Implement the desired wrapping behavior by masking out the high-order 32 bits.
+    resultWide = resultWide & 0xffffffffll;
+    // Casting to a narrower signed type is fine since the casted value is representable in the
+    // narrower type.
+    return static_cast<int32_t>(resultWide);
+}
+
+}  // namespace gl
 
 namespace rx
 {
@@ -684,33 +1100,22 @@ namespace rx
 template <typename T>
 T roundUp(const T value, const T alignment)
 {
-    return value + alignment - 1 - (value - 1) % alignment;
+    auto temp = value + alignment - static_cast<T>(1);
+    return temp - temp % alignment;
+}
+
+template <typename T>
+angle::CheckedNumeric<T> CheckedRoundUp(const T value, const T alignment)
+{
+    angle::CheckedNumeric<T> checkedValue(value);
+    angle::CheckedNumeric<T> checkedAlignment(alignment);
+    return roundUp(checkedValue, checkedAlignment);
 }
 
 inline unsigned int UnsignedCeilDivide(unsigned int value, unsigned int divisor)
 {
     unsigned int divided = value / divisor;
     return (divided + ((value % divisor == 0) ? 0 : 1));
-}
-
-template <class T>
-inline bool IsUnsignedAdditionSafe(T lhs, T rhs)
-{
-    static_assert(!std::numeric_limits<T>::is_signed, "T must be unsigned.");
-    return (rhs <= std::numeric_limits<T>::max() - lhs);
-}
-
-template <class T>
-inline bool IsUnsignedMultiplicationSafe(T lhs, T rhs)
-{
-    static_assert(!std::numeric_limits<T>::is_signed, "T must be unsigned.");
-    return (lhs == T(0) || rhs == T(0) || (rhs <= std::numeric_limits<T>::max() / lhs));
-}
-
-template <class SmallIntT, class BigIntT>
-inline bool IsIntegerCastSafe(BigIntT bigValue)
-{
-    return (static_cast<BigIntT>(static_cast<SmallIntT>(bigValue)) == bigValue);
 }
 
 #if defined(_MSC_VER)
@@ -730,8 +1135,8 @@ inline uint16_t RotR16(uint16_t x, int8_t r)
     return (x >> r) | (x << (16 - r));
 }
 
-#define ANGLE_ROTL(x,y) RotL(x,y)
-#define ANGLE_ROTR16(x,y) RotR16(x,y)
+#define ANGLE_ROTL(x, y) ::rx::RotL(x, y)
+#define ANGLE_ROTR16(x, y) ::rx::RotR16(x, y)
 
 #endif // namespace rx
 

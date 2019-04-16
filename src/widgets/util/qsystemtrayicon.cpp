@@ -574,7 +574,7 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     layout->addWidget(msgLabel, 1, 0, 1, 3);
 #endif
     layout->setSizeConstraint(QLayout::SetFixedSize);
-    layout->setMargin(3);
+    layout->setContentsMargins(3, 3, 3, 3);
     setLayout(layout);
 
     QPalette pal = palette();

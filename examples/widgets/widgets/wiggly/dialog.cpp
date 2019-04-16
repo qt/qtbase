@@ -48,11 +48,11 @@
 **
 ****************************************************************************/
 
-#include <QLineEdit>
-#include <QVBoxLayout>
-
 #include "dialog.h"
 #include "wigglywidget.h"
+
+#include <QLineEdit>
+#include <QVBoxLayout>
 
 //! [0]
 Dialog::Dialog(QWidget *parent)

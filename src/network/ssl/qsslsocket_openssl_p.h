@@ -69,6 +69,9 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qsslsocket_p.h"
 
+#include <QtCore/qvector.h>
+#include <QtCore/qstring.h>
+
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #if defined(OCSP_RESPONSE)
@@ -151,6 +154,16 @@ public:
     void fetchCaRootForCert(const QSslCertificate &cert);
     void _q_caRootLoaded(QSslCertificate,QSslCertificate) override;
 #endif
+
+#if QT_CONFIG(ocsp)
+    bool checkOcspStatus();
+#endif
+
+    // This decription will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
+    QString ocspErrorDescription;
+    // These will go to sslErrors()
+    QVector<QSslError> ocspErrors;
+    QByteArray ocspResponseDer;
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
     static QSslCipher QSslCipher_from_SSL_CIPHER(const SSL_CIPHER *cipher);

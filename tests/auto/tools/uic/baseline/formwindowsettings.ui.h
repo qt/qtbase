@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'formwindowsettings.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -250,12 +250,12 @@ public:
 
         gridLayout->addWidget(gridPanel, 1, 0, 1, 2);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label_2->setBuddy(defaultSpacingSpinBox);
         label->setBuddy(defaultMarginSpinBox);
         label_3->setBuddy(marginFunctionLineEdit);
         label_3_2->setBuddy(spacingFunctionLineEdit);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(authorLineEdit, defaultMarginSpinBox);
         QWidget::setTabOrder(defaultMarginSpinBox, defaultSpacingSpinBox);
         QWidget::setTabOrder(defaultSpacingSpinBox, marginFunctionLineEdit);
@@ -271,17 +271,17 @@ public:
 
     void retranslateUi(QDialog *FormWindowSettings)
     {
-        FormWindowSettings->setWindowTitle(QApplication::translate("FormWindowSettings", "Form Settings", nullptr));
-        layoutDefaultGroupBox->setTitle(QApplication::translate("FormWindowSettings", "Layout &Default", nullptr));
-        label_2->setText(QApplication::translate("FormWindowSettings", "&Spacing:", nullptr));
-        label->setText(QApplication::translate("FormWindowSettings", "&Margin:", nullptr));
-        layoutFunctionGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Layout Function", nullptr));
-        label_3->setText(QApplication::translate("FormWindowSettings", "Ma&rgin:", nullptr));
-        label_3_2->setText(QApplication::translate("FormWindowSettings", "Spa&cing:", nullptr));
-        pixmapFunctionGroupBox_2->setTitle(QApplication::translate("FormWindowSettings", "&Author", nullptr));
-        includeHintsGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Include Hints", nullptr));
-        pixmapFunctionGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Pixmap Function", nullptr));
-        gridPanel->setTitle(QApplication::translate("FormWindowSettings", "Grid", nullptr));
+        FormWindowSettings->setWindowTitle(QCoreApplication::translate("FormWindowSettings", "Form Settings", nullptr));
+        layoutDefaultGroupBox->setTitle(QCoreApplication::translate("FormWindowSettings", "Layout &Default", nullptr));
+        label_2->setText(QCoreApplication::translate("FormWindowSettings", "&Spacing:", nullptr));
+        label->setText(QCoreApplication::translate("FormWindowSettings", "&Margin:", nullptr));
+        layoutFunctionGroupBox->setTitle(QCoreApplication::translate("FormWindowSettings", "&Layout Function", nullptr));
+        label_3->setText(QCoreApplication::translate("FormWindowSettings", "Ma&rgin:", nullptr));
+        label_3_2->setText(QCoreApplication::translate("FormWindowSettings", "Spa&cing:", nullptr));
+        pixmapFunctionGroupBox_2->setTitle(QCoreApplication::translate("FormWindowSettings", "&Author", nullptr));
+        includeHintsGroupBox->setTitle(QCoreApplication::translate("FormWindowSettings", "&Include Hints", nullptr));
+        pixmapFunctionGroupBox->setTitle(QCoreApplication::translate("FormWindowSettings", "&Pixmap Function", nullptr));
+        gridPanel->setTitle(QCoreApplication::translate("FormWindowSettings", "Grid", nullptr));
     } // retranslateUi
 
 };

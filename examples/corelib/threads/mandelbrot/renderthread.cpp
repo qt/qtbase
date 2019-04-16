@@ -50,7 +50,7 @@
 
 #include "renderthread.h"
 
-#include <QtWidgets>
+#include <QImage>
 #include <cmath>
 
 //! [0]

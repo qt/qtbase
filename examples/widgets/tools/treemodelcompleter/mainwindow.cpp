@@ -61,8 +61,8 @@ MainWindow::MainWindow(QWidget *parent)
     completer = new TreeModelCompleter(this);
     completer->setModel(modelFromFile(":/resources/treemodel.txt"));
     completer->setSeparator(QLatin1String("."));
-    QObject::connect(completer, SIGNAL(highlighted(QModelIndex)),
-                     this, SLOT(highlight(QModelIndex)));
+    QObject::connect(completer, QOverload<const QModelIndex &>::of(&TreeModelCompleter::highlighted),
+                     this, &MainWindow::highlight);
 
     QWidget *centralWidget = new QWidget;
 
@@ -91,18 +91,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     QLineEdit *separatorLineEdit = new QLineEdit;
     separatorLineEdit->setText(completer->separator());
-    connect(separatorLineEdit, SIGNAL(textChanged(QString)),
-            completer, SLOT(setSeparator(QString)));
+    connect(separatorLineEdit, &QLineEdit::textChanged,
+            completer, &TreeModelCompleter::setSeparator);
 
     QCheckBox *wrapCheckBox = new QCheckBox;
     wrapCheckBox->setText(tr("Wrap around completions"));
     wrapCheckBox->setChecked(completer->wrapAround());
-    connect(wrapCheckBox, SIGNAL(clicked(bool)), completer, SLOT(setWrapAround(bool)));
+    connect(wrapCheckBox, &QAbstractButton::clicked, completer, &QCompleter::setWrapAround);
 
     contentsLabel = new QLabel;
     contentsLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(separatorLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(updateContentsLabel(QString)));
+    connect(separatorLineEdit, &QLineEdit::textChanged,
+            this, &MainWindow::updateContentsLabel);
 
     treeView = new QTreeView;
     treeView->setModel(completer->model());
@@ -111,8 +111,10 @@ MainWindow::MainWindow(QWidget *parent)
 //! [1]
 
 //! [2]
-    connect(modeCombo, SIGNAL(activated(int)), this, SLOT(changeMode(int)));
-    connect(caseCombo, SIGNAL(activated(int)), this, SLOT(changeCase(int)));
+    connect(modeCombo, QOverload<int>::of(&QComboBox::activated),
+            this, &MainWindow::changeMode);
+    connect(caseCombo, QOverload<int>::of(&QComboBox::activated),
+            this, &MainWindow::changeMode);
 
     lineEdit = new QLineEdit;
     lineEdit->setCompleter(completer);
@@ -145,9 +147,9 @@ void MainWindow::createMenu()
     QAction *aboutAct = new QAction(tr("About"), this);
     QAction *aboutQtAct = new QAction(tr("About Qt"), this);
 
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(exitAction, &QAction::triggered, qApp, &QApplication::quit);
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
+    connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
     QMenu* fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(exitAction);
@@ -180,7 +182,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
         return new QStringListModel(completer);
 
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 #endif
     QStringList words;
 
@@ -218,7 +220,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     }
 
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 
     return model;

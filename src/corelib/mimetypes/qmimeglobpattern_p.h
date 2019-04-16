@@ -53,7 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qhash.h>
@@ -88,7 +88,7 @@ public:
     {
     }
 
-    void swap(QMimeGlobPattern &other) Q_DECL_NOTHROW
+    void swap(QMimeGlobPattern &other) noexcept
     {
         qSwap(m_pattern,         other.m_pattern);
         qSwap(m_mimeType,        other.m_mimeType);
@@ -162,5 +162,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEGLOBPATTERN_P_H

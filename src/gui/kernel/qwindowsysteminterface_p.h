@@ -123,7 +123,7 @@ public:
 
     class CloseEvent : public WindowSystemEvent {
     public:
-        explicit CloseEvent(QWindow *w, bool *a = 0)
+        explicit CloseEvent(QWindow *w, bool *a = nullptr)
             : WindowSystemEvent(Close), window(w), accepted(a)
             { }
         QPointer<QWindow> window;
@@ -398,7 +398,7 @@ public:
     class TabletEnterProximityEvent : public InputEvent {
     public:
         TabletEnterProximityEvent(ulong time, int device, int pointerType, qint64 uid)
-            : InputEvent(0, time, TabletEnterProximity, Qt::NoModifier),
+            : InputEvent(nullptr, time, TabletEnterProximity, Qt::NoModifier),
               device(device), pointerType(pointerType), uid(uid) { }
         int device;
         int pointerType;
@@ -408,7 +408,7 @@ public:
     class TabletLeaveProximityEvent : public InputEvent {
     public:
         TabletLeaveProximityEvent(ulong time, int device, int pointerType, qint64 uid)
-            : InputEvent(0, time, TabletLeaveProximity, Qt::NoModifier),
+            : InputEvent(nullptr, time, TabletLeaveProximity, Qt::NoModifier),
               device(device), pointerType(pointerType), uid(uid) { }
         int device;
         int pointerType;
@@ -474,7 +474,7 @@ public:
             for (int i = 0; i < impl.size(); ++i)
                 if (!(impl.at(i)->type & QWindowSystemInterfacePrivate::UserInputEvent))
                     return impl.takeAt(i);
-            return 0;
+            return nullptr;
         }
         bool nonUserInputEventsQueued()
         {
@@ -495,7 +495,7 @@ public:
                 if (impl.at(i)->type == t)
                     return impl.at(i);
             }
-            return 0;
+            return nullptr;
         }
         void remove(const WindowSystemEvent *e)
         {
@@ -508,7 +508,7 @@ public:
             }
         }
     private:
-        Q_DISABLE_COPY(WindowSystemEventList)
+        Q_DISABLE_COPY_MOVE(WindowSystemEventList)
     };
 
     static WindowSystemEventList windowSystemEventQueue;
@@ -525,6 +525,7 @@ public:
 public:
     static QElapsedTimer eventTime;
     static bool synchronousWindowSystemEvents;
+    static bool platformFiltersEvents;
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
@@ -536,6 +537,7 @@ public:
     static QList<QWindowSystemInterface::TouchPoint>
         toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
                             const QWindow *window);
+    static void clearPointIdMap();
 
     static void installWindowSystemEventHandler(QWindowSystemEventHandler *handler);
     static void removeWindowSystemEventhandler(QWindowSystemEventHandler *handler);

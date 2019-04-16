@@ -43,7 +43,9 @@ private slots:
     void removeDuplicates();
     void removeDuplicates_data();
     void contains();
+    void indexOf_data();
     void indexOf();
+    void lastIndexOf_data();
     void lastIndexOf();
 
     void indexOf_regExp();
@@ -141,20 +143,52 @@ void tst_QStringList::lastIndexOf_regExp()
 
 }
 
+void tst_QStringList::indexOf_data()
+{
+    QTest::addColumn<QString>("search");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("expectedResult");
+
+    QTest::newRow("harald") << "harald" << 0 << 0;
+    QTest::newRow("trond") << "trond" << 0 << 1;
+    QTest::newRow("vohi") << "vohi" << 0 << 2;
+    QTest::newRow("harald-1") << "harald" << 1 << 3;
+
+    QTest::newRow("hans") << "hans" << 0 << -1;
+    QTest::newRow("trond-1") << "trond" << 2 << -1;
+    QTest::newRow("harald-2") << "harald" << -1 << 3;
+    QTest::newRow("vohi-1") << "vohi" << -3 << 2;
+}
+
 void tst_QStringList::indexOf()
 {
     QStringList list;
     list << "harald" << "trond" << "vohi" << "harald";
 
-    QCOMPARE(list.indexOf("harald"), 0);
-    QCOMPARE(list.indexOf("trond"), 1);
-    QCOMPARE(list.indexOf("vohi"), 2);
-    QCOMPARE(list.indexOf("harald", 1), 3);
+    QFETCH(QString, search);
+    QFETCH(int, from);
+    QFETCH(int, expectedResult);
 
-    QCOMPARE(list.indexOf("hans"), -1);
-    QCOMPARE(list.indexOf("trond", 2), -1);
-    QCOMPARE(list.indexOf("harald", -1), 3);
-    QCOMPARE(list.indexOf("vohi", -3), 2);
+    QCOMPARE(list.indexOf(search, from), expectedResult);
+    QCOMPARE(list.indexOf(QStringView(search), from), expectedResult);
+    QCOMPARE(list.indexOf(QLatin1String(search.toLatin1()), from), expectedResult);
+}
+
+void tst_QStringList::lastIndexOf_data()
+{
+    QTest::addColumn<QString>("search");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("expectedResult");
+
+    QTest::newRow("harald") << "harald" << -1 << 3;
+    QTest::newRow("trond") << "trond" << -1 << 1;
+    QTest::newRow("vohi") << "vohi" << -1 << 2;
+    QTest::newRow("harald-1") << "harald" << 2 << 0;
+
+    QTest::newRow("hans") << "hans" << -1 << -1;
+    QTest::newRow("vohi-1") << "vohi" << 1 << -1;
+    QTest::newRow("vohi-2") << "vohi" << -1 << 2;
+    QTest::newRow("vohi-3") << "vohi" << -3 << -1;
 }
 
 void tst_QStringList::lastIndexOf()
@@ -162,15 +196,13 @@ void tst_QStringList::lastIndexOf()
     QStringList list;
     list << "harald" << "trond" << "vohi" << "harald";
 
-    QCOMPARE(list.lastIndexOf("harald"), 3);
-    QCOMPARE(list.lastIndexOf("trond"), 1);
-    QCOMPARE(list.lastIndexOf("vohi"), 2);
-    QCOMPARE(list.lastIndexOf("harald", 2), 0);
+    QFETCH(QString, search);
+    QFETCH(int, from);
+    QFETCH(int, expectedResult);
 
-    QCOMPARE(list.lastIndexOf("hans"), -1);
-    QCOMPARE(list.lastIndexOf("vohi", 1), -1);
-    QCOMPARE(list.lastIndexOf("vohi", -1), 2);
-    QCOMPARE(list.lastIndexOf("vohi", -3), -1);
+    QCOMPARE(list.lastIndexOf(search, from), expectedResult);
+    QCOMPARE(list.lastIndexOf(QStringView(search), from), expectedResult);
+    QCOMPARE(list.lastIndexOf(QLatin1String(search.toLatin1()), from), expectedResult);
 }
 
 void tst_QStringList::filter()

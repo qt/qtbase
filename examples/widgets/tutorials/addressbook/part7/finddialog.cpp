@@ -67,8 +67,10 @@ FindDialog::FindDialog(QWidget *parent)
 
     setLayout(layout);
     setWindowTitle(tr("Find a Contact"));
-    connect(findButton, SIGNAL(clicked()), this, SLOT(findClicked()));
-    connect(findButton, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(findButton, &QPushButton::clicked,
+            this, &FindDialog::findClicked);
+    connect(findButton, &QPushButton::clicked,
+            this, &FindDialog::accept);
 }
 
 void FindDialog::findClicked()

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'identifierpage.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -89,10 +89,10 @@ public:
 
     void retranslateUi(QWidget *IdentifierPage)
     {
-        IdentifierPage->setWindowTitle(QApplication::translate("IdentifierPage", "Form", nullptr));
-        identifierCheckBox->setText(QApplication::translate("IdentifierPage", "Create identifiers", nullptr));
-        globalButton->setText(QApplication::translate("IdentifierPage", "Global prefix:", nullptr));
-        fileNameButton->setText(QApplication::translate("IdentifierPage", "Inherit prefix from file names", nullptr));
+        IdentifierPage->setWindowTitle(QCoreApplication::translate("IdentifierPage", "Form", nullptr));
+        identifierCheckBox->setText(QCoreApplication::translate("IdentifierPage", "Create identifiers", nullptr));
+        globalButton->setText(QCoreApplication::translate("IdentifierPage", "Global prefix:", nullptr));
+        fileNameButton->setText(QCoreApplication::translate("IdentifierPage", "Inherit prefix from file names", nullptr));
     } // retranslateUi
 
 };

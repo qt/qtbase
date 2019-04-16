@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'imagedialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -86,7 +86,7 @@ public:
         colorDepthCombo = new QComboBox(dialog);
         colorDepthCombo->setObjectName(QString::fromUtf8("colorDepthCombo"));
         colorDepthCombo->setGeometry(QRect(74, 83, 227, 22));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(colorDepthCombo->sizePolicy().hasHeightForWidth());
@@ -98,7 +98,7 @@ public:
         nameLineEdit = new QLineEdit(dialog);
         nameLineEdit->setObjectName(QString::fromUtf8("nameLineEdit"));
         nameLineEdit->setGeometry(QRect(74, 83, 227, 22));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(nameLineEdit->sizePolicy().hasHeightForWidth());
@@ -196,14 +196,14 @@ public:
 
     void retranslateUi(QDialog *dialog)
     {
-        dialog->setWindowTitle(QApplication::translate("ImageDialog", "Create Image", nullptr));
-        widthLabel->setText(QApplication::translate("ImageDialog", "Width:", nullptr));
-        heightLabel->setText(QApplication::translate("ImageDialog", "Height:", nullptr));
-        nameLineEdit->setText(QApplication::translate("ImageDialog", "Untitled image", nullptr));
-        nameLabel->setText(QApplication::translate("ImageDialog", "Name:", nullptr));
-        colorDepthLabel->setText(QApplication::translate("ImageDialog", "Color depth:", nullptr));
-        okButton->setText(QApplication::translate("ImageDialog", "OK", nullptr));
-        cancelButton->setText(QApplication::translate("ImageDialog", "Cancel", nullptr));
+        dialog->setWindowTitle(QCoreApplication::translate("ImageDialog", "Create Image", nullptr));
+        widthLabel->setText(QCoreApplication::translate("ImageDialog", "Width:", nullptr));
+        heightLabel->setText(QCoreApplication::translate("ImageDialog", "Height:", nullptr));
+        nameLineEdit->setText(QCoreApplication::translate("ImageDialog", "Untitled image", nullptr));
+        nameLabel->setText(QCoreApplication::translate("ImageDialog", "Name:", nullptr));
+        colorDepthLabel->setText(QCoreApplication::translate("ImageDialog", "Color depth:", nullptr));
+        okButton->setText(QCoreApplication::translate("ImageDialog", "OK", nullptr));
+        cancelButton->setText(QCoreApplication::translate("ImageDialog", "Cancel", nullptr));
     } // retranslateUi
 
 };

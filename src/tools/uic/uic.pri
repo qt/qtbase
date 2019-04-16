@@ -5,7 +5,6 @@ HEADERS += \
            $$PWD/customwidgetsinfo.h \
            $$PWD/databaseinfo.h \
            $$PWD/driver.h \
-           $$PWD/globaldefs.h \
            $$PWD/option.h \
            $$PWD/treewalker.h \
            $$PWD/utils.h \

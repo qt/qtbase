@@ -5,6 +5,12 @@
     ],
 
     "features": {
+        "testlib_selfcover": {
+            "label": "Coverage testing of testlib itself",
+            "purpose": "Gauges how thoroughly testlib's selftest exercises testlib's code",
+            "autoDetect": false,
+            "output": [ "publicFeature" ]
+        },
         "itemmodeltester": {
             "label": "Tester for item models",
             "purpose": "Provides a utility to test item models.",

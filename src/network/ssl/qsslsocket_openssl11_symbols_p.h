@@ -82,14 +82,15 @@ Q_AUTOTEST_EXPORT const BIO_METHOD *q_BIO_s_mem();
 
 int q_DSA_bits(DSA *a);
 int q_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c);
+Q_AUTOTEST_EXPORT int q_EVP_PKEY_up_ref(EVP_PKEY *a);
 int q_EVP_PKEY_base_id(EVP_PKEY *a);
 int q_RSA_bits(RSA *a);
-int q_OPENSSL_sk_num(OPENSSL_STACK *a);
-void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
-OPENSSL_STACK *q_OPENSSL_sk_new_null();
-void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
-void q_OPENSSL_sk_free(OPENSSL_STACK *a);
-void * q_OPENSSL_sk_value(OPENSSL_STACK *a, int b);
+Q_AUTOTEST_EXPORT int q_OPENSSL_sk_num(OPENSSL_STACK *a);
+Q_AUTOTEST_EXPORT void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
+Q_AUTOTEST_EXPORT OPENSSL_STACK *q_OPENSSL_sk_new_null();
+Q_AUTOTEST_EXPORT void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
+Q_AUTOTEST_EXPORT void q_OPENSSL_sk_free(OPENSSL_STACK *a);
+Q_AUTOTEST_EXPORT void * q_OPENSSL_sk_value(OPENSSL_STACK *a, int b);
 int q_SSL_session_reused(SSL *a);
 unsigned long q_SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op);
 int q_OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
@@ -102,6 +103,7 @@ const SSL_METHOD *q_TLS_server_method();
 ASN1_TIME *q_X509_getm_notBefore(X509 *a);
 ASN1_TIME *q_X509_getm_notAfter(X509 *a);
 
+Q_AUTOTEST_EXPORT void q_X509_up_ref(X509 *a);
 long q_X509_get_version(X509 *a);
 EVP_PKEY *q_X509_get_pubkey(X509 *a);
 void q_X509_STORE_set_verify_cb(X509_STORE *ctx, X509_STORE_CTX_verify_cb verify_cb);
@@ -129,6 +131,10 @@ const char *q_OpenSSL_version(int type);
 
 unsigned long q_SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
 unsigned long q_SSL_set_options(SSL *s, unsigned long op);
+
+#ifdef TLS1_3_VERSION
+int q_SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *str);
+#endif
 
 #if QT_CONFIG(dtls)
 // Functions and types required for DTLS support:
@@ -167,6 +173,10 @@ void *q_BIO_get_data(BIO *a);
 void q_BIO_set_init(BIO *a, int init);
 int q_BIO_get_shutdown(BIO *a);
 void q_BIO_set_shutdown(BIO *a, int shut);
+
+#if QT_CONFIG(ocsp)
+const OCSP_CERTID *q_OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *x);
+#endif // ocsp
 
 #define q_SSL_CTX_set_min_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, nullptr)

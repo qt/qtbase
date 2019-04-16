@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType glyph rasterizer (body).                                */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,7 +18,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* This file can be compiled without the rest of the FreeType engine, by */
-  /* defining the _STANDALONE_ macro when compiling it.  You also need to  */
+  /* defining the STANDALONE_ macro when compiling it.  You also need to   */
   /* put the files `ftimage.h' and `ftmisc.h' into the $(incdir)           */
   /* directory.  Typically, you should do something like                   */
   /*                                                                       */
@@ -27,9 +27,9 @@
   /* - copy `include/freetype/ftimage.h' and `src/raster/ftmisc.h' to your */
   /*   current directory                                                   */
   /*                                                                       */
-  /* - compile `ftraster' with the _STANDALONE_ macro defined, as in       */
+  /* - compile `ftraster' with the STANDALONE_ macro defined, as in        */
   /*                                                                       */
-  /*     cc -c -D_STANDALONE_ ftraster.c                                   */
+  /*     cc -c -DSTANDALONE_ ftraster.c                                    */
   /*                                                                       */
   /* The renderer can be initialized with a call to                        */
   /* `ft_standard_raster.raster_new'; a bitmap can be generated            */
@@ -47,7 +47,7 @@
   /*                                                                       */
   /*************************************************************************/
 
-#ifdef _STANDALONE_
+#ifdef STANDALONE_
 
   /* The size in bytes of the render pool used by the scan-line converter  */
   /* to do all of its work.                                                */
@@ -60,7 +60,7 @@
 #include "ftmisc.h"
 #include "ftimage.h"
 
-#else /* !_STANDALONE_ */
+#else /* !STANDALONE_ */
 
 #include <ft2build.h>
 #include "ftraster.h"
@@ -68,7 +68,7 @@
 
 #include "rastpic.h"
 
-#endif /* !_STANDALONE_ */
+#endif /* !STANDALONE_ */
 
 
   /*************************************************************************/
@@ -173,13 +173,11 @@
 #define FT_COMPONENT  trace_raster
 
 
-#ifdef _STANDALONE_
+#ifdef STANDALONE_
 
   /* Auxiliary macros for token concatenation. */
 #define FT_ERR_XCAT( x, y )  x ## y
 #define FT_ERR_CAT( x, y )   FT_ERR_XCAT( x, y )
-
-#define FT_MAX( a, b )  ( (a) > (b) ? (a) : (b) )
 
   /* This macro is used to indicate that a function parameter is unused. */
   /* Its purpose is simply to reduce compiler warnings.  Note also that  */
@@ -226,7 +224,7 @@
             raster_done_                                            \
          };
 
-#else /* !_STANDALONE_ */
+#else /* !STANDALONE_ */
 
 
 #include FT_INTERNAL_OBJECTS_H
@@ -242,7 +240,7 @@
 #define Raster_Err_Unsupported  Raster_Err_Cannot_Render_Glyph
 
 
-#endif /* !_STANDALONE_ */
+#endif /* !STANDALONE_ */
 
 
 #ifndef FT_MEM_SET
@@ -251,6 +249,10 @@
 
 #ifndef FT_MEM_ZERO
 #define FT_MEM_ZERO( dest, count )  FT_MEM_SET( dest, 0, count )
+#endif
+
+#ifndef FT_ZERO
+#define FT_ZERO( p )  FT_MEM_ZERO( p, sizeof ( *(p) ) )
 #endif
 
   /* FMulDiv means `Fast MulDiv'; it is used in case where `b' is       */
@@ -458,6 +460,12 @@
           (Bool)( CEILING( x ) - x >= ras.precision_half )
 #define IS_TOP_OVERSHOOT( x )    \
           (Bool)( x - FLOOR( x ) >= ras.precision_half )
+
+#if FT_RENDER_POOL_SIZE > 2048
+#define FT_MAX_BLACK_POOL  ( FT_RENDER_POOL_SIZE / sizeof ( Long ) )
+#else
+#define FT_MAX_BLACK_POOL  ( 2048 / sizeof ( Long ) )
+#endif
 
   /* The most used variables are positioned at the top of the structure. */
   /* Thus, their offset can be coded with less opcodes, resulting in a   */
@@ -1512,8 +1520,9 @@
         state_bez = y1 < y3 ? Ascending_State : Descending_State;
         if ( ras.state != state_bez )
         {
-          Bool  o = state_bez == Ascending_State ? IS_BOTTOM_OVERSHOOT( y1 )
-                                                 : IS_TOP_OVERSHOOT( y1 );
+          Bool  o = ( state_bez == Ascending_State )
+                      ? IS_BOTTOM_OVERSHOOT( y1 )
+                      : IS_TOP_OVERSHOOT( y1 );
 
 
           /* finalize current profile if any */
@@ -1648,8 +1657,9 @@
         /* detect a change of direction */
         if ( ras.state != state_bez )
         {
-          Bool  o = state_bez == Ascending_State ? IS_BOTTOM_OVERSHOOT( y1 )
-                                                 : IS_TOP_OVERSHOOT( y1 );
+          Bool  o = ( state_bez == Ascending_State )
+                      ? IS_BOTTOM_OVERSHOOT( y1 )
+                      : IS_TOP_OVERSHOOT( y1 );
 
 
           /* finalize current profile if any */
@@ -2382,7 +2392,7 @@
           pxl = e2;
 
         /* check that the other pixel isn't set */
-        e1 = pxl == e1 ? e2 : e1;
+        e1 = ( pxl == e1 ) ? e2 : e1;
 
         e1 = TRUNC( e1 );
 
@@ -2583,7 +2593,7 @@
           pxl = e2;
 
         /* check that the other pixel isn't set */
-        e1 = pxl == e1 ? e2 : e1;
+        e1 = ( pxl == e1 ) ? e2 : e1;
 
         e1 = TRUNC( e1 );
 
@@ -3041,7 +3051,7 @@
   /****                         a static object.                  *****/
 
 
-#ifdef _STANDALONE_
+#ifdef STANDALONE_
 
 
   static int
@@ -3053,7 +3063,7 @@
 
 
      *araster = (FT_Raster)&the_raster;
-     FT_MEM_ZERO( &the_raster, sizeof ( the_raster ) );
+     FT_ZERO( &the_raster );
      ft_black_init( &the_raster );
 
      return 0;
@@ -3068,7 +3078,7 @@
   }
 
 
-#else /* !_STANDALONE_ */
+#else /* !STANDALONE_ */
 
 
   static int
@@ -3102,13 +3112,13 @@
   }
 
 
-#endif /* !_STANDALONE_ */
+#endif /* !STANDALONE_ */
 
 
   static void
-  ft_black_reset( black_PRaster  raster,
-                  char*          pool_base,
-                  Long           pool_size )
+  ft_black_reset( FT_Raster  raster,
+                  PByte      pool_base,
+                  ULong      pool_size )
   {
     FT_UNUSED( raster );
     FT_UNUSED( pool_base );
@@ -3117,20 +3127,20 @@
 
 
   static int
-  ft_black_set_mode( black_PRaster  raster,
-                     ULong          mode,
-                     const char*    palette )
+  ft_black_set_mode( FT_Raster  raster,
+                     ULong      mode,
+                     void*      args )
   {
     FT_UNUSED( raster );
     FT_UNUSED( mode );
-    FT_UNUSED( palette );
+    FT_UNUSED( args );
 
     return 0;
   }
 
 
   static int
-  ft_black_render( black_PRaster            raster,
+  ft_black_render( FT_Raster                raster,
                    const FT_Raster_Params*  params )
   {
     const FT_Outline*  outline    = (const FT_Outline*)params->source;
@@ -3138,7 +3148,7 @@
 
     black_TWorker  worker[1];
 
-    Long  buffer[FT_MAX( FT_RENDER_POOL_SIZE, 2048 ) / sizeof ( Long )];
+    Long  buffer[FT_MAX_BLACK_POOL];
 
 
     if ( !raster )
@@ -3175,6 +3185,20 @@
     if ( !target_map->buffer )
       return FT_THROW( Invalid );
 
+    /* reject too large outline coordinates */
+    {
+      FT_Vector*  vec   = outline->points;
+      FT_Vector*  limit = vec + outline->n_points;
+
+
+      for ( ; vec < limit; vec++ )
+      {
+        if ( vec->x < -0x1000000L || vec->x > 0x1000000L ||
+             vec->y < -0x1000000L || vec->y > 0x1000000L )
+         return FT_THROW( Invalid );
+      }
+    }
+
     ras.outline = *outline;
     ras.target  = *target_map;
 
@@ -3190,11 +3214,12 @@
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Raster_New_Func)     ft_black_new,
-    (FT_Raster_Reset_Func)   ft_black_reset,
-    (FT_Raster_Set_Mode_Func)ft_black_set_mode,
-    (FT_Raster_Render_Func)  ft_black_render,
-    (FT_Raster_Done_Func)    ft_black_done )
+    (FT_Raster_New_Func)     ft_black_new,       /* raster_new      */
+    (FT_Raster_Reset_Func)   ft_black_reset,     /* raster_reset    */
+    (FT_Raster_Set_Mode_Func)ft_black_set_mode,  /* raster_set_mode */
+    (FT_Raster_Render_Func)  ft_black_render,    /* raster_render   */
+    (FT_Raster_Done_Func)    ft_black_done       /* raster_done     */
+  )
 
 
 /* END */

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'chatsetnickname.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -39,7 +39,7 @@ public:
         if (NicknameDialog->objectName().isEmpty())
             NicknameDialog->setObjectName(QString::fromUtf8("NicknameDialog"));
         NicknameDialog->resize(396, 105);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(1));
+        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(NicknameDialog->sizePolicy().hasHeightForWidth());
@@ -112,10 +112,10 @@ public:
 
     void retranslateUi(QDialog *NicknameDialog)
     {
-        NicknameDialog->setWindowTitle(QApplication::translate("NicknameDialog", "Set nickname", nullptr));
-        label->setText(QApplication::translate("NicknameDialog", "New nickname:", nullptr));
-        okButton->setText(QApplication::translate("NicknameDialog", "OK", nullptr));
-        cancelButton->setText(QApplication::translate("NicknameDialog", "Cancel", nullptr));
+        NicknameDialog->setWindowTitle(QCoreApplication::translate("NicknameDialog", "Set nickname", nullptr));
+        label->setText(QCoreApplication::translate("NicknameDialog", "New nickname:", nullptr));
+        okButton->setText(QCoreApplication::translate("NicknameDialog", "OK", nullptr));
+        cancelButton->setText(QCoreApplication::translate("NicknameDialog", "Cancel", nullptr));
     } // retranslateUi
 
 };

@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qstringbuilder.h"
-#include <QtCore/qtextcodec.h>
 #include <private/qutfcodec_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -81,7 +80,7 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     The types in the last list point are only available when
-    QT_NO_CAST_FROM_ASCII is not defined.
+    \c QT_NO_CAST_FROM_ASCII is not defined.
 
     For building QByteArrays:
 
@@ -125,7 +124,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
  */
-void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out) Q_DECL_NOTHROW
+void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out) noexcept
 {
     if (Q_UNLIKELY(len == -1)) {
         if (!a)

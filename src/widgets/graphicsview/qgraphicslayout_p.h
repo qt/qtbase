@@ -91,7 +91,7 @@ public:
         m_defaultSpacing[1] = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
     }
 
-    inline void invalidate() { m_valid = false; m_style = 0; m_widget = 0; }
+    inline void invalidate() { m_valid = false; m_style = nullptr; m_widget = nullptr; }
 
     inline QStyle *style() const { return m_style; }
     inline QWidget *widget() const { return m_widget; }
@@ -130,7 +130,7 @@ class Q_AUTOTEST_EXPORT QGraphicsLayoutPrivate : public QGraphicsLayoutItemPriva
     Q_DECLARE_PUBLIC(QGraphicsLayout)
 
 public:
-    QGraphicsLayoutPrivate() : QGraphicsLayoutItemPrivate(0, true), left(-1.0), top(-1.0), right(-1.0), bottom(-1.0),
+    QGraphicsLayoutPrivate() : QGraphicsLayoutItemPrivate(nullptr, true), left(-1.0), top(-1.0), right(-1.0), bottom(-1.0),
         activated(true) { }
 
     void reparentChildItems(QGraphicsItem *newParent);

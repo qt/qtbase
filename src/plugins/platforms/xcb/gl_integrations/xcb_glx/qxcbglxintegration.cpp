@@ -164,7 +164,11 @@ bool QXcbGlxIntegration::handleXcbEvent(xcb_generic_event_t *event, uint respons
                 XUnlockDisplay(xdisplay);
                 locked = false;
                 auto eventType = m_connection->nativeInterface()->nativeEventType();
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                qintptr result = 0;
+#  else
                 long result = 0;
+#  endif
                 handled = dispatcher->filterNativeEvent(eventType, &ev, &result);
             }
 #endif

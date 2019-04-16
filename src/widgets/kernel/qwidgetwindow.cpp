@@ -73,7 +73,7 @@ public:
     {
         Q_Q(QWidgetWindow);
         if (QWidget *widget = q->widget())
-            widget->setVisible(visible);
+            QWidgetPrivate::get(widget)->setVisible(visible);
         else
             QWindowPrivate::setVisible(visible);
     }
@@ -106,6 +106,7 @@ public:
         if (QWidget *widget = q->widget())
             QWidgetPrivate::get(widget)->updateContentsRect();
     }
+    bool allowClickThrough(const QPoint &) const override;
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -219,6 +220,12 @@ static inline bool shouldBePropagatedToWidget(QEvent *event)
     default:
         return true;
     }
+}
+
+bool QWidgetWindowPrivate::allowClickThrough(const QPoint &globalPos) const
+{
+    QWidget *w = QApplication::widgetAt(globalPos);
+    return w && !w->testAttribute(Qt::WA_MacNoClickThrough);
 }
 
 bool QWidgetWindow::event(QEvent *event)
@@ -521,7 +528,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         if (activePopupWidget->isEnabled()) {
             // deliver event
             qt_replay_popup_mouse_event = false;
-            QWidget *receiver = activePopupWidget;
+            QPointer<QWidget> receiver = activePopupWidget;
             QPoint widgetPos = mapped;
             if (qt_button_down)
                 receiver = qt_button_down;
@@ -642,7 +649,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (!widget)
         widget = m_widget;
 
-    if (event->type() == QEvent::MouseButtonPress)
+    const bool initialPress = event->buttons() == event->button();
+    if (event->type() == QEvent::MouseButtonPress && initialPress)
         qt_button_down = widget;
 
     QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
@@ -877,8 +885,6 @@ void QWidgetWindow::handleDragEnterEvent(QDragEnterEvent *event, QWidget *widget
     const QPoint mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
     QDragEnterEvent translated(mapped, event->possibleActions(), event->mimeData(),
                                event->mouseButtons(), event->keyboardModifiers());
-    translated.setDropAction(event->dropAction());
-    translated.setAccepted(event->isAccepted());
     QGuiApplication::forwardEvent(m_dragTarget, &translated, event);
     event->setAccepted(translated.isAccepted());
     event->setDropAction(translated.dropAction());
@@ -898,10 +904,10 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
         const QPoint mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
         QDragMoveEvent translated(mapped, event->possibleActions(), event->mimeData(),
                                   event->mouseButtons(), event->keyboardModifiers());
-        translated.setDropAction(event->dropAction());
-        translated.setAccepted(event->isAccepted());
 
         if (widget == m_dragTarget) { // Target widget unchanged: Send DragMove
+            translated.setDropAction(event->dropAction());
+            translated.setAccepted(event->isAccepted());
             QGuiApplication::forwardEvent(m_dragTarget, &translated, event);
         } else {
             if (m_dragTarget) { // Send DragLeave to previous
@@ -911,6 +917,9 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
             }
             // Send DragEnter to new widget.
             handleDragEnterEvent(static_cast<QDragEnterEvent*>(event), widget);
+            // Handling 'DragEnter' should suffice for the application.
+            translated.setDropAction(event->dropAction());
+            translated.setAccepted(event->isAccepted());
             // The drag enter event is always immediately followed by a drag move event,
             // see QDragEnterEvent documentation.
             QGuiApplication::forwardEvent(m_dragTarget, &translated, event);
@@ -1016,7 +1025,11 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+#else
 bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+#endif
 {
     return m_widget->nativeEvent(eventType, message, result);
 }

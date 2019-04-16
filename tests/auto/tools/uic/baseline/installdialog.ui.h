@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'installdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -120,13 +120,13 @@ public:
 
     void retranslateUi(QDialog *InstallDialog)
     {
-        InstallDialog->setWindowTitle(QApplication::translate("InstallDialog", "Install Documentation", nullptr));
-        label->setText(QApplication::translate("InstallDialog", "Available Documentation:", nullptr));
-        installButton->setText(QApplication::translate("InstallDialog", "Install", nullptr));
-        cancelButton->setText(QApplication::translate("InstallDialog", "Cancel", nullptr));
-        closeButton->setText(QApplication::translate("InstallDialog", "Close", nullptr));
-        label_4->setText(QApplication::translate("InstallDialog", "Installation Path:", nullptr));
-        browseButton->setText(QApplication::translate("InstallDialog", "...", nullptr));
+        InstallDialog->setWindowTitle(QCoreApplication::translate("InstallDialog", "Install Documentation", nullptr));
+        label->setText(QCoreApplication::translate("InstallDialog", "Available Documentation:", nullptr));
+        installButton->setText(QCoreApplication::translate("InstallDialog", "Install", nullptr));
+        cancelButton->setText(QCoreApplication::translate("InstallDialog", "Cancel", nullptr));
+        closeButton->setText(QCoreApplication::translate("InstallDialog", "Close", nullptr));
+        label_4->setText(QCoreApplication::translate("InstallDialog", "Installation Path:", nullptr));
+        browseButton->setText(QCoreApplication::translate("InstallDialog", "...", nullptr));
     } // retranslateUi
 
 };

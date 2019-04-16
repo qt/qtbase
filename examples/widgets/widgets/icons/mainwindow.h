@@ -60,8 +60,6 @@ QT_BEGIN_NAMESPACE
 class QAction;
 class QActionGroup;
 class QLabel;
-class QMenu;
-class QRadioButton;
 class QButtonGroup;
 class QTableWidget;
 QT_END_NAMESPACE
@@ -74,7 +72,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
     void loadImages(const QStringList &fileNames);
 

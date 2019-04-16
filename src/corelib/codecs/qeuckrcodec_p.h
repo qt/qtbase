@@ -80,9 +80,9 @@
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qlist.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(big_codecs);
 
-#ifndef QT_NO_BIG_CODECS
+QT_BEGIN_NAMESPACE
 
 class QEucKrCodec : public QTextCodec {
 public:
@@ -111,8 +111,6 @@ public:
     QString convertToUnicode(const char *, int, ConverterState *) const override;
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override;
 };
-
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

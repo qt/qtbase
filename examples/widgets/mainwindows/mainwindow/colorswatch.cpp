@@ -86,7 +86,7 @@ QColor bgColorForName(const QString &name)
         return QColor("#D8D8F1");
     if (name == "Yellow")
         return QColor("#F1F0D8");
-    return QColor(name).light(110);
+    return QColor(name).lighter(110);
 }
 
 QColor fgColorForName(const QString &name)
@@ -454,8 +454,8 @@ void ColorSwatch::updateContextMenu()
     tabMenu->clear();
     splitHMenu->clear();
     splitVMenu->clear();
-    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
-    foreach (ColorSwatch *dock, dock_list) {
+    const QList<ColorSwatch *> dockList = mainWindow->findChildren<ColorSwatch*>();
+    for (const ColorSwatch *dock : dockList) {
         tabMenu->addAction(dock->objectName());
         splitHMenu->addAction(dock->objectName());
         splitVMenu->addAction(dock->objectName());
@@ -464,7 +464,8 @@ void ColorSwatch::updateContextMenu()
 
 static ColorSwatch *findByName(const QMainWindow *mainWindow, const QString &name)
 {
-    foreach (ColorSwatch *dock, mainWindow->findChildren<ColorSwatch*>()) {
+    const QList<ColorSwatch *> dockList = mainWindow->findChildren<ColorSwatch*>();
+    for (ColorSwatch *dock : dockList) {
         if (name == dock->objectName())
             return dock;
     }
@@ -584,7 +585,7 @@ void ColorSwatch::changeVerticalTitleBar(bool on)
 QSize BlueTitleBar::minimumSizeHint() const
 {
     QDockWidget *dw = qobject_cast<QDockWidget*>(parentWidget());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
     QSize result(leftPm.width() + rightPm.width(), centerPm.height());
     if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar)
         result.transpose();
@@ -605,7 +606,7 @@ void BlueTitleBar::paintEvent(QPaintEvent*)
     QRect rect = this->rect();
 
     QDockWidget *dw = qobject_cast<QDockWidget*>(parentWidget());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
 
     if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar) {
         QSize s = rect.size();
@@ -632,7 +633,7 @@ void BlueTitleBar::mouseReleaseEvent(QMouseEvent *event)
     QRect rect = this->rect();
 
     QDockWidget *dw = qobject_cast<QDockWidget*>(parentWidget());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
 
     if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar) {
         QPoint p = pos;
@@ -676,7 +677,7 @@ void BlueTitleBar::mouseReleaseEvent(QMouseEvent *event)
 void BlueTitleBar::updateMask()
 {
     QDockWidget *dw = qobject_cast<QDockWidget*>(parent());
-    Q_ASSERT(dw != 0);
+    Q_ASSERT(dw);
 
     QRect rect = dw->rect();
     QPixmap bitmap(dw->size());

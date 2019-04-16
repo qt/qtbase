@@ -146,7 +146,7 @@ inspect_binary() {
         echo "found namespaced class names, updating class entries..."
     fi
 
-    classes=$(otool -o "$target" | grep class_ro_t)
+    classes=$(otool -o -v "$target" | grep class_ro_t)
     while read -a class; do
         address="$(sanitize_address ${class[1]})"
 

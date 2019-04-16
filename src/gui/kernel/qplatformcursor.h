@@ -78,6 +78,8 @@ private:
 
 class Q_GUI_EXPORT QPlatformCursor : public QObject {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformCursor)
+
     enum Capability {
         OverrideCursor = 0x1
     };

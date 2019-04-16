@@ -39,7 +39,9 @@
 
 #include "qcocoaprintdevice.h"
 
+#if QT_CONFIG(mimetype)
 #include <QtCore/qmimedatabase.h>
+#endif
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -417,6 +419,7 @@ QPrint::ColorMode QCocoaPrintDevice::defaultColorMode() const
     return QPrint::GrayScale;
 }
 
+#if QT_CONFIG(mimetype)
 void QCocoaPrintDevice::loadMimeTypes() const
 {
     // TODO Check how settings affect returned list
@@ -438,6 +441,7 @@ void QCocoaPrintDevice::loadMimeTypes() const
     }
     m_haveMimeTypes = true;
 }
+#endif // mimetype
 
 bool QCocoaPrintDevice::openPpdFile()
 {

@@ -46,7 +46,7 @@
 #ifndef QT_NO_CLIPBOARD
 QT_BEGIN_NAMESPACE
 
-class QAndroidPlatformClipboard: public QPlatformClipboard
+class QAndroidPlatformClipboard : public QObject, public QPlatformClipboard
 {
 public:
     QAndroidPlatformClipboard();
@@ -54,9 +54,6 @@ public:
     QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
     void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) override;
     bool supportsMode(QClipboard::Mode mode) const override;
-
-private:
-    QMimeData m_mimeData;
 };
 
 QT_END_NAMESPACE

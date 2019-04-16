@@ -70,7 +70,7 @@ public:
     QWidget *widget;
     QSplitterHandle *handle;
 
-    QSplitterLayoutStruct() : sizer(-1), collapsed(false), collapsible(Default), widget(0), handle(0) {}
+    QSplitterLayoutStruct() : sizer(-1), collapsed(false), collapsible(Default), widget(nullptr), handle(nullptr) {}
     ~QSplitterLayoutStruct() { delete handle; }
     int getWidgetSize(Qt::Orientation orient);
     int getHandleSize(Qt::Orientation orient);
@@ -84,7 +84,7 @@ class QSplitterPrivate : public QFramePrivate
 public:
     QSplitterPrivate() :
 #if QT_CONFIG(rubberband)
-                         rubberBand(0),
+                         rubberBand(nullptr),
 #endif
                          opaque(true), firstShow(true),
                          childrenCollapsible(true), compatMode(false), handleWidth(-1), blockChildAdd(false), opaqueResizeSet(false) {}
@@ -140,7 +140,7 @@ class QSplitterHandlePrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QSplitterHandle)
 public:
-    QSplitterHandlePrivate() : s(0), orient(Qt::Horizontal), mouseOffset(0), opaq(false), hover(false), pressed(false) {}
+    QSplitterHandlePrivate() : s(nullptr), orient(Qt::Horizontal), mouseOffset(0), opaq(false), hover(false), pressed(false) {}
 
     inline int pick(const QPoint &pos) const
     { return orient == Qt::Horizontal ? pos.x() : pos.y(); }

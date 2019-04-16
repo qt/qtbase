@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qfloat16_p.h"
+#include "qfloat16.h"
 #include "private/qsimd_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -65,28 +65,31 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
+    \fn bool qIsInf(qfloat16 f)
     \relates <QFloat16>
+
+    Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
 
     \sa qIsInf
 */
-Q_REQUIRED_RESULT bool qIsInf(qfloat16 f) Q_DECL_NOTHROW { return qt_is_inf(f); }
 
 /*!
-    Returns true if the \c qfloat16 \a {f} is not a number (NaN).
+    \fn bool qIsNaN(qfloat16 f)
     \relates <QFloat16>
+
+    Returns true if the \c qfloat16 \a {f} is not a number (NaN).
 
     \sa qIsNaN
 */
-Q_REQUIRED_RESULT bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW { return qt_is_nan(f); }
 
 /*!
-    Returns true if the \c qfloat16 \a {f} is a finite number.
+    \fn bool qIsFinite(qfloat16 f)
     \relates <QFloat16>
+
+    Returns true if the \c qfloat16 \a {f} is a finite number.
 
     \sa qIsFinite
 */
-Q_REQUIRED_RESULT bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW { return qt_is_finite(f); }
 
 /*! \fn int qRound(qfloat16 value)
     \relates <QFloat16>
@@ -129,8 +132,8 @@ extern "C" {
 #  define f16cextern    extern
 #endif
 
-f16cextern void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_NOTHROW;
-f16cextern void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL_NOTHROW;
+f16cextern void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) noexcept;
+f16cextern void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) noexcept;
 
 #undef f16cextern
 }
@@ -141,7 +144,7 @@ static inline bool hasFastF16()
     return true;
 }
 
-static void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_NOTHROW
+static void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) noexcept
 {
     __fp16 *out_f16 = reinterpret_cast<__fp16 *>(out);
     qsizetype i = 0;
@@ -151,7 +154,7 @@ static void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q
         out_f16[i] = __fp16(in[i]);
 }
 
-static void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL_NOTHROW
+static void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) noexcept
 {
     const __fp16 *in_f16 = reinterpret_cast<const __fp16 *>(in);
     qsizetype i = 0;
@@ -166,12 +169,12 @@ static inline bool hasFastF16()
     return false;
 }
 
-static void qFloatToFloat16_fast(quint16 *, const float *, qsizetype) Q_DECL_NOTHROW
+static void qFloatToFloat16_fast(quint16 *, const float *, qsizetype) noexcept
 {
     Q_UNREACHABLE();
 }
 
-static void qFloatFromFloat16_fast(float *, const quint16 *, qsizetype) Q_DECL_NOTHROW
+static void qFloatFromFloat16_fast(float *, const quint16 *, qsizetype) noexcept
 {
     Q_UNREACHABLE();
 }
@@ -183,7 +186,7 @@ static void qFloatFromFloat16_fast(float *, const quint16 *, qsizetype) Q_DECL_N
     Converts \a len floats from \a in to qfloat16 and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.
 */
-Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len) Q_DECL_NOTHROW
+Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len) noexcept
 {
     if (hasFastF16())
         return qFloatToFloat16_fast(reinterpret_cast<quint16 *>(out), in, len);
@@ -199,7 +202,7 @@ Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len
     Converts \a len qfloat16 from \a in to floats and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.
 */
-Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype len) Q_DECL_NOTHROW
+Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype len) noexcept
 {
     if (hasFastF16())
         return qFloatFromFloat16_fast(out, reinterpret_cast<const quint16 *>(in), len);

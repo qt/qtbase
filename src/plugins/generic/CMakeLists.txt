@@ -1,4 +1,3 @@
-
 if(QT_FEATURE_evdev)
     add_subdirectory(evdevmouse)
     add_subdirectory(evdevtouch)

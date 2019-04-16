@@ -334,7 +334,7 @@ void tst_QCborValue::copyCompare()
     QCOMPARE(v, other);
     QVERIFY(!(v != other));
     QVERIFY(!(v < other));
-#if QT_HAS_INCLUDE(<compare>)
+#if 0 && QT_HAS_INCLUDE(<compare>)
     QVERIFY(v <= other);
     QVERIFY(v >= other);
     QVERIFY(!(v > other));
@@ -384,11 +384,17 @@ void tst_QCborValue::arrayDefaultInitialization()
     QVERIFY(v.isArray());
     QVERIFY(!v.isMap());
     QVERIFY(!v.isTag());
-    QVERIFY(v[0].isUndefined());
 
     QCborArray a2 = v.toArray();
     QVERIFY(a2.isEmpty());
     QCOMPARE(a2, a);
+    auto front = v[0];
+    QVERIFY(front.isUndefined());
+    front = 1;
+    QCOMPARE(v[0], 1);
+    QVERIFY(a2.isEmpty());
+    a2 = v.toArray();
+    QCOMPARE(a2.size(), 1);
 }
 
 void tst_QCborValue::mapDefaultInitialization()
@@ -425,7 +431,7 @@ void tst_QCborValue::mapDefaultInitialization()
     QVERIFY(m == QCborMap{});
     QVERIFY(QCborMap{} == m);
 
-    QCborValue v(m);
+    const QCborValue v(m);
     QVERIFY(v.isMap());
     QVERIFY(!v.isArray());
     QVERIFY(!v.isTag());
@@ -727,6 +733,31 @@ void tst_QCborValue::arrayMutation()
     QCOMPARE(a.at(1), QCborValue(-1));
     QCOMPARE(a2.at(1), QCborValue(nullptr));
     QCOMPARE(++it, end);
+
+    // Array accessed via value:
+    QCborValue val(a);
+    val[2] = QCborArray{2, 3, 5, 7};
+    QCOMPARE(a.size(), 2); // Unchanged
+    QVERIFY(val.isArray());
+    QCOMPARE(val.toArray().size(), 3);
+    val[2][4] = 17;
+    QVERIFY(val.isArray());
+    QVERIFY(val[2].isArray());
+    QCOMPARE(val[2].toArray().size(), 5);
+    QCOMPARE(val[2][4], 17);
+    QCOMPARE(val.toArray().size(), 3);
+    val[3] = 42;
+    QVERIFY(val.isArray());
+    QCOMPARE(val.toArray().size(), 4);
+    QCOMPARE(val[3], 42);
+
+    // Coerce to map on string key:
+    const QLatin1String any("any");
+    val[any] = any;
+    QVERIFY(val.isMap());
+    QCOMPARE(val.toMap().size(), 5);
+    QVERIFY(val[2].isArray());
+    QCOMPARE(val[2].toArray().size(), 5);
 }
 
 void tst_QCborValue::mapMutation()
@@ -782,6 +813,30 @@ void tst_QCborValue::mapMutation()
     QCOMPARE((m.end() - 1)->toInteger(), -1);
     QVERIFY((m2.end() - 1)->isNull());
     QCOMPARE(++it, end);
+
+    // Map accessed via value:
+    QCborValue val(m);
+    val[7] = QCborMap({{0, 2}, {1, 3}, {2, 5}});
+    QCOMPARE(m.size(), 2); // Unchanged
+    QVERIFY(val.isMap());
+    QCOMPARE(val.toMap().size(), 3);
+    val[7][3] = 11;
+    QVERIFY(val.isMap());
+    QVERIFY(val[7].isMap());
+    QCOMPARE(val[7].toMap().size(), 4);
+    val[14] = 42;
+    QVERIFY(val.isMap());
+    QCOMPARE(val.toMap().size(), 4);
+
+    const QLatin1String any("any");
+    const QString hello(QStringLiteral("Hello World"));
+    val[any][3][hello] = any;
+    QVERIFY(val.isMap());
+    QCOMPARE(val.toMap().size(), 5);
+    QVERIFY(val[any].isMap());
+    QCOMPARE(val[any].toMap().size(), 1);
+    QVERIFY(val[any][3].isMap());
+    QCOMPARE(val[any][3].toMap().size(), 1);
 }
 
 void tst_QCborValue::arrayPrepend()

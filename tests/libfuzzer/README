@@ -1,0 +1,39 @@
+This directory contains tests to be run with clang's libFuzzer. It will generate data, pass this
+data to the function
+
+ LLVMFuzzerTestOneInput(const char *Data, size_t Size)
+
+of the test and track the code execution. Should the test crash, libFuzzer will provide you with the
+data which triggered the crash. You can then use this to debug and fix the called code.
+
+! Please note: The purpose of fuzz testing is to find unexpected code paths. Running fuzz tests may!
+! result in unforeseen bevavior, including loss of data. Consider running the tests in an isolated !
+! environment, e.g. on a virtual machine. You have been warned.                                    !
+
+To run a test with libFuzzer:
+
+1. Install clang 5.0 or later, e.g. from the repositories of the Linux distribution you are using.
+   Depending on the version of clang and the source you are installing from, you might have to
+   install libFuzzer for this version of clang explicitly.
+2. Make sure clang and clang++ from this version of clang are found in PATH.
+3. Configure Qt with
+    -platform linux-clang -coverage trace-pc-guard
+   to add the needed code coverage instrumentation. Since speed of execution is crucial for fuzz
+   testing, it's recommendable to also use the switches
+    -release -static
+   It might also make sense to add sanitzers by passing
+    -sanitize <...>
+4. Build Qt.
+5. Build one of the tests using this Qt build.
+6. Execute the resulting executable.
+   Depending on the expected input format of the tested function, you will get results faster if
+   you:
+    * provide a set of interesting input data by passing the path of a directory which contains
+      these data, each in one file. You can find such datasets in the subdirectory "testcases".
+    * pass a so-called dictionary listing keywords of the input format using
+       -dict=<dictionary file>
+      A couple of such dictionaries are provided by AFL (http://lcamtuf.coredump.cx/afl/)
+    * tell libFuzzer to generate only ASCII data using
+       -only_ascii=1
+
+For further info, see https://llvm.org/docs/LibFuzzer.html

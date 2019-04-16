@@ -73,7 +73,7 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
             if (path.isEmpty())
                 break;
 
-            images[numImages++] = qMove(img);
+            images[numImages++] = std::move(img);
         } else {
             bool found = false;
             for (int j = 0; j < numImages; ++j) {
@@ -83,7 +83,7 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
                 }
             }
             if (!found)
-                images[numImages++] = qMove(img);
+                images[numImages++] = std::move(img);
         }
     }
 
@@ -335,7 +335,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
             // TODO optimize this
             mask = mask.alphaChannel();
             mask.invertPixels();
-            mask = mask.convertToFormat(QImage::Format_Mono);
+            mask = mask.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
         }
 
         int mw = qMin(mask.width(), c.w);

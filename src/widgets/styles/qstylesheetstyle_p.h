@@ -82,40 +82,40 @@ public:
     ~QStyleSheetStyle();
 
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
-                            const QWidget *w = 0) const override;
+                            const QWidget *w = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
-                     const QWidget *w = 0) const override;
+                     const QWidget *w = nullptr) const override;
     void drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, const QPixmap &pixmap) const override;
     void drawItemText(QPainter *painter, const QRect& rect, int alignment, const QPalette &pal,
               bool enabled, const QString& text, QPalette::ColorRole textRole  = QPalette::NoRole) const override;
     void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
-                       const QWidget *w = 0) const override;
+                       const QWidget *w = nullptr) const override;
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                 const QStyleOption *option) const override;
     SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                     const QPoint &pt, const QWidget *w = 0) const override;
+                                     const QPoint &pt, const QWidget *w = nullptr) const override;
     QRect itemPixmapRect(const QRect &rect, int alignment, const QPixmap &pixmap) const override;
     QRect itemTextRect(const QFontMetrics &metrics, const QRect &rect, int alignment, bool enabled,
                        const QString &text) const override;
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr, const QWidget *widget = nullptr) const override;
     void polish(QWidget *widget) override;
     void polish(QApplication *app) override;
     void polish(QPalette &pal) override;
     QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
-                           const QSize &contentsSize, const QWidget *widget = 0) const override;
+                           const QSize &contentsSize, const QWidget *widget = nullptr) const override;
     QPalette standardPalette() const override;
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
-                       const QWidget *widget = 0) const override;
-    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option = 0,
-                           const QWidget *w = 0 ) const override;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = nullptr,
+                       const QWidget *widget = nullptr) const override;
+    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option = nullptr,
+                           const QWidget *w = nullptr ) const override;
     int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
-                          Qt::Orientation orientation, const QStyleOption *option = 0,
-                          const QWidget *widget = 0) const override;
-    int styleHint(StyleHint sh, const QStyleOption *opt = 0, const QWidget *w = 0,
-                  QStyleHintReturn *shret = 0) const override;
-    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const override;
+                          Qt::Orientation orientation, const QStyleOption *option = nullptr,
+                          const QWidget *widget = nullptr) const override;
+    int styleHint(StyleHint sh, const QStyleOption *opt = nullptr, const QWidget *w = nullptr,
+                  QStyleHintReturn *shret = nullptr) const override;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = nullptr) const override;
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc,
-                         const QWidget *w = 0) const override;
+                         const QWidget *w = nullptr) const override;
 
     // These functions are called from QApplication/QWidget. Be careful.
     QStyle *baseStyle() const;
@@ -173,7 +173,7 @@ public:
     static int numinstances;
 
 private:
-    Q_DISABLE_COPY(QStyleSheetStyle)
+    Q_DISABLE_COPY_MOVE(QStyleSheetStyle)
     Q_DECLARE_PRIVATE(QStyleSheetStyle)
 };
 

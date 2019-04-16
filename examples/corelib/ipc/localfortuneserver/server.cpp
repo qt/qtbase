@@ -48,14 +48,10 @@
 **
 ****************************************************************************/
 
+#include "server.h"
+
 #include <QtWidgets>
 #include <QtNetwork>
-
-#include <stdlib.h>
-
-#include "server.h"
-#include <qlocalserver.h>
-#include <qlocalsocket.h>
 
 Server::Server(QWidget *parent)
     : QDialog(parent)

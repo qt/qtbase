@@ -102,7 +102,7 @@ public:
           lastSectionLogicalIdx(-1), // Only trust when we stretch last section
           sectionIndicatorOffset(0),
 #if QT_CONFIG(label)
-          sectionIndicator(0),
+          sectionIndicator(nullptr),
 #endif
           globalResizeMode(QHeaderView::Interactive),
           sectionStartposRecalc(true),

@@ -64,10 +64,11 @@ QT_BEGIN_NAMESPACE
 class QEvdevKeyboardManager : public QObject
 {
 public:
-    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = 0);
+    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = nullptr);
     ~QEvdevKeyboardManager();
 
     void loadKeymap(const QString &file);
+    void switchLang();
 
     void addKeyboard(const QString &deviceNode = QString());
     void removeKeyboard(const QString &deviceNode);

@@ -47,7 +47,11 @@
 
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface_p.h>
+
+#include <QtGui/private/qguiapplication_p.h>
+
+#include <QtXkbCommonSupport/private/qxkbcommon_p.h>
 
 #include "qibusproxy.h"
 #include "qibusproxyportal.h"
@@ -217,17 +221,14 @@ void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
             && (q.testFlag(Qt::ImSurroundingText)
                 || q.testFlag(Qt::ImCursorPosition)
                 || q.testFlag(Qt::ImAnchorPosition))) {
-        QInputMethodQueryEvent srrndTextQuery(Qt::ImSurroundingText);
-        QInputMethodQueryEvent cursorPosQuery(Qt::ImCursorPosition);
-        QInputMethodQueryEvent anchorPosQuery(Qt::ImAnchorPosition);
 
-        QCoreApplication::sendEvent(input, &srrndTextQuery);
-        QCoreApplication::sendEvent(input, &cursorPosQuery);
-        QCoreApplication::sendEvent(input, &anchorPosQuery);
+        QInputMethodQueryEvent query(Qt::ImSurroundingText | Qt::ImCursorPosition | Qt::ImAnchorPosition);
 
-        QString surroundingText = srrndTextQuery.value(Qt::ImSurroundingText).toString();
-        uint cursorPosition = cursorPosQuery.value(Qt::ImCursorPosition).toUInt();
-        uint anchorPosition = anchorPosQuery.value(Qt::ImAnchorPosition).toUInt();
+        QCoreApplication::sendEvent(input, &query);
+
+        QString surroundingText = query.value(Qt::ImSurroundingText).toString();
+        uint cursorPosition = query.value(Qt::ImCursorPosition).toUInt();
+        uint anchorPosition = query.value(Qt::ImAnchorPosition).toUInt();
 
         QIBusText text;
         text.text = surroundingText;
@@ -336,14 +337,12 @@ void QIBusPlatformInputContext::forwardKeyEvent(uint keyval, uint keycode, uint 
     if (!input)
         return;
 
-    if (debug)
-        qDebug() << "forwardKeyEvent" << keyval << keycode << state;
-
     QEvent::Type type = QEvent::KeyPress;
     if (state & IBUS_RELEASE_MASK)
         type = QEvent::KeyRelease;
 
     state &= ~IBUS_RELEASE_MASK;
+    keycode += 8;
 
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
     if (state & IBUS_SHIFT_MASK)
@@ -355,7 +354,13 @@ void QIBusPlatformInputContext::forwardKeyEvent(uint keyval, uint keycode, uint 
     if (state & IBUS_META_MASK)
         modifiers |= Qt::MetaModifier;
 
-    QKeyEvent event(type, keyval, modifiers, QString(keyval));
+    int qtcode = QXkbCommon::keysymToQtKey(keyval, modifiers);
+    QString text = QXkbCommon::lookupStringNoKeysymTransformations(keyval);
+
+    if (debug)
+        qDebug() << "forwardKeyEvent" << keyval << keycode << state << modifiers << qtcode << text;
+
+    QKeyEvent event(type, qtcode, modifiers, keycode, keyval, state, text);
     QCoreApplication::sendEvent(input, &event);
 }
 
@@ -422,9 +427,9 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code - 8, ibusState);
 
     if (m_eventFilterUseSynchronousMode || reply.isFinished()) {
-        bool retval = reply.value();
-        qCDebug(qtQpaInputMethods) << "filterEvent return" << code << sym << state << retval;
-        return retval;
+        bool filtered = reply.value();
+        qCDebug(qtQpaInputMethods) << "filterEvent return" << code << sym << state << filtered;
+        return filtered;
     }
 
     Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
@@ -494,23 +499,22 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     const bool isAutoRepeat = args.at(7).toBool();
 
     // copied from QXcbKeyboard::handleKeyEvent()
-    bool retval = reply.value();
-    qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
-    if (!retval) {
+    bool filtered = reply.value();
+    qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << filtered;
+    if (!filtered) {
 #ifndef QT_NO_CONTEXTMENU
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
             && window != NULL) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
             const QPoint pos = window->mapFromGlobal(globalPos);
-#ifndef QT_NO_CONTEXTMENU
-            QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
-                                                           globalPos, modifiers);
-#endif
+            QWindowSystemInterfacePrivate::ContextMenuEvent contextMenuEvent(window, false, pos,
+                                                                             globalPos, modifiers);
+            QGuiApplicationPrivate::processWindowSystemEvent(&contextMenuEvent);
         }
-#endif // QT_NO_CONTEXTMENU
-        QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                       code, sym, state, string, isAutoRepeat);
-
+#endif
+        QWindowSystemInterfacePrivate::KeyEvent keyEvent(window, time, type, qtcode, modifiers,
+                                                         code, sym, state, string, isAutoRepeat);
+        QGuiApplicationPrivate::processWindowSystemEvent(&keyEvent);
     }
     call->deleteLater();
 }
@@ -593,7 +597,7 @@ void QIBusPlatformInputContext::connectToContextSignals()
     if (d->context) {
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
-        connect(d->context, SIGNAL(ForwardKeyEvent(uint, uint, uint)), this, SLOT(forwardKeyEvent(uint, uint, uint)));
+        connect(d->context, SIGNAL(ForwardKeyEvent(uint,uint,uint)), this, SLOT(forwardKeyEvent(uint,uint,uint)));
         connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
         connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
         connect(d->context, SIGNAL(HidePreeditText()), this, SLOT(hidePreeditText()));

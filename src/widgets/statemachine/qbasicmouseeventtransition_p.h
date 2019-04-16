@@ -65,9 +65,9 @@ class Q_AUTOTEST_EXPORT QBasicMouseEventTransition : public QAbstractTransition
 {
     Q_OBJECT
 public:
-    QBasicMouseEventTransition(QState *sourceState = 0);
+    QBasicMouseEventTransition(QState *sourceState = nullptr);
     QBasicMouseEventTransition(QEvent::Type type, Qt::MouseButton button,
-                               QState *sourceState = 0);
+                               QState *sourceState = nullptr);
     ~QBasicMouseEventTransition();
 
     QEvent::Type eventType() const;
@@ -87,7 +87,7 @@ protected:
     void onTransition(QEvent *) override;
 
 private:
-    Q_DISABLE_COPY(QBasicMouseEventTransition)
+    Q_DISABLE_COPY_MOVE(QBasicMouseEventTransition)
     Q_DECLARE_PRIVATE(QBasicMouseEventTransition)
 };
 

@@ -76,6 +76,8 @@ class Q_GUI_EXPORT QPlatformTheme
 {
     Q_DECLARE_PRIVATE(QPlatformTheme)
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformTheme)
+
     enum ThemeHint {
         CursorFlashTime,
         KeyboardInputInterval,
@@ -307,7 +309,7 @@ public:
 
     virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
     virtual QIcon fileIcon(const QFileInfo &fileInfo,
-                           QPlatformTheme::IconOptions iconOptions = 0) const;
+                           QPlatformTheme::IconOptions iconOptions = nullptr) const;
     virtual QIconEngine *createIconEngine(const QString &iconName) const;
 
 #ifndef QT_NO_SHORTCUT
@@ -324,8 +326,6 @@ public:
 protected:
     explicit QPlatformTheme(QPlatformThemePrivate *priv);
     QScopedPointer<QPlatformThemePrivate> d_ptr;
-private:
-    Q_DISABLE_COPY(QPlatformTheme)
 };
 
 QT_END_NAMESPACE

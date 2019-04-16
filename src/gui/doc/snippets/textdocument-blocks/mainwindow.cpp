@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 #include "xmlwriter.h"
@@ -75,9 +75,9 @@ MainWindow::MainWindow()
     editor = new QTextEdit(this);
 //! [0]
 
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(saveFile()));
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(calendarAction, SIGNAL(triggered()), this, SLOT(insertCalendar()));
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+    connect(quitAction, &QAction::triggered, this, &MainWindow::close);
+    connect(calendarAction, &QAction::triggered, this, &MainWindow::insertCalendar);
 
     setCentralWidget(editor);
     setWindowTitle(tr("Text Document Writer"));

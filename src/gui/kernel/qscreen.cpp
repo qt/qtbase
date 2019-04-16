@@ -106,8 +106,17 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
  */
 QScreen::~QScreen()
 {
-    if (!qApp)
+    // Remove screen
+    const bool wasPrimary = QGuiApplication::primaryScreen() == this;
+    QGuiApplicationPrivate::screen_list.removeOne(this);
+    QGuiApplicationPrivate::resetCachedDevicePixelRatio();
+
+    if (!qGuiApp)
         return;
+
+    QScreen *newPrimaryScreen = QGuiApplication::primaryScreen();
+    if (wasPrimary && newPrimaryScreen)
+        emit qGuiApp->primaryScreenChanged(newPrimaryScreen);
 
     // Allow clients to manage windows that are affected by the screen going
     // away, before we fall back to moving them to the primary screen.
@@ -116,11 +125,8 @@ QScreen::~QScreen()
     if (QGuiApplication::closingDown())
         return;
 
-    QScreen *primaryScreen = QGuiApplication::primaryScreen();
-    if (this == primaryScreen)
-        return;
-
-    bool movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
+    bool movingFromVirtualSibling = newPrimaryScreen
+        && newPrimaryScreen->handle()->virtualSiblings().contains(handle());
 
     // Move any leftover windows to the primary screen
     const auto allWindows = QGuiApplication::allWindows();
@@ -129,7 +135,7 @@ QScreen::~QScreen()
             continue;
 
         const bool wasVisible = window->isVisible();
-        window->setScreen(primaryScreen);
+        window->setScreen(newPrimaryScreen);
 
         // Re-show window if moved from a virtual sibling screen. Otherwise
         // leave it up to the application developer to show the window.
@@ -701,6 +707,11 @@ void QScreenPrivate::updatePrimaryOrientation()
     border of the window. If \a height is negative, the function
     copies everything to the bottom of the window.
 
+    The offset and size arguments are specified in device independent
+    pixels. The returned pixmap may be larger than the requested size
+    when grabbing from a high-DPI screen. Call QPixmap::devicePixelRatio()
+    to determine if this is the case.
+
     The window system identifier (\c WId) can be retrieved using the
     QWidget::winId() function. The rationale for using a window
     identifier and not a QWidget, is to enable grabbing of windows
@@ -748,7 +759,7 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
     QPixmap result =
         platformScreen->grabWindow(window, nativePos.x(), nativePos.y(),
                                    nativeSize.width(), nativeSize.height());
-    result.setDevicePixelRatio(factor);
+    result.setDevicePixelRatio(result.devicePixelRatio() * factor);
     return result;
 }
 

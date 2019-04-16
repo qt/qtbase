@@ -54,7 +54,8 @@
 #include "window.h"
 
 //! [0]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent)
 {
     horizontalSliders = new SlidersGroup(Qt::Horizontal, tr("Horizontal"));
     verticalSliders = new SlidersGroup(Qt::Vertical, tr("Vertical"));
@@ -67,13 +68,13 @@ Window::Window()
 //! [0]
 
 //! [1]
-    connect(horizontalSliders, SIGNAL(valueChanged(int)),
+    connect(horizontalSliders, &SlidersGroup::valueChanged,
 //! [1] //! [2]
-            verticalSliders, SLOT(setValue(int)));
-    connect(verticalSliders, SIGNAL(valueChanged(int)),
-            valueSpinBox, SLOT(setValue(int)));
-    connect(valueSpinBox, SIGNAL(valueChanged(int)),
-            horizontalSliders, SLOT(setValue(int)));
+            verticalSliders, &SlidersGroup::setValue);
+    connect(verticalSliders, &SlidersGroup::valueChanged,
+            valueSpinBox, &QSpinBox::setValue);
+    connect(valueSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            horizontalSliders, &SlidersGroup::setValue);
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(controlsGroup);
@@ -120,25 +121,25 @@ void Window::createControls(const QString &title)
     orientationCombo->addItem(tr("Vertical slider-like widgets"));
 
 //! [6] //! [7]
-    connect(orientationCombo, SIGNAL(activated(int)),
+    connect(orientationCombo, QOverload<int>::of(&QComboBox::activated),
 //! [7] //! [8]
-            stackedWidget, SLOT(setCurrentIndex(int)));
-    connect(minimumSpinBox, SIGNAL(valueChanged(int)),
-            horizontalSliders, SLOT(setMinimum(int)));
-    connect(minimumSpinBox, SIGNAL(valueChanged(int)),
-            verticalSliders, SLOT(setMinimum(int)));
-    connect(maximumSpinBox, SIGNAL(valueChanged(int)),
-            horizontalSliders, SLOT(setMaximum(int)));
-    connect(maximumSpinBox, SIGNAL(valueChanged(int)),
-            verticalSliders, SLOT(setMaximum(int)));
-    connect(invertedAppearance, SIGNAL(toggled(bool)),
-            horizontalSliders, SLOT(invertAppearance(bool)));
-    connect(invertedAppearance, SIGNAL(toggled(bool)),
-            verticalSliders, SLOT(invertAppearance(bool)));
-    connect(invertedKeyBindings, SIGNAL(toggled(bool)),
-            horizontalSliders, SLOT(invertKeyBindings(bool)));
-    connect(invertedKeyBindings, SIGNAL(toggled(bool)),
-            verticalSliders, SLOT(invertKeyBindings(bool)));
+            stackedWidget, &QStackedWidget::setCurrentIndex);
+    connect(minimumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            horizontalSliders, &SlidersGroup::setMinimum);
+    connect(minimumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            verticalSliders, &SlidersGroup::setMinimum);
+    connect(maximumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            horizontalSliders, &SlidersGroup::setMaximum);
+    connect(maximumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            verticalSliders, &SlidersGroup::setMaximum);
+    connect(invertedAppearance, &QCheckBox::toggled,
+            horizontalSliders, &SlidersGroup::invertAppearance);
+    connect(invertedAppearance, &QCheckBox::toggled,
+            verticalSliders, &SlidersGroup::invertAppearance);
+    connect(invertedKeyBindings, &QCheckBox::toggled,
+            horizontalSliders, &SlidersGroup::invertKeyBindings);
+    connect(invertedKeyBindings, &QCheckBox::toggled,
+            verticalSliders, &SlidersGroup::invertKeyBindings);
 
     QGridLayout *controlsLayout = new QGridLayout;
     controlsLayout->addWidget(minimumLabel, 0, 0);

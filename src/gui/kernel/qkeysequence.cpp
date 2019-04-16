@@ -1221,10 +1221,12 @@ QString QKeySequence::encodeString(int key)
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)
 {
     if (!str.isEmpty()) {
-        if (format == QKeySequence::NativeText)
+        if (format == QKeySequence::NativeText) {
+            //: Key separator in shortcut string
             str += QCoreApplication::translate("QShortcut", "+");
-        else
+        } else {
             str += QLatin1Char('+');
+        }
     }
 
     str += theKey;
@@ -1464,7 +1466,7 @@ bool QKeySequence::operator==(const QKeySequence &other) const
     Calculates the hash value of \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QKeySequence &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QKeySequence &key, uint seed) noexcept
 {
     return qHashRange(key.d->key, key.d->key + QKeySequencePrivate::MaxKeyCount, seed);
 }

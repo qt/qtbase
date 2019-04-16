@@ -40,10 +40,14 @@
 #include "qjpeghandler_p.h"
 
 #include <qimage.h>
+#include <qcolorspace.h>
+#include <qcolortransform.h>
+#include <qdebug.h>
 #include <qvariant.h>
 #include <qvector.h>
 #include <qbuffer.h>
 #include <qmath.h>
+#include <private/qicc_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>   // for qt_getImageText
 
@@ -56,13 +60,12 @@
 
 // including jpeglib.h seems to be a little messy
 extern "C" {
-// mingw includes rpcndr.h but does not define boolean
-#if defined(Q_OS_WIN) && defined(Q_CC_GNU)
-#   if defined(__RPCNDR_H__) && !defined(boolean)
-        typedef unsigned char boolean;
-#       define HAVE_BOOLEAN
-#   endif
+// jpeglib.h->jmorecfg.h tries to typedef int boolean; but this conflicts with
+// some Windows headers that may or may not have been included
+#ifdef HAVE_BOOLEAN
+#  undef HAVE_BOOLEAN
 #endif
+#define boolean jboolean
 
 #define XMD_H           // shut JPEGlib up
 #include <jpeglib.h>
@@ -726,6 +729,7 @@ public:
     QRect clipRect;
     QString description;
     QStringList readTexts;
+    QByteArray iccProfile;
 
     struct jpeg_decompress_struct info;
     struct my_jpeg_source_mgr * iod_src;
@@ -888,6 +892,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
         if (!setjmp(err.setjmp_buffer)) {
             jpeg_save_markers(&info, JPEG_COM, 0xFFFF);
             jpeg_save_markers(&info, JPEG_APP0 + 1, 0xFFFF); // Exif uses APP1 marker
+            jpeg_save_markers(&info, JPEG_APP0 + 2, 0xFFFF); // ICC uses APP2 marker
 
             (void) jpeg_read_header(&info, TRUE);
 
@@ -920,6 +925,10 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
                     readTexts.append(value);
                 } else if (marker->marker == JPEG_APP0 + 1) {
                     exifData.append((const char*)marker->data, marker->data_length);
+                } else if (marker->marker == JPEG_APP0 + 2) {
+                    if (marker->data_length > 128 + 4 + 14 && strcmp((const char *)marker->data, "ICC_PROFILE") == 0) {
+                        iccProfile.append((const char*)marker->data + 14, marker->data_length - 14);
+                    }
                 }
             }
 
@@ -955,6 +964,9 @@ bool QJpegHandlerPrivate::read(QImage *image)
             for (int i = 0; i < readTexts.size()-1; i+=2)
                 image->setText(readTexts.at(i), readTexts.at(i+1));
 
+            if (!iccProfile.isEmpty())
+                image->setColorSpace(QColorSpace::fromIccProfile(iccProfile));
+
             state = ReadingEnd;
             return true;
         }
@@ -963,7 +975,6 @@ bool QJpegHandlerPrivate::read(QImage *image)
     }
 
     return false;
-
 }
 
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, const uchar *src, int len);

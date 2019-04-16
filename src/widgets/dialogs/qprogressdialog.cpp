@@ -47,7 +47,6 @@
 #include "qapplication.h"
 #include "qstyle.h"
 #include "qpushbutton.h"
-#include "qcursor.h"
 #include "qtimer.h"
 #include "qelapsedtimer.h"
 #include <private/qdialog_p.h>
@@ -94,9 +93,6 @@ public:
     bool cancellation_flag;
     bool setValue_called;
     QElapsedTimer starttime;
-#ifndef QT_NO_CURSOR
-    QCursor parentCursor;
-#endif
     int showTime;
     bool autoClose;
     bool autoReset;
@@ -397,7 +393,7 @@ void QProgressDialog::setLabelText(const QString &text)
   Sets the cancel button to the push button, \a cancelButton. The
   progress dialog takes ownership of this button which will be deleted
   when necessary, so do not pass the address of an object that is on
-  the stack, i.e. use new() to create the button.  If 0 is passed then
+  the stack, i.e. use new() to create the button.  If \nullptr is passed,
   no cancel button will be shown.
 
   \sa setCancelButtonText()
@@ -597,12 +593,6 @@ void QProgressDialog::setRange(int minimum, int maximum)
 void QProgressDialog::reset()
 {
     Q_D(QProgressDialog);
-#ifndef QT_NO_CURSOR
-    if (value() >= 0) {
-        if (parentWidget())
-            parentWidget()->setCursor(d->parentCursor);
-    }
-#endif
     if (d->autoClose || d->forceHide)
         hide();
     d->bar->reset();

@@ -88,8 +88,6 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
     const QMutexLocker locker(qt_opensslInitMutex);
 
     if (!s_libraryLoaded) {
-        s_libraryLoaded = true;
-
         // Initialize OpenSSL.
         if (q_OPENSSL_init_ssl(0, nullptr) != 1)
             return false;
@@ -105,6 +103,8 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
             qWarning("Random number generator not seeded, disabling SSL support");
             return false;
         }
+
+        s_libraryLoaded = true;
     }
     return true;
 }
@@ -122,21 +122,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 
 #if QT_CONFIG(library)
     //load symbols needed to receive certificates from system store
-#if defined(Q_OS_WIN)
-    HINSTANCE hLib = LoadLibraryW(L"Crypt32");
-    if (hLib) {
-        ptrCertOpenSystemStoreW = reinterpret_cast<PtrCertOpenSystemStoreW>(
-            reinterpret_cast<QFunctionPointer>(GetProcAddress(hLib, "CertOpenSystemStoreW")));
-        ptrCertFindCertificateInStore = reinterpret_cast<PtrCertFindCertificateInStore>(
-            reinterpret_cast<QFunctionPointer>(GetProcAddress(hLib, "CertFindCertificateInStore")));
-        ptrCertCloseStore = reinterpret_cast<PtrCertCloseStore>(
-            reinterpret_cast<QFunctionPointer>(GetProcAddress(hLib, "CertCloseStore")));
-        if (!ptrCertOpenSystemStoreW || !ptrCertFindCertificateInStore || !ptrCertCloseStore)
-            qCWarning(lcSsl, "could not resolve symbols in crypt32 library"); // should never happen
-    } else {
-        qCWarning(lcSsl, "could not load crypt32 library"); // should never happen
-    }
-#elif defined(Q_OS_QNX)
+#if defined(Q_OS_QNX)
     s_loadRootCertsOnDemand = true;
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
     // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)

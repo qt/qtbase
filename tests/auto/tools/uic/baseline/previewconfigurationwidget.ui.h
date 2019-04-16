@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'previewconfigurationwidget.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -108,14 +108,14 @@ public:
 
     void retranslateUi(QGroupBox *PreviewConfigurationWidget)
     {
-        PreviewConfigurationWidget->setWindowTitle(QApplication::translate("PreviewConfigurationWidget", "Form", nullptr));
-        PreviewConfigurationWidget->setTitle(QApplication::translate("PreviewConfigurationWidget", "Print/Preview Configuration", nullptr));
-        m_styleLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style", nullptr));
-        m_appStyleSheetLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style sheet", nullptr));
-        m_appStyleSheetChangeButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", nullptr));
-        m_appStyleSheetClearButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", nullptr));
-        m_skinLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Device skin", nullptr));
-        m_skinRemoveButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", nullptr));
+        PreviewConfigurationWidget->setWindowTitle(QCoreApplication::translate("PreviewConfigurationWidget", "Form", nullptr));
+        PreviewConfigurationWidget->setTitle(QCoreApplication::translate("PreviewConfigurationWidget", "Print/Preview Configuration", nullptr));
+        m_styleLabel->setText(QCoreApplication::translate("PreviewConfigurationWidget", "Style", nullptr));
+        m_appStyleSheetLabel->setText(QCoreApplication::translate("PreviewConfigurationWidget", "Style sheet", nullptr));
+        m_appStyleSheetChangeButton->setText(QCoreApplication::translate("PreviewConfigurationWidget", "...", nullptr));
+        m_appStyleSheetClearButton->setText(QCoreApplication::translate("PreviewConfigurationWidget", "...", nullptr));
+        m_skinLabel->setText(QCoreApplication::translate("PreviewConfigurationWidget", "Device skin", nullptr));
+        m_skinRemoveButton->setText(QCoreApplication::translate("PreviewConfigurationWidget", "...", nullptr));
     } // retranslateUi
 
 };

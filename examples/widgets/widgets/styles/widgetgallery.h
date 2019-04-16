@@ -78,7 +78,7 @@ class WidgetGallery : public QDialog
     Q_OBJECT
 
 public:
-    WidgetGallery(QWidget *parent = 0);
+    WidgetGallery(QWidget *parent = nullptr);
 
 private slots:
     void changeStyle(const QString &styleName);

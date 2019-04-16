@@ -69,6 +69,7 @@ public slots:
     void selectionOrderTest();
 
 private slots:
+    void initTestCase() { QApplication::setKeyboardInputInterval(100); }
     void getSetCheck();
 
     // one test per QTreeView property
@@ -112,7 +113,7 @@ private slots:
     void expandAndCollapse();
     void expandAndCollapseAll();
     void expandWithNoChildren();
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void quickExpandCollapse();
 #endif
     void keyboardNavigation();
@@ -199,6 +200,7 @@ private slots:
     void taskQTBUG_45697_crash();
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_8376();
+    void taskQTBUG_61476();
     void testInitialFocus();
 };
 
@@ -1647,50 +1649,96 @@ void tst_QTreeView::expandAndCollapse()
     }
 }
 
+static void checkExpandState(const QAbstractItemModel &model, const QTreeView &view,
+                             const QModelIndex &startIdx, bool bIsExpanded, int *count)
+{
+    *count = 0;
+    QStack<QModelIndex> parents;
+    parents.push(startIdx);
+    if (startIdx.isValid()) {
+        QCOMPARE(view.isExpanded(startIdx), bIsExpanded);
+        *count += 1;
+    }
+    while (!parents.isEmpty()) {
+        const QModelIndex p = parents.pop();
+        const int rows = model.rowCount(p);
+        for (int r = 0; r < rows; ++r) {
+            const QModelIndex c = model.index(r, 0, p);
+            QCOMPARE(view.isExpanded(c), bIsExpanded);
+            parents.push(c);
+        }
+        *count += rows;
+    }
+}
+
 void tst_QTreeView::expandAndCollapseAll()
 {
-    QtTestModel model(3, 2);
-    model.levels = 2;
+    QStandardItemModel model;
+    // QtTestModel has a broken parent/child handling which will break the test
+    for (int i1 = 0; i1 < 3; ++i1) {
+        QStandardItem *s1 = new QStandardItem;
+        s1->setText(QString::number(i1));
+        model.appendRow(s1);
+        for (int i2 = 0; i2 < 3; ++i2) {
+            QStandardItem *s2 = new QStandardItem;
+            s2->setText(QStringLiteral("%1 - %2").arg(i1).arg(i2));
+            s1->appendRow(s2);
+            for (int i3 = 0; i3 < 3; ++i3) {
+                QStandardItem *s3 = new QStandardItem;
+                s3->setText(QStringLiteral("%1 - %2 - %3").arg(i1).arg(i2).arg(i3));
+                s2->appendRow(s3);
+            }
+        }
+    }
     QTreeView view;
     view.setUniformRowHeights(true);
     view.setModel(&model);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QSignalSpy expandedSpy(&view, SIGNAL(expanded(QModelIndex)));
-    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(QModelIndex)));
+    QSignalSpy expandedSpy(&view, &QTreeView::expanded);
+    QSignalSpy collapsedSpy(&view, &QTreeView::collapsed);
+    int count;
 
     view.expandAll();
-    view.show();
-
+    checkExpandState(model, view, QModelIndex(), true, &count);
     QCOMPARE(collapsedSpy.count(), 0);
+    QCOMPARE(expandedSpy.count(),  39); // == 3 (first) + 9 (second) + 27 (third level)
+    QCOMPARE(count, 39);
 
-    QStack<QModelIndex> parents;
-    parents.push(QModelIndex());
-    int count = 0;
-    while (!parents.isEmpty()) {
-        QModelIndex p = parents.pop();
-        int rows = model.rowCount(p);
-        for (int r = 0; r < rows; ++r)
-            QVERIFY(view.isExpanded(model.index(r, 0, p)));
-        count += rows;
-        for (int r = 0; r < rows; ++r)
-            parents.push(model.index(r, 0, p));
-    }
-    QCOMPARE(expandedSpy.count(), 12); // == (3+1)*(2+1) from QtTestModel model(3, 2);
-
+    collapsedSpy.clear();
+    expandedSpy.clear();
     view.collapseAll();
+    checkExpandState(model, view, QModelIndex(), false, &count);
+    QCOMPARE(collapsedSpy.count(), 39);
+    QCOMPARE(expandedSpy.count(), 0);
+    QCOMPARE(count, 39);
 
-    parents.push(QModelIndex());
-    count = 0;
-    while (!parents.isEmpty()) {
-        QModelIndex p = parents.pop();
-        int rows = model.rowCount(p);
-        for (int r = 0; r < rows; ++r)
-            QVERIFY(!view.isExpanded(model.index(r, 0, p)));
-        count += rows;
-        for (int r = 0; r < rows; ++r)
-            parents.push(model.index(r, 0, p));
-    }
-    QCOMPARE(collapsedSpy.count(), 12);
+    collapsedSpy.clear();
+    expandedSpy.clear();
+    view.expandRecursively(model.index(0, 0));
+    QCOMPARE(expandedSpy.count(), 13); // 1 + 3 + 9
+
+    checkExpandState(model, view, model.index(0, 0), true, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(1, 0), false, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(2, 0), false, &count);
+    QCOMPARE(count, 13);
+
+    expandedSpy.clear();
+    view.collapseAll();
+    view.expandRecursively(model.index(0, 0), 1);
+    QCOMPARE(expandedSpy.count(), 4); // 1 + 3
+    view.expandRecursively(model.index(0, 0), 2);
+    QCOMPARE(expandedSpy.count(), 13); // (1 + 3) + 9
+
+    checkExpandState(model, view, model.index(0, 0), true, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(1, 0), false, &count);
+    QCOMPARE(count, 13);
+    checkExpandState(model, view, model.index(2, 0), false, &count);
+    QCOMPARE(count, 13);
 }
 
 void tst_QTreeView::expandWithNoChildren()
@@ -1749,7 +1797,7 @@ void tst_QTreeView::keyboardNavigation()
         case Qt::Key_Down:
             if (view.isExpanded(index)) {
                 row = 0;
-                index = index.child(row, column);
+                index = model.index(row, column, index);
             } else {
                 row = qMin(rows - 1, row + 1);
                 index = index.sibling(row, column);
@@ -2746,7 +2794,7 @@ void tst_QTreeView::sortByColumn()
 
     view.setSortingEnabled(sortingEnabled);
     view.setModel(&model);
-    view.sortByColumn(1);
+    view.sortByColumn(1, Qt::DescendingOrder);
     QCOMPARE(view.header()->sortIndicatorSection(), 1);
     QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
     QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
@@ -3056,7 +3104,7 @@ void tst_QTreeView::evilModel()
     view.resizeColumnToContents(1);
     model.change();
 
-    view.sortByColumn(1);
+    view.sortByColumn(1, Qt::DescendingOrder);
     model.change();
 
     view.selectAll();
@@ -3900,7 +3948,7 @@ void tst_QTreeView::task254234_proxySort()
     model.setItem(2,1,new QStandardItem("h"));
     model.setItem(3,1,new QStandardItem("f"));
 
-    view.sortByColumn(1);
+    view.sortByColumn(1, Qt::DescendingOrder);
     view.setSortingEnabled(true);
 
     QSortFilterProxyModel proxy;
@@ -4088,6 +4136,30 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
     QCOMPARE(view.currentIndex(), model.index(12, 0));
     QTest::keyClick(view.viewport(), Qt::Key_Up);
     QCOMPARE(view.currentIndex(), model.index(6, 0));
+    // QTBUG-44746 - when first/last item is disabled,
+    // Key_PageUp/Down/Home/End will not work as expected.
+    model.item(0)->setEnabled(false);
+    model.item(1)->setEnabled(true);
+    model.item(2)->setEnabled(true);
+    model.item(model.rowCount() - 1)->setEnabled(false);
+    model.item(model.rowCount() - 2)->setEnabled(true);
+    model.item(model.rowCount() - 3)->setEnabled(true);
+    // PageUp
+    view.setCurrentIndex(model.index(2, 0));
+    QCOMPARE(view.currentIndex(), model.index(2, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_PageUp);
+    QCOMPARE(view.currentIndex(), model.index(1, 0));
+    // PageDown
+    view.setCurrentIndex(model.index(model.rowCount() - 3, 0));
+    QCOMPARE(view.currentIndex(), model.index(model.rowCount() - 3, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_PageDown);
+    QCOMPARE(view.currentIndex(), model.index(model.rowCount() - 2, 0));
+    // Key_Home
+    QTest::keyClick(view.viewport(), Qt::Key_Home);
+    QCOMPARE(view.currentIndex(), model.index(1, 0));
+    // Key_End
+    QTest::keyClick(view.viewport(), Qt::Key_End);
+    QCOMPARE(view.currentIndex(), model.index(model.rowCount() - 2, 0));
 }
 
 class RemoveColumnOne : public QSortFilterProxyModel
@@ -4419,7 +4491,7 @@ void tst_QTreeView::testInitialFocus()
     QCOMPARE(treeWidget.currentIndex().column(), 2);
 }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 void tst_QTreeView::quickExpandCollapse()
 {
     //this unit tests makes sure the state after the animation is restored correctly
@@ -4451,7 +4523,7 @@ void tst_QTreeView::quickExpandCollapse()
 
     QCOMPARE(tree.state(), initialState);
 }
-#endif
+#endif // animation
 
 void tst_QTreeView::taskQTBUG_37813_crash()
 {
@@ -4733,6 +4805,59 @@ void tst_QTreeView::taskQTBUG_8376()
     tv.showColumn(1);
     const int rowHeightLvl1Visible2 = tv.rowHeight(idxLvl1);
     QCOMPARE(rowHeightLvl1Visible, rowHeightLvl1Visible2);
+}
+
+void tst_QTreeView::taskQTBUG_61476()
+{
+    // This checks that if a user clicks on an item to collapse it that it
+    // does not edit (in this case change the check state) the item that is
+    // now over the mouse just because it got a release event
+    QTreeView tv;
+    QStandardItemModel model;
+    QStandardItem *lastTopLevel = nullptr;
+    {
+        for (int i = 0; i < 4; ++i) {
+            QStandardItem *item = new QStandardItem(QLatin1String("Row Item"));
+            item->setCheckable(true);
+            item->setCheckState(Qt::Checked);
+            model.appendRow(item);
+            lastTopLevel = item;
+            for (int j = 0; j < 2; ++j) {
+                QStandardItem *childItem = new QStandardItem(QLatin1String("Child row Item"));
+                childItem->setCheckable(true);
+                childItem->setCheckState(Qt::Checked);
+                item->appendRow(childItem);
+                QStandardItem *grandChild = new QStandardItem(QLatin1String("Grand child row Item"));
+                grandChild->setCheckable(true);
+                grandChild->setCheckState(Qt::Checked);
+                childItem->appendRow(grandChild);
+            }
+        }
+    }
+    tv.setModel(&model);
+    tv.expandAll();
+    // We need it to be this size so that the effect of the collapsing will
+    // cause the parent item to move to be under the cursor
+    tv.resize(200, 200);
+    tv.show();
+    QVERIFY(QTest::qWaitForWindowActive(&tv));
+    tv.verticalScrollBar()->setValue(tv.verticalScrollBar()->maximum());
+
+    // We want to press specifically right around where a checkbox for the
+    // parent item could be when collapsing
+    QTreeViewPrivate *priv = static_cast<QTreeViewPrivate*>(qt_widget_private(&tv));
+    const QModelIndex mi = lastTopLevel->child(0)->index();
+    const QRect rect = priv->itemDecorationRect(mi);
+    const QPoint pos = rect.center();
+
+    QTest::mousePress(tv.viewport(), Qt::LeftButton, 0, pos);
+    if (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, &tv) ==
+        QEvent::MouseButtonPress)
+        QTRY_VERIFY(!tv.isExpanded(mi));
+
+    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, 0, pos);
+    QTRY_VERIFY(!tv.isExpanded(mi));
+    QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
 }
 
 QTEST_MAIN(tst_QTreeView)

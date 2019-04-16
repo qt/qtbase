@@ -101,10 +101,7 @@ int main(int argc, char *argv[])
     tableWidget.setEditTriggers(QAbstractItemView::DoubleClicked
                                 | QAbstractItemView::SelectedClicked);
     tableWidget.setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    QStringList headerLabels;
-    headerLabels << "Title" << "Genre" << "Artist" << "Rating";
-    tableWidget.setHorizontalHeaderLabels(headerLabels);
+    tableWidget.setHorizontalHeaderLabels({"Title", "Genre", "Artist", "Rating"});
 
     populateTableWidget(&tableWidget);
 

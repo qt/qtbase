@@ -58,6 +58,8 @@ class QUrl;
 class Q_GUI_EXPORT QPlatformServices
 {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformServices)
+
     QPlatformServices();
     virtual ~QPlatformServices() { }
 

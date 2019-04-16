@@ -27,6 +27,10 @@
 #define XCB_RENDERUTIL
 #include <xcb/render.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum xcb_pict_format_t {
 	XCB_PICT_FORMAT_ID         = (1 << 0),
 	XCB_PICT_FORMAT_TYPE       = (1 << 1),
@@ -58,7 +62,7 @@ xcb_render_util_find_visual_format (const xcb_render_query_pict_formats_reply_t 
 xcb_render_pictforminfo_t *
 xcb_render_util_find_format (const xcb_render_query_pict_formats_reply_t	*formats,
 			 unsigned long				mask,
-			 const xcb_render_pictforminfo_t		*template,
+			 const xcb_render_pictforminfo_t		*ptemplate,
 			 int					count);
 
 xcb_render_pictforminfo_t *
@@ -138,5 +142,9 @@ xcb_render_util_composite_text_checked (
 void
 xcb_render_util_composite_text_free (
 	xcb_render_util_composite_text_stream_t *stream );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* XCB_RENDERUTIL */

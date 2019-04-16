@@ -73,7 +73,7 @@ public:
 
 private:
     struct DeviceState {
-        DeviceState() : m_touchDevice(0) { }
+        DeviceState() : m_touchDevice(nullptr) { }
         QWindowSystemInterface::TouchPoint *point(int32_t slot);
         QList<QWindowSystemInterface::TouchPoint> m_points;
         QTouchDevice *m_touchDevice;

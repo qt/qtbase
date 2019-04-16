@@ -59,17 +59,29 @@ class Q_GUI_EXPORT QFontMetrics
 {
 public:
     explicit QFontMetrics(const QFont &);
-    QFontMetrics(const QFont &, QPaintDevice *pd);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QFontMetrics(const QFont &font, QPaintDevice *pd);
+#ifndef Q_QDOC
+    // the template is necessary to make QFontMetrics(font,nullptr) and QFontMetrics(font,NULL)
+    // not ambiguous. Implementation detail that should not be documented.
+    template<char = 0>
+#endif
+    QFontMetrics(const QFont &font, const QPaintDevice *pd)
+        : QFontMetrics(font, const_cast<QPaintDevice*>(pd))
+    {}
+#else
+    QFontMetrics(const QFont &font, const QPaintDevice *pd);
+#endif
     QFontMetrics(const QFontMetrics &);
     ~QFontMetrics();
 
     QFontMetrics &operator=(const QFontMetrics &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QFontMetrics &operator=(QFontMetrics &&other) Q_DECL_NOEXCEPT
+    inline QFontMetrics &operator=(QFontMetrics &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
 
-    void swap(QFontMetrics &other) Q_DECL_NOEXCEPT
+    void swap(QFontMetrics &other) noexcept
     { qSwap(d, other.d); }
 
     int ascent() const;
@@ -92,8 +104,11 @@ public:
     int rightBearing(QChar) const;
 
 #if QT_DEPRECATED_SINCE(5, 11)
+    QT_DEPRECATED_X("Use QFontMetrics::horizontalAdvance")
     int width(const QString &, int len = -1) const;
+    QT_DEPRECATED_X("Use QFontMetrics::horizontalAdvance")
     int width(const QString &, int len, int flags) const;
+    QT_DEPRECATED_X("Use QFontMetrics::horizontalAdvance")
     int width(QChar) const;
 #endif
 
@@ -137,8 +152,20 @@ Q_DECLARE_SHARED(QFontMetrics)
 class Q_GUI_EXPORT QFontMetricsF
 {
 public:
-    explicit QFontMetricsF(const QFont &);
-    QFontMetricsF(const QFont &, QPaintDevice *pd);
+    explicit QFontMetricsF(const QFont &font);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QFontMetricsF(const QFont &font, QPaintDevice *pd);
+#ifndef Q_QDOC
+    // the template is necessary to make QFontMetrics(font,nullptr) and QFontMetrics(font,NULL)
+    // not ambiguous. Implementation detail that should not be documented.
+    template<char = 0>
+#endif
+    QFontMetricsF(const QFont &font, const QPaintDevice *pd)
+        : QFontMetricsF(font, const_cast<QPaintDevice*>(pd))
+    {}
+#else
+    QFontMetricsF(const QFont &font, const QPaintDevice *pd);
+#endif
     QFontMetricsF(const QFontMetrics &);
     QFontMetricsF(const QFontMetricsF &);
     ~QFontMetricsF();

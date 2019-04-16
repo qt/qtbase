@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 42 font parser (body).                                          */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  Roberto Alameda.                                                       */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -575,6 +575,9 @@
 
     while ( parser->root.cursor < limit )
     {
+      FT_ULong  size;
+
+
       cur = parser->root.cursor;
 
       if ( *cur == ']' )
@@ -637,7 +640,7 @@
 
         string_buf = parser->root.cursor + 1;   /* one space after `RD' */
 
-        if ( (FT_ULong)( limit - parser->root.cursor ) < string_size )
+        if ( (FT_ULong)( limit - parser->root.cursor ) <= string_size )
         {
           FT_ERROR(( "t42_parse_sfnts: too much binary data\n" ));
           error = FT_THROW( Invalid_File_Format );
@@ -666,6 +669,11 @@
         goto Fail;
       }
 
+      /* The whole TTF is now loaded into `string_buf'.  We are */
+      /* checking its contents while copying it to `ttf_data'.  */
+
+      size = (FT_ULong)( limit - parser->root.cursor );
+
       for ( n = 0; n < string_size; n++ )
       {
         switch ( status )
@@ -683,7 +691,7 @@
             status         = BEFORE_TABLE_DIR;
             face->ttf_size = 12 + 16 * num_tables;
 
-            if ( (FT_Long)( limit - parser->root.cursor ) < face->ttf_size )
+            if ( (FT_Long)size < face->ttf_size )
             {
               FT_ERROR(( "t42_parse_sfnts: invalid data in sfnts array\n" ));
               error = FT_THROW( Invalid_File_Format );
@@ -714,6 +722,14 @@
 
 
               len = FT_PEEK_ULONG( p );
+              if ( len > size                               ||
+                   face->ttf_size > (FT_Long)( size - len ) )
+              {
+                FT_ERROR(( "t42_parse_sfnts:"
+                           " invalid data in sfnts array\n" ));
+                error = FT_THROW( Invalid_File_Format );
+                goto Fail;
+              }
 
               /* Pad to a 4-byte boundary length */
               face->ttf_size += (FT_Long)( ( len + 3 ) & ~3U );
@@ -721,7 +737,6 @@
 
             status = OTHER_TABLES;
 
-            /* there are no more than 256 tables, so no size check here */
             if ( FT_REALLOC( face->ttf_data, 12 + 16 * num_tables,
                              face->ttf_size + 1 ) )
               goto Fail;
@@ -795,6 +810,17 @@
         error = FT_THROW( Invalid_File_Format );
         goto Fail;
       }
+
+      /* we certainly need more than 4 bytes per glyph */
+      if ( loader->num_glyphs > ( limit - parser->root.cursor ) >> 2 )
+      {
+        FT_TRACE0(( "t42_parse_charstrings: adjusting number of glyphs"
+                    " (from %d to %d)\n",
+                    loader->num_glyphs,
+                    ( limit - parser->root.cursor ) >> 2 ));
+        loader->num_glyphs = ( limit - parser->root.cursor ) >> 2;
+      }
+
     }
     else if ( *parser->root.cursor == '<' )
     {
@@ -873,8 +899,13 @@
 
     for (;;)
     {
-      /* The format is simple:                   */
-      /*   `/glyphname' + index [+ def]          */
+      /* We support two formats.                     */
+      /*                                             */
+      /*   `/glyphname' + index [+ `def']            */
+      /*   `(glyphname)' [+ `cvn'] + index [+ `def'] */
+      /*                                             */
+      /* The latter format gets created by the       */
+      /* LilyPond typesetting program.               */
 
       T1_Skip_Spaces( parser );
 
@@ -902,12 +933,13 @@
       if ( parser->root.error )
         return;
 
-      if ( *cur == '/' )
+      if ( *cur == '/' || *cur == '(' )
       {
         FT_UInt  len;
+        FT_Bool  have_literal = FT_BOOL( *cur == '(' );
 
 
-        if ( cur + 2 >= limit )
+        if ( cur + ( have_literal ? 3 : 2 ) >= limit )
         {
           FT_ERROR(( "t42_parse_charstrings: out of bounds\n" ));
           error = FT_THROW( Invalid_File_Format );
@@ -916,6 +948,8 @@
 
         cur++;                              /* skip `/' */
         len = (FT_UInt)( parser->root.cursor - cur );
+        if ( have_literal )
+          len--;
 
         error = T1_Add_Table( name_table, n, cur, len + 1 );
         if ( error )
@@ -934,6 +968,9 @@
         }
 
         T1_Skip_Spaces( parser );
+
+        if ( have_literal )
+          T1_Skip_PS_Token( parser );
 
         cur = parser->root.cursor;
 
@@ -1231,7 +1268,7 @@
   {
     FT_UNUSED( face );
 
-    FT_MEM_ZERO( loader, sizeof ( *loader ) );
+    FT_ZERO( loader );
     loader->num_glyphs = 0;
     loader->num_chars  = 0;
 

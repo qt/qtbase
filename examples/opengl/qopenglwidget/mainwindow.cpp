@@ -176,7 +176,7 @@ void MainWindow::timerUsageChanged(bool enabled)
         m_timer->start();
     } else {
         m_timer->stop();
-        foreach (QOpenGLWidget *w, m_glWidgets)
+        for (QOpenGLWidget *w : qAsConst(m_glWidgets))
             w->update();
     }
 }

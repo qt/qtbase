@@ -42,10 +42,9 @@
 
 #include <QtCore/qobject.h>
 
+QT_REQUIRE_CONFIG(animation);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ANIMATION
 
 class QAnimationGroup;
 class QSequentialAnimationGroup;
@@ -148,9 +147,10 @@ public:
 
     virtual qint64 elapsed() const;
 
-    // ### Qt6: Remove these two functions
-    void setStartTime(qint64 startTime);
-    qint64 startTime() const;
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED void setStartTime(qint64 startTime);
+    QT_DEPRECATED qint64 startTime() const;
+#endif
 
 Q_SIGNALS:
     void started();
@@ -168,11 +168,6 @@ private:
     friend class QUnifiedTimer;
 
 };
-
-
-
-
-#endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

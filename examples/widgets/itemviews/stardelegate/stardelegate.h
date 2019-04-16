@@ -57,9 +57,8 @@
 class StarDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
-
 public:
-    StarDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
+    using QStyledItemDelegate::QStyledItemDelegate;
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;

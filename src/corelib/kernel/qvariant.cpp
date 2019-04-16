@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
@@ -1052,11 +1052,13 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         return false;
 
 #ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(regularexpression)
     case QMetaType::QRegularExpression:
         if (d->type != QMetaType::QCborValue || !v_cast<QCborValue>(d)->isRegularExpression())
             return false;
         *static_cast<QRegularExpression *>(result) = v_cast<QCborValue>(d)->toRegularExpression();
         break;
+#endif
     case QMetaType::QJsonValue:
         switch (d->type) {
         case QMetaType::Nullptr:
@@ -1232,9 +1234,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Url:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QUrl>(d));
             break;
+#if QT_CONFIG(regularexpression)
         case QVariant::RegularExpression:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QRegularExpression>(d));
             break;
+#endif
         case QVariant::Uuid:
             *static_cast<QCborValue *>(result) = QCborValue(*v_cast<QUuid>(d));
             break;
@@ -1458,6 +1462,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
     if (size <= sizeof(QVariant::Private::Data)
             && (type.flags() & (QMetaType::MovableType | QMetaType::IsEnumeration))) {
         type.construct(&d->data.ptr, copy);
+        d->is_null = d->data.ptr == nullptr;
         d->is_shared = false;
     } else {
         // Private::Data contains long long, and long double is the biggest standard type.
@@ -1468,6 +1473,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         void *data = operator new(offset + size);
         void *ptr = static_cast<char *>(data) + offset;
         type.construct(ptr, copy);
+        d->is_null = ptr == nullptr;
         d->is_shared = true;
         d->data.shared = new (data) QVariant::PrivateShared(ptr);
     }
@@ -1764,7 +1770,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \fn QVariant::QVariant(int typeId, const void *copy)
 
     Constructs variant of type \a typeId, and initializes with
-    \a copy if \a copy is not 0.
+    \a copy if \a copy is not \nullptr.
 
     Note that you have to pass the address of the variable you want stored.
 
@@ -1793,7 +1799,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \internal
 
     Constructs a variant private of type \a type, and initializes with \a copy if
-    \a copy is not 0.
+    \a copy is not \nullptr.
 */
 
 void QVariant::create(int type, const void *copy)
@@ -3523,13 +3529,19 @@ bool QVariant::canConvert(int targetTypeId) const
     }
 
     // TODO Reimplement this function, currently it works but it is a historical mess.
-    uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
+    uint currentType = d.type;
     if (currentType == QMetaType::SChar || currentType == QMetaType::Char)
         currentType = QMetaType::UInt;
     if (targetTypeId == QMetaType::SChar || currentType == QMetaType::Char)
         targetTypeId = QMetaType::UInt;
-    if (uint(targetTypeId) == uint(QMetaType::Float)) targetTypeId = QVariant::Double;
-
+    if (currentType == QMetaType::Short || currentType == QMetaType::UShort)
+        currentType = QMetaType::Int;
+    if (targetTypeId == QMetaType::Short || currentType == QMetaType::UShort)
+        targetTypeId = QMetaType::Int;
+    if (currentType == QMetaType::Float)
+        currentType = QMetaType::Double;
+    if (targetTypeId == QMetaType::Float)
+        targetTypeId = QMetaType::Double;
 
     if (currentType == uint(targetTypeId))
         return true;
@@ -3992,8 +4004,8 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
         return 0;
 
     // only do fuzzy comparisons for finite, non-zero numbers
-    int c1 = std::fpclassify(r1);
-    int c2 = std::fpclassify(r2);
+    int c1 = qFpClassify(r1);
+    int c2 = qFpClassify(r2);
     if ((c1 == FP_NORMAL || c1 == FP_SUBNORMAL) && (c2 == FP_NORMAL || c2 == FP_SUBNORMAL)) {
         if (qFuzzyCompare(r1, r2))
             return 0;
@@ -4270,6 +4282,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa fromValue()
 */
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
     \fn template<typename T> QVariant qVariantFromValue(const T &value)
     \relates QVariant
@@ -4307,6 +4320,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa QVariant::setValue()
 */
+#endif
 
 /*!
     \fn template<typename T> T qvariant_cast(const QVariant &value)

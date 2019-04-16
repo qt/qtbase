@@ -46,15 +46,14 @@
 
 QT_BEGIN_NAMESPACE
 
-/*! \fn bool qWaitForWindowActive(QWidget *widget, int timeout)
-    \relates QTest
+/*!
     \since 5.0
 
     Waits for \a timeout milliseconds or until the \a widget's window is active.
 
     Returns \c true if \c widget's window is active within \a timeout milliseconds, otherwise returns \c false.
 
-    \sa QTest::qWaitForWindowExposed(), QWidget::isActiveWindow()
+    \sa qWaitForWindowExposed(), QWidget::isActiveWindow()
 */
 Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowActive(QWidget *widget, int timeout)
 {
@@ -63,8 +62,7 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowActive(QWidget *wid
     return false;
 }
 
-/*! \fn bool qWaitForWindowExposed(QWidget *widget, int timeout)
-    \relates QTest
+/*!
     \since 5.0
 
     Waits for \a timeout milliseconds or until the \a widget's window is exposed.
@@ -80,7 +78,7 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowActive(QWidget *wid
     A specific configuration where this happens is when using QGLWidget as a viewport widget on macOS:
     The viewport widget gets the expose event, not the parent widget.
 
-    \sa QTest::qWaitForWindowActive()
+    \sa qWaitForWindowActive()
 */
 Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowExposed(QWidget *widget, int timeout)
 {
@@ -89,10 +87,11 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowExposed(QWidget *wi
     return false;
 }
 
-/*! \fn bool qWaitForWindowShown(QWidget *widget, int timeout)
-    \relates QTest
+/*! \fn bool QTest::qWaitForWindowShown(QWidget *widget, int timeout)
     \since 5.0
     \deprecated
+
+    Use qWaitForWindowExposed() instead.
 
     Waits for \a timeout milliseconds or until the \a widget's window is exposed.
     Returns \c true if \c widget's window is exposed within \a timeout milliseconds, otherwise returns \c false.
@@ -107,7 +106,7 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowExposed(QWidget *wi
         QTest::qWaitForWindowShown(&widget);
     \endcode
 
-    \sa QTest::qWaitForWindowActive(), QTest::qWaitForWindowExposed()
+    \sa qWaitForWindowActive(), qWaitForWindowExposed()
 */
 
 QT_END_NAMESPACE

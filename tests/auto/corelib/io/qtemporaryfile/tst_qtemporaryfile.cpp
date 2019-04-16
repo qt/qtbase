@@ -215,7 +215,7 @@ void tst_QTemporaryFile::fileTemplate()
     if (!fileTemplate.isEmpty())
         file.setFileTemplate(fileTemplate);
 
-    QCOMPARE(file.open(), true);
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QString fileName = QFileInfo(file).fileName();
     if (prefix.length())
@@ -376,7 +376,7 @@ void tst_QTemporaryFile::io()
     before.setSecsSinceEpoch(before.toSecsSinceEpoch());
 
     QVERIFY(file.open());
-    QVERIFY(file.readLink().isEmpty()); // it's not a link!
+    QVERIFY(file.symLinkTarget().isEmpty()); // it's not a link!
     QFile::Permissions perm = file.permissions();
     QVERIFY(perm & QFile::ReadOwner);
     QVERIFY(file.setPermissions(perm));

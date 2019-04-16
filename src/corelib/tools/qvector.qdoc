@@ -263,6 +263,17 @@
     \since 5.2
 */
 
+/*!
+    \fn template <typename T> QVector<T> &QVector<T>::operator=(std::initializer_list<T> args)
+
+    Assigns the collection of values in \a args to this QVector instance.
+
+    This operator is only enabled if the compiler supports C++11 initializer
+    lists.
+
+    \since 5.14
+*/
+
 /*! \fn template <typename T> void QVector<T>::swap(QVector<T> &other)
     \since 4.8
 

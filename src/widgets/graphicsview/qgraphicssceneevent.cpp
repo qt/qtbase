@@ -319,8 +319,8 @@ QGraphicsSceneEvent::~QGraphicsSceneEvent()
 }
 
 /*!
-    Returns the widget where the event originated, or 0 if the event
-    originates from another application.
+    Returns the widget where the event originated, or \nullptr if the
+    event originates from another application.
 */
 QWidget *QGraphicsSceneEvent::widget() const
 {

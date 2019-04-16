@@ -1,0 +1,4 @@
+# See qtbase/src/testlib/qtestblacklist.cpp for format
+# Incidental test: exercise more of the blacklisting code
+[fetch:no-such-dataset]
+*

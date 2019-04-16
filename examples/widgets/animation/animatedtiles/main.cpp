@@ -69,7 +69,7 @@ class Button : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    Button(const QPixmap &pixmap, QGraphicsItem *parent = 0)
+    Button(const QPixmap &pixmap, QGraphicsItem *parent = nullptr)
         : QGraphicsWidget(parent), _pix(pixmap)
     {
         setAcceptHoverEvents(true);

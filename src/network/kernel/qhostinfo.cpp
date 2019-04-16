@@ -64,8 +64,8 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 namespace {
 struct ToBeLookedUpEquals {
     typedef bool result_type;
-    explicit ToBeLookedUpEquals(const QString &toBeLookedUp) Q_DECL_NOTHROW : m_toBeLookedUp(toBeLookedUp) {}
-    result_type operator()(QHostInfoRunnable* lookup) const Q_DECL_NOTHROW
+    explicit ToBeLookedUpEquals(const QString &toBeLookedUp) noexcept : m_toBeLookedUp(toBeLookedUp) {}
+    result_type operator()(QHostInfoRunnable* lookup) const noexcept
     {
         return m_toBeLookedUp == lookup->toBeLookedUp;
     }
@@ -300,25 +300,6 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 */
 
 /*!
-    \fn template<typename PointerToMemberFunction> int QHostInfo::lookupHost(const QString &name, const QObject *receiver, PointerToMemberFunction function)
-
-    \since 5.9
-
-    \overload
-
-    Looks up the IP address(es) associated with host name \a name, and
-    returns an ID for the lookup. When the result of the lookup is
-    ready, the slot or signal \a function in \a receiver is called with
-    a QHostInfo argument. The QHostInfo object can then be inspected
-    to get the results of the lookup.
-
-    \note There is no guarantee on the order the signals will be emitted
-    if you start multiple requests with lookupHost().
-
-    \sa abortHostLookup(), addresses(), error(), fromName()
-*/
-
-/*!
     \fn template<typename Functor> int QHostInfo::lookupHost(const QString &name, Functor functor)
 
     \since 5.9
@@ -353,6 +334,16 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     \a functor will not be called. The \a functor will be run in the
     thread of \a context. The context's thread must have a running Qt
     event loop.
+
+    Here is an alternative signature for the function:
+    \code
+    lookupHost(const QString &name, const QObject *receiver, PointerToMemberFunction function)
+    \endcode
+
+    In this case, when the result of the lookup is ready, the slot or
+    signal \c{function} in \c{receiver} is called with a QHostInfo
+    argument. The QHostInfo object can then be inspected to get the
+    results of the lookup.
 
     \note There is no guarantee on the order the signals will be emitted
     if you start multiple requests with lookupHost().

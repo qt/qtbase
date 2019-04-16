@@ -69,6 +69,11 @@ void QSslKeyPrivate::clear(bool deep)
             q_DSA_free(dsa);
         dsa = nullptr;
     }
+    if (algorithm == QSsl::Dh && dh) {
+        if (deep)
+            q_DH_free(dh);
+        dh = nullptr;
+    }
 #ifndef OPENSSL_NO_EC
     if (algorithm == QSsl::Ec && ec) {
        if (deep)
@@ -104,6 +109,12 @@ bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
         algorithm = QSsl::Dsa;
         type = QSsl::PrivateKey;
         dsa = q_EVP_PKEY_get1_DSA(pkey);
+        return true;
+    } else if (keyType == EVP_PKEY_DH) {
+        isNull = false;
+        algorithm = QSsl::Dh;
+        type = QSsl::PrivateKey;
+        dh = q_EVP_PKEY_get1_DH(pkey);
         return true;
     }
 #ifndef OPENSSL_NO_EC
@@ -160,6 +171,15 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
             : q_PEM_read_bio_DSAPrivateKey(bio, &dsa, nullptr, phrase);
         if (dsa && dsa == result)
             isNull = false;
+    } else if (algorithm == QSsl::Dh) {
+        EVP_PKEY *result = (type == QSsl::PublicKey)
+            ? q_PEM_read_bio_PUBKEY(bio, nullptr, nullptr, phrase)
+            : q_PEM_read_bio_PrivateKey(bio, nullptr, nullptr, phrase);
+        if (result)
+            dh = q_EVP_PKEY_get1_DH(result);
+        if (dh)
+            isNull = false;
+        q_EVP_PKEY_free(result);
 #ifndef OPENSSL_NO_EC
     } else if (algorithm == QSsl::Ec) {
         EC_KEY *result = (type == QSsl::PublicKey)
@@ -181,6 +201,7 @@ int QSslKeyPrivate::length() const
     switch (algorithm) {
         case QSsl::Rsa: return q_RSA_bits(rsa);
         case QSsl::Dsa: return q_DSA_bits(dsa);
+        case QSsl::Dh: return q_DH_bits(dh);
 #ifndef OPENSSL_NO_EC
         case QSsl::Ec: return q_EC_GROUP_get_degree(q_EC_KEY_get0_group(ec));
 #endif
@@ -215,7 +236,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
         } else {
             if (!q_PEM_write_bio_RSAPrivateKey(
-                    bio, rsa, cipher, const_cast<uchar *>((const uchar *)passPhrase.data()),
+                    bio, rsa, cipher, (uchar *)passPhrase.data(),
                     passPhrase.size(), nullptr, nullptr)) {
                 fail = true;
             }
@@ -226,20 +247,33 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
                 fail = true;
         } else {
             if (!q_PEM_write_bio_DSAPrivateKey(
-                    bio, dsa, cipher, const_cast<uchar *>((const uchar *)passPhrase.data()),
+                    bio, dsa, cipher, (uchar *)passPhrase.data(),
                     passPhrase.size(), nullptr, nullptr)) {
                 fail = true;
             }
         }
+    } else if (algorithm == QSsl::Dh) {
+        EVP_PKEY *result = q_EVP_PKEY_new();
+        if (!result || !q_EVP_PKEY_set1_DH(result, dh)) {
+            fail = true;
+        } else if (type == QSsl::PublicKey) {
+            if (!q_PEM_write_bio_PUBKEY(bio, result))
+                fail = true;
+        } else if (!q_PEM_write_bio_PrivateKey(
+                bio, result, cipher, (uchar *)passPhrase.data(),
+                passPhrase.size(), nullptr, nullptr)) {
+            fail = true;
+        }
+        q_EVP_PKEY_free(result);
 #ifndef OPENSSL_NO_EC
     } else if (algorithm == QSsl::Ec) {
         if (type == QSsl::PublicKey) {
             if (!q_PEM_write_bio_EC_PUBKEY(bio, ec))
                 fail = true;
         } else {
-            if (!q_PEM_write_bio_ECPrivateKey(bio, ec, cipher,
-                                              const_cast<uchar *>((const uchar *)passPhrase.data()),
-                                              passPhrase.size(), nullptr, nullptr)) {
+            if (!q_PEM_write_bio_ECPrivateKey(
+                    bio, ec, cipher, (uchar *)passPhrase.data(),
+                    passPhrase.size(), nullptr, nullptr)) {
                 fail = true;
             }
         }
@@ -267,6 +301,8 @@ Qt::HANDLE QSslKeyPrivate::handle() const
         return Qt::HANDLE(rsa);
     case QSsl::Dsa:
         return Qt::HANDLE(dsa);
+    case QSsl::Dh:
+        return Qt::HANDLE(dh);
 #ifndef OPENSSL_NO_EC
     case QSsl::Ec:
         return Qt::HANDLE(ec);
@@ -296,6 +332,15 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
 #ifndef OPENSSL_NO_RC2
         type = q_EVP_rc2_cbc();
 #endif
+        break;
+    case QSslKeyPrivate::Aes128Cbc:
+        type = q_EVP_aes_128_cbc();
+        break;
+    case QSslKeyPrivate::Aes192Cbc:
+        type = q_EVP_aes_192_cbc();
+        break;
+    case QSslKeyPrivate::Aes256Cbc:
+        type = q_EVP_aes_256_cbc();
         break;
     }
 

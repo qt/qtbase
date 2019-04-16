@@ -527,7 +527,7 @@ void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
 /*!
     Constructs an empty QPainterPath object.
 */
-QPainterPath::QPainterPath() Q_DECL_NOEXCEPT
+QPainterPath::QPainterPath() noexcept
     : d_ptr(0)
 {
 }
@@ -626,6 +626,55 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 */
 QPainterPath::~QPainterPath()
 {
+}
+
+/*!
+    Clears the path elements stored.
+
+    This allows the path to reuse previous memory allocations.
+
+    \sa reserve(), capacity()
+    \since 5.13
+*/
+void QPainterPath::clear()
+{
+    if (!d_ptr)
+        return;
+
+    detach();
+    d_func()->clear();
+}
+
+/*!
+    Reserves a given amount of elements in QPainterPath's internal memory.
+
+    Attempts to allocate memory for at least \a size elements.
+
+    \sa clear(), capacity(), QVector::reserve()
+    \since 5.13
+*/
+void QPainterPath::reserve(int size)
+{
+    Q_D(QPainterPath);
+    if ((!d && size > 0) || (d && d->elements.capacity() < size)) {
+        detach();
+        d->elements.reserve(size);
+    }
+}
+
+/*!
+    Returns the number of elements allocated by the QPainterPath.
+
+    \sa clear(), reserve()
+    \since 5.13
+*/
+int QPainterPath::capacity() const
+{
+    Q_D(QPainterPath);
+    if (d)
+        return d->elements.capacity();
+
+    return 0;
 }
 
 /*!
@@ -2271,13 +2320,19 @@ static inline bool epsilonCompare(const QPointF &a, const QPointF &b, const QSiz
 bool QPainterPath::operator==(const QPainterPath &path) const
 {
     QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
-    if (path.d_func() == d)
+    QPainterPathData *other_d = path.d_func();
+    if (other_d == d)
         return true;
-    else if (!d || !path.d_func())
+    else if (!d || !other_d) {
+        if (!d && other_d->elements.empty() && other_d->fillRule == Qt::OddEvenFill)
+            return true;
+        if (!other_d && d && d->elements.empty() && d->fillRule == Qt::OddEvenFill)
+            return true;
         return false;
-    else if (d->fillRule != path.d_func()->fillRule)
+    }
+    else if (d->fillRule != other_d->fillRule)
         return false;
-    else if (d->elements.size() != path.d_func()->elements.size())
+    else if (d->elements.size() != other_d->elements.size())
         return false;
 
     const qreal qt_epsilon = sizeof(qreal) == sizeof(double) ? 1e-12 : qreal(1e-5);
@@ -2287,8 +2342,8 @@ bool QPainterPath::operator==(const QPainterPath &path) const
     epsilon.rheight() *= qt_epsilon;
 
     for (int i = 0; i < d->elements.size(); ++i)
-        if (d->elements.at(i).type != path.d_func()->elements.at(i).type
-            || !epsilonCompare(d->elements.at(i), path.d_func()->elements.at(i), epsilon))
+        if (d->elements.at(i).type != other_d->elements.at(i).type
+            || !epsilonCompare(d->elements.at(i), other_d->elements.at(i), epsilon))
             return false;
 
     return true;
@@ -2476,7 +2531,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
     s >> p.d_func()->cStart;
     int fillRule;
     s >> fillRule;
-    Q_ASSERT(fillRule == Qt::OddEvenFill || Qt::WindingFill);
+    Q_ASSERT(fillRule == Qt::OddEvenFill || fillRule == Qt::WindingFill);
     p.d_func()->fillRule = Qt::FillRule(fillRule);
     p.d_func()->dirtyBounds = true;
     p.d_func()->dirtyControlBounds = true;
@@ -3187,6 +3242,7 @@ void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadi
   Adds the given rectangle \a x, \a y, \a w, \a h  with rounded corners to the path.
  */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   \obsolete
 
@@ -3253,6 +3309,17 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
   \sa addRoundedRect()
 */
+void QPainterPath::addRoundRect(const QRectF &rect,
+                                int roundness)
+{
+    int xRnd = roundness;
+    int yRnd = roundness;
+    if (rect.width() > rect.height())
+        xRnd = int(roundness * rect.height()/rect.width());
+    else
+        yRnd = int(roundness * rect.width()/rect.height());
+    addRoundedRect(rect, xRnd, yRnd, Qt::RelativeSize);
+}
 
 /*!
   \obsolete
@@ -3269,6 +3336,11 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
   \sa addRoundedRect()
  */
+void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
+                                int xRnd, int yRnd)
+{
+    addRoundedRect(QRectF(x, y, w, h), xRnd, yRnd, Qt::RelativeSize);
+}
 
 /*!
   \obsolete
@@ -3288,6 +3360,12 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
   \sa addRoundedRect()
 */
+void QPainterPath::addRoundRect(qreal x, qreal y, qreal w, qreal h,
+                                int roundness)
+{
+    addRoundedRect(QRectF(x, y, w, h), roundness, Qt::RelativeSize);
+}
+#endif
 
 /*!
     \since 4.3
@@ -3342,6 +3420,7 @@ QPainterPath QPainterPath::subtracted(const QPainterPath &p) const
     return clipper.clip(QPathClipper::BoolSub);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \since 4.3
     \obsolete
@@ -3354,6 +3433,7 @@ QPainterPath QPainterPath::subtractedInverted(const QPainterPath &p) const
 {
     return p.subtracted(*this);
 }
+#endif
 
 /*!
     \since 4.4

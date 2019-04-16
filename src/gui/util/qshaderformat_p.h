@@ -69,22 +69,22 @@ public:
         OpenGLES
     };
 
-    Q_GUI_EXPORT QShaderFormat() Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QShaderFormat() noexcept;
 
-    Q_GUI_EXPORT Api api() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setApi(Api api) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT Api api() const noexcept;
+    Q_GUI_EXPORT void setApi(Api api) noexcept;
 
-    Q_GUI_EXPORT QVersionNumber version() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setVersion(const QVersionNumber &version) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QVersionNumber version() const noexcept;
+    Q_GUI_EXPORT void setVersion(const QVersionNumber &version) noexcept;
 
-    Q_GUI_EXPORT QStringList extensions() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setExtensions(const QStringList &extensions) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QStringList extensions() const noexcept;
+    Q_GUI_EXPORT void setExtensions(const QStringList &extensions) noexcept;
 
-    Q_GUI_EXPORT QString vendor() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT void setVendor(const QString &vendor) Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QString vendor() const noexcept;
+    Q_GUI_EXPORT void setVendor(const QString &vendor) noexcept;
 
-    Q_GUI_EXPORT bool isValid() const Q_DECL_NOTHROW;
-    Q_GUI_EXPORT bool supports(const QShaderFormat &other) const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT bool isValid() const noexcept;
+    Q_GUI_EXPORT bool supports(const QShaderFormat &other) const noexcept;
 
 private:
     Api m_api;
@@ -93,9 +93,9 @@ private:
     QString m_vendor;
 };
 
-Q_GUI_EXPORT bool operator==(const QShaderFormat &lhs, const QShaderFormat &rhs) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator==(const QShaderFormat &lhs, const QShaderFormat &rhs) noexcept;
 
-inline bool operator!=(const QShaderFormat &lhs, const QShaderFormat &rhs) Q_DECL_NOTHROW
+inline bool operator!=(const QShaderFormat &lhs, const QShaderFormat &rhs) noexcept
 {
     return !(lhs == rhs);
 }

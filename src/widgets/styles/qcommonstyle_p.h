@@ -43,8 +43,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qcommonstyle.h"
 #include "qstyle_p.h"
+#if QT_CONFIG(animation)
 #include "qstyleanimation_p.h"
-
+#endif
 #include "qstyleoption.h"
 
 QT_BEGIN_NAMESPACE
@@ -61,6 +62,7 @@ QT_BEGIN_NAMESPACE
 //
 
 class QStringList;
+class QTextOption;
 
 // Private class
 class Q_WIDGETS_EXPORT QCommonStylePrivate : public QStylePrivate
@@ -69,14 +71,14 @@ class Q_WIDGETS_EXPORT QCommonStylePrivate : public QStylePrivate
 public:
     inline QCommonStylePrivate() :
 #if QT_CONFIG(itemviews)
-    cachedOption(0),
+    cachedOption(nullptr),
 #endif
     animationFps(30)
     { }
 
     ~QCommonStylePrivate()
     {
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         qDeleteAll(animations);
 #endif
 #if QT_CONFIG(itemviews)
@@ -84,6 +86,10 @@ public:
 #endif
     }
 
+    QString calculateElidedText(const QString &text, const QTextOption &textOption,
+                                const QFont &font, const QRect &textRect, const Qt::Alignment valign,
+                                Qt::TextElideMode textElideMode, int flags,
+                                bool lastVisibleLineShouldBeElided, QPointF *paintStartPosition) const;
 #if QT_CONFIG(itemviews)
     void viewItemDrawText(QPainter *p, const QStyleOptionViewItem *option, const QRect &rect) const;
     void viewItemLayout(const QStyleOptionViewItem *opt,  QRect *checkRect,
@@ -109,13 +115,18 @@ public:
                && option.viewItemPosition == cachedOption->viewItemPosition);
     }
 #endif
+#if QT_CONFIG(toolbutton)
+    QString toolButtonElideText(const QStyleOptionToolButton *toolbutton,
+                                const QRect &textRect, int flags) const;
+#endif
+
     mutable QIcon tabBarcloseButtonIcon;
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif
 
     int animationFps;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void _q_removeAnimation();
 
     QList<const QObject*> animationTargets() const;
@@ -125,7 +136,7 @@ public:
 
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;
-#endif // QT_NO_ANIMATION
+#endif // animation
 };
 
 QT_END_NAMESPACE

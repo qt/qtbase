@@ -54,9 +54,9 @@
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qtextcodec.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(codecs);
 
-#ifndef QT_NO_CODECS
+QT_BEGIN_NAMESPACE
 
 class QIsciiCodec : public QTextCodec {
 public:
@@ -74,8 +74,6 @@ public:
 private:
     int idx;
 };
-
-#endif // QT_NO_CODECS
 
 QT_END_NAMESPACE
 

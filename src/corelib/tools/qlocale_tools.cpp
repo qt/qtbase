@@ -354,7 +354,7 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         ok = false;
         for (int i = 0; i < processed; ++i) {
             char c = num[i];
-            if ((c < '0' || c > '9') && c != '.' && c != '-' && c != '+' && c != 'e') {
+            if ((c < '0' || c > '9') && c != '.' && c != '-' && c != '+' && c != 'e' && c != 'E') {
                 // Garbage found
                 processed = 0;
                 return 0.0;

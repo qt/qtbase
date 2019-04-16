@@ -2,6 +2,9 @@
 *
 [passwordAuth]
 *
+# QTBUG-74162
+[passwordAuth2]
+*
 [serverTest]
 windows
 [downloadBigFile]

@@ -424,7 +424,7 @@
     Note that by combining this option with ReuseAddressHint, you will
     also allow your service to rebind an existing shared address. On
     Unix, this is equivalent to the SO_REUSEADDR socket option. On Windows,
-    this option is ignored.
+    this is the default behavior, so this option is ignored.
 
     \value DontShareAddress Bind the address and port exclusively, so that
     no other services are allowed to rebind. By passing this option to
@@ -444,7 +444,7 @@
 
     \value DefaultForPlatform The default option for the current platform.
     On Unix and \macos, this is equivalent to (DontShareAddress
-    + ReuseAddressHint), and on Windows, its equivalent to ShareAddress.
+    + ReuseAddressHint), and on Windows, it is equivalent to ShareAddress.
 */
 
 /*! \enum QAbstractSocket::PauseMode
@@ -455,7 +455,7 @@
     The only notification currently supported is QSslSocket::sslErrors().
 
     \value PauseNever Do not pause data transfer on the socket. This is the
-    default and matches the behaviour of Qt 4.
+    default and matches the behavior of Qt 4.
     \value PauseOnSslErrors Pause data transfer on the socket upon receiving an
     SSL error notification. I.E. QSslSocket::sslErrors().
 */
@@ -914,7 +914,7 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
         proxies << proxy;
     } else {
         // try the application settings instead
-        QNetworkProxyQuery query(hostname, port, QString(),
+        QNetworkProxyQuery query(hostname, port, protocolTag,
                                  socketType == QAbstractSocket::TcpSocket ?
                                  QNetworkProxyQuery::TcpSocket :
                                  socketType == QAbstractSocket::SctpSocket ?
@@ -1538,11 +1538,9 @@ void QAbstractSocket::setPauseMode(PauseModes pauseMode)
 
     Binds to \a address on port \a port, using the BindMode \a mode.
 
-    Binds this socket to the address \a address and the port \a port.
-
     For UDP sockets, after binding, the signal QUdpSocket::readyRead() is emitted
     whenever a UDP datagram arrives on the specified address and port.
-    Thus, This function is useful to write UDP servers.
+    Thus, this function is useful to write UDP servers.
 
     For TCP sockets, this function may be used to specify which interface to use
     for an outgoing connection, which is useful in case of multiple network
@@ -1551,7 +1549,7 @@ void QAbstractSocket::setPauseMode(PauseModes pauseMode)
     By default, the socket is bound using the DefaultForPlatform BindMode.
     If a port is not specified, a random port is chosen.
 
-    On success, the functions returns \c true and the socket enters
+    On success, the function returns \c true and the socket enters
     BoundState; otherwise it returns \c false.
 
 */
@@ -2961,6 +2959,38 @@ QNetworkProxy QAbstractSocket::proxy() const
     Q_D(const QAbstractSocket);
     return d->proxy;
 }
+
+/*!
+    \since 5.13
+
+    Returns the protocol tag for this socket.
+    If the protocol tag is set then this is passed to QNetworkProxyQuery
+    when this is created internally to indicate the protocol tag to be
+    used.
+
+    \sa setProtocolTag(), QNetworkProxyQuery
+*/
+
+QString QAbstractSocket::protocolTag() const
+{
+    Q_D(const QAbstractSocket);
+    return d->protocolTag;
+}
+
+/*!
+    \since 5.13
+
+    Sets the protocol tag for this socket to \a tag.
+
+    \sa protocolTag()
+*/
+
+void QAbstractSocket::setProtocolTag(const QString &tag)
+{
+    Q_D(QAbstractSocket);
+    d->protocolTag = tag;
+}
+
 #endif // QT_NO_NETWORKPROXY
 
 #ifndef QT_NO_DEBUG_STREAM

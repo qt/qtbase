@@ -40,6 +40,7 @@
 #include "qimage.h"
 
 #include <private/qcore_mac_p.h>
+#include <private/qcoregraphics_p.h>
 
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
@@ -98,32 +99,10 @@ CGImageRef QImage::toCGImage() const
     if (isNull())
         return nil;
 
-    // Determine the target native format
-    uint cgflags = kCGImageAlphaNone;
-    switch (format()) {
-    case QImage::Format_ARGB32:
-        cgflags = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
-        break;
-    case QImage::Format_RGB32:
-        cgflags = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
-        break;
-    case QImage::Format_RGBA8888_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBA8888:
-        cgflags = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBX8888:
-        cgflags = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_ARGB32_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
-        break;
-    default: break;
-    }
+    CGBitmapInfo bitmapInfo = qt_mac_bitmapInfoForImage(*this);
 
     // Format not supported: return nil CGImageRef
-    if (cgflags == kCGImageAlphaNone)
+    if (bitmapInfo == kCGImageAlphaNone)
         return nil;
 
     // Create a data provider that owns a copy of the QImage and references the image data.
@@ -140,7 +119,7 @@ CGImageRef QImage::toCGImage() const
     const bool shouldInterpolate = false;
 
     return CGImageCreate(width(), height(), bitsPerComponent, bitsPerPixel,
-                         this->bytesPerLine(), colorSpace, cgflags, dataProvider,
+                         this->bytesPerLine(), colorSpace, bitmapInfo, dataProvider,
                          decode, shouldInterpolate, kCGRenderingIntentDefault);
 }
 

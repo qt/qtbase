@@ -113,6 +113,7 @@ public:
         Weekdays, // QList<Qt::DayOfWeek>
         CurrencySymbol, // QString in: CurrencyToStringArgument
         CurrencyToString, // QString in: qlonglong, qulonglong or double
+        Collation, // QString
         UILanguages, // QStringList
         StringToStandardQuotation, // QString in: QStringRef to quote
         StringToAlternateQuotation, // QString in: QStringRef to quote
@@ -249,9 +250,16 @@ public:
         if (qIsInf(d))
             return float(d);
         if (std::fabs(d) > std::numeric_limits<float>::max()) {
+            if (ok != nullptr)
+                *ok = false;
+            const float huge = std::numeric_limits<float>::infinity();
+            return d < 0 ? -huge : huge;
+        }
+        if (d != 0 && float(d) == 0) {
+            // Values that underflow double already failed. Match them:
             if (ok != 0)
                 *ok = false;
-            return 0.0f;
+            return 0;
         }
         return float(d);
     }
@@ -358,9 +366,9 @@ public:
     static QLatin1String languageToCode(QLocale::Language language);
     static QLatin1String scriptToCode(QLocale::Script script);
     static QLatin1String countryToCode(QLocale::Country country);
-    static QLocale::Language codeToLanguage(QStringView code) Q_DECL_NOTHROW;
-    static QLocale::Script codeToScript(QStringView code) Q_DECL_NOTHROW;
-    static QLocale::Country codeToCountry(QStringView code) Q_DECL_NOTHROW;
+    static QLocale::Language codeToLanguage(QStringView code) noexcept;
+    static QLocale::Script codeToScript(QStringView code) noexcept;
+    static QLocale::Country codeToCountry(QStringView code) noexcept;
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
 
@@ -412,9 +420,10 @@ inline char QLocaleData::digitToCLocale(QChar in) const
     if (in == m_exponential || in == QChar::toUpper(m_exponential))
         return 'e';
 
-    // In several languages group() is the char 0xA0, which looks like a space.
-    // People use a regular space instead of it and complain it doesn't work.
-    if (m_group == 0xA0 && in.unicode() == ' ')
+    // In several languages group() is a non-breaking space (U+00A0) or its thin
+    // version (U+202f), which look like spaces.  People (and thus some of our
+    // tests) use a regular space instead and complain if it doesn't work.
+    if ((m_group == 0xA0 || m_group == 0x202f) && in.unicode() == ' ')
         return ',';
 
     return 0;

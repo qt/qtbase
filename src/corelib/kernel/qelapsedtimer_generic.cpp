@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
     \sa isMonotonic()
 */
-QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
+QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 {
     return SystemTime;
 }
@@ -60,7 +60,7 @@ QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
 
     \sa clockType(), QElapsedTimer::ClockType
 */
-bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
+bool QElapsedTimer::isMonotonic() noexcept
 {
     return false;
 }
@@ -75,7 +75,7 @@ bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
 
     \sa restart(), invalidate(), elapsed()
 */
-void QElapsedTimer::start() Q_DECL_NOTHROW
+void QElapsedTimer::start() noexcept
 {
     restart();
 }
@@ -97,7 +97,7 @@ void QElapsedTimer::start() Q_DECL_NOTHROW
 
     \sa start(), invalidate(), elapsed(), isValid()
 */
-qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
+qint64 QElapsedTimer::restart() noexcept
 {
     qint64 old = t1;
     t1 = QDateTime::currentMSecsSinceEpoch();
@@ -118,7 +118,7 @@ qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
 
     \sa start(), restart(), hasExpired(), invalidate()
 */
-qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::nsecsElapsed() const noexcept
 {
     return elapsed() * 1000000;
 }
@@ -132,7 +132,7 @@ qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
 
     \sa start(), restart(), hasExpired(), isValid(), invalidate()
 */
-qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::elapsed() const noexcept
 {
     return QDateTime::currentMSecsSinceEpoch() - t1;
 }
@@ -152,7 +152,7 @@ qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
 
     \sa clockType(), elapsed()
 */
-qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsSinceReference() const noexcept
 {
     return t1;
 }
@@ -167,7 +167,7 @@ qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
 
     \sa secsTo(), elapsed()
 */
-qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const noexcept
 {
     qint64 diff = other.t1 - t1;
     return diff;
@@ -183,7 +183,7 @@ qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 
     \sa msecsTo(), elapsed()
 */
-qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const noexcept
 {
     return msecsTo(other) / 1000;
 }
@@ -197,12 +197,12 @@ qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
     and the other isn't. However, two invalid timers are equal and thus this
     function will return false.
 */
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) noexcept
 {
     return v1.t1 < v2.t1;
 }
 
-QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) Q_DECL_NOTHROW
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 {
     QDeadlineTimer result;
     result.t1 = QDateTime::currentMSecsSinceEpoch() * 1000 * 1000;

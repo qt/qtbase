@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
     state3->assignProperty(p5, "opacity", qreal(1));
     state3->assignProperty(p6, "opacity", qreal(1));
 
-    QAbstractTransition *t1 = state1->addTransition(button, SIGNAL(clicked()), state2);
+    QAbstractTransition *t1 = state1->addTransition(button, &QAbstractButton::clicked, state2);
     QSequentialAnimationGroup *animation1SubGroup = new QSequentialAnimationGroup;
     animation1SubGroup->addPause(250);
     animation1SubGroup->addAnimation(new QPropertyAnimation(box, "geometry"));
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
     t1->addAnimation(new QPropertyAnimation(p5, "opacity"));
     t1->addAnimation(new QPropertyAnimation(p6, "opacity"));
 
-    QAbstractTransition *t2 = state2->addTransition(button, SIGNAL(clicked()), state3);
+    QAbstractTransition *t2 = state2->addTransition(button, &QAbstractButton::clicked, state3);
     t2->addAnimation(new QPropertyAnimation(box, "geometry"));
     t2->addAnimation(new QPropertyAnimation(widget, "geometry"));
     t2->addAnimation(new QPropertyAnimation(p1, "pos"));
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
     t2->addAnimation(new QPropertyAnimation(p5, "opacity"));
     t2->addAnimation(new QPropertyAnimation(p6, "opacity"));
 
-    QAbstractTransition *t3 = state3->addTransition(button, SIGNAL(clicked()), state1);
+    QAbstractTransition *t3 = state3->addTransition(button, &QAbstractButton::clicked, state1);
     t3->addAnimation(new QPropertyAnimation(box, "geometry"));
     t3->addAnimation(new QPropertyAnimation(widget, "geometry"));
     t3->addAnimation(new QPropertyAnimation(p1, "pos"));

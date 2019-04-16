@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'preferencesdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -150,11 +150,11 @@ public:
 
     void retranslateUi(QDialog *PreferencesDialog)
     {
-        PreferencesDialog->setWindowTitle(QApplication::translate("PreferencesDialog", "Preferences", nullptr));
-        m_uiModeGroupBox->setTitle(QApplication::translate("PreferencesDialog", "User Interface Mode", nullptr));
-        m_templatePathGroupBox->setTitle(QApplication::translate("PreferencesDialog", "Additional Template Paths", nullptr));
-        m_addTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", nullptr));
-        m_removeTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", nullptr));
+        PreferencesDialog->setWindowTitle(QCoreApplication::translate("PreferencesDialog", "Preferences", nullptr));
+        m_uiModeGroupBox->setTitle(QCoreApplication::translate("PreferencesDialog", "User Interface Mode", nullptr));
+        m_templatePathGroupBox->setTitle(QCoreApplication::translate("PreferencesDialog", "Additional Template Paths", nullptr));
+        m_addTemplatePathButton->setText(QCoreApplication::translate("PreferencesDialog", "...", nullptr));
+        m_removeTemplatePathButton->setText(QCoreApplication::translate("PreferencesDialog", "...", nullptr));
     } // retranslateUi
 
 };

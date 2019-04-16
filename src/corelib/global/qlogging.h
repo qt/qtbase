@@ -121,7 +121,7 @@ public:
     Q_NORETURN
 #endif
     Q_DECL_COLD_FUNCTION
-    void fatal(const char *msg, ...) const Q_DECL_NOTHROW Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
+    void fatal(const char *msg, ...) const noexcept Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #ifndef QT_NO_DEBUG_STREAM
     QDebug debug() const;
@@ -137,7 +137,7 @@ public:
     QDebug critical(const QLoggingCategory &cat) const;
     QDebug critical(CategoryFunction catFunc) const;
 
-    QNoDebug noDebug() const Q_DECL_NOTHROW;
+    QNoDebug noDebug() const noexcept;
 #endif // QT_NO_DEBUG_STREAM
 
 private:
@@ -153,9 +153,9 @@ private:
 #endif
 
 #ifdef QT_MESSAGELOGCONTEXT
-  #define QT_MESSAGELOG_FILE __FILE__
+  #define QT_MESSAGELOG_FILE static_cast<const char *>(__FILE__)
   #define QT_MESSAGELOG_LINE __LINE__
-  #define QT_MESSAGELOG_FUNC Q_FUNC_INFO
+  #define QT_MESSAGELOG_FUNC static_cast<const char *>(Q_FUNC_INFO)
 #else
   #define QT_MESSAGELOG_FILE nullptr
   #define QT_MESSAGELOG_LINE 0

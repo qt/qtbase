@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'addlinkdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -97,9 +97,9 @@ public:
 
     void retranslateUi(QDialog *AddLinkDialog)
     {
-        AddLinkDialog->setWindowTitle(QApplication::translate("AddLinkDialog", "Insert Link", nullptr));
-        label->setText(QApplication::translate("AddLinkDialog", "Title:", nullptr));
-        label_2->setText(QApplication::translate("AddLinkDialog", "URL:", nullptr));
+        AddLinkDialog->setWindowTitle(QCoreApplication::translate("AddLinkDialog", "Insert Link", nullptr));
+        label->setText(QCoreApplication::translate("AddLinkDialog", "Title:", nullptr));
+        label_2->setText(QCoreApplication::translate("AddLinkDialog", "URL:", nullptr));
     } // retranslateUi
 
 };

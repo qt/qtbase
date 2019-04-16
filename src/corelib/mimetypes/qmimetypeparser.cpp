@@ -41,8 +41,6 @@
 
 #include "qmimetypeparser_p.h"
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimetype_p.h"
 #include "qmimemagicrulematcher_p.h"
 
@@ -196,8 +194,9 @@ static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttribute
 bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage)
 {
 #ifdef QT_NO_XMLSTREAMREADER
+    Q_UNUSED(dev);
     if (errorMessage)
-        *errorMessage = QString::fromLatin1("QXmlStreamReader is not available, cannot parse.");
+        *errorMessage = QString::fromLatin1("QXmlStreamReader is not available, cannot parse '%1'.").arg(fileName);
     return false;
 #else
     QMimeTypePrivate data;
@@ -250,11 +249,11 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseComment: {
-                // comments have locale attributes. We want the default, English one
+                // comments have locale attributes.
                 QString locale = atts.value(QLatin1String(localeAttributeC)).toString();
                 const QString comment = reader.readElementText();
                 if (locale.isEmpty())
-                    locale = QString::fromLatin1("en_US");
+                    locale = QString::fromLatin1("default");
                 data.localeComments.insert(locale, comment);
             }
                 break;
@@ -341,5 +340,3 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

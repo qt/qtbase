@@ -40,6 +40,7 @@
 #include "qwindowspipereader_p.h"
 #include "qiodevice_p.h"
 #include <qelapsedtimer.h>
+#include <qscopedvaluerollback.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -301,9 +302,8 @@ void QWindowsPipeReader::emitPendingReadyRead()
 {
     if (readyReadPending) {
         readyReadPending = false;
-        inReadyRead = true;
+        QScopedValueRollback<bool> guard(inReadyRead, true);
         emit readyRead();
-        inReadyRead = false;
     }
 }
 

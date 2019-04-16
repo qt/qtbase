@@ -50,6 +50,7 @@
 
 #include <QtGui/private/qwindow_p.h>
 #include <private/qcoregraphics_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <sys/sysctl.h>
 
@@ -105,10 +106,10 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 + (void)screenConnected:(NSNotification*)notification
 {
-    QIOSIntegration *integration = QIOSIntegration::instance();
-    Q_ASSERT_X(integration, Q_FUNC_INFO, "Screen connected before QIOSIntegration creation");
+    Q_ASSERT_X(QIOSIntegration::instance(), Q_FUNC_INFO,
+        "Screen connected before QIOSIntegration creation");
 
-    integration->addScreen(new QIOSScreen([notification object]));
+    QWindowSystemInterface::handleScreenAdded(new QIOSScreen([notification object]));
 }
 
 + (void)screenDisconnected:(NSNotification*)notification
@@ -116,8 +117,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     QIOSScreen *screen = qtPlatformScreenFor([notification object]);
     Q_ASSERT_X(screen, Q_FUNC_INFO, "Screen disconnected that we didn't know about");
 
-    QIOSIntegration *integration = QIOSIntegration::instance();
-    integration->destroyScreen(screen);
+    QWindowSystemInterface::handleScreenRemoved(screen);
 }
 
 + (void)screenModeChanged:(NSNotification*)notification

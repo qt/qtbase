@@ -190,7 +190,7 @@ struct QX11InfoData {
 };
 
 template <class T>
-Q_DECL_RELAXED_CONSTEXPR inline int lowest_bit(T v) Q_DECL_NOTHROW
+Q_DECL_RELAXED_CONSTEXPR inline int lowest_bit(T v) noexcept
 {
     int result = qCountTrailingZeroBits(v);
     return ((result >> 3) == sizeof(T)) ? -1 : result;

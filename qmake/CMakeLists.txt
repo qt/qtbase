@@ -1,155 +1,210 @@
+# Generated from qmake.pro.
+
+# special case:
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs" DESTINATION ${INSTALL_DATADIR})
 
-find_library(FWApplicationServices ApplicationServices)
-find_library(FWCoreServices CoreServices)
-find_library(FWFoundation Foundation)
+find_library(FWApplicationServices ApplicationServices) # special case
+find_library(FWCoreServices CoreServices) # special case
+find_library(FWFoundation Foundation) # special case
 
-add_qt_tool(qmake
+#####################################################################
+## qmake Binary:
+#####################################################################
+
+add_qt_tool(qmake # special case
+    # GUI # special case: remove this
     SOURCES
-        meta.cpp
-        option.cpp
-        project.cpp
-        property.cpp
-        library/ioutils.cpp
-        library/proitems.cpp
-        library/qmakebuiltins.cpp
-        library/qmakeevaluator.cpp
-        library/qmakeglobals.cpp
-        library/qmakeparser.cpp
-        library/qmakevfs.cpp
-        generators/mac/pbuilder_pbx.cpp
-        generators/makefile.cpp
-        generators/makefiledeps.cpp
-        generators/metamakefile.cpp
-        generators/projectgenerator.cpp
+        ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
+        ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
+        ../src/corelib/global/qlibraryinfo.cpp
+        ../src/corelib/global/qlogging.cpp
+        ../src/corelib/global/qmalloc.cpp
+        ../src/corelib/global/qnumeric.cpp ../src/corelib/global/qnumeric.h
+        ../src/corelib/io/qabstractfileengine.cpp ../src/corelib/io/qabstractfileengine_p.h
+        ../src/corelib/io/qbuffer.cpp ../src/corelib/io/qbuffer.h
+        ../src/corelib/io/qdir.cpp ../src/corelib/io/qdir.h ../src/corelib/io/qdir_p.h
+        ../src/corelib/io/qdiriterator.cpp ../src/corelib/io/qdiriterator.h
+        ../src/corelib/io/qfile.cpp ../src/corelib/io/qfile.h
+        ../src/corelib/io/qfiledevice.cpp
+        ../src/corelib/io/qfileinfo.cpp ../src/corelib/io/qfileinfo.h
+        ../src/corelib/io/qfilesystemengine.cpp
+        ../src/corelib/io/qfilesystementry.cpp
+        ../src/corelib/io/qfsfileengine.cpp
+        ../src/corelib/io/qfsfileengine_iterator.cpp
+        ../src/corelib/io/qiodevice.cpp ../src/corelib/io/qiodevice.h
+        ../src/corelib/io/qsettings.cpp
+        ../src/corelib/io/qtemporaryfile.cpp ../src/corelib/io/qtemporaryfile.h
+        ../src/corelib/kernel/qmetatype.cpp ../src/corelib/kernel/qmetatype.h
+        ../src/corelib/kernel/qsystemerror.cpp ../src/corelib/kernel/qsystemerror_p.h
+        ../src/corelib/kernel/qvariant.cpp
+        ../src/corelib/plugin/quuid.cpp ../src/corelib/plugin/quuid.h
+        ../src/corelib/serialization/qjson.cpp ../src/corelib/serialization/qjson_p.h
+        ../src/corelib/serialization/qjsonarray.cpp ../src/corelib/serialization/qjsonarray.h
+        ../src/corelib/serialization/qjsondocument.cpp ../src/corelib/serialization/qjsondocument.h
+        ../src/corelib/serialization/qjsonobject.cpp ../src/corelib/serialization/qjsonobject.h
+        ../src/corelib/serialization/qjsonparser.cpp ../src/corelib/serialization/qjsonparser_p.h
+        ../src/corelib/serialization/qjsonvalue.cpp ../src/corelib/serialization/qjsonvalue.h
+        ../src/corelib/serialization/qjsonwriter_p.h
+        ../src/corelib/serialization/qtextstream.cpp ../src/corelib/serialization/qtextstream.h
+        ../src/corelib/serialization/qxmlstream.cpp ../src/corelib/serialization/qxmlstream.h
+        ../src/corelib/serialization/qxmlutils.cpp ../src/corelib/serialization/qxmlutils_p.h
+        ../src/corelib/tools/qarraydata.cpp ../src/corelib/tools/qarraydata.h
+        ../src/corelib/tools/qarraydataops.h
+        ../src/corelib/tools/qarraydatapointer.h
+        ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
+        ../src/corelib/tools/qbytearray.cpp ../src/corelib/tools/qbytearray.h
+        ../src/corelib/tools/qbytearraymatcher.cpp ../src/corelib/tools/qbytearraymatcher.h
+        ../src/corelib/tools/qchar.h
+        ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
+        ../src/corelib/tools/qdatetime.cpp ../src/corelib/tools/qdatetime.h ../src/corelib/tools/qdatetime_p.h
+        ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
+        ../src/corelib/tools/qlinkedlist.cpp ../src/corelib/tools/qlinkedlist.h
+        ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
+        ../src/corelib/tools/qlocale.cpp ../src/corelib/tools/qlocale.h
+        ../src/corelib/tools/qlocale_tools.cpp ../src/corelib/tools/qlocale_tools_p.h
+        ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
+        ../src/corelib/tools/qregexp.cpp ../src/corelib/tools/qregexp.h
+        ../src/corelib/tools/qstring.cpp ../src/corelib/tools/qstring.h
+        ../src/corelib/tools/qstring_compat.cpp
+        ../src/corelib/tools/qstringlist.cpp ../src/corelib/tools/qstringlist.h
+        ../src/corelib/tools/qstringmatcher.h
+        ../src/corelib/tools/qvector.h
+        ../src/corelib/tools/qversionnumber.cpp ../src/corelib/tools/qversionnumber.h
+        ../src/corelib/tools/qvsnprintf.cpp
+        cachekeys.h
+        generators/mac/pbuilder_pbx.cpp generators/mac/pbuilder_pbx.h
+        generators/makefile.cpp generators/makefile.h
+        generators/makefiledeps.cpp generators/makefiledeps.h
+        generators/metamakefile.cpp generators/metamakefile.h
+        generators/projectgenerator.cpp generators/projectgenerator.h
+        generators/unix/unixmake.cpp generators/unix/unixmake.h
         generators/unix/unixmake2.cpp
-        generators/unix/unixmake.cpp
-        generators/win32/mingw_make.cpp
-        generators/win32/msbuild_objectmodel.cpp
-        generators/win32/msvc_nmake.cpp
-        generators/win32/msvc_objectmodel.cpp
-        generators/win32/msvc_vcproj.cpp
-        generators/win32/msvc_vcxproj.cpp
-        generators/win32/winmakefile.cpp
-        generators/xmloutput.cpp
-
-        ${PROJECT_SOURCE_DIR}/src/corelib/codecs/qtextcodec.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/codecs/qutfcodec.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qendian.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qglobal.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qlibraryinfo.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qlogging.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qmalloc.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qnumeric.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qoperatingsystemversion.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qrandom.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qabstractfileengine.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qbuffer.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qdebug.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qdir.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qdiriterator.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfile.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfiledevice.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfileinfo.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemengine.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystementry.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfsfileengine.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfsfileengine_iterator.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qiodevice.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qsettings.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qtemporaryfile.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qmetatype.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qsystemerror.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qvariant.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/plugin/quuid.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qdatastream.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qjsonarray.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qjson.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qjsondocument.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qjsonobject.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qjsonparser.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qjsonvalue.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qtextstream.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qxmlstream.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/serialization/qxmlutils.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qarraydata.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qbitarray.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qbytearray.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qbytearraymatcher.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qcryptographichash.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qdatetime.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qhash.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlinkedlist.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlist.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlocale.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlocale_tools.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qmap.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qregexp.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qringbuffer.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qstringbuilder.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qstring_compat.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qstring.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qstringlist.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qversionnumber.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qvsnprintf.cpp
-
+        generators/win32/mingw_make.cpp generators/win32/mingw_make.h
+        generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.h
+        generators/win32/msvc_nmake.cpp generators/win32/msvc_nmake.h
+        generators/win32/msvc_objectmodel.cpp generators/win32/msvc_objectmodel.h
+        generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcproj.h
+        generators/win32/msvc_vcxproj.cpp generators/win32/msvc_vcxproj.h
+        generators/win32/winmakefile.cpp generators/win32/winmakefile.h
+        generators/xmloutput.cpp generators/xmloutput.h
+        library/ioutils.cpp library/ioutils.h
+        library/proitems.cpp library/proitems.h
+        library/qmake_global.h
+        library/qmakebuiltins.cpp
+        library/qmakeevaluator.cpp library/qmakeevaluator.h library/qmakeevaluator_p.h
+        library/qmakeglobals.cpp library/qmakeglobals.h
+        library/qmakeparser.cpp library/qmakeparser.h
+        library/qmakevfs.cpp library/qmakevfs.h
         main.cpp
+        meta.cpp meta.h
+        option.cpp option.h
+        project.cpp project.h
+        property.cpp property.h
     DEFINES
-        QT_VERSION_STR="${PROJECT_VERSION}"
-        QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-        QT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-        QT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
-        QT_BUILD_QMAKE QT_BOOTSTRAPPED PROEVALUATOR_FULL
+        PROEVALUATOR_FULL
+        QT_BOOTSTRAPPED
+        QT_BUILD_QMAKE
         QT_NO_FOREACH
+        QT_VERSION_STR="${PROJECT_VERSION}" # special case
+        QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
+        QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
+        QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
     INCLUDE_DIRECTORIES
+        # . # special case
         library
         generators
         generators/unix
         generators/win32
         generators/mac
+        $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES> # special case
+        ${CMAKE_BINARY_DIR}/src/corelib/global # special case: for qconfig.cpp
+)
 
-        ${PROJECT_BINARY_DIR}/include
-        ${PROJECT_BINARY_DIR}/include/QtCore
-        ${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}
-        ${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore
-        ${PROJECT_BINARY_DIR}/src/corelib/global
+qt_internal_add_target_aliases(Bootstrap) # special case
+
+#### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
+# CONFIG = "cmdline" "-qt"
+# PRECOMPILED_HEADER = "qmake_pch.h"
+# _OPTION = "host_build"
+
+## Scopes:
+#####################################################################
+
+extend_target(qmake CONDITION WIN32
+    SOURCES
+        ../src/corelib/global/qoperatingsystemversion_win.cpp
+        ../src/corelib/io/qfilesystemengine_win.cpp
+        ../src/corelib/io/qfilesystemiterator_win.cpp
+        ../src/corelib/io/qfsfileengine_win.cpp
+        ../src/corelib/io/qsettings_win.cpp
+        ../src/corelib/plugin/qsystemlibrary.cpp
+        ../src/corelib/tools/qlocale_win.cpp
+        library/registry.cpp # special case
+    DEFINES
+        UNICODE
+        _ENABLE_EXTENDED_ALIGNED_STORAGE
+        _CRT_SECURE_NO_WARNINGS
+        _SCL_SECURE_NO_WARNINGS
+    PUBLIC_LIBRARIES
+        advapi32
+        kernel32
+        netapi32
+        ole32
 )
 
 extend_target(qmake CONDITION UNIX
     SOURCES
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qcore_unix.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemengine_unix.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemiterator_unix.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfsfileengine_unix.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlocale_unix.cpp
+        ../src/corelib/io/qfilesystemengine_unix.cpp
+        ../src/corelib/io/qfilesystemiterator_unix.cpp
+        ../src/corelib/io/qfsfileengine_unix.cpp
+        ../src/corelib/kernel/qcore_unix.cpp
+        ../src/corelib/tools/qlocale_unix.cpp
 )
 
 extend_target(qmake CONDITION APPLE_OSX
     SOURCES
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qcore_foundation.mm
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qcore_mac.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qoperatingsystemversion_darwin.mm
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qsettings_mac.cpp
-    LIBRARIES
-        ${FWApplicationServices} ${FWCoreServices} ${FWFoundation}
+        ../src/corelib/kernel/qcore_foundation.mm # special case
+        ../src/corelib/kernel/qcore_mac.cpp # special case
+        ../src/corelib/global/qoperatingsystemversion_darwin.mm # special case
+        ../src/corelib/io/qsettings_mac.cpp # special case
+    PUBLIC_LIBRARIES
+        ${FWApplicationServices}
+        ${FWCoreServices}
+        ${FWFoundation}
+    COMPILE_OPTIONS
+        "-fconstant-cfstrings"
 )
-# TODO: Windows support, cf. qmake.pro
+
+# special case big
 extend_target(qmake CONDITION WIN32
     SOURCES
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemengine_win.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfilesystemiterator_win.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qfsfileengine_win.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/tools/qlocale_win.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/global/qoperatingsystemversion_win.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/io/qsettings_win.cpp
-        ${PROJECT_SOURCE_DIR}/src/corelib/plugin/qsystemlibrary.cpp
-        generators/win32/registry.cpp
+        ../src/corelib/io/qfilesystemengine_win.cpp
+        ../src/corelib/io/qfilesystemiterator_win.cpp
+        ../src/corelib/io/qfsfileengine_win.cpp
+        ../src/corelib/tools/qlocale_win.cpp
+        ../src/corelib/io/qsettings_win.cpp
+        ../src/corelib/global/qoperatingsystemversion.cpp
+        ../src/corelib/global/qoperatingsystemversion_win.cpp
+        ../src/corelib/plugin/qsystemlibrary.cpp
+        library/registry.cpp
     DEFINES
         UNICODE _ENABLE_EXTENDED_ALIGNED_STORAGE _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS
     LIBRARIES
         ole32 advapi32 kernel32 netapi32
 )
 
+extend_target(qmake CONDITION WIN32 AND mingw
+    PUBLIC_LIBRARIES
+        uuid
+)
+
+extend_target(qmake CONDITION CLANG AND WIN32
+    COMPILE_OPTIONS
+        "-fms-compatibility-version=19.00.23506"
+        "-Wno-microsoft-enum-value"
+)
+
+# special case:
 set_target_properties(qmake PROPERTIES
     AUTOMOC OFF
     AUTORCC OFF

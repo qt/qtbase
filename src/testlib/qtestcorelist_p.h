@@ -66,9 +66,6 @@ class QTestCoreList
         void addToList(T **list);
         T *nextElement();
         T *previousElement();
-        int count(T *list);
-        int count();
-
     private:
         T *next;
         T *prev;
@@ -76,8 +73,8 @@ class QTestCoreList
 
 template <class T>
 QTestCoreList<T>::QTestCoreList()
-    : next(0)
-    , prev(0)
+    : next(nullptr)
+    , prev(nullptr)
 {
 }
 
@@ -85,12 +82,12 @@ template <class T>
 QTestCoreList<T>::~QTestCoreList()
 {
     if (prev) {
-        prev->next = 0;
+        prev->next = nullptr;
     }
     delete prev;
 
     if (next) {
-        next->prev = 0;
+        next->prev = nullptr;
     }
     delete next;
 }
@@ -119,20 +116,6 @@ template <class T>
 T *QTestCoreList<T>::previousElement()
 {
     return prev;
-}
-
-template <class T>
-int QTestCoreList<T>::count()
-{
-    int numOfElements = 0;
-    T *it = next;
-
-    while (it) {
-        ++numOfElements;
-        it = it->nextElement();
-    }
-
-    return numOfElements;
 }
 
 QT_END_NAMESPACE

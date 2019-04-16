@@ -61,6 +61,8 @@ public:
   public:
     const_iterator () {}
 
+    const_iterator (const typename _Base::iterator &it):
+      _M_iterator (typename _Base::const_iterator(it)) {}
     const_iterator (const typename _Base::const_iterator &it):
       _M_iterator (it) {}
 

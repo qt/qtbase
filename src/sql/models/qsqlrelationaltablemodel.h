@@ -58,7 +58,7 @@ public:
                const QString &displayCol)
         : tName(aTableName), iColumn(indexCol), dColumn(displayCol) {}
 
-    void swap(QSqlRelation &other) Q_DECL_NOTHROW
+    void swap(QSqlRelation &other) noexcept
     {
         qSwap(tName, other.tName);
         qSwap(iColumn, other.iColumn);
@@ -71,7 +71,7 @@ public:
     { return iColumn; }
     inline QString displayColumn() const
     { return dColumn; }
-    bool isValid() const Q_DECL_NOTHROW
+    bool isValid() const noexcept
     { return !(tName.isEmpty() || iColumn.isEmpty() || dColumn.isEmpty()); }
 private:
     QString tName, iColumn, dColumn;

@@ -1923,12 +1923,13 @@ void QGraphicsScene::setBspTreeDepth(int depth)
 
     QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
     if (!bspTree) {
-        qWarning("QGraphicsScene::setBspTreeDepth: can not apply if indexing method is not BSP");
+        qWarning("QGraphicsScene::setBspTreeDepth: cannot apply if indexing method is not BSP");
         return;
     }
     bspTree->setBspTreeDepth(depth);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \property QGraphicsScene::sortCacheEnabled
     \brief whether sort caching is enabled
@@ -1949,6 +1950,7 @@ void QGraphicsScene::setSortCacheEnabled(bool enabled)
         return;
     d->sortCacheEnabled = enabled;
 }
+#endif
 
 /*!
     Calculates and returns the bounding rect of all items on the scene. This
@@ -2144,8 +2146,8 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
     \overload
     \obsolete
 
-    Returns the topmost visible item at the specified \a position, or 0 if
-    there are no items at this position.
+    Returns the topmost visible item at the specified \a position, or
+    \nullptr if there are no items at this position.
 
     This function is deprecated and returns incorrect results if the scene
     contains items that ignore transformations. Use the overload that takes
@@ -2159,7 +2161,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 /*!
     \since 4.6
 
-    Returns the topmost visible item at the specified \a position, or 0
+    Returns the topmost visible item at the specified \a position, or \nullptr
     if there are no items at this position.
 
     \a deviceTransform is the transformation that applies to the view, and needs to
@@ -2173,7 +2175,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
 {
     const QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
                                                       Qt::DescendingOrder, deviceTransform);
-    return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
+    return itemsAtPoint.isEmpty() ? nullptr : itemsAtPoint.first();
 }
 
 /*!
@@ -2182,7 +2184,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
     \since 4.6
 
     Returns the topmost visible item at the position specified by (\a x, \a
-    y), or 0 if there are no items at this position.
+    y), or \nullptr if there are no items at this position.
 
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
@@ -2199,7 +2201,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
     \obsolete
 
     Returns the topmost visible item at the position specified by (\a x, \a
-    y), or 0 if there are no items at this position.
+    y), or \nullptr if there are no items at this position.
 
     This convenience function is equivalent to calling \c
     {itemAt(QPointF(x, y))}.
@@ -2941,9 +2943,9 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 
 /*!
     When the scene is active, this functions returns the scene's current focus
-    item, or 0 if no item currently has focus. When the scene is inactive, this
-    functions returns the item that will gain input focus when the scene becomes
-    active.
+    item, or \nullptr if no item currently has focus. When the scene is inactive,
+    this functions returns the item that will gain input focus when the scene
+    becomes active.
 
     The focus item receives keyboard input when the scene receives a
     key event.
@@ -2961,12 +2963,12 @@ QGraphicsItem *QGraphicsScene::focusItem() const
     focusReason, after removing focus from any previous item that may have had
     focus.
 
-    If \a item is 0, or if it either does not accept focus (i.e., it does not
+    If \a item is \nullptr, or if it either does not accept focus (i.e., it does not
     have the QGraphicsItem::ItemIsFocusable flag enabled), or is not visible
     or not enabled, this function only removes focus from any previous
     focusitem.
 
-    If item is not 0, and the scene does not currently have focus (i.e.,
+    If item is not \nullptr, and the scene does not currently have focus (i.e.,
     hasFocus() returns \c false), this function will call setFocus()
     automatically.
 
@@ -3062,9 +3064,9 @@ bool QGraphicsScene::stickyFocus() const
 }
 
 /*!
-    Returns the current mouse grabber item, or 0 if no item is currently
-    grabbing the mouse. The mouse grabber item is the item that receives all
-    mouse events sent to the scene.
+    Returns the current mouse grabber item, or \nullptr if no item is
+    currently grabbing the mouse. The mouse grabber item is the item
+    that receives all mouse events sent to the scene.
 
     An item becomes a mouse grabber when it receives and accepts a
     mouse press event, and it stays the mouse grabber until either of
@@ -3321,6 +3323,9 @@ void QGraphicsScene::advance()
     Unlike QWidget, QGraphicsScene does not have the convenience functions
     \l{QWidget::}{enterEvent()} and \l{QWidget::}{leaveEvent()}. Use this
     function to obtain those events instead.
+
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
 
     \sa contextMenuEvent(), keyPressEvent(), keyReleaseEvent(),
     mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(),
@@ -5547,11 +5552,11 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
 
     \a oldFocusItem is a pointer to the item that previously had focus, or
     0 if no item had focus before the signal was emitted. \a newFocusItem
-    is a pointer to the item that gained input focus, or 0 if focus was lost.
+    is a pointer to the item that gained input focus, or \nullptr if focus was lost.
     \a reason is the reason for the focus change (e.g., if the scene was
     deactivated while an input field had focus, \a oldFocusItem would point
-    to the input field item, \a newFocusItem would be 0, and \a reason would be
-    Qt::ActiveWindowFocusReason.
+    to the input field item, \a newFocusItem would be \nullptr, and \a reason
+    would be Qt::ActiveWindowFocusReason.
 */
 
 /*!
@@ -5582,7 +5587,7 @@ QStyle *QGraphicsScene::style() const
     the style for all widgets in the scene that do not have a style explicitly
     assigned to them.
 
-    If \a style is 0, QGraphicsScene will revert to QApplication::style().
+    If \a style is \nullptr, QGraphicsScene will revert to QApplication::style().
 
     \sa style()
 */
@@ -5703,7 +5708,8 @@ bool QGraphicsScene::isActive() const
 
 /*!
     \since 4.6
-    Returns the current active panel, or 0 if no panel is currently active.
+    Returns the current active panel, or \nullptr if no panel is
+    currently active.
 
     \sa QGraphicsScene::setActivePanel()
 */
@@ -5720,7 +5726,7 @@ QGraphicsItem *QGraphicsScene::activePanel() const
     deactivate any currently active panel.
 
     If the scene is currently inactive, \a item remains inactive until the
-    scene becomes active (or, ir \a item is 0, no item will be activated).
+    scene becomes active (or, ir \a item is \nullptr, no item will be activated).
 
     \sa activePanel(), isActive(), QGraphicsItem::isActive()
 */
@@ -5733,8 +5739,8 @@ void QGraphicsScene::setActivePanel(QGraphicsItem *item)
 /*!
     \since 4.4
 
-    Returns the current active window, or 0 if no window is currently
-    active.
+    Returns the current active window, or \nullptr if no window is
+    currently  active.
 
     \sa QGraphicsScene::setActiveWindow()
 */
@@ -5743,7 +5749,7 @@ QGraphicsWidget *QGraphicsScene::activeWindow() const
     Q_D(const QGraphicsScene);
     if (d->activePanel && d->activePanel->isWindow())
         return static_cast<QGraphicsWidget *>(d->activePanel);
-    return 0;
+    return nullptr;
 }
 
 /*!

@@ -62,7 +62,8 @@ void method1()
         qDebug() << "Error:" << reply.error().message();
         exit(1);
     }
-    foreach (QString name, reply.value())
+    const QStringList values = reply.value();
+    for (const QString &name : values)
         qDebug() << name;
 }
 

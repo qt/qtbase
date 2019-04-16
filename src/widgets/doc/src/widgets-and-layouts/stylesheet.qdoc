@@ -520,7 +520,7 @@
     user had manually called the corresponding QWidget::setPalette() and
     QWidget::setFont() methods on all of the QWidgets targeted by the style
     sheet.  If this would have caused propagation in C++, it will cause
-    propagation in style sheets and visa versa.
+    propagation in style sheets and vice versa.
 
     \section1 Widgets Inside C++ Namespaces
 

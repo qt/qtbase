@@ -99,6 +99,7 @@ private slots:
     void insertTopLevelItems_data();
     void insertTopLevelItems();
     void keyboardNavigation();
+    void keyboardNavigationWithHidden();
     void scrollToItem();
     void setSortingEnabled();
     void match();
@@ -140,6 +141,7 @@ private slots:
     void expandAndCallapse();
     void itemData();
     void setDisabled();
+    void setSpanned();
     void removeSelectedItem();
     void removeCurrentItem();
     void removeCurrentItem_task186451();
@@ -608,31 +610,31 @@ void tst_QTreeWidget::setItemHidden()
     QVERIFY(testWidget->visualItemRect(child).isValid()
            && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child)));
 
-    QVERIFY(!testWidget->isItemHidden(parent));
-    QVERIFY(!testWidget->isItemHidden(child));
+    QVERIFY(!parent->isHidden());
+    QVERIFY(!child->isHidden());
 
-    testWidget->setItemHidden(parent, true);
+    parent->setHidden(true);
 
     QVERIFY(!(testWidget->visualItemRect(parent).isValid()
              && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(parent))));
     QVERIFY(!(testWidget->visualItemRect(child).isValid()
              && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child))));
 
-    QVERIFY(testWidget->isItemHidden(parent));
-    QVERIFY(!testWidget->isItemHidden(child));
+    QVERIFY(parent->isHidden());
+    QVERIFY(!child->isHidden());
 
     // From task 78670 (This caused an core dump)
     // Check if we can set an item visible if it already is visible.
-    testWidget->setItemHidden(parent, false);
-    testWidget->setItemHidden(parent, false);
-    QVERIFY(!testWidget->isItemHidden(parent));
+    parent->setHidden(false);
+    parent->setHidden(false);
+    QVERIFY(!parent->isHidden());
 
 
     // hide, hide and then unhide.
-    testWidget->setItemHidden(parent, true);
-    testWidget->setItemHidden(parent, true);
-    testWidget->setItemHidden(parent, false);
-    QVERIFY(!testWidget->isItemHidden(parent));
+    parent->setHidden(true);
+    parent->setHidden(true);
+    parent->setHidden(false);
+    QVERIFY(!parent->isHidden());
 
 
 }
@@ -658,7 +660,7 @@ void tst_QTreeWidget::setItemHidden2()
 
     if (testWidget->topLevelItemCount() > 0) {
         top = testWidget->topLevelItem(0);
-        testWidget->setItemExpanded(top, true);
+        top->setExpanded(true);
     }
 
     if (testWidget->topLevelItemCount() > 0) {
@@ -666,8 +668,8 @@ void tst_QTreeWidget::setItemHidden2()
         for (int i = 0; i < top->childCount(); i++) {
             leaf = top->child(i);
             if (leaf->text(0).toInt() % 2 == 0) {
-                if (!testWidget->isItemHidden(leaf)) {
-                    testWidget->setItemHidden(leaf, true);
+                if (!leaf->isHidden()) {
+                    leaf->setHidden(true);
                 }
             }
         }
@@ -821,7 +823,7 @@ void tst_QTreeWidget::selectedItems()
             else
                 item = item->child(index);
         }
-        testWidget->setItemSelected(item, true);
+        item->setSelected(true);
     }
 
     // hide rows
@@ -833,7 +835,7 @@ void tst_QTreeWidget::selectedItems()
             else
                 item = item->child(index);
         }
-        testWidget->setItemHidden(item, true);
+        item->setHidden(true);
     }
 
     // open/close toplevel
@@ -862,18 +864,23 @@ void tst_QTreeWidget::selectedItems()
     // compare isSelected
     for (int t=0; t<testWidget->topLevelItemCount(); ++t) {
         QTreeWidgetItem *top = testWidget->topLevelItem(t);
-        if (testWidget->isItemSelected(top) && !testWidget->isItemHidden(top))
+        if (top->isSelected() && !top->isHidden())
             QVERIFY(sel.contains(top));
         for (int c=0; c<top->childCount(); ++c) {
             QTreeWidgetItem *child = top->child(c);
-            if (testWidget->isItemSelected(child) && !testWidget->isItemHidden(child))
+            if (child->isSelected() && !child->isHidden())
                 QVERIFY(sel.contains(child));
         }
     }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // Possible to select null without crashing?
-    testWidget->setItemSelected(0, true);
-    QVERIFY(!testWidget->isItemSelected(0));
+    testWidget->setItemSelected(nullptr, true);
+    QVERIFY(!testWidget->isItemSelected(nullptr));
+QT_WARNING_POP
+#endif
 
     // unselect
     foreach (IntList itemPath, selectedItems) {
@@ -884,7 +891,7 @@ void tst_QTreeWidget::selectedItems()
             else
                 item = item->child(index);
         }
-        testWidget->setItemSelected(item, false);
+        item->setSelected(false);
     }
     QCOMPARE(testWidget->selectedItems().count(), 0);
 }
@@ -1010,21 +1017,21 @@ void tst_QTreeWidget::expand()
     QTreeWidgetItem *topLevelItem = testWidget->topLevelItem(topLevelIndex);
     QTreeWidgetItem *childItem = topLevelItem->child(childIndex);
 
-    QVERIFY(!testWidget->isItemExpanded(topLevelItem));
-    testWidget->setItemExpanded(topLevelItem, true);
-    QVERIFY(testWidget->isItemExpanded(topLevelItem));
+    QVERIFY(!topLevelItem->isExpanded());
+    topLevelItem->setExpanded(true);
+    QVERIFY(topLevelItem->isExpanded());
 
-    QVERIFY(!testWidget->isItemExpanded(childItem));
-    testWidget->setItemExpanded(childItem, true);
-    QVERIFY(testWidget->isItemExpanded(childItem));
+    QVERIFY(!childItem->isExpanded());
+    childItem->setExpanded(true);
+    QVERIFY(childItem->isExpanded());
 
-    QVERIFY(testWidget->isItemExpanded(topLevelItem));
-    testWidget->setItemExpanded(topLevelItem, false);
-    QVERIFY(!testWidget->isItemExpanded(topLevelItem));
+    QVERIFY(topLevelItem->isExpanded());
+    topLevelItem->setExpanded(false);
+    QVERIFY(!topLevelItem->isExpanded());
 
-    QVERIFY(testWidget->isItemExpanded(childItem));
-    testWidget->setItemExpanded(childItem, false);
-    QVERIFY(!testWidget->isItemExpanded(childItem));
+    QVERIFY(childItem->isExpanded());
+    childItem->setExpanded(false);
+    QVERIFY(!childItem->isExpanded());
 }
 
 void tst_QTreeWidget::checkState_data()
@@ -1525,7 +1532,7 @@ void tst_QTreeWidget::keyboardNavigation()
             }
             break;
         case Qt::Key_Down:
-            if (testWidget->isItemExpanded(item)) {
+            if (item->isExpanded()) {
                 row = 0;
                 item = item->child(row);
             } else {
@@ -1538,7 +1545,7 @@ void tst_QTreeWidget::keyboardNavigation()
             break;
         case Qt::Key_Left:
             if (checkScroll) {
-                QVERIFY(testWidget->isItemExpanded(item));
+                QVERIFY(item->isExpanded());
                 QCOMPARE(scrollBar->value(), valueBeforeClick - scrollBar->singleStep());
             }
             // windows style right will walk to the parent
@@ -1572,6 +1579,33 @@ void tst_QTreeWidget::keyboardNavigation()
     }
 }
 
+void tst_QTreeWidget::keyboardNavigationWithHidden()
+{
+    QTreeWidget tw;
+    for (int i = 0; i < 1000; ++i)
+        tw.addTopLevelItem(new QTreeWidgetItem({QString::number(i), QStringLiteral("second col")}));
+    // QTBUG-34832 - when first/last item is hidden,
+    // Key_PageUp/Down/Home/End will not work as expected.
+    tw.topLevelItem(0)->setHidden(true);
+    tw.topLevelItem(tw.model()->rowCount() - 1)->setHidden(true);
+    // PageUp
+    tw.setCurrentIndex(tw.model()->index(2, 0));
+    QCOMPARE(tw.currentIndex(), tw.model()->index(2, 0));
+    QTest::keyClick(tw.viewport(), Qt::Key_PageUp);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(1, 0));
+    // PageDown
+    tw.setCurrentIndex(tw.model()->index(tw.model()->rowCount() - 3, 0));
+    QCOMPARE(tw.currentIndex(), tw.model()->index(tw.model()->rowCount() - 3, 0));
+    QTest::keyClick(tw.viewport(), Qt::Key_PageDown);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(tw.model()->rowCount() - 2, 0));
+    // Key_Home
+    QTest::keyClick(tw.viewport(), Qt::Key_Home);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(1, 0));
+    // Key_End
+    QTest::keyClick(tw.viewport(), Qt::Key_End);
+    QCOMPARE(tw.currentIndex(), tw.model()->index(tw.model()->rowCount() - 2, 0));
+}
+
 void tst_QTreeWidget::scrollToItem()
 {
     // Check if all parent nodes of the item found are expanded.
@@ -1597,9 +1631,9 @@ void tst_QTreeWidget::scrollToItem()
     QCOMPARE(search->text(0), QLatin1String("111"));
 
     QTreeWidgetItem *par = search->parent();
-    QVERIFY(testWidget->isItemExpanded(par));
+    QVERIFY(par->isExpanded());
     par = par->parent();
-    QVERIFY(testWidget->isItemExpanded(par));
+    QVERIFY(par->isExpanded());
 }
 
 // From task #85413
@@ -1845,14 +1879,14 @@ void tst_QTreeWidget::setData()
                     item->setBackground(j, backgroundColor);
                     QCOMPARE(itemChangedSpy.count(), 0);
 
-                    QColor textColor((i == 1) ? Qt::green : Qt::cyan);
-                    item->setTextColor(j, textColor);
-                    QCOMPARE(item->textColor(j), textColor);
+                    const QColor foregroundColor((i == 1) ? Qt::green : Qt::cyan);
+                    item->setForeground(j, foregroundColor);
+                    QCOMPARE(item->foreground(j), foregroundColor);
                     QCOMPARE(itemChangedSpy.count(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
-                    item->setTextColor(j, textColor);
+                    item->setForeground(j, foregroundColor);
                     QCOMPARE(itemChangedSpy.count(), 0);
 
                     Qt::CheckState checkState((i == 1) ? Qt::PartiallyChecked : Qt::Checked);
@@ -1874,7 +1908,7 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(item->font(j), font);
                     QCOMPARE(item->textAlignment(j), int(textAlignment));
                     QCOMPARE(item->background(j).color(), backgroundColor);
-                    QCOMPARE(item->textColor(j), textColor);
+                    QCOMPARE(item->foreground(j), foregroundColor);
                     QCOMPARE(item->checkState(j), checkState);
 
                     QCOMPARE(qvariant_cast<QString>(item->data(j, Qt::DisplayRole)), text);
@@ -1885,9 +1919,8 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QSize>(item->data(j, Qt::SizeHintRole)), sizeHint);
                     QCOMPARE(qvariant_cast<QFont>(item->data(j, Qt::FontRole)), font);
                     QCOMPARE(qvariant_cast<int>(item->data(j, Qt::TextAlignmentRole)), int(textAlignment));
-                    QCOMPARE(qvariant_cast<QBrush>(item->data(j, Qt::BackgroundColorRole)), QBrush(backgroundColor));
                     QCOMPARE(qvariant_cast<QBrush>(item->data(j, Qt::BackgroundRole)), QBrush(backgroundColor));
-                    QCOMPARE(qvariant_cast<QColor>(item->data(j, Qt::TextColorRole)), textColor);
+                    QCOMPARE(qvariant_cast<QColor>(item->data(j, Qt::ForegroundRole)), foregroundColor);
                     QCOMPARE(qvariant_cast<int>(item->data(j, Qt::CheckStateRole)), int(checkState));
 
                     item->setBackground(j, pixmap);
@@ -1907,8 +1940,8 @@ void tst_QTreeWidget::setData()
                     item->setData(j, Qt::SizeHintRole, QVariant());
                     item->setData(j, Qt::FontRole, QVariant());
                     item->setData(j, Qt::TextAlignmentRole, QVariant());
-                    item->setData(j, Qt::BackgroundColorRole, QVariant());
-                    item->setData(j, Qt::TextColorRole, QVariant());
+                    item->setData(j, Qt::BackgroundRole, QVariant());
+                    item->setData(j, Qt::ForegroundRole, QVariant());
                     item->setData(j, Qt::CheckStateRole, QVariant());
                     QCOMPARE(itemChangedSpy.count(), 11);
                     itemChangedSpy.clear();
@@ -1921,9 +1954,8 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(item->data(j, Qt::SizeHintRole), QVariant());
                     QCOMPARE(item->data(j, Qt::FontRole), QVariant());
                     QCOMPARE(item->data(j, Qt::TextAlignmentRole), QVariant());
-                    QCOMPARE(item->data(j, Qt::BackgroundColorRole), QVariant());
                     QCOMPARE(item->data(j, Qt::BackgroundRole), QVariant());
-                    QCOMPARE(item->data(j, Qt::TextColorRole), QVariant());
+                    QCOMPARE(item->data(j, Qt::ForegroundRole), QVariant());
                     QCOMPARE(item->data(j, Qt::CheckStateRole), QVariant());
                 }
             }
@@ -2818,6 +2850,28 @@ void tst_QTreeWidget::setDisabled()
     QCOMPARE(takenChildren.items[1]->isDisabled(), false);
 }
 
+void tst_QTreeWidget::setSpanned()
+{
+    QTreeWidget w;
+    QTreeWidgetItem *i1 = new QTreeWidgetItem();
+    QScopedPointer<QTreeWidgetItem> i2(new QTreeWidgetItem());
+
+    QTreeWidgetItem *top = new QTreeWidgetItem(&w);
+    top->addChild(i1);
+
+    top->setFirstColumnSpanned(true);
+    QCOMPARE(top->isFirstColumnSpanned(), true);
+    QCOMPARE(i1->isFirstColumnSpanned(), false);
+    QCOMPARE(i2->isFirstColumnSpanned(), false);
+
+    top->setFirstColumnSpanned(false);
+    i1->setFirstColumnSpanned(true);
+    i2->setFirstColumnSpanned(true);
+    QCOMPARE(top->isFirstColumnSpanned(), false);
+    QCOMPARE(i1->isFirstColumnSpanned(), true);
+    QCOMPARE(i2->isFirstColumnSpanned(), false);
+}
+
 void tst_QTreeWidget::removeSelectedItem()
 {
     const QScopedPointer <QTreeWidget> w(new QTreeWidget);
@@ -2919,14 +2973,14 @@ void tst_QTreeWidget::randomExpand()
     QTreeWidgetItem *newItem1 = 0;
     for (int i = 0; i < 100; i++) {
         newItem1 = new QTreeWidgetItem(&tree, item1);
-        tree.setItemExpanded(newItem1, true);
-        QCOMPARE(tree.isItemExpanded(newItem1), true);
+        newItem1->setExpanded(true);
+        QCOMPARE(newItem1->isExpanded(), true);
 
         QTreeWidgetItem *x = new QTreeWidgetItem();
-        QCOMPARE(tree.isItemExpanded(newItem1), true);
+        QCOMPARE(newItem1->isExpanded(), true);
         newItem1->addChild(x);
 
-        QCOMPARE(tree.isItemExpanded(newItem1), true);
+        QCOMPARE(newItem1->isExpanded(), true);
     }
 
 }
@@ -2939,19 +2993,19 @@ void tst_QTreeWidget::crashTest()
 
     QTreeWidgetItem *item1 = new QTreeWidgetItem(tree);
     item1->setText(0, "item1");
-    tree->setItemExpanded(item1, true);
+    item1->setExpanded(true);
     QTreeWidgetItem *item2 = new QTreeWidgetItem(item1);
     item2->setText(0, "item2");
 
     QTreeWidgetItem *item3 = new QTreeWidgetItem(tree, item1);
     item3->setText(0, "item3");
-    tree->setItemExpanded(item3, true);
+    item3->setExpanded(true);
     QTreeWidgetItem *item4 = new QTreeWidgetItem(item3);
     item4->setText(0, "item4");
 
     QTreeWidgetItem *item5 = new QTreeWidgetItem(tree, item3);
     item5->setText(0, "item5");
-    tree->setItemExpanded(item5, true);
+    item5->setExpanded(true);
     QTreeWidgetItem *item6 = new QTreeWidgetItem(item5);
     item6->setText(0, "item6");
 
@@ -3417,6 +3471,7 @@ void tst_QTreeWidget::setChildIndicatorPolicy()
     treeWidget.setItemDelegate(&delegate);
     treeWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&treeWidget));
+    QCoreApplication::processEvents(); // Process all queued paint events
 
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Hello"));
     treeWidget.insertTopLevelItem(0, item);

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tetrixwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -147,15 +147,15 @@ public:
 
     void retranslateUi(QWidget *TetrixWindow)
     {
-        TetrixWindow->setWindowTitle(QApplication::translate("TetrixWindow", "Tetrix", nullptr));
-        startButton->setText(QApplication::translate("TetrixWindow", "&Start", nullptr));
-        linesRemovedLabel->setText(QApplication::translate("TetrixWindow", "LINES REMOVED", nullptr));
-        pauseButton->setText(QApplication::translate("TetrixWindow", "&Pause", nullptr));
-        levelLabel->setText(QApplication::translate("TetrixWindow", "LEVEL", nullptr));
-        nextLabel->setText(QApplication::translate("TetrixWindow", "NEXT", nullptr));
-        scoreLabel->setText(QApplication::translate("TetrixWindow", "SCORE", nullptr));
+        TetrixWindow->setWindowTitle(QCoreApplication::translate("TetrixWindow", "Tetrix", nullptr));
+        startButton->setText(QCoreApplication::translate("TetrixWindow", "&Start", nullptr));
+        linesRemovedLabel->setText(QCoreApplication::translate("TetrixWindow", "LINES REMOVED", nullptr));
+        pauseButton->setText(QCoreApplication::translate("TetrixWindow", "&Pause", nullptr));
+        levelLabel->setText(QCoreApplication::translate("TetrixWindow", "LEVEL", nullptr));
+        nextLabel->setText(QCoreApplication::translate("TetrixWindow", "NEXT", nullptr));
+        scoreLabel->setText(QCoreApplication::translate("TetrixWindow", "SCORE", nullptr));
         nextPieceLabel->setText(QString());
-        quitButton->setText(QApplication::translate("TetrixWindow", "&Quit", nullptr));
+        quitButton->setText(QCoreApplication::translate("TetrixWindow", "&Quit", nullptr));
     } // retranslateUi
 
 };

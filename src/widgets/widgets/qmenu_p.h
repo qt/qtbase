@@ -95,6 +95,12 @@ static inline int &rperp(Qt::Orientation o, QPoint &pos)
 static inline int &rperp(Qt::Orientation o, QSize &size)
 { return o == Qt::Vertical ? size.rwidth() : size.rheight(); }
 
+static inline int pick(Qt::Orientation o, const QMargins &m)
+{ return o == Qt::Horizontal ? (m.left() + m.right()) : (m.top() + m.bottom()); }
+
+static inline int perp(Qt::Orientation o, const QMargins &m)
+{ return o == Qt::Vertical ? (m.left() + m.right()) : (m.top() + m.bottom()); }
+
 class QTornOffMenu;
 class QEventLoop;
 
@@ -115,7 +121,7 @@ private:
 
 class QMenuSloppyState
 {
-    Q_DISABLE_COPY(QMenuSloppyState)
+    Q_DISABLE_COPY_MOVE(QMenuSloppyState)
 public:
     QMenuSloppyState()
         : m_enabled(false)
@@ -129,9 +135,9 @@ public:
     void initialize(QMenu *menu)
     {
         m_menu = menu;
-        m_uni_directional = menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirection, 0, menu);
-        m_uni_dir_fail_at_count = short(menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirectionFailCount, 0, menu));
-        m_select_other_actions = menu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppySelectOtherActions, 0 , menu);
+        m_uni_directional = menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirection, nullptr, menu);
+        m_uni_dir_fail_at_count = short(menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirectionFailCount, nullptr, menu));
+        m_select_other_actions = menu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppySelectOtherActions, nullptr , menu);
         m_timeout = short(menu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppyCloseTimeout));
         m_discard_state_when_entering_parent = menu->style()->styleHint(QStyle::SH_Menu_SubMenuResetWhenReenteringParent);
         m_dont_start_time_on_leave = menu->style()->styleHint(QStyle::SH_Menu_SubMenuDontStartSloppyOnLeave);
@@ -343,6 +349,7 @@ public:
     void updateActionRects(const QRect &screen) const;
     QRect popupGeometry() const;
     QRect popupGeometry(int screen) const;
+    bool useFullScreenForPopup() const;
     int getLastVisibleAction() const;
 
     //selection
@@ -371,7 +378,7 @@ public:
         }
         void stop()
         {
-            action = 0;
+            action = nullptr;
             timer.stop();
         }
 
@@ -456,7 +463,6 @@ public:
 
     bool hasMouseMoved(const QPoint &globalPos);
 
-    void adjustMenuScreen(const QPoint &p);
     void updateLayoutDirection();
 
     QPointer<QPlatformMenu> platformMenu;

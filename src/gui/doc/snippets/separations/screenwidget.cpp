@@ -105,8 +105,8 @@ ScreenWidget::ScreenWidget(QWidget *parent, QColor initialColor,
     //invertButton->setOn(inverted);
     invertButton->setEnabled(false);
 
-    connect(colorButton, SIGNAL(clicked()), this, SLOT(setColor()));
-    connect(invertButton, SIGNAL(clicked()), this, SLOT(invertImage()));
+    connect(colorButton, &QPushButton::clicked, this, &ScreenWidget::setColor);
+    connect(invertButton, &QPushButton::clicked, this, &ScreenWidget::invertImage);
 
     QGridLayout *gridLayout = new QGridLayout;
     gridLayout->addWidget(imageLabel, 0, 0, 1, 2);

@@ -166,6 +166,7 @@ private slots:
     void getSetCheck();
     void fontPropagation();
     void fontPropagation2();
+    void fontPropagation3();
     void palettePropagation();
     void palettePropagation2();
     void enabledPropagation();
@@ -320,7 +321,9 @@ private slots:
     void setMaskInResizeEvent();
     void moveInResizeEvent();
 
-    void immediateRepaintAfterInvalidateBuffer();
+#ifdef QT_BUILD_INTERNAL
+    void immediateRepaintAfterInvalidateBackingStore();
+#endif
 
     void effectiveWinId();
     void effectiveWinId2();
@@ -817,6 +820,18 @@ void tst_QWidget::fontPropagation2()
     QCOMPARE(child5->font().pointSize(), 15);
     QVERIFY(!child5->font().bold());
     QVERIFY(child5->font().italic());
+}
+
+void tst_QWidget::fontPropagation3()
+{
+    QWidget parent;
+    QWidget *child = new QWidget(&parent);
+    parent.setFont(QFont("Monospace", 9));
+    QImage image(32, 32, QImage::Format_RGB32);
+    QPainter p(&image);
+    p.setFont(child->font());
+    QCOMPARE(p.font().family(), child->font().family());
+    QCOMPARE(p.font().pointSize(), child->font().pointSize());
 }
 
 void tst_QWidget::palettePropagation()
@@ -6131,7 +6146,11 @@ public:
         return false;
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *) override
+#else
     bool nativeEvent(const QByteArray &eventType, void *message, long *) override
+#endif
     {
         if (isMapNotify(eventType, message))
             gotExpectedMapNotify = true;
@@ -6139,7 +6158,11 @@ public:
     }
 
     // QAbstractNativeEventFilter interface
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *) override
+#else
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override
+#endif
     {
         if (isMapNotify(eventType, message))
             gotExpectedGlobalEvent = true;
@@ -8202,7 +8225,7 @@ void tst_QWidget::resizeInPaintEvent()
 
     widget.resizeInPaintEvent = true;
     // This will call resize in the paintEvent, which in turn will call
-    // invalidateBuffer() and a new update request should be posted.
+    // invalidateBackingStore() and a new update request should be posted.
     widget.repaint();
     QCOMPARE(widget.numPaintEvents, 1);
     widget.numPaintEvents = 0;
@@ -8357,7 +8380,8 @@ void tst_QWidget::moveInResizeEvent()
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
 }
 
-void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
+#ifdef QT_BUILD_INTERNAL
+void tst_QWidget::immediateRepaintAfterInvalidateBackingStore()
 {
     if (m_platform != QStringLiteral("xcb") && m_platform != QStringLiteral("windows"))
         QSKIP("We don't support immediate repaint right after show on other platforms.");
@@ -8371,7 +8395,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
 
     // Marks the area covered by the widget as dirty in the backing store and
     // posts an UpdateRequest event.
-    qt_widget_private(widget.data())->invalidateBuffer(widget->rect());
+    qt_widget_private(widget.data())->invalidateBackingStore(widget->rect());
     QCOMPARE(widget->numPaintEvents, 0);
 
     // The entire widget is already dirty, but this time we want to update immediately
@@ -8380,6 +8404,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
     widget->repaint();
     QCOMPARE(widget->numPaintEvents, 1);
 }
+#endif
 
 void tst_QWidget::effectiveWinId()
 {
@@ -9422,7 +9447,7 @@ QWidgetBackingStore* backingStore(QWidget &widget)
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
+    QGuiApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
 #endif
     QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
@@ -9459,7 +9484,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     QTRY_COMPARE(mainPixmap.toImage().convertToFormat(QImage::Format_RGB32),
                  correct.toImage().convertToFormat(QImage::Format_RGB32));
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 }
 
@@ -9615,7 +9640,7 @@ public:
     {
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
             static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStoreTracker.create(this);
-            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
+            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBackingStore(this->rect());
             repaint();
         }
     }

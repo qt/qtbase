@@ -2108,12 +2108,16 @@ void tst_QRegularExpression::threadSafety_data()
         QTest::addRow("pattern%d", ++i) << "ab.*cd" << subject;
     }
 
+    // pcre2 does not support JIT for winrt. As this test row takes a long time without JIT we skip
+    // it for winrt as it might time out in COIN.
+#ifndef Q_OS_WINRT
     {
         QString subject = "ab";
         subject.append(QString(512*1024, QLatin1Char('x')));
         subject.append("c");
         QTest::addRow("pattern%d", ++i) << "ab.*cd" << subject;
     }
+#endif // Q_OS_WINRT
 
     {
         QString subject = "ab";
@@ -2131,11 +2135,12 @@ void tst_QRegularExpression::threadSafety()
     QFETCH(QString, pattern);
     QFETCH(QString, subject);
 
+    QElapsedTimer time;
+    time.start();
     static const int THREAD_SAFETY_ITERATIONS = 50;
-
     const int threadCount = qMax(QThread::idealThreadCount(), 4);
 
-    for (int threadSafetyIteration = 0; threadSafetyIteration < THREAD_SAFETY_ITERATIONS; ++threadSafetyIteration) {
+    for (int threadSafetyIteration = 0; threadSafetyIteration < THREAD_SAFETY_ITERATIONS && time.elapsed() < 2000; ++threadSafetyIteration) {
         QRegularExpression re(pattern);
 
         QVector<MatcherThread *> threads;
@@ -2164,47 +2169,47 @@ void tst_QRegularExpression::wildcard_data()
 
     addRow("*.html", "test.html", 0);
     addRow("*.html", "test.htm", -1);
-    addRow("bar*", "foobarbaz", 3);
+    addRow("*bar*", "foobarbaz", 0);
     addRow("*", "Qt Rocks!", 0);
-    addRow(".html", "test.html", 4);
-    addRow(".h", "test.cpp", -1);
-    addRow(".???l", "test.html", 4);
-    addRow("?", "test.html", 0);
-    addRow("?m", "test.html", 6);
-    addRow("[*]", "test.html", -1);
-    addRow("[?]","test.html", -1);
-    addRow("[?]","test.h?ml", 6);
-    addRow("[[]","test.h[ml", 6);
-    addRow("[]]","test.h]ml", 6);
-    addRow(".h[a-z]ml", "test.html", 4);
-    addRow(".h[A-Z]ml", "test.html", -1);
-    addRow(".h[A-Z]ml", "test.hTml", 4);
-    addRow(".h[!A-Z]ml", "test.hTml", -1);
-    addRow(".h[!A-Z]ml", "test.html", 4);
-    addRow(".h[!T]ml", "test.hTml", -1);
-    addRow(".h[!T]ml", "test.html", 4);
-    addRow(".h[!T]m[!L]", "test.htmL", -1);
-    addRow(".h[!T]m[!L]", "test.html", 4);
-    addRow(".h[][!]", "test.h]ml", 4);
-    addRow(".h[][!]", "test.h[ml", 4);
-    addRow(".h[][!]", "test.h!ml", 4);
+    addRow("*.html", "test.html", 0);
+    addRow("*.h", "test.cpp", -1);
+    addRow("*.???l", "test.html", 0);
+    addRow("*?", "test.html", 0);
+    addRow("*?ml", "test.html", 0);
+    addRow("*[*]", "test.html", -1);
+    addRow("*[?]","test.html", -1);
+    addRow("*[?]ml","test.h?ml", 0);
+    addRow("*[[]ml","test.h[ml", 0);
+    addRow("*[]]ml","test.h]ml", 0);
+    addRow("*.h[a-z]ml", "test.html", 0);
+    addRow("*.h[A-Z]ml", "test.html", -1);
+    addRow("*.h[A-Z]ml", "test.hTml", 0);
+    addRow("*.h[!A-Z]ml", "test.hTml", -1);
+    addRow("*.h[!A-Z]ml", "test.html", 0);
+    addRow("*.h[!T]ml", "test.hTml", -1);
+    addRow("*.h[!T]ml", "test.html", 0);
+    addRow("*.h[!T]m[!L]", "test.htmL", -1);
+    addRow("*.h[!T]m[!L]", "test.html", 0);
+    addRow("*.h[][!]ml", "test.h]ml", 0);
+    addRow("*.h[][!]ml", "test.h[ml", 0);
+    addRow("*.h[][!]ml", "test.h!ml", 0);
 
-    addRow("foo/*/bar", "Qt/foo/baz/bar", 3);
-    addRow("foo/(*)/bar", "Qt/foo/baz/bar", -1);
-    addRow("foo/(*)/bar", "Qt/foo/(baz)/bar", 3);
-    addRow("foo/?/bar", "Qt/foo/Q/bar", 3);
-    addRow("foo/?/bar", "Qt/foo/Qt/bar", -1);
-    addRow("foo/(?)/bar", "Qt/foo/Q/bar", -1);
-    addRow("foo/(?)/bar", "Qt/foo/(Q)/bar", 3);
+    addRow("foo/*/bar", "foo/baz/bar", 0);
+    addRow("foo/(*)/bar", "foo/baz/bar", -1);
+    addRow("foo/(*)/bar", "foo/(baz)/bar", 0);
+    addRow("foo/?/bar", "foo/Q/bar", 0);
+    addRow("foo/?/bar", "foo/Qt/bar", -1);
+    addRow("foo/(?)/bar", "foo/Q/bar", -1);
+    addRow("foo/(?)/bar", "foo/(Q)/bar", 0);
 
 #ifdef Q_OS_WIN
-    addRow("foo\\*\\bar", "Qt\\foo\\baz\\bar", 3);
-    addRow("foo\\(*)\\bar", "Qt\\foo\\baz\\bar", -1);
-    addRow("foo\\(*)\\bar", "Qt\\foo\\(baz)\\bar", 3);
-    addRow("foo\\?\\bar", "Qt\\foo\\Q\\bar", 3);
-    addRow("foo\\?\\bar", "Qt\\foo\\Qt\\bar", -1);
-    addRow("foo\\(?)\\bar", "Qt\\foo\\Q\\bar", -1);
-    addRow("foo\\(?)\\bar", "Qt\\foo\\(Q)\\bar", 3);
+    addRow("foo\\*\\bar", "foo\\baz\\bar", 0);
+    addRow("foo\\(*)\\bar", "foo\\baz\\bar", -1);
+    addRow("foo\\(*)\\bar", "foo\\(baz)\\bar", 0);
+    addRow("foo\\?\\bar", "foo\\Q\\bar", 0);
+    addRow("foo\\?\\bar", "foo\\Qt\\bar", -1);
+    addRow("foo\\(?)\\bar", "foo\\Q\\bar", -1);
+    addRow("foo\\(?)\\bar", "foo\\(Q)\\bar", 0);
 #endif
 }
 

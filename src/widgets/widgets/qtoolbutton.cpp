@@ -669,7 +669,8 @@ void QToolButton::setMenu(QMenu* menu)
 }
 
 /*!
-    Returns the associated menu, or 0 if no menu has been defined.
+    Returns the associated menu, or \nullptr if no menu has been
+    defined.
 
     \sa setMenu()
 */
@@ -678,7 +679,7 @@ QMenu* QToolButton::menu() const
     Q_D(const QToolButton);
     if (d->menuAction)
         return d->menuAction->menu();
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -898,7 +899,23 @@ bool QToolButton::autoRaise() const
   Sets the default action to \a action.
 
   If a tool button has a default action, the action defines the
-  button's properties like text, icon, tool tip, etc.
+  following properties of the button:
+
+  \list
+  \li \l {QAbstractButton::}{checkable}
+  \li \l {QAbstractButton::}{checked}
+  \li \l {QWidget::}{enabled}
+  \li \l {QWidget::}{font}
+  \li \l {QAbstractButton::}{icon}
+  \li \l {QToolButton::}{popupMode} (assuming the action has a menu)
+  \li \l {QWidget::}{statusTip}
+  \li \l {QAbstractButton::}{text}
+  \li \l {QWidget::}{toolTip}
+  \li \l {QWidget::}{whatsThis}
+  \endlist
+
+  Other properties, such as \l autoRepeat, are not affected
+  by actions.
  */
 void QToolButton::setDefaultAction(QAction *action)
 {

@@ -63,6 +63,8 @@
 
 #include <QtGui/private/qcoregraphics_p.h>
 
+#include <QtFontDatabaseSupport/private/qfontengine_coretext_p.h>
+
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qtwidgetsglobal.h>
 #if QT_CONFIG(filedialog)
@@ -78,6 +80,32 @@ static void initResources()
 }
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpa, "qt.qpa", QtWarningMsg);
+
+static void logVersionInformation()
+{
+    if (!lcQpa().isInfoEnabled())
+        return;
+
+    auto osVersion = QMacVersion::currentRuntime();
+    auto qtBuildSDK = QMacVersion::buildSDK(QMacVersion::QtLibraries);
+    auto qtDeploymentTarget = QMacVersion::deploymentTarget(QMacVersion::QtLibraries);
+    auto appBuildSDK = QMacVersion::buildSDK(QMacVersion::ApplicationBinary);
+    auto appDeploymentTarget = QMacVersion::deploymentTarget(QMacVersion::ApplicationBinary);
+
+    qCInfo(lcQpa, "Loading macOS (Cocoa) platform plugin for Qt " QT_VERSION_STR ", running on macOS %d.%d.%d\n\n" \
+        "  Component     SDK version   Deployment target  \n" \
+        " ------------- ------------- -------------------\n" \
+        "  Qt " QT_VERSION_STR "       %d.%d.%d          %d.%d.%d\n" \
+        "  Application     %d.%d.%d          %d.%d.%d\n",
+            osVersion.majorVersion(), osVersion.minorVersion(), osVersion.microVersion(),
+            qtBuildSDK.majorVersion(), qtBuildSDK.minorVersion(), qtBuildSDK.microVersion(),
+            qtDeploymentTarget.majorVersion(), qtDeploymentTarget.minorVersion(), qtDeploymentTarget.microVersion(),
+            appBuildSDK.majorVersion(), appBuildSDK.minorVersion(), appBuildSDK.microVersion(),
+            appDeploymentTarget.majorVersion(), appDeploymentTarget.minorVersion(), appDeploymentTarget.microVersion());
+}
+
 
 class QCoreTextFontEngine;
 class QFontEngineFT;
@@ -112,6 +140,8 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     , mServices(new QCocoaServices)
     , mKeyboardMapper(new QCocoaKeyMapper)
 {
+    logVersionInformation();
+
     if (mInstance)
         qWarning("Creating multiple Cocoa platform integrations is not supported");
     mInstance = this;
@@ -176,6 +206,9 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     // by explicitly setting the presentation option to the magic 'default value',
     // which will resolve to an actual value and result in screen invalidation.
     cocoaApplication.presentationOptions = NSApplicationPresentationDefault;
+
+    m_screensObserver = QMacScopedObserver([NSApplication sharedApplication],
+        NSApplicationDidChangeScreenParametersNotification, [&]() { updateScreens(); });
     updateScreens();
 
     QMacInternalPasteboardMime::initializeMimeTypes();
@@ -211,7 +244,7 @@ QCocoaIntegration::~QCocoaIntegration()
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {
-        destroyScreen(mScreens.takeLast());
+        QWindowSystemInterface::handleScreenRemoved(mScreens.takeLast());
     }
 
     clearToolbars();
@@ -271,7 +304,7 @@ void QCocoaIntegration::updateScreens()
             screen = new QCocoaScreen(i);
             mScreens.append(screen);
             qCDebug(lcQpaScreen) << "Adding" << screen;
-            screenAdded(screen);
+            QWindowSystemInterface::handleScreenAdded(screen);
         }
         siblings << screen;
     }
@@ -288,7 +321,7 @@ void QCocoaIntegration::updateScreens()
         // Prevent stale references to NSScreen during destroy
         screen->m_screenIndex = -1;
         qCDebug(lcQpaScreen) << "Removing" << screen;
-        destroyScreen(screen);
+        QWindowSystemInterface::handleScreenRemoved(screen);
     }
 }
 
@@ -312,12 +345,17 @@ QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedPixmaps:
 #ifndef QT_NO_OPENGL
-    case OpenGL:
     case ThreadedOpenGL:
+        // AppKit expects rendering to happen on the main thread, and we can
+        // easily end up in situations where rendering on secondary threads
+        // will result in visual artifacts, bugs, or even deadlocks, when
+        // building with SDK 10.14 or higher which enbles view layer-backing.
+        return QMacVersion::buildSDK() < QOperatingSystemVersion(QOperatingSystemVersion::MacOSMojave);
+    case OpenGL:
     case BufferQueueingOpenGL:
 #endif
+    case ThreadedPixmaps:
     case WindowMasks:
     case MultipleWindows:
     case ForeignWindows:
@@ -369,7 +407,16 @@ QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLCo
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QCocoaBackingStore(window);
+    QCocoaWindow *platformWindow = static_cast<QCocoaWindow*>(window->handle());
+    if (!platformWindow) {
+        qWarning() << window << "must be created before being used with a backingstore";
+        return nullptr;
+    }
+
+    if (platformWindow->view().layer)
+        return new QCALayerBackingStore(window);
+    else
+        return new QNSWindowBackingStore(window);
 }
 
 QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
@@ -444,7 +491,7 @@ QCocoaServices *QCocoaIntegration::services() const
 QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 {
     if (hint == QPlatformIntegration::FontSmoothingGamma)
-        return 2.0;
+        return QCoreTextFontEngine::fontSmoothingGamma();
 
     return QPlatformIntegration::styleHint(hint);
 }

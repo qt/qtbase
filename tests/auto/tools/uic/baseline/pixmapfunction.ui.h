@@ -58,9 +58,9 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", nullptr));
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Form", nullptr));
         label->setText(QString());
-        pushButton->setText(QApplication::translate("Form", "PushButton", nullptr));
+        pushButton->setText(QCoreApplication::translate("Form", "PushButton", nullptr));
     } // retranslateUi
 
 };

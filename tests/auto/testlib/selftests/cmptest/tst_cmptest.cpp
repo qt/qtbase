@@ -256,7 +256,7 @@ void tst_Cmptest::compare_boolfuncs()
 
 namespace {
 template <typename T>
-T *null() Q_DECL_NOTHROW { return nullptr; }
+T *null() noexcept { return nullptr; }
 }
 
 void tst_Cmptest::compare_to_nullptr()

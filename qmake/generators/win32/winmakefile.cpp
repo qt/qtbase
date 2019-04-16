@@ -84,6 +84,9 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     if (impexts.isEmpty())
         impexts = project->values("QMAKE_EXTENSION_STATICLIB");
     QList<QMakeLocalFileName> dirs;
+    int libidx = 0;
+    for (const ProString &dlib : project->values("QMAKE_DEFAULT_LIBDIRS"))
+        dirs.append(QMakeLocalFileName(dlib.toQString()));
   static const char * const lflags[] = { "LIBS", "LIBS_PRIVATE",
                                          "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
   for (int i = 0; lflags[i]; i++) {
@@ -94,11 +97,12 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         LibFlagType type = parseLibFlag(opt, &arg);
         if (type == LibFlagPath) {
             QMakeLocalFileName lp(arg.toQString());
-            if (dirs.contains(lp)) {
+            int idx = dirs.indexOf(lp);
+            if (idx >= 0 && idx < libidx) {
                 it = l.erase(it);
                 continue;
             }
-            dirs.append(lp);
+            dirs.insert(libidx++, lp);
             (*it) = "-L" + lp.real();
         } else if (type == LibFlagLib) {
             QString lib = arg.toQString();
@@ -112,8 +116,8 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     goto found;
                 }
                 QString libBase = (*dir_it).local() + '/' + lib + verovr;
-                for (ProStringList::ConstIterator extit = impexts.begin();
-                     extit != impexts.end(); ++extit) {
+                for (ProStringList::ConstIterator extit = impexts.cbegin();
+                     extit != impexts.cend(); ++extit) {
                     if (exists(libBase + '.' + *extit)) {
                         (*it) = cand + verovr + '.' + *extit;
                         goto found;
@@ -520,6 +524,8 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
 
 void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 {
+    writeExportedVariables(t);
+
     t << "####### Compiler, tools and options\n\n";
     t << "CC            = " << var("QMAKE_CC") << endl;
     t << "CXX           = " << var("QMAKE_CXX") << endl;

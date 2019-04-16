@@ -728,6 +728,14 @@ def parseFeature(ctx, feature, data, cm_fh):
         'msvc_mp': None,
         'optimize_debug': None,
         'optimize_size': None,
+        # special case to enable implicit feature on WIN32, until ANGLE is ported
+        'opengl-desktop': {
+            'autoDetect': ''
+        },
+        # special case to disable implicit feature on WIN32, until ANGLE is ported
+        'opengl-dynamic': {
+            'autoDetect': 'OFF'
+        },
         'opengles2': { # special case to disable implicit feature on WIN32, until ANGLE is ported
             'condition': 'NOT WIN32 AND ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )'
         },

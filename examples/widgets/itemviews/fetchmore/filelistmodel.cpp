@@ -50,20 +50,18 @@
 
 #include "filelistmodel.h"
 
-#include <QApplication>
-#include <QBrush>
+#include <QGuiApplication>
 #include <QDir>
 #include <QPalette>
 
 FileListModel::FileListModel(QObject *parent)
-    : QAbstractListModel(parent)
-{
-}
+    : QAbstractListModel(parent), fileCount(0)
+{}
 
 //![4]
-int FileListModel::rowCount(const QModelIndex & /* parent */) const
+int FileListModel::rowCount(const QModelIndex &parent) const
 {
-    return fileCount;
+    return parent.isValid() ? 0 : fileCount;
 }
 
 QVariant FileListModel::data(const QModelIndex &index, int role) const
@@ -88,25 +86,26 @@ QVariant FileListModel::data(const QModelIndex &index, int role) const
 //![4]
 
 //![1]
-bool FileListModel::canFetchMore(const QModelIndex & /* index */) const
+bool FileListModel::canFetchMore(const QModelIndex &parent) const
 {
-    if (fileCount < fileList.size())
-        return true;
-    else
+    if (parent.isValid())
         return false;
+    return (fileCount < fileList.size());
 }
 //![1]
 
 //![2]
-void FileListModel::fetchMore(const QModelIndex & /* index */)
+void FileListModel::fetchMore(const QModelIndex &parent)
 {
+    if (parent.isValid())
+        return;
     int remainder = fileList.size() - fileCount;
     int itemsToFetch = qMin(100, remainder);
 
     if (itemsToFetch <= 0)
         return;
 
-    beginInsertRows(QModelIndex(), fileCount, fileCount+itemsToFetch-1);
+    beginInsertRows(QModelIndex(), fileCount, fileCount + itemsToFetch - 1);
 
     fileCount += itemsToFetch;
 

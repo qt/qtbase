@@ -86,7 +86,7 @@
     that it doesn't require RTTI support and it works across dynamic
     library boundaries. It attempts to cast its argument to the pointer
     type specified in angle-brackets, returning a non-zero pointer if the
-    object is of the correct type (determined at run-time), or 0
+    object is of the correct type (determined at run-time), or \nullptr
     if the object's type is incompatible.
 
     For example, let's assume \c MyWidget inherits from QWidget and

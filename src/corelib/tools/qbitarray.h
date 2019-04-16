@@ -50,21 +50,19 @@ class Q_CORE_EXPORT QBitArray
 {
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QBitArray &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QBitArray &);
-    friend Q_CORE_EXPORT uint qHash(const QBitArray &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_CORE_EXPORT uint qHash(const QBitArray &key, uint seed) noexcept;
     QByteArray d;
 
 public:
-    inline QBitArray() Q_DECL_NOTHROW {}
+    inline QBitArray() noexcept {}
     explicit QBitArray(int size, bool val = false);
     QBitArray(const QBitArray &other) : d(other.d) {}
     inline QBitArray &operator=(const QBitArray &other) { d = other.d; return *this; }
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QBitArray(QBitArray &&other) Q_DECL_NOTHROW : d(std::move(other.d)) {}
-    inline QBitArray &operator=(QBitArray &&other) Q_DECL_NOTHROW
+    inline QBitArray(QBitArray &&other) noexcept : d(std::move(other.d)) {}
+    inline QBitArray &operator=(QBitArray &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
 
-    inline void swap(QBitArray &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    inline void swap(QBitArray &other) noexcept { qSwap(d, other.d); }
 
     inline int size() const { return (d.size() << 3) - *d.constData(); }
     inline int count() const { return (d.size() << 3) - *d.constData(); }

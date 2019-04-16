@@ -1,10 +1,6 @@
-[removeItem]
-# QTBUG-60754, QTest::mouseMove is not always respected, or the CI moves the cursor
-osx-10.11 ci
 [isActive]
 opensuse-42.3 ci
 [removeFullyTransparentItem]
-osx-10.11
 osx-10.12
 [tabFocus_sceneWithNestedFocusWidgets]
 opensuse

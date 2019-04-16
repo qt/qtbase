@@ -69,14 +69,18 @@
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_GNU)
-#  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_DECL_RESTRICT __restrict__
+#  if defined(Q_PROCESSOR_X86_32) && defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#    define Q_DECL_VECTORCALL __attribute__((sseregparm,regparm(3)))
+#  else
+#    define Q_DECL_VECTORCALL
+#  endif
 #elif defined(Q_CC_MSVC)
-#  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_DECL_RESTRICT __restrict
+#  define Q_DECL_VECTORCALL __vectorcall
 #else
-#  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_DECL_RESTRICT
+#  define Q_DECL_VECTORCALL
 #endif
 
 static const uint AMASK = 0xff000000;
@@ -149,7 +153,6 @@ typedef void (*MemRotateFunc)(const uchar *srcPixels, int w, int h, int sbpl, uc
 
 struct DrawHelper {
     ProcessSpans blendColor;
-    ProcessSpans blendGradient;
     BitmapBlitFunc bitmapBlit;
     AlphamapBlitFunc alphamapBlit;
     AlphaRGBBlitFunc alphaRGBBlit;
@@ -162,10 +165,33 @@ extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::N
 
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
+struct quint24 {
+    quint24() = default;
+    quint24(uint value)
+    {
+        data[0] = uchar(value >> 16);
+        data[1] = uchar(value >> 8);
+        data[2] = uchar(value);
+    }
+    operator uint() const
+    {
+        return data[2] | (data[1] << 8) | (data[0] << 16);
+    }
+
+    uchar data[3];
+};
+
+void qBlendGradient(int count, const QSpan *spans, void *userData);
 void qBlendTexture(int count, const QSpan *spans, void *userData);
-extern void qt_memfill64(quint64 *dest, quint64 value, int count);
-extern void qt_memfill32(quint32 *dest, quint32 value, int count);
-extern void qt_memfill16(quint16 *dest, quint16 value, int count);
+#ifdef __SSE2__
+extern void (*qt_memfill64)(quint64 *dest, quint64 value, qsizetype count);
+extern void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count);
+#else
+extern void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
+extern void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
+#endif
+extern void qt_memfill24(quint24 *dest, quint24 value, qsizetype count);
+extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunction64)(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha);
@@ -222,11 +248,6 @@ struct Operator
 
 class QRasterPaintEngine;
 
-struct QSolidData
-{
-    QRgba64 color;
-};
-
 struct QLinearGradientData
 {
     struct {
@@ -275,7 +296,9 @@ struct QGradientData
 #define GRADIENT_STOPTABLE_SIZE 1024
 #define GRADIENT_STOPTABLE_SIZE_SHIFT 10
 
+#if QT_CONFIG(raster_64bit)
     const QRgba64 *colorTable64; //[GRADIENT_STOPTABLE_SIZE];
+#endif
     const QRgb *colorTable32; //[GRADIENT_STOPTABLE_SIZE];
 
     uint alphaColor : 1;
@@ -307,7 +330,7 @@ struct QTextureData
 
 struct QSpanData
 {
-    QSpanData() : tempImage(0) {}
+    QSpanData() : tempImage(nullptr) {}
     ~QSpanData() { delete tempImage; }
 
     QRasterBuffer *rasterBuffer;
@@ -331,8 +354,8 @@ struct QSpanData
     int fast_matrix : 1;
     bool bilinear;
     QImage *tempImage;
+    QRgba64 solidColor;
     union {
-        QSolidData solid;
         QGradientData gradient;
         QTextureData texture;
     };
@@ -381,11 +404,13 @@ static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
     return data->colorTable32[qt_gradient_clamp(data, ipos)];
 }
 
+#if QT_CONFIG(raster_64bit)
 static inline const QRgba64& qt_gradient_pixel64(const QGradientData *data, qreal pos)
 {
     int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
     return data->colorTable64[qt_gradient_clamp(data, ipos)];
 }
+#endif
 
 static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
 {
@@ -858,6 +883,8 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
 
 // qt_div_255 is a fast rounded division by 255 using an approximation that is accurate for all positive 16-bit integers
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
+static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
+static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_257(uint x) { return qt_div_257_floor(x + 128); }
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
 
 static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
@@ -868,76 +895,63 @@ static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
     return a;
 }
 
-struct quint24 {
-    quint24() = default;
-    quint24(uint value);
-    operator uint() const;
-    uchar data[3];
-};
-
-inline quint24::quint24(uint value)
-{
-    data[0] = uchar(value >> 16);
-    data[1] = uchar(value >> 8);
-    data[2] = uchar(value);
-}
-
-inline quint24::operator uint() const
-{
-    return data[2] | (data[1] << 8) | (data[0] << 16);
-}
-
-template <class T> Q_STATIC_TEMPLATE_FUNCTION
-void qt_memfill(T *dest, T value, int count);
-
-template<> inline void qt_memfill(quint64 *dest, quint64 color, int count)
-{
-    qt_memfill64(dest, color, count);
-}
-
-template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
-{
-    qt_memfill32(dest, color, count);
-}
-
-template<> inline void qt_memfill(quint16 *dest, quint16 color, int count)
-{
-    qt_memfill16(dest, color, count);
-}
-
-template<> inline void qt_memfill(quint8 *dest, quint8 color, int count)
-{
-    memset(dest, color, count);
-}
-
-template <class T>
-inline void qt_memfill(T *dest, T value, int count)
+template <class T> inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
     if (!count)
         return;
 
-    int n = (count + 7) / 8;
+    qsizetype n = (count + 7) / 8;
     switch (count & 0x07)
     {
-    case 0: do { *dest++ = value; Q_FALLTHROUGH();
-    case 7:      *dest++ = value; Q_FALLTHROUGH();
-    case 6:      *dest++ = value; Q_FALLTHROUGH();
-    case 5:      *dest++ = value; Q_FALLTHROUGH();
-    case 4:      *dest++ = value; Q_FALLTHROUGH();
-    case 3:      *dest++ = value; Q_FALLTHROUGH();
-    case 2:      *dest++ = value; Q_FALLTHROUGH();
-    case 1:      *dest++ = value;
+    case 0: do { *dest++ = color; Q_FALLTHROUGH();
+    case 7:      *dest++ = color; Q_FALLTHROUGH();
+    case 6:      *dest++ = color; Q_FALLTHROUGH();
+    case 5:      *dest++ = color; Q_FALLTHROUGH();
+    case 4:      *dest++ = color; Q_FALLTHROUGH();
+    case 3:      *dest++ = color; Q_FALLTHROUGH();
+    case 2:      *dest++ = color; Q_FALLTHROUGH();
+    case 1:      *dest++ = color;
     } while (--n > 0);
     }
 }
 
-template <class T> Q_STATIC_TEMPLATE_FUNCTION
+template <class T> inline void qt_memfill(T *dest, T value, qsizetype count)
+{
+    qt_memfill_template(dest, value, count);
+}
+
+template<> inline void qt_memfill(quint64 *dest, quint64 color, qsizetype count)
+{
+    qt_memfill64(dest, color, count);
+}
+
+template<> inline void qt_memfill(quint32 *dest, quint32 color, qsizetype count)
+{
+    qt_memfill32(dest, color, count);
+}
+
+template<> inline void qt_memfill(quint24 *dest, quint24 color, qsizetype count)
+{
+    qt_memfill24(dest, color, count);
+}
+
+template<> inline void qt_memfill(quint16 *dest, quint16 color, qsizetype count)
+{
+    qt_memfill16(dest, color, count);
+}
+
+template<> inline void qt_memfill(quint8 *dest, quint8 color, qsizetype count)
+{
+    memset(dest, color, count);
+}
+
+template <class T> static
 inline void qt_rectfill(T *dest, T value,
                         int x, int y, int width, int height, qsizetype stride)
 {
     char *d = reinterpret_cast<char*>(dest + x) + y * stride;
     if (uint(stride) == (width * sizeof(T))) {
-        qt_memfill(reinterpret_cast<T*>(d), value, width * height);
+        qt_memfill(reinterpret_cast<T*>(d), value, qsizetype(width) * height);
     } else {
         for (int j = 0; j < height; ++j) {
             dest = reinterpret_cast<T*>(d);
@@ -946,52 +960,6 @@ inline void qt_rectfill(T *dest, T value,
         }
     }
 }
-
-#define QT_MEMFILL_UINT(dest, length, color)            \
-    qt_memfill<quint32>(dest, color, length);
-
-#define QT_MEMFILL_USHORT(dest, length, color) \
-    qt_memfill<quint16>(dest, color, length);
-
-#define QT_MEMCPY_REV_UINT(dest, src, length) \
-do {                                          \
-    /* Duff's device */                       \
-    uint *_d = (uint*)(dest) + length;         \
-    const uint *_s = (uint*)(src) + length;    \
-    int n = ((length) + 7) / 8;               \
-    switch ((length) & 0x07)                  \
-    {                                         \
-    case 0: do { *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 7:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 6:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 5:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 4:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 3:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 2:      *--_d = *--_s; Q_FALLTHROUGH(); \
-    case 1:      *--_d = *--_s;                 \
-    } while (--n > 0);                        \
-    }                                         \
-} while (false)
-
-#define QT_MEMCPY_USHORT(dest, src, length) \
-do {                                          \
-    /* Duff's device */                       \
-    ushort *_d = (ushort*)(dest);         \
-    const ushort *_s = (const ushort*)(src);    \
-    int n = ((length) + 7) / 8;               \
-    switch ((length) & 0x07)                  \
-    {                                         \
-    case 0: do { *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 7:      *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 6:      *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 5:      *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 4:      *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 3:      *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 2:      *_d++ = *_s++; Q_FALLTHROUGH(); \
-    case 1:      *_d++ = *_s++;                 \
-    } while (--n > 0);                        \
-    }                                         \
-} while (false)
 
 inline ushort qConvertRgb32To16(uint c)
 {

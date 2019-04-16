@@ -51,22 +51,17 @@
 #include "composition.h"
 
 #include <QApplication>
-#ifdef QT_OPENGL_SUPPORT
-#include <QtOpenGL>
-#endif
 
 int main(int argc, char *argv[])
 {
- //   Q_INIT_RESOURCE(deform);
-
     QApplication app(argc, argv);
 
-    CompositionWidget compWidget(0);
+    CompositionWidget compWidget(nullptr);
     QStyle *arthurStyle = new ArthurStyle();
     compWidget.setStyle(arthurStyle);
 
-    QList<QWidget *> widgets = compWidget.findChildren<QWidget *>();
-    foreach (QWidget *w, widgets)
+    const QList<QWidget *> widgets = compWidget.findChildren<QWidget *>();
+    for (QWidget *w : widgets)
         w->setStyle(arthurStyle);
     compWidget.show();
 

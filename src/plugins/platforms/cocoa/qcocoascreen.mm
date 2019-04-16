@@ -269,15 +269,14 @@ struct DeferredDebugHelper
 
 void QCocoaScreen::deliverUpdateRequests()
 {
-    if (!QGuiApplication::instance())
-        return;
+    QMacAutoReleasePool pool;
 
     // The CVDisplayLink callback is a notification that it's a good time to produce a new frame.
     // Since the callback is delivered on a separate thread we have to marshal it over to the
     // main thread, as Qt requires update requests to be delivered there. This needs to happen
     // asynchronously, as otherwise we may end up deadlocking if the main thread calls back
     // into any of the CVDisplayLink APIs.
-    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+    if (!NSThread.isMainThread) {
         // We're explicitly not using the data of the GCD source to track the pending updates,
         // as the data isn't reset to 0 until after the event handler, and also doesn't update
         // during the event handler, both of which we need to track late frames.
@@ -330,7 +329,7 @@ void QCocoaScreen::deliverUpdateRequests()
         auto windows = QGuiApplication::allWindows();
         for (int i = 0; i < windows.size(); ++i) {
             QWindow *window = windows.at(i);
-            QPlatformWindow *platformWindow = window->handle();
+            auto *platformWindow = static_cast<QCocoaWindow*>(window->handle());
             if (!platformWindow)
                 continue;
 
@@ -341,7 +340,7 @@ void QCocoaScreen::deliverUpdateRequests()
                 continue;
 
             // Skip windows that are not doing update requests via display link
-            if (!(window->format().swapInterval() > 0))
+            if (!platformWindow->updatesWithDisplayLink())
                 continue;
 
             platformWindow->deliverUpdateRequest();
@@ -411,8 +410,7 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
         if (![nsWindow conformsToProtocol:@protocol(QNSWindowProtocol)])
             continue;
 
-        id<QNSWindowProtocol> proto = static_cast<id<QNSWindowProtocol> >(nsWindow);
-        QCocoaWindow *cocoaWindow = proto.platformWindow;
+        QCocoaWindow *cocoaWindow = qnsview_cast(nsWindow.contentView).platformWindow;
         if (!cocoaWindow)
             continue;
         window = cocoaWindow->window();
@@ -428,65 +426,71 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
     return window;
 }
 
-QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height) const
+QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) const
 {
-    // TODO window should be handled
-    Q_UNUSED(window)
+    // Determine the grab rect. FIXME: The rect should be bounded by the view's
+    // geometry, but note that for the pixeltool use case that window will be the
+    // desktop widgets's view, which currently gets resized to fit one screen
+    // only, since its NSWindow has the NSWindowStyleMaskTitled flag set.
+    Q_UNUSED(view);
+    QRect grabRect = QRect(x, y, width, height);
+    qCDebug(lcQpaScreen) << "input grab rect" << grabRect;
 
-    const int maxDisplays = 128; // 128 displays should be enough for everyone.
+    // Find which displays to grab from, or all of them if the grab size is unspecified
+    const int maxDisplays = 128;
     CGDirectDisplayID displays[maxDisplays];
     CGDisplayCount displayCount;
-    CGRect cgRect;
-
-    if (width < 0 || height < 0) {
-        // get all displays
-        cgRect = CGRectInfinite;
-    } else {
-        cgRect = CGRectMake(x, y, width, height);
-    }
+    CGRect cgRect = (width < 0 || height < 0) ? CGRectInfinite : grabRect.toCGRect();
     const CGDisplayErr err = CGGetDisplaysWithRect(cgRect, maxDisplays, displays, &displayCount);
-
-    if (err && displayCount == 0)
+    if (err || displayCount == 0)
         return QPixmap();
 
-    // calculate pixmap size
-    QSize windowSize(width, height);
+    // If the grab size is not specified, set it to be the bounding box of all screens,
     if (width < 0 || height < 0) {
         QRect windowRect;
         for (uint i = 0; i < displayCount; ++i) {
-            const CGRect cgRect = CGDisplayBounds(displays[i]);
-            QRect qRect(cgRect.origin.x, cgRect.origin.y, cgRect.size.width, cgRect.size.height);
-            windowRect = windowRect.united(qRect);
+            QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(displays[i])).toRect();
+            windowRect = windowRect.united(displayBounds);
         }
-        if (width < 0)
-            windowSize.setWidth(windowRect.width());
-        if (height < 0)
-            windowSize.setHeight(windowRect.height());
+        if (grabRect.width() < 0)
+            grabRect.setWidth(windowRect.width());
+        if (grabRect.height() < 0)
+            grabRect.setHeight(windowRect.height());
     }
 
-    const qreal dpr = devicePixelRatio();
-    QPixmap windowPixmap(windowSize * dpr);
-    windowPixmap.fill(Qt::transparent);
+    qCDebug(lcQpaScreen) << "final grab rect" << grabRect << "from" << displayCount << "displays";
 
+    // Grab images from each display
+    QVector<QImage> images;
+    QVector<QRect> destinations;
     for (uint i = 0; i < displayCount; ++i) {
-        const CGRect bounds = CGDisplayBounds(displays[i]);
-
-        // Calculate the position and size of the requested area
-        QPoint pos(qAbs(bounds.origin.x - x), qAbs(bounds.origin.y - y));
-        QSize size(qMin(pos.x() + width, qRound(bounds.size.width)),
-                   qMin(pos.y() + height, qRound(bounds.size.height)));
-        pos *= dpr;
-        size *= dpr;
-
-        // Take the whole screen and crop it afterwards, because CGDisplayCreateImageForRect
-        // has a strange behavior when mixing highDPI and non-highDPI displays
-        QCFType<CGImageRef> cgImage = CGDisplayCreateImage(displays[i]);
-        const QImage image = qt_mac_toQImage(cgImage);
-
-        // Draw into windowPixmap only the requested size
-        QPainter painter(&windowPixmap);
-        painter.drawImage(windowPixmap.rect(), image, QRect(pos, size));
+        auto display = displays[i];
+        QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(display)).toRect();
+        QRect grabBounds = displayBounds.intersected(grabRect);
+        QRect displayLocalGrabBounds = QRect(QPoint(grabBounds.topLeft() - displayBounds.topLeft()), grabBounds.size());
+        QImage displayImage = qt_mac_toQImage(QCFType<CGImageRef>(CGDisplayCreateImageForRect(display, displayLocalGrabBounds.toCGRect())));
+        displayImage.setDevicePixelRatio(displayImage.size().width() / displayLocalGrabBounds.size().width());
+        images.append(displayImage);
+        QRect destBounds = QRect(QPoint(grabBounds.topLeft() - grabRect.topLeft()), grabBounds.size());
+        destinations.append(destBounds);
+        qCDebug(lcQpaScreen) << "grab display" << i << "global" << grabBounds << "local" << displayLocalGrabBounds
+                             << "grab image size" << displayImage.size() << "devicePixelRatio" << displayImage.devicePixelRatio();
     }
+
+    // Determine the highest dpr, which becomes the dpr for the returned pixmap.
+    qreal dpr = 1.0;
+    for (uint i = 0; i < displayCount; ++i)
+        dpr = qMax(dpr, images.at(i).devicePixelRatio());
+
+    // Alocate target pixmap and draw each screen's content
+    qCDebug(lcQpaScreen) << "Create grap pixmap" << grabRect.size() << "at devicePixelRatio" << dpr;
+    QPixmap windowPixmap(grabRect.size() * dpr);
+    windowPixmap.setDevicePixelRatio(dpr);
+    windowPixmap.fill(Qt::transparent);
+    QPainter painter(&windowPixmap);
+    for (uint i = 0; i < displayCount; ++i)
+        painter.drawImage(destinations.at(i), images.at(i));
+
     return windowPixmap;
 }
 

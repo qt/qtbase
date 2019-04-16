@@ -62,8 +62,10 @@ QXcbNativeBackingStore::QXcbNativeBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , m_translucentBackground(false)
 {
-    if (QXcbWindow *w = static_cast<QXcbWindow *>(window->handle()))
-        m_translucentBackground = w->connection()->hasXRender() && QImage::toPixelFormat(w->imageFormat()).alphaSize() > 0;
+    if (QXcbWindow *w = static_cast<QXcbWindow *>(window->handle())) {
+        m_translucentBackground = w->connection()->hasXRender() &&
+            QImage::toPixelFormat(w->imageFormat()).alphaUsage() == QPixelFormat::UsesAlpha;
+    }
 }
 
 QXcbNativeBackingStore::~QXcbNativeBackingStore()
@@ -190,6 +192,10 @@ bool QXcbNativeBackingStore::scroll(const QRegion &area, int dx, int dy)
 
 void QXcbNativeBackingStore::beginPaint(const QRegion &region)
 {
+    QX11PlatformPixmap *x11pm = qt_x11Pixmap(m_pixmap);
+    if (x11pm)
+        x11pm->setIsBackingStore(true);
+
 #if QT_CONFIG(xrender)
     if (m_translucentBackground) {
         const QVector<XRectangle> xrects = qt_region_to_xrectangles(region);

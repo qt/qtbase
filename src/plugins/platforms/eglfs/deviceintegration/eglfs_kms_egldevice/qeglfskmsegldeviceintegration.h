@@ -62,6 +62,8 @@ public:
     bool supportsPBuffers() const override;
     QEglFSWindow *createWindow(QWindow *window) const override;
 
+    void presentBuffer(QPlatformSurface *surface) override;
+
     EGLDeviceEXT eglDevice() const { return m_egl_device; }
 
 protected:

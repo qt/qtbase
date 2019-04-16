@@ -53,7 +53,8 @@
 #include "controllerwindow.h"
 
 //! [0]
-ControllerWindow::ControllerWindow()
+ControllerWindow::ControllerWindow(QWidget *parent)
+    : QWidget(parent)
 {
     previewWindow = new PreviewWindow(this);
 
@@ -61,7 +62,8 @@ ControllerWindow::ControllerWindow()
     createHintsGroupBox();
 
     quitButton = new QPushButton(tr("&Quit"));
-    connect(quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
+    connect(quitButton, &QPushButton::clicked,
+            qApp, &QApplication::quit);
 
     QHBoxLayout *bottomLayout = new QHBoxLayout;
     bottomLayout->addStretch();
@@ -219,7 +221,8 @@ void ControllerWindow::createHintsGroupBox()
 QCheckBox *ControllerWindow::createCheckBox(const QString &text)
 {
     QCheckBox *checkBox = new QCheckBox(text);
-    connect(checkBox, SIGNAL(clicked()), this, SLOT(updatePreview()));
+    connect(checkBox, &QCheckBox::clicked,
+            this, &ControllerWindow::updatePreview);
     return checkBox;
 }
 //! [7]
@@ -228,7 +231,8 @@ QCheckBox *ControllerWindow::createCheckBox(const QString &text)
 QRadioButton *ControllerWindow::createRadioButton(const QString &text)
 {
     QRadioButton *button = new QRadioButton(text);
-    connect(button, SIGNAL(clicked()), this, SLOT(updatePreview()));
+    connect(button, &QRadioButton::clicked,
+            this, &ControllerWindow::updatePreview);
     return button;
 }
 //! [8]

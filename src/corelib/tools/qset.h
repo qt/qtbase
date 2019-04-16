@@ -56,7 +56,7 @@ class QSet
     typedef QHash<T, QHashDummyValue> Hash;
 
 public:
-    inline QSet() Q_DECL_NOTHROW {}
+    inline QSet() noexcept {}
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QSet(std::initializer_list<T> list)
     {
@@ -68,7 +68,7 @@ public:
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated destructor is fine!
 
-    inline void swap(QSet<T> &other) Q_DECL_NOTHROW { q_hash.swap(other.q_hash); }
+    inline void swap(QSet<T> &other) noexcept { q_hash.swap(other.q_hash); }
 
     inline bool operator==(const QSet<T> &other) const
         { return q_hash == other.q_hash; }
@@ -176,20 +176,20 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     inline iterator begin() { return q_hash.begin(); }
-    inline const_iterator begin() const Q_DECL_NOTHROW { return q_hash.begin(); }
-    inline const_iterator cbegin() const Q_DECL_NOTHROW { return q_hash.begin(); }
-    inline const_iterator constBegin() const Q_DECL_NOTHROW { return q_hash.constBegin(); }
+    inline const_iterator begin() const noexcept { return q_hash.begin(); }
+    inline const_iterator cbegin() const noexcept { return q_hash.begin(); }
+    inline const_iterator constBegin() const noexcept { return q_hash.constBegin(); }
     inline iterator end() { return q_hash.end(); }
-    inline const_iterator end() const Q_DECL_NOTHROW { return q_hash.end(); }
-    inline const_iterator cend() const Q_DECL_NOTHROW { return q_hash.end(); }
-    inline const_iterator constEnd() const Q_DECL_NOTHROW { return q_hash.constEnd(); }
+    inline const_iterator end() const noexcept { return q_hash.end(); }
+    inline const_iterator cend() const noexcept { return q_hash.end(); }
+    inline const_iterator constEnd() const noexcept { return q_hash.constEnd(); }
 
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
-    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
-    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
     iterator erase(iterator i)
     { return erase(m2c(i)); }
@@ -252,14 +252,14 @@ public:
 private:
     Hash q_hash;
 
-    static const_iterator m2c(iterator it) Q_DECL_NOTHROW
+    static const_iterator m2c(iterator it) noexcept
     { return const_iterator(typename Hash::const_iterator(it.i.i)); }
 
     bool isValidIterator(const iterator &i) const
     {
         return q_hash.isValidIterator(reinterpret_cast<const typename Hash::iterator&>(i));
     }
-    bool isValidIterator(const const_iterator &i) const Q_DECL_NOTHROW
+    bool isValidIterator(const const_iterator &i) const noexcept
     {
         return q_hash.isValidIterator(reinterpret_cast<const typename Hash::const_iterator&>(i));
     }
@@ -267,7 +267,7 @@ private:
 
 template <typename T>
 uint qHash(const QSet<T> &key, uint seed = 0)
-Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
+noexcept(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
 {
     return qHashRangeCommutative(key.begin(), key.end(), seed);
 }

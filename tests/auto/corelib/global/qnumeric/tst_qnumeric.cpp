@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -42,7 +42,8 @@ class tst_QNumeric: public QObject
 private slots:
     void fuzzyCompare_data();
     void fuzzyCompare();
-    void qNan();
+    void qNanInf();
+    void classifyfp();
     void floatDistance_data();
     void floatDistance();
     void floatDistance_double_data();
@@ -91,7 +92,7 @@ void tst_QNumeric::fuzzyCompare()
 #  pragma GCC optimize "no-fast-math"
 #endif
 
-void tst_QNumeric::qNan()
+void tst_QNumeric::qNanInf()
 {
 #if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
     QSKIP("Non-conformant fast math mode is enabled, cannot run test");
@@ -99,9 +100,16 @@ void tst_QNumeric::qNan()
     double nan = qQNaN();
     QVERIFY(!(0 > nan));
     QVERIFY(!(0 < nan));
+    QVERIFY(!(0 == nan));
+    QVERIFY(!(nan == nan));
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1));
     QVERIFY(qIsNaN(-nan));
+    QVERIFY(qIsNaN(1.0 / nan));
+    QVERIFY(qIsNaN(0.0 / nan));
+    QVERIFY(qIsNaN(0.0 * nan));
+    QCOMPARE(nan, nan);
+    QCOMPARE(nan, -nan);
 
     Q_STATIC_ASSERT(sizeof(double) == 8);
 #ifdef Q_LITTLE_ENDIAN
@@ -113,17 +121,56 @@ void tst_QNumeric::qNan()
     QVERIFY(!qIsFinite(nan));
     QVERIFY(!qIsInf(nan));
     QVERIFY(qIsNaN(nan));
+    QVERIFY(qIsNaN(-nan));
+    QVERIFY(!(nan == nan));
+    QVERIFY(qIsNaN(0.0 * nan));
+    QCOMPARE(qFpClassify(nan), FP_NAN);
+    QCOMPARE(nan, nan);
+    QCOMPARE(nan, -nan);
+    QCOMPARE(nan, qQNaN());
 
     double inf = qInf();
     QVERIFY(inf > 0);
     QVERIFY(-inf < 0);
     QVERIFY(qIsInf(inf));
+    QCOMPARE(inf, inf);
+    QCOMPARE(-inf, -inf);
     QVERIFY(qIsInf(-inf));
-    QVERIFY(qIsInf(2*inf));
-    QCOMPARE(1/inf, 0.0);
-    QVERIFY(qIsNaN(0*nan));
-    QVERIFY(qIsNaN(0*inf));
-    QVERIFY(qFuzzyCompare(1/inf, 0.0));
+    QVERIFY(qIsInf(inf + 1));
+    QVERIFY(qIsInf(inf - 1));
+    QVERIFY(qIsInf(inf * 2.0));
+    QVERIFY(qIsInf(inf / 2.0));
+    QVERIFY(qFuzzyCompare(1.0 / inf, 0.0));
+    QCOMPARE(1.0 / inf, 0.0);
+    QVERIFY(qIsNaN(0.0 * inf));
+}
+
+void tst_QNumeric::classifyfp()
+{
+    QCOMPARE(qFpClassify(qQNaN()), FP_NAN);
+
+    QCOMPARE(qFpClassify(qInf()), FP_INFINITE);
+    QCOMPARE(qFpClassify(-qInf()), FP_INFINITE);
+    QCOMPARE(qFpClassify(DBL_MAX * 2.0), FP_INFINITE);
+    QCOMPARE(qFpClassify(FLT_MAX * 2.f), FP_INFINITE);
+    QCOMPARE(qFpClassify(DBL_MAX * -2.0), FP_INFINITE);
+    QCOMPARE(qFpClassify(FLT_MAX * -2.f), FP_INFINITE);
+
+    QCOMPARE(qFpClassify(1.0), FP_NORMAL);
+    QCOMPARE(qFpClassify(DBL_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(-DBL_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(DBL_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(-DBL_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(DBL_MIN / 2.0), FP_SUBNORMAL);
+    QCOMPARE(qFpClassify(DBL_MIN / -2.0), FP_SUBNORMAL);
+
+    QCOMPARE(qFpClassify(1.f), FP_NORMAL);
+    QCOMPARE(qFpClassify(FLT_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(-FLT_MAX), FP_NORMAL);
+    QCOMPARE(qFpClassify(FLT_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(-FLT_MIN), FP_NORMAL);
+    QCOMPARE(qFpClassify(FLT_MIN / 2.f), FP_SUBNORMAL);
+    QCOMPARE(qFpClassify(FLT_MIN / -2.f), FP_SUBNORMAL);
 }
 
 void tst_QNumeric::floatDistance_data()
@@ -461,13 +508,13 @@ template <typename Int> static void mulOverflow_template()
     QCOMPARE(mul_overflow(Int(max / 2), Int(3), &r), true);
     QCOMPARE(mul_overflow(mid1, Int(mid2 + 1), &r), true);
     QCOMPARE(mul_overflow(Int(max / 2 + 2), Int(2), &r), true);
+    QCOMPARE(mul_overflow(Int(max - max / 2), Int(2), &r), true);
     QCOMPARE(mul_overflow(Int(1ULL << (std::numeric_limits<Int>::digits - 1)), Int(2), &r), true);
 
     if (min) {
         QCOMPARE(mul_overflow(min, Int(2), &r), true);
         QCOMPARE(mul_overflow(Int(min / 2), Int(3), &r), true);
         QCOMPARE(mul_overflow(Int(min / 2 - 1), Int(2), &r), true);
-        QCOMPARE(mul_overflow(Int(min + min/2), Int(2), &r), true);
     }
 #endif
 }

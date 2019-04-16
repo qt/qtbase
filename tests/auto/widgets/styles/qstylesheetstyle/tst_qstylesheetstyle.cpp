@@ -741,9 +741,9 @@ void tst_QStyleSheetStyle::fontPropagation()
     QCOMPARE(FONTSIZE(pb), 20);
 
     QWidget window;
-    window.setStyleSheet("* { font-size: 10pt }");
+    window.setStyleSheet("* { font-size: 9pt }");
     pb.setParent(&window);
-    QCOMPARE(FONTSIZE(pb), 10);
+    QCOMPARE(FONTSIZE(pb), 9);
     window.setStyleSheet(QString());
     QCOMPARE(FONTSIZE(pb), buttonFontSize);
 
@@ -2085,7 +2085,8 @@ void tst_QStyleSheetStyle::highdpiImages()
     QFETCH(QColor, color);
 
     QWidget w;
-    QScreen *screen = QGuiApplication::screenAt(w.pos());
+    QScreen *screen = QGuiApplication::primaryScreen();
+    w.move(screen->availableGeometry().topLeft());
     QHighDpiScaling::setScreenFactor(screen, screenFactor);
     w.setStyleSheet("QWidget { background-image: url(\":/images/testimage.png\"); }");
     w.show();

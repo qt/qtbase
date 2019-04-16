@@ -60,7 +60,7 @@ class StyleSheetEditor : public QDialog
     Q_OBJECT
 
 public:
-    StyleSheetEditor(QWidget *parent = 0);
+    StyleSheetEditor(QWidget *parent = nullptr);
 
 private slots:
     void on_styleCombo_activated(const QString &styleName);

@@ -162,7 +162,7 @@ QAbstractEventDispatcher::~QAbstractEventDispatcher()
     Returns a pointer to the event dispatcher object for the specified
     \a thread. If \a thread is zero, the current thread is used. If no
     event dispatcher exists for the specified thread, this function
-    returns 0.
+    returns \nullptr.
 
     \b{Note:} If Qt is built without thread support, the \a thread
     argument is ignored.
@@ -205,6 +205,15 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     returns after all available events are processed.
 
     \sa hasPendingEvents()
+*/
+
+/*!
+    \internal
+
+    \note processEvents() only processes events queued before the function
+    is called. Events that are posted while the function runs will be queued
+    until a later round of event processing. This only applies to posted Qt
+    events. For timers and system level events, the situation is unknown.
 */
 
 /*! \fn bool QAbstractEventDispatcher::hasPendingEvents()
@@ -461,7 +470,11 @@ void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilte
     \sa installNativeEventFilter(), QAbstractNativeEventFilter::nativeEventFilter()
     \since 5.0
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+#else
 bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, void *message, long *result)
+#endif
 {
     Q_D(QAbstractEventDispatcher);
     if (!d->eventFilters.isEmpty()) {

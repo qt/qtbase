@@ -304,6 +304,7 @@ QJsonDocument Parser::parse(QJsonParseError *error)
     // allocate some space
     dataLength = qMax(end - json, (ptrdiff_t) 256);
     data = (char *)malloc(dataLength);
+    Q_CHECK_PTR(data);
 
     // fill in Header data
     QJsonPrivate::Header *h = (QJsonPrivate::Header *)data;

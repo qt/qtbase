@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     \li \l alignment: The alignment of the text in the QAbstractSpinBox.
 
     \li \l wrapping: Whether the QAbstractSpinBox wraps from the
-    minimum value to the maximum value and vica versa.
+    minimum value to the maximum value and vice versa.
 
     \endlist
 
@@ -252,7 +252,7 @@ QString QAbstractSpinBox::text() const
 
     All values are displayed with the prefix and suffix (if set), \e
     except for the special value, which only shows the special value
-    text. This special text is passed in the QSpinBox::valueChanged()
+    text. This special text is passed in the QSpinBox::textChanged()
     signal that passes a QString.
 
     To turn off the special-value text display, call this function
@@ -285,7 +285,7 @@ void QAbstractSpinBox::setSpecialValueText(const QString &specialValueText)
     \brief whether the spin box is circular.
 
     If wrapping is true stepping up from maximum() value will take you
-    to the minimum() value and vica versa. Wrapping only make sense if
+    to the minimum() value and vice versa. Wrapping only make sense if
     you have minimum() and maximum() values set.
 
     \snippet code/src_gui_widgets_qabstractspinbox.cpp 0
@@ -342,18 +342,18 @@ void QAbstractSpinBox::setReadOnly(bool enable)
     \since 4.3
 
     If keyboard tracking is enabled (the default), the spinbox
-    emits the valueChanged() signal while the new value is being
-    entered from the keyboard.
+    emits the valueChanged() and textChanged() signals while the
+    new value is being entered from the keyboard.
 
     E.g. when the user enters the value 600 by typing 6, 0, and 0,
     the spinbox emits 3 signals with the values 6, 60, and 600
     respectively.
 
     If keyboard tracking is disabled, the spinbox doesn't emit the
-    valueChanged() signal while typing. It emits the signal later,
-    when the return key is pressed, when keyboard focus is lost, or
-    when other spinbox functionality is used, e.g. pressing an arrow
-    key.
+    valueChanged() and textChanged() signals while typing. It emits
+    the signals later, when the return key is pressed, when keyboard
+    focus is lost, or when other spinbox functionality is used, e.g.
+    pressing an arrow key.
 */
 
 bool QAbstractSpinBox::keyboardTracking() const
@@ -688,11 +688,11 @@ QLineEdit *QAbstractSpinBox::lineEdit() const
     \fn void QAbstractSpinBox::setLineEdit(QLineEdit *lineEdit)
 
     Sets the line edit of the spinbox to be \a lineEdit instead of the
-    current line edit widget. \a lineEdit can not be 0.
+    current line edit widget. \a lineEdit cannot be \nullptr.
 
     QAbstractSpinBox takes ownership of the new lineEdit
 
-    If QLineEdit::validator() for the \a lineEdit returns 0, the internal
+    If QLineEdit::validator() for the \a lineEdit returns \nullptr, the internal
     validator of the spinbox will be set on the line edit.
 */
 
@@ -2030,8 +2030,8 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
 #if QT_CONFIG(datetimeparser)
     case QVariant::DateTime: {
         QDateTime a2 = arg2.toDateTime();
-        QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATETIME_MIN.daysTo(a2));
-        a1.setTime(a1.time().addMSecs(QTime().msecsTo(a2.time())));
+        QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATE_MIN.daysTo(a2.date()));
+        a1.setTime(a1.time().addMSecs(a2.time().msecsSinceStartOfDay()));
         ret = QVariant(a1);
         break;
     }
@@ -2093,11 +2093,11 @@ QVariant operator*(const QVariant &arg1, double multiplier)
 #if QT_CONFIG(datetimeparser)
     case QVariant::DateTime: {
         double days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
-        int daysInt = (int)days;
+        const qint64 daysInt = qint64(days);
         days -= daysInt;
-        long msecs = (long)((QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) * multiplier)
-                            + (days * (24 * 3600 * 1000)));
-        ret = QDateTime(QDate().addDays(int(days)), QTime().addMSecs(msecs));
+        qint64 msecs = qint64(arg1.toDateTime().time().msecsSinceStartOfDay() * multiplier
+                              + days * (24 * 3600 * 1000));
+        ret = QDateTime(QDATETIMEEDIT_DATE_MIN.addDays(daysInt), QTime::fromMSecsSinceStartOfDay(msecs));
         break;
     }
 #endif // datetimeparser
@@ -2127,8 +2127,8 @@ double operator/(const QVariant &arg1, const QVariant &arg2)
     case QVariant::DateTime:
         a1 = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDate());
         a2 = QDATETIMEEDIT_DATE_MIN.daysTo(arg2.toDate());
-        a1 += (double)QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) / (long)(3600 * 24 * 1000);
-        a2 += (double)QDATETIMEEDIT_TIME_MIN.msecsTo(arg2.toDateTime().time()) / (long)(3600 * 24 * 1000);
+        a1 += arg1.toDateTime().time().msecsSinceStartOfDay() / (36e5 * 24);
+        a2 += arg2.toDateTime().time().msecsSinceStartOfDay() / (36e5 * 24);
         break;
 #endif // datetimeparser
     default: break;

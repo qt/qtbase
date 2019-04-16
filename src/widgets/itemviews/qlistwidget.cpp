@@ -583,24 +583,6 @@ Qt::DropActions QListModel::supportedDropActions() const
 */
 
 /*!
-    \fn void QListWidgetItem::setSelected(bool select)
-    \since 4.2
-
-    Sets the selected state of the item to \a select.
-
-    \sa isSelected()
-*/
-
-/*!
-    \fn bool QListWidgetItem::isSelected() const
-    \since 4.2
-
-    Returns \c true if the item is selected; otherwise returns \c false.
-
-    \sa setSelected()
-*/
-
-/*!
     \fn void QListWidgetItem::setHidden(bool hide)
     \since 4.2
 
@@ -634,14 +616,14 @@ Qt::DropActions QListModel::supportedDropActions() const
 
     \sa type()
 */
-QListWidgetItem::QListWidgetItem(QListWidget *view, int type)
-    : rtti(type), view(view), d(new QListWidgetItemPrivate(this)),
+QListWidgetItem::QListWidgetItem(QListWidget *listview, int type)
+    : rtti(type), view(listview), d(new QListWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled)
 {
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    if (QListModel *model = listModel())
         model->insert(model->rowCount(), this);
 }
 
@@ -661,16 +643,18 @@ QListWidgetItem::QListWidgetItem(QListWidget *view, int type)
 
     \sa type()
 */
-QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *view, int type)
-    : rtti(type), view(0), d(new QListWidgetItemPrivate(this)),
+QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *listview, int type)
+    : rtti(type), view(listview), d(new QListWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled)
 {
-    setData(Qt::DisplayRole, text);
-    this->view = view;
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    {
+        QSignalBlocker b(view);
+        setData(Qt::DisplayRole, text);
+    }
+    if (QListModel *model = listModel())
         model->insert(model->rowCount(), this);
 }
 
@@ -692,17 +676,19 @@ QListWidgetItem::QListWidgetItem(const QString &text, QListWidget *view, int typ
     \sa type()
 */
 QListWidgetItem::QListWidgetItem(const QIcon &icon,const QString &text,
-                                 QListWidget *view, int type)
-    : rtti(type), view(0), d(new QListWidgetItemPrivate(this)),
+                                 QListWidget *listview, int type)
+    : rtti(type), view(listview), d(new QListWidgetItemPrivate(this)),
       itemFlags(Qt::ItemIsSelectable
                 |Qt::ItemIsUserCheckable
                 |Qt::ItemIsEnabled
                 |Qt::ItemIsDragEnabled)
 {
-    setData(Qt::DisplayRole, text);
-    setData(Qt::DecorationRole, icon);
-    this->view = view;
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    {
+        QSignalBlocker b(view);
+        setData(Qt::DisplayRole, text);
+        setData(Qt::DecorationRole, icon);
+    }
+    if (QListModel *model = listModel())
         model->insert(model->rowCount(), this);
 }
 
@@ -711,7 +697,7 @@ QListWidgetItem::QListWidgetItem(const QIcon &icon,const QString &text,
 */
 QListWidgetItem::~QListWidgetItem()
 {
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    if (QListModel *model = listModel())
         model->remove(this);
     delete d;
 }
@@ -748,7 +734,7 @@ void QListWidgetItem::setData(int role, const QVariant &value)
     }
     if (!found)
         d->values.append(QWidgetItemData(role, value));
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : nullptr)) {
+    if (QListModel *model = listModel()) {
         const QVector<int> roles((role == Qt::DisplayRole) ?
                                     QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
                                     QVector<int>({role}));
@@ -815,7 +801,7 @@ void QListWidgetItem::write(QDataStream &out) const
     \sa data(), flags()
 */
 QListWidgetItem::QListWidgetItem(const QListWidgetItem &other)
-    : rtti(Type), view(0),
+    : rtti(Type), view(nullptr),
       d(new QListWidgetItemPrivate(this)),
       itemFlags(other.itemFlags)
 {
@@ -835,6 +821,15 @@ QListWidgetItem &QListWidgetItem::operator=(const QListWidgetItem &other)
     d->values = other.d->values;
     itemFlags = other.itemFlags;
     return *this;
+}
+
+/*!
+   \internal
+   returns the QListModel if a view is set
+ */
+QListModel *QListWidgetItem::listModel() const
+{
+    return (view ? qobject_cast<QListModel*>(view->model()) : nullptr);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -989,6 +984,50 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 */
 
 /*!
+    \fn void QListWidgetItem::setSelected(bool select)
+    \since 4.2
+
+    Sets the selected state of the item to \a select.
+
+    \sa isSelected()
+*/
+void QListWidgetItem::setSelected(bool select)
+{
+    const QListModel *model = listModel();
+    if (!model || !view->selectionModel())
+        return;
+    const QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
+    if (selectionMode == QAbstractItemView::NoSelection)
+        return;
+    const QModelIndex index = model->index(this);
+    if (selectionMode == QAbstractItemView::SingleSelection)
+        view->selectionModel()->select(index, select
+                                       ? QItemSelectionModel::ClearAndSelect
+                                       : QItemSelectionModel::Deselect);
+    else
+        view->selectionModel()->select(index, select
+                                       ? QItemSelectionModel::Select
+                                       : QItemSelectionModel::Deselect);
+}
+
+/*!
+    \fn bool QListWidgetItem::isSelected() const
+    \since 4.2
+
+    Returns \c true if the item is selected; otherwise returns \c false.
+
+    \sa setSelected()
+*/
+bool QListWidgetItem::isSelected() const
+{
+    const QListModel *model = listModel();
+    if (!model || !view->selectionModel())
+        return false;
+    const QModelIndex index = model->index(this);
+    return view->selectionModel()->isSelected(index);
+}
+
+/*!
     \fn void QListWidgetItem::setFlags(Qt::ItemFlags flags)
 
     Sets the item flags for the list item to \a flags.
@@ -998,7 +1037,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 {
     itemFlags = aflags;
-    if (QListModel *model = (view ? qobject_cast<QListModel*>(view->model()) : 0))
+    if (QListModel *model = listModel())
         model->itemChanged(this);
 }
 
@@ -1415,7 +1454,7 @@ void QListWidget::setSelectionModel(QItemSelectionModel *selectionModel)
 
 /*!
     Returns the item that occupies the given \a row in the list if one has been
-    set; otherwise returns 0.
+    set; otherwise returns \nullptr.
 
     \sa row()
 */
@@ -1482,7 +1521,7 @@ void QListWidget::insertItems(int row, const QStringList &labels)
 
 /*!
     Removes and returns the item from the given \a row in the list widget;
-    otherwise returns 0.
+    otherwise returns \nullptr.
 
     Items removed from a list widget will not be managed by Qt, and will need
     to be deleted manually.
@@ -1718,7 +1757,7 @@ QWidget *QListWidget::itemWidget(QListWidgetItem *item) const
 
     This function should only be used to display static content in the place of
     a list widget item. If you want to display custom dynamic content or
-    implement a custom editor widget, use QListView and subclass QItemDelegate
+    implement a custom editor widget, use QListView and subclass QStyledItemDelegate
     instead.
 
     \sa itemWidget(), removeItemWidget(), {Delegate Classes}
@@ -1730,6 +1769,7 @@ void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
     QAbstractItemView::setIndexWidget(index, widget);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Returns \c true if \a item is selected; otherwise returns \c false.
 
@@ -1739,9 +1779,7 @@ void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
 */
 bool QListWidget::isItemSelected(const QListWidgetItem *item) const
 {
-    Q_D(const QListWidget);
-    QModelIndex index = d->listModel()->index(const_cast<QListWidgetItem*>(item));
-    return selectionModel()->isSelected(index);
+    return ((item && item->listWidget() == this) ? item->isSelected() : false);
 }
 
 /*!
@@ -1754,20 +1792,10 @@ bool QListWidget::isItemSelected(const QListWidgetItem *item) const
 */
 void QListWidget::setItemSelected(const QListWidgetItem *item, bool select)
 {
-    Q_D(QListWidget);
-    QModelIndex index = d->listModel()->index(const_cast<QListWidgetItem*>(item));
-
-    if (d->selectionMode == SingleSelection) {
-        selectionModel()->select(index, select
-                                 ? QItemSelectionModel::ClearAndSelect
-                                 : QItemSelectionModel::Deselect);
-    } else if (d->selectionMode != NoSelection) {
-        selectionModel()->select(index, select
-                                 ? QItemSelectionModel::Select
-                                 : QItemSelectionModel::Deselect);
-    }
-
+    if (item && item->listWidget() == this)
+        const_cast<QListWidgetItem*>(item)->setSelected(select);
 }
+#endif
 
 /*!
     Returns a list of all selected items in the list widget.
@@ -1803,6 +1831,7 @@ QList<QListWidgetItem*> QListWidget::findItems(const QString &text, Qt::MatchFla
     return items;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Returns \c true if the \a item is explicitly hidden; otherwise returns \c false.
 
@@ -1826,6 +1855,7 @@ void QListWidget::setItemHidden(const QListWidgetItem *item, bool hide)
 {
     setRowHidden(row(item), hide);
 }
+#endif
 
 /*!
     Scrolls the view if necessary to ensure that the \a item is visible.

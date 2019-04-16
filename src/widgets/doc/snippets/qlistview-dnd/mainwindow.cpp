@@ -73,7 +73,8 @@ listView->setDropIndicatorShown(true);
 
     this->listView = listView;
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(quitAction, &QAction::triggered,
+            this, &QWidget::close);
 
     setupListItems();
 

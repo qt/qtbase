@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "analogclock.h"
+
+#include <QtWidgets>
 
 //! [0] //! [1]
 AnalogClock::AnalogClock(QWidget *parent)
@@ -61,7 +61,7 @@ AnalogClock::AnalogClock(QWidget *parent)
 //! [3] //! [4]
     QTimer *timer = new QTimer(this);
 //! [4] //! [5]
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    connect(timer, &QTimer::timeout, this, QOverload<>::of(&AnalogClock::update));
 //! [5] //! [6]
     timer->start(1000);
 //! [6]

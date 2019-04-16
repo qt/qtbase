@@ -940,8 +940,8 @@ void QAbstractItemView::setItemDelegateForRow(int row, QAbstractItemDelegate *de
    \since 4.2
 
    Returns the item delegate used by this view and model for the given \a row,
-   or 0 if no delegate has been assigned. You can call itemDelegate() to get a
-   pointer to the current delegate for a given index.
+   or \nullptr if no delegate has been assigned. You can call itemDelegate()
+   to get a pointer to the current delegate for a given index.
 
    \sa setItemDelegateForRow(), itemDelegateForColumn(), setItemDelegate()
 */
@@ -1689,6 +1689,9 @@ bool QAbstractItemView::event(QEvent *event)
     This? mode, if the given \a event is a QEvent::ToolTip,or a
     QEvent::WhatsThis. It passes all other
     events on to its base class viewportEvent() handler.
+
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
 */
 bool QAbstractItemView::viewportEvent(QEvent *event)
 {
@@ -1912,7 +1915,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool click = (index == d->pressedIndex && index.isValid());
     bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
-    bool edited = edit(index, trigger, event);
+    const bool edited = click ? edit(index, trigger, event) : false;
 
     d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
@@ -2438,8 +2441,14 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_Space:
     case Qt::Key_Select:
-        if (!edit(currentIndex(), AnyKeyPressed, event) && d->selectionModel)
-            d->selectionModel->select(currentIndex(), selectionCommand(currentIndex(), event));
+        if (!edit(currentIndex(), AnyKeyPressed, event)) {
+            if (d->selectionModel)
+                d->selectionModel->select(currentIndex(), selectionCommand(currentIndex(), event));
+            if (event->key() == Qt::Key_Space) {
+                keyboardSearch(event->text());
+                event->accept();
+            }
+        }
 #ifdef QT_KEYPAD_NAVIGATION
         if ( event->key()==Qt::Key_Select ) {
             // Also do Key_Enter action.
@@ -2915,6 +2924,7 @@ void QAbstractItemView::editorDestroyed(QObject *editor)
         setState(NoState);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Sets the horizontal scroll bar's steps per item to \a steps.
@@ -2972,6 +2982,7 @@ int QAbstractItemView::verticalStepsPerItem() const
 {
     return 1;
 }
+#endif
 
 /*!
     Moves to and selects the item best matching the string \a search.
@@ -3205,7 +3216,7 @@ bool QAbstractItemView::isPersistentEditorOpen(const QModelIndex &index) const
     This function should only be used to display static content within the
     visible area corresponding to an item of data. If you want to display
     custom dynamic content or implement a custom editor widget, subclass
-    QItemDelegate instead.
+    QStyledItemDelegate instead.
 
     \sa {Delegate Classes}
 */

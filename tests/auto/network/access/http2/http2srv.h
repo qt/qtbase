@@ -62,20 +62,31 @@ public:
     Q_DECLARE_PRIVATE(Http11Reply)
 };
 
+enum class H2Type {
+    h2Alpn, // Secure connection, ALPN to negotiate h2.
+    h2c, // Clear text with protocol upgrade.
+    h2Direct, // Secure connection, ALPN not supported.
+    h2cDirect, // Clear text direct
+};
+
 class Http2Server : public QTcpServer
 {
     Q_OBJECT
 public:
-    Http2Server(bool clearText, const Http2::RawSettings &serverSettings,
+
+    Http2Server(H2Type type, const Http2::RawSettings &serverSettings,
                 const Http2::RawSettings &clientSettings);
 
     ~Http2Server();
+
 
     // To be called before server started:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
     void emulateGOAWAY(int timeout);
     void redirectOpenStream(quint16 targetPort);
+
+    bool isClearText() const;
 
     // Invokables, since we can call them from the main thread,
     // but server (can) work on its own thread.
@@ -129,6 +140,7 @@ private:
 
     QScopedPointer<QAbstractSocket> socket;
 
+    H2Type connectionType = H2Type::h2Alpn;
     // Connection preface:
     bool waitingClientPreface = false;
     bool waitingClientSettings = false;
@@ -170,7 +182,6 @@ private:
     quint32 streamRecvWindowSize = Http2::defaultSessionWindowSize;
 
     QByteArray responseBody;
-    bool clearTextHTTP2 = false;
     bool pushPromiseEnabled = false;
     quint32 lastPromisedStream = 0;
     QByteArray pushPath;
@@ -193,6 +204,7 @@ private:
     // Redirect, with status code 308, as soon as we've seen headers, while client
     // may still be sending DATA frames.  See tst_Http2::earlyResponse().
     bool redirectWhileReading = false;
+    bool redirectSent = false;
     quint16 targetPort = 0;
     QAtomicInt interrupted;
 protected slots:

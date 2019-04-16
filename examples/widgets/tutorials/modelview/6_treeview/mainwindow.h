@@ -51,9 +51,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
 
-QT_BEGIN_NAMESPACE // QT_BEGIN_NAMESPACE / QT_END_NAMESPACE are not needed in Qt user code
+QT_BEGIN_NAMESPACE
 class QTreeView; //forward declarations
 class QStandardItemModel;
 class QStandardItem;
@@ -66,11 +66,11 @@ class MainWindow : public QMainWindow
 private:
     QTreeView *treeView;
     QStandardItemModel *standardModel;
-    QList<QStandardItem *> prepareRow( const QString &first,
-                                       const QString &second,
-                                       const QString &third );
+    QList<QStandardItem *> prepareRow(const QString &first,
+                                      const QString &second,
+                                      const QString &third) const;
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 };
 
 #endif // MAINWINDOW_H

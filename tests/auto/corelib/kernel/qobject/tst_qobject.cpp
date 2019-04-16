@@ -41,6 +41,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QScopedPointer>
 #if QT_CONFIG(process)
 # include <QProcess>
 #endif
@@ -103,6 +104,7 @@ private slots:
     void deleteQObjectWhenDeletingEvent();
     void overloads();
     void isSignalConnected();
+    void isSignalConnectedAfterDisconnection();
     void qMetaObjectConnect();
     void qMetaObjectDisconnectOne();
     void sameName();
@@ -152,6 +154,8 @@ private slots:
     void mutableFunctor();
     void checkArgumentsForNarrowing();
     void nullReceiver();
+    void functorReferencesConnection();
+    void disconnectDisconnects();
 };
 
 struct QObjectCreatedOnShutdown
@@ -499,14 +503,13 @@ void tst_QObject::connectSlotsByName()
 
 void tst_QObject::qobject_castTemplate()
 {
-    QObject *o = 0;
-    QVERIFY( !::qobject_cast<QObject*>(o) );
+    QScopedPointer<QObject> o;
+    QVERIFY(!::qobject_cast<QObject*>(o.data()));
 
-    o = new SenderObject;
-    QVERIFY( ::qobject_cast<SenderObject*>(o) );
-    QVERIFY( ::qobject_cast<QObject*>(o) );
-    QVERIFY( !::qobject_cast<ReceiverObject*>(o) );
-    delete o;
+    o.reset(new SenderObject);
+    QVERIFY(::qobject_cast<SenderObject*>(o.data()));
+    QVERIFY(::qobject_cast<QObject*>(o.data()));
+    QVERIFY(!::qobject_cast<ReceiverObject*>(o.data()));
 }
 
 void tst_QObject::findChildren()
@@ -3408,12 +3411,11 @@ void tst_QObject::disconnectSelfInSlotAndDeleteAfterEmit()
 void tst_QObject::dumpObjectInfo()
 {
     QObject a, b;
-    QObject::connect(&a, SIGNAL(destroyed(QObject*)), &b, SLOT(deleteLater()));
-    a.disconnect(&b);
+    QObject::connect(&a, &QObject::destroyed, &b, &QObject::deleteLater);
     QTest::ignoreMessage(QtDebugMsg, "OBJECT QObject::unnamed");
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS OUT");
     QTest::ignoreMessage(QtDebugMsg, "        signal: destroyed(QObject*)");
-    QTest::ignoreMessage(QtDebugMsg, "          <Disconnected receiver>");
+    QTest::ignoreMessage(QtDebugMsg, "          <functor or function pointer>");
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS IN");
     QTest::ignoreMessage(QtDebugMsg, "        <None>");
     a.dumpObjectInfo(); // should not crash
@@ -3835,6 +3837,58 @@ void tst_QObject::isSignalConnected()
     QVERIFY(o.isSignalConnected(meta->method(meta->indexOfSignal("destroyed(QObject*)"))));
 
     QVERIFY(!o.isSignalConnected(QMetaMethod()));
+}
+
+void tst_QObject::isSignalConnectedAfterDisconnection()
+{
+    ManySignals o;
+    const QMetaObject *meta = o.metaObject();
+
+    const QMetaMethod sig00 = meta->method(meta->indexOfSignal("sig00()"));
+    QVERIFY(!o.isSignalConnected(sig00));
+    QObject::connect(&o, &ManySignals::sig00, qt_noop);
+    QVERIFY(o.isSignalConnected(sig00));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig00, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig00));
+
+    const QMetaMethod sig69 = meta->method(meta->indexOfSignal("sig69()"));
+    QVERIFY(!o.isSignalConnected(sig69));
+    QObject::connect(&o, &ManySignals::sig69, qt_noop);
+    QVERIFY(o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig69, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig69));
+
+    {
+        ManySignals o2;
+        QObject::connect(&o, &ManySignals::sig00, &o2, &ManySignals::sig00);
+        QVERIFY(o.isSignalConnected(sig00));
+        // o2 is destructed
+    }
+    QVERIFY(!o.isSignalConnected(sig00));
+
+    const QMetaMethod sig01 = meta->method(meta->indexOfSignal("sig01()"));
+    QObject::connect(&o, &ManySignals::sig00, qt_noop);
+    QObject::connect(&o, &ManySignals::sig01, qt_noop);
+    QObject::connect(&o, &ManySignals::sig69, qt_noop);
+    QVERIFY(o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig69, 0, 0));
+    QVERIFY(o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(!o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig00, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(!o.isSignalConnected(sig69));
+    QObject::connect(&o, &ManySignals::sig69, qt_noop);
+    QVERIFY(!o.isSignalConnected(sig00));
+    QVERIFY(o.isSignalConnected(sig01));
+    QVERIFY(o.isSignalConnected(sig69));
+    QVERIFY(QObject::disconnect(&o, &ManySignals::sig01, 0, 0));
+    QVERIFY(!o.isSignalConnected(sig00));
+    QVERIFY(!o.isSignalConnected(sig01));
+    QVERIFY(o.isSignalConnected(sig69));
 }
 
 void tst_QObject::qMetaObjectConnect()
@@ -4740,13 +4794,13 @@ class LotsOfSignalsAndSlots: public QObject
 
     public slots:
         void slot_v() {}
-        void slot_v_noexcept() Q_DECL_NOTHROW {}
+        void slot_v_noexcept() noexcept {}
         void slot_vi(int) {}
-        void slot_vi_noexcept() Q_DECL_NOTHROW {}
+        void slot_vi_noexcept() noexcept {}
         void slot_vii(int, int) {}
         void slot_viii(int, int, int) {}
         int slot_i() { return 0; }
-        int slot_i_noexcept() Q_DECL_NOTHROW { return 0; }
+        int slot_i_noexcept() noexcept { return 0; }
         int slot_ii(int) { return 0; }
         int slot_iii(int, int) { return 0; }
         int slot_iiii(int, int, int) { return 0; }
@@ -4760,18 +4814,18 @@ class LotsOfSignalsAndSlots: public QObject
         void slot_vPFvvE(fptr) {}
 
         void const_slot_v() const {};
-        void const_slot_v_noexcept() const Q_DECL_NOTHROW {}
+        void const_slot_v_noexcept() const noexcept {}
         void const_slot_vi(int) const {};
-        void const_slot_vi_noexcept(int) const Q_DECL_NOTHROW {}
+        void const_slot_vi_noexcept(int) const noexcept {}
 
         static void static_slot_v() {}
-        static void static_slot_v_noexcept() Q_DECL_NOTHROW {}
+        static void static_slot_v_noexcept() noexcept {}
         static void static_slot_vi(int) {}
-        static void static_slot_vi_noexcept(int) Q_DECL_NOTHROW {}
+        static void static_slot_vi_noexcept(int) noexcept {}
         static void static_slot_vii(int, int) {}
         static void static_slot_viii(int, int, int) {}
         static int static_slot_i() { return 0; }
-        static int static_slot_i_noexcept() Q_DECL_NOTHROW { return 0; }
+        static int static_slot_i_noexcept() noexcept { return 0; }
         static int static_slot_ii(int) { return 0; }
         static int static_slot_iii(int, int) { return 0; }
         static int static_slot_iiii(int, int, int) { return 0; }
@@ -4934,11 +4988,11 @@ void tst_QObject::connectCxx0xTypeMatching()
 
 }
 
-void receiverFunction_noexcept() Q_DECL_NOTHROW {}
-struct Functor_noexcept { void operator()() Q_DECL_NOTHROW {} };
+void receiverFunction_noexcept() noexcept {}
+struct Functor_noexcept { void operator()() noexcept {} };
 void tst_QObject::connectCxx17Noexcept()
 {
-    // this is about connecting signals to slots with the Q_DECL_NOTHROW qualifier
+    // this is about connecting signals to slots with the noexcept qualifier
     // as semantics changed due to http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html
     typedef LotsOfSignalsAndSlots Foo;
     Foo obj;
@@ -5975,7 +6029,6 @@ void tst_QObject::connectFunctorArgDifference()
     QStringListModel model;
     connect(&model, &QStringListModel::rowsInserted, SlotFunctor());
 
-#if defined(Q_COMPILER_LAMBDA)
     connect(&timer, &QTimer::timeout, [=](){});
     connect(&timer, &QTimer::objectNameChanged, [=](const QString &){});
     connect(qApp, &QCoreApplication::aboutToQuit, [=](){});
@@ -5983,7 +6036,6 @@ void tst_QObject::connectFunctorArgDifference()
     connect(&timer, &QTimer::objectNameChanged, [=](){});
     connect(&model, &QStringListModel::rowsInserted, [=](){});
     connect(&model, &QStringListModel::rowsInserted, [=](const QModelIndex &){});
-#endif
 
     QVERIFY(true);
 }
@@ -6021,7 +6073,6 @@ void tst_QObject::connectFunctorQueued()
     e.exec();
     QCOMPARE(status, 2);
 
-#if defined(Q_COMPILER_LAMBDA)
     status = 1;
     connect(&obj, &SenderObject::signal1, this, [&status] { status = 2; }, Qt::QueuedConnection);
 
@@ -6029,7 +6080,6 @@ void tst_QObject::connectFunctorQueued()
     QCOMPARE(status, 1);
     e.exec();
     QCOMPARE(status, 2);
-#endif
 }
 
 void tst_QObject::connectFunctorWithContext()
@@ -6063,7 +6113,6 @@ void tst_QObject::connectFunctorWithContext()
     e.exec();
     QCOMPARE(status, 2);
 
-#if defined(Q_COMPILER_LAMBDA)
     status = 1;
     connect(&obj, &SenderObject::signal1, this, [this, &status, &obj] { status = 2; QCOMPARE(sender(), &obj); }, Qt::QueuedConnection);
 
@@ -6071,7 +6120,6 @@ void tst_QObject::connectFunctorWithContext()
     QCOMPARE(status, 1);
     e.exec();
     QCOMPARE(status, 2);
-#endif
 
     // Free
     context->deleteLater();
@@ -6381,7 +6429,7 @@ void connectFunctorOverload_impl(Signal signal, int expOverload, QList<QVariant>
 
 void tst_QObject::connectFunctorOverloads()
 {
-#if defined (Q_COMPILER_DECLTYPE) && defined (Q_COMPILER_VARIADIC_TEMPLATES)
+#if defined (Q_COMPILER_VARIADIC_TEMPLATES)
     connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_ii, 1,
                                 (QList<QVariant>() << 1 << 2));
     connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_iiS, 1,
@@ -6555,7 +6603,6 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
     }
     QCOMPARE(countedStructObjectsCount, 0);
     {
-#if defined(Q_COMPILER_LAMBDA)
         CountedStruct s;
         QCOMPARE(countedStructObjectsCount, 1);
         QTimer timer;
@@ -6565,7 +6612,6 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
         QCOMPARE(countedStructObjectsCount, 2);
         QVERIFY(QObject::disconnect(c));
         QCOMPARE(countedStructObjectsCount, 1);
-#endif // Q_COMPILER_LAMBDA
     }
     QCOMPARE(countedStructObjectsCount, 0);
 }
@@ -6613,7 +6659,6 @@ void tst_QObject::contextDoesNotLeakFunctor()
     }
     QCOMPARE(countedStructObjectsCount, 0);
     {
-#if defined(Q_COMPILER_LAMBDA)
         CountedStruct s;
         QEventLoop e;
         ContextObject *context = new ContextObject;
@@ -6626,7 +6671,6 @@ void tst_QObject::contextDoesNotLeakFunctor()
         context->deleteLater();
         e.exec();
         QCOMPARE(countedStructObjectsCount, 1);
-#endif // Q_COMPILER_LAMBDA
     }
     QCOMPARE(countedStructObjectsCount, 0);
 }
@@ -6674,16 +6718,16 @@ void tst_QObject::connectWarnings()
     r1.reset();
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): invalid null parameter");
-    connect(nullptr, &SubSender::signal1, &r1, &ReceiverObject::slot1);
+    connect(static_cast<const SenderObject *>(nullptr), &SubSender::signal1, &r1, &ReceiverObject::slot1);
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SubSender, Unknown): invalid null parameter");
-    connect(&sub, &SubSender::signal1, nullptr, &ReceiverObject::slot1);
+    connect(&sub, &SubSender::signal1, static_cast<ReceiverObject *>(nullptr), &ReceiverObject::slot1);
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, ReceiverObject): invalid null parameter");
-    connect(nullptr, &SenderObject::signal1, &r1, &ReceiverObject::slot1);
+    connect(static_cast<const SenderObject *>(nullptr), &SenderObject::signal1, &r1, &ReceiverObject::slot1);
 
     QTest::ignoreMessage(QtWarningMsg, "QObject::connect(SenderObject, Unknown): invalid null parameter");
-    connect(&obj, &SenderObject::signal1, nullptr, &ReceiverObject::slot1);
+    connect(&obj, &SenderObject::signal1, static_cast<ReceiverObject *>(nullptr), &ReceiverObject::slot1);
 }
 
 struct QmlReceiver : public QtPrivate::QSlotObjectBase
@@ -7432,6 +7476,167 @@ void tst_QObject::nullReceiver()
     QVERIFY(!connect(&o, &QObject::destroyed, nullObj, [] {}));
     QVERIFY(!connect(&o, &QObject::destroyed, nullObj, Functor_noexcept()));
     QVERIFY(!connect(&o, SIGNAL(destroyed()), nullObj, SLOT(deleteLater())));
+}
+
+void tst_QObject::functorReferencesConnection()
+{
+    countedStructObjectsCount = 0;
+    QMetaObject::Connection globalCon;
+    {
+        GetSenderObject obj;
+        CountedStruct counted(&obj);
+        QCOMPARE(countedStructObjectsCount, 1);
+        auto c = QSharedPointer<QMetaObject::Connection>::create();
+        int slotCalled = 0;
+        *c = connect(&obj, &GetSenderObject::aSignal, &obj, [&slotCalled, c, counted] {
+            QObject::disconnect(*c);
+            slotCalled++;
+        });
+        globalCon = *c; // keep a handle to the connection somewhere;
+        QVERIFY(globalCon);
+        QCOMPARE(countedStructObjectsCount, 2);
+        obj.triggerSignal();
+        QCOMPARE(slotCalled, 1);
+        QCOMPARE(countedStructObjectsCount, 1);
+        QVERIFY(!globalCon);
+        obj.triggerSignal();
+        QCOMPARE(slotCalled, 1);
+        QCOMPARE(countedStructObjectsCount, 1);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+
+    {
+        GetSenderObject obj;
+        CountedStruct counted(&obj);
+        QCOMPARE(countedStructObjectsCount, 1);
+        auto *rec = new QObject;
+        int slotCalled = 0;
+        globalCon = connect(&obj, &GetSenderObject::aSignal, rec, [&slotCalled, rec, counted] {
+            delete rec;
+            slotCalled++;
+        });
+        QCOMPARE(countedStructObjectsCount, 2);
+        obj.triggerSignal();
+        QCOMPARE(slotCalled, 1);
+        QCOMPARE(countedStructObjectsCount, 1);
+        QVERIFY(!globalCon);
+        obj.triggerSignal();
+        QCOMPARE(slotCalled, 1);
+        QCOMPARE(countedStructObjectsCount, 1);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        int slotCalled = 0;
+        QEventLoop eventLoop;
+        {
+            // Sender will be destroyed when the labda goes out of scope lambda, so it will exit the event loop
+            auto sender = QSharedPointer<GetSenderObject>::create();
+            connect(sender.data(), &QObject::destroyed, &eventLoop, &QEventLoop::quit, Qt::QueuedConnection);
+            globalCon = connect(sender.data(), &GetSenderObject::aSignal, this, [&slotCalled, sender, &globalCon, this] {
+                ++slotCalled;
+                // This signal will be connected, but should never be called as the sender will be destroyed before
+                auto c2 = connect(sender.data(), &GetSenderObject::aSignal, [] { QFAIL("Should not be called"); });
+                QVERIFY(c2);
+                QVERIFY(QObject::disconnect(sender.data(), nullptr, this, nullptr));
+                QVERIFY(!globalCon); // this connection has been disconnected
+                QVERIFY(c2); // sender should not have been deleted yet, only after the emission is done
+            });
+            QMetaObject::invokeMethod(sender.data(), &GetSenderObject::triggerSignal, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(sender.data(), &GetSenderObject::triggerSignal, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(sender.data(), &GetSenderObject::triggerSignal, Qt::QueuedConnection);
+        }
+        eventLoop.exec();
+        QCOMPARE(slotCalled, 1);
+    }
+
+    {
+        GetSenderObject obj;
+        CountedStruct counted(&obj);
+        QCOMPARE(countedStructObjectsCount, 1);
+        auto c1 = QSharedPointer<QMetaObject::Connection>::create();
+        auto c2 = QSharedPointer<QMetaObject::Connection>::create();
+        int slot1Called = 0;
+        int slot3Called = 0;
+        *c1 = connect(&obj, &GetSenderObject::aSignal, &obj, [&slot1Called, &slot3Called, &obj, c1, c2, counted] {
+            auto c3 = connect(&obj, &GetSenderObject::aSignal, [counted, &slot3Called] {
+                slot3Called++;
+            });
+            // top-level + the one in the 3 others lambdas
+            QCOMPARE(countedStructObjectsCount, 4);
+            QObject::disconnect(*c2);
+            slot1Called++;
+        });
+        connect(&obj, &GetSenderObject::aSignal, [] {}); // just a dummy signal to fill the connection list
+        *c2 = connect(&obj, &GetSenderObject::aSignal, [counted, c2] { QFAIL("should not be called"); });
+        QVERIFY(c1 && c2);
+        QCOMPARE(countedStructObjectsCount, 3); // top-level + c1 + c2
+        obj.triggerSignal();
+        QCOMPARE(slot1Called, 1);
+        QCOMPARE(slot3Called, 0);
+        QCOMPARE(countedStructObjectsCount, 3); // top-level + c1 + c3
+        QObject::disconnect(*c1);
+        QCOMPARE(countedStructObjectsCount, 2); // top-level + c3
+        obj.triggerSignal();
+        QCOMPARE(slot1Called, 1);
+        QCOMPARE(slot3Called, 1);
+    }
+    {
+        struct DestroyEmit {
+            Q_DISABLE_COPY(DestroyEmit);
+            explicit DestroyEmit(SenderObject *obj) : obj(obj) {}
+            SenderObject *obj;
+            ~DestroyEmit() {
+                obj->emitSignal1();
+            }
+        };
+        SenderObject obj;
+        int slot1Called = 0;
+        int slot2Called = 0;
+        int slot3Called = 0;
+        auto c1 = QSharedPointer<QMetaObject::Connection>::create();
+        auto de = QSharedPointer<DestroyEmit>::create(&obj);
+        *c1 = connect(&obj, &SenderObject::signal1, [&slot1Called, &slot3Called, de, c1, &obj] {
+            connect(&obj, &SenderObject::signal1, [&slot3Called] { slot3Called++; });
+            slot1Called++;
+            QObject::disconnect(*c1);
+        });
+        de.clear();
+        connect(&obj, &SenderObject::signal1, [&slot2Called] { slot2Called++; });
+        obj.emitSignal1();
+        QCOMPARE(slot1Called, 1);
+        QCOMPARE(slot2Called, 2); // because also called from ~DestroyEmit
+        QCOMPARE(slot3Called, 1);
+    }
+}
+
+void tst_QObject::disconnectDisconnects()
+{
+    // Test what happens if the destructor of an functor slot also disconnects more slot;
+
+    SenderObject s1;
+    QScopedPointer<QObject> receiver(new QObject);
+
+    auto s2 = QSharedPointer<SenderObject>::create();
+    QPointer<QObject> s2_tracker = s2.data();
+    int count = 0;
+    connect(&s1, &SenderObject::signal1, [&count] { count++; }); // α
+    connect(&s1, &SenderObject::signal1, receiver.data(), [s2] { QFAIL("!!"); }); // β
+    connect(s2.data(), &SenderObject::signal1, receiver.data(), [] { QFAIL("!!"); });
+    connect(&s1, &SenderObject::signal2, receiver.data(), [] { QFAIL("!!"); });
+    connect(s2.data(), &SenderObject::signal2, receiver.data(), [] { QFAIL("!!"); });
+    connect(&s1, &SenderObject::signal1, [&count] { count++; }); // γ
+    connect(&s1, &SenderObject::signal2, [&count] { count++; }); // δ
+    s2.clear();
+
+    QVERIFY(s2_tracker);
+    receiver
+        .reset(); // this will delete the receiver which must also delete s2 as β is disconnected
+    QVERIFY(!s2_tracker);
+    // test that the data structures are still in order
+    s1.emitSignal1();
+    QCOMPARE(count, 2); // α + γ
+    s1.emitSignal2();
+    QCOMPARE(count, 3); // + δ
 }
 
 // Test for QtPrivate::HasQ_OBJECT_Macro

@@ -106,7 +106,7 @@ SubMarine::SubMarine(int type, const QString &name, int points) : PixmapItem(QSt
     //This is the initial state of the moving root state
     moving->setInitialState(movement);
 
-    movement->addTransition(this, SIGNAL(subMarineStateChanged()), moving);
+    movement->addTransition(this, &SubMarine::subMarineStateChanged, moving);
 
     //This is the initial state of the machine
     machine->setInitialState(moving);
@@ -115,23 +115,23 @@ SubMarine::SubMarine(int type, const QString &name, int points) : PixmapItem(QSt
     QFinalState *final = new QFinalState(machine);
 
     //If the moving animation is finished we move to the return state
-    movement->addTransition(movement, SIGNAL(animationFinished()), rotation);
+    movement->addTransition(movement, &QAnimationState::animationFinished, rotation);
 
     //If the return animation is finished we move to the moving state
-    rotation->addTransition(rotation, SIGNAL(animationFinished()), movement);
+    rotation->addTransition(rotation, &QAnimationState::animationFinished, movement);
 
     //This state play the destroyed animation
     QAnimationState *destroyedState = new QAnimationState(machine);
     destroyedState->setAnimation(setupDestroyAnimation(this));
 
     //Play a nice animation when the submarine is destroyed
-    moving->addTransition(this, SIGNAL(subMarineDestroyed()), destroyedState);
+    moving->addTransition(this, &SubMarine::subMarineDestroyed, destroyedState);
 
     //Transition to final state when the destroyed animation is finished
-    destroyedState->addTransition(destroyedState, SIGNAL(animationFinished()), final);
+    destroyedState->addTransition(destroyedState, &QAnimationState::animationFinished, final);
 
     //The machine has finished to be executed, then the submarine is dead
-    connect(machine,SIGNAL(finished()),this, SIGNAL(subMarineExecutionFinished()));
+    connect(machine,&QState::finished,this, &SubMarine::subMarineExecutionFinished);
 
     machine->start();
 }

@@ -112,11 +112,12 @@ public:
     QColor color() const;
     void updateColor();
 
+protected:
+    bool event(QEvent *ev) override;
     void exposeEvent(QExposeEvent *event) override;
-
-private:
     void mousePressEvent(QMouseEvent *) override;
 
+private:
     int m_colorIndex;
     QColor m_color;
     const QSharedPointer<Renderer> m_renderer;

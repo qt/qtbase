@@ -32,6 +32,7 @@
 #include <QProcess>
 #include <QUrl>
 #include <QXmlStreamWriter>
+#include <unistd.h>
 
 Report::Report()
     : initialized(false), handler(0), written(false), numItems(0), numMismatches(0), settings(0),

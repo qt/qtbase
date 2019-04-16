@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qstringview.h"
+#include "qstring.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -74,19 +75,14 @@ QT_BEGIN_NAMESPACE
     string literal.
 
     QStringViews should be passed by value, not by reference-to-const:
-    \code
-    void myfun1(QStringView sv);        // preferred
-    void myfun2(const QStringView &sv); // compiles and works, but slower
-    \endcode
+    \snippet code/src_corelib_tools_qstringview.cpp 0
 
     If you want to give your users maximum freedom in what strings they can pass
     to your function, accompany the QStringView overload with overloads for
 
     \list
         \li \e QChar: this overload can delegate to the QStringView version:
-            \code
-            void fun(QChar ch) { fun(QStringView(&ch, 1)); }
-            \endcode
+            \snippet code/src_corelib_tools_qstringview.cpp 1
             even though, for technical reasons, QStringView cannot provide a
             QChar constructor by itself.
         \li \e QString: if you store an unmodified copy of the string and thus would
@@ -237,9 +233,9 @@ QT_BEGIN_NAMESPACE
 
     The range \c{[str,len)} must remain valid for the lifetime of this string view object.
 
-    Passing \c nullptr as \a str is safe if \a len is 0, too, and results in a null string view.
+    Passing \nullptr as \a str is safe if \a len is 0, too, and results in a null string view.
 
-    The behavior is undefined if \a len is negative or, when positive, if \a str is \c nullptr.
+    The behavior is undefined if \a len is negative or, when positive, if \a str is \nullptr.
 
     This constructor only participates in overload resolution if \c Char is a compatible
     character type. The compatible character types are: \c QChar, \c ushort, \c char16_t and
@@ -254,11 +250,11 @@ QT_BEGIN_NAMESPACE
     The range \c{[first,last)} must remain valid for the lifetime of
     this string view object.
 
-    Passing \c nullptr as \a first is safe if \a last is nullptr, too,
+    Passing \c \nullptr as \a first is safe if \a last is \nullptr, too,
     and results in a null string view.
 
     The behavior is undefined if \a last precedes \a first, or \a first
-    is \c nullptr and \a last is not.
+    is \nullptr and \a last is not.
 
     This constructor only participates in overload resolution if \c Char
     is a compatible character type. The compatible character types
@@ -274,7 +270,7 @@ QT_BEGIN_NAMESPACE
 
     \a str must remain valid for the lifetime of this string view object.
 
-    Passing \c nullptr as \a str is safe and results in a null string view.
+    Passing \nullptr as \a str is safe and results in a null string view.
 
     This constructor only participates in overload resolution if \a
     str is not an array and if \c Char is a compatible character
@@ -291,9 +287,7 @@ QT_BEGIN_NAMESPACE
     If you need the full array, use the constructor from pointer and
     size instead:
 
-    \code
-    auto sv = QStringView(array, std::size(array)); // using C++17 std::size()
-    \endcode
+    \snippet code/src_corelib_tools_qstringview.cpp 2
 
     \a string must remain valid for the lifetime of this string view
     object.
@@ -339,7 +333,7 @@ QT_BEGIN_NAMESPACE
 
     The string view will be empty if and only if \c{str.empty()}. It is unspecified
     whether this constructor can result in a null string view (\c{str.data()} would
-    have to return \c nullptr for this).
+    have to return \nullptr for this).
 
     \sa isNull(), isEmpty()
 */
@@ -800,5 +794,35 @@ QT_BEGIN_NAMESPACE
 
     \sa QString::isRightToLeft()
 */
+
+/*!
+    \since 5.14
+
+    Transcribes this string into the given \a array.
+
+    Caller is responsible for ensuring \a array is large enough to hold the \t
+    wchar_t encoding of this string (allocating the array with the same length
+    as the string is always sufficient). The array is encoded in UTF-16 on
+    platforms where \t wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
+    systems), \t wchar_t is assumed to be 4 bytes wide and the data is written
+    in UCS-4.
+
+    \note This function writes no null terminator to the end of \a array.
+
+    Returns the number of \t wchar_t entries written to \a array.
+
+    \sa QString::toWCharArray()
+*/
+
+int QStringView::toWCharArray(wchar_t *array) const
+{
+    if (sizeof(wchar_t) == sizeof(QChar)) {
+        memcpy(array, data(), sizeof(QChar) * size());
+        return size();
+    } else {
+        return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), int(size()),
+                                      reinterpret_cast<uint *>(array));
+    }
+}
 
 QT_END_NAMESPACE

@@ -12,11 +12,11 @@ QMKSRC = $(SOURCE_PATH)\qmake
 #
 !if "$(QMAKESPEC)" == "win32-icc"
 CXX               = icl
-LINKER            = link
-CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11
+LINKER            = xilink
+CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11 /O3
 !elseif "$(QMAKESPEC)" == "win32-clang-msvc"
 CXX               = clang-cl
-LINKER            = link
+LINKER            = lld-link
 CFLAGS_EXTRA      = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value
 !else
 CXX               = cl
@@ -24,13 +24,11 @@ LINKER            = link
 CFLAGS_EXTRA      = /MP /wd4577 $(CFLAGS_CRT)
 !endif  # !win32-icc
 
-!if "$(QMAKESPEC)" != "win32-clang-msvc"
 CFLAGS_PCH        = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch
 PCH_OBJECT        = qmake_pch.obj
-!endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
-              -W2 -nologo -O1 \
+              -W2 -nologo -O2 \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
@@ -100,7 +98,6 @@ QTOBJS= \
 	qoperatingsystemversion.obj \
 	qoperatingsystemversion_win.obj \
 	qregexp.obj \
-	qtextcodec.obj \
 	qutfcodec.obj \
 	qstring.obj \
 	qstring_compat.obj \

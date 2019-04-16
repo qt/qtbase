@@ -61,10 +61,10 @@
 
 QPixmap cached(const QString &img)
 {
-    if (QPixmap *p = QPixmapCache::find(img))
-        return *p;
-
     QPixmap pm;
+    if (QPixmapCache::find(img, &pm))
+        return pm;
+
     pm = QPixmap::fromImage(QImage(img), Qt::OrderedDither | Qt::OrderedAlphaDither);
     if (pm.isNull())
         return QPixmap();
@@ -443,9 +443,9 @@ void ArthurStyle::polish(QWidget *widget)
     if (widget->layout() && qobject_cast<QGroupBox *>(widget)) {
         if (widget->findChildren<QGroupBox *>().size() == 0) {
             widget->layout()->setSpacing(0);
-            widget->layout()->setMargin(12);
+            widget->layout()->setContentsMargins(12, 12, 12, 12);
         } else {
-            widget->layout()->setMargin(13);
+            widget->layout()->setContentsMargins(13, 13, 13, 13);
         }
     }
 

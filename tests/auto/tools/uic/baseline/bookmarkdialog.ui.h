@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'bookmarkdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -148,13 +148,13 @@ public:
 
     void retranslateUi(QDialog *BookmarkDialog)
     {
-        BookmarkDialog->setWindowTitle(QApplication::translate("BookmarkDialog", "Add Bookmark", nullptr));
-        label->setText(QApplication::translate("BookmarkDialog", "Bookmark:", nullptr));
-        label_2->setText(QApplication::translate("BookmarkDialog", "Add in Folder:", nullptr));
-        toolButton->setText(QApplication::translate("BookmarkDialog", "+", nullptr));
+        BookmarkDialog->setWindowTitle(QCoreApplication::translate("BookmarkDialog", "Add Bookmark", nullptr));
+        label->setText(QCoreApplication::translate("BookmarkDialog", "Bookmark:", nullptr));
+        label_2->setText(QCoreApplication::translate("BookmarkDialog", "Add in Folder:", nullptr));
+        toolButton->setText(QCoreApplication::translate("BookmarkDialog", "+", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = bookmarkWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("BookmarkDialog", "1", nullptr));
-        newFolderButton->setText(QApplication::translate("BookmarkDialog", "New Folder", nullptr));
+        ___qtreewidgetitem->setText(0, QCoreApplication::translate("BookmarkDialog", "1", nullptr));
+        newFolderButton->setText(QCoreApplication::translate("BookmarkDialog", "New Folder", nullptr));
     } // retranslateUi
 
 };

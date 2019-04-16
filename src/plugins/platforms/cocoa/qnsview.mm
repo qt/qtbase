@@ -68,10 +68,12 @@
 // Private interface
 @interface QT_MANGLE_NAMESPACE(QNSView) ()
 - (BOOL)isTransparentForUserInput;
+@property (assign) NSView* previousSuperview;
+@property (assign) NSWindow* previousWindow;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (Drawing) <CALayerDelegate>
-- (BOOL)wantsLayerHelper;
+- (void)initDrawing;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
@@ -83,6 +85,7 @@
 @end
 
 @interface QT_MANGLE_NAMESPACE(QNSView) (Mouse)
+- (void)initMouse;
 - (NSPoint)screenMousePoint:(NSEvent *)theEvent;
 - (void)mouseMovedImpl:(NSEvent *)theEvent;
 - (void)mouseEnteredImpl:(NSEvent *)theEvent;
@@ -112,7 +115,6 @@
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) {
     QPointer<QCocoaWindow> m_platformWindow;
-    NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;
     Qt::MouseButtons m_acceptedMouseDowns;
     Qt::MouseButtons m_frameStrutButtons;
@@ -135,36 +137,19 @@
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
         m_platformWindow = platformWindow;
-        m_buttons = Qt::NoButton;
-        m_acceptedMouseDowns = Qt::NoButton;
-        m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
-        m_sendUpAsRightButton = false;
         m_inputSource = nil;
-        m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
-        m_scrolling = false;
         m_updatingDrag = false;
         m_currentlyInterpretedKeyEvent = nil;
-        m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(),
-            "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
-        m_trackingArea = nil;
 
         self.focusRingType = NSFocusRingTypeNone;
-        self.cursor = nil;
-        self.wantsLayer = [self wantsLayerHelper];
 
-        // Enable high-DPI OpenGL for retina displays. Enabling has the side
-        // effect that Cocoa will start calling glViewport(0, 0, width, height),
-        // overriding any glViewport calls in application code. This is usually not a
-        // problem, except if the application wants to have a "custom" viewport.
-        // (like the hellogl example)
-        if (m_platformWindow->window()->supportsOpenGL()) {
-            self.wantsBestResolutionOpenGLSurface = qt_mac_resolveOption(YES, m_platformWindow->window(),
-                "_q_mac_wantsBestResolutionOpenGLSurface", "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
-            // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
-        }
+        self.previousSuperview = nil;
+        self.previousWindow = nil;
 
+        [self initDrawing];
+        [self initMouse];
         [self registerDragTypes];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -177,10 +162,8 @@
 
 - (void)dealloc
 {
-    if (m_trackingArea) {
-        [self removeTrackingArea:m_trackingArea];
-        [m_trackingArea release];
-    }
+    qCDebug(lcQpaWindow) << "Deallocating" << self;
+
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];
@@ -204,8 +187,40 @@
     return description;
 }
 
+// ----------------------------- Re-parenting ---------------------------------
+
+- (void)removeFromSuperview
+{
+    QMacAutoReleasePool pool;
+    [super removeFromSuperview];
+}
+
+- (void)viewWillMoveToSuperview:(NSView *)newSuperview
+{
+    Q_ASSERT(!self.previousSuperview);
+    self.previousSuperview = self.superview;
+
+    if (newSuperview == self.superview)
+        qCDebug(lcQpaWindow) << "Re-ordering" << self << "inside" << self.superview;
+    else
+        qCDebug(lcQpaWindow) << "Re-parenting" << self << "from" << self.superview << "to" << newSuperview;
+}
+
 - (void)viewDidMoveToSuperview
 {
+    auto cleanup = qScopeGuard([&] { self.previousSuperview = nil; });
+
+    if (self.superview == self.previousSuperview) {
+        qCDebug(lcQpaWindow) << "Done re-ordering" << self << "new index:"
+            << [self.superview.subviews indexOfObject:self];
+        return;
+    }
+
+    qCDebug(lcQpaWindow) << "Done re-parenting" << self << "into" << self.superview;
+
+    // Note: at this point the view's window property hasn't been updated to match the window
+    // of the new superview. We have to wait for viewDidMoveToWindow for that to be reflected.
+
     if (!m_platformWindow)
         return;
 
@@ -218,6 +233,36 @@
         QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+    Q_ASSERT(!self.previousWindow);
+    self.previousWindow = self.window;
+
+    // This callback is documented to be called also when a view is just moved between
+    // subviews in the same NSWindow, so we're not necessarily moving between NSWindows.
+    if (newWindow == self.window)
+        return;
+
+    qCDebug(lcQpaWindow) << "Moving" << self << "from" << self.window << "to" << newWindow;
+
+    // Note: at this point the superview has already been updated, so we know which view inside
+    // the new window the view will be a child of.
+}
+
+- (void)viewDidMoveToWindow
+{
+    auto cleanup = qScopeGuard([&] { self.previousWindow = nil; });
+
+    // This callback is documented to be called also when a view is just moved between
+    // subviews in the same NSWindow, so we're not necessarily moving between NSWindows.
+    if (self.window == self.previousWindow)
+        return;
+
+    qCDebug(lcQpaWindow) << "Done moving" << self << "to" << self.window;
+}
+
+// ----------------------------------------------------------------------------
 
 - (QWindow *)topLevelWindow
 {
@@ -246,12 +291,6 @@
 
     // Note: setNeedsDisplay is automatically called for
     // viewDidUnhide so no reason to override it here.
-}
-
-- (void)removeFromSuperview
-{
-    QMacAutoReleasePool pool;
-    [super removeFromSuperview];
 }
 
 - (BOOL)isTransparentForUserInput

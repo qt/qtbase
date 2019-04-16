@@ -44,6 +44,8 @@
 #include <QAction>
 #include <QKeySequence>
 
+static bool optNoPrinter = false;
+
 // Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
 // Compiles with Qt 4.8 and Qt 5.
 
@@ -92,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
     QAction *action = editMenu->addAction(tr("Cut"));
-    action->setShortcut(QKeySequence(QKeySequence::Quit));
+    action->setShortcut(QKeySequence(QKeySequence::Cut));
     action = editMenu->addAction(tr("Copy"));
     action->setShortcut(QKeySequence(QKeySequence::Copy));
     action = editMenu->addAction(tr("Paste"));
@@ -109,7 +111,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tabWidget->addTab(new WizardPanel, tr("QWizard"));
     tabWidget->addTab(new MessageBoxPanel, tr("QMessageBox"));
 #ifndef QT_NO_PRINTER
-    tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
+    if (!optNoPrinter)
+        tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
 #endif
     setCentralWidget(tabWidget);
 }
@@ -123,14 +126,20 @@ void MainWindow::aboutDialog()
 
 int main(int argc, char *argv[])
 {
-#if QT_VERSION >= 0x050700
+#if QT_VERSION >= 0x050600
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+
     for (int a = 1; a < argc; ++a) {
         if (!qstrcmp(argv[a], "-n")) {
             qDebug("AA_DontUseNativeDialogs");
+#if QT_VERSION >= 0x050700
             QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+#endif
+        } else if (!qstrcmp(argv[a], "-p")) {
+            optNoPrinter = true; // Avoid startup slowdown by printer code
         }
     }
-#endif // Qt 5
 
     QApplication a(argc, argv);
     MainWindow w;

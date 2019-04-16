@@ -157,7 +157,7 @@ public:
     QVectorPath path;
 
 private:
-    Q_DISABLE_COPY(QVectorPathConverter)
+    Q_DISABLE_COPY_MOVE(QVectorPathConverter)
 };
 
 class QPainterPathData : public QPainterPathPrivate
@@ -168,7 +168,7 @@ public:
         fillRule(Qt::OddEvenFill),
         dirtyBounds(false),
         dirtyControlBounds(false),
-        pathConverter(0)
+        pathConverter(nullptr)
     {
         require_moveTo = false;
         convex = false;
@@ -181,7 +181,7 @@ public:
         dirtyBounds(other.dirtyBounds),
         dirtyControlBounds(other.dirtyControlBounds),
         convex(other.convex),
-        pathConverter(0)
+        pathConverter(nullptr)
     {
         require_moveTo = false;
         elements = other.elements;
@@ -194,6 +194,7 @@ public:
     inline bool isClosed() const;
     inline void close();
     inline void maybeMoveTo();
+    inline void clear();
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
@@ -290,6 +291,25 @@ inline void QPainterPathData::maybeMoveTo()
     }
 }
 
+inline void QPainterPathData::clear()
+{
+    Q_ASSERT(ref.load() == 1);
+
+    elements.clear();
+
+    cStart = 0;
+
+    bounds = {};
+    controlBounds = {};
+
+    require_moveTo = false;
+    dirtyBounds = false;
+    dirtyControlBounds = false;
+    convex = false;
+
+    delete pathConverter;
+    pathConverter = nullptr;
+}
 #define KAPPA qreal(0.5522847498)
 
 

@@ -224,7 +224,7 @@ void Widget::updateUngroupButton()
 
 CustomItem * Widget::checkedItem() const
 {
-    CustomItem *item;
+    CustomItem *item = nullptr;
 
     if (ui->blue->isChecked())
         item = rectBlue;

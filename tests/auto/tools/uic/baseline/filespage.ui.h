@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'filespage.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -80,10 +80,10 @@ public:
 
     void retranslateUi(QWidget *FilesPage)
     {
-        FilesPage->setWindowTitle(QApplication::translate("FilesPage", "Form", nullptr));
-        fileLabel->setText(QApplication::translate("FilesPage", "Files:", nullptr));
-        removeButton->setText(QApplication::translate("FilesPage", "Remove", nullptr));
-        removeAllButton->setText(QApplication::translate("FilesPage", "Remove All", nullptr));
+        FilesPage->setWindowTitle(QCoreApplication::translate("FilesPage", "Form", nullptr));
+        fileLabel->setText(QCoreApplication::translate("FilesPage", "Files:", nullptr));
+        removeButton->setText(QCoreApplication::translate("FilesPage", "Remove", nullptr));
+        removeAllButton->setText(QCoreApplication::translate("FilesPage", "Remove All", nullptr));
     } // retranslateUi
 
 };

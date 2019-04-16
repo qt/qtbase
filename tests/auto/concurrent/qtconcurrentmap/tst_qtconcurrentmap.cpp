@@ -127,14 +127,11 @@ void tst_QtConcurrentMap::map()
         QtConcurrent::map(numberList.begin(), numberList.end(), &Number::multiplyBy2).waitForFinished();
         QCOMPARE(numberList, QList<Number>() << 4 << 8 << 12);
 
-#ifdef Q_COMPILER_LAMBDA
         // lambda
         QtConcurrent::map(list, [](int &x){x *= 2;}).waitForFinished();
         QCOMPARE(list, QList<int>() << 128 << 256 << 384);
         QtConcurrent::map(list.begin(), list.end(), [](int &x){x *= 2;}).waitForFinished();
         QCOMPARE(list, QList<int>() << 256 << 512 << 768);
-#endif
-
     }
 
     // functors don't take arguments by reference, making these no-ops
@@ -160,13 +157,11 @@ void tst_QtConcurrentMap::map()
         QtConcurrent::map(list.begin(), list.end(), multiplyBy2Immutable).waitForFinished();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
 
-#ifdef Q_COMPILER_LAMBDA
         // lambda
         QtConcurrent::map(list, [](int x){x *= 2;}).waitForFinished();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QtConcurrent::map(list.begin(), list.end(), [](int x){x *= 2;}).waitForFinished();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-#endif
     }
 
     // Linked lists and forward iterators
@@ -2026,12 +2021,12 @@ int fn(int &i)
     return i;
 }
 
-int fnConstNoExcept(const int &i) Q_DECL_NOTHROW
+int fnConstNoExcept(const int &i) noexcept
 {
     return i;
 }
 
-int fnNoExcept(int &i) Q_DECL_NOTHROW
+int fnNoExcept(int &i) noexcept
 {
     return i;
 }
@@ -2046,12 +2041,12 @@ QString changeType(int &)
     return QString();
 }
 
-QString changeTypeConstNoExcept(const int &) Q_DECL_NOTHROW
+QString changeTypeConstNoExcept(const int &) noexcept
 {
     return QString();
 }
 
-QString changeTypeNoExcept(int &) Q_DECL_NOTHROW
+QString changeTypeNoExcept(int &) noexcept
 {
     return QString();
 }
@@ -2066,12 +2061,12 @@ int changeTypeQStringList(QStringList &)
     return 0;
 }
 
-int changeTypeQStringListConstNoExcept(const QStringList &) Q_DECL_NOTHROW
+int changeTypeQStringListConstNoExcept(const QStringList &) noexcept
 {
     return 0;
 }
 
-int changeTypeQStringListNoExcept(QStringList &) Q_DECL_NOTHROW
+int changeTypeQStringListNoExcept(QStringList &) noexcept
 {
     return 0;
 }
@@ -2101,22 +2096,22 @@ public:
         return QString();
     }
 
-    MemFnTester fnNoExcept() Q_DECL_NOTHROW
+    MemFnTester fnNoExcept() noexcept
     {
         return MemFnTester();
     }
 
-    MemFnTester fnConstNoExcept() const Q_DECL_NOTHROW
+    MemFnTester fnConstNoExcept() const noexcept
     {
         return MemFnTester();
     }
 
-    QString changeTypeNoExcept() Q_DECL_NOTHROW
+    QString changeTypeNoExcept() noexcept
     {
         return QString();
     }
 
-    QString changeTypeConstNoExcept() const Q_DECL_NOTHROW
+    QString changeTypeConstNoExcept() const noexcept
     {
         return QString();
     }

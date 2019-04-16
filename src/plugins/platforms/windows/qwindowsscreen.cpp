@@ -89,7 +89,7 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     if (data->name == QLatin1String("WinDisc")) {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
-        if (const HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL)) {
+        if (const HDC hdc = CreateDC(info.szDevice, nullptr, nullptr, nullptr)) {
             const QDpi dpi = monitorDPI(hMonitor);
             data->dpi = dpi.first ? dpi : deviceDPI(hdc);
             data->depth = GetDeviceCaps(hdc, BITSPIXEL);
@@ -121,7 +121,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     QWindowsScreenData data;
     if (monitorData(hMonitor, &data)) {
         WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
-        // QPlatformIntegration::screenAdded() documentation specifies that first
+        // QWindowSystemInterface::handleScreenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
         // screen reported by Qt, unless we want to delete all existing screens and add them
@@ -137,7 +137,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
 static inline WindowsScreenDataList monitorData()
 {
     WindowsScreenDataList result;
-    EnumDisplayMonitors(0, 0, monitorEnumCallback, reinterpret_cast<LPARAM>(&result));
+    EnumDisplayMonitors(nullptr, nullptr, monitorEnumCallback, reinterpret_cast<LPARAM>(&result));
     return result;
 }
 
@@ -209,7 +209,7 @@ QPixmap QWindowsScreen::grabWindow(WId window, int xIn, int yIn, int width, int 
         height = windowSize.height() - yIn;
 
     // Create and setup bitmap
-    HDC display_dc = GetDC(0);
+    HDC display_dc = GetDC(nullptr);
     HDC bitmap_dc = CreateCompatibleDC(display_dc);
     HBITMAP bitmap = CreateCompatibleBitmap(display_dc, width, height);
     HGDIOBJ null_bitmap = SelectObject(bitmap_dc, bitmap);
@@ -226,7 +226,7 @@ QPixmap QWindowsScreen::grabWindow(WId window, int xIn, int yIn, int width, int 
     const QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
 
     DeleteObject(bitmap);
-    ReleaseDC(0, display_dc);
+    ReleaseDC(nullptr, display_dc);
 
     return pixmap;
 }
@@ -237,7 +237,7 @@ QPixmap QWindowsScreen::grabWindow(WId window, int xIn, int yIn, int width, int 
 
 QWindow *QWindowsScreen::topLevelAt(const QPoint &point) const
 {
-    QWindow *result = 0;
+    QWindow *result = nullptr;
     if (QWindow *child = QWindowsScreen::windowAt(point, CWP_SKIPINVISIBLE))
         result = QWindowsWindow::topLevelOf(child);
     qCDebug(lcQpaWindows) <<__FUNCTION__ << point << result;
@@ -246,7 +246,7 @@ QWindow *QWindowsScreen::topLevelAt(const QPoint &point) const
 
 QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
 {
-    QWindow* result = 0;
+    QWindow* result = nullptr;
     if (QPlatformWindow *bw = QWindowsContext::instance()->
             findPlatformWindowAt(GetDesktopWindow(), screenPoint, flags))
         result = bw->window();
@@ -521,7 +521,7 @@ void QWindowsScreenManager::removeScreen(int index)
         if (movedWindowCount)
             QWindowSystemInterface::flushWindowSystemEvents();
     }
-    QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeAt(index));
+    QWindowSystemInterface::handleScreenRemoved(m_screens.takeAt(index));
 }
 
 /*!
@@ -541,7 +541,7 @@ bool QWindowsScreenManager::handleScreenChanges()
         } else {
             QWindowsScreen *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
-            QWindowsIntegration::instance()->emitScreenAdded(newScreen,
+            QWindowSystemInterface::handleScreenAdded(newScreen,
                                                              newData.flags & QWindowsScreenData::PrimaryScreen);
             qCDebug(lcQpaWindows) << "New Monitor: " << newData;
         }    // exists
@@ -561,7 +561,7 @@ void QWindowsScreenManager::clearScreens()
 {
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
-        QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeLast());
+        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
 }
 
 const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
@@ -576,7 +576,7 @@ const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
 const QWindowsScreen *QWindowsScreenManager::screenForHwnd(HWND hwnd) const
 {
     HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
-    if (hMonitor == NULL)
+    if (hMonitor == nullptr)
         return nullptr;
     const auto it =
         std::find_if(m_screens.cbegin(), m_screens.cend(),

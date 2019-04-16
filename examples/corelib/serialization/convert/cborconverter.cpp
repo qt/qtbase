@@ -56,7 +56,6 @@
 #include <QCborArray>
 #include <QCborValue>
 #include <QDataStream>
-#include <QDebug>
 #include <QFloat16>
 #include <QFile>
 #include <QMetaType>

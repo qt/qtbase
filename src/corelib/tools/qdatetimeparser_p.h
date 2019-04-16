@@ -86,7 +86,7 @@ public:
         DateTimeEdit
     };
     QDateTimeParser(QVariant::Type t, Context ctx)
-        : currentSectionIndex(-1), display(0), cachedDay(-1), parserType(t),
+        : currentSectionIndex(-1), display(nullptr), cachedDay(-1), parserType(t),
         fixday(false), spec(Qt::LocalTime), context(ctx)
     {
         defaultLocale = QLocale::system();
@@ -218,9 +218,9 @@ private:
     ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex,
                                int offset, QString *text) const;
     int findMonth(const QString &str1, int monthstart, int sectionIndex,
-                  QString *monthName = 0, int *used = 0) const;
+                  QString *monthName = nullptr, int *used = nullptr) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
-                QString *dayName = 0, int *used = 0) const;
+                QString *dayName = nullptr, int *used = nullptr) const;
     ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
                                int maxVal, int minVal) const;
 #if QT_CONFIG(timezone)
@@ -236,7 +236,7 @@ private:
         PossiblePM = 3,
         PossibleBoth = 4
     };
-    AmPmFinder findAmPm(QString &str, int index, int *used = 0) const;
+    AmPmFinder findAmPm(QString &str, int index, int *used = nullptr) const;
 #endif // datestring
 
     bool potentialValue(const QStringRef &str, int min, int max, int index,

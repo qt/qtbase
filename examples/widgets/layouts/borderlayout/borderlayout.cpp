@@ -50,10 +50,10 @@
 
 #include "borderlayout.h"
 
-BorderLayout::BorderLayout(QWidget *parent, int margin, int spacing)
+BorderLayout::BorderLayout(QWidget *parent, const QMargins &margins, int spacing)
     : QLayout(parent)
 {
-    setMargin(margin);
+    setContentsMargins(margins);
     setSpacing(spacing);
 }
 
@@ -98,10 +98,7 @@ int BorderLayout::count() const
 QLayoutItem *BorderLayout::itemAt(int index) const
 {
     ItemWrapper *wrapper = list.value(index);
-    if (wrapper)
-        return wrapper->item;
-    else
-        return 0;
+    return wrapper ? wrapper->item : nullptr;
 }
 
 QSize BorderLayout::minimumSize() const
@@ -111,7 +108,7 @@ QSize BorderLayout::minimumSize() const
 
 void BorderLayout::setGeometry(const QRect &rect)
 {
-    ItemWrapper *center = 0;
+    ItemWrapper *center = nullptr;
     int eastWidth = 0;
     int westWidth = 0;
     int northHeight = 0;
@@ -189,7 +186,7 @@ QLayoutItem *BorderLayout::takeAt(int index)
         ItemWrapper *layoutStruct = list.takeAt(index);
         return layoutStruct->item;
     }
-    return 0;
+    return nullptr;
 }
 
 void BorderLayout::add(QLayoutItem *item, Position position)

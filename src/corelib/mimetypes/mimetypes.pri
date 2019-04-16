@@ -21,5 +21,5 @@ qtConfig(mimetype) {
         mimetypes/qmimeglobpattern.cpp \
         mimetypes/qmimeprovider.cpp
 
-    RESOURCES += mimetypes/mimetypes.qrc
+    qtConfig(mimetype-database): RESOURCES += mimetypes/mimetypes.qrc
 }

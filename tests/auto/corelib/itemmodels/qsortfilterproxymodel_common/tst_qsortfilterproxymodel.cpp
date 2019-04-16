@@ -38,6 +38,8 @@
 
 #include <qdebug.h>
 
+Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
+
 // Testing get/set functions
 void tst_QSortFilterProxyModel::getSetCheck()
 {
@@ -2361,6 +2363,45 @@ void tst_QSortFilterProxyModel::match()
         QCOMPARE(indexes.at(i).row(), expectedProxyItems.at(i));
 }
 
+QList<QStandardItem *> createStandardItemList(const QString &prefix, int n)
+{
+    QList<QStandardItem *> result;
+    for (int i = 0; i < n; ++i)
+        result.append(new QStandardItem(prefix + QString::number(i)));
+    return result;
+}
+
+// QTBUG-73864, recursive search in a tree model.
+
+void tst_QSortFilterProxyModel::matchTree()
+{
+    QStandardItemModel model(0, 2);
+    // Header00 Header01
+    // Header10 Header11
+    //   Item00 Item01
+    //   Item10 Item11
+    model.appendRow(createStandardItemList(QLatin1String("Header0"), 2));
+    auto headerRow = createStandardItemList(QLatin1String("Header1"), 2);
+    model.appendRow(headerRow);
+    headerRow.first()->appendRow(createStandardItemList(QLatin1String("Item0"), 2));
+    headerRow.first()->appendRow(createStandardItemList(QLatin1String("Item1"), 2));
+
+    auto item11 = model.match(model.index(1, 1), Qt::DisplayRole, QLatin1String("Item11"), 20,
+                              Qt::MatchRecursive).value(0);
+    QVERIFY(item11.isValid());
+    QCOMPARE(item11.data().toString(), QLatin1String("Item11"));
+
+    // Repeat in proxy model
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    auto proxyItem11 = proxy.match(proxy.index(1, 1), Qt::DisplayRole, QLatin1String("Item11"), 20,
+                              Qt::MatchRecursive).value(0);
+    QVERIFY(proxyItem11.isValid());
+    QCOMPARE(proxyItem11.data().toString(), QLatin1String("Item11"));
+
+    QCOMPARE(proxy.mapToSource(proxyItem11).internalId(), item11.internalId());
+}
+
 void tst_QSortFilterProxyModel::insertIntoChildrenlessItem()
 {
     QStandardItemModel model;
@@ -4277,7 +4318,7 @@ public:
     QModelIndex index(int, int, const QModelIndex& parent = QModelIndex()) const override
     {
         // QTBUG-44962: Would we always expect the parent to belong to the model
-        qDebug() << parent.model() << this;
+        qCDebug(lcItemModels) << parent.model() << this;
         Q_ASSERT(!parent.isValid() || parent.model() == this);
 
         quintptr parentId = (parent.isValid()) ? parent.internalId() : 0;
@@ -4363,7 +4404,7 @@ void tst_QSortFilterProxyModel::sourceLayoutChangeLeavesValidPersistentIndexes()
     // The use of qDebug here makes sufficient use of the heap to
     // cause corruption at runtime with normal use on linux (before
     // the fix). valgrind confirms the fix.
-    qDebug() << persistentIndex.parent();
+    qCDebug(lcItemModels) << persistentIndex.parent();
     QVERIFY(persistentIndex.parent().isValid());
 }
 

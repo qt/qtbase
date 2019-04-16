@@ -485,6 +485,32 @@ public:
     void setData(PixelFormat sourceFormat, PixelType sourceType,
                  const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
 
+    void setData(int xOffset, int yOffset, int zOffset,
+                 int width, int height, int depth,
+                 PixelFormat sourceFormat, PixelType sourceType,
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
+    void setData(int xOffset, int yOffset, int zOffset,
+                 int width, int height, int depth, int mipLevel,
+                 PixelFormat sourceFormat, PixelType sourceType,
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
+    void setData(int xOffset, int yOffset, int zOffset,
+                 int width, int height, int depth,
+                 int mipLevel, int layer,
+                 PixelFormat sourceFormat, PixelType sourceType,
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
+    void setData(int xOffset, int yOffset, int zOffset,
+                 int width, int height, int depth,
+                 int mipLevel, int layer,
+                 CubeMapFace cubeFace,
+                 PixelFormat sourceFormat, PixelType sourceType,
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
+    void setData(int xOffset, int yOffset, int zOffset,
+                 int width, int height, int depth,
+                 int mipLevel, int layer,
+                 CubeMapFace cubeFace, int layerCount,
+                 PixelFormat sourceFormat, PixelType sourceType,
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
+
     // Compressed data upload
     // ### Qt 6: remove the non-const void * overloads
 #if QT_DEPRECATED_SINCE(5, 3)

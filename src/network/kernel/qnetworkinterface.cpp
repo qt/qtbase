@@ -798,9 +798,7 @@ QList<QNetworkAddressEntry> QNetworkInterface::addressEntries() const
     no interface with that name. This function should produce the same result
     as the following code, but will probably execute faster.
 
-    \code
-        QNetworkInterface::interfaceFromName(name).index()
-    \endcode
+    \snippet code/src_network_kernel_qnetworkinterface.cpp 0
 
     \sa interfaceFromName(), interfaceNameFromIndex(), QNetworkDatagram::interfaceIndex()
 */
@@ -858,9 +856,7 @@ QNetworkInterface QNetworkInterface::interfaceFromIndex(int index)
     produce the same result as the following code, but will probably execute
     faster.
 
-    \code
-        QNetworkInterface::interfaceFromIndex(index).name()
-    \endcode
+    \snippet code/src_network_kernel_qnetworkinterface.cpp 1
 
     \sa interfaceFromIndex(), interfaceIndexFromName(), QNetworkDatagram::interfaceIndex()
 */

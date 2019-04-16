@@ -71,6 +71,16 @@
     formats, in addition to any image format plugins that support
     writing.
 
+    \note QImageWriter assumes exclusive control over the file or
+    device that is assigned. Any attempts to modify the assigned file
+    or device during the lifetime of the QImageWriter object will
+    yield undefined results. If immediate access to a resource is
+    desired, the use of a scope is the recommended method.
+
+    For example:
+
+    \snippet qimagewriter/main.cpp 0
+
     \sa QImageReader, QImageIOHandler, QImageIOPlugin
 */
 
@@ -397,8 +407,8 @@ void QImageWriter::setDevice(QIODevice *device)
 }
 
 /*!
-    Returns the device currently assigned to QImageWriter, or 0 if no
-    device has been assigned.
+    Returns the device currently assigned to QImageWriter, or \nullptr
+    if no device has been assigned.
 */
 QIODevice *QImageWriter::device() const
 {
@@ -638,6 +648,7 @@ QImageIOHandler::Transformations QImageWriter::transformation() const
     return d->transformation;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -669,6 +680,7 @@ QString QImageWriter::description() const
 {
     return d->description;
 }
+#endif
 
 /*!
     \since 4.1

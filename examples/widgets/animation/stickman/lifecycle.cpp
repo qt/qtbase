@@ -61,11 +61,11 @@ class KeyPressTransition: public QSignalTransition
 {
 public:
     KeyPressTransition(GraphicsView *receiver, Qt::Key key)
-        : QSignalTransition(receiver, SIGNAL(keyPressed(int))), m_key(key)
+        : QSignalTransition(receiver, &GraphicsView::keyPressed), m_key(key)
     {
     }
     KeyPressTransition(GraphicsView *receiver, Qt::Key key, QAbstractState *target)
-        : QSignalTransition(receiver, SIGNAL(keyPressed(int))), m_key(key)
+        : QSignalTransition(receiver, &GraphicsView::keyPressed), m_key(key)
     {
         setTargetState(target);
     }
@@ -132,8 +132,10 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     QTimer *timer = new QTimer(lightningBlink);
     timer->setSingleShot(true);
     timer->setInterval(100);
-    QObject::connect(lightningBlink, SIGNAL(entered()), timer, SLOT(start()));
-    QObject::connect(lightningBlink, SIGNAL(exited()), timer, SLOT(stop()));
+    QObject::connect(lightningBlink, &QAbstractState::entered,
+                     timer, QOverload<>::of(&QTimer::start));
+    QObject::connect(lightningBlink, &QAbstractState::exited,
+                     timer, &QTimer::stop);
 //! [5]
 
     m_dead = new QState(m_machine);
@@ -151,7 +153,7 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     // Lightning strikes at random
     m_alive->addTransition(new LightningStrikesTransition(lightningBlink));
 //! [0]
-    lightningBlink->addTransition(timer, SIGNAL(timeout()), m_dead);
+    lightningBlink->addTransition(timer, &QTimer::timeout, m_dead);
 //! [0]
 
     m_machine->setInitialState(m_alive);
@@ -173,9 +175,8 @@ void LifeCycle::addActivity(const QString &fileName, Qt::Key key, QObject *sende
     QState *state = makeState(m_alive, fileName);
     m_alive->addTransition(new KeyPressTransition(m_keyReceiver, key, state));
 
-    if((sender != NULL) || (signal != NULL)) {
+    if (sender || signal)
         m_alive->addTransition(sender, signal, state);
-    }
 }
 
 QState *LifeCycle::makeState(QState *parentState, const QString &animationFileName)
@@ -190,7 +191,7 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
     }
 
     const int frameCount = animation.totalFrames();
-    QState *previousState = 0;
+    QState *previousState = nullptr;
     for (int i=0; i<frameCount; ++i) {
         animation.setCurrentFrame(i);
 
@@ -202,18 +203,18 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
 //! [1]
 
         frameState->setObjectName(QString::fromLatin1("frame %0").arg(i));
-        if (previousState == 0)
+        if (previousState == nullptr)
             topLevel->setInitialState(frameState);
         else
 //! [2]
-            previousState->addTransition(previousState, SIGNAL(propertiesAssigned()), frameState);
+            previousState->addTransition(previousState, &QState::propertiesAssigned, frameState);
 //! [2]
 
         previousState = frameState;
     }
 
     // Loop
-    previousState->addTransition(previousState, SIGNAL(propertiesAssigned()), topLevel->initialState());
+    previousState->addTransition(previousState, &QState::propertiesAssigned, topLevel->initialState());
 
     return topLevel;
 

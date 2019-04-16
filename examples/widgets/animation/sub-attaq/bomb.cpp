@@ -83,8 +83,8 @@ void Bomb::launch(Bomb::Direction direction)
     anim->setEndValue(QPointF(x() + delta*2,scene()->height()));
     anim->setDuration(y()/2*60);
     launchAnimation->addAnimation(anim);
-    connect(anim,SIGNAL(valueChanged(QVariant)),this,SLOT(onAnimationLaunchValueChanged(QVariant)));
-    connect(this, SIGNAL(bombExploded()), launchAnimation, SLOT(stop()));
+    connect(anim,&QVariantAnimation::valueChanged,this,&Bomb::onAnimationLaunchValueChanged);
+    connect(this, &Bomb::bombExploded, launchAnimation, &QAbstractAnimation::stop);
     //We setup the state machine of the bomb
     QStateMachine *machine = new QStateMachine(this);
 
@@ -98,13 +98,13 @@ void Bomb::launch(Bomb::Direction direction)
     machine->setInitialState(launched);
 
     //### Add a nice animation when the bomb is destroyed
-    launched->addTransition(this, SIGNAL(bombExploded()),final);
+    launched->addTransition(this, &Bomb::bombExploded,final);
 
     //If the animation is finished, then we move to the final state
-    launched->addTransition(launched, SIGNAL(animationFinished()), final);
+    launched->addTransition(launched, &QAnimationState::animationFinished, final);
 
     //The machine has finished to be executed, then the boat is dead
-    connect(machine,SIGNAL(finished()),this, SIGNAL(bombExecutionFinished()));
+    connect(machine,&QState::finished,this, &Bomb::bombExecutionFinished);
 
     machine->start();
 
@@ -112,7 +112,9 @@ void Bomb::launch(Bomb::Direction direction)
 
 void Bomb::onAnimationLaunchValueChanged(const QVariant &)
 {
-    foreach (QGraphicsItem * item , collidingItems(Qt::IntersectsItemBoundingRect)) {
+    const QList<QGraphicsItem *> colItems =
+            collidingItems(Qt::IntersectsItemBoundingRect);
+    for (QGraphicsItem *item : colItems) {
         if (item->type() == SubMarine::Type) {
             SubMarine *s = static_cast<SubMarine *>(item);
             destroy();

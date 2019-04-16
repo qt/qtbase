@@ -172,7 +172,7 @@ void QVistaHelper::updateCustomMargins(bool vistaMargins)
         const QMargins customMarginsDp = vistaMargins
             ? QMargins(0, -titleBarSizeDp(), 0, 0)
             : QMargins();
-        const QVariant customMarginsV = qVariantFromValue(customMarginsDp);
+        const QVariant customMarginsV = QVariant::fromValue(customMarginsDp);
         // The dynamic property takes effect when creating the platform window.
         window->setProperty("_q_windowsCustomMargins", customMarginsV);
         // If a platform window exists, change via native interface.
@@ -293,9 +293,9 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     int glowOffset = 0;
 
     if (vistaState() == VistaAero) {
-        textHeight += 2 * glowSize();
-        textWidth += 2 * glowSize();
         glowOffset = glowSize();
+        textHeight += 2 * glowOffset;
+        textWidth += 2 * glowOffset;
     }
 
     const int titleLeft = (wizard->layoutDirection() == Qt::LeftToRight
@@ -339,7 +339,11 @@ void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
         SetWindowThemeAttribute(handle, WTA_NONCLIENT, &opt, sizeof(WTA_OPTIONS));
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QVistaHelper::winEvent(MSG* msg, qintptr *result)
+#else
 bool QVistaHelper::winEvent(MSG* msg, long* result)
+#endif
 {
     switch (msg->message) {
     case WM_NCHITTEST: {
@@ -401,7 +405,11 @@ void QVistaHelper::mouseEvent(QEvent *event)
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QVistaHelper::handleWinEvent(MSG *message, qintptr *result)
+#else
 bool QVistaHelper::handleWinEvent(MSG *message, long *result)
+#endif
 {
     if (message->message == WM_THEMECHANGED || message->message == WM_DWMCOMPOSITIONCHANGED)
         cachedVistaState = Dirty;
@@ -509,7 +517,11 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
 
     if (event->type() == QEvent::MouseMove) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        qintptr result;
+#else
         long result;
+#endif
         MSG msg;
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
@@ -523,7 +535,11 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
 
         if (mouseEvent->button() == Qt::LeftButton) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            qintptr result;
+#else
             long result;
+#endif
             MSG msg;
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
@@ -538,7 +554,11 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
 
         if (mouseEvent->button() == Qt::LeftButton) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            qintptr result;
+#else
             long result;
+#endif
             MSG msg;
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;

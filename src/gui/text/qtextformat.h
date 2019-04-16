@@ -188,6 +188,8 @@ public:
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
         FontHintingPreference = 0x1FE6,
+        FontFamilies = 0x1FE7,
+        FontStyleName = 0x1FE8,
         FontFamily = 0x2000,
         FontPointSize = 0x2001,
         FontSizeAdjustment = 0x2002,
@@ -428,6 +430,16 @@ public:
     inline QString fontFamily() const
     { return stringProperty(FontFamily); }
 
+    inline void setFontFamilies(const QStringList &families)
+    { setProperty(FontFamilies, QVariant(families)); }
+    inline QVariant fontFamilies() const
+    { return property(FontFamilies); }
+
+    inline void setFontStyleName(const QString &styleName)
+    { setProperty(FontStyleName, styleName); }
+    inline QVariant fontStyleName() const
+    { return property(FontStyleName); }
+
     inline void setFontPointSize(qreal size)
     { setProperty(FontPointSize, size); }
     inline qreal fontPointSize() const
@@ -540,9 +552,13 @@ public:
     inline QString anchorHref() const
     { return stringProperty(AnchorHref); }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setAnchorNames() instead")
     inline void setAnchorName(const QString &name)
     { setAnchorNames(QStringList(name)); }
+    QT_DEPRECATED_X("Use anchorNames() instead")
     QString anchorName() const;
+#endif
 
     inline void setAnchorNames(const QStringList &names)
     { setProperty(AnchorName, names); }

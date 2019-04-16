@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "libANGLE/renderer/d3d/VertexBuffer.h"
+#include "libANGLE/renderer/d3d/d3d11/ResourceManager11.h"
 
 namespace rx
 {
@@ -21,11 +22,13 @@ class VertexBuffer11 : public VertexBuffer
 {
   public:
     explicit VertexBuffer11(Renderer11 *const renderer);
-    virtual ~VertexBuffer11();
 
-    virtual gl::Error initialize(unsigned int size, bool dynamicUsage);
+    gl::Error initialize(unsigned int size, bool dynamicUsage) override;
 
+    // Warning: you should ensure binding really matches attrib.bindingIndex before using this
+    // function.
     gl::Error storeVertexAttributes(const gl::VertexAttribute &attrib,
+                                    const gl::VertexBinding &binding,
                                     GLenum currentValueType,
                                     GLint start,
                                     GLsizei count,
@@ -33,29 +36,27 @@ class VertexBuffer11 : public VertexBuffer
                                     unsigned int offset,
                                     const uint8_t *sourceData) override;
 
-    virtual gl::Error getSpaceRequired(const gl::VertexAttribute &attrib, GLsizei count, GLsizei instances,
-                                       unsigned int *outSpaceRequired) const;
+    unsigned int getBufferSize() const override;
+    gl::Error setBufferSize(unsigned int size) override;
+    gl::Error discard() override;
 
-    virtual unsigned int getBufferSize() const;
-    virtual gl::Error setBufferSize(unsigned int size);
-    virtual gl::Error discard();
+    void hintUnmapResource() override;
 
-    virtual void hintUnmapResource();
-
-    ID3D11Buffer *getBuffer() const;
+    const d3d11::Buffer &getBuffer() const;
 
   private:
+    ~VertexBuffer11() override;
     gl::Error mapResource();
 
     Renderer11 *const mRenderer;
 
-    ID3D11Buffer *mBuffer;
+    d3d11::Buffer mBuffer;
     unsigned int mBufferSize;
     bool mDynamicUsage;
 
     uint8_t *mMappedResourceData;
 };
 
-}
+}  // namespace rx
 
 #endif // LIBANGLE_RENDERER_D3D_D3D11_VERTEXBUFFER11_H_

@@ -1,4 +1,5 @@
 TEMPLATE=subdirs
 
 SUBDIRS = glyphshaping \
-    textperformance
+    textperformance \
+    nativetext

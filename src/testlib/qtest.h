@@ -49,7 +49,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qcborcommon.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
@@ -110,6 +112,12 @@ template<> inline char *toString(const QDateTime &dateTime)
 }
 #endif // datestring
 
+template<> inline char *toString(const QCborError &c)
+{
+    // use the Q_ENUM formatting
+    return toString(c.c);
+}
+
 template<> inline char *toString(const QChar &c)
 {
     const ushort uc = c.unicode();
@@ -119,6 +127,13 @@ template<> inline char *toString(const QChar &c)
         return qstrdup(msg);
     }
     return qstrdup(qPrintable(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16))));
+}
+
+template<> inline char *toString(const QModelIndex &idx)
+{
+    char msg[128];
+    qsnprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)", idx.row(), idx.column(), idx.internalPointer(), idx.model());
+    return qstrdup(msg);
 }
 
 template<> inline char *toString(const QPoint &p)
@@ -359,9 +374,30 @@ QT_END_NAMESPACE
 #  define QTEST_SET_MAIN_SOURCE_PATH  QTest::setMainSourcePath(__FILE__);
 #endif
 
+// Hooks for coverage-testing of QTestLib itself:
+#if QT_CONFIG(testlib_selfcover) && defined(__COVERAGESCANNER__)
+struct QtCoverageScanner
+{
+    QtCoverageScanner(const char *name)
+    {
+        __coveragescanner_clear();
+        __coveragescanner_testname(name);
+    }
+    ~QtCoverageScanner()
+    {
+        __coveragescanner_save();
+        __coveragescanner_testname("");
+    }
+};
+#define TESTLIB_SELFCOVERAGE_START(name) QtCoverageScanner _qtCoverageScanner(name);
+#else
+#define TESTLIB_SELFCOVERAGE_START(name)
+#endif
+
 #define QTEST_APPLESS_MAIN(TestObject) \
 int main(int argc, char *argv[]) \
 { \
+    TESTLIB_SELFCOVERAGE_START(TestObject) \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
@@ -388,48 +424,49 @@ int main(int argc, char *argv[]) \
 #  define QTEST_DISABLE_KEYPAD_NAVIGATION
 #endif
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
+#define QTEST_MAIN_IMPL(TestObject) \
+    TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     QTEST_DISABLE_KEYPAD_NAVIGATION \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    return QTest::qExec(&tc, argc, argv);
 
 #elif defined(QT_GUI_LIB)
 
 #include <QtTest/qtest_gui.h>
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
+#define QTEST_MAIN_IMPL(TestObject) \
+    TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QGuiApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    return QTest::qExec(&tc, argc, argv);
 
 #else
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
+#define QTEST_MAIN_IMPL(TestObject) \
+    TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    return QTest::qExec(&tc, argc, argv);
 
 #endif // QT_GUI_LIB
+
+#define QTEST_MAIN(TestObject) \
+int main(int argc, char *argv[]) \
+{ \
+    QTEST_MAIN_IMPL(TestObject) \
+}
 
 #define QTEST_GUILESS_MAIN(TestObject) \
 int main(int argc, char *argv[]) \
 { \
+    TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \

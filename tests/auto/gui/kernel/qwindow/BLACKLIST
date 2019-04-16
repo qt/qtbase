@@ -26,7 +26,6 @@ osx
 # QTBUG-69163
 android
 [visibility]
-osx-10.11 ci
 osx-10.12 ci
 
 [testInputEvents]
@@ -40,6 +39,7 @@ android
 [exposeEventOnShrink_QTBUG54040]
 # QTBUG-69155
 android
+opensuse
 [initialSize]
 # QTBUG-69159
 android

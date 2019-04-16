@@ -53,7 +53,8 @@
 #include "window.h"
 
 //! [0]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent)
 {
     QGroupBox *echoGroup = new QGroupBox(tr("Echo"));
 
@@ -122,16 +123,16 @@ Window::Window()
 //! [4]
 
 //! [5]
-    connect(echoComboBox, SIGNAL(activated(int)),
-            this, SLOT(echoChanged(int)));
-    connect(validatorComboBox, SIGNAL(activated(int)),
-            this, SLOT(validatorChanged(int)));
-    connect(alignmentComboBox, SIGNAL(activated(int)),
-            this, SLOT(alignmentChanged(int)));
-    connect(inputMaskComboBox, SIGNAL(activated(int)),
-            this, SLOT(inputMaskChanged(int)));
-    connect(accessComboBox, SIGNAL(activated(int)),
-            this, SLOT(accessChanged(int)));
+    connect(echoComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::echoChanged);
+    connect(validatorComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::validatorChanged);
+    connect(alignmentComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::alignmentChanged);
+    connect(inputMaskComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::inputMaskChanged);
+    connect(accessComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::accessChanged);
 //! [5]
 
 //! [6]
@@ -205,7 +206,7 @@ void Window::validatorChanged(int index)
 {
     switch (index) {
     case 0:
-        validatorLineEdit->setValidator(0);
+        validatorLineEdit->setValidator(nullptr);
         break;
     case 1:
         validatorLineEdit->setValidator(new QIntValidator(

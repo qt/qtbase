@@ -127,10 +127,8 @@ void ItemBase::duplicateSelectedItems(QGraphicsScene *scene)
     if (!scene)
         return;
 
-    QList<QGraphicsItem *> selected;
-    selected = scene->selectedItems();
-
-    foreach (QGraphicsItem *item, selected) {
+    const QList<QGraphicsItem *> selected = scene->selectedItems();
+    for (QGraphicsItem *item : selected) {
         ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase)
             scene->addItem(itemBase->createNew(itemBase->m_size, itemBase->pos().x() + itemBase->m_size, itemBase->pos().y()));
@@ -142,10 +140,8 @@ void ItemBase::deleteSelectedItems(QGraphicsScene *scene)
     if (!scene)
         return;
 
-    QList<QGraphicsItem *> selected;
-    selected = scene->selectedItems();
-
-    foreach (QGraphicsItem *item, selected) {
+    const QList<QGraphicsItem *> selected = scene->selectedItems();
+    for (QGraphicsItem *item : selected) {
         ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase)
             delete itemBase;
@@ -157,10 +153,8 @@ void ItemBase::growSelectedItems(QGraphicsScene *scene)
     if (!scene)
         return;
 
-    QList<QGraphicsItem *> selected;
-    selected = scene->selectedItems();
-
-    foreach (QGraphicsItem *item, selected) {
+    const QList<QGraphicsItem *> selected = scene->selectedItems();
+    for (QGraphicsItem *item : selected) {
         ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase) {
             itemBase->prepareGeometryChange();
@@ -176,10 +170,8 @@ void ItemBase::shrinkSelectedItems(QGraphicsScene *scene)
     if (!scene)
         return;
 
-    QList<QGraphicsItem *> selected;
-    selected = scene->selectedItems();
-
-    foreach (QGraphicsItem *item, selected) {
+    const QList<QGraphicsItem *> selected = scene->selectedItems();
+    for (QGraphicsItem *item : selected) {
         ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase) {
             itemBase->prepareGeometryChange();

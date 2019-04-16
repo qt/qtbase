@@ -191,7 +191,7 @@ static qreal progressForValue(const QEasingCurve &curve, qreal value)
 }
 
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 class QScrollTimer : public QAbstractAnimation
 {
 public:
@@ -230,7 +230,7 @@ private:
     bool ignoreUpdate;
     int skip;
 };
-#endif // QT_NO_ANIMATION
+#endif // animation
 
 /*!
     \class QScroller
@@ -249,18 +249,11 @@ private:
     scrolling speed and takes care of updates.
     QScroller can be triggered by a flick gesture
 
-    \code
-        QWidget *w = ...;
-        QScroller::grabGesture(w, QScroller::LeftMouseButtonGesture);
-    \endcode
+    \snippet code/src_widgets_util_qscroller.cpp 0
 
     or directly like this:
 
-    \code
-        QWidget *w = ...;
-        QScroller *scroller = QScroller::scroller(w);
-        scroller->scrollTo(QPointF(100, 100));
-    \endcode
+    \snippet code/src_widgets_util_qscroller.cpp 1
 
     The scrolled QObjects receive a QScrollPrepareEvent whenever the scroller needs to
     update its geometry information and a QScrollEvent whenever the content of the object should
@@ -495,6 +488,7 @@ QScroller::QScroller(QObject *target)
     : d_ptr(new QScrollerPrivate(this, target))
 {
     Q_ASSERT(target); // you can't create a scroller without a target in any normal way
+    setParent(target);
     Q_D(QScroller);
     d->init();
 }
@@ -896,7 +890,7 @@ QScrollerPrivate::QScrollerPrivate(QScroller *q, QObject *_target)
     , snapIntervalX(0.0)
     , snapFirstY(-1.0)
     , snapIntervalY(0.0)
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     , scrollTimer(new QScrollTimer(this))
 #endif
     , q_ptr(q)
@@ -938,7 +932,7 @@ const char *QScrollerPrivate::inputName(QScroller::Input input)
 
 void QScrollerPrivate::targetDestroyed()
 {
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     scrollTimer->stop();
 #endif
     delete q_ptr;
@@ -966,7 +960,7 @@ void QScrollerPrivate::timerTick()
         }
     }
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     scrollTimer->stop();
 #endif
 }
@@ -1690,7 +1684,7 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 
     switch (newstate) {
     case QScroller::Inactive:
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         scrollTimer->stop();
 #endif
 
@@ -1702,7 +1696,7 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         break;
 
     case QScroller::Pressed:
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         scrollTimer->stop();
 #endif
 
@@ -1712,14 +1706,14 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 
     case QScroller::Dragging:
         dragDistance = QPointF(0, 0);
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         if (state == QScroller::Pressed)
             scrollTimer->start();
 #endif
         break;
 
     case QScroller::Scrolling:
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         scrollTimer->start();
 #endif
         break;
@@ -1732,10 +1726,12 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         sendEvent(target, &se);
         firstScroll = true;
     }
-    if (state == QScroller::Dragging || state == QScroller::Scrolling)
-        qt_activeScrollers()->push_back(q);
-    else
+    if (state == QScroller::Dragging || state == QScroller::Scrolling) {
+        if (!qt_activeScrollers()->contains(q))
+            qt_activeScrollers()->push_back(q);
+    } else {
         qt_activeScrollers()->removeOne(q);
+    }
     emit q->stateChanged(state);
 }
 

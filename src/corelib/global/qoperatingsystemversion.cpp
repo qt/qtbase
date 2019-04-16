@@ -106,20 +106,12 @@ QT_BEGIN_NAMESPACE
     major version number component of the object on the left hand side of the expression (10) is
     greater than that of the object on the right (9):
 
-    \code
-    QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 9)
-    \endcode
+    \snippet code/src_corelib_global_qoperatingsystemversion.cpp 0
 
     This allows expressions for multiple operating systems to be joined with a logical OR operator
     and still work as expected. For example:
 
-    \code
-    auto current = QOperatingSystemVersion::current();
-    if (current >= QOperatingSystemVersion::OSXYosemite ||
-        current >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
-        // returns true on macOS >= 10.10 and iOS >= 8.0, but false on macOS < 10.10 and iOS < 8.0
-    }
-    \endcode
+    \snippet code/src_corelib_global_qoperatingsystemversion.cpp 1
 
     A more naive comparison algorithm might incorrectly return true on all versions of macOS,
     including Mac OS 9. This behavior is achieved by overloading the comparison operators to return

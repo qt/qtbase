@@ -10,14 +10,18 @@
 #ifndef LIBANGLE_RENDERER_D3D_D3D11_WINRT_INSPECTABLENATIVEWINDOW_H_
 #define LIBANGLE_RENDERER_D3D_D3D11_WINRT_INSPECTABLENATIVEWINDOW_H_
 
-#include "libANGLE/renderer/d3d/d3d11/NativeWindow.h"
-
+#include "common/debug.h"
 #include "common/platform.h"
 
 #include "angle_windowsstore.h"
 
+#include <EGL/eglplatform.h>
+
+#include <windows.applicationmodel.core.h>
 #include <windows.ui.xaml.h>
 #include <windows.ui.xaml.media.dxinterop.h>
+#include <wrl.h>
+#include <wrl/wrappers/corewrappers.h>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -26,7 +30,8 @@ using namespace ABI::Windows::Foundation::Collections;
 
 namespace rx
 {
-long ConvertDipsToPixels(float dips);
+float ConvertDipsToPixels(float dips);
+float GetLogicalDpi();
 
 class InspectableNativeWindow
 {
@@ -35,24 +40,25 @@ class InspectableNativeWindow
         mSupportsSwapChainResize(true),
         mSwapChainSizeSpecified(false),
         mSwapChainScaleSpecified(false),
-        mSwapChainScale(1.0f),
         mClientRectChanged(false),
         mClientRect({0,0,0,0}),
-        mNewClientRect({0,0,0,0}),
-        mRotationFlags(NativeWindow::RotateNone)
+        mNewClientRect({0,0,0,0})
     {
         mSizeChangedEventToken.value = 0;
+        mSwapChainScale = 96.0f / GetLogicalDpi();
+        if (mSwapChainScale != 1.0f)
+            mSwapChainScaleSpecified = true;
     }
     virtual ~InspectableNativeWindow(){}
 
     virtual bool initialize(EGLNativeWindowType window, IPropertySet *propertySet) = 0;
     virtual HRESULT createSwapChain(ID3D11Device *device,
-                                    DXGIFactory *factory,
+                                    IDXGIFactory2 *factory,
                                     DXGI_FORMAT format,
                                     unsigned int width,
                                     unsigned int height,
                                     bool containsAlpha,
-                                    DXGISwapChain **swapChain) = 0;
+                                    IDXGISwapChain1 **swapChain) = 0;
 
     bool getClientRect(RECT *rect)
     {
@@ -77,8 +83,7 @@ class InspectableNativeWindow
             // If the swapchain size was specified then we should ignore this call too
             if (!mSwapChainSizeSpecified)
             {
-                // We don't have to check if a swapchain scale was specified here; the default value is 1.0f which will have no effect.
-                mNewClientRect = { 0, 0, ConvertDipsToPixels(newWindowSize.Width), ConvertDipsToPixels(newWindowSize.Height) };
+                mNewClientRect     = clientRect(newWindowSize);
                 mClientRectChanged = true;
 
                 // If a scale was specified, then now is the time to apply the scale matrix for the new swapchain size and window size
@@ -97,18 +102,9 @@ class InspectableNativeWindow
         }
     }
 
-    NativeWindow::RotationFlags rotationFlags() const
-    {
-        return mRotationFlags;
-    }
-
-    void setRotationFlags(NativeWindow::RotationFlags flags)
-    {
-        mRotationFlags = flags;
-    }
-
   protected:
     virtual HRESULT scaleSwapChain(const Size &windowSize, const RECT &clientRect) = 0;
+    RECT clientRect(const Size &size);
 
     bool mSupportsSwapChainResize; // Support for IDXGISwapChain::ResizeBuffers method
     bool mSwapChainSizeSpecified;  // If an EGLRenderSurfaceSizeProperty was specified
@@ -117,12 +113,10 @@ class InspectableNativeWindow
     RECT mClientRect;
     RECT mNewClientRect;
     bool mClientRectChanged;
-    NativeWindow::RotationFlags mRotationFlags;
 
     EventRegistrationToken mSizeChangedEventToken;
 };
 
-bool IsValidEGLNativeWindowType(EGLNativeWindowType window);
 bool IsCoreWindow(EGLNativeWindowType window, ComPtr<ABI::Windows::UI::Core::ICoreWindow> *coreWindow = nullptr);
 bool IsSwapChainPanel(EGLNativeWindowType window, ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> *swapChainPanel = nullptr);
 bool IsEGLConfiguredPropertySet(EGLNativeWindowType window, ABI::Windows::Foundation::Collections::IPropertySet **propertySet = nullptr, IInspectable **inspectable = nullptr);

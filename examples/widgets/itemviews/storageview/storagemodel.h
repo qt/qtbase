@@ -74,7 +74,7 @@ public:
         ColumnCount
     };
 
-    explicit StorageModel(QObject *parent = nullptr);
+    using QAbstractTableModel::QAbstractTableModel;
 
     int columnCount(const QModelIndex &parent) const override;
     int rowCount(const QModelIndex &parent) const override;

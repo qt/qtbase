@@ -74,7 +74,7 @@ public:
     void beginPaint(const QRegion &) override;
     void endPaint() override;
 
-    static bool createSystemVShmSegment(QXcbConnection *c, size_t segmentSize = 1,
+    static bool createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize = 1,
                                         void *shmInfo = nullptr);
 
 protected:
@@ -99,14 +99,13 @@ protected:
     void recreateImage(QXcbWindow *win, const QSize &size) override;
 
 private:
-#if QT_CONFIG(xcb_render)
     void initXRenderMode();
 
     xcb_pixmap_t m_xrenderPixmap = XCB_NONE;
     xcb_render_picture_t m_xrenderPicture = XCB_NONE;
     xcb_render_pictformat_t m_xrenderPictFormat  = XCB_NONE;
     xcb_render_picture_t m_windowPicture = XCB_NONE;
-#endif
+
     bool m_usingXRenderMode = false;
     bool m_useGrabbedBackgound = false;
     QPixmap m_grabbedBackground;

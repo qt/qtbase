@@ -40,8 +40,10 @@
 #include "qopenglvertexarrayobject.h"
 
 #include <QtCore/private/qobject_p.h>
+#include <QtCore/qthread.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qoffscreensurface.h>
+#include <QtGui/qguiapplication.h>
 
 #include <QtGui/qopenglfunctions_3_0.h>
 #include <QtGui/qopenglfunctions_3_2_core.h>
@@ -204,18 +206,25 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
     if (context && context != ctx) {
         oldContext = ctx;
         oldContextSurface = ctx ? ctx->surface() : 0;
-        // Cannot just make the current surface current again with another context.
-        // The format may be incompatible and some platforms (iOS) may impose
-        // restrictions on using a window with different contexts. Create an
-        // offscreen surface (a pbuffer or a hidden window) instead to be safe.
-        offscreenSurface.reset(new QOffscreenSurface);
-        offscreenSurface->setFormat(context->format());
-        offscreenSurface->create();
-        if (context->makeCurrent(offscreenSurface.data())) {
-            ctx = context;
-        } else {
-            qWarning("QOpenGLVertexArrayObject::destroy() failed to make VAO's context current");
+        // Before going through the effort of creating an offscreen surface
+        // check that we are on the GUI thread because otherwise many platforms
+        // will not able to create that offscreen surface.
+        if (QThread::currentThread() != qGuiApp->thread()) {
             ctx = 0;
+        } else {
+            // Cannot just make the current surface current again with another context.
+            // The format may be incompatible and some platforms (iOS) may impose
+            // restrictions on using a window with different contexts. Create an
+            // offscreen surface (a pbuffer or a hidden window) instead to be safe.
+            offscreenSurface.reset(new QOffscreenSurface);
+            offscreenSurface->setFormat(context->format());
+            offscreenSurface->create();
+            if (context->makeCurrent(offscreenSurface.data())) {
+                ctx = context;
+            } else {
+                qWarning("QOpenGLVertexArrayObject::destroy() failed to make VAO's context current");
+                ctx = 0;
+            }
         }
     }
 
@@ -224,7 +233,7 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
         context = 0;
     }
 
-    if (vao) {
+    if (vao && ctx) {
         switch (vaoFuncsType) {
 #ifndef QT_OPENGL_ES_2
         case Core_3_2:

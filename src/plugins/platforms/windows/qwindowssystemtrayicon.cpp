@@ -103,6 +103,13 @@ static void setIconContents(NOTIFYICONDATA &tnd, const QString &tip, HICON hIcon
     qStringToLimitedWCharArray(tip, tnd.szTip, sizeof(tnd.szTip) / sizeof(wchar_t));
 }
 
+static void setIconVisibility(NOTIFYICONDATA &tnd, bool v)
+{
+    tnd.uFlags |= NIF_STATE;
+    tnd.dwStateMask = NIS_HIDDEN;
+    tnd.dwState = v ? 0 : NIS_HIDDEN;
+}
+
 // Match the HWND of the dummy window to the instances
 struct QWindowsHwndSystemTrayIconEntry
 {
@@ -153,7 +160,7 @@ static inline HWND createTrayIconMessageWindow()
 {
     QWindowsContext *ctx = QWindowsContext::instance();
     if (!ctx)
-        return 0;
+        return nullptr;
     // Register window class in the platform plugin.
     const QString className =
         ctx->registerWindowClass(QStringLiteral("QTrayIconMessageWindowClass"),
@@ -163,7 +170,8 @@ static inline HWND createTrayIconMessageWindow()
                           windowName, WS_OVERLAPPED,
                           CW_USEDEFAULT, CW_USEDEFAULT,
                           CW_USEDEFAULT, CW_USEDEFAULT,
-                          NULL, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
+                          nullptr, nullptr,
+                          static_cast<HINSTANCE>(GetModuleHandle(nullptr)), nullptr);
 }
 
 /*!
@@ -176,12 +184,6 @@ static inline HWND createTrayIconMessageWindow()
 
 QWindowsSystemTrayIcon::QWindowsSystemTrayIcon()
 {
-    // For restoring the tray icon after explorer crashes
-    if (!MYWM_TASKBARCREATED)
-        MYWM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-    // Allow the WM_TASKBARCREATED message through the UIPI filter
-    ChangeWindowMessageFilterEx(m_hwnd, MYWM_TASKBARCREATED, MSGFLT_ALLOW, 0);
-    qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this << "MYWM_TASKBARCREATED=" << MYWM_TASKBARCREATED;
 }
 
 QWindowsSystemTrayIcon::~QWindowsSystemTrayIcon()
@@ -193,12 +195,15 @@ QWindowsSystemTrayIcon::~QWindowsSystemTrayIcon()
 void QWindowsSystemTrayIcon::init()
 {
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this;
-    ensureInstalled();
+    m_visible = true;
+    if (!setIconVisible(m_visible))
+        ensureInstalled();
 }
 
 void QWindowsSystemTrayIcon::cleanup()
 {
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this;
+    m_visible = false;
     ensureCleanup();
 }
 
@@ -310,6 +315,13 @@ bool QWindowsSystemTrayIcon::ensureInstalled()
     m_hwnd = createTrayIconMessageWindow();
     if (Q_UNLIKELY(m_hwnd == nullptr))
         return false;
+    // For restoring the tray icon after explorer crashes
+    if (!MYWM_TASKBARCREATED)
+        MYWM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+    // Allow the WM_TASKBARCREATED message through the UIPI filter
+    ChangeWindowMessageFilterEx(m_hwnd, MYWM_TASKBARCREATED, MSGFLT_ALLOW, nullptr);
+    qCDebug(lcQpaTrayIcon) << __FUNCTION__ << this << "MYWM_TASKBARCREATED=" << MYWM_TASKBARCREATED;
+
     QWindowsHwndSystemTrayIconEntry entry{m_hwnd, this};
     hwndTrayIconEntries()->append(entry);
     sendTrayMessage(NIM_ADD);
@@ -333,6 +345,18 @@ void QWindowsSystemTrayIcon::ensureCleanup()
     m_toolTip.clear();
 }
 
+bool QWindowsSystemTrayIcon::setIconVisible(bool visible)
+{
+    if (!isInstalled())
+        return false;
+    NOTIFYICONDATA tnd;
+    initNotifyIconData(tnd);
+    tnd.uID = q_uNOTIFYICONID;
+    tnd.hWnd = m_hwnd;
+    setIconVisibility(tnd, visible);
+    return Shell_NotifyIcon(NIM_MODIFY, &tnd) == TRUE;
+}
+
 bool QWindowsSystemTrayIcon::sendTrayMessage(DWORD msg)
 {
     NOTIFYICONDATA tnd;
@@ -340,6 +364,8 @@ bool QWindowsSystemTrayIcon::sendTrayMessage(DWORD msg)
     tnd.uID = q_uNOTIFYICONID;
     tnd.hWnd = m_hwnd;
     tnd.uFlags = NIF_SHOWTIP;
+    if (msg != NIM_DELETE && !m_visible)
+        setIconVisibility(tnd, m_visible);
     if (msg == NIM_ADD || msg == NIM_MODIFY)
         setIconContents(tnd, m_toolTip, m_hIcon);
     if (!Shell_NotifyIcon(msg, &tnd))
@@ -382,12 +408,20 @@ bool QWindowsSystemTrayIcon::winEvent(const MSG &message, long *result)
             emit activated(DoubleClick);     // release we must ignore it
             break;
         case WM_CONTEXTMENU: {
+            // QTBUG-67966: Coordinates may be out of any screen in PROCESS_DPI_UNAWARE mode
+            // since hi-res coordinates are delivered in this case (Windows issue).
+            // Default to primary screen with check to prevent a crash.
             const QPoint globalPos = QPoint(GET_X_LPARAM(message.wParam), GET_Y_LPARAM(message.wParam));
-            const QPlatformScreen *screen = QWindowsContext::instance()->screenManager().screenAtDp(globalPos);
-            emit contextMenuRequested(globalPos, screen);
-            emit activated(Context);
-            if (m_menu)
-                m_menu->trackPopupMenu(message.hwnd, globalPos.x(), globalPos.y());
+            const auto &screenManager = QWindowsContext::instance()->screenManager();
+            const QPlatformScreen *screen = screenManager.screenAtDp(globalPos);
+            if (!screen)
+                screen = screenManager.screens().value(0);
+            if (screen) {
+                emit contextMenuRequested(globalPos, screen);
+                emit activated(Context);
+                if (m_menu)
+                    m_menu->trackPopupMenu(message.hwnd, globalPos.x(), globalPos.y());
+            }
         }
             break;
         case NIN_BALLOONUSERCLICK:

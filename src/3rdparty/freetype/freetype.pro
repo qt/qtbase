@@ -69,8 +69,11 @@ DEFINES += FT2_BUILD_LIBRARY
 DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
 include(../zlib_dependency.pri)
 
-DEFINES += FT_CONFIG_OPTION_USE_PNG
 include($$OUT_PWD/../../gui/qtgui-config.pri)
-QMAKE_USE_PRIVATE += libpng
+QT_FOR_CONFIG += gui-private
+qtConfig(png) {
+    DEFINES += FT_CONFIG_OPTION_USE_PNG
+    QMAKE_USE_PRIVATE += libpng
+}
 
 DEFINES += TT_CONFIG_OPTION_SUBPIXEL_HINTING

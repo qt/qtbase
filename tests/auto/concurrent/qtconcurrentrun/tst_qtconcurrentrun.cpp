@@ -48,12 +48,8 @@ private slots:
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
-#ifdef Q_COMPILER_DECLTYPE
     void functor();
-#endif
-#ifdef Q_COMPILER_LAMBDA
     void lambda();
-#endif
 };
 
 void light()
@@ -126,23 +122,23 @@ public:
 class ANoExcept
 {
 public:
-    int member0() Q_DECL_NOTHROW { return 10; }
-    int member1(int in) Q_DECL_NOTHROW { return in; }
+    int member0() noexcept { return 10; }
+    int member1(int in) noexcept { return in; }
 
     typedef int result_type;
-    int operator()() Q_DECL_NOTHROW { return 10; }
-    int operator()(int in) Q_DECL_NOTHROW { return in; }
+    int operator()() noexcept { return 10; }
+    int operator()(int in) noexcept { return in; }
 };
 
 class AConstNoExcept
 {
 public:
-    int member0() const Q_DECL_NOTHROW { return 10; }
-    int member1(int in) const Q_DECL_NOTHROW { return in; }
+    int member0() const noexcept { return 10; }
+    int member1(int in) const noexcept { return in; }
 
     typedef int result_type;
-    int operator()() const Q_DECL_NOTHROW { return 10; }
-    int operator()(int in) const Q_DECL_NOTHROW { return in; }
+    int operator()() const noexcept { return 10; }
+    int operator()(int in) const noexcept { return in; }
 };
 
 void tst_QtConcurrentRun::returnValue()
@@ -648,7 +644,6 @@ void tst_QtConcurrentRun::exceptions()
 }
 #endif
 
-#ifdef Q_COMPILER_DECLTYPE
 // Compiler supports decltype
 struct Functor {
     int operator()() { return 42; }
@@ -706,9 +701,7 @@ void tst_QtConcurrentRun::functor()
         QtConcurrent::run(&pool, f, 1,2,3,4,5).waitForFinished();
     }
 }
-#endif
 
-#ifdef Q_COMPILER_LAMBDA
 // Compiler supports lambda
 void tst_QtConcurrentRun::lambda()
 {
@@ -742,7 +735,6 @@ void tst_QtConcurrentRun::lambda()
     }
 #endif
 }
-#endif
 
 QTEST_MAIN(tst_QtConcurrentRun)
 #include "tst_qtconcurrentrun.moc"

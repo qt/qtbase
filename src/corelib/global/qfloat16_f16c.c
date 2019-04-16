@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
 QT_FUNCTION_TARGET(F16C)
-void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_NOTHROW
+void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_NOEXCEPT
 {
     qsizetype i = 0;
     int epilog_i;
@@ -70,7 +70,7 @@ void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_N
 }
 
 QT_FUNCTION_TARGET(F16C)
-void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL_NOTHROW
+void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL_NOEXCEPT
 {
     qsizetype i = 0;
     int epilog_i;

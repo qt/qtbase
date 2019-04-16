@@ -61,17 +61,12 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
 #include "private/qcore_unix_p.h"
-#endif
-
-// most of the headers below are already included in qplatformdefs.h
-// also this lacks Large File support but that's probably irrelevant
-#if defined(QT_USE_MMAP)
 // for mmap
 #include <sys/mman.h>
-#include <errno.h>
 #endif
 
 #include <stdlib.h>
+#include <new>
 
 #include "qobject_p.h"
 
@@ -302,7 +297,7 @@ public:
     bool used_mmap : 1;
 #endif
     char *unmapPointer;     // used memory (mmap, new or resource file)
-    quint32 unmapLength;
+    qsizetype unmapLength;
 
     // The resource object in case we loaded the translations from a resource
     QResource *resource;
@@ -322,7 +317,7 @@ public:
     uint numerusRulesLength;
 
     bool do_load(const QString &filename, const QString &directory);
-    bool do_load(const uchar *data, int len, const QString &directory);
+    bool do_load(const uchar *data, qsizetype len, const QString &directory);
     QString do_translate(const char *context, const char *sourceText, const char *comment,
                          int n) const;
     void clear();
@@ -553,7 +548,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
             return false;
 
         qint64 fileSize = file.size();
-        if (fileSize < MagicLength || quint32(-1) <= fileSize)
+        if (fileSize < MagicLength || fileSize > std::numeric_limits<qsizetype>::max())
             return false;
 
         {
@@ -563,7 +558,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
                 return false;
         }
 
-        d->unmapLength = quint32(fileSize);
+        d->unmapLength = qsizetype(fileSize);
 
 #ifdef QT_USE_MMAP
 
@@ -571,28 +566,27 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
 #define MAP_FILE 0
 #endif
 #ifndef MAP_FAILED
-#define MAP_FAILED -1
+#define MAP_FAILED reinterpret_cast<void *>(-1)
 #endif
 
         int fd = file.handle();
         if (fd >= 0) {
-            char *ptr;
-            ptr = reinterpret_cast<char *>(
-                mmap(0, d->unmapLength,         // any address, whole file
-                     PROT_READ,                 // read-only memory
-                     MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
-                     fd, 0));                   // from offset 0 of fd
-            if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
+            int protection = PROT_READ;                 // read-only memory
+            int flags = MAP_FILE | MAP_PRIVATE;         // swap-backed map from file
+            void *ptr = QT_MMAP(nullptr, d->unmapLength,// any address, whole file
+                                protection, flags,
+                                fd, 0);                 // from offset 0 of fd
+            if (ptr != MAP_FAILED) {
                 file.close();
                 d->used_mmap = true;
-                d->unmapPointer = ptr;
+                d->unmapPointer = static_cast<char *>(ptr);
                 ok = true;
             }
         }
 #endif // QT_USE_MMAP
 
         if (!ok) {
-            d->unmapPointer = new char[d->unmapLength];
+            d->unmapPointer = new (std::nothrow) char[d->unmapLength];
             if (d->unmapPointer) {
                 file.seek(0);
                 qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
@@ -815,7 +809,7 @@ static quint32 read32(const uchar *data)
     return qFromBigEndian<quint32>(data);
 }
 
-bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &directory)
+bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString &directory)
 {
     bool ok = true;
     const uchar *end = data + len;
@@ -823,7 +817,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &dire
     data += MagicLength;
 
     QStringList dependencies;
-    while (data < end - 4) {
+    while (data < end - 5) {
         quint8 tag = read8(data++);
         quint32 blockLen = read32(data);
         data += 4;

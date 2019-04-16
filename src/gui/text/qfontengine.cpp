@@ -1022,8 +1022,8 @@ void QFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metr
     Returns \c true if the font table idetified by \a tag exists in the font;
     returns \c false otherwise.
 
-    If \a buffer is NULL, stores the size of the buffer required for the font table data,
-    in bytes, in \a length. If \a buffer is not NULL and the capacity
+    If \a buffer is \nullptr, stores the size of the buffer required for the font table data,
+    in bytes, in \a length. If \a buffer is not \nullptr and the capacity
     of the buffer, passed in \a length, is sufficient to store the font table data,
     also copies the font table data to \a buffer.
 
@@ -1755,7 +1755,7 @@ QImage QFontEngineBox::alphaMapForGlyph(glyph_t)
 // Multi engine
 // ------------------------------------------------------------------
 
-static inline uchar highByte(glyph_t glyph)
+uchar QFontEngineMulti::highByte(glyph_t glyph)
 { return glyph >> 24; }
 
 // strip high byte from glyph
@@ -1843,13 +1843,14 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     QFontDef request(fontDef);
     request.styleStrategy |= QFont::NoFontMerging;
     request.family = fallbackFamilyAt(at - 1);
+    request.families = QStringList(request.family);
 
     // At this point, the main script of the text has already been considered
     // when fetching the list of fallback families from the database, and the
     // info about the actual script of the characters may have been discarded,
     // so we do not check for writing system support, but instead just load
     // the family indiscriminately.
-    if (QFontEngine *engine = QFontDatabase::findFont(request, QFontDatabase::Any)) {
+    if (QFontEngine *engine = QFontDatabase::findFont(request, QChar::Script_Common)) {
         engine->fontDef.weight = request.weight;
         if (request.style > QFont::StyleNormal)
             engine->fontDef.style = request.style;

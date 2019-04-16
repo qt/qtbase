@@ -48,14 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include <stdlib.h>
-
 #include "sortingbox.h"
 
+#include <QtWidgets>
+
 //! [0]
-SortingBox::SortingBox()
+SortingBox::SortingBox(QWidget *parent)
+    : QWidget(parent)
 {
 //! [0] //! [1]
     setMouseTracking(true);
@@ -63,7 +62,7 @@ SortingBox::SortingBox()
     setBackgroundRole(QPalette::Base);
 //! [2]
 
-    itemInMotion = 0;
+    itemInMotion = nullptr;
 
 //! [3]
     newCircleButton = createToolButton(tr("New Circle"),
@@ -139,7 +138,7 @@ void SortingBox::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    foreach (ShapeItem shapeItem, shapeItems) {
+    for (const ShapeItem &shapeItem : qAsConst(shapeItems)) {
 //! [8] //! [9]
         painter.translate(shapeItem.position());
 //! [9] //! [10]
@@ -178,7 +177,7 @@ void SortingBox::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && itemInMotion) {
         moveItemTo(event->pos());
-        itemInMotion = 0;
+        itemInMotion = nullptr;
     }
 }
 //! [13]

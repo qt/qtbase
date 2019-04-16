@@ -47,7 +47,9 @@
 #include <qdebug.h>
 #include <qabstracttextdocumentlayout.h>
 #include "private/qtextdocumentlayout_p.h"
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 #include <qpainter.h>
 #include <qdir.h>
 #if QT_CONFIG(whatsthis)
@@ -274,7 +276,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
     Q_Q(QTextBrowser);
 #ifndef QT_NO_CURSOR
     if (q->isVisible())
-        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QGuiApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
     textOrSourceChanged = true;
 
@@ -293,7 +295,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
         if (data.type() == QVariant::String) {
             txt = data.toString();
         } else if (data.type() == QVariant::ByteArray) {
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
             QByteArray ba = data.toByteArray();
             QTextCodec *codec = Qt::codecForHtml(ba);
             txt = codec->toUnicode(ba);
@@ -308,7 +310,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
             const QStringRef firstTag = txt.leftRef(txt.indexOf(QLatin1Char('>')) + 1);
             if (firstTag.startsWith(QLatin1String("<qt")) && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
 #ifndef QT_NO_CURSOR
-                QApplication::restoreOverrideCursor();
+                QGuiApplication::restoreOverrideCursor();
 #endif
 #if QT_CONFIG(whatsthis)
                 QWhatsThis::showText(QCursor::pos(), txt, q);
@@ -353,7 +355,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
 
 #ifndef QT_NO_CURSOR
     if (q->isVisible())
-        QApplication::restoreOverrideCursor();
+        QGuiApplication::restoreOverrideCursor();
 #endif
     emit q->sourceChanged(url);
 }

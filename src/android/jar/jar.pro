@@ -2,7 +2,6 @@ TARGET = QtAndroid
 
 CONFIG += java
 DESTDIR = $$[QT_INSTALL_PREFIX/get]/jar
-API_VERSION = android-16
 
 PATHPREFIX = $$PWD/src/org/qtproject/qt5/android/
 

@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 typedef QDialog WordCountDialog;
 typedef QDialog FindDialog;
@@ -76,7 +76,8 @@ void EditorWindow::find()
 {
     if (!findDialog) {
         findDialog = new FindDialog(this);
-        connect(findDialog, SIGNAL(findNext()), this, SLOT(findNext()));
+        connect(findDialog, &FindDialog::findNext,
+                this, &EditorWindow::findNext);
     }
 
     findDialog->show();
@@ -249,9 +250,9 @@ Operation::Operation(QObject *parent)
     : QObject(parent), steps(0)
 {
     pd = new QProgressDialog("Operation in progress.", "Cancel", 0, 100);
-    connect(pd, SIGNAL(canceled()), this, SLOT(cancel()));
+    connect(pd, &QProgressDialog::canceled, this, &Operation::cancel);
     t = new QTimer(this);
-    connect(t, SIGNAL(timeout()), this, SLOT(perform()));
+    connect(t, &QTimer::timeout, this, &Operation::perform);
     t->start(0);
 }
 //! [4] //! [5]

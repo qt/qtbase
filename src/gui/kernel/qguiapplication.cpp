@@ -68,7 +68,7 @@
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
-#include <private/qcolorprofile_p.h>
+#include <private/qcolortrclut_p.h>
 #include <private/qscreen_p.h>
 
 #include <QtGui/qgenericpluginfactory.h>
@@ -208,10 +208,12 @@ bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
 
+qreal QGuiApplicationPrivate::m_maxDevicePixelRatio = 0.0;
+
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 extern void qRegisterGuiGetInterpolator();
 #endif
 
@@ -803,7 +805,8 @@ static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if (!QWindowPrivate::get(window)->isPopup() && !self->modalWindowList.isEmpty())
+    const bool popupType = (window->type() == Qt::ToolTip) || (window->type() == Qt::Popup);
+    if (!popupType && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
     updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
@@ -1020,7 +1023,7 @@ QList<QScreen *> QGuiApplication::screens()
 }
 
 /*!
-    Returns the screen at \a point, or \c nullptr if outside of any screen.
+    Returns the screen at \a point, or \nullptr if outside of any screen.
 
     The \a point is in relation to the virtualGeometry() of each set of virtual
     siblings. If the point maps to more than one set of virtual siblings the first
@@ -1092,17 +1095,19 @@ QScreen *QGuiApplication::screenAt(const QPoint &point)
 */
 qreal QGuiApplication::devicePixelRatio() const
 {
-    // Cache topDevicePixelRatio, iterate through the screen list once only.
-    static qreal topDevicePixelRatio = 0.0;
-    if (!qFuzzyIsNull(topDevicePixelRatio)) {
-        return topDevicePixelRatio;
-    }
+    if (!qFuzzyIsNull(QGuiApplicationPrivate::m_maxDevicePixelRatio))
+        return QGuiApplicationPrivate::m_maxDevicePixelRatio;
 
-    topDevicePixelRatio = 1.0; // make sure we never return 0.
+    QGuiApplicationPrivate::m_maxDevicePixelRatio = 1.0; // make sure we never return 0.
     for (QScreen *screen : qAsConst(QGuiApplicationPrivate::screen_list))
-        topDevicePixelRatio = qMax(topDevicePixelRatio, screen->devicePixelRatio());
+        QGuiApplicationPrivate::m_maxDevicePixelRatio = qMax(QGuiApplicationPrivate::m_maxDevicePixelRatio, screen->devicePixelRatio());
 
-    return topDevicePixelRatio;
+    return QGuiApplicationPrivate::m_maxDevicePixelRatio;
+}
+
+void QGuiApplicationPrivate::resetCachedDevicePixelRatio()
+{
+    m_maxDevicePixelRatio = 0.0;
 }
 
 /*!
@@ -1167,7 +1172,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     QStringList plugins = pluginNamesWithArguments.split(QLatin1Char(';'));
     QStringList platformArguments;
     QStringList availablePlugins = QPlatformIntegrationFactory::keys(platformPluginPath);
-    for (auto pluginArgument : plugins) {
+    for (const auto &pluginArgument : plugins) {
         // Split into platform name and arguments
         QStringList arguments = pluginArgument.split(QLatin1Char(':'));
         const QString name = arguments.takeFirst().toLower();
@@ -1420,7 +1425,7 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
-    Q_TRACE(QGuiApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QGuiApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -1528,7 +1533,7 @@ void QGuiApplicationPrivate::init()
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     // trigger registering of animation interpolators
     qRegisterGuiGetInterpolator();
 #endif
@@ -1584,8 +1589,6 @@ void QGuiApplicationPrivate::init()
     if (!QGuiApplicationPrivate::displayName)
         QObject::connect(q, &QGuiApplication::applicationNameChanged,
                          q, &QGuiApplication::applicationDisplayNameChanged);
-
-    Q_TRACE(QGuiApplicationPrivate_init_exit);
 }
 
 extern void qt_cleanupFontDatabase();
@@ -1638,8 +1641,6 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     platform_theme = 0;
     delete platform_integration;
     platform_integration = 0;
-    delete m_a8ColorProfile.load();
-    delete m_a32ColorProfile.load();
 
     window_list.clear();
     screen_list.clear();
@@ -1822,14 +1823,18 @@ bool QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(QWindow *window, 
     return platformWindow->windowEvent(event);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result)
+#else
 bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
+#endif
 {
     return window->nativeEvent(eventType, message, result);
 }
 
 void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
 {
-    Q_TRACE(QGuiApplicationPrivate_processWindowSystemEvent_entry, e->type);
+    Q_TRACE_SCOPE(QGuiApplicationPrivate_processWindowSystemEvent, e->type);
 
     switch(e->type) {
     case QWindowSystemInterfacePrivate::Mouse:
@@ -1939,8 +1944,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         qWarning() << "Unknown user input event type:" << e->type;
         break;
     }
-
-    Q_TRACE(QGuiApplicationPrivate_processWindowSystemEvent_exit, e->type);
 }
 
 /*! \internal
@@ -2182,8 +2185,6 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 #endif // QT_CONFIG(wheelevent)
 }
 
-// Remember, Qt convention is:  keyboard state is state *before*
-
 void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e)
 {
     QWindow *window = e->window.data();
@@ -2422,9 +2423,9 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         window->d_func()->resizeEventPending = false;
 
         if (actualGeometry.width() != lastReportedGeometry.width())
-            window->widthChanged(actualGeometry.width());
+            emit window->widthChanged(actualGeometry.width());
         if (actualGeometry.height() != lastReportedGeometry.height())
-            window->heightChanged(actualGeometry.height());
+            emit window->heightChanged(actualGeometry.height());
     }
 
     if (isMove) {
@@ -2433,9 +2434,9 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
         if (actualGeometry.x() != lastReportedGeometry.x())
-            window->xChanged(actualGeometry.x());
+            emit window->xChanged(actualGeometry.x());
         if (actualGeometry.y() != lastReportedGeometry.y())
-            window->yChanged(actualGeometry.y());
+            emit window->yChanged(actualGeometry.y());
     }
 }
 
@@ -2999,6 +3000,8 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
         for (QScreen* sibling : siblings)
             emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
     }
+
+    resetCachedDevicePixelRatio();
 }
 
 void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)
@@ -3014,6 +3017,8 @@ void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystem
     s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
 
     emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+
+    resetCachedDevicePixelRatio();
 }
 
 void QGuiApplicationPrivate::processScreenRefreshRateChange(QWindowSystemInterfacePrivate::ScreenRefreshRateEvent *e)
@@ -3069,41 +3074,8 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
 
 /*! \internal
 
-  This function updates an internal state to keep the source compatibility. Documentation of
-  QGuiApplication::mouseButtons() states - "The current state is updated synchronously as
-  the event queue is emptied of events that will spontaneously change the mouse state
-  (QEvent::MouseButtonPress and QEvent::MouseButtonRelease events)". But internally we have
-  been updating these state variables from various places to keep buttons returned by
-  mouseButtons() in sync with the systems state. This is not the documented behavior.
-
-  ### Qt6 - Remove QGuiApplication::mouseButtons()/keyboardModifiers() API? And here
-  are the reasons:
-
-  - It is an easy to misuse API by:
-
-   a) Application developers: The only place where the values of this API can be trusted is
-      when using within mouse handling callbacks. In these callbacks we work with the state
-      that was provided directly by the windowing system. Anywhere else it might not reflect what
-      user wrongly expects. We might not always receive a matching mouse release for a press event
-      (e.g. When dismissing a popup window on X11. Or when dnd enter Qt application with mouse
-      button down, we update mouse_buttons and then dnd leaves Qt application and does a drop
-      somewhere else) and hence mouseButtons() will be out-of-sync from users perspective, see
-      for example QTBUG-33161. BUT THIS IS NOT HOW THE API IS SUPPOSED TO BE USED. Since the only
-      safe place to use this API is from mouse event handlers, we might as well deprecate it and
-      pass down the button state if we are not already doing that everywhere where it matters.
-
-   b) Qt framework developers:
-
-      We see users complaining, we start adding hacks everywhere just to keep buttons in sync ;)
-      There are corner cases that can not be solved and adding this kind of hacks is never ending
-      task.
-
-  - Real mouse events, tablet mouse events, etc: all go through QGuiApplication::processMouseEvent,
-    and all share mouse_buttons. What if we want to support multiple mice in future? The API must
-    go.
-
-  - Motivation why this API is public is not clear. Could the same be achieved by a user by
-    installing an event filter?
+  This function updates an internal state to keep the source compatibility.
+  ### Qt 6 - Won't need after QTBUG-73829
 */
 static void updateMouseAndModifierButtonState(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
 {
@@ -3746,7 +3718,7 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
 
     Returns the active application override cursor.
 
-    This function returns 0 if no application cursor has been defined (i.e. the
+    This function returns \nullptr if no application cursor has been defined (i.e. the
     internal cursor stack is empty).
 
     \sa setOverrideCursor(), restoreOverrideCursor()
@@ -3982,12 +3954,24 @@ void QGuiApplicationPrivate::notifyThemeChanged()
         !QCoreApplication::testAttribute(Qt::AA_SetPalette)) {
         clearPalette();
         initPalette();
+        emit qGuiApp->paletteChanged(*app_pal);
+        if (is_app_running && !is_app_closing)
+            sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
         QMutexLocker locker(&applicationFontMutex);
         clearFontUnlocked();
         initFontUnlocked();
     }
+}
+
+void QGuiApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
+{
+    Q_UNUSED(toAllWidgets)
+    Q_UNUSED(className)
+
+    QEvent event(QEvent::ApplicationPaletteChange);
+    QGuiApplication::sendEvent(QGuiApplication::instance(), &event);
 }
 
 #if QT_CONFIG(draganddrop)
@@ -3998,32 +3982,26 @@ void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
 }
 #endif
 
-const QColorProfile *QGuiApplicationPrivate::colorProfileForA8Text()
+const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA8Text()
 {
 #ifdef Q_OS_WIN
-    QColorProfile *result = m_a8ColorProfile.load();
-    if (!result){
-        QColorProfile *cs = QColorProfile::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
-        if (!m_a8ColorProfile.testAndSetRelease(0, cs))
-            delete cs;
-        result = m_a8ColorProfile.load();
+    if (!m_a8ColorProfile){
+        QColorTrcLut *cs = QColorTrcLut::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
+        m_a8ColorProfile.reset(cs);
     }
-    return result;
+    return m_a8ColorProfile.get();
 #else
     return colorProfileForA32Text();
 #endif
 }
 
-const QColorProfile *QGuiApplicationPrivate::colorProfileForA32Text()
+const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA32Text()
 {
-    QColorProfile *result = m_a32ColorProfile.load();
-    if (!result){
-        QColorProfile *cs = QColorProfile::fromGamma(fontSmoothingGamma);
-        if (!m_a32ColorProfile.testAndSetRelease(0, cs))
-            delete cs;
-        result = m_a32ColorProfile.load();
+    if (!m_a32ColorProfile) {
+        QColorTrcLut *cs = QColorTrcLut::fromGamma(fontSmoothingGamma);
+        m_a32ColorProfile.reset(cs);
     }
-    return result;
+    return m_a32ColorProfile.get();
 }
 
 void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)

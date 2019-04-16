@@ -7,14 +7,14 @@ version: '3.4'
 # contexts gets changes, please make sure to update this compose file as well.
 # You can run command 'docker images' to list all the tag of test server images.
 # For example:
-# REPOSITORY              TAG                                       IMAGE ID
-# qt-test-server-apache2  e2a70c8b169c204e762b375885bd3a26cc40ba48  2ad5c8720317
+# REPOSITORY              TAG
+# qt-test-server-apache2  537fe302f61851d1663f41495230d8e3554a4a13
 
 services:
     apache2:
-        image: qt-test-server-apache2:cc9ea678b92bdda33acb9fa0159bb4ad0f3cd947
+        image: qt-test-server-apache2:537fe302f61851d1663f41495230d8e3554a4a13
         container_name: qt-test-server-apache2
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: apache2
         volumes:
             - ./common:/common:ro
@@ -23,14 +23,18 @@ services:
         command: [common/ssl.sh, service/apache2.sh]
 
     squid:
-        image: qt-test-server-squid:577d99307eea9a8cccfec944d25be2bce2fe99cc
+        image: qt-test-server-squid:9c32f41b19aca3d778733c4d8fb0ecc5955e893c
         container_name: qt-test-server-squid
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: squid
         depends_on:
             - apache2
         external_links:
-            - apache2:apache2.test-net.qt.local
+            - apache2:apache2.${TEST_DOMAIN}
+            - cyrus:cyrus.${TEST_DOMAIN}
+            - iptables:iptables.${TEST_DOMAIN}
+            - vsftpd:vsftpd.${TEST_DOMAIN}
+            - echo:echo.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./squid:/service:ro
@@ -38,9 +42,9 @@ services:
         command: service/squid.sh
 
     vsftpd:
-        image: qt-test-server-vsftpd:18896604c7e90b543e56d80c8a8aabdb65a590d0
+        image: qt-test-server-vsftpd:f3a9c8d793a77cc007c0e4e481bec01f9e3eeb7e
         container_name: qt-test-server-vsftpd
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: vsftpd
         volumes:
             - ./common:/common:ro
@@ -49,14 +53,14 @@ services:
         command: service/vsftpd.sh
 
     ftp-proxy:
-        image: qt-test-server-ftp-proxy:2c6c8f1ab6a364b540c43d705fb6f15a585cb2af
+        image: qt-test-server-ftp-proxy:d7de8b28392d173db512a558ccc84ead8bece2ae
         container_name: qt-test-server-ftp-proxy
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: ftp-proxy
         depends_on:
             - vsftpd
         external_links:
-            - vsftpd:vsftpd.test-net.qt.local
+            - vsftpd:vsftpd.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./ftp-proxy:/service:ro
@@ -64,20 +68,58 @@ services:
         command: service/ftp-proxy.sh
 
     danted:
-        image: qt-test-server-danted:327dd56c3c35db85b26fac93213a5a1918475bc7
+        image: qt-test-server-danted:35607f9b790524cf9690c7d12a9a401696b7b6b5
         container_name: qt-test-server-danted
-        domainname: test-net.qt.local
+        domainname: ${TEST_DOMAIN}
         hostname: danted
         depends_on:
             - apache2
             - vsftpd
             - ftp-proxy
         external_links:
-            - apache2:apache2.test-net.qt.local
-            - vsftpd:vsftpd.test-net.qt.local
-            - ftp-proxy:ftp-proxy.test-net.qt.local
+            - apache2:apache2.${TEST_DOMAIN}
+            - vsftpd:vsftpd.${TEST_DOMAIN}
+            - ftp-proxy:ftp-proxy.${TEST_DOMAIN}
+            - cyrus:cyrus.${TEST_DOMAIN}
+            - echo:echo.${TEST_DOMAIN}
         volumes:
             - ./common:/common:ro
             - ./danted:/service:ro
         entrypoint: common/startup.sh
         command: service/danted.sh
+
+    cyrus:
+        image: qt-test-server-cyrus:c8d72754abc0e501afd624ce838e4df35505abc9
+        container_name: qt-test-server-cyrus
+        domainname: ${TEST_DOMAIN}
+        hostname: cyrus
+        volumes:
+            - ./common:/common:ro
+            - ./cyrus:/service:ro
+        entrypoint: common/startup.sh
+        command: [common/ssl.sh, service/cyrus.sh]
+
+    iptables:
+        image: qt-test-server-iptables:cb7a8bd6d28602085a88c8ced7d67e28e75781e2
+        container_name: qt-test-server-iptables
+        domainname: ${TEST_DOMAIN}
+        hostname: iptables
+        volumes:
+            - ./common:/common:ro
+            - ./iptables:/service:ro
+        entrypoint: common/startup.sh
+        command: service/iptables.sh
+        cap_add:
+            - NET_ADMIN
+            - NET_RAW
+
+    echo:
+      image: qt-test-server-echo:b29ad409e746a834c1055fd0f7a55fd5056da6ea
+      container_name: qt-test-server-echo
+      domainname: ${TEST_DOMAIN}
+      hostname: echo
+      volumes:
+          - ./common:/common:ro
+          - ./echo:/service:ro
+      entrypoint: common/startup.sh
+      command: service/echo.sh

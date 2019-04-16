@@ -39,9 +39,7 @@
 
 #include "qmimeglobpattern_p.h"
 
-#ifndef QT_NO_MIMETYPE
-
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QDebug>
 
@@ -144,8 +142,8 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
         return (m_pattern == filename);
 
     // Other (quite rare) patterns, like "*.anim[1-9j]": use slow but correct method
-    QRegExp rx(m_pattern, Qt::CaseSensitive, QRegExp::WildcardUnix);
-    return rx.exactMatch(filename);
+    QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(m_pattern));
+    return rx.match(filename).hasMatch();
 }
 
 static bool isFastPattern(const QString &pattern)
@@ -239,5 +237,3 @@ void QMimeAllGlobPatterns::clear()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

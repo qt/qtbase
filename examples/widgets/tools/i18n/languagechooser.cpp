@@ -148,14 +148,14 @@ void LanguageChooser::checkBoxToggled()
 
 void LanguageChooser::showAll()
 {
-    foreach (QCheckBox *checkBox, qmFileForCheckBoxMap.keys())
-        checkBox->setChecked(true);
+    for (auto it = qmFileForCheckBoxMap.keyBegin(); it != qmFileForCheckBoxMap.keyEnd(); ++it)
+        (*it)->setChecked(true);
 }
 
 void LanguageChooser::hideAll()
 {
-    foreach (QCheckBox *checkBox, qmFileForCheckBoxMap.keys())
-        checkBox->setChecked(false);
+    for (auto it = qmFileForCheckBoxMap.keyBegin(); it != qmFileForCheckBoxMap.keyEnd(); ++it)
+        (*it)->setChecked(false);
 }
 
 QStringList LanguageChooser::findQmFiles()

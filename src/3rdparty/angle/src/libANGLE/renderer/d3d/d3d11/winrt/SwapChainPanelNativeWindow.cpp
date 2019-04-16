@@ -49,7 +49,8 @@ HRESULT RunOnUIThread(CODE &&code, const ComPtr<ICoreDispatcher> &dispatcher)
     }
     else
     {
-        Event waitEvent(CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS));
+        Event waitEvent(
+            CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS));
         if (!waitEvent.IsValid())
         {
             return E_FAIL;
@@ -78,7 +79,8 @@ HRESULT RunOnUIThread(CODE &&code, const ComPtr<ICoreDispatcher> &dispatcher)
             // unrecoverable state (probably deadlocked). We therefore terminate the application
             // entirely. This also prevents stack corruption if the async operation is eventually
             // run.
-            ERR("Timeout waiting for async action on UI thread. The UI thread might be blocked.");
+            ERR()
+                << "Timeout waiting for async action on UI thread. The UI thread might be blocked.";
             std::terminate();
             return E_FAIL;
         }
@@ -132,7 +134,8 @@ bool SwapChainPanelNativeWindow::initialize(EGLNativeWindowType window, IPropert
         // A EGLRenderSurfaceSizeProperty and a EGLRenderResolutionScaleProperty can't both be specified
         if (mSwapChainScaleSpecified && mSwapChainSizeSpecified)
         {
-            ERR("It is invalid to specify both an EGLRenderSurfaceSizeProperty and a EGLRenderResolutionScaleProperty.");
+            ERR() << "It is invalid to specify both an EGLRenderSurfaceSizeProperty and a "
+                     "EGLRenderResolutionScaleProperty.";
             return false;
         }
     }
@@ -169,17 +172,14 @@ bool SwapChainPanelNativeWindow::initialize(EGLNativeWindowType window, IPropert
         }
         else
         {
-            SIZE swapChainPanelSize;
+            Size swapChainPanelSize;
             result = GetSwapChainPanelSize(mSwapChainPanel, mSwapChainPanelDispatcher,
-                                           &swapChainPanelSize, &mSwapChainScale);
-            if (mSwapChainScale != 1.0f)
-                mSwapChainScaleSpecified = true;
+                                           &swapChainPanelSize);
 
             if (SUCCEEDED(result))
             {
                 // Update the client rect to account for any swapchain scale factor
-                mClientRect = { 0, 0, static_cast<long>(ConvertDipsToPixels(swapChainPanelSize.cx * mSwapChainScale)),
-                    static_cast<long>(ConvertDipsToPixels(swapChainPanelSize.cy * mSwapChainScale)) };
+                mClientRect = clientRect(swapChainPanelSize);
             }
         }
     }
@@ -241,14 +241,15 @@ void SwapChainPanelNativeWindow::unregisterForSizeChangeEvents()
 }
 
 HRESULT SwapChainPanelNativeWindow::createSwapChain(ID3D11Device *device,
-                                                    DXGIFactory *factory,
+                                                    IDXGIFactory2 *factory,
                                                     DXGI_FORMAT format,
                                                     unsigned int width,
                                                     unsigned int height,
                                                     bool containsAlpha,
-                                                    DXGISwapChain **swapChain)
+                                                    IDXGISwapChain1 **swapChain)
 {
-    if (device == NULL || factory == NULL || swapChain == NULL || width == 0 || height == 0)
+    if (device == nullptr || factory == nullptr || swapChain == nullptr || width == 0 ||
+        height == 0)
     {
         return E_INVALIDARG;
     }
@@ -272,6 +273,7 @@ HRESULT SwapChainPanelNativeWindow::createSwapChain(ID3D11Device *device,
 
     ComPtr<IDXGISwapChain1> newSwapChain;
     ComPtr<ISwapChainPanelNative> swapChainPanelNative;
+    Size currentPanelSize = {};
 
     HRESULT result = factory->CreateSwapChainForComposition(device, &swapChainDesc, nullptr, newSwapChain.ReleaseAndGetAddressOf());
 
@@ -306,14 +308,14 @@ HRESULT SwapChainPanelNativeWindow::createSwapChain(ID3D11Device *device,
     {
         if (mSwapChainSizeSpecified || mSwapChainScaleSpecified)
         {
-            ComPtr<ABI::Windows::UI::Xaml::IUIElement> uiElement;
-            result = mSwapChainPanel.As(&uiElement);
-            ASSERT(SUCCEEDED(result));
+            result = GetSwapChainPanelSize(mSwapChainPanel, mSwapChainPanelDispatcher,
+                                           &currentPanelSize);
 
-            Size currentSize;
-            result = uiElement->get_RenderSize(&currentSize);
-            ASSERT(SUCCEEDED(result));
-            result = scaleSwapChain(currentSize, mClientRect);
+            // Scale the swapchain to fit inside the contents of the panel.
+            if (SUCCEEDED(result))
+            {
+                result = scaleSwapChain(currentPanelSize, mClientRect);
+            }
         }
     }
 
@@ -342,31 +344,14 @@ HRESULT SwapChainPanelNativeWindow::scaleSwapChain(const Size &windowSize, const
 HRESULT GetSwapChainPanelSize(
     const ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> &swapChainPanel,
     const ComPtr<ICoreDispatcher> &dispatcher,
-    SIZE *windowSize, float *scaleFactor)
+    Size *windowSize)
 {
     ComPtr<IUIElement> uiElement;
-    Size renderSize = {0, 0};
     HRESULT result = swapChainPanel.As(&uiElement);
     if (SUCCEEDED(result))
     {
         result = RunOnUIThread(
-            [uiElement, &renderSize]
-            {
-                return uiElement->get_RenderSize(&renderSize);
-            },
-            dispatcher);
-    }
-
-    if (SUCCEEDED(result))
-    {
-        long width = ConvertDipsToPixels(renderSize.Width);
-        long height = ConvertDipsToPixels(renderSize.Height);
-        *windowSize = { width, height };
-
-        if (scaleFactor)
-        {
-            *scaleFactor = renderSize.Width / width;
-        }
+            [uiElement, windowSize] { return uiElement->get_RenderSize(windowSize); }, dispatcher);
     }
 
     return result;

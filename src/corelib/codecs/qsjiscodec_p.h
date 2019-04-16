@@ -84,9 +84,9 @@
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qlist.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(big_codecs);
 
-#ifndef QT_NO_BIG_CODECS
+QT_BEGIN_NAMESPACE
 
 class QSjisCodec : public QTextCodec {
 public:
@@ -107,8 +107,6 @@ public:
 protected:
     const QJpUnicodeConv *conv;
 };
-
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE
 

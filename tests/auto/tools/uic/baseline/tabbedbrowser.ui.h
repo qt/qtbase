@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tabbedbrowser.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -117,7 +117,7 @@ public:
 
         editFind = new QLineEdit(frameFind);
         editFind->setObjectName(QString::fromUtf8("editFind"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(0), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(editFind->sizePolicy().hasHeightForWidth());
@@ -181,14 +181,14 @@ public:
 
     void retranslateUi(QWidget *TabbedBrowser)
     {
-        TabbedBrowser->setWindowTitle(QApplication::translate("TabbedBrowser", "TabbedBrowser", nullptr));
-        tab->setTabText(tab->indexOf(frontpage), QApplication::translate("TabbedBrowser", "Untitled", nullptr));
+        TabbedBrowser->setWindowTitle(QCoreApplication::translate("TabbedBrowser", "TabbedBrowser", nullptr));
+        tab->setTabText(tab->indexOf(frontpage), QCoreApplication::translate("TabbedBrowser", "Untitled", nullptr));
         toolClose->setText(QString());
-        toolPrevious->setText(QApplication::translate("TabbedBrowser", "Previous", nullptr));
-        toolNext->setText(QApplication::translate("TabbedBrowser", "Next", nullptr));
-        checkCase->setText(QApplication::translate("TabbedBrowser", "Case Sensitive", nullptr));
-        checkWholeWords->setText(QApplication::translate("TabbedBrowser", "Whole words", nullptr));
-        labelWrapped->setText(QApplication::translate("TabbedBrowser", "<img src=\":/qt-project.org/assistant/images/wrap.png\">&nbsp;Search wrapped", nullptr));
+        toolPrevious->setText(QCoreApplication::translate("TabbedBrowser", "Previous", nullptr));
+        toolNext->setText(QCoreApplication::translate("TabbedBrowser", "Next", nullptr));
+        checkCase->setText(QCoreApplication::translate("TabbedBrowser", "Case Sensitive", nullptr));
+        checkWholeWords->setText(QCoreApplication::translate("TabbedBrowser", "Whole words", nullptr));
+        labelWrapped->setText(QCoreApplication::translate("TabbedBrowser", "<img src=\":/qt-project.org/assistant/images/wrap.png\">&nbsp;Search wrapped", nullptr));
     } // retranslateUi
 
 };

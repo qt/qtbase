@@ -256,7 +256,7 @@ int main(int argc, char **argv)
         }
 
     if (ruleFile.isEmpty()) {
-        qWarning("usage: lexgen [-test rulefile");
+        qWarning("usage: lexgen [-debug] [-cache] [-test] rulefile");
         qWarning(" ");
         qWarning("    the -test option will cause lexgen to interpret standard input");
         qWarning("    according to the specified rules and print out pairs of token and");

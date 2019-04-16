@@ -131,7 +131,7 @@ void tst_QNetworkDatagram::makeReply()
     QNetworkDatagram copy = dgram;
     copy.setData(copy.data());
     {
-        QNetworkDatagram reply = qMove(copy).makeReply("World");
+        QNetworkDatagram reply = std::move(copy).makeReply("World");
         QCOMPARE(reply.data(), QByteArray("World"));
         QCOMPARE(reply.senderAddress(), QHostAddress(localAddress));
         QCOMPARE(reply.senderPort(), localAddress.isEmpty() ? -1 : dgram.destinationPort());

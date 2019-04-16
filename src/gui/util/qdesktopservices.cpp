@@ -187,12 +187,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     \l{https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl}{canOpenURL(_:)}.
     For example, the following lines enable URLs with the HTTPS scheme:
 
-    \code
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <string>https</string>
-    </array>
-    \endcode
+    \snippet code/src_gui_util_qdesktopservices.cpp 3
 
     \sa setUrlHandler()
 */
@@ -249,20 +244,12 @@ bool QDesktopServices::openUrl(const QUrl &url)
     The provided method must be implemented as a slot that only accepts a single QUrl
     argument.
 
+    \snippet code/src_gui_util_qdesktopservices.cpp 0
+
     To use this function for receiving data from other apps on iOS you also need to
     add the custom scheme to the \c CFBundleURLSchemes list in your Info.plist file:
 
-    \code
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>myapp</string>
-            </array>
-        </dict>
-    </array>
-    \endcode
+    \snippet code/src_gui_util_qdesktopservices.cpp 4
 
     For more information, see the Apple Developer Documentation for
     \l{https://developer.apple.com/documentation/uikit/core_app/allowing_apps_and_websites_to_link_to_your_content/communicating_with_other_apps_using_custom_urls?language=objc}{Communicating with Other Apps Using Custom URLs}.
@@ -346,14 +333,9 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     wasn't called, while in Qt 5 it defaults to the name of the executable.
 
     Therefore, if you still need to access the Qt 4 path (for example for data migration to Qt 5), replace
-    \code
-    QDesktopServices::storageLocation(QDesktopServices::DataLocation)
-    \endcode
+    \snippet code/src_gui_util_qdesktopservices.cpp 5
     with
-    \code
-    QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
-    "/data/organization/application"
-    \endcode
+    \snippet code/src_gui_util_qdesktopservices.cpp 6
     (assuming an organization name and an application name were set).
 */
 

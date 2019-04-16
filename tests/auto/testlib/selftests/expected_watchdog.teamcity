@@ -1,0 +1,8 @@
+##teamcity[testSuiteStarted name='tst_Watchdog' flowId='tst_Watchdog']
+##teamcity[testStarted name='initTestCase()' flowId='tst_Watchdog']
+##teamcity[testFinished name='initTestCase()' flowId='tst_Watchdog']
+##teamcity[testStarted name='delay()' flowId='tst_Watchdog']
+##teamcity[testFailed name='delay()' message='Failure! |[Loc: Unknown file(0)|]' details='Received a fatal error.' flowId='tst_Watchdog']
+##teamcity[testStdOut name='delay()' out='QFATAL: Test function timed out' flowId='tst_Watchdog']
+##teamcity[testFinished name='delay()' flowId='tst_Watchdog']
+##teamcity[testSuiteFinished name='tst_Watchdog' flowId='tst_Watchdog']

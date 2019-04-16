@@ -48,10 +48,12 @@ QT_BEGIN_NAMESPACE
 
 void QCollatorPrivate::init()
 {
-    if (locale != QLocale())
-        qWarning("Only default locale supported with the posix collation implementation");
-    if (caseSensitivity != Qt::CaseSensitive)
-        qWarning("Case insensitive sorting unsupported in the posix collation implementation");
+    if (!isC()) {
+        if (locale != QLocale())
+            qWarning("Only C and default locale supported with the posix collation implementation");
+        if (caseSensitivity != Qt::CaseSensitive)
+            qWarning("Case insensitive sorting unsupported in the posix collation implementation");
+    }
     if (numericMode)
         qWarning("Numeric mode unsupported in the posix collation implementation");
     if (ignorePunctuation)
@@ -63,7 +65,7 @@ void QCollatorPrivate::cleanup()
 {
 }
 
-static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, const QString &string)
+static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, QStringView string)
 {
     ret.resize(string.length());
     int len = string.toWCharArray(ret.data());
@@ -71,28 +73,17 @@ static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, const QString &str
     ret[len] = 0;
 }
 
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
-    QVarLengthArray<wchar_t> array1, array2;
-    stringToWCharArray(array1, QString(s1, len1));
-    stringToWCharArray(array2, QString(s2, len2));
-    return std::wcscoll(array1.constData(), array2.constData());
-}
+    if (d->isC())
+        return s1.compare(s2, caseSensitivity());
+    if (d->dirty)
+        d->init();
 
-int QCollator::compare(const QString &s1, const QString &s2) const
-{
     QVarLengthArray<wchar_t> array1, array2;
     stringToWCharArray(array1, s1);
     stringToWCharArray(array2, s2);
     return std::wcscoll(array1.constData(), array2.constData());
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    if (d->dirty)
-        d->init();
-
-    return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
@@ -102,14 +93,18 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
     QVarLengthArray<wchar_t> original;
     stringToWCharArray(original, string);
-    QVector<wchar_t> result(string.size());
-    size_t size = std::wcsxfrm(result.data(), original.constData(), string.size());
-    if (size > uint(result.size())) {
+    QVector<wchar_t> result(original.size());
+    if (d->isC()) {
+        std::copy(original.cbegin(), original.cend(), result.begin());
+    } else {
+        size_t size = std::wcsxfrm(result.data(), original.constData(), string.size());
+        if (size > uint(result.size())) {
+            result.resize(size+1);
+            size = std::wcsxfrm(result.data(), original.constData(), string.size());
+        }
         result.resize(size+1);
-        size = std::wcsxfrm(result.data(), original.constData(), string.size());
+        result[size] = 0;
     }
-    result.resize(size+1);
-    result[size] = 0;
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(result)));
 }
 

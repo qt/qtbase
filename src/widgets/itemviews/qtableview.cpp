@@ -138,20 +138,21 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
 }
 
 /** \internal
- * \return a spans that spans over cell x,y  (column,row)  or 0 if there is none.
+ * \return a spans that spans over cell x,y  (column,row)
+ * or \nullptr if there is none.
  */
 QSpanCollection::Span *QSpanCollection::spanAt(int x, int y) const
 {
     Index::const_iterator it_y = index.lowerBound(-y);
     if (it_y == index.end())
-        return 0;
+        return nullptr;
     SubIndex::const_iterator it_x = (*it_y).lowerBound(-x);
     if (it_x == (*it_y).end())
-        return 0;
+        return nullptr;
     Span *span = *it_x;
     if (span->right() >= x && span->bottom() >= y)
         return span;
-    return 0;
+    return nullptr;
 }
 
 
@@ -766,6 +767,66 @@ bool QTableViewPrivate::spanContainsSection(const QHeaderView *header, int logic
 
 /*!
   \internal
+  Searches for the next cell which is available for e.g. keyboard navigation
+  The search is done by row
+*/
+int QTableViewPrivate::nextActiveVisualRow(int rowToStart, int column, int limit,
+                                           SearchDirection searchDirection) const
+{
+    const int lc = logicalColumn(column);
+    int visualRow = rowToStart;
+    const auto isCellActive = [this](int vr, int lc)
+    {
+        const int lr = logicalRow(vr);
+        return !isRowHidden(lr) && isCellEnabled(lr, lc);
+    };
+    switch (searchDirection) {
+    case SearchDirection::Increasing:
+        if (visualRow < limit) {
+            while (!isCellActive(visualRow, lc)) {
+                if (++visualRow == limit)
+                    return rowToStart;
+            }
+        }
+        break;
+    case SearchDirection::Decreasing:
+        while (visualRow > limit && !isCellActive(visualRow, lc))
+            --visualRow;
+        break;
+    }
+    return visualRow;
+}
+
+/*!
+  \internal
+  Searches for the next cell which is available for e.g. keyboard navigation
+  The search is done by column
+*/
+int QTableViewPrivate::nextActiveVisualColumn(int row, int columnToStart, int limit,
+                                              SearchDirection searchDirection) const
+{
+    const int lr = logicalRow(row);
+    int visualColumn = columnToStart;
+    const auto isCellActive = [this](int lr, int vc)
+    {
+        const int lc = logicalColumn(vc);
+        return !isColumnHidden(lc) && isCellEnabled(lr, lc);
+    };
+    switch (searchDirection) {
+    case SearchDirection::Increasing:
+        while (visualColumn < limit && !isCellActive(lr, visualColumn))
+            ++visualColumn;
+        break;
+    case SearchDirection::Decreasing:
+        while (visualColumn > limit && !isCellActive(lr, visualColumn))
+            --visualColumn;
+        break;
+    }
+    return visualColumn;
+}
+
+/*!
+  \internal
   Returns the visual rect for the given \a span.
 */
 QRect QTableViewPrivate::visualSpanRect(const QSpanCollection::Span &span) const
@@ -900,6 +961,15 @@ void QTableViewPrivate::_q_updateSpanRemovedColumns(const QModelIndex &parent, i
 {
     Q_UNUSED(parent)
     spans.updateRemovedColumns(start, end);
+}
+
+/*!
+  \internal
+  Sort the model when the header sort indicator changed
+*/
+void QTableViewPrivate::_q_sortIndicatorChanged(int column, Qt::SortOrder order)
+{
+    model->sort(column, order);
 }
 
 /*!
@@ -1039,7 +1109,7 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     \l showGrid property.
 
     The items shown in a table view, like those in the other item views, are
-    rendered and edited using standard \l{QItemDelegate}{delegates}. However,
+    rendered and edited using standard \l{QStyledItemDelegate}{delegates}. However,
     for some tasks it is sometimes useful to be able to insert widgets in a
     table instead. Widgets are set for particular indexes with the
     \l{QAbstractItemView::}{setIndexWidget()} function, and
@@ -1511,29 +1581,6 @@ void QTableView::paintEvent(QPaintEvent *event)
                     colp +=  columnWidth(col) - gridSize;
                 painter.drawLine(colp, dirtyArea.top(), colp, dirtyArea.bottom());
             }
-
-            //draw the top & left grid lines if the headers are not visible.
-            //We do update this line when subsequent scroll happen (see scrollContentsBy)
-            if (horizontalHeader->isHidden() && top == 0) {
-                const int row = verticalHeader->logicalIndex(top);
-                if (!verticalHeader->isSectionHidden(row)) {
-                    const int rowY = rowViewportPosition(row) + offset.y();
-                    if (rowY == dirtyArea.top())
-                        painter.drawLine(dirtyArea.left(), rowY, dirtyArea.right(), rowY);
-                }
-            }
-            if (verticalHeader->isHidden() && left == 0) {
-                const int col = horizontalHeader->logicalIndex(left);
-                if (!horizontalHeader->isSectionHidden(col)) {
-                    int colX = columnViewportPosition(col) + offset.x();
-                    if (!isLeftToRight())
-                        colX += columnWidth(left) - 1;
-                    if (isLeftToRight() && colX == dirtyArea.left())
-                        painter.drawLine(colX, dirtyArea.top(), colX, dirtyArea.bottom());
-                    if (!isLeftToRight() && colX == dirtyArea.right())
-                        painter.drawLine(colX, dirtyArea.top(), colX, dirtyArea.bottom());
-                }
-            }
             painter.setPen(old);
         }
     }
@@ -1798,35 +1845,34 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         break;
     }
     case MoveHome:
-        visualColumn = 0;
-        while (visualColumn < right && d->isVisualColumnHiddenOrDisabled(visualRow, visualColumn))
-            ++visualColumn;
-        if (modifiers & Qt::ControlModifier) {
-            visualRow = 0;
-            while (visualRow < bottom && d->isVisualRowHiddenOrDisabled(visualRow, visualColumn))
-                ++visualRow;
-        }
+        visualColumn = d->nextActiveVisualColumn(visualRow, 0, right,
+                                                 QTableViewPrivate::SearchDirection::Increasing);
+        if (modifiers & Qt::ControlModifier)
+            visualRow = d->nextActiveVisualRow(0, visualColumn, bottom,
+                                               QTableViewPrivate::SearchDirection::Increasing);
         break;
     case MoveEnd:
-        visualColumn = right;
+        visualColumn = d->nextActiveVisualColumn(visualRow, right, -1,
+                                                 QTableViewPrivate::SearchDirection::Decreasing);
         if (modifiers & Qt::ControlModifier)
-            visualRow = bottom;
+            visualRow = d->nextActiveVisualRow(bottom, visualColumn, -1,
+                                               QTableViewPrivate::SearchDirection::Decreasing);
         break;
     case MovePageUp: {
-        int newRow = rowAt(visualRect(current).bottom() - d->viewport->height());
-        if (newRow == -1) {
-            int visualRow = 0;
-            while (visualRow < bottom && isRowHidden(d->logicalRow(visualRow)))
-                ++visualRow;
-            newRow = d->logicalRow(visualRow);
-        }
-        return d->model->index(newRow, current.column(), d->root);
+        int newLogicalRow = rowAt(visualRect(current).bottom() - d->viewport->height());
+        int visualRow = (newLogicalRow == -1 ? 0 : d->visualRow(newLogicalRow));
+        visualRow = d->nextActiveVisualRow(visualRow, current.column(), bottom,
+                                           QTableViewPrivate::SearchDirection::Increasing);
+        newLogicalRow = d->logicalRow(visualRow);
+        return d->model->index(newLogicalRow, current.column(), d->root);
     }
     case MovePageDown: {
-        int newRow = rowAt(visualRect(current).top() + d->viewport->height());
-        if (newRow == -1)
-            newRow = d->logicalRow(bottom);
-        return d->model->index(newRow, current.column(), d->root);
+        int newLogicalRow = rowAt(visualRect(current).top() + d->viewport->height());
+        int visualRow = (newLogicalRow == -1 ? bottom : d->visualRow(newLogicalRow));
+        visualRow = d->nextActiveVisualRow(visualRow, current.column(), -1,
+                                           QTableViewPrivate::SearchDirection::Decreasing);
+        newLogicalRow = d->logicalRow(visualRow);
+        return d->model->index(newLogicalRow, current.column(), d->root);
     }}
 
     d->visualCursor = QPoint(visualColumn, visualRow);
@@ -2573,25 +2619,27 @@ void QTableView::setColumnHidden(int column, bool hide)
 void QTableView::setSortingEnabled(bool enable)
 {
     Q_D(QTableView);
-    d->sortingEnabled = enable;
     horizontalHeader()->setSortIndicatorShown(enable);
     if (enable) {
         disconnect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
                    this, SLOT(_q_selectColumn(int)));
         disconnect(horizontalHeader(), SIGNAL(sectionPressed(int)),
                    this, SLOT(selectColumn(int)));
-        connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(sortByColumn(int)), Qt::UniqueConnection);
+        //sortByColumn has to be called before we connect or set the sortingEnabled flag
+        // because otherwise it will not call sort on the model.
         sortByColumn(horizontalHeader()->sortIndicatorSection(),
                      horizontalHeader()->sortIndicatorOrder());
+        connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
+                this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)), Qt::UniqueConnection);
     } else {
         connect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
                 this, SLOT(_q_selectColumn(int)), Qt::UniqueConnection);
         connect(horizontalHeader(), SIGNAL(sectionPressed(int)),
                 this, SLOT(selectColumn(int)), Qt::UniqueConnection);
         disconnect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                   this, SLOT(sortByColumn(int)));
+                   this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)));
     }
+    d->sortingEnabled = enable;
 }
 
 bool QTableView::isSortingEnabled() const
@@ -3120,19 +3168,21 @@ void QTableView::resizeColumnsToContents()
     d->horizontalHeader->resizeSections(QHeaderView::ResizeToContents);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
   \obsolete
   \overload
 
+  This function is deprecated. Use
+  sortByColumn(int column, Qt::SortOrder order) instead.
   Sorts the model by the values in the given \a column.
 */
 void QTableView::sortByColumn(int column)
 {
     Q_D(QTableView);
-    if (column == -1)
-        return;
-    d->model->sort(column, d->horizontalHeader->sortIndicatorOrder());
+    sortByColumn(column, d->horizontalHeader->sortIndicatorOrder());
 }
+#endif
 
 /*!
   \since 4.2
@@ -3144,8 +3194,14 @@ void QTableView::sortByColumn(int column)
 void QTableView::sortByColumn(int column, Qt::SortOrder order)
 {
     Q_D(QTableView);
+    if (column < 0)
+        return;
+    // If sorting is enabled it will emit a signal connected to
+    // _q_sortIndicatorChanged, which then actually sorts
     d->horizontalHeader->setSortIndicator(column, order);
-    sortByColumn(column);
+    // If sorting is not enabled, force to sort now
+    if (!d->sortingEnabled)
+        d->model->sort(column, order);
 }
 
 /*!

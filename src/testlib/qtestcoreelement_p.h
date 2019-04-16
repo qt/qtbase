@@ -80,7 +80,7 @@ class QTestCoreElement: public QTestCoreList<ElementType>
 
 template<class ElementType>
 QTestCoreElement<ElementType>::QTestCoreElement(int t)
-    :listOfAttributes(0), type(QTest::LogElementType(t))
+    :listOfAttributes(nullptr), type(QTest::LogElementType(t))
 {
 }
 
@@ -114,7 +114,7 @@ const char *QTestCoreElement<ElementType>::attributeValue(QTest::AttributeIndex 
     if (attrb)
         return attrb->value();
 
-    return 0;
+    return nullptr;
 }
 
 template <class ElementType>
@@ -124,7 +124,7 @@ const char *QTestCoreElement<ElementType>::attributeName(QTest::AttributeIndex i
     if (attrb)
         return attrb->name();
 
-    return 0;
+    return nullptr;
 }
 
 template <class ElementType>
@@ -145,7 +145,7 @@ const char *QTestCoreElement<ElementType>::elementName() const
     if (type != QTest::LET_Undefined)
         return xmlElementNames[type];
 
-    return 0;
+    return nullptr;
 }
 
 template <class ElementType>
@@ -165,7 +165,7 @@ const QTestElementAttribute *QTestCoreElement<ElementType>::attribute(QTest::Att
         iterator = iterator->nextElement();
     }
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

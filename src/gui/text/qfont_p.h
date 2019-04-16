@@ -78,6 +78,7 @@ struct QFontDef
     }
 
     QString family;
+    QStringList families;
     QString styleName;
 
     QStringList fallBackFamilies;
@@ -109,6 +110,7 @@ struct QFontDef
                     && styleStrategy == other.styleStrategy
                     && ignorePitch == other.ignorePitch && fixedPitch == other.fixedPitch
                     && family == other.family
+                    && families == other.families
                     && styleName == other.styleName
                     && hintingPreference == other.hintingPreference
                           ;
@@ -122,6 +124,7 @@ struct QFontDef
         if (styleHint != other.styleHint) return styleHint < other.styleHint;
         if (styleStrategy != other.styleStrategy) return styleStrategy < other.styleStrategy;
         if (family != other.family) return family < other.family;
+        if (families != other.families) return families < other.families;
         if (styleName != other.styleName)
             return styleName < other.styleName;
         if (hintingPreference != other.hintingPreference) return hintingPreference < other.hintingPreference;
@@ -133,7 +136,7 @@ struct QFontDef
     }
 };
 
-inline uint qHash(const QFontDef &fd, uint seed = 0) Q_DECL_NOTHROW
+inline uint qHash(const QFontDef &fd, uint seed = 0) noexcept
 {
     return qHash(qRound64(fd.pixelSize*10000)) // use only 4 fractional digits
         ^  qHash(fd.weight)
@@ -144,6 +147,7 @@ inline uint qHash(const QFontDef &fd, uint seed = 0) Q_DECL_NOTHROW
         ^  qHash(fd.ignorePitch)
         ^  qHash(fd.fixedPitch)
         ^  qHash(fd.family, seed)
+        ^  qHash(fd.families, seed)
         ^  qHash(fd.styleName)
         ^  qHash(fd.hintingPreference)
         ;
@@ -161,7 +165,7 @@ public:
     QFontEngine *engines[QChar::ScriptCount];
 
 private:
-    Q_DISABLE_COPY(QFontEngineData)
+    Q_DISABLE_COPY_MOVE(QFontEngineData)
 };
 
 
@@ -210,7 +214,7 @@ private:
 };
 
 
-class Q_AUTOTEST_EXPORT QFontCache : public QObject
+class Q_GUI_EXPORT QFontCache : public QObject
 {
 public:
     // note: these static functions work on a per-thread basis
@@ -262,7 +266,7 @@ public:
 
     // QFontEngine cache
     struct Engine {
-        Engine() : data(0), timestamp(0), hits(0) { }
+        Engine() : data(nullptr), timestamp(0), hits(0) { }
         Engine(QFontEngine *d) : data(d), timestamp(0), hits(0) { }
 
         QFontEngine *data;
@@ -270,7 +274,7 @@ public:
         uint hits;
     };
 
-    typedef QMap<Key,Engine> EngineCache;
+    typedef QMultiMap<Key,Engine> EngineCache;
     EngineCache engineCache;
     QHash<QFontEngine *, int> engineCacheCount;
 

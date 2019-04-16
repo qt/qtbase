@@ -48,22 +48,23 @@
 **
 ****************************************************************************/
 
-#include "dommodel.h"
 #include "mainwindow.h"
+#include "dommodel.h"
 
 #include <QDomDocument>
 #include <QTreeView>
 #include <QMenuBar>
 #include <QFileDialog>
 
-MainWindow::MainWindow() : QMainWindow(), model(0)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      model(new DomModel(QDomDocument(), this)),
+      view(new QTreeView(this))
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open..."), this, &MainWindow::openFile, QKeySequence::Open);
     fileMenu->addAction(tr("E&xit"), this, &QWidget::close, QKeySequence::Quit);
 
-    model = new DomModel(QDomDocument(), this);
-    view = new QTreeView(this);
     view->setModel(model);
 
     setCentralWidget(view);

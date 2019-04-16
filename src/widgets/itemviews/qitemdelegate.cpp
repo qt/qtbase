@@ -266,7 +266,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     \row    \li \l Qt::AccessibleDescriptionRole \li QString
     \row    \li \l Qt::AccessibleTextRole \li QString
     \endomit
-    \row    \li \l Qt::BackgroundRole \li QBrush
+    \row    \li \l Qt::BackgroundRole \li QBrush (\since 4.2)
     \row    \li \l Qt::BackgroundColorRole \li QColor (obsolete; use Qt::BackgroundRole instead)
     \row    \li \l Qt::CheckStateRole \li Qt::CheckState
     \row    \li \l Qt::DecorationRole \li QIcon, QPixmap and QColor
@@ -278,7 +278,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     \row    \li \l Qt::StatusTipRole \li
     \endomit
     \row    \li \l Qt::TextAlignmentRole \li Qt::Alignment
-    \row    \li \l Qt::ForegroundRole \li QBrush
+    \row    \li \l Qt::ForegroundRole \li QBrush (\since 4.2)
     \row    \li \l Qt::TextColorRole \li QColor (obsolete; use Qt::ForegroundRole instead)
     \omit
     \row    \li \l Qt::ToolTipRole
@@ -724,8 +724,8 @@ void QItemDelegate::drawDecoration(QPainter *painter, const QStyleOptionViewItem
     QPoint p = QStyle::alignedRect(option.direction, option.decorationAlignment,
                                    pixmap.size(), rect).topLeft();
     if (option.state & QStyle::State_Selected) {
-        QPixmap *pm = selected(pixmap, option.palette, option.state & QStyle::State_Enabled);
-        painter->drawPixmap(p, *pm);
+        const QPixmap pm = selectedPixmap(pixmap, option.palette, option.state & QStyle::State_Enabled);
+        painter->drawPixmap(p, pm);
     } else {
         painter->drawPixmap(p, pixmap);
     }
@@ -789,7 +789,7 @@ void QItemDelegate::drawCheck(QPainter *painter,
 
     const QWidget *widget = d->widget(option);
     QStyle *style = widget ? widget->style() : QApplication::style();
-    style->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &opt, painter, widget);
+    style->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &opt, painter, widget);
 }
 
 /*!
@@ -1001,17 +1001,32 @@ static QString qPixmapSerial(quint64 i, bool enabled)
     return QString((const QChar *)ptr, int(&arr[sizeof(arr) / sizeof(ushort)] - ptr));
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const
+{
+    const QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    QPixmap *pm = QPixmapCache::find(key);
+    if (pm)
+        return pm;
+    selectedPixmap(pixmap, palette, enabled);
+    return QPixmapCache::find(key);
+QT_WARNING_POP
+}
+#endif
+
 /*!
   \internal
   Returns the selected version of the given \a pixmap using the given \a palette.
   The \a enabled argument decides whether the normal or disabled highlight color of
   the palette is used.
 */
-QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const
+QPixmap QItemDelegate::selectedPixmap(const QPixmap &pixmap, const QPalette &palette, bool enabled)
 {
-    QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
-    QPixmap *pm = QPixmapCache::find(key);
-    if (!pm) {
+    const QString key = qPixmapSerial(pixmap.cacheKey(), enabled);
+    QPixmap pm;
+    if (!QPixmapCache::find(key, &pm)) {
         QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
         QColor color = palette.color(enabled ? QPalette::Normal : QPalette::Disabled,
@@ -1023,13 +1038,12 @@ QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette,
         painter.fillRect(0, 0, img.width(), img.height(), color);
         painter.end();
 
-        QPixmap selected = QPixmap(QPixmap::fromImage(img));
-        int n = (img.sizeInBytes() >> 10) + 1;
+        pm = QPixmap(QPixmap::fromImage(img));
+        const int n = (img.sizeInBytes() >> 10) + 1;
         if (QPixmapCache::cacheLimit() < n)
             QPixmapCache::setCacheLimit(n);
 
-        QPixmapCache::insert(key, selected);
-        pm = QPixmapCache::find(key);
+        QPixmapCache::insert(key, pm);
     }
     return pm;
 }

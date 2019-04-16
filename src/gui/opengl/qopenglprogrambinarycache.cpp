@@ -63,7 +63,7 @@ Q_DECLARE_LOGGING_CATEGORY(DBG_SHADER_CACHE)
 #endif
 
 const quint32 BINSHADER_MAGIC = 0x5174;
-const quint32 BINSHADER_VERSION = 0x2;
+const quint32 BINSHADER_VERSION = 0x3;
 const quint32 BINSHADER_QTVERSION = QT_VERSION;
 
 namespace {
@@ -120,7 +120,7 @@ QString QOpenGLProgramBinaryCache::cacheFileName(const QByteArray &cacheKey) con
     return m_cacheDir + QString::fromUtf8(cacheKey);
 }
 
-#define BASE_HEADER_SIZE (int(3 * sizeof(quint32)))
+#define BASE_HEADER_SIZE (int(4 * sizeof(quint32)))
 #define FULL_HEADER_SIZE(stringsSize) (BASE_HEADER_SIZE + 12 + stringsSize + 8)
 #define PADDING_SIZE(fullHeaderSize) (((fullHeaderSize + 3) & ~3) - fullHeaderSize)
 
@@ -157,6 +157,10 @@ bool QOpenGLProgramBinaryCache::verifyHeader(const QByteArray &buf) const
     }
     if (readUInt(&p) != BINSHADER_QTVERSION) {
         qCDebug(DBG_SHADER_CACHE, "Qt version does not match");
+        return false;
+    }
+    if (readUInt(&p) != sizeof(quintptr)) {
+        qCDebug(DBG_SHADER_CACHE, "Architecture does not match");
         return false;
     }
     return true;
@@ -371,6 +375,7 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
     writeUInt(&p, BINSHADER_MAGIC);
     writeUInt(&p, BINSHADER_VERSION);
     writeUInt(&p, BINSHADER_QTVERSION);
+    writeUInt(&p, sizeof(quintptr));
 
     writeStr(&p, info.glvendor);
     writeStr(&p, info.glrenderer);

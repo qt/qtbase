@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'connectdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -126,12 +126,12 @@ public:
 
     void retranslateUi(QDialog *ConnectDialog)
     {
-        ConnectDialog->setWindowTitle(QApplication::translate("ConnectDialog", "Configure Connection", nullptr));
-        signalGroupBox->setTitle(QApplication::translate("ConnectDialog", "GroupBox", nullptr));
-        editSignalsButton->setText(QApplication::translate("ConnectDialog", "Edit...", nullptr));
-        slotGroupBox->setTitle(QApplication::translate("ConnectDialog", "GroupBox", nullptr));
-        editSlotsButton->setText(QApplication::translate("ConnectDialog", "Edit...", nullptr));
-        showAllCheckBox->setText(QApplication::translate("ConnectDialog", "Show signals and slots inherited from QWidget", nullptr));
+        ConnectDialog->setWindowTitle(QCoreApplication::translate("ConnectDialog", "Configure Connection", nullptr));
+        signalGroupBox->setTitle(QCoreApplication::translate("ConnectDialog", "GroupBox", nullptr));
+        editSignalsButton->setText(QCoreApplication::translate("ConnectDialog", "Edit...", nullptr));
+        slotGroupBox->setTitle(QCoreApplication::translate("ConnectDialog", "GroupBox", nullptr));
+        editSlotsButton->setText(QCoreApplication::translate("ConnectDialog", "Edit...", nullptr));
+        showAllCheckBox->setText(QCoreApplication::translate("ConnectDialog", "Show signals and slots inherited from QWidget", nullptr));
     } // retranslateUi
 
 };

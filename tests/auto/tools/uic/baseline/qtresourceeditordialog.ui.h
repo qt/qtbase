@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtresourceeditordialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -141,25 +141,25 @@ public:
 
     void retranslateUi(QDialog *QtResourceEditorDialog)
     {
-        QtResourceEditorDialog->setWindowTitle(QApplication::translate("QtResourceEditorDialog", "Dialog", nullptr));
-#ifndef QT_NO_TOOLTIP
-        newQrcButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "New File", nullptr));
-#endif // QT_NO_TOOLTIP
-        newQrcButton->setText(QApplication::translate("QtResourceEditorDialog", "N", nullptr));
-#ifndef QT_NO_TOOLTIP
-        removeQrcButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "Remove File", nullptr));
-#endif // QT_NO_TOOLTIP
-        removeQrcButton->setText(QApplication::translate("QtResourceEditorDialog", "R", nullptr));
-        importQrcButton->setText(QApplication::translate("QtResourceEditorDialog", "I", nullptr));
-#ifndef QT_NO_TOOLTIP
-        newResourceButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "New Resource", nullptr));
-#endif // QT_NO_TOOLTIP
-        newResourceButton->setText(QApplication::translate("QtResourceEditorDialog", "N", nullptr));
-        addResourceButton->setText(QApplication::translate("QtResourceEditorDialog", "A", nullptr));
-#ifndef QT_NO_TOOLTIP
-        removeResourceButton->setToolTip(QApplication::translate("QtResourceEditorDialog", "Remove Resource or File", nullptr));
-#endif // QT_NO_TOOLTIP
-        removeResourceButton->setText(QApplication::translate("QtResourceEditorDialog", "R", nullptr));
+        QtResourceEditorDialog->setWindowTitle(QCoreApplication::translate("QtResourceEditorDialog", "Dialog", nullptr));
+#if QT_CONFIG(tooltip)
+        newQrcButton->setToolTip(QCoreApplication::translate("QtResourceEditorDialog", "New File", nullptr));
+#endif // QT_CONFIG(tooltip)
+        newQrcButton->setText(QCoreApplication::translate("QtResourceEditorDialog", "N", nullptr));
+#if QT_CONFIG(tooltip)
+        removeQrcButton->setToolTip(QCoreApplication::translate("QtResourceEditorDialog", "Remove File", nullptr));
+#endif // QT_CONFIG(tooltip)
+        removeQrcButton->setText(QCoreApplication::translate("QtResourceEditorDialog", "R", nullptr));
+        importQrcButton->setText(QCoreApplication::translate("QtResourceEditorDialog", "I", nullptr));
+#if QT_CONFIG(tooltip)
+        newResourceButton->setToolTip(QCoreApplication::translate("QtResourceEditorDialog", "New Resource", nullptr));
+#endif // QT_CONFIG(tooltip)
+        newResourceButton->setText(QCoreApplication::translate("QtResourceEditorDialog", "N", nullptr));
+        addResourceButton->setText(QCoreApplication::translate("QtResourceEditorDialog", "A", nullptr));
+#if QT_CONFIG(tooltip)
+        removeResourceButton->setToolTip(QCoreApplication::translate("QtResourceEditorDialog", "Remove Resource or File", nullptr));
+#endif // QT_CONFIG(tooltip)
+        removeResourceButton->setText(QCoreApplication::translate("QtResourceEditorDialog", "R", nullptr));
     } // retranslateUi
 
 };

@@ -116,7 +116,17 @@ bool QFontDef::exactMatch(const QFontDef &other) const
     if (stretch != 0 && other.stretch != 0 && stretch != other.stretch)
         return false;
 
+    if (families.size() != other.families.size())
+        return false;
+
     QString this_family, this_foundry, other_family, other_foundry;
+    for (int i = 0; i < families.size(); ++i) {
+        QFontDatabase::parseFontName(families.at(i), this_foundry, this_family);
+        QFontDatabase::parseFontName(other.families.at(i), other_foundry, other_family);
+        if (this_family != other_family || this_foundry != other_foundry)
+            return false;
+    }
+
     QFontDatabase::parseFontName(family, this_foundry, this_family);
     QFontDatabase::parseFontName(other.family, other_foundry, other_family);
 
@@ -260,6 +270,9 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
     // assign the unset-bits with the set-bits of the other font def
     if (! (mask & QFont::FamilyResolved))
         request.family = other->request.family;
+
+    if (!(mask & QFont::FamiliesResolved))
+        request.families = other->request.families;
 
     if (! (mask & QFont::StyleNameResolved))
         request.styleName = other->request.styleName;
@@ -424,7 +437,8 @@ QFontEngineData::~QFontEngineData()
     \target fontmatching
     The font matching algorithm works as follows:
     \list 1
-    \li If the specified font family exists and can be used to represent
+    \li The specified font families (set by setFamilies()) are searched for.
+    \li If not found, then if set the specified font family exists and can be used to represent
         the writing system in use, it will be selected.
     \li If not, a replacement font that supports the writing system is
         selected. The font matching algorithm will try to find the
@@ -506,6 +520,7 @@ QFontEngineData::~QFontEngineData()
     individually and then considered resolved.
 
     \value FamilyResolved
+    \value FamiliesResolved
     \value SizeResolved
     \value StyleHintResolved
     \value StyleStrategyResolved
@@ -547,14 +562,25 @@ QFontEngineData::~QFontEngineData()
     \since 5.2
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
+  \obsolete
   Constructs a font from \a font for use on the paint device \a pd.
 */
 QFont::QFont(const QFont &font, QPaintDevice *pd)
+    : QFont(font, static_cast<const QPaintDevice*>(pd))
+{}
+#endif
+
+/*!
+  \since 5.13
+  Constructs a font from \a font for use on the paint device \a pd.
+*/
+QFont::QFont(const QFont &font, const QPaintDevice *pd)
     : resolve_mask(font.resolve_mask)
 {
-    Q_ASSERT(pd != 0);
-    int dpi = pd->logicalDpiY();
+    Q_ASSERT(pd);
+    const int dpi = pd->logicalDpiY();
     const int screen = 0;
     if (font.d->dpi != dpi || font.d->screen != screen ) {
         d = new QFontPrivate(*font.d);
@@ -1261,7 +1287,7 @@ QFont::StyleStrategy QFont::styleStrategy() const
 /*!
     Returns the StyleHint.
 
-    The style hint affects the \l{#fontmatching}{font matching algorithm}.
+    The style hint affects the \l{QFont#fontmatching}{font matching algorithm}.
     See \l QFont::StyleHint for the list of available hints.
 
     \sa setStyleHint(), QFont::StyleStrategy, QFontInfo::styleHint()
@@ -1691,6 +1717,7 @@ bool QFont::operator<(const QFont &f) const
     if (r1.stretch != r2.stretch) return r1.stretch < r2.stretch;
     if (r1.styleHint != r2.styleHint) return r1.styleHint < r2.styleHint;
     if (r1.styleStrategy != r2.styleStrategy) return r1.styleStrategy < r2.styleStrategy;
+    if (r1.families != r2.families) return r1.families < r2.families;
     if (r1.family != r2.family) return r1.family < r2.family;
     if (f.d->capital != d->capital) return f.d->capital < d->capital;
 
@@ -2056,7 +2083,7 @@ QString QFont::toString() const
     \relates QFont
     \since 5.3
 */
-uint qHash(const QFont &font, uint seed) Q_DECL_NOTHROW
+uint qHash(const QFont &font, uint seed) noexcept
 {
     return qHash(QFontPrivate::get(font)->request, seed);
 }
@@ -2153,7 +2180,7 @@ void QFont::cacheStatistics()
 */
 QString QFont::lastResortFamily() const
 {
-    return QString::fromLatin1("helvetica");
+    return QStringLiteral("helvetica");
 }
 #endif
 
@@ -2188,9 +2215,54 @@ QString QFont::defaultFamily() const
 */
 QString QFont::lastResortFont() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return lastResortFamily();
+QT_WARNING_POP
 }
 #endif
+
+/*!
+    \since 5.13
+
+    Returns the requested font family names, i.e. the names set in the last
+    setFamilies() call or via the constructor. Otherwise it returns an
+    empty list.
+
+    \sa setFamily(), setFamilies(), family(), substitutes(), substitute()
+*/
+
+QStringList QFont::families() const
+{
+    return d->request.families;
+}
+
+/*!
+    \since 5.13
+
+    Sets the list of family names for the font. The names are case
+    insensitive and may include a foundry name. The first family in
+    \a families will be set as the main family for the font.
+
+    Each family name entry in \a families may optionally also include a
+    foundry name, e.g. "Helvetica [Cronyx]". If the family is
+    available from more than one foundry and the foundry isn't
+    specified, an arbitrary foundry is chosen. If the family isn't
+    available a family will be set using the \l{QFont}{font matching}
+    algorithm.
+
+    \sa family(), families(), setFamily(), setStyleHint(), QFontInfo
+*/
+
+void QFont::setFamilies(const QStringList &families)
+{
+    if ((resolve_mask & QFont::FamiliesResolved) && d->request.families == families)
+        return;
+    detach();
+    d->request.families = families;
+    resolve_mask |= QFont::FamiliesResolved;
+}
+
 
 /*****************************************************************************
   QFont stream functions
@@ -2256,6 +2328,8 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
         s << (quint8)font.d->request.hintingPreference;
     if (s.version() >= QDataStream::Qt_5_6)
         s << (quint8)font.d->capital;
+    if (s.version() >= QDataStream::Qt_5_13)
+        s << font.d->request.families;
     return s;
 }
 
@@ -2350,6 +2424,11 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
         quint8 value;
         s >> value;
         font.d->capital = QFont::Capitalization(value);
+    }
+    if (s.version() >= QDataStream::Qt_5_13) {
+        QStringList value;
+        s >> value;
+        font.d->request.families = value;
     }
     return s;
 }
@@ -2874,9 +2953,9 @@ void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMu
     data.timestamp = ++current_timestamp;
 
     if (insertMulti)
-        engineCache.insertMulti(key, data);
-    else
         engineCache.insert(key, data);
+    else
+        engineCache.replace(key, data);
     // only increase the cost if this is the first time we insert the engine
     if (++engineCacheCount[engine] == 1)
         increaseCost(engine->cache_cost);
@@ -3085,7 +3164,104 @@ void QFontCache::decreaseCache()
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug stream, const QFont &font)
 {
-    return stream << "QFont(" << font.toString() << ')';
+    QDebugStateSaver saver(stream);
+    stream.nospace().noquote();
+    stream << "QFont(";
+
+    if (stream.verbosity() == QDebug::DefaultVerbosity) {
+        stream << font.toString() << ")";
+        return stream;
+    }
+
+    QString fontDescription;
+    QDebug debug(&fontDescription);
+    debug.nospace();
+
+    QFontPrivate priv;
+    const QFont defaultFont(&priv);
+
+    for (int property = QFont::FamilyResolved; property < QFont::AllPropertiesResolved; property <<= 1) {
+        const bool resolved = (font.resolve_mask & property) != 0;
+        if (!resolved && stream.verbosity() == QDebug::MinimumVerbosity)
+            continue;
+
+        #define QFONT_DEBUG_SKIP_DEFAULT(prop) \
+            if ((font.prop() == defaultFont.prop()) && stream.verbosity() == 1) \
+                continue;
+
+        QDebugStateSaver saver(debug);
+
+        switch (property) {
+        case QFont::FamilyResolved:
+            debug << font.family(); break;
+        case QFont::SizeResolved:
+            if (font.pointSizeF() >= 0)
+                debug << font.pointSizeF() << "pt";
+            else if (font.pixelSize() >= 0)
+                debug << font.pixelSize() << "px";
+            else
+                Q_UNREACHABLE();
+            break;
+        case QFont::StyleHintResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(styleHint);
+            debug.verbosity(1) << font.styleHint(); break;
+        case QFont::StyleStrategyResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(styleStrategy);
+            debug.verbosity(1) << font.styleStrategy(); break;
+        case QFont::WeightResolved:
+            debug.verbosity(1) << QFont::Weight(font.weight()); break;
+        case QFont::StyleResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(style);
+            debug.verbosity(0) << font.style(); break;
+        case QFont::UnderlineResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(underline);
+            debug << "underline=" << font.underline(); break;
+        case QFont::OverlineResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(overline);
+            debug << "overline=" << font.overline(); break;
+        case QFont::StrikeOutResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(strikeOut);
+            debug << "strikeOut=" << font.strikeOut(); break;
+        case QFont::FixedPitchResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(fixedPitch);
+            debug << "fixedPitch=" << font.fixedPitch(); break;
+        case QFont::StretchResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(stretch);
+            debug.verbosity(0) << QFont::Stretch(font.stretch()); break;
+        case QFont::KerningResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(kerning);
+            debug << "kerning=" << font.kerning(); break;
+        case QFont::CapitalizationResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(capitalization);
+            debug.verbosity(0) << font.capitalization(); break;
+        case QFont::LetterSpacingResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(letterSpacing);
+            debug << "letterSpacing=" << font.letterSpacing();
+            debug.verbosity(0) << " (" << font.letterSpacingType() << ")";
+            break;
+        case QFont::HintingPreferenceResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(hintingPreference);
+            debug.verbosity(0) << font.hintingPreference(); break;
+        case QFont::StyleNameResolved:
+            QFONT_DEBUG_SKIP_DEFAULT(styleName);
+            debug << "styleName=" << font.styleName(); break;
+        default:
+            continue;
+        };
+
+        #undef QFONT_DEBUG_SKIP_DEFAULT
+
+        debug << ", ";
+    }
+
+    if (stream.verbosity() > QDebug::MinimumVerbosity)
+        debug.verbosity(0) << "resolveMask=" << QFlags<QFont::ResolveProperties>(font.resolve_mask);
+    else
+        fontDescription.chop(2); // Last ', '
+
+    stream << fontDescription << ')';
+
+    return stream;
 }
 #endif
 

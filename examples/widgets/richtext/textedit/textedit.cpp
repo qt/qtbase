@@ -369,7 +369,7 @@ void TextEdit::setupTextActions()
 
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
-    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
+    connect(comboFont, &QComboBox::textActivated, this, &TextEdit::textFamily);
 
     comboSize = new QComboBox(tb);
     comboSize->setObjectName("comboSize");
@@ -377,11 +377,11 @@ void TextEdit::setupTextActions()
     comboSize->setEditable(true);
 
     const QList<int> standardSizes = QFontDatabase::standardSizes();
-    foreach (int size, standardSizes)
+    for (int size : standardSizes)
         comboSize->addItem(QString::number(size));
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
-    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textSize);
+    connect(comboSize, &QComboBox::textActivated, this, &TextEdit::textSize);
 }
 
 bool TextEdit::load(const QString &f)

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'downloaditem.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -124,13 +124,13 @@ public:
 
     void retranslateUi(QWidget *DownloadItem)
     {
-        DownloadItem->setWindowTitle(QApplication::translate("DownloadItem", "Form", nullptr));
-        fileIcon->setText(QApplication::translate("DownloadItem", "Ico", nullptr));
-        fileNameLabel->setProperty("text", QVariant(QApplication::translate("DownloadItem", "Filename", nullptr)));
+        DownloadItem->setWindowTitle(QCoreApplication::translate("DownloadItem", "Form", nullptr));
+        fileIcon->setText(QCoreApplication::translate("DownloadItem", "Ico", nullptr));
+        fileNameLabel->setProperty("text", QVariant(QCoreApplication::translate("DownloadItem", "Filename", nullptr)));
         downloadInfoLabel->setProperty("text", QVariant(QString()));
-        tryAgainButton->setText(QApplication::translate("DownloadItem", "Try Again", nullptr));
-        stopButton->setText(QApplication::translate("DownloadItem", "Stop", nullptr));
-        openButton->setText(QApplication::translate("DownloadItem", "Open", nullptr));
+        tryAgainButton->setText(QCoreApplication::translate("DownloadItem", "Try Again", nullptr));
+        stopButton->setText(QCoreApplication::translate("DownloadItem", "Stop", nullptr));
+        openButton->setText(QCoreApplication::translate("DownloadItem", "Open", nullptr));
     } // retranslateUi
 
 };

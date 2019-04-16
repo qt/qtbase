@@ -54,9 +54,9 @@
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qtextcodec.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(textcodec);
 
-#ifndef QT_NO_TEXTCODEC
+QT_BEGIN_NAMESPACE
 
 class QLatin1Codec : public QTextCodec
 {
@@ -85,8 +85,6 @@ public:
     QList<QByteArray> aliases() const override;
     int mibEnum() const override;
 };
-
-#endif // QT_NO_TEXTCODEC
 
 QT_END_NAMESPACE
 

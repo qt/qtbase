@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -62,7 +62,7 @@ class Q_CORE_EXPORT QAbstractProxyModelPrivate : public QAbstractItemModelPrivat
 {
     Q_DECLARE_PUBLIC(QAbstractProxyModel)
 public:
-    QAbstractProxyModelPrivate() : QAbstractItemModelPrivate(), model(0) {}
+    QAbstractProxyModelPrivate() : QAbstractItemModelPrivate(), model(nullptr) {}
     QAbstractItemModel *model;
     virtual void _q_sourceModelDestroyed();
     void mapDropCoordinatesToSource(int row, int column, const QModelIndex &parent,

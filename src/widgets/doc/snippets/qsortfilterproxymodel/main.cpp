@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 int main(int argc, char *argv[])
 {
@@ -74,9 +74,8 @@ int main(int argc, char *argv[])
     filteredView->setWindowTitle("Filtered view onto a string list model");
 
     QLineEdit *patternEditor = new QLineEdit;
-    QObject::
-    connect(patternEditor, SIGNAL(textChanged(QString)),
-            filterModel, SLOT(setFilterRegExp(QString)));
+    QObject::connect(patternEditor, &QLineEdit::textChanged,
+                     filterModel, &QSortFilterProxyModel::setFilterWildcard);
 
     QVBoxLayout *layout = new QVBoxLayout(window);
     layout->addWidget(filteredView);

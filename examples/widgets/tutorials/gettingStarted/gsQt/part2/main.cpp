@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
     QTextEdit *textEdit = new QTextEdit;
     QPushButton *quitButton = new QPushButton("&Quit");
 
-    QObject::connect(quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QObject::connect(quitButton, &QPushButton::clicked,
+                     qApp, &QApplication::quit);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);

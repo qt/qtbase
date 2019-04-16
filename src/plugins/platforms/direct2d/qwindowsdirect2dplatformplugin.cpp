@@ -56,7 +56,7 @@ QPlatformIntegration *QWindowsDirect2DIntegrationPlugin::create(const QString& s
 {
     if (system.compare(system, QLatin1String("direct2d"), Qt::CaseInsensitive) == 0)
         return QWindowsDirect2DIntegration::create(paramList);
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

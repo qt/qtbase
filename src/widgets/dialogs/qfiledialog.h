@@ -46,6 +46,8 @@
 #include <QtCore/qurl.h>
 #include <QtWidgets/qdialog.h>
 
+#include <functional>
+
 QT_REQUIRE_CONFIG(filedialog);
 
 QT_BEGIN_NAMESPACE
@@ -64,19 +66,22 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
     Q_PROPERTY(FileMode fileMode READ fileMode WRITE setFileMode)
     Q_PROPERTY(AcceptMode acceptMode READ acceptMode WRITE setAcceptMode)
-    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly DESIGNABLE false)
-    Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks DESIGNABLE false)
-    Q_PROPERTY(bool confirmOverwrite READ confirmOverwrite WRITE setConfirmOverwrite DESIGNABLE false)
     Q_PROPERTY(QString defaultSuffix READ defaultSuffix WRITE setDefaultSuffix)
+#if QT_DEPRECATED_SINCE(5, 13)
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly DESIGNABLE false)
+    Q_PROPERTY(bool confirmOverwrite READ confirmOverwrite WRITE setConfirmOverwrite DESIGNABLE false)
+    Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks DESIGNABLE false)
     Q_PROPERTY(bool nameFilterDetailsVisible READ isNameFilterDetailsVisible
                WRITE setNameFilterDetailsVisible DESIGNABLE false)
+#endif
     Q_PROPERTY(Options options READ options WRITE setOptions)
     Q_PROPERTY(QStringList supportedSchemes READ supportedSchemes WRITE setSupportedSchemes)
 
 public:
     enum ViewMode { Detail, List };
     Q_ENUM(ViewMode)
-    enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles, DirectoryOnly };
+    enum FileMode { AnyFile, ExistingFile, Directory, ExistingFiles,
+                    DirectoryOnly Q_DECL_ENUMERATOR_DEPRECATED_X("Use setOption(ShowDirsOnly, true) instead")};
     Q_ENUM(FileMode)
     enum AcceptMode { AcceptOpen, AcceptSave };
     Q_ENUM(AcceptMode)
@@ -117,8 +122,12 @@ public:
     void selectUrl(const QUrl &url);
     QList<QUrl> selectedUrls() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setOption(HideNameFilterDetails, !enabled) instead")
     void setNameFilterDetailsVisible(bool enabled);
+    QT_DEPRECATED_X("Use !testOption(HideNameFilterDetails) instead")
     bool isNameFilterDetailsVisible() const;
+#endif
 
     void setNameFilter(const QString &filter);
     void setNameFilters(const QStringList &filters);
@@ -127,7 +136,7 @@ public:
     QString selectedMimeTypeFilter() const;
     QString selectedNameFilter() const;
 
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
     void setMimeTypeFilters(const QStringList &filters);
     QStringList mimeTypeFilters() const;
     void selectMimeTypeFilter(const QString &filter);
@@ -145,11 +154,15 @@ public:
     void setAcceptMode(AcceptMode mode);
     AcceptMode acceptMode() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
     void setReadOnly(bool enabled);
     bool isReadOnly() const;
 
+    QT_DEPRECATED_X("Use setOption(DontResolveSymlinks, !enabled) instead")
     void setResolveSymlinks(bool enabled);
+    QT_DEPRECATED_X("Use !testOption(DontResolveSymlinks) instead")
     bool resolveSymlinks() const;
+#endif
 
     void setSidebarUrls(const QList<QUrl> &urls);
     QList<QUrl> sidebarUrls() const;
@@ -157,8 +170,12 @@ public:
     QByteArray saveState() const;
     bool restoreState(const QByteArray &state);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use setOption(DontConfirmOverwrite, !enabled) instead")
     void setConfirmOverwrite(bool enabled);
+    QT_DEPRECATED_X("Use !testOption(DontConfirmOverwrite) instead")
     bool confirmOverwrite() const;
+#endif
 
     void setDefaultSuffix(const QString &suffix);
     QString defaultSuffix() const;
@@ -263,6 +280,8 @@ public:
                                        Options options = Options(),
                                        const QStringList &supportedSchemes = QStringList());
 
+    static void getOpenFileContent(const QString &nameFilter,
+                                   const std::function<void(const QString &, const QByteArray &)> &fileContentsReady);
 
 protected:
     QFileDialog(const QFileDialogArgs &args);

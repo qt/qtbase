@@ -48,36 +48,30 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#if defined(QT_PRINTSUPPORT_LIB)
-#include <QtPrintSupport/qtprintsupportglobal.h>
-#if QT_CONFIG(printdialog)
-#include <QPrinter>
-#include <QPrintDialog>
-#endif
-#if QT_CONFIG(printpreviewdialog)
-#include <QPrintPreviewDialog>
-#endif
-#endif
-
 #include "spreadsheet.h"
 #include "spreadsheetdelegate.h"
 #include "spreadsheetitem.h"
 #include "printview.h"
 
-SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
-        : QMainWindow(parent)
-{
-    addToolBar(toolBar = new QToolBar());
-    formulaInput = new QLineEdit();
+#include <QtWidgets>
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport>
+#endif
 
-    cellLabel = new QLabel(toolBar);
+SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
+    : QMainWindow(parent),
+      toolBar(new QToolBar(this)),
+      cellLabel(new QLabel(toolBar)),
+      table(new QTableWidget(rows, cols, this)),
+      formulaInput(new QLineEdit(this))
+{
+    addToolBar(toolBar);
+
     cellLabel->setMinimumSize(80, 0);
 
     toolBar->addWidget(cellLabel);
     toolBar->addWidget(formulaInput);
 
-    table = new QTableWidget(rows, cols, this);
     table->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     for (int c = 0; c < cols; ++c) {
         QString character(QChar('A' + c));
@@ -88,7 +82,7 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
     table->setItemDelegate(new SpreadSheetDelegate());
 
     createActions();
-    updateColor(0);
+    updateColor(nullptr);
     setupMenuBar();
     setupContents();
     setupContextMenu();
@@ -103,7 +97,8 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
             this, &SpreadSheet::updateLineEdit);
     connect(table, &QTableWidget::itemChanged,
             this, &SpreadSheet::updateStatus);
-    connect(formulaInput, &QLineEdit::returnPressed, this, &SpreadSheet::returnPressed);
+    connect(formulaInput, &QLineEdit::returnPressed,
+            this, &SpreadSheet::returnPressed);
     connect(table, &QTableWidget::itemChanged,
             this, &SpreadSheet::updateLineEdit);
 
@@ -193,19 +188,19 @@ void SpreadSheet::updateColor(QTableWidgetItem *item)
     QPixmap pix(16, 16);
     QColor col;
     if (item)
-        col = item->backgroundColor();
+        col = item->background().color();
     if (!col.isValid())
         col = palette().base().color();
 
     QPainter pt(&pix);
     pt.fillRect(0, 0, 16, 16, col);
 
-    QColor lighter = col.light();
+    QColor lighter = col.lighter();
     pt.setPen(lighter);
     QPoint lightFrame[] = { QPoint(0, 15), QPoint(0, 0), QPoint(15, 0) };
     pt.drawPolyline(lightFrame, 3);
 
-    pt.setPen(col.dark());
+    pt.setPen(col.darker());
     QPoint darkFrame[] = { QPoint(1, 15), QPoint(15, 15), QPoint(15, 1) };
     pt.drawPolyline(darkFrame, 3);
 
@@ -240,18 +235,18 @@ void SpreadSheet::returnPressed()
 void SpreadSheet::selectColor()
 {
     QTableWidgetItem *item = table->currentItem();
-    QColor col = item ? item->backgroundColor() : table->palette().base().color();
+    QColor col = item ? item->background().color() : table->palette().base().color();
     col = QColorDialog::getColor(col, this);
     if (!col.isValid())
         return;
 
-    QList<QTableWidgetItem*> selected = table->selectedItems();
-    if (selected.count() == 0)
+    const QList<QTableWidgetItem *> selected = table->selectedItems();
+    if (selected.isEmpty())
         return;
 
-    foreach (QTableWidgetItem *i, selected) {
+    for (QTableWidgetItem *i : selected) {
         if (i)
-            i->setBackgroundColor(col);
+            i->setBackground(col);
     }
 
     updateColor(table->currentItem());
@@ -259,8 +254,8 @@ void SpreadSheet::selectColor()
 
 void SpreadSheet::selectFont()
 {
-    QList<QTableWidgetItem*> selected = table->selectedItems();
-    if (selected.count() == 0)
+    const QList<QTableWidgetItem *> selected = table->selectedItems();
+    if (selected.isEmpty())
         return;
 
     bool ok = false;
@@ -268,7 +263,7 @@ void SpreadSheet::selectFont()
 
     if (!ok)
         return;
-    foreach (QTableWidgetItem *i, selected) {
+    for (QTableWidgetItem *i : selected) {
         if (i)
             i->setFont(fnt);
     }
@@ -397,7 +392,7 @@ void SpreadSheet::actionSum()
     int col_last = 0;
     int col_cur = 0;
 
-    QList<QTableWidgetItem*> selected = table->selectedItems();
+    const QList<QTableWidgetItem *> selected = table->selectedItems();
 
     if (!selected.isEmpty()) {
         QTableWidgetItem *first = selected.first();
@@ -408,7 +403,7 @@ void SpreadSheet::actionSum()
         col_last = table->column(last);
     }
 
-    QTableWidgetItem *current = table->currentItem();
+    const QTableWidgetItem *current = table->currentItem();
 
     if (current) {
         row_cur = table->row(current);
@@ -435,7 +430,7 @@ void SpreadSheet::actionMath_helper(const QString &title, const QString &op)
     QString cell2 = "C2";
     QString out = "C3";
 
-    QTableWidgetItem *current = table->currentItem();
+    const QTableWidgetItem *current = table->currentItem();
     if (current)
         out = encode_pos(table->currentRow(), table->currentColumn());
 
@@ -468,8 +463,9 @@ void SpreadSheet::actionDivide()
 
 void SpreadSheet::clear()
 {
-    foreach (QTableWidgetItem *i, table->selectedItems())
-        i->setText("");
+    const QList<QTableWidgetItem *> selectedItems = table->selectedItems();
+    for (QTableWidgetItem *i : selectedItems)
+        i->setText(QString());
 }
 
 void SpreadSheet::setupContextMenu()
@@ -489,13 +485,13 @@ void SpreadSheet::setupContextMenu()
 
 void SpreadSheet::setupContents()
 {
-    QColor titleBackground(Qt::lightGray);
+    QBrush titleBackground(Qt::lightGray);
     QFont titleFont = table->font();
     titleFont.setBold(true);
 
     // column 0
     table->setItem(0, 0, new SpreadSheetItem("Item"));
-    table->item(0, 0)->setBackgroundColor(titleBackground);
+    table->item(0, 0)->setBackground(titleBackground);
     table->item(0, 0)->setToolTip("This column shows the purchased item/service");
     table->item(0, 0)->setFont(titleFont);
 
@@ -510,11 +506,11 @@ void SpreadSheet::setupContents()
     table->setItem(9, 0, new SpreadSheetItem("Total:"));
 
     table->item(9, 0)->setFont(titleFont);
-    table->item(9, 0)->setBackgroundColor(Qt::lightGray);
+    table->item(9, 0)->setBackground(titleBackground);
 
     // column 1
     table->setItem(0, 1, new SpreadSheetItem("Date"));
-    table->item(0, 1)->setBackgroundColor(titleBackground);
+    table->item(0, 1)->setBackground(titleBackground);
     table->item(0, 1)->setToolTip("This column shows the purchase date, double click to change");
     table->item(0, 1)->setFont(titleFont);
 
@@ -528,11 +524,11 @@ void SpreadSheet::setupContents()
     table->setItem(8, 1, new SpreadSheetItem("18/6/2006"));
 
     table->setItem(9, 1, new SpreadSheetItem());
-    table->item(9, 1)->setBackgroundColor(Qt::lightGray);
+    table->item(9, 1)->setBackground(titleBackground);
 
     // column 2
     table->setItem(0, 2, new SpreadSheetItem("Price"));
-    table->item(0, 2)->setBackgroundColor(titleBackground);
+    table->item(0, 2)->setBackground(titleBackground);
     table->item(0, 2)->setToolTip("This column shows the price of the purchase");
     table->item(0, 2)->setFont(titleFont);
 
@@ -546,11 +542,11 @@ void SpreadSheet::setupContents()
     table->setItem(8, 2, new SpreadSheetItem("1240"));
 
     table->setItem(9, 2, new SpreadSheetItem());
-    table->item(9, 2)->setBackgroundColor(Qt::lightGray);
+    table->item(9, 2)->setBackground(Qt::lightGray);
 
     // column 3
     table->setItem(0, 3, new SpreadSheetItem("Currency"));
-    table->item(0, 3)->setBackgroundColor(titleBackground);
+    table->item(0, 3)->setBackground(titleBackground);
     table->item(0, 3)->setToolTip("This column shows the currency");
     table->item(0, 3)->setFont(titleFont);
 
@@ -564,11 +560,11 @@ void SpreadSheet::setupContents()
     table->setItem(8, 3, new SpreadSheetItem("USD"));
 
     table->setItem(9, 3, new SpreadSheetItem());
-    table->item(9,3)->setBackgroundColor(Qt::lightGray);
+    table->item(9, 3)->setBackground(Qt::lightGray);
 
     // column 4
     table->setItem(0, 4, new SpreadSheetItem("Ex. Rate"));
-    table->item(0, 4)->setBackgroundColor(titleBackground);
+    table->item(0, 4)->setBackground(titleBackground);
     table->item(0, 4)->setToolTip("This column shows the exchange rate to NOK");
     table->item(0, 4)->setFont(titleFont);
 
@@ -582,11 +578,11 @@ void SpreadSheet::setupContents()
     table->setItem(8, 4, new SpreadSheetItem("7"));
 
     table->setItem(9, 4, new SpreadSheetItem());
-    table->item(9,4)->setBackgroundColor(Qt::lightGray);
+    table->item(9, 4)->setBackground(titleBackground);
 
     // column 5
     table->setItem(0, 5, new SpreadSheetItem("NOK"));
-    table->item(0, 5)->setBackgroundColor(titleBackground);
+    table->item(0, 5)->setBackground(titleBackground);
     table->item(0, 5)->setToolTip("This column shows the expenses in NOK");
     table->item(0, 5)->setFont(titleFont);
 
@@ -600,7 +596,7 @@ void SpreadSheet::setupContents()
     table->setItem(8, 5, new SpreadSheetItem("* C9 E9"));
 
     table->setItem(9, 5, new SpreadSheetItem("sum F2 F9"));
-    table->item(9,5)->setBackgroundColor(Qt::lightGray);
+    table->item(9, 5)->setBackground(titleBackground);
 }
 
 const char *htmlText =

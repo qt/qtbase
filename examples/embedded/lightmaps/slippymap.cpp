@@ -162,7 +162,6 @@ void SlippyMap::handleNetworkData(QNetworkReply *reply)
 {
     QImage img;
     QPoint tp = reply->request().attribute(QNetworkRequest::User).toPoint();
-    QUrl url = reply->url();
     if (!reply->error())
         if (!img.load(reply, 0))
             img = QImage();
@@ -173,10 +172,12 @@ void SlippyMap::handleNetworkData(QNetworkReply *reply)
     emit updated(tileRect(tp));
 
     // purge unused spaces
-    QRect bound = m_tilesRect.adjusted(-2, -2, 2, 2);
-    foreach(QPoint tp, m_tilePixmaps.keys())
-    if (!bound.contains(tp))
-        m_tilePixmaps.remove(tp);
+    const QRect bound = m_tilesRect.adjusted(-2, -2, 2, 2);
+    for (auto it = m_tilePixmaps.keyBegin(); it != m_tilePixmaps.keyEnd(); ++it) {
+        const QPoint &tp = *it;
+        if (!bound.contains(tp))
+            m_tilePixmaps.remove(tp);
+    }
 
     download();
 }

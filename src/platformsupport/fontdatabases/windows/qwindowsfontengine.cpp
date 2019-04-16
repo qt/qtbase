@@ -702,8 +702,8 @@ static inline double qt_fixed_to_double(const FIXED &p) {
     return ((p.value << 16) + p.fract) / 65536.0;
 }
 
-static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale) {
-    return QPointF(qt_fixed_to_double(pt.x) * scale, -qt_fixed_to_double(pt.y) * scale);
+static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale, qreal stretch) {
+    return QPointF(qt_fixed_to_double(pt.x) * scale * stretch, -qt_fixed_to_double(pt.y) * scale);
 }
 
 #ifndef GGO_UNHINTED
@@ -711,7 +711,8 @@ static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale) {
 #endif
 
 static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
-                           QPainterPath *path, bool ttf, glyph_metrics_t *metric = 0, qreal scale = 1)
+                           QPainterPath *path, bool ttf, glyph_metrics_t *metric = 0,
+                           qreal scale = 1.0, qreal stretch = 1.0)
 {
     MAT2 mat;
     mat.eM11.value = mat.eM22.value = 1;
@@ -761,7 +762,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
     while (headerOffset < bufferSize) {
         const TTPOLYGONHEADER *ttph = reinterpret_cast<const TTPOLYGONHEADER *>(dataBuffer + headerOffset);
 
-        QPointF lastPoint(qt_to_qpointf(ttph->pfxStart, scale));
+        QPointF lastPoint(qt_to_qpointf(ttph->pfxStart, scale, stretch));
         path->moveTo(lastPoint + oset);
         offset += sizeof(TTPOLYGONHEADER);
         while (offset < headerOffset + ttph->cb) {
@@ -769,7 +770,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
             switch (curve->wType) {
             case TT_PRIM_LINE: {
                 for (int i=0; i<curve->cpfx; ++i) {
-                    QPointF p = qt_to_qpointf(curve->apfx[i], scale) + oset;
+                    QPointF p = qt_to_qpointf(curve->apfx[i], scale, stretch) + oset;
                     path->lineTo(p);
                 }
                 break;
@@ -779,8 +780,8 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
                 QPointF prev(elm.x, elm.y);
                 QPointF endPoint;
                 for (int i=0; i<curve->cpfx - 1; ++i) {
-                    QPointF p1 = qt_to_qpointf(curve->apfx[i], scale) + oset;
-                    QPointF p2 = qt_to_qpointf(curve->apfx[i+1], scale) + oset;
+                    QPointF p1 = qt_to_qpointf(curve->apfx[i], scale, stretch) + oset;
+                    QPointF p2 = qt_to_qpointf(curve->apfx[i+1], scale, stretch) + oset;
                     if (i < curve->cpfx - 2) {
                         endPoint = QPointF((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2);
                     } else {
@@ -795,9 +796,9 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
             }
             case TT_PRIM_CSPLINE: {
                 for (int i=0; i<curve->cpfx; ) {
-                    QPointF p2 = qt_to_qpointf(curve->apfx[i++], scale) + oset;
-                    QPointF p3 = qt_to_qpointf(curve->apfx[i++], scale) + oset;
-                    QPointF p4 = qt_to_qpointf(curve->apfx[i++], scale) + oset;
+                    QPointF p2 = qt_to_qpointf(curve->apfx[i++], scale, stretch) + oset;
+                    QPointF p3 = qt_to_qpointf(curve->apfx[i++], scale, stretch) + oset;
+                    QPointF p4 = qt_to_qpointf(curve->apfx[i++], scale, stretch) + oset;
                     path->cubicTo(p2, p3, p4);
                 }
                 break;
@@ -829,9 +830,11 @@ void QWindowsFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions
     HDC hdc = m_fontEngineData->hdc;
     HGDIOBJ oldfont = SelectObject(hdc, hf);
 
+    qreal scale = qreal(fontDef.pixelSize) / unitsPerEm;
+    qreal stretch = fontDef.stretch ? qreal(fontDef.stretch) / 100 : 1.0;
     for(int i = 0; i < nglyphs; ++i) {
         if (!addGlyphToPath(glyphs[i], positions[i], hdc, path, ttf, /*metric*/0,
-                            qreal(fontDef.pixelSize) / unitsPerEm)) {
+                            scale, stretch)) {
             // Some windows fonts, like "Modern", are vector stroke
             // fonts, which are reported as TMPF_VECTOR but do not
             // support GetGlyphOutline, and thus we set this bit so
@@ -1197,120 +1200,6 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
     } else if (fontDef.pixelSize == -1) {
         fontDef.pixelSize = qRound(fontDef.pointSize * dpi / 72.);
     }
-}
-
-/*!
-    \class QWindowsMultiFontEngine
-    \brief Standard Windows Multi font engine.
-    \internal
-    \ingroup qt-lighthouse-win
-
-    "Merges" several font engines that have gaps in the
-    supported writing systems.
-
-    Will probably be superseded by a common Free Type font engine in Qt 5.X.
-*/
-QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *fe, int script)
-    : QFontEngineMulti(fe, script)
-{
-}
-
-#ifndef QT_NO_DIRECTWRITE
-static QString msgDirectWriteFunctionFailed(HRESULT hr, const char *function,
-                                            const QString &fam, const QString &substitute)
-{
-    _com_error error(hr);
-    QString result;
-    QTextStream str(&result);
-    str << function << " failed for \"" << fam << '"';
-    if (substitute != fam)
-        str << " (substitute: \"" <<  substitute << "\")";
-    str << ": error " << hex << showbase << ulong(hr) << ' ' << noshowbase << dec
-        << ": " << QString::fromWCharArray(error.ErrorMessage());
-    return result;
-}
-#endif // !QT_NO_DIRECTWRITE
-
-QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
-{
-    QFontEngine *fontEngine = engine(0);
-    QSharedPointer<QWindowsFontEngineData> data;
-    LOGFONT lf;
-
-#ifndef QT_NO_DIRECTWRITE
-    if (fontEngine->type() == QFontEngine::DirectWrite) {
-        QWindowsFontEngineDirectWrite *fe = static_cast<QWindowsFontEngineDirectWrite *>(fontEngine);
-        lf = QWindowsFontDatabase::fontDefToLOGFONT(fe->fontDef, QString());
-
-        data = fe->fontEngineData();
-    } else
-#endif
-    {
-        QWindowsFontEngine *fe = static_cast<QWindowsFontEngine*>(fontEngine);
-        lf = fe->m_logfont;
-
-        data = fe->fontEngineData();
-    }
-
-    const QString fam = fallbackFamilyAt(at - 1);
-    const int faceNameLength = qMin(fam.length(), LF_FACESIZE - 1);
-    memcpy(lf.lfFaceName, fam.utf16(), faceNameLength * sizeof(wchar_t));
-    lf.lfFaceName[faceNameLength] = 0;
-
-#ifndef QT_NO_DIRECTWRITE
-    if (fontEngine->type() == QFontEngine::DirectWrite) {
-        const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
-        if (nameSubstitute != fam) {
-            const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
-            memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
-            lf.lfFaceName[nameSubstituteLength] = 0;
-        }
-
-        HFONT hfont = CreateFontIndirect(&lf);
-        if (hfont == nullptr) {
-            qErrnoWarning("%s: CreateFontIndirect failed", __FUNCTION__);
-        } else {
-            HGDIOBJ oldFont = SelectObject(data->hdc, hfont);
-
-            IDWriteFontFace *directWriteFontFace = nullptr;
-            QWindowsFontEngineDirectWrite *fedw = nullptr;
-            HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
-            if (SUCCEEDED(hr)) {
-                Q_ASSERT(directWriteFontFace);
-                fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
-                                                         fontEngine->fontDef.pixelSize,
-                                                         data);
-                fedw->fontDef.weight = fontEngine->fontDef.weight;
-                if (fontEngine->fontDef.style > QFont::StyleNormal)
-                    fedw->fontDef.style = fontEngine->fontDef.style;
-                fedw->fontDef.family = fam;
-                fedw->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
-                fedw->fontDef.stretch = fontEngine->fontDef.stretch;
-            } else {
-                qWarning("%s: %s", __FUNCTION__,
-                         qPrintable(msgDirectWriteFunctionFailed(hr, "CreateFontFace", fam, nameSubstitute)));
-            }
-
-            SelectObject(data->hdc, oldFont);
-            DeleteObject(hfont);
-
-            if (fedw != nullptr)
-                return fedw;
-        }
-    }
-#endif
-
-    // Get here if original font is not DirectWrite or DirectWrite creation failed for some
-    // reason
-
-    QFontEngine *fe = new QWindowsFontEngine(fam, lf, data);
-    fe->fontDef.weight = fontEngine->fontDef.weight;
-    if (fontEngine->fontDef.style > QFont::StyleNormal)
-        fe->fontDef.style = fontEngine->fontDef.style;
-    fe->fontDef.family = fam;
-    fe->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
-    fe->fontDef.stretch = fontEngine->fontDef.stretch;
-    return fe;
 }
 
 bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) const

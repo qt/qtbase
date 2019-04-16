@@ -255,11 +255,12 @@ protected:
     void calculateAndCheck(int cppline, const int precalced_comparedata[]);
     void testMinMaxSectionSize(bool stretchLastSection);
 
-    QWidget *topLevel;
-    QHeaderView *view;
-    QStandardItemModel *model;
-    QTableView *m_tableview;
-    bool m_using_reset_model;
+    QWidget *topLevel = nullptr;
+    QHeaderView *view = nullptr;
+    QStandardItemModel *model = nullptr;
+    QTableView *m_tableview = nullptr;
+    bool m_using_reset_model = false;
+    bool m_special_prepare = false;
     QElapsedTimer timer;
 };
 
@@ -444,7 +445,13 @@ tst_QHeaderView::tst_QHeaderView()
 
 void tst_QHeaderView::initTestCase()
 {
-    m_tableview = new QTableView();
+    m_tableview = new QTableView;
+    qDebug().noquote().nospace()
+            << "default min section size is "
+            << QString::number(m_tableview->verticalHeader()->minimumSectionSize())
+            << QLatin1Char('/')
+            << m_tableview->horizontalHeader()->minimumSectionSize()
+            << " (v/h)";
 }
 
 void tst_QHeaderView::cleanupTestCase()
@@ -616,6 +623,27 @@ void tst_QHeaderView::hidden()
     view->setSectionHidden(1, false);
     QCOMPARE(view->isSectionHidden(0), false);
     QCOMPARE(view->sectionSize(0), view->defaultSectionSize());
+
+    // d->hiddenSectionSize could go out of sync when a new model
+    // was set which has fewer sections than before and some of them
+    // were hidden
+    QStandardItemModel model2(model->rowCount() - 1, model->columnCount());
+
+    for (int i = 0; i < model->rowCount(); ++i)
+        view->setSectionHidden(i, true);
+    view->setModel(&model2);
+    QVERIFY(view->sectionsHidden());
+    for (int i = 0; i < model2.rowCount(); ++i) {
+        QVERIFY(view->isSectionHidden(i));
+    }
+
+    view->setModel(model);
+    for (int i = 0; i < model2.rowCount(); ++i) {
+        QVERIFY(view->isSectionHidden(i));
+    }
+    QCOMPARE(view->isSectionHidden(model->rowCount() - 1), false);
+    for (int i = 0; i < model->rowCount(); ++i)
+        view->setSectionHidden(i, false);
 }
 
 void tst_QHeaderView::stretch()
@@ -1835,9 +1863,14 @@ void tst_QHeaderView::restoreBeforeSetModel()
 
 void tst_QHeaderView::defaultSectionSizeTest()
 {
+#if defined Q_OS_WINRT
+    QSKIP("Fails on WinRT - QTBUG-73309");
+#endif
+
     // Setup
     QTableView qtv;
     QHeaderView *hv = qtv.verticalHeader();
+    hv->setMinimumSectionSize(10);
     hv->setDefaultSectionSize(99); // Set it to a value different from defaultSize.
     QStandardItemModel amodel(4, 4);
     qtv.setModel(&amodel);
@@ -2824,6 +2857,7 @@ void tst_QHeaderView::additionalInit()
     QFETCH(bool, reset_model);
 
     m_using_reset_model = reset_model;
+    m_special_prepare = special_prepare;
 
     if (m_using_reset_model) {
         XResetModel *m = new XResetModel();
@@ -3037,18 +3071,34 @@ void tst_QHeaderView::mixedTests()
     view->moveSection(0, 5);
 
     for (int u = model->rowCount(); u >= 0; --u) {
-        if (u % 5 != 0)
+        if (u % 5 != 0) {
             view->hideSection(u);
-        if (u % 3 != 0)
+            QVERIFY(view->isSectionHidden(u));
+        }
+        if (u % 3 != 0) {
             view->showSection(u);
+            QVERIFY(!view->isSectionHidden(u));
+        }
     }
 
     model->insertRows(3, 7);
     model->removeRows(8, 3);
     model->setRowCount(model->rowCount() - 10);
 
+    // the upper is not visible (when m_using_reset_model is true)
+    // the lower 11 are modified due to insert/removeRows
+    for (int u = model->rowCount() - 1; u >= 11; --u) {
+        // when using reset, the hidden rows will *not* move
+        const int calcMod = m_using_reset_model ? u : u - 4;    // 7 added, 3 removed
+        if (calcMod % 5 != 0 && calcMod % 3 == 0) {
+            QVERIFY(view->isSectionHidden(u));
+        }
+        if (calcMod % 3 != 0) {
+            QVERIFY(!view->isSectionHidden(u));
+        }
+    }
     if (m_using_reset_model) {
-        const int precalced_results[] = { 898296472, 337096378, -543340640, 1, -1251526424, -568618976, 9250 };
+        const int precalced_results[] = { 898296472, 337096378, -543340640, -1964432121, -1251526424, -568618976, 9250 };
         calculateAndCheck(__LINE__, precalced_results);
     } else {
         const int precalced_results[] = { 1911338224, 1693514365, -613398968, -1912534953, 1582159424, -1851079000, 9300 };

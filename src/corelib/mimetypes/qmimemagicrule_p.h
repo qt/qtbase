@@ -53,7 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qscopedpointer.h>
@@ -69,7 +69,7 @@ public:
     QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
                    const QByteArray &mask, QString *errorString);
 
-    void swap(QMimeMagicRule &other) Q_DECL_NOTHROW
+    void swap(QMimeMagicRule &other) noexcept
     {
         qSwap(m_type,          other.m_type);
         qSwap(m_value,         other.m_value);
@@ -125,5 +125,4 @@ Q_DECLARE_SHARED(QMimeMagicRule)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEMAGICRULE_H

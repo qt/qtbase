@@ -322,7 +322,7 @@ bool QRawFont::operator==(const QRawFont &other) const
     \relates QRawFont
     \since 5.8
 */
-uint qHash(const QRawFont &font, uint seed) Q_DECL_NOTHROW
+uint qHash(const QRawFont &font, uint seed) noexcept
 {
     return qHash(QRawFontPrivate::get(font)->fontEngine, seed);
 }

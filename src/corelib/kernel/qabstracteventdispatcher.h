@@ -110,7 +110,11 @@ public:
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool filterNativeEvent(const QByteArray &eventType, void *message, qintptr *result);
+#else
     bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
+#endif
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED bool filterEvent(void *message)
     { return filterNativeEvent("", message, nullptr); }

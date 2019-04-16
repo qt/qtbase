@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_BIG_CODECS
-
 #define        USE_JISX0212
 
 #define        Q_STRICT
@@ -10733,7 +10731,5 @@ uint QJpUnicodeConv::unicodeToCp932(uint h, uint l) const
 
 \internal
 */
-
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'outputpage.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -87,9 +87,9 @@ public:
 
     void retranslateUi(QWidget *OutputPage)
     {
-        OutputPage->setWindowTitle(QApplication::translate("OutputPage", "Form", nullptr));
-        label->setText(QApplication::translate("OutputPage", "Project file name:", nullptr));
-        label_2->setText(QApplication::translate("OutputPage", "Collection file name:", nullptr));
+        OutputPage->setWindowTitle(QCoreApplication::translate("OutputPage", "Form", nullptr));
+        label->setText(QCoreApplication::translate("OutputPage", "Project file name:", nullptr));
+        label_2->setText(QCoreApplication::translate("OutputPage", "Collection file name:", nullptr));
     } // retranslateUi
 
 };

@@ -79,14 +79,14 @@ inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
     return tbName;
 }
 
-inline static QString qTableName(const QString& prefix, const char *sourceFileName, QSqlDatabase db)
+inline static QString qTableName(const QString &prefix, const char *sourceFileName,
+                                 QSqlDatabase db, bool escape = true)
 {
-    QString tableStr = QLatin1String("dbtst");
-    if (db.driverName().toLower().contains("ODBC"))
-        tableStr += QLatin1String("_odbc");
-    return fixupTableName(QString(QLatin1String("dbtst") + db.driverName() +
-                          QString::number(qHash(QLatin1String(sourceFileName) +
-                          "_" + qGetHostName().replace( "-", "_" )), 16) + "_" + prefix), db);
+    const auto tableStr = fixupTableName(QString(QLatin1String("dbtst") + db.driverName() +
+                                                 QString::number(qHash(QLatin1String(sourceFileName) +
+                                                 "_" + qGetHostName().replace("-", "_")), 16) +
+                                                 "_" + prefix), db);
+    return escape ? db.driver()->escapeIdentifier(tableStr, QSqlDriver::TableName) : tableStr;
 }
 
 inline static QString qTableName(const QString& prefix, QSqlDatabase db)

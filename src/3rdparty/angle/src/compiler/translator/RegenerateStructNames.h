@@ -7,27 +7,29 @@
 #ifndef COMPILER_TRANSLATOR_REGENERATESTRUCTNAMES_H_
 #define COMPILER_TRANSLATOR_REGENERATESTRUCTNAMES_H_
 
-#include "compiler/translator/Intermediate.h"
+#include "compiler/translator/IntermTraverse.h"
 #include "compiler/translator/SymbolTable.h"
 
 #include <set>
 
+namespace sh
+{
+
 class RegenerateStructNames : public TIntermTraverser
 {
   public:
-    RegenerateStructNames(const TSymbolTable &symbolTable,
-                          int shaderVersion)
-        : TIntermTraverser(true, false, false),
-          mSymbolTable(symbolTable),
+    RegenerateStructNames(TSymbolTable *symbolTable, int shaderVersion)
+        : TIntermTraverser(true, false, false, symbolTable),
           mShaderVersion(shaderVersion),
-          mScopeDepth(0) {}
+          mScopeDepth(0)
+    {
+    }
 
   protected:
     void visitSymbol(TIntermSymbol *) override;
-    bool visitAggregate(Visit, TIntermAggregate *) override;
+    bool visitBlock(Visit, TIntermBlock *block) override;
 
   private:
-    const TSymbolTable &mSymbolTable;
     int mShaderVersion;
 
     // Indicating the depth of the current scope.
@@ -37,5 +39,7 @@ class RegenerateStructNames : public TIntermTraverser
     // If a struct's declared globally, push its ID in this set.
     std::set<int> mDeclaredGlobalStructs;
 };
+
+}  // namespace sh
 
 #endif  // COMPILER_TRANSLATOR_REGENERATESTRUCTNAMES_H_

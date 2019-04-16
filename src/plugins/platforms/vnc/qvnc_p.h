@@ -139,7 +139,7 @@ public:
 class QRfbServerInit
 {
 public:
-    QRfbServerInit() { name = 0; }
+    QRfbServerInit() { name = nullptr; }
     ~QRfbServerInit() { delete[] name; }
 
     int size() const { return QRfbPixelFormat::size() + 8 + strlen(name); }

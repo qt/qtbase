@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'calculator.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -156,34 +156,34 @@ public:
 
     void retranslateUi(QWidget *Calculator)
     {
-        Calculator->setWindowTitle(QApplication::translate("Calculator", "Calculator", nullptr));
-        backspaceButton->setText(QApplication::translate("Calculator", "Backspace", nullptr));
-        clearButton->setText(QApplication::translate("Calculator", "Clear", nullptr));
-        clearAllButton->setText(QApplication::translate("Calculator", "Clear All", nullptr));
-        clearMemoryButton->setText(QApplication::translate("Calculator", "MC", nullptr));
-        readMemoryButton->setText(QApplication::translate("Calculator", "MR", nullptr));
-        setMemoryButton->setText(QApplication::translate("Calculator", "MS", nullptr));
-        addToMemoryButton->setText(QApplication::translate("Calculator", "M+", nullptr));
-        sevenButton->setText(QApplication::translate("Calculator", "7", nullptr));
-        eightButton->setText(QApplication::translate("Calculator", "8", nullptr));
-        nineButton->setText(QApplication::translate("Calculator", "9", nullptr));
-        fourButton->setText(QApplication::translate("Calculator", "4", nullptr));
-        fiveButton->setText(QApplication::translate("Calculator", "5", nullptr));
-        sixButton->setText(QApplication::translate("Calculator", "6", nullptr));
-        oneButton->setText(QApplication::translate("Calculator", "1", nullptr));
-        twoButton->setText(QApplication::translate("Calculator", "2", nullptr));
-        threeButton->setText(QApplication::translate("Calculator", "3", nullptr));
-        zeroButton->setText(QApplication::translate("Calculator", "0", nullptr));
-        pointButton->setText(QApplication::translate("Calculator", ".", nullptr));
-        changeSignButton->setText(QApplication::translate("Calculator", "+-", nullptr));
-        plusButton->setText(QApplication::translate("Calculator", "+", nullptr));
-        divisionButton->setText(QApplication::translate("Calculator", "/", nullptr));
-        timesButton->setText(QApplication::translate("Calculator", "*", nullptr));
-        minusButton->setText(QApplication::translate("Calculator", "-", nullptr));
-        squareRootButton->setText(QApplication::translate("Calculator", "Sqrt", nullptr));
-        powerButton->setText(QApplication::translate("Calculator", "x^2", nullptr));
-        reciprocalButton->setText(QApplication::translate("Calculator", "1/x", nullptr));
-        equalButton->setText(QApplication::translate("Calculator", "=", nullptr));
+        Calculator->setWindowTitle(QCoreApplication::translate("Calculator", "Calculator", nullptr));
+        backspaceButton->setText(QCoreApplication::translate("Calculator", "Backspace", nullptr));
+        clearButton->setText(QCoreApplication::translate("Calculator", "Clear", nullptr));
+        clearAllButton->setText(QCoreApplication::translate("Calculator", "Clear All", nullptr));
+        clearMemoryButton->setText(QCoreApplication::translate("Calculator", "MC", nullptr));
+        readMemoryButton->setText(QCoreApplication::translate("Calculator", "MR", nullptr));
+        setMemoryButton->setText(QCoreApplication::translate("Calculator", "MS", nullptr));
+        addToMemoryButton->setText(QCoreApplication::translate("Calculator", "M+", nullptr));
+        sevenButton->setText(QCoreApplication::translate("Calculator", "7", nullptr));
+        eightButton->setText(QCoreApplication::translate("Calculator", "8", nullptr));
+        nineButton->setText(QCoreApplication::translate("Calculator", "9", nullptr));
+        fourButton->setText(QCoreApplication::translate("Calculator", "4", nullptr));
+        fiveButton->setText(QCoreApplication::translate("Calculator", "5", nullptr));
+        sixButton->setText(QCoreApplication::translate("Calculator", "6", nullptr));
+        oneButton->setText(QCoreApplication::translate("Calculator", "1", nullptr));
+        twoButton->setText(QCoreApplication::translate("Calculator", "2", nullptr));
+        threeButton->setText(QCoreApplication::translate("Calculator", "3", nullptr));
+        zeroButton->setText(QCoreApplication::translate("Calculator", "0", nullptr));
+        pointButton->setText(QCoreApplication::translate("Calculator", ".", nullptr));
+        changeSignButton->setText(QCoreApplication::translate("Calculator", "+-", nullptr));
+        plusButton->setText(QCoreApplication::translate("Calculator", "+", nullptr));
+        divisionButton->setText(QCoreApplication::translate("Calculator", "/", nullptr));
+        timesButton->setText(QCoreApplication::translate("Calculator", "*", nullptr));
+        minusButton->setText(QCoreApplication::translate("Calculator", "-", nullptr));
+        squareRootButton->setText(QCoreApplication::translate("Calculator", "Sqrt", nullptr));
+        powerButton->setText(QCoreApplication::translate("Calculator", "x^2", nullptr));
+        reciprocalButton->setText(QCoreApplication::translate("Calculator", "1/x", nullptr));
+        equalButton->setText(QCoreApplication::translate("Calculator", "=", nullptr));
     } // retranslateUi
 
 };

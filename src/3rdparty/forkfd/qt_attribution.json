@@ -3,6 +3,8 @@
     "Name": "forkfd",
     "QDocModule": "qtcore",
     "QtUsage": "Used on most Unix platforms in Qt Core.",
+    "Files": "No upstream; treat as final",
+    "Files": "forkfd.c forkfd.h forkfd_gcc.h",
 
     "License": "MIT License",
     "LicenseId": "MIT",

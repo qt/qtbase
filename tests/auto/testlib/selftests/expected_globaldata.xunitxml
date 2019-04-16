@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="37" failures="0" tests="6" name="tst_globaldata">
+<testsuite errors="43" failures="0" tests="6" name="tst_globaldata">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -9,88 +9,100 @@
     <!-- message="initTestCase initTestCase (null)" type="qdebug" -->
   </testcase>
   <testcase result="pass" name="testGlobal">
-    <!-- tag="1:local 1" message="init testGlobal local 1" type="qdebug" -->
-    <!-- tag="1:local 1" message="global: false" type="qdebug" -->
-    <!-- tag="1:local 1" message="local: false" type="qdebug" -->
-    <!-- tag="1:local 1" message="cleanup testGlobal local 1" type="qdebug" -->
-    <!-- tag="1:local 2" message="init testGlobal local 2" type="qdebug" -->
-    <!-- tag="1:local 2" message="global: false" type="qdebug" -->
-    <!-- tag="1:local 2" message="local: true" type="qdebug" -->
-    <!-- tag="1:local 2" message="cleanup testGlobal local 2" type="qdebug" -->
-    <!-- tag="2:local 1" message="init testGlobal local 1" type="qdebug" -->
-    <!-- tag="2:local 1" message="global: true" type="qdebug" -->
-    <!-- tag="2:local 1" message="local: false" type="qdebug" -->
-    <!-- tag="2:local 1" message="cleanup testGlobal local 1" type="qdebug" -->
-    <!-- tag="2:local 2" message="init testGlobal local 2" type="qdebug" -->
-    <!-- tag="2:local 2" message="global: true" type="qdebug" -->
-    <!-- tag="2:local 2" message="local: true" type="qdebug" -->
-    <!-- tag="2:local 2" message="cleanup testGlobal local 2" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="init testGlobal local=false" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="global: false" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="local: false" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="cleanup testGlobal local=false" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="init testGlobal local=true" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="global: false" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="local: true" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="cleanup testGlobal local=true" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="init testGlobal local=false" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="global: true" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="local: false" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="cleanup testGlobal local=false" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="init testGlobal local=true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="global: true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="local: true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="cleanup testGlobal local=true" type="qdebug" -->
   </testcase>
   <testcase name="skip">
-    <!-- tag="1" message="skipping" type="skip" -->
+    <!-- tag="global=false" message="skipping" type="skip" -->
   </testcase>
   <testcase name="skipLocal">
-    <!-- tag="1:local 1" message="init skipLocal local 1" type="qdebug" -->
-    <!-- tag="1:local 1" message="skipping" type="skip" -->
-    <!-- tag="1:local 1" message="cleanup skipLocal local 1" type="qdebug" -->
-    <!-- tag="1:local 2" message="init skipLocal local 2" type="qdebug" -->
-    <!-- tag="1:local 2" message="skipping" type="skip" -->
-    <!-- tag="1:local 2" message="cleanup skipLocal local 2" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="init skipLocal local=false" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="skipping" type="skip" -->
+    <!-- tag="global=false:local=false" message="cleanup skipLocal local=false" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="init skipLocal local=true" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="skipping" type="skip" -->
+    <!-- tag="global=false:local=true" message="cleanup skipLocal local=true" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="init skipLocal local=false" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="skipping" type="skip" -->
+    <!-- tag="global=true:local=false" message="cleanup skipLocal local=false" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="init skipLocal local=true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="skipping" type="skip" -->
+    <!-- tag="global=true:local=true" message="cleanup skipLocal local=true" type="qdebug" -->
   </testcase>
   <testcase result="pass" name="skipSingle">
-    <!-- tag="1:local 1" message="init skipSingle local 1" type="qdebug" -->
-    <!-- tag="1:local 1" message="global: false local: false" type="qdebug" -->
-    <!-- tag="1:local 1" message="cleanup skipSingle local 1" type="qdebug" -->
-    <!-- tag="1:local 2" message="init skipSingle local 2" type="qdebug" -->
-    <!-- tag="1:local 2" message="global: false local: true" type="qdebug" -->
-    <!-- tag="1:local 2" message="cleanup skipSingle local 2" type="qdebug" -->
-    <!-- tag="2:local 1" message="init skipSingle local 1" type="qdebug" -->
-    <!-- tag="2:local 1" message="skipping" type="skip" -->
-    <!-- tag="2:local 1" message="cleanup skipSingle local 1" type="qdebug" -->
-    <!-- tag="2:local 2" message="init skipSingle local 2" type="qdebug" -->
-    <!-- tag="2:local 2" message="global: true local: true" type="qdebug" -->
-    <!-- tag="2:local 2" message="cleanup skipSingle local 2" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="init skipSingle local=false" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="global: false local: false" type="qdebug" -->
+    <!-- tag="global=false:local=false" message="cleanup skipSingle local=false" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="init skipSingle local=true" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="Skipping" type="skip" -->
+    <!-- tag="global=false:local=true" message="cleanup skipSingle local=true" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="init skipSingle local=false" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="Skipping" type="skip" -->
+    <!-- tag="global=true:local=false" message="cleanup skipSingle local=false" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="init skipSingle local=true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="global: true local: true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="cleanup skipSingle local=true" type="qdebug" -->
   </testcase>
   <testcase result="pass" name="cleanupTestCase">
     <!-- message="cleanupTestCase cleanupTestCase (null)" type="qdebug" -->
   </testcase>
   <system-err>
 <![CDATA[initTestCase initTestCase (null)]]>
-<![CDATA[init testGlobal local 1]]>
+<![CDATA[init testGlobal local=false]]>
 <![CDATA[global: false]]>
 <![CDATA[local: false]]>
-<![CDATA[cleanup testGlobal local 1]]>
-<![CDATA[init testGlobal local 2]]>
+<![CDATA[cleanup testGlobal local=false]]>
+<![CDATA[init testGlobal local=true]]>
 <![CDATA[global: false]]>
 <![CDATA[local: true]]>
-<![CDATA[cleanup testGlobal local 2]]>
-<![CDATA[init testGlobal local 1]]>
+<![CDATA[cleanup testGlobal local=true]]>
+<![CDATA[init testGlobal local=false]]>
 <![CDATA[global: true]]>
 <![CDATA[local: false]]>
-<![CDATA[cleanup testGlobal local 1]]>
-<![CDATA[init testGlobal local 2]]>
+<![CDATA[cleanup testGlobal local=false]]>
+<![CDATA[init testGlobal local=true]]>
 <![CDATA[global: true]]>
 <![CDATA[local: true]]>
-<![CDATA[cleanup testGlobal local 2]]>
+<![CDATA[cleanup testGlobal local=true]]>
 <![CDATA[skipping]]>
-<![CDATA[init skipLocal local 1]]>
+<![CDATA[init skipLocal local=false]]>
 <![CDATA[skipping]]>
-<![CDATA[cleanup skipLocal local 1]]>
-<![CDATA[init skipLocal local 2]]>
+<![CDATA[cleanup skipLocal local=false]]>
+<![CDATA[init skipLocal local=true]]>
 <![CDATA[skipping]]>
-<![CDATA[cleanup skipLocal local 2]]>
-<![CDATA[init skipSingle local 1]]>
+<![CDATA[cleanup skipLocal local=true]]>
+<![CDATA[init skipLocal local=false]]>
+<![CDATA[skipping]]>
+<![CDATA[cleanup skipLocal local=false]]>
+<![CDATA[init skipLocal local=true]]>
+<![CDATA[skipping]]>
+<![CDATA[cleanup skipLocal local=true]]>
+<![CDATA[init skipSingle local=false]]>
 <![CDATA[global: false local: false]]>
-<![CDATA[cleanup skipSingle local 1]]>
-<![CDATA[init skipSingle local 2]]>
-<![CDATA[global: false local: true]]>
-<![CDATA[cleanup skipSingle local 2]]>
-<![CDATA[init skipSingle local 1]]>
-<![CDATA[skipping]]>
-<![CDATA[cleanup skipSingle local 1]]>
-<![CDATA[init skipSingle local 2]]>
+<![CDATA[cleanup skipSingle local=false]]>
+<![CDATA[init skipSingle local=true]]>
+<![CDATA[Skipping]]>
+<![CDATA[cleanup skipSingle local=true]]>
+<![CDATA[init skipSingle local=false]]>
+<![CDATA[Skipping]]>
+<![CDATA[cleanup skipSingle local=false]]>
+<![CDATA[init skipSingle local=true]]>
 <![CDATA[global: true local: true]]>
-<![CDATA[cleanup skipSingle local 2]]>
+<![CDATA[cleanup skipSingle local=true]]>
 <![CDATA[cleanupTestCase cleanupTestCase (null)]]>
   </system-err>
 </testsuite>

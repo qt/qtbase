@@ -39,8 +39,6 @@
 
 #include "qicucodec_p.h"
 
-#ifndef QT_NO_TEXTCODEC
-
 #include "qtextcodec_p.h"
 #include "qutfcodec_p.h"
 #include "qlatincodec_p.h"
@@ -373,7 +371,7 @@ static QTextCodec *loadQtCodec(const char *name)
         return new QUtf32LECodec;
     if (!strcmp(name, "ISO-8859-16") || !strcmp(name, "latin10") || !strcmp(name, "iso-ir-226"))
         return new QSimpleTextCodec(13 /* == 8859-16*/);
-#ifndef QT_NO_CODECS
+#if QT_CONFIG(codecs)
     if (!strcmp(name, "TSCII"))
         return new QTsciiCodec;
     if (!qstrnicmp(name, "iscii", 5))
@@ -698,5 +696,3 @@ int QIcuCodec::mibEnum() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TEXTCODEC

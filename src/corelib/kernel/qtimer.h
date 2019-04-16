@@ -100,6 +100,8 @@ public:
     QMetaObject::Connection callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
     template <typename Functor>
     QMetaObject::Connection callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    template <typename PointerToMemberFunction>
+    QMetaObject::Connection callOnTimeout(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
 #else
     // singleShot to a QObject slot
     template <typename Duration, typename Func1>
@@ -216,7 +218,7 @@ private:
     inline int startTimer(int){ return -1;}
     inline void killTimer(int){}
 
-    static Q_DECL_CONSTEXPR Qt::TimerType defaultTypeFor(int msecs) Q_DECL_NOTHROW
+    static Q_DECL_CONSTEXPR Qt::TimerType defaultTypeFor(int msecs) noexcept
     { return msecs >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer; }
     static void singleShotImpl(int msec, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);

@@ -71,13 +71,11 @@ class Q_WIDGETS_EXPORT QFlickGesture : public QGesture
     Q_DECLARE_PRIVATE(QFlickGesture)
 
 public:
-    QFlickGesture(QObject *receiver, Qt::MouseButton button, QObject *parent = 0);
+    QFlickGesture(QObject *receiver, Qt::MouseButton button, QObject *parent = nullptr);
     ~QFlickGesture();
 
     friend class QFlickGestureRecognizer;
 };
-
-class PressDelayHandler;
 
 class QFlickGesturePrivate : public QGesturePrivate
 {
@@ -89,7 +87,6 @@ public:
     QScroller *receiverScroller;
     Qt::MouseButton button; // NoButton == Touch
     bool macIgnoreWheel;
-    static PressDelayHandler *pressDelayHandler;
 };
 
 class QFlickGestureRecognizer : public QGestureRecognizer

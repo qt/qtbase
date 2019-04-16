@@ -3615,6 +3615,14 @@ void tst_QLineEdit::task174640_editingFinished()
 
     le2->setFocus();
     QTRY_VERIFY(le2->hasFocus());
+    // editingFinished will not be emitted anew because no editing happened
+    QCOMPARE(editingFinishedSpy.count(), 0);
+
+    le1->setFocus();
+    QTRY_VERIFY(le1->hasFocus());
+    QTest::keyPress(le1, Qt::Key_Plus);
+    le2->setFocus();
+    QTRY_VERIFY(le2->hasFocus());
     QCOMPARE(editingFinishedSpy.count(), 1);
     editingFinishedSpy.clear();
 
@@ -3632,6 +3640,8 @@ void tst_QLineEdit::task174640_editingFinished()
     delete testMenu1;
     QCOMPARE(editingFinishedSpy.count(), 0);
     QTRY_VERIFY(le1->hasFocus());
+    // Ensure le1 has been edited
+    QTest::keyPress(le1, Qt::Key_Plus);
 
     QMenu *testMenu2 = new QMenu(le2);
     testMenu2->addAction("foo2");
@@ -4451,10 +4461,11 @@ void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
     QTRY_VERIFY(clearButton->opacity() > 0);
     QTRY_COMPARE(clearButton->cursor().shape(), Qt::ArrowCursor);
 
-    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButton->rect().center());
+    QTest::mouseClick(clearButton, Qt::LeftButton, nullptr, clearButton->rect().center());
     QTRY_COMPARE(edit.text(), QString());
 
     QTRY_COMPARE(clearButton->opacity(), qreal(0));
+    QVERIFY(clearButton->isHidden());
     QTRY_COMPARE(clearButton->cursor().shape(), clearButton->parentWidget()->cursor().shape());
 
     edit.setClearButtonEnabled(false);

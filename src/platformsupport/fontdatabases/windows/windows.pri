@@ -15,9 +15,14 @@ qtConfig(freetype) {
     HEADERS += $$PWD/qwindowsfontdatabase_ft_p.h
 }
 
-qtConfig(directwrite) {
-    qtConfig(directwrite2): \
+qtConfig(directwrite):qtConfig(direct2d) {
+    qtConfig(directwrite2) {
+        QMAKE_USE_PRIVATE += dwrite_2
         DEFINES *= QT_USE_DIRECTWRITE2
+    } else {
+        QMAKE_USE_PRIVATE += dwrite
+    }
+    QMAKE_USE_PRIVATE += d2d1
 
     SOURCES += $$PWD/qwindowsfontenginedirectwrite.cpp
     HEADERS += $$PWD/qwindowsfontenginedirectwrite_p.h

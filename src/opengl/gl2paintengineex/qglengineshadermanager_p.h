@@ -372,7 +372,7 @@ private:
 class QGLEngineShaderProg
 {
 public:
-    QGLEngineShaderProg() : program(0) {}
+    QGLEngineShaderProg() : program(nullptr) {}
 
     ~QGLEngineShaderProg() {
         if (program)

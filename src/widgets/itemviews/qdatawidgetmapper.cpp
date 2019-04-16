@@ -324,6 +324,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
 QDataWidgetMapper::QDataWidgetMapper(QObject *parent)
     : QObject(*new QDataWidgetMapperPrivate, parent)
 {
+    // ### Qt6: QStyledItemDelegate
     setItemDelegate(new QItemDelegate(this));
 }
 

@@ -473,7 +473,8 @@ void QState::onExit(QEvent *event)
 }
 
 /*!
-  Returns this state's initial state, or 0 if the state has no initial state.
+  Returns this state's initial state, or \nullptr if the state has no
+  initial state.
 */
 QAbstractState *QState::initialState() const
 {

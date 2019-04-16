@@ -71,6 +71,8 @@ class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformWindow)
+
     explicit QPlatformWindow(QWindow *window);
     ~QPlatformWindow() override;
 
@@ -108,7 +110,7 @@ public:
     virtual bool isActive() const;
     virtual bool isAncestorOf(const QPlatformWindow *child) const;
     virtual bool isEmbedded() const;
-    virtual bool isForeignWindow() const { return window()->type() == Qt::ForeignWindow; };
+    virtual bool isForeignWindow() const { return false; };
     virtual QPoint mapToGlobal(const QPoint &pos) const;
     virtual QPoint mapFromGlobal(const QPoint &pos) const;
 
@@ -164,8 +166,6 @@ protected:
     static QSize constrainWindowSize(const QSize &size);
 
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
-private:
-    Q_DISABLE_COPY(QPlatformWindow)
 };
 
 QT_END_NAMESPACE

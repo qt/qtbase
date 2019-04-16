@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType outline management (body).                                  */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -42,7 +42,7 @@
 
 
   static
-  const FT_Outline  null_outline = { 0, 0, 0, 0, 0, 0 };
+  const FT_Outline  null_outline = { 0, 0, NULL, NULL, NULL, 0 };
 
 
   /* documentation is in ftoutln.h */
@@ -286,12 +286,13 @@
     FT_TRACE5(( "FT_Outline_Decompose: Done\n", n ));
     return FT_Err_Ok;
 
-  Exit:
-    FT_TRACE5(( "FT_Outline_Decompose: Error %d\n", error ));
-    return error;
-
   Invalid_Outline:
-    return FT_THROW( Invalid_Outline );
+    error = FT_THROW( Invalid_Outline );
+    /* fall through */
+
+  Exit:
+    FT_TRACE5(( "FT_Outline_Decompose: Error 0x%x\n", error ));
+    return error;
   }
 
 
@@ -415,11 +416,14 @@
     if ( source == target )
       return FT_Err_Ok;
 
-    FT_ARRAY_COPY( target->points, source->points, source->n_points );
+    if ( source->n_points )
+    {
+      FT_ARRAY_COPY( target->points, source->points, source->n_points );
+      FT_ARRAY_COPY( target->tags,   source->tags,   source->n_points );
+    }
 
-    FT_ARRAY_COPY( target->tags, source->tags, source->n_points );
-
-    FT_ARRAY_COPY( target->contours, source->contours, source->n_contours );
+    if ( source->n_contours )
+      FT_ARRAY_COPY( target->contours, source->contours, source->n_contours );
 
     /* copy all flags, except the `FT_OUTLINE_OWNER' one */
     is_owner      = target->flags & FT_OUTLINE_OWNER;
@@ -537,8 +541,8 @@
 
     for ( n = 0; n < outline->n_points; n++ )
     {
-      vec->x += xOffset;
-      vec->y += yOffset;
+      vec->x = ADD_LONG( vec->x, xOffset );
+      vec->y = ADD_LONG( vec->y, yOffset );
       vec++;
     }
   }
@@ -942,6 +946,9 @@
       l_in = 0;
       last = outline->contours[c];
 
+      /* pacify compiler */
+      in.x = in.y = anchor.x = anchor.y = 0;
+
       /* Counter j cycles though the points; counter i advances only  */
       /* when points are moved; anchor k marks the first moved point. */
       for ( i = last, j = first, k = -1;
@@ -1074,13 +1081,17 @@
       FT_Int  last = outline->contours[c];
 
 
-      v_prev = points[last];
+      v_prev.x = points[last].x >> xshift;
+      v_prev.y = points[last].y >> yshift;
 
       for ( n = first; n <= last; n++ )
       {
-        v_cur = points[n];
-        area += ( ( v_cur.y - v_prev.y ) >> yshift ) *
-                ( ( v_cur.x + v_prev.x ) >> xshift );
+        v_cur.x = points[n].x >> xshift;
+        v_cur.y = points[n].y >> yshift;
+
+        area = ADD_LONG( area,
+                         ( v_cur.y - v_prev.y ) * ( v_cur.x + v_prev.x ) );
+
         v_prev = v_cur;
       }
 

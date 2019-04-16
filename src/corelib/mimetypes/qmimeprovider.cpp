@@ -40,8 +40,6 @@
 
 #include "qmimeprovider_p.h"
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimetypeparser_p.h"
 #include <qstandardpaths.h>
 #include "qmimemagicrulematcher_p.h"
@@ -56,7 +54,9 @@
 
 static void initResources()
 {
+#if QT_CONFIG(mimetype_database)
     Q_INIT_RESOURCE(mimetypes);
+#endif
 }
 
 QT_BEGIN_NAMESPACE
@@ -447,10 +447,10 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
     loadMimeTypeList();
     if (result.isEmpty()) {
         result.reserve(m_mimetypeNames.count());
-        for (const QString &name : m_mimetypeNames)
+        for (const QString &name : qAsConst(m_mimetypeNames))
             result.append(mimeTypeForNameUnchecked(name));
     } else {
-        for (const QString &name : m_mimetypeNames)
+        for (const QString &name : qAsConst(m_mimetypeNames))
             if (std::find_if(result.constBegin(), result.constEnd(), [name](const QMimeType &mime) -> bool { return mime.name() == name; })
                     == result.constEnd())
                 result.append(mimeTypeForNameUnchecked(name));
@@ -460,6 +460,7 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
 void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
 #ifdef QT_NO_XMLSTREAMREADER
+    Q_UNUSED(data);
     qWarning("Cannot load mime type since QXmlStreamReader is not available.");
     return;
 #else
@@ -504,7 +505,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
                     QString lang = xml.attributes().value(QLatin1String("xml:lang")).toString();
                     const QString text = xml.readElementText();
                     if (lang.isEmpty()) {
-                        lang = QLatin1String("en_US");
+                        lang = QLatin1String("default"); // no locale attribute provided, treat it as default.
                     }
                     data.localeComments.insert(lang, text);
                     continue; // we called readElementText, so we're at the EndElement already.
@@ -757,5 +758,3 @@ void QMimeXMLProvider::addMagicMatcher(const QMimeMagicRuleMatcher &matcher)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

@@ -260,21 +260,22 @@ namespace
 
     QByteArray replaceParameters(const QByteArray &original, const QShaderNode &node, const QShaderFormat &format)
     {
-        auto result = original;
+        QByteArray result = original;
 
-        for (const auto &parameterName : node.parameterNames()) {
-            const auto placeholder = QByteArray(QByteArrayLiteral("$") + parameterName.toUtf8());
-            const auto parameter = node.parameter(parameterName);
+        const QStringList parameterNames = node.parameterNames();
+        for (const QString &parameterName : parameterNames) {
+            const QByteArray placeholder = QByteArray(QByteArrayLiteral("$") + parameterName.toUtf8());
+            const QVariant parameter = node.parameter(parameterName);
             if (parameter.userType() == qMetaTypeId<QShaderLanguage::StorageQualifier>()) {
-                const auto qualifier = parameter.value<QShaderLanguage::StorageQualifier>();
-                const auto value = toGlsl(qualifier, format);
+                const QShaderLanguage::StorageQualifier qualifier = parameter.value<QShaderLanguage::StorageQualifier>();
+                const QByteArray value = toGlsl(qualifier, format);
                 result.replace(placeholder, value);
             } else if (parameter.userType() == qMetaTypeId<QShaderLanguage::VariableType>()) {
-                const auto type = parameter.value<QShaderLanguage::VariableType>();
-                const auto value = toGlsl(type);
+                const QShaderLanguage::VariableType type = parameter.value<QShaderLanguage::VariableType>();
+                const QByteArray value = toGlsl(type);
                 result.replace(placeholder, value);
             } else {
-                const auto value = parameter.toString().toUtf8();
+                const QByteArray value = parameter.toString().toUtf8();
                 result.replace(placeholder, value);
             }
         }
@@ -288,20 +289,20 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     auto code = QByteArrayList();
 
     if (format.isValid()) {
-        const auto isGLES = format.api() == QShaderFormat::OpenGLES;
-        const auto major = format.version().majorVersion();
-        const auto minor = format.version().minorVersion();
+        const bool isGLES = format.api() == QShaderFormat::OpenGLES;
+        const int major = format.version().majorVersion();
+        const int minor = format.version().minorVersion();
 
-        const auto version = major == 2 && isGLES ? 100
-                           : major == 3 && isGLES ? 300
-                           : major == 2 ? 100 + 10 * (minor + 1)
-                           : major == 3 && minor <= 2 ? 100 + 10 * (minor + 3)
-                           : major * 100 + minor * 10;
+        const int version = major == 2 && isGLES ? 100
+                          : major == 3 && isGLES ? 300
+                          : major == 2 ? 100 + 10 * (minor + 1)
+                          : major == 3 && minor <= 2 ? 100 + 10 * (minor + 3)
+                          : major * 100 + minor * 10;
 
-        const auto profile = isGLES && version > 100 ? QByteArrayLiteral(" es")
-                           : version >= 150 && format.api() == QShaderFormat::OpenGLCoreProfile ? QByteArrayLiteral(" core")
-                           : version >= 150 && format.api() == QShaderFormat::OpenGLCompatibilityProfile ? QByteArrayLiteral(" compatibility")
-                           : QByteArray();
+        const QByteArray profile = isGLES && version > 100 ? QByteArrayLiteral(" es")
+                                   : version >= 150 && format.api() == QShaderFormat::OpenGLCoreProfile ? QByteArrayLiteral(" core")
+                                   : version >= 150 && format.api() == QShaderFormat::OpenGLCompatibilityProfile ? QByteArrayLiteral(" compatibility")
+                                   : QByteArray();
 
         code << (QByteArrayLiteral("#version ") + QByteArray::number(version) + profile);
         code << QByteArray();
@@ -313,9 +314,11 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
                            [enabledLayers] (const QString &s) { return enabledLayers.contains(s); });
     };
 
-    for (const auto &node : graph.nodes()) {
+    const QVector<QShaderNode> nodes = graph.nodes();
+    for (const QShaderNode &node : nodes) {
         if (intersectsEnabledLayers(node.layers())) {
-            for (const auto &snippet : node.rule(format).headerSnippets) {
+            const QByteArrayList headerSnippets = node.rule(format).headerSnippets;
+            for (const QByteArray &snippet : headerSnippets) {
                 code << replaceParameters(snippet, node, format);
             }
         }
@@ -325,17 +328,18 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     code << QByteArrayLiteral("void main()");
     code << QByteArrayLiteral("{");
 
-    for (const auto &statement : graph.createStatements(enabledLayers)) {
-        const auto node = statement.node;
-        auto line = node.rule(format).substitution;
-        for (const auto &port : node.ports()) {
-            const auto portName = port.name;
-            const auto portDirection = port.direction;
-            const auto isInput = port.direction == QShaderNodePort::Input;
+    for (const QShaderGraph::Statement &statement : graph.createStatements(enabledLayers)) {
+        const QShaderNode node = statement.node;
+        QByteArray line = node.rule(format).substitution;
+        const QVector<QShaderNodePort> ports = node.ports();
+        for (const QShaderNodePort &port : ports) {
+            const QString portName = port.name;
+            const QShaderNodePort::Direction portDirection = port.direction;
+            const bool isInput = port.direction == QShaderNodePort::Input;
 
-            const auto portIndex = statement.portIndex(portDirection, portName);
-            const auto variableIndex = isInput ? statement.inputs.at(portIndex)
-                                               : statement.outputs.at(portIndex);
+            const int portIndex = statement.portIndex(portDirection, portName);
+            const int variableIndex = isInput ? statement.inputs.at(portIndex)
+                                              : statement.outputs.at(portIndex);
             if (variableIndex < 0)
                 continue;
 

@@ -79,9 +79,9 @@ int main(int argc, char **argv)
 
     // create one window on each additional screen as well
 
-    QList<QScreen *> screens = app.screens();
     QList<WindowPtr> windows;
-    foreach (QScreen *screen, screens) {
+    const QList<QScreen *> screens = app.screens();
+    for (QScreen *screen : screens) {
         if (screen == app.primaryScreen())
             continue;
         WindowPtr window(new Window(screen));

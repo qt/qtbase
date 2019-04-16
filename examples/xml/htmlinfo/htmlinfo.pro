@@ -1,10 +1,9 @@
 SOURCES += main.cpp
 QT -= gui
-CONFIG -= app_bundle
 
 RESOURCES   = resources.qrc
 
-win32: CONFIG += console
+CONFIG += cmdline
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/xml/htmlinfo

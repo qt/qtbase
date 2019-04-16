@@ -360,4 +360,12 @@ QString wildcard = QRegularExpression::wildcardToRegularExpression("*.jpeg");
 //! [31]
 }
 
+//! [32]
+    (?<day>\d\d)-(?<month>\d\d)-(?<year>\d\d\d\d) (\w+) (?<name>\w+)
+//! [32]
+
+//! [33]
+    ("", "day", "month", "year", "", "name")
+//! [33]
+
 }

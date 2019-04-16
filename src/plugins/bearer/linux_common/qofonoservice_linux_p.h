@@ -100,7 +100,7 @@ class QOfonoManagerInterface : public  QDBusAbstractInterface
 
 public:
 
-    QOfonoManagerInterface( QObject *parent = 0);
+    QOfonoManagerInterface( QObject *parent = nullptr);
     ~QOfonoManagerInterface();
 
     QStringList getModems();
@@ -120,7 +120,7 @@ class QOfonoModemInterface : public QDBusAbstractInterface
 
 public:
 
-    explicit QOfonoModemInterface(const QString &dbusModemPathName, QObject *parent = 0);
+    explicit QOfonoModemInterface(const QString &dbusModemPathName, QObject *parent = nullptr);
     ~QOfonoModemInterface();
 
     bool isPowered();
@@ -140,7 +140,7 @@ class QOfonoNetworkRegistrationInterface : public QDBusAbstractInterface
 
 public:
 
-    explicit QOfonoNetworkRegistrationInterface(const QString &dbusModemPathName, QObject *parent = 0);
+    explicit QOfonoNetworkRegistrationInterface(const QString &dbusModemPathName, QObject *parent = nullptr);
     ~QOfonoNetworkRegistrationInterface();
 
     QString getTechnology();
@@ -159,7 +159,7 @@ class QOfonoDataConnectionManagerInterface : public QDBusAbstractInterface
 
 public:
 
-    explicit QOfonoDataConnectionManagerInterface(const QString &dbusPathName, QObject *parent = 0);
+    explicit QOfonoDataConnectionManagerInterface(const QString &dbusPathName, QObject *parent = nullptr);
     ~QOfonoDataConnectionManagerInterface();
 
     QStringList contexts();
@@ -184,7 +184,7 @@ class QOfonoConnectionContextInterface : public QDBusAbstractInterface
 
 public:
 
-    explicit QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent = 0);
+    explicit QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent = nullptr);
     ~QOfonoConnectionContextInterface();
 
     QVariant getProperty(const QString &);

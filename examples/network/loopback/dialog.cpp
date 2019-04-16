@@ -99,7 +99,7 @@ void Dialog::start()
     startButton->setEnabled(false);
 
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
 
     bytesWritten = 0;
@@ -162,7 +162,7 @@ void Dialog::updateServerProgress()
         tcpServerConnection->close();
         startButton->setEnabled(true);
 #ifndef QT_NO_CURSOR
-        QApplication::restoreOverrideCursor();
+        QGuiApplication::restoreOverrideCursor();
 #endif
     }
 }
@@ -198,6 +198,6 @@ void Dialog::displayError(QAbstractSocket::SocketError socketError)
     serverStatusLabel->setText(tr("Server ready"));
     startButton->setEnabled(true);
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 }

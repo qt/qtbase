@@ -48,18 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QBrush>
-#include <QTime>
 #include "mymodel.h"
+
+#include <QTime>
 
 //! [quoting mymodel_a]
 MyModel::MyModel(QObject *parent)
-    :QAbstractTableModel(parent)
+    : QAbstractTableModel(parent)
+    , timer(new QTimer(this))
 {
-//    selectedCell = 0;
-    timer = new QTimer(this);
     timer->setInterval(1000);
-    connect(timer, SIGNAL(timeout()) , this, SLOT(timerHit()));
+    connect(timer, &QTimer::timeout , this, &MyModel::timerHit);
     timer->start();
 }
 //! [quoting mymodel_a]
@@ -82,13 +81,9 @@ QVariant MyModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     int col = index.column();
 
-    if (role == Qt::DisplayRole)
-    {
-        if (row == 0 && col == 0)
-        {
-            return QTime::currentTime().toString();
-        }
-    }
+    if (role == Qt::DisplayRole && row == 0 && col == 0)
+        return QTime::currentTime().toString();
+
     return QVariant();
 }
 //! [quoting mymodel_QVariant ]
@@ -99,6 +94,6 @@ void MyModel::timerHit()
     //we identify the top left cell
     QModelIndex topLeft = createIndex(0,0);
     //emit a signal to make the view reread identified data
-    emit dataChanged(topLeft, topLeft);
+    emit dataChanged(topLeft, topLeft, {Qt::DisplayRole});
 }
 //! [quoting mymodel_b ]

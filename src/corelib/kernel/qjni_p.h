@@ -76,7 +76,7 @@ public:
 
 private:
     friend class QAndroidJniEnvironment;
-    Q_DISABLE_COPY(QJNIEnvironmentPrivate)
+    Q_DISABLE_COPY_MOVE(QJNIEnvironmentPrivate)
     JNIEnv *jniEnv;
 };
 

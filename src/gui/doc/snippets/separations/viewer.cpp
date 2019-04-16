@@ -58,7 +58,7 @@ A main menu provides entries for selecting files, and adjusting the
 brightness of the separations.
 */
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "finalwidget.h"
 #include "screenwidget.h"
@@ -126,11 +126,11 @@ void Viewer::createMenus()
     menuBar()->addMenu(fileMenu);
     menuBar()->addMenu(brightnessMenu);
 
-    connect(openAction, SIGNAL(triggered()), this, SLOT(chooseFile()));
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(saveImage()));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(brightnessMenu, SIGNAL(triggered(QAction*)), this,
-            SLOT(setBrightness(QAction*)));
+    connect(openAction, &QAction::triggered, this, &Viewer::chooseFile);
+    connect(saveAction, &QAction::triggered, this, &Viewer::saveImage);
+    connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
+    connect(brightnessMenu, &QMenu::triggered,
+            this, &Viewer::setBrightness);
 }
 
 /*
@@ -160,9 +160,9 @@ QFrame* Viewer::createCentralWidget()
     yellowWidget = new ScreenWidget(frame, Qt::yellow, tr("Yellow"),
                                     ScreenWidget::Yellow, labelSize);
 
-    connect(cyanWidget, SIGNAL(imageChanged()), this, SLOT(createImage()));
-    connect(magentaWidget, SIGNAL(imageChanged()), this, SLOT(createImage()));
-    connect(yellowWidget, SIGNAL(imageChanged()), this, SLOT(createImage()));
+    connect(cyanWidget, &ScreenWidget::imageChanged, this, &Viewer::createImage);
+    connect(magentaWidget, &ScreenWidget::imageChanged, this, &Viewer::createImage);
+    connect(yellowWidget, &ScreenWidget::imageChanged, this, &Viewer::createImage);
 
     grid->addWidget(finalWidget, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
     grid->addWidget(cyanWidget, 0, 1, Qt::AlignTop | Qt::AlignHCenter);

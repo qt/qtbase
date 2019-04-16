@@ -33,6 +33,8 @@
 #include "qwasmcompositor.h"
 #include "qwasmopenglcontext.h"
 #include "qwasmtheme.h"
+#include "qwasmclipboard.h"
+#include "qwasmservices.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -55,47 +57,76 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
-void browserBeforeUnload()
+static void browserBeforeUnload(emscripten::val)
 {
     QWasmIntegration::QWasmBrowserExit();
 }
 
-EMSCRIPTEN_BINDINGS(my_module)
+static void addCanvasElement(emscripten::val canvas)
 {
-    function("browserBeforeUnload", &browserBeforeUnload);
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->addScreen(canvasId);
 }
 
-static QWasmIntegration *globalHtml5Integration;
-QWasmIntegration *QWasmIntegration::get() { return globalHtml5Integration; }
+static void removeCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->removeScreen(canvasId);
+}
+
+static void resizeCanvasElement(emscripten::val canvas)
+{
+    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QWasmIntegration::get()->resizeScreen(canvasId);
+}
+
+EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
+{
+    function("qtBrowserBeforeUnload", &browserBeforeUnload);
+    function("qtAddCanvasElement", &addCanvasElement);
+    function("qtRemoveCanvasElement", &removeCanvasElement);
+    function("qtResizeCanvasElement", &resizeCanvasElement);
+}
+
+QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
-      m_compositor(new QWasmCompositor),
-      m_screen(new QWasmScreen(m_compositor)),
-      m_eventDispatcher(nullptr)
+      m_desktopServices(nullptr),
+      m_clipboard(new QWasmClipboard)
 {
+    s_instance = this;
 
-    globalHtml5Integration = this;
+    // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
+    // Also check Module.canvas, which may be set if the emscripen or a custom loader is used.
+    emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
+    emscripten::val canvas = val::module_property("canvas");
 
-    updateQScreenAndCanvasRenderSize();
-    screenAdded(m_screen);
-    emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
+    if (!qtCanvaseElements.isUndefined()) {
+        int screenCount = qtCanvaseElements["length"].as<int>();
+        for (int i = 0; i < screenCount; ++i) {
+            emscripten::val canvas = qtCanvaseElements[i].as<emscripten::val>();
+            QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+            addScreen(canvasId);
+        }
+    } else if (!canvas.isUndefined()){
+        QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+        addScreen(canvasId);
+    }
 
-    m_eventTranslator = new QWasmEventTranslator;
-
-    EM_ASM(// exit app if browser closes
-           window.onbeforeunload = function () {
-           Module.browserBeforeUnload();
-           };
-     );
+    emscripten::val::global("window").set("onbeforeunload", val::module_property("qtBrowserBeforeUnload"));
 }
 
 QWasmIntegration::~QWasmIntegration()
 {
-    delete m_compositor;
-    destroyScreen(m_screen);
     delete m_fontDb;
-    delete m_eventTranslator;
+    delete m_desktopServices;
+
+    for (auto it = m_screens.constBegin(); it != m_screens.constEnd(); ++it)
+        QWindowSystemInterface::handleScreenRemoved(*it);
+    m_screens.clear();
+
+    s_instance = nullptr;
 }
 
 void QWasmIntegration::QWasmBrowserExit()
@@ -109,7 +140,7 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     switch (cap) {
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
-    case ThreadedOpenGL: return true;
+    case ThreadedOpenGL: return false;
     case RasterGLSurface: return false; // to enable this you need to fix qopenglwidget and quickwidget for wasm
     case MultipleWindows: return true;
     case WindowManagement: return true;
@@ -119,13 +150,15 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QPlatformWindow *QWasmIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QWasmWindow(window, m_compositor, m_backingStores.value(window));
+    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
+    return new QWasmWindow(window, compositor, m_backingStores.value(window));
 }
 
 QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *window) const
 {
 #ifndef QT_NO_OPENGL
-    QWasmBackingStore *backingStore = new QWasmBackingStore(m_compositor, window);
+    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
+    QWasmBackingStore *backingStore = new QWasmBackingStore(compositor, window);
     m_backingStores.insert(window, backingStore);
     return backingStore;
 #else
@@ -155,7 +188,19 @@ QAbstractEventDispatcher *QWasmIntegration::createEventDispatcher() const
 
 QVariant QWasmIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
+    if (hint == ShowIsFullScreen)
+        return true;
+
     return QPlatformIntegration::styleHint(hint);
+}
+
+Qt::WindowState QWasmIntegration::defaultWindowState(Qt::WindowFlags flags) const
+{
+    // Don't maximize dialogs
+    if (flags & Qt::Dialog & ~Qt::Window)
+        return Qt::WindowNoState;
+
+    return QPlatformIntegration::defaultWindowState(flags);
 }
 
 QStringList QWasmIntegration::themeNames() const
@@ -170,50 +215,34 @@ QPlatformTheme *QWasmIntegration::createPlatformTheme(const QString &name) const
     return QPlatformIntegration::createPlatformTheme(name);
 }
 
-int QWasmIntegration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
+QPlatformServices *QWasmIntegration::services() const
 {
-    Q_UNUSED(e)
-    Q_UNUSED(userData)
-
-    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
-        // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas might also have been resized, so we
-        // update the Qt screen size (and canvas render size).
-        updateQScreenAndCanvasRenderSize();
-    }
-
-    return 0;
+    if (m_desktopServices == nullptr)
+        m_desktopServices = new QWasmServices();
+    return m_desktopServices;
 }
 
-static void set_canvas_size(double width, double height)
+QPlatformClipboard* QWasmIntegration::clipboard() const
 {
-    EM_ASM_({
-        var canvas = Module.canvas;
-        canvas.width = $0;
-        canvas.height = $1;
-    }, width, height);
+    return m_clipboard;
 }
 
-void QWasmIntegration::updateQScreenAndCanvasRenderSize()
+void QWasmIntegration::addScreen(const QString &canvasId)
 {
-    // The HTML canvas has two sizes: the CSS size and the canvas render size.
-    // The CSS size is determined according to standard CSS rules, while the
-    // render size is set using the "width" and "height" attributes. The render
-    // size must be set manually and is not auto-updated on CSS size change.
-    // Setting the render size to a value larger than the CSS size enables high-dpi
-    // rendering.
+    QWasmScreen *screen = new QWasmScreen(canvasId);
+    m_clipboard->installEventHandlers(canvasId);
+    m_screens.insert(canvasId, screen);
+    QWindowSystemInterface::handleScreenAdded(screen);
+}
 
-    double css_width;
-    double css_height;
-    emscripten_get_element_css_size(0, &css_width, &css_height);
-    QSizeF cssSize(css_width, css_height);
+void QWasmIntegration::removeScreen(const QString &canvasId)
+{
+    QWindowSystemInterface::handleScreenRemoved(m_screens.take(canvasId));
+}
 
-    QWasmScreen *screen = QWasmIntegration::get()->m_screen;
-    QSizeF canvasSize = cssSize * screen->devicePixelRatio();
-
-    set_canvas_size(canvasSize.width(), canvasSize.height());
-    screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
-    QWasmIntegration::get()->m_compositor->redrawWindowContent();
+void QWasmIntegration::resizeScreen(const QString &canvasId)
+{
+    m_screens.value(canvasId)->updateQScreenAndCanvasRenderSize();
 }
 
 QT_END_NAMESPACE

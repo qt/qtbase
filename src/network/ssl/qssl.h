@@ -62,12 +62,14 @@ namespace QSsl {
         Opaque,
         Rsa,
         Dsa,
-        Ec
+        Ec,
+        Dh,
     };
 
     enum AlternativeNameEntryType {
         EmailEntry,
-        DnsEntry
+        DnsEntry,
+        IpAddressEntry
     };
 
 #if QT_DEPRECATED_SINCE(5,0)
@@ -91,12 +93,13 @@ namespace QSsl {
         TlsV1_1OrLater,
         TlsV1_2OrLater,
 
-#if QT_CONFIG(dtls) || defined(Q_CLANG_QDOC)
         DtlsV1_0,
         DtlsV1_0OrLater,
         DtlsV1_2,
         DtlsV1_2OrLater,
-#endif
+
+        TlsV1_3,
+        TlsV1_3OrLater,
 
         UnknownProtocol = -1
     };

@@ -51,14 +51,13 @@
 #include "testwidget.h"
 #include "elidedlabel.h"
 
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QSizePolicy>
-#include <QtWidgets/QGridLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QPushButton>
 
 //! [0]
-TestWidget::TestWidget(QWidget *parent):
-    QWidget(parent)
+TestWidget::TestWidget(QWidget *parent)
+    : QWidget(parent)
 {
     const QString romeo = tr(
         "But soft, what light through yonder window breaks? / "
@@ -116,7 +115,7 @@ TestWidget::TestWidget(QWidget *parent):
     //! [3]
 
     //! [4]
-    QGridLayout *layout = new QGridLayout();
+    QGridLayout *layout = new QGridLayout;
     layout->addWidget(label, 0, 1, Qt::AlignCenter);
     layout->addWidget(switchButton, 0, 2);
     layout->addWidget(exitButton, 0, 3);

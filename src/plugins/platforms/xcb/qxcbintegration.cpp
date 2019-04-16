@@ -46,6 +46,8 @@
 #include "qxcbbackingstore.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
+#include "qxcbeventqueue.h"
+#include "qxcbeventdispatcher.h"
 #if QT_CONFIG(draganddrop)
 #include "qxcbdrag.h"
 #endif
@@ -57,7 +59,6 @@
 
 #include <xcb/xcb.h>
 
-#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
 
@@ -136,6 +137,8 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     m_instance = this;
     qApp->setAttribute(Qt::AA_CompressHighFrequencyEvents, true);
 
+    QWindowSystemInterface::setPlatformFiltersEvents(true);
+
     qRegisterMetaType<QXcbWindow*>();
 #if QT_CONFIG(xcb_xlib)
     XInitThreads();
@@ -193,14 +196,22 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     const int numParameters = parameters.size();
     m_connections.reserve(1 + numParameters / 2);
 
-    if (QXcbConnection *defaultConnection = QXcbConnection::create(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName)) {
-        m_connections.append(defaultConnection);
-        for (int i = 0; i < numParameters - 1; i += 2) {
-            qCDebug(lcQpaScreen) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
-            QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
-            if (QXcbConnection *connection = QXcbConnection::create(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, display.toLatin1().constData()))
-                m_connections.append(connection);
-        }
+    auto conn = new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName);
+    if (!conn->isConnected()) {
+        delete conn;
+        return;
+    }
+    m_connections << conn;
+
+    // ### Qt 6 (QTBUG-52408) remove this multi-connection code path
+    for (int i = 0; i < numParameters - 1; i += 2) {
+        qCDebug(lcQpaXcb) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
+        QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
+        conn = new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, display.toLatin1().constData());
+        if (conn->isConnected())
+            m_connections << conn;
+        else
+            delete conn;
     }
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
@@ -332,10 +343,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
-    for (int i = 0; i < m_connections.size(); i++)
-        m_connections[i]->eventReader()->registerEventDispatcher(dispatcher);
-    return dispatcher;
+    return QXcbEventDispatcher::createEventDispatcher(defaultConnection());
 }
 
 void QXcbIntegration::initialize()
@@ -349,6 +357,8 @@ void QXcbIntegration::initialize()
     m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
     if (!m_inputContext && icStr != defaultInputContext && icStr != QLatin1String("none"))
         m_inputContext.reset(QPlatformInputContextFactory::create(defaultInputContext));
+
+    defaultConnection()->keyboard()->initialize();
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)

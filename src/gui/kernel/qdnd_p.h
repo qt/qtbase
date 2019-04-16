@@ -73,9 +73,9 @@ class QDragPrivate : public QObjectPrivate
 {
 public:
     QDragPrivate()
-        : source(0)
-        , target(0)
-        , data(0)
+        : source(nullptr)
+        , target(nullptr)
+        , data(nullptr)
     { }
     QObject *source;
     QObject *target;
@@ -110,7 +110,7 @@ private:
     QDrag *m_object;
 
     static QDragManager *m_instance;
-    Q_DISABLE_COPY(QDragManager)
+    Q_DISABLE_COPY_MOVE(QDragManager)
 };
 
 QT_END_NAMESPACE

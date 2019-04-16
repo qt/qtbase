@@ -340,7 +340,7 @@ void QImageIOHandler::setDevice(QIODevice *device)
 
 /*!
     Returns the device currently assigned to the QImageIOHandler. If
-    not device has been assigned, 0 is returned.
+    not device has been assigned, \nullptr is returned.
 */
 QIODevice *QImageIOHandler::device() const
 {
@@ -416,6 +416,7 @@ QByteArray QImageIOHandler::format() const
     \sa read(), QIODevice::peek()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -426,6 +427,7 @@ QByteArray QImageIOHandler::name() const
 {
     return format();
 }
+#endif
 
 /*!
     Writes the image \a image to the assigned device. Returns \c true on

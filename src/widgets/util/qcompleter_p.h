@@ -75,7 +75,7 @@ class QCompleterPrivate : public QObjectPrivate
 public:
     QCompleterPrivate();
     ~QCompleterPrivate() { delete popup; }
-    void init(QAbstractItemModel *model = 0);
+    void init(QAbstractItemModel *model = nullptr);
 
     QPointer<QWidget> widget;
     QCompletionModel *proxy;
@@ -194,6 +194,7 @@ private:
                      const QIndexMapper& iv, QMatchData* m);
 };
 
+// ### Qt6: QStyledItemDelegate
 class QCompleterItemDelegate : public QItemDelegate
 {
 public:

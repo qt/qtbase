@@ -370,7 +370,7 @@ private:
 class QOpenGLEngineShaderProg
 {
 public:
-    QOpenGLEngineShaderProg() : program(0) {}
+    QOpenGLEngineShaderProg() : program(nullptr) {}
 
     ~QOpenGLEngineShaderProg() {
         if (program)

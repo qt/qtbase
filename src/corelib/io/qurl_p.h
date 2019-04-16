@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 // in qurlrecode.cpp
 extern Q_AUTOTEST_EXPORT int qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
-                                          QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications = 0);
+                                          QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications = nullptr);
 
 // in qurlidna.cpp
 enum AceLeadingDot { AllowLeadingDot, ForbidLeadingDot };

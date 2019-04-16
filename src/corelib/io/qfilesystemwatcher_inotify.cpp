@@ -330,13 +330,24 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
     while (it.hasNext()) {
         QString path = it.next();
         int id = pathToID.take(path);
-        QString x = idToPath.take(id);
-        if (x.isEmpty() || x != path)
+
+        // Multiple paths could be associated to the same watch descriptor
+        // when a file is moved and added with the new name.
+        // So we should find and delete the correct one by using
+        // both id and path
+        auto path_range = idToPath.equal_range(id);
+        auto path_it = std::find(path_range.first, path_range.second, path);
+        if (path_it == idToPath.end())
             continue;
 
-        int wd = id < 0 ? -id : id;
-        // qDebug() << "removing watch for path" << path << "wd" << wd;
-        inotify_rm_watch(inotifyFd, wd);
+        const ssize_t num_elements = std::distance(path_range.first, path_range.second);
+        idToPath.erase(path_it);
+
+        // If there was only one path associated to the given id we should remove the watch
+        if (num_elements == 1) {
+            int wd = id < 0 ? -id : id;
+            inotify_rm_watch(inotifyFd, wd);
+        }
 
         it.remove();
         if (id < 0) {

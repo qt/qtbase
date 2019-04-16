@@ -86,10 +86,12 @@ MainWindow::MainWindow()
 //! [2]
 
 //! [3]
-    connect(monthCombo, SIGNAL(activated(int)), this, SLOT(setMonth(int)));
-    connect(yearEdit, SIGNAL(dateChanged(QDate)), this, SLOT(setYear(QDate)));
-    connect(fontSizeSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(setFontSize(int)));
+    connect(monthCombo, QOverload<int>::of(&QComboBox::activated),
+            this, &MainWindow::setMonth);
+    connect(yearEdit, &QDateTimeEdit::dateChanged,
+            this, &MainWindow::setYear);
+    connect(fontSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &MainWindow::setFontSize);
 //! [3]
 
     fontSizeSpinBox->setValue(10);

@@ -38,7 +38,7 @@ if(gcc|intel_icl|msvc):!rim_qcc:!uikit:!no_moc_predefs:if(!macos|count(QMAKE_APP
     } else:         error("Oops, I messed up")
     moc_predefs.output = $$MOC_DIR/moc_predefs.h
     moc_predefs.input = MOC_PREDEF_FILE
-    silent: moc_predefs.commands = @echo generating $$moc_predefs.output$$escape_expand(\n\t)@$$moc_predefs.commands
+    silent: moc_predefs.commands = @echo generating $$moc_predefs.output$$escape_expand(\\n\\t)@$$moc_predefs.commands
     QMAKE_EXTRA_COMPILERS += moc_predefs
     MOC_PREDEF_FILE = $$[QT_HOST_DATA/src]/mkspecs/features/data/dummy.cpp
 }

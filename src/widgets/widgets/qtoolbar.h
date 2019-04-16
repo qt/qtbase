@@ -99,15 +99,11 @@ public:
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);
     QAction *addAction(const QIcon &icon, const QString &text,
                        const QObject *receiver, const char* member);
-#ifdef Q_QDOC
-    template<typename PointerToMemberFunction>
-    QAction *addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method);
+#ifdef Q_CLANG_QDOC
     template<typename Functor>
     QAction *addAction(const QString &text, Functor functor);
     template<typename Functor>
     QAction *addAction(const QString &text, const QObject *context, Functor functor);
-    template<typename PointerToMemberFunction>
-    QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method);
     template<typename Functor>
     QAction *addAction(const QIcon &icon, const QString &text, Functor functor);
     template<typename Functor>
@@ -149,7 +145,7 @@ public:
         connect(result, &QAction::triggered, slot);
         return result;
     }
-#endif // !Q_QDOC
+#endif // !Q_CLANG_QDOC
 
     QAction *addSeparator();
     QAction *insertSeparator(QAction *before);

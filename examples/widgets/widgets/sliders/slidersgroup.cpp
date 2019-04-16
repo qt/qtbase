@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "slidersgroup.h"
+
+#include <QtWidgets>
 
 //! [0]
 SlidersGroup::SlidersGroup(Qt::Orientation orientation, const QString &title,
@@ -69,11 +69,11 @@ SlidersGroup::SlidersGroup(Qt::Orientation orientation, const QString &title,
     dial = new QDial;
     dial->setFocusPolicy(Qt::StrongFocus);
 
-    connect(slider, SIGNAL(valueChanged(int)), scrollBar, SLOT(setValue(int)));
-    connect(scrollBar, SIGNAL(valueChanged(int)), dial, SLOT(setValue(int)));
-    connect(dial, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
+    connect(slider, &QSlider::valueChanged, scrollBar, &QScrollBar::setValue);
+    connect(scrollBar, &QScrollBar::valueChanged, dial, &QDial::setValue);
+    connect(dial, &QDial::valueChanged, slider, &QSlider::setValue);
 //! [0] //! [1]
-    connect(dial, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+    connect(dial, &QDial::valueChanged, this, &SlidersGroup::valueChanged);
 //! [1] //! [2]
 
 //! [2] //! [3]

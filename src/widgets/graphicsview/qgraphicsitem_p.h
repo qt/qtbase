@@ -78,13 +78,13 @@ public:
     typedef void (*ClearFunction)(QDeclarativeListProperty<T> *);
 
     QDeclarativeListProperty()
-        : object(0), data(0), append(0), count(0), at(0), clear(0), dummy1(0), dummy2(0) {}
+        : object(nullptr), data(nullptr), append(nullptr), count(nullptr), at(nullptr), clear(nullptr), dummy1(nullptr), dummy2(nullptr) {}
     QDeclarativeListProperty(QObject *o, QList<T *> &list)
         : object(o), data(&list), append(qlist_append), count(qlist_count), at(qlist_at),
-          clear(qlist_clear), dummy1(0), dummy2(0) {}
+          clear(qlist_clear), dummy1(nullptr), dummy2(nullptr) {}
     QDeclarativeListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = 0, AtFunction t = 0,
                     ClearFunction r = 0)
-        : object(o), data(d), append(a), count(c), at(t), clear(r), dummy1(0), dummy2(0) {}
+        : object(o), data(d), append(a), count(c), at(t), clear(r), dummy1(nullptr), dummy2(nullptr) {}
 
     bool operator==(const QDeclarativeListProperty &o) const {
         return object == o.object &&
@@ -198,8 +198,8 @@ public:
             || (ancestorFlags & AncestorIgnoresTransformations);
     }
 
-    void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
-    void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void combineTransformToParent(QTransform *x, const QTransform *viewTransform = nullptr) const;
+    void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = nullptr) const;
     virtual void updateSceneTransformFromParent();
 
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
@@ -232,7 +232,7 @@ public:
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect, QGraphicsItem *topMostEffectItem);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
-    QRectF effectiveBoundingRect(QGraphicsItem *topMostEffectItem = 0) const;
+    QRectF effectiveBoundingRect(QGraphicsItem *topMostEffectItem = nullptr) const;
     QRectF sceneEffectiveBoundingRect() const;
 
     QRectF effectiveBoundingRect(const QRectF &rect) const;
@@ -408,8 +408,8 @@ public:
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromHide);
     void clearFocusHelper(bool giveFocusToParent, bool hiddenByParentPanel);
-    void setSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
-    void clearSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
+    void setSubFocus(QGraphicsItem *rootItem = nullptr, QGraphicsItem *stopItem = nullptr);
+    void clearSubFocus(QGraphicsItem *rootItem = nullptr, QGraphicsItem *stopItem = nullptr);
     void resetFocusProxy();
     virtual void subFocusItemChange();
     virtual void focusScopeItemChange(bool isSubFocusItem);
@@ -541,7 +541,7 @@ struct QGraphicsItemPrivate::TransformData
         onlyTransform(true)
     { }
 
-    QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
+    QTransform computedFullTransform(QTransform *postmultiplyTransform = nullptr) const
     {
         if (onlyTransform) {
             if (!postmultiplyTransform || postmultiplyTransform->isIdentity())
@@ -595,12 +595,12 @@ class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
     QGraphicsItemEffectSourcePrivate(QGraphicsItem *i)
-        : QGraphicsEffectSourcePrivate(), item(i), info(0)
+        : QGraphicsEffectSourcePrivate(), item(i), info(nullptr)
     {}
 
     void detach() override
     {
-        item->d_ptr->graphicsEffect = 0;
+        item->d_ptr->graphicsEffect = nullptr;
         item->prepareGeometryChange();
     }
 
@@ -608,7 +608,7 @@ public:
     { return item; }
 
     const QWidget *widget() const override
-    { return 0; }
+    { return nullptr; }
 
     void update() override {
         item->d_ptr->updateDueToGraphicsEffect = true;
@@ -628,7 +628,7 @@ public:
     }
 
     const QStyleOption *styleOption() const override
-    { return info ? info->option : 0; }
+    { return info ? info->option : nullptr; }
 
     QRect deviceRect() const override
     {
@@ -644,7 +644,7 @@ public:
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
                    QGraphicsEffect::PixmapPadMode mode) const override;
-    QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
+    QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = nullptr) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

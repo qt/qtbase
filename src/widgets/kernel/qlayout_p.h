@@ -80,7 +80,7 @@ public:
 
     static QWidgetItem *createWidgetItem(const QLayout *layout, QWidget *widget);
     static QSpacerItem *createSpacerItem(const QLayout *layout, int w, int h, QSizePolicy::Policy hPolicy = QSizePolicy::Minimum, QSizePolicy::Policy vPolicy = QSizePolicy::Minimum);
-    virtual QLayoutItem* replaceAt(int index, QLayoutItem *newitem) { Q_UNUSED(index); Q_UNUSED(newitem); return 0; }
+    virtual QLayoutItem* replaceAt(int index, QLayoutItem *newitem) { Q_UNUSED(index); Q_UNUSED(newitem); return nullptr; }
 
     static QWidgetItemFactoryMethod widgetItemFactoryMethod;
     static QSpacerItemFactoryMethod spacerItemFactoryMethod;

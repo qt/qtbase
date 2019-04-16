@@ -170,11 +170,17 @@ void QPdfWriter::setPdfVersion(PdfVersion version)
 {
     Q_D(QPdfWriter);
 
+    static const QHash<QPdfWriter::PdfVersion, QPdfEngine::PdfVersion> engineMapping {
+        {QPdfWriter::PdfVersion_1_4, QPdfEngine::Version_1_4},
+        {QPdfWriter::PdfVersion_A1b, QPdfEngine::Version_A1b},
+        {QPdfWriter::PdfVersion_1_6, QPdfEngine::Version_1_6}
+    };
+
     if (d->pdfVersion == version)
         return;
 
     d->pdfVersion = version;
-    d->engine->setPdfVersion(d->pdfVersion == QPdfWriter::PdfVersion_1_4 ? QPdfEngine::Version_1_4 : QPdfEngine::Version_A1b);
+    d->engine->setPdfVersion(engineMapping.value(version, QPdfEngine::Version_1_4));
 }
 
 /*!
@@ -373,6 +379,9 @@ int QPdfWriter::resolution() const
 */
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
     \reimp
 
@@ -398,6 +407,8 @@ void QPdfWriter::setPageSizeMM(const QSizeF &size)
 {
     setPageSize(QPageSize(size, QPageSize::Millimeter));
 }
+QT_WARNING_POP
+#endif
 
 /*!
     \internal
@@ -421,6 +432,9 @@ bool QPdfWriter::newPage()
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
     \reimp
 
@@ -432,6 +446,8 @@ void QPdfWriter::setMargins(const Margins &m)
 {
     setPageMargins(QMarginsF(m.left, m.top, m.right, m.bottom), QPageLayout::Millimeter);
 }
+QT_WARNING_POP
+#endif
 
 QT_END_NAMESPACE
 

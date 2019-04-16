@@ -55,6 +55,8 @@ private slots:
     void testCbrtFloat();
     void cpp11();
     void quadraticEquation();
+    void streamInOut_data();
+    void streamInOut();
 };
 
 void tst_QEasingCurve::type()
@@ -877,6 +879,37 @@ void tst_QEasingCurve::quadraticEquation() {
         test.addCubicBezierSegment(QPointF(p3, 1.0), QPointF(1.0, 1.0), QPointF(1.0, 1.0));
         QCOMPARE(test.valueForProgress(0.0), 0.0);
     }
+}
+
+void tst_QEasingCurve::streamInOut_data()
+{
+    QTest::addColumn<int>("version");
+    QTest::addColumn<bool>("equality");
+
+    QTest::newRow("5.11") << int(QDataStream::Qt_5_11) << false;
+    QTest::newRow("5.13") << int(QDataStream::Qt_5_13) << true;
+}
+
+void tst_QEasingCurve::streamInOut()
+{
+    QFETCH(int, version);
+    QFETCH(bool, equality);
+
+    QEasingCurve orig;
+    orig.addCubicBezierSegment(QPointF(0.43, 0.0025), QPointF(0.38, 0.51), QPointF(0.57, 0.99));
+
+    QEasingCurve copy;
+
+    QByteArray data;
+    QDataStream dsw(&data,QIODevice::WriteOnly);
+    QDataStream dsr(&data,QIODevice::ReadOnly);
+
+    dsw.setVersion(version);
+    dsr.setVersion(version);
+    dsw << orig;
+    dsr >> copy;
+
+    QCOMPARE(copy == orig, equality);
 }
 
 QTEST_MAIN(tst_QEasingCurve)

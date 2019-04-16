@@ -46,6 +46,7 @@ private slots:
     void construction();
     void moveOperator();
     void operators();
+    void qtbug_74575();
 };
 
 tst_QSqlError::tst_QSqlError()
@@ -113,6 +114,7 @@ void tst_QSqlError::construction()
    QVERIFY(!obj4.isValid());
    QCOMPARE(obj4.driverText(), QString());
    QCOMPARE(obj4.databaseText(), QString());
+   QCOMPARE(obj4.text(), QString());
    QCOMPARE(obj4.type(), QSqlError::NoError);
    QCOMPARE(obj4.number(), -1);
    QCOMPARE(obj4.nativeErrorCode(), QString());
@@ -180,6 +182,28 @@ void tst_QSqlError::operators()
    QVERIFY(error1 != error3);
 }
 
+void tst_QSqlError::qtbug_74575()
+{
+   const QString driverText(QStringLiteral("drivertext"));
+   const QString databaseText(QStringLiteral("databasetext"));
+   const QString databaseTextNewline(QStringLiteral("databasetext\n"));
+
+   QSqlError error1(driverText, databaseText,
+                  QSqlError::UnknownError, QStringLiteral("123"));
+   QCOMPARE(error1.text(), databaseText + QLatin1Char(' ') + driverText);
+
+   QSqlError error2(QString(), databaseText,
+                  QSqlError::UnknownError, QStringLiteral("123"));
+   QCOMPARE(error2.text(), databaseText);
+
+   QSqlError error3(driverText, QString(),
+                  QSqlError::UnknownError, QStringLiteral("123"));
+   QCOMPARE(error3.text(), driverText);
+
+   QSqlError error4(driverText, databaseTextNewline,
+                  QSqlError::UnknownError, QStringLiteral("123"));
+   QCOMPARE(error4.text(), databaseTextNewline + driverText);
+}
 
 QTEST_MAIN(tst_QSqlError)
 #include "tst_qsqlerror.moc"

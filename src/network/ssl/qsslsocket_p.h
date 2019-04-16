@@ -58,6 +58,7 @@
 #include <private/qtcpsocket_p.h>
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
+#include "qocspresponse.h"
 #ifndef QT_NO_OPENSSL
 #include <private/qsslcontext_openssl_p.h>
 #else
@@ -65,7 +66,7 @@ class QSslContext;
 #endif
 
 #include <QtCore/qstringlist.h>
-
+#include <QtCore/qvector.h>
 #include <private/qringbuffer_p.h>
 
 #if defined(Q_OS_MAC)
@@ -89,14 +90,6 @@ QT_BEGIN_NAMESPACE
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(HCRYPTPROV_LEGACY, LPCWSTR);
-    typedef PCCERT_CONTEXT (WINAPI *PtrCertFindCertificateInStore)(HCERTSTORE, DWORD, DWORD, DWORD, const void*, PCCERT_CONTEXT);
-    typedef BOOL (WINAPI *PtrCertCloseStore)(HCERTSTORE, DWORD);
-#endif // Q_OS_WIN && !Q_OS_WINRT
-
-
-
 class QSslSocketPrivate : public QTcpSocketPrivate
 {
     Q_DECLARE_PUBLIC(QSslSocket)
@@ -105,6 +98,7 @@ public:
     virtual ~QSslSocketPrivate();
 
     void init();
+    bool verifyProtocolSupported(const char *where);
     bool initialized;
 
     QSslSocket::SslMode mode;
@@ -155,12 +149,6 @@ public:
                                                      const QString &peerName);
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    static PtrCertOpenSystemStoreW ptrCertOpenSystemStoreW;
-    static PtrCertFindCertificateInStore ptrCertFindCertificateInStore;
-    static PtrCertCloseStore ptrCertCloseStore;
-#endif // Q_OS_WIN && !Q_OS_WINRT
-
     // The socket itself, including private slots.
     QTcpSocket *plainSocket;
     void createPlainSocket(QIODevice::OpenMode openMode);
@@ -184,7 +172,7 @@ public:
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
     void _q_resumeImplementation();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !QT_CONFIG(schannel)
     virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
 #endif
 
@@ -220,9 +208,10 @@ protected:
     bool verifyErrorsHaveBeenIgnored();
     bool paused;
     bool flushTriggered;
+    QVector<QOcspResponse> ocspResponses;
 };
 
-#if QT_CONFIG(securetransport)
+#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
 // Implemented in qsslsocket_qt.cpp
 QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase);
 #endif

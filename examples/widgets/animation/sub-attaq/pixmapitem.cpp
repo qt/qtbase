@@ -54,7 +54,8 @@
 //Qt
 #include <QPainter>
 
-PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsObject(parent)
+PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent)
+    : QGraphicsObject(parent)
 {
     if (mode == GraphicsScene::Big)
         pix  = QPixmap(QStringLiteral(":/big/") + fileName);

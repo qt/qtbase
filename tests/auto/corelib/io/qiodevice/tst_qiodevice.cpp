@@ -209,9 +209,6 @@ void tst_QIODevice::read_QByteArray()
 //--------------------------------------------------------------------
 void tst_QIODevice::unget()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("The unget network test is unstable on Mac. See QTBUG-39983.");
-#endif
     QBuffer buffer;
     buffer.open(QBuffer::ReadWrite);
     buffer.write("ZXCV");

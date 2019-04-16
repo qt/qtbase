@@ -56,7 +56,6 @@ QT_BEGIN_NAMESPACE
     either individually or in batches.
 */
 
-#ifndef Q_QDOC
 
 namespace QtPrivate {
 
@@ -143,7 +142,7 @@ public:
     template <typename T>
     int addResult(int index, const T *result)
     {
-        if (result == 0)
+        if (result == nullptr)
             return addResult(index, static_cast<void *>(nullptr));
         else
             return addResult(index, static_cast<void *>(new T(*result)));
@@ -159,7 +158,7 @@ public:
     int addResults(int index, const QVector<T> *results, int totalCount)
     {
         if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
-            return addResults(index, 0, 0, totalCount);
+            return addResults(index, nullptr, 0, totalCount);
         else
             return addResults(index, new QVector<T>(*results), results->count(), totalCount);
     }
@@ -196,7 +195,6 @@ public:
 
 Q_DECLARE_TYPEINFO(QtPrivate::ResultItem, Q_PRIMITIVE_TYPE);
 
-#endif //Q_QDOC
 
 QT_END_NAMESPACE
 

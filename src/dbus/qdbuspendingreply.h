@@ -108,10 +108,8 @@ namespace QDBusPendingReplyTypes {
     template <>           struct NotVoid<void> { typedef TypeIsVoid Type; };
 } // namespace QDBusPendingReplyTypes
 
-#ifndef Q_CLANG_QDOC
 template<typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void,
          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void>
-#endif
 class QDBusPendingReply:
 #ifdef Q_CLANG_QDOC
     public QDBusPendingCall
@@ -158,7 +156,7 @@ public:
     {
         Q_STATIC_ASSERT_X(Index >= 0 && Index < Count, "Index out of bounds");
         typedef typename Select<Index>::Type ResultType;
-        return qdbus_cast<ResultType>(argumentAt(Index), 0);
+        return qdbus_cast<ResultType>(argumentAt(Index), nullptr);
     }
 #endif
 
@@ -171,7 +169,6 @@ public:
     QDBusError error() const;
     QDBusMessage reply() const;
 
-    typedef QVariant T1;
     inline T1 value() const;
     inline operator T1() const;
 #else

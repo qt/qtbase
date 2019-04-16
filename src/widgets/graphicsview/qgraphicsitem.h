@@ -283,10 +283,16 @@ public:
     inline void ensureVisible(qreal x, qreal y, qreal w, qreal h, int xmargin = 50, int ymargin = 50);
 
     // Local transformation
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use transform() instead")
     QMatrix matrix() const;
+    QT_DEPRECATED_X("Use sceneTransform() instead")
     QMatrix sceneMatrix() const;
+    QT_DEPRECATED_X("Use setTransform() instead")
     void setMatrix(const QMatrix &matrix, bool combine = false);
+    QT_DEPRECATED_X("Use resetTransform() instead")
     void resetMatrix();
+#endif
     QTransform transform() const;
     QTransform sceneTransform() const;
     QTransform deviceTransform(const QTransform &viewportTransform) const;
@@ -487,7 +493,9 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsItem::GraphicsItemFlags)
+#ifndef Q_CLANG_QDOC
 Q_DECLARE_INTERFACE(QGraphicsItem, "org.qt-project.Qt.QGraphicsItem")
+#endif
 
 inline void QGraphicsItem::setPos(qreal ax, qreal ay)
 { setPos(QPointF(ax, ay)); }

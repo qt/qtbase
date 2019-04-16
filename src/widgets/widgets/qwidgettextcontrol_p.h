@@ -97,9 +97,9 @@ class Q_WIDGETS_EXPORT QWidgetTextControl : public QInputControl
     Q_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
     Q_PROPERTY(bool ignoreUnusedNavigationEvents READ ignoreUnusedNavigationEvents WRITE setIgnoreUnusedNavigationEvents)
 public:
-    explicit QWidgetTextControl(QObject *parent = 0);
-    explicit QWidgetTextControl(const QString &text, QObject *parent = 0);
-    explicit QWidgetTextControl(QTextDocument *doc, QObject *parent = 0);
+    explicit QWidgetTextControl(QObject *parent = nullptr);
+    explicit QWidgetTextControl(const QString &text, QObject *parent = nullptr);
+    explicit QWidgetTextControl(QTextDocument *doc, QObject *parent = nullptr);
     virtual ~QWidgetTextControl();
 
     void setDocument(QTextDocument *document);
@@ -116,12 +116,12 @@ public:
     void setCurrentCharFormat(const QTextCharFormat &format);
     QTextCharFormat currentCharFormat() const;
 
-    bool find(const QString &exp, QTextDocument::FindFlags options = 0);
+    bool find(const QString &exp, QTextDocument::FindFlags options = nullptr);
 #ifndef QT_NO_REGEXP
-    bool find(const QRegExp &exp, QTextDocument::FindFlags options = 0);
+    bool find(const QRegExp &exp, QTextDocument::FindFlags options = nullptr);
 #endif
 #if QT_CONFIG(regularexpression)
-    bool find(const QRegularExpression &exp, QTextDocument::FindFlags options = 0);
+    bool find(const QRegularExpression &exp, QTextDocument::FindFlags options = nullptr);
 #endif
 
     QString toPlainText() const;
@@ -243,11 +243,11 @@ public:
     QPalette palette() const;
     void setPalette(const QPalette &pal);
 
-    virtual void processEvent(QEvent *e, const QMatrix &matrix, QWidget *contextWidget = 0);
-    void processEvent(QEvent *e, const QPointF &coordinateOffset = QPointF(), QWidget *contextWidget = 0);
+    virtual void processEvent(QEvent *e, const QMatrix &matrix, QWidget *contextWidget = nullptr);
+    void processEvent(QEvent *e, const QPointF &coordinateOffset = QPointF(), QWidget *contextWidget = nullptr);
 
     // control methods
-    void drawContents(QPainter *painter, const QRectF &rect = QRectF(), QWidget *widget = 0);
+    void drawContents(QPainter *painter, const QRectF &rect = QRectF(), QWidget *widget = nullptr);
 
     void setFocus(bool focus, Qt::FocusReason = Qt::OtherFocusReason);
 
@@ -267,7 +267,7 @@ protected:
     virtual bool event(QEvent *e) override;
 
 private:
-    Q_DISABLE_COPY(QWidgetTextControl)
+    Q_DISABLE_COPY_MOVE(QWidgetTextControl)
     Q_PRIVATE_SLOT(d_func(), void _q_updateCurrentCharFormatAndSelection())
     Q_PRIVATE_SLOT(d_func(), void _q_emitCursorPosChanged(const QTextCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_deleteSelected())

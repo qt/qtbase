@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include "math.h"
+#include <QtWidgets>
+#include <math.h>
 
 #include "mainwindow.h"
 
@@ -89,9 +89,9 @@ MainWindow::MainWindow()
     tableWidget->setHorizontalHeaderItem(1, squaresHeaderItem);
     tableWidget->setHorizontalHeaderItem(2, cubesHeaderItem);
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(sumItemsAction, SIGNAL(triggered()), this, SLOT(sumItems()));
-    connect(averageItemsAction, SIGNAL(triggered()), this, SLOT(averageItems()));
+    connect(quitAction, &QAction::triggered, this, &QWidget::close);
+    connect(sumItemsAction, &QAction::triggered, this, &MainWindow::sumItems);
+    connect(averageItemsAction, &QAction::triggered, this, &MainWindow::averageItems);
 
     setupTableItems();
 
@@ -119,12 +119,11 @@ void MainWindow::setupTableItems()
 
 void MainWindow::averageItems()
 {
-    QList<QTableWidgetItem *> selected = tableWidget->selectedItems();
-    QTableWidgetItem *item;
+    const QList<QTableWidgetItem *> selected = tableWidget->selectedItems();
     int number = 0;
     double total = 0;
 
-    foreach (item, selected) {
+    for (QTableWidgetItem *item : selected) {
         bool ok;
         double value = item->text().toDouble(&ok);
 
@@ -140,12 +139,11 @@ void MainWindow::averageItems()
 void MainWindow::sumItems()
 {
 //! [4]
-    QList<QTableWidgetItem *> selected = tableWidget->selectedItems();
-    QTableWidgetItem *item;
+    const QList<QTableWidgetItem *> selected = tableWidget->selectedItems();
     int number = 0;
     double total = 0;
 
-    foreach (item, selected) {
+    for (QTableWidgetItem *item : selected) {
         bool ok;
         double value = item->text().toDouble(&ok);
 

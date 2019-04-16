@@ -103,13 +103,11 @@ public:
 
     QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
 
-    void addScreen(QPlatformScreen *screen, bool isPrimary = false);
-    void removeScreen(QPlatformScreen *screen);
-
 private:
     EGLNativeDisplayType nativeDisplay() const;
     void createInputHandlers();
     static void loadKeymapStatic(const QString &filename);
+    static void switchLangStatic();
 
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;

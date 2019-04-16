@@ -51,7 +51,6 @@
 
 #define PD_CLASSINFO Q_CLASSINFO
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) || defined (Q_MOC_RUN)
 #define PD_VARARG(x, ...) x(__VA_ARGS__)
 
 #if defined(Q_CC_GNU) || defined(Q_MOC_RUN)
@@ -61,7 +60,6 @@
 #define PD_VARARGEXT(x, ...) x(__VA_ARGS__)
 #endif
 
-#endif
 
 #define PD_ADD_SUFFIX(x)  PD_DEFINE1(x,_SUFFIX)
 #define PD_DEFINE_ITSELF PD_ADD_SUFFIX(PD_DEFINE_ITSELF)
@@ -100,7 +98,6 @@ public slots:
 
     PD_TEST_IDENTIFIER_ARG(void, combined6()) {}
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) || defined (Q_MOC_RUN)
     PD_VARARG(void vararg1) {}
     PD_VARARG(void vararg2, int) {}
     PD_VARARG(void vararg3, int, int) {}
@@ -108,14 +105,6 @@ public slots:
     PD_VARARGEXT(void vararg4) {}
     PD_VARARGEXT(void vararg5, int) {}
     PD_VARARGEXT(void vararg6, int, int) {}
-#else
-    void vararg1() {}
-    void vararg2(int) {}
-    void vararg3(int,int) {}
-    void vararg4() {}
-    void vararg5(int) {}
-    void vararg6(int,int) {}
-#endif
 
 #define OUTERFUNCTION(x) x
 #define INNERFUNCTION(x) OUTERFUNCTION(x)

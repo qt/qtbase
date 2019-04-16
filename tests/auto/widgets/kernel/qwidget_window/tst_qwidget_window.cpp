@@ -46,6 +46,9 @@
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformdrag.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 
@@ -87,6 +90,7 @@ private slots:
 #if QT_CONFIG(draganddrop)
     void tst_dnd();
     void tst_dnd_events();
+    void tst_dnd_propagation();
 #endif
 
     void tst_qtbug35600();
@@ -470,6 +474,10 @@ static const char *expectedLogC[] = {
     "Event at 11,241 accepted",
     "acceptingDropsWidget2::dropEvent at 1,51 action=1 MIME_DATA_ADDRESS 'testmimetext'",
     "Event at 11,261 accepted",
+    "acceptingDropsWidget3::dragEnterEvent at 1,21 action=1 MIME_DATA_ADDRESS 'testmimetext'",
+    "Event at 11,281 accepted",
+    "acceptingDropsWidget3::dragLeaveEvent QDragLeaveEvent",
+    "Event at 11,301 ignored",
     "acceptingDropsWidget1::dragEnterEvent at 10,10 action=1 MIME_DATA_ADDRESS 'testmimetext'",
     "Event at 0,0 accepted",
     "acceptingDropsWidget1::dragMoveEvent at 11,11 action=1 MIME_DATA_ADDRESS 'testmimetext'",
@@ -482,8 +490,9 @@ static const char *expectedLogC[] = {
 class DnDEventLoggerWidget : public QWidget
 {
 public:
-    DnDEventLoggerWidget(QStringList *log, QWidget *w = 0) : QWidget(w), m_log(log) {}
-
+    DnDEventLoggerWidget(QStringList *log, QWidget *w = nullptr, bool ignoreDragMove = false)
+        : QWidget(w), m_log(log), m_ignoreDragMove(ignoreDragMove)
+    {}
 protected:
     void dragEnterEvent(QDragEnterEvent *);
     void dragMoveEvent(QDragMoveEvent *);
@@ -493,6 +502,7 @@ protected:
 private:
     void formatDropEvent(const char *function, const QDropEvent *e, QTextStream &str) const;
     QStringList *m_log;
+    bool m_ignoreDragMove;
 };
 
 void DnDEventLoggerWidget::formatDropEvent(const char *function, const QDropEvent *e, QTextStream &str) const
@@ -513,6 +523,8 @@ void DnDEventLoggerWidget::dragEnterEvent(QDragEnterEvent *e)
 
 void DnDEventLoggerWidget::dragMoveEvent(QDragMoveEvent *e)
 {
+    if (m_ignoreDragMove)
+        return;
     e->accept();
     QString message;
     QTextStream str(&message);
@@ -580,7 +592,17 @@ void tst_QWidget_window::tst_dnd()
     dropsRefusingWidget2->resize(160, 60);
     dropsRefusingWidget2->move(10, 10);
 
+    QWidget *dropsAcceptingWidget3 = new DnDEventLoggerWidget(&log, &dndTestWidget, true);
+    dropsAcceptingWidget3->setAcceptDrops(true);
+    dropsAcceptingWidget3->setObjectName(QLatin1String("acceptingDropsWidget3"));
+    // 260 + 40 = 300 = widget size, must not be more than that.
+    // otherwise it will break WinRT because there the tlw is maximized every time
+    // and this window will receive one more event
+    dropsAcceptingWidget3->resize(180, 40);
+    dropsAcceptingWidget3->move(10, 260);
+
     dndTestWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dndTestWidget));
     qApp->setActiveWindow(&dndTestWidget);
     QVERIFY(QTest::qWaitForWindowActive(&dndTestWidget));
 
@@ -595,16 +617,17 @@ void tst_QWidget_window::tst_dnd()
     log.push_back(msgEventAccepted(e));
     while (true) {
         position.ry() += 20;
-        if (position.y() >= 250) {
+        if (position.y() >= 250 && position.y() < 270) {
             QDropEvent e(position, Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
             qApp->sendEvent(window, &e);
             log.push_back(msgEventAccepted(e));
-            break;
         } else {
             QDragMoveEvent e(position, Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
             qApp->sendEvent(window, &e);
             log.push_back(msgEventAccepted(e));
         }
+        if (position.y() > 290)
+            break;
     }
 
     window = nativeWidget->windowHandle();
@@ -628,6 +651,15 @@ void tst_QWidget_window::tst_dnd()
     for (int i= 0; i < expectedLogSize; ++i)
         expectedLog.push_back(QString::fromLatin1(expectedLogC[i]).replace(mimeDataAddressPlaceHolder, mimeDataAddress));
 
+    if (log.size() != expectedLog.size()) {
+        for (int i = 0; i < log.size() && i < expectedLog.size(); ++i)
+            QCOMPARE(log.at(i), expectedLog.at(i));
+        const int iMin = std::min(log.size(), expectedLog.size());
+        for (int i = iMin; i < log.size(); ++i)
+            qDebug() << "log[" << i << "]:" << log.at(i);
+        for (int i = iMin; i < expectedLog.size(); ++i)
+            qDebug() << "exp[" << i << "]:" << log.at(i);
+    }
     QCOMPARE(log, expectedLog);
 }
 
@@ -715,6 +747,77 @@ void tst_QWidget_window::tst_dnd_events()
     QTest::mousePress(window, Qt::LeftButton);
 
     QCOMPARE(dndWidget._dndEvents, expectedDndEvents);
+}
+
+class DropTarget : public QWidget
+{
+public:
+    explicit DropTarget()
+    {
+        setAcceptDrops(true);
+
+        const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+        auto width = availableGeometry.width() / 6;
+        auto height = availableGeometry.height() / 4;
+
+        setGeometry(availableGeometry.x() + 200, availableGeometry.y() + 200, width, height);
+
+        QLabel *label = new QLabel(QStringLiteral("Test"), this);
+        label->setGeometry(40, 40, 60, 60);
+        label->setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *event) override
+    {
+        event->accept();
+        mDndEvents.append("enter ");
+    }
+
+    void dragMoveEvent(QDragMoveEvent *event) override
+    {
+        event->acceptProposedAction();
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent *) override
+    {
+        mDndEvents.append("leave ");
+    }
+
+    void dropEvent(QDropEvent *event) override
+    {
+        event->accept();
+        mDndEvents.append("drop ");
+    }
+
+    QString mDndEvents;
+};
+
+void tst_QWidget_window::tst_dnd_propagation()
+{
+    QMimeData mimeData;
+    mimeData.setText(QLatin1String("testmimetext"));
+
+    DropTarget target;
+    target.show();
+    QVERIFY(QTest::qWaitForWindowActive(&target));
+
+    Qt::DropActions supportedActions = Qt::DropAction::CopyAction;
+    QWindow *window = target.windowHandle();
+
+    auto posInsideDropTarget = QHighDpi::toNativePixels(QPoint(20, 20), window->screen());
+    auto posInsideLabel      = QHighDpi::toNativePixels(QPoint(60, 60), window->screen());
+
+    // Enter DropTarget.
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideDropTarget, supportedActions, 0, 0);
+    // Enter QLabel. This will propagate because default QLabel does
+    // not accept the drop event in dragEnterEvent().
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+    // Drop on QLabel. DropTarget will get dropEvent(), because it accepted the event.
+    QWindowSystemInterface::handleDrop(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+
+    QGuiApplication::processEvents();
+
+    QCOMPARE(target.mDndEvents, "enter leave enter drop ");
 }
 #endif
 

@@ -139,6 +139,12 @@ def spaces(indent: int) -> str:
     return '    ' * indent
 
 
+def trim_leading_dot(file: str) -> str:
+    while file.startswith('./'):
+        file = file[2:]
+    return file
+
+
 def map_to_file(f: str, scope: Scope, *, is_include: bool = False) -> str:
     assert('$$' not in f)
 
@@ -148,9 +154,7 @@ def map_to_file(f: str, scope: Scope, *, is_include: bool = False) -> str:
     base_dir = scope.currentdir if is_include else scope.basedir
     f = os.path.join(base_dir, f)
 
-    while f.startswith('./'):
-        f = f[2:]
-    return f
+    return trim_leading_dot(f)
 
 
 def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
@@ -175,8 +179,7 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
     for v in vpath:
         fullpath = os.path.join(v, source)
         if os.path.exists(fullpath):
-            relpath = os.path.relpath(fullpath, base_dir)
-            return relpath
+            return trim_leading_dot(os.path.relpath(fullpath, base_dir))
 
     print('    XXXX: Source {}: Not found.'.format(source))
     return '{}-NOTFOUND'.format(source)
@@ -563,6 +566,9 @@ class Scope(object):
 
         # strip ${CMAKE_CURRENT_SOURCE_DIR}:
         result = list(map(lambda f: f[28:] if f.startswith('${CMAKE_CURRENT_SOURCE_DIR}/') else f, result))
+
+        # strip leading ./:
+        result = list(map(lambda f: trim_leading_dot(f), result))
 
         return result
 
@@ -1432,7 +1438,7 @@ def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
                indent: int = 0) -> None:
     tool_name = scope.TARGET
 
-    extra = ['BOOTSTRAP'] if 'force_bootstrap' in scope.get('CONFIG', []) else []
+    extra = ['BOOTSTRAP'] if 'force_bootstrap' in scope.get('CONFIG') else []
 
     write_main_part(cm_fh, tool_name, 'Tool', 'add_qt_tool', scope,
                     indent=indent, known_libraries={'Qt::Core', },

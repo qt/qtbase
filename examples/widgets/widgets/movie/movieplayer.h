@@ -70,7 +70,7 @@ class MoviePlayer : public QWidget
     Q_OBJECT
 
 public:
-    MoviePlayer(QWidget *parent = 0);
+    MoviePlayer(QWidget *parent = nullptr);
     void openFile(const QString &fileName);
 
 private slots:

@@ -73,7 +73,9 @@ const char _slnHeader120[]      = "Microsoft Visual Studio Solution File, Format
 const char _slnHeader140[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
                                   "\n# Visual Studio 2015";
 const char _slnHeader141[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
-                                  "\n# Visual Studio 2017";
+                                  "\n# Visual Studio 15";
+const char _slnHeader142[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
+                                  "\n# Visual Studio Version 16";
                                   // The following UUID _may_ change for later servicepacks...
                                   // If so we need to search through the registry at
                                   // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\7.0\Projects
@@ -191,6 +193,10 @@ bool VcprojGenerator::writeProjectMakefile()
         mergedProject.SccProjectName = mergedProjects.at(0)->vcProject.SccProjectName;
         mergedProject.SccLocalPath = mergedProjects.at(0)->vcProject.SccLocalPath;
         mergedProject.PlatformName = mergedProjects.at(0)->vcProject.PlatformName;
+        mergedProject.WindowsTargetPlatformVersion =
+                project->first("WINDOWS_TARGET_PLATFORM_VERSION").toQString();
+        mergedProject.WindowsTargetPlatformMinVersion =
+                project->first("WINDOWS_TARGET_PLATFORM_MIN_VERSION").toQString();
 
         XmlOutput xmlOut(t);
         projectWriter->write(xmlOut, mergedProject);
@@ -207,6 +213,16 @@ struct VcsolutionDepend {
     Target targetType;
     QStringList dependencies;
 };
+
+/* Disable optimization in getProjectUUID() due to a compiler
+ * bug in MSVC 2015 that causes ASSERT: "&other != this" in the QString
+ * copy constructor for non-empty file names at:
+ * filename.isEmpty()?project->first("QMAKE_MAKEFILE"):filename */
+
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#   pragma optimize( "g", off )
+#   pragma warning ( disable : 4748 )
+#endif
 
 QUuid VcprojGenerator::getProjectUUID(const QString &filename)
 {
@@ -238,6 +254,10 @@ QUuid VcprojGenerator::getProjectUUID(const QString &filename)
     project->values("GUID") = ProStringList(uuid.toString().toUpper());
     return uuid;
 }
+
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#   pragma optimize( "g", on )
+#endif
 
 QUuid VcprojGenerator::increaseUUID(const QUuid &id)
 {
@@ -287,6 +307,8 @@ QString VcprojGenerator::retrievePlatformToolSet() const
         return QStringLiteral("v140");
     case NET2017:
         return QStringLiteral("v141");
+    case NET2019:
+        return QStringLiteral("v142");
     default:
         return QString();
     }
@@ -459,8 +481,8 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     // Add all unknown libs to the deps
                     QStringList where = QStringList() << "LIBS" << "LIBS_PRIVATE"
                                                       << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
-                    for (QStringList::ConstIterator wit = where.begin();
-                        wit != where.end(); ++wit) {
+                    for (QStringList::ConstIterator wit = where.cbegin();
+                        wit != where.cend(); ++wit) {
                             const ProStringList &l = tmp_proj.values(ProKey(*wit));
                             for (ProStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
                                 const QString opt = fixLibFlag(*it).toQString();
@@ -513,6 +535,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
 
     switch (vcProject.Configuration.CompilerVersion) {
+    case NET2019:
+        t << _slnHeader142;
+        break;
     case NET2017:
         t << _slnHeader141;
         break;
@@ -757,8 +782,9 @@ void VcprojGenerator::init()
 
     // Setup PCH variables
     precompH = project->first("PRECOMPILED_HEADER").toQString();
-    precompCPP = project->first("PRECOMPILED_SOURCE").toQString();
-    usePCH = !precompH.isEmpty() && project->isActiveConfig("precompile_header");
+    precompSource = project->first("PRECOMPILED_SOURCE").toQString();
+    pchIsCFile = project->isActiveConfig("precompile_header_c");
+    usePCH = !precompH.isEmpty() && (pchIsCFile || project->isActiveConfig("precompile_header"));
     if (usePCH) {
         precompHFilename = fileInfo(precompH).fileName();
         // Created files
@@ -772,13 +798,15 @@ void VcprojGenerator::init()
         project->values("PRECOMPILED_OBJECT") = ProStringList(precompObj);
         project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
 
-        autogenPrecompCPP = precompCPP.isEmpty() && project->isActiveConfig("autogen_precompile_source");
-        if (autogenPrecompCPP) {
-            precompCPP = precompH
-                + (Option::cpp_ext.count() ? Option::cpp_ext.at(0) : QLatin1String(".cpp"));
-            project->values("GENERATED_SOURCES") += precompCPP;
-        } else if (!precompCPP.isEmpty()) {
-            project->values("SOURCES") += precompCPP;
+        autogenPrecompSource = precompSource.isEmpty() && project->isActiveConfig("autogen_precompile_source");
+        if (autogenPrecompSource) {
+            precompSource = precompH
+                    + (pchIsCFile
+                       ? (Option::c_ext.count() ? Option::c_ext.at(0) : QLatin1String(".c"))
+                       : (Option::cpp_ext.count() ? Option::cpp_ext.at(0) : QLatin1String(".cpp")));
+            project->values("GENERATED_SOURCES") += precompSource;
+        } else if (!precompSource.isEmpty()) {
+            project->values("SOURCES") += precompSource;
         }
     }
 
@@ -860,6 +888,9 @@ void VcprojGenerator::initProject()
     // Own elements -----------------------------
     vcProject.Name = project->first("QMAKE_ORIG_TARGET").toQString();
     switch (vcProject.Configuration.CompilerVersion) {
+    case NET2019:
+        vcProject.Version = "16.00";
+        break;
     case NET2017:
         vcProject.Version = "15.00";
         break;
@@ -1032,16 +1063,6 @@ void VcprojGenerator::initCompilerTool()
         conf.compiler.PrecompiledHeaderFile    = "$(IntDir)\\" + precompPch;
         conf.compiler.PrecompiledHeaderThrough = project->first("PRECOMPILED_HEADER").toQString();
         conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER").toQStringList();
-
-        if (conf.CompilerVersion <= NET2003) {
-            // Minimal build option triggers an Internal Compiler Error
-            // when used in conjunction with /FI and /Yu, so remove it
-            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-            project->values("QMAKE_CFLAGS_DEBUG").removeAll("-Gm");
-            project->values("QMAKE_CFLAGS_DEBUG").removeAll("/Gm");
-            project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("-Gm");
-            project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("/Gm");
-        }
     }
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
@@ -1326,7 +1347,7 @@ void VcprojGenerator::initWinDeployQtTool()
         //  structure manually by invoking windeployqt a second time, so that
         //  the MDILXapCompile call succeeds and deployment continues.
         conf.windeployqt.CommandLine += commandLine
-                + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetName).exe\" > ")
+                + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetFileName)\" > ")
                 + MakefileGenerator::shellQuote(conf.windeployqt.Record);
         conf.windeployqt.config = &vcProject.Configuration;
         conf.windeployqt.ExcludedFromBuild = false;
@@ -1423,6 +1444,7 @@ void VcprojGenerator::initTranslationFiles()
     vcProject.TranslationFiles.Guid = _GUIDTranslationFiles;
 
     vcProject.TranslationFiles.addFiles(project->values("TRANSLATIONS"));
+    vcProject.TranslationFiles.addFiles(project->values("EXTRA_TRANSLATIONS"));
 
     vcProject.TranslationFiles.Project = this;
     vcProject.TranslationFiles.Config = &(vcProject.Configuration);
@@ -1527,14 +1549,14 @@ void VcprojGenerator::initExtraCompilerOutputs()
         extraCompile.Filter = "";
         extraCompile.Guid = QString(_GUIDExtraCompilerFiles) + "-" + (*it);
 
-        // If the extra compiler has a variable_out set the output file
-        // is added to an other file list, and does not need its own..
         bool addOnInput = hasBuiltinCompiler(firstExpandedOutputFileName(*it));
-        const ProString &tmp_other_out = project->first(ProKey(*it + ".variable_out"));
-        if (!tmp_other_out.isEmpty() && !addOnInput)
-            continue;
-
         if (!addOnInput) {
+            // If the extra compiler has a variable_out set that is already handled
+            // some other place, ignore it.
+            const ProString &outputVar = project->first(ProKey(*it + ".variable_out"));
+            if (!outputVar.isEmpty() && otherFilters.contains(outputVar))
+                continue;
+
             QString tmp_out = project->first(ProKey(*it + ".output")).toQString();
             if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
                 // Combined output, only one file result
@@ -1545,7 +1567,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
                 const ProStringList &tmp_in = project->values(project->first(ProKey(*it + ".input")).toKey());
                 for (int i = 0; i < tmp_in.count(); ++i) {
                     const QString &filename = tmp_in.at(i).toQString();
-                    if (extraCompilerSources.contains(filename))
+                    if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                         extraCompile.addFile(Option::fixPathToTargetOS(
                                 replaceExtraCompilerVariables(filename, tmp_out, QString(), NoShell), false));
                 }
@@ -1561,7 +1583,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
                     const ProStringList &tmp_in = project->values(inputVar.toKey());
                     for (int i = 0; i < tmp_in.count(); ++i) {
                         const QString &filename = tmp_in.at(i).toQString();
-                        if (extraCompilerSources.contains(filename))
+                        if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                             extraCompile.addFile(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(filename, QString(), QString(), NoShell), false));
                     }
@@ -1573,6 +1595,28 @@ void VcprojGenerator::initExtraCompilerOutputs()
 
         vcProject.ExtraCompilersFiles.append(extraCompile);
     }
+}
+
+bool VcprojGenerator::otherFiltersContain(const QString &fileName) const
+{
+    auto filterFileMatches = [&fileName] (const VCFilterFile &ff)
+    {
+        return ff.file == fileName;
+    };
+    for (const VCFilter *filter : { &vcProject.RootFiles,
+                                    &vcProject.SourceFiles,
+                                    &vcProject.HeaderFiles,
+                                    &vcProject.GeneratedFiles,
+                                    &vcProject.LexYaccFiles,
+                                    &vcProject.TranslationFiles,
+                                    &vcProject.FormFiles,
+                                    &vcProject.ResourceFiles,
+                                    &vcProject.DeploymentFiles,
+                                    &vcProject.DistributionFiles}) {
+        if (std::any_of(filter->Files.cbegin(), filter->Files.cend(), filterFileMatches))
+            return true;
+    }
+    return false;
 }
 
 // ------------------------------------------------------------------------------------------------

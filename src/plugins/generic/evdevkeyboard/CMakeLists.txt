@@ -12,8 +12,14 @@ add_qt_plugin(qevdevkeyboardplugin
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::InputSupportPrivate
-    # OTHER_FILES = "evdevkeyboard.json"
-    # PLUGIN_CLASS_NAME = "QEvdevKeyboardPlugin"
-    # PLUGIN_EXTENDS = "-"
-    # _LOADED = "qt_plugin"
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
+        Qt::InputSupport
 )
+
+#### Keys ignored in scope 1:.:.:evdevkeyboard.pro:<TRUE>:
+# OTHER_FILES = "evdevkeyboard.json"
+# PLUGIN_CLASS_NAME = "QEvdevKeyboardPlugin"
+# PLUGIN_EXTENDS = "-"
+# _LOADED = "qt_plugin"

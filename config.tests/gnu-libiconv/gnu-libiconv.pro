@@ -1,1 +1,0 @@
-SOURCES = gnu-libiconv.cpp

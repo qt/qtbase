@@ -58,7 +58,9 @@
 #include <qicon.h>
 #include <qtoolbutton.h>
 #include <qdebug.h>
+#if QT_CONFIG(animation)
 #include <qvariantanimation.h>
+#endif
 
 #define ANIMATION_DURATION 250
 
@@ -90,7 +92,7 @@ public:
         drawBase(true), scrollOffset(0), hoverIndex(-1), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
         dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
-        switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(0)
+        switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(nullptr)
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
         , previousPressedIndex(-1)
 #endif
@@ -107,9 +109,9 @@ public:
         inline Tab(const QIcon &ico, const QString &txt)
             : enabled(true) , shortcutId(0), text(txt), icon(ico),
             leftWidget(0), rightWidget(0), lastTab(-1), dragOffset(0)
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
             , animation(0)
-#endif //QT_NO_ANIMATION
+#endif // animation
         {}
         bool operator==(const Tab &other) const { return &other == this; }
         bool enabled;
@@ -136,7 +138,7 @@ public:
         QString accessibleName;
 #endif
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
         ~Tab() { delete animation; }
         struct TabBarAnimation : public QVariantAnimation {
             TabBarAnimation(Tab *t, QTabBarPrivate *_priv) : tab(t), priv(_priv)
@@ -166,7 +168,7 @@ public:
 #else
         void startAnimation(QTabBarPrivate *priv, int duration)
         { Q_UNUSED(duration); priv->moveTabFinished(priv->tabList.indexOf(*this)); }
-#endif //QT_NO_ANIMATION
+#endif // animation
     };
     QList<Tab> tabList;
     mutable QHash<QString, QSize> textSizes;
@@ -180,7 +182,7 @@ public:
 
     int indexAtPos(const QPoint &p) const;
 
-    inline bool isAnimated() const { Q_Q(const QTabBar); return q->style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, q) > 0; }
+    inline bool isAnimated() const { Q_Q(const QTabBar); return q->style()->styleHint(QStyle::SH_Widget_Animation_Duration, nullptr, q) > 0; }
     inline bool validIndex(int index) const { return index >= 0 && index < tabList.count(); }
     void setCurrentNextEnabledIndex(int offset);
 

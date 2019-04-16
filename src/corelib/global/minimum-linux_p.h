@@ -75,9 +75,18 @@ QT_BEGIN_NAMESPACE
  * - accept4                    2.6.28
  * - renameat2                  3.16                    QT_CONFIG(renameat2)
  * - getrandom                  3.17                    QT_CONFIG(getentropy)
+ * - statx                      4.11                    QT_CONFIG(statx)
  */
 
-#if QT_CONFIG(getentropy)
+#if QT_CONFIG(statx) && !QT_CONFIG(glibc)
+// if using glibc, the statx() function in sysdeps/unix/sysv/linux/statx.c
+// falls back to stat() for us.
+// (Using QT_CONFIG(glibc) instead of __GLIBC__ because the macros aren't
+// defined in assembler mode)
+#  define MINLINUX_MAJOR        4
+#  define MINLINUX_MINOR        11
+#  define MINLINUX_PATCH        0
+#elif QT_CONFIG(getentropy)
 #  define MINLINUX_MAJOR        3
 #  define MINLINUX_MINOR        17
 #  define MINLINUX_PATCH        0

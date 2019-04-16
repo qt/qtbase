@@ -138,6 +138,7 @@ private slots:
     void noModificationOfInputString();
     void superscriptCrash_qtbug53911();
     void showLineAndParagraphSeparatorsCrash();
+    void koreanWordWrap();
 
 private:
     QFont testFont;
@@ -2307,6 +2308,31 @@ void tst_QTextLayout::nbspWithFormat()
     QCOMPARE(layout.lineAt(0).textLength(), s1.length());
     QCOMPARE(layout.lineAt(1).textStart(), s1.length());
     QCOMPARE(layout.lineAt(1).textLength(), s2.length() + 1 + s3.length());
+}
+
+void tst_QTextLayout::koreanWordWrap()
+{
+    QString s = QString::fromUtf8("안녕하세요 여러분!");
+    QTextLayout layout;
+    QTextOption option = layout.textOption();
+    option.setWrapMode(QTextOption::WordWrap);
+    option.setFlags(QTextOption::Flag(QTextOption::IncludeTrailingSpaces));
+    layout.setTextOption(option);
+    layout.setText(s);
+
+    QFontMetrics metrics(layout.font());
+
+    layout.beginLayout();
+    forever {
+        QTextLine line = layout.createLine();
+        if (!line.isValid())
+            break;
+        line.setLineWidth(metrics.width(s) * 0.8);
+    }
+    layout.endLayout();
+    QCOMPARE(layout.lineCount(), 2);
+    QCOMPARE(layout.lineAt(0).textLength(), 6);
+    QCOMPARE(layout.lineAt(1).textLength(), 4);
 }
 
 QTEST_MAIN(tst_QTextLayout)

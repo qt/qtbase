@@ -1,6 +1,5 @@
 QT       -= gui
-CONFIG   += console
-CONFIG   -= app_bundle
+CONFIG   += cmdline
 
 # Uncomment following to enable debug output
 #DEFINES += SPECPARSER_DEBUG

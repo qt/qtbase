@@ -95,7 +95,7 @@ class QEventDispatcherWin32Private;
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
-    : threadId(GetCurrentThreadId()), interrupt(false), closingDown(false), internalHwnd(0),
+    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0),
       getMessageHook(0), serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0),
       wakeUps(0), activateNotifiersPosted(false), winEventNotifierActivatedEvent(NULL)
 {
@@ -136,7 +136,11 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     msg.wParam = wp;
     msg.lParam = lp;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    qintptr result;
+#else
     long result;
+#endif
     if (!dispatcher) {
         if (message == WM_TIMER)
             KillTimer(hwnd, wp);
@@ -552,7 +556,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
         wakeUp(); // trigger a call to sendPostedEvents()
     }
 
-    d->interrupt = false;
+    d->interrupt.store(false);
     emit awake();
 
     bool canWait;
@@ -568,7 +572,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             pHandles = &d->winEventNotifierActivatedEvent;
         }
         QVarLengthArray<MSG> processedTimers;
-        while (!d->interrupt) {
+        while (!d->interrupt.load()) {
             MSG msg;
             bool haveMessage;
 
@@ -649,7 +653,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
         // still nothing - wait for message or signalled objects
         canWait = (!retVal
-                   && !d->interrupt
+                   && !d->interrupt.load()
                    && (flags & QEventLoop::WaitForMoreEvents));
         if (canWait) {
             emit aboutToBlock();
@@ -992,8 +996,14 @@ int QEventDispatcherWin32::remainingTime(int timerId)
     quint64 currentTime = qt_msectime();
 
     for (const WinTimerInfo *t : qAsConst(d->timerVec)) {
-        if (t && t->timerId == timerId) // timer found, return time to wait
-            return t->timeout > currentTime ? t->timeout - currentTime : 0;
+        if (t && t->timerId == timerId) {
+            // timer found, return time to wait
+
+            if (d->internalHwnd)
+                return t->timeout > currentTime ? t->timeout - currentTime : 0;
+            else
+                return t->interval;
+        }
     }
 
 #ifndef QT_NO_DEBUG
@@ -1016,7 +1026,7 @@ void QEventDispatcherWin32::wakeUp()
 void QEventDispatcherWin32::interrupt()
 {
     Q_D(QEventDispatcherWin32);
-    d->interrupt = true;
+    d->interrupt.store(true);
     wakeUp();
 }
 

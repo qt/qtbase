@@ -88,7 +88,7 @@ QT_BEGIN_NAMESPACE
     and is part of Qt's \l{Model/View Programming}{model/view framework}.
 
     To render an item in a custom way, you must implement paint() and
-    sizeHint(). The QItemDelegate class provides default implementations for
+    sizeHint(). The QStyledItemDelegate class provides default implementations for
     these functions; if you do not need custom rendering, subclass that
     class instead.
 
@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
     The second approach is to handle user events directly by reimplementing
     editorEvent().
 
-    \sa {model-view-programming}{Model/View Programming}, QItemDelegate,
+    \sa {model-view-programming}{Model/View Programming}, QStyledItemDelegate,
         {Pixelator Example}, QStyledItemDelegate, QStyle
 */
 
@@ -240,7 +240,7 @@ QAbstractItemDelegate::~QAbstractItemDelegate()
     model being used. The editor's parent widget is specified by \a parent,
     and the item options by \a option.
 
-    The base implementation returns 0. If you want custom editing you
+    The base implementation returns \nullptr. If you want custom editing you
     will need to reimplement this function.
 
     The returned editor widget should have Qt::StrongFocus;
@@ -345,6 +345,7 @@ bool QAbstractItemDelegate::editorEvent(QEvent *,
     return false;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -364,6 +365,7 @@ QString QAbstractItemDelegate::elidedText(const QFontMetrics &fontMetrics, int w
 {
     return fontMetrics.elidedText(text, mode, width);
 }
+#endif
 
 /*!
     \since 4.3

@@ -372,7 +372,7 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
 
 #if QT_CONFIG(thread)
 
-unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(void *arg) Q_DECL_NOEXCEPT
+unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(void *arg) noexcept
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
@@ -406,7 +406,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     return 0;
 }
 
-void QThreadPrivate::finish(void *arg, bool lockAnyway) Q_DECL_NOEXCEPT
+void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadPrivate *d = thr->d_func();
@@ -447,12 +447,12 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) Q_DECL_NOEXCEPT
  ** QThread
  *************************************************************************/
 
-Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+Qt::HANDLE QThread::currentThreadId() noexcept
 {
     return reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId()));
 }
 
-int QThread::idealThreadCount() Q_DECL_NOTHROW
+int QThread::idealThreadCount() noexcept
 {
     SYSTEM_INFO sysinfo;
 #ifndef Q_OS_WINRT
@@ -465,11 +465,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
 
 void QThread::yieldCurrentThread()
 {
-#if !defined(Q_OS_WINRT)
     SwitchToThread();
-#else
-    ::Sleep(0);
-#endif
 }
 
 #endif // QT_CONFIG(thread)

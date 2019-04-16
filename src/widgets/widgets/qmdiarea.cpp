@@ -954,14 +954,6 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
         }
     }
 
-    if (active && rearranger->type() == Rearranger::RegularTiler && !tileCalledFromResizeEvent) {
-        // Move active window in front if necessary. That's the case if we
-        // have any windows with staysOnTopHint set.
-        int indexToActive = widgets.indexOf((QWidget *)active);
-        if (indexToActive > 0)
-            widgets.move(indexToActive, 0);
-    }
-
     QRect domain = viewport->rect();
     if (rearranger->type() == Rearranger::RegularTiler && !widgets.isEmpty())
         domain = resizeToMinimumTileSize(minSubWindowSize, widgets.count());
@@ -1296,7 +1288,11 @@ QRect QMdiAreaPrivate::resizeToMinimumTileSize(const QSize &minSubWindowSize, in
             minAreaHeight += 2 * frame;
         }
         const QSize diff = QSize(minAreaWidth, minAreaHeight).expandedTo(q->size()) - q->size();
-        topLevel->resize(topLevel->size() + diff);
+        // Only resize topLevel widget if scroll bars are disabled.
+        if (hbarpolicy == Qt::ScrollBarAlwaysOff)
+            topLevel->resize(topLevel->size().width() + diff.width(), topLevel->size().height());
+        if (vbarpolicy == Qt::ScrollBarAlwaysOff)
+            topLevel->resize(topLevel->size().width(), topLevel->size().height() + diff.height());
     }
 
     QRect domain = viewport->rect();
@@ -1778,7 +1774,7 @@ QSize QMdiArea::minimumSizeHint() const
 }
 
 /*!
-    Returns a pointer to the current subwindow, or 0 if there is
+    Returns a pointer to the current subwindow, or \nullptr if there is
     no current subwindow.
 
     This function will return the same as activeSubWindow() if
@@ -1790,13 +1786,13 @@ QMdiSubWindow *QMdiArea::currentSubWindow() const
 {
     Q_D(const QMdiArea);
     if (d->childWindows.isEmpty())
-        return 0;
+        return nullptr;
 
     if (d->active)
         return d->active;
 
     if (d->isActivated && !window()->isMinimized())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(d->indicesToActivatedChildren.count() > 0);
     int index = d->indicesToActivatedChildren.at(0);
@@ -1808,7 +1804,7 @@ QMdiSubWindow *QMdiArea::currentSubWindow() const
 
 /*!
     Returns a pointer to the current active subwindow. If no
-    window is currently active, 0 is returned.
+    window is currently active, \nullptr is returned.
 
     Subwindows are treated as top-level windows with respect to
     window state, i.e., if a widget outside the MDI area is the active
@@ -1825,7 +1821,7 @@ QMdiSubWindow *QMdiArea::activeSubWindow() const
 }
 
 /*!
-    Activates the subwindow \a window. If \a window is 0, any
+    Activates the subwindow \a window. If \a window is \nullptr, any
     current active window is deactivated.
 
     \sa activeSubWindow()
@@ -1834,7 +1830,7 @@ void QMdiArea::setActiveSubWindow(QMdiSubWindow *window)
 {
     Q_D(QMdiArea);
     if (!window) {
-        d->activateWindow(0);
+        d->activateWindow(nullptr);
         return;
     }
 
@@ -1992,9 +1988,11 @@ QMdiSubWindow *QMdiArea::addSubWindow(QWidget *widget, Qt::WindowFlags windowFla
         Q_ASSERT(child->testAttribute(Qt::WA_DeleteOnClose));
     }
 
+    d->appendChild(child);
+
     if (childFocus)
         childFocus->setFocus();
-    d->appendChild(child);
+
     return child;
 }
 
@@ -2640,7 +2638,11 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
 #endif // QT_CONFIG(tabbar)
         Q_FALLTHROUGH();
     case QEvent::Hide:
-        d->isSubWindowsTiled = false;
+        // Do not reset the isSubWindowsTiled flag if the event is a spontaneous system window event.
+        // This ensures that tiling will be performed during the resizeEvent after an application
+        // window minimize (hide) and then restore (show).
+        if (!event->spontaneous())
+            d->isSubWindowsTiled = false;
         break;
 #if QT_CONFIG(rubberband)
     case QEvent::Close:

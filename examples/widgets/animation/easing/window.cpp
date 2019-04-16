@@ -66,11 +66,16 @@ Window::Window(QWidget *parent)
     m_ui.amplitudeSpinBox->setValue(dummy.amplitude());
     m_ui.overshootSpinBox->setValue(dummy.overshoot());
 
-    connect(m_ui.easingCurvePicker, SIGNAL(currentRowChanged(int)), this, SLOT(curveChanged(int)));
-    connect(buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathChanged(int)));
-    connect(m_ui.periodSpinBox, SIGNAL(valueChanged(double)), this, SLOT(periodChanged(double)));
-    connect(m_ui.amplitudeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(amplitudeChanged(double)));
-    connect(m_ui.overshootSpinBox, SIGNAL(valueChanged(double)), this, SLOT(overshootChanged(double)));
+    connect(m_ui.easingCurvePicker, &QListWidget::currentRowChanged,
+            this, &Window::curveChanged);
+    connect(buttonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+            this, &Window::pathChanged);
+    connect(m_ui.periodSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &Window::periodChanged);
+    connect(m_ui.amplitudeSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &Window::amplitudeChanged);
+    connect(m_ui.overshootSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &Window::overshootChanged);
     createCurveIcons();
 
     QPixmap pix(QLatin1String(":/images/qt-logo.png"));

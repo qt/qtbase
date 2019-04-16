@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'remotecontrol.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -222,22 +222,22 @@ public:
 
     void retranslateUi(QMainWindow *RemoteControlClass)
     {
-        RemoteControlClass->setWindowTitle(QApplication::translate("RemoteControlClass", "RemoteControl", nullptr));
-        actionQuit->setText(QApplication::translate("RemoteControlClass", "Quit", nullptr));
-        label->setText(QApplication::translate("RemoteControlClass", "Start URL:", nullptr));
-        launchButton->setText(QApplication::translate("RemoteControlClass", "Launch Qt HelpViewer", nullptr));
-        actionGroupBox->setTitle(QApplication::translate("RemoteControlClass", "Actions", nullptr));
-        label_2->setText(QApplication::translate("RemoteControlClass", "Search in Index:", nullptr));
+        RemoteControlClass->setWindowTitle(QCoreApplication::translate("RemoteControlClass", "RemoteControl", nullptr));
+        actionQuit->setText(QCoreApplication::translate("RemoteControlClass", "Quit", nullptr));
+        label->setText(QCoreApplication::translate("RemoteControlClass", "Start URL:", nullptr));
+        launchButton->setText(QCoreApplication::translate("RemoteControlClass", "Launch Qt HelpViewer", nullptr));
+        actionGroupBox->setTitle(QCoreApplication::translate("RemoteControlClass", "Actions", nullptr));
+        label_2->setText(QCoreApplication::translate("RemoteControlClass", "Search in Index:", nullptr));
         indexButton->setText(QString());
-        label_4->setText(QApplication::translate("RemoteControlClass", "Identifier:", nullptr));
+        label_4->setText(QCoreApplication::translate("RemoteControlClass", "Identifier:", nullptr));
         identifierButton->setText(QString());
-        label_3->setText(QApplication::translate("RemoteControlClass", "Show URL:", nullptr));
+        label_3->setText(QCoreApplication::translate("RemoteControlClass", "Show URL:", nullptr));
         urlButton->setText(QString());
-        syncContentsButton->setText(QApplication::translate("RemoteControlClass", "Sync Contents", nullptr));
-        contentsCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Contents", nullptr));
-        indexCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Index", nullptr));
-        bookmarksCheckBox->setText(QApplication::translate("RemoteControlClass", "Show Bookmarks", nullptr));
-        menuFile->setTitle(QApplication::translate("RemoteControlClass", "File", nullptr));
+        syncContentsButton->setText(QCoreApplication::translate("RemoteControlClass", "Sync Contents", nullptr));
+        contentsCheckBox->setText(QCoreApplication::translate("RemoteControlClass", "Show Contents", nullptr));
+        indexCheckBox->setText(QCoreApplication::translate("RemoteControlClass", "Show Index", nullptr));
+        bookmarksCheckBox->setText(QCoreApplication::translate("RemoteControlClass", "Show Bookmarks", nullptr));
+        menuFile->setTitle(QCoreApplication::translate("RemoteControlClass", "File", nullptr));
     } // retranslateUi
 
 };

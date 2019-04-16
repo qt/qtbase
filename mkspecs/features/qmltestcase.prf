@@ -1,7 +1,8 @@
 !isEmpty(SOURCES) {
     QT += qml qmltest
     load(testcase)
-    DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$_PRO_FILE_PWD_\\\"\"
+    contains(TEMPLATE, vc.*): DEFINES += QUICK_TEST_SOURCE_DIR=\"$$_PRO_FILE_PWD_\"
+    else: DEFINES += QUICK_TEST_SOURCE_DIR=$$shell_quote(\"$$_PRO_FILE_PWD_\")
 } else {
     # Allow a project to run tests without a CPP stub
     TEMPLATE = aux

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'bookwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -157,15 +157,15 @@ public:
 
     void retranslateUi(QMainWindow *BookWindow)
     {
-        BookWindow->setWindowTitle(QApplication::translate("BookWindow", "Books", nullptr));
-        groupBox->setTitle(QApplication::translate("BookWindow", "Books", nullptr));
-        groupBox_2->setTitle(QApplication::translate("BookWindow", "Details", nullptr));
-        label_5->setText(QApplication::translate("BookWindow", "<b>Title:</b>", nullptr));
-        label_2_2_2_2->setText(QApplication::translate("BookWindow", "<b>Author: </b>", nullptr));
-        label_3->setText(QApplication::translate("BookWindow", "<b>Genre:</b>", nullptr));
-        label_4->setText(QApplication::translate("BookWindow", "<b>Year:</b>", nullptr));
+        BookWindow->setWindowTitle(QCoreApplication::translate("BookWindow", "Books", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("BookWindow", "Books", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("BookWindow", "Details", nullptr));
+        label_5->setText(QCoreApplication::translate("BookWindow", "<b>Title:</b>", nullptr));
+        label_2_2_2_2->setText(QCoreApplication::translate("BookWindow", "<b>Author: </b>", nullptr));
+        label_3->setText(QCoreApplication::translate("BookWindow", "<b>Genre:</b>", nullptr));
+        label_4->setText(QCoreApplication::translate("BookWindow", "<b>Year:</b>", nullptr));
         yearEdit->setPrefix(QString());
-        label->setText(QApplication::translate("BookWindow", "<b>Rating:</b>", nullptr));
+        label->setText(QCoreApplication::translate("BookWindow", "<b>Rating:</b>", nullptr));
     } // retranslateUi
 
 };

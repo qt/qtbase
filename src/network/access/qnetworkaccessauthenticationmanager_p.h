@@ -90,12 +90,12 @@ public:
 
     void cacheCredentials(const QUrl &url, const QAuthenticator *auth);
     QNetworkAuthenticationCredential fetchCachedCredentials(const QUrl &url,
-                                                             const QAuthenticator *auth = 0);
+                                                             const QAuthenticator *auth = nullptr);
 
 #ifndef QT_NO_NETWORKPROXY
     void cacheProxyCredentials(const QNetworkProxy &proxy, const QAuthenticator *auth);
     QNetworkAuthenticationCredential fetchCachedProxyCredentials(const QNetworkProxy &proxy,
-                                                             const QAuthenticator *auth = 0);
+                                                             const QAuthenticator *auth = nullptr);
 #endif
 
     void clearCache();

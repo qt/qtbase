@@ -5,6 +5,10 @@
         "QDocModule": "qtgui",
         "QtUsage": "Used on Windows to implement OpenGL ES on top of DirectX. Configure with -no-opengl, or -opengl desktop to exclude.",
 
+        "Description": "The ANGLE library translates OpenGL ES API calls to hardware-supported APIs.",
+        "Homepage": "http://angleproject.org/",
+        "Version": "chromium/3280",
+
         "License": "BSD 3-clause \"New\" or \"Revised\" License",
         "LicenseId": "BSD-3-Clause",
         "LicenseFile": "LICENSE",

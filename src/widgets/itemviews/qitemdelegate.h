@@ -113,7 +113,12 @@ protected:
                                     const QStyleOptionViewItem &option) const;
 
     QPixmap decoration(const QStyleOptionViewItem &option, const QVariant &variant) const;
+
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use selectedPixmap() instead")
     QPixmap *selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const;
+#endif
+    static QPixmap selectedPixmap(const QPixmap &pixmap, const QPalette &palette, bool enabled);
 
     QRect doCheck(const QStyleOptionViewItem &option, const QRect &bounding,
                 const QVariant &variant) const;

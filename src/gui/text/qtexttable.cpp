@@ -696,18 +696,22 @@ void QTextTable::insertRows(int pos, int num)
     int extended = 0;
     int insert_before = 0;
     if (pos > 0 && pos < d->nRows) {
+        int lastCell = -1;
         for (int i = 0; i < d->nCols; ++i) {
             int cell = d->grid[pos*d->nCols + i];
             if (cell == d->grid[(pos-1)*d->nCols+i]) {
                 // cell spans the insertion place, extend it
-                QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
-                QTextCharFormat fmt = c->charFormat(it->format);
-                fmt.setTableCellRowSpan(fmt.tableCellRowSpan() + num);
-                p->setCharFormat(it.position(), 1, fmt);
+                if (cell != lastCell) {
+                    QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
+                    QTextCharFormat fmt = c->charFormat(it->format);
+                    fmt.setTableCellRowSpan(fmt.tableCellRowSpan() + num);
+                    p->setCharFormat(it.position(), 1, fmt);
+                }
                 extended++;
             } else if (!insert_before) {
                 insert_before = cell;
             }
+            lastCell = cell;
         }
     } else {
         insert_before = (pos == 0 ? d->grid[0] : d->fragment_end);

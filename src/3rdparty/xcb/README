@@ -8,7 +8,7 @@ Contains the header and sources files from selected xcb libraries:
        Pointer Barriers API and SendExtensionEvent API)
    libxcb-util-image-0.3.9
    libxcb-util-keysyms-0.3.9
-   libxcb-util-renderutil-0.3.8
+   libxcb-util-renderutil-0.3.9
    libxcb-util-wm-0.3.9
 
 The 'include' directory was obtained by compiling and installing all of the modules.

@@ -86,7 +86,7 @@ QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
         }
         m_context = nativeHandle.value<QCocoaNativeContext>().context();
         if (!m_context) {
-            qCWarning(lcQpaOpenGLContext, "QCocoaNativeContext's NSOpenGLContext can not be null");
+            qCWarning(lcQpaOpenGLContext, "QCocoaNativeContext's NSOpenGLContext cannot be null");
             return;
         }
 
@@ -216,8 +216,13 @@ NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurface
               << NSOpenGLPFASamples << NSOpenGLPixelFormatAttribute(format.samples());
     }
 
-    // Allow rendering on GPUs without a connected display
-    attrs << NSOpenGLPFAAllowOfflineRenderers;
+    //Workaround for problems with Chromium and offline renderers on the lat 2013 MacPros.
+    //FIXME: Think if this could be solved via QSurfaceFormat in the future.
+    static bool offlineRenderersAllowed = qEnvironmentVariableIsEmpty("QT_MAC_PRO_WEBENGINE_WORKAROUND");
+    if (offlineRenderersAllowed) {
+        // Allow rendering on GPUs without a connected display
+        attrs << NSOpenGLPFAAllowOfflineRenderers;
+    }
 
     // FIXME: Pull this information out of the NSView
     QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
@@ -414,7 +419,8 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     // have the same effect as an update.
 
     // Now we are ready to associate the view with the context
-    if ((m_context.view = view) != view) {
+    m_context.view = view;
+    if (m_context.view != view) {
         qCInfo(lcQpaOpenGLContext) << "Failed to set" << view << "as drawable for" << m_context;
         m_updateObservers.clear();
         return false;

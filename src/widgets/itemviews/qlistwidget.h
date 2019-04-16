@@ -61,10 +61,10 @@ class Q_WIDGETS_EXPORT QListWidgetItem
     friend class QListWidget;
 public:
     enum ItemType { Type = 0, UserType = 1000 };
-    explicit QListWidgetItem(QListWidget *view = nullptr, int type = Type);
-    explicit QListWidgetItem(const QString &text, QListWidget *view = nullptr, int type = Type);
+    explicit QListWidgetItem(QListWidget *listview = nullptr, int type = Type);
+    explicit QListWidgetItem(const QString &text, QListWidget *listview = nullptr, int type = Type);
     explicit QListWidgetItem(const QIcon &icon, const QString &text,
-                             QListWidget *view = nullptr, int type = Type);
+                             QListWidget *listview = nullptr, int type = Type);
     QListWidgetItem(const QListWidgetItem &other);
     virtual ~QListWidgetItem();
 
@@ -72,8 +72,8 @@ public:
 
     inline QListWidget *listWidget() const { return view; }
 
-    inline void setSelected(bool select);
-    inline bool isSelected() const;
+    void setSelected(bool select);
+    bool isSelected() const;
 
     inline void setHidden(bool hide);
     inline bool isHidden() const;
@@ -118,10 +118,11 @@ public:
     QT_DEPRECATED_X ("Use QListWidgetItem::background() instead")
     inline QColor backgroundColor() const
         { return qvariant_cast<QColor>(data(Qt::BackgroundRole)); }
+#endif
+    // no QT_DEPRECATED_SINCE because it is a virtual function
     QT_DEPRECATED_X ("Use QListWidgetItem::setBackground() instead")
     virtual void setBackgroundColor(const QColor &color)
         { setData(Qt::BackgroundRole, color); }
-#endif
 
     inline QBrush background() const
         { return qvariant_cast<QBrush>(data(Qt::BackgroundRole)); }
@@ -166,6 +167,7 @@ public:
     inline int type() const { return rtti; }
 
 private:
+    QListModel *listModel() const;
     int rtti;
     QVector<void *> dummy;
     QListWidget *view;
@@ -254,13 +256,21 @@ public:
     void setItemWidget(QListWidgetItem *item, QWidget *widget);
     inline void removeItemWidget(QListWidgetItem *item);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QListWidgetItem::isSelected() instead")
     bool isItemSelected(const QListWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QListWidgetItem::setSelected() instead")
     void setItemSelected(const QListWidgetItem *item, bool select);
+#endif
     QList<QListWidgetItem*> selectedItems() const;
     QList<QListWidgetItem*> findItems(const QString &text, Qt::MatchFlags flags) const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QListWidgetItem::isHidden() instead")
     bool isItemHidden(const QListWidgetItem *item) const;
+    QT_DEPRECATED_X ("Use QListWidgetItem::setHidden() instead")
     void setItemHidden(const QListWidgetItem *item, bool hide);
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 protected:
 #endif
@@ -339,17 +349,11 @@ inline void QListWidget::addItem(QListWidgetItem *aitem)
 inline QListWidgetItem *QListWidget::itemAt(int ax, int ay) const
 { return itemAt(QPoint(ax, ay)); }
 
-inline void QListWidgetItem::setSelected(bool aselect)
-{ if (view) view->setItemSelected(this, aselect); }
-
-inline bool QListWidgetItem::isSelected() const
-{ return (view ? view->isItemSelected(this) : false); }
-
 inline void QListWidgetItem::setHidden(bool ahide)
-{ if (view) view->setItemHidden(this, ahide); }
+{ if (view) view->setRowHidden(view->row(this), ahide); }
 
 inline bool QListWidgetItem::isHidden() const
-{ return (view ? view->isItemHidden(this) : false); }
+{ return (view ? view->isRowHidden(view->row(this)) : false); }
 
 QT_END_NAMESPACE
 

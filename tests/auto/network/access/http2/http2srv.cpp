@@ -76,11 +76,15 @@ void fill_push_header(const HttpHeader &originalRequest, HttpHeader &promisedReq
 
 }
 
-Http2Server::Http2Server(bool h2c, const Http2::RawSettings &ss, const Http2::RawSettings &cs)
-    : serverSettings(ss),
-      expectedClientSettings(cs),
-      clearTextHTTP2(h2c)
+Http2Server::Http2Server(H2Type type, const Http2::RawSettings &ss, const Http2::RawSettings &cs)
+    : connectionType(type),
+      serverSettings(ss),
+      expectedClientSettings(cs)
 {
+#if !QT_CONFIG(ssl)
+    Q_ASSERT(type != H2Type::h2Alpn && type != H2Type::h2Direct);
+#endif
+
     responseBody = "<html>\n"
                    "<head>\n"
                    "<title>Sample \"Hello, World\" Application</title>\n"
@@ -129,15 +133,15 @@ void Http2Server::redirectOpenStream(quint16 port)
     targetPort = port;
 }
 
+bool Http2Server::isClearText() const
+{
+    return connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect;
+}
+
 void Http2Server::startServer()
 {
-#ifdef QT_NO_SSL
-    // Let the test fail with timeout.
-    if (!clearTextHTTP2)
-        return;
-#endif
     if (listen()) {
-        if (clearTextHTTP2)
+        if (isClearText())
             authority = QStringLiteral("127.0.0.1:%1").arg(serverPort()).toLatin1();
         emit serverStarted(serverPort());
     }
@@ -146,7 +150,7 @@ void Http2Server::startServer()
 bool Http2Server::sendProtocolSwitchReply()
 {
     Q_ASSERT(socket);
-    Q_ASSERT(clearTextHTTP2 && upgradeProtocol);
+    Q_ASSERT(connectionType == H2Type::h2c);
     // The first and the last HTTP/1.1 response we send:
     const char response[] = "HTTP/1.1 101 Switching Protocols\r\n"
                             "Connection: Upgrade\r\n"
@@ -262,25 +266,28 @@ void Http2Server::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
 
 void Http2Server::incomingConnection(qintptr socketDescriptor)
 {
-    if (clearTextHTTP2) {
+    if (isClearText()) {
         socket.reset(new QTcpSocket);
         const bool set = socket->setSocketDescriptor(socketDescriptor);
         Q_ASSERT(set);
         // Stop listening:
         close();
-        upgradeProtocol = true;
+        upgradeProtocol = connectionType == H2Type::h2c;
         QMetaObject::invokeMethod(this, "connectionEstablished",
                                   Qt::QueuedConnection);
     } else {
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
         socket.reset(new QSslSocket);
         QSslSocket *sslSocket = static_cast<QSslSocket *>(socket.data());
-        // Add HTTP2 as supported protocol:
-        auto conf = QSslConfiguration::defaultConfiguration();
-        auto protos = conf.allowedNextProtocols();
-        protos.prepend(QSslConfiguration::ALPNProtocolHTTP2);
-        conf.setAllowedNextProtocols(protos);
-        sslSocket->setSslConfiguration(conf);
+
+        if (connectionType == H2Type::h2Alpn) {
+            // Add HTTP2 as supported protocol:
+            auto conf = QSslConfiguration::defaultConfiguration();
+            auto protos = conf.allowedNextProtocols();
+            protos.prepend(QSslConfiguration::ALPNProtocolHTTP2);
+            conf.setAllowedNextProtocols(protos);
+            sslSocket->setSslConfiguration(conf);
+        }
         // SSL-related setup ...
         sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
         sslSocket->setProtocol(QSsl::TlsV1_2OrLater);
@@ -299,7 +306,7 @@ void Http2Server::incomingConnection(qintptr socketDescriptor)
         connect(sslSocket, SIGNAL(encrypted()), this, SLOT(connectionEstablished()));
         sslSocket->startServerEncryption();
 #else
-        Q_UNREACHABLE();
+        Q_ASSERT(0);
 #endif
     }
 }
@@ -377,7 +384,7 @@ void Http2Server::connectionEstablished()
 {
     using namespace Http2;
 
-    if (testingGOAWAY && !clearTextHTTP2)
+    if (testingGOAWAY && !isClearText())
         return triggerGOAWAYEmulation();
 
     // For clearTextHTTP2 we first have to respond with 'protocol switch'
@@ -392,7 +399,7 @@ void Http2Server::connectionEstablished()
     waitingClientSettings = false;
     settingsSent = false;
 
-    if (clearTextHTTP2) {
+    if (connectionType == H2Type::h2c) {
         requestLine.clear();
         // Now we have to handle HTTP/1.1 request. We use Get/Post in our test,
         // so set requestType to something unsupported:
@@ -430,6 +437,13 @@ void Http2Server::readReady()
 {
     if (connectionError)
         return;
+
+    if (redirectSent) {
+        // We are a "single shot" server, working in 'h2' mode,
+        // responding with a redirect code. Don't bother to handle
+        // anything else now.
+        return;
+    }
 
     if (upgradeProtocol) {
         handleProtocolUpgrade();
@@ -800,11 +814,18 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
 
     HttpHeader header;
     if (redirectWhileReading) {
+        if (redirectSent) {
+            // This is a "single-shot" server responding with a redirect code.
+            return;
+        }
+
+        redirectSent = true;
+
         qDebug("server received HEADERS frame (followed by DATA frames), redirecting ...");
         Q_ASSERT(targetPort);
         header.push_back({":status", "308"});
         const QString url("%1://localhost:%2/");
-        header.push_back({"location", url.arg(clearTextHTTP2 ? QStringLiteral("http") : QStringLiteral("https"),
+        header.push_back({"location", url.arg(isClearText() ? QStringLiteral("http") : QStringLiteral("https"),
                                               QString::number(targetPort)).toLatin1()});
 
     } else {

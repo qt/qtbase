@@ -107,7 +107,19 @@ public:
     // does itemization
     QTextLayout();
     QTextLayout(const QString& text);
-    QTextLayout(const QString& text, const QFont &font, QPaintDevice *paintdevice = nullptr);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QTextLayout(const QString &text, const QFont &font, QPaintDevice *paintdevice = nullptr);
+#ifndef Q_QDOC
+    // the template is necessary to make QTextLayout(font,text,nullptr) and QTextLayout(font,text,NULL)
+    // not ambiguous. Implementation detail that should not be documented.
+    template<char = 0>
+#endif
+    QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice)
+        : QTextLayout(text, font, const_cast<QPaintDevice*>(paintdevice))
+    {}
+#else
+    QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice = nullptr);
+#endif
     QTextLayout(const QTextBlock &b);
     ~QTextLayout();
 

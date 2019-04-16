@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'gridalignment.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -61,11 +61,11 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", nullptr));
-        pushButton->setText(QApplication::translate("Form", "Left", nullptr));
-        pushButton_3->setText(QApplication::translate("Form", "Top", nullptr));
-        pushButton_2->setText(QApplication::translate("Form", "Right", nullptr));
-        pushButton_4->setText(QApplication::translate("Form", "Bottom", nullptr));
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Form", nullptr));
+        pushButton->setText(QCoreApplication::translate("Form", "Left", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("Form", "Top", nullptr));
+        pushButton_2->setText(QCoreApplication::translate("Form", "Right", nullptr));
+        pushButton_4->setText(QCoreApplication::translate("Form", "Bottom", nullptr));
     } // retranslateUi
 
 };

@@ -78,7 +78,9 @@ stack_protector_strong {
 
 # disable special linker flags for host builds (no proper test for host support yet)
 !host_build|!cross_compile {
+    use_bfd_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_BFD
     use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD
+    use_lld_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_LLD
     enable_new_dtags: QMAKE_LFLAGS += $$QMAKE_LFLAGS_NEW_DTAGS
     enable_gdb_index: QMAKE_LFLAGS += $$QMAKE_LFLAGS_GDB_INDEX
 }
@@ -88,6 +90,10 @@ static:mac: QMAKE_LFLAGS += $$QMAKE_LFLAGS_STATIC_LIB
 staticlib:unix {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_STATIC_LIB
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_STATIC_LIB
+}
+
+defined(WINDOWS_TARGET_PLATFORM_VERSION, var):isEmpty(WINDOWS_TARGET_PLATFORM_MIN_VERSION) {
+    WINDOWS_TARGET_PLATFORM_MIN_VERSION = $$WINDOWS_TARGET_PLATFORM_VERSION
 }
 
 incredibuild_xge {
@@ -112,6 +118,8 @@ breakpad {
     QMAKE_POST_LINK = $$QMAKE_POST_LINK$$quote($${QT_BREAKPAD_ROOT_PATH}$${QMAKE_DIR_SEP}qtbreakpadsymbols $$DEBUGFILENAME $$PROJECTPATH)
     !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP $$DEBUGFILENAME)
 }
+
+c++17: CONFIG += c++1z
 
 !c++11:!c++14:!c++1z {
     # Qt requires C++11 since 5.7, check if we need to force a compiler option

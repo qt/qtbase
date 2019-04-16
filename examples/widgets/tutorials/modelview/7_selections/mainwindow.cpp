@@ -49,17 +49,18 @@
 ****************************************************************************/
 
 //! [quoting modelview_a]
+#include "mainwindow.h"
+
 #include <QTreeView>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
-#include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , treeView(new QTreeView(this))
+    , standardModel(new QStandardItemModel(this))
 {
-    treeView = new QTreeView(this);
     setCentralWidget(treeView);
-    standardModel = new QStandardItemModel ;
     QStandardItem *rootNode = standardModel->invisibleRootItem();
 
 
@@ -88,9 +89,9 @@ MainWindow::MainWindow(QWidget *parent)
     treeView->expandAll();
 
     //selection changes shall trigger a slot
-    QItemSelectionModel *selectionModel= treeView->selectionModel();
-    connect(selectionModel, SIGNAL(selectionChanged (const QItemSelection &, const QItemSelection &)),
-            this, SLOT(selectionChangedSlot(const QItemSelection &, const QItemSelection &)));
+    QItemSelectionModel *selectionModel = treeView->selectionModel();
+    connect(selectionModel, &QItemSelectionModel::selectionChanged,
+            this, &MainWindow::selectionChangedSlot);
 }
 //! [quoting modelview_a]
 
@@ -103,10 +104,9 @@ void MainWindow::selectionChangedSlot(const QItemSelection & /*newSelection*/, c
     const QModelIndex index = treeView->selectionModel()->currentIndex();
     QString selectedText = index.data(Qt::DisplayRole).toString();
     //find out the hierarchy level of the selected item
-    int hierarchyLevel=1;
+    int hierarchyLevel = 1;
     QModelIndex seekRoot = index;
-    while(seekRoot.parent() != QModelIndex())
-    {
+    while (seekRoot.parent() != QModelIndex()) {
         seekRoot = seekRoot.parent();
         hierarchyLevel++;
     }

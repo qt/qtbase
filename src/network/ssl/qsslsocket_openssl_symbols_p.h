@@ -72,6 +72,10 @@
 #include "qsslsocket_openssl_p.h"
 #include <QtCore/qglobal.h>
 
+#if QT_CONFIG(ocsp)
+#include "qocsp_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define DUMMYARG
@@ -224,6 +228,7 @@ QT_BEGIN_NAMESPACE
 
 bool q_resolveOpenSslSymbols();
 long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
+int q_ASN1_INTEGER_cmp(const ASN1_INTEGER *x, const ASN1_INTEGER *y);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
@@ -267,6 +272,8 @@ int q_EVP_CipherInit(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, const unsigned
 int q_EVP_CipherInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *cipher, ENGINE *impl, const unsigned char *key, const unsigned char *iv, int enc);
 int q_EVP_CipherUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl);
 int q_EVP_CipherFinal(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl);
+const EVP_MD *q_EVP_get_digestbyname(const char *name);
+
 #ifndef OPENSSL_NO_DES
 const EVP_CIPHER *q_EVP_des_cbc();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
@@ -274,16 +281,24 @@ const EVP_CIPHER *q_EVP_des_ede3_cbc();
 #ifndef OPENSSL_NO_RC2
 const EVP_CIPHER *q_EVP_rc2_cbc();
 #endif
-const EVP_MD *q_EVP_sha1();
+#ifndef OPENSSL_NO_AES
+const EVP_CIPHER *q_EVP_aes_128_cbc();
+const EVP_CIPHER *q_EVP_aes_192_cbc();
+const EVP_CIPHER *q_EVP_aes_256_cbc();
+#endif
+Q_AUTOTEST_EXPORT const EVP_MD *q_EVP_sha1();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
-int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
+Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
+Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_DH(EVP_PKEY *a, DH *b);
 #ifndef OPENSSL_NO_EC
-int q_EVP_PKEY_set1_EC_KEY(EVP_PKEY *a, EC_KEY *b);
+Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_EC_KEY(EVP_PKEY *a, EC_KEY *b);
 #endif
-void q_EVP_PKEY_free(EVP_PKEY *a);
+Q_AUTOTEST_EXPORT int q_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
+Q_AUTOTEST_EXPORT void q_EVP_PKEY_free(EVP_PKEY *a);
 RSA *q_EVP_PKEY_get1_RSA(EVP_PKEY *a);
 DSA *q_EVP_PKEY_get1_DSA(EVP_PKEY *a);
+DH *q_EVP_PKEY_get1_DH(EVP_PKEY *a);
 #ifndef OPENSSL_NO_EC
 EC_KEY *q_EVP_PKEY_get1_EC_KEY(EVP_PKEY *a);
 #endif
@@ -297,6 +312,7 @@ int q_OBJ_ln2nid(const char *s);
 int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
 int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
+#define q_EVP_get_digestbynid(a) q_EVP_get_digestbyname(q_OBJ_nid2sn(a))
 #ifdef SSLEAY_MACROS
 // ### verify
 void *q_PEM_ASN1_read_bio(d2i_of_void *a, const char *b, BIO *c, void **d, pem_password_cb *e,
@@ -314,6 +330,8 @@ int q_PEM_write_bio_DSAPrivateKey(BIO *a, DSA *b, const EVP_CIPHER *c, unsigned 
                                   int e, pem_password_cb *f, void *g);
 int q_PEM_write_bio_RSAPrivateKey(BIO *a, RSA *b, const EVP_CIPHER *c, unsigned char *d,
                                   int e, pem_password_cb *f, void *g);
+int q_PEM_write_bio_PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
+                               int e, pem_password_cb *f, void *g);
 #ifndef OPENSSL_NO_EC
 int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
                                   int e, pem_password_cb *f, void *g);
@@ -327,6 +345,7 @@ EC_KEY *q_PEM_read_bio_EC_PUBKEY(BIO *a, EC_KEY **b, pem_password_cb *c, void *d
 #endif
 int q_PEM_write_bio_DSA_PUBKEY(BIO *a, DSA *b);
 int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
+int q_PEM_write_bio_PUBKEY(BIO *a, EVP_PKEY *b);
 #ifndef OPENSSL_NO_EC
 int q_PEM_write_bio_EC_PUBKEY(BIO *a, EC_KEY *b);
 #endif
@@ -344,15 +363,15 @@ int q_SSL_connect(SSL *a);
 int q_SSL_CTX_check_private_key(const SSL_CTX *a);
 long q_SSL_CTX_ctrl(SSL_CTX *a, int b, long c, void *d);
 void q_SSL_CTX_free(SSL_CTX *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 SSL_CTX *q_SSL_CTX_new(const SSL_METHOD *a);
-#else
-SSL_CTX *q_SSL_CTX_new(SSL_METHOD *a);
-#endif
 int q_SSL_CTX_set_cipher_list(SSL_CTX *a, const char *b);
 int q_SSL_CTX_set_default_verify_paths(SSL_CTX *a);
 void q_SSL_CTX_set_verify(SSL_CTX *a, int b, int (*c)(int, X509_STORE_CTX *));
 void q_SSL_CTX_set_verify_depth(SSL_CTX *a, int b);
+extern "C" {
+typedef void (*GenericCallbackType)();
+}
+long q_SSL_CTX_callback_ctrl(SSL_CTX *, int, GenericCallbackType);
 int q_SSL_CTX_use_certificate(SSL_CTX *a, X509 *b);
 int q_SSL_CTX_use_certificate_file(SSL_CTX *a, const char *b, int c);
 int q_SSL_CTX_use_PrivateKey(SSL_CTX *a, EVP_PKEY *b);
@@ -369,17 +388,14 @@ int q_SSL_CONF_cmd(SSL_CONF_CTX *a, const char *b, const char *c);
 #endif
 void q_SSL_free(SSL *a);
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
-#else
-SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
-#endif
 int q_SSL_version(const SSL *a);
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
 X509 *q_SSL_get_peer_certificate(SSL *a);
 long q_SSL_get_verify_result(const SSL *a);
 SSL *q_SSL_new(SSL_CTX *a);
+SSL_CTX *q_SSL_get_SSL_CTX(SSL *a);
 long q_SSL_ctrl(SSL *ssl,int cmd, long larg, void *parg);
 int q_SSL_read(SSL *a, void *b, int c);
 void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
@@ -414,7 +430,9 @@ X509 *q_X509_dup(X509 *a);
 void q_X509_print(BIO *a, X509*b);
 int q_X509_digest(const X509 *x509, const EVP_MD *type, unsigned char *md, unsigned int *len);
 ASN1_OBJECT *q_X509_EXTENSION_get_object(X509_EXTENSION *a);
-void q_X509_free(X509 *a);
+Q_AUTOTEST_EXPORT void q_X509_free(X509 *a);
+Q_AUTOTEST_EXPORT ASN1_TIME *q_X509_gmtime_adj(ASN1_TIME *s, long adj);
+Q_AUTOTEST_EXPORT void q_ASN1_TIME_free(ASN1_TIME *t);
 X509_EXTENSION *q_X509_get_ext(X509 *a, int b);
 int q_X509_get_ext_count(X509 *a);
 void *q_X509_get_ext_d2i(X509 *a, int b, int *c, int *d);
@@ -424,11 +442,7 @@ int q_X509_EXTENSION_get_critical(X509_EXTENSION *a);
 ASN1_OCTET_STRING *q_X509_EXTENSION_get_data(X509_EXTENSION *a);
 void q_BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *a);
 void q_AUTHORITY_KEYID_free(AUTHORITY_KEYID *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 int q_ASN1_STRING_print(BIO *a, const ASN1_STRING *b);
-#else
-int q_ASN1_STRING_print(BIO *a, ASN1_STRING *b);
-#endif
 int q_X509_check_issued(X509 *a, X509 *b);
 X509_NAME *q_X509_get_issuer_name(X509 *a);
 X509_NAME *q_X509_get_subject_name(X509 *a);
@@ -570,6 +584,57 @@ int q_BIO_set_ex_data(BIO *b, int idx, void *data);
 // Helper function
 class QDateTime;
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime);
+
+#ifndef OPENSSL_NO_TLSEXT
+
+#define q_SSL_set_tlsext_status_type(ssl, type) \
+    q_SSL_ctrl((ssl), SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE, (type), nullptr)
+
+#endif // OPENSSL_NO_TLSEXT
+
+#if QT_CONFIG(ocsp)
+
+OCSP_RESPONSE *q_d2i_OCSP_RESPONSE(OCSP_RESPONSE **a, const unsigned char **in, long len);
+Q_AUTOTEST_EXPORT int q_i2d_OCSP_RESPONSE(OCSP_RESPONSE *r, unsigned char **ppout);
+Q_AUTOTEST_EXPORT OCSP_RESPONSE *q_OCSP_response_create(int status, OCSP_BASICRESP *bs);
+Q_AUTOTEST_EXPORT void q_OCSP_RESPONSE_free(OCSP_RESPONSE *rs);
+int q_OCSP_response_status(OCSP_RESPONSE *resp);
+OCSP_BASICRESP *q_OCSP_response_get1_basic(OCSP_RESPONSE *resp);
+Q_AUTOTEST_EXPORT OCSP_SINGLERESP *q_OCSP_basic_add1_status(OCSP_BASICRESP *rsp, OCSP_CERTID *cid,
+                                                            int status, int reason, ASN1_TIME *revtime,
+                                                            ASN1_TIME *thisupd, ASN1_TIME *nextupd);
+Q_AUTOTEST_EXPORT int q_OCSP_basic_sign(OCSP_BASICRESP *brsp, X509 *signer, EVP_PKEY *key, const EVP_MD *dgst,
+                                        STACK_OF(X509) *certs, unsigned long flags);
+Q_AUTOTEST_EXPORT OCSP_BASICRESP *q_OCSP_BASICRESP_new();
+Q_AUTOTEST_EXPORT void q_OCSP_BASICRESP_free(OCSP_BASICRESP *bs);
+int q_OCSP_basic_verify(OCSP_BASICRESP *bs, STACK_OF(X509) *certs, X509_STORE *st, unsigned long flags);
+int q_OCSP_resp_count(OCSP_BASICRESP *bs);
+OCSP_SINGLERESP *q_OCSP_resp_get0(OCSP_BASICRESP *bs, int idx);
+int q_OCSP_single_get0_status(OCSP_SINGLERESP *single, int *reason, ASN1_GENERALIZEDTIME **revtime,
+                              ASN1_GENERALIZEDTIME **thisupd, ASN1_GENERALIZEDTIME **nextupd);
+int q_OCSP_check_validity(ASN1_GENERALIZEDTIME *thisupd, ASN1_GENERALIZEDTIME *nextupd, long nsec, long maxsec);
+int q_OCSP_id_get0_info(ASN1_OCTET_STRING **piNameHash, ASN1_OBJECT **pmd, ASN1_OCTET_STRING **pikeyHash,
+                        ASN1_INTEGER **pserial, OCSP_CERTID *cid);
+
+const STACK_OF(X509) *q_OCSP_resp_get0_certs(const OCSP_BASICRESP *bs);
+Q_AUTOTEST_EXPORT OCSP_CERTID *q_OCSP_cert_to_id(const EVP_MD *dgst, X509 *subject, X509 *issuer);
+Q_AUTOTEST_EXPORT void q_OCSP_CERTID_free(OCSP_CERTID *cid);
+int q_OCSP_id_cmp(OCSP_CERTID *a, OCSP_CERTID *b);
+
+#define q_SSL_get_tlsext_status_ocsp_resp(ssl, arg) \
+    q_SSL_ctrl(ssl, SSL_CTRL_GET_TLSEXT_STATUS_REQ_OCSP_RESP, 0, arg)
+
+#define q_SSL_CTX_set_tlsext_status_cb(ssl, cb) \
+    q_SSL_CTX_callback_ctrl(ssl, SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB, GenericCallbackType(cb))
+
+# define q_SSL_set_tlsext_status_ocsp_resp(ssl, arg, arglen) \
+    q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP, arglen, arg)
+
+#endif // ocsp
+
+
+void *q_CRYPTO_malloc(size_t num, const char *file, int line);
+#define q_OPENSSL_malloc(num) q_CRYPTO_malloc(num, "", 0)
 
 QT_END_NAMESPACE
 

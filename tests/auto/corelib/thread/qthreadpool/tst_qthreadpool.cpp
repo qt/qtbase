@@ -1322,6 +1322,7 @@ void tst_QThreadPool::waitForDoneAfterTake()
         QRunnable *runnable = createTask(emptyFunct);
         manager.start(runnable);
         QVERIFY(manager.tryTake(runnable));
+        delete runnable;
     }
 
     // Add another runnable that will not be removed

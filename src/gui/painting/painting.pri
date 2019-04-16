@@ -8,7 +8,15 @@ HEADERS += \
         painting/qbrush.h \
         painting/qcolor.h \
         painting/qcolor_p.h \
-        painting/qcolorprofile_p.h \
+        painting/qcolormatrix_p.h \
+        painting/qcolorspace.h \
+        painting/qcolorspace_p.h \
+        painting/qcolortransferfunction_p.h \
+        painting/qcolortransfertable_p.h \
+        painting/qcolortransform.h \
+        painting/qcolortransform_p.h \
+        painting/qcolortrc_p.h \
+        painting/qcolortrclut_p.h \
         painting/qcosmeticstroker_p.h \
         painting/qdatabuffer_p.h \
         painting/qdrawhelper_p.h \
@@ -17,6 +25,7 @@ HEADERS += \
         painting/qemulationpaintengine_p.h \
         painting/qfixed_p.h \
         painting/qgrayraster_p.h \
+        painting/qicc_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
@@ -64,12 +73,15 @@ SOURCES += \
         painting/qblittable.cpp \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
-        painting/qcolorprofile.cpp \
+        painting/qcolorspace.cpp \
+        painting/qcolortransform.cpp \
+        painting/qcolortrclut.cpp \
         painting/qcompositionfunctions.cpp \
         painting/qcosmeticstroker.cpp \
         painting/qdrawhelper.cpp \
         painting/qemulationpaintengine.cpp \
         painting/qgrayraster.c \
+        painting/qicc.cpp \
         painting/qimagescale.cpp \
         painting/qmatrix.cpp \
         painting/qmemrotate.cpp \
@@ -131,9 +143,11 @@ ARCH_HASWELL_SOURCES += painting/qdrawhelper_avx2.cpp
 
 NEON_SOURCES += painting/qdrawhelper_neon.cpp painting/qimagescale_neon.cpp
 NEON_HEADERS += painting/qdrawhelper_neon_p.h
-NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
 !uikit:!win32:contains(QT_ARCH, "arm"): CONFIG += no_clang_integrated_as
-!uikit:!win32:!contains(QT_ARCH, "arm64"): DEFINES += ENABLE_PIXMAN_DRAWHELPERS
+!uikit:!win32:!integrity:!contains(QT_ARCH, "arm64") {
+    NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
+    DEFINES += ENABLE_PIXMAN_DRAWHELPERS
+}
 
 MIPS_DSP_SOURCES += painting/qdrawhelper_mips_dsp.cpp
 MIPS_DSP_HEADERS += painting/qdrawhelper_mips_dsp_p.h painting/qt_mips_asm_dsp_p.h

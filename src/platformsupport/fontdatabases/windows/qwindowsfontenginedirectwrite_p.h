@@ -72,7 +72,7 @@ class QWindowsFontEngineData;
 
 class QWindowsFontEngineDirectWrite : public QFontEngine
 {
-    Q_DISABLE_COPY(QWindowsFontEngineDirectWrite)
+    Q_DISABLE_COPY_MOVE(QWindowsFontEngineDirectWrite)
 public:
     explicit QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
                                     qreal pixelSize,

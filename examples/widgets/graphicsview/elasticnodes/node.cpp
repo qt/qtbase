@@ -94,7 +94,8 @@ void Node::calculateForces()
     // Sum up all forces pushing this item away
     qreal xvel = 0;
     qreal yvel = 0;
-    foreach (QGraphicsItem *item, scene()->items()) {
+    const QList<QGraphicsItem *> items = scene()->items();
+    for (QGraphicsItem *item : items) {
         Node *node = qgraphicsitem_cast<Node *>(item);
         if (!node)
             continue;
@@ -113,7 +114,7 @@ void Node::calculateForces()
 //! [4]
     // Now subtract all forces pulling items together
     double weight = (edgeList.size() + 1) * 10;
-    foreach (Edge *edge, edgeList) {
+    for (const Edge *edge : qAsConst(edgeList)) {
         QPointF vec;
         if (edge->sourceNode() == this)
             vec = mapToItem(edge->destNode(), 0, 0);
@@ -176,8 +177,8 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     if (option->state & QStyle::State_Sunken) {
         gradient.setCenter(3, 3);
         gradient.setFocalPoint(3, 3);
-        gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
+        gradient.setColorAt(1, QColor(Qt::yellow).lighter(120));
+        gradient.setColorAt(0, QColor(Qt::darkYellow).lighter(120));
     } else {
         gradient.setColorAt(0, Qt::yellow);
         gradient.setColorAt(1, Qt::darkYellow);
@@ -194,7 +195,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     switch (change) {
     case ItemPositionHasChanged:
-        foreach (Edge *edge, edgeList)
+        for (Edge *edge : qAsConst(edgeList))
             edge->adjust();
         graph->itemMoved();
         break;

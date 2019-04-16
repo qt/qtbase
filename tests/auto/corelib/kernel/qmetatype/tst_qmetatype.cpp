@@ -124,6 +124,7 @@ private slots:
     void compareCustomType();
     void compareCustomEqualOnlyType();
     void customDebugStream();
+    void unknownType();
 };
 
 struct BaseGenericType
@@ -342,6 +343,7 @@ struct Bar
             ++failureCount;
         }
     }
+    ~Bar() {}
 
 public:
     static int failureCount;
@@ -458,7 +460,7 @@ void tst_QMetaType::threadSafety()
 
 namespace TestSpace
 {
-    struct Foo { double d; };
+    struct Foo { double d; public: ~Foo() {} };
     struct QungTfu {};
 }
 Q_DECLARE_METATYPE(TestSpace::Foo)
@@ -515,10 +517,16 @@ void tst_QMetaType::properties()
 }
 
 template <typename T>
-struct Whity { T t; };
+struct Whity { T t; Whity() {} };
 
 Q_DECLARE_METATYPE( Whity < int > )
 Q_DECLARE_METATYPE(Whity<double>)
+
+#if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(Whity<double>, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
+#endif
 
 void tst_QMetaType::normalizedTypes()
 {
@@ -818,10 +826,13 @@ void tst_QMetaType::sizeOfStaticLess()
     QCOMPARE(size_t(QMetaType(type).sizeOf()), size);
 }
 
-struct CustomMovable {};
+struct CustomMovable { CustomMovable() {} };
+#if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
+#endif
+
 Q_DECLARE_METATYPE(CustomMovable);
 
 class CustomObject : public QObject
@@ -850,13 +861,15 @@ public:
 };
 Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
 
-class C { char _[4]; };
-class M { char _[4]; };
+class C { char _[4]; public: C() = default; C(const C&) {} };
+class M { char _[4]; public: M() {} };
 class P { char _[4]; };
 
 QT_BEGIN_NAMESPACE
+#if defined(Q_CC_GNU) && Q_CC_GNU < 501
 Q_DECLARE_TYPEINFO(M, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(P, Q_PRIMITIVE_TYPE);
+#endif
 QT_END_NAMESPACE
 
 // avoid the comma:
@@ -902,7 +915,7 @@ QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
     QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false << false;
-    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true << false << false;
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << true << true << false << false;
     QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false << false;
     QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true << false;
     QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true << false;
@@ -1486,7 +1499,7 @@ public:
 typedef MyObject* MyObjectPtr;
 Q_DECLARE_METATYPE(MyObjectPtr)
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
+#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
 static QByteArray createTypeName(const char *begin, const char *va)
 {
     QByteArray tn(begin);
@@ -1684,7 +1697,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
+#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
     #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F) \
         F(bool) \
@@ -1763,7 +1776,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     CREATE_AND_VERIFY_CONTAINER(QHash, void*, void*)
     CREATE_AND_VERIFY_CONTAINER(QHash, const void*, const void*)
 
-#endif // Q_COMPILER_VARIADIC_MACROS
+#endif // !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
 #define TEST_OWNING_SMARTPOINTER(SMARTPOINTER, ELEMENT_TYPE, FLAG_TEST, FROMVARIANTFUNCTION) \
     { \
@@ -2529,6 +2542,16 @@ void tst_QMetaType::customDebugStream()
     qDebug() << v1;
 }
 
+void tst_QMetaType::unknownType()
+{
+    QMetaType invalid(QMetaType::UnknownType);
+    QVERIFY(!invalid.create());
+    QVERIFY(!invalid.sizeOf());
+    QVERIFY(!invalid.metaObject());
+    int buffer = 0xBAD;
+    invalid.construct(&buffer);
+    QCOMPARE(buffer, 0xBAD);
+}
 // Compile-time test, it should be possible to register function pointer types
 class Undefined;
 
@@ -2542,9 +2565,7 @@ Q_DECLARE_METATYPE(UndefinedFunction0);
 Q_DECLARE_METATYPE(UndefinedFunction1);
 Q_DECLARE_METATYPE(UndefinedFunction2);
 Q_DECLARE_METATYPE(UndefinedFunction3);
-#ifdef Q_COMPILER_VARIADIC_TEMPLATES
 Q_DECLARE_METATYPE(UndefinedFunction4);
-#endif
 
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"

@@ -242,7 +242,11 @@ void QQnxScreenEventHandler::processEvents()
             break;
 
         ++count;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        qintptr result = 0;
+#else
         long result = 0;
+#endif
         QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
         bool handled = dispatcher && dispatcher->filterNativeEvent(QByteArrayLiteral("screen_event_t"), event, &result);
         if (!handled)

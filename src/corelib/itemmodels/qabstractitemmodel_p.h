@@ -65,11 +65,10 @@ QT_REQUIRE_CONFIG(itemmodel);
 class QPersistentModelIndexData
 {
 public:
-    QPersistentModelIndexData() : model(0) {}
-    QPersistentModelIndexData(const QModelIndex &idx) : index(idx), model(idx.model()) {}
+    QPersistentModelIndexData() {}
+    QPersistentModelIndexData(const QModelIndex &idx) : index(idx) {}
     QModelIndex index;
     QAtomicInt ref;
-    const QAbstractItemModel *model;
     static QPersistentModelIndexData *create(const QModelIndex &index);
     static void destroy(QPersistentModelIndexData *data);
 };
@@ -99,7 +98,7 @@ public:
     void itemsMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
     bool allowMove(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
 
-    inline QModelIndex createIndex(int row, int column, void *data = 0) const {
+    inline QModelIndex createIndex(int row, int column, void *data = nullptr) const {
         return q_func()->createIndex(row, column, data);
     }
 
@@ -142,7 +141,7 @@ public:
 
     struct Persistent {
         Persistent() {}
-        QHash<QModelIndex, QPersistentModelIndexData *> indexes;
+        QMultiHash<QModelIndex, QPersistentModelIndexData *> indexes;
         QStack<QVector<QPersistentModelIndexData *> > moved;
         QStack<QVector<QPersistentModelIndexData *> > invalidated;
         void insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data);

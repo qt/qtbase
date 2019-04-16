@@ -50,6 +50,8 @@
 #include "qasn1element_p.h"
 
 #include <QtCore/qdatastream.h>
+#include <QtCore/qendian.h>
+#include <QtNetwork/qhostaddress.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,7 +64,7 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
     return d->derData == other.d->derData;
 }
 
-uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslCertificate &key, uint seed) noexcept
 {
     // DER is the native encoding here, so toDer() is just "return d->derData":
     return qHash(key.toDer(), seed);
@@ -139,7 +141,7 @@ QDateTime QSslCertificate::expiryDate() const
     return d->notValidAfter;
 }
 
-#ifndef Q_OS_WINRT // implemented in qsslcertificate_winrt.cpp
+#if !defined(Q_OS_WINRT) && !QT_CONFIG(schannel) // implemented in qsslcertificate_{winrt,schannel}.cpp
 Qt::HANDLE QSslCertificate::handle() const
 {
     Q_UNIMPLEMENTED();
@@ -206,6 +208,10 @@ void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat f
             : certificatesFromDer(data, 1);
         if (!certs.isEmpty()) {
             *this = *certs.first().d;
+#if QT_CONFIG(schannel)
+            if (certificateContext)
+                certificateContext = CertDuplicateCertificateContext(certificateContext);
+#endif
         }
     }
 }
@@ -399,10 +405,32 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
                             QDataStream nameStream(sanElem.value());
                             QAsn1Element nameElem;
                             while (nameElem.read(nameStream)) {
-                                if (nameElem.type() == QAsn1Element::Rfc822NameType) {
+                                switch (nameElem.type()) {
+                                case QAsn1Element::Rfc822NameType:
                                     subjectAlternativeNames.insert(QSsl::EmailEntry, nameElem.toString());
-                                } else if (nameElem.type() == QAsn1Element::DnsNameType) {
+                                    break;
+                                case QAsn1Element::DnsNameType:
                                     subjectAlternativeNames.insert(QSsl::DnsEntry, nameElem.toString());
+                                    break;
+                                case QAsn1Element::IpAddressType: {
+                                    QHostAddress ipAddress;
+                                    QByteArray ipAddrValue = nameElem.value();
+                                    switch (ipAddrValue.length()) {
+                                    case 4: // IPv4
+                                        ipAddress = QHostAddress(qFromBigEndian(*reinterpret_cast<quint32 *>(ipAddrValue.data())));
+                                        break;
+                                    case 16: // IPv6
+                                        ipAddress = QHostAddress(reinterpret_cast<quint8 *>(ipAddrValue.data()));
+                                        break;
+                                    default: // Unknown IP address format
+                                        break;
+                                    }
+                                    if (!ipAddress.isNull())
+                                        subjectAlternativeNames.insert(QSsl::IpAddressEntry, ipAddress.toString());
+                                    break;
+                                }
+                                default:
+                                    break;
                                 }
                             }
                         }

@@ -247,7 +247,7 @@ public:
             // if you add "= 4" here, increase the number of bits below
         };
 
-        Channel() : process(0), notifier(0), type(Normal), closed(false), append(false)
+        Channel() : process(nullptr), notifier(nullptr), type(Normal), closed(false), append(false)
         {
             pipe[0] = INVALID_Q_PIPE;
             pipe[1] = INVALID_Q_PIPE;

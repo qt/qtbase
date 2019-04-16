@@ -80,7 +80,7 @@ public:
     };
 
     inline QFileInfoPrivate()
-        : QSharedData(), fileEngine(0),
+        : QSharedData(), fileEngine(nullptr),
         cachedFlags(0),
         isDefaultConstructed(true),
         cache_enabled(true), fileFlags(0), fileSize(0)

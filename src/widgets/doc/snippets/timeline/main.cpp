@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include <math.h>
 
 int main(int argv, char *args[])
@@ -68,7 +68,7 @@ int main(int argv, char *args[])
     for (int i = 0; i < 200; ++i)
         animation->setPosAt(i / 200.0, QPointF(i, i));
 
-    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsScene *scene = new QGraphicsScene;
     scene->setSceneRect(0, 0, 250, 250);
     scene->addItem(ball);
 

@@ -44,13 +44,16 @@
 
 #include <private/qcore_mac_p.h>
 
+#include <QScopedPointer>
+#include "qiosurfacegraphicsbuffer.h"
+
 QT_BEGIN_NAMESPACE
 
-class QCocoaBackingStore : public QRasterBackingStore
+class QNSWindowBackingStore : public QRasterBackingStore
 {
 public:
-    QCocoaBackingStore(QWindow *window);
-    ~QCocoaBackingStore();
+    QNSWindowBackingStore(QWindow *window);
+    ~QNSWindowBackingStore();
 
     void flush(QWindow *, const QRegion &, const QPoint &) override;
 
@@ -58,6 +61,49 @@ private:
     bool windowHasUnifiedToolbar() const;
     QImage::Format format() const override;
     void redrawRoundedBottomCorners(CGRect) const;
+};
+
+class QCALayerBackingStore : public QPlatformBackingStore
+{
+public:
+    QCALayerBackingStore(QWindow *window);
+    ~QCALayerBackingStore();
+
+    void resize(const QSize &size, const QRegion &staticContents) override;
+
+    void beginPaint(const QRegion &region) override;
+    QPaintDevice *paintDevice() override;
+    void endPaint() override;
+
+    void flush(QWindow *, const QRegion &, const QPoint &) override;
+    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+        QPlatformTextureList *textures, bool translucentBackground) override;
+
+    QPlatformGraphicsBuffer *graphicsBuffer() const override;
+
+private:
+    QSize m_requestedSize;
+    QRegion m_paintedRegion;
+
+    class GraphicsBuffer : public QIOSurfaceGraphicsBuffer
+    {
+    public:
+        GraphicsBuffer(const QSize &size, qreal devicePixelRatio,
+                const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace);
+
+        QRegion dirtyRegion; // In unscaled coordinates
+        QImage *asImage();
+
+    private:
+        qreal m_devicePixelRatio;
+        QImage m_image;
+    };
+
+    void ensureBackBuffer();
+    bool recreateBackBufferIfNeeded();
+    bool prepareForFlush();
+
+    std::list<std::unique_ptr<GraphicsBuffer>> m_buffers;
 };
 
 QT_END_NAMESPACE

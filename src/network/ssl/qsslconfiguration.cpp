@@ -228,7 +228,8 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->nextAllowedProtocols == other.d->nextAllowedProtocols &&
         d->nextNegotiatedProtocol == other.d->nextNegotiatedProtocol &&
         d->nextProtocolNegotiationStatus == other.d->nextProtocolNegotiationStatus &&
-        d->dtlsCookieEnabled == other.d->dtlsCookieEnabled;
+        d->dtlsCookieEnabled == other.d->dtlsCookieEnabled &&
+        d->ocspStaplingEnabled == other.d->ocspStaplingEnabled;
 }
 
 /*!
@@ -272,7 +273,8 @@ bool QSslConfiguration::isNull() const
             d->preSharedKeyIdentityHint.isNull() &&
             d->nextAllowedProtocols.isEmpty() &&
             d->nextNegotiatedProtocol.isNull() &&
-            d->nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNone);
+            d->nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNone &&
+            d->ocspStaplingEnabled == false);
 }
 
 /*!
@@ -585,6 +587,8 @@ void QSslConfiguration::setPrivateKey(const QSslKey &key)
     ciphers. You can revert to using the entire set by calling
     setCiphers() with the list returned by QSslSocket::supportedCiphers().
 
+    \note This is not currently supported in the Schannel backend.
+
     \sa setCiphers(), QSslSocket::supportedCiphers()
 */
 QList<QSslCipher> QSslConfiguration::ciphers() const
@@ -599,6 +603,8 @@ QList<QSslCipher> QSslConfiguration::ciphers() const
 
     Restricting the cipher suite must be done before the handshake
     phase, where the session cipher is chosen.
+
+    \note This is not currently supported in the Schannel backend.
 
     \sa ciphers(), QSslSocket::supportedCiphers()
 */
@@ -1093,6 +1099,37 @@ void QSslConfiguration::setDefaultDtlsConfiguration(const QSslConfiguration &con
 }
 
 #endif // dtls
+
+/*!
+    \since 5.13
+    If \a enabled is true, client QSslSocket will send a certificate status request
+    to its peer when initiating a handshake. During the handshake QSslSocket will
+    verify the server's response. This value must be set before the handshake
+    starts.
+
+    \sa ocspStaplingEnabled()
+*/
+void QSslConfiguration::setOcspStaplingEnabled(bool enabled)
+{
+#if QT_CONFIG(ocsp)
+    d->ocspStaplingEnabled = enabled;
+#else
+    if (enabled)
+        qCWarning(lcSsl, "Enabling OCSP-stapling requires the feature 'ocsp'");
+#endif // ocsp
+}
+
+/*!
+    \since 5.13
+    Returns true if OCSP stapling was enabled by setOCSPStaplingEnabled(),
+    otherwise false (which is the default value).
+
+    \sa setOcspStaplingEnabled()
+*/
+bool QSslConfiguration::ocspStaplingEnabled() const
+{
+    return d->ocspStaplingEnabled;
+}
 
 /*! \internal
 */

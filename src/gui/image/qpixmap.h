@@ -74,10 +74,10 @@ public:
 
     QPixmap &operator=(const QPixmap &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPixmap &operator=(QPixmap &&other) Q_DECL_NOEXCEPT
+    inline QPixmap &operator=(QPixmap &&other) noexcept
     { qSwap(data, other.data); return *this; }
 #endif
-    inline void swap(QPixmap &other) Q_DECL_NOEXCEPT
+    inline void swap(QPixmap &other) noexcept
     { qSwap(data, other.data); }
 
     operator QVariant() const;
@@ -94,8 +94,12 @@ public:
     static int defaultDepth();
 
     void fill(const QColor &fillColor = Qt::white);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QPainter or fill(QColor)")
     void fill(const QPaintDevice *device, const QPoint &ofs);
-    inline void fill(const QPaintDevice *device, int xofs, int yofs) { fill(device, QPoint(xofs, yofs)); }
+    QT_DEPRECATED_X("Use QPainter or fill(QColor)")
+    void fill(const QPaintDevice *device, int xofs, int yofs);
+#endif
 
     QBitmap mask() const;
     void setMask(const QBitmap &);
@@ -111,10 +115,14 @@ public:
 #endif
     QBitmap createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode = Qt::MaskInColor) const;
 
-    static QPixmap grabWindow(WId, int x=0, int y=0, int w=-1, int h=-1);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QScreen::grabWindow() instead")
+    static QPixmap grabWindow(WId, int x = 0, int y = 0, int w = -1, int h = -1);
+    QT_DEPRECATED_X("Use QWidget::grab() instead")
     static QPixmap grabWidget(QObject *widget, const QRect &rect);
-    static inline QPixmap grabWidget(QObject *widget, int x=0, int y=0, int w=-1, int h=-1)
-    { return grabWidget(widget, QRect(x, y, w, h)); }
+    QT_DEPRECATED_X("Use QWidget::grab() instead")
+    static QPixmap grabWidget(QObject *widget, int x = 0, int y = 0, int w = -1, int h = -1);
+#endif
 
     inline QPixmap scaled(int w, int h, Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio,
                           Qt::TransformationMode mode = Qt::FastTransformation) const

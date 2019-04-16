@@ -100,7 +100,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
 
 private:
-    bool isItemChange(int type);
+    bool isItemChange(int type) const;
 
     DiagramItem::DiagramType myItemType;
     QMenu *myItemMenu;

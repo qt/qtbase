@@ -83,8 +83,12 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
         len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     prev, 2, wc.data(), wc.length());
         if (len) {
-            prepend = true;
             sp.append(QChar(wc[0]));
+            if (mblen == 1) {
+                state->remainingChars = 0;
+                return sp;
+            }
+            prepend = true;
             mb++;
             mblen--;
             wc[0] = 0;
@@ -179,7 +183,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
 #else
     QString s;
     size_t size = mbstowcs(NULL, mb, length);
-    if (size < 0) {
+    if (size == size_t(-1)) {
         Q_ASSERT("Error in CE TextCodec");
         return QString();
     }

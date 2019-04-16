@@ -54,7 +54,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qmimetype.h"
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qhash.h>
 #include <QtCore/qstringlist.h>
@@ -103,7 +103,6 @@ QT_END_NAMESPACE
     } \
     QT_END_NAMESPACE
 
-#ifdef Q_COMPILER_RVALUE_REFS
 #define QMIMETYPE_BUILDER_FROM_RVALUE_REFS \
     QT_BEGIN_NAMESPACE \
     static QMimeType buildQMimeType ( \
@@ -122,7 +121,5 @@ QT_END_NAMESPACE
         return QMimeType(qMimeTypeData); \
     } \
     QT_END_NAMESPACE
-#endif
 
-#endif // QT_NO_MIMETYPE
 #endif   // QMIMETYPE_P_H

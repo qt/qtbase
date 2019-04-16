@@ -53,7 +53,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
     m_needsCompositor = w->surfaceType() != QSurface::OpenGLSurface;
     static int serialNo = 0;
     m_winid = ++serialNo;
-    qWarning("QWasmWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 
     m_compositor->addWindow(this);
 
@@ -199,8 +198,10 @@ void QWasmWindow::injectMouseReleased(const QPoint &local, const QPoint &global,
     if (!hasTitleBar() || button != Qt::LeftButton)
         return;
 
-    if (closeButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarCloseButton)
+    if (closeButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarCloseButton) {
         window()->close();
+        return;
+    }
 
     if (maxButtonRect().contains(global) && m_activeControl == QWasmCompositor::SC_TitleBarMaxButton) {
         window()->setWindowState(Qt::WindowMaximized);

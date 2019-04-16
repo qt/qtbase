@@ -356,7 +356,7 @@ QDebug &QDebug::resetFormat()
     stream->space = true;
     if (stream->context.version > 1)
         stream->flags = 0;
-    stream->setVerbosity(Stream::DefaultVerbosity);
+    stream->setVerbosity(DefaultVerbosity);
     return *this;
 }
 
@@ -461,7 +461,7 @@ QDebug &QDebug::resetFormat()
 
     The allowed range is from 0 to 7. The default value is 2.
 
-    \sa setVerbosity()
+    \sa setVerbosity(), VerbosityLevel
 */
 
 /*!
@@ -472,7 +472,31 @@ QDebug &QDebug::resetFormat()
 
     The allowed range is from 0 to 7. The default value is 2.
 
-    \sa verbosity()
+    \sa verbosity(), VerbosityLevel
+*/
+
+/*!
+    \fn QDebug &QDebug::verbosity(int verbosityLevel)
+    \since 5.13
+
+    Sets the verbosity of the stream to \a verbosityLevel and returns a reference to the stream.
+
+    The allowed range is from 0 to 7. The default value is 2.
+
+    \sa verbosity(), setVerbosity(), VerbosityLevel
+*/
+
+/*!
+    \enum QDebug::VerbosityLevel
+    \since 5.13
+
+    This enum describes the range of verbosity levels.
+
+    \value MinimumVerbosity
+    \value DefaultVerbosity
+    \value MaximumVerbosity
+
+    \sa verbosity(), setVerbosity()
 */
 
 /*!
@@ -606,31 +630,7 @@ QDebug &QDebug::resetFormat()
     clean.
 
     Output examples:
-    \code
-        QString s;
-
-        s = "a";
-        qDebug().noquote() << s;    // prints: a
-        qDebug() << s;              // prints: "a"
-
-        s = "\"a\r\n\"";
-        qDebug() << s;              // prints: "\"a\r\n\""
-
-        s = "\033";                 // escape character
-        qDebug() << s;              // prints: "\u001B"
-
-        s = "\u00AD";               // SOFT HYPHEN
-        qDebug() << s;              // prints: "\u00AD"
-
-        s = "\u00E1";               // LATIN SMALL LETTER A WITH ACUTE
-        qDebug() << s;              // prints: "á"
-
-        s = "a\u0301";              // "a" followed by COMBINING ACUTE ACCENT
-        qDebug() << s;              // prints: "á";
-
-        s = "\u0430\u0301";         // CYRILLIC SMALL LETTER A followed by COMBINING ACUTE ACCENT
-        qDebug() << s;              // prints: "а́"
-    \endcode
+    \snippet code/src_corelib_io_qdebug.cpp 0
 */
 
 /*!
@@ -690,25 +690,7 @@ QDebug &QDebug::resetFormat()
     clean.
 
     Output examples:
-    \code
-        QByteArray ba;
-
-        ba = "a";
-        qDebug().noquote() << ba;    // prints: a
-        qDebug() << ba;              // prints: "a"
-
-        ba = "\"a\r\n\"";
-        qDebug() << ba;              // prints: "\"a\r\n\""
-
-        ba = "\033";                 // escape character
-        qDebug() << ba;              // prints: "\x1B"
-
-        ba = "\xC3\xA1";
-        qDebug() << ba;              // prints: "\xC3\xA1"
-
-        ba = QByteArray("a\0b", 3);
-        qDebug() << ba               // prints: "\a\x00""b"
-    \endcode
+    \snippet code/src_corelib_io_qdebug.cpp 1
 
     Note how QDebug needed to close and reopen the string in the way C and C++
     languages concatenate string literals so that the letter 'b' is not
@@ -934,37 +916,127 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
 
 #ifndef QT_NO_QOBJECT
 /*!
+    \fn QDebug qt_QMetaEnum_debugOperator(QDebug &, int value, const QMetaObject *, const char *name)
     \internal
+
+    Formats the given enum \a value for debug output.
+
+    The supported verbosity are:
+
+      0: Just the key, or value with enum name if no key is found:
+
+         MyEnum2
+         MyEnum(123)
+         MyScopedEnum::Enum3
+         MyScopedEnum(456)
+
+      1: Same as 0, but treating all enums as scoped:
+
+         MyEnum::MyEnum2
+         MyEnum(123)
+         MyScopedEnum::Enum3
+         MyScopedEnum(456)
+
+      2: The QDebug default. Same as 0, and includes class/namespace scope:
+
+         MyNamespace::MyClass::MyEnum2
+         MyNamespace::MyClass::MyEnum(123)
+         MyNamespace::MyClass::MyScopedEnum::Enum3
+         MyNamespace::MyClass::MyScopedEnum(456)
+
+      3: Same as 2, but treating all enums as scoped:
+
+         MyNamespace::MyClass::MyEnum::MyEnum2
+         MyNamespace::MyClass::MyEnum(123)
+         MyNamespace::MyClass::MyScopedEnum::Enum3
+         MyNamespace::MyClass::MyScopedEnum(456)
  */
 QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    const char *key = me.valueToKey(value);
-    if (key) {
+
+    const int verbosity = dbg.verbosity();
+    if (verbosity >= QDebug::DefaultVerbosity) {
         if (const char *scope = me.scope())
             dbg << scope << "::";
-        if (me.isScoped())
-            dbg << me.enumName() << "::";
-        dbg << key;
-    } else {
-        dbg << meta->className() << "::" << name << "(" << value << ")";
     }
+
+    const char *key = me.valueToKey(value);
+    const bool scoped = me.isScoped() || verbosity & 1;
+    if (scoped || !key)
+        dbg << me.enumName() << (!key ? "(" : "::");
+
+    if (key)
+        dbg << key;
+    else
+        dbg << value << ")";
+
     return dbg;
 }
 
+/*!
+    \fn QDebug qt_QMetaEnum_flagDebugOperator(QDebug &, quint64 value, const QMetaObject *, const char *name)
+    \internal
+
+    Formats the given flag \a value for debug output.
+
+    The supported verbosity are:
+
+      0: Just the key(s):
+
+         MyFlag1
+         MyFlag2|MyFlag3
+         MyScopedFlag(MyFlag2)
+         MyScopedFlag(MyFlag2|MyFlag3)
+
+      1: Same as 0, but treating all flags as scoped:
+
+         MyFlag(MyFlag1)
+         MyFlag(MyFlag2|MyFlag3)
+         MyScopedFlag(MyFlag2)
+         MyScopedFlag(MyFlag2|MyFlag3)
+
+      2: The QDebug default. Same as 1, and includes class/namespace scope:
+
+         QFlags<MyNamespace::MyClass::MyFlag>(MyFlag1)
+         QFlags<MyNamespace::MyClass::MyFlag>(MyFlag2|MyFlag3)
+         QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2)
+         QFlags<MyNamespace::MyClass::MyScopedFlag>(MyFlag2|MyFlag3)
+ */
 QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaObject *meta, const char *name)
 {
+    const int verbosity = debug.verbosity();
+
     QDebugStateSaver saver(debug);
     debug.resetFormat();
     debug.noquote();
     debug.nospace();
-    debug << "QFlags<";
+
     const QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    if (const char *scope = me.scope())
-        debug << scope << "::";
-    debug << me.enumName() << ">(" << me.valueToKeys(value) << ')';
+
+    const bool classScope = verbosity >= QDebug::DefaultVerbosity;
+    if (classScope) {
+        debug << "QFlags<";
+
+        if (const char *scope = me.scope())
+            debug << scope << "::";
+    }
+
+    const bool enumScope = me.isScoped() || verbosity > QDebug::MinimumVerbosity;
+    if (enumScope) {
+        debug << me.enumName();
+        if (classScope)
+            debug << ">";
+        debug << "(";
+    }
+
+    debug << me.valueToKeys(value);
+
+    if (enumScope)
+        debug << ')';
+
     return debug;
 }
 #endif // !QT_NO_QOBJECT

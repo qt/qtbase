@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtConcurrent module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -266,7 +266,7 @@ public:
         if (keep(*it))
             this->reportResult(&(*it), index);
         else
-            this->reportResult(0, index);
+            this->reportResult(nullptr, index);
         return false;
     }
 

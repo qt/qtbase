@@ -68,7 +68,7 @@ class QSslKeyPrivate
 public:
     inline QSslKeyPrivate()
         : algorithm(QSsl::Opaque)
-        , opaque(0)
+        , opaque(nullptr)
     {
         clear(false);
     }
@@ -105,7 +105,10 @@ public:
     enum Cipher {
         DesCbc,
         DesEde3Cbc,
-        Rc2Cbc
+        Rc2Cbc,
+        Aes128Cbc,
+        Aes192Cbc,
+        Aes256Cbc
     };
 
     Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
@@ -116,6 +119,7 @@ public:
         EVP_PKEY *opaque;
         RSA *rsa;
         DSA *dsa;
+        DH *dh;
 #ifndef OPENSSL_NO_EC
         EC_KEY *ec;
 #endif
@@ -129,7 +133,7 @@ public:
     QAtomicInt ref;
 
 private:
-    Q_DISABLE_COPY(QSslKeyPrivate)
+    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
 };
 
 QT_END_NAMESPACE

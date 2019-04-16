@@ -30,7 +30,6 @@
             "libjpeg": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "libpng": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "linuxfb": "boolean",
-            "mirclient": "boolean",
             "mtdev": "boolean",
             "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2", "dynamic" ] },
             "opengl-es-2": { "type": "void", "name": "opengl", "value": "es2" },
@@ -46,9 +45,7 @@
             "xcb-xlib": "boolean",
             "xcb-xinput": "boolean",
             "xkb": "boolean",
-            "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
-            "xkbcommon-evdev": "boolean",
-            "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] }
+            "xkbcommon": "boolean"
         }
     },
 
@@ -61,52 +58,132 @@
         },
         "bcm_host": {
             "export": "",
+            "headers": ["bcm_host.h"],
             "sources": [
-                "-lbcm_host"
+                { "type": "makeSpec", "spec": "BCM_HOST" }
             ]
         },
-        "direct2d": {
-            "label": "Direct 2D",
-            "export": "",
+        "dxguid": {
+            "label": "DirectX GUID",
+            "sources": [
+                "-ldxguid"
+            ]
+        },
+        "dxgi": {
+            "label": "DirectX GI",
+            "headers": "dxgi.h",
+            "sources": [
+                "-ldxgi"
+            ]
+        },
+        "dxgi1_2": {
+            "label": "DirectX GI 1.2",
             "test": {
-                "include": [ "d3d11_1.h", "d2d1_1.h", "d2d1_1helper.h", "dxgi1_2.h", "wrl.h", "dwrite.h" ],
-                "tail": "using Microsoft::WRL::ComPtr;",
                 "main": [
-                    "ComPtr<ID2D1Factory1> d2dFactory;",
-                    "D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, d2dFactory.ReleaseAndGetAddressOf());",
-                    "ComPtr<IDXGISurface1> surface;",
+                    "// fails with mingw-w64 5.4.0 - declaration is missing from header",
+                    "IDXGISurface1 *surface;",
                     "(void) surface;"
                 ]
             },
+            "headers": "dxgi1_2.h",
             "sources": [
-                "-ld2d1 -ldwrite -ld3d11"
+                "-ldxgi"
+            ]
+        },
+        "d3d9": {
+            "label": "Direct3D 9",
+            "headers": "d3d9.h",
+            "sources": [
+                "-ld3d9"
+            ]
+        },
+        "d3d11": {
+            "label": "Direct3D 11",
+            "headers": "d3d11.h",
+            "sources": [
+                "-ld3d11"
+            ]
+        },
+        "d3d11_1": {
+            "label": "Direct3D 11.1",
+            "headers": "d3d11_1.h",
+            "sources": [
+                "-ld3d11"
+            ]
+        },
+        "d3dcompiler": {
+            "label": "Direct3D Shader Compiler Library",
+            "headers": "d3dcompiler.h",
+            "sources": [
+                "-ld3dcompiler"
+            ]
+        },
+        "d2d1": {
+            "label": "Direct2D 1",
+            "headers": [ "d2d1.h", "d2d1helper.h" ],
+            "sources": [
+                "-ld2d1"
+            ]
+        },
+        "d2d1_1": {
+            "label": "Direct2D 1.1",
+            "test": {
+                "main": [
+                    "ID2D1Factory1 *d2dFactory;",
+                    "D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);"
+                ]
+            },
+            "headers": [ "d2d1_1.h", "d2d1_1helper.h" ],
+            "sources": [
+                "-ld2d1"
             ]
         },
         "directfb": {
             "label": "DirectFB",
             "test": {
-                "include": "directfb.h",
                 "tail": [
                     "#ifdef __typeof__",
                     "#  error DirectFB headers are unclean and cannot compile",
                     "#endif"
                 ]
             },
+            "headers": "directfb.h",
             "sources": [
                 { "type": "pkgConfig", "args": "directfb" }
             ]
         },
-        "directwrite": {
+        "dwrite": {
             "label": "DirectWrite",
-            "export": "",
             "test": {
-                "include": [ "dwrite.h", "d2d1.h" ],
                 "main": [
                     "IDWriteFactory *factory = 0;",
                     "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),",
                     "                    (IUnknown **)(&factory));"
                 ]
             },
+            "headers": "dwrite.h",
+            "sources": [
+                "-ldwrite"
+            ]
+        },
+        "dwrite_1": {
+            "label": "DirectWrite 1",
+            "headers": "dwrite_1.h",
+            "sources": [
+                "-ldwrite"
+            ]
+        },
+        "dwrite_2": {
+            "label": "DirectWrite 2",
+            "test": {
+                "main": [
+                    "IUnknown *factory = 0;",
+                    "(void)(size_t(DWRITE_E_NOCOLOR) + sizeof(IDWriteFontFace2));",
+                    "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),",
+                    "                    &factory);"
+                ]
+            },
+            "headers": "dwrite_2.h",
             "sources": [
                 "-ldwrite"
             ]
@@ -119,15 +196,12 @@
                     "#include <stdint.h>",
                     "extern \"C\" {"
                 ],
-                "include": [
-                    "xf86drmMode.h",
-                    "xf86drm.h"
-                ],
                 "tail": [
                     "}"
                 ],
                 "main": "(void) drmModeGetCrtc(0, 0);"
             },
+            "headers": [ "xf86drmMode.h", "xf86drm.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
                 { "libs": "-ldrm", "condition": "!config.integrity" },
@@ -137,12 +211,12 @@
         "egl": {
             "label": "EGL",
             "test": {
-                "include": "EGL/egl.h",
                 "main": [
                     "EGLint x = 0; EGLDisplay dpy = 0; EGLContext ctx = 0;",
                     "eglDestroyContext(dpy, ctx);"
                 ]
             },
+            "headers": "EGL/egl.h",
             "sources": [
                 { "type": "pkgConfig", "args": "egl" },
                 { "type": "makeSpec", "spec": "EGL" }
@@ -151,7 +225,6 @@
         "freetype": {
             "label": "FreeType",
             "test": {
-                "include": "ft2build.h",
                 "tail": [
                     "#include FT_FREETYPE_H",
                     "#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20200)",
@@ -162,25 +235,30 @@
                     "FT_Face face = 0;"
                 ]
             },
+            "headers": "ft2build.h",
             "sources": [
                 { "type": "pkgConfig", "args": "freetype2" },
                 { "type": "freetype", "libs": "-lfreetype", "condition": "!config.wasm" },
-                { "type": "freetype", "libs": "-s USE_FREETYPE=1", "condition": "config.wasm" }
+                { "libs": "-s USE_FREETYPE=1", "condition": "config.wasm" },
+                { "libs": "-lfreetype" }
+            ],
+            "use": [
+                { "lib": "zlib", "condition": "features.system-zlib" }
             ]
         },
         "fontconfig": {
             "label": "Fontconfig",
             "test": {
-                "include": "fontconfig/fontconfig.h",
                 "tail": [
                     "#ifndef FC_RGBA_UNKNOWN",
-                    "#  error This version of fontconfig is tool old, it is missing the FC_RGBA_UNKNOWN define",
+                    "#  error This version of fontconfig is too old, it is missing the FC_RGBA_UNKNOWN define",
                     "#endif"
                 ],
                 "main": [
                     "FcPattern *pattern = 0;"
                 ]
             },
+            "headers": "fontconfig/fontconfig.h",
             "sources": [
                 { "type": "pkgConfig", "args": "fontconfig" },
                 { "type": "freetype", "libs": "-lfontconfig" }
@@ -195,12 +273,12 @@
                     "#include <stdint.h>",
                     "extern \"C\" {"
                 ],
-                "include": "gbm.h",
                 "tail": [
                     "}"
                 ],
                 "main": "gbm_surface *surface = 0;"
             },
+            "headers": "gbm.h",
             "sources": [
                 { "type": "pkgConfig", "args": "gbm" }
             ]
@@ -208,7 +286,6 @@
         "harfbuzz": {
             "label": "HarfBuzz",
             "test": {
-                "include": "harfbuzz/hb.h",
                 "tail": [
                     "#if !HB_VERSION_ATLEAST(1, 6, 0)",
                     "#  error This version of harfbuzz is too old.",
@@ -223,6 +300,7 @@
                     "hb_buffer_destroy(buffer);"
                 ]
             },
+            "headers": "harfbuzz/hb.h",
             "sources": [
                 "-lharfbuzz"
             ]
@@ -231,9 +309,9 @@
             "label": "IMF",
             "export": "",
             "test": {
-                "include": "imf/imf_client.h",
                 "main": "imf_client_init();"
             },
+            "headers": "imf/imf_client.h",
             "sources": [
                 "-linput_client"
             ]
@@ -241,9 +319,9 @@
         "lgmon": {
             "label": "lgmon",
             "test": {
-                "include": "lgmon.h",
                 "main": "lgmon_supported(getpid());"
             },
+            "headers": "lgmon.h",
             "sources": [
                 "-llgmon"
             ]
@@ -251,9 +329,9 @@
         "libinput": {
             "label": "libinput",
             "test": {
-                "include": "libinput.h",
                 "main": "libinput_udev_create_context(NULL, NULL, NULL);"
             },
+            "headers": "libinput.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libinput" }
             ]
@@ -265,7 +343,6 @@
                     "#include <stdlib.h>",
                     "#include <stdint.h>"
                 ],
-                "include": "device/hiddriver.h",
                 "main": [
                     "HIDDriver *driver;",
                     "uintptr_t devicecontext;",
@@ -273,6 +350,7 @@
                     "gh_hid_enum_devices(driver, &device_id, &devicecontext);"
                 ]
             },
+            "headers": "device/hiddriver.h",
             "sources": [
                 { "libs": "-lhiddev -lusbhid -lusb" }
             ]
@@ -285,7 +363,6 @@
                     "#include <stdio.h>",
                     "extern \"C\" {"
                 ],
-                "include": "jpeglib.h",
                 "tail": [
                     "}",
                     "",
@@ -293,6 +370,7 @@
                 ],
                 "main": "jpeg_create_compress(cinfo);"
             },
+            "headers": "jpeglib.h",
             "sources": [
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
                 "-ljpeg"
@@ -301,9 +379,9 @@
         "libpng": {
             "label": "libpng",
             "test": {
-                "include": "png.h",
                 "main": "(void) png_create_read_struct(PNG_LIBPNG_VER_STRING,0,0,0);"
             },
+            "headers": "png.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
                 { "libs": "-llibpng16", "condition": "config.msvc" },
@@ -316,29 +394,15 @@
                 { "lib": "zlib", "condition": "features.system-zlib" }
             ]
         },
-        "mirclient": {
-            "label": "Mir client libraries",
-            "test": {
-                "include": [ "mir_toolkit/mir_client_library.h", "ubuntu/application/lifecycle_delegate.h", "EGL/egl.h" ],
-                "tail": "static void surfaceCreateCallback(MirSurface*, void*) {}",
-                "main": [
-                    "u_application_lifecycle_delegate_new();",
-                    "mir_surface_create(0, surfaceCreateCallback, 0);"
-                ]
-            },
-            "sources": [
-                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api libcontent-hub >= 0.2.0" }
-            ]
-        },
         "mtdev": {
             "label": "mtdev",
             "test": {
-                "include": "mtdev.h",
                 "main": [
                     "mtdev m;",
                     "mtdev_open(&m, 0);"
                 ]
             },
+            "headers": "mtdev.h",
             "sources": [
                 { "type": "pkgConfig", "args": "mtdev" }
             ]
@@ -351,7 +415,6 @@
                     "#  include <OpenGL/gl.h>",
                     "#else",
                     "#  define GL_GLEXT_PROTOTYPES",
-                    "#  include <GL/gl.h>",
                     "#endif"
                 ],
                 "main": [
@@ -362,9 +425,15 @@
                     "glEnd();"
                 ]
             },
+            "headers": [
+                {
+                    "condition": "!config.darwin",
+                    "headers": "GL/gl.h"
+                }
+            ],
             "sources": [
                 { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
-                { "type": "makeSpec", "spec": "OPENGL" }
+                { "type": "openglMakeSpec" }
             ]
         },
         "opengl_es2": {
@@ -375,7 +444,6 @@
                     "#  include <OpenGLES/ES2/gl.h>",
                     "#else",
                     "#  define GL_GLEXT_PROTOTYPES",
-                    "#  include <GLES2/gl2.h>",
                     "#endif"
                 ],
                 "main": [
@@ -383,6 +451,12 @@
                     "glClear(GL_COLOR_BUFFER_BIT);"
                 ]
             },
+            "headers": [
+                {
+                    "condition": "!config.darwin",
+                    "headers": "GLES2/gl2.h"
+                }
+            ],
             "sources": [
                 { "type": "pkgConfig", "args": "glesv2", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL_ES2" }
@@ -391,9 +465,9 @@
         "openvg": {
             "label": "OpenVG",
             "test": {
-                "include": "VG/openvg.h",
                 "main": "VGint i = 2; vgFlush();"
             },
+            "headers": "VG/openvg.h",
             "sources": [
                 { "type": "pkgConfig", "args": "vg" },
                 { "type": "makeSpec", "spec": "OPENVG" }
@@ -402,9 +476,9 @@
         "tslib": {
             "label": "tslib",
             "test": {
-                "include": "tslib.h",
                 "main": "ts_open(\"foo\", 0);"
             },
+            "headers": "tslib.h",
             "sources": [
                 "-lts"
             ]
@@ -416,10 +490,6 @@
                     "#include <cstddef>",
                     "extern \"C\" {"
                 ],
-                "include": [
-                    "mediactl/mediactl.h",
-                    "mediactl/v4l2subdev.h"
-                ],
                 "tail": [
                     "}"
                 ],
@@ -430,6 +500,7 @@
                     "v4l2_subdev_set_format(nullptr, nullptr, 0, V4L2_SUBDEV_FORMAT_ACTIVE);"
                 ]
             },
+            "headers": [ "mediactl/mediactl.h", "mediactl/v4l2subdev.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "libv4l2 libmediactl" },
                 "-lmediactl -lv4l2 -lv4l2subdev"
@@ -437,7 +508,23 @@
         },
         "vulkan": {
             "label": "Vulkan",
-            "test": "qpa/vulkan",
+            "test": {
+                "comment": "Note: Qt does not rely on linking to a Vulkan library directly.",
+                "tail": [
+                    "// The pData parameter has changed from uint32_t* to void* at some point.",
+                    "// Ensure the headers have the updated one to prevent compile errors later on.",
+                    "PFN_vkCmdUpdateBuffer cmdUpdBuf;",
+                    "void testUpdateBuffer(VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void* pData)",
+                    "{",
+                    "    cmdUpdBuf(commandBuffer, dstBuffer, dstOffset, dataSize, pData);",
+                    "}"
+                ],
+                "main": [
+                    "VkInstanceCreateInfo info;",
+                    "testUpdateBuffer(0, 0, 0, 0, 0);"
+                ]
+            },
+            "headers": "vulkan/vulkan.h",
             "sources": [
                 { "type": "pkgConfig", "args": "vulkan" },
                 { "type": "makeSpec", "spec": "VULKAN" }
@@ -446,11 +533,24 @@
         "wayland_server": {
             "label": "Wayland Server",
             "test": {
-                "include": "wayland-server.h",
                 "main": "wl_display_create();"
             },
+            "headers": "wayland-server.h",
             "sources": [
                 { "type": "pkgConfig", "args": "wayland-server" }
+            ]
+        },
+        "xlib": {
+            "label": "XLib",
+            "test": {
+                "main": [
+                    "Display *d = XOpenDisplay(NULL);",
+                    "XCloseDisplay(d);"
+                ]
+            },
+            "headers": "X11/Xlib.h",
+            "sources": [
+                { "type": "makeSpec", "spec": "X11" }
             ]
         },
         "x11sm": {
@@ -460,9 +560,8 @@
             ]
         },
         "xcb": {
-            "label": "XCB >= 1.9 (core)",
+            "label": "XCB >= 1.9",
             "test": {
-                "include": "xcb/xcb.h",
                 "main": [
                     "int primaryScreen = 0;",
                     "(void)xcb_connect(\"\", &primaryScreen);",
@@ -470,54 +569,113 @@
                     "int xcbScreenError = XCB_CONN_CLOSED_INVALID_SCREEN;"
                 ]
             },
+            "headers": "xcb/xcb.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb >= 1.9" },
                 "-lxcb"
             ]
         },
-        "xcb_syslibs": {
-            "label": "XCB (extensions)",
-            "test": {
-                "include": [
-                    "xcb/xcb.h",
-                    "xcb/xfixes.h",
-                    "xcb/xcb_image.h",
-                    "xcb/xcb_keysyms.h",
-                    "xcb/xinerama.h",
-                    "xcb/sync.h",
-                    "xcb/randr.h",
-                    "xcb/shm.h"
-                ],
-                "tail": [
-                    "// This workaround can be removed for xcb-icccm > 3.8",
-                    "#define class class_name",
-                    "#include <xcb/xcb_icccm.h>",
-                    "#undef class"
-                ],
-                "main": [
-                    "int primaryScreen = 0;",
-                    "(void) xcb_connect(\"\", &primaryScreen);"
-                ]
-            },
+        "xcb_icccm": {
+            "label": "XCB ICCCM >= 0.3.9",
+            "headers": "xcb/xcb_icccm.h",
             "sources": [
-                { "type": "pkgConfig",
-                  "args": "xcb xcb-shm xcb-sync xcb-xfixes xcb-xinerama xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape" },
-                "-lxcb -lxcb-shm -lxcb-sync -lxcb-xfixes -lxcb-xinerama -lxcb-randr -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-shape"
-            ]
+                { "type": "pkgConfig", "args": "xcb-icccm >= 0.3.9" },
+                "-lxcb-icccm"
+            ],
+            "use": "xcb"
+        },
+        "xcb_image": {
+            "label": "XCB Image >= 0.3.9",
+            "headers": "xcb/xcb_image.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-image >= 0.3.9" },
+                "-lxcb-image"
+            ],
+            "use": "xcb_shm xcb"
+        },
+        "xcb_keysyms": {
+            "label": "XCB Keysyms >= 0.3.9",
+            "headers": "xcb/xcb_keysyms.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-keysyms >= 0.3.9" },
+                "-lxcb-keysyms"
+            ],
+            "use": "xcb"
+        },
+        "xcb_renderutil": {
+            "label": "XCB Renderutil >= 0.3.9",
+            "headers": "xcb/xcb_renderutil.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-renderutil >= 0.3.9" },
+                "-lxcb-render-util"
+            ],
+            "use": "xcb xcb_render"
+        },
+        "xcb_randr": {
+            "label": "XCB RandR",
+            "headers": "xcb/randr.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-randr" },
+                "-lxcb-randr"
+            ],
+            "use": "xcb"
+        },
+        "xcb_shape": {
+            "label": "XCB Shape",
+            "headers": "xcb/shape.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-shape" },
+                "-lxcb-shape"
+            ],
+            "use": "xcb"
+        },
+        "xcb_shm": {
+            "label": "XCB SHM",
+            "headers": "xcb/shm.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-shm" },
+                "-lxcb-shm"
+            ],
+            "use": "xcb"
+        },
+        "xcb_sync": {
+            "label": "XCB Sync",
+            "headers": "xcb/sync.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-sync" },
+                "-lxcb-sync"
+            ],
+            "use": "xcb"
+        },
+        "xcb_xfixes": {
+            "label": "XCB Xfixes",
+            "headers": "xcb/xfixes.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-xfixes" },
+                "-lxcb-xfixes"
+            ],
+            "use": "xcb"
+        },
+        "xcb_xinerama": {
+            "label": "XCB Xinerama",
+            "headers": "xcb/xinerama.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-xinerama" },
+                "-lxcb-xinerama"
+            ],
+            "use": "xcb"
         },
         "xcb_xlib": {
             "label": "XCB Xlib",
             "test": {
-                "include": [ "xcb/xcb.h", "X11/Xlib.h", "X11/Xlib-xcb.h" ],
-                "main": [
-                    "Display *dpy = XOpenDisplay(\"\");",
-                    "(void) XGetXCBConnection(dpy);"
-                ]
+                "main": "(void) XGetXCBConnection((Display *)0);"
             },
+            "headers": "X11/Xlib-xcb.h",
             "sources": [
-                { "type": "pkgConfig", "args": "x11-xcb x11 xcb" },
-                "-lxcb -lX11 -lX11-xcb"
-            ]
+                { "type": "pkgConfig", "args": "x11-xcb" },
+                "-lX11-xcb"
+            ],
+            "use": "xcb xlib"
         },
         "xcb_xkb": {
             "label": "XCB XKB >= 1.10",
@@ -526,114 +684,102 @@
                     "// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++",
                     "#define explicit dont_use_cxx_explicit"
                 ],
-                "include": "xcb/xkb.h",
                 "tail": "#undef explicit",
                 "main": [
                     "// This takes more arguments in xcb-xkb < 1.10.",
                     "xcb_xkb_get_kbd_by_name_unchecked(NULL, 0, 0, 0, 0);"
                 ]
             },
+            "headers": "xcb/xkb.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-xkb >= 1.10 xcb" },
-                "-lxcb-xkb -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-xkb >= 1.10" },
+                "-lxcb-xkb"
+            ],
+            "use": "xcb"
         },
         "xcb_render": {
             "label": "XCB XRender",
-            "test": {
-                "include": [ "xcb/xcb.h", "xcb/render.h" ],
-                "tail": [
-                    "// 'template' is used as a function argument name in xcb_renderutil.h",
-                    "#define template template_param",
-                    "// extern \"C\" is missing, too",
-                    "extern \"C\" {",
-                    "#include <xcb/xcb_renderutil.h>",
-                    "}",
-                    "#undef template"
-                ],
-                "main": [
-                    "int primaryScreen = 0;",
-                    "xcb_generic_error_t *error = 0;",
-                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
-                    "xcb_render_query_pict_formats_cookie_t formatsCookie =",
-                    "    xcb_render_query_pict_formats(connection);",
-                    "xcb_render_query_pict_formats_reply_t *formatsReply =",
-                    "    xcb_render_query_pict_formats_reply(",
-                    "            connection, formatsCookie, &error);",
-                    "xcb_render_util_find_standard_format(",
-                    "        formatsReply, XCB_PICT_STANDARD_ARGB_32);"
-                ]
-            },
+            "headers": "xcb/render.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-renderutil xcb-render xcb" },
-                "-lxcb-render-util -lxcb-render -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-render" },
+                "-lxcb-render"
+            ],
+            "use": "xcb"
         },
         "xcb_glx": {
             "label": "XCB GLX",
             "test": {
-                "include": [ "xcb/xcb.h", "xcb/glx.h" ],
                 "main": [
-                    "int primaryScreen = 0;",
-                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
+                    "xcb_connection_t *connection = 0;",
                     "xcb_generic_error_t *error = 0;",
                     "xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(",
                     "        connection, XCB_GLX_MAJOR_VERSION, XCB_GLX_MINOR_VERSION);",
                     "xcb_glx_query_version_reply(connection, xglx_query_cookie, &error);"
                 ]
             },
+            "headers": "xcb/glx.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-glx xcb" },
-                "-lxcb-glx -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-glx" },
+                "-lxcb-glx"
+            ],
+            "use": "xcb"
         },
         "xcb_xinput": {
             "label": "XCB XInput",
             "test": {
-                "include": [ "xcb/xcb.h", "xcb/xinput.h" ],
                 "main": [
-                    "int primaryScreen = 0;",
-                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
+                    "xcb_connection_t *connection = 0;",
                     "xcb_generic_error_t *error = 0;",
                     "xcb_input_xi_query_version_cookie_t xinput_query_cookie = xcb_input_xi_query_version(",
                     "        connection, XCB_INPUT_MAJOR_VERSION, XCB_INPUT_MINOR_VERSION);",
                     "xcb_input_xi_query_version_reply(connection, xinput_query_cookie, &error);"
                 ]
             },
+            "headers": "xcb/xinput.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-xinput >= 1.12 xcb" },
-                "-lxcb-xinput -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-xinput >= 1.12" },
+                "-lxcb-xinput"
+            ],
+            "use": "xcb"
         },
         "xkbcommon": {
-            "label": "xkbcommon",
-            "export": "xkbcommon_evdev",
+            "label": "xkbcommon >= 0.5.0",
             "test": {
-                "include": [ "xkbcommon/xkbcommon.h", "xkbcommon/xkbcommon-keysyms.h", "xkbcommon/xkbcommon-names.h" ],
                 "main": "xkb_context_new(XKB_CONTEXT_NO_FLAGS);"
             },
+            "headers": [ "xkbcommon/xkbcommon.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon" }
+                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" },
+                "-lxkbcommon"
             ]
         },
         "xkbcommon_x11": {
-            "label": "xkbcommon-x11 >= 0.4.1",
-            "export": "xkbcommon",
+            "label": "xkbcommon-x11",
+            "test": {
+                "main": "xkb_x11_get_core_keyboard_device_id(nullptr);"
+            },
+            "headers": [ "xkbcommon/xkbcommon-x11.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon xkbcommon-x11 >= 0.4.1" }
+                { "type": "pkgConfig", "args": "xkbcommon-x11" },
+                "-lxkbcommon -lxkbcommon-x11"
             ]
         },
         "xrender": {
             "label": "XRender for native painting",
-            "test": "x11/xrender",
+            "test": {
+                "tail": [
+                    "#if RENDER_MAJOR == 0 && RENDER_MINOR < 5",
+                    "#  error Required Xrender version 0.6 not found.",
+                    "#endif"
+                ],
+                "main": "XRenderPictFormat *format = 0;"
+            },
+            "headers": "X11/extensions/Xrender.h",
             "sources": [
                 "-lXrender"
-            ]
+            ],
+            "use": "xlib"
         }
-    },
-
-    "testTypeAliases": {
-        "files": [ "directX" ]
     },
 
     "tests": {
@@ -648,28 +794,10 @@
                 ]
             }
         },
-        "directwrite2": {
-            "label": "DirectWrite 2",
-            "type": "compile",
-            "test": {
-                "include": [ "dwrite_2.h", "d2d1.h" ],
-                "main": [
-                    "IUnknown *factory = 0;",
-                    "(void)(size_t(DWRITE_E_NOCOLOR) + sizeof(IDWriteFontFace2));",
-                    "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),",
-                    "                    &factory);"
-                ]
-            },
-            "use": "directwrite"
-        },
-        "directx": {
-            "label": "DirectX SDK",
-            "type": "directX",
-            "files": [
-                "d3dcompiler.h",
-                "d3d11.lib",
-                "fxc.exe"
-            ]
+        "fxc": {
+            "label": "Direct3D Shader Compiler",
+            "type": "fxc",
+            "log": "value"
         },
         "drm_atomic": {
             "label": "DRM Atomic API",
@@ -702,7 +830,7 @@
                     "// window and pixmap types will be different than what an X-based platform",
                     "// plugin would expect."
                 ],
-                "include": [ "EGL/egl.h", "xcb/xcb.h", "X11/Xlib.h", "X11/Xlib-xcb.h" ],
+                "include": [ "EGL/egl.h", "X11/Xlib.h" ],
                 "main": [
                     "Display *dpy = EGL_DEFAULT_DISPLAY;",
                     "EGLNativeDisplayType egldpy = XOpenDisplay(\"\");",
@@ -712,7 +840,7 @@
                     "XCloseDisplay(dpy);"
                 ]
             },
-            "use": "egl xcb_xlib"
+            "use": "egl xlib"
         },
         "egl-brcm": {
             "label": "Broadcom EGL (Raspberry Pi)",
@@ -900,13 +1028,51 @@
         "opengles32": {
             "label": "OpenGL ES 3.2",
             "type": "compile",
-            "test": "unix/opengles32",
+            "test": {
+                "include": "GLES3/gl32.h",
+                "main": "glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);"
+            },
             "use": "opengl_es2"
         },
         "qpa_default_platform": {
             "label": "default QPA platform",
             "type": "qpaDefaultPlatform",
             "log": "value"
+        },
+        "xcb_syslibs": {
+            "label": "XCB (extensions)",
+            "type": "compile",
+            "test": {
+                "include": [
+                    "xcb/xcb.h",
+                    "xcb/xcb_image.h",
+                    "xcb/xcb_keysyms.h",
+                    "xcb/randr.h",
+                    "xcb/render.h",
+                    "xcb/shape.h",
+                    "xcb/shm.h",
+                    "xcb/sync.h",
+                    "xcb/xfixes.h",
+                    "xcb/xinerama.h",
+                    "xcb/xcb_icccm.h",
+                    "xcb/xcb_renderutil.h"
+                ],
+                "main": [
+                    "int primaryScreen = 0;",
+                    "xcb_connection_t *c = xcb_connect(\"\", &primaryScreen);",
+
+                    "/* RENDER */",
+                    "xcb_generic_error_t *error = nullptr;",
+                    "xcb_render_query_pict_formats_cookie_t formatsCookie =",
+                    "    xcb_render_query_pict_formats(c);",
+                    "xcb_render_query_pict_formats_reply_t *formatsReply =",
+                    "    xcb_render_query_pict_formats_reply(c, formatsCookie, &error);",
+
+                    "/* RENDERUTIL: xcb_renderutil.h include won't compile unless version >= 0.3.9 */",
+                    "xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);"
+                ]
+            },
+            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb"
         },
         "x11prefix": {
             "label": "X11 prefix",
@@ -915,18 +1081,6 @@
             "pkg-config-variable": "prefix",
             "value": "/usr",
             "log": "value"
-        },
-        "xlib": {
-            "label": "XLib",
-            "type": "compile",
-            "test": {
-                "include": "X11/Xlib.h",
-                "main": [
-                    "Display *d = XOpenDisplay(NULL);",
-                    "XCloseDisplay(d);"
-                ],
-                "qmake": "CONFIG += x11"
-            }
         }
      },
 
@@ -939,10 +1093,11 @@
         "angle": {
             "label": "ANGLE",
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
-            "condition": "config.win32 && tests.directx",
+            "condition": "!features.opengl-desktop && features.dxguid && tests.fxc && (features.direct3d9 || (config.winrt && features.direct3d11 && libs.d3dcompiler))",
             "output": [
                 "publicFeature",
-                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
+                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" },
+                { "type": "varAssign", "name": "QMAKE_FXC_LOCATION", "value": "tests.fxc.value" }
             ]
         },
         "angle_d3d11_qdtd": {
@@ -966,19 +1121,59 @@
         "directwrite": {
             "label": "DirectWrite",
             "emitIf": "config.win32",
-            "condition": "libs.directwrite",
+            "condition": "libs.dwrite",
+            "output": [ "privateFeature" ]
+        },
+        "directwrite1": {
+            "label": "DirectWrite 1",
+            "emitIf": "config.win32",
+            "condition": "libs.dwrite_1",
             "output": [ "privateFeature" ]
         },
         "directwrite2": {
             "label": "DirectWrite 2",
             "emitIf": "config.win32",
-            "condition": "features.directwrite && tests.directwrite2",
+            "condition": "features.directwrite1 && libs.dwrite_2",
+            "output": [ "privateFeature" ]
+        },
+        "dxguid": {
+            "label": "DirectX GUID",
+            "condition": "config.win32 && libs.dxguid",
+            "output": [ "privateFeature" ]
+        },
+        "direct3d9": {
+            "label": "Direct 3D 9",
+            "condition": "config.win32 && !config.winrt && libs.d3d9",
+            "output": [ "privateFeature" ]
+        },
+        "dxgi": {
+            "label": "DirectX GI",
+            "condition": "config.win32 && libs.dxgi",
+            "output": [ "privateFeature" ]
+        },
+        "dxgi1_2": {
+            "label": "DirectX GI 1.2",
+            "condition": "features.dxgi && libs.dxgi1_2",
+            "output": [ "privateFeature" ]
+        },
+        "direct3d11": {
+            "label": "Direct 3D 11",
+            "condition": "features.dxgi && libs.d3d11",
+            "output": [ "privateFeature" ]
+        },
+        "direct3d11_1": {
+            "label": "Direct 3D 11.1",
+            "condition": "features.direct3d11 && features.dxgi1_2 && libs.d3d11_1",
             "output": [ "privateFeature" ]
         },
         "direct2d": {
             "label": "Direct 2D",
-            "section": "Platform plugins",
-            "condition": "config.win32 && !config.winrt && libs.direct2d",
+            "condition": "config.win32 && !config.winrt && features.direct3d11 && libs.d2d1",
+            "output": [ "privateFeature" ]
+        },
+        "direct2d1_1": {
+            "label": "Direct 2D 1.1",
+            "condition": "features.direct2d && libs.d2d1_1",
             "output": [ "privateFeature" ]
         },
         "evdev": {
@@ -1087,13 +1282,6 @@
             ],
             "output": [ "privateFeature" ]
         },
-        "mirclient": {
-            "label": "Mir client",
-            "section": "Platform plugins",
-            "autoDetect": false,
-            "condition": "libs.mirclient",
-            "output": [ "privateFeature" ]
-        },
         "mtdev": {
             "label": "mtdev",
             "condition": "libs.mtdev",
@@ -1101,9 +1289,9 @@
         },
         "opengles2": {
             "label": "OpenGL ES 2.0",
-            "enable": "input.opengl == 'es2'",
+            "enable": "input.opengl == 'es2' || input.angle == 'yes'",
             "disable": "input.opengl == 'desktop' || input.opengl == 'dynamic' || input.opengl == 'no'",
-            "condition": "config.win32 || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
+            "condition": "(config.win32 && !features.opengl-dynamic) || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
             "output": [
                 "publicFeature",
                 "publicQtConfig",
@@ -1137,14 +1325,14 @@
         },
         "opengl-desktop": {
             "label": "Desktop OpenGL",
+            "autoDetect": "!config.win32",
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl)) || (!config.watchos && !config.win32 && !config.wasm && libs.opengl)"
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",
-            "enable": "input.opengl == 'dynamic'",
-            "autoDetect": false,
+            "disable": "input.angle == 'yes' || input.opengl == 'no' || input.opengl == 'desktop'",
             "condition": "config.win32 && !config.winrt",
             "output": [
                 { "type": "publicFeature", "name": "dynamicgl" },
@@ -1179,7 +1367,7 @@
         "eglfs": {
             "label": "EGLFS",
             "section": "Platform plugins",
-            "condition": "!config.android && !config.darwin && !config.win32 && features.egl",
+            "condition": "!config.android && !config.darwin && !config.win32 && !config.wasm && features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
@@ -1225,6 +1413,11 @@
         "eglfs_openwfd": {
             "label": "EGLFS OpenWFD",
             "condition": "config.integrity && features.eglfs && tests.egl-openwfd",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_x11": {
+            "label": "EGLFS X11",
+            "condition": "features.eglfs && features.xcb-xlib && features.egl_x11",
             "output": [ "privateFeature" ]
         },
         "gif": {
@@ -1303,7 +1496,7 @@
             "section": "Platform plugins",
             "autoDetect": "!config.darwin",
             "enable": "input.xcb == 'system' || input.xcb == 'qt' || input.xcb == 'yes'",
-            "condition": "features.thread && libs.xcb",
+            "condition": "features.thread && features.xkbcommon && libs.xcb",
             "output": [ "privateFeature" ]
         },
         "system-xcb": {
@@ -1311,7 +1504,7 @@
             "enable": "input.xcb == 'system'",
             "disable": "input.xcb == 'qt'",
             "autoDetect": "!config.darwin",
-            "condition": "features.xcb && libs.xcb_syslibs",
+            "condition": "features.xcb && tests.xcb_syslibs",
             "output": [ "privateFeature" ]
         },
         "x11-prefix": {
@@ -1319,10 +1512,22 @@
             "emitIf": "features.xcb",
             "output": [ { "type": "varAssign", "name": "QMAKE_X11_PREFIX", "value": "tests.x11prefix.value" } ]
         },
-        "xcb-glx": {
-            "label": "XCB GLX",
+        "xcb-glx-plugin": {
+            "label": "GLX Plugin",
             "emitIf": "features.xcb",
+            "condition": "features.xcb-xlib && features.opengl && !features.opengles2",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-glx": {
+            "label": "  XCB GLX",
+            "emitIf": "features.xcb && features.xcb-glx-plugin",
             "condition": "libs.xcb_glx",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-egl-plugin": {
+            "label": "EGL-X11 Plugin",
+            "emitIf": "features.xcb",
+            "condition": "features.egl_x11 && features.opengl",
             "output": [ "privateFeature" ]
         },
         "xcb-native-painting": {
@@ -1337,21 +1542,14 @@
             "condition": "features.xcb-native-painting",
             "output": [ "privateFeature" ]
         },
-        "xcb-render": {
-            "label": "XCB render",
-            "emitIf": "features.xcb",
-            "condition": "!features.system-xcb || libs.xcb_render",
-            "output": [ "privateFeature" ]
-        },
         "xkb": {
             "label": "XCB XKB",
             "emitIf": "features.xcb",
-            "condition": "!features.system-xcb || libs.xcb_xkb",
+            "condition": "(!features.system-xcb || libs.xcb_xkb) && libs.xkbcommon_x11",
             "output": [ "privateFeature" ]
         },
         "xcb-xlib": {
             "label": "XCB Xlib",
-            "emitIf": "features.xcb",
             "condition": "features.xlib && libs.xcb_xlib",
             "output": [ "privateFeature" ]
         },
@@ -1367,23 +1565,15 @@
             "condition": "!features.system-xcb || libs.xcb_xinput",
             "output": [ "privateFeature" ]
         },
-        "xkbcommon-evdev": {
-            "label": "xkbcommon-evdev",
+        "xkbcommon": {
+            "label": "xkbcommon",
             "condition": "libs.xkbcommon",
-            "output": [ "privateFeature" ]
-        },
-        "xkbcommon-system": {
-            "label": "Using system-provided xkbcommon",
-            "emitIf": "features.xcb",
-            "enable": "input.xkbcommon == 'system'",
-            "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
-            "condition": "libs.xkbcommon_x11",
             "output": [ "privateFeature" ]
         },
         "xlib": {
             "label": "XLib",
             "autoDetect": "!config.darwin || features.xcb",
-            "condition": "tests.xlib",
+            "condition": "libs.xlib",
             "output": [ "privateFeature" ]
         },
         "texthtmlparser": {
@@ -1576,7 +1766,7 @@
         },
         "multiprocess": {
             "label": "Multi process",
-            "description": "Provides support for detecting the desktop environment, launching external processes and opening URLs.",
+            "purpose": "Provides support for detecting the desktop environment, launching external processes and opening URLs.",
             "section": "Utilities",
             "condition": "!config.integrity",
             "output": [ "privateFeature" ]
@@ -1586,6 +1776,12 @@
             "purpose": "Supports displaying \"What's this\" help.",
             "section": "Widget Support",
             "output": [ "publicFeature", "feature" ]
+        },
+        "raster-64bit": {
+            "label": "QPainter - 64 bit raster",
+            "purpose": "Internal painting support for 64 bit (16 bpc) rasterization.",
+            "section": "Painting",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -1593,7 +1789,7 @@
         {
             "type": "error",
             "condition": "input.xcb != '' && input.xcb != 'no' && input.xkbcommon == 'no'",
-            "message": "XCB plugin requires libxkbcommon. See -qt-xkbcommon-x11 and -system-xkbcommon-x11."
+            "message": "XCB plugin requires xkbcommon, but -no-xkbcommon was provided."
         }
     ],
 
@@ -1615,8 +1811,8 @@
         },
         {
             "type": "warning",
-            "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
-            "message": "No QPA platform plugin enabled! This will produce a Qt that cannot run GUI applications.  The dependencies needed for xcb to build are listed in src/plugins/platforms/xcb/README"
+            "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb",
+            "message": "No QPA platform plugin enabled! This will produce a Qt that cannot run GUI applications.  See \"Platform backends\" in the output of --help."
         },
         {
             "type": "warning",
@@ -1695,7 +1891,15 @@
                 "integrityhid",
                 "mtdev",
                 "tslib",
-                "xkbcommon-evdev"
+                "xkbcommon",
+                {
+                    "section": "X11 specific",
+                    "entries": [
+                        "xlib",
+                        "xcb-xlib",
+                        "egl_x11"
+                    ]
+                }
             ]
         },
         {
@@ -1706,10 +1910,10 @@
                     "section": "EGLFS details",
                     "condition": "features.eglfs",
                     "entries": [
-                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "egl_x11"
+                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "eglfs_x11"
                     ]
                 },
-                "linuxfb", "vnc", "mirclient",
+                "linuxfb", "vnc",
                 {
                     "type": "feature",
                     "condition": "config.integrity",
@@ -1723,10 +1927,18 @@
                     ]
                 },
                 {
-                    "section": "X11",
+                    "section": "XCB",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xinput", "xcb-xlib", "xkbcommon-system", "xcb-native-painting"
+                        "system-xcb", "xkb", "xcb-xinput", "xcb-native-painting",
+                        {
+                            "section": "GL integrations",
+                            "entries": [
+                                "xcb-glx-plugin",
+                                "xcb-glx",
+                                "xcb-egl-plugin"
+                            ]
+                        }
                     ]
                 },
                 {

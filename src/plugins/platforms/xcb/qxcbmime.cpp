@@ -168,7 +168,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     if (!encoding.isEmpty()
         && atomName == format + QLatin1String(";charset=") + QLatin1String(encoding)) {
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         if (requestedType == QVariant::String) {
             QTextCodec *codec = QTextCodec::codecForName(encoding);
             if (codec)

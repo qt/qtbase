@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "clipwindow.h"
 
@@ -67,10 +67,11 @@ ClipWindow::ClipWindow(QWidget *parent)
     previousItems = new QListWidget(centralWidget);
 
 //! [0]
-    connect(clipboard, SIGNAL(dataChanged()), this, SLOT(updateClipboard()));
+    connect(clipboard, &QClipboard::dataChanged,
+            this, &ClipWindow::updateClipboard);
 //! [0]
-    connect(mimeTypeCombo, SIGNAL(activated(QString)),
-            this, SLOT(updateData(QString)));
+    connect(mimeTypeCombo, QOverload<QString>::of(&QComboBox::activated),
+            this, &ClipWindow::updateData);
 
     QVBoxLayout *currentLayout = new QVBoxLayout(currentItem);
     currentLayout->addWidget(mimeTypeLabel);

@@ -92,7 +92,7 @@ public:
     QJsonValue(const QJsonValue &other);
     QJsonValue &operator =(const QJsonValue &other);
 
-    QJsonValue(QJsonValue &&other) Q_DECL_NOTHROW
+    QJsonValue(QJsonValue &&other) noexcept
         : ui(other.ui),
           d(other.d),
           t(other.t)
@@ -102,13 +102,13 @@ public:
         other.t = Null;
     }
 
-    QJsonValue &operator =(QJsonValue &&other) Q_DECL_NOTHROW
+    QJsonValue &operator =(QJsonValue &&other) noexcept
     {
         swap(other);
         return *this;
     }
 
-    void swap(QJsonValue &other) Q_DECL_NOTHROW
+    void swap(QJsonValue &other) noexcept
     {
         qSwap(ui, other.ui);
         qSwap(d, other.d);
@@ -219,7 +219,6 @@ private:
     uint index : 31;
 };
 
-#ifndef Q_QDOC
 // ### Qt 6: Get rid of these fake pointer classes
 class QJsonValuePtr
 {
@@ -244,7 +243,6 @@ public:
     QJsonValueRef& operator*() { return valueRef; }
     QJsonValueRef* operator->() { return &valueRef; }
 };
-#endif
 
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonValue)
 

@@ -291,10 +291,10 @@ void tst_QAtomicIntegerXX::copy()
     QCOMPARE(copy2.load(), atomic.load());
 
     // move
-    QAtomicInteger<T> copy3(qMove(copy));
+    QAtomicInteger<T> copy3(std::move(copy));
     QCOMPARE(copy3.load(), atomic.load());
 
-    QAtomicInteger<T> copy4 = qMove(copy2);
+    QAtomicInteger<T> copy4 = std::move(copy2);
     QCOMPARE(copy4.load(), atomic.load());
 }
 
@@ -317,11 +317,11 @@ void tst_QAtomicIntegerXX::assign()
 
     // move
     QAtomicInteger<T> copy3;
-    copy3 = qMove(copy);
+    copy3 = std::move(copy);
     QCOMPARE(copy3.load(), atomic.load());
 
     QAtomicInteger<T> copy4;
-    copy4 = qMove(copy2);
+    copy4 = std::move(copy2);
     QCOMPARE(copy4.load(), atomic.load());
 }
 

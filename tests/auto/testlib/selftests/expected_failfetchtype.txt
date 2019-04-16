@@ -1,0 +1,8 @@
+********* Start testing of tst_FailFetchType *********
+Config: Using QtTest library
+PASS   : tst_FailFetchType::initTestCase()
+QFATAL : tst_FailFetchType::fetch(bool) Requested type 'QString' does not match available type 'bool'.
+FAIL!  : tst_FailFetchType::fetch(bool) Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_FailFetchType *********

@@ -77,7 +77,7 @@ private:
 class QGLPixelBufferPrivate {
     Q_DECLARE_PUBLIC(QGLPixelBuffer)
 public:
-    QGLPixelBufferPrivate(QGLPixelBuffer *q) : q_ptr(q), invalid(true), qctx(0), widget(0), fbo(0), blit_fbo(0), pbuf(0), ctx(0)
+    QGLPixelBufferPrivate(QGLPixelBuffer *q) : q_ptr(q), invalid(true), qctx(nullptr), widget(nullptr), fbo(nullptr), blit_fbo(nullptr), pbuf(nullptr), ctx(nullptr)
     {
     }
     bool init(const QSize &size, const QGLFormat &f, QGLWidget *shareWidget);

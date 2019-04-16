@@ -52,7 +52,6 @@
 #define CHARACTERWIDGET_H
 
 #include <QFont>
-#include <QPoint>
 #include <QSize>
 #include <QString>
 #include <QWidget>
@@ -68,7 +67,7 @@ class CharacterWidget : public QWidget
     Q_OBJECT
 
 public:
-    CharacterWidget(QWidget *parent = 0);
+    CharacterWidget(QWidget *parent = nullptr);
     QSize sizeHint() const override;
 
 public slots:

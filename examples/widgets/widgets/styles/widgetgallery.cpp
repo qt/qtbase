@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include "norwegianwoodstyle.h"
 #include "widgetgallery.h"
+#include "norwegianwoodstyle.h"
+
+#include <QtWidgets>
 
 //! [0]
 WidgetGallery::WidgetGallery(QWidget *parent)
@@ -79,19 +79,19 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [0]
 
 //! [1]
-    connect(styleComboBox, SIGNAL(activated(QString)),
+    connect(styleComboBox, &QComboBox::textActivated,
 //! [1] //! [2]
-            this, SLOT(changeStyle(QString)));
-    connect(useStylePaletteCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(changePalette()));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            topLeftGroupBox, SLOT(setDisabled(bool)));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            topRightGroupBox, SLOT(setDisabled(bool)));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            bottomLeftTabWidget, SLOT(setDisabled(bool)));
-    connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
-            bottomRightGroupBox, SLOT(setDisabled(bool)));
+            this, &WidgetGallery::changeStyle);
+    connect(useStylePaletteCheckBox, &QCheckBox::toggled,
+            this, &WidgetGallery::changePalette);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            topLeftGroupBox, &QGroupBox::setDisabled);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            topRightGroupBox, &QGroupBox::setDisabled);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            bottomLeftTabWidget, &QGroupBox::setDisabled);
+    connect(disableWidgetsCheckBox, &QCheckBox::toggled,
+            bottomRightGroupBox, &QGroupBox::setDisabled);
 //! [2]
 
 //! [3]
@@ -212,7 +212,7 @@ void WidgetGallery::createBottomLeftTabWidget()
     tableWidget = new QTableWidget(10, 10);
 
     QHBoxLayout *tab1hbox = new QHBoxLayout;
-    tab1hbox->setMargin(5);
+    tab1hbox->setContentsMargins(5,5, 5, 5);
     tab1hbox->addWidget(tableWidget);
     tab1->setLayout(tab1hbox);
 
@@ -227,7 +227,7 @@ void WidgetGallery::createBottomLeftTabWidget()
                               "How I wonder what you are!\n"));
 
     QHBoxLayout *tab2hbox = new QHBoxLayout;
-    tab2hbox->setMargin(5);
+    tab2hbox->setContentsMargins(5, 5, 5, 5);
     tab2hbox->addWidget(textEdit);
     tab2->setLayout(tab2hbox);
 
@@ -279,7 +279,7 @@ void WidgetGallery::createProgressBar()
     progressBar->setValue(0);
 
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(advanceProgressBar()));
+    connect(timer, &QTimer::timeout, this, &WidgetGallery::advanceProgressBar);
     timer->start(1000);
 }
 //! [13]

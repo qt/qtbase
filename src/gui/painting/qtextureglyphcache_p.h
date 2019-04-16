@@ -75,7 +75,7 @@ class Q_GUI_EXPORT QTextureGlyphCache : public QFontEngineGlyphCache
 {
 public:
     QTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
-        : QFontEngineGlyphCache(format, matrix), m_current_fontengine(0),
+        : QFontEngineGlyphCache(format, matrix), m_current_fontengine(nullptr),
                                                m_w(0), m_h(0), m_cx(0), m_cy(0), m_currentRowHeight(0)
         { }
 

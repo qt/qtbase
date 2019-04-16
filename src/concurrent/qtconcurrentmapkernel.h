@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtConcurrent module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -74,7 +74,7 @@ public:
         Iterator it = sequenceBeginIterator;
         std::advance(it, beginIndex);
         for (int i = beginIndex; i < endIndex; ++i) {
-            runIteration(it, i, 0);
+            runIteration(it, i, nullptr);
             std::advance(it, 1);
         }
 

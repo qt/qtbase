@@ -66,9 +66,10 @@ void tst_globaldata::initTestCase()
 
 void tst_globaldata::initTestCase_data()
 {
-    QTest::addColumn<bool>("booli");
-    QTest::newRow("1") << false;
-    QTest::newRow("2") << true;
+    // QFETCH_GLOBAL shall iterate these, for every test:
+    QTest::addColumn<bool>("global");
+    QTest::newRow("global=false") << false;
+    QTest::newRow("global=true") << true;
 }
 
 void tst_globaldata::cleanupTestCase()
@@ -94,41 +95,42 @@ void tst_globaldata::cleanup()
 
 void tst_globaldata::testGlobal_data()
 {
-    QTest::addColumn<bool>("booll");
-    QTest::newRow("local 1") << false;
-    QTest::newRow("local 2") << true;
+    QTest::addColumn<bool>("local");
+    QTest::newRow("local=false") << false;
+    QTest::newRow("local=true") << true;
 }
 
 void tst_globaldata::testGlobal()
 {
-    QFETCH_GLOBAL(bool, booli);
-    qDebug() << "global:" << booli;
-    QFETCH(bool, booll);
-    qDebug() << "local:" << booll;
+    QFETCH_GLOBAL(bool, global);
+    qDebug() << "global:" << global;
+    QFETCH(bool, local);
+    qDebug() << "local:" << local;
 }
 
 void tst_globaldata::skip_data()
 {
-    QTest::addColumn<bool>("booll");
-    QTest::newRow("local 1") << false;
-    QTest::newRow("local 2") << true;
-
+    testGlobal_data();
     QSKIP("skipping");
 }
 
 void tst_globaldata::skip()
 {
-    qDebug() << "this line should never be reached";
+    // A skip in _data() causes the whole test to be skipped, for all global rows.
+    QVERIFY(!"This line should never be reached.");
 }
 
 void tst_globaldata::skipSingle()
 {
-    QFETCH_GLOBAL(bool, booli);
-    QFETCH(bool, booll);
+    QFETCH_GLOBAL(bool, global);
+    QFETCH(bool, local);
 
-    if (booli && !booll)
-        QSKIP("skipping");
-    qDebug() << "global:" << booli << "local:" << booll;
+    // A skip in the last run of one global row used to suppress the test in the
+    // next global row (where a skip in an earlier run of the first row did not).
+    if (global ^ local)
+        QSKIP("Skipping");
+    qDebug() << "global:" << global << "local:" << local;
+    QCOMPARE(global, local);
 }
 
 void tst_globaldata::skipLocal()

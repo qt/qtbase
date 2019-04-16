@@ -62,12 +62,7 @@
 #endif
 
 #ifdef QT_BUILD_INTERNAL
-
-QT_BEGIN_NAMESPACE
-extern Q_AUTOTEST_EXPORT QString
-    qt_normalizePathSegments(const QString &path, bool allowUncPaths, bool *ok = nullptr);
-QT_END_NAMESPACE
-
+#include "private/qdir_p.h"
 #endif
 
 static QByteArray msgDoesNotExist(const QString &name)
@@ -354,21 +349,21 @@ void tst_QDir::mkdirRmdir_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("recurse");
 
-    QStringList dirs;
-    dirs << "testdir/one"
-         << "testdir/two/three/four"
-         << "testdir/../testdir/three";
-    QTest::newRow("plain") << QDir::currentPath() + "/" + dirs.at(0) << false;
-    QTest::newRow("recursive") << QDir::currentPath() + "/" + dirs.at(1) << true;
-    QTest::newRow("with-..") << QDir::currentPath() + "/" + dirs.at(2) << false;
+    const struct {
+        const char *name; // shall have a prefix added
+        const char *path; // relative
+        bool recurse;
+    } cases[] = {
+        { "plain", "testdir/one", false },
+        { "recursive", "testdir/two/three/four", true },
+        { "with-..", "testdir/../testdir/three", false },
+    };
 
-    QTest::newRow("relative-plain") << dirs.at(0) << false;
-    QTest::newRow("relative-recursive") << dirs.at(1) << true;
-    QTest::newRow("relative-with-..") << dirs.at(2) << false;
-
-    // Ensure that none of these directories already exist
-    for (int i = 0; i < dirs.count(); ++i)
-        QVERIFY(!QFile::exists(dirs.at(i)));
+    for (const auto &it : cases) {
+        QVERIFY(!QFile::exists(it.path));
+        QTest::addRow("absolute-%s", it.name) << (QDir::currentPath() + "/") + it.path << it.recurse;
+        QTest::addRow("relative-%s", it.name) << QString::fromLatin1(it.path) << it.recurse;
+    }
 }
 
 void tst_QDir::mkdirRmdir()
@@ -1376,7 +1371,7 @@ void tst_QDir::normalizePathSegments()
     QFETCH(QString, path);
     QFETCH(UncHandling, uncHandling);
     QFETCH(QString, expected);
-    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc);
+    QString cleaned = qt_normalizePathSegments(path, uncHandling == HandleUnc ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization);
     QCOMPARE(cleaned, expected);
     if (path == expected)
         QVERIFY2(path.isSharedWith(cleaned), "Strings are same but data is not shared");
@@ -1528,6 +1523,11 @@ void tst_QDir::filePath_data()
     QTest::newRow("rel-rel") << "relative" << "path" << "relative/path";
     QTest::newRow("empty-empty") << "" << "" << ".";
     QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
+#ifdef Q_OS_IOS
+    QTest::newRow("assets-rel") << "assets-library:/" << "foo/bar.baz" << "assets-library:/foo/bar.baz";
+    QTest::newRow("assets-abs") << "assets-library:/" << "/foo/bar.baz" << "/foo/bar.baz";
+    QTest::newRow("abs-assets") << "/some/path" << "assets-library:/foo/bar.baz" << "assets-library:/foo/bar.baz";
+#endif
 #ifdef Q_OS_WIN
     QTest::newRow("abs-LTUNC") << "Q:/path" << "\\/leaning\\tooth/pick" << "\\/leaning\\tooth/pick";
     QTest::newRow("LTUNC-slash") << "\\/leaning\\tooth/pick" << "/path" << "//leaning/tooth/path";
@@ -2045,7 +2045,7 @@ void tst_QDir::detachingOperations()
         QCOMPARE(dir2.nameFilters(), nameFilters);
         QCOMPARE(dir2.sorting(), sorting);
 
-        dir2 = path1;
+        dir2.setPath(path1);
         QCOMPARE(dir2.path(), path1);
         QCOMPARE(dir2.filter(), filter);
         QCOMPARE(dir2.nameFilters(), nameFilters);

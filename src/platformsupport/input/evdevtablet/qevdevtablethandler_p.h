@@ -64,7 +64,7 @@ class QEvdevTabletData;
 class QEvdevTabletHandler : public QObject
 {
 public:
-    explicit QEvdevTabletHandler(const QString &device, const QString &spec = QString(), QObject *parent = 0);
+    explicit QEvdevTabletHandler(const QString &device, const QString &spec = QString(), QObject *parent = nullptr);
     ~QEvdevTabletHandler();
 
     qint64 deviceId() const;
@@ -83,7 +83,7 @@ private:
 class QEvdevTabletHandlerThread : public QDaemonThread
 {
 public:
-    explicit QEvdevTabletHandlerThread(const QString &device, const QString &spec, QObject *parent = 0);
+    explicit QEvdevTabletHandlerThread(const QString &device, const QString &spec, QObject *parent = nullptr);
     ~QEvdevTabletHandlerThread();
     void run() override;
     QEvdevTabletHandler *handler() { return m_handler; }

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -72,7 +72,7 @@ int Q_GUI_EXPORT QT_DISTANCEFIELD_HIGHGLYPHCOUNT();
 class Q_GUI_EXPORT QDistanceFieldData : public QSharedData
 {
 public:
-    QDistanceFieldData() : glyph(0), width(0), height(0), nbytes(0), data(0) {}
+    QDistanceFieldData() : glyph(0), width(0), height(0), nbytes(0), data(nullptr) {}
     QDistanceFieldData(const QDistanceFieldData &other);
     ~QDistanceFieldData();
 

@@ -121,6 +121,9 @@
 #ifdef QT_SECURETRANSPORT
 #include "qsslsocket_mac_p.h"
 #endif
+#if QT_CONFIG(schannel)
+#include "qsslsocket_schannel_p.h"
+#endif
 
 #include "qssl_p.h"
 #include "qsslcertificate.h"

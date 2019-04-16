@@ -77,13 +77,13 @@ public:
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // ### Qt 6: remove; the compiler-generated ones are fine!
-    QTransform &operator=(QTransform &&other) Q_DECL_NOTHROW // = default
+    QTransform &operator=(QTransform &&other) noexcept // = default
     { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); return *this; }
-    QTransform &operator=(const QTransform &) Q_DECL_NOTHROW; // = default
-    QTransform(QTransform &&other) Q_DECL_NOTHROW // = default
+    QTransform &operator=(const QTransform &) noexcept; // = default
+    QTransform(QTransform &&other) noexcept // = default
         : affine(Qt::Uninitialized)
     { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); }
-    QTransform(const QTransform &other) Q_DECL_NOTHROW // = default
+    QTransform(const QTransform &other) noexcept // = default
         : affine(Qt::Uninitialized)
     { memcpy(static_cast<void *>(this), static_cast<const void *>(&other), sizeof(QTransform)); }
 #endif
@@ -98,7 +98,10 @@ public:
     TransformationType type() const;
 
     inline qreal determinant() const;
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use determinant() instead")
     qreal det() const;
+#endif
 
     qreal m11() const;
     qreal m12() const;
@@ -199,7 +202,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
 
-Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QTransform &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QTransform &key, uint seed = 0) noexcept;
 
 /******* inlines *****/
 inline QTransform::TransformationType QTransform::inline_type() const
@@ -242,10 +245,12 @@ inline qreal QTransform::determinant() const
     return affine._m11*(m_33*affine._m22-affine._dy*m_23) -
         affine._m21*(m_33*affine._m12-affine._dy*m_13)+affine._dx*(m_23*affine._m12-affine._m22*m_13);
 }
+#if QT_DEPRECATED_SINCE(5, 13)
 inline qreal QTransform::det() const
 {
     return determinant();
 }
+#endif
 inline qreal QTransform::m11() const
 {
     return affine._m11;

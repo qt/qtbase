@@ -272,10 +272,12 @@ Q_SIGNALS:
 protected:
     QAbstractItemView(QAbstractItemViewPrivate &, QWidget *parent = nullptr);
 
-    void setHorizontalStepsPerItem(int steps);
-    int horizontalStepsPerItem() const;
-    void setVerticalStepsPerItem(int steps);
-    int verticalStepsPerItem() const;
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED void setHorizontalStepsPerItem(int steps);
+    QT_DEPRECATED int horizontalStepsPerItem() const;
+    QT_DEPRECATED void setVerticalStepsPerItem(int steps);
+    QT_DEPRECATED int verticalStepsPerItem() const;
+#endif
 
     enum CursorAction { MoveUp, MoveDown, MoveLeft, MoveRight,
                         MoveHome, MoveEnd, MovePageUp, MovePageDown,

@@ -59,9 +59,8 @@
 class StarEditor : public QWidget
 {
     Q_OBJECT
-
 public:
-    StarEditor(QWidget *parent = 0);
+    StarEditor(QWidget *parent = nullptr);
 
     QSize sizeHint() const override;
     void setStarRating(const StarRating &starRating) {
@@ -78,7 +77,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
-    int starAtPosition(int x);
+    int starAtPosition(int x) const;
 
     StarRating myStarRating;
 };

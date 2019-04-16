@@ -198,6 +198,7 @@ private:
     void command_drawRoundRect(QRegularExpressionMatch re);
     void command_drawText(QRegularExpressionMatch re);
     void command_drawStaticText(QRegularExpressionMatch re);
+    void command_drawTextDocument(QRegularExpressionMatch re);
     void command_drawTiledPixmap(QRegularExpressionMatch re);
     void command_path_addEllipse(QRegularExpressionMatch re);
     void command_path_addPolygon(QRegularExpressionMatch re);

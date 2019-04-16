@@ -57,7 +57,7 @@
 
 #include "private/qabstractanimation_p.h"
 
-#ifndef QT_NO_ANIMATION
+QT_REQUIRE_CONFIG(animation);
 
 QT_BEGIN_NAMESPACE
 
@@ -76,7 +76,7 @@ public:
     void disconnectUncontrolledAnimation(QAbstractAnimation *anim)
     {
         //0 for the signal here because we might be called from the animation destructor
-        QObject::disconnect(anim, 0, q_func(), SLOT(_q_uncontrolledAnimationFinished()));
+        QObject::disconnect(anim, nullptr, q_func(), SLOT(_q_uncontrolledAnimationFinished()));
     }
 
     void connectUncontrolledAnimation(QAbstractAnimation *anim)
@@ -88,7 +88,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION
 
 #endif //QANIMATIONGROUP_P_H

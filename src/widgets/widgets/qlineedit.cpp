@@ -315,7 +315,7 @@ QString QLineEdit::text() const
 void QLineEdit::setText(const QString& text)
 {
     Q_D(QLineEdit);
-    d->control->setText(text);
+    d->setText(text);
 }
 
 /*!
@@ -488,7 +488,10 @@ void QLineEdit::setClearButtonEnabled(bool enable)
         QAction *clearAction = new QAction(d->clearButtonIcon(), QString(), this);
         clearAction->setEnabled(!isReadOnly());
         clearAction->setObjectName(QLatin1String(clearButtonActionNameC));
-        d->addAction(clearAction, 0, QLineEdit::TrailingPosition, QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText);
+
+        int flags = QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText;
+        auto widgetAction = d->addAction(clearAction, nullptr, QLineEdit::TrailingPosition, flags);
+        widgetAction->setVisible(!text().isEmpty());
     } else {
         QAction *clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
         Q_ASSERT(clearAction);
@@ -583,7 +586,7 @@ void QLineEdit::setEchoMode(EchoMode mode)
 
 #ifndef QT_NO_VALIDATOR
 /*!
-    Returns a pointer to the current input validator, or 0 if no
+    Returns a pointer to the current input validator, or \nullptr if no
     validator has been set.
 
     \sa setValidator()
@@ -1480,8 +1483,11 @@ bool QLineEdit::event(QEvent * e)
         } else if (e->type() == QEvent::LeaveEditFocus) {
             d->setCursorVisible(false);
             d->control->setCursorBlinkEnabled(false);
-            if (d->control->hasAcceptableInput() || d->control->fixup())
+            if (d->edited && (d->control->hasAcceptableInput()
+                              || d->control->fixup())) {
                 emit editingFinished();
+                d->edited = false;
+            }
         }
     }
 #endif
@@ -1678,6 +1684,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 
 /*!
     \fn void QLineEdit::inputRejected()
+    \since 5.12
 
     This signal is emitted when the user presses a key that is not
     considered to be acceptable input. For example, if a key press
@@ -1887,7 +1894,6 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
 
 /*!\reimp
 */
-
 void QLineEdit::focusOutEvent(QFocusEvent *e)
 {
     Q_D(QLineEdit);
@@ -1910,8 +1916,10 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
 #endif
     if (reason != Qt::PopupFocusReason
         || !(QApplication::activePopupWidget() && QApplication::activePopupWidget()->parentWidget() == this)) {
-            if (hasAcceptableInput() || d->control->fixup())
+            if (d->edited && (hasAcceptableInput() || d->control->fixup())) {
                 emit editingFinished();
+                d->edited = false;
+            }
     }
 #ifdef QT_KEYPAD_NAVIGATION
     d->control->setCancelText(QString());

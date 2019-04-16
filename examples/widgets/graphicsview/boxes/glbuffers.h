@@ -129,7 +129,7 @@ class GLTextureCube : public GLTexture
 {
 public:
     GLTextureCube(int size);
-    explicit GLTextureCube(const QStringList& fileNames, int size = 0);
+    explicit GLTextureCube(const QStringList &fileNames, int size = 0);
     void load(int size, int face, QRgb *data);
     void bind() override;
     void unbind() override;

@@ -61,7 +61,7 @@ class QUnixEventDispatcherQPA : public QEventDispatcherUNIX
     Q_OBJECT
 
 public:
-    explicit QUnixEventDispatcherQPA(QObject *parent = 0);
+    explicit QUnixEventDispatcherQPA(QObject *parent = nullptr);
     ~QUnixEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);

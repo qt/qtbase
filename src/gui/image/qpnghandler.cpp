@@ -42,14 +42,18 @@
 
 #ifndef QT_NO_IMAGEFORMAT_PNG
 #include <qcoreapplication.h>
+#include <qdebug.h>
 #include <qiodevice.h>
 #include <qimage.h>
 #include <qlist.h>
-#include <qtextcodec.h>
 #include <qvariant.h>
 #include <qvector.h>
 
 #include <private/qimage_p.h> // for qt_getImageText
+
+#include <qcolorspace.h>
+#include <private/qcolorspace_p.h>
+#include <private/qicc_p.h>
 
 #include <png.h>
 #include <pngconf.h>
@@ -97,17 +101,27 @@ public:
         ReadingEnd,
         Error
     };
+    // Defines the order of how the various ways of setting colorspace overrides eachother:
+    enum ColorSpaceState {
+        Undefined = 0,
+        GammaChrm = 1, // gAMA+cHRM chunks
+        Srgb = 2,      // sRGB chunk
+        Icc = 3        // iCCP chunk
+    };
 
     QPngHandlerPrivate(QPngHandler *qq)
-        : gamma(0.0), fileGamma(0.0), quality(2), png_ptr(0), info_ptr(0), end_info(0), state(Ready), q(qq)
+        : gamma(0.0), fileGamma(0.0), quality(50), compression(50), colorSpaceState(Undefined), png_ptr(0), info_ptr(0), end_info(0), state(Ready), q(qq)
     { }
 
     float gamma;
     float fileGamma;
-    int quality;
+    int quality; // quality is used for backward compatibility, maps to compression
+    int compression;
     QString description;
     QSize scaledSize;
     QStringList readTexts;
+    QColorSpace colorSpace;
+    ColorSpaceState colorSpaceState;
 
     png_struct *png_ptr;
     png_info *info_ptr;
@@ -161,11 +175,11 @@ public:
     void setGamma(float);
 
     bool writeImage(const QImage& img, int x, int y);
-    bool writeImage(const QImage& img, volatile int quality, const QString &description, int x, int y);
+    bool writeImage(const QImage& img, volatile int compression_in, const QString &description, int x, int y);
     bool writeImage(const QImage& img)
         { return writeImage(img, 0, 0); }
-    bool writeImage(const QImage& img, int quality, const QString &description)
-        { return writeImage(img, quality, description, 0, 0); }
+    bool writeImage(const QImage& img, int compression, const QString &description)
+        { return writeImage(img, compression, description, 0, 0); }
 
     QIODevice* device() { return dev; }
 
@@ -226,21 +240,18 @@ void qpiw_flush_fn(png_structp /* png_ptr */)
 }
 
 static
-void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead, float screen_gamma=0.0, float file_gamma=0.0)
+void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scaledSize, bool *doScaledRead)
 {
-    if (screen_gamma != 0.0 && file_gamma != 0.0)
-        png_set_gamma(png_ptr, 1.0f / screen_gamma, file_gamma);
-
-    png_uint_32 width;
-    png_uint_32 height;
-    int bit_depth;
-    int color_type;
+    png_uint_32 width = 0;
+    png_uint_32 height = 0;
+    int bit_depth = 0;
+    int color_type = 0;
     png_bytep trans_alpha = 0;
     png_color_16p trans_color_p = 0;
     int num_trans;
     png_colorp palette = 0;
     int num_palette;
-    int interlace_method;
+    int interlace_method = PNG_INTERLACE_LAST;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, 0, 0);
     png_set_interlace_handling(png_ptr);
 
@@ -266,6 +277,18 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
                 else if (g == 1)
                     image.setColor(0, qRgba(255, 255, 255, 0));
             }
+        } else if (bit_depth == 16
+                   && png_get_channels(png_ptr, info_ptr) == 1
+                   && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+            if (image.size() != QSize(width, height) || image.format() != QImage::Format_Grayscale16) {
+                image = QImage(width, height, QImage::Format_Grayscale16);
+                if (image.isNull())
+                    return;
+            }
+
+            png_read_update_info(png_ptr, info_ptr);
+            if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+                png_set_swap(png_ptr);
         } else if (bit_depth == 16) {
             bool hasMask = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
             if (!hasMask)
@@ -573,10 +596,45 @@ bool QPngHandlerPrivate::readPngHeader()
 
     readPngTexts(info_ptr);
 
+#ifdef PNG_iCCP_SUPPORTED
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_iCCP)) {
+        png_charp name = nullptr;
+        int compressionType = 0;
+#if (PNG_LIBPNG_VER < 10500)
+        png_charp profileData = nullptr;
+#else
+        png_bytep profileData = nullptr;
+#endif
+        png_uint_32 profLen;
+        png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
+        if (!QIcc::fromIccProfile(QByteArray::fromRawData((const char *)profileData, profLen), &colorSpace)) {
+            qWarning() << "QPngHandler: Failed to parse ICC profile";
+        } else {
+            colorSpaceState = Icc;
+        }
+    }
+#endif
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sRGB)) {
+        int rendering_intent = -1;
+        png_get_sRGB(png_ptr, info_ptr, &rendering_intent);
+        // We don't actually care about the rendering_intent, just that it is valid
+        if (rendering_intent >= 0 && rendering_intent <= 3 && colorSpaceState <= Srgb) {
+            colorSpace = QColorSpace::SRgb;
+            colorSpaceState = Srgb;
+        }
+    }
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA)) {
         double file_gamma = 0.0;
         png_get_gAMA(png_ptr, info_ptr, &file_gamma);
         fileGamma = file_gamma;
+        if (fileGamma > 0.0f && colorSpaceState <= GammaChrm) {
+            QColorSpacePrivate *csPrivate = colorSpace.d_func();
+            csPrivate->gamut = QColorSpace::Gamut::SRgb;
+            csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
+            csPrivate->gamma = fileGamma;
+            csPrivate->initialize();
+            colorSpaceState = GammaChrm;
+        }
     }
 
     state = ReadHeader;
@@ -601,8 +659,19 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         return false;
     }
 
+    if (gamma != 0.0 && fileGamma != 0.0) {
+        // This configuration forces gamma correction and
+        // thus changes the output colorspace
+        png_set_gamma(png_ptr, 1.0f / gamma, fileGamma);
+        QColorSpacePrivate *csPrivate = colorSpace.d_func();
+        csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
+        csPrivate->gamma = gamma;
+        csPrivate->initialize();
+        colorSpaceState = GammaChrm;
+    }
+
     bool doScaledRead = false;
-    setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead, gamma, fileGamma);
+    setup_qt(*outImage, png_ptr, info_ptr, scaledSize, &doScaledRead);
 
     if (outImage->isNull()) {
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
@@ -671,14 +740,17 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
     if (scaledSize.isValid() && outImage->size() != scaledSize)
         *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
+    if (colorSpaceState > Undefined && colorSpace.isValid())
+        outImage->setColorSpace(colorSpace);
+
     return true;
 }
 
 QImage::Format QPngHandlerPrivate::readImageFormat()
 {
         QImage::Format format = QImage::Format_Invalid;
-        png_uint_32 width, height;
-        int bit_depth, color_type;
+        png_uint_32 width = 0, height = 0;
+        int bit_depth = 0, color_type = 0;
         png_colorp palette;
         int num_palette;
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
@@ -687,7 +759,7 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
             if (bit_depth == 1 && png_get_channels(png_ptr, info_ptr) == 1) {
                 format = QImage::Format_Mono;
             } else if (bit_depth == 16) {
-                format = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ? QImage::Format_RGBA64 : QImage::Format_RGBX64;
+                format = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ? QImage::Format_RGBA64 : QImage::Format_Grayscale16;
             } else if (bit_depth == 8 && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
                 format = QImage::Format_Grayscale8;
             } else {
@@ -814,7 +886,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, int off_x, int off_y)
     return writeImage(image, -1, QString(), off_x, off_y);
 }
 
-bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, const QString &description,
+bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_in, const QString &description,
                                  int off_x_in, int off_y_in)
 {
     QPoint offset = image.offset();
@@ -842,13 +914,13 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
         return false;
     }
 
-    int quality = quality_in;
-    if (quality >= 0) {
-        if (quality > 9) {
-            qWarning("PNG: Quality %d out of range", quality);
-            quality = 9;
+    int compression = compression_in;
+    if (compression >= 0) {
+        if (compression > 9) {
+            qWarning("PNG: Compression %d out of range", compression);
+            compression = 9;
         }
-        png_set_compression_level(png_ptr, quality);
+        png_set_compression_level(png_ptr, compression);
     }
 
     png_set_write_fn(png_ptr, (void*)this, qpiw_write_fn, qpiw_flush_fn);
@@ -861,7 +933,8 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
         else
             color_type = PNG_COLOR_TYPE_PALETTE;
     }
-    else if (image.format() == QImage::Format_Grayscale8)
+    else if (image.format() == QImage::Format_Grayscale8
+             || image.format() == QImage::Format_Grayscale16)
         color_type = PNG_COLOR_TYPE_GRAY;
     else if (image.hasAlphaChannel())
         color_type = PNG_COLOR_TYPE_RGB_ALPHA;
@@ -877,6 +950,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
     case QImage::Format_RGBX64:
     case QImage::Format_RGBA64:
     case QImage::Format_RGBA64_Premultiplied:
+    case QImage::Format_Grayscale16:
         bpc = 16;
         break;
     default:
@@ -988,6 +1062,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
         case QImage::Format_RGBX64:
         case QImage::Format_RGBA64:
         case QImage::Format_RGBA64_Premultiplied:
+        case QImage::Format_Grayscale16:
             png_set_swap(png_ptr);
             break;
         default:
@@ -1018,6 +1093,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
     case QImage::Format_MonoLSB:
     case QImage::Format_Indexed8:
     case QImage::Format_Grayscale8:
+    case QImage::Format_Grayscale16:
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
     case QImage::Format_RGB888:
@@ -1067,15 +1143,21 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
 }
 
 static bool write_png_image(const QImage &image, QIODevice *device,
-                            int quality, float gamma, const QString &description)
+                            int compression, int quality, float gamma, const QString &description)
 {
+    // quality is used for backward compatibility, maps to compression
+
     QPNGImageWriter writer(device);
-    if (quality >= 0) {
-        quality = qMin(quality, 100);
-        quality = (100-quality) * 9 / 91; // map [0,100] -> [9,0]
-    }
+    if (compression >= 0)
+        compression = qMin(compression, 100);
+    else if (quality >= 0)
+        compression = 100 - qMin(quality, 100);
+
+    if (compression >= 0)
+        compression = (compression * 9) / 91; // map [0,100] -> [0,9]
+
     writer.setGamma(gamma);
-    return writer.writeImage(image, quality, description);
+    return writer.writeImage(image, compression, description);
 }
 
 QPngHandler::QPngHandler()
@@ -1122,7 +1204,7 @@ bool QPngHandler::read(QImage *image)
 
 bool QPngHandler::write(const QImage &image)
 {
-    return write_png_image(image, device(), d->quality, d->gamma, d->description);
+    return write_png_image(image, device(), d->compression, d->quality, d->gamma, d->description);
 }
 
 bool QPngHandler::supportsOption(ImageOption option) const
@@ -1131,6 +1213,7 @@ bool QPngHandler::supportsOption(ImageOption option) const
         || option == Description
         || option == ImageFormat
         || option == Quality
+        || option == CompressionRatio
         || option == Size
         || option == ScaledSize;
 }
@@ -1146,6 +1229,8 @@ QVariant QPngHandler::option(ImageOption option) const
         return d->gamma == 0.0 ? d->fileGamma : d->gamma;
     else if (option == Quality)
         return d->quality;
+    else if (option == CompressionRatio)
+        return d->compression;
     else if (option == Description)
         return d->description;
     else if (option == Size)
@@ -1164,16 +1249,20 @@ void QPngHandler::setOption(ImageOption option, const QVariant &value)
         d->gamma = value.toFloat();
     else if (option == Quality)
         d->quality = value.toInt();
+    else if (option == CompressionRatio)
+        d->compression = value.toInt();
     else if (option == Description)
         d->description = value.toString();
     else if (option == ScaledSize)
         d->scaledSize = value.toSize();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 QByteArray QPngHandler::name() const
 {
     return "png";
 }
+#endif
 
 QT_END_NAMESPACE
 

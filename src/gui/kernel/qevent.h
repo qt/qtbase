@@ -549,7 +549,7 @@ public:
     };
     class Attribute {
     public:
-        Attribute(AttributeType typ, int s, int l, QVariant val) : type(typ), start(s), length(l), value(qMove(val)) {}
+        Attribute(AttributeType typ, int s, int l, QVariant val) : type(typ), start(s), length(l), value(std::move(val)) {}
         Attribute(AttributeType typ, int s, int l) : type(typ), start(s), length(l), value() {}
 
         AttributeType type;
@@ -811,14 +811,14 @@ class Q_GUI_EXPORT QPointingDeviceUniqueId
     Q_PROPERTY(qint64 numericId READ numericId CONSTANT)
 public:
     Q_ALWAYS_INLINE
-    Q_DECL_CONSTEXPR QPointingDeviceUniqueId() Q_DECL_NOTHROW : m_numericId(-1) {}
+    Q_DECL_CONSTEXPR QPointingDeviceUniqueId() noexcept : m_numericId(-1) {}
     // compiler-generated copy/move ctor/assignment operators are ok!
     // compiler-generated dtor is ok!
 
     static QPointingDeviceUniqueId fromNumericId(qint64 id);
 
-    Q_ALWAYS_INLINE Q_DECL_CONSTEXPR bool isValid() const Q_DECL_NOTHROW { return m_numericId != -1; }
-    qint64 numericId() const Q_DECL_NOTHROW;
+    Q_ALWAYS_INLINE Q_DECL_CONSTEXPR bool isValid() const noexcept { return m_numericId != -1; }
+    qint64 numericId() const noexcept;
 
 private:
     // TODO: for TUIO 2, or any other type of complex token ID, an internal
@@ -829,10 +829,10 @@ private:
 Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
 template <> class QList<QPointingDeviceUniqueId> {}; // to prevent instantiation: use QVector instead
 
-Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL_NOTHROW;
-inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL_NOTHROW
+Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept;
+inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
 { return !operator==(lhs, rhs); }
-Q_GUI_EXPORT uint qHash(QPointingDeviceUniqueId key, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT uint qHash(QPointingDeviceUniqueId key, uint seed = 0) noexcept;
 
 
 
@@ -856,10 +856,10 @@ public:
         explicit TouchPoint(int id = -1);
         TouchPoint(const TouchPoint &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-        TouchPoint(TouchPoint &&other) Q_DECL_NOEXCEPT
+        TouchPoint(TouchPoint &&other) noexcept
             : d(nullptr)
         { qSwap(d, other.d); }
-        TouchPoint &operator=(TouchPoint &&other) Q_DECL_NOEXCEPT
+        TouchPoint &operator=(TouchPoint &&other) noexcept
         { qSwap(d, other.d); return *this; }
 #endif
         ~TouchPoint();
@@ -867,7 +867,7 @@ public:
         TouchPoint &operator=(const TouchPoint &other)
         { if ( d != other.d ) { TouchPoint copy(other); swap(copy); } return *this; }
 
-        void swap(TouchPoint &other) Q_DECL_NOEXCEPT
+        void swap(TouchPoint &other) noexcept
         { qSwap(d, other.d); }
 
         int id() const;

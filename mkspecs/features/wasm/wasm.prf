@@ -2,6 +2,39 @@
 # DESTDIR will be empty if not set in the app .pro file; make sure it has a value
 isEmpty(DESTDIR): DESTDIR = $$OUT_PWD
 
+exists($$QMAKE_QT_CONFIG) {
+    qtConfig(thread) {
+
+        EMCC_THREAD_LFLAGS += -s USE_PTHREADS=1
+        # Hardcode wasm memory size. Emscripten does not currently support memory growth
+        # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
+        # at build time. Further, browsers limit the maximum initial memory size to 1GB.
+        TOTAL_MEMORY = 1GB
+        !isEmpty(QMAKE_WASM_TOTAL_MEMORY) {
+            TOTAL_MEMORY = $$QMAKE_WASM_TOTAL_MEMORY
+        }
+
+        message("Setting TOTAL_MEMORY to" $$TOTAL_MEMORY)
+        EMCC_THREAD_LFLAGS += -s TOTAL_MEMORY=$$TOTAL_MEMORY
+
+        # Create worker threads at startup. This is supposed to be an optimization,
+        # however exceeding the pool size has been obesverved to hang the application.
+        POOL_SIZE = 4
+        !isEmpty(QMAKE_WASM_PTHREAD_POOL_SIZE) {
+            POOL_SIZE = $$QMAKE_WASM_PTHREAD_POOL_SIZE
+        }
+
+        message("Setting PTHREAD_POOL_SIZE to" $$POOL_SIZE)
+        EMCC_THREAD_LFLAGS += -s PTHREAD_POOL_SIZE=$$POOL_SIZE
+    } else {
+        EMCC_THREAD_LFLAGS += -s ALLOW_MEMORY_GROWTH=1
+    }
+    QMAKE_LFLAGS       += $$EMCC_THREAD_LFLAGS
+    QMAKE_LFLAGS_DEBUG += $$EMCC_THREAD_LFLAGS
+    QMAKE_CFLAGS += $$EMCC_THREAD_LFLAGS
+    QMAKE_CXXFLAGS += $$EMCC_THREAD_LFLAGS
+}
+
 # Create js and wasm files for applications
 contains(TEMPLATE, .*app) {
     TARGET_BASE = $${TARGET}
@@ -41,14 +74,14 @@ contains(TEMPLATE, .*app) {
 
     appjs.name = application qtloader.js
     appjs.output = $$DESTDIR/qtloader.js
-    appjs.commands = $$QMAKE_COPY $$WASM_PLUGIN_PATH/qtloader.js $$DESTDIR
+    appjs.commands = $$QMAKE_COPY $$shell_path($$WASM_PLUGIN_PATH/qtloader.js) $$shell_path($$DESTDIR)
     appjs.input = $$WASM_PLUGIN_PATH/qtloader.js
     appjs.depends = $$appjs.input
     QMAKE_EXTRA_COMPILERS += appjs
 
     appsvg.name = application qtlogo.svg
     appsvg.output = $$DESTDIR/qtlogo.svg
-    appsvg.commands = $$QMAKE_COPY $$WASM_PLUGIN_PATH/qtlogo.svg $$DESTDIR
+    appsvg.commands = $$QMAKE_COPY $$shell_path($$WASM_PLUGIN_PATH/qtlogo.svg) $$shell_path($$DESTDIR)
     appsvg.input = $$WASM_PLUGIN_PATH/qtlogo.svg
     appsvg.depends = $$appsvg.input
     QMAKE_EXTRA_COMPILERS += appsvg
@@ -71,6 +104,13 @@ contains(TEMPLATE, .*app) {
             $$QMAKE_LIBS_FREETYPE $$QMAKE_LIBS_LIBPNG
     }
 }
+
+# Pass --source-map-base on the linker line. This informs the
+# browser where to find the source files when debugging.
+WASM_SOURCE_MAP_BASE = http://localhost:8000/
+!isEmpty(QMAKE_WASM_SOURCE_MAP_BASE):\
+    WASM_SOURCE_MAP_BASE = $$QMAKE_WASM_SOURCE_MAP_BASE
+CONFIG(debug): QMAKE_LFLAGS += --source-map-base $$WASM_SOURCE_MAP_BASE
 
 # Creates the stand-alone version of the library from bitcode
 !static:contains(TEMPLATE, .*lib): {

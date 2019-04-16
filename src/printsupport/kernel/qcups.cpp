@@ -44,12 +44,12 @@
 
 QT_BEGIN_NAMESPACE
 
-static QStringList cupsOptionsList(QPrinter *printer) Q_DECL_NOTHROW
+static QStringList cupsOptionsList(QPrinter *printer) noexcept
 {
     return printer->printEngine()->property(PPK_CupsOptions).toStringList();
 }
 
-void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions) Q_DECL_NOTHROW
+void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions) noexcept
 {
     printer->printEngine()->setProperty(PPK_CupsOptions, QVariant(cupsOptions));
 }

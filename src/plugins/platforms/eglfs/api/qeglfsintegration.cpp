@@ -120,16 +120,6 @@ QEglFSIntegration::QEglFSIntegration()
     initResources();
 }
 
-void QEglFSIntegration::addScreen(QPlatformScreen *screen, bool isPrimary)
-{
-    screenAdded(screen, isPrimary);
-}
-
-void QEglFSIntegration::removeScreen(QPlatformScreen *screen)
-{
-    destroyScreen(screen);
-}
-
 void QEglFSIntegration::initialize()
 {
     qt_egl_device_integration()->platformInit();
@@ -147,7 +137,7 @@ void QEglFSIntegration::initialize()
     m_vtHandler.reset(new QFbVtHandler);
 
     if (qt_egl_device_integration()->usesDefaultScreen())
-        addScreen(new QEglFSScreen(display()));
+        QWindowSystemInterface::handleScreenAdded(new QEglFSScreen(display()));
     else
         qt_egl_device_integration()->screenInit();
 
@@ -198,6 +188,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
     static_cast<QEglFSWindow *>(window->handle())->setBackingStore(bs);
     return bs;
 #else
+    Q_UNUSED(window);
     return nullptr;
 #endif
 }
@@ -428,6 +419,8 @@ QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function)
 #if QT_CONFIG(evdev)
     if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
         return QFunctionPointer(loadKeymapStatic);
+    else if (function == QEglFSFunctions::switchLangTypeIdentifier())
+        return QFunctionPointer(switchLangStatic);
 #endif
 
     return qt_egl_device_integration()->platformFunction(function);
@@ -443,6 +436,17 @@ void QEglFSIntegration::loadKeymapStatic(const QString &filename)
         qWarning("QEglFSIntegration: Cannot load keymap, no keyboard handler found");
 #else
     Q_UNUSED(filename);
+#endif
+}
+
+void QEglFSIntegration::switchLangStatic()
+{
+#if QT_CONFIG(evdev)
+    QEglFSIntegration *self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    if (self->m_kbdMgr)
+        self->m_kbdMgr->switchLang();
+    else
+        qWarning("QEglFSIntegration: Cannot switch language, no keyboard handler found");
 #endif
 }
 

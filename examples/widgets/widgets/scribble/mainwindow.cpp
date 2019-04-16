@@ -54,9 +54,9 @@
 #include "scribblearea.h"
 
 //! [0]
-MainWindow::MainWindow()
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), scribbleArea(new ScribbleArea(this))
 {
-    scribbleArea = new ScribbleArea;
     setCentralWidget(scribbleArea);
 
     createActions();
@@ -151,40 +151,41 @@ void MainWindow::createActions()
 {
     openAct = new QAction(tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    connect(openAct, &QAction::triggered, this, &MainWindow::open);
 
-    foreach (QByteArray format, QImageWriter::supportedImageFormats()) {
-        QString text = tr("%1...").arg(QString(format).toUpper());
+    const QList<QByteArray> imageFormats = QImageWriter::supportedImageFormats();
+    for (const QByteArray &format : imageFormats) {
+        QString text = tr("%1...").arg(QString::fromLatin1(format).toUpper());
 
         QAction *action = new QAction(text, this);
         action->setData(format);
-        connect(action, SIGNAL(triggered()), this, SLOT(save()));
+        connect(action, &QAction::triggered, this, &MainWindow::save);
         saveAsActs.append(action);
     }
 
     printAct = new QAction(tr("&Print..."), this);
-    connect(printAct, SIGNAL(triggered()), scribbleArea, SLOT(print()));
+    connect(printAct, &QAction::triggered, scribbleArea, &ScribbleArea::print);
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+    connect(exitAct, &QAction::triggered, this, &MainWindow::close);
 
     penColorAct = new QAction(tr("&Pen Color..."), this);
-    connect(penColorAct, SIGNAL(triggered()), this, SLOT(penColor()));
+    connect(penColorAct, &QAction::triggered, this, &MainWindow::penColor);
 
     penWidthAct = new QAction(tr("Pen &Width..."), this);
-    connect(penWidthAct, SIGNAL(triggered()), this, SLOT(penWidth()));
+    connect(penWidthAct, &QAction::triggered, this, &MainWindow::penWidth);
 
     clearScreenAct = new QAction(tr("&Clear Screen"), this);
     clearScreenAct->setShortcut(tr("Ctrl+L"));
-    connect(clearScreenAct, SIGNAL(triggered()),
-            scribbleArea, SLOT(clearImage()));
+    connect(clearScreenAct, &QAction::triggered,
+            scribbleArea, &ScribbleArea::clearImage);
 
     aboutAct = new QAction(tr("&About"), this);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
     aboutQtAct = new QAction(tr("About &Qt"), this);
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 }
 //! [14]
 
@@ -193,7 +194,7 @@ void MainWindow::createMenus()
 //! [15] //! [16]
 {
     saveAsMenu = new QMenu(tr("&Save As"), this);
-    foreach (QAction *action, saveAsActs)
+    for (QAction *action : qAsConst(saveAsActs))
         saveAsMenu->addAction(action);
 
     fileMenu = new QMenu(tr("&File"), this);

@@ -345,6 +345,8 @@ void tst_QBrush::gradientPresets()
 
     QGradient invalidPreset(QGradient::Preset(-1));
     QCOMPARE(invalidPreset.type(), QGradient::NoGradient);
+    QBrush brush(invalidPreset);
+    QCOMPARE(brush.style(), Qt::NoBrush);
 }
 
 void fill(QPaintDevice *pd) {

@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include "qwasmopenglcontext.h"
-
+#include "qwasmintegration.h"
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,7 +57,7 @@ void QWasmOpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surfac
             emscripten_webgl_destroy_context(m_context);
 
         // Create new context
-        const char *canvasId = 0; // (use default canvas) FIXME: get the actual canvas from the surface.
+        const QString canvasId = QWasmScreen::get(surface->screen())->canvasId();
         m_context = createEmscriptenContext(canvasId, m_requestedFormat);
 
         // Register context-lost callback.
@@ -73,11 +73,11 @@ void QWasmOpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surfac
             return true;
         };
         bool capture = true;
-        emscripten_set_webglcontextlost_callback(canvasId, this, capture, callback);
+        emscripten_set_webglcontextlost_callback(canvasId.toLocal8Bit().constData(), this, capture, callback);
     }
 }
 
-EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(const char *canvasId, QSurfaceFormat format)
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(const QString &canvasId, QSurfaceFormat format)
 {
     EmscriptenWebGLContextAttributes attributes;
     emscripten_webgl_init_context_attributes(&attributes); // Populate with default attributes
@@ -96,7 +96,7 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(cons
     attributes.depth = format.depthBufferSize() > 0;
     attributes.stencil = format.stencilBufferSize() > 0;
 
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(canvasId, &attributes);
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(canvasId.toLocal8Bit().constData(), &attributes);
 
     return context;
 }

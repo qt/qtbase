@@ -26,14 +26,14 @@ qt_feature("style_fusion" PRIVATE
 )
 qt_feature("style_mac" PRIVATE
     LABEL "macOS"
-    CONDITION APPLE_OSX
+    CONDITION APPLE_OSX AND QT_FEATURE_animation
 )
 qt_feature("style_windows" PRIVATE
     LABEL "Windows"
 )
 qt_feature("style_windowsvista" PRIVATE
     LABEL "WindowsVista"
-    CONDITION QT_FEATURE_style_windows AND WIN32 AND NOT WINRT AND tests.uxtheme OR FIXME
+    CONDITION QT_FEATURE_style_windows AND QT_FEATURE_animation AND WIN32 AND NOT WINRT AND tests.uxtheme OR FIXME
 )
 qt_feature("style_android" PRIVATE
     LABEL "Android"

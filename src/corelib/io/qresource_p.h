@@ -108,7 +108,7 @@ public:
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
     Iterator *endEntryList() override;
 
-    bool extension(Extension extension, const ExtensionOption *option = 0, ExtensionReturn *output = 0) override;
+    bool extension(Extension extension, const ExtensionOption *option = nullptr, ExtensionReturn *output = nullptr) override;
     bool supportsExtension(Extension extension) const override;
 };
 

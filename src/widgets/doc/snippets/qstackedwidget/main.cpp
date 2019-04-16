@@ -48,8 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <QApplication>
+#include <QtWidgets>
 
 class Widget : public QWidget
 {
@@ -75,8 +74,8 @@ Widget::Widget(QWidget *parent)
     pageComboBox->addItem(tr("Page 1"));
     pageComboBox->addItem(tr("Page 2"));
     pageComboBox->addItem(tr("Page 3"));
-    connect(pageComboBox, SIGNAL(activated(int)),
-            stackedWidget, SLOT(setCurrentIndex(int)));
+    connect(pageComboBox, QOverload<int>::of(&QComboBox::activated),
+            stackedWidget, &QStackedWidget::setCurrentIndex);
 
 //! [1] //! [2]
     QVBoxLayout *layout = new QVBoxLayout;

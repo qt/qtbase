@@ -32,7 +32,7 @@ ANDROID_PERMISSIONS = \
 # OpenBSD 6.0 will include environ in libc.
 freebsd|openbsd: QMAKE_LFLAGS_NOUNDEF =
 
-include(animation/animation.pri)
+qtConfig(animation): include(animation/animation.pri)
 include(global/global.pri)
 include(thread/thread.pri)
 include(tools/tools.pri)
@@ -44,6 +44,7 @@ include(codecs/codecs.pri)
 include(serialization/serialization.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
+include(platform/platform.pri)
 
 win32 {
     LIBS_PRIVATE += -lws2_32
@@ -66,8 +67,6 @@ integrity {
 }
 
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
-
-contains(DEFINES,QT_EVAL):include(eval.pri)
 
 HOST_BINS = $$[QT_HOST_BINS]
 host_bins.name = host_bins

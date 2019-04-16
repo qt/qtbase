@@ -494,8 +494,8 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     //
     connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
             SLOT(_q_onlineStateChanged(bool)));
-    connect(&d->networkConfigurationManager, SIGNAL(configurationChanged(const QNetworkConfiguration &)),
-            SLOT(_q_configurationChanged(const QNetworkConfiguration &)));
+    connect(&d->networkConfigurationManager, SIGNAL(configurationChanged(QNetworkConfiguration)),
+            SLOT(_q_configurationChanged(QNetworkConfiguration)));
 
 #endif
 }
@@ -1181,8 +1181,36 @@ QSharedPointer<QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession(
 
     \sa connectToHost(), get(), post(), put(), deleteResource()
 */
+
 void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quint16 port,
                                                    const QSslConfiguration &sslConfiguration)
+{
+    connectToHostEncrypted(hostName, port, sslConfiguration, QString());
+}
+
+/*!
+    \since 5.13
+    \overload
+
+    Initiates a connection to the host given by \a hostName at port \a port, using
+    \a sslConfiguration with \a peerName set to be the hostName used for certificate
+    validation. This function is useful to complete the TCP and SSL handshake
+    to a host before the HTTPS request is made, resulting in a lower network latency.
+
+    \note Preconnecting a SPDY connection can be done by calling setAllowedNextProtocols()
+    on \a sslConfiguration with QSslConfiguration::NextProtocolSpdy3_0 contained in
+    the list of allowed protocols. When using SPDY, one single connection per host is
+    enough, i.e. calling this method multiple times per host will not result in faster
+    network transactions.
+
+    \note This function has no possibility to report errors.
+
+    \sa connectToHost(), get(), post(), put(), deleteResource()
+*/
+
+void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quint16 port,
+                                                   const QSslConfiguration &sslConfiguration,
+                                                   const QString &peerName)
 {
     QUrl url;
     url.setHost(hostName);
@@ -1198,6 +1226,7 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
                 QSslConfiguration::NextProtocolSpdy3_0))
         request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
 
+    request.setPeerVerifyName(peerName);
     get(request);
 }
 #endif
@@ -1361,7 +1390,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QString scheme = req.url().scheme();
 
 #ifdef Q_OS_WASM
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
+    // Support http, https, and relateive urls
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") || scheme.isEmpty()) {
         QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
         QNetworkReplyWasmImplPrivate *priv = reply->d_func();
         priv->manager = this;
@@ -1848,6 +1878,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     if (config.isValid())
         newSession = QSharedNetworkSessionManager::getSession(config);
 
+    QNetworkSession::State oldState = QNetworkSession::Invalid;
     if (networkSessionStrongRef) {
         //do nothing if new and old session are the same
         if (networkSessionStrongRef == newSession)
@@ -1859,6 +1890,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
         QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
                             q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
+        oldState = networkSessionStrongRef->state();
     }
 
     //switch to new session (null if config was invalid)
@@ -1884,7 +1916,11 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     QObject::connect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
                         q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
 
-    _q_networkSessionStateChanged(networkSessionStrongRef->state());
+    const QNetworkSession::State newState = networkSessionStrongRef->state();
+    if (newState != oldState) {
+        QMetaObject::invokeMethod(q, "_q_networkSessionStateChanged", Qt::QueuedConnection,
+                                  Q_ARG(QNetworkSession::State, newState));
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()

@@ -239,10 +239,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case QStandardPaths::PicturesLocation:
         return getExternalStoragePublicDirectory("DIRECTORY_PICTURES");
     case QStandardPaths::DocumentsLocation:
-        if (QtAndroidPrivate::androidSdkVersion() > 18)
-            return getExternalStoragePublicDirectory("DIRECTORY_DOCUMENTS");
-        else
-            return getExternalStorageDirectory() + QLatin1String("/Documents");
+        return getExternalStoragePublicDirectory("DIRECTORY_DOCUMENTS");
     case QStandardPaths::DownloadLocation:
         return getExternalStoragePublicDirectory("DIRECTORY_DOWNLOADS");
     case QStandardPaths::GenericConfigLocation:
@@ -295,13 +292,8 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     }
 
     if (type == DocumentsLocation) {
-        if (QtAndroidPrivate::androidSdkVersion() > 18) {
-            return QStringList() << writableLocation(type)
-                                 << getExternalFilesDir("DIRECTORY_DOCUMENTS");
-        } else {
-            return QStringList() << writableLocation(type)
-                                 << getExternalFilesDir() + QLatin1String("/Documents");
-        }
+        return QStringList() << writableLocation(type)
+                             << getExternalFilesDir("DIRECTORY_DOCUMENTS");
     }
 
     if (type == DownloadLocation) {

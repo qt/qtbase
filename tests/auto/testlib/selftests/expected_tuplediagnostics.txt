@@ -5,11 +5,11 @@ PASS   : tst_TupleDiagnostics::testEmptyTuple()
 FAIL!  : tst_TupleDiagnostics::testSimpleTuple() Compared values are not the same
    Actual   (std::tuple<int>{1}): std::tuple(1)
    Expected (std::tuple<int>{2}): std::tuple(2)
-   Loc: [/localqtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp(0)]
+   Loc: [qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp(0)]
 FAIL!  : tst_TupleDiagnostics::testTuple() Compared values are not the same
    Actual   (tuple1): std::tuple(42, 'Y', "tuple1")
    Expected (tuple2): std::tuple(42, 'Y', "tuple2")
-   Loc: [/localqtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp(0)]
+   Loc: [qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp(0)]
 PASS   : tst_TupleDiagnostics::cleanupTestCase()
 Totals: 3 passed, 2 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_TupleDiagnostics *********

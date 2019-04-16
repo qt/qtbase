@@ -51,6 +51,7 @@
 #include <QtWidgets>
 
 #include "mainwindow.h"
+#include "encodingdialog.h"
 #include "previewform.h"
 
 MainWindow::MainWindow()
@@ -126,11 +127,10 @@ void MainWindow::about()
 
 void MainWindow::aboutToShowSaveAsMenu()
 {
-    QString currentText = textEdit->toPlainText();
-
-    foreach (QAction *action, saveAsActs) {
-        QByteArray codecName = action->data().toByteArray();
-        QTextCodec *codec = QTextCodec::codecForName(codecName);
+    const QString currentText = textEdit->toPlainText();
+    for (QAction *action : qAsConst(saveAsActs)) {
+        const QByteArray codecName = action->data().toByteArray();
+        const QTextCodec *codec = QTextCodec::codecForName(codecName);
         action->setVisible(codec && codec->canEncode(currentText));
     }
 }
@@ -141,7 +141,8 @@ void MainWindow::findCodecs()
     QRegularExpression iso8859RegExp("^ISO[- ]8859-([0-9]+).*$");
     QRegularExpressionMatch match;
 
-    foreach (int mib, QTextCodec::availableMibs()) {
+    const QList<int> mibs = QTextCodec::availableMibs();
+    for (int mib : mibs) {
         QTextCodec *codec = QTextCodec::codecForMib(mib);
 
         QString sortKey = codec->name().toUpper();
@@ -176,7 +177,7 @@ void MainWindow::createMenus()
     QMenu *saveAsMenu = fileMenu->addMenu(tr("&Save As"));
     connect(saveAsMenu, &QMenu::aboutToShow,
             this, &MainWindow::aboutToShowSaveAsMenu);
-    foreach (const QTextCodec *codec, codecs) {
+    for (const QTextCodec *codec : qAsConst(codecs)) {
         const QByteArray name = codec->name();
         QAction *action = saveAsMenu->addAction(tr("%1...").arg(QLatin1String(name)));
         action->setData(QVariant(name));
@@ -188,9 +189,27 @@ void MainWindow::createMenus()
     QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
     exitAct->setShortcuts(QKeySequence::Quit);
 
+    auto toolMenu =  menuBar()->addMenu(tr("&Tools"));
+    auto encodingAction = toolMenu->addAction(tr("Encodings"), this, &MainWindow::encodingDialog);
+    encodingAction->setShortcut(Qt::CTRL + Qt::Key_E);
+    encodingAction->setToolTip(tr("Shows a dialog allowing to convert to common encoding in programming languages."));
+
+
     menuBar()->addSeparator();
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+}
+
+void MainWindow::encodingDialog()
+{
+    if (!m_encodingDialog) {
+        m_encodingDialog = new EncodingDialog(this);
+        const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+        m_encodingDialog->setMinimumWidth(screenGeometry.width() / 4);
+    }
+    m_encodingDialog->show();
+    m_encodingDialog->raise();
+
 }

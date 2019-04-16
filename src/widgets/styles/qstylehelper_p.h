@@ -89,11 +89,11 @@ namespace QStyleHelper
     Q_WIDGETS_EXPORT bool isInstanceOf(QObject *obj, QAccessible::Role role);
     Q_WIDGETS_EXPORT bool hasAncestor(QObject *obj, QAccessible::Role role);
 #endif
-    Q_WIDGETS_EXPORT QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
+    Q_WIDGETS_EXPORT QColor backgroundColor(const QPalette &pal, const QWidget* widget = nullptr);
 
     enum WidgetSizePolicy { SizeLarge = 0, SizeSmall = 1, SizeMini = 2, SizeDefault = -1 };
 
-    Q_WIDGETS_EXPORT WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
+    Q_WIDGETS_EXPORT WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = nullptr);
 }
 
 

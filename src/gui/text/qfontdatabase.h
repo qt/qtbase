@@ -160,8 +160,8 @@ private:
     static void createDatabase();
     static void parseFontName(const QString &name, QString &foundry, QString &family);
     static QString resolveFontFamilyAlias(const QString &family);
-    static QFontEngine *findFont(const QFontDef &request, int script);
-    static void load(const QFontPrivate *d, int script);
+    static QFontEngine *findFont(const QFontDef &request, int script /* QChar::Script */);
+    static void load(const QFontPrivate *d, int script /* QChar::Script */);
 
     friend struct QFontDef;
     friend class QFontPrivate;

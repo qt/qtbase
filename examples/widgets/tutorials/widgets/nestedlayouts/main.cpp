@@ -76,25 +76,26 @@ int main(int argc, char *argv[])
 
 //! [set up the model]
     QStandardItemModel model;
-    model.setHorizontalHeaderLabels(
-        QStringList() << QApplication::translate("nestedlayouts", "Name")
-                      << QApplication::translate("nestedlayouts", "Office"));
+    model.setHorizontalHeaderLabels({ QApplication::translate("nestedlayouts", "Name"),
+                                      QApplication::translate("nestedlayouts", "Office") });
 
-    QList<QStringList> rows = QList<QStringList>()
-        << (QStringList() << "Verne Nilsen" << "123")
-        << (QStringList() << "Carlos Tang" << "77")
-        << (QStringList() << "Bronwyn Hawcroft" << "119")
-        << (QStringList() << "Alessandro Hanssen" << "32")
-        << (QStringList() << "Andrew John Bakken" << "54")
-        << (QStringList() << "Vanessa Weatherley" << "85")
-        << (QStringList() << "Rebecca Dickens" << "17")
-        << (QStringList() << "David Bradley" << "42")
-        << (QStringList() << "Knut Walters" << "25")
-        << (QStringList() << "Andrea Jones" << "34");
+    const QStringList rows[] = {
+        QStringList{ QStringLiteral("Verne Nilsen"), QStringLiteral("123") },
+        QStringList{ QStringLiteral("Carlos Tang"), QStringLiteral("77") },
+        QStringList{ QStringLiteral("Bronwyn Hawcroft"), QStringLiteral("119") },
+        QStringList{ QStringLiteral("Alessandro Hanssen"), QStringLiteral("32") },
+        QStringList{ QStringLiteral("Andrew John Bakken"), QStringLiteral("54") },
+        QStringList{ QStringLiteral("Vanessa Weatherley"), QStringLiteral("85") },
+        QStringList{ QStringLiteral("Rebecca Dickens"), QStringLiteral("17") },
+        QStringList{ QStringLiteral("David Bradley"), QStringLiteral("42") },
+        QStringList{ QStringLiteral("Knut Walters"), QStringLiteral("25") },
+        QStringList{ QStringLiteral("Andrea Jones"), QStringLiteral("34") }
+    };
 
-    foreach (QStringList row, rows) {
-        QList<QStandardItem *> items;
-        foreach (QString text, row)
+    QList<QStandardItem *> items;
+    for (const QStringList &row : rows) {
+        items.clear();
+        for (const QString &text : row)
             items.append(new QStandardItem(text));
         model.appendRow(items);
     }

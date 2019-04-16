@@ -1,3 +1,5 @@
+requires(widgets)
+
 TEMPLATE = subdirs
 
 test.depends = app

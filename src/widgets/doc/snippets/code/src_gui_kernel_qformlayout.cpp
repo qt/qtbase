@@ -84,3 +84,51 @@ formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 formLayout->setFormAlignment(Qt::AlignHCenter | Qt::AlignTop);
 formLayout->setLabelAlignment(Qt::AlignLeft);
 //! [2]
+
+//! [3]
+QFormLayout *flay = ...;
+QPointer<QLineEdit> le = new QLineEdit;
+flay->insertRow(2, "User:", le);
+// later:
+flay->removeRow(2); // le == nullptr at this point
+//! [3]
+
+//! [4]
+QFormLayout *flay = ...;
+QPointer<QLineEdit> le = new QLineEdit;
+flay->insertRow(2, "User:", le);
+// later:
+flay->removeRow(le); // le == nullptr at this point
+//! [4]
+
+//! [5]
+QFormLayout *flay = ...;
+QPointer<QVBoxLayout> vbl = new QVBoxLayout;
+flay->insertRow(2, "User:", vbl);
+// later:
+flay->removeRow(layout); // vbl == nullptr at this point
+//! [5]
+
+//! [6]
+QFormLayout *flay = ...;
+QPointer<QLineEdit> le = new QLineEdit;
+flay->insertRow(2, "User:", le);
+// later:
+QFormLayout::TakeRowResult result = flay->takeRow(2);
+//! [6]
+
+//! [7]
+QFormLayout *flay = ...;
+QPointer<QLineEdit> le = new QLineEdit;
+flay->insertRow(2, "User:", le);
+// later:
+QFormLayout::TakeRowResult result = flay->takeRow(widget);
+//! [7]
+
+//! [8]
+QFormLayout *flay = ...;
+QPointer<QVBoxLayout> vbl = new QVBoxLayout;
+flay->insertRow(2, "User:", vbl);
+// later:
+QFormLayout::TakeRowResult result = flay->takeRow(widget);
+//! [8]

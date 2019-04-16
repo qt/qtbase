@@ -32,7 +32,6 @@ osx
 osx
 # QTQAINFRA-1292
 [testPushButtonPressRelease]
-osx-10.11 ci
 osx-10.12 ci
 
 # QTQAINFRA-1292

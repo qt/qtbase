@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'batchtranslation.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -90,7 +90,7 @@ public:
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         groupBox = new QGroupBox(databaseTranslationDialog);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(4));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
@@ -120,7 +120,7 @@ public:
 
         groupBox_2 = new QGroupBox(databaseTranslationDialog);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(1));
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Minimum);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
@@ -213,16 +213,16 @@ public:
 
     void retranslateUi(QDialog *databaseTranslationDialog)
     {
-        databaseTranslationDialog->setWindowTitle(QApplication::translate("databaseTranslationDialog", "Qt Linguist - Batch Translation", nullptr));
-        groupBox->setTitle(QApplication::translate("databaseTranslationDialog", "Options", nullptr));
-        ckOnlyUntranslated->setText(QApplication::translate("databaseTranslationDialog", "Only translate entries with no translation", nullptr));
-        ckMarkFinished->setText(QApplication::translate("databaseTranslationDialog", "Set translated entries to finished", nullptr));
-        groupBox_2->setTitle(QApplication::translate("databaseTranslationDialog", "Phrase book preference", nullptr));
-        moveUpButton->setText(QApplication::translate("databaseTranslationDialog", "Move up", nullptr));
-        moveDownButton->setText(QApplication::translate("databaseTranslationDialog", "Move down", nullptr));
-        label->setText(QApplication::translate("databaseTranslationDialog", "The batch translator will search through the selected phrasebooks in the order given above.", nullptr));
-        runButton->setText(QApplication::translate("databaseTranslationDialog", "&Run", nullptr));
-        cancelButton->setText(QApplication::translate("databaseTranslationDialog", "&Cancel", nullptr));
+        databaseTranslationDialog->setWindowTitle(QCoreApplication::translate("databaseTranslationDialog", "Qt Linguist - Batch Translation", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("databaseTranslationDialog", "Options", nullptr));
+        ckOnlyUntranslated->setText(QCoreApplication::translate("databaseTranslationDialog", "Only translate entries with no translation", nullptr));
+        ckMarkFinished->setText(QCoreApplication::translate("databaseTranslationDialog", "Set translated entries to finished", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("databaseTranslationDialog", "Phrase book preference", nullptr));
+        moveUpButton->setText(QCoreApplication::translate("databaseTranslationDialog", "Move up", nullptr));
+        moveDownButton->setText(QCoreApplication::translate("databaseTranslationDialog", "Move down", nullptr));
+        label->setText(QCoreApplication::translate("databaseTranslationDialog", "The batch translator will search through the selected phrasebooks in the order given above.", nullptr));
+        runButton->setText(QCoreApplication::translate("databaseTranslationDialog", "&Run", nullptr));
+        cancelButton->setText(QCoreApplication::translate("databaseTranslationDialog", "&Cancel", nullptr));
     } // retranslateUi
 
 };

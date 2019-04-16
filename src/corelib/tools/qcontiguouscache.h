@@ -107,10 +107,8 @@ public:
 #endif
 
     QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other)
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QContiguousCache<T> &other) { qSwap(d, other.d); }
     bool operator==(const QContiguousCache<T> &other) const;
     inline bool operator!=(const QContiguousCache<T> &other) const { return !(*this == other); }
@@ -217,6 +215,7 @@ void QContiguousCache<T>::setCapacity(int asize)
     detach();
     union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
     x.d = allocateData(asize);
+    x.d->ref.store(1);
     x.d->alloc = asize;
     x.d->count = qMin(d->count, asize);
     x.d->offset = d->offset + d->count - x.d->count;

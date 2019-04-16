@@ -118,7 +118,6 @@ public:
     int columnSpan(int row, int column) const;
     void clearSpans();
 
-    void sortByColumn(int column, Qt::SortOrder order);
 
 public Q_SLOTS:
     void selectRow(int row);
@@ -131,7 +130,11 @@ public Q_SLOTS:
     void resizeRowsToContents();
     void resizeColumnToContents(int column);
     void resizeColumnsToContents();
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X ("Use QTableView::sortByColumn(int column, Qt::SortOrder order) instead")
     void sortByColumn(int column);
+#endif
+    void sortByColumn(int column, Qt::SortOrder order);
     void setShowGrid(bool show);
 
 protected Q_SLOTS:
@@ -188,6 +191,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateSpanInsertedColumns(QModelIndex,int,int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateSpanRemovedRows(QModelIndex,int,int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateSpanRemovedColumns(QModelIndex,int,int))
+    Q_PRIVATE_SLOT(d_func(), void _q_sortIndicatorChanged(int column, Qt::SortOrder order))
 };
 
 QT_END_NAMESPACE

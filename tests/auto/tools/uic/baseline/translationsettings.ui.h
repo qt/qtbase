@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'translationsettings.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -86,9 +86,9 @@ public:
 
         vboxLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(cbLanguageList);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(TranslationSettings);
         QObject::connect(buttonBox, SIGNAL(accepted()), TranslationSettings, SLOT(accept()));
@@ -99,10 +99,10 @@ public:
 
     void retranslateUi(QDialog *TranslationSettings)
     {
-        TranslationSettings->setWindowTitle(QApplication::translate("TranslationSettings", "Qt Linguist - Translation file settings", nullptr));
-        groupBox->setTitle(QApplication::translate("TranslationSettings", "Target language", nullptr));
-        label->setText(QApplication::translate("TranslationSettings", "Language", nullptr));
-        lblCountry->setText(QApplication::translate("TranslationSettings", "Country/Region", nullptr));
+        TranslationSettings->setWindowTitle(QCoreApplication::translate("TranslationSettings", "Qt Linguist - Translation file settings", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("TranslationSettings", "Target language", nullptr));
+        label->setText(QCoreApplication::translate("TranslationSettings", "Language", nullptr));
+        lblCountry->setText(QCoreApplication::translate("TranslationSettings", "Country/Region", nullptr));
     } // retranslateUi
 
 };

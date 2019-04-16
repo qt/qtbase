@@ -78,6 +78,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 #include <private/qdesktopwidget_p.h>
+#include <private/qstyle_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -307,29 +308,26 @@ int QMenuPrivate::scrollerHeight() const
     return qMax(QApplication::globalStrut().height(), q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q));
 }
 
-//Windows and KDE allow menus to cover the taskbar, while GNOME and Mac don't
+// Windows and KDE allow menus to cover the taskbar, while GNOME and macOS
+// don't. Torn-off menus are again different
+inline bool QMenuPrivate::useFullScreenForPopup() const
+{
+    return !tornoff && QStylePrivate::useFullScreenForPopup();
+}
+
 QRect QMenuPrivate::popupGeometry() const
 {
     Q_Q(const QMenu);
-    if (!tornoff && // Torn-off menus are different
-            QGuiApplicationPrivate::platformTheme() &&
-            QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QDesktopWidgetPrivate::screenGeometry(q);
-    } else {
-        return QDesktopWidgetPrivate::availableGeometry(q);
-    }
+    return useFullScreenForPopup()
+        ? QDesktopWidgetPrivate::screenGeometry(q)
+        : QDesktopWidgetPrivate::availableGeometry(q);
 }
 
-//Windows and KDE allow menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(int screen) const
 {
-    if (!tornoff && // Torn-off menus are different
-            QGuiApplicationPrivate::platformTheme() &&
-            QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QDesktopWidgetPrivate::screenGeometry(screen);
-    } else {
-        return QDesktopWidgetPrivate::availableGeometry(screen);
-    }
+    return useFullScreenForPopup()
+        ? QDesktopWidgetPrivate::screenGeometry(screen)
+        : QDesktopWidgetPrivate::availableGeometry(screen);
 }
 
 QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
@@ -894,23 +892,6 @@ void QMenuPrivate::setOverrideMenuAction(QAction *a)
 void QMenuPrivate::_q_overrideMenuActionDestroyed()
 {
     menuAction=defaultMenuAction;
-}
-
-void QMenuPrivate::adjustMenuScreen(const QPoint &p)
-{
-    Q_Q(QMenu);
-    // The windowHandle must point to the screen where the menu will be shown.
-    // The (item) size calculations depend on the menu screen,
-    // so a wrong screen would often cause wrong sizes (on high DPI)
-    const QScreen *currentScreen = q->windowHandle() ? q->windowHandle()->screen() : nullptr;
-    QScreen *actualScreen = QGuiApplication::screenAt(p);
-    if (actualScreen && currentScreen != actualScreen) {
-        if (!q->windowHandle()) // Try to create a window handle if not created.
-            createWinId();
-        if (q->windowHandle())
-            q->windowHandle()->setScreen(actualScreen);
-        itemsDirty = true;
-    }
 }
 
 void QMenuPrivate::updateLayoutDirection()
@@ -1800,21 +1781,6 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     return action;
 }
 
-/*!\fn template<typename PointerToMemberFunction> QAction *QMenu::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
-
-    \since 5.6
-
-    \overload
-
-    This convenience function creates a new action with the text \a
-    text and an optional shortcut \a shortcut. The action's
-    \l{QAction::triggered()}{triggered()} signal is connected to the
-    \a method of the \a receiver. The function adds the newly created
-    action to the menu's list of actions and returns it.
-
-    QMenu takes ownership of the returned QAction.
-*/
-
 /*!\fn template<typename Functor> QAction *QMenu::addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0)
 
     \since 5.6
@@ -1839,25 +1805,11 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     This convenience function creates a new action with the text \a
     text and an optional shortcut \a shortcut. The action's
     \l{QAction::triggered()}{triggered()} signal is connected to the
-    \a functor. The function adds the newly created
-    action to the menu's list of actions and returns it.
+    \a functor. The functor can be a pointer to a member function of
+    the \a context object. The newly created action is added to the
+    menu's list of actions and a pointer to it is returned.
 
-    If \a context is destroyed, the functor will not be called.
-
-    QMenu takes ownership of the returned QAction.
-*/
-
-/*!\fn template<typename PointerToMemberFunction> QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
-
-    \since 5.6
-
-    \overload
-
-    This convenience function creates a new action with an \a icon
-    and some \a text and an optional shortcut \a shortcut. The action's
-    \l{QAction::triggered()}{triggered()} signal is connected to the
-    \a method of the \a receiver. The function adds the newly created
-    action to the menu's list of actions and returns it.
+    If the \a context object is destroyed, the functor will not be called.
 
     QMenu takes ownership of the returned QAction.
 */
@@ -1886,8 +1838,9 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     This convenience function creates a new action with an \a icon
     and some \a text and an optional shortcut \a shortcut. The action's
     \l{QAction::triggered()}{triggered()} signal is connected to the
-    \a functor. The function adds the newly created
-    action to the menu's list of actions and returns it.
+    \a functor. The \a functor can be a pointer to a member function
+    of the \a context object. The newly created action is added to the
+    menu's list of actions and a pointer to it is returned.
 
     If \a context is destroyed, the functor will not be called.
 
@@ -2241,7 +2194,7 @@ void QMenu::setActiveAction(QAction *act)
 
 
 /*!
-    Returns the currently highlighted action, or 0 if no
+    Returns the currently highlighted action, or \nullptr if no
     action is currently highlighted.
 */
 QAction *QMenu::activeAction() const
@@ -2300,7 +2253,7 @@ int QMenu::columnCount() const
 }
 
 /*!
-  Returns the item at \a pt; returns 0 if there is no item there.
+  Returns the item at \a pt; returns \nullptr if there is no item there.
 */
 QAction *QMenu::actionAt(const QPoint &pt) const
 {
@@ -2375,7 +2328,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->motions = 0;
     d->doChildEffects = true;
     d->updateLayoutDirection();
-    d->adjustMenuScreen(p);
+    // Ensure that we get correct sizeHints by placing this window on the right screen.
+    d->setScreenForPoint(p);
 
     const bool contextMenu = d->isContextMenu();
     if (d->lastContextMenu != contextMenu) {
@@ -2608,8 +2562,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     This is equivalent to \c{exec(pos())}.
 
     This returns the triggered QAction in either the popup menu or one
-    of its submenus, or 0 if no item was triggered (normally because
-    the user pressed Esc).
+    of its submenus, or \nullptr if no item was triggered (normally
+    because the user pressed Esc).
 
     In most situations you'll want to specify the position yourself,
     for example, the current mouse position:
@@ -2635,8 +2589,8 @@ QAction *QMenu::exec()
     coordinates into global coordinates, use QWidget::mapToGlobal().
 
     This returns the triggered QAction in either the popup menu or one
-    of its submenus, or 0 if no item was triggered (normally because
-    the user pressed Esc).
+    of its submenus, or \nullptr if no item was triggered (normally
+    because the user pressed Esc).
 
     Note that all signals are emitted as usual. If you connect a
     QAction to a slot and call the menu's exec(), you get the result
@@ -2672,11 +2626,11 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
     QPointer<QObject> guard = this;
     (void) eventLoop.exec();
     if (guard.isNull())
-        return 0;
+        return nullptr;
 
     action = d->syncAction;
-    d->syncAction = 0;
-    d->eventLoop = 0;
+    d->syncAction = nullptr;
+    d->eventLoop = nullptr;
     return action;
 }
 
@@ -2694,7 +2648,7 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
     QGraphicsView).
 
     The function returns the triggered QAction in either the popup
-    menu or one of its submenus, or 0 if no item was triggered
+    menu or one of its submenus, or \nullptr if no item was triggered
     (normally because the user pressed Esc).
 
     This is equivalent to:

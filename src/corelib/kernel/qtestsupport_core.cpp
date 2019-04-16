@@ -3,7 +3,7 @@
 ** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -59,8 +59,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 #endif
 }
 
-/*! \fn template <typename Functor> bool qWaitFor(Functor predicate, int timeout)
-    \relates QTest
+/*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)
 
     Waits for \a timeout milliseconds or until the \a predicate returns true.
 
@@ -68,13 +67,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 
     Example:
 
-    \code
-        MyObject obj;
-        obj.startup();
-        QTest::qWaitFor([&]() {
-            return obj.isReady();
-        }, 3000);
-    \endcode
+    \snippet code/src_corelib_kernel_qtestsupport_core.cpp 0
 
     The code above will wait for the object to become ready, for a
     maximum of three seconds.
@@ -83,19 +76,14 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 */
 
 
-/*! \fn void qWait(int ms)
-    \relates QTest
+/*! \fn void QTest::qWait(int ms)
 
     Waits for \a ms milliseconds. While waiting, events will be processed and
     your test will stay responsive to user interface events or network communication.
 
     Example:
 
-    \code
-        int i = 0;
-        while (myNetworkServerNotResponding() && i++ < 50)
-            QTest::qWait(250);
-    \endcode
+    \snippet code/src_corelib_kernel_qtestsupport_core.cpp 1
 
     The code above will wait until the network server is responding for a
     maximum of about 12.5 seconds.
@@ -114,7 +102,7 @@ Q_CORE_EXPORT void QTest::qWait(int ms)
     int remaining = ms;
     do {
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-        QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         remaining = timer.remainingTime();
         if (remaining <= 0)
             break;

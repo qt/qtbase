@@ -68,9 +68,9 @@ void tst_BenchlibCallgrind::twoHundredMillionInstructions()
     QBENCHMARK {
         __asm__ __volatile__(
             "mov $100000000,%%eax   \n"
-            "LOOPTOP:               \n"
+            "1:               \n"
             "dec %%eax              \n"
-            "jnz LOOPTOP            \n"
+            "jnz 1b            \n"
             : /* no output */
             : /* no input */
             : /* clobber */ "eax"

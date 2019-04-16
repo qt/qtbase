@@ -47,6 +47,7 @@ private slots:
     void sizeConstraints();
     void setGeometry();
     void setStyleShouldChangeSpacing();
+    void widgetSurplus();
 
     void testLayoutEngine_data();
     void testLayoutEngine();
@@ -234,6 +235,69 @@ void tst_QBoxLayout::setStyleShouldChangeSpacing()
     style2->hspacing = 10;
     window.setStyle(style2.data());
     QTRY_COMPARE(spacing(), 10);
+}
+
+class MarginEatingStyle : public QProxyStyle
+{
+public:
+    MarginEatingStyle() : QProxyStyle(QStyleFactory::create("windows"))
+    {
+    }
+
+    virtual QRect subElementRect(SubElement sr, const QStyleOption *opt,
+                                const QWidget *widget) const
+    {
+        QRect rect = opt->rect;
+        switch (sr) {
+        case SE_GroupBoxLayoutItem:
+            // this is a simplifed version of what the macOS style does
+            rect.setTop(rect.top() + 20);
+            rect.setLeft(rect.left() + 20);
+            rect.setRight(rect.right() - 20);
+            rect.setBottom(rect.bottom() - 20);
+            break;
+        default:
+            return QProxyStyle::subElementRect(sr, opt, widget);
+        }
+
+        return rect;
+    }
+};
+
+void tst_QBoxLayout::widgetSurplus()
+{
+    // Test case for QTBUG-67608 - a style requests space in the margin
+
+    QDialog window;
+    QScopedPointer<MarginEatingStyle> marginEater(new MarginEatingStyle);
+    QVBoxLayout *vbox = new QVBoxLayout(&window);
+    vbox->setMargin(0);
+    vbox->setSpacing(0);
+
+    QLabel *hiddenLabel = new QLabel(tr("Invisible label"));
+    hiddenLabel->setVisible(false);
+
+    QGroupBox *groupBox = new QGroupBox(tr("Groupbox Title"));
+    groupBox->setStyle(marginEater.data());
+    groupBox->setObjectName("Test group box");
+    QPushButton *button1 = new QPushButton(tr("Button 1"));
+    QPushButton *button2 = new QPushButton(tr("Button 2"));
+    QVBoxLayout *groupLayout = new QVBoxLayout;
+    groupLayout->addWidget(button1);
+    groupLayout->addWidget(button2);
+    groupBox->setLayout(groupLayout);
+
+    QLabel *label = new QLabel(tr("Visible label"));
+
+    vbox->addWidget(hiddenLabel);
+    vbox->addWidget(groupBox);
+    vbox->addWidget(label);
+    window.setLayout(vbox);
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(groupBox->y(), 0);
+    QCOMPARE(groupBox->x(), 0);
 }
 
 void tst_QBoxLayout::taskQTBUG_7103_minMaxWidthNotRespected()

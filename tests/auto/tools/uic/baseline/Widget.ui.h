@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Widget.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -57,13 +57,13 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", nullptr));
-        Alabel->setText(QApplication::translate("Form", "A label.\n"
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Form", nullptr));
+        Alabel->setText(QCoreApplication::translate("Form", "A label.\n"
 "One new line.\n"
 "Another new line.\n"
 "Last line.", nullptr));
-        groupBox->setTitle(QApplication::translate("Form", "A Group Box", nullptr));
-        pushButton->setText(QApplication::translate("Form", "PushButton", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("Form", "A Group Box", nullptr));
+        pushButton->setText(QCoreApplication::translate("Form", "PushButton", nullptr));
     } // retranslateUi
 
 };

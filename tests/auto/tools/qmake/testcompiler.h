@@ -49,6 +49,8 @@ public:
     void resetEnvironment();
     void addToEnvironment( QString varAssignment );
 
+    static QString targetName(BuildType buildMode, const QString& target, const QString& version);
+
     // executes a make clean in the specified workPath
     bool makeClean( const QString &workPath );
     // executes a make dist clean in the specified workPath
@@ -56,11 +58,13 @@ public:
     // executes a qmake -project on the specified workDir
     bool qmakeProject( const QString &workDir, const QString &proName );
     // executes a qmake on proName in the specified workDir, output goes to buildDir or workDir if it's null
-    bool qmake( const QString &workDir, const QString &proName, const QString &buildDir = QString() );
+    bool qmake(const QString &workDir, const QString &proName, const QString &buildDir = QString(),
+               const QStringList &additionalArguments = QStringList());
     // executes a make in the specified workPath, with an optional target (eg. install)
     bool make( const QString &workPath, const QString &target = QString(), bool expectFail = false );
     // checks if the executable exists in destDir
-    bool exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version );
+    bool exists(const QString &destDir, const QString &exeName, BuildType buildType,
+                const QString &version = QString());
     // removes the makefile
     bool removeMakefile( const QString &workPath );
     // removes the project file specified by 'project' on the 'workPath'

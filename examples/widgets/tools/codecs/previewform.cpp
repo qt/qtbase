@@ -182,7 +182,7 @@ PreviewForm::PreviewForm(QWidget *parent)
 void PreviewForm::setCodecList(const QList<QTextCodec *> &list)
 {
     encodingComboBox->clear();
-    foreach (const QTextCodec *codec, list) {
+    for (const QTextCodec *codec : list) {
         encodingComboBox->addItem(QLatin1String(codec->name()),
                                   QVariant(codec->mibEnum()));
     }

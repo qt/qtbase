@@ -44,8 +44,6 @@
 #include "qtsciicodec_p.h"
 #include "qlist.h"
 
-#ifndef QT_NO_CODECS
-
 QT_BEGIN_NAMESPACE
 
 static unsigned char qt_UnicodeToTSCII(ushort u1, ushort u2, ushort u3);
@@ -493,5 +491,3 @@ static unsigned int qt_TSCIIToUnicode(uint code, uint *s)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_CODECS

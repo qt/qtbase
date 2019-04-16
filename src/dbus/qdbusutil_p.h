@@ -134,7 +134,7 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
         return false;
     }
 
-    inline bool checkMemberName(const QString &name, AllowEmptyFlag empty, QDBusError *error, const char *nameType = 0)
+    inline bool checkMemberName(const QString &name, AllowEmptyFlag empty, QDBusError *error, const char *nameType = nullptr)
     {
         if (!nameType) nameType = "member";
         if (name.isEmpty()) {

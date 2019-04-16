@@ -86,7 +86,7 @@ public:
     Q_ENUM(QDeviceType)
     Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)
 
-    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = 0);
+    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = nullptr);
 
     virtual QStringList scanConnectedDevices() = 0;
 
@@ -96,7 +96,7 @@ signals:
 
 protected:
     QDeviceDiscovery(QDeviceTypes types, QObject *parent) : QObject(parent), m_types(types) { }
-    Q_DISABLE_COPY(QDeviceDiscovery)
+    Q_DISABLE_COPY_MOVE(QDeviceDiscovery)
 
     QDeviceTypes m_types;
 };

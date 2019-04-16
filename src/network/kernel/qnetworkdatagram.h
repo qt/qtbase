@@ -61,13 +61,13 @@ public:
     ~QNetworkDatagram()
     { if (d) destroy(d); }
 
-    QNetworkDatagram(QNetworkDatagram &&other) Q_DECL_NOTHROW
+    QNetworkDatagram(QNetworkDatagram &&other) noexcept
         : d(other.d)
     { other.d = nullptr; }
-    QNetworkDatagram &operator=(QNetworkDatagram &&other) Q_DECL_NOTHROW
+    QNetworkDatagram &operator=(QNetworkDatagram &&other) noexcept
     { swap(other); return *this; }
 
-    void swap(QNetworkDatagram &other) Q_DECL_NOTHROW
+    void swap(QNetworkDatagram &other) noexcept
     { qSwap(d, other.d); }
 
     void clear();

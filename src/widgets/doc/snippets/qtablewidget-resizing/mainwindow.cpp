@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 
@@ -72,9 +72,9 @@ MainWindow::MainWindow()
 //! [0]
     tableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(tableWidthAction, SIGNAL(triggered()), this, SLOT(changeWidth()));
-    connect(tableHeightAction, SIGNAL(triggered()), this, SLOT(changeHeight()));
+    connect(quitAction, &QAction::triggered, this, &QWidget::close);
+    connect(tableWidthAction, &QAction::triggered, this, &MainWindow::changeWidth);
+    connect(tableHeightAction, &QAction::triggered, this, &MainWindow::changeHeight);
 
     setupTableItems();
 

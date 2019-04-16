@@ -222,6 +222,9 @@ public:
     void setMiterLimit(qfixed length) { m_miterLimit = length; }
     qfixed miterLimit() const { return m_miterLimit; }
 
+    void setForceOpen(bool state) { m_forceOpen = state; }
+    bool forceOpen() { return m_forceOpen; }
+
     void joinPoints(qfixed x, qfixed y, const QLineF &nextLine, LineJoinMode join);
     inline void emitMoveTo(qfixed x, qfixed y);
     inline void emitLineTo(qfixed x, qfixed y);
@@ -247,6 +250,8 @@ protected:
 
     qfixed m_back2X;
     qfixed m_back2Y;
+
+    bool m_forceOpen;
 };
 
 class Q_GUI_EXPORT QDashStroker : public QStrokerOps

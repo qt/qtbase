@@ -79,17 +79,18 @@ extend_target(Bootstrap
         ../../corelib/tools/qstring_compat.cpp
         ../../corelib/tools/qstringbuilder.cpp
         ../../corelib/tools/qstringlist.cpp
+        ../../corelib/tools/qstringview.cpp
         ../../corelib/tools/qversionnumber.cpp
         ../../corelib/tools/qvsnprintf.cpp
         ../../xml/dom/qdom.cpp
         ../../xml/sax/qxml.cpp
-    PUBLIC_DEFINES  # special case:
-        QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-        QT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-        QT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
-        QT_VERSION_STR="${PROJECT_VERSION}"
+    PUBLIC_DEFINES # special case
+        QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
+        QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
+        QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
+        QT_VERSION_STR="${PROJECT_VERSION}" # special case
         QT_BOOTSTRAPPED
-        QT_NO_CAST_ASCII
+        QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
         QT_NO_CAST_FROM_ASCII
     PUBLIC_INCLUDE_DIRECTORIES  # special case
@@ -98,17 +99,16 @@ extend_target(Bootstrap
     PUBLIC_LIBRARIES  # special case
         ZLIB::ZLIB
         Qt::Platform
-    # CONFIG = "minimal_syncqt" "internal_module" "force_bootstrap" "gc_binaries"
-    # INSTALLS = "lib"
-    # MODULE_CONFIG = "gc_binaries"
-    # MODULE_DEFINES = "QT_VERSION_STR=$$shell_quote\"$$QT_VERSION\"" "QT_VERSION_MAJOR=$$QT_MAJOR_VERSION" "QT_VERSION_MINOR=$$QT_MINOR_VERSION" "QT_VERSION_PATCH=$$QT_PATCH_VERSION" "QT_BOOTSTRAPPED" "QT_NO_CAST_TO_ASCII"
-    # MODULE_INCNAME = "QtCore" "QtXml"
-    # _LOADED = "qt_module"
-    # _OPTION = "host_build"
-    # lib.CONFIG = "dummy_install"
 )
 
-qt_internal_add_target_aliases(Bootstrap)  # special case
+#### Keys ignored in scope 1:.:.:bootstrap.pro:<TRUE>:
+# CONFIG = "minimal_syncqt" "internal_module" "force_bootstrap" "gc_binaries"
+# INSTALLS = "lib"
+# MODULE_CONFIG = "gc_binaries"
+# MODULE_INCNAME = "QtCore" "QtXml"
+# _LOADED = "qt_module"
+# _OPTION = "host_build"
+# lib.CONFIG = "dummy_install"
 
 ## Scopes:
 #####################################################################
@@ -130,12 +130,12 @@ extend_target(Bootstrap CONDITION WIN32
         ../../corelib/io/qstandardpaths_win.cpp
         ../../corelib/kernel/qcoreapplication_win.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
-    LIBRARIES
-        user32
-        ole32
+    PUBLIC_LIBRARIES
         advapi32
-        shell32
         netapi32
+        ole32
+        shell32
+        user32
 )
 
 extend_target(Bootstrap CONDITION APPLE_OSX
@@ -148,6 +148,7 @@ extend_target(Bootstrap CONDITION APPLE_OSX
         ../../corelib/kernel/qcoreapplication_mac.cpp
     LIBRARIES
         ${FWCoreServices}
+    PUBLIC_LIBRARIES
         ${FWFoundation}
 )
 
@@ -165,11 +166,15 @@ extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
 # extend_target(Bootstrap CONDITION cross_compile [...])
 # extend_target(Bootstrap CONDITION NOT cross_compile [...])
 
+#### Keys ignored in scope 12:.:.:bootstrap.pro:else:
+# CONFIG = "no_core_dep"
+
 extend_target(Bootstrap CONDITION WIN32 AND mingw
-    LIBRARIES
+    PUBLIC_LIBRARIES
         uuid
 )
 
 # special case:
 qt_internal_add_link_flags_gc_sections(Bootstrap PUBLIC)
 set_target_properties(Bootstrap PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+qt_internal_add_target_aliases(Bootstrap)

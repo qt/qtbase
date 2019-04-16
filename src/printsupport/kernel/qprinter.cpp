@@ -149,7 +149,12 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
         printEngine = ps->createNativePrintEngine(printerMode, printerName);
         paintEngine = ps->createPaintEngine(printEngine, printerMode);
     } else {
-        const auto pdfEngineVersion = (pdfVersion == QPrinter::PdfVersion_1_4 ? QPdfEngine::Version_1_4 : QPdfEngine::Version_A1b);
+        static const QHash<QPrinter::PdfVersion, QPdfEngine::PdfVersion> engineMapping {
+            {QPrinter::PdfVersion_1_4, QPdfEngine::Version_1_4},
+            {QPrinter::PdfVersion_A1b, QPdfEngine::Version_A1b},
+            {QPrinter::PdfVersion_1_6, QPdfEngine::Version_1_6}
+        };
+        const auto pdfEngineVersion = engineMapping.value(pdfVersion, QPdfEngine::Version_1_4);
         QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode, pdfEngineVersion);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
@@ -1843,7 +1848,7 @@ QList<int> QPrinter::supportedResolutions() const
         = d->printEngine->property(QPrintEngine::PPK_SupportedResolutions).toList();
     QList<int> intlist;
     intlist.reserve(varlist.size());
-    for (auto var : varlist)
+    for (const auto &var : varlist)
         intlist << var.toInt();
     return intlist;
 }

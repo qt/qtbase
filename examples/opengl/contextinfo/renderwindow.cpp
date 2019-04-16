@@ -181,6 +181,13 @@ void RenderWindow::setupVertexAttribs()
     m_vbo.release();
 }
 
+bool RenderWindow::event(QEvent *ev)
+{
+    if (ev->type() == QEvent::UpdateRequest)
+        render();
+    return QWindow::event(ev);
+}
+
 void RenderWindow::render()
 {
     if (!m_context->makeCurrent(this)) {
@@ -227,9 +234,5 @@ void RenderWindow::render()
 
     m_angle += 1.0f;
 
-    // Instead of 0 wait a few more milliseconds before rendering again. This is
-    // only here to make the UI widgets more responsive on slower machines. We
-    // can afford it since our rendering is so lightweight.
-    const int interval = 5;
-    QTimer::singleShot(interval, this, &RenderWindow::render);
+    requestUpdate();
 }

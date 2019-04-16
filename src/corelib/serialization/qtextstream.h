@@ -98,7 +98,7 @@ public:
     explicit QTextStream(const QByteArray &array, QIODevice::OpenMode openMode = QIODevice::ReadOnly);
     virtual ~QTextStream();
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     void setCodec(QTextCodec *codec);
     void setCodec(const char *codecName);
     QTextCodec *codec() const;
@@ -213,8 +213,8 @@ typedef void (QTextStream::*QTSMFC)(QChar); // manipulator w/QChar argument
 class Q_CORE_EXPORT QTextStreamManipulator
 {
 public:
-    Q_DECL_CONSTEXPR QTextStreamManipulator(QTSMFI m, int a) Q_DECL_NOTHROW : mf(m), mc(nullptr), arg(a), ch() {}
-    Q_DECL_CONSTEXPR QTextStreamManipulator(QTSMFC m, QChar c) Q_DECL_NOTHROW : mf(nullptr), mc(m), arg(-1), ch(c) {}
+    Q_DECL_CONSTEXPR QTextStreamManipulator(QTSMFI m, int a) noexcept : mf(m), mc(nullptr), arg(a), ch() {}
+    Q_DECL_CONSTEXPR QTextStreamManipulator(QTSMFC m, QChar c) noexcept : mf(nullptr), mc(m), arg(-1), ch(c) {}
     void exec(QTextStream &s) { if (mf) { (s.*mf)(arg); } else { (s.*mc)(ch); } }
 
 private:
@@ -232,6 +232,13 @@ inline QTextStream &operator<<(QTextStream &s, QTextStreamFunction f)
 
 inline QTextStream &operator<<(QTextStream &s, QTextStreamManipulator m)
 { m.exec(s); return s; }
+
+#if defined(Q_QDOC) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+namespace Qt {
+#else
+// This namespace only exists for 'using namespace' declarations.
+namespace QTextStreamFunctions {
+#endif
 
 Q_CORE_EXPORT QTextStream &bin(QTextStream &s);
 Q_CORE_EXPORT QTextStream &oct(QTextStream &s);
@@ -264,6 +271,18 @@ Q_CORE_EXPORT QTextStream &reset(QTextStream &s);
 Q_CORE_EXPORT QTextStream &bom(QTextStream &s);
 
 Q_CORE_EXPORT QTextStream &ws(QTextStream &s);
+
+} // namespace QTextStreamFunctions
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
+namespace Qt {
+using namespace QTextStreamFunctions;
+}
+
+// We use 'using namespace' as that doesn't cause
+// conflicting definitions compiler errors.
+using namespace QTextStreamFunctions;
+#endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
 
 inline QTextStreamManipulator qSetFieldWidth(int width)
 {

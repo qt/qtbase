@@ -39,7 +39,10 @@ qtConfig(dnslookup) {
 
 unix {
     !integrity:qtConfig(dnslookup): SOURCES += kernel/qdnslookup_unix.cpp
+
     SOURCES += kernel/qhostinfo_unix.cpp
+
+    qtConfig(dlopen): QMAKE_USE_PRIVATE += libdl
 
     qtConfig(linux-netlink): SOURCES += kernel/qnetworkinterface_linux.cpp
     else: SOURCES += kernel/qnetworkinterface_unix.cpp
@@ -67,6 +70,8 @@ mac {
     LIBS_PRIVATE += -framework CoreFoundation
     !uikit: LIBS_PRIVATE += -framework CoreServices -framework SystemConfiguration
 }
+
+qtConfig(gssapi): LIBS_PRIVATE += -lgssapi_krb5
 
 uikit:HEADERS += kernel/qnetworkinterface_uikit_p.h
 osx:SOURCES += kernel/qnetworkproxy_mac.cpp

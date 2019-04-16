@@ -101,6 +101,16 @@ static CborError _cbor_value_dup_string(const CborValue *, void **, size_t *, Cb
     Q_UNREACHABLE();
     return CborErrorInternalError;
 }
+static CborError cbor_value_get_half_float_as_float(const CborValue *, float *)
+{
+    Q_UNREACHABLE();
+    return CborErrorInternalError;
+}
+static CborError cbor_encode_float_as_half_float(CborEncoder *, float)
+{
+    Q_UNREACHABLE();
+    return CborErrorInternalError;
+}
 QT_WARNING_POP
 
 Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
@@ -213,9 +223,7 @@ QDebug operator<<(QDebug dbg, QCborSimpleType st)
    For example, the following creates a QCborValue containing a byte array
    tagged with a tag 2.
 
-   \code
-        QCborValue(QCborTag(2), QByteArray("\x01\0\0\0\0\0\0\0\0", 9));
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 0
 
    \sa QCborKnownTags, QCborStreamWriter::append(QCborTag),
        QCborStreamReader::isTag(), QCborStreamReader::toTag(),
@@ -422,7 +430,7 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value IllegalSimpleType The CBOR stream contains a Simple Type encoded incorrectly (data is
                             corrupt and the error is not recoverable).
    \value InvalidUtf8String The CBOR stream contains a text string that does not decode properly
-                            as UTF (data is corrupt and the error is not recoverable).
+                            as UTF-8 (data is corrupt and the error is not recoverable).
    \value DataTooLarge      CBOR string, map or array is too big and cannot be parsed by Qt
                             (internal limitation, but the error is not recoverable).
    \value NestingTooDeep    Too many levels of arrays or maps encountered while processing the
@@ -430,6 +438,24 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value UnsupportedType   The CBOR stream contains a known type that the implementation does not
                             support (internal limitation, but the error is not recoverable).
  */
+
+// Convert from CborError to QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static QCborError fromCborError(CborError err)
+{
+    return { QCborError::Code(int(err)) };
+}
+
+// Convert to CborError from QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static CborError toCborError(QCborError c)
+{
+    return CborError(int(c.c));
+}
 
 /*!
    \variable QCborError::c
@@ -501,8 +527,8 @@ QString QCborError::toString() const
         return QStringLiteral("Internal limitation: unsupported type");
     }
 
-    // get the error from TinyCBOR
-    CborError err = CborError(int(c));
+    // get the error string from TinyCBOR
+    CborError err = toCborError(*this);
     return QString::fromLatin1(cbor_error_string(err));
 }
 
@@ -546,25 +572,7 @@ QString QCborError::toString() const
      }
    \enddiv
 
-   \code
-     writer.startMap(4);    // 4 elements in the map
-
-     writer.append(QLatin1String("label"));
-     writer.append(QLatin1String("journald"));
-
-     writer.append(QLatin1String("autoDetect"));
-     writer.append(false);
-
-     writer.append(QLatin1String("condition"));
-     writer.append(QLatin1String("libs.journald"));
-
-     writer.append(QLatin1String("output"));
-     writer.startArray(1);
-     writer.append(QLatin1String("privateFeature"));
-     writer.endArray();
-
-     writer.endMap();
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 1
 
    \section1 CBOR support
 
@@ -747,12 +755,7 @@ static CborError qt_cbor_encoder_write_callback(void *self, const void *data, si
 
    The following example writes an empty map to a file:
 
-   \code
-      QFile f("output", QIODevice::WriteOnly);
-      QCborStreamWriter writer(&f);
-      writer.startMap(0);
-      writer.endMap();
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 2
 
    QCborStreamWriter does not take ownership of \a device.
 
@@ -771,15 +774,7 @@ QCborStreamWriter::QCborStreamWriter(QIODevice *device)
    The following example writes a number to a byte array then returns
    it.
 
-   \code
-     QByteArray encodedNumber(qint64 value)
-     {
-         QByteArray ba;
-         QCborStreamWriter writer(&ba);
-         writer.append(value);
-         return ba;
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 3
 
    QCborStreamWriter does not take ownership of \a data.
  */
@@ -837,11 +832,7 @@ QIODevice *QCborStreamWriter::device() const
    Unsigned Integer value. In the following example, we write the values 0,
    2\sup{32} and \c UINT64_MAX:
 
-   \code
-     writer.append(0U);
-     writer.append(Q_UINT64_C(4294967296));
-     writer.append(std::numeric_limits<quint64>::max());
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 4
 
    \sa QCborStreamReader::isUnsignedInteger(), QCborStreamReader::toUnsignedInteger()
  */
@@ -858,12 +849,7 @@ void QCborStreamWriter::append(quint64 u)
    sign of the parameter. In the following example, we write the values 0, -1,
    2\sup{32} and \c INT64_MAX:
 
-   \code
-     writer.append(0);
-     writer.append(-1);
-     writer.append(Q_INT64_C(4294967296));
-     writer.append(std::numeric_limits<qint64>::max());
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 5
 
    \sa QCborStreamReader::isInteger(), QCborStreamReader::toInteger()
  */
@@ -881,11 +867,7 @@ void QCborStreamWriter::append(qint64 i)
    equivalent to 2\sup{64} (that is, -18,446,744,073,709,551,616).
 
    In the following example, we write the values -1, -2\sup{32} and INT64_MIN:
-   \code
-     writer.append(QCborNegativeInteger(1));
-     writer.append(QCborNegativeInteger(Q_INT64_C(4294967296)));
-     writer.append(QCborNegativeInteger(-quint64(std::numeric_limits<qint64>::min())));
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 6
 
    Note how this function can be used to encode numbers that cannot fit a
    standard computer's 64-bit signed integer like \l qint64. That is, if \a n
@@ -911,14 +893,7 @@ void QCborStreamWriter::append(QCborNegativeInteger n)
    The following example will load and append the contents of a file to the
    stream:
 
-   \code
-     void writeFile(QCborStreamWriter &writer, const QString &fileName)
-     {
-         QFile f(fileName);
-         if (f.open(QIODevice::ReadOnly))
-             writer.append(f.readAll());
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 7
 
    As the example shows, unlike JSON, CBOR requires no escaping for binary
    content.
@@ -936,9 +911,7 @@ void QCborStreamWriter::append(QCborNegativeInteger n)
 
    The following example appends a simple string to the stream:
 
-   \code
-     writer.append(QLatin1String("Hello, World"));
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 8
 
    \b{Performance note}: CBOR requires that all Text Strings be encoded in
    UTF-8, so this function will iterate over the characters in the string to
@@ -971,12 +944,7 @@ void QCborStreamWriter::append(QLatin1String str)
 
    The following example writes an arbitrary QString to the stream:
 
-   \code
-     void writeString(QCborStreamWriter &writer, const QString &str)
-     {
-         writer.append(str);
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 9
 
    \sa QCborStreamReader::isString(), QCborStreamReader::readString()
  */
@@ -995,13 +963,7 @@ void QCborStreamWriter::append(QStringView str)
    In the following example, we append a CBOR Tag 36 (Regular Expression) and a
    QRegularExpression's pattern to the stream:
 
-   \code
-     void writeRxPattern(QCborStreamWriter &writer, const QRegularExpression &rx)
-     {
-         writer.append(QCborTag(36));
-         writer.append(rx.pattern());
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 10
 
    \sa QCborStreamReader::isTag(), QCborStreamReader::toTag()
  */
@@ -1021,13 +983,7 @@ void QCborStreamWriter::append(QCborTag tag)
    integer representing the current time to the stream, obtained using the \c
    time() function:
 
-   \code
-     void writeCurrentTime(QCborStreamWriter &writer)
-     {
-         writer.append(QCborKnownTags::UnixTime_t);
-         writer.append(time(nullptr));
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 11
 
    \sa QCborStreamReader::isTag(), QCborStreamReader::toTag()
  */
@@ -1039,10 +995,7 @@ void QCborStreamWriter::append(QCborTag tag)
    Type value. In the following example, we write the simple type for Null as
    well as for type 32, which Qt has no support for.
 
-   \code
-     writer.append(QCborSimpleType::Null);
-     writer.append(QCborSimpleType(32));
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 12
 
    \note Using Simple Types for which there is no specification can lead to
    validation errors by the remote receiver. In addition, simple type values 24
@@ -1063,16 +1016,7 @@ void QCborStreamWriter::append(QCborSimpleType st)
    a C++ \tt float to \c qfloat16 if there's no loss of precision and append it, or
    instead append the \tt float.
 
-   \code
-     void writeFloat(QCborStreamWriter &writer, float f)
-     {
-         qfloat16 f16 = f;
-         if (qIsNaN(f) || f16 == f)
-             writer.append(f16);
-         else
-             writer.append(f);
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 13
 
    \sa QCborStreamReader::isFloat16(), QCborStreamReader::toFloat16()
  */
@@ -1089,16 +1033,7 @@ void QCborStreamWriter::append(qfloat16 f)
    a C++ \tt double to \tt float if there's no loss of precision and append it, or
    instead append the \tt double.
 
-   \code
-     void writeFloat(QCborStreamWriter &writer, double d)
-     {
-         float f = d;
-         if (qIsNaN(d) || d == f)
-             writer.append(f);
-         else
-             writer.append(d);
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 14
 
    \sa QCborStreamReader::isFloat(), QCborStreamReader::toFloat()
  */
@@ -1120,25 +1055,7 @@ void QCborStreamWriter::append(float f)
    which is expected to be taken into account by the system FPU or floating
    point emulation directly.
 
-   \code
-     void writeDouble(QCborStreamWriter &writer, double d)
-     {
-         float f;
-         if (qIsNaN(d)) {
-             writer.append(qfloat16(qQNaN()));
-         } else if (qIsInf(d)) {
-             writer.append(d < 0 ? -qInf() : qInf());
-         } else if ((f = d) == d) {
-             qfloat16 f16 = f;
-             if (f16 == f)
-                 writer.append(f16);
-             else
-                 writer.append(f);
-         } else {
-             writer.append(d);
-         }
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 15
 
    Determining if a double can be converted to an integral with no loss of
    precision is left as an exercise to the reader.
@@ -1216,9 +1133,7 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    value or a CBOR True value. This function is equivalent to (and implemented
    as):
 
-   \code
-     writer.append(b ? QCborSimpleType::True : QCborSimpleType::False);
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 16
 
    \sa appendNull(), appendUndefined(),
        QCborStreamReader::isBool(), QCborStreamReader::toBool()
@@ -1231,9 +1146,7 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    Appends a CBOR Null value to the stream. This function is equivalent to (and
    implemented as): The parameter is ignored.
 
-   \code
-     writer.append(QCborSimpleType::Null);
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 17
 
    \sa appendNull(), append(QCborSimpleType), QCborStreamReader::isNull()
  */
@@ -1244,9 +1157,7 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    Appends a CBOR Null value to the stream. This function is equivalent to (and
    implemented as):
 
-   \code
-     writer.append(QCborSimpleType::Null);
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 18
 
    \sa append(std::nullptr_t), append(QCborSimpleType), QCborStreamReader::isNull()
  */
@@ -1257,9 +1168,7 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    Appends a CBOR Undefined value to the stream. This function is equivalent to (and
    implemented as):
 
-   \code
-     writer.append(QCborSimpleType::Undefined);
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 19
 
    \sa append(QCborSimpleType), QCborStreamReader::isUndefined()
  */
@@ -1276,15 +1185,7 @@ void QCborStreamWriter::appendTextString(const char *utf8, qsizetype len)
    The following example appends elements from the linked list of strings
    passed as input:
 
-   \code
-     void appendList(QCborStreamWriter &writer, const QLinkedList<QString> &list)
-     {
-         writer.startArray();
-         for (const QString &s : list)
-             writer.append(s);
-         writer.endArray();
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 20
 
    \sa startArray(quint64), endArray(), startMap(), QCborStreamReader::isArray(),
    QCborStreamReader::isLengthKnown()
@@ -1309,15 +1210,7 @@ void QCborStreamWriter::startArray()
 
    The following example appends all strings found in the \l QStringList passed as input:
 
-   \code
-     void appendList(QCborStreamWriter &writer, const QStringList &list)
-     {
-         writer.startArray(list.size());
-         for (const QString &s : list)
-             writer.append(s);
-         writer.endArray();
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 21
 
    \b{Size limitations}: The parameter to this function is quint64, which would
    seem to allow up to 2\sup{64}-1 elements in the array. However, both
@@ -1365,17 +1258,7 @@ bool QCborStreamWriter::endArray()
    The following example appends elements from the linked list of int and
    string pairs passed as input:
 
-   \code
-     void appendMap(QCborStreamWriter &writer, const QLinkedList<QPair<int, QString>> &list)
-     {
-         writer.startMap();
-         for (const auto pair : list) {
-             writer.append(pair.first)
-             writer.append(pair.second);
-         }
-         writer.endMap();
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 22
 
    \sa startMap(quint64), endMap(), startArray(), QCborStreamReader::isMap(),
        QCborStreamReader::isLengthKnown()
@@ -1400,17 +1283,7 @@ void QCborStreamWriter::startMap()
 
    The following example appends all strings found in the \l QMap passed as input:
 
-   \code
-     void appendMap(QCborStreamWriter &writer, const QMap<int, QString> &map)
-     {
-         writer.startMap(map.size());
-         for (auto it = map.begin(); it != map.end(); ++it) {
-             writer.append(it.key());
-             writer.append(it.value());
-         }
-         writer.endMap();
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 23
 
    \b{Size limitations}: The parameter to this function is quint64, which would
    seem to allow up to 2\sup{64}-1 pairs in the map. However, both
@@ -1491,33 +1364,7 @@ bool QCborStreamWriter::endMap()
 
    So a processor function typically looks like this:
 
-   \code
-   void handleStream(QCborStreamReader &reader)
-   {
-       switch (reader.type())
-       case QCborStreamReader::UnsignedInteger:
-       case QCborStreamReader::NegativeInteger:
-       case QCborStreamReader::SimpleType:
-       case QCborStreamReader::Float16:
-       case QCborStreamReader::Float:
-       case QCborStreamReader::Double:
-           handleFixedWidth(reader);
-           reader.next();
-           break;
-       case QCborStreamReader::ByteArray:
-       case QCborStreamReader::String:
-           handleString(reader);
-           break;
-       case QCborStreamReader::Array:
-       case QCborStreamReader::Map:
-           reader.enterContainer();
-           while (reader.lastError() == QCborError::NoError)
-               handleStream(reader);
-           if (reader.lastError() == QCborError::NoError)
-               reader.leaveContainer();
-       }
-   }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 24
 
    \section1 CBOR support
 
@@ -1619,12 +1466,14 @@ bool QCborStreamWriter::endMap()
  */
 
 /*!
-   \variable Container QCborStreamReader::StringResult::data
+   \variable QCborStreamReader::StringResult::data
+
    Contains the actual data from the string if \l status is \c Ok.
  */
 
 /*!
-   \variable QCborStreamReader::StringResultCode QCborStreamReader::StringResult::status
+   \variable QCborStreamReader::StringResult::status
+
    Contains the status of the attempt of reading the string from the stream.
  */
 
@@ -1733,20 +1582,7 @@ bool QCborStreamWriter::endMap()
    The following example pre-allocates a QVariantList given the array's size
    for more efficient decoding:
 
-   \code
-     QVariantList populateFromCbor(QCborStreamReader &reader)
-     {
-         QVariantList list;
-         if (reader.isLengthKnown())
-             list.reserve(reader.length());
-
-         reader.enterContainer();
-         while (reader.lastError() == QCborError::NoError && reader.hasNext())
-             list.append(readOneElement(reader));
-         if (reader.lastError() == QCborError::NoError)
-             reader.leaveContainer();
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 25
 
    \note The code above does not validate that the length is a sensible value.
    If the input stream reports that the length is 1 billion elements, the above
@@ -1770,22 +1606,7 @@ bool QCborStreamWriter::endMap()
    The following example pre-allocates a QVariantMap given the map's size
    for more efficient decoding:
 
-   \code
-     QVariantMap populateFromCbor(QCborStreamReader &reader)
-     {
-         QVariantMap map;
-         if (reader.isLengthKnown())
-             map.reserve(reader.length());
-
-         reader.enterContainer();
-         while (reader.lastError() == QCborError::NoError && reader.hasNext()) {
-             QString key = readElementAsString(reader);
-             map.insert(key, readOneElement(reader));
-         }
-         if (reader.lastError() == QCborError::NoError)
-             reader.leaveContainer();
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 26
 
    The example above uses a function called \c readElementAsString to read the
    map's keys and obtain a string. That is because CBOR maps may contain any
@@ -2004,6 +1825,8 @@ public:
         preread();
         if (CborError err = cbor_parser_init_reader(nullptr, &parser, &currentElement, this))
             handleError(err);
+        else
+            lastError = { QCborError::NoError };
     }
 
     char *bufferPtr()
@@ -2044,8 +1867,7 @@ public:
         if (err != CborErrorUnexpectedEOF)
             corrupt = true;
 
-        // our error codes are the same (for now)
-        lastError = { QCborError::Code(err) };
+        lastError = fromCborError(err);
     }
 
     void updateBufferAfterString(qsizetype offset, qsizetype size)
@@ -2155,7 +1977,7 @@ inline void QCborStreamReader::preparse()
             // for negative integer and we don't have separate types for Boolean,
             // Null and Undefined).
             if (type_ == CborBooleanType || type_ == CborNullType || type_ == CborUndefinedType) {
-                type_ = SimpleType;
+                type_ = CborSimpleType;
                 value64 = quint8(d->buffer.at(d->bufferStart)) - CborSimpleType;
             } else {
                 // Using internal TinyCBOR API!
@@ -2718,23 +2540,7 @@ bool QCborStreamReader::leaveContainer()
    always loop around calling this function, even if isLengthKnown() has
    is true. The typical use of this function is as follows:
 
-   \code
-     QString decodeString(QCborStreamReader &reader)
-     {
-         QString result;
-         auto r = reader.readString();
-         while (r.code == QCborStreamReader::Ok) {
-             result += r.data;
-             r = reader.readString();
-         }
-
-         if (r.code == QCborStreamReader::Error) {
-             // handle error condition
-             result.clear();
-         }
-         return result;
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 27
 
    This function does not perform any type conversions, including from integers
    or from byte arrays. Therefore, it may only be called if isString() returned
@@ -2770,23 +2576,7 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
    always loop around calling this function, even if isLengthKnown() has
    is true. The typical use of this function is as follows:
 
-   \code
-     QBytearray decodeBytearray(QCborStreamReader &reader)
-     {
-         QBytearray result;
-         auto r = reader.readBytearray();
-         while (r.code == QCborStreamReader::Ok) {
-             result += r.data;
-             r = reader.readByteArray();
-         }
-
-         if (r.code == QCborStreamReader::Error) {
-             // handle error condition
-             result.clear();
-         }
-         return result;
-     }
-   \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 28
 
    This function does not perform any type conversions, including from integers
    or from strings. Therefore, it may only be called if isByteArray() is true;
@@ -2856,15 +2646,7 @@ qsizetype QCborStreamReader::_currentStringChunkSize() const
     This function is usually used alongside currentStringChunkSize() in a loop.
     For example:
 
-    \code
-        QCborStreamReader<qsizetype> result;
-        do {
-            qsizetype size = reader.currentStringChunkSize();
-            qsizetype oldsize = buffer.size();
-            buffer.resize(oldsize + size);
-            result = reader.readStringChunk(buffer.data() + oldsize, size);
-        } while (result.status() == QCborStreamReader::Ok);
-    \endcode
+   \snippet code/src_corelib_serialization_qcborstream.cpp 29
 
     Unlike readByteArray() and readString(), this function is not limited by
     implementation limits of QByteArray and QString.

@@ -62,7 +62,7 @@ static const char docTypeHeader[] =
 
 #define PROGRAMNAME     "qdbuscpp2xml"
 #define PROGRAMVERSION  "0.2"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2018 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2019 The Qt Company Ltd."
 
 static QString outputFile;
 static int flags;
@@ -212,8 +212,11 @@ static QString generateInterfaceXml(const ClassDef *mo)
                 access |= 2;
 
             int typeId = QMetaType::type(mp.type.constData());
-            if (!typeId)
+            if (!typeId) {
+                fprintf(stderr, PROGRAMNAME ": unregistered type: '%s', ignoring\n",
+                        mp.type.constData());
                 continue;
+            }
             const char *signature = QDBusMetaType::typeToSignature(typeId);
             if (!signature)
                 continue;

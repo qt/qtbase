@@ -194,7 +194,7 @@ QIODevicePrivate::~QIODevicePrivate()
     QIODevice provides both a common implementation and an abstract
     interface for devices that support reading and writing of blocks
     of data, such as QFile, QBuffer and QTcpSocket. QIODevice is
-    abstract and can not be instantiated, but it is common to use the
+    abstract and cannot be instantiated, but it is common to use the
     interface it defines to provide device-independent I/O features.
     For example, Qt's XML classes operate on a QIODevice pointer,
     allowing them to be used with various devices (such as files and
@@ -333,7 +333,7 @@ QIODevicePrivate::~QIODevicePrivate()
                      allowed. This flag currently only affects QFile. Other
                      classes might use this flag in the future, but until then
                      using this flag with any classes other than QFile may
-                     result in undefined behavior.
+                     result in undefined behavior. (since Qt 5.11)
     \value ExistingOnly Fail if the file to be opened does not exist. This flag
                      must be specified alongside ReadOnly, WriteOnly, or
                      ReadWrite. Note that using this flag with ReadOnly alone
@@ -341,7 +341,7 @@ QIODevicePrivate::~QIODevicePrivate()
                      not exist. This flag currently only affects QFile. Other
                      classes might use this flag in the future, but until then
                      using this flag with any classes other than QFile may
-                     result in undefined behavior.
+                     result in undefined behavior. (since Qt 5.11)
 
     Certain flags, such as \c Unbuffered and \c Truncate, are
     meaningless when used with some subclasses. Some of these

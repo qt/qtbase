@@ -66,6 +66,10 @@ namespace QTest {
             return "BPASS";
         case QAbstractTestLogger::BlacklistedFail:
             return "BFAIL";
+        case QAbstractTestLogger::BlacklistedXPass:
+            return "BXPASS";
+        case QAbstractTestLogger::BlacklistedXFail:
+            return "BXFAIL";
         }
         return "??????";
     }
@@ -247,7 +251,7 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
         }
     }
 
-    return qMove(formattedString).simplified();
+    return std::move(formattedString).simplified();
 }
 
 QString QTeamCityLogger::escapedTestFuncName() const

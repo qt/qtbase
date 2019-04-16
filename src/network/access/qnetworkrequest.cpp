@@ -438,6 +438,7 @@ public:
         if (other.sslConfiguration)
             sslConfiguration = new QSslConfiguration(*other.sslConfiguration);
 #endif
+        peerVerifyName = other.peerVerifyName;
     }
 
     inline bool operator==(const QNetworkRequestPrivate &other) const
@@ -446,7 +447,8 @@ public:
             priority == other.priority &&
             rawHeaders == other.rawHeaders &&
             attributes == other.attributes &&
-            maxRedirectsAllowed == other.maxRedirectsAllowed;
+            maxRedirectsAllowed == other.maxRedirectsAllowed &&
+            peerVerifyName == other.peerVerifyName;
         // don't compare cookedHeaders
     }
 
@@ -456,6 +458,7 @@ public:
     mutable QSslConfiguration *sslConfiguration;
 #endif
     int maxRedirectsAllowed;
+    QString peerVerifyName;
 };
 
 /*!
@@ -714,7 +717,7 @@ void QNetworkRequest::setOriginatingObject(QObject *object)
     \since 4.6
 
     Returns a reference to the object that initiated this
-    network request; returns 0 if not set or the object has
+    network request; returns \nullptr if not set or the object has
     been destroyed.
 
     \sa setOriginatingObject()
@@ -787,6 +790,32 @@ int QNetworkRequest::maximumRedirectsAllowed() const
 void QNetworkRequest::setMaximumRedirectsAllowed(int maxRedirectsAllowed)
 {
     d->maxRedirectsAllowed = maxRedirectsAllowed;
+}
+
+/*!
+    \since 5.13
+
+    Returns the host name set for the certificate validation, as set by
+    setPeerVerifyName. By default this returns a null string.
+
+    \sa setPeerVerifyName
+*/
+QString QNetworkRequest::peerVerifyName() const
+{
+    return d->peerVerifyName;
+}
+
+/*!
+    \since 5.13
+
+    Sets \a peerName as host name for the certificate validation, instead of the one used for the
+    TCP connection.
+
+    \sa peerVerifyName
+*/
+void QNetworkRequest::setPeerVerifyName(const QString &peerName)
+{
+    d->peerVerifyName = peerName;
 }
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)

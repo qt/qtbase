@@ -235,6 +235,7 @@ void tst_QUdpSocket::initTestCase_data()
     // hack: we only enable the Socks5 over UDP tests on the old
     // test server, because they fail on the new one. See QTBUG-35490
     bool newTestServer = true;
+#ifndef QT_TEST_SERVER
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 22);
     if (socket.waitForConnected(10000)) {
@@ -244,6 +245,7 @@ void tst_QUdpSocket::initTestCase_data()
             newTestServer = false;
         socket.disconnectFromHost();
     }
+#endif
 
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
@@ -257,8 +259,13 @@ void tst_QUdpSocket::initTestCase_data()
 
 void tst_QUdpSocket::initTestCase()
 {
+#ifdef QT_TEST_SERVER
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
+     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::echoServerName(), 7));
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
     allAddresses = QNetworkInterface::allAddresses();
     m_skipUnsupportedIPv6Tests = shouldSkipIpv6TestsForBrokenSetsockopt();
 
@@ -300,7 +307,7 @@ void tst_QUdpSocket::init()
 #if QT_CONFIG(socks5)
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
-            QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
+            QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::socksProxyServerName(), 1080));
         }
 #else
         QSKIP("No proxy support");
@@ -981,7 +988,7 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
     QTest::addColumn<bool>("bind");
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses());
     if (serverAddresses.isEmpty())
         return;
 
@@ -995,7 +1002,7 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
 
 void tst_QUdpSocket::writeDatagramToNonExistingPeer()
 {
-    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+    if (QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses().isEmpty())
         QFAIL("Could not find test server address");
     QFETCH(bool, bind);
     QFETCH(QHostAddress, peerAddress);
@@ -1015,7 +1022,7 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 {
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses());
     if (serverAddresses.isEmpty())
         return;
 
@@ -1028,7 +1035,7 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 void tst_QUdpSocket::writeToNonExistingPeer()
 {
     QSKIP("Connected-mode UDP sockets and their behaviour are erratic");
-    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+    if (QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses().isEmpty())
         QFAIL("Could not find test server address");
     QFETCH(QHostAddress, peerAddress);
     quint16 peerPort = 34534;
@@ -1551,7 +1558,7 @@ void tst_QUdpSocket::echo_data()
 void tst_QUdpSocket::echo()
 {
     QFETCH(bool, connect);
-    QHostInfo info = QHostInfo::fromName(QtNetworkSettings::serverName());
+    QHostInfo info = QHostInfo::fromName(QtNetworkSettings::echoServerName());
     QVERIFY(info.addresses().count());
     QHostAddress remote = info.addresses().first();
 
@@ -1640,15 +1647,14 @@ void tst_QUdpSocket::linkLocalIPv6()
         sockets << s;
     }
 
-    QUdpSocket neutral;
-    QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv6)));
-    QSignalSpy neutralReadSpy(&neutral, SIGNAL(readyRead()));
-
     QByteArray testData("hello");
     foreach (QUdpSocket *s, sockets) {
+        QUdpSocket neutral;
+        QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv6)));
+        QSignalSpy neutralReadSpy(&neutral, SIGNAL(readyRead()));
+
         QSignalSpy spy(s, SIGNAL(readyRead()));
 
-        neutralReadSpy.clear();
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QTRY_VERIFY(neutralReadSpy.count() > 0); //note may need to accept a firewall prompt
 

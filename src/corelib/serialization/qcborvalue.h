@@ -43,7 +43,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qcborcommon.h>
-#include <QtCore/qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qurl.h>
@@ -72,11 +74,12 @@ class QDataStream;
 struct QCborParserError
 {
     qint64 offset = 0;
-    QCborError error = {};
+    QCborError error = { QCborError::NoError };
 
     QString errorString() const { return error.toString(); }
 };
 
+class QCborValueRef;
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborValue
 {
@@ -156,7 +159,9 @@ public:
 
     explicit QCborValue(const QDateTime &dt);
     explicit QCborValue(const QUrl &url);
+#if QT_CONFIG(regularexpression)
     explicit QCborValue(const QRegularExpression &rx);
+#endif
     explicit QCborValue(const QUuid &uuid);
 
     ~QCborValue() { if (container) dispose(); }
@@ -234,7 +239,9 @@ public:
     QString toString(const QString &defaultValue = {}) const;
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const;
     QUrl toUrl(const QUrl &defaultValue = {}) const;
+#if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const;
+#endif
     QUuid toUuid(const QUuid &defaultValue = {}) const;
 
     // only forward-declared, need split functions
@@ -246,6 +253,9 @@ public:
     const QCborValue operator[](const QString &key) const;
     const QCborValue operator[](QLatin1String key) const;
     const QCborValue operator[](qint64 key) const;
+    QCborValueRef operator[](qint64 key);
+    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
 #if 0 && QT_HAS_INCLUDE(<compare>)
@@ -376,8 +386,10 @@ public:
     { return concrete().toDateTime(defaultValue); }
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
+#if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
     { return concrete().toRegularExpression(defaultValue); }
+#endif
     QUuid toUuid(const QUuid &defaultValue = {}) const
     { return concrete().toUuid(defaultValue); }
 
@@ -386,6 +398,13 @@ public:
     QCborArray toArray(const QCborArray &a) const;
     QCborMap toMap() const;
     QCborMap toMap(const QCborMap &m) const;
+
+    const QCborValue operator[](const QString &key) const;
+    const QCborValue operator[](QLatin1String key) const;
+    const QCborValue operator[](qint64 key) const;
+    QCborValueRef operator[](qint64 key);
+    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
@@ -417,6 +436,7 @@ public:
     { return concrete().toDiagnosticNotation(opt); }
 
 private:
+    friend class QCborValue;
     friend class QCborArray;
     friend class QCborMap;
     friend class QCborContainerPrivate;

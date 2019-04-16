@@ -50,7 +50,9 @@
 
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
+#if QT_CONFIG(settings)
 #include <QtCore/QSettings>
+#endif
 #include <QtCore/QtEndian>
 #ifndef QT_NO_FREETYPE
 #include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
@@ -115,67 +117,6 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 QCoreTextFontDatabase::QCoreTextFontDatabase()
     : m_hasPopulatedAliases(false)
 {
-#ifdef Q_OS_MACX
-    QSettings appleSettings(QLatin1String("apple.com"));
-    QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
-    if (appleValue.isValid())
-        QCoreTextFontEngine::antialiasingThreshold = appleValue.toInt();
-
-    /*
-        font_smoothing = 0 means no smoothing, while 1-3 means subpixel
-        antialiasing with different hinting styles (but we don't care about the
-        exact value, only if subpixel rendering is available or not)
-    */
-    int font_smoothing = 0;
-    appleValue = appleSettings.value(QLatin1String("AppleFontSmoothing"));
-    if (appleValue.isValid()) {
-        font_smoothing = appleValue.toInt();
-    } else {
-        // non-Apple displays do not provide enough information about subpixel rendering so
-        // draw text with cocoa and compare pixel colors to see if subpixel rendering is enabled
-        int w = 10;
-        int h = 10;
-        NSRect rect = NSMakeRect(0.0, 0.0, w, h);
-        NSImage *fontImage = [[NSImage alloc] initWithSize:NSMakeSize(w, h)];
-
-        [fontImage lockFocus];
-
-        [[NSColor whiteColor] setFill];
-        NSRectFill(rect);
-
-        NSString *str = @"X\\";
-        NSFont *font = [NSFont fontWithName:@"Helvetica" size:10.0];
-        NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
-        [attrs setObject:font forKey:NSFontAttributeName];
-        [attrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
-
-        [str drawInRect:rect withAttributes:attrs];
-
-        NSBitmapImageRep *nsBitmapImage = [[NSBitmapImageRep alloc] initWithFocusedViewRect:rect];
-
-        [fontImage unlockFocus];
-
-        float red, green, blue;
-        for (int x = 0; x < w; x++) {
-            for (int y = 0; y < h; y++) {
-                NSColor *pixelColor = [nsBitmapImage colorAtX:x y:y];
-                red = [pixelColor redComponent];
-                green = [pixelColor greenComponent];
-                blue = [pixelColor blueComponent];
-                if (red != green || red != blue)
-                    font_smoothing = 1;
-            }
-        }
-
-        [nsBitmapImage release];
-        [fontImage release];
-    }
-    QCoreTextFontEngine::defaultGlyphFormat = (font_smoothing > 0
-                                               ? QFontEngine::Format_A32
-                                               : QFontEngine::Format_A8);
-#else
-    QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A8;
-#endif
 }
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
@@ -253,7 +194,7 @@ struct FontDescription {
     QFont::Weight weight;
     QFont::Style style;
     QFont::Stretch stretch;
-    int pixelSize;
+    qreal pointSize;
     bool fixedPitch;
     QSupportedWritingSystems writingSystems;
 };
@@ -269,7 +210,7 @@ Q_DECL_UNUSED static inline QDebug operator<<(QDebug debug, const FontDescriptio
         << ", weight=" << fd.weight
         << ", style=" << fd.style
         << ", stretch=" << fd.stretch
-        << ", pixelSize=" << fd.pixelSize
+        << ", pointSize=" << fd.pointSize
         << ", fixedPitch=" << fd.fixedPitch
         << ", writingSystems=" << fd.writingSystems
     << ")";
@@ -345,9 +286,11 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
         if (CFNumberIsFloatType(size)) {
             double d;
             CFNumberGetValue(size, kCFNumberDoubleType, &d);
-            fd->pixelSize = d;
+            fd->pointSize = d;
         } else {
-            CFNumberGetValue(size, kCFNumberIntType, &fd->pixelSize);
+            int i;
+            CFNumberGetValue(size, kCFNumberIntType, &i);
+            fd->pointSize = i;
         }
     }
 
@@ -375,8 +318,8 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, con
 
     CFRetain(font);
     QPlatformFontDatabase::registerFont(family, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
-            true /* antialiased */, true /* scalable */,
-            fd.pixelSize, fd.fixedPitch, fd.writingSystems, (void *) font);
+            true /* antialiased */, true /* scalable */, 0 /* pixelSize, ignored as font is scalable */,
+            fd.fixedPitch, fd.writingSystems, (void *)font);
 }
 
 static NSString * const kQtFontDataAttribute = @"QtFontDataAttribute";
@@ -786,7 +729,7 @@ QFont *QCoreTextFontDatabase::themeFont(QPlatformTheme::Font f) const
     else
         CFRelease(fontDesc);
 
-    QFont *font = new QFont(fd.familyName, fd.pixelSize, fd.weight, fd.style == QFont::StyleItalic);
+    QFont *font = new QFont(fd.familyName, fd.pointSize, fd.weight, fd.style == QFont::StyleItalic);
     return font;
 }
 

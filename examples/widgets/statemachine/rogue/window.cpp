@@ -66,7 +66,8 @@ Window::Window()
         font = QFont("Monospace");
     }
     else {
-        foreach (QString family, database.families()) {
+        const QStringList fontFamilies = database.families();
+        for (const QString &family : fontFamilies ) {
             if (database.isFixedPitch(family)) {
                 font = QFont(family);
                 break;
@@ -217,7 +218,8 @@ void Window::buildMachine()
 //![5]
     machine->setInitialState(inputState);
 
-    connect(machine, SIGNAL(finished()), qApp, SLOT(quit()));
+    connect(machine, &QStateMachine::finished,
+            qApp, &QApplication::quit);
 
     machine->start();
 }

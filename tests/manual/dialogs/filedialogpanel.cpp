@@ -438,9 +438,9 @@ void FileDialogPanel::restoreDefaults()
     setComboBoxValue(m_viewMode, d.viewMode());
     m_showDirsOnly->setChecked(d.testOption(QFileDialog::ShowDirsOnly));
     m_allowedSchemes->setText(QString());
-    m_confirmOverWrite->setChecked(d.confirmOverwrite());
-    m_nameFilterDetailsVisible->setChecked(d.isNameFilterDetailsVisible());
-    m_resolveSymLinks->setChecked(d.resolveSymlinks());
+    m_confirmOverWrite->setChecked(!d.testOption(QFileDialog::DontConfirmOverwrite));
+    m_nameFilterDetailsVisible->setChecked(!d.testOption(QFileDialog::HideNameFilterDetails));
+    m_resolveSymLinks->setChecked(!d.testOption(QFileDialog::DontResolveSymlinks));
     m_readOnly->setChecked(d.isReadOnly());
     m_native->setChecked(true);
     m_customDirIcons->setChecked(d.testOption(QFileDialog::DontUseCustomDirectoryIcons));
@@ -505,8 +505,15 @@ void FileDialogPanel::accepted()
     Q_ASSERT(d);
     m_result.clear();
     QDebug(&m_result).nospace()
+#if QT_VERSION >= 0x050000
+        << "URLs: " << d->selectedUrls() << '\n'
+#endif
         << "Files: " << d->selectedFiles()
-        << "\nDirectory: " << d->directory().absolutePath()
+        << "\nDirectory: "
+#if QT_VERSION >= 0x050000
+        << d->directoryUrl() << ", "
+#endif
+        << d->directory().absolutePath()
         << "\nName filter: " << d->selectedNameFilter();
     QTimer::singleShot(0, this, SLOT(showAcceptedResult())); // Avoid problems with the closing (modal) dialog as parent.
 }

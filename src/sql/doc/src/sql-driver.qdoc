@@ -381,6 +381,23 @@
     multibyte enabled PostgreSQL server can be found in the PostgreSQL
     Administrator Guide, Chapter 5.
 
+    \section3 QPSQL Case Sensitivity
+
+    PostgreSQL databases will only respect case sensitivity if the table or field
+    name is quoted when the table is created. So for example, a SQL query such
+    as:
+
+    \snippet code/doc_src_sql-driver.qdoc 39
+
+    will ensure that it can be accessed with the same case that was used. If the
+    table or field name is not quoted when created, the actual table name
+    or field name will be lower-case. When QSqlDatabase::record() or
+    QSqlDatabase::primaryIndex() access a table or field that was unquoted
+    when created, the name passed to the function must be lower-case to
+    ensure it is found. For example:
+
+    \snippet code/doc_src_sql-driver.qdoc 40
+
     \section3 QPSQL BLOB Support
 
     Binary Large Objects are supported through the \c BYTEA field type in

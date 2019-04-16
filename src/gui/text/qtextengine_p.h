@@ -304,8 +304,8 @@ class QTextItemInt : public QTextItem
 {
 public:
     inline QTextItemInt()
-        : justified(false), underlineStyle(QTextCharFormat::NoUnderline), num_chars(0), chars(0),
-          logClusters(0), f(0), fontEngine(0)
+        : justified(false), underlineStyle(QTextCharFormat::NoUnderline), num_chars(0), chars(nullptr),
+          logClusters(nullptr), f(nullptr), fontEngine(nullptr)
     {}
     QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format = QTextCharFormat());
     QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars, int numChars, QFontEngine *fe,
@@ -335,7 +335,7 @@ public:
 
 struct QScriptItem
 {
-    Q_DECL_CONSTEXPR QScriptItem(int p, QScriptAnalysis a) Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR QScriptItem(int p, QScriptAnalysis a) noexcept
         : position(p), analysis(a),
           num_glyphs(0), descent(-1), ascent(-1), leading(-1), width(-1),
           glyph_data_offset(0) {}
@@ -348,7 +348,7 @@ struct QScriptItem
     QFixed leading;
     QFixed width;
     int glyph_data_offset;
-    Q_DECL_CONSTEXPR QFixed height() const Q_DECL_NOTHROW { return ascent + descent; }
+    Q_DECL_CONSTEXPR QFixed height() const noexcept { return ascent + descent; }
 private:
     friend class QVector<QScriptItem>;
     QScriptItem() {}; // for QVector, don't use
@@ -484,7 +484,7 @@ public:
         return end - si->position;
     }
 
-    QFontEngine *fontEngine(const QScriptItem &si, QFixed *ascent = 0, QFixed *descent = 0, QFixed *leading = 0) const;
+    QFontEngine *fontEngine(const QScriptItem &si, QFixed *ascent = nullptr, QFixed *descent = nullptr, QFixed *leading = nullptr) const;
     QFont font(const QScriptItem &si) const;
     inline QFont font() const { return fnt; }
 
@@ -530,7 +530,7 @@ public:
     inline QTextFormatCollection *formatCollection() const {
         if (block.docHandle())
             return block.docHandle()->formatCollection();
-        return specialData ? specialData->formatCollection.data() : 0;
+        return specialData ? specialData->formatCollection.data() : nullptr;
     }
     QTextCharFormat format(const QScriptItem *si) const;
     inline QAbstractTextDocumentLayout *docLayout() const {
@@ -553,8 +553,8 @@ private:
         mutable int prevPosition;
         mutable int prevLength;
         inline void reset() {
-            prevFontEngine = 0;
-            prevScaledFontEngine = 0;
+            prevFontEngine = nullptr;
+            prevScaledFontEngine = nullptr;
             prevScript = -1;
             prevPosition = -1;
             prevLength = -1;
@@ -684,7 +684,7 @@ Q_DECLARE_TYPEINFO(QTextEngine::ItemDecoration, Q_MOVABLE_TYPE);
 struct QTextLineItemIterator
 {
     QTextLineItemIterator(QTextEngine *eng, int lineNum, const QPointF &pos = QPointF(),
-                          const QTextLayout::FormatRange *_selection = 0);
+                          const QTextLayout::FormatRange *_selection = nullptr);
 
     inline bool atEnd() const { return logicalItem >= nItems - 1; }
     inline bool atBeginning() const { return logicalItem <= 0; }

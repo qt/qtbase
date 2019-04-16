@@ -12,7 +12,6 @@ HEADERS +=  \
         global/qendian_p.h \
         global/qnumeric_p.h \
         global/qnumeric.h \
-        global/qfloat16_p.h \
         global/qfloat16.h \
         global/qglobalstatic.h \
         global/qlibraryinfo.h \
@@ -131,7 +130,7 @@ qtPrepareTool(QMAKE_QFLOAT16_TABLES, qfloat16-tables)
 
 qfloat16_tables.commands = $$QMAKE_QFLOAT16_TABLES ${QMAKE_FILE_OUT}
 qfloat16_tables.output = global/qfloat16tables.cpp
-qfloat16_tables.depends = $$QMAKE_QFLOAT16_TABLES
+qfloat16_tables.depends = $$QMAKE_QFLOAT16_TABLES_EXE
 qfloat16_tables.input = QMAKE_QFLOAT16_TABLES_GENERATE
 qfloat16_tables.variable_out = SOURCES
 QMAKE_EXTRA_COMPILERS += qfloat16_tables

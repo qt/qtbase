@@ -15,8 +15,10 @@
             "openssl-linked": { "type": "void", "name": "openssl", "value": "linked" },
             "openssl-runtime": { "type": "void", "name": "openssl", "value": "runtime" },
             "dtls": "boolean",
+            "ocsp": "boolean",
             "sctp": "boolean",
             "securetransport": "boolean",
+            "schannel": "boolean",
             "ssl": "boolean",
             "system-proxies": "boolean"
         }
@@ -26,13 +28,16 @@
         "corewlan": {
             "label": "CoreWLan",
             "export": "",
-            "test": "corewlan",
+            "test": {
+                "lang": "objc++",
+                "include": [ "CoreWLAN/CoreWLAN.h", "CoreWLAN/CWInterface.h" ],
+                "main": "[CWInterface interfaceWithName:@\"en2\"];"
+            },
             "sources": [
                 "-framework CoreWLAN -framework Foundation"
             ]
         },
         "network": {
-            "export": "",
             "sources": [
                 { "type": "makeSpec", "spec": "NETWORK" }
             ]
@@ -40,13 +45,13 @@
         "libproxy": {
             "label": "libproxy",
             "test": {
-                "include": [ "proxy.h" ],
                 "main": [
                     "pxProxyFactory *factory = px_proxy_factory_new();",
                     "px_proxy_factory_get_proxies(factory, \"http://qt-project.org\");",
                     "px_proxy_factory_free(factory);"
                 ]
             },
+            "headers": "proxy.h",
             "sources": [
                 "-lproxy"
             ]
@@ -54,7 +59,17 @@
         "openssl_headers": {
             "label": "OpenSSL Headers",
             "export": "openssl",
-            "test": "openssl",
+            "test": {
+                "tail": [
+                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10000000L",
+                    "#  error OpenSSL >= 1.0.0 is required",
+                    "#endif",
+                    "#if OPENSSL_VERSION_NUMBER-0 >= 0x10002000L && !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)",
+                    "#  error OpenSSL was reported as >= 1.0.2 but is missing required features, possibly it's libressl which is unsupported",
+                    "#endif"
+                ]
+            },
+            "headers": [ "openssl/ssl.h", "openssl/opensslv.h" ],
             "sources": [
                 {
                     "comment": "placeholder for OPENSSL_PATH",
@@ -64,23 +79,24 @@
         },
         "openssl": {
             "label": "OpenSSL",
-            "test": "openssl",
+            "test": {
+                "inherit": "openssl_headers",
+                "main": "SSL_free(SSL_new(0));"
+            },
             "sources": [
                 { "type": "openssl" },
                 {
-                    "comment": "placeholder for OPENSSL_{PATH,LIBS{,_{DEBUG,RELEASE}}}",
-                    "libs": "",
-                    "condition": "config.win32 && !features.shared"
-                },
-                {
-                    "libs": "-lssleay32 -llibeay32",
-                    "condition": "config.win32 && features.shared"
-                },
-                {
-                    "libs": "-llibssl -llibcrypto",
+                    "libs": "-lssleay32 -llibeay32 -lUser32 -lWs2_32 -lAdvapi32 -lGdi32",
                     "condition": "config.win32"
                 },
-                { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
+                {
+                    "libs": "-llibssl -llibcrypto -lUser32 -lWs2_32 -lAdvapi32 -lCrypt32",
+                    "condition": "config.msvc"
+                },
+                {
+                    "libs": "-lssl -lcrypto",
+                    "condition": "!config.msvc"
+                }
             ]
         }
     },
@@ -148,7 +164,14 @@
         "openssl11": {
             "label": "OpenSSL 1.1 support",
             "type": "compile",
-            "test": "unix/openssl11",
+            "test": {
+                "include": "openssl/opensslv.h",
+                "tail": [
+                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L",
+                    "#  error OpenSSL >= 1.1 is required",
+                    "#endif"
+                ]
+            },
             "use": "openssl"
         },
         "dtls": {
@@ -163,6 +186,28 @@
                 ]
             },
             "use": "openssl"
+        },
+        "ocsp": {
+            "label": "OCSP stapling support in OpenSSL",
+            "type": "compile",
+            "test": {
+                "include": ["openssl/ssl.h", "openssl/ocsp.h"],
+                "tail": [
+                    "#if defined(OPENSSL_NO_OCSP) || defined(OPENSSL_NO_TLSEXT)",
+                    "#  error OpenSSL without OCSP stapling",
+                    "#endif"
+                ]
+            },
+            "use": "openssl"
+        },
+        "gssapi": {
+            "label": "KRB5 GSSAPI support",
+            "type": "compile",
+            "test": {
+                "include": [ "gssapi/gssapi.h" ],
+                "main": ["gss_ctx_id_t ctx;"],
+                "qmake": "LIBS += -lgssapi_krb5"
+            }
         }
     },
 
@@ -196,21 +241,25 @@
         },
         "openssl": {
             "label": "OpenSSL",
-            "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
-            "disable": "input.openssl == 'no' || input.ssl == 'no'",
-            "autoDetect": "!config.winrt && !config.wasm",
-            "condition": "!features.securetransport && (features.openssl-linked || libs.openssl_headers)",
+            "enable": "false",
+            "condition": "features.openssl-runtime || features.openssl-linked",
             "output": [
                 "privateFeature",
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
                 { "type": "define", "negative": true, "name": "QT_NO_OPENSSL" }
             ]
         },
+        "openssl-runtime": {
+            "autoDetect": "!config.winrt && !config.wasm",
+            "enable": "input.openssl == 'yes' || input.openssl == 'runtime'",
+            "disable": "input.openssl == 'no' || input.openssl == 'linked' || input.ssl == 'no'",
+            "condition": "!features.securetransport && !features.schannel && libs.openssl_headers"
+        },
         "openssl-linked": {
             "label": "  Qt directly linked to OpenSSL",
+            "autoDetect": false,
             "enable": "input.openssl == 'linked'",
-            "disable": "input.openssl != 'linked'",
-            "condition": "!features.securetransport && libs.openssl",
+            "condition": "!features.securetransport && !features.schannel && libs.openssl",
             "output": [
                 "privateFeature",
                 { "type": "define", "name": "QT_LINKED_OPENSSL" }
@@ -221,20 +270,36 @@
             "disable": "input.securetransport == 'no' || input.ssl == 'no'",
             "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
             "output": [
-                "privateFeature",
+                "publicFeature",
                 { "type": "define", "name": "QT_SECURETRANSPORT" }
+            ]
+        },
+        "schannel": {
+            "label": "Schannel",
+            "disable": "input.schannel == 'no' || input.ssl == 'no'",
+            "condition": "input.schannel == 'yes' && config.win32 && !config.winrt && (input.openssl == '' || input.openssl == 'no')",
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_SCHANNEL" }
             ]
         },
         "ssl": {
             "label": "SSL",
-            "condition": "config.winrt || features.securetransport || features.openssl",
+            "condition": "config.winrt || features.securetransport || features.openssl || features.schannel",
             "output": [ "publicFeature", "feature" ]
         },
         "dtls": {
             "label": "DTLS",
             "purpose": "Provides a DTLS implementation",
             "section": "Networking",
-            "condition": "features.openssl && tests.dtls",
+            "condition": "features.openssl && features.udpsocket && tests.dtls",
+            "output": [ "publicFeature" ]
+        },
+        "ocsp": {
+            "label": "OCSP-stapling",
+            "purpose": "Provides OCSP stapling support",
+            "section": "Networking",
+            "condition": "features.opensslv11 && tests.ocsp",
             "output": [ "publicFeature" ]
         },
         "opensslv11": {
@@ -318,6 +383,20 @@
             "purpose": "Provides API for DNS lookups.",
             "section": "Networking",
             "output": [ "publicFeature" ]
+        },
+        "gssapi": {
+            "label": "GSSAPI",
+            "purpose": "Enable SPNEGO authentication through GSSAPI",
+            "section": "Networking",
+            "condition": "!config.win32 && tests.gssapi",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sspi": {
+            "label": "SSPI",
+            "purpose": "Enable NTLM/SPNEGO authentication through SSPI",
+            "section": "Networking",
+            "condition": "config.win32 && !config.winrt",
+            "output": [ "publicFeature", "feature" ]
         }
     },
 
@@ -354,12 +433,19 @@
                     "args": "securetransport",
                     "condition": "config.darwin"
                 },
+                {
+                    "type": "feature",
+                    "args": "schannel",
+                    "condition": "config.win32 && !config.winrt"
+                },
                 "openssl",
                 "openssl-linked",
                 "opensslv11",
                 "dtls",
+                "ocsp",
                 "sctp",
-                "system-proxies"
+                "system-proxies",
+                "gssapi"
             ]
         }
     ]

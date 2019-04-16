@@ -53,23 +53,20 @@
 #include <QtXml>
 
 //! [0]
-DomItem::DomItem(QDomNode &node, int row, DomItem *parent)
-{
-    domNode = node;
+DomItem::DomItem(const QDomNode &node, int row, DomItem *parent)
+    : domNode(node),
 //! [0]
-    // Record the item's location within its parent.
+      // Record the item's location within its parent.
 //! [1]
-    rowNumber = row;
-    parentItem = parent;
-}
+      parentItem(parent),
+      rowNumber(row)
+{}
 //! [1]
 
 //! [2]
 DomItem::~DomItem()
 {
-    QHash<int,DomItem*>::iterator it;
-    for (it = childItems.begin(); it != childItems.end(); ++it)
-        delete it.value();
+    qDeleteAll(childItems);
 }
 //! [2]
 
@@ -90,21 +87,22 @@ DomItem *DomItem::parent()
 //! [5]
 DomItem *DomItem::child(int i)
 {
-    if (childItems.contains(i))
-        return childItems[i];
+    DomItem *childItem = childItems.value(i);
+    if (childItem)
+        return childItem;
 
+    // if child does not yet exist, create it
     if (i >= 0 && i < domNode.childNodes().count()) {
         QDomNode childNode = domNode.childNodes().item(i);
-        DomItem *childItem = new DomItem(childNode, i, this);
+        childItem = new DomItem(childNode, i, this);
         childItems[i] = childItem;
-        return childItem;
     }
-    return 0;
+    return childItem;
 }
 //! [5]
 
 //! [6]
-int DomItem::row()
+int DomItem::row() const
 {
     return rowNumber;
 }

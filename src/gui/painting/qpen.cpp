@@ -322,7 +322,7 @@ QPen::QPen(const QBrush &brush, qreal width, Qt::PenStyle s, Qt::PenCapStyle c, 
     Constructs a pen that is a copy of the given \a pen.
 */
 
-QPen::QPen(const QPen &p) Q_DECL_NOTHROW
+QPen::QPen(const QPen &p) noexcept
 {
     d = p.d;
     if (d)
@@ -381,7 +381,7 @@ void QPen::detach()
     this pen.
 */
 
-QPen &QPen::operator=(const QPen &p) Q_DECL_NOTHROW
+QPen &QPen::operator=(const QPen &p) noexcept
 {
     QPen(p).swap(*this);
     return *this;

@@ -191,7 +191,7 @@
 
     We then set the \c{cursor}'s position back to its last position in
     \c topFrame and fill in the customer's name (provided by the constructor)
-    and address - using a \c foreach loop to traverse the QString, \c address.
+    and address - using a range-based for loop to traverse the QString, \c address.
 
     \snippet richtext/orderform/mainwindow.cpp 4
 

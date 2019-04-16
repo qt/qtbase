@@ -1,5 +1,4 @@
 SUBPROGRAMS = \
-     #alive \
      assert \
      badxml \
      benchlibcallgrind \
@@ -21,22 +20,23 @@ SUBPROGRAMS = \
      exceptionthrow \
      expectfail \
      failcleanup \
+     faildatatype \
+     failfetchtype \
      failinit \
      failinitdata \
      fetchbogus \
      findtestdata \
      float \
      globaldata \
-     keyboard \
      longstring \
      maxwarnings \
-     mouse \
      multiexec \
      pairdiagnostics \
      printdatatags \
      printdatatagswithglobaltags \
      qexecstringlist \
      silent \
+     signaldumper \
      singleskip \
      skip \
      skipcleanup \
@@ -45,12 +45,18 @@ SUBPROGRAMS = \
      sleep \
      strcmp \
      subtest \
+     testlib \
      tuplediagnostics \
      verbose1 \
      verbose2 \
      verifyexceptionthrown \
      warnings \
+     watchdog \
      xunit
+
+qtHaveModule(gui): SUBPROGRAMS += \
+    keyboard \
+    mouse
 
 INCLUDEPATH += ../../../../shared/
 HEADERS += ../../../../shared/emulationdetector.h

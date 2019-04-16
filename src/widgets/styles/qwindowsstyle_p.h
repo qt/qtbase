@@ -77,32 +77,32 @@ public:
     void polish(QPalette &) override;
 
     void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
-                       const QWidget *w = 0) const override;
+                       const QWidget *w = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
-                     const QWidget *w = 0) const override;
-    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const override;
+                     const QWidget *w = nullptr) const override;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = nullptr) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
-                            const QWidget *w = 0) const override;
+                            const QWidget *w = nullptr) const override;
     QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
-                           const QSize &contentsSize, const QWidget *widget = 0) const override;
+                           const QSize &contentsSize, const QWidget *widget = nullptr) const override;
 
-    int pixelMetric(PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0) const override;
+    int pixelMetric(PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr) const override;
 
-    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
-                  QStyleHintReturn *returnData = 0) const override;
+    int styleHint(StyleHint hint, const QStyleOption *opt = nullptr, const QWidget *widget = nullptr,
+                  QStyleHintReturn *returnData = nullptr) const override;
 
     QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
-                           const QWidget *widget = 0) const override;
+                           const QWidget *widget = nullptr) const override;
 
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
-                       const QWidget *widget = 0) const override;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = nullptr,
+                       const QWidget *widget = nullptr) const override;
 
 protected:
     bool eventFilter(QObject *o, QEvent *e) override;
     QWindowsStyle(QWindowsStylePrivate &dd);
 
 private:
-    Q_DISABLE_COPY(QWindowsStyle)
+    Q_DISABLE_COPY_MOVE(QWindowsStyle)
     Q_DECLARE_PRIVATE(QWindowsStyle)
 };
 

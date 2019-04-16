@@ -39,7 +39,6 @@ add_qt_module(Gui
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network
     SOURCES
-        animation/qguivariantanimation.cpp
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
         image/qicon.cpp image/qicon.h image/qicon_p.h
@@ -133,7 +132,13 @@ add_qt_module(Gui
         painting/qblittable.cpp painting/qblittable_p.h
         painting/qbrush.cpp painting/qbrush.h
         painting/qcolor.cpp painting/qcolor.h painting/qcolor_p.h
-        painting/qcolorprofile.cpp painting/qcolorprofile_p.h
+        painting/qcolormatrix_p.h
+        painting/qcolorspace.cpp painting/qcolorspace.h painting/qcolorspace_p.h
+        painting/qcolortransferfunction_p.h
+        painting/qcolortransfertable_p.h
+        painting/qcolortransform.cpp painting/qcolortransform.h painting/qcolortransform_p.h
+        painting/qcolortrc_p.h
+        painting/qcolortrclut.cpp painting/qcolortrclut_p.h
         painting/qcompositionfunctions.cpp
         painting/qcosmeticstroker.cpp painting/qcosmeticstroker_p.h
         painting/qdatabuffer_p.h
@@ -143,6 +148,7 @@ add_qt_module(Gui
         painting/qemulationpaintengine.cpp painting/qemulationpaintengine_p.h
         painting/qfixed_p.h
         painting/qgrayraster.c painting/qgrayraster_p.h
+        painting/qicc.cpp painting/qicc_p.h
         painting/qimagescale.cpp
         painting/qmatrix.cpp painting/qmatrix.h
         painting/qmemrotate.cpp painting/qmemrotate_p.h
@@ -209,6 +215,7 @@ add_qt_module(Gui
         text/qtextoption.cpp text/qtextoption.h
         text/qtexttable.cpp text/qtexttable.h text/qtexttable_p.h
         util/qabstractlayoutstyleinfo.cpp util/qabstractlayoutstyleinfo_p.h
+        util/qastchandler.cpp util/qastchandler_p.h
         util/qdesktopservices.cpp util/qdesktopservices.h
         util/qgridlayoutengine.cpp util/qgridlayoutengine_p.h
         util/qhexstring_p.h
@@ -239,6 +246,7 @@ add_qt_module(Gui
 )
 
 # Resources:
+
 # special case:
 # This name is fixed in the code:-/
 add_qt_resource(Gui qmake_webgradients PREFIX "/qgradient" BASE "painting" FILES
@@ -270,10 +278,8 @@ add_qt_simd_part(Gui SIMD sse4_1
 
 add_qt_simd_part(Gui SIMD neon
     SOURCES
-        ../3rdparty/pixman/pixman-arm-neon-asm.S
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
-        painting/qdrawhelper_neon_asm.S
         painting/qimagescale_neon.cpp
 )
 
@@ -303,6 +309,7 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
     SOURCES
         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
 )
+
 
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
 # CONFIG = "simd" "optimize_full" "qt_tracepoints"
@@ -336,50 +343,55 @@ extend_target(Gui CONDITION APPLE
         ${FWCoreGraphics}
 )
 
+extend_target(Gui CONDITION QT_FEATURE_animation
+    SOURCES
+        animation/qguivariantanimation.cpp
+)
+
 extend_target(Gui CONDITION WIN32
     SOURCES
         kernel/qwindowdefs_win.h
 )
 
-#### Keys ignored in scope 7:.:.:gui.pro:WIN32:
+#### Keys ignored in scope 8:.:.:gui.pro:WIN32:
 # CMAKE_WINDOWS_BUILD = "True"
 
-#### Keys ignored in scope 10:.:.:gui.pro:QT_FEATURE_egl:
+#### Keys ignored in scope 11:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_LIBS = "$$cmakeProcessLibs$$QMAKE_LIBS_EGL"
 
-#### Keys ignored in scope 11:.:.:gui.pro:NOT QMAKE_LIBDIR_EGL_ISEMPTY:
+#### Keys ignored in scope 12:.:.:gui.pro:NOT QMAKE_LIBDIR_EGL_ISEMPTY:
 # CMAKE_EGL_LIBDIR = "$$cmakeTargetPath$$QMAKE_LIBDIR_EGL"
 
-#### Keys ignored in scope 12:.:.:gui.pro:QT_FEATURE_opengles2:
+#### Keys ignored in scope 13:.:.:gui.pro:QT_FEATURE_opengles2:
 # CMAKE_GL_HEADER_NAME = "GLES2/gl2.h"
 # CMAKE_OPENGL_INCDIRS = "$$cmakePortablePaths$$QMAKE_INCDIR_OPENGL_ES2"
 # CMAKE_OPENGL_LIBS = "$$cmakeProcessLibs$$QMAKE_LIBS_OPENGL_ES2"
 # CMAKE_QT_OPENGL_IMPLEMENTATION = "GLESv2"
 
-#### Keys ignored in scope 13:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ES2_ISEMPTY:
+#### Keys ignored in scope 14:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ES2_ISEMPTY:
 # CMAKE_GL_INCDIRS = "$$cmakeTargetPaths$$QMAKE_INCDIR_OPENGL_ES2"
 
-#### Keys ignored in scope 14:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ES2_ISEMPTY:
+#### Keys ignored in scope 15:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ES2_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths$$QMAKE_LIBDIR_OPENGL_ES2"
 
-#### Keys ignored in scope 16:.:.:gui.pro:QT_FEATURE_opengl:
+#### Keys ignored in scope 17:.:.:gui.pro:QT_FEATURE_opengl:
 # CMAKE_GL_HEADER_NAME = "GL/gl.h"
 # CMAKE_OPENGL_INCDIRS = "$$cmakePortablePaths$$QMAKE_INCDIR_OPENGL"
 # CMAKE_QT_OPENGL_IMPLEMENTATION = "GL"
 
-#### Keys ignored in scope 17:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ISEMPTY:
+#### Keys ignored in scope 18:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ISEMPTY:
 # CMAKE_GL_INCDIRS = "$$cmakeTargetPaths$$QMAKE_INCDIR_OPENGL"
 
-#### Keys ignored in scope 18:.:.:gui.pro:NOT QT_FEATURE_dynamicgl:
+#### Keys ignored in scope 19:.:.:gui.pro:NOT QT_FEATURE_dynamicgl:
 # CMAKE_OPENGL_LIBS = "$$cmakeProcessLibs$$QMAKE_LIBS_OPENGL"
 
-#### Keys ignored in scope 19:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
+#### Keys ignored in scope 20:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths$$QMAKE_LIBDIR_OPENGL"
 
-#### Keys ignored in scope 20:.:.:gui.pro:APPLE_OSX:
+#### Keys ignored in scope 21:.:.:gui.pro:APPLE_OSX:
 # CMAKE_GL_HEADER_NAME = "gl.h"
 
-#### Keys ignored in scope 21:.:.:gui.pro:QT_FEATURE_egl:
+#### Keys ignored in scope 22:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_INCDIRS = "$$cmakePortablePaths$$QMAKE_INCDIR_EGL"
 
 extend_target(Gui CONDITION QT_FEATURE_accessibility
@@ -494,15 +506,26 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
 # special case:
 # extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5 ...
 
-#### Keys ignored in scope 43:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
+#### Keys ignored in scope 45:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
 
-extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT (TEST_architecture_arch STREQUAL "arm64")
+extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
-#### Keys ignored in scope 53:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
+# special case:
+extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64" AND QT_FEATURE_neon)
+    SOURCES
+        ../3rdparty/pixman/pixman-arm-neon-asm.S
+        painting/qdrawhelper_neon_asm.S
+)
+
+
+#### Keys ignored in scope 46:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND NOT INTEGRITY AND NOT QT_ARCH___contains___arm64:
+# NEON_ASM = "../3rdparty/pixman/pixman-arm-neon-asm.S" "painting/qdrawhelper_neon_asm.S"
+
+#### Keys ignored in scope 55:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
 # CONFIG = "opengles2"
 
 extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
@@ -542,6 +565,13 @@ extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
         opengl/qopenglfunctions_es2.cpp opengl/qopenglfunctions_es2.h
 )
 
+# special case
+# Make Vulkan a global imported target, so that generator expressions involving Vulkan
+# can be correctly evaluated in any sub project directory.
+if(TARGET Vulkan::Vulkan)
+    set_property(TARGET Vulkan::Vulkan PROPERTY IMPORTED_GLOBAL TRUE)
+endif()
+
 extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
@@ -549,14 +579,8 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
     PUBLIC_LIBRARIES
-        vulkan_nolink
+        Vulkan::Vulkan_nolink # special case
 )
-
-#### Keys ignored in scope 61:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
-# CONFIG = "generated_privates"
-
-#### Keys ignored in scope 63:.:vulkan:vulkan/vulkan.pri:else:
-# qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 # special case:
 if (QT_FEATURE_vulkan)
@@ -597,6 +621,17 @@ if (QT_FEATURE_vulkan)
     )
 endif()
 
+#### Keys ignored in scope 62:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+# CONFIG = "generated_privates"
+
+#### Keys ignored in scope 64:.:vulkan:vulkan/vulkan.pri:else:
+# qvkgen_h.CONFIG = "target_predeps" "no_link"
+
+extend_target(Gui CONDITION WASM
+    SOURCES
+        platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
+)
+
 # special case:
 # qpa headers are expected to be located right next to QtGui's private
 # headers. So a private QtGui header is #include <private/qfoo_p.h> and
@@ -606,7 +641,7 @@ qt_read_headers_pri("Gui" "module_headers") # special case
 install(FILES ${module_headers_qpa}
     DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa) # special case
 
-qt_create_tracepoints(Gui ./qtgui.tracepoints)
+qt_create_tracepoints(Gui qtgui.tracepoints)
 add_qt_docs(
-    ./doc/qtgui.qdocconf
+    doc/qtgui.qdocconf
 )

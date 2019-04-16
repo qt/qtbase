@@ -140,7 +140,7 @@ void XbelReader::readFolder(QTreeWidgetItem *item)
 
     QTreeWidgetItem *folder = createChildItem(item);
     bool folded = (xml.attributes().value(foldedAttribute()) != QLatin1String("no"));
-    treeWidget->setItemExpanded(folder, !folded);
+    folder->setExpanded(!folded);
 
     while (xml.readNextStartElement()) {
         if (xml.name() == QLatin1String("title"))

@@ -52,6 +52,7 @@
 //
 #include "qt_mac_p.h"
 #include <private/qguiapplication_p.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qscreen.h>
 
@@ -59,6 +60,8 @@
 #include <objc/message.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSView));
+
+struct mach_header;
 
 QT_BEGIN_NAMESPACE
 
@@ -172,6 +175,34 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
     // return default value.
     return fallback;
 }
+
+// -------------------------------------------------------------------------
+
+#if !defined(Q_PROCESSOR_X86_64)
+#error "32-bit builds are not supported"
+#endif
+
+class QMacVersion
+{
+public:
+    enum VersionTarget {
+        ApplicationBinary,
+        QtLibraries
+    };
+
+    static QOperatingSystemVersion buildSDK(VersionTarget target = ApplicationBinary);
+    static QOperatingSystemVersion deploymentTarget(VersionTarget target = ApplicationBinary);
+    static QOperatingSystemVersion currentRuntime();
+
+private:
+    QMacVersion() = default;
+    using VersionTuple = QPair<QOperatingSystemVersion, QOperatingSystemVersion>;
+    static VersionTuple versionsForImage(const mach_header *machHeader);
+    static VersionTuple applicationVersion();
+    static VersionTuple libraryVersion();
+};
+
+// -------------------------------------------------------------------------
 
 QT_END_NAMESPACE
 

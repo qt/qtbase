@@ -51,7 +51,9 @@
 #include <qregularexpression.h>
 #endif
 #include <qvarlengtharray.h>
+#if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
+#endif
 #include <qthread.h>
 #include <qcoreapplication.h>
 #include <qmetaobject.h>
@@ -153,7 +155,7 @@ bool Qt::mightBeRichText(const QString& text)
 
     This function is defined in the \c <QTextDocument> header file.
 
-    \sa escape(), mightBeRichText()
+    \sa QString::toHtmlEscaped(), mightBeRichText()
 */
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {
@@ -209,7 +211,7 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 
     This function is defined in the \c <QTextDocument> header file.
 */
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 QTextCodec *Qt::codecForHtml(const QByteArray &ba)
 {
     return QTextCodec::codecForHtml(ba);
@@ -1910,7 +1912,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 }
 
 /*!
-    Prints the document to the given \a printer. The QPageablePaintDevice must be
+    Prints the document to the given \a printer. The QPagedPaintDevice must be
     set up before being used with this function.
 
     This is only a convenience method to print the whole document to the printer.
@@ -2661,10 +2663,10 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
     bool closeAnchor = false;
 
     if (format.isAnchor()) {
-        const QString name = format.anchorName();
-        if (!name.isEmpty()) {
+        const auto names = format.anchorNames();
+        if (!names.isEmpty()) {
             html += QLatin1String("<a name=\"");
-            html += name.toHtmlEscaped();
+            html += names.constFirst().toHtmlEscaped();
             html += QLatin1String("\"></a>");
         }
         const QString href = format.anchorHref();

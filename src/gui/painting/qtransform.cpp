@@ -795,7 +795,7 @@ bool QTransform::operator==(const QTransform &o) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QTransform &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QTransform &key, uint seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.m11());
@@ -1021,7 +1021,7 @@ QTransform QTransform::operator*(const QTransform &m) const
 /*!
     Assigns the given \a matrix's values to this matrix.
 */
-QTransform & QTransform::operator=(const QTransform &matrix) Q_DECL_NOTHROW
+QTransform & QTransform::operator=(const QTransform &matrix) noexcept
 {
     affine._m11 = matrix.affine._m11;
     affine._m12 = matrix.affine._m12;
@@ -1517,8 +1517,23 @@ QRegion QTransform::map(const QRegion &r) const
         return copy;
     }
 
-    if (t == TxScale && r.rectCount() == 1)
-        return QRegion(mapRect(r.boundingRect()));
+    if (t == TxScale) {
+        QRegion res;
+        if (m11() < 0 || m22() < 0) {
+            for (const QRect &rect : r)
+                res += mapRect(rect);
+        } else {
+            QVarLengthArray<QRect, 32> rects;
+            rects.reserve(r.rectCount());
+            for (const QRect &rect : r) {
+                QRect nr = mapRect(rect);
+                if (!nr.isEmpty())
+                    rects.append(nr);
+            }
+            res.setRects(rects.constData(), rects.count());
+        }
+        return res;
+    }
 
     QPainterPath p = map(qt_regionToPath(r));
     return p.toFillPolygon(QTransform()).toPolygon();
@@ -2144,13 +2159,14 @@ QTransform::operator QVariant() const
     \sa inverted()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn qreal QTransform::det() const
     \obsolete
 
     Returns the matrix's determinant. Use determinant() instead.
 */
-
+#endif
 
 /*!
     \fn qreal QTransform::m11() const

@@ -157,7 +157,7 @@ class QGLDefaultOverlayFormat: public QGLFormat
 public:
     inline QGLDefaultOverlayFormat()
     {
-        setOption(QGL::FormatOption(0xffff << 16)); // turn off all options
+        setOption(QGL::FormatOption(0xffffU << 16)); // turn off all options
         setOption(QGL::DirectRendering);
         setPlane(1);
     }
@@ -3880,12 +3880,9 @@ void QGLContext::doneCurrent()
 */
 
 QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(*(new QGLWidgetPrivate), parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
 }
 
@@ -3893,12 +3890,9 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
   \internal
  */
 QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
-    : QWidget(dd, parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(dd, parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(format, this), shareWidget);
 
 }
@@ -3935,12 +3929,9 @@ QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *par
 
 QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* shareWidget,
                      Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(*(new QGLWidgetPrivate), parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(format, this), shareWidget);
 }
 
@@ -3971,12 +3962,9 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
 */
 QGLWidget::QGLWidget(QGLContext *context, QWidget *parent, const QGLWidget *shareWidget,
                      Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
+    : QWidget(*(new QGLWidgetPrivate), parent, f)
 {
     Q_D(QGLWidget);
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
     d->init(context, shareWidget);
 }
 
@@ -4131,14 +4119,14 @@ void QGLWidget::swapBuffers()
 /*!
     \fn const QGLContext* QGLWidget::overlayContext() const
 
-    Returns the overlay context of this widget, or 0 if this widget
-    has no overlay.
+    Returns the overlay context of this widget, or \nullptr if this
+    widget has no overlay.
 
     \sa context()
 */
 const QGLContext* QGLWidget::overlayContext() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -5169,6 +5157,15 @@ QPaintEngine *QGLWidget::paintEngine() const
 
 void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget *shareWidget)
 {
+    Q_Q(QGLWidget);
+    q->setAttribute(Qt::WA_PaintOnScreen);
+    q->setAttribute(Qt::WA_NoSystemBackground);
+    q->setAutoFillBackground(true); // for compatibility
+
+    mustHaveWindowHandle = 1;
+    q->setAttribute(Qt::WA_NativeWindow);
+    q->setWindowFlag(Qt::MSWindowsOwnDC);
+
     initContext(context, shareWidget);
 }
 
@@ -5203,25 +5200,6 @@ bool QGLWidgetPrivate::renderCxPm(QPixmap*)
 */
 void QGLWidgetPrivate::cleanupColormaps()
 {
-}
-
-Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
-
-void qt_set_gl_library_name(const QString& name)
-{
-    qt_gl_lib_name()->operator=(name);
-}
-
-const QString qt_gl_library_name()
-{
-    if (qt_gl_lib_name()->isNull()) {
-# if defined(QT_OPENGL_ES_2)
-        return QLatin1String("GLESv2");
-# else
-        return QLatin1String("GL");
-# endif
-    }
-    return *qt_gl_lib_name();
 }
 
 void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *share) {

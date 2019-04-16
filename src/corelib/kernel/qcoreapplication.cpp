@@ -55,7 +55,6 @@
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
 #include <qstandardpaths.h>
-#include <qtextcodec.h>
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
 #include <qthreadstorage.h>
@@ -257,15 +256,6 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 
 // Support for introspection
 
-#ifndef QT_NO_QOBJECT
-QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
-
-void qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet &callback_set)
-{
-    qt_signal_spy_callback_set = callback_set;
-}
-#endif
-
 extern "C" void Q_CORE_EXPORT qt_startup_hook()
 {
 }
@@ -379,7 +369,7 @@ uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
 
 struct QCoreApplicationData {
-    QCoreApplicationData() Q_DECL_NOTHROW {
+    QCoreApplicationData() noexcept {
         applicationNameSet = false;
         applicationVersionSet = false;
     }
@@ -779,7 +769,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
-    Q_TRACE(QCoreApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QCoreApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -867,11 +857,6 @@ void QCoreApplicationPrivate::init()
     eventDispatcherReady();
 #endif
 
-#ifdef QT_EVAL
-    extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
-    qt_core_eval_init(application_type);
-#endif
-
     processCommandLineArguments();
 
     qt_call_pre_routines();
@@ -884,8 +869,6 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
 #endif
-
-    Q_TRACE(QCoreApplicationPrivate_init_exit);
 }
 
 /*!
@@ -1200,7 +1183,7 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
     // Note: when adjusting the tracepoints in here
     // consider adjusting QApplicationPrivate::notify_helper too.
-    Q_TRACE(QCoreApplication_notify_entry, receiver, event, event->type());
+    Q_TRACE_SCOPE(QCoreApplication_notify, receiver, event, event->type());
 
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
@@ -1266,7 +1249,11 @@ bool QCoreApplication::closingDown()
     \l{QCoreApplication::sendPostedEvents()}{sendPostedEvents()} from
     within that local loop.
 
-    Calling this function processes events only for the calling thread.
+    Calling this function processes events only for the calling thread,
+    and returns after all available events have been processed. Available
+    events are events queued before the function call. This means that
+    events that are posted while the function runs will be queued until
+    a later round of event processing.
 
     \threadsafe
 
@@ -1283,7 +1270,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 /*!
     \overload processEvents()
 
-    Processes pending events for the calling thread for \a maxtime
+    Processes pending events for the calling thread for \a ms
     milliseconds or until there are no more events to process,
     whichever is shorter.
 
@@ -1292,11 +1279,14 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     Calling this function processes events only for the calling thread.
 
+    \note Unlike the \l{QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)}{processEvents()}
+    overload, this function also processes events that are posted while the function runs.
+
     \threadsafe
 
     \sa exec(), QTimer, QEventLoop::processEvents()
 */
-void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime)
+void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int ms)
 {
     // ### Qt 6: consider splitting this method into a public and a private
     //           one, so that a user-invoked processEvents can be detected
@@ -1307,7 +1297,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     QElapsedTimer start;
     start.start();
     while (data->eventDispatcher.load()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
-        if (start.elapsed() > maxtime)
+        if (start.elapsed() > ms)
             break;
     }
 }
@@ -1492,7 +1482,7 @@ bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 */
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
-    Q_TRACE(QCoreApplication_postEvent_entry, receiver, event, event->type());
+    Q_TRACE_SCOPE(QCoreApplication_postEvent, receiver, event, event->type());
 
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
@@ -1630,14 +1620,15 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
 
 /*!
   Immediately dispatches all events which have been previously queued
-  with QCoreApplication::postEvent() and which are for the object \a receiver
-  and have the event type \a event_type.
+  with QCoreApplication::postEvent() and which are for the object \a
+  receiver and have the event type \a event_type.
 
   Events from the window system are \e not dispatched by this
   function, but by processEvents().
 
-  If \a receiver is null, the events of \a event_type are sent for all
-  objects. If \a event_type is 0, all the events are sent for \a receiver.
+  If \a receiver is \nullptr, the events of \a event_type are sent for
+  all objects. If \a event_type is 0, all the events are sent for
+  \a receiver.
 
   \note This method must be called from the thread in which its QObject
   parameter, \a receiver, lives.
@@ -1818,10 +1809,10 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     call it, be aware that killing events may cause \a receiver to
     break one or more invariants.
 
-    If \a receiver is null, the events of \a eventType are removed for
-    all objects. If \a eventType is 0, all the events are removed for
-    \a receiver. You should never call this function with \a eventType
-    of 0.
+    If \a receiver is \nullptr, the events of \a eventType are removed
+    for all objects. If \a eventType is 0, all the events are removed
+    for \a receiver. You should never call this function with \a
+    eventType of 0.
 
     \threadsafe
 */
@@ -2098,9 +2089,13 @@ static void replacePercentN(QString *result, int n)
         int len = 0;
         while ((percentPos = result->indexOf(QLatin1Char('%'), percentPos + len)) != -1) {
             len = 1;
+            if (percentPos + len == result->length())
+                break;
             QString fmt;
             if (result->at(percentPos + len) == QLatin1Char('L')) {
                 ++len;
+                if (percentPos + len == result->length())
+                    break;
                 fmt = QLatin1String("%L1");
             } else {
                 fmt = QLatin1String("%1");
@@ -2130,7 +2125,7 @@ static void replacePercentN(QString *result, int n)
 
     \a disambiguation is an identifying string, for when the same \a
     sourceText is used in different roles within the same context. By
-    default, it is null.
+    default, it is \nullptr.
 
     See the \l QTranslator and \l QObject::tr() documentation for
     more information about contexts, disambiguations and comments.
@@ -2665,9 +2660,9 @@ QStringList QCoreApplication::libraryPaths()
         QStringList *app_libpaths = new QStringList;
         coreappdata()->app_libpaths.reset(app_libpaths);
 
-        const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
+        QString libPathEnv = qEnvironmentVariable("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
-            QStringList paths = QFile::decodeName(libPathEnv).split(QDir::listSeparator(), QString::SkipEmptyParts);
+            QStringList paths = libPathEnv.split(QDir::listSeparator(), QString::SkipEmptyParts);
             for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
                 QString canonicalPath = QDir(*it).canonicalPath();
                 if (!canonicalPath.isEmpty()
@@ -2920,7 +2915,7 @@ bool QCoreApplication::hasPendingEvents()
 
 /*!
     Returns a pointer to the event dispatcher object for the main thread. If no
-    event dispatcher exists for the thread, this function returns 0.
+    event dispatcher exists for the thread, this function returns \nullptr.
 */
 QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {

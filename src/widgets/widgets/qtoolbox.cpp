@@ -294,7 +294,7 @@ QToolBox::QToolBox(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QToolBox);
     d->layout = new QVBoxLayout(this);
-    d->layout->setMargin(0);
+    d->layout->setContentsMargins(QMargins());
     setBackgroundRole(QPalette::Button);
 }
 
@@ -437,7 +437,7 @@ void QToolBoxPrivate::relayout()
     Q_Q(QToolBox);
     delete layout;
     layout = new QVBoxLayout(q);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
     for (QToolBoxPrivate::PageList::ConstIterator i = pageList.constBegin(); i != pageList.constEnd(); ++i) {
         layout->addWidget((*i).button);
         layout->addWidget((*i).sv);
@@ -504,7 +504,8 @@ int QToolBox::currentIndex() const
 }
 
 /*!
-    Returns a pointer to the current widget, or 0 if there is no such item.
+    Returns a pointer to the current widget, or \nullptr if there is
+    no such item.
 
     \sa currentIndex(), setCurrentWidget()
 */
@@ -512,7 +513,7 @@ int QToolBox::currentIndex() const
 QWidget * QToolBox::currentWidget() const
 {
     Q_D(const QToolBox);
-    return d->currentPage ? d->currentPage->widget : 0;
+    return d->currentPage ? d->currentPage->widget : nullptr;
 }
 
 /*!
@@ -530,15 +531,15 @@ void QToolBox::setCurrentWidget(QWidget *widget)
 }
 
 /*!
-    Returns the widget at position \a index, or 0 if there is no such
-    item.
+    Returns the widget at position \a index, or \nullptr if there is
+    no such item.
 */
 
 QWidget *QToolBox::widget(int index) const
 {
     Q_D(const QToolBox);
     if (index < 0 || index >= (int) d->pageList.size())
-        return 0;
+        return nullptr;
     return d->pageList.at(index).widget;
 }
 

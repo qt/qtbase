@@ -60,6 +60,10 @@
 #include <QTextBrowser>
 #include <QBoxLayout>
 #include <QRegularExpression>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLPaintDevice>
+#include <QOpenGLWindow>
 
 extern QPixmap cached(const QString &img);
 
@@ -67,17 +71,12 @@ ArthurFrame::ArthurFrame(QWidget *parent)
     : QWidget(parent)
     , m_prefer_image(false)
 {
-#ifdef QT_OPENGL_SUPPORT
-    glw = 0;
+#if QT_CONFIG(opengl)
+    m_glWindow = nullptr;
+    m_glWidget = nullptr;
     m_use_opengl = false;
-    QGLFormat f = QGLFormat::defaultFormat();
-    f.setSampleBuffers(true);
-    f.setStencil(true);
-    f.setAlpha(true);
-    f.setAlphaBufferSize(8);
-    QGLFormat::setDefaultFormat(f);
 #endif
-    m_document = 0;
+    m_document = nullptr;
     m_show_doc = false;
 
     m_tile = QPixmap(128, 128);
@@ -94,37 +93,55 @@ ArthurFrame::ArthurFrame(QWidget *parent)
 }
 
 
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
 void ArthurFrame::enableOpenGL(bool use_opengl)
 {
     if (m_use_opengl == use_opengl)
         return;
 
-    if (!glw && use_opengl) {
-        glw = new GLWidget(this);
-        glw->setAutoFillBackground(false);
-        glw->disableAutoBufferSwap();
+    m_use_opengl = use_opengl;
+
+    if (!m_glWindow && use_opengl) {
+        createGlWindow();
         QApplication::postEvent(this, new QResizeEvent(size(), size()));
     }
 
-    m_use_opengl = use_opengl;
     if (use_opengl) {
-        glw->show();
+        m_glWidget->show();
     } else {
-        if (glw)
-            glw->hide();
+        if (m_glWidget)
+            m_glWidget->hide();
     }
 
     update();
 }
+
+void ArthurFrame::createGlWindow()
+{
+    Q_ASSERT(m_use_opengl);
+
+    m_glWindow = new QOpenGLWindow();
+    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
+    f.setSamples(4);
+    f.setAlphaBufferSize(8);
+    f.setStencilBufferSize(8);
+    m_glWindow->setFormat(f);
+    m_glWindow->setFlags(Qt::WindowTransparentForInput);
+    m_glWindow->resize(width() - 1, height() - 1);
+    m_glWindow->create();
+    m_glWidget = QWidget::createWindowContainer(m_glWindow, this);
+}
 #endif
+
 
 void ArthurFrame::paintEvent(QPaintEvent *e)
 {
     static QImage *static_image = 0;
+
     QPainter painter;
+
     if (preferImage()
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
         && !m_use_opengl
 #endif
         ) {
@@ -142,10 +159,12 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         painter.fillRect(0, height() - o, o, o, bg);
         painter.fillRect(width() - o, height() - o, o, o, bg);
     } else {
-#ifdef QT_OPENGL_SUPPORT
-        if (m_use_opengl) {
-            painter.begin(glw);
-            painter.fillRect(QRectF(0, 0, glw->width(), glw->height()), palette().color(backgroundRole()));
+#if QT_CONFIG(opengl)
+        if (m_use_opengl && m_glWindow->isValid()) {
+            m_glWindow->makeCurrent();
+
+            painter.begin(m_glWindow);
+            painter.fillRect(QRectF(0, 0, m_glWindow->width(), m_glWindow->height()), palette().color(backgroundRole()));
         } else {
             painter.begin(this);
         }
@@ -196,7 +215,7 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
     painter.drawPath(clipPath);
 
     if (preferImage()
-#ifdef QT_OPENGL_SUPPORT
+#if QT_CONFIG(opengl)
         && !m_use_opengl
 #endif
         ) {
@@ -204,18 +223,17 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         painter.begin(this);
         painter.drawImage(e->rect(), *static_image, e->rect());
     }
-
-#ifdef QT_OPENGL_SUPPORT
-    if (m_use_opengl && (inherits("PathDeformRenderer") || inherits("PathStrokeRenderer") || inherits("CompositionRenderer") || m_show_doc))
-        glw->swapBuffers();
+#if QT_CONFIG(opengl)
+    if (m_use_opengl)
+        m_glWindow->update();
 #endif
 }
 
 void ArthurFrame::resizeEvent(QResizeEvent *e)
 {
-#ifdef QT_OPENGL_SUPPORT
-    if (glw)
-        glw->setGeometry(0, 0, e->size().width()-1, e->size().height()-1);
+#if QT_CONFIG(opengl)
+    if (m_glWidget)
+        m_glWidget->setGeometry(0, 0, e->size().width()-1, e->size().height()-1);
 #endif
     QWidget::resizeEvent(e);
 }
@@ -312,32 +330,40 @@ void ArthurFrame::showSource()
 
     QString contents;
     if (m_sourceFileName.isEmpty()) {
-        contents = QString("No source for widget: '%1'").arg(objectName());
+        contents = tr("No source for widget: '%1'").arg(objectName());
     } else {
         QFile f(m_sourceFileName);
         if (!f.open(QFile::ReadOnly))
-            contents = QString("Could not open file: '%1'").arg(m_sourceFileName);
+            contents = tr("Could not open file: '%1'").arg(m_sourceFileName);
         else
             contents = f.readAll();
     }
 
-    contents.replace('&', "&amp;");
-    contents.replace('<', "&lt;");
-    contents.replace('>', "&gt;");
+    contents.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+    contents.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+    contents.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
 
-    QStringList keywords;
-    keywords << "for " << "if " << "switch " << " int " << "#include " << "const"
-             << "void " << "uint " << "case " << "double " << "#define " << "static"
-             << "new" << "this";
+    static const QString keywords[] = {
+        QStringLiteral("for "),      QStringLiteral("if "),
+        QStringLiteral("switch "),   QStringLiteral(" int "),
+        QStringLiteral("#include "), QStringLiteral("const"),
+        QStringLiteral("void "),     QStringLiteral("uint "),
+        QStringLiteral("case "),     QStringLiteral("double "),
+        QStringLiteral("#define "),  QStringLiteral("static"),
+        QStringLiteral("new"),       QStringLiteral("this")
+    };
 
-    foreach (QString keyword, keywords)
+    for (const QString &keyword : keywords)
         contents.replace(keyword, QLatin1String("<font color=olive>") + keyword + QLatin1String("</font>"));
-    contents.replace("(int ", "(<font color=olive><b>int </b></font>");
+    contents.replace(QStringLiteral("(int "), QStringLiteral("(<font color=olive><b>int </b></font>"));
 
-    QStringList ppKeywords;
-    ppKeywords << "#ifdef" << "#ifndef" << "#if" << "#endif" << "#else";
+    static const QString ppKeywords[] = {
+        QStringLiteral("#ifdef"), QStringLiteral("#ifndef"),
+        QStringLiteral("#if"),    QStringLiteral("#endif"),
+        QStringLiteral("#else")
+    };
 
-    foreach (QString keyword, ppKeywords)
+    for (const QString &keyword : ppKeywords)
         contents.replace(keyword, QLatin1String("<font color=navy>") + keyword + QLatin1String("</font>"));
 
     contents.replace(QRegularExpression("(\\d\\d?)"), QLatin1String("<font color=navy>\\1</font>"));
@@ -348,12 +374,10 @@ void ArthurFrame::showSource()
     QRegularExpression stringLiteralRe("(\".+?\")");
     contents.replace(stringLiteralRe, QLatin1String("<font color=green>\\1</font>"));
 
-    QString html = contents;
-    html.prepend("<html><pre>");
-    html.append("</pre></html>");
+    const QString html = QStringLiteral("<html><pre>") + contents + QStringLiteral("</pre></html>");
 
     QTextBrowser *sourceViewer = new QTextBrowser(0);
-    sourceViewer->setWindowTitle("Source: " + m_sourceFileName.mid(5));
+    sourceViewer->setWindowTitle(tr("Source: %1").arg(m_sourceFileName.midRef(5)));
     sourceViewer->setParent(this, Qt::Dialog);
     sourceViewer->setAttribute(Qt::WA_DeleteOnClose);
     sourceViewer->setLineWrapMode(QTextEdit::NoWrap);

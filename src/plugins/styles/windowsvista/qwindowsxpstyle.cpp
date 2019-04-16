@@ -511,8 +511,8 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
         if (numBytes == 0)
             return QRegion();
 
-        char *buf = new char[numBytes];
-        if (buf == 0)
+        char *buf = new (std::nothrow) char[numBytes];
+        if (!buf)
             return QRegion();
 
         RGNDATA *rd = reinterpret_cast<RGNDATA*>(buf);
@@ -740,7 +740,8 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeDa
 {
     QPainter *painter = themeData.painter;
 
-    const QPointF redirectionDelta(painter->deviceMatrix().dx(), painter->deviceMatrix().dy());
+    const auto deviceTransform = painter->deviceTransform();
+    const QPointF redirectionDelta(deviceTransform.dx(), deviceTransform.dy());
     const QRect area = scaleRect(QRectF(themeData.rect), additionalDevicePixelRatio).translated(redirectionDelta).toRect();
 
     QRegion sysRgn = painter->paintEngine()->systemClip();
@@ -835,7 +836,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         alphaType = data.alphaType;
         potentialInvalidAlpha = data.hadInvalidAlpha;
 
-        haveCachedPixmap = QPixmapCache::find(pixmapCacheKey, cachedPixmap);
+        haveCachedPixmap = QPixmapCache::find(pixmapCacheKey, &cachedPixmap);
 
 #ifdef DEBUG_XP_STYLE
         char buf[25];
@@ -1485,11 +1486,13 @@ case PE_Frame:
 
                 // Inner white border
                 p->setPen(QPen(option->palette.base().color(), 0));
-                p->drawRect(QRectF(option->rect).adjusted(QStyleHelper::dpiScaled(0.5), QStyleHelper::dpiScaled(0.5),
-                                                          QStyleHelper::dpiScaled(-1), QStyleHelper::dpiScaled(-1)));
+                const auto topLevelAdjustment = QStyleHelper::dpiScaled(0.5);
+                const auto bottomRightAdjustment = QStyleHelper::dpiScaled(-1);
+                p->drawRect(QRectF(option->rect).adjusted(topLevelAdjustment, topLevelAdjustment,
+                                                          bottomRightAdjustment, bottomRightAdjustment));
                 // Outer dark border
                 p->setPen(QPen(bordercolor, 0));
-                p->drawRect(QRectF(option->rect).adjusted(0, 0, QStyleHelper::dpiScaled(-0.5), QStyleHelper::dpiScaled(-0.5)));
+                p->drawRect(QRectF(option->rect).adjusted(0, 0, -topLevelAdjustment, -topLevelAdjustment));
                 p->setPen(oldPen);
                 return;
             } else if (fillType == BT_NONE) {
@@ -3533,9 +3536,12 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                              qRound(QStyleHelper::dpiScaled(16)), he - qRound(QStyleHelper::dpiScaled(2)));
                 break;
 
-            case SC_ComboBoxEditField:
-                rect = QRect(x + qRound(QStyleHelper::dpiScaled(2)), y + qRound(QStyleHelper::dpiScaled(2)),
-                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)), he - qRound(QStyleHelper::dpiScaled(4)));
+            case SC_ComboBoxEditField: {
+                const int frame = qRound(QStyleHelper::dpiScaled(2));
+                rect = QRect(x + frame, y + frame,
+                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)),
+                             he - qRound(QStyleHelper::dpiScaled(4)));
+            }
                 break;
 
             case SC_ComboBoxListBoxPopup:

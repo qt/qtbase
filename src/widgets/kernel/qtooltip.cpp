@@ -41,6 +41,7 @@
 #endif
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtWidgets/private/qlabel_p.h>
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -127,6 +128,7 @@ public:
     ~QTipLabel();
     static QTipLabel *instance;
 
+    void adjustTooltipScreen(const QPoint &pos);
     void updateSize(const QPoint &pos);
 
     bool eventFilter(QObject *, QEvent *) override;
@@ -214,7 +216,6 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint 
     }
 #endif
 
-    setWordWrap(true);
     setText(text);
     updateSize(pos);
     restartExpireTimer(msecDisplayTime);
@@ -222,19 +223,28 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint 
 
 void  QTipLabel::updateSize(const QPoint &pos)
 {
+#ifndef Q_OS_WINRT
+    // ### The code below does not always work well on WinRT
+    // (e.g COIN fails an auto test - tst_QToolTip::qtbug64550_stylesheet - QTBUG-72652)
+    d_func()->setScreenForPoint(pos);
+#endif
+    // Ensure that we get correct sizeHints by placing this window on the right screen.
     QFontMetrics fm(font());
     QSize extra(1, 0);
     // Make it look good with the default ToolTip font on Mac, which has a small descent.
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
+    setWordWrap(Qt::mightBeRichText(text()));
     QSize sh = sizeHint();
-    if (wordWrap()) {
-        const QRect screenRect = QGuiApplication::screenAt(pos)->geometry();
-        if (sh.width() > screenRect.width()) {
-            // Try to use widely accepted 75chars max length or 80% of the screen width else.
-            // See https://en.wikipedia.org/wiki/Line_length
-            sh.setWidth(qMin(fm.averageCharWidth() * 75, static_cast<int>(screenRect.width() * .8)));
-            sh.setHeight(heightForWidth(sh.width()));
+    // ### When the above WinRT code is fixed, windowhandle should be used to find the screen.
+    QScreen *screen = QGuiApplication::screenAt(pos);
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        const qreal screenWidth = screen->geometry().width();
+        if (!wordWrap() && sh.width() > screenWidth) {
+            setWordWrap(true);
+            sh = sizeHint();
         }
     }
     resize(sh + extra);
@@ -472,8 +482,8 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 
     The \a rect is in the coordinates of the widget you specify with
     \a w. If the \a rect is not empty you must specify a widget.
-    Otherwise this argument can be 0 but it is used to determine the
-    appropriate screen on multi-head systems.
+    Otherwise this argument can be \nullptr but it is used to
+    determine the appropriate screen on multi-head systems.
 
     If \a text is empty the tool tip is hidden. If the text is the
     same as the currently shown tooltip, the tip will \e not move.

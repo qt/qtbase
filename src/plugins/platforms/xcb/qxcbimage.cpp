@@ -42,16 +42,9 @@
 #include <QtGui/QColor>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#if QT_CONFIG(xcb_render)
+
 #include <xcb/render.h>
-// 'template' is used as a function argument name in xcb_renderutil.h
-#define template template_param
-// extern "C" is missing too
-extern "C" {
 #include <xcb/xcb_renderutil.h>
-}
-#undef template
-#endif
 
 #include "qxcbconnection.h"
 #include "qxcbintegration.h"
@@ -236,7 +229,6 @@ xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image)
 xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
                                         const QPoint &spot)
 {
-#if QT_CONFIG(xcb_render)
     xcb_connection_t *conn = screen->xcb_connection();
     const int w = image.width();
     const int h = image.height();
@@ -289,13 +281,6 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
     xcb_render_free_picture(conn, pic);
     xcb_free_pixmap(conn, pix);
     return cursor;
-
-#else
-    Q_UNUSED(screen);
-    Q_UNUSED(image);
-    Q_UNUSED(spot);
-    return XCB_NONE;
-#endif
 }
 
 QT_END_NAMESPACE

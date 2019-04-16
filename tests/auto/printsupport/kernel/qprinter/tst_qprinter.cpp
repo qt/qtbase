@@ -644,7 +644,7 @@ void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
         QByteArray file1Line = file1.readLine();
         QByteArray file2Line = file2.readLine();
 
-        if (!file1Line.startsWith("%%CreationDate"))
+        if (!file1Line.contains("CreationDate"))
             QCOMPARE(file1Line, file2Line);
     }
 

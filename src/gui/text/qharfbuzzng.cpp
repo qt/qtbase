@@ -686,12 +686,10 @@ _hb_qt_font_create(QFontEngine *fe)
     const int x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100;
 
     hb_font_set_funcs(font, hb_qt_get_font_funcs(), (void *)fe, NULL);
-#ifdef Q_OS_MAC
-    hb_font_set_scale(font, QFixed(x_ppem).value(), QFixed(y_ppem).value());
-#else
     hb_font_set_scale(font, QFixed(x_ppem).value(), -QFixed(y_ppem).value());
-#endif
     hb_font_set_ppem(font, x_ppem, y_ppem);
+
+    hb_font_set_ptem(font, fe->fontDef.pointSize);
 
     return font;
 }

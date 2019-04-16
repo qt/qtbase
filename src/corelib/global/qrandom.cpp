@@ -48,7 +48,7 @@
 
 #include <errno.h>
 
-#if !QT_CONFIG(getentropy) && !defined(Q_OS_BSD4) && !defined(Q_OS_WIN)
+#if !QT_CONFIG(getentropy) && (!defined(Q_OS_BSD4) || defined(__GLIBC__)) && !defined(Q_OS_WIN)
 #  include "qdeadlinetimer.h"
 #  include "qhashfunctions.h"
 
@@ -91,7 +91,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
+static qsizetype qt_random_cpu(void *buffer, qsizetype count) noexcept;
 
 #  ifdef Q_PROCESSOR_X86_64
 #    define _rdrandXX_step _rdrand64_step
@@ -99,7 +99,7 @@ static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
 #    define _rdrandXX_step _rdrand32_step
 #  endif
 
-static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW
+static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) noexcept
 {
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
@@ -134,7 +134,7 @@ enum {
 struct QRandomGenerator::SystemGenerator
 {
 #if QT_CONFIG(getentropy)
-    static qsizetype fillBuffer(void *buffer, qsizetype count) Q_DECL_NOTHROW
+    static qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         // getentropy can read at most 256 bytes, so break the reading
         qsizetype read = 0;
@@ -204,13 +204,13 @@ struct QRandomGenerator::SystemGenerator
     }
 
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    qsizetype fillBuffer(void *buffer, qsizetype count) Q_DECL_NOTHROW
+    qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
     }
 #elif defined(Q_OS_WINRT)
-    qsizetype fillBuffer(void *, qsizetype) Q_DECL_NOTHROW
+    qsizetype fillBuffer(void *, qsizetype) noexcept
     {
         // always use the fallback
         return 0;
@@ -218,7 +218,8 @@ struct QRandomGenerator::SystemGenerator
 #endif // Q_OS_WINRT
 
     static SystemGenerator &self();
-    void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
+    typedef quint32 result_type;
+    void generate(quint32 *begin, quint32 *end) noexcept(FillBufferNoexcept);
 
     // For std::mersenne_twister_engine implementations that use something
     // other than quint32 (unsigned int) to fill their buffers.
@@ -241,7 +242,7 @@ struct QRandomGenerator::SystemGenerator
 
 #if defined(Q_OS_WIN)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
     // on Windows, rand_s is a high-quality random number generator
     // and it requires no seeding
@@ -253,14 +254,14 @@ static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
 }
 #elif QT_CONFIG(getentropy)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *, qsizetype) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *, qsizetype) noexcept
 {
     // no fallback necessary, getentropy cannot fail under normal circumstances
     Q_UNREACHABLE();
 }
-#elif defined(Q_OS_BSD4)
+#elif defined(Q_OS_BSD4) && !defined(__GLIBC__)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
     // BSDs have arc4random(4) and these work even in chroot(2)
     arc4random_buf(ptr, left * sizeof(*ptr));
@@ -279,7 +280,7 @@ Q_NEVER_INLINE
 #ifdef Q_CC_GNU
 __attribute__((cold))   // this function is pretty big, so optimize for size
 #endif
-static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
     quint32 scratch[12];    // see element count below
     quint32 *end = scratch;
@@ -353,7 +354,7 @@ static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
 #endif
 
 Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, quint32 *end)
-    Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept)
+    noexcept(FillBufferNoexcept)
 {
     quint32 *buffer = begin;
     qsizetype count = end - begin;
@@ -510,9 +511,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     those. The most common way of generating new values is to call the generate(),
     generate64() or fillRange() functions. One would use it as:
 
-    \code
-        quint32 value = QRandomGenerator::global()->generate();
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 0
 
     Additionally, it provides a floating-point function generateDouble() that
     returns a number in the range [0, 1) (that is, inclusive of zero and
@@ -525,11 +524,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     the numbers generated by the object will always be the same, as in the
     following example:
 
-    \code
-        QRandomGenerator prng1(1234), prng2(1234);
-        Q_ASSERT(prng1.generate() == prng2.generate());
-        Q_ASSERT(prng1.generate64() == prng2.generate64());
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 1
 
     The seed data takes the form of one or more 32-bit words. The ideal seed
     size is approximately equal to the size of the QRandomGenerator class
@@ -552,12 +547,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     For ease of use, QRandomGenerator provides a global object that can
     be easily used, as in the following example:
 
-    \code
-        int x = QRandomGenerator::global()->generate();
-        int y = QRandomGenerator::global()->generate();
-        int w = QRandomGenerator::global()->bounded(16384);
-        int h = QRandomGenerator::global()->bounded(16384);
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 2
 
     \section1 System-wide random number generator
 
@@ -645,10 +635,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     following code may be used to generate a floating-point number in the range
     [1, 2.5):
 
-    \code
-        std::uniform_real_distribution dist(1, 2.5);
-        return dist(*QRandomGenerator::global());
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 3
 
     \sa QRandomGenerator64, qrand()
  */
@@ -688,10 +675,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     with the same seed value will produce the same number sequence.
 
     This constructor is equivalent to:
-    \code
-        std::seed_seq sseq(seedBuffer, seedBuffer + len);
-        QRandomGenerator generator(sseq);
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 4
 
     \sa seed(), securelySeeded()
  */
@@ -705,10 +689,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     with the same seed value will produce the same number sequence.
 
     This constructor is equivalent to:
-    \code
-        std::seed_seq sseq(begin, end);
-        QRandomGenerator generator(sseq);
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 5
 
     \sa seed(), securelySeeded()
  */
@@ -828,10 +809,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     Discards the next \a z entries from the sequence. This method is equivalent
     to calling generate() \a z times and discarding the result, as in:
 
-    \code
-        while (z--)
-            generator.generate();
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 6
 */
 
 /*!
@@ -840,9 +818,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     Generates 32-bit quantities and stores them in the range between \a begin
     and \a end. This function is equivalent to (and is implemented as):
 
-    \code
-        std::generate(begin, end, [this]() { return generate(); });
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 7
 
     This function complies with the requirements for the function
     \l{http://en.cppreference.com/w/cpp/numeric/random/seed_seq/generate}{\c std::seed_seq::generate},
@@ -853,9 +829,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     32 bits of data. Any other bits will be zero. To fill the range with 64 bit
     quantities, one can write:
 
-    \code
-        std::generate(begin, end, []() { return QRandomGenerator::global()->generate64(); });
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 8
 
     If the range refers to contiguous memory (such as an array or the data from
     a QVector), the fillRange() function may be used too.
@@ -882,11 +856,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     For example, to fill a vector of 16 entries with random values, one may
     write:
 
-    \code
-        QVector<quint32> vector;
-        vector.resize(16);
-        QRandomGenerator::fillRange(vector.data(), vector.size());
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 9
 
     \sa generate()
  */
@@ -901,10 +871,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     For example, to fill generate two 32-bit quantities, one may write:
 
-    \code
-        quint32 array[2];
-        QRandomGenerator::fillRange(array);
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 10
 
     It would have also been possible to make one call to generate64() and then split
     the two halves of the 64-bit value.
@@ -919,10 +886,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     inclusive of zero and exclusive of 1).
 
     This function is equivalent to:
-    \code
-        QRandomGenerator64 rd;
-        return std::generate_canonical<qreal, std::numeric_limits<qreal>::digits>(rd);
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 11
 
     The same may also be obtained by using
     \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution}{\c std::uniform_real_distribution}
@@ -937,9 +901,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     Generates one random double in the range between 0 (inclusive) and \a
     highest (exclusive). This function is equivalent to and is implemented as:
 
-    \code
-        return generateDouble() * highest;
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 12
 
     \sa generateDouble(), bounded()
  */
@@ -956,9 +918,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     For example, to obtain a value between 0 and 255 (inclusive), one would write:
 
-    \code
-        quint32 v = QRandomGenerator::bounded(256);
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 13
 
     Naturally, the same could also be obtained by masking the result of generate()
     to only the lower 8 bits. Either solution is as efficient.
@@ -970,7 +930,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int highest)
+    \fn int QRandomGenerator::bounded(int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
@@ -995,10 +955,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     For example, to obtain a value between 1000 (incl.) and 2000 (excl.), one
     would write:
 
-    \code
-        quint32 v = QRandomGenerator::bounded(1000, 2000);
-    \endcode
-
+    \snippet code/src_corelib_global_qrandom.cpp 14
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
@@ -1007,7 +964,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int lowest, int highest)
+    \fn int QRandomGenerator::bounded(int lowest, int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between \a lowest
@@ -1053,9 +1010,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     For example, the following creates a random RGB color:
 
-    \code
-        return QColor::fromRgb(QRandomGenerator::global()->generate());
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 15
 
     Accesses to this object are thread-safe and it may therefore be used in any
     thread without locks. The object may also be copied and the sequence
@@ -1123,9 +1078,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     set. If you wish to cast the returned value to qint64 and keep it positive,
     you should mask the sign bit off:
 
-    \code
-        qint64 value = QRandomGenerator64::generate() & std::numeric_limits<qint64>::max();
-    \endcode
+    \snippet code/src_corelib_global_qrandom.cpp 16
 
     \sa QRandomGenerator, QRandomGenerator::generate64()
  */
@@ -1214,7 +1167,7 @@ QRandomGenerator &QRandomGenerator::operator=(const QRandomGenerator &other)
     return *this;
 }
 
-QRandomGenerator::QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW
+QRandomGenerator::QRandomGenerator(std::seed_seq &sseq) noexcept
     : type(MersenneTwister)
 {
     Q_ASSERT(this != system());

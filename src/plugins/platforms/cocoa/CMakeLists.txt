@@ -1,3 +1,5 @@
+# Generated from cocoa.pro.
+
 # special case:
 find_package(Cups)
 find_package(WrapOpenGL)
@@ -38,6 +40,7 @@ add_qt_plugin(qcocoa
         qcocoasystemtrayicon.h qcocoasystemtrayicon.mm
         qcocoatheme.h qcocoatheme.mm
         qcocoawindow.h qcocoawindow.mm
+        qiosurfacegraphicsbuffer.h qiosurfacegraphicsbuffer.mm
         qmacclipboard.h qmacclipboard.mm
         qmultitouch_mac.mm qmultitouch_mac_p.h
         qnsview.h qnsview.mm
@@ -57,6 +60,7 @@ add_qt_plugin(qcocoa
         ${FWCoreServices}
         ${FWCoreVideo}
         ${FWIOKit}
+        ${FWIOSurface}
         ${FWMetal}
         ${FWQuartzCore}
         Cups::Cups
@@ -76,7 +80,7 @@ add_qt_resource(qcocoa "qcocoaresources" PREFIX "/qt-project.org/mac/cursors" FI
     images/waitcursor.png)
 
 
-#### Keys ignored in scope 1:.:.:./cocoa.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:cocoa.pro:<TRUE>:
 # CONFIG = "no_app_extension_api_only"
 # OTHER_FILES = "cocoa.json"
 # PLUGIN_CLASS_NAME = "QCocoaIntegrationPlugin"
@@ -89,7 +93,7 @@ extend_target(qcocoa CONDITION QT_FEATURE_opengl # special case
     SOURCES
         qcocoaglcontext.h qcocoaglcontext.mm
     LIBRARIES
-        WrapOpenGL
+        WrapOpenGL # special case
 )
 
 extend_target(qcocoa CONDITION QT_FEATURE_vulkan
@@ -115,7 +119,7 @@ extend_target(qcocoa CONDITION TARGET Qt::Widgets
         Qt::Widgets
 )
 
-#### Keys ignored in scope 5:.:.:./cocoa.pro:TARGET Qt::Widgets:
+#### Keys ignored in scope 5:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
 extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_colordialog)
@@ -133,5 +137,5 @@ extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_fontdialog)
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )
 
-#### Keys ignored in scope 9:.:.:./cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 9:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

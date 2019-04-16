@@ -54,10 +54,8 @@
 
 //! [0]
 PixelDelegate::PixelDelegate(QObject *parent)
-    : QAbstractItemDelegate(parent)
-{
-    pixelSize = 12;
-}
+    : QAbstractItemDelegate(parent), pixelSize(12)
+{}
 //! [0]
 
 //! [1]
@@ -70,11 +68,11 @@ void PixelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 //! [1]
 
 //! [3]
-    int size = qMin(option.rect.width(), option.rect.height());
+    const int size = qMin(option.rect.width(), option.rect.height());
 //! [3] //! [4]
-    int brightness = index.model()->data(index, Qt::DisplayRole).toInt();
-    double radius = (size / 2.0) - (brightness / 255.0 * size / 2.0);
-    if (radius == 0.0)
+    const int brightness = index.model()->data(index, Qt::DisplayRole).toInt();
+    const double radius = (size / 2.0) - (brightness / 255.0 * size / 2.0);
+    if (qFuzzyIsNull(radius))
         return;
 //! [4]
 

@@ -69,7 +69,7 @@ class QNetworkManagerEngine : public QBearerEngineImpl
     Q_OBJECT
 
 public:
-    QNetworkManagerEngine(QObject *parent = 0);
+    QNetworkManagerEngine(QObject *parent = nullptr);
     ~QNetworkManagerEngine();
 
     bool networkManagerAvailable() const;
@@ -99,7 +99,7 @@ private Q_SLOTS:
     void interfacePropertiesChanged(const QMap<QString, QVariant> &properties);
     void activeConnectionPropertiesChanged(const QMap<QString, QVariant> &properties);
 
-    void newConnection(const QDBusObjectPath &path, QNetworkManagerSettings *settings = 0);
+    void newConnection(const QDBusObjectPath &path, QNetworkManagerSettings *settings = nullptr);
     void removeConnection(const QString &path);
     void updateConnection();
     void activationFinished(QDBusPendingCallWatcher *watcher);

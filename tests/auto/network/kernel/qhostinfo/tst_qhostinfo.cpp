@@ -179,7 +179,6 @@ void tst_QHostInfo::staticInformation()
 
 void tst_QHostInfo::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     //start the default network
     netConfMan = new QNetworkConfigurationManager(this);
@@ -240,8 +239,6 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-    // Test server lookup
-    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("single_ip4") << "a-single" TEST_DOMAIN << "192.0.2.1" << int(QHostInfo::NoError);
@@ -396,6 +393,68 @@ void tst_QHostInfo::lookupConnectToLambda()
     QCOMPARE(tmp.join(' '), expected.join(' '));
 }
 
+static QStringList reverseLookupHelper(const QString &ip)
+{
+    QStringList results;
+
+    const QString pythonCode =
+        "import socket;"
+        "import sys;"
+        "print (socket.getnameinfo((sys.argv[1], 0), 0)[0]);";
+
+    QList<QByteArray> lines;
+    QProcess python;
+    python.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+    python.start("python", QStringList() << QString("-c") << pythonCode << ip);
+    if (python.waitForFinished()) {
+        if (python.exitStatus() == QProcess::NormalExit && python.exitCode() == 0)
+            lines = python.readAllStandardOutput().split('\n');
+        for (QByteArray line : lines) {
+            if (!line.isEmpty())
+                results << line.trimmed();
+        }
+        if (!results.isEmpty())
+            return results;
+    }
+
+    qDebug() << "Python failed, falling back to nslookup";
+    QProcess lookup;
+    lookup.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+    lookup.start("nslookup", QStringList(ip));
+    if (!lookup.waitForFinished()) {
+        results << "nslookup failure";
+        qDebug() << "nslookup failure";
+        return results;
+    }
+    lines = lookup.readAllStandardOutput().split('\n');
+
+    QByteArray name;
+
+    const QByteArray nameMarkerNix("name =");
+    const QByteArray nameMarkerWin("Name:");
+    const QByteArray addressMarkerWin("Address:");
+
+    for (QByteArray line : lines) {
+        int index = -1;
+        if ((index = line.indexOf(nameMarkerNix)) != -1) { // Linux and macOS
+            name = line.mid(index + nameMarkerNix.length()).chopped(1).trimmed();
+            results << name;
+        } else if (line.startsWith(nameMarkerWin)) { // Windows formatting
+            name = line.mid(line.lastIndexOf(" ")).trimmed();
+        } else if (line.startsWith(addressMarkerWin)) {
+            QByteArray address = line.mid(addressMarkerWin.length()).trimmed();
+            if (address == ip) {
+                results << name;
+            }
+        }
+    }
+
+    if (results.isEmpty()) {
+        qDebug() << "Failure to parse nslookup output: " << lines;
+    }
+    return results;
+}
+
 void tst_QHostInfo::reverseLookup_data()
 {
     QTest::addColumn<QString>("address");
@@ -403,8 +462,8 @@ void tst_QHostInfo::reverseLookup_data()
     QTest::addColumn<int>("err");
     QTest::addColumn<bool>("ipv6");
 
-    QTest::newRow("google-public-dns-a.google.com") << QString("8.8.8.8") << QStringList(QString("google-public-dns-a.google.com")) << 0 << false;
-    QTest::newRow("gitorious.org") << QString("87.238.52.168") << QStringList(QString("gitorious.org")) << 0 << false;
+    QTest::newRow("dns.google") << QString("8.8.8.8") << reverseLookupHelper("8.8.8.8") << 0 << false;
+    QTest::newRow("one.one.one.one") << QString("1.1.1.1") << reverseLookupHelper("1.1.1.1") << 0 << false;
     QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1 << true;
 }
 
@@ -422,6 +481,8 @@ void tst_QHostInfo::reverseLookup()
     QHostInfo info = QHostInfo::fromName(address);
 
     if (err == 0) {
+        if (!hostNames.contains(info.hostName()))
+            qDebug() << "Failure: expecting" << hostNames << ",got " << info.hostName();
         QVERIFY(hostNames.contains(info.hostName()));
         QCOMPARE(info.addresses().first(), QHostAddress(address));
     } else {

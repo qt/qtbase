@@ -72,12 +72,6 @@ private:
     void createMenus();
 
     AddressWidget *addressWidget;
-    QMenu *fileMenu;
-    QMenu *toolMenu;
-    QAction *openAct;
-    QAction *saveAct;
-    QAction *exitAct;
-    QAction *addAct;
     QAction *editAct;
     QAction *removeAct;
 };

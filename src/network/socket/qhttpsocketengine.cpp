@@ -524,7 +524,7 @@ void QHttpSocketEngine::slotSocketConnected()
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);
     if (priv && priv->method != QAuthenticatorPrivate::None) {
         d->credentialsSent = true;
-        data += "Proxy-Authorization: " + priv->calculateResponse(method, path);
+        data += "Proxy-Authorization: " + priv->calculateResponse(method, path, d->proxy.hostName());
         data += "\r\n";
     }
     data += "\r\n";
@@ -649,7 +649,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         }
 
         if (priv->phase == QAuthenticatorPrivate::Done)
-            emit proxyAuthenticationRequired(d->proxy, &d->authenticator);
+            proxyAuthenticationRequired(d->proxy, &d->authenticator);
         // priv->phase will get reset to QAuthenticatorPrivate::Start if the authenticator got modified in the signal above.
         if (priv->phase == QAuthenticatorPrivate::Done) {
             setError(QAbstractSocket::ProxyAuthenticationRequiredError, tr("Authentication required"));
@@ -771,7 +771,7 @@ void QHttpSocketEngine::emitPendingReadNotification()
     Q_D(QHttpSocketEngine);
     d->readNotificationPending = false;
     if (d->readNotificationEnabled)
-        emit readNotification();
+        readNotification();
 }
 
 void QHttpSocketEngine::emitPendingWriteNotification()
@@ -779,14 +779,14 @@ void QHttpSocketEngine::emitPendingWriteNotification()
     Q_D(QHttpSocketEngine);
     d->writeNotificationPending = false;
     if (d->writeNotificationEnabled)
-        emit writeNotification();
+        writeNotification();
 }
 
 void QHttpSocketEngine::emitPendingConnectionNotification()
 {
     Q_D(QHttpSocketEngine);
     d->connectionNotificationPending = false;
-    emit connectionNotification();
+    connectionNotification();
 }
 
 void QHttpSocketEngine::emitReadNotification()

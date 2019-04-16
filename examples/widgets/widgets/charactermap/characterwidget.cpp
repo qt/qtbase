@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "characterwidget.h"
+
+#include <QtWidgets>
 
 //! [0]
 CharacterWidget::CharacterWidget(QWidget *parent)

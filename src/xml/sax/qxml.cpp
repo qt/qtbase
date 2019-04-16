@@ -39,9 +39,13 @@
 
 #include "qxml.h"
 #include "qxml_p.h"
+#if QT_CONFIG(textcodec)
 #include "qtextcodec.h"
+#endif
 #include "qbuffer.h"
-#include "qregexp.h"
+#if QT_CONFIG(regularexpression)
+#include "qregularexpression.h"
+#endif
 #include "qmap.h"
 #include "qhash.h"
 #include "qstack.h"
@@ -191,19 +195,23 @@ static const signed char charLookupTable[256]={
 */
 static bool stripTextDecl(QString& str)
 {
-    QString textDeclStart(QLatin1String("<?xml"));
+    QLatin1String textDeclStart("<?xml");
     if (str.startsWith(textDeclStart)) {
-        QRegExp textDecl(QString::fromLatin1(
+#if QT_CONFIG(regularexpression)
+        QRegularExpression textDecl(QString::fromLatin1(
             "^<\\?xml\\s+"
             "(version\\s*=\\s*((['\"])[-a-zA-Z0-9_.:]+\\3))?"
             "\\s*"
             "(encoding\\s*=\\s*((['\"])[A-Za-z][-a-zA-Z0-9_.]*\\6))?"
             "\\s*\\?>"
-       ));
+        ));
         QString strTmp = str.replace(textDecl, QLatin1String(""));
         if (strTmp.length() != str.length())
             return false; // external entity has wrong TextDecl
         str = strTmp;
+#else
+        return false;
+#endif
     }
     return true;
 }
@@ -237,7 +245,7 @@ public:
     int pos;
     int length;
     bool nextReturnedEndOfData;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     QTextDecoder *encMapper;
 #endif
 
@@ -1075,7 +1083,7 @@ void QXmlInputSource::init()
         d->inputStream = 0;
 
         setData(QString());
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
         d->encMapper = 0;
 #endif
         d->nextReturnedEndOfData = true; // first call to next() will call fetchData()
@@ -1121,7 +1129,7 @@ QXmlInputSource::QXmlInputSource(QIODevice *dev)
 QXmlInputSource::~QXmlInputSource()
 {
     // ### close the input device.
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     delete d->encMapper;
 #endif
     delete d;
@@ -1284,7 +1292,7 @@ void QXmlInputSource::fetchData()
     }
 }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 {
     *needMoreText = false;
@@ -1326,7 +1334,7 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 
     return encoding;
 }
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
 
 /*!
     This function reads the XML file from \a data and tries to
@@ -1341,7 +1349,7 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 */
 QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
 {
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
     Q_UNUSED(beginning);
     return QString::fromLatin1(data.constData(), data.size());
 #else
@@ -2605,8 +2613,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     is returned. If no such feature exists the return value is
     undefined.
 
-    If \a ok is not 0: \c{*}\a{ok}  is set to true if the reader has the
-    feature called \a name; otherwise \c{*}\a{ok} is set to false.
+    If \a ok is not \nullptr: \c{*}\a{ok}  is set to true if the
+    reader has the feature called \a name; otherwise \c{*}\a{ok} is
+    set to false.
 
     \sa setFeature(), hasFeature()
 */
@@ -2635,7 +2644,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     If the reader has the property \a name, this function returns the
     value of the property; otherwise the return value is undefined.
 
-    If \a ok is not 0: if the reader has the \a name property
+    If \a ok is not \nullptr: if the reader has the \a name property
     \c{*}\a{ok} is set to true; otherwise \c{*}\a{ok} is set to false.
 
     \sa setProperty(), hasProperty()
@@ -2668,9 +2677,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlEntityResolver* QXmlReader::entityResolver() const
+    \fn QXmlEntityResolver *QXmlReader::entityResolver() const
 
-    Returns the entity resolver or 0 if none was set.
+    Returns the entity resolver or \nullptr if none was set.
 
     \sa setEntityResolver()
 */
@@ -2684,9 +2693,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlDTDHandler* QXmlReader::DTDHandler() const
+    \fn QXmlDTDHandler *QXmlReader::DTDHandler() const
 
-    Returns the DTD handler or 0 if none was set.
+    Returns the DTD handler or \nullptr if none was set.
 
     \sa setDTDHandler()
 */
@@ -2700,9 +2709,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlContentHandler* QXmlReader::contentHandler() const
+    \fn QXmlContentHandler *QXmlReader::contentHandler() const
 
-    Returns the content handler or 0 if none was set.
+    Returns the content handler or \nullptr if none was set.
 
     \sa setContentHandler()
 */
@@ -2717,9 +2726,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlErrorHandler* QXmlReader::errorHandler() const
+    \fn QXmlErrorHandler *QXmlReader::errorHandler() const
 
-    Returns the error handler or 0 if none is set.
+    Returns the error handler or \nullptr if none is set.
 
     \sa setErrorHandler()
 */
@@ -2733,9 +2742,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlLexicalHandler* QXmlReader::lexicalHandler() const
+    \fn QXmlLexicalHandler *QXmlReader::lexicalHandler() const
 
-    Returns the lexical handler or 0 if none was set.
+    Returns the lexical handler or \nullptr if none was set.
 
     \sa setLexicalHandler()
 */
@@ -2749,9 +2758,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 */
 
 /*!
-    \fn QXmlDeclHandler* QXmlReader::declHandler() const
+    \fn QXmlDeclHandler *QXmlReader::declHandler() const
 
-    Returns the declaration handler or 0 if none was set.
+    Returns the declaration handler or \nullptr if none was set.
 
     \sa setDeclHandler()
 */

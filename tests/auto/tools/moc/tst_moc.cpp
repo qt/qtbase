@@ -71,6 +71,7 @@
 #include "grand-parent-gadget-class.h"
 #include "namespace.h"
 #include "cxx17-namespaces.h"
+#include "cxx-attributes.h"
 
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
@@ -703,6 +704,7 @@ private slots:
     void optionsFileError();
     void testQNamespace();
     void cxx17Namespaces();
+    void cxxAttributes();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2267,6 +2269,9 @@ void tst_Moc::cxx11Enums_data()
     QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false;
     QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true;
     QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true;
+    QTest::newRow("EnumStruct") << meta1 << QByteArray("EnumStruct") << QByteArray("EnumStruct") << 'G' << true;
+    QTest::newRow("TypedEnumStruct") << meta1 << QByteArray("TypedEnumStruct") << QByteArray("TypedEnumStruct") << 'H' << true;
+    QTest::newRow("StructFlags") << meta1 << QByteArray("StructFlags") << QByteArray("StructFlag") << 'I' << true;
 }
 
 void tst_Moc::cxx11Enums()
@@ -3844,6 +3849,14 @@ static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name, const
     }
 }
 
+class EnumFromNamespaceClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(FooNamespace::Enum1 prop READ prop CONSTANT)
+public:
+    FooNamespace::Enum1 prop() { return FooNamespace::Enum1::Key2; }
+};
+
 void tst_Moc::testQNamespace()
 {
     QCOMPARE(TestQNamespace::staticMetaObject.enumeratorCount(), 4);
@@ -3871,6 +3884,11 @@ void tst_Moc::testQNamespace()
     QCOMPARE(FooNamespace::staticMetaObject.enumeratorCount(), 1);
     QCOMPARE(FooNamespace::FooNestedNamespace::staticMetaObject.enumeratorCount(), 2);
     QCOMPARE(FooNamespace::FooNestedNamespace::FooMoreNestedNamespace::staticMetaObject.enumeratorCount(), 1);
+
+    EnumFromNamespaceClass obj;
+    const QVariant prop = obj.property("prop");
+    QCOMPARE(prop.type(), QMetaType::Int);
+    QCOMPARE(prop.toInt(), int(FooNamespace::Enum1::Key2));
 }
 
 void tst_Moc::cxx17Namespaces()
@@ -3890,6 +3908,41 @@ void tst_Moc::cxx17Namespaces()
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().name(), "GadEn");
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().keyCount(), 1);
     QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().value(0), 3);
+}
+
+void tst_Moc::cxxAttributes()
+{
+    auto so = CppAttribute::staticMetaObject;
+    QCOMPARE(so.className(), "CppAttribute");
+    QCOMPARE(so.enumeratorCount(), 0);
+    QVERIFY(so.indexOfSignal("deprecatedSignal") != 1);
+    for (auto a: {"deprecatedSlot", "deprecatedSlot2", "deprecatedReason", "deprecatedReasonWithLBRACK",
+                  "deprecatedReasonWith2LBRACK", "deprecatedReasonWithRBRACK", "deprecatedReasonWith2RBRACK",
+                  "slotWithArguments"
+#if !defined(_MSC_VER) || _MSC_VER >= 1912
+                  , "noreturnSlot", "noreturnSlot2", "returnInt", "noreturnDeprecatedSlot",
+                  "noreturnSlot3"
+#endif
+                  }) {
+        QVERIFY(so.indexOfSlot(a) != 1);
+    }
+
+    QCOMPARE(TestQNamespaceDeprecated::staticMetaObject.enumeratorCount(), 2);
+    checkEnum(TestQNamespaceDeprecated::staticMetaObject.enumerator(0), "TestEnum1",
+                {{"Key1", 11}, {"Key2", 12}, {"Key3", 13}, {"Key4", 14}, {"Key5", 15}, {"Key6", 16},
+                 {"Key7", 17}});
+    checkEnum(TestQNamespaceDeprecated::staticMetaObject.enumerator(1), "TestFlag1",
+                {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Flag3", 3}, {"Any", 1 | 2 | 3}});
+
+    QCOMPARE(TestQNamespaceDeprecated::TestGadget::staticMetaObject.enumeratorCount(), 1);
+    checkEnum(TestQNamespaceDeprecated::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
+                {{"Key1", 13}, {"Key2", 14}, {"Key3", 15}});
+
+    QMetaEnum meta = QMetaEnum::fromType<TestQNamespaceDeprecated::TestEnum1>();
+    QVERIFY(meta.isValid());
+    QCOMPARE(meta.name(), "TestEnum1");
+    QCOMPARE(meta.enclosingMetaObject(), &TestQNamespaceDeprecated::staticMetaObject);
+    QCOMPARE(meta.keyCount(), 7);
 }
 
 QTEST_MAIN(tst_Moc)

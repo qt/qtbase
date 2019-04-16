@@ -28,19 +28,21 @@
 ****************************************************************************/
 
 #include "qwasmcursor.h"
+#include "qwasmscreen.h"
 
 #include <QtCore/qdebug.h>
+#include <QtGui/qwindow.h>
 
 #include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
 
 void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
-    if (windowCursor == nullptr)
+    if (!windowCursor || !window)
         return;
-
-    // FIXME: The HTML5 plugin sets the cursor on the native canvas; when using multiple windows
-    // multiple cursors need to be managed taking mouse postion and stacking into account.
-    Q_UNUSED(window);
+    QScreen *screen = window->screen();
+    if (!screen)
+        return;
 
     // Bitmap and custom cursors are not implemented (will fall back to "auto")
     if (windowCursor->shape() == Qt::BitmapCursor || windowCursor->shape() >= Qt::CustomCursor)
@@ -51,12 +53,10 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     if (htmlCursorName.isEmpty())
         htmlCursorName = "auto";
 
-    // Set cursor on the main canvas
-    EM_ASM_ARGS({
-        if (Module['canvas']) {
-            Module['canvas'].style['cursor'] = Pointer_stringify($0);
-        }
-    }, htmlCursorName.constData());
+    // Set cursor on the canvas
+    QString canvasId = QWasmScreen::get(screen)->canvasId();
+    emscripten::val canvasStyle = emscripten::val::global(canvasId.toUtf8().constData())["style"];
+    canvasStyle.set("cursor", emscripten::val(htmlCursorName.constData()));
 }
 
 QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)

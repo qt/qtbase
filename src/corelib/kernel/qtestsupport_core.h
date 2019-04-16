@@ -3,7 +3,7 @@
 ** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -67,7 +67,13 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
     QDeadlineTimer deadline(remaining, Qt::PreciseTimer);
 
     do {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+        // We explicitly do not pass the remaining time to processEvents, as
+        // that would keep spinning processEvents for the whole duration if
+        // new events were posted as part of processing events, and we need
+        // to return back to this function to check the predicate between
+        // each pass of processEvents. Our own timer will take care of the
+        // timeout.
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
         remaining = deadline.remainingTime();

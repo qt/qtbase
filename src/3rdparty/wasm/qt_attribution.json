@@ -1,20 +1,34 @@
+[
 {
     "Id": "vera_font",
-    "Name": "Vera",
-    "QDocModule": "qtcore",
+    "Name": "Bitstream Vera Font",
+    "QDocModule": "qtgui",
     "QtUsage": "Used for WebAssembly platform.",
+    "Files": "Vera.ttf",
+    "Description": "Vera is a group typeface (font) with a liberal license.",
 
-    "License": "Bitstream",
-    "LicenseFile": "LICENSE",
+    "Homepage": "https://www.gnome.org/fonts/",
+    "Version": "1.10",
+    "DownloadLocation": "http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10/ttf-bitstream-vera-1.10.tar.bz2",
+    "License": "Bitstream Vera Font License",
+    "LicenseId": "bitstream-vera",
+    "LicenseFile": "VERA-LICENSE",
     "Copyright": "Copyright (C) 2003 Bitstream,Inc"
 },
 {
     "Id": "dejayvu",
-    "Name": "DejaVuSans",
-    "QDocModule": "qtcore",
+    "Name": "DejaVu Fonts",
+    "QDocModule": "qtgui",
     "QtUsage": "Used for WebAssembly platform.",
+    "Files": "DejaVuSans.ttf",
+    "Description": "The DejaVu fonts are a font family based on the Vera Fonts.",
 
-    "License": "Bitstream",
-    "LicenseFile": "LICENSE",
-    "Copyright": "Copyright (C) 2003 Bitstream,Inc"
+    "Homepage": "https://dejavu-fonts.github.io/",
+    "Version": "2.37",
+    "License": "Bitstream Vera Font License",
+    "LicenseFile": "DEJAVU-LICENSE",
+    "Copyright": "Copyright (c) 2003 by Bitstream, Inc
+Copyright (c) 2006 by Tavmjong Bah
+(c) American Mathematical Society"
 }
+]

@@ -171,7 +171,8 @@ public:
     enum PdfVersion
     {
         Version_1_4,
-        Version_A1b
+        Version_A1b,
+        Version_1_6
     };
 
     QPdfEngine();
@@ -241,7 +242,7 @@ public:
     void writeHeader();
     void writeTail();
 
-    int addImage(const QImage &image, bool *bitmap, qint64 serial_no);
+    int addImage(const QImage &image, bool *bitmap, bool lossless, qint64 serial_no);
     int addConstantAlphaObject(int brushAlpha, int penAlpha = 255);
     int addBrushPattern(const QTransform &matrix, bool *specifyColor, int *gStateObject);
 
@@ -300,6 +301,7 @@ private:
     void writePageRoot();
     void writeFonts();
     void embedFont(QFontSubset *font);
+    qreal calcUserUnit() const;
 
     QVector<int> xrefPositions;
     QDataStream* stream;

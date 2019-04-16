@@ -36,6 +36,7 @@
 #include <qtextlayout.h>
 #include <qdebug.h>
 #include <QStaticText>
+#include <QTextDocument>
 #include <private/qimage_p.h>
 
 #ifndef QT_NO_OPENGL
@@ -441,6 +442,10 @@ void PaintCommands::staticInit()
                       "^drawStaticText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawStaticText <x> <y> <text>",
                       "drawStaticText 10 10 \"my text\"");
+    DECL_PAINTCOMMAND("drawTextDocument", command_drawTextDocument,
+                      "^drawTextDocument\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
+                      "drawTextDocument <x> <y> <html>",
+                      "drawTextDocument 10 10 \"html\"");
     DECL_PAINTCOMMAND("drawTiledPixmap", command_drawTiledPixmap,
                       "^drawTiledPixmap\\s+([\\w.:\\/]*)"
                       "\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w*)\\s*(-?\\w*)"
@@ -1294,6 +1299,29 @@ void PaintCommands::command_drawStaticText(QRegularExpressionMatch re)
 
     m_painter->drawStaticText(x, y, QStaticText(txt));
 }
+
+void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
+{
+    if (!m_shouldDrawText)
+        return;
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    QString txt = caps.at(3);
+
+    if (m_verboseMode)
+        printf(" -(lance) drawTextDocument(%d, %d, %s)\n", x, y, qPrintable(txt));
+
+    QTextDocument doc;
+    doc.setBaseUrl(QUrl::fromLocalFile(QDir::currentPath() + QLatin1String("/")));
+    doc.setHtml(txt);
+
+    m_painter->save();
+    m_painter->translate(x, y);
+    doc.drawContents(m_painter);
+    m_painter->restore();
+}
+
 
 /***************************************************************************************************/
 void PaintCommands::command_noop(QRegularExpressionMatch)

@@ -217,7 +217,7 @@ void QScrollAreaPrivate::updateScrollBars()
 }
 
 /*!
-    Returns the scroll area's widget, or 0 if there is none.
+    Returns the scroll area's widget, or \nullptr if there is none.
 
     \sa setWidget()
 */

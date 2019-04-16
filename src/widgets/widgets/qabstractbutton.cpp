@@ -805,7 +805,7 @@ bool QAbstractButton::autoExclusive() const
   Returns the group that this button belongs to.
 
   If the button is not a member of any QButtonGroup, this function
-  returns 0.
+  returns \nullptr.
 
   \sa QButtonGroup
 */

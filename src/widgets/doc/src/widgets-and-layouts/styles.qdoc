@@ -286,7 +286,7 @@
     QStyleOption to a subclass (e.g., QStyleOptionFocusRect). For
     safety, you can use qstyleoption_cast() to ensure that the
     pointer type is correct. If the object isn't of the right type,
-    qstyleoption_cast() returns 0. For example:
+    qstyleoption_cast() returns \nullptr. For example:
 
     \snippet code/doc_src_qt4-styles.cpp 0
 

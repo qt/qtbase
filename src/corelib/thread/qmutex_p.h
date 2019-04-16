@@ -92,7 +92,7 @@ public:
     QMutexPrivate();
 
     bool wait(int timeout = -1);
-    void wakeUp() Q_DECL_NOTHROW;
+    void wakeUp() noexcept;
 
     // Control the lifetime of the privates
     QAtomicInt refCount;
@@ -125,7 +125,7 @@ public:
                                     when the mutex is unlocked.
                                   */
     enum { BigNumber = 0x100000 }; //Must be bigger than the possible number of waiters (number of threads)
-    void derefWaiters(int value) Q_DECL_NOTHROW;
+    void derefWaiters(int value) noexcept;
 
     //platform specific stuff
 #if defined(Q_OS_MAC)

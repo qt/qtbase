@@ -49,9 +49,6 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QtCore>
-
-#include <stdlib.h>
 
 #include "server.h"
 

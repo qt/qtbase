@@ -4,22 +4,26 @@
         "Name": "Secure Hash Algorithm SHA-3 - brg_endian",
         "QDocModule": "qtcore",
         "QtUsage": "Used in Qt Core (QCryptographicHash).",
+        "Files": "apply brg_endian.h.patch to upstream from https://github.com/BrianGladman/sha/",
         "Files": "brg_endian.h",
 
         "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
-        "License": "BSD 3-clause \"New\" or \"Revised\" License",
+        "Version": "https://github.com/BrianGladman/sha/ commit 4b9e13ead2c5b5e41ca27c65de4dd69ae0bac228",
+        "License": "BSD 2-clause \"Simplified\" License",
         "LicenseFile": "BRG_ENDIAN_LICENSE",
-        "LicenseId": "BSD-3-Clause",
-        "Copyright": "Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved."
+        "LicenseId": "BSD-2-Clause",
+        "Copyright": "Copyright (c) 1998-2013, Brian Gladman, Worcester, UK. All rights reserved."
     },
     {
         "Id": "sha3_keccak",
         "Name": "Secure Hash Algorithm SHA-3 - Keccak",
         "QDocModule": "qtcore",
         "QtUsage": "Used in Qt Core (QCryptographicHash).",
+        "Files": "https://keccak.team/obsolete/KeccakReferenceAndOptimized-3.2.zip - but it's obsolete",
         "Files": "KeccakF-1600-32-rvk.macros KeccakF-1600-32.macros KeccakF-1600-64.macros KeccakF-1600-interface.h KeccakF-1600-opt32.c KeccakF-1600-opt64.c KeccakF-1600-unrolling.macros KeccakNISTInterface.c KeccakNISTInterface.h KeccakSponge.c KeccakSponge.h",
 
         "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
+        "Version": "3.2",
         "License": "Creative Commons Zero v1.0 Universal",
         "LicenseId": "CC0-1.0",
         "LicenseFile": "CC0_LICENSE",

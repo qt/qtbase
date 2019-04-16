@@ -51,8 +51,11 @@
 // We mean it.
 //
 
+#include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qbrush.h"
+#include "QtGui/qcolorspace.h"
+#include "QtGui/qcolortransform.h"
 #include "QtGui/qfont.h"
 #include "QtGui/qpen.h"
 #include "QtGui/qregion.h"
@@ -190,9 +193,9 @@ class QPainterPrivate
     Q_DECLARE_PUBLIC(QPainter)
 public:
     QPainterPrivate(QPainter *painter)
-    : q_ptr(painter), d_ptrs(0), state(0), dummyState(0), txinv(0), inDestructor(false), d_ptrs_size(0),
-        refcount(1), device(0), original_device(0), helper_device(0), engine(0), emulationEngine(0),
-        extended(0)
+    : q_ptr(painter), d_ptrs(nullptr), state(nullptr), dummyState(nullptr), txinv(0), inDestructor(false), d_ptrs_size(0),
+        refcount(1), device(nullptr), original_device(nullptr), helper_device(nullptr), engine(nullptr), emulationEngine(nullptr),
+        extended(nullptr)
     {
     }
 
@@ -202,7 +205,7 @@ public:
     QPainterPrivate **d_ptrs;
 
     QPainterState *state;
-    QVector<QPainterState*> states;
+    QVarLengthArray<QPainterState *, 8> states;
 
     mutable QPainterDummyState *dummyState;
 

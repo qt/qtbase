@@ -170,7 +170,8 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
 {
     int dividerIndex = 0;
 
-    foreach (QString group, settings->childGroups()) {
+    const QStringList childGroups = settings->childGroups();
+    for (const QString &group : childGroups) {
         QTreeWidgetItem *child;
         int childIndex = findChild(parent, group, dividerIndex);
         if (childIndex != -1) {
@@ -190,7 +191,8 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
         settings->endGroup();
     }
 
-    foreach (const QString &key, settings->childKeys()) {
+    const QStringList childKeys = settings->childKeys();
+    for (const QString &key : childKeys) {
         QTreeWidgetItem *child;
         int childIndex = findChild(parent, key, 0);
 

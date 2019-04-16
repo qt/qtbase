@@ -1437,6 +1437,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     by slightly less than half a pixel. Also will treat default constructed pens
     as cosmetic. Potentially useful when porting a Qt 4 application to Qt 5.
 
+    \value LosslessImageRendering Use a lossless image rendering, whenever possible.
+    Currently, this hint is only used when QPainter is employed to output a PDF
+    file through QPrinter or QPdfWriter, where drawImage()/drawPixmap() calls
+    will encode images using a lossless compression algorithm instead of lossy
+    JPEG compression.
+    This value was added in Qt 5.13.
+
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
     Quality}{Rendering Quality}, {Concentric Circles Example}
 
@@ -1514,7 +1521,7 @@ QPainter::~QPainter()
 
 /*!
     Returns the paint device on which this painter is currently
-    painting, or 0 if the painter is not active.
+    painting, or \nullptr if the painter is not active.
 
     \sa isActive()
 */
@@ -1540,6 +1547,7 @@ bool QPainter::isActive() const
     return d->engine;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Initializes the painters pen, background and font to the same as
     the given \a device.
@@ -1567,7 +1575,7 @@ void QPainter::initFrom(const QPaintDevice *device)
         d->engine->setDirty(QPaintEngine::DirtyFont);
     }
 }
-
+#endif
 
 /*!
     Saves the current painter state (pushes the state onto a stack). A
@@ -2878,6 +2886,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     d->updateState(d->state);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \since 4.2
     \obsolete
@@ -2972,7 +2981,10 @@ void QPainter::setMatrix(const QMatrix &matrix, bool combine)
 
 const QMatrix &QPainter::matrix() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return worldMatrix();
+QT_WARNING_POP
 }
 
 
@@ -3041,7 +3053,7 @@ void QPainter::resetMatrix()
 {
     resetTransform();
 }
-
+#endif
 
 /*!
     \since 4.2
@@ -3092,6 +3104,7 @@ bool QPainter::worldMatrixEnabled() const
     return d->state->WxF;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -3117,6 +3130,7 @@ bool QPainter::matrixEnabled() const
 {
     return worldMatrixEnabled();
 }
+#endif
 
 /*!
     Scales the coordinate system by (\a{sx}, \a{sy}).
@@ -4175,6 +4189,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
     Draws the given rectangle \a x, \a y, \a w, \a h with rounded corners.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -4202,6 +4217,10 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     Draws the rectangle \a r with rounded corners.
 */
+void QPainter::drawRoundRect(const QRect &rect, int xRnd, int yRnd)
+{
+    drawRoundedRect(QRectF(rect), xRnd, yRnd, Qt::RelativeSize);
+}
 
 /*!
     \obsolete
@@ -4212,6 +4231,11 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     Draws the rectangle \a x, \a y, \a w, \a h with rounded corners.
 */
+void QPainter::drawRoundRect(int x, int y, int w, int h, int xRnd, int yRnd)
+{
+    drawRoundedRect(QRectF(x, y, w, h), xRnd, yRnd, Qt::RelativeSize);
+}
+#endif
 
 /*!
     \fn void QPainter::drawEllipse(const QRectF &rectangle)
@@ -6203,7 +6227,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
                   % HexString<qreal>(pen.widthF());
 
     QPixmap pixmap;
-    if (QPixmapCache::find(key, pixmap))
+    if (QPixmapCache::find(key, &pixmap))
         return pixmap;
 
     const qreal halfPeriod = qMax(qreal(2), qreal(radiusBase * 1.61803399)); // the golden ratio
@@ -7371,6 +7395,7 @@ void QPainter::setViewTransformEnabled(bool enable)
     d->updateMatrix();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \threadsafe
 
@@ -7451,6 +7476,7 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
     Q_UNUSED(offset)
     return 0;
 }
+#endif
 
 void qt_format_text(const QFont &fnt, const QRectF &_r,
                     int tf, const QString& str, QRectF *brect,
@@ -8060,6 +8086,7 @@ QFont QPaintEngineState::font() const
     return static_cast<const QPainterState *>(this)->font;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \since 4.2
     \obsolete
@@ -8082,6 +8109,7 @@ QMatrix QPaintEngineState::matrix() const
 
     return st->matrix.toAffine();
 }
+#endif
 
 /*!
     \since 4.3
@@ -8321,7 +8349,7 @@ void QPainter::resetTransform()
     d->state->ww = d->state->vw = d->device->metric(QPaintDevice::PdmWidth);
     d->state->wh = d->state->vh = d->device->metric(QPaintDevice::PdmHeight);
     d->state->worldMatrix = QTransform();
-    setMatrixEnabled(false);
+    setWorldMatrixEnabled(false);
     setViewTransformEnabled(false);
     if (d->extended)
         d->extended->transformChanged();

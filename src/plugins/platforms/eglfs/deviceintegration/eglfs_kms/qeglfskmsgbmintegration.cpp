@@ -63,7 +63,6 @@ QEglFSKmsGbmIntegration::QEglFSKmsGbmIntegration()
 
 #ifndef EGL_EXT_platform_base
 typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
-typedef EGLSurface (EGLAPIENTRYP PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy, EGLConfig config, void *native_window, const EGLint *attrib_list);
 #endif
 
 #ifndef EGL_PLATFORM_GBM_KHR
@@ -118,6 +117,8 @@ QPlatformCursor *QEglFSKmsGbmIntegration::createCursor(QPlatformScreen *screen) 
         qCDebug(qLcEglfsKmsDebug, "Using plain OpenGL mouse cursor");
         return new QEglFSCursor(screen);
     }
+#else
+    Q_UNUSED(screen);
 #endif
     return nullptr;
 }

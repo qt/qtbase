@@ -294,6 +294,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int c
 
     QTextBlock changeStartBlock = doc->findBlock(from);
     QTextBlock changeEndBlock = doc->findBlock(qMax(0, from + charsChanged - 1));
+    bool blockVisibilityChanged = false;
 
     if (changeStartBlock == changeEndBlock && newBlockCount == d->blockCount) {
         QTextBlock block = changeStartBlock;
@@ -311,14 +312,19 @@ void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int c
         QTextBlock block = changeStartBlock;
         do {
             block.clearLayout();
+            if (block.isVisible()
+                    ? (block.lineCount() == 0)
+                    : (block.lineCount() > 0)) {
+                blockVisibilityChanged = true;
+                block.setLineCount(block.isVisible() ? 1 : 0);
+            }
             if (block == changeEndBlock)
                 break;
             block = block.next();
         } while(block.isValid());
     }
 
-    if (newBlockCount != d->blockCount) {
-
+    if (newBlockCount != d->blockCount || blockVisibilityChanged) {
         int changeEnd = changeEndBlock.blockNumber();
         int blockDiff = newBlockCount - d->blockCount;
         int oldChangeEnd = changeEnd - blockDiff;
@@ -2033,7 +2039,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
 
     if (backgroundVisible() && !block.isValid() && offset.y() <= er.bottom()
         && (centerOnScroll() || verticalScrollBar()->maximum() == verticalScrollBar()->minimum())) {
-        painter.fillRect(QRect(QPoint((int)er.left(), (int)offset.y()), er.bottomRight()), palette().background());
+        painter.fillRect(QRect(QPoint((int)er.left(), (int)offset.y()), er.bottomRight()), palette().window());
     }
 }
 
@@ -2924,7 +2930,7 @@ bool QPlainTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
 #endif
 
 /*!
-    \fn bool QTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
+    \fn bool QPlainTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
 
     \since 5.13
     \overload

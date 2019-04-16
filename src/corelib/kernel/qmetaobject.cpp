@@ -216,8 +216,8 @@ private:
 
     Constructs a new instance of this class. You can pass up to ten arguments
     (\a val0, \a val1, \a val2, \a val3, \a val4, \a val5, \a val6, \a val7,
-    \a val8, and \a val9) to the constructor. Returns the new object, or 0 if
-    no suitable constructor is available.
+    \a val8, and \a val9) to the constructor. Returns the new object, or
+    \nullptr if no suitable constructor is available.
 
     Note that only constructors that are declared with the Q_INVOKABLE
     modifier are made available through the meta-object system.
@@ -235,6 +235,12 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    if (!inherits(&QObject::staticMetaObject))
+    {
+        qWarning("QMetaObject::newInstance: type %s does not inherit QObject", className());
+        return nullptr;
+    }
+
     QByteArray constructorName = className();
     {
         int idx = constructorName.lastIndexOf(':');
@@ -321,8 +327,8 @@ const char *QMetaObject::className() const
 /*!
     \fn QMetaObject *QMetaObject::superClass() const
 
-    Returns the meta-object of the superclass, or 0 if there is no
-    such object.
+    Returns the meta-object of the superclass, or \nullptr if there is
+    no such object.
 
     \sa className()
 */
@@ -335,7 +341,7 @@ const char *QMetaObject::className() const
 
     \since 5.7
 */
-bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
+bool QMetaObject::inherits(const QMetaObject *metaObject) const noexcept
 {
     const QMetaObject *m = this;
     do {
@@ -349,7 +355,7 @@ bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
     \internal
 
     Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
+    meta-object; otherwise returns \nullptr.
 */
 QObject *QMetaObject::cast(QObject *obj) const
 {
@@ -361,7 +367,7 @@ QObject *QMetaObject::cast(QObject *obj) const
     \internal
 
     Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
+    meta-object; otherwise returns \nullptr.
 */
 const QObject *QMetaObject::cast(const QObject *obj) const
 {
@@ -1381,6 +1387,8 @@ static inline QByteArray findMethodCandidates(const QMetaObject *metaObject, con
 }
 
 /*!
+    \threadsafe
+
     Invokes the \a member (a signal or a slot name) on the object \a
     obj. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
@@ -1570,6 +1578,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                                        QGenericArgument val7 = QGenericArgument(),
                                        QGenericArgument val8 = QGenericArgument(),
                                        QGenericArgument val9 = QGenericArgument());
+    \threadsafe
     \overload invokeMethod()
 
     This overload always invokes the member using the connection type Qt::AutoConnection.
@@ -1588,6 +1597,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                              QGenericArgument val8 = QGenericArgument(),
                              QGenericArgument val9 = QGenericArgument())
 
+    \threadsafe
     \overload invokeMethod()
 
     This overload can be used if the return value of the member is of no interest.
@@ -1606,6 +1616,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
                              QGenericArgument val8 = QGenericArgument(),
                              QGenericArgument val9 = QGenericArgument())
 
+    \threadsafe
     \overload invokeMethod()
 
     This overload invokes the member using the connection type Qt::AutoConnection and
@@ -1617,6 +1628,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 
     \since 5.10
 
+    \threadsafe
     \overload
 
     Invokes the \a function in the event loop of \a context. \a function can be a functor
@@ -1630,6 +1642,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 
     \since 5.10
 
+    \threadsafe
     \overload
 
     Invokes the \a function in the event loop of \a context using the connection type Qt::AutoConnection.
@@ -1968,9 +1981,8 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
 */
 QList<QByteArray> QMetaMethod::parameterNames() const
 {
-    QList<QByteArray> list;
     if (!mobj)
-        return list;
+        return QList<QByteArray>();
     return QMetaMethodPrivate::get(this)->parameterNames();
 }
 
@@ -1996,27 +2008,11 @@ const char *QMetaMethod::typeName() const
     Tag information can be added in the following
     way in the function declaration:
 
-    \code
-        // In the class MainWindow declaration
-        #ifndef Q_MOC_RUN
-        // define the tag text as empty, so the compiler doesn't see it
-        #  define MY_CUSTOM_TAG
-        #endif
-        ...
-        private slots:
-            MY_CUSTOM_TAG void testFunc();
-    \endcode
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 10
 
     and the information can be accessed by using:
 
-    \code
-        MainWindow win;
-        win.show();
-
-        int functionIndex = win.metaObject()->indexOfSlot("testFunc()");
-        QMetaMethod mm = win.metaObject()->method(functionIndex);
-        qDebug() << mm.tag(); // prints MY_CUSTOM_TAG
-    \endcode
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 11
 
     For the moment, \c moc will extract and record all tags, but it will not
     handle any of them specially. You can use the tags to annotate your methods
@@ -2267,9 +2263,9 @@ bool QMetaMethod::invoke(QObject *object,
         return false;
 
     // check connection type
-    QThread *currentThread = QThread::currentThread();
-    QThread *objectThread = object->thread();
     if (connectionType == Qt::AutoConnection) {
+        QThread *currentThread = QThread::currentThread();
+        QThread *objectThread = object->thread();
         connectionType = currentThread == objectThread
                          ? Qt::DirectConnection
                          : Qt::QueuedConnection;
@@ -2352,6 +2348,8 @@ bool QMetaMethod::invoke(QObject *object,
                                                         0, -1, nargs, types, args));
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
+        QThread *currentThread = QThread::currentThread();
+        QThread *objectThread = object->thread();
         if (currentThread == objectThread) {
             qWarning("QMetaMethod::invoke: Dead lock detected in "
                         "BlockingQueuedConnection: Receiver is %s(%p)",
@@ -2623,7 +2621,7 @@ int QMetaEnum::keyCount() const
 }
 
 /*!
-    Returns the key with the given \a index, or 0 if no such key exists.
+    Returns the key with the given \a index, or \nullptr if no such key exists.
 
     \sa keyCount(), value(), valueToKey()
 */
@@ -2669,8 +2667,10 @@ int QMetaEnum::value(int index) const
 */
 bool QMetaEnum::isFlag() const
 {
+    if (!mobj)
+        return false;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
-    return mobj && mobj->d.data[handle + offset] & EnumIsFlag;
+    return mobj->d.data[handle + offset] & EnumIsFlag;
 }
 
 /*!
@@ -2681,8 +2681,10 @@ bool QMetaEnum::isFlag() const
 */
 bool QMetaEnum::isScoped() const
 {
+    if (!mobj)
+        return false;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 2 : 1;
-    return mobj && mobj->d.data[handle + offset] & EnumIsScoped;
+    return mobj->d.data[handle + offset] & EnumIsScoped;
 }
 
 /*!
@@ -2741,7 +2743,7 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
 
 /*!
     Returns the string that is used as the name of the given
-    enumeration \a value, or 0 if \a value is not defined.
+    enumeration \a value, or \nullptr if \a value is not defined.
 
     For flag types, use valueToKeys().
 
@@ -3018,6 +3020,18 @@ int QMetaProperty::propertyIndex() const
     if (!mobj)
         return -1;
     return idx + mobj->propertyOffset();
+}
+
+/*!
+  \since 5.14
+
+  Returns this property's index relative within the enclosing meta object.
+*/
+int QMetaProperty::relativePropertyIndex() const
+{
+    if (!mobj)
+        return -1;
+    return idx;
 }
 
 /*!
@@ -3526,7 +3540,7 @@ bool QMetaProperty::isStored(const QObject *object) const
     false. e.g., the \c text property is the \c USER editable property
     of a QLineEdit.
 
-    If \a object is null, the function returns \c false if the \c
+    If \a object is \nullptr, the function returns \c false if the \c
     {Q_PROPERTY()}'s \c USER attribute is false. Otherwise it returns
     true.
 

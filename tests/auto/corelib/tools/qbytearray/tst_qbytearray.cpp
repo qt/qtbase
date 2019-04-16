@@ -138,9 +138,7 @@ private slots:
     void reserveExtended();
     void movablity_data();
     void movablity();
-#if defined(Q_COMPILER_LAMBDA)
     void literals();
-#endif
     void toUpperLower_data();
     void toUpperLower();
     void isUpper();
@@ -1361,6 +1359,9 @@ void tst_QByteArray::toDouble_data()
     QTest::newRow("trailing spaces") << QByteArray("1.2345 \n\r\t") << 1.2345 << true;
     QTest::newRow("leading junk") << QByteArray("x1.2345") << 0.0 << false;
     QTest::newRow("trailing junk") << QByteArray("1.2345x") << 0.0 << false;
+
+    QTest::newRow("raw, null plus junk") << QByteArray::fromRawData("1.2\0 junk", 9) << 0.0 << false;
+    QTest::newRow("raw, null-terminator not included") << QByteArray::fromRawData("2.3", 3) << 2.3 << true;
 }
 
 void tst_QByteArray::toDouble()
@@ -2189,7 +2190,6 @@ void tst_QByteArray::movablity()
     QVERIFY(true);
 }
 
-#if defined(Q_COMPILER_LAMBDA)
 // Only tested on c++0x compliant compiler or gcc
 void tst_QByteArray::literals()
 {
@@ -2210,7 +2210,6 @@ void tst_QByteArray::literals()
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
 }
-#endif
 
 void tst_QByteArray::toUpperLower_data()
 {
@@ -2242,28 +2241,28 @@ void tst_QByteArray::toUpperLower()
     QCOMPARE(input.toLower(), lower);
 
     QByteArray copy = input;
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
     copy = input;
     copy.detach();
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
 
     copy = input;
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
     copy = input;
     copy.detach();
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
 
     copy = lower;
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
     copy = lower;
     copy.detach();
-    QCOMPARE(qMove(copy).toLower(), lower);
+    QCOMPARE(std::move(copy).toLower(), lower);
 
     copy = upper;
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
     copy = upper;
     copy.detach();
-    QCOMPARE(qMove(copy).toUpper(), upper);
+    QCOMPARE(std::move(copy).toUpper(), upper);
 }
 
 void tst_QByteArray::isUpper()

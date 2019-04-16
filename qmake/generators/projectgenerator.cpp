@@ -345,14 +345,10 @@ ProjectGenerator::writeMakefile(QTextStream &t)
           << getWritableVar("CONFIG_REMOVE", false)
           << getWritableVar("INCLUDEPATH") << endl;
 
-        t << "# The following define makes your compiler warn you if you use any\n"
-             "# feature of Qt which has been marked as deprecated (the exact warnings\n"
-             "# depend on your compiler). Please consult the documentation of the\n"
-             "# deprecated API in order to know how to port your code away from it.\n"
-             "DEFINES += QT_DEPRECATED_WARNINGS\n"
-             "\n"
-             "# You can also make your code fail to compile if you use deprecated APIs.\n"
+        t << "# You can make your code fail to compile if you use deprecated APIs.\n"
              "# In order to do so, uncomment the following line.\n"
+             "# Please consult the documentation of the deprecated API in order to know\n"
+             "# how to port your code away from it.\n"
              "# You can also select to disable deprecated APIs only up to a certain version of Qt.\n"
              "#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0\n\n";
 

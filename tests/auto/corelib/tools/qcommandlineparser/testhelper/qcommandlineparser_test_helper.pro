@@ -1,5 +1,4 @@
-CONFIG += console
-CONFIG -= app_bundle
+CONFIG += cmdline
 QT = core
 DESTDIR = ./
 

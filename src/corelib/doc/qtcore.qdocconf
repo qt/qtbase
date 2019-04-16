@@ -45,6 +45,9 @@ excludedirs += snippets
 excludefiles += ../../../examples/widgets/tools/customcompleter/doc/src/customcompleter.qdoc \
                 ../../../examples/widgets/tools/codecs/doc/src/codecs.qdoc
 
+# Included in qttestlib.qdocconf instead
+excludefiles += ../kernel/qtestsupport_core.cpp
+
 manifestmeta.highlighted.names      = "QtCore/JSON Save Game Example" \
                                       "QtCore/Local Fortune*"
 

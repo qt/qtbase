@@ -387,10 +387,9 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     \value UnboundedIntersection The two lines intersect, but not
     within the range defined by their lengths. This will be the case
-    if the lines are not parallel.
-
-    intersect() will also return this value if the intersect point is
-    within the start and end point of only one of the lines.
+    if the lines are not parallel. intersect() will also return this
+    value if the intersect point is within the start and end point of
+    only one of the lines.
 
     \value BoundedIntersection The two lines intersect with each other
     within the start and end points of each line.
@@ -806,6 +805,7 @@ qreal QLineF::angleTo(const QLineF &l) const
         return delta_normalized;
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
   \fn qreal QLineF::angle(const QLineF &line) const
 
@@ -838,6 +838,7 @@ qreal QLineF::angle(const QLineF &l) const
     if (cos_line >= -1.0 && cos_line <= 1.0) rad = qAcos( cos_line );
     return rad * 360 / M_2PI;
 }
+#endif
 
 
 #ifndef QT_NO_DEBUG_STREAM

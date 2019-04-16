@@ -254,19 +254,15 @@ public:
     int rvalue() && { ADD("TestClass1::rvalue"); return 0; }
     int const_rvalue() const && { ADD("TestClass1::const_rvalue"); return 0; }
 #endif
-#ifdef Q_COMPILER_DECLTYPE
     int decltype_param(int x = 0, decltype(x) = 0) { ADD("TestClass1::decltype_param"); return x; }
     template<typename T> int decltype_template_param(T x = 0, decltype(x) = 0)
     { ADD("TestClass1::decltype_template_param"); return x; }
     template<typename T> void decltype_template_param2(T x, decltype(x + QString()))
     { ADD("TestClass1::decltype_template_param2"); }
-#  ifdef Q_COMPILER_AUTO_FUNCTION
     auto decltype_return(int x = 0) -> decltype(x)
     { ADD("TestClass1::decltype_return"); return x; }
     template <typename T> auto decltype_template_return(T x = 0) -> decltype(x)
     { ADD("TestClass1::decltype_template_return"); return x; }
-#  endif
-#endif
 
 public:
     TestClass1()
@@ -323,15 +319,11 @@ public:
             std::move(*this).rvalue();
             std::move(*this).const_rvalue();
 #endif
-#ifdef Q_COMPILER_DECLTYPE
             decltype_param();
             decltype_template_param(0);
             decltype_template_param2(QByteArray(), QString());
-#  ifdef Q_COMPILER_AUTO_FUNCTION
             decltype_return();
             decltype_template_return(0);
-#  endif
-#endif
         }
 };
 

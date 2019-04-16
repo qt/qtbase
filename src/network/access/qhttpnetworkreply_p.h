@@ -89,7 +89,7 @@ class Q_AUTOTEST_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkH
     Q_OBJECT
 public:
 
-    explicit QHttpNetworkReply(const QUrl &url = QUrl(), QObject *parent = 0);
+    explicit QHttpNetworkReply(const QUrl &url = QUrl(), QObject *parent = nullptr);
     virtual ~QHttpNetworkReply();
 
     QUrl url() const override;

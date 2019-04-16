@@ -46,10 +46,9 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qpair.h>
 
+QT_REQUIRE_CONFIG(animation);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ANIMATION
 
 class QVariantAnimationPrivate;
 class Q_CORE_EXPORT QVariantAnimation : public QAbstractAnimation
@@ -115,8 +114,6 @@ template <typename T>
 void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress)) {
     QVariantAnimation::registerInterpolator(reinterpret_cast<QVariantAnimation::Interpolator>(reinterpret_cast<void(*)()>(func)), qMetaTypeId<T>());
 }
-
-#endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

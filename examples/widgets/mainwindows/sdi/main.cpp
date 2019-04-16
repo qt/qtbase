@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
     parser.process(app);
 
     MainWindow *mainWin = nullptr;
-    foreach (const QString &file, parser.positionalArguments()) {
+    const QStringList posArgs = parser.positionalArguments();
+    for (const QString &file : posArgs) {
         MainWindow *newWin = new MainWindow(file);
         newWin->tile(mainWin);
         newWin->show();

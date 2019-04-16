@@ -97,7 +97,7 @@ private:
     friend class QOpenGLContextGroupPrivate;
     friend class QOpenGLMultiGroupSharedResource;
 
-    Q_DISABLE_COPY(QOpenGLSharedResource)
+    Q_DISABLE_COPY_MOVE(QOpenGLSharedResource)
 };
 
 class Q_GUI_EXPORT QOpenGLSharedResourceGuard : public QOpenGLSharedResource
@@ -131,7 +131,7 @@ class Q_GUI_EXPORT QOpenGLContextGroupPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpenGLContextGroup)
 public:
     QOpenGLContextGroupPrivate()
-        : m_context(0)
+        : m_context(nullptr)
         , m_mutex(QMutex::Recursive)
         , m_refs(0)
     {
@@ -198,20 +198,20 @@ class Q_GUI_EXPORT QOpenGLContextPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpenGLContext)
 public:
     QOpenGLContextPrivate()
-        : qGLContextHandle(0)
-        , qGLContextDeleteFunction(0)
-        , platformGLContext(0)
-        , shareContext(0)
-        , shareGroup(0)
-        , screen(0)
-        , surface(0)
-        , functions(0)
-        , textureFunctions(0)
+        : qGLContextHandle(nullptr)
+        , qGLContextDeleteFunction(nullptr)
+        , platformGLContext(nullptr)
+        , shareContext(nullptr)
+        , shareGroup(nullptr)
+        , screen(nullptr)
+        , surface(nullptr)
+        , functions(nullptr)
+        , textureFunctions(nullptr)
         , max_texture_size(-1)
         , workaround_brokenFBOReadBack(false)
         , workaround_brokenTexSubImage(false)
         , workaround_missingPrecisionQualifiers(false)
-        , active_engine(0)
+        , active_engine(nullptr)
         , qgl_current_fbo_invalid(false)
         , qgl_current_fbo(nullptr)
         , defaultFboRedirect(0)

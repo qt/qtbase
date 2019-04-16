@@ -115,7 +115,7 @@ public:
     virtual bool isUnnamedFile() const
     { return false; }
 
-    bool extension(Extension extension, const ExtensionOption *option = 0, ExtensionReturn *output = 0) override;
+    bool extension(Extension extension, const ExtensionOption *option = nullptr, ExtensionReturn *output = nullptr) override;
     bool supportsExtension(Extension extension) const override;
 
     //FS only!!

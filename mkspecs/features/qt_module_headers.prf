@@ -239,6 +239,14 @@ headersclean:!internal_module {
                 gcc_ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
                 versionAtLeast(gcc_ver, 4.5): hcleanFLAGS += -Wdouble-promotion
                 versionAtLeast(gcc_ver, 4.9): hcleanFLAGS += -Wfloat-conversion
+                # GCC 9 has a lot of false positives relating to this, so disable completely
+                greaterThan(QT_GCC_MAJOR_VERSION, 8): hcleanFLAGS += -Wno-deprecated-copy
+                # GCC 9 introduced this
+                greaterThan(QT_GCC_MAJOR_VERSION, 8): hcleanFLAGS += -Wno-redundant-move
+                # GCC 9 introduced this
+                greaterThan(QT_GCC_MAJOR_VERSION, 8): hcleanFLAGS += -Wno-format-overflow
+                # GCC 9 introduced this
+                greaterThan(QT_GCC_MAJOR_VERSION, 8): hcleanFLAGS += -Wno-init-list-lifetime
 
                 c++11 {
                     # only enabled for actual c++11 builds due to

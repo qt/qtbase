@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'saveformastemplate.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -117,10 +117,10 @@ public:
 
         vboxLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(templateNameEdit);
         label_2->setBuddy(categoryCombo);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(SaveFormAsTemplate);
         QObject::connect(buttonBox, SIGNAL(accepted()), SaveFormAsTemplate, SLOT(accept()));
@@ -131,10 +131,10 @@ public:
 
     void retranslateUi(QDialog *SaveFormAsTemplate)
     {
-        SaveFormAsTemplate->setWindowTitle(QApplication::translate("SaveFormAsTemplate", "Save Form As Template", nullptr));
-        label->setText(QApplication::translate("SaveFormAsTemplate", "&Name:", nullptr));
+        SaveFormAsTemplate->setWindowTitle(QCoreApplication::translate("SaveFormAsTemplate", "Save Form As Template", nullptr));
+        label->setText(QCoreApplication::translate("SaveFormAsTemplate", "&Name:", nullptr));
         templateNameEdit->setText(QString());
-        label_2->setText(QApplication::translate("SaveFormAsTemplate", "&Category:", nullptr));
+        label_2->setText(QCoreApplication::translate("SaveFormAsTemplate", "&Category:", nullptr));
     } // retranslateUi
 
 };

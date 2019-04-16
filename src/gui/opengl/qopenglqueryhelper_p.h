@@ -65,18 +65,18 @@ class QOpenGLQueryHelper
 {
 public:
     QOpenGLQueryHelper(QOpenGLContext *context)
-        : GetQueryObjectuiv(0),
-          GetQueryObjectiv(0),
-          GetQueryiv(0),
-          EndQuery(0),
-          BeginQuery(0),
-          IsQuery(0),
-          DeleteQueries(0),
-          GenQueries(0),
-          GetInteger64v(0),
-          GetQueryObjectui64v(0),
-          GetQueryObjecti64v(0),
-          QueryCounter(0)
+        : GetQueryObjectuiv(nullptr),
+          GetQueryObjectiv(nullptr),
+          GetQueryiv(nullptr),
+          EndQuery(nullptr),
+          BeginQuery(nullptr),
+          IsQuery(nullptr),
+          DeleteQueries(nullptr),
+          GenQueries(nullptr),
+          GetInteger64v(nullptr),
+          GetQueryObjectui64v(nullptr),
+          GetQueryObjecti64v(nullptr),
+          QueryCounter(nullptr)
     {
         Q_ASSERT(context);
 

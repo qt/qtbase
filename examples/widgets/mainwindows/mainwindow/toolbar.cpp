@@ -208,7 +208,7 @@ ToolBar::ToolBar(const QString &title, QWidget *parent)
 void ToolBar::updateMenu()
 {
     QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
-    Q_ASSERT(mainWindow != 0);
+    Q_ASSERT(mainWindow);
 
     const Qt::ToolBarArea area = mainWindow->toolBarArea(this);
     const Qt::ToolBarAreas areas = allowedAreas();
@@ -244,7 +244,8 @@ void ToolBar::order()
 {
     QList<QAction *> ordered;
     QList<QAction *> actions1 = actions();
-    foreach (QAction *action, findChildren<QAction *>()) {
+    const QList<QAction *> childActions = findChildren<QAction *>();
+    for (QAction *action : childActions) {
         if (!actions1.contains(action))
             continue;
         actions1.removeAll(action);
@@ -313,7 +314,7 @@ void ToolBar::place(Qt::ToolBarArea area, bool p)
         return;
 
     QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
-    Q_ASSERT(mainWindow != 0);
+    Q_ASSERT(mainWindow);
 
     mainWindow->addToolBar(area, this);
 
@@ -355,7 +356,7 @@ void ToolBar::placeBottom(bool p)
 void ToolBar::insertToolBarBreak()
 {
     QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
-    Q_ASSERT(mainWindow != 0);
+    Q_ASSERT(mainWindow);
 
     mainWindow->insertToolBarBreak(this);
 }

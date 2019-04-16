@@ -266,10 +266,10 @@ inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
     const int mr = qRed(rgbAlpha);
     const int mg = qGreen(rgbAlpha);
     const int mb = qBlue(rgbAlpha);
-    blend.setRed  (qt_div_255(s.red()   * mr + d.red()   * (255 - mr)));
-    blend.setGreen(qt_div_255(s.green() * mg + d.green() * (255 - mg)));
-    blend.setBlue (qt_div_255(s.blue()  * mb + d.blue()  * (255 - mb)));
-    blend.setAlpha(s.alpha());
+    blend = qRgba64(qt_div_255(s.red()   * mr + d.red()   * (255 - mr)),
+                    qt_div_255(s.green() * mg + d.green() * (255 - mg)),
+                    qt_div_255(s.blue()  * mb + d.blue()  * (255 - mb)),
+                    s.alpha());
 #endif
     return blend;
 }

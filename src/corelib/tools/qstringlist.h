@@ -100,11 +100,11 @@ class QStringList : public QList<QString>
 {
 #endif
 public:
-    inline QStringList() Q_DECL_NOTHROW { }
+    inline QStringList() noexcept { }
     inline explicit QStringList(const QString &i) { append(i); }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QStringList(QList<QString> &&l) Q_DECL_NOTHROW : QList<QString>(std::move(l)) { }
+    inline QStringList(QList<QString> &&l) noexcept : QList<QString>(std::move(l)) { }
 #endif
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
@@ -113,7 +113,7 @@ public:
     QStringList &operator=(const QList<QString> &other)
     { QList<QString>::operator=(other); return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
-    QStringList &operator=(QList<QString> &&other) Q_DECL_NOTHROW
+    QStringList &operator=(QList<QString> &&other) noexcept
     { QList<QString>::operator=(std::move(other)); return *this; }
 #endif
 
@@ -131,6 +131,12 @@ public:
     { *this += l; return *this; }
     inline QStringList &operator<<(const QList<QString> &l)
     { *this += l; return *this; }
+
+    inline int indexOf(QStringView str, int from = 0) const;
+    inline int indexOf(QLatin1String str, int from = 0) const;
+
+    inline int lastIndexOf(QStringView str, int from = -1) const;
+    inline int lastIndexOf(QLatin1String str, int from = -1) const;
 
 #ifndef QT_NO_REGEXP
     inline int indexOf(const QRegExp &rx, int from = 0) const;
@@ -247,6 +253,26 @@ inline QStringList operator+(const QList<QString> &one, const QStringList &other
     QStringList n = one;
     n += other;
     return n;
+}
+
+inline int QStringList::indexOf(QStringView string, int from) const
+{
+    return QtPrivate::indexOf<QString, QStringView>(*this, string, from);
+}
+
+inline int QStringList::indexOf(QLatin1String string, int from) const
+{
+    return QtPrivate::indexOf<QString, QLatin1String>(*this, string, from);
+}
+
+inline int QStringList::lastIndexOf(QStringView string, int from) const
+{
+    return QtPrivate::lastIndexOf<QString, QStringView>(*this, string, from);
+}
+
+inline int QStringList::lastIndexOf(QLatin1String string, int from) const
+{
+    return QtPrivate::lastIndexOf<QString, QLatin1String>(*this, string, from);
 }
 
 #ifndef QT_NO_REGEXP

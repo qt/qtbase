@@ -93,12 +93,7 @@ void tst_QCollator::compare_data()
     QTest::addColumn<int>("caseInsensitiveResult");
     QTest::addColumn<bool>("numericMode");
     QTest::addColumn<bool>("ignorePunctuation");
-    QTest::addColumn<int>("punctuationResult");
-
-    /*
-        A few tests below are commented out on the mac. It's unclear why they fail,
-        as it looks like the collator for the locale is created correctly.
-    */
+    QTest::addColumn<int>("punctuationResult"); // Test ignores punctuation *and case*
 
     /*
         It's hard to test English, because it's treated differently
@@ -164,7 +159,7 @@ void tst_QCollator::compare_data()
     QTest::newRow("german13") << QString("de_DE") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
 
     /*
-        French sorting of e and e with accent
+        French sorting of e and e with acute accent
     */
     QTest::newRow("french1") << QString("fr_FR") << QString::fromLatin1("\xe9") << QString::fromLatin1("e") << 1 << 1 << false << false << 1;
     QTest::newRow("french2") << QString("fr_FR") << QString::fromLatin1("\xe9t") << QString::fromLatin1("et") << 1 << 1 << false << false << 1;
@@ -174,8 +169,12 @@ void tst_QCollator::compare_data()
     QTest::newRow("french6") << QString("fr_FR") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
     QTest::newRow("french7") << QString("fr_FR") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
     QTest::newRow("french8") << QString("fr_FR") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
-}
 
+    // C locale: case sensitive [A-Z] < [a-z] but case insensitive [Aa] < [Bb] <...< [Zz]
+    const QString C = QStringLiteral("C");
+    QTest::newRow("C:ABBA:AaaA") << C << QStringLiteral("ABBA") << QStringLiteral("AaaA") << -1 << 1 << false << false << 1;
+    QTest::newRow("C:AZa:aAZ") << C << QStringLiteral("AZa") << QStringLiteral("aAZ") << -1 << 1 << false << false << 1;
+}
 
 void tst_QCollator::compare()
 {
@@ -189,6 +188,10 @@ void tst_QCollator::compare()
     QFETCH(int, punctuationResult);
 
     QCollator collator(locale);
+    // Need to canonicalize sign to -1, 0 or 1, as .compare() can produce any -ve for <, any +ve for >.
+    auto asSign = [](int compared) {
+        return compared < 0 ? -1 : compared > 0 ? 1 : 0;
+    };
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     if (collator.locale() != QLocale())
@@ -198,12 +201,12 @@ void tst_QCollator::compare()
     if (numericMode)
         collator.setNumericMode(true);
 
-    QCOMPARE(collator.compare(s1, s2), result);
+    QCOMPARE(asSign(collator.compare(s1, s2)), result);
     collator.setCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE(collator.compare(s1, s2), caseInsensitiveResult);
+    QCOMPARE(asSign(collator.compare(s1, s2)), caseInsensitiveResult);
 #if !QT_CONFIG(iconv)
     collator.setIgnorePunctuation(ignorePunctuation);
-    QCOMPARE(collator.compare(s1, s2), punctuationResult);
+    QCOMPARE(asSign(collator.compare(s1, s2)), punctuationResult);
 #endif
 }
 

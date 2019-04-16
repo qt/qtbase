@@ -64,8 +64,8 @@ QT_BEGIN_NAMESPACE
   */
 class Q_WIDGETS_EXPORT QFSCompleter :  public QCompleter {
 public:
-    explicit QFSCompleter(QFileSystemModel *model, QObject *parent = 0)
-        : QCompleter(model, parent), proxyModel(0), sourceModel(model)
+    explicit QFSCompleter(QFileSystemModel *model, QObject *parent = nullptr)
+        : QCompleter(model, parent), proxyModel(nullptr), sourceModel(model)
     {
 #if defined(Q_OS_WIN)
         setCaseSensitivity(Qt::CaseInsensitive);

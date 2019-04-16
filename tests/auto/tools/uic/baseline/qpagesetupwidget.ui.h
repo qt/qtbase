@@ -290,12 +290,12 @@ public:
 
         gridLayout_3->addItem(verticalSpacer, 6, 0, 1, 1);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         pageSizeLabel->setBuddy(pageSizeCombo);
         widthLabel->setBuddy(pageWidth);
         heightLabel->setBuddy(pageHeight);
         paperSourceLabel->setBuddy(paperSource);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(QPageSetupWidget);
 
@@ -304,45 +304,45 @@ public:
 
     void retranslateUi(QWidget *QPageSetupWidget)
     {
-        QPageSetupWidget->setWindowTitle(QApplication::translate("QPageSetupWidget", "Form", nullptr));
-        groupBox_2->setTitle(QApplication::translate("QPageSetupWidget", "Paper", nullptr));
-        pageSizeLabel->setText(QApplication::translate("QPageSetupWidget", "Page size:", nullptr));
-        widthLabel->setText(QApplication::translate("QPageSetupWidget", "Width:", nullptr));
-        heightLabel->setText(QApplication::translate("QPageSetupWidget", "Height:", nullptr));
-        paperSourceLabel->setText(QApplication::translate("QPageSetupWidget", "Paper source:", nullptr));
-        groupBox_3->setTitle(QApplication::translate("QPageSetupWidget", "Orientation", nullptr));
-        portrait->setText(QApplication::translate("QPageSetupWidget", "Portrait", nullptr));
-        landscape->setText(QApplication::translate("QPageSetupWidget", "Landscape", nullptr));
-        reverseLandscape->setText(QApplication::translate("QPageSetupWidget", "Reverse landscape", nullptr));
-        reversePortrait->setText(QApplication::translate("QPageSetupWidget", "Reverse portrait", nullptr));
-        groupBox->setTitle(QApplication::translate("QPageSetupWidget", "Margins", nullptr));
-#ifndef QT_NO_TOOLTIP
-        topMargin->setToolTip(QApplication::translate("QPageSetupWidget", "top margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
-        topMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "top margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-#ifndef QT_NO_TOOLTIP
-        leftMargin->setToolTip(QApplication::translate("QPageSetupWidget", "left margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
-        leftMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "left margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-#ifndef QT_NO_TOOLTIP
-        rightMargin->setToolTip(QApplication::translate("QPageSetupWidget", "right margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
-        rightMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "right margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-#ifndef QT_NO_TOOLTIP
-        bottomMargin->setToolTip(QApplication::translate("QPageSetupWidget", "bottom margin", nullptr));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_ACCESSIBILITY
-        bottomMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "bottom margin", nullptr));
-#endif // QT_NO_ACCESSIBILITY
-        pagesPerSheetButtonGroup->setTitle(QApplication::translate("QPageSetupWidget", "Page Layout", nullptr));
-        label->setText(QApplication::translate("QPageSetupWidget", "Page order:", nullptr));
-        label_2->setText(QApplication::translate("QPageSetupWidget", "Pages per sheet:", nullptr));
+        QPageSetupWidget->setWindowTitle(QCoreApplication::translate("QPageSetupWidget", "Form", nullptr));
+        groupBox_2->setTitle(QCoreApplication::translate("QPageSetupWidget", "Paper", nullptr));
+        pageSizeLabel->setText(QCoreApplication::translate("QPageSetupWidget", "Page size:", nullptr));
+        widthLabel->setText(QCoreApplication::translate("QPageSetupWidget", "Width:", nullptr));
+        heightLabel->setText(QCoreApplication::translate("QPageSetupWidget", "Height:", nullptr));
+        paperSourceLabel->setText(QCoreApplication::translate("QPageSetupWidget", "Paper source:", nullptr));
+        groupBox_3->setTitle(QCoreApplication::translate("QPageSetupWidget", "Orientation", nullptr));
+        portrait->setText(QCoreApplication::translate("QPageSetupWidget", "Portrait", nullptr));
+        landscape->setText(QCoreApplication::translate("QPageSetupWidget", "Landscape", nullptr));
+        reverseLandscape->setText(QCoreApplication::translate("QPageSetupWidget", "Reverse landscape", nullptr));
+        reversePortrait->setText(QCoreApplication::translate("QPageSetupWidget", "Reverse portrait", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("QPageSetupWidget", "Margins", nullptr));
+#if QT_CONFIG(tooltip)
+        topMargin->setToolTip(QCoreApplication::translate("QPageSetupWidget", "top margin", nullptr));
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
+        topMargin->setAccessibleName(QCoreApplication::translate("QPageSetupWidget", "top margin", nullptr));
+#endif // QT_CONFIG(accessibility)
+#if QT_CONFIG(tooltip)
+        leftMargin->setToolTip(QCoreApplication::translate("QPageSetupWidget", "left margin", nullptr));
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
+        leftMargin->setAccessibleName(QCoreApplication::translate("QPageSetupWidget", "left margin", nullptr));
+#endif // QT_CONFIG(accessibility)
+#if QT_CONFIG(tooltip)
+        rightMargin->setToolTip(QCoreApplication::translate("QPageSetupWidget", "right margin", nullptr));
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
+        rightMargin->setAccessibleName(QCoreApplication::translate("QPageSetupWidget", "right margin", nullptr));
+#endif // QT_CONFIG(accessibility)
+#if QT_CONFIG(tooltip)
+        bottomMargin->setToolTip(QCoreApplication::translate("QPageSetupWidget", "bottom margin", nullptr));
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(accessibility)
+        bottomMargin->setAccessibleName(QCoreApplication::translate("QPageSetupWidget", "bottom margin", nullptr));
+#endif // QT_CONFIG(accessibility)
+        pagesPerSheetButtonGroup->setTitle(QCoreApplication::translate("QPageSetupWidget", "Page Layout", nullptr));
+        label->setText(QCoreApplication::translate("QPageSetupWidget", "Page order:", nullptr));
+        label_2->setText(QCoreApplication::translate("QPageSetupWidget", "Pages per sheet:", nullptr));
     } // retranslateUi
 
 };

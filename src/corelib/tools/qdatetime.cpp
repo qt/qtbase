@@ -256,7 +256,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
 
 #if QT_CONFIG(datestring)
 // Parse offset in [+-]HH[[:]mm] format
-static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_NOTHROW
+static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcept
 {
     *valid = false;
 
@@ -908,10 +908,16 @@ QString QDate::toString(Qt::DateFormat format) const
             a minus sign is prepended in addition.
     \endtable
 
-    All other input characters will be ignored. Any sequence of characters that
-    are enclosed in single quotes will be treated as text and not be used as an
-    expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output. Formats without separators (e.g. "ddMM") are currently not supported.
+    Any sequence of characters enclosed in single quotes will be included
+    verbatim in the output string (stripped of the quotes), even if it contains
+    formatting characters. Two consecutive single quotes ("''") are replaced by
+    a single quote in the output. All other characters in the format string are
+    included verbatim in the output string.
+
+    Formats without separators (e.g. "ddMM") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
+    produces "212" it could mean either the 2nd of December or the 21st of
+    February).
 
     Example format strings (assuming that the QDate is the 20 July
     1969):
@@ -1458,9 +1464,8 @@ bool QDate::isLeapYear(int y)
 /*!
     \fn QTime::QTime()
 
-    Constructs a null time object. A null time can be a QTime(0, 0, 0, 0)
-    (i.e., midnight) object, except that isNull() returns \c true and isValid()
-    returns \c false.
+    Constructs a null time object. For a null time, isNull() returns \c true and
+    isValid() returns \c false. If you need a zero time, use QTime(0, 0).
 
     \sa isNull(), isValid()
 */
@@ -1672,10 +1677,16 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
-    All other input characters will be ignored. Any sequence of characters that
-    are enclosed in single quotes will be treated as text and not be used as an
-    expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output. Formats without separators (e.g. "HHmm") are currently not supported.
+    Any sequence of characters enclosed in single quotes will be included
+    verbatim in the output string (stripped of the quotes), even if it contains
+    formatting characters. Two consecutive single quotes ("''") are replaced by
+    a single quote in the output. All other characters in the format string are
+    included verbatim in the output string.
+
+    Formats without separators (e.g. "ddMM") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
+    produces "212" it could mean either the 2nd of December or the 21st of
+    February).
 
     Example format strings (assuming that the QTime is 14:13:09.042 and the system
     locale is \c{en_US})
@@ -3120,7 +3131,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     \sa isValid()
 */
-QDateTime::QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall)
+QDateTime::QDateTime() noexcept(Data::CanBeSmall)
 {
 }
 
@@ -3131,7 +3142,7 @@ QDateTime::QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall)
 */
 
 QDateTime::QDateTime(const QDate &date)
-    : d(QDateTimePrivate::create(date, QTime(0, 0, 0), Qt::LocalTime, 0))
+    : d(QDateTimePrivate::create(date, QTime(0, 0), Qt::LocalTime, 0))
 {
 }
 
@@ -3199,7 +3210,7 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, const QTimeZone &time
 /*!
     Constructs a copy of the \a other datetime.
 */
-QDateTime::QDateTime(const QDateTime &other) Q_DECL_NOTHROW
+QDateTime::QDateTime(const QDateTime &other) noexcept
     : d(other.d)
 {
 }
@@ -3209,7 +3220,7 @@ QDateTime::QDateTime(const QDateTime &other) Q_DECL_NOTHROW
     Moves the content of the temporary \a other datetime to this object and
     leaves \a other in an unspecified (but proper) state.
 */
-QDateTime::QDateTime(QDateTime &&other) Q_DECL_NOTHROW
+QDateTime::QDateTime(QDateTime &&other) noexcept
     : d(std::move(other.d))
 {
 }
@@ -3226,7 +3237,7 @@ QDateTime::~QDateTime()
     copy.
 */
 
-QDateTime &QDateTime::operator=(const QDateTime &other) Q_DECL_NOTHROW
+QDateTime &QDateTime::operator=(const QDateTime &other) noexcept
 {
     d = other.d;
     return *this;
@@ -3952,10 +3963,16 @@ QString QDateTime::toString(Qt::DateFormat format) const
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
-    All other input characters will be ignored. Any sequence of characters that
-    are enclosed in single quotes will be treated as text and not be used as an
-    expression. Two consecutive single quotes ("''") are replaced by a singlequote
-    in the output. Formats without separators (e.g. "HHmm") are currently not supported.
+    Any sequence of characters enclosed in single quotes will be included
+    verbatim in the output string (stripped of the quotes), even if it contains
+    formatting characters. Two consecutive single quotes ("''") are replaced by
+    a single quote in the output. All other characters in the format string are
+    included verbatim in the output string.
+
+    Formats without separators (e.g. "ddMM") are supported but must be used with
+    care, as the resulting strings aren't always reliably readable (e.g. if "dM"
+    produces "212" it could mean either the 2nd of December or the 21st of
+    February).
 
     Example format strings (assumed that the QDateTime is 21 May 2001
     14:13:09.120):
@@ -4448,7 +4465,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return QDateTime(d, t, Qt::UTC);
 }
 
-qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -4459,7 +4476,7 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
                    - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400000);
 }
 
-qint64 QDateTime::currentSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -4491,7 +4508,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), Qt::UTC);
 }
 
-qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
     // posix compliant system
     // we have milliseconds
@@ -4500,7 +4517,7 @@ qint64 QDateTime::currentMSecsSinceEpoch() Q_DECL_NOTHROW
     return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
 }
 
-qint64 QDateTime::currentSecsSinceEpoch() Q_DECL_NOTHROW
+qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
     struct timeval tv;
     gettimeofday(&tv, 0);
@@ -5397,7 +5414,7 @@ uint qHash(const QDateTime &key, uint seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QDate &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QDate &key, uint seed) noexcept
 {
     return qHash(key.toJulianDay(), seed);
 }
@@ -5408,7 +5425,7 @@ uint qHash(const QDate &key, uint seed) Q_DECL_NOTHROW
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QTime &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QTime &key, uint seed) noexcept
 {
     return qHash(key.msecsSinceStartOfDay(), seed);
 }

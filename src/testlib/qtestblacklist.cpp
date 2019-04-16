@@ -104,6 +104,7 @@ static QSet<QByteArray> keywords()
 #endif
 #ifdef Q_OS_OSX
             << "osx"
+            << "macos"
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
             << "windows"

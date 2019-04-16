@@ -147,7 +147,7 @@ public:
     void drawControl(ControlElement element, const QStyleOption *option,
             QPainter *painter, const QWidget *widget = nullptr) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *option,
-                            QPainter *painter, const QWidget *widget=0) const override;
+                            QPainter *painter, const QWidget *widget=nullptr) const override;
 
     QSize sizeFromContents(ContentsType type, const QStyleOption *option,
             const QSize &contentsSize, const QWidget *widget = nullptr) const override;

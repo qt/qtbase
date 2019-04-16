@@ -58,7 +58,7 @@
 #include <private/qobject_p.h>
 #include <qabstractanimation.h>
 
-#ifndef QT_NO_ANIMATION
+QT_REQUIRE_CONFIG(animation);
 
 QT_BEGIN_NAMESPACE
 
@@ -78,7 +78,7 @@ public:
           hasRegisteredTimer(false),
           isPause(false),
           isGroup(false),
-          group(0)
+          group(nullptr)
     {
     }
 
@@ -295,7 +295,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION
 
 #endif //QABSTRACTANIMATION_P_H

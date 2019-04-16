@@ -43,20 +43,28 @@ class QPlatformOpenGLContext;
 class QWasmWindow;
 class QWasmBackingStore;
 class QWasmCompositor;
+class QWasmEventTranslator;
 class QOpenGLContext;
 
 class QWasmScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-
-    QWasmScreen(QWasmCompositor *compositor);
+    QWasmScreen(const QString &canvasId);
     ~QWasmScreen();
+
+    static QWasmScreen *get(QPlatformScreen *screen);
+    static QWasmScreen *get(QScreen *screen);
+    QString canvasId() const;
+
+    QWasmCompositor *compositor();
+    QWasmEventTranslator *eventTranslator();
 
     QRect geometry() const override;
     int depth() const override;
     QImage::Format format() const override;
     qreal devicePixelRatio() const override;
+    QString name() const override;
     QPlatformCursor *cursor() const override;
 
     void resizeMaximizedWindows();
@@ -64,17 +72,18 @@ public:
     QWindow *topLevelAt(const QPoint &p) const override;
 
     void invalidateSize();
+    void updateQScreenAndCanvasRenderSize();
 
 public slots:
     void setGeometry(const QRect &rect);
-protected:
 
 private:
-    QWasmCompositor *m_compositor;
-
+    QString m_canvasId;
+    QWasmCompositor *m_compositor = nullptr;
+    QWasmEventTranslator *m_eventTranslator = nullptr;
     QRect m_geometry = QRect(0, 0, 100, 100);
-    int m_depth;
-    QImage::Format m_format;
+    int m_depth = 32;
+    QImage::Format m_format = QImage::Format_RGB32;
     QWasmCursor m_cursor;
 };
 

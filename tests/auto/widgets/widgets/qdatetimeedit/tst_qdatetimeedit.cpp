@@ -823,7 +823,7 @@ void tst_QDateTimeEdit::displayFormat_data()
                              << QString("31 12 2999::59:59:03") << dt;
     QTest::newRow("valid-2") << QString("hh-dd-mm-MM-yy") << true << QString("03-31-59-12-99") << dt;
     QTest::newRow("valid-3") << QString("ddd MM d yyyy::ss:mm:hh") << true
-                             << QDate::shortDayName(2) + " 12 31 2999::59:59:03" << dt;
+                             << QLocale::system().dayName(2, QLocale::ShortFormat) + " 12 31 2999::59:59:03" << dt;
     QTest::newRow("valid-4") << QString("hh-dd-mm-MM-yyyy") << true << QString("03-31-59-12-2999") << dt;
     QTest::newRow("invalid-0") << QString("yyyy.MM.yy") << true << QString("2999.12.99") << dt;
     QTest::newRow("invalid-1") << QString("y") << false << QString() << dt;
@@ -2611,9 +2611,13 @@ void tst_QDateTimeEdit::weirdCase()
 
 void tst_QDateTimeEdit::newCase()
 {
-    if (QDate::shortMonthName(6) != "Jun" || QDate::shortMonthName(7) != "Jul" ||
-        QDate::longMonthName(6) != "June" || QDate::longMonthName(7) != "July")
+    const auto locale = QLocale::system();
+    if (locale.monthName(6, QLocale::ShortFormat) != "Jun" ||
+            locale.monthName(7, QLocale::ShortFormat) != "Jul" ||
+            locale.monthName(6, QLocale::LongFormat) != "June" ||
+            locale.monthName(7, QLocale::LongFormat) != "July") {
         QSKIP("This test only works in English");
+    }
 
     testWidget->setDisplayFormat("MMMM'a'MbMMMcMM");
     testWidget->setDate(QDate(2005, 6, 1));
@@ -2656,12 +2660,12 @@ void tst_QDateTimeEdit::newCase2()
     testWidget->setDate(QDate(2005, 8, 8));
     QTest::keyClick(testWidget, Qt::Key_Return);
     QTest::keyClick(testWidget, Qt::Key_Backspace);
-    QCOMPARE(testWidget->text(), QString(" 2005-08-08 ") + QDate::longMonthName(8));
+    QCOMPARE(testWidget->text(), QString(" 2005-08-08 ") + QLocale::system().monthName(8, QLocale::LongFormat));
 }
 
 void tst_QDateTimeEdit::newCase3()
 {
-    if (!QDate::longMonthName(1).startsWith("Januar"))
+    if (!QLocale::system().monthName(1, QLocale::LongFormat).startsWith("Januar"))
         QSKIP("This test does not work in this locale");
 
     testWidget->setDisplayFormat("dd MMMM yyyy");
@@ -2681,7 +2685,7 @@ void tst_QDateTimeEdit::newCase3()
 
 void tst_QDateTimeEdit::cursorPos()
 {
-    if (QDate::longMonthName(1) != "January")
+    if (QLocale::system().monthName(1, QLocale::LongFormat) != "January")
         QSKIP("This test only works in English");
 
     testWidget->setDisplayFormat("dd MMMM yyyy");
@@ -3017,7 +3021,7 @@ void tst_QDateTimeEdit::yyTest()
     testWidget->setDate(testWidget->minimumDate());
     testWidget->setCurrentSection(QDateTimeEdit::YearSection);
 
-    QString jan = QDate::shortMonthName(1);
+    QString jan = QLocale::system().monthName(1, QLocale::ShortFormat);
     QCOMPARE(testWidget->lineEdit()->displayText(), "01-" + jan + "-05");
     QTest::keyClick(testWidget, Qt::Key_Up);
     QCOMPARE(testWidget->lineEdit()->displayText(), "01-" + jan + "-06");
@@ -3130,7 +3134,7 @@ void tst_QDateTimeEdit::ddMMMMyyyy()
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-23674", Abort);
 #endif
-    QCOMPARE(testWidget->lineEdit()->text(), "01." + QDate::longMonthName(1) + ".200");
+    QCOMPARE(testWidget->lineEdit()->text(), "01." + QLocale::system().monthName(1, QLocale::LongFormat) + ".200");
 }
 
 void tst_QDateTimeEdit::wheelEvent_data()
@@ -3848,7 +3852,7 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
         << threeDigitDayIssueKeypresses_DayName << QString::fromLatin1("00/2/Tuesday");
 
     QTest::newRow("no fixday, leap, yy/M/ddd") << defaultLocale << defaultDate << QString::fromLatin1("yy/M/ddd")
-        << threeDigitDayIssueKeypresses_DayName << QString::fromLatin1("00/2/Tue.");
+        << threeDigitDayIssueKeypresses_DayName << QString::fromLatin1("00/2/Tue");
 
     QTest::newRow("no fixday, leap, yy/MM/dddd") << defaultLocale << defaultDate << QString::fromLatin1("yy/MM/dddd")
         << threeDigitDayIssueKeypresses_DayName << QString::fromLatin1("00/02/Tuesday");
@@ -3896,13 +3900,13 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
         << threeDigitDayIssueKeypresses_YearDayMonth << QString::fromLatin1("2000/29/2");
 
     QTest::newRow("fixday, leap, yyyy/MMM/dd") << defaultLocale << defaultDate << QString::fromLatin1("yyyy/MMM/dd")
-        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("2000/Feb./29");
+        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("2000/Feb/29");
 
     QTest::newRow("fixday, leap, yyyy/MMM/d") << defaultLocale << defaultDate << QString::fromLatin1("yyyy/MMM/d")
-        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("2000/Feb./29");
+        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("2000/Feb/29");
 
     QTest::newRow("fixday, leap, yy/MMM/dd") << defaultLocale << defaultDate << QString::fromLatin1("yy/MMM/dd")
-        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("00/Feb./29");
+        << threeDigitDayIssueKeypresses_ShortMonthName << QString::fromLatin1("00/Feb/29");
 
     QTest::newRow("fixday, leap, yyyy/dddd/M") << defaultLocale << defaultDate << QString::fromLatin1("yyyy/dddd/M")
         << threeDigitDayIssueKeypresses_DayName_YearDayMonth << QString::fromLatin1("2000/Tuesday/2");
@@ -3977,16 +3981,16 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize_data()
         << threeDigitDayIssueKeypresses_MonthYearDay << QString::fromLatin1("02/2000/29");
 
     QTest::newRow("fixday, leap, MMM/yy/d") << defaultLocale << defaultDate << QString::fromLatin1("MMM/yy/d")
-        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb./00/29");
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/00/29");
 
     QTest::newRow("fixday, leap, MMM/yyyy/d") << defaultLocale << defaultDate << QString::fromLatin1("MMM/yyyy/d")
-        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb./2000/29");
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/2000/29");
 
     QTest::newRow("fixday, MMM/yyyy/d") << defaultLocale << defaultDate.addYears(1) << QString::fromLatin1("MMM/yyyy/d")
-        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb./2001/28");
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/2001/28");
 
     QTest::newRow("fixday, leap, MMM/yyyy/dd") << defaultLocale << defaultDate << QString::fromLatin1("MMM/yyyy/dd")
-        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb./2000/29");
+        << threeDigitDayIssueKeypresses_ShortMonthName_MonthYearDay << QString::fromLatin1("Feb/2000/29");
 
     QTest::newRow("fixday, leap, dddd, dd. MMMM yyyy") << defaultLocale
         << defaultDate << QString::fromLatin1("dddd, dd. MMMM yyyy")

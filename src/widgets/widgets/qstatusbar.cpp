@@ -482,14 +482,14 @@ void QStatusBar::reformat()
 #if QT_CONFIG(sizegrip)
     if (d->resizer) {
         d->box = new QHBoxLayout(this);
-        d->box->setMargin(0);
+        d->box->setContentsMargins(QMargins());
         vbox = new QVBoxLayout;
         d->box->addLayout(vbox);
     } else
 #endif
     {
         vbox = d->box = new QVBoxLayout(this);
-        d->box->setMargin(0);
+        d->box->setContentsMargins(QMargins());
     }
     vbox->addSpacing(3);
     QBoxLayout* l = new QHBoxLayout;
@@ -689,7 +689,7 @@ void QStatusBar::paintEvent(QPaintEvent *event)
         }
     }
     if (haveMessage) {
-        p.setPen(palette().foreground().color());
+        p.setPen(palette().windowText().color());
         p.drawText(d->messageRect(), Qt::AlignLeading | Qt::AlignVCenter | Qt::TextSingleLine, d->tempItem);
     }
 }

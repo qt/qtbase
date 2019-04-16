@@ -88,7 +88,7 @@ public:
     static QAbstractSocketEngine *createSocketEngine(QAbstractSocket::SocketType socketType, const QNetworkProxy &, QObject *parent);
     static QAbstractSocketEngine *createSocketEngine(qintptr socketDescriptor, QObject *parent);
 
-    QAbstractSocketEngine(QObject *parent = 0);
+    QAbstractSocketEngine(QObject *parent = nullptr);
 
     enum SocketOption {
         NonBlockingSocketOption,
@@ -155,7 +155,7 @@ public:
     virtual qint64 pendingDatagramSize() const = 0;
 #endif // QT_NO_UDPSOCKET
 
-    virtual qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header = 0,
+    virtual qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header = nullptr,
                                 PacketHeaderOptions = WantNone) = 0;
     virtual qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header) = 0;
     virtual qint64 bytesToWrite() const = 0;
@@ -163,11 +163,11 @@ public:
     virtual int option(SocketOption option) const = 0;
     virtual bool setOption(SocketOption option, int value) = 0;
 
-    virtual bool waitForRead(int msecs = 30000, bool *timedOut = 0) = 0;
-    virtual bool waitForWrite(int msecs = 30000, bool *timedOut = 0) = 0;
+    virtual bool waitForRead(int msecs = 30000, bool *timedOut = nullptr) = 0;
+    virtual bool waitForWrite(int msecs = 30000, bool *timedOut = nullptr) = 0;
     virtual bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
                             bool checkRead, bool checkWrite,
-                            int msecs = 30000, bool *timedOut = 0) = 0;
+                            int msecs = 30000, bool *timedOut = nullptr) = 0;
 
     QAbstractSocket::SocketError error() const;
     QString errorString() const;
@@ -202,7 +202,7 @@ public Q_SLOTS:
 public:
     void setReceiver(QAbstractSocketEngineReceiver *receiver);
 protected:
-    QAbstractSocketEngine(QAbstractSocketEnginePrivate &dd, QObject* parent = 0);
+    QAbstractSocketEngine(QAbstractSocketEnginePrivate &dd, QObject* parent = nullptr);
 
     void setError(QAbstractSocket::SocketError error, const QString &errorString) const;
     void setState(QAbstractSocket::SocketState state);
@@ -215,7 +215,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QAbstractSocketEngine)
-    Q_DISABLE_COPY(QAbstractSocketEngine)
+    Q_DISABLE_COPY_MOVE(QAbstractSocketEngine)
 };
 
 class QAbstractSocketEnginePrivate : public QObjectPrivate

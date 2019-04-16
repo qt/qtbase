@@ -171,7 +171,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String(CONNMAN_MANAGER_PATH),
                                QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                QLatin1String("ServicesChanged"),
-                               this,SLOT(onServicesChanged(ConnmanMapList, QList<QDBusObjectPath>)))) {
+                               this,SLOT(onServicesChanged(ConnmanMapList,QList<QDBusObjectPath>)))) {
             qWarning("servicesChanged not connected");
         }
     }

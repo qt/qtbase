@@ -33,18 +33,16 @@
 #include "treewalker.h"
 #include "validator.h"
 
-#ifdef QT_UIC_CPP_GENERATOR
 #include "cppwriteincludes.h"
 #include "cppwritedeclaration.h"
-#endif
+#include <pythonwritedeclaration.h>
+#include <pythonwriteimports.h>
 
-#ifdef QT_UIC_JAVA_GENERATOR
-#include "javawriteincludes.h"
-#include "javawritedeclaration.h"
-#endif
+#include <language.h>
 
 #include <qxmlstream.h>
 #include <qfileinfo.h>
+#include <qscopedpointer.h>
 #include <qtextstream.h>
 
 QT_BEGIN_NAMESPACE
@@ -109,19 +107,61 @@ bool Uic::printDependencies()
     return true;
 }
 
-void Uic::writeCopyrightHeader(DomUI *ui)
+void Uic::writeCopyrightHeaderCpp(const DomUI *ui) const
 {
     QString comment = ui->elementComment();
-    if (comment.size())
+    if (!comment.isEmpty())
         out << "/*\n" << comment << "\n*/\n\n";
 
     out << "/********************************************************************************\n";
     out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
     out << "**\n";
-    out << "** Created by: Qt User Interface Compiler version " << QLatin1String(QT_VERSION_STR) << "\n";
+    out << "** Created by: Qt User Interface Compiler version " << QT_VERSION_STR << "\n";
     out << "**\n";
     out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
     out << "********************************************************************************/\n\n";
+}
+
+// Format existing UI file comments for Python with some smartness : Replace all
+// leading C++ comment characters by '#' or prepend '#' if needed.
+
+static inline bool isCppCommentChar(QChar c)
+{
+    return  c == QLatin1Char('/') || c == QLatin1Char('*');
+}
+
+static int leadingCppCommentCharCount(const QStringRef &s)
+{
+    int i = 0;
+    for (const int size = s.size(); i < size && isCppCommentChar(s.at(i)); ++i) {
+    }
+    return i;
+}
+
+void Uic::writeCopyrightHeaderPython(const DomUI *ui) const
+{
+    QString comment = ui->elementComment();
+    if (!comment.isEmpty()) {
+        const auto lines = comment.splitRef(QLatin1Char('\n'));
+        for (const auto &line : lines) {
+            if (const int leadingCommentChars = leadingCppCommentCharCount(line)) {
+                 out << language::repeat(leadingCommentChars, '#')
+                     << line.right(line.size() - leadingCommentChars);
+            } else {
+                if (!line.startsWith(QLatin1Char('#')))
+                    out << "# ";
+                out << line;
+            }
+            out << '\n';
+        }
+        out << '\n';
+    }
+
+    out << language::repeat(80, '#') << "\n## Form generated from reading UI file '"
+        << QFileInfo(opt.inputFile).fileName()
+        << "'\n##\n## Created by: Qt User Interface Compiler version " << QT_VERSION_STR
+        << "\n##\n## WARNING! All changes made in this file will be lost when recompiling UI file!\n"
+        << language::repeat(80, '#') << "\n\n";
 }
 
 // Check the version with a stream reader at the <ui> element.
@@ -172,128 +212,92 @@ DomUI *Uic::parseUiFile(QXmlStreamReader &reader)
 
 bool Uic::write(QIODevice *in)
 {
-    if (option().generator == Option::JavaGenerator) {
-         // the Java generator ignores header protection
-        opt.headerProtection = false;
-    }
-
-    DomUI *ui = 0;
+    QScopedPointer<DomUI> ui;
     {
         QXmlStreamReader reader;
         reader.setDevice(in);
-        ui = parseUiFile(reader);
-
-        if (!ui)
-            return false;
+        ui.reset(parseUiFile(reader));
     }
+
+    if (ui.isNull())
+        return false;
 
     double version = ui->attributeVersion().toDouble();
     if (version < 4.0) {
-        delete ui;
-
         fprintf(stderr, "uic: File generated with too old version of Qt Designer\n");
         return false;
     }
 
-    QString language = ui->attributeLanguage();
+    const QString &language = ui->attributeLanguage();
     driver()->setUseIdBasedTranslations(ui->attributeIdbasedtr());
 
-    bool rtn = false;
-
-    if (option().generator == Option::JavaGenerator) {
-#ifdef QT_UIC_JAVA_GENERATOR
-        if (language.toLower() != QLatin1String("jambi")) {
-            fprintf(stderr, "uic: File is not a 'jambi' form\n");
-            delete ui;
-            return false;
-        }
-        rtn = jwrite (ui);
-#else
-        fprintf(stderr, "uic: option to generate java code not compiled in\n");
-#endif
-    } else {
-#ifdef QT_UIC_CPP_GENERATOR
-        if (!language.isEmpty() && language.toLower() != QLatin1String("c++")) {
-            fprintf(stderr, "uic: File is not a 'c++' ui file, language=%s\n", qPrintable(language));
-            delete ui;
-            return false;
-        }
-
-        rtn = write (ui);
-#else
-        fprintf(stderr, "uic: option to generate cpp code not compiled in\n");
-#endif
+    if (!language.isEmpty() && language.compare(QLatin1String("c++"), Qt::CaseInsensitive) != 0) {
+        fprintf(stderr, "uic: File is not a \"c++\" ui file, language=%s\n", qPrintable(language));
+        return false;
     }
 
-    delete ui;
-
-    return rtn;
+    return write(ui.data());
 }
 
-#ifdef QT_UIC_CPP_GENERATOR
 bool Uic::write(DomUI *ui)
 {
-    using namespace CPP;
-
     if (!ui || !ui->elementWidget())
         return false;
 
-    if (opt.copyrightHeader)
-        writeCopyrightHeader(ui);
+    const auto lang = language::language();
 
-    if (opt.headerProtection) {
+    if (lang == Language::Python)
+       out << "# -*- coding: utf-8 -*-\n\n";
+
+    if (opt.copyrightHeader) {
+        switch (language::language()) {
+        case Language::Cpp:
+            writeCopyrightHeaderCpp(ui);
+            break;
+        case Language::Python:
+            writeCopyrightHeaderPython(ui);
+            break;
+        }
+    }
+
+    if (opt.headerProtection && lang == Language::Cpp) {
         writeHeaderProtectionStart();
         out << "\n";
     }
 
     pixFunction = ui->elementPixmapFunction();
-    if (pixFunction == QLatin1String("QPixmap::fromMimeSource"))
-        pixFunction = QLatin1String("qPixmapFromMimeSource");
+    if (pixFunction == QLatin1String("QPixmap::fromMimeSource")
+        || pixFunction == QLatin1String("qPixmapFromMimeSource")) {
+        fprintf(stderr, "%s: Warning: Obsolete pixmap function '%s' specified in the UI file.\n",
+                qPrintable(opt.messagePrefix()), qPrintable(pixFunction));
+        pixFunction.clear();
+    }
 
     info.acceptUI(ui);
     cWidgetsInfo.acceptUI(ui);
-    WriteIncludes writeIncludes(this);
-    writeIncludes.acceptUI(ui);
 
-    Validator(this).acceptUI(ui);
-    WriteDeclaration(this).acceptUI(ui);
+    switch (language::language()) {
+    case Language::Cpp: {
+        CPP::WriteIncludes writeIncludes(this);
+        writeIncludes.acceptUI(ui);
+        Validator(this).acceptUI(ui);
+        CPP::WriteDeclaration(this).acceptUI(ui);
+    }
+        break;
+    case Language::Python: {
+        Python::WriteImports writeImports(this);
+        writeImports.acceptUI(ui);
+        Validator(this).acceptUI(ui);
+        Python::WriteDeclaration(this).acceptUI(ui);
+    }
+        break;
+    }
 
-    if (opt.headerProtection)
+    if (opt.headerProtection && lang == Language::Cpp)
         writeHeaderProtectionEnd();
 
     return true;
 }
-#endif
-
-#ifdef QT_UIC_JAVA_GENERATOR
-bool Uic::jwrite(DomUI *ui)
-{
-    using namespace Java;
-
-    if (!ui || !ui->elementWidget())
-        return false;
-
-    if (opt.copyrightHeader)
-        writeCopyrightHeader(ui);
-
-    pixFunction = ui->elementPixmapFunction();
-    if (pixFunction == QLatin1String("QPixmap::fromMimeSource"))
-        pixFunction = QLatin1String("qPixmapFromMimeSource");
-
-    externalPix = ui->elementImages() == 0;
-
-    info.acceptUI(ui);
-    cWidgetsInfo.acceptUI(ui);
-    WriteIncludes(this).acceptUI(ui);
-
-    Validator(this).acceptUI(ui);
-    WriteDeclaration(this).acceptUI(ui);
-
-    return true;
-}
-#endif
-
-#ifdef QT_UIC_CPP_GENERATOR
 
 void Uic::writeHeaderProtectionStart()
 {
@@ -307,57 +311,35 @@ void Uic::writeHeaderProtectionEnd()
     QString h = drv->headerFileName();
     out << "#endif // " << h << "\n";
 }
-#endif
-
-bool Uic::isMainWindow(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QMainWindow"));
-}
-
-bool Uic::isToolBar(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QToolBar"));
-}
 
 bool Uic::isButton(const QString &className) const
 {
-    return customWidgetsInfo()->extends(className, QLatin1String("QRadioButton"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QToolButton"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QCheckBox"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QPushButton"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QCommandLinkButton"));
+    static const QStringList buttons = {
+        QLatin1String("QRadioButton"), QLatin1String("QToolButton"),
+        QLatin1String("QCheckBox"), QLatin1String("QPushButton"),
+        QLatin1String("QCommandLinkButton")
+    };
+    return customWidgetsInfo()->extendsOneOf(className, buttons);
 }
 
 bool Uic::isContainer(const QString &className) const
 {
-    return customWidgetsInfo()->extends(className, QLatin1String("QStackedWidget"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QToolBox"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QTabWidget"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QScrollArea"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QMdiArea"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QWizard"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"));
-}
+    static const QStringList containers = {
+        QLatin1String("QStackedWidget"), QLatin1String("QToolBox"),
+        QLatin1String("QTabWidget"), QLatin1String("QScrollArea"),
+        QLatin1String("QMdiArea"), QLatin1String("QWizard"),
+        QLatin1String("QDockWidget")
+    };
 
-bool Uic::isCustomWidgetContainer(const QString &className) const
-{
-    return customWidgetsInfo()->isCustomWidgetContainer(className);
-}
-
-bool Uic::isStatusBar(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"));
-}
-
-bool Uic::isMenuBar(const QString &className) const
-{
-    return customWidgetsInfo()->extends(className, QLatin1String("QMenuBar"));
+    return customWidgetsInfo()->extendsOneOf(className, containers);
 }
 
 bool Uic::isMenu(const QString &className) const
 {
-    return customWidgetsInfo()->extends(className, QLatin1String("QMenu"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QPopupMenu"));
+    static const QStringList menus = {
+        QLatin1String("QMenu"), QLatin1String("QPopupMenu")
+    };
+    return customWidgetsInfo()->extendsOneOf(className, menus);
 }
 
 QT_END_NAMESPACE

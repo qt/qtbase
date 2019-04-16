@@ -112,13 +112,6 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 
         xcb_depth_next(&depth_iterator);
     }
-
-    if (connection->hasXRandr()) {
-        xcb_connection_t *conn = connection->xcb_connection();
-        auto screen_info = Q_XCB_REPLY(xcb_randr_get_screen_info, conn, screen->root);
-        if (screen_info)
-            m_rotation = screen_info->rotation;
-    }
 }
 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
@@ -154,7 +147,7 @@ void QXcbVirtualDesktop::setPrimaryScreen(QPlatformScreen *s)
 {
     const int idx = m_screens.indexOf(s);
     Q_ASSERT(idx > -1);
-    m_screens.swap(0, idx);
+    m_screens.swapItemsAt(0, idx);
 }
 
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
@@ -747,7 +740,11 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
         m_sizeMillimeters = sizeInMillimeters(geometry.size(), m_virtualDesktop->dpi());
 
     qreal dpi = geometry.width() / physicalSize().width() * qreal(25.4);
-    m_pixelDensity = qMax(1, qRound(dpi/96));
+
+    // Use 128 as a reference DPI on small screens. This favors "small UI" over "large UI".
+    qreal referenceDpi = physicalSize().width() <= 320 ? 128 : 96;
+
+    m_pixelDensity = qMax(1, qRound(dpi/referenceDpi));
     m_geometry = geometry;
     m_availableGeometry = geometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);

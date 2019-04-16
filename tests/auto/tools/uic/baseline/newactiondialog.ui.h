@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'newactiondialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -143,11 +143,11 @@ public:
 
         verticalLayout->addWidget(buttonBox);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(editActionText);
         label_3->setBuddy(editObjectName);
         label_2->setBuddy(iconSelector);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(editActionText, editObjectName);
 
         retranslateUi(qdesigner_internal__NewActionDialog);
@@ -159,10 +159,10 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__NewActionDialog)
     {
-        qdesigner_internal__NewActionDialog->setWindowTitle(QApplication::translate("qdesigner_internal::NewActionDialog", "New Action...", nullptr));
-        label->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "&Text:", nullptr));
-        label_3->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "Object &name:", nullptr));
-        label_2->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "&Icon:", nullptr));
+        qdesigner_internal__NewActionDialog->setWindowTitle(QCoreApplication::translate("qdesigner_internal::NewActionDialog", "New Action...", nullptr));
+        label->setText(QCoreApplication::translate("qdesigner_internal::NewActionDialog", "&Text:", nullptr));
+        label_3->setText(QCoreApplication::translate("qdesigner_internal::NewActionDialog", "Object &name:", nullptr));
+        label_2->setText(QCoreApplication::translate("qdesigner_internal::NewActionDialog", "&Icon:", nullptr));
     } // retranslateUi
 
 };

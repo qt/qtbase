@@ -1,9 +1,10 @@
 include(../common/common.pri)
 DEF_FILE_TARGET = $${TARGET}
 TARGET = $$qtLibraryTarget($${LIBEGL_NAME})
-winrt: LIBS_PRIVATE += -ld3d11
+winrt: QMAKE_USE_PRIVATE += d3d11
+QMAKE_USE_PRIVATE += dxguid
 
-LIBS_PRIVATE += -ldxguid -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget($${LIBGLESV2_NAME})
+LIBS_PRIVATE += -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget($${LIBGLESV2_NAME})
 
 DEFINES += GL_APICALL= GL_GLEXT_PROTOTYPES= EGLAPI= LIBEGL_IMPLEMENTATION
 
@@ -21,6 +22,7 @@ SOURCES += \
 egl_headers.files = \
     $$ANGLE_DIR/include/EGL/egl.h \
     $$ANGLE_DIR/include/EGL/eglext.h \
+    $$ANGLE_DIR/include/EGL/eglext_angle.h \
     $$ANGLE_DIR/include/EGL/eglplatform.h
 egl_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/EGL
 INSTALLS += egl_headers

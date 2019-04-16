@@ -163,7 +163,7 @@ void Mouse::timerEvent(QTimerEvent *)
                                                        << mapToScene(0, 0)
                                                        << mapToScene(-30, -50)
                                                        << mapToScene(30, -50));
-    foreach (QGraphicsItem *item, dangerMice) {
+    for (QGraphicsItem *item : dangerMice) {
         if (item == this)
             continue;
 

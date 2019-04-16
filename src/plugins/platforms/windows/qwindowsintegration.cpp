@@ -312,7 +312,7 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     case AllGLFunctionsQueryable:
         return true;
     case SwitchableWidgetComposition:
-        return true;
+        return false; // QTBUG-68329 QTBUG-53515 QTBUG-54734
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
@@ -461,7 +461,7 @@ QPlatformOpenGLContext *QWindowsIntegration::createPlatformOpenGLContext(QOpenGL
         if (result->isValid())
             return result.take();
     }
-    return 0;
+    return nullptr;
 }
 
 QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
@@ -481,7 +481,7 @@ QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 {
     QWindowsIntegration *integration = QWindowsIntegration::instance();
     if (!integration)
-        return 0;
+        return nullptr;
     QWindowsIntegrationPrivate *d = integration->d.data();
     QMutexLocker lock(&d->m_staticContextLock);
     if (d->m_staticOpenGLContext.isNull())

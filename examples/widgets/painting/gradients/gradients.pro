@@ -6,10 +6,6 @@ SHARED_FOLDER = ../shared
 include($$SHARED_FOLDER/shared.pri)
 
 RESOURCES += gradients.qrc
-qtHaveModule(opengl) {
-	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl
-}
 QT += widgets
 
 # install

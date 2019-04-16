@@ -47,7 +47,6 @@
 #include <private/qpaintengine_raster_p.h>
 #include <qprinter.h>
 #include <qstack.h>
-#include <qtextcodec.h>
 #include <qwidget.h>
 #include <qvarlengtharray.h>
 #include <qdebug.h>
@@ -314,7 +313,6 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
             }
             pat->image = qt_mac_create_imagemask(pm, pm.rect());
             CGImageRelease(swatch);
-            CGContextRelease(pm_ctx);
             w *= QMACPATTERN_MASK_MULTIPLIER;
             h *= QMACPATTERN_MASK_MULTIPLIER;
 #endif
@@ -916,7 +914,6 @@ void QCoreGraphicsPaintEngine::drawTextItem(const QPointF &pos, const QTextItem 
     QFontEngine *fe = ti.fontEngine;
 
     const bool textAA = ((state->renderHints() & QPainter::TextAntialiasing)
-                         && (fe->fontDef.pointSize > QCoreTextFontEngine::antialiasingThreshold)
                          && !(fe->fontDef.styleStrategy & QFont::NoAntialias));
     const bool lineAA = state->renderHints() & QPainter::Antialiasing;
     if (textAA != lineAA)

@@ -55,7 +55,7 @@ CONFIG(debug, debug|release) {
 !isEmpty(BUILD_PASS): BUILDSUBDIR = $$lower($$BUILD_PASS)/
 
 # c++11 is needed by MinGW to get support for unordered_map.
-CONFIG += stl exceptions c++11
+CONFIG += stl exceptions c++11 c++14
 
 INCLUDEPATH += . .. $$PWD/../include
 
@@ -79,10 +79,9 @@ msvc {
     #   /Oy:   Omits frame pointer (x86 only).
     #   /Gy:   Enables function-level linking.
     #   /GS:   Buffers security check.
-    #   /Gm-:  Disable minimal rebuild.
     #   /RTC1: Run time error checking
-    QMAKE_CFLAGS_RELEASE    += -Oy- -Gy -GS -Gm-
-    QMAKE_CFLAGS_DEBUG      += -Oy- -Gy -GS -Gm- -RTC1
+    QMAKE_CFLAGS_RELEASE    += -Oy- -Gy -GS
+    QMAKE_CFLAGS_DEBUG      += -Oy- -Gy -GS -RTC1
     QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO = -Zi $$QMAKE_CFLAGS_RELEASE
 
     QMAKE_CXXFLAGS_WARN_ON = $$QMAKE_CFLAGS_WARN_ON

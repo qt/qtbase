@@ -62,7 +62,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void on_editStyleAction_triggered();

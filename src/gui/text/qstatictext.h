@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -65,12 +65,12 @@ public:
     explicit QStaticText(const QString &text);
     QStaticText(const QStaticText &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QStaticText &operator=(QStaticText &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QStaticText &operator=(QStaticText &&other) noexcept { swap(other); return *this; }
 #endif
     QStaticText &operator=(const QStaticText &);
     ~QStaticText();
 
-    void swap(QStaticText &other) Q_DECL_NOTHROW { qSwap(data, other.data); }
+    void swap(QStaticText &other) noexcept { qSwap(data, other.data); }
 
     void setText(const QString &text);
     QString text() const;

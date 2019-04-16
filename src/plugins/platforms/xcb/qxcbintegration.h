@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 class QXcbConnection;
 class QAbstractEventDispatcher;
 class QXcbNativeInterface;
-class QXcbScreen;
 
 class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
 {
@@ -137,8 +136,6 @@ private:
 #endif
 
     QScopedPointer<QPlatformServices> m_services;
-
-    friend class QXcbConnection; // access QPlatformIntegration::screenAdded()
 
     mutable QByteArray m_wmClass;
     const char *m_instanceName;

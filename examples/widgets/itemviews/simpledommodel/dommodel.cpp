@@ -48,16 +48,17 @@
 **
 ****************************************************************************/
 
-#include "domitem.h"
 #include "dommodel.h"
+#include "domitem.h"
 
 #include <QtXml>
 
 //! [0]
-DomModel::DomModel(QDomDocument document, QObject *parent)
-    : QAbstractItemModel(parent), domDocument(document)
+DomModel::DomModel(const QDomDocument &document, QObject *parent)
+    : QAbstractItemModel(parent),
+      domDocument(document),
+      rootItem(new DomItem(domDocument, 0))
 {
-    rootItem = new DomItem(domDocument, 0);
 }
 //! [0]
 
@@ -69,8 +70,9 @@ DomModel::~DomModel()
 //! [1]
 
 //! [2]
-int DomModel::columnCount(const QModelIndex &/*parent*/) const
+int DomModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return 3;
 }
 //! [2]
@@ -84,28 +86,31 @@ QVariant DomModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    DomItem *item = static_cast<DomItem*>(index.internalPointer());
+    const DomItem *item = static_cast<DomItem*>(index.internalPointer());
 
-    QDomNode node = item->node();
+    const QDomNode node = item->node();
 //! [3] //! [4]
-    QStringList attributes;
-    QDomNamedNodeMap attributeMap = node.attributes();
 
     switch (index.column()) {
         case 0:
             return node.nodeName();
         case 1:
+        {
+            const QDomNamedNodeMap attributeMap = node.attributes();
+            QStringList attributes;
             for (int i = 0; i < attributeMap.count(); ++i) {
                 QDomNode attribute = attributeMap.item(i);
                 attributes << attribute.nodeName() + "=\""
-                              +attribute.nodeValue() + '"';
+                              + attribute.nodeValue() + '"';
             }
             return attributes.join(' ');
+        }
         case 2:
-            return node.nodeValue().split("\n").join(' ');
+            return node.nodeValue().split('\n').join(' ');
         default:
-            return QVariant();
+            break;
     }
+    return QVariant();
 }
 //! [4]
 
@@ -113,7 +118,7 @@ QVariant DomModel::data(const QModelIndex &index, int role) const
 Qt::ItemFlags DomModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return 0;
+        return Qt::NoItemFlags;
 
     return QAbstractItemModel::flags(index);
 }
@@ -132,17 +137,15 @@ QVariant DomModel::headerData(int section, Qt::Orientation orientation,
             case 2:
                 return tr("Value");
             default:
-                return QVariant();
+                break;
         }
     }
-
     return QVariant();
 }
 //! [6]
 
 //! [7]
-QModelIndex DomModel::index(int row, int column, const QModelIndex &parent)
-            const
+QModelIndex DomModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -159,8 +162,7 @@ QModelIndex DomModel::index(int row, int column, const QModelIndex &parent)
     DomItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
-    else
-        return QModelIndex();
+    return QModelIndex();
 }
 //! [8]
 

@@ -973,6 +973,7 @@
     \row    \li c++1z \li C++17 support is enabled. This option has no effect if
             the compiler does not support C++17, or can't select the C++ standard.
             By default, support is disabled.
+    \row    \li c++17 \li Same as c++1z.
     \row    \li strict_c++ \li Disables support for C++ compiler extensions.
             By default, they are enabled.
     \row    \li depend_includepath \li Appending the value of INCLUDEPATH to
@@ -1059,8 +1060,12 @@
         proper include paths, compiler flags and libraries will
         automatically be added to the project.
     \row \li console \li The target is a Win32 console application (app only). The
-        proper include paths, compiler flags and libraries will
-        automatically be added to the project.
+        proper include paths, compiler flags and libraries will automatically be
+        added to the project. Consider using the option \c{cmdline} for
+        cross-platform applications.
+    \row \li cmdline \li The target is a cross-platform command line application.
+        On Windows, this implies \c{CONFIG += console}.
+        On macOS, this implies \c{CONFIG -= app_bundle}.
     \row \li shared \li{1,2} The target is a shared object/DLL. The proper
         include paths, compiler flags and libraries will automatically be
         added to the project. Note that \c dll can also be used on all platforms;
@@ -2787,6 +2792,26 @@
 
     See also \l{#DEPENDPATH}{DEPENDPATH}.
 
+    \target WINDOWS_TARGET_PLATFORM_VERSION
+    \section1 WINDOWS_TARGET_PLATFORM_VERSION
+
+    Specifies the targeted Windows version; this corresponds to the tag
+    \c{WindowsTargetPlatformVersion} in vcxproj files.
+
+    On desktop Windows, the default value is the value of the environment
+    variable \c{WindowsSDKVersion}.
+
+    On WinRT, the default value is the value of the environment variable
+    \c{UCRTVERSION}.
+
+    \target WINDOWS_TARGET_PLATFORM_MIN_VERSION
+    \section1 WINDOWS_TARGET_PLATFORM_MIN_VERSION
+
+    Specifies the minimum version of the Windows target platform; this
+    corresponds to the tag \c{WindowsTargetPlatformMinVersion} in vcxproj files.
+
+    Defaults to \c{WINDOWS_TARGET_PLATFORM_VERSION}.
+
     \target WINRT_MANIFEST
     \section1 WINRT_MANIFEST
 
@@ -2920,10 +2945,12 @@
         \li The version number of the package. Defaults to \c{1.0.0.0}.
     \row
         \li minVersion
-        \li The minimum required Windows version to run the package. Defaults to the environment variable \c UCRTVersion.
+        \li The minimum required Windows version to run the package.
+            Defaults to \c{WINDOWS_TARGET_PLATFORM_VERSION}.
     \row
         \li maxVersionTested
-        \li The maximum Windows version the package has been tested against. Defaults to \c WINRT_MANIFEST.minVersion
+        \li The maximum Windows version the package has been tested against.
+            Defaults to \c{WINDOWS_TARGET_PLATFORM_MIN_VERSION}.
 
     \endtable
 
@@ -3026,6 +3053,8 @@
 
     \snippet code/doc_src_qmake-manual.pro 159
 
+    This function was introduced in Qt 5.0.
+
     See also \l{clean_path(path)}{clean_path()},
     \l{relative_path(filePath[, base])}{relative_path()}.
 
@@ -3037,6 +3066,7 @@
 
     \snippet code/doc_src_qmake-manual.pro 59
 
+    \target qmake-cat
     \section2 cat(filename[, mode])
 
     Returns the contents of \c filename. You can specify the following options
@@ -3059,6 +3089,8 @@
     redundant ones removed, and "."s and ".."s resolved (as far as possible).
     This function is a wrapper around QDir::cleanPath.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{absolute_path(path[, base])}{absolute_path()},
     \l{relative_path(filePath[, base])}{relative_path()},
     \l{shell_path(path)}{shell_path()}, \l{system_path(path)}{system_path()}.
@@ -3072,6 +3104,8 @@
     \section2 enumerate_vars
 
     Returns a list of all defined variable names.
+
+    This function was introduced in Qt 5.0.
 
     \section2 escape_expand(arg1 [, arg2 ..., argn])
 
@@ -3136,6 +3170,8 @@
 
     \snippet code/doc_src_qmake-manual.pro 163
 
+    This function was introduced in Qt 5.0.
+
     \section2 fromfile(filename, variablename)
 
     Evaluates \c filename as a qmake project file and returns the value assigned
@@ -3149,6 +3185,8 @@
     This is mostly equivalent to the \c $$(variablename) syntax.
     The \c getenv function, however, supports environment variables with
     parentheses in their name.
+
+    This function was introduced in Qt 5.12.
 
     \section2 join(variablename, glue, before, after)
 
@@ -3239,6 +3277,8 @@
     sum = $$num_add($$first, $$second_neg)
     \endcode
 
+    This function was introduced in Qt 5.8.
+
     \section2 prompt(question [, decorate])
 
     Displays the specified \c question, and returns a value read from stdin.
@@ -3256,6 +3296,19 @@
     Returns the \c string with every special regular expression character
     escaped with a backslash. This function is a wrapper around QRegExp::escape.
 
+    \section2 read_registry(tree, key[, flag])
+
+    Returns the value of registry key \c key inside the tree \c tree.
+
+    Only the trees \c HKEY_CURRENT_USER (\c HKCU) and \c HKEY_LOCAL_MACHINE
+    (\c HKLM) are supported.
+
+    The \c flag may be \c WOW64_32KEY (\c 32) or \c WOW64_64KEY (\c 64).
+
+    \note This function is available only on Windows hosts.
+
+    This function was introduced in Qt 5.12.1.
+
     \section2 relative_path(filePath[, base])
 
     Returns the path to \c filePath relative to \c base.
@@ -3267,6 +3320,8 @@
     If \c filePath is relative, it is first resolved against the base
     directory; in that case, this function effectively acts as
     $$clean_path().
+
+    This function was introduced in Qt 5.0.
 
     See also \l{absolute_path(path[, base])}{absolute_path()},
     \l{clean_path(path)}{clean_path()}.
@@ -3287,9 +3342,13 @@
 
     This is an internal function that you will typically not need.
 
+    This function was introduced in Qt 5.0.
+
     \section2 reverse(variablename)
 
     Returns the values of \c variablename in reverse order.
+
+    This function was introduced in Qt 5.0.
 
     \section2 section(variablename, separator, begin, end)
 
@@ -3306,6 +3365,8 @@
     This function returns \c path for in-source builds. It returns an empty
     string if \c path points outside of the source tree.
 
+    This function was introduced in Qt 5.0.
+
     \section2 shell_path(path)
 
     Converts all directory separators within \c path to separators that are
@@ -3313,11 +3374,15 @@
     the shell that is invoked by the make tool). For example, slashes are
     converted to backslashes when the Windows shell is used.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{system_path(path)}{system_path()}.
 
     \section2 shell_quote(arg)
 
     Quotes \c arg for the shell that is used while building the project.
+
+    This function was introduced in Qt 5.0.
 
     See also \l{system_quote(arg)}{system_quote()}.
 
@@ -3332,6 +3397,8 @@
 
     This is an internal function that you will typically not need.
 
+    This function was introduced in Qt 5.0.
+
     \section2 sorted(variablename)
 
     Returns the list of values in \c variablename with entries sorted
@@ -3339,6 +3406,8 @@
 
     Numerical sorting can be accomplished by zero-padding the values to
     a fixed length with the help of the \l{format_number()} function.
+
+    This function was introduced in Qt 5.8.
 
     \section2 split(variablename, separator)
 
@@ -3386,12 +3455,16 @@
 
     See also \l{member()}, \l{num_add()}.
 
+    This function was introduced in Qt 5.8.
+
     \target str_size()
     \section2 str_size(arg)
 
     Returns the number of characters in the argument.
 
     See also \l{fn_size}{size()}.
+
+    This function was introduced in Qt 5.8.
 
     \target system_replace
     \section2 system(command[, mode[, stsvar]])
@@ -3402,6 +3475,10 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 72
+
+    Like \l {qmake-cat}{$$cat()}, the \a mode argument takes \c blob, \c lines,
+    \c true, and \c false as value. However, the legacy word splitting rules
+    (i.e. empty or \c true, and \c false) differ subtly.
 
     If you pass \c stsvar, the command's exit status will be stored in that
     variable. If the command crashes, the status will be -1, otherwise a
@@ -3417,12 +3494,16 @@
     invoke commands. For example, slashes are converted to backslashes for the
     Windows shell.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{shell_path(path)}{shell_path()}.
 
     \section2 system_quote(arg)
 
     Quotes \c arg for the shell that is used by the \c{system()}
     functions.
+
+    This function was introduced in Qt 5.0.
 
     See also \l{shell_quote(arg)}{shell_quote()}.
 
@@ -3434,6 +3515,8 @@
 
     This provides convenience for implementing queues, for example.
 
+    This function was introduced in Qt 5.8.
+
     See also \l{take_last()}, \l{fn_first}{first()}.
 
     \target take_last()
@@ -3443,6 +3526,8 @@
     source variable.
 
     This provides convenience for implementing stacks, for example.
+
+    This function was introduced in Qt 5.8.
 
     See also \l{take_first()}, \l{fn_last}{last()}.
 
@@ -3464,6 +3549,8 @@
 
     Escapes the values of \c variablename in a way that enables parsing them as
     qmake code.
+
+    This function was introduced in Qt 5.0.
 */
 
 /*!
@@ -3486,6 +3573,8 @@
     \section2 cache(variablename, [set|add|sub] [transient] [super|stash], [source variablename])
 
     This is an internal function that you will typically not need.
+
+    This function was introduced in Qt 5.0.
 
     \section2 CONFIG(config)
 
@@ -3693,6 +3782,8 @@
     Prints a message on the console. Unlike the \c message function, neither
     prepends text nor appends a line break.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{message(string)}{message()}.
 
     \section2 message(string)
@@ -3717,6 +3808,8 @@
 
     Creates the directory path \c dirPath. This function is a wrapper around the
     QDir::mkpath function.
+
+    This function was introduced in Qt 5.0.
 
     \section2 requires(condition)
 
@@ -3744,6 +3837,8 @@
     Updates the time stamp of \c filename to match the time stamp of
     \c reference_filename.
 
+    This function was introduced in Qt 5.0.
+
     \section2 unset(variablename)
 
     Removes \c variablename from the current context.
@@ -3760,11 +3855,15 @@
     the string will be ignored. Comparison is performed segment-wise from left
     to right; if one version is a prefix of the other, it is considered smaller.
 
+    This function was introduced in Qt 5.10.
+
     \section2 versionAtMost(variablename, versionNumber)
 
     Tests that the version number from \c variablename is less than or equal to
     \c versionNumber. Works as
     \l{versionAtLeast(variablename, versionNumber)}{versionAtLeast()}.
+
+    This function was introduced in Qt 5.10.
 
     \section2 warning(string)
 
@@ -3776,6 +3875,8 @@
     each value on a separate line. If \c variablename is not specified, creates
     an empty file. If \c mode is \c append and the file already exists, appends
     to it instead of replacing it.
+
+    This function was introduced in Qt 5.0.
 
     \section1 Test Function Library
 
@@ -3823,6 +3924,8 @@
 
     \snippet code/doc_src_qmake-manual.pro 178
 
+    This function was introduced in Qt 5.0.
+
     \section2 qtCompileTest(test)
 
     Builds a test project. If the test passes, true is returned and
@@ -3863,10 +3966,14 @@
 
     See also \l{load(feature)}{load()}.
 
+    This function was introduced in Qt 5.0.
+
     \section2 qtHaveModule(name)
 
     Checks whether the Qt module specified by \c name is present.
     For a list of possible values, see \l{Variables#QT}{QT}.
+
+    This function was introduced in Qt 5.0.1.
 */
 
 /*!
@@ -4870,8 +4977,7 @@
     \code
     TEMPLATE  = app
     LANGUAGE  = C++
-    CONFIG   += console precompile_header
-    CONFIG   -= app_bundle
+    CONFIG   += cmdline precompile_header
 
     # Use Precompiled headers (PCH)
     PRECOMPILED_HEADER  = stable.h

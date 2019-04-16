@@ -54,9 +54,9 @@ void tst_QGraphicsItemAnimation::construction()
     QCOMPARE(animation.posAt(0), QPointF());
     QCOMPARE(animation.posAt(0.5), QPointF());
     QCOMPARE(animation.posAt(1), QPointF());
-    QCOMPARE(animation.matrixAt(0), QMatrix());
-    QCOMPARE(animation.matrixAt(0.5), QMatrix());
-    QCOMPARE(animation.matrixAt(1), QMatrix());
+    QCOMPARE(animation.transformAt(0), QTransform());
+    QCOMPARE(animation.transformAt(0.5), QTransform());
+    QCOMPARE(animation.transformAt(1), QTransform());
     QCOMPARE(animation.rotationAt(0), qreal(0.0));
     QCOMPARE(animation.rotationAt(0.5), qreal(0.0));
     QCOMPARE(animation.rotationAt(1), qreal(0.0));

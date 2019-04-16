@@ -119,7 +119,7 @@ void WriteIncludes::acceptUI(DomUI *node)
     writeHeaders(m_globalIncludes, true);
     writeHeaders(m_localIncludes, false);
 
-    m_output << QLatin1Char('\n');
+    m_output << '\n';
 }
 
 void WriteIncludes::acceptWidget(DomWidget *node)
@@ -214,14 +214,14 @@ void WriteIncludes::add(const QString &className, bool determineHeader, const QS
     m_knownClasses.insert(className);
 
     const CustomWidgetsInfo *cwi = m_uic->customWidgetsInfo();
-    if (cwi->extends(className, QLatin1String("QTreeView"))
-               || cwi->extends(className, QLatin1String("QTreeWidget"))
-               || cwi->extends(className, QLatin1String("QTableView"))
-               || cwi->extends(className, QLatin1String("QTableWidget"))) {
+    static const QStringList treeViewsWithHeaders = {
+        QLatin1String("QTreeView"), QLatin1String("QTreeWidget"),
+        QLatin1String("QTableView"), QLatin1String("QTableWidget")
+    };
+    if (cwi->extendsOneOf(className, treeViewsWithHeaders))
         add(QLatin1String("QHeaderView"));
-    }
 
-    if (!m_laidOut && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QToolBox")))
+    if (!m_laidOut && cwi->extends(className, QLatin1String("QToolBox")))
         add(QLatin1String("QLayout")); // spacing property of QToolBox)
 
     if (className == QLatin1String("Line")) { // ### hmm, deprecate me!
@@ -314,7 +314,7 @@ void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
         const QString value = m_oldHeaderToNewHeader.value(header, header);
         const auto trimmed = QStringRef(&value).trimmed();
         if (!trimmed.isEmpty())
-            m_output << "#include " << openingQuote << trimmed << closingQuote << QLatin1Char('\n');
+            m_output << "#include " << openingQuote << trimmed << closingQuote << '\n';
     }
 }
 

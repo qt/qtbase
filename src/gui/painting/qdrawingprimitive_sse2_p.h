@@ -42,7 +42,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <private/qsimd_p.h>
-#include "qdrawhelper_p.h"
+#include "qdrawhelper_x86_p.h"
 #include "qrgba64_p.h"
 
 #ifdef __SSE2__
@@ -232,7 +232,7 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 #if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
 QT_FUNCTION_TARGET(SSE2)
-Q_ALWAYS_INLINE void reciprocal_mul_ss(__m128 &ia, const __m128 a, float mul)
+Q_ALWAYS_INLINE void Q_DECL_VECTORCALL reciprocal_mul_ss(__m128 &ia, const __m128 a, float mul)
 {
     ia = _mm_rcp_ss(a); // Approximate 1/a
     // Improve precision of ia using Newton-Raphson

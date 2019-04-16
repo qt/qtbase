@@ -52,7 +52,8 @@ enum DotNET {
     NET2012 = 0xb0,
     NET2013 = 0xc0,
     NET2015 = 0xd0,
-    NET2017 = 0xe0
+    NET2017 = 0xe0,
+    NET2019
 };
 
 DotNET vsVersionFromString(const ProString &versionString);
@@ -1123,6 +1124,8 @@ public:
     QString                 SccLocalPath;
     QString                 PlatformName;
     QString                 SdkVersion;
+    QString                 WindowsTargetPlatformVersion;
+    QString                 WindowsTargetPlatformMinVersion;
 
     // Single projects
     QList<VCProjectSingleConfig>  SingleProjects;

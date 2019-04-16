@@ -43,6 +43,21 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
 
+/*!
+  \class QtPrivate::ResultItem
+  \internal
+ */
+
+/*!
+  \class QtPrivate::ResultIteratorBase
+  \internal
+ */
+
+/*!
+  \class QtPrivate::ResultStoreBase
+  \internal
+ */
+
 ResultIteratorBase::ResultIteratorBase()
  : mapIterator(QMap<int, ResultItem>::const_iterator()), m_vectorIndex(0) { }
 ResultIteratorBase::ResultIteratorBase(QMap<int, ResultItem>::const_iterator _mapIterator, int _vectorIndex)

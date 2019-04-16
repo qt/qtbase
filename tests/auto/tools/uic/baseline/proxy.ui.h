@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'proxy.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -87,11 +87,11 @@ public:
 
     void retranslateUi(QDialog *ProxyDialog)
     {
-        ProxyDialog->setWindowTitle(QApplication::translate("ProxyDialog", "Proxy Authentication", nullptr));
-        iconLabel->setText(QApplication::translate("ProxyDialog", "ICON", nullptr));
-        introLabel->setText(QApplication::translate("ProxyDialog", "Connect to proxy", nullptr));
-        usernameLabel->setText(QApplication::translate("ProxyDialog", "Username:", nullptr));
-        passwordLabel->setText(QApplication::translate("ProxyDialog", "Password:", nullptr));
+        ProxyDialog->setWindowTitle(QCoreApplication::translate("ProxyDialog", "Proxy Authentication", nullptr));
+        iconLabel->setText(QCoreApplication::translate("ProxyDialog", "ICON", nullptr));
+        introLabel->setText(QCoreApplication::translate("ProxyDialog", "Connect to proxy", nullptr));
+        usernameLabel->setText(QCoreApplication::translate("ProxyDialog", "Username:", nullptr));
+        passwordLabel->setText(QCoreApplication::translate("ProxyDialog", "Password:", nullptr));
     } // retranslateUi
 
 };

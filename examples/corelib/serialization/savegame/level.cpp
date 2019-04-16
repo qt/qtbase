@@ -97,7 +97,7 @@ void Level::write(QJsonObject &json) const
 {
     json["name"] = mName;
     QJsonArray npcArray;
-    foreach (const Character npc, mNpcs) {
+    for (const Character &npc : mNpcs) {
         QJsonObject npcObject;
         npc.write(npcObject);
         npcArray.append(npcObject);

@@ -105,7 +105,7 @@ private:
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     void setCursor(Qt::CursorShape shape);
     void setCursor(const QImage &image, int hotx, int hoty);
-    QRect getCurrentRect();
+    QRect getCurrentRect() const;
 
     bool mVisible;
     QFbScreen *mScreen;

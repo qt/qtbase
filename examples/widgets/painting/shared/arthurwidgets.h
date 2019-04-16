@@ -56,42 +56,13 @@
 #include <QPushButton>
 #include <QGroupBox>
 
-#if defined(QT_OPENGL_SUPPORT)
-#include <QGLWidget>
-#include <QEvent>
-class GLWidget : public QGLWidget
-{
-public:
-    GLWidget(QWidget *parent)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
-    {
-        setAttribute(Qt::WA_AcceptTouchEvents);
-    }
-    void disableAutoBufferSwap() { setAutoBufferSwap(false); }
-    void paintEvent(QPaintEvent *) override { parentWidget()->update(); }
-protected:
-    bool event(QEvent *event) override
-    {
-        switch (event->type()) {
-        case QEvent::TouchBegin:
-        case QEvent::TouchUpdate:
-        case QEvent::TouchEnd:
-            event->ignore();
-            return false;
-            break;
-        default:
-            break;
-        }
-        return QGLWidget::event(event);
-    }
-};
-#endif
-
+QT_FORWARD_DECLARE_CLASS(QOpenGLWindow)
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 class ArthurFrame : public QWidget
+
 {
     Q_OBJECT
 public:
@@ -107,9 +78,8 @@ public:
     void loadSourceFile(const QString &fileName);
 
     bool preferImage() const { return m_prefer_image; }
-
-#if defined(QT_OPENGL_SUPPORT)
-    QGLWidget *glWidget() const { return glw; }
+#if QT_CONFIG(opengl)
+    QOpenGLWindow *glWindow() const { return m_glWindow; }
 #endif
 
 public slots:
@@ -117,7 +87,7 @@ public slots:
     void setDescriptionEnabled(bool enabled);
     void showSource();
 
-#if defined(QT_OPENGL_SUPPORT)
+#if QT_CONFIG(opengl)
     void enableOpenGL(bool use_opengl);
     bool usesOpenGL() { return m_use_opengl; }
 #endif
@@ -129,8 +99,10 @@ protected:
     void paintEvent(QPaintEvent *) override;
     void resizeEvent(QResizeEvent *) override;
 
-#if defined(QT_OPENGL_SUPPORT)
-    GLWidget *glw;
+#if QT_CONFIG(opengl)
+    virtual void createGlWindow();
+    QOpenGLWindow *m_glWindow;
+    QWidget *m_glWidget;
     bool m_use_opengl;
 #endif
     QPixmap m_tile;

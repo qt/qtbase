@@ -49,6 +49,7 @@
 #include "androidjniinput.h"
 #include "androidjniclipboard.h"
 #include "androidjnimenu.h"
+#include "androidcontentfileengine.h"
 #include "androiddeadlockprotector.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
@@ -116,6 +117,7 @@ static double m_scaledDensity = 0;
 static double m_density = 1.0;
 
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = nullptr;
+static AndroidContentFileEngineHandler *m_androidContentFileEngineHandler = nullptr;
 
 
 
@@ -445,6 +447,7 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
 {
     m_androidPlatformIntegration = nullptr;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
+    m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
     m_mainLibraryHnd = nullptr;
     { // Set env. vars
         const char *nativeString = env->GetStringUTFChars(environmentString, 0);
@@ -555,15 +558,22 @@ static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
+    delete m_androidContentFileEngineHandler;
+    m_androidContentFileEngineHandler = nullptr;
 }
 
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)
 {
     // QAndroidEventDispatcherStopper is stopped when the user uses the task manager to kill the application
-    if (!QAndroidEventDispatcherStopper::instance()->stopped()) {
-        sem_wait(&m_terminateSemaphore);
-        sem_destroy(&m_terminateSemaphore);
+    if (QAndroidEventDispatcherStopper::instance()->stopped()) {
+        QAndroidEventDispatcherStopper::instance()->startAll();
+        QCoreApplication::quit();
+        QAndroidEventDispatcherStopper::instance()->goingToStop(false);
     }
+
+    sem_wait(&m_terminateSemaphore);
+    sem_destroy(&m_terminateSemaphore);
+
     env->DeleteGlobalRef(m_applicationClass);
     env->DeleteGlobalRef(m_classLoaderObject);
     if (m_resourcesObj)
@@ -583,10 +593,7 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
-
-    if (!QAndroidEventDispatcherStopper::instance()->stopped()) {
-        sem_post(&m_exitSemaphore);
-    }
+    sem_post(&m_exitSemaphore);
 }
 
 static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface, jint w, jint h)

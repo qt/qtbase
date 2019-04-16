@@ -5,34 +5,7 @@
 # Afterwards, they can override the default template by assigning their template to WINRT_MANIFEST.
 #
 # All subkeys in WINRT_MANIFEST will be replaced if defined/found, so new variables can be easily
-# added. The following keys have default values and are present in the default templates:
-# WINRT_MANIFEST: The name of the input manifest file. Defaults to a file defined by the mkspec.
-# WINRT_MANIFEST.target: The name of the target (.exe). Defaults to TARGET.
-# WINRT_MANIFEST.identity: The unique ID of the app. Defaults to reusing the existing generated manifest's UUID, or generates a new UUID if none is present.
-# WINRT_MANIFEST.name: The name of the package as displayed to the user. Defaults to TARGET.
-# WINRT_MANIFEST.architecture: The target architecture. Defaults to VCPROJ_ARCH.
-# WINRT_MANIFEST.version: The version number of the package. Defaults to "1.0.0.0".
-# WINRT_MANIFEST.publisher: Display name of the publisher. Defaults to "Default publisher display name".
-# WINRT_MANIFEST.publisher_id: The publisher's distinguished name (default: CN=MyCN).
-# WINRT_MANIFEST.phone_product_id: The GUID of the product. Defaults to the value of WINRT_MANIFEST.identity. (Windows Phone only)
-# WINRT_MANIFEST.phone_publisher_id: The GUID of the publisher. Defaults to an invalid GUID. (Windows Phone only)
-# WINRT_MANIFEST.description: Package description. Defaults to "Default package description".
-# WINRT_MANIFEST.background: Tile background color. Defaults to "green".
-# WINRT_MANIFEST.foreground: Tile foreground (text) color (Windows 8/RT only). Defaults to "light".
-# WINRT_MANIFEST.logo_store: Logo image file for Windows Store. Default provided by the mkspec.
-# WINRT_MANIFEST.logo_small: Small logo image file. Default provided by the mkspec.
-# WINRT_MANIFEST.logo_medium: Medium logo image file. Default provided by the mkspec.
-# WINRT_MANIFEST.logo_large: Large logo image file. Default provided by the mkspec.
-# WINRT_MANIFEST.splash_screen: Splash screen image file. Default provided by the mkspec.
-# WINRT_MANIFEST.rotation_preference: Orientation specification. Default is empty. (portrait, landscape, landscapeFlipped)
-# WINRT_MANIFEST.iconic_tile_icon: Image file for the "iconic" tile template icon. Default provided by the mkspec.
-# WINRT_MANIFEST.iconic_tile_small: Image file for the small "iconic" tile template logo. Default provided by the mkspec.
-# WINRT_MANIFEST.default_language: Specifies the default language of the application
-# WINRT_MANIFEST.capabilities: Specifies capabilities to add to the capability list.
-# WINRT_MANIFEST.capabilities_device: Specifies device capabilities to add to the capability list. (location, webcam...)
-# WINRT_MANIFEST.dependencies: Specifies dependencies required by the package.
-# WINRT_MANIFEST.minVersion: Specifies the minimum required Windows version to run the package. Defaults to %UCRTVersion%
-# WINRT_MANIFEST.maxVersionTested: Specifies the maximum Windows version the package has been tested against. Defaults to WINRT_MANIFEST.minVersion
+# added.
 
 # The manifest is generated for each build pass for normal apps, and only once for vcapps.
 # - Normal apps have their package root directory in the same place as the target (one for each build pass).
@@ -96,9 +69,10 @@
         isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
         isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
         *-msvc2015|*-msvc2017 {
-            isEmpty(WINRT_MANIFEST.minVersion): WINRT_MANIFEST.minVersion = $$(UCRTVersion)
-            isEmpty(WINRT_MANIFEST.minVersion): error("No UCRTVersion found in environment."))
-            isEmpty(WINRT_MANIFEST.maxVersionTested): WINRT_MANIFEST.maxVersionTested = $$WINRT_MANIFEST.minVersion
+            isEmpty(WINRT_MANIFEST.minVersion): \
+                WINRT_MANIFEST.minVersion = $$WINDOWS_TARGET_PLATFORM_VERSION
+            isEmpty(WINRT_MANIFEST.maxVersionTested): \
+                WINRT_MANIFEST.maxVersionTested = $$WINDOWS_TARGET_PLATFORM_MIN_VERSION
         }
 
         INDENT = "$$escape_expand(\\r\\n)        "

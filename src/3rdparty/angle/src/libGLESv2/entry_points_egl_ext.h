@@ -43,6 +43,71 @@ ANGLE_EXPORT EGLDeviceEXT EGLAPIENTRY CreateDeviceANGLE(EGLint device_type,
                                                         void *native_device,
                                                         const EGLAttrib *attrib_list);
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY ReleaseDeviceANGLE(EGLDeviceEXT device);
-}
+
+// EGL_KHR_stream
+ANGLE_EXPORT EGLStreamKHR EGLAPIENTRY CreateStreamKHR(EGLDisplay dpy, const EGLint *attrib_list);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY DestroyStreamKHR(EGLDisplay dpy, EGLStreamKHR stream);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY StreamAttribKHR(EGLDisplay dpy,
+                                                    EGLStreamKHR stream,
+                                                    EGLenum attribute,
+                                                    EGLint value);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY QueryStreamKHR(EGLDisplay dpy,
+                                                   EGLStreamKHR stream,
+                                                   EGLenum attribute,
+                                                   EGLint *value);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY QueryStreamu64KHR(EGLDisplay dpy,
+                                                      EGLStreamKHR stream,
+                                                      EGLenum attribute,
+                                                      EGLuint64KHR *value);
+
+// EGL_KHR_stream_consumer_gltexture
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY StreamConsumerGLTextureExternalKHR(EGLDisplay dpy,
+                                                                       EGLStreamKHR stream);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY StreamConsumerAcquireKHR(EGLDisplay dpy, EGLStreamKHR stream);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY StreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR stream);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY
+StreamConsumerGLTextureExternalAttribsNV(EGLDisplay dpy,
+                                         EGLStreamKHR stream,
+                                         const EGLAttrib *attrib_list);
+
+// EGL_ANGLE_stream_producer_d3d_texture_nv12
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY
+CreateStreamProducerD3DTextureNV12ANGLE(EGLDisplay dpy,
+                                        EGLStreamKHR stream,
+                                        const EGLAttrib *attrib_list);
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY StreamPostD3DTextureNV12ANGLE(EGLDisplay dpy,
+                                                                  EGLStreamKHR stream,
+                                                                  void *texture,
+                                                                  const EGLAttrib *attrib_list);
+
+// EGL_CHROMIUM_get_sync_values
+ANGLE_EXPORT EGLBoolean EGLAPIENTRY GetSyncValuesCHROMIUM(EGLDisplay dpy,
+                                                          EGLSurface surface,
+                                                          EGLuint64KHR *ust,
+                                                          EGLuint64KHR *msc,
+                                                          EGLuint64KHR *sbc);
+
+// EGL_EXT_swap_buffers_with_damage
+ANGLE_EXPORT EGLBoolean SwapBuffersWithDamageEXT(EGLDisplay dpy,
+                                                 EGLSurface surface,
+                                                 EGLint *rects,
+                                                 EGLint n_rects);
+
+//
+ANGLE_EXPORT EGLint EGLAPIENTRY ProgramCacheGetAttribANGLE(EGLDisplay dpy, EGLenum attrib);
+ANGLE_EXPORT void EGLAPIENTRY ProgramCacheQueryANGLE(EGLDisplay dpy,
+                                                     EGLint index,
+                                                     void *key,
+                                                     EGLint *keysize,
+                                                     void *binary,
+                                                     EGLint *binarysize);
+ANGLE_EXPORT void EGLAPIENTRY ProgramCachePopulateANGLE(EGLDisplay dpy,
+                                                        const void *key,
+                                                        EGLint keysize,
+                                                        const void *binary,
+                                                        EGLint binarysize);
+ANGLE_EXPORT EGLint EGLAPIENTRY ProgramCacheResizeANGLE(EGLDisplay dpy, EGLint limit, EGLenum mode);
+
+}  // namespace egl
 
 #endif // LIBGLESV2_ENTRYPOINTSEGLEXT_H_

@@ -55,7 +55,7 @@
 
 #include "private/qvariantanimation_p.h"
 
-#ifndef QT_NO_ANIMATION
+QT_REQUIRE_CONFIG(animation);
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +64,7 @@ class QPropertyAnimationPrivate : public QVariantAnimationPrivate
    Q_DECLARE_PUBLIC(QPropertyAnimation)
 public:
     QPropertyAnimationPrivate()
-        : targetValue(0), propertyType(0), propertyIndex(-1)
+        : targetValue(nullptr), propertyType(0), propertyIndex(-1)
     {
     }
 
@@ -82,7 +82,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION
 
 #endif //QPROPERTYANIMATION_P_H

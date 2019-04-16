@@ -6,7 +6,7 @@ TARGET = mylib
 DESTDIR = ../
 QT = core
 
-win32-msvc: DEFINES += WIN32_MSVC
+msvc: DEFINES += WIN32_MSVC
 
 # This project is testdata for tst_qlibrary
 target.path = $$[QT_INSTALL_TESTS]/tst_qlibrary

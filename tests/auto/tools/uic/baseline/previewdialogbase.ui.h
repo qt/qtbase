@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'previewdialogbase.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -70,7 +70,7 @@ public:
 
         paperSizeCombo = new QComboBox(PreviewDialogBase);
         paperSizeCombo->setObjectName(QString::fromUtf8("paperSizeCombo"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(paperSizeCombo->sizePolicy().hasHeightForWidth());
@@ -115,7 +115,7 @@ public:
 
         previewArea = new QScrollArea(PreviewDialogBase);
         previewArea->setObjectName(QString::fromUtf8("previewArea"));
-        QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(previewArea->sizePolicy().hasHeightForWidth());
@@ -135,7 +135,7 @@ public:
         progressBar = new QProgressBar(PreviewDialogBase);
         progressBar->setObjectName(QString::fromUtf8("progressBar"));
         progressBar->setEnabled(false);
-        QSizePolicy sizePolicy2(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(0));
+        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy2.setHorizontalStretch(1);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(progressBar->sizePolicy().hasHeightForWidth());
@@ -156,10 +156,10 @@ public:
 
         vboxLayout->addLayout(hboxLayout2);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(paperSizeCombo);
         label_2->setBuddy(paperOrientationCombo);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(PreviewDialogBase);
         QObject::connect(buttonBox, SIGNAL(accepted()), PreviewDialogBase, SLOT(accept()));
@@ -170,11 +170,11 @@ public:
 
     void retranslateUi(QDialog *PreviewDialogBase)
     {
-        PreviewDialogBase->setWindowTitle(QApplication::translate("PreviewDialogBase", "Print Preview", nullptr));
-        label->setText(QApplication::translate("PreviewDialogBase", "&Paper Size:", nullptr));
-        label_2->setText(QApplication::translate("PreviewDialogBase", "&Orientation:", nullptr));
+        PreviewDialogBase->setWindowTitle(QCoreApplication::translate("PreviewDialogBase", "Print Preview", nullptr));
+        label->setText(QCoreApplication::translate("PreviewDialogBase", "&Paper Size:", nullptr));
+        label_2->setText(QCoreApplication::translate("PreviewDialogBase", "&Orientation:", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = pageList->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("PreviewDialogBase", "1", nullptr));
+        ___qtreewidgetitem->setText(0, QCoreApplication::translate("PreviewDialogBase", "1", nullptr));
     } // retranslateUi
 
 };

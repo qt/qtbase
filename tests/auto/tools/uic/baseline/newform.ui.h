@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'newform.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -93,7 +93,7 @@ public:
 
         lblPreview = new QLabel(NewForm);
         lblPreview->setObjectName(QString::fromUtf8("lblPreview"));
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(lblPreview->sizePolicy().hasHeightForWidth());
@@ -132,11 +132,11 @@ public:
 
     void retranslateUi(QDialog *NewForm)
     {
-        NewForm->setWindowTitle(QApplication::translate("NewForm", "New Form", nullptr));
+        NewForm->setWindowTitle(QCoreApplication::translate("NewForm", "New Form", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("NewForm", "0", nullptr));
-        lblPreview->setText(QApplication::translate("NewForm", "Choose a template for a preview", nullptr));
-        chkShowOnStartup->setText(QApplication::translate("NewForm", "Show this Dialog on Startup", nullptr));
+        ___qtreewidgetitem->setText(0, QCoreApplication::translate("NewForm", "0", nullptr));
+        lblPreview->setText(QCoreApplication::translate("NewForm", "Choose a template for a preview", nullptr));
+        chkShowOnStartup->setText(QCoreApplication::translate("NewForm", "Show this Dialog on Startup", nullptr));
     } // retranslateUi
 
 };

@@ -101,10 +101,10 @@ bool MetaInfo::parse(const QByteArray &data)
         QList<QVariant> files = info.value("files").toList();
 
         for (int i = 0; i < files.size(); ++i) {
-            QMap<QByteArray, QVariant> file = qvariant_cast<Dictionary>(files.at(i));
-            QList<QVariant> pathElements = file.value("path").toList();
+            const QMap<QByteArray, QVariant> file = qvariant_cast<Dictionary>(files.at(i));
+            const QList<QVariant> pathElements = file.value("path").toList();
             QByteArray path;
-            foreach (QVariant p, pathElements) {
+            for (const QVariant &p : pathElements) {
                 if (!path.isEmpty())
                     path += '/';
                 path += p.toByteArray();
@@ -221,7 +221,7 @@ qint64 MetaInfo::totalSize() const
         return singleFile().length;
 
     qint64 size = 0;
-    foreach (MetaInfoMultiFile file, multiFiles())
+    for (const MetaInfoMultiFile &file : metaInfoMultiFiles)
         size += file.length;
     return size;
 }

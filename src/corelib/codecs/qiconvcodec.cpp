@@ -39,8 +39,6 @@
 
 #include <QtCore/private/qglobal_p.h>
 
-QT_REQUIRE_CONFIG(iconv);
-
 #include "qiconvcodec_p.h"
 #include "qtextcodec_p.h"
 #include <qdebug.h>

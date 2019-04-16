@@ -55,13 +55,22 @@ QT_BEGIN_NAMESPACE
 void QCollatorPrivate::init()
 {
     cleanup();
+    /*
+      LocaleRefFromLocaleString() will accept "POSIX" as the locale name, but
+      the locale it produces (named "pos") doesn't implement the [A-Z] < [a-z]
+      behavior we expect of the C locale.  We can use QStringView to get round
+      that for collation, but this leaves no way to do a sort key.
+    */
+    if (isC())
+        return;
+
     LocaleRef localeRef;
-    int rc = LocaleRefFromLocaleString(QLocalePrivate::get(locale)->bcp47Name().constData(), &localeRef);
-    if (rc != 0)
-        qWarning("couldn't initialize the locale");
+    OSStatus status =
+        LocaleRefFromLocaleString(QLocalePrivate::get(locale)->bcp47Name().constData(), &localeRef);
+    if (status != 0)
+        qWarning("Couldn't initialize the locale (%d)", int(status));
 
     UInt32 options = 0;
-
     if (caseSensitivity == Qt::CaseInsensitive)
         options |= kUCCollateCaseInsensitiveMask;
     if (numericMode)
@@ -69,14 +78,9 @@ void QCollatorPrivate::init()
     if (!ignorePunctuation)
         options |= kUCCollatePunctuationSignificantMask;
 
-    OSStatus status = UCCreateCollator(
-        localeRef,
-        0,
-        options,
-        &collator
-    );
+    status = UCCreateCollator(localeRef, 0, options, &collator);
     if (status != 0)
-        qWarning("Couldn't initialize the collator");
+        qWarning("Couldn't initialize the collator (%d)", int(status));
 
     dirty = false;
 }
@@ -88,47 +92,46 @@ void QCollatorPrivate::cleanup()
     collator = 0;
 }
 
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
     if (d->dirty)
         d->init();
+    if (!d->collator)
+        return s1.compare(s2, caseSensitivity());
 
     SInt32 result;
     Boolean equivalent;
     UCCompareText(d->collator,
-                  reinterpret_cast<const UniChar *>(s1), len1,
-                  reinterpret_cast<const UniChar *>(s2), len2,
+                  reinterpret_cast<const UniChar *>(s1.data()), s1.size(),
+                  reinterpret_cast<const UniChar *>(s2.data()), s2.size(),
                   &equivalent,
                   &result);
     if (equivalent)
         return 0;
     return result < 0 ? -1 : 1;
 }
-int QCollator::compare(const QString &str1, const QString &str2) const
-{
-    return compare(str1.constData(), str1.size(), str2.constData(), str2.size());
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
-}
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
     if (d->dirty)
         d->init();
+    if (!d->collator) {
+        // What should (or even *can*) we do here ? (See init()'s comment.)
+        qWarning("QCollator doesn't support sort keys for the C locale on Darwin");
+        return QCollatorSortKey(nullptr);
+    }
 
     //Documentation recommends having it 5 times as big as the input
     QVector<UCCollationValue> ret(string.size() * 5);
     ItemCount actualSize;
-    int status = UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
-                                   ret.size(), &actualSize, ret.data());
+    int status = UCGetCollationKey(d->collator,
+                                   reinterpret_cast<const UniChar *>(string.constData()),
+                                   string.count(), ret.size(), &actualSize, ret.data());
 
-    ret.resize(actualSize+1);
+    ret.resize(actualSize + 1);
     if (status == kUCOutputBufferTooSmall) {
-        UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()), string.count(),
-                          ret.size(), &actualSize, ret.data());
+        UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()),
+                          string.count(), ret.size(), &actualSize, ret.data());
     }
     ret[actualSize] = 0;
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
@@ -136,6 +139,9 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &key) const
 {
+    if (!d.data())
+        return 0;
+
     SInt32 order;
     UCCompareCollationKeys(d->m_key.data(), d->m_key.size(),
                            key.d->m_key.data(), key.d->m_key.size(),

@@ -113,14 +113,14 @@ struct Q_CORE_EXPORT QArrayData
     }
 
     Q_REQUIRED_RESULT static QArrayData *allocate(size_t objectSize, size_t alignment,
-            size_t capacity, AllocationOptions options = Default) Q_DECL_NOTHROW;
+            size_t capacity, AllocationOptions options = Default) noexcept;
     Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
-            size_t newCapacity, AllocationOptions newOptions = Default) Q_DECL_NOTHROW;
+            size_t newCapacity, AllocationOptions newOptions = Default) noexcept;
     static void deallocate(QArrayData *data, size_t objectSize,
-            size_t alignment) Q_DECL_NOTHROW;
+            size_t alignment) noexcept;
 
     static const QArrayData shared_null[2];
-    static QArrayData *sharedNull() Q_DECL_NOTHROW { return const_cast<QArrayData*>(shared_null); }
+    static QArrayData *sharedNull() noexcept { return const_cast<QArrayData*>(shared_null); }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
@@ -254,7 +254,7 @@ struct QTypedArrayData
         return result;
     }
 
-    static QTypedArrayData *sharedNull() Q_DECL_NOTHROW
+    static QTypedArrayData *sharedNull() noexcept
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::sharedNull());
@@ -306,8 +306,6 @@ struct QArrayDataPointerRef
 // accomplished by hiding a static const instance of QStaticArrayData, which is
 // POD.
 
-#if defined(Q_COMPILER_VARIADIC_MACROS)
-#if defined(Q_COMPILER_LAMBDA)
 // Hide array inside a lambda
 #define Q_ARRAY_LITERAL(Type, ...)                                              \
     ([]() -> QArrayDataPointerRef<Type> {                                       \
@@ -324,10 +322,7 @@ struct QArrayDataPointerRef
             return StaticWrapper::get();                                        \
         }())                                                                    \
     /**/
-#endif
-#endif // defined(Q_COMPILER_VARIADIC_MACROS)
 
-#if defined(Q_ARRAY_LITERAL)
 #define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
     union { Type type_must_be_POD; } dummy; Q_UNUSED(dummy)                     \
                                                                                 \
@@ -342,31 +337,6 @@ struct QArrayDataPointerRef
         { static_cast<QTypedArrayData<Type> *>(                                 \
             const_cast<QArrayData *>(&literal.header)) };                       \
     /**/
-#else
-// As a fallback, memory is allocated and data copied to the heap.
-
-// The fallback macro does NOT use variadic macros and does NOT support
-// variable number of arguments. It is suitable for char arrays.
-
-namespace QtPrivate {
-    template <class T, size_t N>
-    inline QArrayDataPointerRef<T> qMakeArrayLiteral(const T (&array)[N])
-    {
-        union { T type_must_be_POD; } dummy; Q_UNUSED(dummy)
-
-        QArrayDataPointerRef<T> result = { QTypedArrayData<T>::allocate(N) };
-        Q_CHECK_PTR(result.ptr);
-
-        ::memcpy(result.ptr->data(), array, N * sizeof(T));
-        result.ptr->size = N;
-
-        return result;
-    }
-}
-
-#define Q_ARRAY_LITERAL(Type, Array) \
-    QT_PREPEND_NAMESPACE(QtPrivate::qMakeArrayLiteral)<Type>( Array )
-#endif // !defined(Q_ARRAY_LITERAL)
 
 namespace QtPrivate {
 struct Q_CORE_EXPORT QContainerImplHelper

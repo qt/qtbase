@@ -64,7 +64,7 @@ class Calculator : public QWidget
     Q_OBJECT
 
 public:
-    Calculator(QWidget *parent = 0);
+    Calculator(QWidget *parent = nullptr);
 
 private slots:
     void digitClicked();

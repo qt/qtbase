@@ -1,5 +1,5 @@
 SOURCES = main.cpp
-CONFIG -= qt app_bundle
-CONFIG += console
+CONFIG -= qt
+CONFIG += cmdline
 winrt: QMAKE_LFLAGS += /ENTRY:mainCRTStartup
 DESTDIR = ./

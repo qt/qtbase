@@ -19,8 +19,6 @@ DEFINES += \
     QT_NO_FOREACH \
     QT_NO_CAST_FROM_ASCII
 
-DEFINES -= QT_EVAL
-
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
@@ -93,6 +91,7 @@ SOURCES += \
            ../../corelib/tools/qstringbuilder.cpp \
            ../../corelib/tools/qstring_compat.cpp \
            ../../corelib/tools/qstringlist.cpp \
+           ../../corelib/tools/qstringview.cpp \
            ../../corelib/tools/qversionnumber.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
            ../../xml/dom/qdom.cpp \

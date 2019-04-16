@@ -13,7 +13,8 @@ add_qt_executable(validators
         localeselector.cpp localeselector.h
         main.cpp
         validators.ui
-    LIBRARIES
+        validatorwidget.cpp validatorwidget.h
+    PUBLIC_LIBRARIES
         Qt::Widgets
 )
 

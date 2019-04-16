@@ -703,6 +703,8 @@ bool QFileInfo::exists() const
 */
 bool QFileInfo::exists(const QString &file)
 {
+    if (file.isEmpty())
+        return false;
     QFileSystemEntry entry(file);
     QFileSystemMetaData data;
     QAbstractFileEngine *engine =
@@ -1105,12 +1107,19 @@ bool QFileInfo::isRoot() const
     \sa exists(), isSymLink(), isDir(), isFile()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
     Use symLinkTarget() instead.
 */
 QString QFileInfo::readLink() const
+{
+    return symLinkTarget();
+}
+#endif
+
+QString QFileInfo::symLinkTarget() const
 {
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)

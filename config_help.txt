@@ -17,7 +17,8 @@ quoting and double quotes for the outer quoting.
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
-                       [/usr/local/Qt-$QT_VERSION, $PWD if -developer-build]
+                       [/usr/local/Qt-$QT_VERSION; qtbase build directory if
+                       -developer-build]
   -extprefix <dir> ... The installation directory, as seen on the host machine.
                        [SYSROOT/PREFIX]
   -hostprefix [dir] .. The installation directory for build tools running on
@@ -135,6 +136,9 @@ Build options:
                          for example, -sanitize address cannot be combined with
                          -sanitize thread.
 
+  -coverage {trace-pc-guard}
+                         Add code coverage instrumentation (Clang only)
+
   -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
                          (Not supported with MSVC)
 
@@ -163,7 +167,8 @@ Build options:
 
   -pch ................. Use precompiled headers [auto]
   -ltcg ................ Use Link Time Code Generation [no]
-  -use-gold-linker ..... Use the GNU gold linker [auto]
+  -linker [bfd,gold,lld] Force use of the GNU ld, GNU gold or LLVM/LLD linker
+                         instead of default one (GCC only)
   -incredibuild-xge .... Use the IncrediBuild XGE [no] (Windows only)
   -ccache .............. Use the ccache compiler cache [no] (Unix only)
   -make-tool <tool> .... Use <tool> to build qmake [nmake] (Windows only)
@@ -213,7 +218,8 @@ Component selection:
                          [libs and examples, also tools if not cross-building,
                          also tests if -developer-build]
   -nomake <part> ....... Exclude <part> from the list of parts to be built.
-  -compile-examples .... When unset, install only the sources of examples [yes]
+  -compile-examples .... When unset, install only the sources of examples
+                         [no on WebAssembly, otherwise yes]
   -gui ................. Build the Qt GUI module and dependencies [yes]
   -widgets ............. Build the Qt Widgets module and dependencies [yes]
   -no-dbus ............. Do not build the Qt D-Bus module
@@ -235,7 +241,7 @@ Core options:
   -inotify ............. Enable inotify support
   -iconv ............... Enable iconv(3) support [posix/sun/gnu/no] (Unix only)
   -icu ................. Enable ICU support [auto]
-  -pcre ................ Select used libpcre2 [system/qt]
+  -pcre ................ Select used libpcre2 [system/qt/no]
   -pps ................. Enable PPS support [auto] (QNX only)
   -zlib ................ Select used zlib [system/qt]
 
@@ -290,8 +296,7 @@ Gui, printing, widget options:
     -gbm ............... Enable backends for GBM [auto] (Linux only)
     -kms ............... Enable backends for KMS [auto] (Linux only)
     -linuxfb ........... Enable Linux Framebuffer support [auto] (Linux only)
-    -mirclient ......... Enable Mir client support [no] (Linux only)
-    -xcb ............... Select used xcb-* libraries [system/qt/no]
+    -xcb ............... Enable X11 support. Select used xcb-* libraries [system/qt/no]
                          (-qt-xcb still uses system version of libxcb itself)
 
   Input backends:
@@ -302,10 +307,7 @@ Gui, printing, widget options:
     -mtdev ............. Enable mtdev support [auto]
     -tslib ............. Enable tslib support [auto]
     -xcb-xinput ........ Enable XInput2 support [auto]
-    -xkbcommon-x11 ..... Select xkbcommon used in combination with xcb
-                         [system/qt/no]
-    -xkbcommon-evdev ... Enable X-less xkbcommon in combination with libinput
-                         [auto]
+    -xkbcommon ......... Enable key mapping support [auto]
 
   Image formats:
     -gif ............... Enable reading support for GIF [auto]

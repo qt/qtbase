@@ -1,0 +1,42 @@
+TAP version 13
+# tst_Silent
+ok 1 - initTestCase()
+ok 2 - pass()
+ok 3 - skip() # SKIP This test should skip
+not ok 4 - fail()
+  ---
+  type: QVERIFY
+  message: This test should fail
+  wanted: true (false)
+  found: false (false)
+  expected: true (false)
+  actual: false (false)
+  at: tst_Silent::fail() (qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp:60)
+  file: qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp
+  line: 60
+  ...
+not ok 5 - xfail() # TODO This test should XFAIL
+  ---
+  at: tst_Silent::xfail() (qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp:66)
+  file: qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp
+  line: 66
+  ...
+ok 6 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should XPASS)
+# This is a warning that should not appear in silent test output
+# This is an internal testlib warning that should not appear in silent test output
+# This is a debug message that should not appear in silent test output
+# This is a critical message that should not appear in silent test output
+# This is an info message that should not appear in silent test output
+# This is an internal testlib info message that should not appear in silent test output
+# This is a fatal error message that should still appear in silent test output
+not ok 7 - messages()
+  ---
+  # Received a fatal error.
+  at: tst_Silent::messages() (Unknown file:0)
+  file: Unknown file
+  line: 0
+  ...
+1..7
+# tests 7
+# pass 3
+# fail 3

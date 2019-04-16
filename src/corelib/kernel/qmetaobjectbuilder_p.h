@@ -173,7 +173,7 @@ public:
     void setStaticMetacallFunction(QMetaObjectBuilder::StaticMetacallFunction value);
 
     QMetaObject *toMetaObject() const;
-    QByteArray toRelocatableData(bool * = 0) const;
+    QByteArray toRelocatableData(bool * = nullptr) const;
     static void fromRelocatableData(QMetaObject *, const QMetaObject *, const QByteArray &);
 
 #ifndef QT_NO_DATASTREAM
@@ -184,7 +184,7 @@ public:
 #endif
 
 private:
-    Q_DISABLE_COPY(QMetaObjectBuilder)
+    Q_DISABLE_COPY_MOVE(QMetaObjectBuilder)
 
     QMetaObjectBuilderPrivate *d;
 
@@ -196,7 +196,7 @@ private:
 class Q_CORE_EXPORT QMetaMethodBuilder
 {
 public:
-    QMetaMethodBuilder() : _mobj(0), _index(0) {}
+    QMetaMethodBuilder() : _mobj(nullptr), _index(0) {}
 
     int index() const;
 
@@ -238,7 +238,7 @@ private:
 class Q_CORE_EXPORT QMetaPropertyBuilder
 {
 public:
-    QMetaPropertyBuilder() : _mobj(0), _index(0) {}
+    QMetaPropertyBuilder() : _mobj(nullptr), _index(0) {}
 
     int index() const { return _index; }
 
@@ -294,7 +294,7 @@ private:
 class Q_CORE_EXPORT QMetaEnumBuilder
 {
 public:
-    QMetaEnumBuilder() : _mobj(0), _index(0) {}
+    QMetaEnumBuilder() : _mobj(nullptr), _index(0) {}
 
     int index() const { return _index; }
 

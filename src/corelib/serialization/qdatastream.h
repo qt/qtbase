@@ -99,11 +99,12 @@ public:
         Qt_5_10 = Qt_5_9,
         Qt_5_11 = Qt_5_10,
         Qt_5_12 = 18,
-        Qt_5_13 = Qt_5_12,
-#if QT_VERSION >= 0x050e00
+        Qt_5_13 = 19,
+        Qt_5_14 = Qt_5_13,
+#if QT_VERSION >= 0x050f00
 #error Add the datastream version for this Qt version and update Qt_DefaultCompiledVersion
 #endif
-        Qt_DefaultCompiledVersion = Qt_5_13
+        Qt_DefaultCompiledVersion = Qt_5_14
     };
 
     enum ByteOrder {
@@ -131,7 +132,10 @@ public:
 
     QIODevice *device() const;
     void setDevice(QIODevice *);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QDataStream::setDevice(nullptr) instead")
     void unsetDevice();
+#endif
 
     bool atEnd() const;
 
@@ -372,6 +376,16 @@ inline QDataStream &operator<<(QDataStream &s, QFlags<Enum> e)
 template <typename Enum>
 inline QDataStream &operator>>(QDataStream &s, QFlags<Enum> &e)
 { return s >> e.i; }
+
+template <typename T>
+typename std::enable_if<std::is_enum<T>::value, QDataStream &>::type&
+operator<<(QDataStream &s, const T &t)
+{ return s << static_cast<typename std::underlying_type<T>::type>(t); }
+
+template <typename T>
+typename std::enable_if<std::is_enum<T>::value, QDataStream &>::type&
+operator>>(QDataStream &s, T &t)
+{ return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
 
 template <typename T>
 inline QDataStream &operator>>(QDataStream &s, QList<T> &l)

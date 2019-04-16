@@ -96,7 +96,7 @@ public:
     static const char *name;
 };
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 class QKdeThemePrivate;
 
 class QKdeTheme : public QPlatformTheme
@@ -109,7 +109,7 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
 
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions iconOptions = 0) const override;
+                   QPlatformTheme::IconOptions iconOptions = nullptr) const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;
 
@@ -123,7 +123,7 @@ public:
 
     static const char *name;
 };
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 class QGnomeThemePrivate;
 
@@ -134,7 +134,7 @@ public:
     QGnomeTheme();
     QVariant themeHint(ThemeHint hint) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions = 0) const override;
+                   QPlatformTheme::IconOptions = nullptr) const override;
     const QFont *font(Font type) const override;
     QString standardButtonText(int button) const override;
 

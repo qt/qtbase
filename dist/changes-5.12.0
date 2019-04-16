@@ -1,0 +1,469 @@
+Qt 5.12 introduces many new features and improvements as well as bugfixes
+over the 5.11.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - QtCore:
+   * [QTBUG-34460] qFatal() no longer uses std::abort() on Windows, as
+     there are circumstances where global destructors are still run after
+     that call, leading to possible deadlocks.
+ - QRegularExpression:
+   * [QTBUG-66781] Regular expressions are now automatically optimized
+     (including JIT compiling) on their first usage. The pattern options
+     OptimizeOnFirstUsageOption and DontAutomaticallyOptimizeOption no
+     longer have any effect, and will get removed in a future version of
+     Qt. QRegularExpression::optimize() can be still used to compile and
+     optimize the regular expression in advance (before any match), if
+     needed.
+ - QDataStream:
+   * [QTBUG-59978][QTBUG-67995] version bumped up to 18 to account for
+     changes in the serialization of QGradient.
+ - Dialogs:
+   * QFileSystemModel now uses QRegularExpression internally for wildcard
+     matching. Note that QRegularExpression might not give the exact same
+     result as QRegExp as its implementation follows strictly the glob
+     patterns definition for wildcard expressions.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - Sources of xcb-xinput 1.13 were bundled and are available via -qt-xcb.
+ - The minimal required version of libxcb is now 1.9. Bundled xcb sources
+   were updated to libxcb 1.9.1 built with xcb-proto 1.8.
+ - [QTBUG-67654] Updated CLDR to version 33.1
+ - [QTBUG-71144] Updated CLDR to version 34
+ - [QTBUG-66561][QTBUG-70008] double-conversion got updated to upstream
+   version 3.1.1.
+ - libjpeg-turbo was updated to version 2.0.0
+ - libpng was updated to version 1.6.35
+ - Sqlite was updated to version 3.25.2
+ - [QTBUG-71109] updated bundled libxkbcommon 0.4.1 -> 0.8.2 (up to
+   31f1f355700870c6615399fbfa7934934b3a9a57)
+ - PCRE2 was updated to version 10.32.
+ - Added documentation for the SLJIT part of pcre2, which is available
+   under the BSD-2-Clause license.
+
+****************************************************************************
+*                                  Tools                                   *
+****************************************************************************
+
+ - rcc:
+   * Added a --list-mapping option which shows a mapping of resource paths
+     to file system paths.
+
+ - qmake
+   * New CONFIG options lrelease and embed_translations were added.
+     CONFIG+=lrelease does run lrelease on translation files listed in
+     TRANSLATIONS and EXTRA_TRANSLATIONS. CONFIG+=embed_translations does
+     include the generated .qm files as resources under :/i18n/.
+
+ - uic
+   * [QTBUG-65251][QTBUG-51602] The -no-stringliteral option is now
+     deprecated and UIC will not generate QStringLiteral anymore.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - Added support for CBOR:
+   * Added QCborStreamReader and QCborStreamWriter, classes for low-level
+     reading and writing of CBOR streams.
+   * Added QCborValue, QCborArray and QCborMap, classes that permit DOM-like
+     access to CBOR data. The API is similar to QJsonValue, QJsonArray and
+     QJsonObject, respectively.
+
+ - QByteArray:
+   * Added QByteArray::isUpper() and QByteArray::isLower() to check if a
+     byte array contains only uppercase or only lowercase Latin1 letters.
+   * Added compare(), which takes Qt::CaseSensitivity as one of the
+     parameters. This function is more efficient than using toLower() or
+     toUpper() and then comparing.
+   * [QTBUG-66187] QByteArray::toInt(), QByteArray::toDouble() and the
+     other number conversion functions now ignore leading and trailing
+     whitespaces, as their QString counterparts already did. For
+     consistency reasons, the same behavior was added to
+     qEnvironmentVariableIntValue() also.
+
+ - QCommandLineParser:
+   * [QTBUG-70174] Fixed a bug that caused the help output to show two
+     options or more in the same line if the options didn't have a
+     description.
+
+ - QCryptographicHash:
+   * Add a static method, hashLength, which returns the length of the
+     output of a hash function in bytes.
+
+ - QDir:
+   * QDir now uses QRegularExpression internally for wildcard matching.
+     Note that QRegularExpression might not give the exact same result as
+     QRegExp as its implementation follows strictly the glob patterns
+     definition for wildcard expressions. Nevertheless, the tests for QDir
+     return the same results as before.
+   * QDir::tempPath() now reports the canonical path of the temporary
+     directory, with any symlinks resolved.
+   * On Windows, QDir::drives() no longer returns drives whose media were
+     ejected.
+
+ - QExplicitlySharedDataPointer:
+   * [QTBUG-66635][QTBUG-66946] Added operator== for nullptr.
+
+ - QFile:
+   * [QTBUG-13470] When opening a file, if Truncate is asked for, or
+     implied by other flags, it shall be attempted, regardless of what
+     other options are selected. We previously did this on Windows; now we
+     do so also on Unix (even when appending).
+
+ - QFileSystemWatcher:
+   * [QTBUG-69320] Fixed a bug that caused addPaths() to crash on Windows
+     if adding a path to be watched on removable storage, if that
+     addPaths() was called on a thread not created by QThread and no
+     QEventLoop has been created yet.
+
+ - QFlags's operator| for enum types in the Qt namespace are now declared
+   in the Qt namespace itself.
+
+ - QLocale:
+   * [QTBUG-57802] Added support for World and Europe as (numeric)
+     "country" codes ("territory" in CLDR terms), thereby enabling support
+     for Yiddish and Esperanto, among other locales using such codes.
+
+ - Logging:
+   * [QTBUG-69548] Qt will now accept qtlogging.ini files written by
+     QSettings.
+
+ - QMetaType can now register constructor for a set of dynamic types.
+
+ - QRegularExpression:
+   * Implemented support for wildcard patterns through a static method.
+   * QRegularExpression now provides anchoredPattern() which is a helper
+     function to build regular expressions used for exact matching.
+   * Implemented support for wildcard patterns. Warning: QRegularExpression
+     might not give the exact same result as QRegExp as its implementation
+     follows strictly the glob patterns definition for the wildcard
+     expressions.
+
+ - [QTBUG-62894] Introduced QScopeGuard.
+
+ - QSharedDataPointer:
+   * [QTBUG-66635][QTBUG-66946] Added operator== for nullptr.
+
+ - QSortFilterProxyModel:
+   * [QTBUG-46810] QSortFilterProxyModel now supports QRegularExpression.
+   * Setters of both the filterRegExp and filterRegularExpression
+     properties are now slots and can be used with the old as well as the
+     new syntax.
+
+ - QString:
+   * Added the functions QString::isUpper() and QString::isLower() to check
+     if a string contains only uppercase or only lowercase letters.
+
+ - QTextCodec:
+   * [QTBUG-56203] QTextCodec automatically deregisters on destruction now.
+
+ - QTimer:
+   * [QTBUG-69800] Fixed singleShot() methods that lacked proper "const"
+     qualification to QObject context receivers.
+   * Added QTimer::connectTo(), a shorthand way of connecting to the
+     timeout() signal.
+
+ - QTranslator:
+   * [QTBUG-31031] It is now possible to load qm files without any
+     translations. This is particularly useful for the language the
+     untranslated strings are written in; logic to load translations can
+     now handle the source language like all other languages.
+
+ - QUndoStack:
+   * [QTBUG-40040] Exposed canUndo, canRedo, undoText, redoText and clean as
+     Q_PROPERTYs.
+
+ - QUrl:
+   * Fixed a bug that caused QUrl::matches to incorrectly compare two URLs
+     with different hostnames or different usernames as equal, if certain
+     QUrl::RemoveXxx options were passed.
+
+ - other:
+   * Added an overload of q{To,From}{Big,Little}Endian that operates on a
+     memory region.
+   * Added the QT_TR_N_NOOP(), QT_TRANSLATE_N_NOOP(), and
+     QT_TRANSLATE_N_NOOP3() macros for numeral dependent delayed
+     translation.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QBitmap:
+   * Added overloaded QBitmap::fromImage that takes QImage rvalue.
+
+ - QDocumentWriter:
+   * [QTBUG-63581] QDocumentWriter now supports table borders, table
+     alignment, table width, column widths, line height and image
+     resolution when exporting QTextDocuments to ODF files.
+
+ - QGradient:
+   * [QTBUG-59978][QTBUG-67995] Added ObjectMode coordinate mode.
+
+ - QGuiApplication:
+   * [QTBUG-26413] Fixed queryKeyboardModifiers() on macOS to actually return
+     the current modifier key state.
+
+ - QImage:
+   * [QTBUG-45858] QImage now supports 64bit image formats with 16 bits per
+     color channel, compatible with 16bpc PNG or RGBA16 OpenGL formats.
+
+ - QIntValidator:
+   * [QTBUG-59650] Input value with over the highest acceptable value, but
+     with no more digits than the maximum value, is now considered
+     intermediate.
+
+ - QOpenGLShader:
+   * [QTBUG-66074] QOpenGLShader has been fixed to expose geometry and
+     tessellation evaluation/control shaders with OpenGL ES 3.2.
+
+ - QPagedPaintDevice:
+   * The default constructor has been deprecated since that class is
+     not meant to be used standalone. The two public but internal
+     devicePageLayout() methods are now deprecated.
+
+ - QPainter:
+   * [QTBUG-67248] Fixed drawTiledPixmap() and texture-brush painting with
+     high-DPR images.
+   * QPainter::drawTiledPixmap() now tiles in the device independent
+     coordinate system.
+
+ - QPicture:
+   * [QTBUG-71208] Fixed a crash reading malformed picture file.
+
+ - QStandardItemModel:
+   * itemData does not return role 255 any more.
+
+ - QTextImageFormat:
+   * Added two new functions to the class: setQuality(int=100) and
+     quality(). They are currently used by QTextODFWriter to determine the
+     image type and quality when exporting images to ODT files.
+
+ - Text:
+   * [QTBUG-57479] Non-breaking spaces are now displayed as a degree symbol
+     when QTextOption::ShowTabsAndSpaces is used.
+   * [QTBUG-69085] Fixed position of text cursor set by clicking outside
+     the bounds of a text line that ends with a surrogate pair or ligature.
+   * [QTBUG-70293] Fixed a crash that can happen when calling a setter on a
+     QTextCursor after its QTextDocument has been deleted.
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - Added DTLS over UDP support.
+
+ - QPasswordDigestor:
+   * [QTBUG-30550] Added QPasswordDigestor
+
+ - QSslKey:
+   * [QTBUG-17718] The OpenSSL backend can now load encrypted PKCS#8
+     DER-encoded keys.
+   * [QTBUG-59068] Added support for PKCS#8-encoded keys in the generic SSL
+     back-end (used for SecureTransport on macOS and for WinRT). Note that
+     it does not support keys encrypted with a PKCS#12 algorithm.
+
+ - QSslSocket:
+   * Enabled ALPN (and thus HTTP/2 negotiation) in SecureTransport backend
+     (macOS).
+   * [QTBUG-69420] Implemented renegotiation for SecureTransport backend.
+
+ - SSL:
+   * The OpenSSL 1.1 backend also works with OpenSSL 1.1.1 (and thus can
+     negotiate TLS 1.3).
+   * [QTBUG-68156] OpenSSL >= 1.0 is now required to build Qt with OpenSSL
+     support.
+
+****************************************************************************
+*                                  QtSql                                   *
+****************************************************************************
+
+ - MySQL:
+   * Now supports MySQL versions >= 8.0.1.
+   * [QTBUG-57028] The TIME data type is now treated like a string-based
+     type in order to respect the full range of the TIME data type.
+
+****************************************************************************
+*                                  QtTest                                  *
+****************************************************************************
+
+ - QCOMPARE:
+   * Now outputs contents of std::tuple on failure.
+   * [QTBUG-65845] QtTest now prints values of QFlags that failed to compare.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - Itemviews:
+   * [QTBUG-12129][QTBUG-14949][QTBUG-57891] Fixed eliding of multi-line
+     items.
+
+ - QAbstractSpinBox:
+   * [QTBUG-67380] The Qt::ControlModifier now increases the number of steps a
+     QAbstractSpinBox takes for the following interactions: scrolling, up/down
+     keyboard keys and the spin box buttons. Previously, Qt::ControlModifier
+     only affected scrolling.
+
+ - QApplication:
+   * [QTBUG-67736] QApplication no longer sends a mouse move event to the
+     entered widget if it sends synthetic enter and leave events.
+
+ - QHeaderView:
+   * [QTBUG-23203] Padding/margin is now taken into account when the text gets
+     elided.
+   * [QTBUG-59501] The qss padding attribute is now honored in all cases.
+   * [QTBUG-62091] The size of the decoration is now taken into account in
+     paintSection().
+   * [QTBUG-65017] The drag'n'drop indicator is now using the correct font.
+   * [QTBUG-69431] setDefaultSectionSize() now checks if the given value is
+     inside min/max section size.
+   * [QTBUG-70084] The section indicator is now high-DPI-aware.
+
+ - QItemDelegate:
+   * [QTBUG-16134] Fixed text height calculation when the item has a
+     decoration or checkbox.
+
+ - QLineEdit:
+   * [QTBUG-44046] The textEdited() signal is now emitted even if the
+     QValidator has changed the user input.
+   * [QTBUG-57448] Added inputRejected() signal for when a key press is not
+     accepted by the QLineEdit. For instance, when an invalid key is
+     pressed for a validator set.
+
+ - QListView:
+   * [QTBUG-27110] The pseudo states :first/:middle/:last are now respected.
+   * [QTBUG-56606] Added itemAlignment property.
+   * [QTBUG-67440] Fixed a bug that caused items on internal move to be
+     deleted.
+
+ - QMenu:
+   * [QTBUG-69199] Removed icon highlight when a stylesheet was applied by
+     the application.
+
+ - QMessageBox:
+   * [QTBUG-35545] On Android and iOS it's now possible to show a
+     QMessageBox with custom buttons as a native dialog.
+
+ - QSpinBox/QDoubleSpinBox:
+   * Added an option for adaptive decimal step size.
+
+ - QSplashScreen:
+  * [QTBUG-43081] The alignment when the message is passed as HTML is now
+    correctly honored.
+
+ - QStyle:
+   * QStyle::SH_SpinBox_StepModifier allows the developer to pick which
+     keyboard modifier increases the number of steps a QAbstractSpinBox
+     takes for the following interactions: scrolling, up/down keyboard keys
+     and the spin box buttons. The Qt::ShiftModifier can now be used, or
+     the feature can be disabled using Qt::NoModifier. Previously, only
+     Qt::ControlModifier could be used as the modifier.
+
+ - QTabBar:
+   * [QTBUG-18146] Fixed mixed up CSS pseudo class for left and right.
+
+ - QTableView:
+   * [QTBUG-48244][QTBUG-49548] Fixed calculating geometries for editors.
+   * [QTBUG-70215] Fixed PageUp not getting to top when first row is hidden.
+
+ - QTableWidget:
+   * Fixed handling of Qt::EditRole and Qt::DisplayRole in setItemData().
+
+ - QTreeView:
+   * [QTBUG-39486] Sped up expanding items when pressing asterisk.
+
+ - QWidget:
+   * [QTBUG-68393][QTBUG-69619][QTBUG-10907] Fixed several bugs that
+     incorrectly reordered tabs for compound widgets under some special
+     circumstances.
+   * [QTBUG-65199] enterEvent() and leaveEvent() now occur when a hovering
+     drawing tablet stylus enters or leaves a widget.
+   * Added the Qt::WA_StyleSheetTarget attribute to indicate that a widget
+     was affected by a style sheet.
+
+****************************************************************************
+*                                 Android                                  *
+****************************************************************************
+
+ - Added Android edit context menu.
+ - Removed old debugging bridge. To be able to debug Qt on Android apps the
+   user must use QtCreator 4.6.1+.
+ - [QTBUG-63735] The system no longer restarts the application when the user
+   replaces SIM card or changes the logical density of the screen.
+ - [QTBUG-70280] ARM64 builds now default to android-21 instead of failing.
+ - [QTBUG-35545] QMessageBox now supports buttons with custom labels.
+
+****************************************************************************
+*                                  Linux                                   *
+****************************************************************************
+
+ - QFileDialog will use the native dialogs provided by the platform theme
+   instead of trying to use Flatpak portal to select directories.
+
+****************************************************************************
+*                                  macOS                                   *
+****************************************************************************
+
+ - QtGui:
+   * [QTBUG-63800] Fixed display of condensed fonts when NoFontMerging is
+     in use.
+
+ - Text:
+   * [QTBUG-69955] Fixed font weights on macOS 10.14.
+
+****************************************************************************
+*                                 Windows                                  *
+****************************************************************************
+
+ - [QTBUG-55762] The dimensions of invisible margins inside the frames of
+   Windows 10 windows will now be disregarded in the positioning of Qt
+   windows to avoid a misplaced look (offset by a few pixels from the
+   expected position).
+ - [QTBUG-44964][QTBUG-60437] The application attributes
+   AA_CompressTabletEvents and AA_CompressHighFrequencyEvents are now
+   supported on Windows 8 and above for touch/pen input, with the same
+   defaults as on X11 (compress touch events, don't compress tablet events)
+
+ - QTimeZone:
+   * [QTBUG-42021] Changed MS-Win to use ICU for time-zone data, when
+     available, in preference to MS's TZ APIs. The choice is made when
+     building Qt. This will give reliable results when non-DST transitions
+     arise, or when a zone's DST is not simple (e.g. interrupted by
+     Ramadan).
+
+****************************************************************************
+*                                  winrt                                   *
+****************************************************************************
+
+ - Added support to Windows UI Automation to the WinRT QPA, allowing
+   Qt-based UWP applications to operate with accessibility and
+   programmatic UI control tools.
+
+****************************************************************************
+*                                   X11                                    *
+****************************************************************************
+
+ - [QTBUG-39624] The xcb plugin was ported to use libxcb-xinput instead of
+   libXi for XInput2 support. The -xinput2 configure option was replaced by
+   -xcb-xinput.

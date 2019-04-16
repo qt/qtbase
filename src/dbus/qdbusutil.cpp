@@ -331,8 +331,8 @@ namespace QDBusUtil
 
     /*!
         \internal
-        \fn bool QDBusUtil::isValidPartOfObjectPath(const QStringRef &part)
-        See QDBusUtil::isValidObjectPath
+        \fn bool isValidPartOfObjectPath(const QStringRef &part)
+        See isValidObjectPath
     */
     bool isValidPartOfObjectPath(const QStringRef &part)
     {
@@ -349,13 +349,13 @@ namespace QDBusUtil
 
     /*!
         \internal
-        \fn bool QDBusUtil::isValidPartOfObjectPath(const QString &part)
+        \fn bool isValidPartOfObjectPath(const QString &part)
 
         \overload
     */
 
     /*!
-        \fn bool QDBusUtil::isValidInterfaceName(const QString &ifaceName)
+        \fn bool isValidInterfaceName(const QString &ifaceName)
         Returns \c true if this is \a ifaceName is a valid interface name.
 
         Valid interface names must:
@@ -384,7 +384,7 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidUniqueConnectionName(const QStringRef &connName)
+        \fn bool isValidUniqueConnectionName(const QStringRef &connName)
         Returns \c true if \a connName is a valid unique connection name.
 
         Unique connection names start with a colon (":") and are followed by a list of dot-separated
@@ -414,13 +414,13 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidUniqueConnectionName(const QString &connName)
+        \fn bool isValidUniqueConnectionName(const QString &connName)
 
         \overload
     */
 
     /*!
-        \fn bool QDBusUtil::isValidBusName(const QString &busName)
+        \fn bool isValidBusName(const QString &busName)
         Returns \c true if \a busName is a valid bus name.
 
         A valid bus name is either a valid unique connection name or follows the rules:
@@ -462,7 +462,7 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidMemberName(const QStringRef &memberName)
+        \fn bool isValidMemberName(const QStringRef &memberName)
         Returns \c true if \a memberName is a valid member name. A valid member name does not exceed
         255 characters in length, is not empty, is composed only of ASCII letters, digits and
         underscores, but does not start with a digit.
@@ -482,13 +482,13 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidMemberName(const QString &memberName)
+        \fn bool isValidMemberName(const QString &memberName)
 
         \overload
     */
 
     /*!
-        \fn bool QDBusUtil::isValidErrorName(const QString &errorName)
+        \fn bool isValidErrorName(const QString &errorName)
         Returns \c true if \a errorName is a valid error name. Valid error names are valid interface
         names and vice-versa, so this function is actually an alias for isValidInterfaceName.
     */
@@ -498,7 +498,7 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidObjectPath(const QString &path)
+        \fn bool isValidObjectPath(const QString &path)
         Returns \c true if \a path is valid object path.
 
         Valid object paths follow the rules:
@@ -529,7 +529,7 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidBasicType(int type)
+        \fn bool isValidBasicType(int type)
         Returns \c true if \a c is a valid, basic D-Bus type.
      */
     bool isValidBasicType(int c)
@@ -538,7 +538,7 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidFixedType(int type)
+        \fn bool isValidFixedType(int type)
         Returns \c true if \a c is a valid, fixed D-Bus type.
      */
     bool isValidFixedType(int c)
@@ -548,7 +548,7 @@ namespace QDBusUtil
 
 
     /*!
-        \fn bool QDBusUtil::isValidSignature(const QString &signature)
+        \fn bool isValidSignature(const QString &signature)
         Returns \c true if \a signature is a valid D-Bus type signature for one or more types.
         This function returns \c true if it can all of \a signature into valid, individual types and no
         characters remain in \a signature.
@@ -569,7 +569,7 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool QDBusUtil::isValidSingleSignature(const QString &signature)
+        \fn bool isValidSingleSignature(const QString &signature)
         Returns \c true if \a signature is a valid D-Bus type signature for exactly one full type. This
         function tries to convert the type signature into a D-Bus type and, if it succeeds and no
         characters remain in the signature, it returns \c true.

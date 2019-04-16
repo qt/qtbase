@@ -132,22 +132,12 @@ DECLARE_DEBUG_VAR(statistics)
     setWindowProperty function of the native interface to set the \e qnxWindowGroup property
     to the desired value, for example:
 
-    \code
-    QQuickView *view = new QQuickView(parent);
-    view->create();
-    QGuiApplication::platformNativeInterface()->setWindowProperty(view->handle(), "qnxWindowGroup",
-                                                                  group);
-    \endcode
+    \snippet code/src_plugins_platforms_qnx_qqnxwindow.cpp 0
 
     To leave the current window group, one passes a null value for the property value,
     for example:
 
-    \code
-    QQuickView *view = new QQuickView(parent);
-    view->create();
-    QGuiApplication::platformNativeInterface()->setWindowProperty(view->handle(), "qnxWindowGroup",
-                                                                  QVariant());
-    \endcode
+    \snippet code/src_plugins_platforms_qnx_qqnxwindow.cpp 1
 
     \section1 Window Id
 

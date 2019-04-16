@@ -73,21 +73,18 @@ QAnimationState *s = new QAnimationState(machine->rootState());
 QPropertyAnimation *animation = new QPropertyAnimation(obj, "pos");
 s->setAnimation(animation);
 QState *s2 = new QState(machine->rootState());
-s->addTransition(s, SIGNAL(animationFinished()), s2);
+s->addTransition(s, &QAnimationState::animationFinished, s2);
 machine.start();
 \endcode
 
 \sa QState, {The Animation Framework}
 */
 
-
-#ifndef QT_NO_ANIMATION
-
 /*!
   Constructs a new state with the given \a parent state.
 */
 QAnimationState::QAnimationState(QState *parent)
-    : QState(parent), m_animation(0)
+    : QState(parent), m_animation(nullptr)
 {
 }
 
@@ -110,18 +107,18 @@ void QAnimationState::setAnimation(QAbstractAnimation *animation)
 
     //Disconnect from the previous animation if exist
     if(m_animation)
-        disconnect(m_animation, SIGNAL(finished()), this, SIGNAL(animationFinished()));
+        disconnect(m_animation, &QAbstractAnimation::finished, this, &QAnimationState::animationFinished);
 
     m_animation = animation;
 
     if (m_animation) {
         //connect the new animation
-        connect(m_animation, SIGNAL(finished()), this, SIGNAL(animationFinished()));
+        connect(m_animation, &QAbstractAnimation::finished, this, &QAnimationState::animationFinished);
     }
 }
 
 /*!
-  Returns the animation handle by this animation state, or 0 if there is no animation.
+  Returns the animation handle by this animation state, or \nullptr if there is no animation.
 */
 QAbstractAnimation* QAnimationState::animation() const
 {
@@ -155,5 +152,3 @@ bool QAnimationState::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
-
-#endif

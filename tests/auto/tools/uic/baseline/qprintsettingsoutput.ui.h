@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qprintsettingsoutput.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -260,9 +260,9 @@ public:
 
         horizontalLayout_2->addWidget(tabs);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(copies);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(QPrintSettingsOutput);
         QObject::connect(printRange, SIGNAL(toggled(bool)), from, SLOT(setEnabled(bool)));
@@ -276,25 +276,25 @@ public:
 
     void retranslateUi(QWidget *QPrintSettingsOutput)
     {
-        QPrintSettingsOutput->setWindowTitle(QApplication::translate("QPrintSettingsOutput", "Form", nullptr));
-        gbPrintRange->setTitle(QApplication::translate("QPrintSettingsOutput", "Print range", nullptr));
-        printAll->setText(QApplication::translate("QPrintSettingsOutput", "Print all", nullptr));
-        printRange->setText(QApplication::translate("QPrintSettingsOutput", "Pages from", nullptr));
-        label_3->setText(QApplication::translate("QPrintSettingsOutput", "to", nullptr));
-        printSelection->setText(QApplication::translate("QPrintSettingsOutput", "Selection", nullptr));
-        groupBox->setTitle(QApplication::translate("QPrintSettingsOutput", "Output Settings", nullptr));
-        label->setText(QApplication::translate("QPrintSettingsOutput", "Copies:", nullptr));
-        collate->setText(QApplication::translate("QPrintSettingsOutput", "Collate", nullptr));
-        reverse->setText(QApplication::translate("QPrintSettingsOutput", "Reverse", nullptr));
-        tabs->setTabText(tabs->indexOf(copiesTab), QApplication::translate("QPrintSettingsOutput", "Copies", nullptr));
-        colorMode->setTitle(QApplication::translate("QPrintSettingsOutput", "Color Mode", nullptr));
-        color->setText(QApplication::translate("QPrintSettingsOutput", "Color", nullptr));
-        grayscale->setText(QApplication::translate("QPrintSettingsOutput", "Grayscale", nullptr));
-        duplex->setTitle(QApplication::translate("QPrintSettingsOutput", "Duplex Printing", nullptr));
-        noDuplex->setText(QApplication::translate("QPrintSettingsOutput", "None", nullptr));
-        duplexLong->setText(QApplication::translate("QPrintSettingsOutput", "Long side", nullptr));
-        duplexShort->setText(QApplication::translate("QPrintSettingsOutput", "Short side", nullptr));
-        tabs->setTabText(tabs->indexOf(optionsTab), QApplication::translate("QPrintSettingsOutput", "Options", nullptr));
+        QPrintSettingsOutput->setWindowTitle(QCoreApplication::translate("QPrintSettingsOutput", "Form", nullptr));
+        gbPrintRange->setTitle(QCoreApplication::translate("QPrintSettingsOutput", "Print range", nullptr));
+        printAll->setText(QCoreApplication::translate("QPrintSettingsOutput", "Print all", nullptr));
+        printRange->setText(QCoreApplication::translate("QPrintSettingsOutput", "Pages from", nullptr));
+        label_3->setText(QCoreApplication::translate("QPrintSettingsOutput", "to", nullptr));
+        printSelection->setText(QCoreApplication::translate("QPrintSettingsOutput", "Selection", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("QPrintSettingsOutput", "Output Settings", nullptr));
+        label->setText(QCoreApplication::translate("QPrintSettingsOutput", "Copies:", nullptr));
+        collate->setText(QCoreApplication::translate("QPrintSettingsOutput", "Collate", nullptr));
+        reverse->setText(QCoreApplication::translate("QPrintSettingsOutput", "Reverse", nullptr));
+        tabs->setTabText(tabs->indexOf(copiesTab), QCoreApplication::translate("QPrintSettingsOutput", "Copies", nullptr));
+        colorMode->setTitle(QCoreApplication::translate("QPrintSettingsOutput", "Color Mode", nullptr));
+        color->setText(QCoreApplication::translate("QPrintSettingsOutput", "Color", nullptr));
+        grayscale->setText(QCoreApplication::translate("QPrintSettingsOutput", "Grayscale", nullptr));
+        duplex->setTitle(QCoreApplication::translate("QPrintSettingsOutput", "Duplex Printing", nullptr));
+        noDuplex->setText(QCoreApplication::translate("QPrintSettingsOutput", "None", nullptr));
+        duplexLong->setText(QCoreApplication::translate("QPrintSettingsOutput", "Long side", nullptr));
+        duplexShort->setText(QCoreApplication::translate("QPrintSettingsOutput", "Short side", nullptr));
+        tabs->setTabText(tabs->indexOf(optionsTab), QCoreApplication::translate("QPrintSettingsOutput", "Options", nullptr));
     } // retranslateUi
 
 };

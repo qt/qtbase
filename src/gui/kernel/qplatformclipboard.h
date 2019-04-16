@@ -61,6 +61,9 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QPlatformClipboard
 {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformClipboard)
+
+    QPlatformClipboard() = default;
     virtual ~QPlatformClipboard();
 
     virtual QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);

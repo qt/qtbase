@@ -52,7 +52,9 @@
 //
 
 #ifdef QT_EGL_NO_X11
-# define MESA_EGL_NO_X11_HEADERS // MESA
+# ifndef MESA_EGL_NO_X11_HEADERS
+#  define MESA_EGL_NO_X11_HEADERS // MESA
+# endif
 # if !defined(Q_OS_INTEGRITY)
 #  define WIN_INTERFACE_CUSTOM   // NV
 # endif // Q_OS_INTEGRITY

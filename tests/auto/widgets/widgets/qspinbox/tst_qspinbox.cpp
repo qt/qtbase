@@ -53,6 +53,8 @@
 #include <QStyleOptionSpinBox>
 #include <QStyle>
 #include <QProxyStyle>
+#include <QScreen>
+
 
 class SpinBox : public QSpinBox
 {
@@ -204,7 +206,7 @@ private slots:
     void stepModifierPressAndHold_data();
     void stepModifierPressAndHold();
 public slots:
-    void valueChangedHelper(const QString &);
+    void textChangedHelper(const QString &);
     void valueChangedHelper(int);
 private:
     QStringList actualTexts;
@@ -343,6 +345,14 @@ tst_QSpinBox::tst_QSpinBox()
 void tst_QSpinBox::init()
 {
     QLocale::setDefault(QLocale(QLocale::C));
+
+#if QT_CONFIG(cursor)
+    // Ensure mouse cursor was not left by previous tests where widgets
+    // will appear, as it could cause events and interfere with the tests.
+    const QScreen *screen = QGuiApplication::primaryScreen();
+    const QRect availableGeometry = screen->availableGeometry();
+    QCursor::setPos(availableGeometry.topLeft());
+#endif
 }
 
 void tst_QSpinBox::setValue_data()
@@ -452,8 +462,11 @@ void tst_QSpinBox::setPrefixSuffix()
     QFETCH(bool, show);
 
     QSpinBox spin(0);
+    const QSize size1 = spin.sizeHint();
     spin.setPrefix(prefix);
+    const QSize size2 = spin.sizeHint();
     spin.setSuffix(suffix);
+    const QSize size3 = spin.sizeHint();
     spin.setValue(value);
     if (show)
         spin.show();
@@ -462,9 +475,18 @@ void tst_QSpinBox::setPrefixSuffix()
     QCOMPARE(spin.suffix(), suffix);
     QCOMPARE(spin.text(), expectedText);
     QCOMPARE(spin.cleanText(), expectedCleanText);
+
+    if (!prefix.isEmpty() && !suffix.isEmpty()) {
+        QVERIFY(size1.width() < size2.width());
+        QVERIFY(size2.width() < size3.width());
+        spin.setSuffix(QString());
+        QCOMPARE(spin.sizeHint(), size2);
+        spin.setPrefix(QString());
+        QCOMPARE(spin.sizeHint(), size1);
+    }
 }
 
-void tst_QSpinBox::valueChangedHelper(const QString &text)
+void tst_QSpinBox::textChangedHelper(const QString &text)
 {
     actualTexts << text;
 }
@@ -542,7 +564,7 @@ void tst_QSpinBox::setTracking()
     QSpinBox spin(0);
     spin.setKeyboardTracking(tracking);
     spin.show();
-    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(QString)));
+    connect(&spin, &QSpinBox::textChanged, this, &tst_QSpinBox::textChangedHelper);
 
     keys.simulate(&spin);
     QCOMPARE(actualTexts, texts);

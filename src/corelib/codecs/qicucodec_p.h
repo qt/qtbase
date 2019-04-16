@@ -59,9 +59,9 @@ extern "C" {
     typedef struct UConverter UConverter;
 }
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(textcodec);
 
-#ifndef QT_NO_TEXTCODEC
+QT_BEGIN_NAMESPACE
 
 class QIcuCodec : public QTextCodec
 {
@@ -89,8 +89,6 @@ private:
 
     const char *m_name;
 };
-
-#endif // QT_NO_TEXTCODEC
 
 QT_END_NAMESPACE
 

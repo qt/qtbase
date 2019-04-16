@@ -194,7 +194,7 @@ public:
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat,
                                            const QTransform &t = QTransform(),
-                                           QPoint *offset = 0);
+                                           QPoint *offset = nullptr);
     virtual void unlockAlphaMapForGlyph();
     virtual bool hasInternalCaching() const { return false; }
 
@@ -224,7 +224,7 @@ public:
     virtual qreal minLeftBearing() const;
     virtual qreal minRightBearing() const;
 
-    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
+    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = nullptr, qreal *rightBearing = nullptr);
 
     inline bool canRender(uint ucs4) const { return glyphIndex(ucs4) != 0; }
     virtual bool canRender(const QChar *str, int len) const;
@@ -234,7 +234,7 @@ public:
     virtual int glyphCount() const;
     virtual int glyphMargin(GlyphFormat format) { return format == Format_A32 ? 2 : 0; }
 
-    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
+    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return nullptr; }
 
     virtual Qt::HANDLE handle() const;
 
@@ -292,33 +292,33 @@ public:
         Holder() : ptr(nullptr), destroy_func(nullptr) {}
         explicit Holder(void *p, qt_destroy_func_t d) : ptr(p), destroy_func(d) {}
         ~Holder() { if (ptr && destroy_func) destroy_func(ptr); }
-        Holder(Holder &&other) Q_DECL_NOTHROW
+        Holder(Holder &&other) noexcept
             : ptr(other.ptr),
               destroy_func(other.destroy_func)
         {
             other.ptr = nullptr;
             other.destroy_func = nullptr;
         }
-        Holder &operator=(Holder &&other) Q_DECL_NOTHROW
+        Holder &operator=(Holder &&other) noexcept
         { swap(other); return *this; }
 
-        void swap(Holder &other) Q_DECL_NOTHROW
+        void swap(Holder &other) noexcept
         {
             qSwap(ptr, other.ptr);
             qSwap(destroy_func, other.destroy_func);
         }
 
-        void *get() const Q_DECL_NOTHROW { return ptr; }
-        void *release() Q_DECL_NOTHROW {
+        void *get() const noexcept { return ptr; }
+        void *release() noexcept {
             void *result = ptr;
             ptr = nullptr;
             destroy_func = nullptr;
             return result;
         }
-        void reset() Q_DECL_NOTHROW { Holder().swap(*this); }
-        qt_destroy_func_t get_deleter() const Q_DECL_NOTHROW { return destroy_func; }
+        void reset() noexcept { Holder().swap(*this); }
+        qt_destroy_func_t get_deleter() const noexcept { return destroy_func; }
 
-        bool operator!() const Q_DECL_NOTHROW { return !ptr; }
+        bool operator!() const noexcept { return !ptr; }
     };
 
     mutable Holder font_; // \ NOTE: Declared before m_glyphCaches, so font_, face_
@@ -390,7 +390,7 @@ inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId
 }
 
 inline uint qHash(const QFontEngine::FaceId &f, uint seed = 0)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(f.filename)))
+    noexcept(noexcept(qHash(f.filename)))
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, f.filename);
@@ -458,7 +458,7 @@ public:
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const override;
     virtual void doKerning(QGlyphLayout *, ShaperFlags) const override;
     virtual void addOutlineToPath(qreal, qreal, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags flags) override;
-    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0) override;
+    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = nullptr, qreal *rightBearing = nullptr) override;
 
     virtual QFixed ascent() const override;
     virtual QFixed capHeight() const override;
@@ -484,6 +484,8 @@ public:
     inline QString fallbackFamilyAt(int at) const { return m_fallbackFamilies.at(at); }
 
     void setFallbackFamiliesList(const QStringList &fallbackFamilies);
+
+    static uchar highByte(glyph_t glyph); // Used for determining engine
 
     inline QFontEngine *engine(int at) const
     { Q_ASSERT(at < m_engines.size()); return m_engines.at(at); }

@@ -298,12 +298,9 @@ QThreadPrivate::~QThreadPrivate()
     \warning The handle returned by this function is used for internal
     purposes and should not be used in any application code.
 
-    \warning On Windows, the returned value is a pseudo-handle for the
-    current thread. It can't be used for numerical comparison. i.e.,
-    this function returns the DWORD (Windows-Thread ID) returned by
-    the Win32 function getCurrentThreadId(), not the HANDLE
-    (Windows-Thread HANDLE) returned by the Win32 function
-    getCurrentThread().
+    \note On Windows, this function returns the DWORD (Windows-Thread
+    ID) returned by the Win32 function GetCurrentThreadId(), not the pseudo-HANDLE
+    (Windows-Thread HANDLE) returned by the Win32 function GetCurrentThread().
 */
 
 /*!
@@ -653,6 +650,13 @@ QThread::Priority QThread::priority() const
 
     Forces the current thread to sleep for \a secs seconds.
 
+    Avoid using this function if you need to wait for a given condition to
+    change. Instead, connect a slot to the signal that indicates the change or
+    use an event handler (see \l QObject::event()).
+
+    \note This function does not guarantee accuracy. The application may sleep
+    longer than \a secs under heavy load conditions.
+
     \sa msleep(), usleep()
 */
 
@@ -661,6 +665,14 @@ QThread::Priority QThread::priority() const
 
     Forces the current thread to sleep for \a msecs milliseconds.
 
+    Avoid using this function if you need to wait for a given condition to
+    change. Instead, connect a slot to the signal that indicates the change or
+    use an event handler (see \l QObject::event()).
+
+    \note This function does not guarantee accuracy. The application may sleep
+    longer than \a msecs under heavy load conditions. Some OSes might round \a
+    msecs up to 10 ms or 15 ms.
+
     \sa sleep(), usleep()
 */
 
@@ -668,6 +680,15 @@ QThread::Priority QThread::priority() const
     \fn void QThread::usleep(unsigned long usecs)
 
     Forces the current thread to sleep for \a usecs microseconds.
+
+    Avoid using this function if you need to wait for a given condition to
+    change. Instead, connect a slot to the signal that indicates the change or
+    use an event handler (see \l QObject::event()).
+
+    \note This function does not guarantee accuracy. The application may sleep
+    longer than \a usecs under heavy load conditions. Some OSes might round \a
+    usecs up to 10 ms or 15 ms; on Windows, it will be rounded up to a multiple
+    of 1 ms.
 
     \sa sleep(), msleep()
 */
@@ -797,6 +818,16 @@ void QThread::quit()
 
 }
 
+void QThread::exit(int returnCode)
+{
+    Q_D(QThread);
+    d->data->quitNow = true;
+    for (int i = 0; i < d->data->eventLoops.size(); ++i) {
+        QEventLoop *eventLoop = d->data->eventLoops.at(i);
+        eventLoop->exit(returnCode);
+    }
+}
+
 bool QThread::wait(unsigned long time)
 {
     Q_UNUSED(time);
@@ -808,7 +839,7 @@ bool QThread::event(QEvent* event)
     return QObject::event(event);
 }
 
-Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+Qt::HANDLE QThread::currentThreadId() noexcept
 {
     return Qt::HANDLE(currentThread());
 }
@@ -818,7 +849,7 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread;
 }
 
-int QThread::idealThreadCount() Q_DECL_NOTHROW
+int QThread::idealThreadCount() noexcept
 {
     return 1;
 }
@@ -889,7 +920,7 @@ QThreadPrivate::~QThreadPrivate()
     \since 5.0
 
     Returns a pointer to the event dispatcher object for the thread. If no event
-    dispatcher exists for the thread, this function returns 0.
+    dispatcher exists for the thread, this function returns \nullptr.
 */
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {

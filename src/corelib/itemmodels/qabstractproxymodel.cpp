@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -316,6 +316,7 @@ bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 /*!
     \reimp
+    \since 6.0
  */
 bool QAbstractProxyModel::clearItemData(const QModelIndex &index)
 {

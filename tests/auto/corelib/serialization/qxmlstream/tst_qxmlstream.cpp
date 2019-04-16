@@ -253,7 +253,7 @@ public:
                 qFatal("%s: aId must not be an empty string", Q_FUNC_INFO);
         }
 
-        void swap(MissedBaseline &other) Q_DECL_NOTHROW
+        void swap(MissedBaseline &other) noexcept
         {
             qSwap(id, other.id);
             qSwap(expected, other.expected);

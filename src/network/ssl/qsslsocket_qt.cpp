@@ -92,14 +92,12 @@ static QByteArray _q_PKCS12_keygen(char id, const QByteArray &salt, const QStrin
     QByteArray S, P;
     const int sSize = v * ((salt.size() + v - 1) / v);
     S.resize(sSize);
-    for (int i = 0; i < sSize; ++i) {
+    for (int i = 0; i < sSize; ++i)
         S[i] = salt[i % salt.size()];
-    }
     const int pSize = v * ((passUnicode.size() + v - 1) / v);
     P.resize(pSize);
-    for (int i = 0; i < pSize; ++i) {
+    for (int i = 0; i < pSize; ++i)
         P[i] = passUnicode[i % passUnicode.size()];
-    }
     QByteArray I = S + P;
 
     // apply hashing
@@ -117,16 +115,15 @@ static QByteArray _q_PKCS12_keygen(char id, const QByteArray &salt, const QStrin
             Ai = hash.result();
         }
 
-        for (int j = 0; j < v; ++j) {
+        for (int j = 0; j < v; ++j)
             B[j] = Ai[j % u];
-        }
 
         // modify I as Ij = (Ij + B + 1) modulo 2^v
         for (int p = 0; p < I.size(); p += v) {
             quint8 carry = 1;
             for (int j = v - 1; j >= 0; --j) {
-                quint16 v = quint8(I[p+j]) + quint8(B[j]) + carry;
-                I[p+j] = v & 0xff;
+                quint16 v = quint8(I[p + j]) + quint8(B[j]) + carry;
+                I[p + j] = v & 0xff;
                 carry = (v & 0xff00) >> 8;
             }
         }
@@ -139,9 +136,8 @@ static QByteArray _q_PKCS12_salt()
 {
     QByteArray salt;
     salt.resize(8);
-    for (int i = 0; i < salt.size(); ++i) {
+    for (int i = 0; i < salt.size(); ++i)
         salt[i] = (qrand() & 0xff);
-    }
     return salt;
 }
 
@@ -203,7 +199,7 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
     QDataStream plainStream(&plain, QIODevice::WriteOnly);
     _q_PKCS12_key(key).write(plainStream);
     QByteArray crypted = QSslKeyPrivate::encrypt(QSslKeyPrivate::DesEde3Cbc,
-        plain, cKey, cIv);
+                                                 plain, cKey, cIv);
 
     QVector<QAsn1Element> items;
     items << QAsn1Element::fromObjectId("1.2.840.113549.1.12.10.1.2");
@@ -246,8 +242,10 @@ static QByteArray _q_PKCS12_bag(const QList<QSslCertificate> &certs, const QSslK
         items << _q_PKCS7_data(_q_PKCS12_certBag(certs[i]));
 
     // key
-    const QByteArray localKeyId = certs.first().digest(QCryptographicHash::Sha1);
-    items << _q_PKCS7_data(_q_PKCS12_shroudedKeyBag(key, passPhrase, localKeyId));
+    if (!key.isNull()) {
+        const QByteArray localKeyId = certs.first().digest(QCryptographicHash::Sha1);
+        items << _q_PKCS7_data(_q_PKCS12_shroudedKeyBag(key, passPhrase, localKeyId));
+    }
 
     // dump
     QAsn1Element root = QAsn1Element::fromVector(items);

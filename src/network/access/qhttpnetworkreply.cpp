@@ -444,6 +444,9 @@ QAuthenticatorPrivate::Method QHttpNetworkReplyPrivate::authenticationMethod(boo
         } else if (method < QAuthenticatorPrivate::DigestMd5
             && line.startsWith("digest")) {
             method = QAuthenticatorPrivate::DigestMd5;
+        } else if (method < QAuthenticatorPrivate::Negotiate
+            && line.startsWith("negotiate")) {
+            method = QAuthenticatorPrivate::Negotiate;
         }
     }
     return method;

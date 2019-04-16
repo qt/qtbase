@@ -58,6 +58,21 @@ defineTest(qtConfCommandline_sanitize) {
     }
 }
 
+defineTest(qtConfCommandline_coverage) {
+    arg = $${1}
+    val = $${2}
+    isEmpty(val): val = $$qtConfGetNextCommandlineArg()
+    !contains(val, "^-.*"):!isEmpty(val) {
+        equals(val, "trace-pc-guard") {
+            qtConfCommandlineSetInput("coverage_trace_pc_guard", "yes")
+        } else {
+            qtConfAddError("Invalid argument $$val to command line parameter $$arg")
+        }
+    } else {
+        qtConfAddError("Missing argument to command line parameter $$arg")
+    }
+}
+
 # callbacks
 
 defineReplace(qtConfFunc_crossCompile) {
@@ -106,8 +121,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             }
         } else {
             !$$hasCommercial: \
-                qtConfFatalError("No license files and no licheck executables found." \
-                                 "Cannot proceed. Try re-installing Qt.")
+                qtConfFatalError("No license files. Cannot proceed. Try re-installing Qt.")
             commercial = yes
         }
     }
@@ -277,6 +291,8 @@ defineTest(qtConfTest_architecture) {
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: wasm:exists($$test_out_dir/arch.wasm): \
         content = $$cat($$test_out_dir/arch.wasm, blob)
+    else: wasm:exists($$test_out_dir/arch.o): \
+        content = $$cat($$test_out_dir/arch.o, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
@@ -449,7 +465,9 @@ defineTest(reloadSpec) {
             $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
             $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
 
-        _SAVED_CONFIG = $$CONFIG
+        saved_variables = CONFIG QMAKE_CXXFLAGS
+        for (name, saved_variables): \
+            _SAVED_$$name = $$eval($$name)
         load(spec_pre)
         # qdevice.pri gets written too late (and we can't write it early
         # enough, as it's populated in stages, with later ones depending
@@ -458,7 +476,8 @@ defineTest(reloadSpec) {
             eval($$l)
         include($$QMAKESPEC/qmake.conf)
         load(spec_post)
-        CONFIG += $$_SAVED_CONFIG
+        for (name, saved_variables): \
+            $$name += $$eval(_SAVED_$$name)
         load(default_pre)
 
         # ensure pristine environment for configuration. again.
@@ -604,11 +623,8 @@ defineTest(qtConfOutput_prepareOptions) {
             target_arch = armeabi-v7a
 
         platform = $$eval(config.input.android-ndk-platform)
-        isEmpty(platform): equals(target_arch, arm64-v8a): \
-            platform = android-21
-
         isEmpty(platform): \
-            platform = android-16  ### the windows configure disagrees ...
+            platform = android-21
 
         $${currentConfig}.output.devicePro += \
             "DEFAULT_ANDROID_SDK_ROOT = $$val_escape(sdk_root)" \
@@ -1015,11 +1031,27 @@ defineTest(qtConfOutput_crossCompile) {
     export(CONFIG)
 }
 
+defineTest(qtConfOutput_useBFDLinker) {
+    !$${2}: return()
+
+    # We need to preempt the output here, so that qtConfTest_linkerSupportsFlag can work properly in qtbase
+    CONFIG += use_bfd_linker
+    export(CONFIG)
+}
+
 defineTest(qtConfOutput_useGoldLinker) {
     !$${2}: return()
 
     # We need to preempt the output here, so that qtConfTest_linkerSupportsFlag can work properly in qtbase
     CONFIG += use_gold_linker
+    export(CONFIG)
+}
+
+defineTest(qtConfOutput_useLLDLinker) {
+    !$${2}: return()
+
+    # We need to preempt the output here, so that qtConfTest_linkerSupportsFlag can work properly in qtbase
+    CONFIG += use_lld_linker
     export(CONFIG)
 }
 
@@ -1303,6 +1335,7 @@ defineTest(createConfigStatus) {
         cont = \
             "$$system_quote($$system_path($$cfg)$$ext) -redo %*"
     } else {
+        !contains(cfg, .*/.*): cfg = ./$$cfg
         cont = \
             "$${LITERAL_HASH}!/bin/sh" \
             "exec $$system_quote($$cfg) -redo \"$@\""

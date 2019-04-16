@@ -123,11 +123,11 @@ do { \
         MODELTESTER_VERIFY(variant.canConvert<QFont>());
 
     // General Purpose roles that should return a QColor or a QBrush
-    variant = model->data(model->index(0, 0), Qt::BackgroundColorRole);
+    variant = model->data(model->index(0, 0), Qt::BackgroundRole);
     if (variant.isValid())
         MODELTESTER_VERIFY(variant.canConvert<QColor>() || variant.canConvert<QBrush>());
 
-    variant = model->data(model->index(0, 0), Qt::TextColorRole);
+    variant = model->data(model->index(0, 0), Qt::ForegroundRole);
     if (variant.isValid())
         MODELTESTER_VERIFY(variant.canConvert<QColor>() || variant.canConvert<QBrush>());
 

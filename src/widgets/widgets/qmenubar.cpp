@@ -1581,7 +1581,7 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
 }
 
 /*!
-  Returns the QAction at \a pt. Returns 0 if there is no action at \a pt or if
+  Returns the QAction at \a pt. Returns \nullptr if there is no action at \a pt or if
 the location has a separator.
 
     \sa addAction(), addSeparator()

@@ -40,8 +40,6 @@
 
 #include <qplatformdefs.h> // always first
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimedatabase.h"
 #include "qmimedatabase_p.h"
 
@@ -424,7 +422,7 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
         toCheck.pop();
         const auto parentList = parents(mimeName);
         for (const QString &par : parentList)
-            toCheck.push(par);
+            toCheck.push(resolveAlias(par));
     }
     return false;
 }
@@ -443,25 +441,14 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
     Applications which want to define custom MIME types need to install an
     XML file into the locations searched for MIME definitions.
     These locations can be queried with
-    \code
-    QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/packages"),
-                              QStandardPaths::LocateDirectory);
-    \endcode
+    \snippet code/src_corelib_mimetype_qmimedatabase.cpp 1
     On a typical Unix system, this will be /usr/share/mime/packages/, but it is also
     possible to extend the list of directories by setting the environment variable
     \c XDG_DATA_DIRS. For instance adding /opt/myapp/share to \c XDG_DATA_DIRS will result
     in /opt/myapp/share/mime/packages/ being searched for MIME definitions.
 
     Here is an example of MIME XML:
-    \code
-    <?xml version="1.0" encoding="UTF-8"?>
-    <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-      <mime-type type="application/vnd.qt.qmakeprofile">
-        <comment xml:lang="en">Qt qmake Profile</comment>
-        <glob pattern="*.pro" weight="50"/>
-      </mime-type>
-    </mime-info>
-    \endcode
+    \snippet code/src_corelib_mimetype_qmimedatabase.cpp 2
 
     For more details about the syntax of XML MIME definitions, including defining
     "magic" in order to detect MIME types based on data as well, read the
@@ -798,5 +785,3 @@ QList<QMimeType> QMimeDatabase::allMimeTypes() const
 */
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

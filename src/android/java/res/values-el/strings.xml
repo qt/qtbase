@@ -3,4 +3,5 @@
     <string name="ministro_not_found_msg">Δεν ήταν δυνατή η εύρεση της υπηρεσίας Ministro. Δεν είναι δυνατή η εκκίνηση της εφαρμογής.</string>
     <string name="ministro_needed_msg">Η εφαρμογή απαιτεί την υπηρεσία Ministro. Να εγκατασταθεί η υπηρεσία?</string>
     <string name="fatal_error_msg">Παρουσιάστηκε ένα κρίσιμο σφάλμα και η εφαρμογή δεν μπορεί να συνεχίσει.</string>
+    <string name="unsupported_android_version">Αυτή η έκδοση του Android δεν υποστηρίζεται.</string>
 </resources>

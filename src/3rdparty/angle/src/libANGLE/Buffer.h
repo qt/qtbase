@@ -15,69 +15,109 @@
 #include "libANGLE/Debug.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/IndexRangeCache.h"
+#include "libANGLE/PackedGLEnums.h"
 #include "libANGLE/RefCountObject.h"
 
 namespace rx
 {
 class BufferImpl;
+class GLImplFactory;
 };
 
 namespace gl
 {
+class Buffer;
+class Context;
+
+class BufferState final : angle::NonCopyable
+{
+  public:
+    BufferState();
+    ~BufferState();
+
+    const std::string &getLabel();
+
+    BufferUsage getUsage() const { return mUsage; }
+    GLbitfield getAccessFlags() const { return mAccessFlags; }
+    GLenum getAccess() const { return mAccess; }
+    GLboolean isMapped() const { return mMapped; }
+    void *getMapPointer() const { return mMapPointer; }
+    GLint64 getMapOffset() const { return mMapOffset; }
+    GLint64 getMapLength() const { return mMapLength; }
+    GLint64 getSize() const { return mSize; }
+
+  private:
+    friend class Buffer;
+
+    std::string mLabel;
+
+    BufferUsage mUsage;
+    GLint64 mSize;
+    GLbitfield mAccessFlags;
+    GLenum mAccess;
+    GLboolean mMapped;
+    void *mMapPointer;
+    GLint64 mMapOffset;
+    GLint64 mMapLength;
+};
 
 class Buffer final : public RefCountObject, public LabeledObject
 {
   public:
-    Buffer(rx::BufferImpl *impl, GLuint id);
-    virtual ~Buffer();
+    Buffer(rx::GLImplFactory *factory, GLuint id);
+    ~Buffer() override;
+    Error onDestroy(const Context *context) override;
 
     void setLabel(const std::string &label) override;
     const std::string &getLabel() const override;
 
-    Error bufferData(const void *data, GLsizeiptr size, GLenum usage);
-    Error bufferSubData(const void *data, GLsizeiptr size, GLintptr offset);
-    Error copyBufferSubData(Buffer* source, GLintptr sourceOffset, GLintptr destOffset, GLsizeiptr size);
-    Error map(GLenum access);
-    Error mapRange(GLintptr offset, GLsizeiptr length, GLbitfield access);
-    Error unmap(GLboolean *result);
+    Error bufferData(const Context *context,
+                     BufferBinding target,
+                     const void *data,
+                     GLsizeiptr size,
+                     BufferUsage usage);
+    Error bufferSubData(const Context *context,
+                        BufferBinding target,
+                        const void *data,
+                        GLsizeiptr size,
+                        GLintptr offset);
+    Error copyBufferSubData(const Context *context,
+                            Buffer *source,
+                            GLintptr sourceOffset,
+                            GLintptr destOffset,
+                            GLsizeiptr size);
+    Error map(const Context *context, GLenum access);
+    Error mapRange(const Context *context, GLintptr offset, GLsizeiptr length, GLbitfield access);
+    Error unmap(const Context *context, GLboolean *result);
 
     void onTransformFeedback();
     void onPixelUnpack();
 
-    Error getIndexRange(GLenum type,
+    Error getIndexRange(const gl::Context *context,
+                        GLenum type,
                         size_t offset,
                         size_t count,
                         bool primitiveRestartEnabled,
                         IndexRange *outRange) const;
 
-    GLenum getUsage() const { return mUsage; }
-    GLbitfield getAccessFlags() const { return mAccessFlags; }
-    GLenum getAccess() const { return mAccess; }
-    GLboolean isMapped() const { return mMapped; }
-    GLvoid *getMapPointer() const { return mMapPointer; }
-    GLint64 getMapOffset() const { return mMapOffset; }
-    GLint64 getMapLength() const { return mMapLength; }
-    GLint64 getSize() const { return mSize; }
+    BufferUsage getUsage() const { return mState.mUsage; }
+    GLbitfield getAccessFlags() const { return mState.mAccessFlags; }
+    GLenum getAccess() const { return mState.mAccess; }
+    GLboolean isMapped() const { return mState.mMapped; }
+    void *getMapPointer() const { return mState.mMapPointer; }
+    GLint64 getMapOffset() const { return mState.mMapOffset; }
+    GLint64 getMapLength() const { return mState.mMapLength; }
+    GLint64 getSize() const { return mState.mSize; }
 
-    rx::BufferImpl *getImplementation() const { return mBuffer; }
+    rx::BufferImpl *getImplementation() const { return mImpl; }
 
   private:
-    rx::BufferImpl *mBuffer;
-
-    std::string mLabel;
-
-    GLenum mUsage;
-    GLint64 mSize;
-    GLbitfield mAccessFlags;
-    GLenum mAccess;
-    GLboolean mMapped;
-    GLvoid *mMapPointer;
-    GLint64 mMapOffset;
-    GLint64 mMapLength;
+    BufferState mState;
+    rx::BufferImpl *mImpl;
 
     mutable IndexRangeCache mIndexRangeCache;
 };
 
-}
+}  // namespace gl
 
-#endif   // LIBANGLE_BUFFER_H_
+#endif  // LIBANGLE_BUFFER_H_

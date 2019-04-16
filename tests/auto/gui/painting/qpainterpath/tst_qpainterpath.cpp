@@ -43,6 +43,8 @@ public slots:
     void cleanupTestCase();
 private slots:
     void getSetCheck();
+    void clear();
+    void reserveAndCapacity();
     void swap();
 
     void contains_QPointF_data();
@@ -146,6 +148,47 @@ void tst_QPainterPath::swap()
     p1.swap(p2);
     QCOMPARE(p1.boundingRect().toRect(), QRect(10,10,10,10));
     QCOMPARE(p2.boundingRect().toRect(), QRect( 0, 0,10,10));
+}
+
+void tst_QPainterPath::clear()
+{
+    QPainterPath p1;
+    QPainterPath p2;
+    p1.clear();
+    QCOMPARE(p1, p2);
+
+    p1.addRect(0, 0, 10, 10);
+    p1.clear();
+    QCOMPARE(p1, p2);
+
+    QCOMPARE(p1.fillRule(), Qt::OddEvenFill);
+    p1.setFillRule(Qt::WindingFill);
+    p1.clear();
+    QCOMPARE(p1.fillRule(), Qt::WindingFill);
+}
+
+void tst_QPainterPath::reserveAndCapacity()
+{
+    QPainterPath p;
+    QVERIFY(p.capacity() == 0);
+
+    p.addRect(0, 0, 10, 10);
+    QVERIFY(p.capacity() > 0);
+
+    p.clear();
+    QVERIFY(p.capacity() > 0);
+
+    p = QPainterPath{};
+    QVERIFY(p.capacity() == 0);
+
+    p.moveTo(100, 100);
+    QVERIFY(p.capacity() > 1);
+
+    p.reserve(1000);
+    QVERIFY(p.capacity() >= 1000);
+
+    p.reserve(0);
+    QVERIFY(p.capacity() >= 1000);
 }
 
 Q_DECLARE_METATYPE(QPainterPath)

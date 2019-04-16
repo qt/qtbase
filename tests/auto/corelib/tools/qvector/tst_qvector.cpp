@@ -206,6 +206,9 @@ private slots:
     void assignmentInt() const;
     void assignmentMovable() const;
     void assignmentCustom() const;
+    void assignFromInitializerListInt() const;
+    void assignFromInitializerListMovable() const;
+    void assignFromInitializerListCustom() const;
     void addInt() const;
     void addMovable() const;
     void addCustom() const;
@@ -330,6 +333,7 @@ private:
     template<typename T> void copyConstructor() const;
     template<typename T> void add() const;
     template<typename T> void append() const;
+    template<typename T> void assignFromInitializerList() const;
     template<typename T> void capacity() const;
     template<typename T> void clear() const;
     template<typename T> void count() const;
@@ -540,6 +544,44 @@ void tst_QVector::assignmentMovable() const
 void tst_QVector::assignmentCustom() const
 {
     testAssignment<Custom>();
+}
+
+template<typename T>
+void tst_QVector::assignFromInitializerList() const
+{
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    T val1(SimpleValue<T>::at(1));
+    T val2(SimpleValue<T>::at(2));
+    T val3(SimpleValue<T>::at(3));
+
+    QVector<T> v1 = {val1, val2, val3};
+    QCOMPARE(v1, QVector<T>() << val1 << val2 << val3);
+    QCOMPARE(v1, (QVector<T> {val1, val2, val3}));
+
+    v1 = {};
+    QCOMPARE(v1.size(), 0);
+#else
+    QSKIP("This test requires support for C++11 initializer lists.");
+#endif
+}
+
+void tst_QVector::assignFromInitializerListInt() const
+{
+    assignFromInitializerList<int>();
+}
+
+void tst_QVector::assignFromInitializerListMovable() const
+{
+    const int instancesCount = Movable::counter.loadAcquire();
+    assignFromInitializerList<Movable>();
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
+}
+
+void tst_QVector::assignFromInitializerListCustom() const
+{
+    const int instancesCount = Custom::counter.loadAcquire();
+    assignFromInitializerList<Custom>();
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>

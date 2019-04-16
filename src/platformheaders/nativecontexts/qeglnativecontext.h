@@ -54,8 +54,8 @@ typedef int EGLDisplay;
 struct QEGLNativeContext
 {
     QEGLNativeContext()
-        : m_context(0),
-          m_display(0)
+        : m_context(nullptr),
+          m_display(nullptr)
     { }
 
     QEGLNativeContext(EGLContext ctx, EGLDisplay dpy)

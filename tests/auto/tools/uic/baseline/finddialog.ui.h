@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'finddialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -172,9 +172,9 @@ public:
 
         hboxLayout->addLayout(vboxLayout1);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         findWhat->setBuddy(led);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
         QWidget::setTabOrder(led, findNxt);
         QWidget::setTabOrder(findNxt, cancel);
         QWidget::setTabOrder(cancel, comments);
@@ -193,40 +193,40 @@ public:
 
     void retranslateUi(QDialog *FindDialog)
     {
-        FindDialog->setWindowTitle(QApplication::translate("FindDialog", "Find", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        FindDialog->setWhatsThis(QApplication::translate("FindDialog", "This window allows you to search for some text in the translation source file.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        findWhat->setText(QApplication::translate("FindDialog", "&Find what:", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        led->setWhatsThis(QApplication::translate("FindDialog", "Type in the text to search for.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        groupBox->setTitle(QApplication::translate("FindDialog", "Options", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        sourceText->setWhatsThis(QApplication::translate("FindDialog", "Source texts are searched when checked.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        sourceText->setText(QApplication::translate("FindDialog", "&Source texts", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        translations->setWhatsThis(QApplication::translate("FindDialog", "Translations are searched when checked.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        translations->setText(QApplication::translate("FindDialog", "&Translations", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        matchCase->setWhatsThis(QApplication::translate("FindDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        matchCase->setText(QApplication::translate("FindDialog", "&Match case", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        comments->setWhatsThis(QApplication::translate("FindDialog", "Comments and contexts are searched when checked.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        comments->setText(QApplication::translate("FindDialog", "&Comments", nullptr));
-        ignoreAccelerators->setText(QApplication::translate("FindDialog", "Ignore &accelerators", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        findNxt->setWhatsThis(QApplication::translate("FindDialog", "Click here to find the next occurrence of the text you typed in.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        findNxt->setText(QApplication::translate("FindDialog", "Find Next", nullptr));
-#ifndef QT_NO_WHATSTHIS
-        cancel->setWhatsThis(QApplication::translate("FindDialog", "Click here to close this window.", nullptr));
-#endif // QT_NO_WHATSTHIS
-        cancel->setText(QApplication::translate("FindDialog", "Cancel", nullptr));
+        FindDialog->setWindowTitle(QCoreApplication::translate("FindDialog", "Find", nullptr));
+#if QT_CONFIG(whatsthis)
+        FindDialog->setWhatsThis(QCoreApplication::translate("FindDialog", "This window allows you to search for some text in the translation source file.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        findWhat->setText(QCoreApplication::translate("FindDialog", "&Find what:", nullptr));
+#if QT_CONFIG(whatsthis)
+        led->setWhatsThis(QCoreApplication::translate("FindDialog", "Type in the text to search for.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        groupBox->setTitle(QCoreApplication::translate("FindDialog", "Options", nullptr));
+#if QT_CONFIG(whatsthis)
+        sourceText->setWhatsThis(QCoreApplication::translate("FindDialog", "Source texts are searched when checked.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        sourceText->setText(QCoreApplication::translate("FindDialog", "&Source texts", nullptr));
+#if QT_CONFIG(whatsthis)
+        translations->setWhatsThis(QCoreApplication::translate("FindDialog", "Translations are searched when checked.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        translations->setText(QCoreApplication::translate("FindDialog", "&Translations", nullptr));
+#if QT_CONFIG(whatsthis)
+        matchCase->setWhatsThis(QCoreApplication::translate("FindDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        matchCase->setText(QCoreApplication::translate("FindDialog", "&Match case", nullptr));
+#if QT_CONFIG(whatsthis)
+        comments->setWhatsThis(QCoreApplication::translate("FindDialog", "Comments and contexts are searched when checked.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        comments->setText(QCoreApplication::translate("FindDialog", "&Comments", nullptr));
+        ignoreAccelerators->setText(QCoreApplication::translate("FindDialog", "Ignore &accelerators", nullptr));
+#if QT_CONFIG(whatsthis)
+        findNxt->setWhatsThis(QCoreApplication::translate("FindDialog", "Click here to find the next occurrence of the text you typed in.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        findNxt->setText(QCoreApplication::translate("FindDialog", "Find Next", nullptr));
+#if QT_CONFIG(whatsthis)
+        cancel->setWhatsThis(QCoreApplication::translate("FindDialog", "Click here to close this window.", nullptr));
+#endif // QT_CONFIG(whatsthis)
+        cancel->setText(QCoreApplication::translate("FindDialog", "Cancel", nullptr));
     } // retranslateUi
 
 };

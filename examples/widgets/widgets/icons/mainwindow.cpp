@@ -60,7 +60,8 @@ enum { OtherSize = QStyle::PM_CustomBase };
 //! [40]
 
 //! [0]
-MainWindow::MainWindow()
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -121,7 +122,8 @@ void MainWindow::changeStyle(bool checked)
     Q_ASSERT(style);
     QApplication::setStyle(style);
 
-    foreach (QAbstractButton *button, sizeButtonGroup->buttons()) {
+    const QList<QAbstractButton*> buttons = sizeButtonGroup->buttons();
+    for (QAbstractButton *button : buttons) {
         const QStyle::PixelMetric metric = static_cast<QStyle::PixelMetric>(sizeButtonGroup->id(button));
         const int value = style->pixelMetric(metric);
         switch (metric) {
@@ -229,7 +231,8 @@ void MainWindow::addImages(const QString &directory)
 {
     QFileDialog fileDialog(this, tr("Open Images"), directory);
     QStringList mimeTypeFilters;
-    foreach (const QByteArray &mimeTypeName, QImageReader::supportedMimeTypes())
+    const QList<QByteArray> mimeTypes = QImageReader::supportedMimeTypes();
+    for (const QByteArray &mimeTypeName : mimeTypes)
         mimeTypeFilters.append(mimeTypeName);
     mimeTypeFilters.sort();
     fileDialog.setMimeTypeFilters(mimeTypeFilters);
@@ -245,7 +248,7 @@ void MainWindow::addImages(const QString &directory)
 
 void MainWindow::loadImages(const QStringList &fileNames)
 {
-    foreach (const QString &fileName, fileNames) {
+    for (const QString &fileName : fileNames) {
         const int row = imagesTable->rowCount();
         imagesTable->setRowCount(row + 1);
 //! [13]
@@ -468,7 +471,8 @@ void MainWindow::createActions()
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
 
     styleActionGroup = new QActionGroup(this);
-    foreach (const QString &styleName, QStyleFactory::keys()) {
+    const QStringList styleKeys = QStyleFactory::keys();
+    for (const QString &styleName : styleKeys) {
         QAction *action = new QAction(tr("%1 Style").arg(styleName), styleActionGroup);
         action->setData(styleName);
         action->setCheckable(true);
@@ -507,8 +511,9 @@ void MainWindow::createContextMenu()
 //! [31]
 void MainWindow::checkCurrentStyle()
 {
-    foreach (QAction *action, styleActionGroup->actions()) {
-        QString styleName = action->data().toString();
+    const QList<QAction *> actions = styleActionGroup->actions();
+    for (QAction *action : actions) {
+        const QString styleName = action->data().toString();
         QScopedPointer<QStyle> candidate(QStyleFactory::create(styleName));
         Q_ASSERT(!candidate.isNull());
         if (candidate->metaObject()->className()

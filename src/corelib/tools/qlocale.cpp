@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -94,7 +94,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) Q_DECL_NOTHROW
+QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
@@ -138,7 +138,7 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) Q_DECL_NOTHRO
     return QLocale::C;
 }
 
-QLocale::Script QLocalePrivate::codeToScript(QStringView code) Q_DECL_NOTHROW
+QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 4)
@@ -158,7 +158,7 @@ QLocale::Script QLocalePrivate::codeToScript(QStringView code) Q_DECL_NOTHROW
     return QLocale::AnyScript;
 }
 
-QLocale::Country QLocalePrivate::codeToCountry(QStringView code) Q_DECL_NOTHROW
+QLocale::Country QLocalePrivate::codeToCountry(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
@@ -788,7 +788,7 @@ static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (QLocalePrivate::create(defaultData(), default_number_options)))
-Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, systemLocalePrivate,
+Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
                           (QLocalePrivate::create(systemData())))
 
 static QLocalePrivate *localePrivateByName(const QString &name)
@@ -982,7 +982,7 @@ bool QLocale::operator!=(const QLocale &other) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QLocale &key, uint seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.d->m_data);
@@ -1265,7 +1265,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1283,7 +1283,7 @@ short QLocale::toShort(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1301,7 +1301,7 @@ ushort QLocale::toUShort(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1319,7 +1319,7 @@ int QLocale::toInt(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1333,11 +1333,53 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 }
 
 /*!
+ Returns the long int represented by the localized string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toInt(), toULong(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+
+long QLocale::toLong(const QString &s, bool *ok) const
+{
+    return toIntegral_helper<long>(d, s, ok);
+}
+
+/*!
+ Returns the unsigned long int represented by the localized
+ string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toLong(), toInt(), toDouble(), toString()
+
+ \since 5.13
+*/
+
+ulong QLocale::toULong(const QString &s, bool *ok) const
+{
+    return toIntegral_helper<ulong>(d, s, ok);
+}
+
+/*!
     Returns the long long int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1357,7 +1399,7 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1371,10 +1413,12 @@ qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
 }
 
 /*!
-    Returns the float represented by the localized string \a s, or 0.0
-    if the conversion failed.
+    Returns the float represented by the localized string \a s.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1391,10 +1435,12 @@ float QLocale::toFloat(const QString &s, bool *ok) const
 }
 
 /*!
-    Returns the double represented by the localized string \a s, or
-    0.0 if the conversion failed.
+    Returns the double represented by the localized string \a s.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1420,7 +1466,7 @@ double QLocale::toDouble(const QString &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1440,7 +1486,7 @@ short QLocale::toShort(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1460,7 +1506,7 @@ ushort QLocale::toUShort(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1480,7 +1526,7 @@ int QLocale::toInt(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1496,11 +1542,53 @@ uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 }
 
 /*!
+ Returns the long int represented by the localized string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toInt(), toULong(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+
+long QLocale::toLong(const QStringRef &s, bool *ok) const
+{
+    return toIntegral_helper<long>(d, s, ok);
+}
+
+/*!
+ Returns the unsigned long int represented by the localized
+ string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toLong(), toInt(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+ulong QLocale::toULong(const QStringRef &s, bool *ok) const
+{
+    return toIntegral_helper<ulong>(d, s, ok);
+}
+
+/*!
     Returns the long long int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1522,7 +1610,7 @@ qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 
     If the conversion fails the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1538,10 +1626,12 @@ qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
 }
 
 /*!
-    Returns the float represented by the localized string \a s, or 0.0
-    if the conversion failed.
+    Returns the float represented by the localized string \a s.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1560,10 +1650,12 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
 }
 
 /*!
-    Returns the double represented by the localized string \a s, or
-    0.0 if the conversion failed.
+    Returns the double represented by the localized string \a s.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function does not fall back to the 'C' locale if the string
@@ -1592,7 +1684,7 @@ double QLocale::toDouble(const QStringRef &s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1612,7 +1704,7 @@ short QLocale::toShort(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1632,7 +1724,7 @@ ushort QLocale::toUShort(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1652,7 +1744,7 @@ int QLocale::toInt(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1668,11 +1760,53 @@ uint QLocale::toUInt(QStringView s, bool *ok) const
 }
 
 /*!
+ Returns the long int represented by the localized string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toInt(), toULong(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+
+long QLocale::toLong(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<long>(d, s, ok);
+}
+
+/*!
+ Returns the unsigned long int represented by the localized
+ string \a s.
+
+ If the conversion fails the function returns 0.
+
+ If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ to \c false, and success by setting *\a{ok} to \c true.
+
+ This function ignores leading and trailing whitespace.
+
+ \sa toLong(), toInt(), toDouble(), toString()
+
+ \since 5.13
+ */
+
+ulong QLocale::toULong(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<ulong>(d, s, ok);
+}
+
+/*!
     Returns the long long int represented by the localized string \a s.
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1694,7 +1828,7 @@ qlonglong QLocale::toLongLong(QStringView s, bool *ok) const
 
     If the conversion fails, the function returns 0.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1710,10 +1844,12 @@ qulonglong QLocale::toULongLong(QStringView s, bool *ok) const
 }
 
 /*!
-    Returns the float represented by the localized string \a s, or 0.0
-    if the conversion failed.
+    Returns the float represented by the localized string \a s.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     This function ignores leading and trailing whitespace.
@@ -1729,10 +1865,12 @@ float QLocale::toFloat(QStringView s, bool *ok) const
 }
 
 /*!
-    Returns the double represented by the localized string \a s, or
-    0.0 if the conversion failed.
+    Returns the double represented by the localized string \a s.
 
-    If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for any other reason (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
     Unlike QString::toDouble(), this function does not fall back to
@@ -2359,6 +2497,8 @@ QString QLocale::toString(double i, char f, int prec) const
 QLocale QLocale::system()
 {
     QT_PREPEND_NAMESPACE(systemData)(); // trigger updating of the system data if necessary
+    if (systemLocalePrivate.isDestroyed())
+        return QLocale(QLocale::C);
     return QLocale(*systemLocalePrivate->data());
 }
 
@@ -3881,6 +4021,19 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     \sa formattedDataSize()
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \obsolete
+
+    Use the const version instead.
+*/
+QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
+{
+    const auto *that = this;
+    return that->formattedDataSize(bytes, precision, format);
+}
+#endif
+
 /*!
     \since 5.10
 
@@ -3897,7 +4050,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     whereas \c DataSizeSIFormat uses the older SI quantifiers k, M, etc., and
     \c DataSizeTraditionalFormat abuses them.
 */
-QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
+QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format) const
 {
     int power, base = 1000;
     if (!bytes) {
@@ -3976,6 +4129,29 @@ QStringList QLocale::uiLanguages() const
     if (max != min && max != id)
         uiLanguages.append(QString::fromLatin1(max.name()));
     return uiLanguages;
+}
+
+/*!
+  \since 5.13
+
+  Returns the locale to use for collation.
+
+  The result is usually this locale; however, the system locale (which is
+  commonly the default locale) will return the system collation locale.
+  The result is suitable for passing to QCollator's constructor.
+
+  \sa QCollator
+*/
+QLocale QLocale::collation() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d->m_data == systemData()) {
+        QString res = systemLocale()->query(QSystemLocale::Collation, QVariant()).toString();
+        if (!res.isEmpty())
+            return QLocale(res);
+    }
+#endif
+    return *this;
 }
 
 /*!

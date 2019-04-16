@@ -1,1 +1,7 @@
 windows
+[connectToHostEncrypted]
+osx-10.13
+[setSslConfiguration]
+osx-10.13
+[connectToHostEncryptedWithVerificationPeerName]
+osx-10.13

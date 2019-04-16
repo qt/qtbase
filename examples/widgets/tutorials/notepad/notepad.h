@@ -79,37 +79,37 @@ public:
 //! [5]
 
 private slots:
-    void on_actionNew_triggered();
+    void newDocument();
 
-    void on_actionOpen_triggered();
+    void open();
 
-    void on_actionSave_triggered();
+    void save();
 
-    void on_actionSave_as_triggered();
+    void saveAs();
 
-    void on_actionPrint_triggered();
+    void print();
 
-    void on_actionExit_triggered();
+    void exit();
 
-    void on_actionCopy_triggered();
+    void copy();
 
-    void on_actionCut_triggered();
+    void cut();
 
-    void on_actionPaste_triggered();
+    void paste();
 
-    void on_actionUndo_triggered();
+    void undo();
 
-    void on_actionRedo_triggered();
+    void redo();
 
-    void on_actionFont_triggered();
+    void selectFont();
 
-    void on_actionBold_triggered();
+    void setFontBold(bool bold);
 
-    void on_actionUnderline_triggered();
+    void setFontUnderline(bool underline);
 
-    void on_actionItalic_triggered();
+    void setFontItalic(bool italic);
 
-    void on_actionAbout_triggered();
+    void about();
 
 //! [6]
 private:

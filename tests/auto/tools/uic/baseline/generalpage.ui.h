@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'generalpage.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -73,9 +73,9 @@ public:
 
     void retranslateUi(QWidget *GeneralPage)
     {
-        GeneralPage->setWindowTitle(QApplication::translate("GeneralPage", "Form", nullptr));
-        label->setText(QApplication::translate("GeneralPage", "Namespace:", nullptr));
-        label_2->setText(QApplication::translate("GeneralPage", "Virtual Folder:", nullptr));
+        GeneralPage->setWindowTitle(QCoreApplication::translate("GeneralPage", "Form", nullptr));
+        label->setText(QCoreApplication::translate("GeneralPage", "Namespace:", nullptr));
+        label_2->setText(QCoreApplication::translate("GeneralPage", "Virtual Folder:", nullptr));
     } // retranslateUi
 
 };

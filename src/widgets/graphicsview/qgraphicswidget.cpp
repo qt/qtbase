@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
     manage the relationships between parent and child items. These functions
     control the stacking order of items as well as their ownership.
 
-    \note The QObject::parent() should always return 0 for QGraphicsWidgets,
+    \note The QObject::parent() should always return \nullptr for QGraphicsWidgets,
     but this policy is not strictly defined.
 
     \sa QGraphicsProxyWidget, QGraphicsItem, {Widgets and Layouts}
@@ -518,7 +518,7 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
 /*!
     Gets the widget's contents margins. The margins are stored in \a left, \a
     top, \a right and \a bottom, as pointers to qreals. Each argument can
-    be \e {omitted} by passing 0.
+    be \e {omitted} by passing \nullptr.
 
     \sa setContentsMargins()
 */
@@ -573,7 +573,7 @@ void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, 
 /*!
     Gets the widget's window frame margins. The margins are stored in \a left,
     \a top, \a right and \a bottom as pointers to qreals. Each argument can
-    be \e {omitted} by passing 0.
+    be \e {omitted} by passing \nullptr.
 
     \sa setWindowFrameMargins(), windowFrameRect()
 */
@@ -780,7 +780,7 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     \brief The layout of the widget
 
     Any existing layout manager is deleted before the new layout is assigned. If
-     \a layout is 0, the widget is left without a layout. Existing subwidgets'
+     \a layout is \nullptr, the widget is left without a layout. Existing subwidgets'
     geometries will remain unaffected.
 
     QGraphicsWidget takes ownership of \a layout.
@@ -792,7 +792,7 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     explicitly managed by \a layout remain unaffected by the layout after
     it has been assigned to this widget.
 
-    If no layout is currently managing this widget, layout() will return 0.
+    If no layout is currently managing this widget, layout() will return \nullptr.
 
 */
 
@@ -803,8 +803,8 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
 */
 
 /*!
-    Returns this widget's layout, or 0 if no layout is currently managing this
-    widget.
+    Returns this widget's layout, or \nullptr if no layout is currently
+    managing this widget.
 
     \sa setLayout()
 */
@@ -818,7 +818,7 @@ QGraphicsLayout *QGraphicsWidget::layout() const
     \fn void QGraphicsWidget::setLayout(QGraphicsLayout *layout)
 
     Sets the layout for this widget to \a layout. Any existing layout manager
-    is deleted before the new layout is assigned. If \a layout is 0, the
+    is deleted before the new layout is assigned. If \a layout is \nullptr, the
     widget is left without a layout. Existing subwidgets' geometries will
     remain unaffected.
 
@@ -937,11 +937,11 @@ QStyle *QGraphicsWidget::style() const
     Sets the widget's style to \a style. QGraphicsWidget does \e not take
     ownership of \a style.
 
-    If no style is assigned, or \a style is 0, the widget will use
+    If no style is assigned, or \a style is \nullptr, the widget will use
     QGraphicsScene::style() (if this has been set). Otherwise the widget will
     use QApplication::style().
 
-    This function sets the Qt::WA_SetStyle attribute if \a style is not 0;
+    This function sets the Qt::WA_SetStyle attribute if \a style is not \nullptr;
     otherwise it clears the attribute.
 
     \sa style()
@@ -1231,6 +1231,9 @@ QVariant QGraphicsWidget::propertyChange(const QString &propertyName, const QVar
     QGraphicsWidget::event(). You can handle all events for your widget in
     event() or in any of the convenience functions; you should not have to
     reimplement this function in a subclass of QGraphicsWidget.
+
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
 
     \sa QGraphicsItem::sceneEvent()
 */
@@ -1871,7 +1874,7 @@ void QGraphicsWidget::setFocusPolicy(Qt::FocusPolicy policy)
 /*!
     If this widget, a child or descendant of this widget currently has input
     focus, this function will return a pointer to that widget. If
-    no descendant widget has input focus, 0 is returned.
+    no descendant widget has input focus, \nullptr is returned.
 
     \sa QGraphicsItem::focusItem(), QWidget::focusWidget()
 */
@@ -1880,7 +1883,7 @@ QGraphicsWidget *QGraphicsWidget::focusWidget() const
     Q_D(const QGraphicsWidget);
     if (d->subFocusItem && d->subFocusItem->d_ptr->isWidget)
         return static_cast<QGraphicsWidget *>(d->subFocusItem);
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_SHORTCUT
@@ -2022,7 +2025,7 @@ void QGraphicsWidget::addActions(QList<QAction *> actions)
     \since 4.5
 
     Inserts the action \a action to this widget's list of actions,
-    before the action \a before. It appends the action if \a before is 0 or
+    before the action \a before. It appends the action if \a before is \nullptr or
     \a before is not a valid action for this widget.
 
     A QGraphicsWidget should only have one of each action.
@@ -2062,7 +2065,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     \since 4.5
 
     Inserts the actions \a actions to this widget's list of actions,
-    before the action \a before. It appends the action if \a before is 0 or
+    before the action \a before. It appends the action if \a before is \nullptr or
     \a before is not a valid action for this widget.
 
     A QGraphicsWidget can have at most one of each action.
@@ -2131,9 +2134,9 @@ QList<QAction *> QGraphicsWidget::actions() const
 
     \snippet code/src_gui_graphicsview_qgraphicswidget.cpp 2
 
-    If \a first is 0, this indicates that \a second should be the first widget
+    If \a first is \nullptr, this indicates that \a second should be the first widget
     to receive input focus should the scene gain Tab focus (i.e., the user
-    hits Tab so that focus passes into the scene). If \a second is 0, this
+    hits Tab so that focus passes into the scene). If \a second is \nullptr, this
     indicates that \a first should be the first widget to gain focus if the
     scene gained BackTab focus.
 
@@ -2306,7 +2309,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     QStyleHintReturnMask mask;
     bool setMask = style()->styleHint(QStyle::SH_WindowFrame_Mask, &bar, widget, &mask) && !mask.region.isEmpty();
     bool hasBorder = !style()->styleHint(QStyle::SH_TitleBar_NoBorder, &bar, widget);
-    int frameWidth = style()->pixelMetric(QStyle::PM_MDIFrameWidth, &bar, widget);
+    int frameWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, &bar, widget);
     if (setMask) {
         painter->save();
         painter->setClipRegion(mask.region, Qt::IntersectClip);

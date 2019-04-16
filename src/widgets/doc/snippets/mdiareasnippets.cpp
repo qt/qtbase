@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 void mainWindowExample()
 {
@@ -95,7 +95,7 @@ int main(int argv, char **args)
    QAction *act = new QAction(qApp);
    act->setShortcut(Qt::ALT + Qt::Key_S);
    act->setShortcutContext( Qt::ApplicationShortcut );
-   QObject::connect(act, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+   QObject::connect(act, &QAction::triggered, qApp, &QApplication::aboutQt);
 
     QWidget widget5;
     widget5.show();

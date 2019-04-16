@@ -30,7 +30,6 @@
 #define CXX11_ENUMS_H
 #include <QtCore/QObject>
 
-#if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_MOC_RUN)
 class CXX11Enums
 {
     Q_GADGET
@@ -40,13 +39,22 @@ public:
     enum class TypedEnumClass : char { C0, C1, C2, C3 };
     enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
     enum class ClassFlag { F0 = 1, F1 = 2, F2 = 4, F3 = 8};
+
+    enum struct EnumStruct { G0, G1, G2, G3 };
+    enum struct TypedEnumStruct : char { H0, H1, H2, H3 };
+    enum struct StructFlag { I0 = 1, I1 = 2, I2 = 4, I3 = 8};
+
     Q_DECLARE_FLAGS(ClassFlags, ClassFlag)
+    Q_DECLARE_FLAGS(StructFlags, StructFlag)
 
     Q_ENUM(EnumClass)
     Q_ENUM(TypedEnum)
     Q_ENUM(TypedEnumClass)
     Q_ENUM(NormalEnum)
+    Q_ENUM(EnumStruct)
+    Q_ENUM(TypedEnumStruct)
     Q_FLAG(ClassFlags)
+    Q_FLAG(StructFlags)
 };
 
 // Also test the Q_ENUMS macro
@@ -64,21 +72,4 @@ public:
     Q_FLAGS(ClassFlags)
 };
 
-#else
-//workaround to get the moc compiled code to compile
-class CXX11Enums
-{
-    Q_GADGET
-public:
-    struct EnumClass { enum { A0, A1, A2, A3 }; };
-    struct TypedEnumClass { enum { C0, C1, C2, C3 }; };
-    enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
-    enum TypedEnum { B0, B1 , B2, B3 };
-};
-
-class CXX11Enums2 : public CXX11Enums
-{
-    Q_GADGET
-};
-#endif
 #endif // CXX11_ENUMS_H

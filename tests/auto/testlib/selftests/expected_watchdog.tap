@@ -1,0 +1,15 @@
+TAP version 13
+# tst_Watchdog
+ok 1 - initTestCase()
+# Test function timed out
+not ok 2 - delay()
+  ---
+  # Received a fatal error.
+  at: tst_Watchdog::delay() (Unknown file:0)
+  file: Unknown file
+  line: 0
+  ...
+1..2
+# tests 2
+# pass 1
+# fail 1

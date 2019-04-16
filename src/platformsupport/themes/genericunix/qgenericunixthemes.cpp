@@ -49,9 +49,13 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 #include <QtCore/QHash>
+#if QT_CONFIG(mimetype)
 #include <QtCore/QMimeDatabase>
+#endif
 #include <QtCore/QLoggingCategory>
+#if QT_CONFIG(settings)
 #include <QtCore/QSettings>
+#endif
 #include <QtCore/QVariant>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QStringList>
@@ -168,15 +172,9 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
     if (homeIconDir.isDir())
         paths.prepend(homeIconDir.absoluteFilePath());
 
-    QString xdgDirString = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
-    if (xdgDirString.isEmpty())
-        xdgDirString = QLatin1String("/usr/local/share/:/usr/share/");
-    const auto xdgDirs = xdgDirString.splitRef(QLatin1Char(':'));
-    for (const QStringRef &xdgDir : xdgDirs) {
-        const QFileInfo xdgIconsDir(xdgDir + QLatin1String("/icons"));
-        if (xdgIconsDir.isDir())
-            paths.append(xdgIconsDir.absoluteFilePath());
-    }
+    paths.append(QStandardPaths::locateAll(QStandardPaths::GenericDataLocation,
+                                           QStringLiteral("icons"),
+                                           QStandardPaths::LocateDirectory));
 
     return paths;
 }
@@ -259,7 +257,7 @@ static QIcon xdgFileIcon(const QFileInfo &fileInfo)
 }
 #endif
 
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
 class QKdeThemePrivate : public QPlatformThemePrivate
 {
 public:
@@ -686,7 +684,7 @@ QPlatformSystemTrayIcon *QKdeTheme::createPlatformSystemTrayIcon() const
 }
 #endif
 
-#endif // QT_NO_SETTINGS
+#endif // settings
 
 /*!
     \class QGnomeTheme
@@ -832,7 +830,7 @@ QPlatformTheme *QGenericUnixTheme::createUnixTheme(const QString &name)
 {
     if (name == QLatin1String(QGenericUnixTheme::name))
         return new QGenericUnixTheme;
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
     if (name == QLatin1String(QKdeTheme::name))
         if (QPlatformTheme *kdeTheme = QKdeTheme::createKdeTheme())
             return kdeTheme;
@@ -857,7 +855,7 @@ QStringList QGenericUnixTheme::themeNames()
         const QList<QByteArray> desktopNames = desktopEnvironment.split(':');
         for (const QByteArray &desktopName : desktopNames) {
             if (desktopEnvironment == "KDE") {
-#ifndef QT_NO_SETTINGS
+#if QT_CONFIG(settings)
                 result.push_back(QLatin1String(QKdeTheme::name));
 #endif
             } else if (gtkBasedEnvironments.contains(desktopName)) {

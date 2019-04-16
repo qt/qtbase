@@ -27,6 +27,9 @@ namespace egl
 struct Config
 {
     Config();
+    ~Config();
+    Config(const Config &other);
+    Config &operator=(const Config &other);
 
     GLenum renderTargetFormat;      // TODO(geofflang): remove this
     GLenum depthStencilFormat;      // TODO(geofflang): remove this
@@ -65,11 +68,17 @@ struct Config
     EGLint transparentGreenValue;   // Transparent green value
     EGLint transparentBlueValue;    // Transparent blue value
     EGLint optimalOrientation;      // Optimal window surface orientation
+    EGLenum colorComponentType;     // Color component type
 };
 
 class ConfigSet
 {
   public:
+    ConfigSet();
+    ConfigSet(const ConfigSet &other);
+    ~ConfigSet();
+    ConfigSet &operator=(const ConfigSet &other);
+
     EGLint add(const Config &config);
     const Config &get(EGLint id) const;
 
@@ -83,7 +92,7 @@ class ConfigSet
     std::vector<const Config*> filter(const AttributeMap &attributeMap) const;
 
   private:
-    typedef std::map<EGLint, const Config> ConfigMap;
+    typedef std::map<EGLint, Config> ConfigMap;
     ConfigMap mConfigs;
 };
 

@@ -65,6 +65,19 @@ QCFString::operator CFStringRef() const
 
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
 
+bool AppleUnifiedLogger::willMirrorToStderr()
+{
+    // When running under Xcode or LLDB, one or more of these variables will
+    // be set, which triggers libsystem_trace.dyld to log messages to stderr
+    // as well, via_os_log_impl_mirror_to_stderr. Un-setting these variables
+    // is not an option, as that would silence normal NSLog or os_log calls,
+    // so instead we skip our own stderr output. See rdar://36919139.
+    static bool willMirror = qEnvironmentVariableIsSet("OS_ACTIVITY_DT_MODE")
+                                 || qEnvironmentVariableIsSet("ACTIVITY_LOG_STDERR")
+                                 || qEnvironmentVariableIsSet("CFLOG_FORCE_STDERR");
+    return willMirror;
+}
+
 QT_MAC_WEAK_IMPORT(_os_log_default);
 bool AppleUnifiedLogger::messageHandler(QtMsgType msgType, const QMessageLogContext &context,
                                         const QString &message, const QString &optionalSubsystem)
@@ -103,15 +116,7 @@ bool AppleUnifiedLogger::messageHandler(QtMsgType msgType, const QMessageLogCont
     // system from redacting our log message.
     os_log_with_type(log, logType, "%{public}s", qPrintable(message));
 
-    // When running under Xcode or LLDB, one or more of these variables will
-    // be set, which triggers libsystem_trace.dyld to log messages to stderr
-    // as well, via_os_log_impl_mirror_to_stderr. Un-setting these variables
-    // is not an option, as that would silence normal NSLog or os_log calls,
-    // so instead we skip our own stderr output. See rdar://36919139.
-    static bool mirroredToStderr = qEnvironmentVariableIsSet("OS_ACTIVITY_DT_MODE")
-                                 || qEnvironmentVariableIsSet("ACTIVITY_LOG_STDERR")
-                                 || qEnvironmentVariableIsSet("CFLOG_FORCE_STDERR");
-    return mirroredToStderr;
+    return willMirrorToStderr();
 }
 
 os_log_type_t AppleUnifiedLogger::logTypeForMessageType(QtMsgType msgType)

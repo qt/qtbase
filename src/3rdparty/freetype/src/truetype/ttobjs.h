@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Objects manager (specification).                                     */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __TTOBJS_H__
-#define __TTOBJS_H__
+#ifndef TTOBJS_H_
+#define TTOBJS_H_
 
 
 #include <ft2build.h>
@@ -71,10 +71,6 @@ FT_BEGIN_HEADER
     FT_UnitVector  dualVector;
     FT_UnitVector  projVector;
     FT_UnitVector  freeVector;
-
-#ifdef TT_CONFIG_OPTION_UNPATENTED_HINTING
-    FT_Bool        both_x_axis;
-#endif
 
     FT_Long        loop;
     FT_F26Dot6     minimum_distance;
@@ -282,13 +278,16 @@ FT_BEGIN_HEADER
 
     /* we have our own copy of metrics so that we can modify */
     /* it without affecting auto-hinting (when used)         */
-    FT_Size_Metrics    metrics;
+    FT_Size_Metrics*   metrics;        /* for the current rendering mode */
+    FT_Size_Metrics    hinted_metrics; /* for the hinted rendering mode  */
 
     TT_Size_Metrics    ttmetrics;
 
     FT_ULong           strike_index;      /* 0xFFFFFFFF to indicate invalid */
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
+
+    FT_Long            point_size;    /* for the `MPS' bytecode instruction */
 
     FT_UInt            num_function_defs; /* number of function definitions */
     FT_UInt            max_function_defs;
@@ -391,7 +390,8 @@ FT_BEGIN_HEADER
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
   FT_LOCAL( FT_Error )
-  tt_size_reset( TT_Size  size );
+  tt_size_reset( TT_Size  size,
+                 FT_Bool  only_height );
 
 
   /*************************************************************************/
@@ -419,7 +419,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __TTOBJS_H__ */
+#endif /* TTOBJS_H_ */
 
 
 /* END */

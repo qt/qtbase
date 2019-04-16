@@ -160,7 +160,7 @@ public:
     void setTranslateZ(GLfloat z);
 
 private:
-    Q_DISABLE_COPY(QGL2PaintEngineEx)
+    Q_DISABLE_COPY_MOVE(QGL2PaintEngineEx)
 };
 
 class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate, protected QOpenGLExtensions
@@ -175,9 +175,9 @@ public:
 
     QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
             q(q_ptr),
-            shaderManager(0),
+            shaderManager(nullptr),
             width(0), height(0),
-            ctx(0),
+            ctx(nullptr),
             useSystemClip(true),
             elementIndicesVBOId(0),
             opacityArray(0),

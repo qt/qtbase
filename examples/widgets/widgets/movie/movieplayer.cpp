@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "movieplayer.h"
+
+#include <QtWidgets>
 
 MoviePlayer::MoviePlayer(QWidget *parent)
     : QWidget(parent)
@@ -69,13 +69,12 @@ MoviePlayer::MoviePlayer(QWidget *parent)
     createControls();
     createButtons();
 
-    connect(movie, SIGNAL(frameChanged(int)), this, SLOT(updateFrameSlider()));
-    connect(movie, SIGNAL(stateChanged(QMovie::MovieState)),
-            this, SLOT(updateButtons()));
-    connect(fitCheckBox, SIGNAL(clicked()), this, SLOT(fitToWindow()));
-    connect(frameSlider, SIGNAL(valueChanged(int)), this, SLOT(goToFrame(int)));
-    connect(speedSpinBox, SIGNAL(valueChanged(int)),
-            movie, SLOT(setSpeed(int)));
+    connect(movie, &QMovie::frameChanged, this, &MoviePlayer::updateFrameSlider);
+    connect(movie, &QMovie::stateChanged, this, &MoviePlayer::updateButtons);
+    connect(fitCheckBox, &QCheckBox::clicked, this, &MoviePlayer::fitToWindow);
+    connect(frameSlider, &QSlider::valueChanged, this, &MoviePlayer::goToFrame);
+    connect(speedSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            movie, &QMovie::setSpeed);
 
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(movieLabel);
@@ -182,32 +181,32 @@ void MoviePlayer::createButtons()
     openButton->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
     openButton->setIconSize(iconSize);
     openButton->setToolTip(tr("Open File"));
-    connect(openButton, SIGNAL(clicked()), this, SLOT(open()));
+    connect(openButton, &QToolButton::clicked, this, &MoviePlayer::open);
 
     playButton = new QToolButton;
     playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     playButton->setIconSize(iconSize);
     playButton->setToolTip(tr("Play"));
-    connect(playButton, SIGNAL(clicked()), movie, SLOT(start()));
+    connect(playButton, &QToolButton::clicked, movie, &QMovie::start);
 
     pauseButton = new QToolButton;
     pauseButton->setCheckable(true);
     pauseButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     pauseButton->setIconSize(iconSize);
     pauseButton->setToolTip(tr("Pause"));
-    connect(pauseButton, SIGNAL(clicked(bool)), movie, SLOT(setPaused(bool)));
+    connect(pauseButton, &QToolButton::clicked, movie, &QMovie::setPaused);
 
     stopButton = new QToolButton;
     stopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
     stopButton->setIconSize(iconSize);
     stopButton->setToolTip(tr("Stop"));
-    connect(stopButton, SIGNAL(clicked()), movie, SLOT(stop()));
+    connect(stopButton, &QToolButton::clicked, movie, &QMovie::stop);
 
     quitButton = new QToolButton;
     quitButton->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
     quitButton->setIconSize(iconSize);
     quitButton->setToolTip(tr("Quit"));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(quitButton, &QToolButton::clicked, this, &MoviePlayer::close);
 
     buttonsLayout = new QHBoxLayout;
     buttonsLayout->addStretch();

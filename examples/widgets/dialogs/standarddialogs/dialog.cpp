@@ -65,7 +65,7 @@
 class DialogOptionsWidget : public QGroupBox
 {
 public:
-    explicit DialogOptionsWidget(QWidget *parent = 0);
+    explicit DialogOptionsWidget(QWidget *parent = nullptr);
 
     void addCheckBox(const QString &text, int value);
     void addSpacer();
@@ -99,9 +99,10 @@ void DialogOptionsWidget::addSpacer()
 int DialogOptionsWidget::value() const
 {
     int result = 0;
-    foreach (const CheckBoxEntry &checkboxEntry, checkBoxEntries)
+    for (const CheckBoxEntry &checkboxEntry : qAsConst(checkBoxEntries)) {
         if (checkboxEntry.first->isChecked())
             result |= checkboxEntry.second;
+    }
     return result;
 }
 
@@ -492,7 +493,7 @@ void Dialog::questionMessage()
 void Dialog::warningMessage()
 {
     QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
-                       MESSAGE, 0, this);
+                       MESSAGE, nullptr, this);
     msgBox.setDetailedText(MESSAGE_DETAILS);
     msgBox.addButton(tr("Save &Again"), QMessageBox::AcceptRole);
     msgBox.addButton(tr("&Continue"), QMessageBox::RejectRole);

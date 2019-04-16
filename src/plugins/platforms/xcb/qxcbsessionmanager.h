@@ -85,8 +85,6 @@ public:
 
 private:
     QEventLoop *m_eventLoop;
-
-    Q_DISABLE_COPY(QXcbSessionManager)
 };
 
 QT_END_NAMESPACE

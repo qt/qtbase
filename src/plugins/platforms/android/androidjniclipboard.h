@@ -51,9 +51,8 @@ namespace QtAndroidClipboard
 {
     // Clipboard support
     void setClipboardManager(QAndroidPlatformClipboard *manager);
-    void setClipboardText(const QString &text);
-    bool hasClipboardText();
-    QString clipboardText();
+    void setClipboardMimeData(QMimeData *data);
+    QMimeData *getClipboardMimeData();
     void onClipboardDataChanged(JNIEnv */*env*/, jobject /*thiz*/);
     // Clipboard support
 }

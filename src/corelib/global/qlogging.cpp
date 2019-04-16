@@ -57,6 +57,7 @@
 #include "private/qloggingregistry_p.h"
 #include "private/qcoreapplication_p.h"
 #include "private/qsimd_p.h"
+#include <qtcore_tracepoints_p.h>
 #endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -239,7 +240,7 @@ static bool systemHasStderr()
 
     \note Qt Creator does not implement a pseudo TTY, nor does it launch apps with
     the override environment variable set, but it will read stderr and print it to
-    the user, so in effect this function can not be used to conclude that stderr
+    the user, so in effect this function cannot be used to conclude that stderr
     output will _not_ be visible to the user, as even if this function returns false,
     the output might still end up visible to the user. For this reason, we don't guard
     the stderr output in the default message handler with stderrHasConsoleAttached().
@@ -346,7 +347,7 @@ using namespace QtPrivate;
 */
 
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
-static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
+static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) noexcept
 {
     size_t len = qstrlen(s);
     if (len + 1 > space) {
@@ -529,7 +530,7 @@ QDebug QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc) const
 
     \sa QNoDebug, qDebug()
 */
-QNoDebug QMessageLogger::noDebug() const Q_DECL_NOTHROW
+QNoDebug QMessageLogger::noDebug() const noexcept
 {
     return QNoDebug();
 }
@@ -875,7 +876,7 @@ QDebug QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc) const
 
     \sa qFatal()
 */
-void QMessageLogger::fatal(const char *msg, ...) const Q_DECL_NOTHROW
+void QMessageLogger::fatal(const char *msg, ...) const noexcept
 {
     QString message;
 
@@ -1811,6 +1812,8 @@ static void ungrabMessageHandler() { }
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
 #ifndef QT_BOOTSTRAPPED
+    Q_TRACE(qt_message_print, msgType, context.category, context.function, context.file, context.line, message);
+
     // qDebug, qWarning, ... macros do not check whether category is enabled
     if (isDefaultCategory(context.category)) {
         if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
@@ -1885,7 +1888,7 @@ static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const
     // [support.start.term]). So we bypass std::abort() and directly
     // terminate the application.
 
-#  ifdef Q_CC_MSVC
+#  if defined(Q_CC_MSVC) && !defined(Q_CC_INTEL)
     if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
         __fastfail(FAST_FAIL_FATAL_APP_EXIT);
 #  else
@@ -2062,9 +2065,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     is not the default one.
 
     Example:
-    \code
-    QT_MESSAGE_PATTERN="[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
-    \endcode
+    \snippet code/src_corelib_global_qlogging.cpp 0
 
     The default \a pattern is "%{if-category}%{category}: %{endif}%{message}".
 

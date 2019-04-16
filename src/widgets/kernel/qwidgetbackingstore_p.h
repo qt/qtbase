@@ -109,7 +109,7 @@ public:
 
     void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
     void sync();
-    void flush(QWidget *widget = 0);
+    void flush(QWidget *widget = nullptr);
 
     QBackingStore *backingStore() const { return store; }
 
@@ -118,10 +118,8 @@ public:
         return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && dirtyRenderToTextureWidgets.isEmpty());
     }
 
-    // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-    void markDirty(const QRegion &rgn, QWidget *widget, UpdateTime updateTime = UpdateLater,
-                   BufferState bufferState = BufferValid);
-    void markDirty(const QRect &rect, QWidget *widget, UpdateTime updateTime = UpdateLater,
+    template <class T>
+    void markDirty(const T &r, QWidget *widget, UpdateTime updateTime = UpdateLater,
                    BufferState bufferState = BufferValid);
 
 private:
@@ -151,14 +149,13 @@ private:
 
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
-    void releaseBuffer();
 
     void beginPaint(QRegion &toClean, QWidget *widget, QBackingStore *backingStore,
                     BeginPaintInfo *returnInfo, bool toCleanIsInTopLevelCoordinates = true);
     void endPaint(const QRegion &cleaned, QBackingStore *backingStore, BeginPaintInfo *beginPaintInfo);
 
-    QRegion dirtyRegion(QWidget *widget = 0) const;
-    QRegion staticContents(QWidget *widget = 0, const QRect &withinClipRect = QRect()) const;
+    QRegion dirtyRegion(QWidget *widget = nullptr) const;
+    QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;
 
     void markDirtyOnScreen(const QRegion &dirtyOnScreen, QWidget *widget, const QPoint &topLevelOffset);
 
@@ -305,7 +302,7 @@ private:
     friend class QWidget;
     friend class QBackingStore;
 
-    Q_DISABLE_COPY(QWidgetBackingStore)
+    Q_DISABLE_COPY_MOVE(QWidgetBackingStore)
 };
 
 QT_END_NAMESPACE

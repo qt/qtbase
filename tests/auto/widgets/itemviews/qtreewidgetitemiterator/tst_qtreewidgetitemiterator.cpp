@@ -95,11 +95,11 @@ void tst_QTreeWidgetItemIterator::initTestCase()
         const QString topS = QLatin1String("top") + QString::number(i);
         top->setText(0, topS);
         switch (i) {
-            case 0:  testWidget->setItemHidden(top, true);break;
-            case 1:  testWidget->setItemHidden(top, false);break;
+            case 0:  top->setHidden(true);break;
+            case 1:  top->setHidden(false);break;
 
-            case 2:  testWidget->setItemSelected(top, true);break;
-            case 3:  testWidget->setItemSelected(top, false);break;
+            case 2:  top->setSelected(true);break;
+            case 3:  top->setSelected(false);break;
 
             case 4:  top->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);break;
             case 5:  top->setFlags(Qt::ItemIsEnabled);break;
@@ -126,11 +126,11 @@ void tst_QTreeWidgetItemIterator::initTestCase()
             QTreeWidgetItem *child = new QTreeWidgetItem(top);
             child->setText(0, topS + QLatin1String(",child") + QString::number(j));
             switch (j) {
-                case 0:  testWidget->setItemHidden(child, true);break;
-                case 1:  testWidget->setItemHidden(child, false);break;
+                case 0:  child->setHidden(true);break;
+                case 1:  child->setHidden(false);break;
 
-                case 2:  testWidget->setItemSelected(child, true);break;
-                case 3:  testWidget->setItemSelected(child, false);break;
+                case 2:  child->setSelected(true);break;
+                case 3:  child->setSelected(false);break;
 
                 case 4:  child->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);break;
                 case 5:  child->setFlags(Qt::ItemIsEnabled);break;

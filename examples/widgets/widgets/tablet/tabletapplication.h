@@ -61,15 +61,14 @@ class TabletApplication : public QApplication
     Q_OBJECT
 
 public:
-    TabletApplication(int &argv, char **args)
-    : QApplication(argv, args) {}
+    using QApplication::QApplication;
 
     bool event(QEvent *event) override;
     void setCanvas(TabletCanvas *canvas)
         { m_canvas = canvas; }
 
 private:
-    TabletCanvas *m_canvas;
+    TabletCanvas *m_canvas = nullptr;
 };
 //! [0]
 

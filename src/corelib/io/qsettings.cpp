@@ -41,8 +41,6 @@
 #include "qplatformdefs.h"
 #include "qsettings.h"
 
-#ifndef QT_NO_SETTINGS
-
 #include "qsettings_p.h"
 #include "qcache.h"
 #include "qfile.h"
@@ -54,7 +52,7 @@
 #include "qstandardpaths.h"
 #include <qdatastream.h>
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 #  include "qtextcodec.h"
 #endif
 
@@ -64,8 +62,8 @@
 #include "qrect.h"
 #endif // !QT_NO_GEOM_VARIANT
 
-#ifndef QT_NO_QOBJECT
-#include "qcoreapplication.h"
+#ifndef QT_BUILD_QMAKE
+#  include "qcoreapplication.h"
 #endif
 
 #ifndef QT_BOOTSTRAPPED
@@ -681,7 +679,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
             if (ch <= 0x1F || (ch >= 0x7F && !useCodec)) {
                 result += "\\x" + QByteArray::number(ch, 16);
                 escapeNextIfDigit = true;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
             } else if (useCodec) {
                 // slow
                 result += codec->fromUnicode(&unicode[i], 1);
@@ -834,7 +832,7 @@ StNormal:
                 ++j;
             }
 
-#ifdef QT_NO_TEXTCODEC
+#if !QT_CONFIG(textcodec)
             Q_UNUSED(codec)
 #else
             if (codec) {
@@ -1601,12 +1599,14 @@ bool QConfFileSettingsPrivate::readIniLine(const QByteArray &data, int &dataPos,
 
     int i = lineStart;
     while (i < dataLen) {
-        while (!(charTraits[uint(uchar(data.at(i)))] & Special)) {
+        char ch = data.at(i);
+        while (!(charTraits[uchar(ch)] & Special)) {
             if (++i == dataLen)
                 goto break_out_of_outer_loop;
+            ch = data.at(i);
         }
 
-        char ch = data.at(i++);
+        ++i;
         if (ch == '=') {
             if (!inQuotes && equalsPos == -1)
                 equalsPos = i - 1;
@@ -1633,8 +1633,9 @@ bool QConfFileSettingsPrivate::readIniLine(const QByteArray &data, int &dataPos,
             Q_ASSERT(ch == ';');
 
             if (i == lineStart + 1) {
-                char ch;
                 while (i < dataLen && (((ch = data.at(i)) != '\n') && ch != '\r'))
+                    ++i;
+                while (i < dataLen && charTraits[uchar(data.at(i))] & Space)
                     ++i;
                 lineStart = i;
             } else if (!inQuotes) {
@@ -1679,7 +1680,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
     int sectionPosition = 0;
     bool ok = true;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     // detect utf8 BOM
     const uchar *dd = (const uchar *)data.constData();
     if (data.size() >= 3 && dd[0] == 0xef && dd[1] == 0xbb && dd[2] == 0xbf) {
@@ -2166,6 +2167,9 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \snippet settings/settings.cpp 15
 
+    Note that type information is not preserved when reading settings from INI
+    files; all values will be returned as QString.
+
     The \l{tools/settingseditor}{Settings Editor} example lets you
     experiment with different settings location and with fallbacks
     turned on or off.
@@ -2447,7 +2451,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
                             On 32-bit Windows or from a 64-bit application on 64-bit Windows,
                             this works the same as specifying NativeFormat.
                             This enum value was added in Qt 5.7.
-    \value IniFormat        Store the settings in INI files.
+    \value IniFormat        Store the settings in INI files. Note that type information
+                            is not preserved when reading settings from INI files;
+                            all values will be returned as QString.
+
     \value InvalidFormat    Special value returned by registerFormat().
     \omitvalue CustomFormat1
     \omitvalue CustomFormat2
@@ -2660,9 +2667,10 @@ QSettings::QSettings(const QString &fileName, Format format, QObject *parent)
     called, the QSettings object will not be able to read or write
     any settings, and status() will return AccessError.
 
-    On \macos and iOS, if both a name and an Internet domain are specified
-    for the organization, the domain is preferred over the name. On
-    other platforms, the name is preferred over the domain.
+    You should supply both the domain (used by default on \macos and iOS) and
+    the name (used by default elsewhere), although the code will cope if you
+    supply only one, which will then be used (on all platforms), at odds with
+    the usual naming of the file on platforms for which it isn't the default.
 
     \sa QCoreApplication::setOrganizationName(),
         QCoreApplication::setOrganizationDomain(),
@@ -2670,8 +2678,21 @@ QSettings::QSettings(const QString &fileName, Format format, QObject *parent)
         setDefaultFormat()
 */
 QSettings::QSettings(QObject *parent)
-    : QObject(*QSettingsPrivate::create(globalDefaultFormat, UserScope,
-#ifdef Q_OS_MAC
+    : QSettings(UserScope, parent)
+{
+}
+
+/*!
+    \since 5.13
+
+    Constructs a QSettings object in the same way as
+    QSettings(QObject *parent) but with the given \a scope.
+
+    \sa QSettings(QObject *parent)
+*/
+QSettings::QSettings(Scope scope, QObject *parent)
+    : QObject(*QSettingsPrivate::create(globalDefaultFormat, scope,
+#ifdef Q_OS_DARWIN
                                         QCoreApplication::organizationDomain().isEmpty()
                                             ? QCoreApplication::organizationName()
                                             : QCoreApplication::organizationDomain()
@@ -2710,6 +2731,25 @@ QSettings::QSettings(const QString &fileName, Format format)
 {
     d_ptr->q_ptr = this;
 }
+
+# ifndef QT_BUILD_QMAKE
+QSettings::QSettings(Scope scope)
+    : d_ptr(QSettingsPrivate::create(globalDefaultFormat, scope,
+#  ifdef Q_OS_DARWIN
+                                     QCoreApplication::organizationDomain().isEmpty()
+                                         ? QCoreApplication::organizationName()
+                                         : QCoreApplication::organizationDomain()
+#  else
+                                     QCoreApplication::organizationName().isEmpty()
+                                         ? QCoreApplication::organizationDomain()
+                                         : QCoreApplication::organizationName()
+#  endif
+                                     , QCoreApplication::applicationName())
+              )
+{
+    d_ptr->q_ptr = this;
+}
+# endif
 #endif
 
 /*!
@@ -2835,7 +2875,7 @@ QString QSettings::applicationName() const
     return d->applicationName;
 }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 
 /*!
     \since 4.5
@@ -2888,7 +2928,7 @@ QTextCodec *QSettings::iniCodec() const
     return d->iniCodec;
 }
 
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
 
 /*!
     Returns a status code indicating the first error that was met by
@@ -3410,6 +3450,7 @@ QSettings::Format QSettings::defaultFormat()
     return globalDefaultFormat;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
@@ -3443,7 +3484,7 @@ void QSettings::setUserIniPath(const QString &dir)
     setPath(NativeFormat, UserScope, dir);
 #endif
 }
-
+#endif
 /*!
     \since 4.1
 
@@ -3584,5 +3625,3 @@ QT_END_NAMESPACE
 #ifndef QT_BOOTSTRAPPED
 #include "moc_qsettings.cpp"
 #endif
-
-#endif // QT_NO_SETTINGS

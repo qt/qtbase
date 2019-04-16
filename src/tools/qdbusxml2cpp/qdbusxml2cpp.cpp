@@ -46,7 +46,7 @@
 
 #define PROGRAMNAME     "qdbusxml2cpp"
 #define PROGRAMVERSION  "0.8"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2018 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2019 The Qt Company Ltd."
 
 #define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
 
@@ -326,7 +326,6 @@ static void writeArgList(QTextStream &ts, const QStringList &argNames,
     // yes, starting from 1
     for (int i = 1; i < outputArgs.count(); ++i) {
         const QDBusIntrospection::Argument &arg = outputArgs.at(i);
-        QString name = arg.name;
 
         if (!first)
             ts << ", ";
@@ -531,8 +530,6 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
         // properties:
         for (const QDBusIntrospection::Property &property : interface->properties) {
             QByteArray type = qtTypeName(property.type, property.annotations);
-            QString templateType = templateArg(type);
-            QString constRefType = constRefArg(type);
             QString getter = propertyGetter(property);
             QString setter = propertySetter(property);
 

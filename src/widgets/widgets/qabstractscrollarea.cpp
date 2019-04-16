@@ -185,7 +185,7 @@ QAbstractScrollAreaScrollBarContainer::QAbstractScrollAreaScrollBarContainer(Qt:
      orientation(orientation)
 {
     setLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
     layout->setSpacing(0);
     layout->addWidget(scrollBar);
     layout->setSizeConstraint(QLayout::SetMaximumSize);
@@ -820,7 +820,7 @@ QWidget *QAbstractScrollArea::cornerWidget() const
 
     All widgets set here will be deleted by the scroll area when it is
     destroyed unless you separately reparent the widget after setting
-    some other corner widget (or 0).
+    some other corner widget (or \nullptr).
 
     Any \e newly set widget should have no current parent.
 

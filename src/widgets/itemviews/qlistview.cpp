@@ -982,18 +982,9 @@ void QListView::paintEvent(QPaintEvent *e)
         ? qMax(viewport()->size().width(), d->contentsSize().width()) - 2 * d->spacing()
         : qMax(viewport()->size().height(), d->contentsSize().height()) - 2 * d->spacing();
 
-    const int rowCount = d->commonListView->rowCount();
     QVector<QModelIndex>::const_iterator end = toBeRendered.constEnd();
     for (QVector<QModelIndex>::const_iterator it = toBeRendered.constBegin(); it != end; ++it) {
         Q_ASSERT((*it).isValid());
-        if (rowCount == 1)
-            option.viewItemPosition = QStyleOptionViewItem::OnlyOne;
-        else if ((*it).row() == 0)
-            option.viewItemPosition = QStyleOptionViewItem::Beginning;
-        else if ((*it).row() == rowCount - 1)
-            option.viewItemPosition = QStyleOptionViewItem::End;
-        else
-            option.viewItemPosition = QStyleOptionViewItem::Middle;
         option.rect = visualRect(*it);
 
         if (flow() == TopToBottom)
@@ -1109,16 +1100,42 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     Q_D(QListView);
     Q_UNUSED(modifiers);
 
-    QModelIndex current = currentIndex();
-    if (!current.isValid()) {
+    auto findAvailableRowBackward = [d](int row) {
+        while (row >= 0 && d->isHiddenOrDisabled(row))
+            --row;
+        return row;
+    };
+
+    auto findAvailableRowForward = [d](int row) {
         int rowCount = d->model->rowCount(d->root);
         if (!rowCount)
-            return QModelIndex();
-        int row = 0;
+            return -1;
         while (row < rowCount && d->isHiddenOrDisabled(row))
             ++row;
         if (row >= rowCount)
+            return -1;
+        return row;
+    };
+
+    QModelIndex current = currentIndex();
+    if (!current.isValid()) {
+        int row = findAvailableRowForward(0);
+        if (row == -1)
             return QModelIndex();
+        return d->model->index(row, d->column, d->root);
+    }
+
+    if ((d->flow == LeftToRight && cursorAction == MoveLeft) ||
+            (d->flow == TopToBottom && (cursorAction == MoveUp || cursorAction == MovePrevious))) {
+        const int row = findAvailableRowBackward(current.row() - 1);
+        if (row == -1)
+            return current;
+        return d->model->index(row, d->column, d->root);
+    } else if ((d->flow == LeftToRight && cursorAction == MoveRight) ||
+               (d->flow == TopToBottom && (cursorAction == MoveDown || cursorAction == MoveNext))) {
+        const int row = findAvailableRowForward(current.row() + 1);
+        if (row == -1)
+            return current;
         return d->model->index(row, d->column, d->root);
     }
 
@@ -1298,8 +1315,8 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
             if (tl.isValid() && br.isValid()
                 && d->isIndexEnabled(tl)
                 && d->isIndexEnabled(br)) {
-                QRect first = rectForIndex(tl);
-                QRect last = rectForIndex(br);
+                QRect first = d->cellRectForIndex(tl);
+                QRect last = d->cellRectForIndex(br);
                 QRect middle;
                 if (d->flow == LeftToRight) {
                     QRect &top = first;

@@ -33,7 +33,7 @@
 
 #include <qcolor.h>
 #include <qdebug.h>
-#include <private/qcolorprofile_p.h>
+#include <private/qcolortrclut_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <qrgba64.h>
 
@@ -318,6 +318,9 @@ void tst_QColor::namehex_data()
     QTest::newRow("global color darkCyan") << "#008080" << QColor(Qt::darkCyan);
     QTest::newRow("global color darkMagenta") << "#800080" << QColor(Qt::darkMagenta);
     QTest::newRow("global color darkYellow") << "#808000" << QColor(Qt::darkYellow);
+    QTest::newRow("#RGB") << "#888" << QColor(0x88, 0x88, 0x88);
+    QTest::newRow("#RRRGGGBBB") << "#80F80F80F" << QColor(qRgba64(0x80f8, 0x80f8, 0x80f8, 0xffff));
+    QTest::newRow("#RRRRGGGGBBBB") << "#808180818081" << QColor(qRgba64(0x8081, 0x8081, 0x8081, 0xffff));
     QTest::newRow("transparent red") << "#66ff0000" << QColor(255, 0, 0, 102);
     QTest::newRow("invalid red") << "#gg0000" << QColor();
     QTest::newRow("invalid transparent") << "#gg00ff00" << QColor();
@@ -1288,7 +1291,7 @@ void tst_QColor::toCmyk_data()
         << QColor::fromHslF(180./360., 1., 0.5, 1.0);
 
     QTest::newRow("data1")
-        << QColor::fromCmyk(255, 255, 255, 255)
+        << QColor::fromCmyk(0, 0, 0, 255)
         << QColor::fromRgb(0, 0, 0)
         << QColor::fromRgb(0, 0, 0).toHsv()
         << QColor::fromRgb(0, 0, 0).toHsl();
@@ -1629,14 +1632,13 @@ void tst_QColor::qcolorprofile_data()
     QTest::newRow("gamma=1.7") << qreal(1.7) << 2;
     QTest::newRow("gamma=2.0") << qreal(2.0) << 8;
     QTest::newRow("gamma=2.31") << qreal(2.31) << 33;
-    QTest::newRow("SRgb") << qreal(0.0) << 7;
 }
 
 void tst_QColor::qcolorprofile()
 {
     QFETCH(qreal, gammaC);
     QFETCH(int, tolerance);
-    QColorProfile *cp = (gammaC == 0) ? QColorProfile::fromSRgb(): QColorProfile::fromGamma(gammaC);
+    QColorTrcLut *cp = QColorTrcLut::fromGamma(gammaC);
 
     // Test we are accurate for most values after converting through gamma-correction.
     int error = 0;

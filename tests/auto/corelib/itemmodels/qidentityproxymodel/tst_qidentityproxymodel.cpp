@@ -32,9 +32,12 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <QTest>
+#include <QLoggingCategory>
 
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"
+
+Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
 
 class DataChangedModel : public QAbstractListModel
 {
@@ -390,7 +393,7 @@ void dump(QAbstractItemModel* model, QString const& indent = " - ", QModelIndex 
     for (auto row = 0; row < model->rowCount(parent); ++row)
     {
         auto idx = model->index(row, 0, parent);
-        qDebug() << (indent + idx.data().toString());
+        qCDebug(lcItemModels) << (indent + idx.data().toString());
         dump(model, indent + "- ", idx);
     }
 }

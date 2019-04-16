@@ -467,8 +467,8 @@ struct Q_GUI_EXPORT Declaration
     Attachment attachmentValue() const;
     int  styleFeaturesValue() const;
 
-    bool intValue(int *i, const char *unit = 0) const;
-    bool realValue(qreal *r, const char *unit = 0) const;
+    bool intValue(int *i, const char *unit = nullptr) const;
+    bool realValue(qreal *r, const char *unit = nullptr) const;
 
     QSize sizeValue() const;
     QRect rectValue() const;
@@ -584,7 +584,7 @@ struct Q_GUI_EXPORT Selector
 {
     QVector<BasicSelector> basicSelectors;
     int specificity() const;
-    quint64 pseudoClass(quint64 *negated = 0) const;
+    quint64 pseudoClass(quint64 *negated = nullptr) const;
     QString pseudoElement() const;
 };
 QT_CSS_DECLARE_TYPEINFO(Selector, Q_MOVABLE_TYPE)
@@ -656,7 +656,7 @@ public:
     };
 
     QVector<StyleRule> styleRulesForNode(NodePtr node);
-    QVector<Declaration> declarationsForNode(NodePtr node, const char *extraPseudo = 0);
+    QVector<Declaration> declarationsForNode(NodePtr node, const char *extraPseudo = nullptr);
 
     virtual bool nodeNameEquals(NodePtr node, const QString& nodeName) const;
     virtual QString attribute(NodePtr node, const QString &name) const = 0;
@@ -674,7 +674,7 @@ public:
     Qt::CaseSensitivity nameCaseSensitivity;
 private:
     void matchRule(NodePtr node, const StyleRule &rules, StyleSheetOrigin origin,
-                    int depth, QMap<uint, StyleRule> *weightedRules);
+                    int depth, QMultiMap<uint, StyleRule> *weightedRules);
     bool selectorMatches(const Selector &rule, NodePtr node);
     bool basicSelectorMatches(const BasicSelector &rule, NodePtr node);
 };
@@ -744,7 +744,7 @@ QT_CSS_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE)
 class Q_GUI_EXPORT Scanner
 {
 public:
-    static QString preprocess(const QString &input, bool *hasEscapeSequences = 0);
+    static QString preprocess(const QString &input, bool *hasEscapeSequences = nullptr);
     static void scan(const QString &preprocessedInput, QVector<Symbol> *symbols);
 };
 
@@ -845,7 +845,7 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractGeometry(int *w, int *h, int *minw, int *minh, int *maxw, int *maxh);
     bool extractPosition(int *l, int *t, int *r, int *b, QCss::Origin *, Qt::Alignment *,
                          QCss::PositionMode *, Qt::Alignment *);
-    bool extractBox(int *margins, int *paddings, int *spacing = 0);
+    bool extractBox(int *margins, int *paddings, int *spacing = nullptr);
     bool extractBorder(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii);
     bool extractOutline(int *borders, QBrush *colors, BorderStyle *Styles, QSize *radii, int *offsets);
     bool extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg);

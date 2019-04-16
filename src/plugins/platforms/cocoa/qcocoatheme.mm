@@ -53,11 +53,13 @@
 #include "qcocoahelpers.h"
 
 #include <QtCore/qfileinfo.h>
+#include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qtextformat.h>
 #include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfontengine_coretext_p.h>
 #include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformintegration.h>
@@ -78,12 +80,7 @@
 
 #include <CoreServices/CoreServices.h>
 
-#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface NSApplication (MojaveForwardDeclarations)
-@property (readonly, strong) NSAppearance *effectiveAppearance NS_AVAILABLE_MAC(10_14);
-@end
-#endif
-
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
 @interface QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) : NSObject
 @property (readonly, nonatomic) QCocoaTheme *theme;
 - (instancetype)initWithTheme:(QCocoaTheme *)theme;
@@ -122,6 +119,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeAppAppearanceObserver);
     self.theme->handleSystemThemeChange();
 }
 @end
+#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
 
 QT_BEGIN_NAMESPACE
 
@@ -130,8 +128,10 @@ const char *QCocoaTheme::name = "cocoa";
 QCocoaTheme::QCocoaTheme()
     : m_systemPalette(nullptr), m_appearanceObserver(nil)
 {
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
         m_appearanceObserver = [[QCocoaThemeAppAppearanceObserver alloc] initWithTheme:this];
+#endif
 
     [[NSNotificationCenter defaultCenter] addObserverForName:NSSystemColorsDidChangeNotification
         object:nil queue:nil usingBlock:^(NSNotification *) {
@@ -161,6 +161,11 @@ void QCocoaTheme::handleSystemThemeChange()
     reset();
     m_systemPalette = qt_mac_createSystemPalette();
     m_palettes = qt_mac_createRolePalettes();
+
+    if (QCoreTextFontEngine::fontSmoothing() == QCoreTextFontEngine::FontSmoothing::Grayscale) {
+        // Re-populate glyph caches based on the new appearance's assumed text fill color
+        QFontCache::instance()->clear();
+    }
 
     QWindowSystemInterface::handleThemeChange(nullptr);
 }
@@ -221,16 +226,12 @@ const QPalette *QCocoaTheme::palette(Palette type) const
     return nullptr;
 }
 
-QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
-{
-    QCoreTextFontDatabase *ctfd = static_cast<QCoreTextFontDatabase *>(QGuiApplicationPrivate::platformIntegration()->fontDatabase());
-    return ctfd->themeFonts();
-}
-
 const QFont *QCocoaTheme::font(Font type) const
 {
     if (m_fonts.isEmpty()) {
-        m_fonts = qt_mac_createRoleFonts();
+        const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        const auto *coreTextFontDb = static_cast<QCoreTextFontDatabase *>(platformIntegration->fontDatabase());
+        m_fonts = coreTextFontDb->themeFonts();
     }
     return m_fonts.value(type, nullptr);
 }

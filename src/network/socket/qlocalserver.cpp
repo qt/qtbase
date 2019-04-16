@@ -506,8 +506,8 @@ void QLocalServer::setMaxPendingConnections(int numConnections)
 /*!
     Waits for at most \a msec milliseconds or until an incoming connection
     is available.  Returns \c true if a connection is available; otherwise
-    returns \c false.  If the operation timed out and \a timedOut is not 0,
-    *timedOut will be set to true.
+    returns \c false.  If the operation timed out and \a timedOut is not
+    \nullptr, *timedOut will be set to true.
 
     This is a blocking function call. Its use is ill-advised in a
     single-threaded GUI application, since the whole application will stop

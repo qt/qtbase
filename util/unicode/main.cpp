@@ -78,7 +78,6 @@ static void initAgeMap()
     }
 }
 
-
 static QHash<QByteArray, QChar::Category> categoryMap;
 
 static void initCategoryMap()
@@ -778,7 +777,6 @@ static void initScriptMap()
         { QChar::Script_Soyombo,                "Soyombo" },
         { QChar::Script_ZanabazarSquare,        "ZanabazarSquare" },
 
-
         // unhandled
         { QChar::Script_Unknown,                0 }
     };
@@ -788,7 +786,6 @@ static void initScriptMap()
         ++p;
     }
 }
-
 
 // Keep this one in sync with the code in createPropertyInfo
 static const char *property_string =
@@ -801,6 +798,9 @@ static const char *property_string =
     "    signed short mirrorDiff    : 16;\n"
     "    ushort lowerCaseSpecial    : 1;\n"
     "    signed short lowerCaseDiff : 15;\n"
+    "#ifdef Q_OS_WASM\n"
+    "    unsigned char              : 0; //wasm 64 packing trick\n"
+    "#endif\n"
     "    ushort upperCaseSpecial    : 1;\n"
     "    signed short upperCaseDiff : 15;\n"
     "    ushort titleCaseSpecial    : 1;\n"
@@ -809,14 +809,17 @@ static const char *property_string =
     "    signed short caseFoldDiff  : 15;\n"
     "    ushort unicodeVersion      : 8; /* 5 used */\n"
     "    ushort nfQuickCheck        : 8;\n" // could be narrowed
+    "#ifdef Q_OS_WASM\n"
+    "    unsigned char              : 0; //wasm 64 packing trick\n"
+    "#endif\n"
     "    ushort graphemeBreakClass  : 5; /* 5 used */\n"
     "    ushort wordBreakClass      : 5; /* 5 used */\n"
     "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
     "    ushort lineBreakClass      : 6; /* 6 used */\n"
     "    ushort script              : 8;\n"
     "};\n\n"
-    "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW;\n"
-    "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) Q_DECL_NOTHROW;\n"
+    "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept;\n"
+    "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) noexcept;\n"
     "\n"
     "struct LowercaseTraits\n"
     "{\n"
@@ -852,20 +855,20 @@ static const char *property_string =
     "\n";
 
 static const char *methods =
-    "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) Q_DECL_NOTHROW;\n"
-    "inline GraphemeBreakClass graphemeBreakClass(QChar ch) Q_DECL_NOTHROW\n"
+    "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) noexcept;\n"
+    "inline GraphemeBreakClass graphemeBreakClass(QChar ch) noexcept\n"
     "{ return graphemeBreakClass(ch.unicode()); }\n"
     "\n"
-    "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) Q_DECL_NOTHROW;\n"
-    "inline WordBreakClass wordBreakClass(QChar ch) Q_DECL_NOTHROW\n"
+    "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) noexcept;\n"
+    "inline WordBreakClass wordBreakClass(QChar ch) noexcept\n"
     "{ return wordBreakClass(ch.unicode()); }\n"
     "\n"
-    "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) Q_DECL_NOTHROW;\n"
-    "inline SentenceBreakClass sentenceBreakClass(QChar ch) Q_DECL_NOTHROW\n"
+    "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) noexcept;\n"
+    "inline SentenceBreakClass sentenceBreakClass(QChar ch) noexcept\n"
     "{ return sentenceBreakClass(ch.unicode()); }\n"
     "\n"
-    "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) Q_DECL_NOTHROW;\n"
-    "inline LineBreakClass lineBreakClass(QChar ch) Q_DECL_NOTHROW\n"
+    "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) noexcept;\n"
+    "inline LineBreakClass lineBreakClass(QChar ch) noexcept\n"
     "{ return lineBreakClass(ch.unicode()); }\n"
     "\n";
 
@@ -2473,10 +2476,6 @@ static QByteArray createPropertyInfo()
         out += ", ";
         out += QByteArray::number( p.lowerCaseDiff );
         out += ", ";
-        out += "#ifdef Q_OS_WASM \n"
-//     "        unsigned char    : 0; //wasm 64 packing trick QTBUG-65259\n"
-        out += "#endif \n"
-        out += ", ";
 //     "        ushort upperCaseSpecial    : 1;\n"
 //     "        signed short upperCaseDiff : 15;\n"
         out += QByteArray::number( p.upperCaseSpecial );
@@ -2501,10 +2500,6 @@ static QByteArray createPropertyInfo()
 //     "    ushort nfQuickCheck        : 8;\n"
         out += QByteArray::number( p.nfQuickCheck );
         out += ", ";
-        out += "#ifdef Q_OS_WASM \n"
-//     "        unsigned char    : 0; //wasm 64 packing trick QTBUG-65259\n"
-        out += "#endif \n"
-        out += ", ";
 //     "        ushort graphemeBreakClass  : 5; /* 5 used */\n"
 //     "        ushort wordBreakClass      : 5; /* 5 used */\n"
 //     "        ushort sentenceBreakClass  : 8; /* 4 used */\n"
@@ -2526,42 +2521,42 @@ static QByteArray createPropertyInfo()
     out += "\n};\n\n";
 
 
-    out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) Q_DECL_NOTHROW\n"
+    out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) noexcept\n"
            "{\n"
            "    return uc_properties + GET_PROP_INDEX(ucs4);\n"
            "}\n"
            "\n"
-           "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) Q_DECL_NOTHROW\n"
+           "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) noexcept\n"
            "{\n"
            "    return uc_properties + GET_PROP_INDEX_UCS2(ucs2);\n"
            "}\n"
            "\n"
-           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW\n"
+           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept\n"
            "{\n"
            "    return qGetProp(ucs4);\n"
            "}\n"
            "\n"
-           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) Q_DECL_NOTHROW\n"
+           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) noexcept\n"
            "{\n"
            "    return qGetProp(ucs2);\n"
            "}\n\n";
 
-    out += "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
+    out += "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) noexcept\n"
            "{\n"
            "    return static_cast<GraphemeBreakClass>(qGetProp(ucs4)->graphemeBreakClass);\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
+           "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) noexcept\n"
            "{\n"
            "    return static_cast<WordBreakClass>(qGetProp(ucs4)->wordBreakClass);\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
+           "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) noexcept\n"
            "{\n"
            "    return static_cast<SentenceBreakClass>(qGetProp(ucs4)->sentenceBreakClass);\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
+           "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) noexcept\n"
            "{\n"
            "    return static_cast<LineBreakClass>(qGetProp(ucs4)->lineBreakClass);\n"
            "}\n"

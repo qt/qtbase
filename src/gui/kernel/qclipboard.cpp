@@ -46,7 +46,9 @@
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qimage.h"
+#if QT_CONFIG(textcodec)
 #include "qtextcodec.h"
+#endif
 
 #include "private/qguiapplication_p.h"
 #include <qpa/qplatformintegration.h>
@@ -298,16 +300,16 @@ QString QClipboard::text(QString &subtype, Mode mode) const
 
     const QByteArray rawData = data->data(QLatin1String("text/") + subtype);
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     QTextCodec* codec = QTextCodec::codecForMib(106); // utf-8 is default
     if (subtype == QLatin1String("html"))
         codec = QTextCodec::codecForHtml(rawData, codec);
     else
         codec = QTextCodec::codecForUtfText(rawData, codec);
     return codec->toUnicode(rawData);
-#else //QT_NO_TEXTCODEC
+#else // textcodec
     return rawData;
-#endif //QT_NO_TEXTCODEC
+#endif // textcodec
 }
 
 /*!
@@ -437,7 +439,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
     \fn QMimeData *QClipboard::mimeData(Mode mode) const
 
     Returns a pointer to a QMimeData representation of the current
-    clipboard data (can be NULL if the given \a mode is not
+    clipboard data (can be \nullptr if the given \a mode is not
     supported by the platform).
 
     The \a mode argument is used to control which part of the system

@@ -190,22 +190,22 @@ View::View(const QString &name, QWidget *parent)
     topLayout->addWidget(resetButton, 2, 1);
     setLayout(topLayout);
 
-    connect(resetButton, SIGNAL(clicked()), this, SLOT(resetView()));
-    connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setupMatrix()));
-    connect(rotateSlider, SIGNAL(valueChanged(int)), this, SLOT(setupMatrix()));
-    connect(graphicsView->verticalScrollBar(), SIGNAL(valueChanged(int)),
-            this, SLOT(setResetButtonEnabled()));
-    connect(graphicsView->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-            this, SLOT(setResetButtonEnabled()));
-    connect(selectModeButton, SIGNAL(toggled(bool)), this, SLOT(togglePointerMode()));
-    connect(dragModeButton, SIGNAL(toggled(bool)), this, SLOT(togglePointerMode()));
-    connect(antialiasButton, SIGNAL(toggled(bool)), this, SLOT(toggleAntialiasing()));
-    connect(openGlButton, SIGNAL(toggled(bool)), this, SLOT(toggleOpenGL()));
-    connect(rotateLeftIcon, SIGNAL(clicked()), this, SLOT(rotateLeft()));
-    connect(rotateRightIcon, SIGNAL(clicked()), this, SLOT(rotateRight()));
-    connect(zoomInIcon, SIGNAL(clicked()), this, SLOT(zoomIn()));
-    connect(zoomOutIcon, SIGNAL(clicked()), this, SLOT(zoomOut()));
-    connect(printButton, SIGNAL(clicked()), this, SLOT(print()));
+    connect(resetButton, &QAbstractButton::clicked, this, &View::resetView);
+    connect(zoomSlider, &QAbstractSlider::valueChanged, this, &View::setupMatrix);
+    connect(rotateSlider, &QAbstractSlider::valueChanged, this, &View::setupMatrix);
+    connect(graphicsView->verticalScrollBar(), &QAbstractSlider::valueChanged,
+            this, &View::setResetButtonEnabled);
+    connect(graphicsView->horizontalScrollBar(), &QAbstractSlider::valueChanged,
+            this, &View::setResetButtonEnabled);
+    connect(selectModeButton, &QAbstractButton::toggled, this, &View::togglePointerMode);
+    connect(dragModeButton, &QAbstractButton::toggled, this, &View::togglePointerMode);
+    connect(antialiasButton, &QAbstractButton::toggled, this, &View::toggleAntialiasing);
+    connect(openGlButton, &QAbstractButton::toggled, this, &View::toggleOpenGL);
+    connect(rotateLeftIcon, &QAbstractButton::clicked, this, &View::rotateLeft);
+    connect(rotateRightIcon, &QAbstractButton::clicked, this, &View::rotateRight);
+    connect(zoomInIcon, &QAbstractButton::clicked, this, &View::zoomIn);
+    connect(zoomOutIcon, &QAbstractButton::clicked, this, &View::zoomOut);
+    connect(printButton, &QAbstractButton::clicked, this, &View::print);
 
     setupMatrix();
 }

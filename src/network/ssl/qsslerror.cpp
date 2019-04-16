@@ -86,6 +86,18 @@
     \value UnspecifiedError
     \value NoSslSupport
     \value CertificateBlacklisted
+    \value OcspNoResponseFound
+    \value OcspMalformedRequest
+    \value OcspMalformedResponse
+    \value OcspInternalError
+    \value OcspTryLater
+    \value OcspSigRequred
+    \value OcspUnauthorized
+    \value OcspResponseCannotBeTrusted
+    \value OcspResponseCertIdUnknown
+    \value OcspResponseExpired
+    \value OcspStatusUnknown
+
 
     \sa QSslError::errorString()
 */
@@ -292,6 +304,39 @@ QString QSslError::errorString() const
     case CertificateBlacklisted:
         errStr = QSslSocket::tr("The peer certificate is blacklisted");
         break;
+    case OcspNoResponseFound:
+        errStr = QSslSocket::tr("No OCSP status response found");
+        break;
+    case OcspMalformedRequest:
+        errStr = QSslSocket::tr("The OCSP status request had invalid syntax");
+        break;
+    case OcspMalformedResponse:
+        errStr = QSslSocket::tr("OCSP response contains an unexpected number of SingleResponse structures");
+        break;
+    case OcspInternalError:
+        errStr = QSslSocket::tr("OCSP responder reached an inconsistent internal state");
+        break;
+    case OcspTryLater:
+        errStr = QSslSocket::tr("OCSP responder was unable to return a status for the requested certificate");
+        break;
+    case OcspSigRequred:
+        errStr = QSslSocket::tr("The server requires the client to sign the OCSP request in order to construct a response");
+        break;
+    case OcspUnauthorized:
+        errStr = QSslSocket::tr("The client is not authorized to request OCSP status from this server");
+        break;
+    case OcspResponseCannotBeTrusted:
+        errStr = QSslSocket::tr("OCSP responder's identity cannot be verified");
+        break;
+    case OcspResponseCertIdUnknown:
+        errStr = QSslSocket::tr("The identity of a certificate in an OCSP response cannot be established");
+        break;
+    case OcspResponseExpired:
+        errStr = QSslSocket::tr("The certificate status response has expired");
+        break;
+    case OcspStatusUnknown:
+        errStr = QSslSocket::tr("The certificate's status is unknown");
+        break;
     default:
         errStr = QSslSocket::tr("Unknown error");
         break;
@@ -316,7 +361,7 @@ QSslCertificate QSslError::certificate() const
     \since 5.4
     \relates QHash
 */
-uint qHash(const QSslError &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslError &key, uint seed) noexcept
 {
     // 2x boost::hash_combine inlined:
     seed ^= qHash(key.error())       + 0x9e3779b9 + (seed << 6) + (seed >> 2);

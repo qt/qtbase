@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 template <typename Type> class QDataBuffer
 {
-    Q_DISABLE_COPY(QDataBuffer)
+    Q_DISABLE_COPY_MOVE(QDataBuffer)
 public:
     QDataBuffer(int res)
     {
@@ -69,7 +69,7 @@ public:
             buffer = (Type*) malloc(capacity * sizeof(Type));
             Q_CHECK_PTR(buffer);
         } else {
-            buffer = 0;
+            buffer = nullptr;
         }
         siz = 0;
     }
@@ -128,7 +128,7 @@ public:
             Q_CHECK_PTR(buffer);
         } else {
             free(buffer);
-            buffer = 0;
+            buffer = nullptr;
         }
     }
 

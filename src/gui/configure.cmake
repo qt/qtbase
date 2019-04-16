@@ -18,14 +18,6 @@ set_property(CACHE INPUT_libpng PROPERTY STRINGS undefined no qt system)
 set(INPUT_xcb "undefined" CACHE STRING "")
 set_property(CACHE INPUT_xcb PROPERTY STRINGS undefined no yes qt system)
 
-# input xkbcommon
-set(INPUT_xkbcommon "undefined" CACHE STRING "")
-set_property(CACHE INPUT_xkbcommon PROPERTY STRINGS undefined no qt system)
-
-# input xkbcommon-x11
-set(INPUT_xkbcommon_x11 "undefined" CACHE STRING "")
-set_property(CACHE INPUT_xkbcommon_x11 PROPERTY STRINGS undefined no qt system)
-
 
 
 #### Libraries
@@ -91,27 +83,6 @@ D3D11_QUERY_DATA_TIMESTAMP_DISJOINT qdtd;
 }
 ")
 
-# directwrite2
-qt_config_compile_test(directwrite2
-    LABEL "DirectWrite 2"
-"
-#include <dwrite_2.h>
-#include <d2d1.h>
-
-int main(int argc, char **argv)
-{
-    (void)argc; (void)argv;
-    /* BEGIN TEST: */
-IUnknown *factory = 0;
-(void)(size_t(DWRITE_E_NOCOLOR) + sizeof(IDWriteFontFace2));
-DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),
-                    &factory);
-    /* END TEST: */
-    return 0;
-}
-"# FIXME: use: directwrite
-)
-
 # drm_atomic
 qt_config_compile_test(drm_atomic
     LABEL "DRM Atomic API"
@@ -133,22 +104,15 @@ drmModeAtomicReq *request;
 )
 
 # egl-x11
-if (HAVE_EGL AND X11_XCB_FOUND AND X11_FOUND)
-    set(egl_x11_TEST_LIBRARIES EGL::EGL X11::X11 X11::XCB)
-endif()
 qt_config_compile_test(egl_x11
     LABEL "EGL on X11"
-    LIBRARIES "${egl_x11_TEST_LIBRARIES}"
-    CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
 // has to be disabled in plugins like xcb in this case since the native display,
 // window and pixmap types will be different than what an X-based platform
 // plugin would expect.
 #include <EGL/egl.h>
-#include <xcb/xcb.h>
 #include <X11/Xlib.h>
-#include <X11/Xlib-xcb.h>
 
 int main(int argc, char **argv)
 {
@@ -163,7 +127,8 @@ XCloseDisplay(dpy);
     /* END TEST: */
     return 0;
 }
-")
+"# FIXME: use: egl xlib
+)
 
 # egl-brcm
 qt_config_compile_test(egl_brcm
@@ -412,6 +377,60 @@ glProgramUniform1i(0, 0, 0);
 "# FIXME: use: opengl_es2
 )
 
+# opengles32
+qt_config_compile_test(opengles32
+    LABEL "OpenGL ES 3.2"
+"
+#include <GLES3/gl32.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: use: opengl_es2
+)
+
+# xcb_syslibs
+qt_config_compile_test(xcb_syslibs
+    LABEL "XCB (extensions)"
+"
+#include <xcb/xcb.h>
+#include <xcb/xcb_image.h>
+#include <xcb/xcb_keysyms.h>
+#include <xcb/randr.h>
+#include <xcb/render.h>
+#include <xcb/shape.h>
+#include <xcb/shm.h>
+#include <xcb/sync.h>
+#include <xcb/xfixes.h>
+#include <xcb/xinerama.h>
+#include <xcb/xcb_icccm.h>
+#include <xcb/xcb_renderutil.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+int primaryScreen = 0;
+xcb_connection_t *c = xcb_connect(\"\", &primaryScreen);
+/* RENDER */
+xcb_generic_error_t *error = nullptr;
+xcb_render_query_pict_formats_cookie_t formatsCookie =
+    xcb_render_query_pict_formats(c);
+xcb_render_query_pict_formats_reply_t *formatsReply =
+    xcb_render_query_pict_formats_reply(c, formatsCookie, &error);
+/* RENDERUTIL: xcb_renderutil.h include won't compile unless version >= 0.3.9 */
+xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: use: xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb
+)
+
 
 
 #### Features
@@ -424,7 +443,7 @@ qt_feature_definition("accessibility_atspi_bridge" "QT_NO_ACCESSIBILITY_ATSPI_BR
 qt_feature("angle" PUBLIC
     LABEL "ANGLE"
     AUTODETECT QT_FEATURE_opengles2 OR QT_FEATURE_opengl_dynamic
-    CONDITION WIN32 AND tests.directx OR FIXME
+    CONDITION NOT QT_FEATURE_opengl_desktop AND QT_FEATURE_dxguid AND tests.fxc AND ( QT_FEATURE_direct3d9 OR ( WINRT AND QT_FEATURE_direct3d11 AND libs.d3dcompiler ) ) OR FIXME
 )
 qt_feature_definition("angle" "QT_OPENGL_ES_2_ANGLE")
 qt_feature("angle_d3d11_qdtd" PRIVATE
@@ -444,18 +463,50 @@ qt_feature("directfb" PRIVATE
 )
 qt_feature("directwrite" PRIVATE
     LABEL "DirectWrite"
-    CONDITION libs.directwrite OR FIXME
+    CONDITION libs.dwrite OR FIXME
+    EMIT_IF WIN32
+)
+qt_feature("directwrite1" PRIVATE
+    LABEL "DirectWrite 1"
+    CONDITION libs.dwrite_1 OR FIXME
     EMIT_IF WIN32
 )
 qt_feature("directwrite2" PRIVATE
     LABEL "DirectWrite 2"
-    CONDITION QT_FEATURE_directwrite AND TEST_directwrite2
+    CONDITION QT_FEATURE_directwrite1 AND libs.dwrite_2 OR FIXME
     EMIT_IF WIN32
 )
+qt_feature("dxguid" PRIVATE
+    LABEL "DirectX GUID"
+    CONDITION WIN32 AND libs.dxguid OR FIXME
+)
+qt_feature("direct3d9" PRIVATE
+    LABEL "Direct 3D 9"
+    CONDITION WIN32 AND NOT WINRT AND libs.d3d9 OR FIXME
+)
+qt_feature("dxgi" PRIVATE
+    LABEL "DirectX GI"
+    CONDITION WIN32 AND libs.dxgi OR FIXME
+)
+qt_feature("dxgi1_2" PRIVATE
+    LABEL "DirectX GI 1.2"
+    CONDITION QT_FEATURE_dxgi AND libs.dxgi1_2 OR FIXME
+)
+qt_feature("direct3d11" PRIVATE
+    LABEL "Direct 3D 11"
+    CONDITION QT_FEATURE_dxgi AND libs.d3d11 OR FIXME
+)
+qt_feature("direct3d11_1" PRIVATE
+    LABEL "Direct 3D 11.1"
+    CONDITION QT_FEATURE_direct3d11 AND QT_FEATURE_dxgi1_2 AND libs.d3d11_1 OR FIXME
+)
 qt_feature("direct2d" PRIVATE
-    SECTION "Platform plugins"
     LABEL "Direct 2D"
-    CONDITION WIN32 AND NOT WINRT AND libs.direct2d OR FIXME
+    CONDITION WIN32 AND NOT WINRT AND QT_FEATURE_direct3d11 AND libs.d2d1 OR FIXME
+)
+qt_feature("direct2d1_1" PRIVATE
+    LABEL "Direct 2D 1.1"
+    CONDITION QT_FEATURE_direct2d AND libs.d2d1_1 OR FIXME
 )
 qt_feature("evdev" PRIVATE
     LABEL "evdev"
@@ -523,12 +574,6 @@ qt_feature("vnc" PRIVATE
     LABEL "VNC"
     CONDITION ( UNIX AND NOT ANDROID AND NOT APPLE ) AND ( QT_FEATURE_regularexpression AND QT_FEATURE_network )
 )
-qt_feature("mirclient" PRIVATE
-    SECTION "Platform plugins"
-    LABEL "Mir client"
-    AUTODETECT OFF
-    CONDITION libs.mirclient OR FIXME
-)
 qt_feature("mtdev" PRIVATE
     LABEL "mtdev"
     CONDITION Mtdev_FOUND
@@ -536,7 +581,7 @@ qt_feature("mtdev" PRIVATE
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"
     CONDITION NOT WIN32 AND ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
-    ENABLE INPUT_opengl STREQUAL 'es2'
+    ENABLE INPUT_opengl STREQUAL 'es2' OR INPUT_angle STREQUAL 'yes'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
 qt_feature_definition("opengles2" "QT_OPENGL_ES")
@@ -566,13 +611,13 @@ qt_feature("opengl_dynamic"
     LABEL "Dynamic OpenGL"
     AUTODETECT OFF
     CONDITION WIN32 AND NOT WINRT
-    ENABLE INPUT_opengl STREQUAL 'dynamic'
+    DISABLE INPUT_angle STREQUAL 'yes' OR INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature("dynamicgl" PUBLIC
     LABEL "Dynamic OpenGL: dynamicgl"
     AUTODETECT OFF
     CONDITION WIN32 AND NOT WINRT
-    ENABLE INPUT_opengl STREQUAL 'dynamic'
+    DISABLE INPUT_angle STREQUAL 'yes' OR INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature_definition("opengl_dynamic" "QT_OPENGL_DYNAMIC")
 qt_feature("opengl" PUBLIC
@@ -600,7 +645,7 @@ qt_feature("egl_x11" PRIVATE
 qt_feature("eglfs" PRIVATE
     SECTION "Platform plugins"
     LABEL "EGLFS"
-    CONDITION NOT ANDROID AND NOT APPLE AND NOT WIN32 AND QT_FEATURE_egl
+    CONDITION NOT ANDROID AND NOT APPLE AND NOT WIN32 AND NOT WASM AND QT_FEATURE_egl
 )
 qt_feature("eglfs_brcm" PRIVATE
     LABEL "EGLFS Raspberry Pi"
@@ -637,6 +682,10 @@ qt_feature("eglfs_viv_wl" PRIVATE
 qt_feature("eglfs_openwfd" PRIVATE
     LABEL "EGLFS OpenWFD"
     CONDITION INTEGRITY AND QT_FEATURE_eglfs AND TEST_egl_openwfd
+)
+qt_feature("eglfs_x11" PRIVATE
+    LABEL "EGLFS X11"
+    CONDITION QT_FEATURE_eglfs AND QT_FEATURE_xcb_xlib AND QT_FEATURE_egl_x11
 )
 qt_feature("gif" PRIVATE
     LABEL "GIF"
@@ -678,12 +727,22 @@ qt_feature("xcb" PRIVATE
     SECTION "Platform plugins"
     LABEL "XCB"
     AUTODETECT NOT APPLE
-    CONDITION QT_FEATURE_thread AND XCB_FOUND
+    CONDITION QT_FEATURE_thread AND QT_FEATURE_xkbcommon AND XCB_FOUND
     ENABLE INPUT_xcb STREQUAL 'system' OR INPUT_xcb STREQUAL 'qt' OR INPUT_xcb STREQUAL 'yes'
 )
+qt_feature("xcb_glx_plugin" PRIVATE
+    LABEL "GLX Plugin"
+    CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
+    EMIT_IF QT_FEATURE_xcb
+)
 qt_feature("xcb_glx" PRIVATE
-    LABEL "XCB GLX"
+    LABEL "  XCB GLX"
     CONDITION XCB_GLX_FOUND
+    EMIT_IF QT_FEATURE_xcb AND QT_FEATURE_xcb_glx_plugin
+)
+qt_feature("xcb_egl_plugin" PRIVATE
+    LABEL "EGL-X11 Plugin"
+    CONDITION QT_FEATURE_egl_x11 AND QT_FEATURE_opengl
     EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xcb_native_painting" PRIVATE
@@ -696,20 +755,14 @@ qt_feature("xrender" PRIVATE
     CONDITION QT_FEATURE_xcb_native_painting
     EMIT_IF QT_FEATURE_xcb AND QT_FEATURE_xcb_native_painting
 )
-qt_feature("xcb_render" PRIVATE
-    LABEL "XCB render"
-    CONDITION NOT ON OR XCB_RENDER_FOUND
-    EMIT_IF QT_FEATURE_xcb
-)
 qt_feature("xkb" PRIVATE
     LABEL "XCB XKB"
-    CONDITION NOT ON OR XCB_XKB_FOUND
+    CONDITION ( NOT ON OR XCB_XKB_FOUND ) AND libs.xkbcommon_x11 OR FIXME
     EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xcb_xlib" PRIVATE
     LABEL "XCB Xlib"
     CONDITION QT_FEATURE_xlib AND X11_XCB_FOUND
-    EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xcb_sm" PRIVATE
     LABEL "xcb-sm"
@@ -721,8 +774,8 @@ qt_feature("xcb_xinput" PRIVATE
     CONDITION NOT ON OR XCB_XINPUT_FOUND
     EMIT_IF QT_FEATURE_xcb
 )
-qt_feature("xkbcommon_evdev" PRIVATE
-    LABEL "xkbcommon-evdev"
+qt_feature("xkbcommon" PRIVATE
+    LABEL "xkbcommon"
     CONDITION XKB_FOUND
 )
 qt_feature("xlib" PRIVATE
@@ -930,3 +983,8 @@ qt_feature("whatsthis" PUBLIC
     PURPOSE "Supports displaying \"What's this\" help."
 )
 qt_feature_definition("whatsthis" "QT_NO_WHATSTHIS" NEGATE VALUE "1")
+qt_feature("raster_64bit" PRIVATE
+    SECTION "Painting"
+    LABEL "QPainter - 64 bit raster"
+    PURPOSE "Internal painting support for 64 bit (16 bpc) rasterization."
+)

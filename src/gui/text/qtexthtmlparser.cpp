@@ -40,7 +40,6 @@
 #include "qtexthtmlparser_p.h"
 
 #include <qbytearray.h>
-#include <qtextcodec.h>
 #include <qstack.h>
 #include <qdebug.h>
 #include <qthread.h>
@@ -862,7 +861,8 @@ QString QTextHtmlParser::parseWord()
         ++pos;
         while (pos < len) {
             QChar c = txt.at(pos++);
-            if (c == QLatin1Char('\''))
+            // Allow for escaped single quotes as they may be part of the string
+            if (c == QLatin1Char('\'') && (txt.length() > 1 && txt.at(pos - 2) != QLatin1Char('\\')))
                 break;
             else
                 word += c;
@@ -1544,7 +1544,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                 if (key == QLatin1String("href"))
                     node->charFormat.setAnchorHref(value);
                 else if (key == QLatin1String("name"))
-                    node->charFormat.setAnchorName(value);
+                    node->charFormat.setAnchorNames({value});
                 break;
             case Html_img:
                 if (key == QLatin1String("src") || key == QLatin1String("source")) {
@@ -1684,7 +1684,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
             node->charFormat.setToolTip(value);
         } else if (key == QLatin1String("id")) {
             node->charFormat.setAnchor(true);
-            node->charFormat.setAnchorName(value);
+            node->charFormat.setAnchorNames({value});
         }
     }
 

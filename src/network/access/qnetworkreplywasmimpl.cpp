@@ -102,6 +102,8 @@ static void q_loadCallback(val event)
         return;
     }
     QString statusText = QString::fromStdString(xhr["statusText"].as<std::string>());
+    int readyState = xhr["readyState"].as<int>();
+
     if (status == 200 || status == 203) {
         QString responseString;
         const std::string responseType = xhr["responseType"].as<std::string>();
@@ -112,13 +114,15 @@ static void q_loadCallback(val event)
                     QString::fromStdWString(val::global("JSON").call<std::wstring>("stringify", xhr["response"]));
         } else if (responseType == "arraybuffer" || responseType == "blob") {
             // handle this data in the FileReader, triggered by the call to readAsArrayBuffer
+            val blob = xhr["response"];
+
             val reader = val::global("FileReader").new_();
-            reader.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_readBinary"));
+            reader.set("onload", val::module_property("qt_QNetworkReplyWasmImplPrivate_readBinary"));
             reader.set("data-handler", xhr["data-handler"]);
-            reader.call<void>("readAsArrayBuffer", xhr["response"]);
+
+            reader.call<void>("readAsArrayBuffer", blob);
         }
 
-        int readyState = xhr["readyState"].as<int>();
 
         if (readyState == 4) { // done
             reply->setReplyAttributes(xhr["data-handler"].as<quintptr>(), status, statusText);
@@ -167,15 +171,15 @@ static void q_readBinary(val event)
                                                             reinterpret_cast<quintptr>(buffer.data()), size);
     destinationTypedArray.call<void>("set", sourceTypedArray);
     reply->dataReceived(buffer, buffer.size());
+    QCoreApplication::processEvents();
 }
 
-
-EMSCRIPTEN_BINDINGS(network_module) {
-    function("QNetworkReplyWasmImplPrivate_requestErrorCallback", q_requestErrorCallback);
-    function("QNetworkReplyWasmImplPrivate_progressCallback", q_progressCallback);
-    function("QNetworkReplyWasmImplPrivate_loadCallback", q_loadCallback);
-    function("QNetworkReplyWasmImplPrivate_responseHeadersCallback", q_responseHeadersCallback);
-    function("QNetworkReplyWasmImplPrivate_readBinary", q_readBinary);
+EMSCRIPTEN_BINDINGS(qtNetworkModule) {
+    function("qt_QNetworkReplyWasmImplPrivate_requestErrorCallback", q_requestErrorCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_progressCallback", q_progressCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_loadCallback", q_loadCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_responseHeadersCallback", q_responseHeadersCallback);
+    function("qt_QNetworkReplyWasmImplPrivate_readBinary", q_readBinary);
 }
 
 QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
@@ -222,20 +226,24 @@ QByteArray QNetworkReplyWasmImpl::methodName() const
 
 void QNetworkReplyWasmImpl::close()
 {
+    setFinished(true);
+    emit finished();
+
     QNetworkReply::close();
 }
 
 void QNetworkReplyWasmImpl::abort()
 {
+    Q_D(const QNetworkReplyWasmImpl);
+    setError( QNetworkReply::OperationCanceledError, "Operation canceled" );
+    d->doAbort();
+
     close();
 }
 
 qint64 QNetworkReplyWasmImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyWasmImpl);
-
-    if (!d->isFinished)
-        return QNetworkReply::bytesAvailable();
 
     return QNetworkReply::bytesAvailable() + d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
 }
@@ -258,7 +266,7 @@ qint64 QNetworkReplyWasmImpl::readData(char *data, qint64 maxlen)
     Q_D(QNetworkReplyWasmImpl);
 
     qint64 howMuch = qMin(maxlen, (d->downloadBuffer.size() - d->downloadBufferReadPosition));
-    memcpy(data, d->downloadBuffer.constData(), howMuch);
+    memcpy(data, d->downloadBuffer.constData() + d->downloadBufferReadPosition, howMuch);
     d->downloadBufferReadPosition += howMuch;
 
     return howMuch;
@@ -307,32 +315,29 @@ void QNetworkReplyWasmImplPrivate::setReplyAttributes(quintptr data, int statusC
         handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusReason);
 }
 
+void QNetworkReplyWasmImplPrivate::doAbort() const
+{
+    m_xhr.call<void>("abort");
+}
+
 void QNetworkReplyWasmImplPrivate::doSendRequest()
 {
     Q_Q(QNetworkReplyWasmImpl);
     totalDownloadSize = 0;
 
-    val xhr = val::global("XMLHttpRequest").new_();
+    m_xhr = val::global("XMLHttpRequest").new_();
     std::string verb = q->methodName().toStdString();
 
-    QUrl url;
     QString extraDataString;
 
-    if (request.url().hasQuery()) { //strip query from url
-        extraDataString = request.url().query(QUrl::FullyEncoded);
-        QString urlStr = request.url().toString();
-        url.setUrl(urlStr.left(urlStr.indexOf("?")));
-    } else {
-        url = request.url();
-    }
-    xhr.call<void>("open", verb, url.toString().toStdString());
+    m_xhr.call<void>("open", verb, request.url().toString().toStdString());
 
-    xhr.set("onerror", val::module_property("QNetworkReplyWasmImplPrivate_requestErrorCallback"));
-    xhr.set("onload", val::module_property("QNetworkReplyWasmImplPrivate_loadCallback"));
-    xhr.set("onprogress", val::module_property("QNetworkReplyWasmImplPrivate_progressCallback"));
-    xhr.set("onreadystatechange", val::module_property("QNetworkReplyWasmImplPrivate_responseHeadersCallback"));
+    m_xhr.set("onerror", val::module_property("qt_QNetworkReplyWasmImplPrivate_requestErrorCallback"));
+    m_xhr.set("onload", val::module_property("qt_QNetworkReplyWasmImplPrivate_loadCallback"));
+    m_xhr.set("onprogress", val::module_property("qt_QNetworkReplyWasmImplPrivate_progressCallback"));
+    m_xhr.set("onreadystatechange", val::module_property("qt_QNetworkReplyWasmImplPrivate_responseHeadersCallback"));
 
-    xhr.set("data-handler", val(quintptr(reinterpret_cast<void *>(this))));
+    m_xhr.set("data-handler", val(quintptr(reinterpret_cast<void *>(this))));
 
     QByteArray contentType = request.rawHeader("Content-Type");
 
@@ -351,11 +356,10 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     }
     if (contentType.contains("json")) {
         if (!extraDataString.isEmpty()) {
-            xhr.set("responseType", val("json"));
+            m_xhr.set("responseType", val("json"));
             dataToSend = val(extraDataString.toStdString());
         }
-    }
-    if (contentType.contains("form")) { //construct form data
+    } else if (contentType.contains("form")) { //construct form data
         if (!extraDataString.isEmpty()) {
             val formData = val::global("FormData").new_();
             QStringList formList = extraDataString.split('&');
@@ -365,12 +369,14 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
             }
             dataToSend = formData;
         }
+    } else {
+        m_xhr.set("responseType", val("blob"));
     }
     // set request headers
     for (auto header : request.rawHeaderList()) {
-        xhr.call<void>("setRequestHeader", header.toStdString(), request.rawHeader(header).toStdString());
+        m_xhr.call<void>("setRequestHeader", header.toStdString(), request.rawHeader(header).toStdString());
     }
-     xhr.call<void>("send", dataToSend);
+     m_xhr.call<void>("send", dataToSend);
 }
 
 void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString)
@@ -414,10 +420,13 @@ void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bu
 
     downloadBuffer.append(buffer, bufferSize);
 
+    emit q->readyRead();
+
     if (downloadBufferCurrentSize == totalDownloadSize) {
-         q->setFinished(true);
-         emit q->finished();
-     }
+        q->setFinished(true);
+        emit q->readChannelFinished();
+        emit q->finished();
+    }
 }
 
 //taken from qnetworkrequest.cpp

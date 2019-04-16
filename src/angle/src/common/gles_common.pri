@@ -1,15 +1,18 @@
 CONFIG += simd no_batch object_parallel_to_source
 include(common.pri)
 
-INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libANGLE
+INCLUDEPATH += \
+    $$OUT_PWD/.. \
+    $$ANGLE_DIR \
+    $$ANGLE_DIR/src/libANGLE
 
 # Remember to adapt src/gui/configure.* if the Direct X version changes.
 !winrt: \
-    LIBS_PRIVATE += -ld3d9
+    QMAKE_USE_PRIVATE += d3d9
 winrt: \
-    LIBS_PRIVATE += -ld3dcompiler -ldxgi -ld3d11
+    QMAKE_USE_PRIVATE += d3dcompiler d3d11 dxgi
 
-LIBS_PRIVATE += -ldxguid
+QMAKE_USE_PRIVATE += dxguid
 
 STATICLIBS = translator preprocessor
 for(libname, STATICLIBS) {
@@ -30,10 +33,8 @@ qtConfig(angle_d3d11_qdtd): DEFINES += ANGLE_D3D11_QDTD_AVAILABLE
 
 HEADERS += \
     $$ANGLE_DIR/src/common/mathutil.h \
-    $$ANGLE_DIR/src/common/blocklayout.h \
-    $$ANGLE_DIR/src/common/NativeWindow.h \
-    $$ANGLE_DIR/src/common/shadervars.h \
     $$ANGLE_DIR/src/common/utilities.h \
+    $$ANGLE_DIR/src/common/version.h \
     $$ANGLE_DIR/src/common/MemoryBuffer.h \
     $$ANGLE_DIR/src/common/angleutils.h \
     $$ANGLE_DIR/src/common/debug.h \
@@ -47,7 +48,6 @@ HEADERS += \
     $$ANGLE_DIR/src/libANGLE/Config.h \
     $$ANGLE_DIR/src/libANGLE/Constants.h \
     $$ANGLE_DIR/src/libANGLE/Context.h \
-    $$ANGLE_DIR/src/libANGLE/Data.h \
     $$ANGLE_DIR/src/libANGLE/Debug.h \
     $$ANGLE_DIR/src/libANGLE/Device.h \
     $$ANGLE_DIR/src/libANGLE/Display.h \
@@ -81,21 +81,16 @@ HEADERS += \
     $$ANGLE_DIR/src/libANGLE/VertexAttribute.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/BufferD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/CompilerD3D.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/copyimage.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/DeviceD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/DisplayD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/DynamicHLSL.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/EGLImageD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/formatutilsD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/FramebufferD3D.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/generatemip.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/HLSLCompiler.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ImageD3D.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/imageformats.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/IndexBuffer.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/IndexDataManager.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimage.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimage_etc.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ProgramD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/RenderbufferD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/RendererD3D.h \
@@ -106,8 +101,6 @@ HEADERS += \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/SwapChainD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/TextureD3D.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/TextureStorage.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/TransformFeedbackD3D.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/VaryingPacking.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/VertexBuffer.h \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/VertexDataManager.h \
     $$ANGLE_DIR/src/libANGLE/renderer/BufferImpl.h \
@@ -115,21 +108,15 @@ HEADERS += \
     $$ANGLE_DIR/src/libANGLE/renderer/DeviceImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/DisplayImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/FenceNVImpl.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/FenceSyncImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/FramebufferImpl.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/Image.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/ImplFactory.h \
     $$ANGLE_DIR/src/libANGLE/renderer/ProgramImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/QueryImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/RenderbufferImpl.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/Renderer.h \
     $$ANGLE_DIR/src/libANGLE/renderer/ShaderImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/SurfaceImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/TextureImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/TransformFeedbackImpl.h \
     $$ANGLE_DIR/src/libANGLE/renderer/VertexArrayImpl.h \
-    $$ANGLE_DIR/src/libANGLE/renderer/Workarounds.h \
-    $$ANGLE_DIR/src/libANGLE/resource.h \
     $$ANGLE_DIR/src/libANGLE/ResourceManager.h \
     $$ANGLE_DIR/src/libANGLE/Sampler.h \
     $$ANGLE_DIR/src/libANGLE/Shader.h \
@@ -142,16 +129,11 @@ HEADERS += \
     $$ANGLE_DIR/src/libANGLE/validationES.h \
     $$ANGLE_DIR/src/libANGLE/VertexArray.h \
     $$ANGLE_DIR/src/libANGLE/VertexAttribute.h \
-    $$ANGLE_DIR/src/libANGLE/vertexconversion.h \
     $$ANGLE_DIR/src/libGLESv2/entry_points_egl.h \
     $$ANGLE_DIR/src/libGLESv2/entry_points_egl_ext.h \
-    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_2_0.h \
     $$ANGLE_DIR/src/libGLESv2/entry_points_gles_2_0_ext.h \
-    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0.h \
-    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0_ext.h \
     $$ANGLE_DIR/src/libGLESv2/global_state.h \
-    $$ANGLE_DIR/src/libGLESv2/resource.h \
-    $$ANGLE_DIR/src/third_party/murmurhash/MurmurHash3.h
+    $$ANGLE_DIR/src/libGLESv2/resource.h
 
 SOURCES += \
     $$ANGLE_DIR/src/common/mathutil.cpp \
@@ -161,7 +143,14 @@ SOURCES += \
     $$ANGLE_DIR/src/common/debug.cpp \
     $$ANGLE_DIR/src/common/event_tracer.cpp \
     $$ANGLE_DIR/src/common/Float16ToFloat32.cpp \
-    $$ANGLE_DIR/src/third_party/murmurhash/MurmurHash3.cpp \
+    $$ANGLE_DIR/src/common/string_utils.cpp \
+    $$ANGLE_DIR/src/common/uniform_type_info_autogen.cpp \
+    $$ANGLE_DIR/src/common/third_party/smhasher/src/PMurHash.cpp \
+    $$ANGLE_DIR/src/common/third_party/base/anglebase/sha1.cc \
+    $$ANGLE_DIR/src/image_util/copyimage.cpp \
+    $$ANGLE_DIR/src/image_util/imageformats.cpp \
+    $$ANGLE_DIR/src/image_util/loadimage.cpp \
+    $$ANGLE_DIR/src/image_util/loadimage_etc.cpp \
     $$ANGLE_DIR/src/libANGLE/angletypes.cpp \
     $$ANGLE_DIR/src/libANGLE/AttributeMap.cpp \
     $$ANGLE_DIR/src/libANGLE/Buffer.cpp \
@@ -169,57 +158,75 @@ SOURCES += \
     $$ANGLE_DIR/src/libANGLE/Compiler.cpp \
     $$ANGLE_DIR/src/libANGLE/Config.cpp \
     $$ANGLE_DIR/src/libANGLE/Context.cpp \
-    $$ANGLE_DIR/src/libANGLE/Data.cpp \
+    $$ANGLE_DIR/src/libANGLE/ContextState.cpp \
     $$ANGLE_DIR/src/libANGLE/Debug.cpp \
     $$ANGLE_DIR/src/libANGLE/Device.cpp \
     $$ANGLE_DIR/src/libANGLE/Display.cpp \
     $$ANGLE_DIR/src/libANGLE/Error.cpp \
+    $$ANGLE_DIR/src/libANGLE/es3_copy_conversion_table_autogen.cpp \
     $$ANGLE_DIR/src/libANGLE/Fence.cpp \
     $$ANGLE_DIR/src/libANGLE/formatutils.cpp \
+    $$ANGLE_DIR/src/libANGLE/format_map_autogen.cpp \
     $$ANGLE_DIR/src/libANGLE/Framebuffer.cpp \
     $$ANGLE_DIR/src/libANGLE/FramebufferAttachment.cpp \
     $$ANGLE_DIR/src/libANGLE/HandleAllocator.cpp \
+    $$ANGLE_DIR/src/libANGLE/HandleRangeAllocator.cpp \
     $$ANGLE_DIR/src/libANGLE/Image.cpp \
     $$ANGLE_DIR/src/libANGLE/ImageIndex.cpp \
     $$ANGLE_DIR/src/libANGLE/IndexRangeCache.cpp \
+    $$ANGLE_DIR/src/libANGLE/LoggingAnnotator.cpp \
+    $$ANGLE_DIR/src/libANGLE/MemoryProgramCache.cpp \
+    $$ANGLE_DIR/src/libANGLE/PackedGLEnums_autogen.cpp \
+    $$ANGLE_DIR/src/libANGLE/params.cpp \
+    $$ANGLE_DIR/src/libANGLE/Path.cpp \
     $$ANGLE_DIR/src/libANGLE/Platform.cpp \
     $$ANGLE_DIR/src/libANGLE/Program.cpp \
+    $$ANGLE_DIR/src/libANGLE/ProgramLinkedResources.cpp \
+    $$ANGLE_DIR/src/libANGLE/ProgramPipeline.cpp \
     $$ANGLE_DIR/src/libANGLE/Query.cpp \
     $$ANGLE_DIR/src/libANGLE/queryconversions.cpp \
+    $$ANGLE_DIR/src/libANGLE/queryutils.cpp \
     $$ANGLE_DIR/src/libANGLE/Renderbuffer.cpp \
     $$ANGLE_DIR/src/libANGLE/ResourceManager.cpp \
     $$ANGLE_DIR/src/libANGLE/Sampler.cpp \
     $$ANGLE_DIR/src/libANGLE/Shader.cpp \
     $$ANGLE_DIR/src/libANGLE/State.cpp \
+    $$ANGLE_DIR/src/libANGLE/Stream.cpp \
     $$ANGLE_DIR/src/libANGLE/Surface.cpp \
     $$ANGLE_DIR/src/libANGLE/Texture.cpp \
+    $$ANGLE_DIR/src/libANGLE/Thread.cpp \
     $$ANGLE_DIR/src/libANGLE/TransformFeedback.cpp \
     $$ANGLE_DIR/src/libANGLE/Uniform.cpp \
     $$ANGLE_DIR/src/libANGLE/validationEGL.cpp \
     $$ANGLE_DIR/src/libANGLE/validationES.cpp \
     $$ANGLE_DIR/src/libANGLE/validationES2.cpp \
     $$ANGLE_DIR/src/libANGLE/validationES3.cpp \
+    $$ANGLE_DIR/src/libANGLE/validationES31.cpp \
+    $$ANGLE_DIR/src/libANGLE/VaryingPacking.cpp \
     $$ANGLE_DIR/src/libANGLE/VertexArray.cpp \
     $$ANGLE_DIR/src/libANGLE/VertexAttribute.cpp \
+    $$ANGLE_DIR/src/libANGLE/WorkerThread.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/ContextImpl.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/DeviceImpl.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/DisplayImpl.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/Renderer.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/driver_utils.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/Format_table_autogen.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/load_functions_table_autogen.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/renderer_utils.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/SurfaceImpl.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/TextureImpl.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/BufferD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/CompilerD3D.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/copyimage.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/DeviceD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/DisplayD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/DynamicHLSL.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/EGLImageD3D.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/formatutilsD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/FramebufferD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/HLSLCompiler.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ImageD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/IndexBuffer.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/IndexDataManager.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimage.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimage_etc.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/d3d/NativeWindowD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ProgramD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/RenderbufferD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/RendererD3D.cpp \
@@ -227,21 +234,19 @@ SOURCES += \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ShaderD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/ShaderExecutableD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/SurfaceD3D.cpp \
+    $$ANGLE_DIR/src/libANGLE/renderer/d3d/SwapChainD3D.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/TextureD3D.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/TransformFeedbackD3D.cpp \
-    $$ANGLE_DIR/src/libANGLE/renderer/d3d/VaryingPacking.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/VertexBuffer.cpp \
     $$ANGLE_DIR/src/libANGLE/renderer/d3d/VertexDataManager.cpp \
     $$ANGLE_DIR/src/libGLESv2/entry_points_egl.cpp \
     $$ANGLE_DIR/src/libGLESv2/entry_points_egl_ext.cpp \
-    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_2_0.cpp \
+    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_2_0_autogen.cpp \
+    $$ANGLE_DIR/src/libGLESv2/proc_table_autogen.cpp \
     $$ANGLE_DIR/src/libGLESv2/entry_points_gles_2_0_ext.cpp \
-    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0.cpp \
-    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0_ext.cpp \
+    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0_autogen.cpp \
+    $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_1_autogen.cpp \
     $$ANGLE_DIR/src/libGLESv2/global_state.cpp \
     $$ANGLE_DIR/src/libGLESv2/libGLESv2.cpp
-
-SSE2_SOURCES += $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimageSSE2.cpp
 
 angle_d3d11 {
     HEADERS += \
@@ -256,8 +261,7 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Image11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/IndexBuffer11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/InputLayoutCache.h \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/internal_format_initializer_table.h \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/load_functions_table.h \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/NativeWindow11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/PixelTransfer11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Query11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Renderer11.h \
@@ -267,7 +271,6 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/ShaderExecutable11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/StateManager11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/SwapChain11.h \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/swizzle_format_info.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/TextureStorage11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Trim11.h \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/texture_format_table.h \
@@ -277,7 +280,9 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Blit11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Clear11.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Context11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/dxgi_format_map_autogen.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/dxgi_support_table.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Fence11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp \
@@ -285,21 +290,24 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Image11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/IndexBuffer11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/InputLayoutCache.cpp \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/internal_format_initializer_table.cpp \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/load_functions_table_autogen.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/PixelTransfer11.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/ProgramPipeline11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Query11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/RenderTarget11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/RenderStateCache.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/ResourceManager11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/ShaderExecutable11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/StateManager11.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/StreamProducerNV12.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/swizzle_format_info_autogen.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/TextureStorage11.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/TransformFeedback11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/Trim11.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/texture_format_table.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/texture_format_table_autogen.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/VertexArray11.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/VertexBuffer11.cpp
 }
 
@@ -327,12 +335,14 @@ angle_d3d11 {
     SOURCES += \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Blit9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Buffer9.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Context9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/DebugAnnotator9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Fence9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Framebuffer9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/formatutils9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Image9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/IndexBuffer9.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/NativeWindow9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Query9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/renderer9_utils.cpp \
@@ -343,7 +353,7 @@ angle_d3d11 {
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/TextureStorage9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/VertexBuffer9.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/VertexDeclarationCache.cpp \
-        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.cpp \
         $$ANGLE_DIR/src/third_party/systeminfo/SystemInfo.cpp
 } else {
     HEADERS += \
@@ -354,6 +364,7 @@ angle_d3d11 {
     SOURCES += \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp \
+        $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/winrt/NativeWindow11WinRT.cpp \
         $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp
 }
 
@@ -367,9 +378,6 @@ BLITVS = $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/shaders/Blit.vs
 standardvs.input = BLITVS
 standardvs.type = vs_2_0
 standardvs.output = standardvs.h
-flipyvs.input = BLITVS
-flipyvs.type = vs_2_0
-flipyvs.output = flipyvs.h
 
 BLITPS = $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d9/shaders/Blit.ps
 passthroughps.input = BLITPS
@@ -378,9 +386,21 @@ passthroughps.output = passthroughps.h
 luminanceps.input = BLITPS
 luminanceps.type = ps_2_0
 luminanceps.output = luminanceps.h
+luminancepremultps.input = BLITPS
+luminancepremultps.type = ps_2_0
+luminancepremultps.output = luminancepremultps.h
+luminanceunmultps.input = BLITPS
+luminanceunmultps.type = ps_2_0
+luminanceunmultps.output = luminanceunmultps.h
 componentmaskps.input = BLITPS
 componentmaskps.type = ps_2_0
 componentmaskps.output = componentmaskps.h
+componentmaskpremultps.input = BLITPS
+componentmaskpremultps.type = ps_2_0
+componentmaskpremultps.output = componentmaskpremultps.h
+componentmaskunmultps.input = BLITPS
+componentmaskunmultps.type = ps_2_0
+componentmaskunmultps.output = componentmaskunmultps.h
 
 PASSTHROUGH2D = $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/shaders/Passthrough2D11.hlsl
 VS_Passthrough2D.input = PASSTHROUGH2D
@@ -431,29 +451,104 @@ PS_PassthroughR2DUI.output = passthroughr2dui11ps.h
 PS_PassthroughR2DI.input = PASSTHROUGH2D
 PS_PassthroughR2DI.type = ps_4_0
 PS_PassthroughR2DI.output = passthroughr2di11ps.h
+PS_PassthroughA2D.input = PASSTHROUGH2D
+PS_PassthroughA2D.type = ps_4_0_level_9_3
+PS_PassthroughA2D.output = passthrougha2d11ps.h
+PS_PassthroughRGBA2DMS.input = PASSTHROUGH2D
+PS_PassthroughRGBA2DMS.type = ps_4_1
+PS_PassthroughRGBA2DMS.output = passthroughrgba2dms11ps.h
 
 CLEAR = $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/shaders/Clear11.hlsl
-VS_ClearFloat.input = CLEAR
-VS_ClearFloat.type = vs_4_0_level_9_3
-VS_ClearFloat.output = clearfloat11vs.h
+VS_Clear_FL9.input = CLEAR
+VS_Clear_FL9.type = vs_4_0_level_9_3
+VS_Clear_FL9.output = clear11_fl9vs.h
 PS_ClearFloat_FL9.input = CLEAR
 PS_ClearFloat_FL9.type = ps_4_0_level_9_3
 PS_ClearFloat_FL9.output = clearfloat11_fl9ps.h
-PS_ClearFloat.input = CLEAR
-PS_ClearFloat.type = ps_4_0
-PS_ClearFloat.output = clearfloat11ps.h
-VS_ClearUint.input = CLEAR
-VS_ClearUint.type = vs_4_0
-VS_ClearUint.output = clearuint11vs.h
-PS_ClearUint.input = CLEAR
-PS_ClearUint.type = ps_4_0
-PS_ClearUint.output = clearuint11ps.h
-VS_ClearSint.input = CLEAR
-VS_ClearSint.type = vs_4_0
-VS_ClearSint.output = clearsint11vs.h
-PS_ClearSint.input = CLEAR
-PS_ClearSint.type = ps_4_0
-PS_ClearSint.output = clearsint11ps.h
+VS_Clear.input = CLEAR
+VS_Clear.type = vs_4_0
+VS_Clear.output = clear11vs.h
+VS_Multiview_Clear.input = CLEAR
+VS_Multiview_Clear.type = vs_4_0
+VS_Multiview_Clear.output = clear11multiviewvs.h
+GS_Multiview_Clear.input = CLEAR
+GS_Multiview_Clear.type = gs_4_0
+GS_Multiview_Clear.output = clear11multiviewgs.h
+PS_ClearDepth.input = CLEAR
+PS_ClearDepth.type = ps_4_0
+PS_ClearDepth.output = cleardepth11ps.h
+PS_ClearFloat1.input = CLEAR
+PS_ClearFloat1.type = ps_4_0
+PS_ClearFloat1.output = clearfloat11ps1.h
+PS_ClearFloat2.input = CLEAR
+PS_ClearFloat2.type = ps_4_0
+PS_ClearFloat2.output = clearfloat11ps2.h
+PS_ClearFloat3.input = CLEAR
+PS_ClearFloat3.type = ps_4_0
+PS_ClearFloat3.output = clearfloat11ps3.h
+PS_ClearFloat4.input = CLEAR
+PS_ClearFloat4.type = ps_4_0
+PS_ClearFloat4.output = clearfloat11ps4.h
+PS_ClearFloat5.input = CLEAR
+PS_ClearFloat5.type = ps_4_0
+PS_ClearFloat5.output = clearfloat11ps5.h
+PS_ClearFloat6.input = CLEAR
+PS_ClearFloat6.type = ps_4_0
+PS_ClearFloat6.output = clearfloat11ps6.h
+PS_ClearFloat7.input = CLEAR
+PS_ClearFloat7.type = ps_4_0
+PS_ClearFloat7.output = clearfloat11ps7.h
+PS_ClearFloat8.input = CLEAR
+PS_ClearFloat8.type = ps_4_0
+PS_ClearFloat8.output = clearfloat11ps8.h
+PS_ClearUint1.input = CLEAR
+PS_ClearUint1.type = ps_4_0
+PS_ClearUint1.output = clearuint11ps1.h
+PS_ClearUint2.input = CLEAR
+PS_ClearUint2.type = ps_4_0
+PS_ClearUint2.output = clearuint11ps2.h
+PS_ClearUint3.input = CLEAR
+PS_ClearUint3.type = ps_4_0
+PS_ClearUint3.output = clearuint11ps3.h
+PS_ClearUint4.input = CLEAR
+PS_ClearUint4.type = ps_4_0
+PS_ClearUint4.output = clearuint11ps4.h
+PS_ClearUint5.input = CLEAR
+PS_ClearUint5.type = ps_4_0
+PS_ClearUint5.output = clearuint11ps5.h
+PS_ClearUint6.input = CLEAR
+PS_ClearUint6.type = ps_4_0
+PS_ClearUint6.output = clearuint11ps6.h
+PS_ClearUint7.input = CLEAR
+PS_ClearUint7.type = ps_4_0
+PS_ClearUint7.output = clearuint11ps7.h
+PS_ClearUint8.input = CLEAR
+PS_ClearUint8.type = ps_4_0
+PS_ClearUint8.output = clearuint11ps8.h
+PS_ClearSint1.input = CLEAR
+PS_ClearSint1.type = ps_4_0
+PS_ClearSint1.output = clearsint11ps1.h
+PS_ClearSint2.input = CLEAR
+PS_ClearSint2.type = ps_4_0
+PS_ClearSint2.output = clearsint11ps2.h
+PS_ClearSint3.input = CLEAR
+PS_ClearSint3.type = ps_4_0
+PS_ClearSint3.output = clearsint11ps3.h
+PS_ClearSint4.input = CLEAR
+PS_ClearSint4.type = ps_4_0
+PS_ClearSint4.output = clearsint11ps4.h
+PS_ClearSint5.input = CLEAR
+PS_ClearSint5.type = ps_4_0
+PS_ClearSint5.output = clearsint11ps5.h
+PS_ClearSint6.input = CLEAR
+PS_ClearSint6.type = ps_4_0
+PS_ClearSint6.output = clearsint11ps6.h
+PS_ClearSint7.input = CLEAR
+PS_ClearSint7.type = ps_4_0
+PS_ClearSint7.output = clearsint11ps7.h
+PS_ClearSint8.input = CLEAR
+PS_ClearSint8.type = ps_4_0
+PS_ClearSint8.output = clearsint11ps8.h
 
 PASSTHROUGH3D = $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/shaders/Passthrough3D11.hlsl
 VS_Passthrough3D.input = PASSTHROUGH3D
@@ -551,15 +646,81 @@ PS_BufferToTexture_4UI.input = BUFFERTOTEXTURE
 PS_BufferToTexture_4UI.type = ps_4_0
 PS_BufferToTexture_4UI.output = buffertotexture11_ps_4ui.h
 
+MULTIPLYALPHA = $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/shaders/MultiplyAlpha.hlsl
+PS_FtoF_PM_RGBA.input = MULTIPLYALPHA
+PS_FtoF_PM_RGBA.type = ps_4_0
+PS_FtoF_PM_RGBA.output = multiplyalpha_ftof_pm_rgba_ps.h
+PS_FtoF_UM_RGBA.input = MULTIPLYALPHA
+PS_FtoF_UM_RGBA.type = ps_4_0
+PS_FtoF_UM_RGBA.output = multiplyalpha_ftof_um_rgba_ps.h
+PS_FtoF_PM_RGB.input = MULTIPLYALPHA
+PS_FtoF_PM_RGB.type = ps_4_0
+PS_FtoF_PM_RGB.output = multiplyalpha_ftof_pm_rgb_ps.h
+PS_FtoF_UM_RGB.input = MULTIPLYALPHA
+PS_FtoF_UM_RGB.type = ps_4_0
+PS_FtoF_UM_RGB.output = multiplyalpha_ftof_um_rgb_ps.h
+PS_FtoU_PT_RGBA.input = MULTIPLYALPHA
+PS_FtoU_PT_RGBA.type = ps_4_0
+PS_FtoU_PT_RGBA.output = multiplyalpha_ftou_pt_rgba_ps.h
+PS_FtoU_PM_RGBA.input = MULTIPLYALPHA
+PS_FtoU_PM_RGBA.type = ps_4_0
+PS_FtoU_PM_RGBA.output = multiplyalpha_ftou_pm_rgba_ps.h
+PS_FtoU_UM_RGBA.input = MULTIPLYALPHA
+PS_FtoU_UM_RGBA.type = ps_4_0
+PS_FtoU_UM_RGBA.output = multiplyalpha_ftou_um_rgba_ps.h
+PS_FtoU_PT_RGB.input = MULTIPLYALPHA
+PS_FtoU_PT_RGB.type = ps_4_0
+PS_FtoU_PT_RGB.output = multiplyalpha_ftou_pt_rgb_ps.h
+PS_FtoU_PM_RGB.input = MULTIPLYALPHA
+PS_FtoU_PM_RGB.type = ps_4_0
+PS_FtoU_PM_RGB.output = multiplyalpha_ftou_pm_rgb_ps.h
+PS_FtoU_UM_RGB.input = MULTIPLYALPHA
+PS_FtoU_UM_RGB.type = ps_4_0
+PS_FtoU_UM_RGB.output = multiplyalpha_ftou_um_rgb_ps.h
+PS_FtoF_PM_LUMA.input = MULTIPLYALPHA
+PS_FtoF_PM_LUMA.type = ps_4_0
+PS_FtoF_PM_LUMA.output = multiplyalpha_ftof_pm_luma_ps.h
+PS_FtoF_UM_LUMA.input = MULTIPLYALPHA
+PS_FtoF_UM_LUMA.type = ps_4_0
+PS_FtoF_UM_LUMA.output = multiplyalpha_ftof_um_luma_ps.h
+PS_FtoF_PM_LUMAALPHA.input = MULTIPLYALPHA
+PS_FtoF_PM_LUMAALPHA.type = ps_4_0
+PS_FtoF_PM_LUMAALPHA.output = multiplyalpha_ftof_pm_lumaalpha_ps.h
+PS_FtoF_UM_LUMAALPHA.input = MULTIPLYALPHA
+PS_FtoF_UM_LUMAALPHA.type = ps_4_0
+PS_FtoF_UM_LUMAALPHA.output = multiplyalpha_ftof_um_lumaalpha_ps.h
+
+RESOLVEDEPTHSTENCIL = \
+    $$ANGLE_DIR/src/libANGLE/renderer/d3d/d3d11/shaders/ResolveDepthStencil.hlsl
+VS_ResolveDepthStencil.input = RESOLVEDEPTHSTENCIL
+VS_ResolveDepthStencil.type = vs_4_1
+VS_ResolveDepthStencil.output = resolvedepthstencil11_vs.h
+PS_ResolveDepth.input = RESOLVEDEPTHSTENCIL
+PS_ResolveDepth.type = ps_4_1
+PS_ResolveDepth.output = resolvedepth11_ps.h
+PS_ResolveDepthStencil.input = RESOLVEDEPTHSTENCIL
+PS_ResolveDepthStencil.type = ps_4_1
+PS_ResolveDepthStencil.output = resolvedepthstencil11_ps.h
+PS_ResolveStencil.input = RESOLVEDEPTHSTENCIL
+PS_ResolveStencil.type = ps_4_1
+PS_ResolveStencil.output = resolvestencil11_ps.h
+
 # D3D11
 angle_d3d11: SHADERS = VS_Passthrough2D \
     PS_PassthroughRGB2D PS_PassthroughRGB2DUI PS_PassthroughRGB2DI \
     PS_PassthroughRGBA2D PS_PassthroughRGBA2DUI PS_PassthroughRGBA2DI \
     PS_PassthroughRG2D PS_PassthroughRG2DUI PS_PassthroughRG2DI \
     PS_PassthroughR2D PS_PassthroughR2DUI PS_PassthroughR2DI \
+    PS_PassthroughA2D \
     PS_PassthroughLum2D PS_PassthroughLumAlpha2D PS_PassthroughDepth2D \
-    VS_ClearFloat VS_ClearUint VS_ClearSint \
-    PS_ClearFloat PS_ClearFloat_FL9 PS_ClearUint PS_ClearSint \
+    VS_Clear_FL9 PS_ClearFloat_FL9 VS_Clear VS_Multiview_Clear \
+    GS_Multiview_Clear PS_ClearDepth \
+    PS_ClearFloat1 PS_ClearFloat2 PS_ClearFloat3 PS_ClearFloat4 PS_ClearFloat5 \
+    PS_ClearFloat6 PS_ClearFloat7 PS_ClearFloat8 \
+    PS_ClearUint1 PS_ClearUint2 PS_ClearUint3 PS_ClearUint4 \
+    PS_ClearUint5 PS_ClearUint6 PS_ClearUint7 PS_ClearUint8 \
+    PS_ClearSint1 PS_ClearSint2 PS_ClearSint3 PS_ClearSint4 \
+    PS_ClearSint5 PS_ClearSint6 PS_ClearSint7 PS_ClearSint8 \
     VS_Passthrough3D GS_Passthrough3D \
     PS_PassthroughRGBA3D PS_PassthroughRGBA3DUI PS_PassthroughRGBA3DI \
     PS_PassthroughRGB3D PS_PassthroughRGB3DUI PS_PassthroughRGB3DI \
@@ -570,10 +731,22 @@ angle_d3d11: SHADERS = VS_Passthrough2D \
     PS_SwizzleF3D PS_SwizzleI3D PS_SwizzleUI3D \
     PS_SwizzleF2DArray PS_SwizzleI2DArray PS_SwizzleUI2DArray \
     VS_BufferToTexture GS_BufferToTexture \
-    PS_BufferToTexture_4F PS_BufferToTexture_4I PS_BufferToTexture_4UI
+    PS_BufferToTexture_4F PS_BufferToTexture_4I PS_BufferToTexture_4UI \
+    PS_FtoF_PM_RGBA PS_FtoF_UM_RGBA PS_FtoF_PM_RGB PS_FtoF_UM_RGB \
+    PS_FtoU_PT_RGBA PS_FtoU_PM_RGBA PS_FtoU_UM_RGBA \
+    PS_FtoU_PT_RGB PS_FtoU_PM_RGB PS_FtoU_UM_RGB \
+    PS_FtoF_PM_LUMA PS_FtoF_UM_LUMA \
+    PS_FtoF_PM_LUMAALPHA PS_FtoF_UM_LUMAALPHA \
+    VS_ResolveDepthStencil PS_ResolveDepth PS_ResolveDepthStencil PS_ResolveStencil
+
+# This shader causes an internal compiler error in mingw73. Re-enable it, when
+# our mingw version can handle it.
+!mingw: angle_d3d11: SHADERS += PS_PassthroughRGBA2DMS
 
 # D3D9
-!winrt: SHADERS += standardvs flipyvs passthroughps luminanceps componentmaskps
+!winrt: SHADERS += standardvs passthroughps \
+    luminanceps luminancepremultps luminanceunmultps \
+    componentmaskps componentmaskpremultps componentmaskunmultps
 
 # Generate headers
 for (SHADER, SHADERS) {
@@ -593,11 +766,11 @@ khr_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/KHR
 gles2_headers.files = \
     $$ANGLE_DIR/include/GLES2/gl2.h \
     $$ANGLE_DIR/include/GLES2/gl2ext.h \
+    $$ANGLE_DIR/include/GLES2/gl2ext_angle.h \
     $$ANGLE_DIR/include/GLES2/gl2platform.h
 gles2_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/GLES2
 gles3_headers.files = \
     $$ANGLE_DIR/include/GLES3/gl3.h \
-    $$ANGLE_DIR/include/GLES3/gl3ext.h \
     $$ANGLE_DIR/include/GLES3/gl3platform.h
 gles3_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/GLES3
 INSTALLS += khr_headers gles2_headers

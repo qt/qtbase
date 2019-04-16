@@ -525,6 +525,31 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
   made private. In that case, no error would be reported, but your
   application would probably crash when you called a member function
   of \c{w}.
+
+  \sa Q_DISABLE_COPY_MOVE, Q_DISABLE_MOVE
+*/
+
+/*!
+  \macro Q_DISABLE_MOVE(Class)
+  \relates QObject
+
+  Disables the use of move constructors and move assignment operators
+  for the given \a Class.
+
+  \sa Q_DISABLE_COPY, Q_DISABLE_COPY_MOVE
+  \since 5.13
+*/
+
+/*!
+  \macro Q_DISABLE_COPY_MOVE(Class)
+  \relates QObject
+
+  A convenience macro that disables the use of copy constructors, assignment
+  operators, move constructors and move assignment operators for the given
+  \a Class, combining Q_DISABLE_COPY and Q_DISABLE_MOVE.
+
+  \sa Q_DISABLE_COPY, Q_DISABLE_MOVE
+  \since 5.13
 */
 
 /*!
@@ -1122,12 +1147,12 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     \sa QT_VERSION_STR, QLibraryInfo::version()
 */
 
-const char *qVersion() Q_DECL_NOTHROW
+const char *qVersion() noexcept
 {
     return QT_VERSION_STR;
 }
 
-bool qSharedBuild() Q_DECL_NOTHROW
+bool qSharedBuild() noexcept
 {
 #ifdef QT_SHARED
     return true;
@@ -1954,11 +1979,11 @@ bool qSharedBuild() Q_DECL_NOTHROW
   a specified version of Qt or any earlier version. The default version number is 5.0,
   meaning that functions deprecated in or before Qt 5.0 will not be included.
 
-  Examples:
-  When using a future release of Qt 5, set QT_DISABLE_DEPRECATED_BEFORE=0x050100 to
-  disable functions deprecated in Qt 5.1 and earlier. In any release, set
-  QT_DISABLE_DEPRECATED_BEFORE=0x000000 to enable any functions, including the ones
-  deprecated in Qt 5.0
+  For instance, when using a future release of Qt 5, set
+  \c{QT_DISABLE_DEPRECATED_BEFORE=0x050100} to disable functions deprecated in
+  Qt 5.1 and earlier. In any release, set
+  \c{QT_DISABLE_DEPRECATED_BEFORE=0x000000} to enable all functions, including
+  the ones deprecated in Qt 5.0.
 
   \sa QT_DEPRECATED_WARNINGS
  */
@@ -1968,11 +1993,23 @@ bool qSharedBuild() Q_DECL_NOTHROW
   \macro QT_DEPRECATED_WARNINGS
   \relates <QtGlobal>
 
-  If this macro is defined, the compiler will generate warnings if API declared as
+  Since Qt 5.13, this macro has no effect. In Qt 5.12 and before, if this macro
+  is defined, the compiler will generate warnings if any API declared as
   deprecated by Qt is used.
 
-  \sa QT_DISABLE_DEPRECATED_BEFORE
+  \sa QT_DISABLE_DEPRECATED_BEFORE, QT_NO_DEPRECATED_WARNINGS
  */
+
+/*!
+  \macro QT_NO_DEPRECATED_WARNINGS
+  \relates <QtGlobal>
+  \since 5.13
+
+  This macro can be used to suppress deprecation warnings that would otherwise
+  be generated when using deprecated APIs.
+
+  \sa QT_DISABLE_DEPRECATED_BEFORE
+*/
 
 #if defined(QT_BUILD_QMAKE)
 // needed to bootstrap qmake
@@ -2025,6 +2062,8 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
             return "Sierra";
         case 13:
             return "High Sierra";
+        case 14:
+            return "Mojave";
         }
     }
     // unknown, future version
@@ -2908,18 +2947,18 @@ enum {
 QByteArray QSysInfo::machineUniqueId()
 {
 #ifdef Q_OS_BSD4
-    char uuid[UuidStringLen];
+    char uuid[UuidStringLen + 1];
     size_t uuidlen = sizeof(uuid);
 #  ifdef KERN_HOSTUUID
     int name[] = { CTL_KERN, KERN_HOSTUUID };
     if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
             && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen);
+        return QByteArray(uuid, uuidlen - 1);
 
 #  else
     // Darwin: no fixed value, we need to search by name
     if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen);
+        return QByteArray(uuid, uuidlen - 1);
 #  endif
 #elif defined(Q_OS_UNIX)
     // The modern name on Linux is /etc/machine-id, but that path is
@@ -2942,7 +2981,7 @@ QByteArray QSysInfo::machineUniqueId()
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // Let's poke at the registry
     HKEY key = NULL;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY, &key)
             == ERROR_SUCCESS) {
         wchar_t buffer[UuidStringLen + 1];
         DWORD size = sizeof(buffer);
@@ -2983,11 +3022,11 @@ QByteArray QSysInfo::bootUniqueId()
     }
 #elif defined(Q_OS_DARWIN)
     // "kern.bootsessionuuid" is only available by name
-    char uuid[UuidStringLen];
+    char uuid[UuidStringLen + 1];
     size_t uuidlen = sizeof(uuid);
     if (sysctlbyname("kern.bootsessionuuid", uuid, &uuidlen, nullptr, 0) == 0
             && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen);
+        return QByteArray(uuid, uuidlen - 1);
 #endif
     return QByteArray();
 };
@@ -3167,7 +3206,7 @@ QByteArray QSysInfo::bootUniqueId()
     The Q_CHECK_PTR macro calls this function if an allocation check
     fails.
 */
-void qt_check_pointer(const char *n, int l) Q_DECL_NOTHROW
+void qt_check_pointer(const char *n, int l) noexcept
 {
     // make separate printing calls so that the first one may flush;
     // the second one could want to allocate memory (fputs prints a
@@ -3194,7 +3233,7 @@ void qBadAlloc()
    Allows you to call std::terminate() without including <exception>.
    Called internally from QT_TERMINATE_ON_EXCEPTION
 */
-Q_NORETURN void qTerminate() Q_DECL_NOTHROW
+Q_NORETURN void qTerminate() noexcept
 {
     std::terminate();
 }
@@ -3203,7 +3242,7 @@ Q_NORETURN void qTerminate() Q_DECL_NOTHROW
 /*
   The Q_ASSERT macro calls this function when the test fails.
 */
-void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
+void qt_assert(const char *assertion, const char *file, int line) noexcept
 {
     QMessageLogger(file, line, nullptr).fatal("ASSERT: \"%s\" in file %s, line %d", assertion, file, line);
 }
@@ -3211,7 +3250,7 @@ void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
 /*
   The Q_ASSERT_X macro calls this function when the test fails.
 */
-void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW
+void qt_assert_x(const char *where, const char *what, const char *file, int line) noexcept
 {
     QMessageLogger(file, line, nullptr).fatal("ASSERT failure in %s: \"%s\", file %s, line %d", where, what, file, line);
 }
@@ -3413,14 +3452,12 @@ QString qEnvironmentVariable(const char *varName)
     Returns whether the environment variable \a varName is empty.
 
     Equivalent to
-    \code
-    qgetenv(varName).isEmpty()
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp is-empty
     except that it's potentially much faster, and can't throw exceptions.
 
     \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet()
 */
-bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
+bool qEnvironmentVariableIsEmpty(const char *varName) noexcept
 {
     QMutexLocker locker(&environmentMutex);
 #ifdef Q_CC_MSVC
@@ -3445,9 +3482,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
     on the success of the conversion.
 
     Equivalent to
-    \code
-    qgetenv(varName).toInt(ok, 0)
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp to-int
     except that it's much faster, and can't throw exceptions.
 
     \note there's a limit on the length of the value, which is sufficient for
@@ -3457,7 +3492,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 
     \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet()
 */
-int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
+int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
 {
     static const int NumBinaryDigitsPerOctalDigit = 3;
     static const int MaxDigitsForOctalInt =
@@ -3521,14 +3556,12 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
     Returns whether the environment variable \a varName is set.
 
     Equivalent to
-    \code
-    !qgetenv(varName).isNull()
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp is-null
     except that it's potentially much faster, and can't throw exceptions.
 
     \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsEmpty()
 */
-bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
+bool qEnvironmentVariableIsSet(const char *varName) noexcept
 {
     QMutexLocker locker(&environmentMutex);
 #ifdef Q_CC_MSVC
@@ -3699,37 +3732,21 @@ bool qunsetenv(const char *varName)
 
     Its main use in Qt is to prevent implicitly-shared Qt containers
     from detaching:
-    \code
-    QString s = ...;
-    for (QChar ch : s) // detaches 's' (performs a deep-copy if 's' was shared)
-        process(ch);
-    for (QChar ch : qAsConst(s)) // ok, no detach attempt
-        process(ch);
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp as-const-0
 
     Of course, in this case, you could (and probably should) have declared
     \c s as \c const in the first place:
-    \code
-    const QString s = ...;
-    for (QChar ch : s) // ok, no detach attempt on const objects
-        process(ch);
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp as-const-1
     but often that is not easily possible.
 
     It is important to note that qAsConst() does not copy its argument,
     it just performs a \c{const_cast<const T&>(t)}. This is also the reason
     why it is designed to fail for rvalues: The returned reference would go
     stale too soon. So while this works (but detaches the returned object):
-    \code
-    for (QChar ch : funcReturningQString())
-        process(ch); // OK, the returned object is kept alive for the loop's duration
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp as-const-2
 
     this would not:
-    \code
-    for (QChar ch : qAsConst(funcReturningQString()))
-        process(ch); // ERROR: ch is copied from deleted memory
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp as-const-3
 
     To prevent this construct from compiling (and failing at runtime), qAsConst() has
     a second, deleted, overload which binds to rvalues.
@@ -3742,10 +3759,7 @@ bool qunsetenv(const char *varName)
     \overload
 
     This overload is deleted to prevent a dangling reference in code like
-    \code
-    for (QChar ch : qAsConst(funcReturningQString()))
-        process(ch); // ERROR: ch is copied from deleted memory
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp as-const-4
 */
 
 /*!
@@ -3858,7 +3872,7 @@ bool qunsetenv(const char *varName)
     dependent delayed translation in the given \a context with the given
     \a comment.
     The \a context is typically a class and also needs to be specified
-    as a string literal. The string literal \a disambiguation should be
+    as a string literal. The string literal \a comment should be
     a short semantic tag to tell apart otherwise identical strings.
 
     The macro tells lupdate to collect the string, and expands to an
@@ -4103,6 +4117,13 @@ bool qunsetenv(const char *varName)
     Example of a movable type:
 
     \snippet code/src_corelib_global_qglobal.cpp 39
+
+    Qt will try to detect the class of a type using std::is_trivial or
+    std::is_trivially_copyable. Use this macro to tune the behavior.
+    For instance many types would be candidates for Q_MOVABLE_TYPE despite
+    not being trivially-copyable. For binary compatibility reasons, QList
+    optimizations are only enabled if there is an explicit
+    Q_DECLARE_TYPEINFO even for trivially-copyable types.
 */
 
 /*!
@@ -4679,9 +4700,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     purpose. It either expands to \c expr (if Qt is compiled without
     exception support or the compiler supports C++11 noexcept
     semantics) or to
-    \code
-    try { expr; } catch(...) { qTerminate(); }
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp qterminate
     otherwise.
 
     Since this macro expands to just \c expr if the compiler supports
@@ -4751,10 +4770,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
     The macro goes at the end of the function, usually after the
     \c{const}, if any:
-    \code
-    // generate error if this doesn't actually override anything:
-    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp qdecloverride
 
     \sa Q_DECL_FINAL
 */
@@ -4776,18 +4792,11 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
     The macro goes at the end of the function, usually after the
     \c{const}, if any:
-    \code
-    // more-derived classes no longer permitted to override this:
-    virtual void MyWidget::paintEvent(QPaintEvent*) Q_DECL_FINAL;
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp qdeclfinal-1
 
     For classes, it goes in front of the \c{:} in the class
     definition, if any:
-    \code
-    class QRect Q_DECL_FINAL { // cannot be derived from
-        // ...
-    };
-    \endcode
+    \snippet code/src_corelib_global_qglobal.cpp qdeclfinal-2
 
     \sa Q_DECL_OVERRIDE
 */

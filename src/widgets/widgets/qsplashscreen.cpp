@@ -46,6 +46,7 @@
 #include "qpixmap.h"
 #include "qtextdocument.h"
 #include "qtextcursor.h"
+#include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qelapsedtimer.h>
@@ -69,6 +70,10 @@ public:
     int currAlign;
 
     inline QSplashScreenPrivate();
+
+    void setPixmap(const QPixmap &p, const QScreen *screen = nullptr);
+
+    static const QScreen *screenFor(const QWidget *w);
 };
 
 /*!
@@ -143,8 +148,9 @@ QSplashScreen::QSplashScreen(const QPixmap &pixmap, Qt::WindowFlags f)
 QSplashScreen::QSplashScreen(QWidget *parent, const QPixmap &pixmap, Qt::WindowFlags f)
     : QWidget(*new QSplashScreenPrivate, parent, Qt::SplashScreen | Qt::FramelessWindowHint | f)
 {
-    d_func()->pixmap = pixmap;
-    setPixmap(d_func()->pixmap);  // Does an implicit repaint
+    // Does an implicit repaint. Explicitly pass parent as QObject::parent()
+    // is still 0 here due to QWidget's special handling.
+    d_func()->setPixmap(pixmap, QSplashScreenPrivate::screenFor(parent));
 }
 
 /*!
@@ -276,16 +282,54 @@ void QSplashScreen::finish(QWidget *mainWin)
 */
 void QSplashScreen::setPixmap(const QPixmap &pixmap)
 {
-    Q_D(QSplashScreen);
+    d_func()->setPixmap(pixmap, QSplashScreenPrivate::screenFor(this));
+}
 
-    d->pixmap = pixmap;
-    setAttribute(Qt::WA_TranslucentBackground, pixmap.hasAlpha());
+// In setPixmap(), resize and try to position on a screen according to:
+// 1) If a QDesktopScreenWidget is found in the parent hierarchy, use that (see docs on
+//    QSplashScreen(QWidget *, QPixmap).
+// 2) If a widget with associated QWindow is found, use that
+// 3) When nothing can be found, try to center it over the cursor
 
-    QRect r(QPoint(), d->pixmap.size()  / d->pixmap.devicePixelRatio());
-    resize(r.size());
-    move(QDesktopWidgetPrivate::screenGeometry().center() - r.center());
-    if (isVisible())
-        repaint();
+static inline int screenNumberOf(const QDesktopScreenWidget *dsw)
+{
+    auto desktopWidgetPrivate =
+        static_cast<QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
+    return desktopWidgetPrivate->screens.indexOf(const_cast<QDesktopScreenWidget *>(dsw));
+}
+
+const QScreen *QSplashScreenPrivate::screenFor(const QWidget *w)
+{
+    for (const QWidget *p = w; p !=nullptr ; p = p->parentWidget()) {
+        if (auto dsw = qobject_cast<const QDesktopScreenWidget *>(p))
+            return QGuiApplication::screens().value(screenNumberOf(dsw));
+        if (QWindow *window = p->windowHandle())
+            return window->screen();
+    }
+#if QT_CONFIG(cursor)
+    // Note: We could rely on QPlatformWindow::initialGeometry() to center it
+    // over the cursor, but not all platforms (namely Android) use that.
+    if (QGuiApplication::screens().size() > 1) {
+        if (auto screenAtCursor = QGuiApplication::screenAt(QCursor::pos()))
+            return screenAtCursor;
+    }
+#endif // cursor
+    return QGuiApplication::primaryScreen();
+}
+
+void QSplashScreenPrivate::setPixmap(const QPixmap &p, const QScreen *screen)
+{
+    Q_Q(QSplashScreen);
+
+    pixmap = p;
+    q->setAttribute(Qt::WA_TranslucentBackground, pixmap.hasAlpha());
+
+    QRect r(QPoint(), pixmap.size() / pixmap.devicePixelRatio());
+    q->resize(r.size());
+    if (screen)
+        q->move(screen->geometry().center() - r.center());
+    if (q->isVisible())
+        q->repaint();
 }
 
 /*!

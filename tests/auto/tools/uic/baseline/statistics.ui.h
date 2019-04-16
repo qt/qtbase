@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'statistics.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -179,19 +179,19 @@ public:
 
     void retranslateUi(QDialog *Statistics)
     {
-        Statistics->setWindowTitle(QApplication::translate("Statistics", "Statistics", nullptr));
-        closeBtn->setText(QApplication::translate("Statistics", "&Close", nullptr));
-        textLabel4->setText(QApplication::translate("Statistics", "Translation", nullptr));
-        textLabel5->setText(QApplication::translate("Statistics", "Source", nullptr));
-        untrWords->setText(QApplication::translate("Statistics", "0", nullptr));
-        trWords->setText(QApplication::translate("Statistics", "0", nullptr));
-        textLabel1->setText(QApplication::translate("Statistics", "Words:", nullptr));
-        trChars->setText(QApplication::translate("Statistics", "0", nullptr));
-        untrChars->setText(QApplication::translate("Statistics", "0", nullptr));
-        textLabel3->setText(QApplication::translate("Statistics", "Characters:", nullptr));
-        textLabel6->setText(QApplication::translate("Statistics", "Characters (with spaces):", nullptr));
-        trCharsSpc->setText(QApplication::translate("Statistics", "0", nullptr));
-        untrCharsSpc->setText(QApplication::translate("Statistics", "0", nullptr));
+        Statistics->setWindowTitle(QCoreApplication::translate("Statistics", "Statistics", nullptr));
+        closeBtn->setText(QCoreApplication::translate("Statistics", "&Close", nullptr));
+        textLabel4->setText(QCoreApplication::translate("Statistics", "Translation", nullptr));
+        textLabel5->setText(QCoreApplication::translate("Statistics", "Source", nullptr));
+        untrWords->setText(QCoreApplication::translate("Statistics", "0", nullptr));
+        trWords->setText(QCoreApplication::translate("Statistics", "0", nullptr));
+        textLabel1->setText(QCoreApplication::translate("Statistics", "Words:", nullptr));
+        trChars->setText(QCoreApplication::translate("Statistics", "0", nullptr));
+        untrChars->setText(QCoreApplication::translate("Statistics", "0", nullptr));
+        textLabel3->setText(QCoreApplication::translate("Statistics", "Characters:", nullptr));
+        textLabel6->setText(QCoreApplication::translate("Statistics", "Characters (with spaces):", nullptr));
+        trCharsSpc->setText(QCoreApplication::translate("Statistics", "0", nullptr));
+        untrCharsSpc->setText(QCoreApplication::translate("Statistics", "0", nullptr));
     } // retranslateUi
 
 };

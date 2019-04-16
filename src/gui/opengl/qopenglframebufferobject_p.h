@@ -109,8 +109,8 @@ public:
 class QOpenGLFramebufferObjectPrivate
 {
 public:
-    QOpenGLFramebufferObjectPrivate() : fbo_guard(0), depth_buffer_guard(0)
-                                  , stencil_buffer_guard(0)
+    QOpenGLFramebufferObjectPrivate() : fbo_guard(nullptr), depth_buffer_guard(nullptr)
+                                  , stencil_buffer_guard(nullptr)
                                   , valid(false) {}
     ~QOpenGLFramebufferObjectPrivate() {}
 
@@ -135,9 +135,9 @@ public:
     QOpenGLExtensions funcs;
 
     struct ColorAttachment {
-        ColorAttachment() : internalFormat(0), guard(0) { }
+        ColorAttachment() : internalFormat(0), guard(nullptr) { }
         ColorAttachment(const QSize &size, GLenum internalFormat)
-            : size(size), internalFormat(internalFormat), guard(0) { }
+            : size(size), internalFormat(internalFormat), guard(nullptr) { }
         QSize size;
         GLenum internalFormat;
         QOpenGLSharedResourceGuard *guard;

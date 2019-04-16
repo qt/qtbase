@@ -1088,6 +1088,11 @@ QStringList QSqlDatabase::tables(QSql::TableType type) const
     Returns the primary index for table \a tablename. If no primary
     index exists, an empty QSqlIndex is returned.
 
+    \note Some drivers, such as the \l {QPSQL Case Sensitivity}{QPSQL}
+    driver, may may require you to pass \a tablename in lower case if
+    the table was not quoted when created. See the
+    \l{sql-driver.html}{Qt SQL driver} documentation for more information.
+
     \sa tables(), record()
 */
 
@@ -1102,6 +1107,11 @@ QSqlIndex QSqlDatabase::primaryIndex(const QString& tablename) const
     the table (or view) called \a tablename. The order in which the
     fields appear in the record is undefined. If no such table (or
     view) exists, an empty record is returned.
+
+    \note Some drivers, such as the \l {QPSQL Case Sensitivity}{QPSQL}
+    driver, may may require you to pass \a tablename in lower case if
+    the table was not quoted when created. See the
+    \l{sql-driver.html}{Qt SQL driver} documentation for more information.
 */
 
 QSqlRecord QSqlDatabase::record(const QString& tablename) const
@@ -1375,6 +1385,40 @@ QSqlDatabase QSqlDatabase::cloneDatabase(const QSqlDatabase &other, const QStrin
 
     QSqlDatabase db(other.driverName());
     db.d->copy(other.d);
+    QSqlDatabasePrivate::addDatabase(db, connectionName);
+    return db;
+}
+
+/*!
+    \since 5.13
+    \overload
+
+    Clones the database connection \a other and stores it as \a
+    connectionName. All the settings from the original database, e.g.
+    databaseName(), hostName(), etc., are copied across. Does nothing
+    if \a other is an invalid database. Returns the newly created
+    database connection.
+
+    \note The new connection has not been opened. Before using the new
+    connection, you must call open().
+
+    This overload is useful when cloning the database in another thread to the
+    one that is used by the database represented by \a other.
+*/
+
+QSqlDatabase QSqlDatabase::cloneDatabase(const QString &other, const QString &connectionName)
+{
+    const QConnectionDict *dict = dbDict();
+    Q_ASSERT(dict);
+
+    dict->lock.lockForRead();
+    QSqlDatabase otherDb = dict->value(other);
+    dict->lock.unlock();
+    if (!otherDb.isValid())
+        return QSqlDatabase();
+
+    QSqlDatabase db(otherDb.driverName());
+    db.d->copy(otherDb.d);
     QSqlDatabasePrivate::addDatabase(db, connectionName);
     return db;
 }

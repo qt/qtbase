@@ -32,6 +32,9 @@
 #include <QtGui/QWindow>
 #include <QDebug>
 
+// the complete class is deprecated
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 class tst_QDesktopWidget : public QObject
 {
     Q_OBJECT
@@ -163,7 +166,7 @@ void tst_QDesktopWidget::topLevels()
     QCOMPARE(topLevelDesktopWidgets, 0);
     QCOMPARE(topLevelDesktopWindows, 0);
 }
+QT_WARNING_POP
 
 QTEST_MAIN(tst_QDesktopWidget)
 #include "tst_qdesktopwidget.moc"
-

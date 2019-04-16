@@ -50,19 +50,9 @@
 
 #include "spreadsheetitem.h"
 
-SpreadSheetItem::SpreadSheetItem()
-        : QTableWidgetItem(), isResolving(false)
-{
-}
-
-SpreadSheetItem::SpreadSheetItem(const QString &text)
-        : QTableWidgetItem(text), isResolving(false)
-{
-}
-
 QTableWidgetItem *SpreadSheetItem::clone() const
 {
-    SpreadSheetItem *item = new SpreadSheetItem();
+    SpreadSheetItem *item = new SpreadSheetItem;
     *item = *this;
     return item;
 }
@@ -75,21 +65,20 @@ QVariant SpreadSheetItem::data(int role) const
     if (role == Qt::DisplayRole)
         return display();
 
-    QString t = display().toString();
-    bool isNumber = false;
-    int number = t.toInt(&isNumber);
+    const QString t = display().toString();
 
-    if (role == Qt::TextColorRole) {
-        if (!isNumber)
-            return QVariant::fromValue(QColor(Qt::black));
-        else if (number < 0)
-            return QVariant::fromValue(QColor(Qt::red));
-        return QVariant::fromValue(QColor(Qt::blue));
+    if (role == Qt::ForegroundRole) {
+        bool isNumber = false;
+        const int number = t.toInt(&isNumber);
+        QColor color = Qt::black;
+        if (isNumber)
+            color = (number < 0) ? Qt::red : Qt::blue;
+        return QVariant::fromValue(color);
     }
 
-     if (role == Qt::TextAlignmentRole)
-         if (!t.isEmpty() && (t.at(0).isNumber() || t.at(0) == '-'))
-             return (int)(Qt::AlignRight | Qt::AlignVCenter);
+    if (role == Qt::TextAlignmentRole)
+        if (!t.isEmpty() && (t.at(0).isNumber() || t.at(0) == '-'))
+            return int(Qt::AlignRight | Qt::AlignVCenter);
 
      return QTableWidgetItem::data(role);
  }

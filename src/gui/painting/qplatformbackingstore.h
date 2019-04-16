@@ -85,7 +85,7 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
-    explicit QPlatformTextureList(QObject *parent = 0);
+    explicit QPlatformTextureList(QObject *parent = nullptr);
     ~QPlatformTextureList();
 
     int count() const;
@@ -99,7 +99,7 @@ public:
     bool isLocked() const;
 
     void appendTexture(void *source, GLuint textureId, const QRect &geometry,
-                       const QRect &clipRect = QRect(), Flags flags = 0);
+                       const QRect &clipRect = QRect(), Flags flags = nullptr);
     void clear();
 
  Q_SIGNALS:

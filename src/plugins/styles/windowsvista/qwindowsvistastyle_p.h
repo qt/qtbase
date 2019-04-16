@@ -99,7 +99,7 @@ public:
     QPalette standardPalette() const override;
 
 private:
-    Q_DISABLE_COPY(QWindowsVistaStyle)
+    Q_DISABLE_COPY_MOVE(QWindowsVistaStyle)
     Q_DECLARE_PRIVATE(QWindowsVistaStyle)
     friend class QStyleFactory;
 };

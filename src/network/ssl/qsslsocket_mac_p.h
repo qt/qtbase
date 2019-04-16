@@ -75,7 +75,7 @@ public:
 private:
     SSLContextRef context;
 
-    Q_DISABLE_COPY(QSecureTransportContext)
+    Q_DISABLE_COPY_MOVE(QSecureTransportContext)
 };
 
 class QSslSocketBackendPrivate : public QSslSocketPrivate
@@ -129,7 +129,7 @@ private:
     QSecureTransportContext context;
     bool renegotiating = false;
 
-    Q_DISABLE_COPY(QSslSocketBackendPrivate)
+    Q_DISABLE_COPY_MOVE(QSslSocketBackendPrivate)
 };
 
 QT_END_NAMESPACE

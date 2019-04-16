@@ -1,24 +1,31 @@
 suffix =
 for(ever) {
-    QMAKE_USE$${suffix} = $$unique(QMAKE_USE$${suffix})
+    CC_USES =
+    LD_USES =
     for (use, QMAKE_USE$${suffix}) {
         use = $$split(use, /)
         name = $$take_first(use)
-        nu = $$upper($$name)
+        nu = $$upper($$replace(name, -, _))
+        !contains(use, linkonly): CC_USES += $$nu
+        !contains(use, nolink): LD_USES += $$nu
+    }
+    CC_USES = $$resolve_depends(CC_USES, QMAKE_DEPENDS_, _CC)
+    for (nu, CC_USES) {
         !defined(QMAKE_LIBS_$$nu, var): \
-            error("Library '$$name' is not defined.")
+            error("Library '$$lower($$replace(nu, _, -))' is not defined.")
 
-        !contains(use, nolink) {
-            QMAKE_LIBDIR += $$eval(QMAKE_LIBDIR_$$nu)
-            debug: \
-                LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$$nu)
-            else: \
-                LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_RELEASE) $$eval(QMAKE_LIBS_$$nu)
-        }
-        !contains(use, linkonly) {
-            DEFINES += $$eval(QMAKE_DEFINES_$${nu})
-            INCLUDEPATH += $$eval(QMAKE_INCDIR_$${nu})
-        }
+        DEFINES += $$eval(QMAKE_DEFINES_$${nu})
+        INCLUDEPATH += $$eval(QMAKE_INCDIR_$${nu})
+    }
+    LD_USES = $$resolve_depends(LD_USES, QMAKE_DEPENDS_, _LD)
+    for (nu, LD_USES) {
+        !defined(QMAKE_LIBS_$$nu, var): \
+            error("Library '$$lower($$replace(nu, _, -))' is not defined.")
+
+        debug: \
+            LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$$nu)
+        else: \
+            LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_RELEASE) $$eval(QMAKE_LIBS_$$nu)
     }
     !isEmpty(suffix): break()
     suffix = "_PRIVATE"

@@ -27,7 +27,9 @@
       defined(__sun) || \
       defined(__GLIBC__) || \
       defined(__GNU__) || \
-      defined(__QNX__)
+      defined(__QNX__) || \
+      defined(__Fuchsia__) || \
+      defined(__HAIKU__)
 #   define ANGLE_PLATFORM_POSIX 1
 #else
 #   error Unsupported platform.
@@ -57,28 +59,22 @@
 #   endif
 
 #   if defined(ANGLE_ENABLE_D3D11)
-#       include <d3d10_1.h>
-#       include <d3d11.h>
-#       include <dxgi.h>
-#      if defined(__MINGW32__) && !defined(__d3d11sdklayers_h__)
-#          define ANGLE_MINGW32_COMPAT
-#      endif
-#      if defined(_MSC_VER) && _MSC_VER >= 1800
-#          define ANGLE_ENABLE_D3D11_1
-#      endif
-#      if defined(ANGLE_ENABLE_D3D11_1)
-#       include <d3d11_1.h>
-#       include <dxgi1_2.h>
-#      endif
-#       include <d3dcompiler.h>
+#include <d3d10_1.h>
+#include <d3d11.h>
+#include <d3d11_3.h>
+#include <d3dcompiler.h>
+#include <dxgi.h>
+#include <dxgi1_2.h>
 #   endif
+
+#if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
+#include <wrl.h>
+#endif
 
 #   if defined(ANGLE_ENABLE_WINDOWS_STORE)
 #       include <dxgi1_3.h>
 #       if defined(_DEBUG)
-#          if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
 #           include <DXProgrammableCapture.h>
-#          endif
 #           include <dxgidebug.h>
 #       endif
 #   endif
@@ -87,8 +83,21 @@
 #   undef far
 #endif
 
-#if !defined(_M_ARM) && !defined(ANGLE_PLATFORM_ANDROID)
-#   define ANGLE_USE_SSE
+#if defined(_MSC_VER) && !defined(_M_ARM) && !defined(_M_ARM64)
+#include <intrin.h>
+#define ANGLE_USE_SSE
+#elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__)) && !defined(__MINGW32__)
+#include <x86intrin.h>
+#define ANGLE_USE_SSE
 #endif
+
+// Mips and arm devices need to include stddef for size_t.
+#if defined(__mips__) || defined(__arm__) || defined(__aarch64__)
+#include <stddef.h>
+#endif
+
+// The MemoryBarrier function name collides with a macro under Windows
+// We will undef the macro so that the function name does not get replaced
+#undef MemoryBarrier
 
 #endif // COMMON_PLATFORM_H_

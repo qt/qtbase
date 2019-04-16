@@ -829,7 +829,6 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             break;
 #endif
 
-        // It seems we need to use invertedAppearance for Left and right, otherwise, things look weird.
         case Qt::Key_Left:
 #ifdef QT_KEYPAD_NAVIGATION
             // In QApplication::KeypadNavigationDirectional, we want to change the slider
@@ -848,9 +847,9 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             else
 #endif
             if (isRightToLeft())
-                action = d->invertedAppearance ? SliderSingleStepSub : SliderSingleStepAdd;
+                action = d->invertedControls ? SliderSingleStepSub : SliderSingleStepAdd;
             else
-                action = !d->invertedAppearance ? SliderSingleStepSub : SliderSingleStepAdd;
+                action = !d->invertedControls ? SliderSingleStepSub : SliderSingleStepAdd;
             break;
         case Qt::Key_Right:
 #ifdef QT_KEYPAD_NAVIGATION
@@ -868,9 +867,9 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             else
 #endif
             if (isRightToLeft())
-                action = d->invertedAppearance ? SliderSingleStepAdd : SliderSingleStepSub;
+                action = d->invertedControls ? SliderSingleStepAdd : SliderSingleStepSub;
             else
-                action = !d->invertedAppearance ? SliderSingleStepAdd : SliderSingleStepSub;
+                action = !d->invertedControls ? SliderSingleStepAdd : SliderSingleStepSub;
             break;
         case Qt::Key_Up:
 #ifdef QT_KEYPAD_NAVIGATION

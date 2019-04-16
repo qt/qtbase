@@ -109,11 +109,11 @@ class QStandardItemPrivate
     Q_DECLARE_PUBLIC(QStandardItem)
 public:
     inline QStandardItemPrivate()
-        : model(0),
-          parent(0),
+        : model(nullptr),
+          parent(nullptr),
           rows(0),
           columns(0),
-          q_ptr(0),
+          q_ptr(nullptr),
           lastKnownIndex(-1)
         { }
 
@@ -220,10 +220,10 @@ public:
         if (!index.isValid())
             return root.data();
         if (index.model() != q)
-            return 0;
+            return nullptr;
         QStandardItem *parent = static_cast<QStandardItem*>(index.internalPointer());
-        if (parent == 0)
-            return 0;
+        if (parent == nullptr)
+            return nullptr;
         return parent->child(index.row(), index.column());
     }
 

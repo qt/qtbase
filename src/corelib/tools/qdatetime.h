@@ -258,7 +258,7 @@ class Q_CORE_EXPORT QDateTime
     };
 
 public:
-    QDateTime() Q_DECL_NOEXCEPT_EXPR(Data::CanBeSmall);
+    QDateTime() noexcept(Data::CanBeSmall);
     explicit QDateTime(const QDate &);
     QDateTime(const QDate &, const QTime &, Qt::TimeSpec spec = Qt::LocalTime);
     // ### Qt 6: Merge with above with default offsetSeconds = 0
@@ -266,16 +266,16 @@ public:
 #if QT_CONFIG(timezone)
     QDateTime(const QDate &date, const QTime &time, const QTimeZone &timeZone);
 #endif // timezone
-    QDateTime(const QDateTime &other) Q_DECL_NOTHROW;
-    QDateTime(QDateTime &&other) Q_DECL_NOTHROW;
+    QDateTime(const QDateTime &other) noexcept;
+    QDateTime(QDateTime &&other) noexcept;
     ~QDateTime();
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    QDateTime &operator=(QDateTime &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QDateTime &operator=(QDateTime &&other) noexcept { swap(other); return *this; }
 #endif
-    QDateTime &operator=(const QDateTime &other) Q_DECL_NOTHROW;
+    QDateTime &operator=(const QDateTime &other) noexcept;
 
-    void swap(QDateTime &other) Q_DECL_NOTHROW { qSwap(d.d, other.d.d); }
+    void swap(QDateTime &other) noexcept { qSwap(d.d, other.d.d); }
 
     bool isNull() const;
     bool isValid() const;
@@ -366,8 +366,8 @@ public:
     static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);
 #endif
 
-    static qint64 currentMSecsSinceEpoch() Q_DECL_NOTHROW;
-    static qint64 currentSecsSinceEpoch() Q_DECL_NOTHROW;
+    static qint64 currentMSecsSinceEpoch() noexcept;
+    static qint64 currentSecsSinceEpoch() noexcept;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QDateTime fromCFDate(CFDateRef date);
@@ -410,8 +410,8 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QDateTime &);
 // QDateTime is not noexcept for now -- to be revised once
 // timezone and calendaring support is added
 Q_CORE_EXPORT uint qHash(const QDateTime &key, uint seed = 0);
-Q_CORE_EXPORT uint qHash(const QDate &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qHash(const QTime &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT uint qHash(const QDate &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT uint qHash(const QTime &key, uint seed = 0) noexcept;
 
 QT_END_NAMESPACE
 

@@ -8,6 +8,7 @@ macos: CONFIG += no_app_extension_api_only
 
 SOURCES = \
     qxcbmain.cpp
+
 OTHER_FILES += xcb.json README
 
 PLUGIN_TYPE = platforms

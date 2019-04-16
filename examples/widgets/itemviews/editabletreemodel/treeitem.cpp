@@ -56,14 +56,11 @@
 
 #include "treeitem.h"
 
-#include <QStringList>
-
 //! [0]
 TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent)
-{
-    parentItem = parent;
-    itemData = data;
-}
+    : itemData(data),
+      parentItem(parent)
+{}
 //! [0]
 
 //! [1]
@@ -76,7 +73,9 @@ TreeItem::~TreeItem()
 //! [2]
 TreeItem *TreeItem::child(int number)
 {
-    return childItems.value(number);
+    if (number < 0 || number >= childItems.size())
+        return nullptr;
+    return childItems.at(number);
 }
 //! [2]
 
@@ -92,7 +91,6 @@ int TreeItem::childNumber() const
 {
     if (parentItem)
         return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
-
     return 0;
 }
 //! [4]
@@ -107,7 +105,9 @@ int TreeItem::columnCount() const
 //! [6]
 QVariant TreeItem::data(int column) const
 {
-    return itemData.value(column);
+    if (column < 0 || column >= itemData.size())
+        return QVariant();
+    return itemData.at(column);
 }
 //! [6]
 
@@ -136,7 +136,7 @@ bool TreeItem::insertColumns(int position, int columns)
     for (int column = 0; column < columns; ++column)
         itemData.insert(position, QVariant());
 
-    foreach (TreeItem *child, childItems)
+    for (TreeItem *child : qAsConst(childItems))
         child->insertColumns(position, columns);
 
     return true;
@@ -171,7 +171,7 @@ bool TreeItem::removeColumns(int position, int columns)
     for (int column = 0; column < columns; ++column)
         itemData.remove(position);
 
-    foreach (TreeItem *child, childItems)
+    for (TreeItem *child : qAsConst(childItems))
         child->removeColumns(position, columns);
 
     return true;

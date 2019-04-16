@@ -59,7 +59,7 @@ class Q_DBUS_EXPORT QDBusObjectPath
 {
     QString m_path;
 public:
-    QDBusObjectPath() Q_DECL_NOTHROW : m_path() {}
+    QDBusObjectPath() noexcept : m_path() {}
     // compiler-generated copy/move constructor/assignment operators are ok!
     // compiler-generated destructor is ok!
 
@@ -70,7 +70,7 @@ public:
     explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
 #endif
 
-    void swap(QDBusObjectPath &other) Q_DECL_NOTHROW { qSwap(m_path, other.m_path); }
+    void swap(QDBusObjectPath &other) noexcept { qSwap(m_path, other.m_path); }
 
     inline void setPath(const QString &path);
 
@@ -114,7 +114,7 @@ class Q_DBUS_EXPORT QDBusSignature
 {
     QString m_signature;
 public:
-    QDBusSignature() Q_DECL_NOTHROW : m_signature() {}
+    QDBusSignature() noexcept : m_signature() {}
     // compiler-generated copy/move constructor/assignment operators are ok!
     // compiler-generated destructor is ok!
 
@@ -125,7 +125,7 @@ public:
     explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
 #endif
 
-    void swap(QDBusSignature &other) Q_DECL_NOTHROW { qSwap(m_signature, other.m_signature); }
+    void swap(QDBusSignature &other) noexcept { qSwap(m_signature, other.m_signature); }
 
     inline void setSignature(const QString &signature);
 
@@ -168,16 +168,16 @@ class QDBusVariant
 {
     QVariant m_variant;
 public:
-    QDBusVariant() Q_DECL_NOTHROW : m_variant() {}
+    QDBusVariant() noexcept : m_variant() {}
     // compiler-generated copy/move constructor/assignment operators are ok!
     // compiler-generated destructor is ok!
 
     inline explicit QDBusVariant(const QVariant &variant);
 #ifdef Q_COMPILER_RVALUE_REFS
-    explicit QDBusVariant(QVariant &&v) Q_DECL_NOTHROW : m_variant(std::move(v)) {}
+    explicit QDBusVariant(QVariant &&v) noexcept : m_variant(std::move(v)) {}
 #endif
 
-    void swap(QDBusVariant &other) Q_DECL_NOTHROW { qSwap(m_variant, other.m_variant); }
+    void swap(QDBusVariant &other) noexcept { qSwap(m_variant, other.m_variant); }
 
     inline void setVariant(const QVariant &variant);
 

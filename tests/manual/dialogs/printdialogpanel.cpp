@@ -55,6 +55,10 @@
 #include <QTextStream>
 #include <QDir>
 
+#if QT_VERSION >= 0x050000
+#  include <QScreen>
+#endif
+
 const FlagData printerModeComboData[] =
 {
     {"ScreenResolution", QPrinter::ScreenResolution},
@@ -705,7 +709,13 @@ void PrintDialogPanel::showPreviewDialog()
 {
     applySettings(m_printer.data());
     PrintPreviewDialog dialog(m_printer.data(), this);
-    dialog.resize(QApplication::desktop()->availableGeometry().size() * 4/ 5);
+#if QT_VERSION >= 0x050000
+    const int screenNumber = QApplication::desktop()->screenNumber(this);
+    const QSize availableSize = QGuiApplication::screens().at(screenNumber)->availableSize();
+#else
+    const QSize availableSize = QApplication::desktop()->availableGeometry().size();
+#endif
+    dialog.resize(availableSize * 4/ 5);
     if (dialog.exec() == QDialog::Accepted)
         retrieveSettings(m_printer.data());
 }

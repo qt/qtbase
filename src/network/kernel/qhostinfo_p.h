@@ -101,7 +101,7 @@ public Q_SLOTS:
     {
         if (slotObj) {
             QHostInfo copy = info;
-            void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
+            void *args[2] = { nullptr, reinterpret_cast<void *>(&copy) };
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
             slotObj->destroyIfLastRef();
         } else {

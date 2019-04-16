@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for validating TrueTypeGX/AAT tables (specification).   */
 /*                                                                         */
-/*  Copyright 2004-2015 by                                                 */
+/*  Copyright 2004-2018 by                                                 */
 /*  Masatake YAMATO, Redhat K.K,                                           */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
@@ -25,8 +25,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTGXVAL_H__
-#define __FTGXVAL_H__
+#ifndef FTGXVAL_H_
+#define FTGXVAL_H_
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -101,15 +101,15 @@ FT_BEGIN_HEADER
    *   The number of tables checked in this module.  Use it as a parameter
    *   for the `table-length' argument of function @FT_TrueTypeGX_Validate.
    */
-#define FT_VALIDATE_GX_LENGTH     (FT_VALIDATE_GX_LAST_INDEX + 1)
+#define FT_VALIDATE_GX_LENGTH  ( FT_VALIDATE_GX_LAST_INDEX + 1 )
 
   /* */
 
   /* Up to 0x1000 is used by otvalid.
      Ox2xxx is reserved for feature OT extension. */
-#define FT_VALIDATE_GX_START 0x4000
-#define FT_VALIDATE_GX_BITFIELD( tag )                  \
-  ( FT_VALIDATE_GX_START << FT_VALIDATE_##tag##_INDEX )
+#define FT_VALIDATE_GX_START  0x4000
+#define FT_VALIDATE_GX_BITFIELD( tag ) \
+          ( FT_VALIDATE_GX_START << FT_VALIDATE_##tag##_INDEX )
 
 
  /**********************************************************************
@@ -351,7 +351,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTGXVAL_H__ */
+#endif /* FTGXVAL_H_ */
 
 
 /* END */

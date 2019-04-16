@@ -19,3 +19,4 @@ RESOURCES += expected_files
 include(../selftests.pri)
 !android:!winrt: for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
 
+include($$QT_SOURCE_TREE/src/testlib/selfcover.pri)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -72,14 +72,19 @@ public:
     }
 
 #ifdef QT_NETWORK_LIB
-    static QHostAddress serverIP()
+    static QHostAddress getServerIpImpl(const QString &serverName)
     {
-        const QHostInfo info = QHostInfo::fromName(serverName());
+        const QHostInfo info = QHostInfo::fromName(serverName);
         if (info.error()) {
             QTest::qFail(qPrintable(info.errorString()), __FILE__, __LINE__);
             return QHostAddress();
         }
         return info.addresses().constFirst();
+    }
+
+    static QHostAddress serverIP()
+    {
+        return getServerIpImpl(serverName());
     }
 #endif
 
@@ -143,7 +148,7 @@ public:
         return true;
     }
 
-    static bool verifyConnection(QString serverName, quint16 port, quint32 retry = 10)
+    static bool verifyConnection(QString serverName, quint16 port, quint32 retry = 60)
     {
         QTcpSocket socket;
         for (quint32 i = 1; i < retry; i++) {
@@ -214,4 +219,67 @@ public:
         return serverName();
 #endif
     }
+    static QString imapServerName()
+    {
+#ifdef QT_TEST_SERVER_NAME
+        return QString("cyrus.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+
+    static QString echoServerName()
+    {
+#ifdef QT_TEST_SERVER_NAME
+        return QString("echo.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+
+    static QString firewallServerName()
+    {
+#ifdef QT_TEST_SERVER_NAME
+        return QString("iptables.") % serverDomainName();
+#else
+        return serverName();
+#endif
+    }
+
+#ifdef QT_NETWORK_LIB
+    static QHostAddress imapServerIp()
+    {
+        return getServerIpImpl(imapServerName());
+    }
+
+    static QHostAddress httpServerIp()
+    {
+        return getServerIpImpl(httpServerName());
+    }
+
+    static QHostAddress httpProxyServerIp()
+    {
+        return getServerIpImpl(httpProxyServerName());
+    }
+
+    static QHostAddress socksProxyServerIp()
+    {
+        return getServerIpImpl(socksProxyServerName());
+    }
+
+    static QHostAddress ftpProxyServerIp()
+    {
+        return getServerIpImpl(ftpProxyServerName());
+    }
+
+    static QHostAddress ftpServerIp()
+    {
+        return getServerIpImpl(ftpServerName());
+    }
+
+    static QHostAddress firewallServerIp()
+    {
+        return getServerIpImpl(firewallServerName());
+    }
+#endif
 };

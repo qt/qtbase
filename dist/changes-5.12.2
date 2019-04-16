@@ -1,0 +1,105 @@
+Qt 5.12.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.1.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - QtTestLib:
+   * [QTBUG-72928] Blacklisting of tests will be taken into account for
+     XPASS and XFAIL. A blacklisted test that causes an XPASS will no
+     longer be a fail.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - [QTBUG-72885] Fixed a number of warnings with Clang or Clang-Tidy in
+   Qt headers related to alignment of Qt private classes.
+
+ - QDate, QTime and QDateTime;
+   * [QTBUG-51208] Corrected documentation of how non-placeholder
+     characters are handled in format patterns passed to toString().
+
+ - QCoreApplication:
+   * [QTBUG-57171] Fixed an out-of-bounds access if the translatable
+     string passed to tr() ended in '%'.
+
+ - QFileInfo:
+   * [QTBUG-72644] Fixed a bug that would cause QFileInfo to report an
+     link incorrectly as a non-link.
+
+ - QLocale:
+   * Fixed a crash if qDebug() is used after main() has exited.
+   * [QTBUG-73403] Fixed a race condition in getting the system locale
+     (possible regression from Qt 5.11.x)
+
+ - QSysInfo:
+   * Fixed a bug on BSD systems in getting the machineUniqueId().
+   * Fixed a bug on Windows in 32-bit applications getting the
+     machineUniqueId() when the OS is 64-bit.
+
+ - QWaitCondition:
+   * Fixed handling of wait(QDeadlineTimer::Forever) on 32-bit platforms.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - ItemViews:
+   * Fixed a regression with wrongly drawn centered/right aligned item
+     texts
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - libpng was updated to version 1.6.36
+
+****************************************************************************
+*                                 Freetype                                 *
+****************************************************************************
+
+ - Upgraded bundled Freetype version to 2.9.1. This also adds support for
+   the latest emoji font in use on Android 9.
+
+****************************************************************************
+*                                 Android                                  *
+****************************************************************************
+
+ - Added the --no-strip command line option to androiddeployqt.
+
+ - qmake:
+   * Can now set the version name and code for Android using
+     ANDROID_VERSION_NAME and ANDROID_VERSION_CODE respectively in the pro
+     file.
+
+****************************************************************************
+*                                 Windows                                  *
+****************************************************************************
+
+ - Fixed an issue where loading fonts from files or data would sometimes
+   mistakenly classify them as oblique.
+
+****************************************************************************
+*                                  qmake                                   *
+****************************************************************************
+
+ - [QTBUG-27079] A new feature "cmdline" was added that implies "CONFIG +=
+   console" and "CONFIG -= app_bundle".

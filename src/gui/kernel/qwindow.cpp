@@ -166,7 +166,7 @@ QWindow::QWindow(QScreen *targetScreen)
 static QWindow *nonDesktopParent(QWindow *parent)
 {
     if (parent && parent->type() == Qt::Desktop) {
-        qWarning("QWindows can not be reparented into desktop windows");
+        qWarning("QWindows cannot be reparented into desktop windows");
         return nullptr;
     }
 
@@ -546,6 +546,9 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
 
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
     QGuiApplication::sendEvent(q, &e);
+
+    if (updateRequestPending)
+        platformWindow->requestUpdate();
 }
 
 void QWindowPrivate::clearFocusObject()
@@ -685,7 +688,8 @@ QWindow *QWindow::parent() const
     Sets the \a parent Window. This will lead to the windowing system managing
     the clip of the window, so it will be clipped to the \a parent window.
 
-    Setting \a parent to be 0 will make the window become a top level window.
+    Setting \a parent to be \nullptr will make the window become a top level
+    window.
 
     If \a parent is a window created by fromWinId(), then the current window
     will be embedded inside \a parent, if the platform supports it.
@@ -916,8 +920,7 @@ void QWindow::setFlag(Qt::WindowType flag, bool on)
 */
 Qt::WindowType QWindow::type() const
 {
-    Q_D(const QWindow);
-    return static_cast<Qt::WindowType>(int(d->windowFlags & Qt::WindowType_Mask));
+    return static_cast<Qt::WindowType>(int(flags() & Qt::WindowType_Mask));
 }
 
 /*!
@@ -1349,7 +1352,7 @@ void QWindow::setTransientParent(QWindow *parent)
         return;
     }
     if (parent == this) {
-        qWarning() << "transient parent" << parent << "can not be same as window";
+        qWarning() << "transient parent" << parent << "cannot be same as window";
         return;
     }
 
@@ -1919,9 +1922,6 @@ void QWindowPrivate::destroy()
     resizeEventPending = true;
     receivedExpose = false;
     exposed = false;
-
-    if (wasVisible)
-        maybeQuitOnLastWindowClosed();
 }
 
 /*!
@@ -2310,8 +2310,17 @@ bool QWindow::event(QEvent *ev)
 #endif
 
     case QEvent::Close:
-        if (ev->isAccepted())
+        if (ev->isAccepted()) {
+            Q_D(QWindow);
+            bool wasVisible = isVisible();
             destroy();
+            if (wasVisible) {
+                // FIXME: This check for visibility is a workaround for both QWidgetWindow
+                // and QWindow having logic to emit lastWindowClosed, and possibly quit the
+                // application. We should find a better way to handle this.
+                d->maybeQuitOnLastWindowClosed();
+            }
+        }
         break;
 
     case QEvent::Expose:
@@ -2520,7 +2529,12 @@ void QWindow::tabletEvent(QTabletEvent *ev)
 
     Should return true only if the event was handled.
 */
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool QWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+#else
 bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+#endif
 {
     Q_UNUSED(eventType);
     Q_UNUSED(message);
@@ -2596,6 +2610,8 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         return;
 
     Q_Q(QWindow);
+    if (!q->isTopLevel())
+        return;
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
     QWindowList list = QGuiApplication::topLevelWindows();
@@ -2652,7 +2668,7 @@ QOpenGLContext *QWindowPrivate::shareContext() const
     native window, or to embed a native window inside a QWindow.
 
     If foreign windows are not supported or embedding the native window
-    failed in the platform plugin, this function returns 0.
+    failed in the platform plugin, this function returns \nullptr.
 
     \note The resulting QWindow should not be used to manipulate the underlying
     native window (besides re-parenting), or to observe state changes of the

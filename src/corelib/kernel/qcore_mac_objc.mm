@@ -1,57 +1,57 @@
 /****************************************************************************
- **
- ** Copyright (C) 2016 The Qt Company Ltd.
- ** Copyright (C) 2014 Petroules Corporation.
- ** Contact: https://www.qt.io/licensing/
- **
- ** This file is part of the QtCore module of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:LGPL$
- ** Commercial License Usage
- ** Licensees holding valid commercial Qt licenses may use this file in
- ** accordance with the commercial license agreement provided with the
- ** Software or, alternatively, in accordance with the terms contained in
- ** a written agreement between you and The Qt Company. For licensing terms
- ** and conditions see https://www.qt.io/terms-conditions. For further
- ** information use the contact form at https://www.qt.io/contact-us.
- **
- ** GNU Lesser General Public License Usage
- ** Alternatively, this file may be used under the terms of the GNU Lesser
- ** General Public License version 3 as published by the Free Software
- ** Foundation and appearing in the file LICENSE.LGPL3 included in the
- ** packaging of this file. Please review the following information to
- ** ensure the GNU Lesser General Public License version 3 requirements
- ** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
- **
- ** GNU General Public License Usage
- ** Alternatively, this file may be used under the terms of the GNU
- ** General Public License version 2.0 or (at your option) the GNU General
- ** Public license version 3 or any later version approved by the KDE Free
- ** Qt Foundation. The licenses are as published by the Free Software
- ** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
- ** included in the packaging of this file. Please review the following
- ** information to ensure the GNU General Public License requirements will
- ** be met: https://www.gnu.org/licenses/gpl-2.0.html and
- ** https://www.gnu.org/licenses/gpl-3.0.html.
- **
- ** $QT_END_LICENSE$
- **
- ****************************************************************************/
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2014 Petroules Corporation.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
 #include <private/qcore_mac_p.h>
 
 #ifdef Q_OS_MACOS
-# include <AppKit/AppKit.h>
-# if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface NSApplication (MojaveForwardDeclarations)
-@property (strong) NSAppearance *effectiveAppearance NS_AVAILABLE_MAC(10_14);
-@end
-# endif
+#include <AppKit/AppKit.h>
 #endif
 
 #if defined(QT_PLATFORM_UIKIT)
 #include <UIKit/UIKit.h>
 #endif
+
+#include <execinfo.h>
+#include <dlfcn.h>
+#include <cxxabi.h>
+#include <objc/runtime.h>
 
 #include <qdebug.h>
 
@@ -132,12 +132,54 @@ QT_USE_NAMESPACE
 }
 @end
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAutoReleasePoolTracker);
+
 QT_BEGIN_NAMESPACE
 
 QMacAutoReleasePool::QMacAutoReleasePool()
     : pool([[NSAutoreleasePool alloc] init])
 {
-    [[[QMacAutoReleasePoolTracker alloc] initWithPool:
+    Class trackerClass = [QMacAutoReleasePoolTracker class];
+
+#ifdef QT_DEBUG
+    void *poolFrame = nullptr;
+    if (__builtin_available(macOS 10.14, iOS 12.0, tvOS 12.0, watchOS 5.0, *)) {
+        void *frame;
+        if (backtrace_from_fp(__builtin_frame_address(0), &frame, 1))
+            poolFrame = frame;
+    } else {
+        static const int maxFrames = 3;
+        void *callstack[maxFrames];
+        if (backtrace(callstack, maxFrames) == maxFrames)
+            poolFrame = callstack[maxFrames - 1];
+    }
+
+    if (poolFrame) {
+        Dl_info info;
+        if (dladdr(poolFrame, &info) && info.dli_sname) {
+            const char *symbolName = info.dli_sname;
+            if (symbolName[0] == '_') {
+                int status;
+                if (char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status))
+                    symbolName = demangled;
+            }
+
+            char *className = nullptr;
+            asprintf(&className, "  ^-- allocated in function: %s", symbolName);
+
+            if (Class existingClass = objc_getClass(className))
+                trackerClass = existingClass;
+            else
+                trackerClass = objc_duplicateClass(trackerClass, className, 0);
+
+            free(className);
+
+            if (symbolName != info.dli_sname)
+                free((char*)symbolName);
+        }
+    }
+#endif
+
+    [[[trackerClass alloc] initWithPool:
         reinterpret_cast<NSAutoreleasePool **>(&pool)] autorelease];
 }
 
@@ -174,10 +216,14 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool)
 #ifdef Q_OS_MACOS
 bool qt_mac_applicationIsInDarkMode()
 {
-    if (__builtin_available(macOS 10.14, *))
-        return [NSApp.effectiveAppearance.name hasSuffix:@"DarkAqua"];
-    else
-        return false;
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (__builtin_available(macOS 10.14, *)) {
+        auto appearance = [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:
+                @[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
+        return [appearance isEqualToString:NSAppearanceNameDarkAqua];
+    }
+#endif
+    return false;
 }
 #endif
 
@@ -325,7 +371,7 @@ bool operator<(const KeyPair &entry, const Qt::Key &key)
 struct qtKey2CocoaKeySortLessThan
 {
     typedef bool result_type;
-    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR result_type operator()(const KeyPair &entry1, const KeyPair &entry2) const noexcept
     {
         return entry1.qtKey < entry2.qtKey;
     }
@@ -455,7 +501,7 @@ void qt_apple_check_os_version()
         if (!applicationName)
             applicationName = NSProcessInfo.processInfo.processName;
 
-        fprintf(stderr, "Sorry, \"%s\" can not be run on this version of %s. "
+        fprintf(stderr, "Sorry, \"%s\" cannot be run on this version of %s. "
             "Qt requires %s %ld.%ld.%ld or later, you have %s %ld.%ld.%ld.\n",
             applicationName.UTF8String, os,
             os, long(required.majorVersion), long(required.minorVersion), long(required.patchVersion),

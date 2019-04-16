@@ -66,7 +66,7 @@ class QStringList;
 
 class QSslCertificate;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed = 0) noexcept;
 
 class QSslCertificatePrivate;
 class Q_NETWORK_EXPORT QSslCertificate
@@ -89,11 +89,11 @@ public:
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
 #ifdef Q_COMPILER_RVALUE_REFS
-    QSslCertificate &operator=(QSslCertificate &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QSslCertificate &operator=(QSslCertificate &&other) noexcept { swap(other); return *this; }
 #endif
     QSslCertificate &operator=(const QSslCertificate &other);
 
-    void swap(QSslCertificate &other) Q_DECL_NOTHROW
+    void swap(QSslCertificate &other) noexcept
     { qSwap(d, other.d); }
 
     bool operator==(const QSslCertificate &other) const;
@@ -169,7 +169,7 @@ private:
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;
 
-    friend Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed) noexcept;
 };
 Q_DECLARE_SHARED(QSslCertificate)
 

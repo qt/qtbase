@@ -44,7 +44,6 @@
 #include "qpixmap.h"
 #include "qevent.h"
 #include "qfile.h"
-#include "qtextcodec.h"
 #include "qguiapplication.h"
 #include "qpoint.h"
 #include "qbuffer.h"
@@ -75,7 +74,7 @@ static QWindow* topLevelAt(const QPoint &pos)
     QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = list.count()-1; i >= 0; --i) {
         QWindow *w = list.at(i);
-        if (w->isVisible() && w->geometry().contains(pos) && !qobject_cast<QShapedPixmapWindow*>(w))
+        if (w->isVisible() && w->handle() && w->geometry().contains(pos) && !qobject_cast<QShapedPixmapWindow*>(w))
             return w;
     }
     return 0;

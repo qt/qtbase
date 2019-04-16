@@ -5,7 +5,7 @@ classname = QCssScanner_Generated
 [Code Generator Options]
 MapToCode[a-z] = (ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256
 TokenPrefix = QCss::
-FileHeader = ../../src/tools/moc/util/licenseheader.txt
+FileHeader = ../../header.LGPL
 
 [Macros]
 escape          = \\[^\r\n\f0-9a-f]

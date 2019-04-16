@@ -1,0 +1,44 @@
+TAP version 13
+# tst_Blacklisted
+ok 1 - initTestCase()
+ok 2 - pass() # TODO 
+ok 3 - skip() # SKIP This test should SKIP
+not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
+  ---
+  type: QVERIFY
+  message: This test should BFAIL
+  wanted: true (false)
+  found: false (false)
+  expected: true (false)
+  actual: false (false)
+  at: tst_Blacklisted::fail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:63)
+  file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
+  line: 63
+  ...
+not ok 4 - xfail() # TODO This test should BXFAIL then BPASS
+  ---
+  # This test should BXFAIL then BPASS
+  at: tst_Blacklisted::xfail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:69)
+  file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
+  line: 69
+  ...
+ok 5 - xfail() # TODO 
+ok 6 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS)
+# This is a warning that should not appear in silent test output
+# This is an internal testlib warning that should not appear in silent test output
+# This is a debug message that should not appear in silent test output
+# This is a critical message that should not appear in silent test output
+# This is an info message that should not appear in silent test output
+# This is an internal testlib info message that should not appear in silent test output
+# This is a fatal error message that should still appear in silent test output
+not ok 7 - messages() # TODO Received a fatal error.
+  ---
+  # Received a fatal error.
+  at: tst_Blacklisted::messages() (Unknown file:0)
+  file: Unknown file
+  line: 0
+  ...
+1..7
+# tests 7
+# pass 1
+# fail 0

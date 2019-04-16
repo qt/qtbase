@@ -69,29 +69,17 @@ class QStyleHintsPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QStyleHints)
 public:
-    inline QStyleHintsPrivate()
-        : m_mouseDoubleClickInterval(-1)
-        , m_mousePressAndHoldInterval(-1)
-        , m_startDragDistance(-1)
-        , m_startDragTime(-1)
-        , m_keyboardInputInterval(-1)
-        , m_cursorFlashTime(-1)
-        , m_tabFocusBehavior(-1)
-        , m_uiEffects(-1)
-        , m_wheelScrollLines(-1)
-        , m_mouseQuickSelectionThreshold(-1)
-        {}
-
-    int m_mouseDoubleClickInterval;
-    int m_mousePressAndHoldInterval;
-    int m_startDragDistance;
-    int m_startDragTime;
-    int m_keyboardInputInterval;
-    int m_cursorFlashTime;
-    int m_tabFocusBehavior;
-    int m_uiEffects;
-    int m_wheelScrollLines;
-    int m_mouseQuickSelectionThreshold;
+    int m_mouseDoubleClickInterval = -1;
+    int m_mousePressAndHoldInterval = -1;
+    int m_startDragDistance = -1;
+    int m_startDragTime = -1;
+    int m_keyboardInputInterval = -1;
+    int m_cursorFlashTime = -1;
+    int m_tabFocusBehavior = -1;
+    int m_uiEffects = -1;
+    int m_showShortcutsInContextMenus = -1;
+    int m_wheelScrollLines = -1;
+    int m_mouseQuickSelectionThreshold = -1;
 };
 
 /*!
@@ -371,10 +359,25 @@ bool QStyleHints::showIsMaximized() const
     \since 5.10
     \brief \c true if the platform normally shows shortcut key sequences in
     context menus, otherwise \c false.
+
+    Since Qt 5.13, the setShowShortcutsInContextMenus() function can be used to
+    override the platform default.
 */
 bool QStyleHints::showShortcutsInContextMenus() const
 {
-    return themeableHint(QPlatformTheme::ShowShortcutsInContextMenus, QPlatformIntegration::ShowShortcutsInContextMenus).toBool();
+    Q_D(const QStyleHints);
+    return d->m_showShortcutsInContextMenus >= 0
+        ? d->m_showShortcutsInContextMenus != 0
+        : themeableHint(QPlatformTheme::ShowShortcutsInContextMenus, QPlatformIntegration::ShowShortcutsInContextMenus).toBool();
+}
+
+void QStyleHints::setShowShortcutsInContextMenus(bool s)
+{
+    Q_D(QStyleHints);
+    if (s != showShortcutsInContextMenus()) {
+        d->m_showShortcutsInContextMenus = s ? 1 : 0;
+        emit showShortcutsInContextMenusChanged(s);
+    }
 }
 
 /*!

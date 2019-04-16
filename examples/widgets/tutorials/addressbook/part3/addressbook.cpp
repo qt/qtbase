@@ -74,13 +74,17 @@ AddressBook::AddressBook(QWidget *parent)
     previousButton = new QPushButton(tr("&Previous"));
     previousButton->setEnabled(false);
 //! [navigation pushbuttons]
-
-    connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submitContact()));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
+    connect(addButton, &QPushButton::clicked,
+            this, &AddressBook::addContact);
+    connect(submitButton, &QPushButton::clicked,
+            this, &AddressBook::submitContact);
+    connect(cancelButton, &QPushButton::clicked,
+            this, &AddressBook::cancel);
 //! [connecting navigation signals]
-    connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
-    connect(previousButton, SIGNAL(clicked()), this, SLOT(previous()));
+    connect(nextButton, &QPushButton::clicked,
+            this, &AddressBook::next);
+    connect(previousButton, &QPushButton::clicked,
+            this, &AddressBook::previous);
 //! [connecting navigation signals]
 
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;

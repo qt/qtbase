@@ -52,16 +52,15 @@ QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)
 {
     Q_UNUSED(mode);
     Q_ASSERT(supportsMode(mode));
-    m_mimeData.setText(QtAndroidClipboard::hasClipboardText()
-                       ? QtAndroidClipboard::clipboardText()
-                       : QString());
-    return &m_mimeData;
+    QMimeData *data = QtAndroidClipboard::getClipboardMimeData();
+    data->setParent(this);
+    return data;
 }
 
 void QAndroidPlatformClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
-    if (supportsMode(mode))
-        QtAndroidClipboard::setClipboardText(data != 0 && data->hasText() ? data->text() : QString());
+    if (data && supportsMode(mode))
+        QtAndroidClipboard::setClipboardMimeData(data);
     if (data != 0)
         data->deleteLater();
 }

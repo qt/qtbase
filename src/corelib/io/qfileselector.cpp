@@ -81,27 +81,11 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     Consider the following example usage, where you want to use different settings files on
     different locales. You might select code between locales like this:
 
-    \code
-    QString defaultsBasePath = "data/";
-    QString defaultsPath = defaultsBasePath + "defaults.conf";
-    QString localizedPath = defaultsBasePath
-            + QString("%1/defaults.conf").arg(QLocale().name());
-    if (QFile::exists(localizedPath))
-        defaultsPath = localizedPath;
-    QFile defaults(defaultsPath);
-    \endcode
+    \snippet code/src_corelib_io_qfileselector.cpp 0
 
     Similarly, if you want to pick a different data file based on target platform,
     your code might look something like this:
-    \code
-    QString defaultsPath = "data/defaults.conf";
-#if defined(Q_OS_ANDROID)
-    defaultsPath = "data/android/defaults.conf";
-#elif defined(Q_OS_IOS)
-    defaultsPath = "data/ios/defaults.conf";
-#endif
-    QFile defaults(defaultsPath);
-    \endcode
+    \snippet code/src_corelib_io_qfileselector.cpp 1
 
     QFileSelector provides a convenient alternative to writing such boilerplate code, and in the
     latter case it allows you to start using an platform-specific configuration without a recompile.
@@ -109,27 +93,17 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     selecting a different file only on certain combinations of platform and locale. For example, to
     select based on platform and/or locale, the code is as follows:
 
-    \code
-    QFileSelector selector;
-    QFile defaultsFile(selector.select("data/defaults.conf"));
-    \endcode
+    \snippet code/src_corelib_io_qfileselector.cpp 2
 
     The files to be selected are placed in directories named with a \c'+' and a selector name. In the above
     example you could have the platform configurations selected by placing them in the following locations:
-    \code
-    data/defaults.conf
-    data/+android/defaults.conf
-    data/+ios/+en_GB/defaults.conf
-    \endcode
+    \snippet code/src_corelib_io_qfileselector.cpp 3
 
     To find selected files, QFileSelector looks in the same directory as the base file. If there are
     any directories of the form +<selector> with an active selector, QFileSelector will prefer a file
     with the same file name from that directory over the base file. These directories can be nested to
     check against multiple selectors, for example:
-    \code
-    images/background.png
-    images/+android/+en_GB/background.png
-    \endcode
+    \snippet code/src_corelib_io_qfileselector.cpp 4
     With those files available, you would select a different file on the android platform,
     but only if the locale was en_GB.
 
@@ -178,13 +152,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     credentials. The example is sorted so that the lowest matching file would be chosen if all
     selectors were present:
 
-    \code
-    images/background.png
-    images/+linux/background.png
-    images/+windows/background.png
-    images/+admin/background.png
-    images/+admin/+linux/background.png
-    \endcode
+    \snippet code/src_corelib_io_qfileselector.cpp 5
 
     Because extra selectors are checked before platform the \c{+admin/background.png} will be chosen
     on Windows when the admin selector is set, and \c{+windows/background.png} will be chosen on

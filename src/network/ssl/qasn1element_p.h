@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 #define RSA_ENCRYPTION_OID QByteArrayLiteral(RSADSI_OID "1.1.1")
 #define DSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10040.4.1")
 #define EC_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10045.2.1")
+#define DH_ENCRYPTION_OID QByteArrayLiteral(RSADSI_OID "1.3.1")
 
 // These are mostly from the RFC for PKCS#5
 // PKCS#5: https://tools.ietf.org/html/rfc8018#appendix-B
@@ -137,6 +138,7 @@ public:
         Rfc822NameType = 0x81,
         DnsNameType = 0x82,
         UniformResourceIdentifierType = 0x86,
+        IpAddressType = 0x87,
 
         // context specific
         Context0Type = 0xA0,
@@ -154,10 +156,10 @@ public:
     static QAsn1Element fromVector(const QVector<QAsn1Element> &items);
     static QAsn1Element fromObjectId(const QByteArray &id);
 
-    bool toBool(bool *ok = 0) const;
+    bool toBool(bool *ok = nullptr) const;
     QDateTime toDateTime() const;
     QMultiMap<QByteArray, QString> toInfo() const;
-    qint64 toInteger(bool *ok = 0) const;
+    qint64 toInteger(bool *ok = nullptr) const;
     QVector<QAsn1Element> toVector() const;
     QByteArray toObjectId() const;
     QByteArray toObjectName() const;

@@ -99,13 +99,14 @@ public:
         // Shape rendering specifiers...
         OddEvenFill             = 0x1000,
         WindingFill             = 0x2000,
-        ImplicitClose           = 0x4000
+        ImplicitClose           = 0x4000,
+        ExplicitOpen            = 0x8000
     };
 
     // ### Falcon: introduca a struct XY for points so lars is not so confused...
     QVectorPath(const qreal *points,
                 int count,
-                const QPainterPath::ElementType *elements = 0,
+                const QPainterPath::ElementType *elements = nullptr,
                 uint hints = ArbitraryShapeHint)
         : m_elements(elements),
           m_points(points),
@@ -124,14 +125,15 @@ public:
 
     inline bool isCacheable() const { return m_hints & ShouldUseCacheHint; }
     inline bool hasImplicitClose() const { return m_hints & ImplicitClose; }
+    inline bool hasExplicitOpen() const { return m_hints & ExplicitOpen; }
     inline bool hasWindingFill() const { return m_hints & WindingFill; }
 
-    inline void makeCacheable() const { m_hints |= ShouldUseCacheHint; m_cache = 0; }
+    inline void makeCacheable() const { m_hints |= ShouldUseCacheHint; m_cache = nullptr; }
     inline uint hints() const { return m_hints; }
 
     inline const QPainterPath::ElementType *elements() const { return m_elements; }
     inline const qreal *points() const { return m_points; }
-    inline bool isEmpty() const { return m_points == 0; }
+    inline bool isEmpty() const { return m_points == nullptr; }
 
     inline int elementCount() const { return m_count; }
     inline const QPainterPath convertToPainterPath() const;
@@ -142,7 +144,7 @@ public:
         case QPaintEngine::ConvexMode: return ConvexPolygonHint | ImplicitClose;
         case QPaintEngine::OddEvenMode: return PolygonHint | OddEvenFill | ImplicitClose;
         case QPaintEngine::WindingMode: return PolygonHint | WindingFill | ImplicitClose;
-        case QPaintEngine::PolylineMode: return PolygonHint;
+        case QPaintEngine::PolylineMode: return PolygonHint | ExplicitOpen;
         default: return 0;
         }
     }
@@ -163,7 +165,7 @@ public:
                 return e;
             e = e->next;
         }
-        return 0;
+        return nullptr;
     }
 
     template <typename T> static inline bool isRect(const T *pts, int elementCount) {
@@ -194,7 +196,7 @@ public:
 
 
 private:
-    Q_DISABLE_COPY(QVectorPath)
+    Q_DISABLE_COPY_MOVE(QVectorPath)
 
     const QPainterPath::ElementType *m_elements;
     const qreal *m_points;

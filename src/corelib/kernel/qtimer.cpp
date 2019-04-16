@@ -42,6 +42,8 @@
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qobject_p.h"
+#include "qthread.h"
+#include "qcoreapplication_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -343,6 +345,33 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
                             const QObject *receiver,
                             QtPrivate::QSlotObjectBase *slotObj)
 {
+    if (msec == 0) {
+        bool deleteReceiver = false;
+        // Optimize: set a receiver context when none is given, such that we can use
+        // QMetaObject::invokeMethod which is more efficient than going through a timer.
+        // We need a QObject living in the current thread. But the QThread itself lives
+        // in a different thread - with the exception of the main QThread which lives in
+        // itself. And QThread::currentThread() is among the few QObjects we know that will
+        // most certainly be there. Note that one can actually call singleShot before the
+        // QApplication is created!
+        if (!receiver && QThread::currentThread() == QCoreApplicationPrivate::mainThread()) {
+            // reuse main thread as context object
+            receiver = QThread::currentThread();
+        } else if (!receiver) {
+            // Create a receiver context object on-demand. According to the benchmarks,
+            // this is still more efficient than going through a timer.
+            receiver = new QObject;
+            deleteReceiver = true;
+        }
+
+        QMetaObject::invokeMethodImpl(const_cast<QObject *>(receiver), slotObj,
+                                      Qt::QueuedConnection, nullptr);
+
+        if (deleteReceiver)
+            const_cast<QObject *>(receiver)->deleteLater();
+        return;
+    }
+
     new QSingleShotTimer(msec, timerType, receiver, slotObj);
 }
 
@@ -571,30 +600,43 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn template<typename Functor> QMetaObject::Connection callOnTimeout(Functor functor, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload
 
-    Creates a connection from the timeout() signal to \a functor, and returns a
+    Creates a connection from the timeout() signal to \a slot, and returns a
     handle to the connection.
 
     This method is provided for convenience.
-    It's equivalent to calling \c {QObject::connect(timer, &QTimer::timeout, timer, functor, connectionType)}.
+    It's equivalent to calling \c {QObject::connect(timer, &QTimer::timeout, timer, slot, connectionType)}.
 
     \sa QObject::connect(), timeout()
 */
 
 /*!
-    \fn template<typename Functor> QMetaObject::Connection callOnTimeout(QObject *context, Functor function, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \fn template <typename Functor> QMetaObject::Connection QTimer::callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
     \since 5.12
     \overload callOnTimeout()
 
-    Creates a connection from the timeout() signal to \a function, which could be a pointer
-    to a member function of \a context, or it could be a functor to be placed in a specific
-    event loop of \a context. It returns a handle to the connection.
+    Creates a connection from the timeout() signal to \a slot to be placed in a specific
+    event loop of \a context, and returns a handle to the connection.
 
     This method is provided for convenience. It's equivalent to calling
-    \c {QObject::connect(timer, &QTimer::timeout, context, function, connectionType)}.
+    \c {QObject::connect(timer, &QTimer::timeout, context, slot, connectionType)}.
+
+    \sa QObject::connect(), timeout()
+*/
+
+/*!
+    \fn template <typename PointerToMemberFunction> QMetaObject::Connection QTimer::callOnTimeout(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection)
+    \since 5.12
+    \overload callOnTimeout()
+
+    Creates a connection from the timeout() signal to the \a slot in the \a receiver object. Returns
+    a handle to the connection.
+
+    This method is provided for convenience. It's equivalent to calling
+    \c {QObject::connect(timer, &QTimer::timeout, receiver, slot, connectionType)}.
 
     \sa QObject::connect(), timeout()
 */

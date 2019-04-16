@@ -45,6 +45,8 @@ public:
 private slots:
     void engineData_data();
     void engineData();
+    void engineDataFamilies_data();
+    void engineDataFamilies();
 
     void clear();
 };
@@ -103,6 +105,49 @@ void tst_QFontCache::engineData()
         req.pointSize = req.pixelSize*72.0/d->dpi;
 
     req.family = cacheKey;
+
+    QFontEngineData *engineData = QFontCache::instance()->findEngineData(req);
+
+    QCOMPARE(engineData, QFontPrivate::get(f)->engineData);
+}
+
+void tst_QFontCache::engineDataFamilies_data()
+{
+    QTest::addColumn<QStringList>("families");
+
+    const QStringList multiple = { QLatin1String("invalid"), QLatin1String("Times New Roman") };
+    const QStringList multipleQuotes = { QLatin1String("'invalid'"), QLatin1String("Times New Roman") };
+    const QStringList multiple2 = { QLatin1String("invalid"), QLatin1String("Times New Roman"),
+                                    QLatin1String("foobar"), QLatin1String("'baz'") };
+
+    QTest::newRow("unquoted-family-name") << QStringList(QLatin1String("Times New Roman"));
+    QTest::newRow("quoted-family-name") << QStringList(QLatin1String("Times New Roman"));
+    QTest::newRow("invalid") << QStringList(QLatin1String("invalid"));
+    QTest::newRow("multiple") << multiple;
+    QTest::newRow("multiple spaces quotes") << multipleQuotes;
+    QTest::newRow("multiple2") << multiple2;
+}
+
+void tst_QFontCache::engineDataFamilies()
+{
+    QFETCH(QStringList, families);
+
+    QFont f;
+    f.setFamily(QString()); // Unset the family as taken from the QGuiApplication default
+    f.setFamilies(families);
+    f.exactMatch(); // loads engine
+    QFontPrivate *d = QFontPrivate::get(f);
+
+    QFontDef req = d->request;
+    // copy-pasted from QFontDatabase::load(), to engineer the cache key
+    if (req.pixelSize == -1) {
+        req.pixelSize = std::floor(((req.pointSize * d->dpi) / 72) * 100 + 0.5) / 100;
+        req.pixelSize = qRound(req.pixelSize);
+    }
+    if (req.pointSize < 0)
+        req.pointSize = req.pixelSize*72.0/d->dpi;
+
+    req.families = families;
 
     QFontEngineData *engineData = QFontCache::instance()->findEngineData(req);
 

@@ -17,24 +17,13 @@ endif()
 add_qt_module(Core
     SOURCES
         # special case: remove ../3rdparty/harfbuzz
-        animation/qabstractanimation.cpp animation/qabstractanimation.h animation/qabstractanimation_p.h
-        animation/qanimationgroup.cpp animation/qanimationgroup.h animation/qanimationgroup_p.h
-        animation/qparallelanimationgroup.cpp animation/qparallelanimationgroup.h animation/qparallelanimationgroup_p.h
-        animation/qpauseanimation.cpp animation/qpauseanimation.h
-        animation/qpropertyanimation.cpp animation/qpropertyanimation.h animation/qpropertyanimation_p.h
-        animation/qsequentialanimationgroup.cpp animation/qsequentialanimationgroup.h animation/qsequentialanimationgroup_p.h
-        animation/qvariantanimation.cpp animation/qvariantanimation.h animation/qvariantanimation_p.h
-        codecs/qisciicodec.cpp codecs/qisciicodec_p.h
-        codecs/qlatincodec.cpp codecs/qlatincodec_p.h
-        codecs/qsimplecodec.cpp codecs/qsimplecodec_p.h
-        codecs/qtextcodec.cpp codecs/qtextcodec.h codecs/qtextcodec_p.h
-        codecs/qtsciicodec.cpp codecs/qtsciicodec_p.h
+        codecs/qtextcodec_p.h
         codecs/qutfcodec.cpp codecs/qutfcodec_p.h
         global/archdetect.cpp
         global/qcompilerdetection.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
         global/qflags.h
-        global/qfloat16.cpp global/qfloat16.h global/qfloat16_p.h
+        global/qfloat16.cpp global/qfloat16.h
         global/qglobal.cpp global/qglobal.h
         global/qglobalstatic.h
         global/qhooks.cpp global/qhooks_p.h
@@ -77,7 +66,6 @@ add_qt_module(Core
         io/qresource.cpp io/qresource_p.h
         io/qresource_iterator.cpp io/qresource_iterator_p.h
         io/qsavefile.cpp io/qsavefile.h
-        io/qsettings.cpp io/qsettings.h io/qsettings_p.h
         io/qstandardpaths.cpp io/qstandardpaths.h
         io/qstorageinfo.cpp io/qstorageinfo.h io/qstorageinfo_p.h
         io/qtemporarydir.cpp io/qtemporarydir.h
@@ -304,8 +292,6 @@ if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
     endif()
 endif()
 
-
-
 add_qt_simd_part(Core SIMD mips_dsp
     SOURCES
         ../gui/painting/qt_mips_asm_dsp_p.h
@@ -371,6 +357,17 @@ extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
 #### Keys ignored in scope 5:.:.:corelib.pro:FREEBSD OR OPENBSD:
 # QMAKE_LFLAGS_NOUNDEF = <EMPTY>
 
+extend_target(Core CONDITION QT_FEATURE_animation
+    SOURCES
+        animation/qabstractanimation.cpp animation/qabstractanimation.h animation/qabstractanimation_p.h
+        animation/qanimationgroup.cpp animation/qanimationgroup.h animation/qanimationgroup_p.h
+        animation/qparallelanimationgroup.cpp animation/qparallelanimationgroup.h animation/qparallelanimationgroup_p.h
+        animation/qpauseanimation.cpp animation/qpauseanimation.h
+        animation/qpropertyanimation.cpp animation/qpropertyanimation.h animation/qpropertyanimation_p.h
+        animation/qsequentialanimationgroup.cpp animation/qsequentialanimationgroup.h animation/qsequentialanimationgroup_p.h
+        animation/qvariantanimation.cpp animation/qvariantanimation.h animation/qvariantanimation_p.h
+)
+
 extend_target(Core CONDITION WIN32
     SOURCES
         global/qoperatingsystemversion_win.cpp global/qoperatingsystemversion_win_p.h
@@ -392,7 +389,6 @@ extend_target(Core CONDITION WIN32
 
 extend_target(Core CONDITION WIN32 AND NOT WINRT
     SOURCES
-        io/qsettings_win.cpp
         io/qstandardpaths_win.cpp
         io/qstorageinfo_win.cpp
         io/qwindowspipereader.cpp io/qwindowspipereader_p.h
@@ -453,13 +449,6 @@ extend_target(Core CONDITION INTEGRITY
         "--pending_instantiations=128"
 )
 
-extend_target(Core CONDITION DEFINES___contains___QT_EVAL
-    SOURCES
-        ${PROJECT_SOURCE_DIR}/src/corelib/kernel/qtcore_eval.cpp
-    INCLUDE_DIRECTORIES
-        ${PROJECT_BUILD_DIR}/src/corelib/global
-)
-
 #### Keys ignored in scope 13:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
 # CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
 # CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
@@ -468,25 +457,25 @@ extend_target(Core CONDITION DEFINES___contains___QT_EVAL
 # CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
 # CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 18:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
+#### Keys ignored in scope 17:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 20:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
+#### Keys ignored in scope 19:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
 # f16c_cxx = "false"
 
-#### Keys ignored in scope 22:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
+#### Keys ignored in scope 21:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 24:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
+#### Keys ignored in scope 23:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 25:.:global:global/global.pri:else:
+#### Keys ignored in scope 24:.:global:global/global.pri:else:
 # f16c_cxx = "false"
 
 # special case: Handled manually:
 # extend_target(Core CONDITION _ss_f16c_cxx ...
 
-#### Keys ignored in scope 27:.:global:global/global.pri:else:
+#### Keys ignored in scope 26:.:global:global/global.pri:else:
 # F16C_SOURCES = "global/qfloat16_f16c.c"
 
 extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
@@ -501,7 +490,7 @@ extend_target(Core CONDITION LINUX AND NOT static
         global/minimum-linux_p.h
 )
 
-#### Keys ignored in scope 32:.:global:global/global.pri:precompile_header:
+#### Keys ignored in scope 31:.:global:global/global.pri:precompile_header:
 # NO_PCH_ASM = "global/minimum-linux.S"
 # QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
 # no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
@@ -510,7 +499,7 @@ extend_target(Core CONDITION LINUX AND NOT static
 # no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
 # no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 
-#### Keys ignored in scope 33:.:global:global/global.pri:silent:
+#### Keys ignored in scope 32:.:global:global/global.pri:silent:
 # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&" "$$no_pch_assembler.commands"
 
 extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
@@ -528,7 +517,7 @@ extend_target(Core CONDITION QT_FEATURE_journald
         journald
 )
 
-#### Keys ignored in scope 37:.:global:global/global.pri:GCC AND ltcg:
+#### Keys ignored in scope 36:.:global:global/global.pri:GCC AND ltcg:
 # QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
 # versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
 # versiontagging_compiler.dependency_type = "TYPE_C"
@@ -537,7 +526,7 @@ extend_target(Core CONDITION QT_FEATURE_journald
 # versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 # versiontagging_compiler.variable_out = "OBJECTS"
 
-#### Keys ignored in scope 38:.:global:global/global.pri:silent:
+#### Keys ignored in scope 37:.:global:global/global.pri:silent:
 # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&" "$$versiontagging_compiler.commands"
 
 extend_target(Core CONDITION UNIX
@@ -625,7 +614,6 @@ extend_target(Core CONDITION MSVC
 
 extend_target(Core CONDITION APPLE_OSX AND NOT NACL
     SOURCES
-        io/qsettings_mac.cpp
         kernel/qelapsedtimer_mac.cpp
         tools/qlocale_mac.mm
 )
@@ -642,27 +630,14 @@ extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE_OSX)
 
 extend_target(Core CONDITION QT_FEATURE_icu
     SOURCES
-        codecs/qicucodec.cpp codecs/qicucodec_p.h
         tools/qcollator_icu.cpp
         tools/qlocale_icu.cpp
     LIBRARIES
         ICU::i18n ICU::uc ICU::data
 )
 
-extend_target(Core CONDITION NOT QT_FEATURE_icu
-    SOURCES
-        codecs/qbig5codec.cpp codecs/qbig5codec_p.h
-        codecs/qeucjpcodec.cpp codecs/qeucjpcodec_p.h
-        codecs/qeuckrcodec.cpp codecs/qeuckrcodec_p.h
-        codecs/qgb18030codec.cpp codecs/qgb18030codec_p.h
-        codecs/qjiscodec.cpp codecs/qjiscodec_p.h
-        codecs/qjpunicode.cpp
-        codecs/qsjiscodec.cpp codecs/qsjiscodec_p.h
-)
-
 extend_target(Core CONDITION WIN32 AND NOT QT_FEATURE_icu
     SOURCES
-        codecs/qwindowscodec.cpp codecs/qwindowscodec_p.h
         tools/qcollator_win.cpp
 )
 
@@ -736,6 +711,11 @@ extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORK
         m
 )
 
+extend_target(Core CONDITION QT_FEATURE_zstd
+    LIBRARIES
+        ZSTD::ZSTD
+)
+
 extend_target(Core CONDITION QT_FEATURE_filesystemwatcher
     SOURCES
         io/qfilesystemwatcher.cpp io/qfilesystemwatcher.h io/qfilesystemwatcher_p.h
@@ -777,6 +757,26 @@ extend_target(Core CONDITION QT_FEATURE_processenvironment AND UNIX
         io/qprocess_unix.cpp
 )
 
+extend_target(Core CONDITION QT_FEATURE_settings
+    SOURCES
+        io/qsettings.cpp io/qsettings.h io/qsettings_p.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_settings AND WIN32 AND NOT WINRT
+    SOURCES
+        io/qsettings_win.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_settings AND WINRT
+    SOURCES
+        io/qsettings_winrt.cpp
+)
+
+extend_target(Core CONDITION APPLE AND QT_FEATURE_settings AND NOT NACL
+    SOURCES
+        io/qsettings_mac.cpp
+)
+
 extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
     SOURCES
         io/qfilesystemiterator_win.cpp
@@ -784,7 +784,6 @@ extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
 
 extend_target(Core CONDITION WINRT
     SOURCES
-        io/qsettings_winrt.cpp
         io/qstandardpaths_winrt.cpp
         io/qstorageinfo_stub.cpp
         kernel/qeventdispatcher_winrt.cpp kernel/qeventdispatcher_winrt_p.h
@@ -846,6 +845,11 @@ extend_target(Core CONDITION QT_FEATURE_identityproxymodel AND QT_FEATURE_proxym
 extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_sortfilterproxymodel
     SOURCES
         itemmodels/qsortfilterproxymodel.cpp itemmodels/qsortfilterproxymodel.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_transposeproxymodel
+    SOURCES
+        itemmodels/qtransposeproxymodel.cpp itemmodels/qtransposeproxymodel.h itemmodels/qtransposeproxymodel_p.h
 )
 
 extend_target(Core CONDITION QT_FEATURE_stringlistmodel
@@ -940,14 +944,45 @@ extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
         pps
 )
 
-extend_target(Core CONDITION QT_FEATURE_iconv AND NOT QT_FEATURE_icu
+extend_target(Core CONDITION QT_FEATURE_textcodec
     SOURCES
-        codecs/qiconvcodec.cpp codecs/qiconvcodec_p.h
+        codecs/qlatincodec.cpp codecs/qlatincodec_p.h
+        codecs/qsimplecodec.cpp codecs/qsimplecodec_p.h
+        codecs/qtextcodec.cpp codecs/qtextcodec.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_gnu_libiconv AND QT_FEATURE_iconv AND NOT QT_FEATURE_icu
+extend_target(Core CONDITION QT_FEATURE_codecs AND QT_FEATURE_textcodec
+    SOURCES
+        codecs/qisciicodec.cpp codecs/qisciicodec_p.h
+        codecs/qtsciicodec.cpp codecs/qtsciicodec_p.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_textcodec
+    SOURCES
+        codecs/qicucodec.cpp codecs/qicucodec_p.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_big_codecs AND QT_FEATURE_textcodec AND NOT QT_FEATURE_icu
+    SOURCES
+        codecs/qbig5codec.cpp codecs/qbig5codec_p.h
+        codecs/qeucjpcodec.cpp codecs/qeucjpcodec_p.h
+        codecs/qeuckrcodec.cpp codecs/qeuckrcodec_p.h
+        codecs/qgb18030codec.cpp codecs/qgb18030codec_p.h
+        codecs/qjiscodec.cpp codecs/qjiscodec_p.h
+        codecs/qjpunicode.cpp
+        codecs/qsjiscodec.cpp codecs/qsjiscodec_p.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_iconv AND QT_FEATURE_textcodec AND NOT QT_FEATURE_icu
+    SOURCES
+        codecs/qiconvcodec.cpp codecs/qiconvcodec_p.h
     LIBRARIES
         iconv
+)
+
+extend_target(Core CONDITION QT_FEATURE_textcodec AND WIN32 AND NOT QT_FEATURE_icu
+    SOURCES
+        codecs/qwindowscodec.cpp codecs/qwindowscodec_p.h
 )
 
 extend_target(Core CONDITION QT_FEATURE_qeventtransition
@@ -972,6 +1007,11 @@ set_source_files_properties("mimetypes/mime/packages/freedesktop.org.xml"
 add_qt_resource(Core "mimetypes" PREFIX "/qt-project.org/qmime/packages" BASE "mimetypes" FILES
     mime/packages/freedesktop.org.xml)
 
+
+extend_target(Core CONDITION WASM
+    SOURCES
+        platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
+)
 
 # special case:
 # needs refinement for the other compiler specific cases.

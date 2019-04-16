@@ -61,9 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_ANIMATION
-
 class QAbstractAnimation;
 
 class QAnimationState : public QState
@@ -88,8 +85,6 @@ private:
     Q_DISABLE_COPY(QAnimationState)
     QAbstractAnimation *m_animation;
 };
-
-#endif
 
 QT_END_NAMESPACE
 

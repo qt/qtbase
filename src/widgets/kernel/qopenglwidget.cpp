@@ -756,6 +756,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
 
     fbo->bind();
     context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    flushPending = true; // Make sure the FBO is initialized before use
 
     paintDevice->setSize(deviceSize);
     paintDevice->setDevicePixelRatio(q->devicePixelRatioF());
@@ -1117,8 +1118,8 @@ void QOpenGLWidget::setTextureFormat(GLenum texFormat)
 /*!
     \return the active internal texture format if the widget has already
     initialized, the requested format if one was set but the widget has not yet
-    been made visible, or 0 if setTextureFormat() was not called and the widget
-    has not yet been made visible.
+    been made visible, or \nullptr if setTextureFormat() was not called and the
+    widget has not yet been made visible.
 
     \since 5.10
  */

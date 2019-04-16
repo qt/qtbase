@@ -27,10 +27,10 @@ IF YOU MODIFY THIS FILE YOU ALSO NEED TO RUN generate_parser.sh.
 #pragma warning(disable: 4005)
 #endif
 
-#include "Tokenizer.h"
+#include "compiler/preprocessor/Tokenizer.h"
 
-#include "DiagnosticsBase.h"
-#include "Token.h"
+#include "compiler/preprocessor/DiagnosticsBase.h"
+#include "compiler/preprocessor/Token.h"
 
 #if defined(__GNUC__)
 // Triggered by the auto-generated yy_fatal_error function.
@@ -110,7 +110,14 @@ FRACTIONAL_CONSTANT  ({DIGIT}*"."{DIGIT}+)|({DIGIT}+".")
 "/*" { BEGIN(COMMENT); }
 <COMMENT>[^*\r\n]+
 <COMMENT>"*"
-<COMMENT>{NEWLINE} { ++yylineno; }
+<COMMENT>{NEWLINE} {
+    if (yylineno == INT_MAX)
+    {
+        *yylval = "Integer overflow on line number";
+        return pp::Token::GOT_ERROR;
+    }
+    ++yylineno;
+}
 <COMMENT>"*/" {
     yyextra->leadingSpace = true;
     BEGIN(INITIAL);
@@ -237,12 +244,15 @@ FRACTIONAL_CONSTANT  ({DIGIT}*"."{DIGIT}+)|({DIGIT}+".")
 [ \t\v\f]+   { yyextra->leadingSpace = true; }
 
 {NEWLINE} {
+    if (yylineno == INT_MAX)
+    {
+        *yylval = "Integer overflow on line number";
+        return pp::Token::GOT_ERROR;
+    }
     ++yylineno;
     yylval->assign(1, '\n');
     return '\n';
 }
-
-\\{NEWLINE} { ++yylineno; }
 
 . {
     yylval->assign(1, yytext[0]);
@@ -267,11 +277,17 @@ FRACTIONAL_CONSTANT  ({DIGIT}*"."{DIGIT}+)|({DIGIT}+".")
     yylloc->line = yylineno;
     yylval->clear();
 
-    if (YY_START == COMMENT)
+    // Line number overflows fake EOFs to exit early, check for this case.
+    if (yylineno == INT_MAX) {
+        yyextra->diagnostics->report(pp::Diagnostics::PP_TOKENIZER_ERROR,
+                pp::SourceLocation(yyfileno, yylineno),
+                "Integer overflow on line number");
+    }
+    else if (YY_START == COMMENT)
     {
         yyextra->diagnostics->report(pp::Diagnostics::PP_EOF_IN_COMMENT,
                                      pp::SourceLocation(yyfileno, yylineno),
-                                     "");
+                                     "EOF while in a comment");
     }
     yyterminate();
 }
@@ -280,9 +296,7 @@ FRACTIONAL_CONSTANT  ({DIGIT}*"."{DIGIT}+)|({DIGIT}+".")
 
 namespace pp {
 
-Tokenizer::Tokenizer(Diagnostics *diagnostics)
-    : mHandle(0),
-      mMaxTokenSize(256)
+Tokenizer::Tokenizer(Diagnostics *diagnostics) : mHandle(nullptr), mMaxTokenSize(256)
 {
     mContext.diagnostics = diagnostics;
 }
@@ -320,7 +334,18 @@ void Tokenizer::setMaxTokenSize(size_t maxTokenSize)
 
 void Tokenizer::lex(Token *token)
 {
-    token->type = yylex(&token->text, &token->location, mHandle);
+    int tokenType = yylex(&token->text, &token->location, mHandle);
+
+    if (tokenType == Token::GOT_ERROR)
+    {
+        mContext.diagnostics->report(Diagnostics::PP_TOKENIZER_ERROR, token->location, token->text);
+        token->type = Token::LAST;
+    }
+    else
+    {
+        token->type = tokenType;
+    }
+
     if (token->text.size() > mMaxTokenSize)
     {
         mContext.diagnostics->report(Diagnostics::PP_TOKEN_TOO_LONG,
@@ -339,7 +364,7 @@ void Tokenizer::lex(Token *token)
 
 bool Tokenizer::initScanner()
 {
-    if ((mHandle == NULL) && yylex_init_extra(&mContext, &mHandle))
+    if ((mHandle == nullptr) && yylex_init_extra(&mContext, &mHandle))
         return false;
 
     yyrestart(0, mHandle);
@@ -348,11 +373,11 @@ bool Tokenizer::initScanner()
 
 void Tokenizer::destroyScanner()
 {
-    if (mHandle == NULL)
+    if (mHandle == nullptr)
         return;
 
     yylex_destroy(mHandle);
-    mHandle = NULL;
+    mHandle = nullptr;
 }
 
 }  // namespace pp

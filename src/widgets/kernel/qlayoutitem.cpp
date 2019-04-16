@@ -309,24 +309,24 @@ void QLayoutItem::invalidate()
 
 /*!
     If this item is a QLayout, it is returned as a QLayout; otherwise
-    0 is returned. This function provides type-safe casting.
+    \nullptr is returned. This function provides type-safe casting.
 
     \sa spacerItem(), widget()
 */
-QLayout * QLayoutItem::layout()
+QLayout *QLayoutItem::layout()
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
     If this item is a QSpacerItem, it is returned as a QSpacerItem;
-    otherwise 0 is returned. This function provides type-safe casting.
+    otherwise \nullptr is returned. This function provides type-safe casting.
 
     \sa layout(), widget()
 */
-QSpacerItem * QLayoutItem::spacerItem()
+QSpacerItem *QLayoutItem::spacerItem()
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -354,7 +354,7 @@ QSpacerItem * QSpacerItem::spacerItem()
 
 /*!
     If this item manages a QWidget, returns that widget. Otherwise,
-    \c nullptr is returned.
+    \nullptr is returned.
 
     \note While the functions layout() and spacerItem() perform casts, this
     function returns another object: QLayout and QSpacerItem inherit QLayoutItem,
@@ -362,9 +362,9 @@ QSpacerItem * QSpacerItem::spacerItem()
 
     \sa layout(), spacerItem()
 */
-QWidget * QLayoutItem::widget()
+QWidget *QLayoutItem::widget()
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -501,6 +501,17 @@ void QWidgetItem::setGeometry(const QRect &rect)
         y = y + (r.height() - s.height());
     else if (!(align & Qt::AlignTop))
         y = y + (r.height() - s.height()) / 2;
+
+    // Make sure we don't move outside of the parent, e.g when styles demand
+    // surplus space that exceeds the available margins (f.ex macOS with QGroupBox)
+    if (x < 0) {
+        s.rwidth() += x;
+        x = 0;
+    }
+    if (y < 0) {
+        s.rheight() += y;
+        y = 0;
+    }
 
     wid->setGeometry(x, y, s.width(), s.height());
 }

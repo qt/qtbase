@@ -63,11 +63,11 @@ class Q_AUTOTEST_EXPORT QBasicKeyEventTransition : public QAbstractTransition
 {
     Q_OBJECT
 public:
-    QBasicKeyEventTransition(QState *sourceState = 0);
-    QBasicKeyEventTransition(QEvent::Type type, int key, QState *sourceState = 0);
+    QBasicKeyEventTransition(QState *sourceState = nullptr);
+    QBasicKeyEventTransition(QEvent::Type type, int key, QState *sourceState = nullptr);
     QBasicKeyEventTransition(QEvent::Type type, int key,
                              Qt::KeyboardModifiers modifierMask,
-                             QState *sourceState = 0);
+                             QState *sourceState = nullptr);
     ~QBasicKeyEventTransition();
 
     QEvent::Type eventType() const;
@@ -84,7 +84,7 @@ protected:
     void onTransition(QEvent *) override;
 
 private:
-    Q_DISABLE_COPY(QBasicKeyEventTransition)
+    Q_DISABLE_COPY_MOVE(QBasicKeyEventTransition)
     Q_DECLARE_PRIVATE(QBasicKeyEventTransition)
 };
 

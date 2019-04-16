@@ -893,13 +893,7 @@ bool QTemporaryFile::rename(const QString &newName)
 
   For example:
 
-  \code
-  QFile f(":/resources/file.txt");
-  QTemporaryFile::createNativeFile(f); // Returns a pointer to a temporary file
-
-  QFile f("/users/qt/file.txt");
-  QTemporaryFile::createNativeFile(f); // Returns 0
-  \endcode
+  \snippet code/src_corelib_io_qtemporaryfile.cpp 1
 
   \sa QFileInfo::isNativePath()
 */
@@ -914,20 +908,24 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
         qint64 old_off = 0;
         if(wasOpen)
             old_off = file.pos();
-        else
-            file.open(QIODevice::ReadOnly);
+        else if (!file.open(QIODevice::ReadOnly))
+            return nullptr;
         //dump data
         QTemporaryFile *ret = new QTemporaryFile;
-        ret->open();
-        file.seek(0);
-        char buffer[1024];
-        while(true) {
-            qint64 len = file.read(buffer, 1024);
-            if(len < 1)
-                break;
-            ret->write(buffer, len);
+        if (ret->open()) {
+            file.seek(0);
+            char buffer[1024];
+            while (true) {
+                qint64 len = file.read(buffer, 1024);
+                if (len < 1)
+                    break;
+                ret->write(buffer, len);
+            }
+            ret->seek(0);
+        } else {
+            delete ret;
+            ret = nullptr;
         }
-        ret->seek(0);
         //restore
         if(wasOpen)
             file.seek(old_off);

@@ -62,7 +62,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

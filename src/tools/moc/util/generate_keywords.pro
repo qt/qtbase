@@ -1,4 +1,4 @@
 CONFIG -= moc
-mac:CONFIG -= app_bundle
+CONFIG += cmdline
 
 SOURCES += generate_keywords.cpp

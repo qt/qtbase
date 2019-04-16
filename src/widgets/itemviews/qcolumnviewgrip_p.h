@@ -68,12 +68,12 @@ Q_SIGNALS:
     void gripMoved(int offset);
 
 public:
-    explicit QColumnViewGrip(QWidget *parent = 0);
+    explicit QColumnViewGrip(QWidget *parent = nullptr);
     ~QColumnViewGrip();
     int moveGrip(int offset);
 
 protected:
-    QColumnViewGrip(QColumnViewGripPrivate &, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QColumnViewGrip(QColumnViewGripPrivate &, QWidget *parent = nullptr, Qt::WindowFlags f = nullptr);
     void paintEvent(QPaintEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -82,7 +82,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QColumnViewGrip)
-    Q_DISABLE_COPY(QColumnViewGrip)
+    Q_DISABLE_COPY_MOVE(QColumnViewGrip)
 };
 
 class QColumnViewGripPrivate : public QWidgetPrivate

@@ -417,6 +417,23 @@ static const char *findWMstr(uint msg)
  { 0x0232, "WM_EXITSIZEMOVE" },
  { 0x0233, "WM_DROPFILES" },
  { 0x0234, "WM_MDIREFRESHMENU" },
+ { 0x0241, "WM_NCPOINTERUPDATE"},
+ { 0x0242, "WM_NCPOINTERDOWN"},
+ { 0x0243, "WM_NCPOINTERUP"},
+ { 0x0245, "WM_POINTERUPDATE"},
+ { 0x0246, "WM_POINTERDOWN"},
+ { 0x0247, "WM_POINTERUP"},
+ { 0x0249, "WM_POINTERENTER"},
+ { 0x024A, "WM_POINTERLEAVE"},
+ { 0x0248, "WM_POINTERACTIVATE"},
+ { 0x024C, "WM_POINTERCAPTURECHANGED"},
+ { 0x024D, "WM_TOUCHHITTESTING"},
+ { 0x024E, "WM_POINTERWHEEL"},
+ { 0x024F, "WM_POINTERHWHEEL"},
+ { 0x0250, "DM_POINTERHITTEST"},
+ { 0x0251, "WM_POINTERROUTEDTO"},
+ { 0x0252, "WM_POINTERROUTEDAWAY"},
+ { 0x0253, "WM_POINTERROUTEDRELEASED"},
  { 0x0281, "WM_IME_SETCONTEXT" },
  { 0x0282, "WM_IME_NOTIFY" },
  { 0x0283, "WM_IME_CONTROL" },
@@ -700,7 +717,7 @@ QString decodeMSG(const MSG& msg)
     else if (const char *wmmsgC = findWMstr(msg.message))
         message = QString::fromLatin1(wmmsgC);
     else
-        message = QString::fromLatin1("WM_(%1)").arg(msg.message); // Unknown WM_, so use number
+        message = QString::fromLatin1("WM_(0x%1)").arg(msg.message, 0, 16); // Unknown WM_, so use number
 
     // Yes, we want to give the WM_ names 20 chars of space before showing the
     // decoded message, since some of the common messages are quite long, and

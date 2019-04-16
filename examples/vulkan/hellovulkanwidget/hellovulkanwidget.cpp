@@ -140,12 +140,12 @@ void VulkanRenderer::initResources()
     m_devFuncs = inst->deviceFunctions(m_window->device());
 
     QString info;
-    info += QString().sprintf("Number of physical devices: %d\n", m_window->availablePhysicalDevices().count());
+    info += QString::asprintf("Number of physical devices: %d\n", m_window->availablePhysicalDevices().count());
 
     QVulkanFunctions *f = inst->functions();
     VkPhysicalDeviceProperties props;
     f->vkGetPhysicalDeviceProperties(m_window->physicalDevice(), &props);
-    info += QString().sprintf("Active physical device name: '%s' version %d.%d.%d\nAPI version %d.%d.%d\n",
+    info += QString::asprintf("Active physical device name: '%s' version %d.%d.%d\nAPI version %d.%d.%d\n",
                               props.deviceName,
                               VK_VERSION_MAJOR(props.driverVersion), VK_VERSION_MINOR(props.driverVersion),
                               VK_VERSION_PATCH(props.driverVersion),
@@ -154,19 +154,19 @@ void VulkanRenderer::initResources()
 
     info += QStringLiteral("Supported instance layers:\n");
     for (const QVulkanLayer &layer : inst->supportedLayers())
-        info += QString().sprintf("    %s v%u\n", layer.name.constData(), layer.version);
+        info += QString::asprintf("    %s v%u\n", layer.name.constData(), layer.version);
     info += QStringLiteral("Enabled instance layers:\n");
     for (const QByteArray &layer : inst->layers())
-        info += QString().sprintf("    %s\n", layer.constData());
+        info += QString::asprintf("    %s\n", layer.constData());
 
     info += QStringLiteral("Supported instance extensions:\n");
     for (const QVulkanExtension &ext : inst->supportedExtensions())
-        info += QString().sprintf("    %s v%u\n", ext.name.constData(), ext.version);
+        info += QString::asprintf("    %s v%u\n", ext.name.constData(), ext.version);
     info += QStringLiteral("Enabled instance extensions:\n");
     for (const QByteArray &ext : inst->extensions())
-        info += QString().sprintf("    %s\n", ext.constData());
+        info += QString::asprintf("    %s\n", ext.constData());
 
-    info += QString().sprintf("Color format: %u\nDepth-stencil format: %u\n",
+    info += QString::asprintf("Color format: %u\nDepth-stencil format: %u\n",
                               m_window->colorFormat(), m_window->depthStencilFormat());
 
     info += QStringLiteral("Supported sample counts:");

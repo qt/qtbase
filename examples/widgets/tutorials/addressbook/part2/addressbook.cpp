@@ -74,9 +74,12 @@ AddressBook::AddressBook(QWidget *parent)
     cancelButton->hide();
 //! [pushbutton declaration]
 //! [connecting signals and slots]
-    connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submitContact()));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
+    connect(addButton, &QPushButton::clicked,
+            this, &AddressBook::addContact);
+    connect(submitButton, &QPushButton::clicked,
+            this, &AddressBook::submitContact);
+    connect(cancelButton, &QPushButton::clicked,
+            this, &AddressBook::cancel);
 //! [connecting signals and slots]
 //! [vertical layout]
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;

@@ -83,12 +83,12 @@ public:
                 const QMarginsF &minMargins = QMarginsF(0, 0, 0, 0));
     QPageLayout(const QPageLayout &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QPageLayout &operator=(QPageLayout &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QPageLayout &operator=(QPageLayout &&other) noexcept { swap(other); return *this; }
 #endif
     QPageLayout &operator=(const QPageLayout &other);
     ~QPageLayout();
 
-    void swap(QPageLayout &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QPageLayout &other) noexcept { qSwap(d, other.d); }
 
     friend Q_GUI_EXPORT bool operator==(const QPageLayout &lhs, const QPageLayout &rhs);
     bool isEquivalentTo(const QPageLayout &other) const;

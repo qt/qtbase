@@ -87,7 +87,7 @@ public:
                 && !d->image.d->paintEngine->isActive())
             {
                 delete d->image.d->paintEngine;
-                d->image.d->paintEngine = 0;
+                d->image.d->paintEngine = nullptr;
             }
         }
     }

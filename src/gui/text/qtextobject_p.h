@@ -93,7 +93,7 @@ class QTextFramePrivate : public QTextObjectPrivate
     Q_DECLARE_PUBLIC(QTextFrame)
 public:
     QTextFramePrivate(QTextDocument *doc)
-        : QTextObjectPrivate(doc), fragment_start(0), fragment_end(0), parentFrame(0), layoutData(0)
+        : QTextObjectPrivate(doc), fragment_start(0), fragment_end(0), parentFrame(nullptr), layoutData(nullptr)
     {
     }
     virtual void fragmentAdded(QChar type, uint fragment);

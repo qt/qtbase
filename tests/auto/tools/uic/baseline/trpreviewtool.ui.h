@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'trpreviewtool.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -117,7 +117,7 @@ public:
         mainToolBar = new QToolBar(TrPreviewToolClass);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
         mainToolBar->setOrientation(Qt::Horizontal);
-        TrPreviewToolClass->addToolBar(static_cast<Qt::ToolBarArea>(4), mainToolBar);
+        TrPreviewToolClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(TrPreviewToolClass);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         TrPreviewToolClass->setStatusBar(statusBar);
@@ -138,7 +138,7 @@ public:
         vboxLayout->addWidget(viewForms);
 
         dwForms->setWidget(dockWidgetContents);
-        TrPreviewToolClass->addDockWidget(static_cast<Qt::DockWidgetArea>(1), dwForms);
+        TrPreviewToolClass->addDockWidget(Qt::LeftDockWidgetArea, dwForms);
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuView->menuAction());
@@ -162,21 +162,21 @@ public:
 
     void retranslateUi(QMainWindow *TrPreviewToolClass)
     {
-        TrPreviewToolClass->setWindowTitle(QApplication::translate("TrPreviewToolClass", "Qt Translation Preview Tool", nullptr));
-        actionOpenForm->setText(QApplication::translate("TrPreviewToolClass", "&Open Form...", nullptr));
-        actionLoadTranslation->setText(QApplication::translate("TrPreviewToolClass", "&Load Translation...", nullptr));
-        actionReloadTranslations->setText(QApplication::translate("TrPreviewToolClass", "&Reload Translations", nullptr));
-#ifndef QT_NO_SHORTCUT
-        actionReloadTranslations->setShortcut(QApplication::translate("TrPreviewToolClass", "F5", nullptr));
-#endif // QT_NO_SHORTCUT
-        actionClose->setText(QApplication::translate("TrPreviewToolClass", "&Close", nullptr));
-        actionAbout->setText(QApplication::translate("TrPreviewToolClass", "About", nullptr));
-        actionAbout_Qt->setText(QApplication::translate("TrPreviewToolClass", "About Qt", nullptr));
-        menuView->setTitle(QApplication::translate("TrPreviewToolClass", "&View", nullptr));
-        menuViewViews->setTitle(QApplication::translate("TrPreviewToolClass", "&Views", nullptr));
-        menuHelp->setTitle(QApplication::translate("TrPreviewToolClass", "&Help", nullptr));
-        menuFile->setTitle(QApplication::translate("TrPreviewToolClass", "&File", nullptr));
-        dwForms->setWindowTitle(QApplication::translate("TrPreviewToolClass", "Forms", nullptr));
+        TrPreviewToolClass->setWindowTitle(QCoreApplication::translate("TrPreviewToolClass", "Qt Translation Preview Tool", nullptr));
+        actionOpenForm->setText(QCoreApplication::translate("TrPreviewToolClass", "&Open Form...", nullptr));
+        actionLoadTranslation->setText(QCoreApplication::translate("TrPreviewToolClass", "&Load Translation...", nullptr));
+        actionReloadTranslations->setText(QCoreApplication::translate("TrPreviewToolClass", "&Reload Translations", nullptr));
+#if QT_CONFIG(shortcut)
+        actionReloadTranslations->setShortcut(QCoreApplication::translate("TrPreviewToolClass", "F5", nullptr));
+#endif // QT_CONFIG(shortcut)
+        actionClose->setText(QCoreApplication::translate("TrPreviewToolClass", "&Close", nullptr));
+        actionAbout->setText(QCoreApplication::translate("TrPreviewToolClass", "About", nullptr));
+        actionAbout_Qt->setText(QCoreApplication::translate("TrPreviewToolClass", "About Qt", nullptr));
+        menuView->setTitle(QCoreApplication::translate("TrPreviewToolClass", "&View", nullptr));
+        menuViewViews->setTitle(QCoreApplication::translate("TrPreviewToolClass", "&Views", nullptr));
+        menuHelp->setTitle(QCoreApplication::translate("TrPreviewToolClass", "&Help", nullptr));
+        menuFile->setTitle(QCoreApplication::translate("TrPreviewToolClass", "&File", nullptr));
+        dwForms->setWindowTitle(QCoreApplication::translate("TrPreviewToolClass", "Forms", nullptr));
     } // retranslateUi
 
 };

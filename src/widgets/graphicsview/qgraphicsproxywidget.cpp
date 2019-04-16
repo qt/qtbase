@@ -556,7 +556,7 @@ QGraphicsProxyWidget::~QGraphicsProxyWidget()
     exclusively either inside or outside of Graphics View. You cannot embed a
     widget as long as it is is visible elsewhere in the UI, at the same time.
 
-    \a widget must be a top-level widget whose parent is 0.
+    \a widget must be a top-level widget whose parent is \nullptr.
 
     When the widget is embedded, its state (e.g., visible, enabled, geometry,
     size hints) is copied into the proxy widget. If the embedded widget is
@@ -607,20 +607,20 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         for (QGraphicsItem *child : childItems) {
             if (child->d_ptr->isProxyWidget()) {
                 QGraphicsProxyWidget *childProxy = static_cast<QGraphicsProxyWidget *>(child);
-                QWidget * parent = childProxy->widget();
-                while (parent->parentWidget() != 0) {
+                QWidget *parent = childProxy->widget();
+                while (parent && parent->parentWidget()) {
                     if (parent == widget)
                         break;
                     parent = parent->parentWidget();
                 }
                 if (!childProxy->widget() || parent != widget)
                     continue;
-                childProxy->setWidget(0);
+                childProxy->setWidget(nullptr);
                 delete childProxy;
             }
         }
 
-        widget = 0;
+        widget = nullptr;
 #ifndef QT_NO_CURSOR
         q->unsetCursor();
 #endif
@@ -739,7 +739,7 @@ QWidget *QGraphicsProxyWidget::widget() const
     Returns the rectangle for \a widget, which must be a descendant of
     widget(), or widget() itself, in this proxy item's local coordinates.
 
-    If no widget is embedded, \a widget is 0, or \a widget is not a
+    If no widget is embedded, \a widget is \nullptr, or \a widget is not a
     descendant of the embedded widget, this function returns an empty QRectF.
 
     \sa widget()

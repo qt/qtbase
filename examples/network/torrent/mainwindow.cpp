@@ -239,7 +239,7 @@ int MainWindow::rowOfClient(TorrentClient *client) const
     // Return the row that displays this client's status, or -1 if the
     // client is not known.
     int row = 0;
-    foreach (Job job, jobs) {
+    for (const Job &job : jobs) {
         if (job.client == client)
             return row;
         ++row;
@@ -358,7 +358,7 @@ bool MainWindow::addTorrent(const QString &fileName, const QString &destinationF
                             const QByteArray &resumeState)
 {
     // Check if the torrent is already being downloaded.
-    foreach (Job job, jobs) {
+    for (const Job &job : qAsConst(jobs)) {
         if (job.torrentFileName == fileName && job.destinationDirectory == destinationFolder) {
             QMessageBox::warning(this, tr("Already downloading"),
                                  tr("The torrent file %1 is "
@@ -630,7 +630,7 @@ void MainWindow::about()
     QPushButton *quitButton = new QPushButton("OK");
 
     QHBoxLayout *topLayout = new QHBoxLayout;
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10, 10, 10, 10);
     topLayout->setSpacing(10);
     topLayout->addWidget(icon);
     topLayout->addWidget(text);
@@ -684,7 +684,7 @@ void MainWindow::closeEvent(QCloseEvent *)
     // them to signal that they have stopped.
     jobsToStop = 0;
     jobsStopped = 0;
-    foreach (Job job, jobs) {
+    for (const Job &job : qAsConst(jobs)) {
         ++jobsToStop;
         TorrentClient *client = job.client;
         client->disconnect();

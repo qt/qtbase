@@ -956,6 +956,7 @@ QLineEdit[echoMode="2"] {
 //! [119]
 QLineEdit:read-only {
     background: lightblue;
+}
 //! [119]
 
 

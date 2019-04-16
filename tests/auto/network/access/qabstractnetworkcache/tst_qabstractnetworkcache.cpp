@@ -39,7 +39,7 @@
 
 #include <algorithm>
 
-#define TESTFILE QLatin1String("http://") + QtNetworkSettings::serverName() + QLatin1String("/qtest/cgi-bin/")
+#define TESTFILE QLatin1String("http://") + QtNetworkSettings::httpServerName() + QLatin1String("/qtest/cgi-bin/")
 
 class tst_QAbstractNetworkCache : public QObject
 {
@@ -127,8 +127,13 @@ Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
 
 void tst_QAbstractNetworkCache::initTestCase()
 {
+#if defined(QT_TEST_SERVER)
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
+
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     networkConfiguration = netConfMan->defaultConfiguration();
@@ -251,9 +256,14 @@ void tst_QAbstractNetworkCache::cacheControl_data()
     QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol-expire.cgi" << false;
 
     QTest::newRow("200-2") << QNetworkRequest::AlwaysNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << AlwaysFalse;
-    QTest::newRow("200-3") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << false;
+    QTest::newRow("200-3") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << true;
     QTest::newRow("200-4") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;
-    QTest::newRow("200-5") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;
+    QTest::newRow("200-5") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?no-cache" << true;
+
+    QTest::newRow("200-6") << QNetworkRequest::AlwaysNetwork << "httpcachetest_cachecontrol.cgi?no-store" << AlwaysFalse;
+    QTest::newRow("200-7") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?no-store" << false;
+    QTest::newRow("200-8") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?no-store" << false;
+    QTest::newRow("200-9") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?no-store" << false;
 
     QTest::newRow("304-0") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000" << true;
 

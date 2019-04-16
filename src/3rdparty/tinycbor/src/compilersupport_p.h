@@ -106,7 +106,7 @@
 #      define cbor_ntohs    __builtin_bswap16
 #      define cbor_htons    __builtin_bswap16
 #    else
-#      define cbor_ntohs(x) (((uint16_t)x >> 8) | ((uint16_t)x << 8))
+#      define cbor_ntohs(x) (((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8))
 #      define cbor_htons    cbor_ntohs
 #    endif
 #  else

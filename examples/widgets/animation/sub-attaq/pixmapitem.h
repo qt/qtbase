@@ -60,7 +60,7 @@
 class PixmapItem : public QGraphicsObject
 {
 public:
-    PixmapItem(const QString &fileName, GraphicsScene::Mode mode, QGraphicsItem * parent = 0);
+    PixmapItem(const QString &fileName, GraphicsScene::Mode mode, QGraphicsItem *parent = nullptr);
     PixmapItem(const QString &fileName, QGraphicsScene *scene);
     QSizeF size() const;
     QRectF boundingRect() const override;

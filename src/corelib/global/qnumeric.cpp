@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Returns \c true if the double \a {d} is equivalent to infinity.
     \relates <QtGlobal>
+    \sa qInf()
 */
 Q_CORE_EXPORT bool qIsInf(double d) { return qt_is_inf(d); }
 
@@ -64,6 +65,7 @@ Q_CORE_EXPORT bool qIsFinite(double d) { return qt_is_finite(d); }
 /*!
     Returns \c true if the float \a {f} is equivalent to infinity.
     \relates <QtGlobal>
+    \sa qInf()
 */
 Q_CORE_EXPORT bool qIsInf(float f) { return qt_is_inf(f); }
 
@@ -88,15 +90,36 @@ Q_CORE_EXPORT double qSNaN() { return qt_snan(); }
 /*!
     Returns the bit pattern of a quiet NaN as a double.
     \relates <QtGlobal>
+    \sa qIsNaN()
 */
 Q_CORE_EXPORT double qQNaN() { return qt_qnan(); }
 
 /*!
     Returns the bit pattern for an infinite number as a double.
     \relates <QtGlobal>
+    \sa qIsInf()
 */
 Q_CORE_EXPORT double qInf() { return qt_inf(); }
 
+/*!
+    \relates <QtGlobal>
+    Classifies a floating-point value.
+
+    The return values are defined in \c{<cmath>}: returns one of the following,
+    determined by the floating-point class of \a val:
+    \list
+    \li FP_NAN not a number
+    \li FP_INFINITE infinities (positive or negative)
+    \li FP_NORMAL finite with a full mantissa
+    \li FP_SUBNORMAL finite with a reduced mantissa
+    \endlist
+*/
+Q_CORE_EXPORT int qFpClassify(double val) { return qt_fpclassify(val); }
+
+/*!
+    \overload
+*/
+Q_CORE_EXPORT int qFpClassify(float val) { return qt_fpclassify(val); }
 
 
 /*!
@@ -130,12 +153,7 @@ static inline quint32 f2i(float f)
     two 32-bit floating point numbers and all you need is an approximated 24-bit precision, you can
     use this function like this:
 
-    \code
-    if (qFloatDistance(a, b) < (1 << 7)) {   // The last 7 bits are not
-                                            // significant
-        // precise enough
-    }
-    \endcode
+    \snippet code/src_corelib_global_qnumeric.cpp 0
 
     \sa qFuzzyCompare()
     \since 5.2

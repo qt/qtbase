@@ -173,15 +173,12 @@ template <class Iterator> bool qt_stroke_side(Iterator *it, QStroker *stroker,
                                               bool capFirst, QLineF *startTangent);
 
 /*******************************************************************************
- * QLineF::angle gives us the smalles angle between two lines. Here we
- * want to identify the line's angle direction on the unit circle.
+ * QLineF::angleTo gives us the angle between two lines with respecting the direction.
+ * Here we want to identify the line's angle direction on the unit circle.
  */
 static inline qreal adapted_angle_on_x(const QLineF &line)
 {
-    qreal angle = line.angle(QLineF(0, 0, 1, 0));
-    if (line.dy() > 0)
-        angle = 360 - angle;
-    return angle;
+    return QLineF(0, 0, 1, 0).angleTo(line);
 }
 
 QStrokerOps::QStrokerOps()
@@ -369,7 +366,8 @@ void QStrokerOps::strokeEllipse(const QRectF &rect, void *data, const QTransform
 QStroker::QStroker()
     : m_capStyle(SquareJoin), m_joinStyle(FlatJoin),
       m_back1X(0), m_back1Y(0),
-      m_back2X(0), m_back2Y(0)
+      m_back2X(0), m_back2Y(0),
+      m_forceOpen(false)
 {
     m_strokeWidth = qt_real_to_fixed(1);
     m_miterLimit = qt_real_to_fixed(2);
@@ -455,12 +453,12 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
         return;
     }
 #endif
+    QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
+                    qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
+    QPointF isect;
+    QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
 
     if (join == FlatJoin) {
-        QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
-                        qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
-        QPointF isect;
-        QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
         QLineF shortCut(prevLine.p2(), nextLine.p1());
         qreal angle = shortCut.angleTo(prevLine);
         if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
@@ -472,12 +470,6 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
                    qt_real_to_fixed(nextLine.y1()));
 
     } else {
-        QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
-                        qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
-
-        QPointF isect;
-        QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
-
         if (join == MiterJoin) {
             qreal appliedMiterLimit = qt_fixed_to_real(m_strokeWidth * m_miterLimit);
 
@@ -512,7 +504,11 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
             qfixed offset = m_strokeWidth / 2;
 
             QLineF l1(prevLine);
-            l1.translate(l1.dx(), l1.dy());
+            qreal dp = QPointF::dotProduct(QPointF(prevLine.dx(), prevLine.dy()), QPointF(nextLine.dx(), nextLine.dy()));
+            if (dp > 0)  // same direction, means that prevLine is from a bezier that has been "reversed" by shifting
+                l1 = QLineF(prevLine.p2(), prevLine.p1());
+            else
+                l1.translate(l1.dx(), l1.dy());
             l1.setLength(qt_fixed_to_real(offset));
             QLineF l2(nextLine.p2(), nextLine.p1());
             l2.translate(l2.dx(), l2.dy());
@@ -570,7 +566,11 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
 
             // first control line
             QLineF l1 = prevLine;
-            l1.translate(l1.dx(), l1.dy());
+            qreal dp = QPointF::dotProduct(QPointF(prevLine.dx(), prevLine.dy()), QPointF(nextLine.dx(), nextLine.dy()));
+            if (dp > 0)  // same direction, means that prevLine is from a bezier that has been "reversed" by shifting
+                l1 = QLineF(prevLine.p2(), prevLine.p1());
+            else
+                l1.translate(l1.dx(), l1.dy());
             l1.setLength(QT_PATH_KAPPA * offset);
 
             // second control line, find through normal between prevLine and focal.
@@ -705,7 +705,6 @@ template <class Iterator> bool qt_stroke_side(Iterator *it,
                                     QPointF(qt_fixed_to_real(e.x), qt_fixed_to_real(e.y)),
                                     QPointF(qt_fixed_to_real(cp2.x), qt_fixed_to_real(cp2.y)),
                                     QPointF(qt_fixed_to_real(ep.x), qt_fixed_to_real(ep.y)));
-
             int count = bezier.shifted(offsetCurves,
                                        MAX_OFFSET,
                                        offset,
@@ -748,7 +747,7 @@ template <class Iterator> bool qt_stroke_side(Iterator *it,
         }
     }
 
-    if (start == prev) {
+    if (start == prev && !stroker->forceOpen()) {
         // closed subpath, join first and last point
 #ifdef QPP_STROKE_DEBUG
         qDebug("\n ---> (side) closed subpath");

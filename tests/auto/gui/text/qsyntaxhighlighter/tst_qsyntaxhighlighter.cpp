@@ -74,6 +74,7 @@ private slots:
     void emptyBlocks();
     void setCharFormat();
     void highlightOnInit();
+    void highlightOnInitAndAppend();
     void stopHighlightingWhenStateDoesNotChange();
     void unindent();
     void highlightToEndOfDocument();
@@ -81,6 +82,7 @@ private slots:
     void preservePreeditArea();
     void task108530();
     void avoidUnnecessaryRehighlight();
+    void avoidUnnecessaryDelayedRehighlight();
     void noContentsChangedDuringHighlight();
     void rehighlight();
     void rehighlightBlock();
@@ -265,6 +267,19 @@ void tst_QSyntaxHighlighter::highlightOnInit()
     QTRY_VERIFY(hl->highlighted);
 }
 
+void tst_QSyntaxHighlighter::highlightOnInitAndAppend()
+{
+    cursor.insertText("Hello");
+    cursor.insertBlock();
+    cursor.insertText("World");
+
+    TestHighlighter *hl = new TestHighlighter(doc);
+    cursor.insertBlock();
+    cursor.insertText("More text");
+    QTRY_VERIFY(hl->highlighted);
+    QVERIFY(hl->highlightedText.endsWith(doc->toPlainText().remove(QLatin1Char('\n'))));
+}
+
 class StateTestHighlighter : public QSyntaxHighlighter
 {
 public:
@@ -330,6 +345,7 @@ void tst_QSyntaxHighlighter::unindent()
     QCOMPARE(doc->toPlainText(), plainText);
 
     TestHighlighter *hl = new TestHighlighter(doc);
+    QTRY_VERIFY(hl->highlighted);
     hl->callCount = 0;
 
     cursor.movePosition(QTextCursor::Start);
@@ -460,7 +476,26 @@ void tst_QSyntaxHighlighter::avoidUnnecessaryRehighlight()
     QVERIFY(hl->highlighted);
 
     hl->highlighted = false;
-    QTRY_VERIFY(!hl->highlighted);
+    QCoreApplication::processEvents();
+    QVERIFY(!hl->highlighted);
+}
+
+void tst_QSyntaxHighlighter::avoidUnnecessaryDelayedRehighlight()
+{
+    // Having text in the document before creating the highlighter starts the delayed rehighlight
+    cursor.insertText("Hello World");
+
+    TestHighlighter *hl = new TestHighlighter(doc);
+    QVERIFY(!hl->highlighted);
+
+    hl->rehighlight();
+    QVERIFY(hl->highlighted);
+
+    hl->highlighted = false;
+    // Process events, including delayed rehighlight emission
+    QCoreApplication::processEvents();
+    // Should be cancelled and no extra rehighlight should be done
+    QVERIFY(!hl->highlighted);
 }
 
 void tst_QSyntaxHighlighter::noContentsChangedDuringHighlight()

@@ -45,6 +45,7 @@
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #if defined(Q_OS_MAC)
 #include <qpa/qplatformfontdatabase.h>
+#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
 #else
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #endif
@@ -62,10 +63,17 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <qpa/qplatformservices.h>
 
+#if QT_CONFIG(xlib) && QT_CONFIG(opengl) && !QT_CONFIG(opengles2)
+#include "qoffscreenintegration_x11.h"
+#endif
+
 QT_BEGIN_NAMESPACE
+
+class QCoreTextFontEngine;
 
 template <typename BaseEventDispatcher>
 class QOffscreenEventDispatcher : public BaseEventDispatcher
@@ -101,7 +109,7 @@ QOffscreenIntegration::QOffscreenIntegration()
 {
 #if defined(Q_OS_UNIX)
 #if defined(Q_OS_MAC)
-    m_fontDatabase.reset(new QPlatformFontDatabase());
+    m_fontDatabase.reset(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>);
 #else
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
 #endif
@@ -114,7 +122,7 @@ QOffscreenIntegration::QOffscreenIntegration()
 #endif
     m_services.reset(new QPlatformServices);
 
-    screenAdded(new QOffscreenScreen);
+    QWindowSystemInterface::handleScreenAdded(new QOffscreenScreen);
 }
 
 QOffscreenIntegration::~QOffscreenIntegration()
@@ -214,6 +222,16 @@ QPlatformDrag *QOffscreenIntegration::drag() const
 QPlatformServices *QOffscreenIntegration::services() const
 {
     return m_services.data();
+}
+
+QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration()
+{
+#if QT_CONFIG(xlib) && QT_CONFIG(opengl) && !QT_CONFIG(opengles2)
+    QByteArray glx = qgetenv("QT_QPA_OFFSCREEN_NO_GLX");
+    if (glx.isEmpty())
+        return new QOffscreenX11Integration;
+#endif
+    return new QOffscreenIntegration;
 }
 
 QT_END_NAMESPACE

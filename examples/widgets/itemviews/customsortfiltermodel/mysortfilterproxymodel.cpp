@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mysortfilterproxymodel.h"
+
+#include <QtWidgets>
 
 //! [0]
 MySortFilterProxyModel::MySortFilterProxyModel(QObject *parent)
@@ -77,7 +77,7 @@ void MySortFilterProxyModel::setFilterMaximumDate(const QDate &date)
 
 //! [3]
 bool MySortFilterProxyModel::filterAcceptsRow(int sourceRow,
-        const QModelIndex &sourceParent) const
+                                              const QModelIndex &sourceParent) const
 {
     QModelIndex index0 = sourceModel()->index(sourceRow, 0, sourceParent);
     QModelIndex index1 = sourceModel()->index(sourceRow, 1, sourceParent);

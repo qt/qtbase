@@ -49,26 +49,19 @@ class DomButtonGroup;
 
 class Driver
 {
-    Q_DISABLE_COPY(Driver)
+    Q_DISABLE_COPY_MOVE(Driver)
 public:
     Driver();
     virtual ~Driver();
 
     // tools
     bool printDependencies(const QString &fileName);
-    bool uic(const QString &fileName, QTextStream *output = 0);
-    bool uic(const QString &fileName, DomUI *ui, QTextStream *output = 0);
+    bool uic(const QString &fileName, QTextStream *output = nullptr);
+    bool uic(const QString &fileName, DomUI *ui, QTextStream *output = nullptr);
 
     // configuration
     inline QTextStream &output() const { return *m_output; }
     inline Option &option() { return m_option; }
-
-    // initialization
-    void reset();
-
-    // error
-    inline QStringList problems() { return m_problems; }
-    inline void addProblem(const QString &problem) { m_problems.append(problem); }
 
     // utils
     static QString headerFileName(const QString &fileName);
@@ -80,50 +73,46 @@ public:
                    const QString &className=QString());
 
     // symbol table
-    QString findOrInsertWidget(DomWidget *ui_widget);
-    QString findOrInsertSpacer(DomSpacer *ui_spacer);
-    QString findOrInsertLayout(DomLayout *ui_layout);
-    QString findOrInsertLayoutItem(DomLayoutItem *ui_layoutItem);
+    QString findOrInsertWidget(const DomWidget *ui_widget);
+    QString findOrInsertSpacer(const DomSpacer *ui_spacer);
+    QString findOrInsertLayout(const DomLayout *ui_layout);
+    QString findOrInsertLayoutItem(const DomLayoutItem *ui_layoutItem);
     QString findOrInsertName(const QString &name);
-    QString findOrInsertActionGroup(DomActionGroup *ui_group);
-    QString findOrInsertAction(DomAction *ui_action);
+    QString findOrInsertActionGroup(const DomActionGroup *ui_group);
+    QString findOrInsertAction(const DomAction *ui_action);
     QString findOrInsertButtonGroup(const DomButtonGroup *ui_group);
     // Find a group by its non-uniqified name
     const DomButtonGroup *findButtonGroup(const QString &attributeName) const;
 
-    inline bool hasName(const QString &name) const
-    { return m_nameRepository.contains(name); }
-
-    DomWidget *widgetByName(const QString &name) const;
-    DomSpacer *spacerByName(const QString &name) const;
-    DomLayout *layoutByName(const QString &name) const;
-    DomActionGroup *actionGroupByName(const QString &name) const;
-    DomAction *actionByName(const QString &name) const;
-
-    // pixmap
-    void insertPixmap(const QString &pixmap);
-    bool containsPixmap(const QString &pixmap) const;
+    const DomWidget *widgetByName(const QString &name) const;
+    const DomActionGroup *actionGroupByName(const QString &name) const;
+    const DomAction *actionByName(const QString &name) const;
 
     bool useIdBasedTranslations() const { return m_idBasedTranslations; }
     void setUseIdBasedTranslations(bool u) { m_idBasedTranslations = u; }
 
 private:
+    template <class DomClass> using DomObjectHash = QHash<const DomClass *, QString>;
+
+    template <class DomClass>
+    const DomClass *findByAttributeName(const DomObjectHash<DomClass> &domHash,
+                                        const QString &name) const;
+    template <class DomClass>
+    QString findOrInsert(DomObjectHash<DomClass> *domHash, const DomClass *dom, const QString &className,
+                         bool isMember = true);
+
     Option m_option;
     QTextStream m_stdout;
     QTextStream *m_output;
 
-    QStringList m_problems;
-
     // symbol tables
-    QHash<DomWidget*, QString> m_widgets;
-    QHash<DomSpacer*, QString> m_spacers;
-    QHash<DomLayout*, QString> m_layouts;
-    QHash<DomActionGroup*, QString> m_actionGroups;
-    typedef QHash<const DomButtonGroup*, QString> ButtonGroupNameHash;
-    ButtonGroupNameHash m_buttonGroups;
-    QHash<DomAction*, QString> m_actions;
+    DomObjectHash<DomWidget> m_widgets;
+    DomObjectHash<DomSpacer> m_spacers;
+    DomObjectHash<DomLayout> m_layouts;
+    DomObjectHash<DomActionGroup> m_actionGroups;
+    DomObjectHash<DomButtonGroup> m_buttonGroups;
+    DomObjectHash<DomAction> m_actions;
     QHash<QString, bool> m_nameRepository;
-    QHash<QString, bool> m_pixmaps;
     bool m_idBasedTranslations = false;
 };
 

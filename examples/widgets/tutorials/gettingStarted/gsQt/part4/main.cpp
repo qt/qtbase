@@ -73,14 +73,16 @@ private:
 
 Notepad::Notepad()
 {
-
     loadAction = new QAction(tr("&Load"), this);
     saveAction = new QAction(tr("&Save"), this);
     exitAction = new QAction(tr("E&xit"), this);
 
-    connect(loadAction, SIGNAL(triggered()), this, SLOT(load()));
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(loadAction, &QAction::triggered,
+            this, &Notepad::load);
+    connect(saveAction, &QAction::triggered,
+            this, &Notepad::save);
+    connect(exitAction, &QAction::triggered,
+            qApp, &QApplication::quit);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(loadAction);

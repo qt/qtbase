@@ -50,16 +50,6 @@ namespace ABI {
         namespace Foundation {
             struct IAsyncAction;
         }
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-        namespace Phone {
-            namespace UI {
-                namespace Input {
-                    struct IBackPressedEventArgs;
-                    struct ICameraEventArgs;
-                }
-            }
-        }
-#endif
     }
 }
 struct IAsyncInfo;
@@ -111,12 +101,6 @@ public:
 
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 private:
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-    HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
-    HRESULT onCameraPressed(IInspectable *, ABI::Windows::Phone::UI::Input::ICameraEventArgs *);
-    HRESULT onCameraHalfPressed(IInspectable *, ABI::Windows::Phone::UI::Input::ICameraEventArgs *);
-    HRESULT onCameraReleased(IInspectable *, ABI::Windows::Phone::UI::Input::ICameraEventArgs *);
-#endif
     HRESULT onSuspended(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
     HRESULT onResume(IInspectable *, IInspectable *);
 

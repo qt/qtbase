@@ -672,43 +672,9 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
     return currentModalSessionCached;
 }
 
-static void setChildrenWorksWhenModal(QWindow *window, bool worksWhenModal)
+bool QCocoaEventDispatcherPrivate::hasModalSession() const
 {
-    Q_UNUSED(window)
-    Q_UNUSED(worksWhenModal)
-
-    // For NSPanels (but not NSWindows, sadly), we can set the flag
-    // worksWhenModal, so that they are active even when they are not modal.
-/*
-    ### not ported
-    QList<QDialog *> dialogs = window->findChildren<QDialog *>();
-    for (int i=0; i<dialogs.size(); ++i){
-        NSWindow *window = qt_mac_window_for(dialogs[i]);
-        if (window && [window isKindOfClass:[NSPanel class]]) {
-            [static_cast<NSPanel *>(window) setWorksWhenModal:worksWhenModal];
-            if (worksWhenModal && [window isVisible]){
-                [window orderFront:window];
-            }
-        }
-    }
-*/
-}
-
-void QCocoaEventDispatcherPrivate::updateChildrenWorksWhenModal()
-{
-    // Make the dialog children of the window
-    // active. And make the dialog children of
-    // the previous modal dialog unactive again:
-    QMacAutoReleasePool pool;
-    int size = cocoaModalSessionStack.size();
-    if (size > 0){
-        if (QWindow *prevModal = cocoaModalSessionStack[size-1].window)
-            setChildrenWorksWhenModal(prevModal, true);
-        if (size > 1){
-            if (QWindow *prevModal = cocoaModalSessionStack[size-2].window)
-                setChildrenWorksWhenModal(prevModal, false);
-        }
-    }
+    return !cocoaModalSessionStack.isEmpty();
 }
 
 void QCocoaEventDispatcherPrivate::cleanupModalSessions()
@@ -743,7 +709,6 @@ void QCocoaEventDispatcherPrivate::cleanupModalSessions()
         cocoaModalSessionStack.remove(i);
     }
 
-    updateChildrenWorksWhenModal();
     cleanupModalSessionsNeeded = false;
 }
 
@@ -764,7 +729,6 @@ void QCocoaEventDispatcherPrivate::beginModalSession(QWindow *window)
     // stopped in cleanupModalSessions()).
     QCocoaModalSessionInfo info = {window, nullptr, nullptr};
     cocoaModalSessionStack.push(info);
-    updateChildrenWorksWhenModal();
     currentModalSessionCached = nullptr;
 }
 

@@ -165,6 +165,7 @@
 #endif
 
 #include <private/qimagereaderwriterhelpers_p.h>
+#include <qtgui_tracepoints_p.h>
 
 #include <algorithm>
 
@@ -525,7 +526,7 @@ bool QImageReaderPrivate::initHandler()
             // Try the most probable extension first
             int currentFormatIndex = extensions.indexOf(format.toLower());
             if (currentFormatIndex > 0)
-                extensions.swap(0, currentFormatIndex);
+                extensions.swapItemsAt(0, currentFormatIndex);
         }
 
         int currentExtension = 0;
@@ -755,13 +756,13 @@ void QImageReader::setDevice(QIODevice *device)
     d->device = device;
     d->deleteDevice = false;
     delete d->handler;
-    d->handler = 0;
+    d->handler = nullptr;
     d->text.clear();
 }
 
 /*!
-    Returns the device currently assigned to QImageReader, or 0 if no
-    device has been assigned.
+    Returns the device currently assigned to QImageReader, or \nullptr
+    if no device has been assigned.
 */
 QIODevice *QImageReader::device() const
 {
@@ -1250,7 +1251,18 @@ bool QImageReader::read(QImage *image)
         d->handler->setOption(QImageIOHandler::Quality, d->quality);
 
     // read the image
-    if (!d->handler->read(image)) {
+    if (Q_TRACE_ENABLED(QImageReader_read_before_reading)) {
+        QString fileName = QStringLiteral("unknown");
+        if (QFile *file = qobject_cast<QFile *>(d->device))
+            fileName = file->fileName();
+        Q_TRACE(QImageReader_read_before_reading, this, fileName);
+    }
+
+    const bool result = d->handler->read(image);
+
+    Q_TRACE(QImageReader_read_after_reading, this, result);
+
+    if (!result) {
         d->imageReaderError = InvalidDataError;
         d->errorString = QImageReader::tr("Unable to read image data");
         return false;

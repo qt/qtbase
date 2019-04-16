@@ -79,9 +79,9 @@ void MainWindow::createMenu()
     QAction *aboutAct = new QAction(tr("About"), this);
     QAction *aboutQtAct = new QAction(tr("About Qt"), this);
 
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(exitAction, &QAction::triggered, qApp, &QApplication::quit);
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
+    connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
     QMenu* fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(exitAction);
@@ -100,7 +100,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
         return new QStringListModel(completer);
 
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 #endif
     QStringList words;
 
@@ -111,7 +111,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     }
 
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
     return new QStringListModel(words, completer);
 }

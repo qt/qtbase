@@ -48,11 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtCore>
-
-#include <stdlib.h>
-
 #include "tetrixpiece.h"
+
+#include <QtCore>
 
 //! [0]
 void TetrixPiece::setRandomShape()

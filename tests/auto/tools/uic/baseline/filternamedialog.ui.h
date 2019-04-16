@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'filternamedialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -76,8 +76,8 @@ public:
 
     void retranslateUi(QDialog *FilterNameDialogClass)
     {
-        FilterNameDialogClass->setWindowTitle(QApplication::translate("FilterNameDialogClass", "FilterNameDialog", nullptr));
-        label->setText(QApplication::translate("FilterNameDialogClass", "Filter Name:", nullptr));
+        FilterNameDialogClass->setWindowTitle(QCoreApplication::translate("FilterNameDialogClass", "FilterNameDialog", nullptr));
+        label->setText(QCoreApplication::translate("FilterNameDialogClass", "Filter Name:", nullptr));
     } // retranslateUi
 
 };

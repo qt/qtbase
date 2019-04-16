@@ -54,9 +54,9 @@
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qtextcodec.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(textcodec);
 
-#ifndef QT_NO_TEXTCODEC
+QT_BEGIN_NAMESPACE
 
 template <typename T> class QAtomicPointer;
 
@@ -78,8 +78,6 @@ private:
     int forwardIndex;
     mutable QAtomicPointer<QByteArray> reverseMap;
 };
-
-#endif // QT_NO_TEXTCODEC
 
 QT_END_NAMESPACE
 

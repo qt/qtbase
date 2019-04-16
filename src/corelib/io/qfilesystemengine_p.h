@@ -130,7 +130,7 @@ public:
     static bool removeFile(const QFileSystemEntry &entry, QSystemError &error);
 
     static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
-                               QFileSystemMetaData *data = 0);
+                               QFileSystemMetaData *data = nullptr);
 
     // unused, therefore not implemented
     static bool setFileTime(const QFileSystemEntry &entry, const QDateTime &newDate,

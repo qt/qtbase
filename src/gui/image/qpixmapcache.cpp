@@ -176,7 +176,7 @@ bool QPixmapCache::Key::operator ==(const Key &key) const
     Otherwise, if pixmap was flushed, the key is no longer valid.
     \since 5.7
 */
-bool QPixmapCache::Key::isValid() const Q_DECL_NOTHROW
+bool QPixmapCache::Key::isValid() const noexcept
 {
     return d && d->isValid;
 }
@@ -469,9 +469,12 @@ QPixmapCacheEntry::~QPixmapCacheEntry()
     pm_cache()->releaseKey(key);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     \overload
+
+    Use bool find(const QString &, QPixmap *) instead.
 
     Returns the pixmap associated with the \a key in the cache, or
     null if there is no such pixmap.
@@ -494,13 +497,14 @@ QPixmap *QPixmapCache::find(const QString &key)
 /*!
     \obsolete
 
-    Use bool find(const QString&, QPixmap*) instead.
+    Use bool find(const QString &, QPixmap *) instead.
 */
 
-bool QPixmapCache::find(const QString &key, QPixmap& pixmap)
+bool QPixmapCache::find(const QString &key, QPixmap &pixmap)
 {
     return find(key, &pixmap);
 }
+#endif
 
 /*!
     Looks for a cached pixmap associated with the given \a key in the cache.
@@ -513,7 +517,7 @@ bool QPixmapCache::find(const QString &key, QPixmap& pixmap)
     \snippet code/src_gui_image_qpixmapcache.cpp 1
 */
 
-bool QPixmapCache::find(const QString &key, QPixmap* pixmap)
+bool QPixmapCache::find(const QString &key, QPixmap *pixmap)
 {
     QPixmap *ptr = pm_cache()->object(key);
     if (ptr && pixmap)
@@ -530,7 +534,7 @@ bool QPixmapCache::find(const QString &key, QPixmap* pixmap)
 
     \since 4.6
 */
-bool QPixmapCache::find(const Key &key, QPixmap* pixmap)
+bool QPixmapCache::find(const Key &key, QPixmap *pixmap)
 {
     //The key is not valid anymore, a flush happened before probably
     if (!key.d || !key.d->isValid)

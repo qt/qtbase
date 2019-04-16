@@ -85,7 +85,9 @@
 #include <qheaderview.h>
 #endif
 #include <private/qwindowsstyle_p_p.h>
+#if QT_CONFIG(animation)
 #include <private/qstyleanimation_p.h>
+#endif
 #if QT_CONFIG(tabbar)
 #include <qtabbar.h>
 #endif
@@ -849,7 +851,7 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
             info.rule = subRule;
             info.offset = offsets[where];
             info.where = where;
-            infos.append(qMove(info));
+            infos.append(std::move(info));
 
             offsets[where] += info.width;
         }
@@ -1642,7 +1644,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
             if (!parser.parse(&ss)) {
                 parser.init(QLatin1String("* {") + styleSheet + QLatin1Char('}'));
                 if (Q_UNLIKELY(!parser.parse(&ss)))
-                   qWarning("Could not parse stylesheet of object %p", o);
+                   qWarning() << "Could not parse stylesheet of object" << o;
             }
             ss.origin = StyleSheetOrigin_Inline;
             styleSheetCaches->styleSheetCache.insert(o, ss);
@@ -2643,7 +2645,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         QRenderRule rule = renderRule(w, PseudoElement_None, map[i].state | extendedPseudoClass(w));
         if (i == 0) {
             if (!w->property("_q_styleSheetWidgetFont").isValid()) {
-                saveWidgetFont(w, w->font());
+                saveWidgetFont(w, w->d_func()->localFont());
             }
             updateStyleSheetFont(w);
             if (ew != w)
@@ -3244,8 +3246,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            QStyleOptionSlider sbOpt(*sb);
             if (!rule.hasDrawable()) {
+                QStyleOptionSlider sbOpt(*sb);
                 sbOpt.rect = rule.borderRect(opt->rect);
                 rule.drawBackgroundImage(p, opt->rect);
                 baseStyle()->drawComplexControl(cc, &sbOpt, p, w);
@@ -3706,21 +3708,17 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     QStyleOptionMenuItem newMi = mi;
                     newMi.rect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
-                    checkableOffset = newMi.rect.width();
+                    // align with icons if there are some
+                    checkableOffset = std::max(m->maxIconWidth, newMi.rect.width());
                     if (subSubRule.hasDrawable() || checked)
                         drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
                 }
 
-                int iconOffset = 0;
                 if (!mi.icon.isNull()) {
                     QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
                     if (act && !dis)
                         mode = QIcon::Active;
-                    QPixmap pixmap;
-                    if (checked)
-                        pixmap = mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode, QIcon::On);
-                    else
-                        pixmap = mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode);
+                    const QPixmap pixmap(mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode, checked ? QIcon::On : QIcon::Off));
                     const int pixw = pixmap.width() / pixmap.devicePixelRatio();
                     const int pixh = pixmap.height() / pixmap.devicePixelRatio();
                     QRenderRule iconRule = renderRule(w, opt, PseudoElement_MenuIcon);
@@ -3739,15 +3737,20 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     QRect pmr(0, 0, pixw, pixh);
                     pmr.moveCenter(iconRect.center());
                     p->drawPixmap(pmr.topLeft(), pixmap);
-                    iconOffset = iconRule.geo->width;
                 }
 
+                int textOffset = 0;
+                // padding overrules it all
+                if (!subRule.hasBox() || subRule.box()->paddings[LeftEdge] == 0) {
+                    textOffset = checkableOffset;
+                    if (!m->icon.isNull() || !checkable)
+                        textOffset += m->maxIconWidth;
+                }
                 QRect textRect = subRule.contentsRect(opt->rect);
-                if (opt->direction == Qt::LeftToRight)
-                    textRect.setLeft(textRect.left() + checkableOffset + iconOffset);
-                else
-                    textRect.setRight(textRect.right() - checkableOffset - iconOffset);
+                textRect.setLeft(textRect.left() + textOffset);
                 textRect.setWidth(textRect.width() - mi.tabWidth);
+                const QRect vTextRect = visualRect(opt->direction, m->rect, textRect);
+
                 QStringRef s(&mi.text);
                 p->setPen(mi.palette.buttonText().color());
                 if (!s.isEmpty()) {
@@ -3761,7 +3764,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         p->drawText(vShortcutRect, text_flags, s.mid(t + 1).toString());
                         s = s.left(t);
                     }
-                    p->drawText(textRect, text_flags, s.left(t).toString());
+                    p->drawText(vTextRect, text_flags, s.left(t).toString());
                 }
 
                 if (mi.menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
@@ -4087,6 +4090,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (subRule.hasFont)
                 p->setFont(subRule.font);
             boxCopy.rect = subRule.contentsRect(opt->rect);
+            if (subRule.hasImage()) {
+                // the image is already drawn with CE_ToolBoxTabShape, adjust rect here
+                const int iconExtent = proxy()->pixelMetric(QStyle::PM_SmallIconSize, box, w);
+                boxCopy.rect.setLeft(boxCopy.rect.left() + iconExtent);
+            }
             QWindowsStyle::drawControl(ce, &boxCopy, p , w);
             if (subRule.hasFont)
                 p->setFont(oldFont);
@@ -4222,7 +4230,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
                 QString titleText = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight, r.width());
                 drawItemText(p, r,
-                             alignment | Qt::TextShowMnemonic, dwOpt->palette,
+                             alignment, dwOpt->palette,
                              dwOpt->state & State_Enabled, titleText,
                              QPalette::WindowText);
 
@@ -4296,7 +4304,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     switch (pe) {
 
-    case PE_FrameStatusBar: {
+    case PE_FrameStatusBarItem: {
         QRenderRule subRule = renderRule(w ? w->parentWidget() : nullptr, opt, PseudoElement_Item);
         if (subRule.hasDrawable()) {
             subRule.drawRule(p, opt->rect);
@@ -4317,7 +4325,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         pseudoElement = PseudoElement_ExclusiveIndicator;
         break;
 
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
         pseudoElement = PseudoElement_ViewItemIndicator;
         break;
 
@@ -4590,8 +4598,12 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         break;
 #if QT_CONFIG(tabbar)
     case PE_IndicatorTabClose:
-        if (w)
+        if (w) {
+            // QMacStyle needs a real widget, not its parent - to implement
+            // 'document mode' properly, drawing nothing if a tab is not hovered.
+            baseStyle()->setProperty("_q_styleSheetRealCloseButton", QVariant::fromValue((void *)w));
             w = w->parentWidget(); //match on the QTabBar instead of the CloseButton
+        }
         pseudoElement = PseudoElement_TabBarTabCloseButton;
 #endif
 
@@ -4609,6 +4621,9 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     } else {
         baseStyle()->drawPrimitive(pe, opt, p, w);
     }
+
+    if (baseStyle()->property("_q_styleSheetRealCloseButton").toBool())
+        baseStyle()->setProperty("_q_styleSheetRealCloseButton", QVariant(QVariant::Invalid));
 }
 
 QPixmap QStyleSheetStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap,
@@ -5086,10 +5101,11 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 if (mi->text.contains(QLatin1Char('\t')))
                     sz.rwidth() += 12; //as in QCommonStyle
                 bool checkable = mi->checkType != QStyleOptionMenuItem::NotCheckable;
+                int checkableWidth = 0;
                 if (checkable) {
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     QRect checkmarkRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
-                    sz.rwidth() += checkmarkRect.width();
+                    checkableWidth = std::max(mi->maxIconWidth, checkmarkRect.width());
                 }
                 if (!mi->icon.isNull()) {
                     QPixmap pixmap = mi->icon.pixmap(pixelMetric(PM_SmallIconSize));
@@ -5099,6 +5115,12 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     QFontMetrics fm(subRule.font);
                     const QRect r = fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, mi->text);
                     sz = sz.expandedTo(r.size());
+                }
+                // padding overrules it all
+                if (!subRule.hasBox() || subRule.box()->paddings[LeftEdge] == 0) {
+                    sz.rwidth() += checkableWidth;
+                    if (!mi->icon.isNull() || !checkable)
+                        sz.rwidth() += mi->maxIconWidth;
                 }
                 return subRule.boxSize(subRule.adjustSize(sz));
             }
@@ -5639,22 +5661,18 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                     } else {
                         sliderlen = maxlen;
                     }
-                    const int sliderPosition = sb->orientation == Qt::Horizontal && sb->direction == Qt::RightToLeft ? sb->maximum - sb->sliderPosition + sb->minimum : sb->sliderPosition;
                     int sliderstart = (styleOptionSlider.orientation == Qt::Horizontal ? contentRect.left() : contentRect.top())
-                        + sliderPositionFromValue(sb->minimum, sb->maximum, sliderPosition,
+                        + sliderPositionFromValue(sb->minimum, sb->maximum, sb->sliderPosition,
                                                   maxlen - sliderlen, sb->upsideDown);
 
                     QRect sr = (sb->orientation == Qt::Horizontal)
                                ? QRect(sliderstart, contentRect.top(), sliderlen, contentRect.height())
                                : QRect(contentRect.left(), sliderstart, contentRect.width(), sliderlen);
-                    if (sc == SC_ScrollBarSlider) {
-                        return sr;
-                    } else if (sc == SC_ScrollBarSubPage) {
-                        return QRect(contentRect.topLeft(), sb->orientation == Qt::Horizontal ? sr.bottomLeft() : sr.topRight());
-                    } else { // SC_ScrollBarAddPage
-                        return QRect(sb->orientation == Qt::Horizontal ? sr.topRight() : sr.bottomLeft(), contentRect.bottomRight());
-                    }
-                    break;
+                    if (sc == SC_ScrollBarSubPage)
+                        sr = QRect(contentRect.topLeft(), sb->orientation == Qt::Horizontal ? sr.bottomLeft() : sr.topRight());
+                    else if (sc == SC_ScrollBarAddPage)
+                        sr = QRect(sb->orientation == Qt::Horizontal ? sr.topRight() : sr.bottomLeft(), contentRect.bottomRight());
+                    return visualRect(styleOptionSlider.direction, grooveRect, sr);
                 }
                 case SC_ScrollBarAddLine: pe = PseudoElement_ScrollBarAddLine; break;
                 case SC_ScrollBarSubLine: pe = PseudoElement_ScrollBarSubLine; break;
@@ -5775,11 +5793,10 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_PushButtonContents:
     case SE_PushButtonFocusRect:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            QStyleOptionButton btnOpt(*btn);
             if (rule.hasBox() || !rule.hasNativeBorder())
                 return visualRect(opt->direction, opt->rect, rule.contentsRect(opt->rect));
-            return rule.baseStyleCanDraw() ? baseStyle()->subElementRect(se, &btnOpt, w)
-                                           : QWindowsStyle::subElementRect(se, &btnOpt, w);
+            return rule.baseStyleCanDraw() ? baseStyle()->subElementRect(se, btn, w)
+                                           : QWindowsStyle::subElementRect(se, btn, w);
         }
         break;
 
@@ -6036,7 +6053,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
         unsetStyleSheetFont(w);
 
         if (rule.font.resolve()) {
-            QFont wf = w->font();
+            QFont wf = w->d_func()->localFont();
             styleSheetCaches->customFontWidgets.insert(w, {wf, rule.font.resolve()});
 
             QFont font = rule.font.resolve(wf);
@@ -6044,7 +6061,9 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
             w->setFont(font);
         }
     } else {
-        QFont font = rule.font.resolve(w->font());
+        QFont wf = w->d_func()->localFont();
+        QFont font = rule.font.resolve(wf);
+        font.resolve(wf.resolve() | rule.font.resolve());
 
         if ((!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
             && isNaturalChild(w) && qobject_cast<QWidget *>(w->parent())) {
@@ -6052,10 +6071,11 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
             font = font.resolve(static_cast<QWidget *>(w->parent())->font());
         }
 
-        if (w->data->fnt == font)
+        if (wf.resolve() == font.resolve() && wf == font)
             return;
 
         w->data->fnt = font;
+        w->d_func()->directFontResolveMask = font.resolve();
 
         QEvent e(QEvent::FontChange);
         QApplication::sendEvent(w, &e);

@@ -41,6 +41,24 @@
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) (Drawing)
 
+- (void)initDrawing
+{
+    self.wantsLayer = [self layerExplicitlyRequested]
+        || [self shouldUseMetalLayer]
+        || [self layerEnabledByMacOS];
+
+    // Enable high-DPI OpenGL for retina displays. Enabling has the side
+    // effect that Cocoa will start calling glViewport(0, 0, width, height),
+    // overriding any glViewport calls in application code. This is usually not a
+    // problem, except if the application wants to have a "custom" viewport.
+    // (like the hellogl example)
+    if (m_platformWindow->window()->supportsOpenGL()) {
+        self.wantsBestResolutionOpenGLSurface = qt_mac_resolveOption(YES, m_platformWindow->window(),
+            "_q_mac_wantsBestResolutionOpenGLSurface", "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
+        // See also QCocoaGLContext::makeCurrent for software renderer workarounds.
+    }
+}
+
 - (BOOL)isOpaque
 {
     if (!m_platformWindow)
@@ -71,23 +89,38 @@
     m_platformWindow->handleExposeEvent(exposedRegion);
 }
 
+- (BOOL)layerEnabledByMacOS
+{
+    // AppKit has its own logic for this, but if we rely on that, our layers are created
+    // by AppKit at a point where we've already set up other parts of the platform plugin
+    // based on the presence of layers or not. Once we've rewritten these parts to support
+    // dynamically picking up layer enablement we can let AppKit do its thing.
+    return QMacVersion::buildSDK() >= QOperatingSystemVersion::MacOSMojave
+        && QMacVersion::currentRuntime() >= QOperatingSystemVersion::MacOSMojave;
+}
+
+- (BOOL)layerExplicitlyRequested
+{
+    static bool wantsLayer = [&]() {
+        int wantsLayer = qt_mac_resolveOption(-1, m_platformWindow->window(),
+            "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
+
+        if (wantsLayer != -1 && [self layerEnabledByMacOS]) {
+            qCWarning(lcQpaDrawing) << "Layer-backing cannot be explicitly controlled on 10.14 when built against the 10.14 SDK";
+            return true;
+        }
+
+        return wantsLayer == 1;
+    }();
+
+    return wantsLayer;
+}
+
 - (BOOL)shouldUseMetalLayer
 {
     // MetalSurface needs a layer, and so does VulkanSurface (via MoltenVK)
     QSurface::SurfaceType surfaceType = m_platformWindow->window()->surfaceType();
     return surfaceType == QWindow::MetalSurface || surfaceType == QWindow::VulkanSurface;
-}
-
-- (BOOL)wantsLayerHelper
-{
-    Q_ASSERT(m_platformWindow);
-
-    bool wantsLayer = qt_mac_resolveOption(true, m_platformWindow->window(),
-        "_q_mac_wantsLayer", "QT_MAC_WANTS_LAYER");
-
-    bool layerForSurfaceType = [self shouldUseMetalLayer];
-
-    return wantsLayer || layerForSurfaceType;
 }
 
 - (CALayer *)makeBackingLayer
@@ -115,12 +148,29 @@
     return [super makeBackingLayer];
 }
 
+- (void)setLayer:(CALayer *)layer
+{
+    qCDebug(lcQpaDrawing) << "Making" << self << "layer-backed with" << layer
+        << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
+            : [self shouldUseMetalLayer] ? "needed by surface type" : "enabled by macOS");
+    [super setLayer:layer];
+}
+
 - (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
 {
     // We need to set this explicitly since the super implementation
     // returns LayerContentsRedrawNever for custom layers like CAMetalLayer.
     return NSViewLayerContentsRedrawDuringViewResize;
 }
+
+#if 0 // Disabled until we enable lazy backingstore resizing
+- (NSViewLayerContentsPlacement)layerContentsPlacement
+{
+    // Always place the layer at top left without any automatic scaling,
+    // so that we can re-use larger layers when resizing a window down.
+    return NSViewLayerContentsPlacementTopLeft;
+}
+#endif
 
 - (void)updateMetalLayerDrawableSize:(CAMetalLayer *)layer
 {

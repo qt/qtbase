@@ -67,6 +67,21 @@
 */
 
 /*!
+    \fn void QEglFSFunctions::switchLang()
+
+    Switches between English and other language when the keymap is loaded.
+    Usually the keymap contains two languages: English and national. When
+    you load the keymap, English is selected by default. This function allows
+    to switch between these languages.
+
+    \note This is functional only when the evdev keyboard support code is
+    compiled in to the platform plugin. When using external generic plugins via
+    the \c{-plugin} argument, or when the environment variable
+    \c{QT_QPA_EGLFS_DISABLE_INPUT} is set or when building Qt without evdev
+    support, this function will have no effect.
+*/
+
+/*!
     \fn int QEglFSFunctions::vsp2AddLayer(const QScreen *screen, int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine)
     \internal
     \preliminary

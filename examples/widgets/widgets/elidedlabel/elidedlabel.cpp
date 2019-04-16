@@ -51,8 +51,8 @@
 #include "elidedlabel.h"
 
 #include <QPainter>
+#include <QSizePolicy>
 #include <QTextLayout>
-#include <QDebug>
 
 //! [0]
 ElidedLabel::ElidedLabel(const QString &text, QWidget *parent)

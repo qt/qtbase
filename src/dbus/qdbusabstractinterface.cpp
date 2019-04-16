@@ -66,11 +66,11 @@ namespace {
 // of to QDBusAbstractInterface::customEvent.
 // See solution in Patch Set 1 of this change in the Qt Gerrit servers.
 // (https://codereview.qt-project.org/#/c/126384/1)
-class DisconnectRelayEvent : public QMetaCallEvent
+class DisconnectRelayEvent : public QAbstractMetaCallEvent
 {
 public:
     DisconnectRelayEvent(QObject *sender, const QMetaMethod &m)
-        : QMetaCallEvent(0, 0, nullptr, sender, m.methodIndex())
+        : QAbstractMetaCallEvent(sender, m.methodIndex())
     {}
 
     void placeMetaCall(QObject *object) override
@@ -185,7 +185,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     if (reply.signature() != QLatin1String("v")) {
         QString errmsg = QLatin1String("Invalid signature `%1' in return from call to "
                                        DBUS_INTERFACE_PROPERTIES);
-        lastError = QDBusError(QDBusError::InvalidSignature, qMove(errmsg).arg(reply.signature()));
+        lastError = QDBusError(QDBusError::InvalidSignature, std::move(errmsg).arg(reply.signature()));
         return false;
     }
 

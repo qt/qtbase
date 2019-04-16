@@ -41,6 +41,7 @@
 #ifndef QENDIAN_H
 #define QENDIAN_H
 
+#include <QtCore/qfloat16.h>
 #include <QtCore/qglobal.h>
 
 // include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
@@ -151,6 +152,31 @@ template <> inline Q_DECL_CONSTEXPR qint8 qbswap<qint8>(qint8 source)
     return source;
 }
 
+// floating specializations
+template<typename Float>
+Float qbswapFloatHelper(Float source)
+{
+    // memcpy call in qFromUnaligned is recognized by optimizer as a correct way of type prunning
+    auto temp = qFromUnaligned<typename QIntegerForSizeof<Float>::Unsigned>(&source);
+    temp = qbswap(temp);
+    return qFromUnaligned<Float>(&temp);
+}
+
+inline qfloat16 qbswap(qfloat16 source)
+{
+    return qbswapFloatHelper(source);
+}
+
+inline float qbswap(float source)
+{
+    return qbswapFloatHelper(source);
+}
+
+inline double qbswap(double source)
+{
+    return qbswapFloatHelper(source);
+}
+
 /*
  * qbswap(const T src, const void *dest);
  * Changes the byte order of \a src from big endian to little endian or vice versa
@@ -159,7 +185,7 @@ template <> inline Q_DECL_CONSTEXPR qint8 qbswap<qint8>(qint8 source)
 */
 template <typename T> inline void qbswap(const T src, void *dest)
 {
-    qToUnaligned<T>(qbswap<T>(src), dest);
+    qToUnaligned<T>(qbswap(src), dest);
 }
 
 template <int Size> void *qbswap(const void *source, qsizetype count, void *dest) noexcept;
@@ -178,9 +204,9 @@ template <typename T> inline Q_DECL_CONSTEXPR T qToBigEndian(T source)
 template <typename T> inline Q_DECL_CONSTEXPR T qFromBigEndian(T source)
 { return source; }
 template <typename T> inline Q_DECL_CONSTEXPR T qToLittleEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline Q_DECL_CONSTEXPR T qFromLittleEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline void qToBigEndian(T src, void *dest)
 { qToUnaligned<T>(src, dest); }
 template <typename T> inline void qToLittleEndian(T src, void *dest)
@@ -197,9 +223,9 @@ template <typename T> inline void qFromLittleEndian(const void *source, qsizetyp
 #else // Q_LITTLE_ENDIAN
 
 template <typename T> inline Q_DECL_CONSTEXPR T qToBigEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline Q_DECL_CONSTEXPR T qFromBigEndian(T source)
-{ return qbswap<T>(source); }
+{ return qbswap(source); }
 template <typename T> inline Q_DECL_CONSTEXPR T qToLittleEndian(T source)
 { return source; }
 template <typename T> inline Q_DECL_CONSTEXPR T qFromLittleEndian(T source)

@@ -166,7 +166,7 @@ public:
     bool needsSync() const;
 
     void postSyncWindowRequest();
-    void clearSyncWindowRequest() { m_pendingSyncRequest = 0; }
+    void clearSyncWindowRequest() { m_pendingSyncRequest = nullptr; }
 
     QXcbScreen *xcbScreen() const;
 
@@ -193,22 +193,19 @@ protected:
     void setImageFormatForVisual(const xcb_visualtype_t *visual);
 
     QXcbScreen *parentScreen();
-
     QXcbScreen *initialScreen() const;
-    void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+
+    void setNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+    void setNetWmState(Qt::WindowFlags flags);
+    void setNetWmState(Qt::WindowStates state);
+    void setNetWmStateOnUnmappedWindow();
     NetWmStates netWmStates();
-    void setNetWmStates(NetWmStates);
 
-    void setMotifWindowFlags(Qt::WindowFlags flags);
-    void setNetWmStateWindowFlags(Qt::WindowFlags flags);
-
-    void updateMotifWmHintsBeforeMap();
-    void updateNetWmStateBeforeMap();
+    void setMotifWmHints(Qt::WindowFlags flags);
 
     void setTransparentForMouseEvents(bool transparent);
     void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);
 
-    QRect windowToWmGeometry(QRect r) const;
     void sendXEmbedMessage(xcb_window_t window, quint32 message,
                            quint32 detail = 0, quint32 data1 = 0, quint32 data2 = 0);
     void handleXEmbedMessage(const xcb_client_message_event_t *event);

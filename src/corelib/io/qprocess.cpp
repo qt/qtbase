@@ -42,6 +42,7 @@
 
 #include <qdebug.h>
 #include <qdir.h>
+#include <qscopedvaluerollback.h>
 #if defined(Q_OS_WIN)
 #include <qtimer.h>
 #endif
@@ -112,12 +113,12 @@ QT_BEGIN_NAMESPACE
     \relates QProcess
 
     Disables the
-    \l {QProcess::start(const QString &, OpenMode)}{QProcess::start()}
-    overload taking a single string.
+    \l {QProcess::start(const QString &, QIODevice::OpenMode)}
+    {QProcess::start}() overload taking a single string.
     In most cases where it is used, the user intends for the first argument
     to be treated atomically as per the other overload.
 
-    \sa QProcess::start(const QString &command, OpenMode mode)
+    \sa QProcess::start(const QString &command, QIODevice::OpenMode mode)
 */
 
 /*!
@@ -813,6 +814,7 @@ void QProcessPrivate::Channel::clear()
     \a newState argument is the state QProcess changed to.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QProcess::finished(int exitCode)
     \obsolete
@@ -820,6 +822,7 @@ void QProcessPrivate::Channel::clear()
 
     Use finished(int exitCode, QProcess::ExitStatus status) instead.
 */
+#endif
 
 /*!
     \fn void QProcess::finished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -1060,9 +1063,8 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     if (currentReadChannel == channelIdx) {
         didRead = true;
         if (!emittedReadyRead) {
-            emittedReadyRead = true;
+            QScopedValueRollback<bool> guard(emittedReadyRead, true);
             emit q->readyRead();
-            emittedReadyRead = false;
         }
     }
     emit q->channelReadyRead(int(channelIdx));
@@ -1172,7 +1174,12 @@ bool QProcessPrivate::_q_processDied()
         //emit q->standardOutputClosed();
         //emit q->standardErrorClosed();
 
+#if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit q->finished(exitCode);
+QT_WARNING_POP
+#endif
         emit q->finished(exitCode, exitStatus);
     }
 #if defined QPROCESS_DEBUG
@@ -1264,6 +1271,7 @@ QProcess::~QProcess()
     d->cleanup();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Returns the read channel mode of the QProcess. This function is
@@ -1287,6 +1295,7 @@ void QProcess::setReadChannelMode(ProcessChannelMode mode)
 {
     setProcessChannelMode(mode);
 }
+#endif
 
 /*!
     \since 4.2
@@ -2473,7 +2482,7 @@ QProcess::ExitStatus QProcess::exitStatus() const
 int QProcess::execute(const QString &program, const QStringList &arguments)
 {
     QProcess process;
-    process.setReadChannelMode(ForwardedChannels);
+    process.setProcessChannelMode(ForwardedChannels);
     process.start(program, arguments);
     if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
@@ -2496,7 +2505,7 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 int QProcess::execute(const QString &command)
 {
     QProcess process;
-    process.setReadChannelMode(ForwardedChannels);
+    process.setProcessChannelMode(ForwardedChannels);
     process.start(command);
     if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
@@ -2557,7 +2566,7 @@ bool QProcess::startDetached(const QString &program,
     After the \a command string has been split and unquoted, this function
     behaves like the overload which takes the arguments as a string list.
 
-    \sa start(const QString &command, OpenMode mode)
+    \sa start(const QString &command, QIODevice::OpenMode mode)
 */
 bool QProcess::startDetached(const QString &command)
 {

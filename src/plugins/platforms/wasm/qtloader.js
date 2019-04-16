@@ -50,6 +50,7 @@
 // External mode.usage:
 //
 //    var config = {
+//        canvasElements : [$("canvas-id")],
 //        showLoader: function() {
 //            loader.style.display = 'block'
 //            canvas.style.display = 'hidden'
@@ -69,6 +70,8 @@
 //      One or more HTML elements. QtLoader will display loader elements
 //      on these while loading the applicaton, and replace the loader with a
 //      canvas on load complete.
+//  canvasElements : [canvas-element, ...]
+//      One or more canvas elements.
 //  showLoader : function(status, containerElement)
 //      Optional loading element constructor function. Implement to create
 //      a custom loading screen. This function may be called multiple times,
@@ -115,6 +118,12 @@
 //      "Exited", iff crashed is false.
 // exitText
 //      Abort/exit message.
+// addCanvasElement
+//      Add canvas at run-time. Adds a corresponding QScreen,
+// removeCanvasElement
+//      Remove canvas at run-time. Removes the corresponding QScreen.
+// resizeCanvasElement
+//      Signals to the application that a canvas has been resized.
 
 
 var Module = {}
@@ -146,8 +155,26 @@ function QtLoader(config)
         while (element.firstChild) element.removeChild(element.firstChild);
     }
 
-    // Set default state handler functions if needed
+    function createCanvas() {
+        var canvas = document.createElement("canvas");
+        canvas.className = "QtCanvas";
+        canvas.style.height = "100%";
+        canvas.style.width = "100%";
+
+        // Set contentEditable in order to enable clipboard events; hide the resulting focus frame.
+        canvas.contentEditable = true;
+        canvas.style.outline = "0px solid transparent";
+        canvas.style.caretColor = "transparent";
+        canvas.style.cursor = "default";
+
+        return canvas;
+    }
+
+    // Set default state handler functions and create canvases if needed
     if (config.containerElements !== undefined) {
+
+        config.canvasElements = config.containerElements.map(createCanvas);
+
         config.showError = config.showError || function(errorText, container) {
             removeChildren(container);
             var errorTextElement = document.createElement("text");
@@ -164,12 +191,8 @@ function QtLoader(config)
             return loadingText;
         };
 
-        config.showCanvas = config.showCanvas || function(container) {
+        config.showCanvas = config.showCanvas || function(canvas, container) {
             removeChildren(container);
-            var canvas = document.createElement("canvas");
-            canvas.className = "QtCanvas"
-            canvas.style = "height: 100%; width: 100%;"
-            return canvas;
         }
 
         config.showExit = config.showExit || function(crashed, exitCode, container) {
@@ -211,6 +234,9 @@ function QtLoader(config)
     publicAPI.canLoadApplication = canLoadQt();
     publicAPI.status = undefined;
     publicAPI.loadEmscriptenModule = loadEmscriptenModule;
+    publicAPI.addCanvasElement = addCanvasElement;
+    publicAPI.removeCanvasElement = removeCanvasElement;
+    publicAPI.resizeCanvasElement = resizeCanvasElement;
 
     restartCount = 0;
 
@@ -312,13 +338,13 @@ function QtLoader(config)
         // and is ready to be instantiated. Define the instantiateWasm callback which
         // emscripten will call to create the instance.
         Module.instantiateWasm = function(imports, successCallback) {
-            return WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
-                successCallback(instance);
-                return instance;
+            WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
+                successCallback(instance, wasmModule);
             }, function(error) {
                 self.error = error;
                 setStatus("Error");
             });
+            return {};
         };
 
         Module.locateFile = Module.locateFile || function(filename) {
@@ -382,6 +408,10 @@ function QtLoader(config)
             }
         });
 
+        Module.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
+
+        Module.qtCanvasElements = config.canvasElements;
+
         config.restart = function() {
 
             // Restart by reloading the page. This will wipe all state which means
@@ -436,19 +466,17 @@ function QtLoader(config)
     }
 
     function setCanvasContent() {
-        var firstCanvas;
         if (config.containerElements === undefined) {
-            firstCanvas = config.showCanvas();
-        } else {
-            for (container of config.containerElements) {
-                var canvasElement = config.showCanvas(container);
-                container.appendChild(canvasElement);
-            }
-            firstCanvas = config.containerElements[0].firstChild;
+            if (config.showCanvas !== undefined)
+                config.showCanvas();
+            return;
         }
 
-        if (Module.canvas === undefined) {
-            Module.canvas = firstCanvas;
+        for (var i = 0; i < config.containerElements.length; ++i) {
+            var container = config.containerElements[i];
+            var canvas = config.canvasElements[i];
+            config.showCanvas(canvas, container);
+            container.appendChild(canvas);
         }
     }
 
@@ -508,6 +536,25 @@ function QtLoader(config)
         publicAPI.status = status;
 
         window.setTimeout(function() { handleStatusChange(); }, 0);
+    }
+
+    function addCanvasElement(element) {
+        if (publicAPI.status == "Running")
+            Module.qtAddCanvasElement(element);
+        else
+            console.log("Error: addCanvasElement can only be called in the Running state");
+    }
+
+    function removeCanvasElement(element) {
+        if (publicAPI.status == "Running")
+            Module.qtRemoveCanvasElement(element);
+        else
+            console.log("Error: removeCanvasElement can only be called in the Running state");
+    }
+
+    function resizeCanvasElement(element) {
+        if (publicAPI.status == "Running")
+            Module.qtResizeCanvasElement(element);
     }
 
     setStatus("Created");

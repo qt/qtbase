@@ -44,13 +44,15 @@
 #include "qsslkey_p.h"
 #include "qsslcertificateextension_p.h"
 
+#include <QtCore/qendian.h>
+
 #if QT_CONFIG(thread)
 #include <QtCore/private/qmutexpool_p.h>
 #endif
 QT_BEGIN_NAMESPACE
 
 // forward declaration
-static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
+static QMultiMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
 
 bool QSslCertificate::operator==(const QSslCertificate &other) const
 {
@@ -63,7 +65,7 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
     return false;
 }
 
-uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslCertificate &key, uint seed) noexcept
 {
     if (X509 * const x509 = key.d->x509) {
         const EVP_MD *sha1 = q_EVP_sha1();
@@ -207,10 +209,14 @@ QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlter
     STACK_OF(GENERAL_NAME) *altNames = (STACK_OF(GENERAL_NAME) *)q_X509_get_ext_d2i(
         d->x509, NID_subject_alt_name, nullptr, nullptr);
 
+    auto altName = [](ASN1_IA5STRING *ia5, int len) {
+        const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_get0_data(ia5));
+        return QString::fromLatin1(altNameStr, len);
+    };
     if (altNames) {
         for (int i = 0; i < q_sk_GENERAL_NAME_num(altNames); ++i) {
             const GENERAL_NAME *genName = q_sk_GENERAL_NAME_value(altNames, i);
-            if (genName->type != GEN_DNS && genName->type != GEN_EMAIL)
+            if (genName->type != GEN_DNS && genName->type != GEN_EMAIL && genName->type != GEN_IPADD)
                 continue;
 
             int len = q_ASN1_STRING_length(genName->d.ia5);
@@ -219,12 +225,32 @@ QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlter
                 continue;
             }
 
-            const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_get0_data(genName->d.ia5));
-            const QString altName = QString::fromLatin1(altNameStr, len);
-            if (genName->type == GEN_DNS)
-                result.insert(QSsl::DnsEntry, altName);
-            else if (genName->type == GEN_EMAIL)
-                result.insert(QSsl::EmailEntry, altName);
+            switch (genName->type) {
+            case GEN_DNS:
+                result.insert(QSsl::DnsEntry, altName(genName->d.ia5, len));
+                break;
+            case GEN_EMAIL:
+                result.insert(QSsl::EmailEntry, altName(genName->d.ia5, len));
+                break;
+            case GEN_IPADD: {
+                QHostAddress ipAddress;
+                switch (len) {
+                case 4: // IPv4
+                    ipAddress = QHostAddress(qFromBigEndian(*reinterpret_cast<quint32 *>(genName->d.iPAddress->data)));
+                    break;
+                case 16: // IPv6
+                    ipAddress = QHostAddress(reinterpret_cast<quint8 *>(genName->d.iPAddress->data));
+                    break;
+                default: // Unknown IP address format
+                    break;
+                }
+                if (!ipAddress.isNull())
+                    result.insert(QSsl::IpAddressEntry, ipAddress.toString());
+                break;
+            }
+            default:
+                break;
+            }
         }
 
         q_OPENSSL_sk_pop_free((OPENSSL_STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_GENERAL_NAME_free));
@@ -615,16 +641,16 @@ QByteArray QSslCertificatePrivate::asn1ObjectName(ASN1_OBJECT *object)
     return asn1ObjectId(object);
 }
 
-static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
+static QMultiMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
 {
-    QMap<QByteArray, QString> info;
+    QMultiMap<QByteArray, QString> info;
     for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
         X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
 
         QByteArray name = QSslCertificatePrivate::asn1ObjectName(q_X509_NAME_ENTRY_get_object(e));
         unsigned char *data = nullptr;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info.insertMulti(name, QString::fromUtf8((char*)data, size));
+        info.insert(name, QString::fromUtf8((char*)data, size));
 #if QT_CONFIG(opensslv11)
         q_CRYPTO_free(data, nullptr, 0);
 #else

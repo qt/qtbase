@@ -96,7 +96,7 @@ public:
                        const QWidget *widget = nullptr) const override;
 
 private:
-    Q_DISABLE_COPY(QWindowsXPStyle)
+    Q_DISABLE_COPY_MOVE(QWindowsXPStyle)
     Q_DECLARE_PRIVATE(QWindowsXPStyle)
     friend class QStyleFactory;
 };

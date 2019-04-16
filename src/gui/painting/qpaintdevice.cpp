@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QPaintDevice::QPaintDevice() Q_DECL_NOEXCEPT
+QPaintDevice::QPaintDevice() noexcept
 {
     reserved = 0;
     painters = 0;

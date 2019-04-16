@@ -2268,7 +2268,7 @@ QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
     setMouseTracking(true);
     setLayout(new QVBoxLayout);
     setFocusPolicy(Qt::StrongFocus);
-    layout()->setMargin(0);
+    layout()->setContentsMargins(QMargins());
     d->updateGeometryConstraints();
     setAttribute(Qt::WA_Resized, false);
     d->titleBarPalette = d->desktopPalette();
@@ -2576,7 +2576,8 @@ void QMdiSubWindow::showSystemMenu()
 /*!
     \since 4.4
 
-    Returns the area containing this sub-window, or 0 if there is none.
+    Returns the area containing this sub-window, or \nullptr if there
+    is none.
 
     \sa QMdiArea::addSubWindow()
 */
@@ -2590,7 +2591,7 @@ QMdiArea *QMdiSubWindow::mdiArea() const
         }
         parent = parent->parentWidget();
     }
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -3341,8 +3342,11 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
     }
 
     if ((mouseEvent->buttons() & Qt::LeftButton) || d->isInInteractiveMode) {
-        if ((d->isResizeOperation() && d->resizeEnabled) || (d->isMoveOperation() && d->moveEnabled))
-            d->setNewGeometry(mapToParent(mouseEvent->pos()));
+        if ((d->isResizeOperation() && d->resizeEnabled) || (d->isMoveOperation() && d->moveEnabled)) {
+            // As setNewGeometry moves the window, it invalidates the pos() value of any mouse move events that are
+            // currently queued in the event loop. Map to parent using globalPos() instead.
+            d->setNewGeometry(parentWidget()->mapFromGlobal(mouseEvent->globalPos()));
+        }
         return;
     }
 

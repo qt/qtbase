@@ -2321,9 +2321,10 @@ void QHeaderView::initializeSections()
         if (stretchLastSection())   // we've already gotten the size hint
             d->maybeRestorePrevLastSectionAndStretchLast();
 
-        //make sure we update the hidden sections
+        // make sure we update the hidden sections
+        // simulate remove from newCount to oldCount
         if (newCount < oldCount)
-            d->updateHiddenSections(0, newCount-1);
+            d->updateHiddenSections(newCount, oldCount);
     }
 }
 
@@ -3116,9 +3117,25 @@ void QHeaderView::scrollContentsBy(int dx, int dy)
     \reimp
     \internal
 */
-void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &)
+void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     Q_D(QHeaderView);
+    if (!roles.isEmpty()) {
+        const auto doesRoleAffectSize = [](int role) -> bool {
+            switch (role) {
+            case Qt::DisplayRole:
+            case Qt::DecorationRole:
+            case Qt::SizeHintRole:
+            case Qt::FontRole:
+                return true;
+            default:
+                // who knows what a subclass or custom style might do
+                return role >= Qt::UserRole;
+            }
+        };
+        if (std::none_of(roles.begin(), roles.end(), doesRoleAffectSize))
+            return;
+    }
     d->invalidateCachedSizeHint();
     if (d->hasAutoResizeSections()) {
         bool resizeRequired = d->globalResizeMode == ResizeToContents;

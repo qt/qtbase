@@ -1330,6 +1330,8 @@ void tst_QThread::quitLock()
     QCOMPARE(job->thread(), &thread);
     loop.exec();
     QVERIFY(exitThreadCalled);
+
+    delete job;
 }
 
 void tst_QThread::create()

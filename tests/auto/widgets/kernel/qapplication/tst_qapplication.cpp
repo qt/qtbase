@@ -360,8 +360,8 @@ void tst_QApplication::setFont_data()
     int cnt = 0;
     QFontDatabase fdb;
     QStringList families = fdb.families();
-    for (QStringList::const_iterator itr = families.begin();
-         itr != families.end();
+    for (QStringList::const_iterator itr = families.cbegin();
+         itr != families.cend();
          ++itr) {
         if (cnt < 3) {
             QString family = *itr;
@@ -2200,8 +2200,6 @@ void tst_QApplication::abortQuitOnShow()
 void tst_QApplication::staticFunctions()
 {
     QApplication::setStyle(QStringLiteral("blub"));
-    QApplication::colorSpec();
-    QApplication::setColorSpec(42);
     QApplication::allWidgets();
     QApplication::topLevelWidgets();
     QApplication::desktop();

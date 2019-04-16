@@ -67,7 +67,7 @@ class Q_CORE_EXPORT QDebug
     friend class QMessageLogger;
     friend class QDebugStateSaverPrivate;
     struct Stream {
-        enum { DefaultVerbosity = 2, VerbosityShift = 29, VerbosityMask = 0x7 };
+        enum { VerbosityShift = 29, VerbosityMask = 0x7 };
 
         Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg),
             space(true), message_output(false), flags(DefaultVerbosity << VerbosityShift) {}
@@ -92,11 +92,11 @@ class Q_CORE_EXPORT QDebug
         void setFlag(FormatFlag flag) { if (context.version > 1) { flags |= flag; } }
         void unsetFlag(FormatFlag flag) { if (context.version > 1) { flags &= ~flag; } }
         int verbosity() const
-        { return context.version > 1 ? (flags >> VerbosityShift) & VerbosityMask : int(Stream::DefaultVerbosity); }
+        { return context.version > 1 ? (flags >> VerbosityShift) & VerbosityMask : int(DefaultVerbosity); }
         void setVerbosity(int v)
         {
             if (context.version > 1) {
-                flags &= ~(VerbosityMask << VerbosityShift);
+                flags &= ~(uint(VerbosityMask) << VerbosityShift);
                 flags |= (v & VerbosityMask) << VerbosityShift;
             }
         }
@@ -116,15 +116,17 @@ public:
     inline QDebug(const QDebug &o):stream(o.stream) { ++stream->ref; }
     inline QDebug &operator=(const QDebug &other);
     ~QDebug();
-    inline void swap(QDebug &other) Q_DECL_NOTHROW { qSwap(stream, other.stream); }
+    inline void swap(QDebug &other) noexcept { qSwap(stream, other.stream); }
 
     QDebug &resetFormat();
 
     inline QDebug &space() { stream->space = true; stream->ts << ' '; return *this; }
     inline QDebug &nospace() { stream->space = false; return *this; }
     inline QDebug &maybeSpace() { if (stream->space) stream->ts << ' '; return *this; }
+    inline QDebug &verbosity(int verbosityLevel) { setVerbosity(verbosityLevel); return *this; }
     int verbosity() const { return stream->verbosity(); }
     void setVerbosity(int verbosityLevel) { stream->setVerbosity(verbosityLevel); }
+    enum VerbosityLevel { MinimumVerbosity = 0, DefaultVerbosity = 2, MaximumVerbosity = 7 };
 
     bool autoInsertSpaces() const { return stream->space; }
     void setAutoInsertSpaces(bool b) { stream->space = b; }
@@ -159,9 +161,7 @@ public:
     inline QDebug &operator<<(QLatin1String t) { putByteArray(t.latin1(), t.size(), ContainsLatin1); return maybeSpace(); }
     inline QDebug &operator<<(const QByteArray & t) { putByteArray(t.constData(), t.size(), ContainsBinary); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
-#ifdef Q_COMPILER_NULLPTR
     inline QDebug &operator<<(std::nullptr_t) { stream->ts << "(nullptr)"; return maybeSpace(); }
-#endif
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
         return *this;
@@ -195,6 +195,7 @@ public:
     inline QNoDebug &quote() { return *this; }
     inline QNoDebug &noquote() { return *this; }
     inline QNoDebug &maybeQuote(const char = '"') { return *this; }
+    inline QNoDebug &verbosity(int) { return *this; }
 
     template<typename T>
     inline QNoDebug &operator<<(const T &) { return *this; }

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'downloads.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -79,9 +79,9 @@ public:
 
     void retranslateUi(QDialog *DownloadDialog)
     {
-        DownloadDialog->setWindowTitle(QApplication::translate("DownloadDialog", "Downloads", nullptr));
-        cleanupButton->setText(QApplication::translate("DownloadDialog", "Clean up", nullptr));
-        itemCount->setText(QApplication::translate("DownloadDialog", "0 Items", nullptr));
+        DownloadDialog->setWindowTitle(QCoreApplication::translate("DownloadDialog", "Downloads", nullptr));
+        cleanupButton->setText(QCoreApplication::translate("DownloadDialog", "Clean up", nullptr));
+        itemCount->setText(QCoreApplication::translate("DownloadDialog", "0 Items", nullptr));
     } // retranslateUi
 
 };

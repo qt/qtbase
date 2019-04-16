@@ -91,21 +91,21 @@ void tst_QSslSocket::nextProtocolNegotiation_data()
                 << QSslConfiguration::NextProtocolNegotiationNegotiated;
 
         tag = host.toLocal8Bit();
-        tag.append("-spdy/3");
+        tag.append("-h2");
         QTest::newRow(tag)
                 << true
                 << host
-                << (QList<QByteArray>() << QSslConfiguration::NextProtocolSpdy3_0)
-                << QByteArray(QSslConfiguration::NextProtocolSpdy3_0)
+                << (QList<QByteArray>() << QSslConfiguration::ALPNProtocolHTTP2)
+                << QByteArray(QSslConfiguration::ALPNProtocolHTTP2)
                 << QSslConfiguration::NextProtocolNegotiationNegotiated;
 
         tag = host.toLocal8Bit();
-        tag.append("-spdy/3-and-http/1.1");
+        tag.append("-h2-and-http/1.1");
         QTest::newRow(tag)
                 << true
                 << host
-                << (QList<QByteArray>() << QSslConfiguration::NextProtocolSpdy3_0 << QSslConfiguration::NextProtocolHttp1_1)
-                << QByteArray(QSslConfiguration::NextProtocolSpdy3_0)
+                << (QList<QByteArray>() << QSslConfiguration::ALPNProtocolHTTP2 << QSslConfiguration::NextProtocolHttp1_1)
+                << QByteArray(QSslConfiguration::ALPNProtocolHTTP2)
                 << QSslConfiguration::NextProtocolNegotiationNegotiated;
     }
 }

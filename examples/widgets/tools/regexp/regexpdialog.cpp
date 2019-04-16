@@ -135,15 +135,15 @@ RegExpDialog::RegExpDialog(QWidget *parent)
     }
     setLayout(mainLayout);
 
-    connect(patternComboBox, SIGNAL(editTextChanged(QString)),
-            this, SLOT(refresh()));
-    connect(textComboBox, SIGNAL(editTextChanged(QString)),
-            this, SLOT(refresh()));
-    connect(caseSensitiveCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(refresh()));
-    connect(minimalCheckBox, SIGNAL(toggled(bool)), this, SLOT(refresh()));
-    connect(syntaxComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(refresh()));
+    connect(patternComboBox, &QComboBox::editTextChanged,
+            this, &RegExpDialog::refresh);
+    connect(textComboBox, &QComboBox::editTextChanged,
+            this, &RegExpDialog::refresh);
+    connect(caseSensitiveCheckBox, &QAbstractButton::toggled,
+            this, &RegExpDialog::refresh);
+    connect(minimalCheckBox, &QAbstractButton::toggled, this, &RegExpDialog::refresh);
+    connect(syntaxComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &RegExpDialog::refresh);
 
     patternComboBox->addItem(tr("[A-Za-z_]+([A-Za-z_0-9]*)"));
     textComboBox->addItem(tr("(10 + delta4) * 32"));

@@ -249,14 +249,7 @@ void QMainWindowPrivate::init()
 
     An example of how to create menus follows:
 
-    \code
-    void MainWindow::createMenus()
-    {
-        fileMenu = menuBar()->addMenu(tr("&File"));
-        fileMenu->addAction(newAct);
-        fileMenu->addAction(openAct);
-        fileMenu->addAction(saveAct);
-    \endcode
+    \snippet code/src_widgets_widgets_qmainwindow.cpp 0
 
     The \c createPopupMenu() function creates popup menus when the
     main window receives context menu events.  The default
@@ -283,12 +276,7 @@ void QMainWindowPrivate::init()
 
     An example of toolbar creation follows:
 
-    \code
-    void MainWindow::createToolBars()
-    {
-        fileToolBar = addToolBar(tr("File"));
-        fileToolBar->addAction(newAct);
-    \endcode
+    \snippet code/src_widgets_widgets_qmainwindow.cpp 1
 
     \section2 Creating Dock Widgets
 
@@ -1231,9 +1219,8 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
     to the relative weight of the sizes.
 
     Example:
-    \code
-    resizeDocks({blueWidget, yellowWidget}, {20 , 40}, Qt::Horizontal);
-    \endcode
+    \snippet code/src_widgets_widgets_qmainwindow.cpp 2
+
     If the blue and the yellow widget are nested on the same level they will be
     resized such that the yellowWidget is twice as big as the blueWidget
 

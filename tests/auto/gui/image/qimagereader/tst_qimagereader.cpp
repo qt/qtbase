@@ -525,7 +525,7 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png") << QImage::Format_ARGB32;
     QTest::newRow("png-2") << QString("YCbCr_cmyk.png") << QByteArray("png") << QImage::Format_RGB32;
     QTest::newRow("png-3") << QString("kollada-16bpc.png") << QByteArray("png") << QImage::Format_RGBA64;
-    QTest::newRow("png-4") << QString("basn0g16.png") << QByteArray("png") << QImage::Format_RGBX64; // Grayscale16
+    QTest::newRow("png-4") << QString("basn0g16.png") << QByteArray("png") << QImage::Format_Grayscale16;
     QTest::newRow("png-5") << QString("basn2c16.png") << QByteArray("png") << QImage::Format_RGBX64;
     QTest::newRow("png-6") << QString("basn4a16.png") << QByteArray("png") << QImage::Format_RGBA64; // Grayscale16Alpha16
     QTest::newRow("png-7") << QString("basn6a16.png") << QByteArray("png") << QImage::Format_RGBA64;
@@ -1603,6 +1603,7 @@ void tst_QImageReader::supportsOption_data()
                          << (QIntList() << QImageIOHandler::Gamma
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
+                              << QImageIOHandler::CompressionRatio
                               << QImageIOHandler::Size
                               << QImageIOHandler::ScaledSize);
 }

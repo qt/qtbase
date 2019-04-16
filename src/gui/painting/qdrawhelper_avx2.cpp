@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -38,6 +39,7 @@
 ****************************************************************************/
 
 #include "qdrawhelper_p.h"
+#include "qdrawhelper_x86_p.h"
 #include "qdrawingprimitive_sse2_p.h"
 #include "qrgba64_p.h"
 
@@ -53,7 +55,8 @@ enum {
 // Vectorized blend functions:
 
 // See BYTE_MUL_SSE2 for details.
-inline static void BYTE_MUL_AVX2(__m256i &pixelVector, const __m256i &alphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+BYTE_MUL_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m256i half)
 {
     __m256i pixelVectorAG = _mm256_srli_epi16(pixelVector, 8);
     __m256i pixelVectorRB = _mm256_and_si256(pixelVector, colorMask);
@@ -72,7 +75,8 @@ inline static void BYTE_MUL_AVX2(__m256i &pixelVector, const __m256i &alphaChann
     pixelVector = _mm256_or_si256(pixelVectorAG, pixelVectorRB);
 }
 
-inline static void BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, const __m256i &alphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, __m256i alphaChannel, __m256i colorMask, __m256i half)
 {
     __m256i pixelVectorAG = _mm256_srli_epi32(pixelVector, 16);
     __m256i pixelVectorRB = _mm256_and_si256(pixelVector, colorMask);
@@ -92,7 +96,8 @@ inline static void BYTE_MUL_RGB64_AVX2(__m256i &pixelVector, const __m256i &alph
 }
 
 // See INTERPOLATE_PIXEL_255_SSE2 for details.
-inline static void INTERPOLATE_PIXEL_255_AVX2(const __m256i &srcVector, __m256i &dstVector, const __m256i &alphaChannel, const __m256i &oneMinusAlphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+INTERPOLATE_PIXEL_255_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaChannel, __m256i oneMinusAlphaChannel, __m256i colorMask, __m256i half)
 {
     const __m256i srcVectorAG = _mm256_srli_epi16(srcVector, 8);
     const __m256i dstVectorAG = _mm256_srli_epi16(dstVector, 8);
@@ -114,7 +119,8 @@ inline static void INTERPOLATE_PIXEL_255_AVX2(const __m256i &srcVector, __m256i 
     dstVector = _mm256_or_si256(finalAG, finalRB);
 }
 
-inline static void INTERPOLATE_PIXEL_RGB64_AVX2(const __m256i &srcVector, __m256i &dstVector, const __m256i &alphaChannel, const __m256i &oneMinusAlphaChannel, const __m256i &colorMask, const __m256i &half)
+inline static void Q_DECL_VECTORCALL
+INTERPOLATE_PIXEL_RGB64_AVX2(__m256i srcVector, __m256i &dstVector, __m256i alphaChannel, __m256i oneMinusAlphaChannel, __m256i colorMask, __m256i half)
 {
     const __m256i srcVectorAG = _mm256_srli_epi32(srcVector, 16);
     const __m256i dstVectorAG = _mm256_srli_epi32(dstVector, 16);
@@ -138,7 +144,7 @@ inline static void INTERPOLATE_PIXEL_RGB64_AVX2(const __m256i &srcVector, __m256
 
 
 // See BLEND_SOURCE_OVER_ARGB32_SSE2 for details.
-inline static void BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *src, const int length)
+inline static void Q_DECL_VECTORCALL BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *src, const int length)
 {
     const __m256i half = _mm256_set1_epi16(0x80);
     const __m256i one = _mm256_set1_epi16(0xff);
@@ -209,7 +215,8 @@ inline static void BLEND_SOURCE_OVER_ARGB32_AVX2(quint32 *dst, const quint32 *sr
 
 
 // See BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2 for details.
-inline static void BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(quint32 *dst, const quint32 *src, const int length, const int const_alpha)
+inline static void Q_DECL_VECTORCALL
+BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(quint32 *dst, const quint32 *src, const int length, const int const_alpha)
 {
     int x = 0;
 
@@ -316,6 +323,66 @@ void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
     }
 }
 
+static Q_NEVER_INLINE
+void Q_DECL_VECTORCALL qt_memfillXX_avx2(uchar *dest, __m256i value256, qsizetype bytes)
+{
+    __m128i value128 = _mm256_castsi256_si128(value256);
+
+    // main body
+    __m256i *dst256 = reinterpret_cast<__m256i *>(dest);
+    uchar *end = dest + bytes;
+    while (reinterpret_cast<uchar *>(dst256 + 4) <= end) {
+        _mm256_storeu_si256(dst256 + 0, value256);
+        _mm256_storeu_si256(dst256 + 1, value256);
+        _mm256_storeu_si256(dst256 + 2, value256);
+        _mm256_storeu_si256(dst256 + 3, value256);
+        dst256 += 4;
+    }
+
+    // first epilogue: fewer than 128 bytes / 32 entries
+    bytes = end - reinterpret_cast<uchar *>(dst256);
+    switch (bytes / sizeof(value256)) {
+    case 3: _mm256_storeu_si256(dst256++, value256); Q_FALLTHROUGH();
+    case 2: _mm256_storeu_si256(dst256++, value256); Q_FALLTHROUGH();
+    case 1: _mm256_storeu_si256(dst256++, value256);
+    }
+
+    // second epilogue: fewer than 32 bytes
+    __m128i *dst128 = reinterpret_cast<__m128i *>(dst256);
+    if (bytes & sizeof(value128))
+        _mm_storeu_si128(dst128++, value128);
+
+    // third epilogue: fewer than 16 bytes
+    if (bytes & 8)
+        _mm_storel_epi64(reinterpret_cast<__m128i *>(end - 8), value128);
+}
+
+void qt_memfill64_avx2(quint64 *dest, quint64 value, qsizetype count)
+{
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+    // work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80820
+    __m128i value64 = _mm_set_epi64x(0, value); // _mm_cvtsi64_si128(value);
+#  ifdef Q_PROCESSOR_X86_64
+    asm ("" : "+x" (value64));
+#  endif
+    __m256i value256 =  _mm256_broadcastq_epi64(value64);
+#else
+    __m256i value256 = _mm256_set1_epi64x(value);
+#endif
+
+    qt_memfillXX_avx2(reinterpret_cast<uchar *>(dest), value256, count * sizeof(quint64));
+}
+
+void qt_memfill32_avx2(quint32 *dest, quint32 value, qsizetype count)
+{
+    if (count % 2) {
+        // odd number of pixels, round to even
+        *dest++ = value;
+        --count;
+    }
+    qt_memfillXX_avx2(reinterpret_cast<uchar *>(dest), _mm256_set1_epi32(value), count * sizeof(quint32));
+}
+
 void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256);
@@ -329,6 +396,7 @@ void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixe
         BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(dst, src, length, const_alpha);
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
@@ -386,6 +454,7 @@ void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *dst, const QRgba64 *sr
             blend_pixel(dst[x], src[x], const_alpha);
     }
 }
+#endif
 
 void QT_FASTCALL comp_func_Source_avx2(uint *dst, const uint *src, int length, uint const_alpha)
 {
@@ -418,6 +487,7 @@ void QT_FASTCALL comp_func_Source_avx2(uint *dst, const uint *src, int length, u
     }
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
@@ -450,6 +520,7 @@ void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, i
             dst[x] = interpolate65535(src[x], ca, dst[x], cia);
     }
 }
+#endif
 
 void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha)
 {
@@ -482,6 +553,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, u
     }
 }
 
+#if QT_CONFIG(raster_64bit)
 void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int length, QRgba64 color, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
@@ -512,6 +584,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int 
             destPixels[x] = color + multiplyAlpha65535(destPixels[x], minusAlphaOfColor);
     }
 }
+#endif
 
 #define interpolate_4_pixels_16_avx2(tlr1, tlr2, blr1, blr2, distx, disty, colorMask, v_256, b)  \
 { \
@@ -926,6 +999,233 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *
         fy += fdy;
         ++b;
     }
+}
+
+static inline __m256i epilogueMaskFromCount(qsizetype count)
+{
+    Q_ASSERT(count > 0);
+    static const __m256i offsetMask = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+    return _mm256_add_epi32(offsetMask, _mm256_set1_epi32(-count));
+}
+
+template<bool RGBA>
+static void convertARGBToARGB32PM_avx2(uint *buffer, const uint *src, qsizetype count)
+{
+    qsizetype i = 0;
+    const __m256i alphaMask = _mm256_set1_epi32(0xff000000);
+    const __m256i rgbaMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15));
+    const __m256i shuffleMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15));
+    const __m256i half = _mm256_set1_epi16(0x0080);
+    const __m256i zero = _mm256_setzero_si256();
+
+    for (; i < count - 7; i += 8) {
+        __m256i srcVector = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + i));
+        if (!_mm256_testz_si256(srcVector, alphaMask)) {
+            // keep the two _mm_test[zc]_siXXX next to each other
+            bool cf = _mm256_testc_si256(srcVector, alphaMask);
+            if (RGBA)
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+            if (!cf) {
+                __m256i src1 = _mm256_unpacklo_epi8(srcVector, zero);
+                __m256i src2 = _mm256_unpackhi_epi8(srcVector, zero);
+                __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                src1 = _mm256_mullo_epi16(src1, alpha1);
+                src2 = _mm256_mullo_epi16(src2, alpha2);
+                src1 = _mm256_add_epi16(src1, _mm256_srli_epi16(src1, 8));
+                src2 = _mm256_add_epi16(src2, _mm256_srli_epi16(src2, 8));
+                src1 = _mm256_add_epi16(src1, half);
+                src2 = _mm256_add_epi16(src2, half);
+                src1 = _mm256_srli_epi16(src1, 8);
+                src2 = _mm256_srli_epi16(src2, 8);
+                src1 = _mm256_blend_epi16(src1, alpha1, 0x88);
+                src2 = _mm256_blend_epi16(src2, alpha2, 0x88);
+                srcVector = _mm256_packus_epi16(src1, src2);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), srcVector);
+            } else {
+                if (buffer != src || RGBA)
+                    _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), srcVector);
+            }
+        } else {
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), zero);
+        }
+    }
+
+    if (i < count) {
+        const __m256i epilogueMask = epilogueMaskFromCount(count - i);
+        __m256i srcVector = _mm256_maskload_epi32(reinterpret_cast<const int *>(src + i), epilogueMask);
+        const __m256i epilogueAlphaMask = _mm256_blendv_epi8(_mm256_setzero_si256(), alphaMask, epilogueMask);
+
+        if (!_mm256_testz_si256(srcVector, epilogueAlphaMask)) {
+            // keep the two _mm_test[zc]_siXXX next to each other
+            bool cf = _mm256_testc_si256(srcVector, epilogueAlphaMask);
+            if (RGBA)
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+            if (!cf) {
+                __m256i src1 = _mm256_unpacklo_epi8(srcVector, zero);
+                __m256i src2 = _mm256_unpackhi_epi8(srcVector, zero);
+                __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                src1 = _mm256_mullo_epi16(src1, alpha1);
+                src2 = _mm256_mullo_epi16(src2, alpha2);
+                src1 = _mm256_add_epi16(src1, _mm256_srli_epi16(src1, 8));
+                src2 = _mm256_add_epi16(src2, _mm256_srli_epi16(src2, 8));
+                src1 = _mm256_add_epi16(src1, half);
+                src2 = _mm256_add_epi16(src2, half);
+                src1 = _mm256_srli_epi16(src1, 8);
+                src2 = _mm256_srli_epi16(src2, 8);
+                src1 = _mm256_blend_epi16(src1, alpha1, 0x88);
+                src2 = _mm256_blend_epi16(src2, alpha2, 0x88);
+                srcVector = _mm256_packus_epi16(src1, src2);
+                _mm256_maskstore_epi32(reinterpret_cast<int *>(buffer + i), epilogueMask, srcVector);
+            } else {
+                if (buffer != src || RGBA)
+                    _mm256_maskstore_epi32(reinterpret_cast<int *>(buffer + i), epilogueMask, srcVector);
+            }
+        } else {
+            _mm256_maskstore_epi32(reinterpret_cast<int *>(buffer + i), epilogueMask, zero);
+        }
+    }
+}
+
+void QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, int count, const QVector<QRgb> *)
+{
+    convertARGBToARGB32PM_avx2<false>(buffer, buffer, count);
+}
+
+void QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, int count, const QVector<QRgb> *)
+{
+    convertARGBToARGB32PM_avx2<true>(buffer, buffer, count);
+}
+
+const uint *QT_FASTCALL fetchARGB32ToARGB32PM_avx2(uint *buffer, const uchar *src, int index, int count,
+                                                  const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_avx2<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL fetchRGBA8888ToARGB32PM_avx2(uint *buffer, const uchar *src, int index, int count,
+                                                     const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_avx2<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+template<bool RGBA>
+static void convertARGBToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, qsizetype count)
+{
+    qsizetype i = 0;
+    const __m256i alphaMask = _mm256_set1_epi32(0xff000000);
+    const __m256i rgbaMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15));
+    const __m256i shuffleMask = _mm256_broadcastsi128_si256(_mm_setr_epi8(6, 7, 6, 7, 6, 7, 6, 7, 14, 15, 14, 15, 14, 15, 14, 15));
+    const __m256i zero = _mm256_setzero_si256();
+
+    for (; i < count - 7; i += 8) {
+        __m256i dst1, dst2;
+        __m256i srcVector = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + i));
+        if (!_mm256_testz_si256(srcVector, alphaMask)) {
+            // keep the two _mm_test[zc]_siXXX next to each other
+            bool cf = _mm256_testc_si256(srcVector, alphaMask);
+            if (!RGBA)
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+
+            // The two unpack instructions unpack the low and upper halves of
+            // each 128-bit half of the 256-bit register. Here's the tracking
+            // of what's where: (p is 32-bit, P is 64-bit)
+            //  as loaded:        [ p1, p2, p3, p4; p5, p6, p7, p8 ]
+            //  after permute4x64 [ p1, p2, p5, p6; p3, p4, p7, p8 ]
+            //  after unpacklo/hi [ P1, P2; P3, P4 ] [ P5, P6; P7, P8 ]
+            srcVector = _mm256_permute4x64_epi64(srcVector, _MM_SHUFFLE(3, 1, 2, 0));
+
+            const __m256i src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
+            const __m256i src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
+            if (!cf) {
+                const __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                const __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                dst1 = _mm256_mulhi_epu16(src1, alpha1);
+                dst2 = _mm256_mulhi_epu16(src2, alpha2);
+                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 15));
+                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 15));
+                dst1 = _mm256_blend_epi16(dst1, src1, 0x88);
+                dst2 = _mm256_blend_epi16(dst2, src2, 0x88);
+            } else {
+                dst1 = src1;
+                dst2 = src2;
+            }
+        } else {
+            dst1 = dst2 = zero;
+        }
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i), dst1);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(buffer + i) + 1, dst2);
+    }
+
+    if (i < count) {
+        __m256i epilogueMask = epilogueMaskFromCount(count - i);
+        const __m256i epilogueAlphaMask = _mm256_blendv_epi8(_mm256_setzero_si256(), alphaMask, epilogueMask);
+        __m256i dst1, dst2;
+        __m256i srcVector = _mm256_maskload_epi32(reinterpret_cast<const int *>(src + i), epilogueMask);
+
+        if (!_mm256_testz_si256(srcVector, epilogueAlphaMask)) {
+            // keep the two _mm_test[zc]_siXXX next to each other
+            bool cf = _mm256_testc_si256(srcVector, epilogueAlphaMask);
+            if (!RGBA)
+                srcVector = _mm256_shuffle_epi8(srcVector, rgbaMask);
+            srcVector = _mm256_permute4x64_epi64(srcVector, _MM_SHUFFLE(3, 1, 2, 0));
+            const __m256i src1 = _mm256_unpacklo_epi8(srcVector, srcVector);
+            const __m256i src2 = _mm256_unpackhi_epi8(srcVector, srcVector);
+            if (!cf) {
+                const __m256i alpha1 = _mm256_shuffle_epi8(src1, shuffleMask);
+                const __m256i alpha2 = _mm256_shuffle_epi8(src2, shuffleMask);
+                dst1 = _mm256_mulhi_epu16(src1, alpha1);
+                dst2 = _mm256_mulhi_epu16(src2, alpha2);
+                dst1 = _mm256_add_epi16(dst1, _mm256_srli_epi16(dst1, 15));
+                dst2 = _mm256_add_epi16(dst2, _mm256_srli_epi16(dst2, 15));
+                dst1 = _mm256_blend_epi16(dst1, src1, 0x88);
+                dst2 = _mm256_blend_epi16(dst2, src2, 0x88);
+            } else {
+                dst1 = src1;
+                dst2 = src2;
+            }
+        } else {
+            dst1 = dst2 = zero;
+        }
+        epilogueMask = _mm256_permute4x64_epi64(epilogueMask, _MM_SHUFFLE(3, 1, 2, 0));
+        _mm256_maskstore_epi64(reinterpret_cast<qint64 *>(buffer + i),
+                               _mm256_unpacklo_epi32(epilogueMask, epilogueMask),
+                               dst1);
+        _mm256_maskstore_epi64(reinterpret_cast<qint64 *>(buffer + i + 4),
+                               _mm256_unpackhi_epi32(epilogueMask, epilogueMask),
+                               dst2);
+    }
+}
+
+const QRgba64 * QT_FASTCALL convertARGB32ToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, int count,
+                                                         const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_avx2<false>(buffer, src, count);
+    return buffer;
+}
+
+const QRgba64 * QT_FASTCALL convertRGBA8888ToRGBA64PM_avx2(QRgba64 *buffer, const uint *src, int count,
+                                                           const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_avx2<true>(buffer, src, count);
+    return buffer;
+}
+
+const QRgba64 *QT_FASTCALL fetchARGB32ToRGBA64PM_avx2(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                      const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_avx2<false>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
+}
+
+const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_avx2(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                        const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToRGBA64PM_avx2<true>(buffer, reinterpret_cast<const uint *>(src) + index, count);
+    return buffer;
 }
 
 QT_END_NAMESPACE

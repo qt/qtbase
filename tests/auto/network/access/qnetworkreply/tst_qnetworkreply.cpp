@@ -123,7 +123,7 @@ class tst_QNetworkReply: public QObject
         if (!seedCreated) {
             seedCreated = true; // not thread-safe, but who cares
         }
-        return QString::number(QTime(0, 0, 0).msecsTo(QTime::currentTime()))
+        return QString::number(QTime::currentTime().msecsSinceStartOfDay())
             + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid())
             + QLatin1Char('-') + QString::number(QRandomGenerator::global()->generate());
     }
@@ -550,7 +550,14 @@ static void setupSslServer(QSslSocket* serverSocket)
 }
 
 #ifdef QT_TEST_SERVER
+#ifdef QT_TEST_SERVER_NAME
+// In this case, each server is assigned a unique hostname. Use the wildcard SSL
+// certificate (*.test-net.qt.local).
 const QString tst_QNetworkReply::certsFilePath = "/certs/qt-test-net-cacert.pem";
+#else
+// Otherwise, select the single-name SSL certificate (qt-test-server.local) instead.
+const QString tst_QNetworkReply::certsFilePath = "/certs/qt-test-server-host-network-cacert.pem";
+#endif // QT_TEST_SERVER_NAME
 #else
 const QString tst_QNetworkReply::certsFilePath = "/certs/qt-test-server-cacert.pem";
 #endif
@@ -1809,6 +1816,11 @@ void tst_QNetworkReply::getFromFileSpecial_data()
 
 void tst_QNetworkReply::getFromFileSpecial()
 {
+#if defined(QT_TEST_SERVER) && defined(Q_OS_WIN)
+    if (qstrcmp(QTest::currentDataTag(), "smb-path") == 0)
+        QSKIP("Docker-based test server doesn't support smb protocol yet");
+#endif
+
     QFETCH(QString, fileName);
     QFETCH(QString, url);
 
@@ -3202,6 +3214,11 @@ void tst_QNetworkReply::ioGetFromFileSpecial_data()
 
 void tst_QNetworkReply::ioGetFromFileSpecial()
 {
+#if defined(QT_TEST_SERVER) && defined(Q_OS_WIN)
+    if (qstrcmp(QTest::currentDataTag(), "smb-path") == 0)
+        QSKIP("Docker-based test server doesn't support smb protocol yet");
+#endif
+
     QFETCH(QString, fileName);
     QFETCH(QString, url);
 
@@ -3959,7 +3976,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
             "HTTP/1.0 200\r\n"
             "Connection: keep-alive\r\n"
             "Content-Type: text/plain\r\n"
-            "Cache-control: no-cache\r\n"
+            "Cache-control: no-store\r\n"
             "Content-length: 8\r\n"
             "\r\n"
             "Reloaded";
@@ -3984,6 +4001,33 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
     MyMemoryCache::CachedContent content;
     content.second = "Not-reloaded";
     content.first.setLastModified(past);
+
+    // "no-cache"
+    rawHeaders.clear();
+    rawHeaders << QNetworkCacheMetaData::RawHeader("Date", QLocale::c().toString(past, dateFormat).toLatin1())
+            << QNetworkCacheMetaData::RawHeader("Cache-control", "no-cache");
+    content.first.setRawHeaders(rawHeaders);
+    content.first.setLastModified(past);
+    content.first.setExpirationDate(future);
+
+    // "no-cache" does not mean "no cache", just that we must consult remote first
+    QTest::newRow("no-cache,200,always-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::AlwaysNetwork) << QStringList() << false << true;
+    QTest::newRow("no-cache,200,prefer-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << false << true;
+    QTest::newRow("no-cache,200,prefer-cache")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << false << true;
+    // We're not allowed by the spec to deliver cached data without checking if it is still
+    // up-to-date.
+    QTest::newRow("no-cache,200,always-cache")
+            << reply200 << QString() << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
+
+    QTest::newRow("no-cache,304,prefer-network")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << true << true;
+    QTest::newRow("no-cache,304,prefer-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << true;
+    QTest::newRow("no-cache,304,always-cache")
+            << reply304 << QString() << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
 
     //
     // Set to expired

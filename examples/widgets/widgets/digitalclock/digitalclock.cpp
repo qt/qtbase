@@ -48,9 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "digitalclock.h"
+
+#include <QtWidgets>
 
 //! [0]
 DigitalClock::DigitalClock(QWidget *parent)

@@ -276,13 +276,11 @@
 
     TSCII, formally the Tamil Standard Code Information Interchange
     specification, is a commonly used charset for Tamils. The
-    official page for the standard is at
-    \l{http://www.tamil.net/tscii/}
+    official page for the standard is \l{Information Technology in Tamil}
 
-    This codec uses the mapping table found at
-    \l{http://www.geocities.com/Athens/5180/tsciiset.html}.
     Tamil uses composed Unicode which might cause some
     problems if you are using Unicode fonts instead of TSCII fonts.
+    A Tamil codepage layout can be found on \l {Tamil Script Code}.
 
     Most of the code was written by Hans Petter Bieker and is
     included in Qt with the author's permission and the grateful

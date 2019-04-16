@@ -53,7 +53,8 @@
 #include "window.h"
 
 //! [0]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent)
 {
     createPreviewGroupBox();
     createGeneralOptionsGroupBox();
@@ -220,8 +221,8 @@ void Window::createPreviewGroupBox()
     calendar->setMaximumDate(QDate(3000, 1, 1));
     calendar->setGridVisible(true);
 
-    connect(calendar, SIGNAL(currentPageChanged(int,int)),
-            this, SLOT(reformatCalendarPage()));
+    connect(calendar, &QCalendarWidget::currentPageChanged,
+            this, &Window::reformatCalendarPage);
 
     previewLayout = new QGridLayout;
     previewLayout->addWidget(calendar, 0, 0, Qt::AlignCenter);
@@ -305,20 +306,20 @@ void Window::createGeneralOptionsGroupBox()
     verticalHeaderLabel->setBuddy(verticalHeaderCombo);
 
 //! [11]
-    connect(localeCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(localeChanged(int)));
-    connect(firstDayCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(firstDayChanged(int)));
-    connect(selectionModeCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(selectionModeChanged(int)));
-    connect(gridCheckBox, SIGNAL(toggled(bool)),
-            calendar, SLOT(setGridVisible(bool)));
-    connect(navigationCheckBox, SIGNAL(toggled(bool)),
-            calendar, SLOT(setNavigationBarVisible(bool)));
-    connect(horizontalHeaderCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(horizontalHeaderChanged(int)));
-    connect(verticalHeaderCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(verticalHeaderChanged(int)));
+    connect(localeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::localeChanged);
+    connect(firstDayCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::firstDayChanged);
+    connect(selectionModeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::selectionModeChanged);
+    connect(gridCheckBox, &QCheckBox::toggled,
+            calendar, &QCalendarWidget::setGridVisible);
+    connect(navigationCheckBox, &QCheckBox::toggled,
+            calendar, &QCalendarWidget::setNavigationBarVisible);
+    connect(horizontalHeaderCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::horizontalHeaderChanged);
+    connect(verticalHeaderCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::verticalHeaderChanged);
 //! [11]
 
     QHBoxLayout *checkBoxLayout = new QHBoxLayout;
@@ -381,14 +382,14 @@ void Window::createDatesGroupBox()
     maximumDateLabel->setBuddy(maximumDateEdit);
 
 //! [13] //! [14]
-    connect(currentDateEdit, SIGNAL(dateChanged(QDate)),
-            calendar, SLOT(setSelectedDate(QDate)));
-    connect(calendar, SIGNAL(selectionChanged()),
-            this, SLOT(selectedDateChanged()));
-    connect(minimumDateEdit, SIGNAL(dateChanged(QDate)),
-            this, SLOT(minimumDateChanged(QDate)));
-    connect(maximumDateEdit, SIGNAL(dateChanged(QDate)),
-            this, SLOT(maximumDateChanged(QDate)));
+    connect(currentDateEdit, &QDateEdit::dateChanged,
+            calendar, &QCalendarWidget::setSelectedDate);
+    connect(calendar, &QCalendarWidget::selectionChanged,
+            this, &Window::selectedDateChanged);
+    connect(minimumDateEdit, &QDateEdit::dateChanged,
+            this, &Window::minimumDateChanged);
+    connect(maximumDateEdit, &QDateEdit::dateChanged,
+            this, &Window::maximumDateChanged);
 
 //! [14]
     QGridLayout *dateBoxLayout = new QGridLayout;
@@ -438,20 +439,20 @@ void Window::createTextFormatsGroupBox()
     mayFirstCheckBox = new QCheckBox(tr("May &1 in red"));
 
 //! [17] //! [18]
-    connect(weekdayColorCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(weekdayFormatChanged()));
-    connect(weekdayColorCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(reformatCalendarPage()));
-    connect(weekendColorCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(weekendFormatChanged()));
-    connect(weekendColorCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(reformatCalendarPage()));
-    connect(headerTextFormatCombo, SIGNAL(currentIndexChanged(QString)),
-            this, SLOT(reformatHeaders()));
-    connect(firstFridayCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(reformatCalendarPage()));
-    connect(mayFirstCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(reformatCalendarPage()));
+    connect(weekdayColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::weekdayFormatChanged);
+    connect(weekdayColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::reformatCalendarPage);
+    connect(weekendColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::weekendFormatChanged);
+    connect(weekendColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::reformatCalendarPage);
+    connect(headerTextFormatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &Window::reformatHeaders);
+    connect(firstFridayCheckBox, &QCheckBox::toggled,
+            this, &Window::reformatCalendarPage);
+    connect(mayFirstCheckBox, &QCheckBox::toggled,
+            this, &Window::reformatCalendarPage);
 
 //! [18]
     QHBoxLayout *checkBoxLayout = new QHBoxLayout;

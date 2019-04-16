@@ -18,4 +18,4 @@ QTSRCS = \
     $(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp \
     $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp \
     $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp \
-    $(SOURCE_PATH)/qmake/generators/win32/registry.cpp
+    $(SOURCE_PATH)/qmake/library/registry.cpp

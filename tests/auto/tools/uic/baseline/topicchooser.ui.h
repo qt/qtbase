@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'topicchooser.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -86,9 +86,9 @@ public:
 
         vboxLayout->addWidget(Layout16);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(listWidget);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(TopicChooser);
 
@@ -100,10 +100,10 @@ public:
 
     void retranslateUi(QDialog *TopicChooser)
     {
-        TopicChooser->setWindowTitle(QApplication::translate("TopicChooser", "Choose Topic", nullptr));
-        label->setText(QApplication::translate("TopicChooser", "&Topics", nullptr));
-        buttonDisplay->setText(QApplication::translate("TopicChooser", "&Display", nullptr));
-        buttonCancel->setText(QApplication::translate("TopicChooser", "&Close", nullptr));
+        TopicChooser->setWindowTitle(QCoreApplication::translate("TopicChooser", "Choose Topic", nullptr));
+        label->setText(QCoreApplication::translate("TopicChooser", "&Topics", nullptr));
+        buttonDisplay->setText(QCoreApplication::translate("TopicChooser", "&Display", nullptr));
+        buttonCancel->setText(QCoreApplication::translate("TopicChooser", "&Close", nullptr));
     } // retranslateUi
 
 };

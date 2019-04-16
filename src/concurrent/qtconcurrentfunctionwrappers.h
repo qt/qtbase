@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtConcurrent module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -225,13 +225,11 @@ struct PushBackWrapper
         return c.push_back(u);
     }
 
-#ifdef Q_COMPILER_RVALUE_REFS
     template <class C, class U>
     inline void operator()(C &c, U &&u) const
     {
         return c.push_back(u);
     }
-#endif
 };
 
 template <typename Functor, bool foo = HasResultType<Functor>::Value>

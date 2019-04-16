@@ -204,10 +204,12 @@ GlobalSid::GlobalSid()
                 ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
                 if (retsize) {
                     void *tokenBuffer = malloc(retsize);
+                    Q_CHECK_PTR(tokenBuffer);
                     if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
                         PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
                         DWORD sidLen = ::GetLengthSid(tokenSid);
                         currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
+                        Q_CHECK_PTR(currentUserSID);
                         if (::CopySid(sidLen, currentUserSID, tokenSid))
                             BuildTrusteeWithSid(&currentUserTrusteeW, currentUserSID);
                     }
@@ -294,6 +296,7 @@ static QString readSymLink(const QFileSystemEntry &link)
     if (handle != INVALID_HANDLE_VALUE) {
         DWORD bufsize = MAXIMUM_REPARSE_DATA_BUFFER_SIZE;
         REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)malloc(bufsize);
+        Q_CHECK_PTR(rdb);
         DWORD retsize = 0;
         if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
             if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
@@ -552,7 +555,7 @@ typedef struct _FILE_ID_INFO {
 
 #endif // if defined (Q_CC_MINGW) && WINVER < 0x0602
 
-// File ID for Windows up to version 7.
+// File ID for Windows up to version 7 and FAT32 drives
 static inline QByteArray fileId(HANDLE handle)
 {
 #ifndef Q_OS_WINRT
@@ -585,6 +588,8 @@ QByteArray fileIdWin8(HANDLE handle)
         result += ':';
         // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
         result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId), int(sizeof(infoEx.FileId))).toHex();
+    } else {
+        result = fileId(handle); // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
     }
     return result;
 #else // !QT_BOOTSTRAPPED && !QT_BUILD_QMAKE
@@ -1035,8 +1040,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     if (what & QFileSystemMetaData::Permissions)
         fillPermissions(fname, data, what);
-    if ((what & QFileSystemMetaData::LinkType)
-        && data.missingFlags(QFileSystemMetaData::LinkType)) {
+    if (what & QFileSystemMetaData::LinkType) {
         data.knownFlagsMask |= QFileSystemMetaData::LinkType;
         if (data.fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT) {
             WIN32_FIND_DATA findData;

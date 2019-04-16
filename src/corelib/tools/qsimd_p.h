@@ -344,7 +344,7 @@ extern Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1];
 #else
 extern Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2];
 #endif
-Q_CORE_EXPORT void qDetectCpuFeatures();
+Q_CORE_EXPORT quint64 qDetectCpuFeatures();
 
 static inline quint64 qCpuFeatures()
 {
@@ -353,11 +353,7 @@ static inline quint64 qCpuFeatures()
     features |= quint64(qt_cpu_features[1].load()) << 32;
 #endif
     if (Q_UNLIKELY(features == 0)) {
-        qDetectCpuFeatures();
-        features = qt_cpu_features[0].load();
-#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-        features |= quint64(qt_cpu_features[1].load()) << 32;
-#endif
+        features = qDetectCpuFeatures();
         Q_ASSUME(features != 0);
     }
     return features;

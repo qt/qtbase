@@ -8,11 +8,32 @@
 
 find_package(ZLIB)
 set_package_properties(ZLIB PROPERTIES TYPE OPTIONAL)
+find_package(ZSTD)
+set_package_properties(ZSTD PROPERTIES TYPE OPTIONAL)
 find_package(Libudev)
 set_package_properties(Libudev PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests
+
+# precompile_header
+qt_config_compile_test(precompile_header
+    LABEL "precompiled header support"
+"
+
+#ifndef HEADER_H
+#error no go
+#endif
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: ['CONFIG += precompile_header', 'PRECOMPILED_DIR = .pch', 'PRECOMPILED_HEADER = header.h']
+)
 
 # reduce_relocations
 qt_config_compile_test(reduce_relocations
@@ -192,6 +213,10 @@ qt_feature("android_style_assets" PRIVATE
     LABEL "Android Style Assets"
     CONDITION ANDROID
 )
+qt_feature("use_gold_linker_alias"
+    AUTODETECT false
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND tests.use_gold_linker OR FIXME
+)
 qt_feature("developer_build"
     LABEL "Developer build"
     AUTODETECT OFF
@@ -361,10 +386,15 @@ qt_feature("alloca" PRIVATE
     LABEL "alloca()"
     CONDITION QT_FEATURE_alloca_h OR QT_FEATURE_alloca_malloc_h OR TEST_alloca_stdlib_h
 )
+qt_feature("zstd" PRIVATE
+    LABEL "Zstandard support"
+    CONDITION ZSTD_FOUND
+)
 qt_feature("thread" PUBLIC
     SECTION "Kernel"
     LABEL "Thread support"
     PURPOSE "Provides QThread and related classes."
+    AUTODETECT NOT WASM
 )
 qt_feature("future" PUBLIC
     SECTION "Kernel"

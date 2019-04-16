@@ -81,6 +81,8 @@ private slots:
     void setData_emits_both_roles_data();
     void setData_emits_both_roles();
 
+    void setData_emits_on_change_only();
+
     void supportedDragDropActions();
 
     void moveRows_data();
@@ -331,7 +333,7 @@ template <class C>
 C sorted(C c)
 {
     std::sort(c.begin(), c.end());
-    return qMove(c);
+    return std::move(c);
 }
 
 void tst_QStringListModel::setData_emits_both_roles()
@@ -420,6 +422,24 @@ void tst_QStringListModel::setItemData()
     QCOMPARE(dataChangedArguments.at(0).value<QModelIndex>(), changeIndex);
     QCOMPARE(dataChangedArguments.at(1).value<QModelIndex>(), changeIndex);
     QCOMPARE(dataChangedArguments.at(2).value<QVector<int> >(), changeRoles);
+}
+
+void tst_QStringListModel::setData_emits_on_change_only()
+{
+    QStringListModel model(QStringList{QStringLiteral("one"), QStringLiteral("two")});
+    QSignalSpy dataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+    QVERIFY(dataChangedSpy.isValid());
+    const QModelIndex modelIdx = model.index(0, 0);
+    const QString newStringData = QStringLiteral("test");
+    QVERIFY(model.setData(modelIdx, newStringData));
+    QCOMPARE(dataChangedSpy.count(), 1);
+    const QList<QVariant> spyList = dataChangedSpy.takeFirst();
+    QCOMPARE(spyList.at(0).value<QModelIndex>(), modelIdx);
+    QCOMPARE(spyList.at(1).value<QModelIndex>(), modelIdx);
+    const QVector<int> expectedRoles{Qt::DisplayRole, Qt::EditRole};
+    QCOMPARE(spyList.at(2).value<QVector<int> >(), expectedRoles);
+    QVERIFY(model.setData(modelIdx, newStringData));
+    QVERIFY(dataChangedSpy.isEmpty());
 }
 
 void tst_QStringListModel::supportedDragDropActions()

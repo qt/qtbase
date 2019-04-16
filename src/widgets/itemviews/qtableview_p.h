@@ -137,7 +137,7 @@ public:
         : showGrid(true), gridStyle(Qt::SolidLine),
           rowSectionAnchor(-1), columnSectionAnchor(-1),
           columnResizeTimerID(0), rowResizeTimerID(0),
-          horizontalHeader(0), verticalHeader(0),
+          horizontalHeader(nullptr), verticalHeader(nullptr),
           sortingEnabled(false), geometryRecursionBlock(false),
           visualCursor(QPoint())
  {
@@ -234,16 +234,16 @@ public:
     inline bool isCellEnabled(int row, int column) const {
         return isIndexEnabled(model->index(row, column, root));
     }
-    inline bool isVisualRowHiddenOrDisabled(int row, int column) const {
-        int r = logicalRow(row);
-        int c = logicalColumn(column);
-        return isRowHidden(r) || !isCellEnabled(r, c);
-    }
-    inline bool isVisualColumnHiddenOrDisabled(int row, int column) const {
-        int r = logicalRow(row);
-        int c = logicalColumn(column);
-        return isColumnHidden(c) || !isCellEnabled(r, c);
-    }
+
+    enum class SearchDirection
+    {
+        Increasing,
+        Decreasing
+    };
+    int nextActiveVisualRow(int rowToStart, int column, int limit,
+                            SearchDirection searchDirection) const;
+    int nextActiveVisualColumn(int row, int columnToStart, int limit,
+                               SearchDirection searchDirection) const;
 
     QRect visualSpanRect(const QSpanCollection::Span &span) const;
 
@@ -257,6 +257,7 @@ public:
     void _q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end);
     void _q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end);
     void _q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end);
+    void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
 };
 
 QT_END_NAMESPACE

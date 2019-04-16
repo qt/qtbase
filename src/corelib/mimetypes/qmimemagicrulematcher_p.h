@@ -53,7 +53,7 @@
 
 #include "qmimemagicrule_p.h"
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
@@ -66,7 +66,7 @@ class QMimeMagicRuleMatcher
 public:
     explicit QMimeMagicRuleMatcher(const QString &mime, unsigned priority = 65535);
 
-    void swap(QMimeMagicRuleMatcher &other) Q_DECL_NOTHROW
+    void swap(QMimeMagicRuleMatcher &other) noexcept
     {
         qSwap(m_list,     other.m_list);
         qSwap(m_priority, other.m_priority);
@@ -94,5 +94,4 @@ Q_DECLARE_SHARED(QMimeMagicRuleMatcher)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEMAGICRULEMATCHER_P_H

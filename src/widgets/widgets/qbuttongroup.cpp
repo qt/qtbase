@@ -291,8 +291,8 @@ QList<QAbstractButton*> QButtonGroup::buttons() const
 }
 
 /*!
-    Returns the button group's checked button, or 0 if no buttons are
-    checked.
+    Returns the button group's checked button, or \nullptr if no
+    buttons are checked.
 
     \sa buttonClicked()
 */
@@ -305,8 +305,8 @@ QAbstractButton *QButtonGroup::checkedButton() const
 /*!
     \since 4.1
 
-    Returns the button with the specified \a id, or 0 if no such button
-    exists.
+    Returns the button with the specified \a id, or \nullptr if no
+    such button exists.
 */
 QAbstractButton *QButtonGroup::button(int id) const
 {

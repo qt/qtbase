@@ -40,8 +40,6 @@
 #include "qtextcodec_p.h"
 #include "qlist.h"
 
-#ifndef QT_NO_CODECS
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -291,5 +289,3 @@ QString QIsciiCodec::convertToUnicode(const char* chars, int len, ConverterState
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_CODECS

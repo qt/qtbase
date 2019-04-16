@@ -169,7 +169,7 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
     drag->setHotSpot(event->pos() - square.topLeft());
     drag->setPixmap(piece.pixmap);
 
-    if (drag->start(Qt::MoveAction) == Qt::IgnoreAction) {
+    if (drag->exec(Qt::MoveAction) == Qt::IgnoreAction) {
         pieces.insert(found, piece);
         update(targetSquare(event->pos()));
 

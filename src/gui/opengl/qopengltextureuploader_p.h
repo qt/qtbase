@@ -65,7 +65,7 @@ public:
     enum BindOption {
         NoBindOption                            = 0x0000,
         PremultipliedAlphaBindOption            = 0x0001,
-        UseRedFor8BitBindOption                 = 0x0002,
+        UseRedForAlphaAndLuminanceBindOption    = 0x0002,
         SRgbBindOption                          = 0x0004,
         PowerOfTwoBindOption                    = 0x0008
     };

@@ -120,6 +120,7 @@ struct QSystemLocalePrivate
     QVariant toString(const QTime &, QLocale::FormatType);
     QVariant toString(const QDateTime &, QLocale::FormatType);
     QVariant measurementSystem();
+    QVariant collation();
     QVariant amText();
     QVariant pmText();
     QVariant firstDayOfWeek();
@@ -453,6 +454,11 @@ QVariant QSystemLocalePrivate::measurementSystem()
     }
 
     return QLocale::MetricSystem;
+}
+
+QVariant QSystemLocalePrivate::collation()
+{
+    return getLocaleInfo(LOCALE_SSORTLOCALE);
 }
 
 QVariant QSystemLocalePrivate::amText()
@@ -808,6 +814,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return QVariant(QLocale::AnyScript);
     case MeasurementSystem:
         return d->measurementSystem();
+    case Collation:
+        return d->collation();
     case AMText:
         return d->amText();
     case PMText:

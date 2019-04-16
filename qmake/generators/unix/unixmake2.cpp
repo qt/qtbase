@@ -180,6 +180,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     ProStringList &bundledFiles = project->values("QMAKE_BUNDLED_FILES");
 
+    writeExportedVariables(t);
+
     t << "####### Compiler, tools and options\n\n";
     t << "CC            = " << var("QMAKE_CC") << endl;
     t << "CXX           = " << var("QMAKE_CXX") << endl;
@@ -405,7 +407,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         const ProStringList &l = project->values("QMAKE_PRL_INTERNAL_FILES");
         ProStringList::ConstIterator it;
         for(it = l.begin(); it != l.end(); ++it) {
-            QMakeMetaInfo libinfo(project);
+            QMakeMetaInfo libinfo;
             if (libinfo.readLib((*it).toQString()) && !libinfo.isEmpty("QMAKE_PRL_BUILD_DIR")) {
                 ProString dir;
                 int slsh = (*it).lastIndexOf(Option::dir_sep);
@@ -1225,6 +1227,8 @@ void UnixMakefileGenerator::init2()
         else
             ar_cmd.append("$(AR) $(TARGETA) $(OBJECTS)");
         if (!project->isEmpty("QMAKE_BUNDLE")) {
+            project->values("PRL_TARGET").prepend(
+                    project->first("QMAKE_BUNDLE") + Option::dir_sep + project->first("TARGET"));
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
                 bundle_loc.prepend("/");
@@ -1483,7 +1487,7 @@ UnixMakefileGenerator::writeLibtoolFile()
     ProStringList libs;
     libs << "LIBS" << "QMAKE_LIBS";
     t << "dependency_libs='";
-    for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+    for (ProStringList::ConstIterator it = libs.cbegin(); it != libs.cend(); ++it)
         t << fixLibFlags((*it).toKey()).join(' ') << ' ';
     t << "'\n\n";
 

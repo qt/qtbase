@@ -235,7 +235,7 @@ QVersionNumber QVersionNumber::normalized() const
 
     \sa commonPrefix()
 */
-bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHROW
+bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const noexcept
 {
     if (segmentCount() > other.segmentCount())
         return false;
@@ -259,7 +259,7 @@ bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHRO
 
     \snippet qversionnumber/main.cpp 1
 */
-int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW
+int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) noexcept
 {
     int commonlen;
 
@@ -482,7 +482,7 @@ QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex
     if (suffixIndex)
         *suffixIndex = int(lastGoodEnd - string.begin());
 
-    return QVersionNumber(qMove(seg));
+    return QVersionNumber(std::move(seg));
 }
 
 void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)

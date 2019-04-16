@@ -76,7 +76,7 @@ QPixmap QAbstractFileIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     key += QLatin1Char('_') + QString::number(size.width());
 
     QPixmap result;
-    if (!QPixmapCache::find(key, result)) {
+    if (!QPixmapCache::find(key, &result)) {
         result = filePixmap(size, mode, state);
         if (!result.isNull())
             QPixmapCache::insert(key, result);

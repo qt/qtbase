@@ -176,7 +176,7 @@ void Window::showMessage()
 //! [6]
 void Window::messageClicked()
 {
-    QMessageBox::information(0, tr("Systray"),
+    QMessageBox::information(nullptr, tr("Systray"),
                              tr("Sorry, I already gave what help I could.\n"
                                 "Maybe you should try asking a human?"));
 }

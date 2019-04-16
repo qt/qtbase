@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 
+#include <emulationdetector.h>
 #include <QtTest/QtTest>
 #ifdef QT_BUILD_INTERNAL
 #include <private/qfilesystemmodel_p.h>
@@ -51,10 +52,15 @@
 
 // Will try to wait for the condition while allowing event processing
 // for a maximum of 5 seconds.
-#define TRY_WAIT(expr) \
+#define TRY_WAIT(expr, timedOut) \
     do { \
+        *timedOut = true; \
         const int step = 50; \
-        for (int __i = 0; __i < 5000 && !(expr); __i+=step) { \
+        for (int __i = 0; __i < 5000; __i += step) { \
+            if (expr) { \
+                *timedOut = false; \
+                break; \
+            } \
             QTest::qWait(step); \
         } \
     } while(0)
@@ -123,6 +129,8 @@ private slots:
 
 protected:
     bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
+    QModelIndex prepareTestModelRoot(const QString &test_path, QSignalSpy **spy2 = nullptr,
+                                     QSignalSpy **spy3 = nullptr);
 
 private:
     QFileSystemModel *model;
@@ -306,7 +314,11 @@ void tst_QFileSystemModel::iconProvider()
 bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount, const QStringList &initial_dirs)
 {
     //qDebug() << (model->rowCount(model->index(test_path))) << existingFileCount << initial_files;
-    TRY_WAIT((model->rowCount(model->index(test_path)) == existingFileCount));
+    bool timedOut = false;
+    TRY_WAIT((model->rowCount(model->index(test_path)) == existingFileCount), &timedOut);
+    if (timedOut)
+        return false;
+
     for (int i = 0; i < initial_dirs.count(); ++i) {
         QDir dir(test_path);
         if (!dir.exists()) {
@@ -363,23 +375,45 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
     return true;
 }
 
-void tst_QFileSystemModel::rowCount()
+QModelIndex tst_QFileSystemModel::prepareTestModelRoot(const QString &test_path, QSignalSpy **spy2,
+                                                       QSignalSpy **spy3)
 {
-    QString tmp = flatDirTestPath;
-    QVERIFY(createFiles(tmp, QStringList()));
+    if (model->rowCount(model->index(test_path)) != 0)
+        return QModelIndex();
 
-    QSignalSpy spy2(model, SIGNAL(rowsInserted(QModelIndex,int,int)));
-    QSignalSpy spy3(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
+    if (spy2)
+        *spy2 = new QSignalSpy(model, &QFileSystemModel::rowsInserted);
+    if (spy3)
+        *spy3 = new QSignalSpy(model, &QFileSystemModel::rowsAboutToBeInserted);
 
-    QStringList files = QStringList() <<  "b" << "d" << "f" << "h" << "j" << ".a" << ".c" << ".e" << ".g";
+    QStringList files = { "b", "d", "f", "h", "j", ".a", ".c", ".e", ".g" };
     QString l = "b,d,f,h,j,.a,.c,.e,.g";
 
-    QVERIFY(createFiles(tmp, files));
+    if (!createFiles(test_path, files))
+        return QModelIndex();
 
-    QModelIndex root = model->setRootPath(tmp);
-    QTRY_COMPARE(model->rowCount(root), 5);
-    QVERIFY(spy2.count() > 0);
-    QVERIFY(spy3.count() > 0);
+    QModelIndex root = model->setRootPath(test_path);
+    if (!root.isValid())
+        return QModelIndex();
+
+    bool timedOut = false;
+    TRY_WAIT(model->rowCount(root) == 5, &timedOut);
+    if (timedOut)
+        return QModelIndex();
+
+    return root;
+}
+
+void tst_QFileSystemModel::rowCount()
+{
+    const QString tmp = flatDirTestPath;
+    QSignalSpy *spy2 = nullptr;
+    QSignalSpy *spy3 = nullptr;
+    QModelIndex root = prepareTestModelRoot(flatDirTestPath, &spy2, &spy3);
+    QVERIFY(root.isValid());
+
+    QVERIFY(spy2 && spy2->count() > 0);
+    QVERIFY(spy3 && spy3->count() > 0);
 }
 
 void tst_QFileSystemModel::rowsInserted_data()
@@ -401,9 +435,9 @@ static inline QString lastEntry(const QModelIndex &root)
 
 void tst_QFileSystemModel::rowsInserted()
 {
-    QString tmp = flatDirTestPath;
-    rowCount();
-    QModelIndex root = model->index(model->rootPath());
+    const QString tmp = flatDirTestPath;
+    QModelIndex root = prepareTestModelRoot(tmp);
+    QVERIFY(root.isValid());
 
     QFETCH(int, ascending);
     QFETCH(int, count);
@@ -454,9 +488,9 @@ void tst_QFileSystemModel::rowsRemoved_data()
 
 void tst_QFileSystemModel::rowsRemoved()
 {
-    QString tmp = flatDirTestPath;
-    rowCount();
-    QModelIndex root = model->index(model->rootPath());
+    const QString tmp = flatDirTestPath;
+    QModelIndex root = prepareTestModelRoot(tmp);
+    QVERIFY(root.isValid());
 
     QFETCH(int, count);
     QFETCH(int, ascending);
@@ -509,9 +543,9 @@ void tst_QFileSystemModel::dataChanged()
 {
     QSKIP("This can't be tested right now since we don't watch files, only directories.");
 
-    QString tmp = flatDirTestPath;
-    rowCount();
-    QModelIndex root = model->index(model->rootPath());
+    const QString tmp = flatDirTestPath;
+    QModelIndex root = prepareTestModelRoot(tmp);
+    QVERIFY(root.isValid());
 
     QFETCH(int, count);
     QFETCH(int, assending);
@@ -754,6 +788,9 @@ void tst_QFileSystemModel::sort()
 
     MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();
     QTreeView *tree = new QTreeView();
+
+    if (fileDialogMode && EmulationDetector::isRunningArmOnX86())
+        QSKIP("Crashes in QEMU. QTBUG-70572");
 
 #ifdef QT_BUILD_INTERNAL
     if (fileDialogMode)

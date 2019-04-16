@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -46,6 +46,7 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qhash.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,19 +62,22 @@ public:
     bool translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     QTouchDevice *ensureTouchDevice();
-    Qt::MouseButtons queryMouseButtons();
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
 
 private:
-    bool translateMouseTouchPadEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vPointerInfo);
     bool translateTouchEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vTouchInfo, unsigned int count);
     bool translatePenEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vPenInfo);
+    bool translateMouseWheelEvent(QWindow *window, QWindow *currentWindowUnderPointer, MSG msg, QPoint globalPos, Qt::KeyboardModifiers keyModifiers);
+    void handleCaptureRelease(QWindow *window, QWindow *currentWindowUnderPointer, HWND hwnd, QEvent::Type eventType, Qt::MouseButtons mouseButtons);
+    void handleEnterLeave(QWindow *window, QWindow *currentWindowUnderPointer, QPoint globalPos);
 
     QTouchDevice *m_touchDevice = nullptr;
     QHash<int, QPointF> m_lastTouchPositions;
+    QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QPointer<QWindow> m_windowUnderPointer;
     QPointer<QWindow> m_currentWindow;
+    QWindow *m_previousCaptureWindow = nullptr;
     bool m_needsEnterOnPointerUpdate = false;
 };
 

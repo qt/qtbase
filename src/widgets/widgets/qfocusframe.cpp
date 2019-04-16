@@ -335,7 +335,25 @@ QFocusFrame::eventFilter(QObject *o, QEvent *e)
 /*! \reimp */
 bool QFocusFrame::event(QEvent *e)
 {
-    return QWidget::event(e);
+    Q_D(QFocusFrame);
+
+    switch (e->type()) {
+    case QEvent::Move:
+    case QEvent::Resize:
+        if (d->widget) {
+            // When we're tracking a widget, we don't allow anyone to move the focus frame around.
+            // We do our best with event filters to make it stay on top of the widget, so trying to
+            // move the frame somewhere else will be flaky at best. This can e.g happen for general
+            // purpose code, like QAbstractScrollView, that bulk-moves all children a certain distance.
+            // So we need to call updateSize() when that happens to ensure that the focus frame stays
+            // on top of the widget.
+            d->updateSize();
+        }
+        break;
+    default:
+        return QWidget::event(e);
+    }
+    return true;
 }
 
 QT_END_NAMESPACE

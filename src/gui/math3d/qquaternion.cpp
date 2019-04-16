@@ -325,15 +325,11 @@ void QQuaternion::normalize()
     Rotates \a vector with this quaternion to produce a new vector
     in 3D space.  The following code:
 
-    \code
-    QVector3D result = q.rotatedVector(vector);
-    \endcode
+    \snippet code/src_gui_math3d_qquaternion.cpp 0
 
     is equivalent to the following:
 
-    \code
-    QVector3D result = (q * QQuaternion(0, vector) * q.conjugated()).vector();
-    \endcode
+    \snippet code/src_gui_math3d_qquaternion.cpp 1
 */
 QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 {

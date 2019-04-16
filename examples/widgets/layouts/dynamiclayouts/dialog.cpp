@@ -104,7 +104,7 @@ void Dialog::rotateWidgets()
 {
     Q_ASSERT(rotatableWidgets.count() % 2 == 0);
 
-    foreach (QWidget *widget, rotatableWidgets)
+    for (QWidget *widget : qAsConst(rotatableWidgets))
         rotatableLayout->removeWidget(widget);
 
     rotatableWidgets.enqueue(rotatableWidgets.dequeue());

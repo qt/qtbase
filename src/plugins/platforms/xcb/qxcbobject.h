@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 class QXcbObject
 {
 public:
-    QXcbObject(QXcbConnection *connection = 0) : m_connection(connection) {}
+    QXcbObject(QXcbConnection *connection = nullptr) : m_connection(connection) {}
 
     void setConnection(QXcbConnection *connection) { m_connection = connection; }
     QXcbConnection *connection() const { return m_connection; }

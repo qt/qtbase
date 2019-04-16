@@ -74,60 +74,7 @@ Q_LOGGING_CATEGORY(lcGuiVk, "qt.vulkan")
 
   A typical application using QVulkanWindow may look like the following:
 
-  \code
-  class VulkanRenderer : public QVulkanWindowRenderer
-  {
-  public:
-      VulkanRenderer(QVulkanWindow *w) : m_window(w) { }
-
-      void initResources() override
-      {
-          m_devFuncs = m_window->vulkanInstance()->deviceFunctions(m_window->device());
-          ...
-      }
-      void initSwapChainResources() override { ... }
-      void releaseSwapChainResources() override { ... }
-      void releaseResources() override { ... }
-
-      void startNextFrame() override
-      {
-          VkCommandBuffer cmdBuf = m_window->currentCommandBuffer();
-          ...
-          m_devFuncs->vkCmdBeginRenderPass(...);
-          ...
-          m_window->frameReady();
-      }
-
-  private:
-      QVulkanWindow *m_window;
-      QVulkanDeviceFunctions *m_devFuncs;
-  };
-
-  class VulkanWindow : public QVulkanWindow
-  {
-  public:
-      QVulkanWindowRenderer *createRenderer() override {
-          return new VulkanRenderer(this);
-      }
-  };
-
-  int main(int argc, char *argv[])
-  {
-      QGuiApplication app(argc, argv);
-
-      QVulkanInstance inst;
-      // enable the standard validation layers, when available
-      inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
-      if (!inst.create())
-          qFatal("Failed to create Vulkan instance: %d", inst.errorCode());
-
-      VulkanWindow w;
-      w.setVulkanInstance(&inst);
-      w.showMaximized();
-
-      return app.exec();
-  }
-  \endcode
+  \snippet code/src_gui_vulkan_qvulkanwindow.cpp 0
 
   As it can be seen in the example, the main patterns in QVulkanWindow usage are:
 
@@ -2439,18 +2386,7 @@ VkFramebuffer QVulkanWindow::currentFramebuffer() const
     concurrentFrameCount(). Such arrays can then be indexed by the value
     returned from this function.
 
-    \code
-        class Renderer {
-            ...
-            VkDescriptorBufferInfo m_uniformBufInfo[QVulkanWindow::MAX_CONCURRENT_FRAME_COUNT];
-        };
-
-        void Renderer::startNextFrame()
-        {
-            VkDescriptorBufferInfo &uniformBufInfo(m_uniformBufInfo[m_window->currentFrame()]);
-            ...
-        }
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkanwindow.cpp 1
 
     \note This function must only be called from within startNextFrame() and, in
     case of asynchronous command generation, up until the call to frameReady().
@@ -2477,20 +2413,7 @@ int QVulkanWindow::currentFrame() const
 
     \note The value is constant for the entire lifetime of the QVulkanWindow.
 
-    \code
-        class Renderer {
-            ...
-            VkDescriptorBufferInfo m_uniformBufInfo[QVulkanWindow::MAX_CONCURRENT_FRAME_COUNT];
-        };
-
-        void Renderer::startNextFrame()
-        {
-            const int count = m_window->concurrentFrameCount();
-            for (int i = 0; i < count; ++i)
-                m_uniformBufInfo[i] = ...
-            ...
-        }
-    \endcode
+    \snippet code/src_gui_vulkan_qvulkanwindow.cpp 2
 
     \sa currentFrame()
  */

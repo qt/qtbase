@@ -44,7 +44,7 @@
 # include <QProcess>
 #endif
 #include "../../../network-settings.h"
-
+#include "emulationdetector.h"
 
 QT_BEGIN_NAMESPACE
 template<> struct QMetaTypeId<QIODevice::OpenModeFlag>
@@ -1102,7 +1102,7 @@ void tst_QTextStream::hexTest()
     QByteArray array;
     QTextStream stream(&array);
 
-    stream << showbase << hex << number;
+    stream << Qt::showbase << Qt::hex << number;
     stream.flush();
     QCOMPARE(array, data);
 }
@@ -1132,7 +1132,7 @@ void tst_QTextStream::binTest()
     QByteArray array;
     QTextStream stream(&array);
 
-    stream << showbase << bin << number;
+    stream << Qt::showbase << Qt::bin << number;
     stream.flush();
     QCOMPARE(array.constData(), data.constData());
 }
@@ -1155,7 +1155,7 @@ void tst_QTextStream::octTest()
     QByteArray array;
     QTextStream stream(&array);
 
-    stream << showbase << oct << number;
+    stream << Qt::showbase << Qt::oct << number;
     stream.flush();
     QCOMPARE(array, data);
 }
@@ -1196,7 +1196,7 @@ void tst_QTextStream::ws_manipulator()
         QTextStream stream(&string);
 
         char a, b, c, d;
-        stream >> a >> ws >> b >> ws >> c >> ws >> d;
+        stream >> a >> Qt::ws >> b >> Qt::ws >> c >> Qt::ws >> d;
         QCOMPARE(a, 'a');
         QCOMPARE(b, 'b');
         QCOMPARE(c, 'c');
@@ -1460,6 +1460,9 @@ void tst_QTextStream::pos2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::pos3LargeFile()
 {
+    if (EmulationDetector::isRunningArmOnX86())
+        QSKIP("Running QTextStream::pos() in tight loop is too slow on emulator");
+
     {
         QFile file(testFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -1620,18 +1623,18 @@ void tst_QTextStream::forcePoint()
 {
     QString str;
     QTextStream stream(&str);
-    stream << fixed << forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
+    stream << Qt::fixed << Qt::forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
     QCOMPARE(str, QString("1.000000 1 0 -1.000000 -1"));
 
     str.clear();
     stream.seek(0);
-    stream << scientific << forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
+    stream << Qt::scientific << Qt::forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
     QCOMPARE(str, QString("1.000000e+00 1 0 -1.000000e+00 -1"));
 
     str.clear();
     stream.seek(0);
     stream.setRealNumberNotation(QTextStream::SmartNotation);
-    stream << forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
+    stream << Qt::forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
     QCOMPARE(str, QString("1.00000 1 0 -1.00000 -1"));
 
 }
@@ -1641,7 +1644,7 @@ void tst_QTextStream::forceSign()
 {
     QString str;
     QTextStream stream(&str);
-    stream << forcesign << 1.2 << ' ' << -1.2 << ' ' << 0;
+    stream << Qt::forcesign << 1.2 << ' ' << -1.2 << ' ' << 0;
     QCOMPARE(str, QString("+1.2 -1.2 +0"));
 }
 
@@ -1660,19 +1663,22 @@ void tst_QTextStream::read0d0d0a()
 
 Q_DECLARE_METATYPE(QTextStreamFunction);
 
+// Also tests that we can have namespaces that conflict with our QTextStream constants.
+namespace ws {
 QTextStream &noop(QTextStream &s) { return s; }
+}
 
 void tst_QTextStream::numeralCase_data()
 {
-    QTextStreamFunction noop_ = noop;
-    QTextStreamFunction bin_  = bin;
-    QTextStreamFunction oct_  = oct;
-    QTextStreamFunction hex_  = hex;
-    QTextStreamFunction base  = showbase;
-    QTextStreamFunction ucb   = uppercasebase;
-    QTextStreamFunction lcb   = lowercasebase;
-    QTextStreamFunction ucd   = uppercasedigits;
-    QTextStreamFunction lcd   = lowercasedigits;
+    QTextStreamFunction noop_ = ws::noop;
+    QTextStreamFunction bin  = Qt::bin;
+    QTextStreamFunction oct  = Qt::oct;
+    QTextStreamFunction hex  = Qt::hex;
+    QTextStreamFunction base  = Qt::showbase;
+    QTextStreamFunction ucb   = Qt::uppercasebase;
+    QTextStreamFunction lcb   = Qt::lowercasebase;
+    QTextStreamFunction ucd   = Qt::uppercasedigits;
+    QTextStreamFunction lcd   = Qt::lowercasedigits;
 
     QTest::addColumn<QTextStreamFunction>("func1");
     QTest::addColumn<QTextStreamFunction>("func2");
@@ -1683,30 +1689,30 @@ void tst_QTextStream::numeralCase_data()
     QTest::newRow("dec 1") << noop_ << noop_ << noop_ << noop_ << 31 << "31";
     QTest::newRow("dec 2") << noop_ << base  << noop_ << noop_ << 31 << "31";
 
-    QTest::newRow("hex 1")  << hex_  << noop_ << noop_ << noop_ << 31 << "1f";
-    QTest::newRow("hex 2")  << hex_  << noop_ << noop_ << lcd   << 31 << "1f";
-    QTest::newRow("hex 3")  << hex_  << noop_ << ucb   << noop_ << 31 << "1f";
-    QTest::newRow("hex 4")  << hex_  << noop_ << noop_ << ucd   << 31 << "1F";
-    QTest::newRow("hex 5")  << hex_  << noop_ << lcb   << ucd   << 31 << "1F";
-    QTest::newRow("hex 6")  << hex_  << noop_ << ucb   << ucd   << 31 << "1F";
-    QTest::newRow("hex 7")  << hex_  << base  << noop_ << noop_ << 31 << "0x1f";
-    QTest::newRow("hex 8")  << hex_  << base  << lcb   << lcd   << 31 << "0x1f";
-    QTest::newRow("hex 9")  << hex_  << base  << ucb   << noop_ << 31 << "0X1f";
-    QTest::newRow("hex 10") << hex_  << base  << ucb   << lcd   << 31 << "0X1f";
-    QTest::newRow("hex 11") << hex_  << base  << noop_ << ucd   << 31 << "0x1F";
-    QTest::newRow("hex 12") << hex_  << base  << lcb   << ucd   << 31 << "0x1F";
-    QTest::newRow("hex 13") << hex_  << base  << ucb   << ucd   << 31 << "0X1F";
+    QTest::newRow("hex 1")  << hex  << noop_ << noop_ << noop_ << 31 << "1f";
+    QTest::newRow("hex 2")  << hex  << noop_ << noop_ << lcd   << 31 << "1f";
+    QTest::newRow("hex 3")  << hex  << noop_ << ucb   << noop_ << 31 << "1f";
+    QTest::newRow("hex 4")  << hex  << noop_ << noop_ << ucd   << 31 << "1F";
+    QTest::newRow("hex 5")  << hex  << noop_ << lcb   << ucd   << 31 << "1F";
+    QTest::newRow("hex 6")  << hex  << noop_ << ucb   << ucd   << 31 << "1F";
+    QTest::newRow("hex 7")  << hex  << base  << noop_ << noop_ << 31 << "0x1f";
+    QTest::newRow("hex 8")  << hex  << base  << lcb   << lcd   << 31 << "0x1f";
+    QTest::newRow("hex 9")  << hex  << base  << ucb   << noop_ << 31 << "0X1f";
+    QTest::newRow("hex 10") << hex  << base  << ucb   << lcd   << 31 << "0X1f";
+    QTest::newRow("hex 11") << hex  << base  << noop_ << ucd   << 31 << "0x1F";
+    QTest::newRow("hex 12") << hex  << base  << lcb   << ucd   << 31 << "0x1F";
+    QTest::newRow("hex 13") << hex  << base  << ucb   << ucd   << 31 << "0X1F";
 
-    QTest::newRow("bin 1") << bin_  << noop_ << noop_ << noop_ << 31 << "11111";
-    QTest::newRow("bin 2") << bin_  << base  << noop_ << noop_ << 31 << "0b11111";
-    QTest::newRow("bin 3") << bin_  << base  << lcb   << noop_ << 31 << "0b11111";
-    QTest::newRow("bin 4") << bin_  << base  << ucb   << noop_ << 31 << "0B11111";
-    QTest::newRow("bin 5") << bin_  << base  << noop_ << ucd   << 31 << "0b11111";
-    QTest::newRow("bin 6") << bin_  << base  << lcb   << ucd   << 31 << "0b11111";
-    QTest::newRow("bin 7") << bin_  << base  << ucb   << ucd   << 31 << "0B11111";
+    QTest::newRow("bin 1") << bin  << noop_ << noop_ << noop_ << 31 << "11111";
+    QTest::newRow("bin 2") << bin  << base  << noop_ << noop_ << 31 << "0b11111";
+    QTest::newRow("bin 3") << bin  << base  << lcb   << noop_ << 31 << "0b11111";
+    QTest::newRow("bin 4") << bin  << base  << ucb   << noop_ << 31 << "0B11111";
+    QTest::newRow("bin 5") << bin  << base  << noop_ << ucd   << 31 << "0b11111";
+    QTest::newRow("bin 6") << bin  << base  << lcb   << ucd   << 31 << "0b11111";
+    QTest::newRow("bin 7") << bin  << base  << ucb   << ucd   << 31 << "0B11111";
 
-    QTest::newRow("oct 1") << oct_  << noop_ << noop_ << noop_ << 31 << "37";
-    QTest::newRow("oct 2") << oct_  << base  << noop_ << noop_ << 31 << "037";
+    QTest::newRow("oct 1") << oct  << noop_ << noop_ << noop_ << 31 << "37";
+    QTest::newRow("oct 2") << oct  << base  << noop_ << noop_ << 31 << "037";
 }
 
 void tst_QTextStream::numeralCase()
@@ -1779,9 +1785,9 @@ void tst_QTextStream::nanInf()
     QString s;
     QTextStream out(&s);
     out << qInf() << ' ' << -qInf() << ' ' << qQNaN()
-        << uppercasedigits << ' '
+        << Qt::uppercasedigits << ' '
         << qInf() << ' ' << -qInf() << ' ' << qQNaN()
-        << flush;
+        << Qt::flush;
 
     QCOMPARE(s, QString("inf -inf nan INF -INF NAN"));
 }
@@ -1856,9 +1862,9 @@ void tst_QTextStream::writeSeekWriteNoBOM()
     int number = 0;
     QString sizeStr = QLatin1String("Size=")
         + QString::number(number).rightJustified(10, QLatin1Char('0'));
-    stream << sizeStr << endl;
-    stream << "Version=" << QString::number(14) << endl;
-    stream << "blah blah blah" << endl;
+    stream << sizeStr << Qt::endl;
+    stream << "Version=" << QString::number(14) << Qt::endl;
+    stream << "blah blah blah" << Qt::endl;
     stream.flush();
 
     QCOMPARE(out.buffer().constData(), "Size=0000000000\nVersion=14\nblah blah blah\n");
@@ -1868,7 +1874,7 @@ void tst_QTextStream::writeSeekWriteNoBOM()
     stream.seek(0);
     sizeStr = QLatin1String("Size=")
         + QString::number(number).rightJustified(10, QLatin1Char('0'));
-    stream << sizeStr << endl;
+    stream << sizeStr << Qt::endl;
     stream.flush();
 
     // Check buffer is still OK

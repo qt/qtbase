@@ -117,17 +117,14 @@
 
     \snippet tools/customtype/main.cpp storing a custom value
 
-    Alternatively, the QVariant::fromValue() and qVariantSetValue() functions
-    can be used if you are using a compiler without support for member template
+    Alternatively, the QVariant::fromValue() function can be used if
+    you are using a compiler without support for member template
     functions.
 
     The value can be retrieved using the QVariant::value() member template
     function:
 
     \snippet tools/customtype/main.cpp retrieving a custom value
-
-    Alternatively, the qVariantValue() template function can be used if
-    you are using a compiler without support for member template functions.
 
     \section1 Further Reading
 

@@ -543,14 +543,19 @@ QVariant QCborValue::toVariant() const
     case Url:
         return toUrl();
 
+#if QT_CONFIG(regularexpression)
     case RegularExpression:
         return toRegularExpression();
+#endif
 
     case Uuid:
         return toUuid();
 
     case Invalid:
         return QVariant();
+
+    default:
+        break;
     }
 
     if (isSimpleType())
@@ -714,8 +719,10 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
     case QVariant::Hash:
         return QCborMap::fromVariantHash(variant.toHash());
 #ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(regularexpression)
     case QVariant::RegularExpression:
         return QCborValue(variant.toRegularExpression());
+#endif
     case QMetaType::QJsonValue:
         return fromJsonValue(variant.toJsonValue());
     case QMetaType::QJsonObject:
@@ -817,7 +824,7 @@ QCborArray QCborArray::fromJsonArray(const QJsonArray &array)
 {
     QCborArray a;
     a.detach(array.size());
-    for (const QJsonValue v : array) {
+    for (const QJsonValue &v : array) {
         if (v.isString())
             a.d->append(v.toString());
         else

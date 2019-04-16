@@ -45,16 +45,8 @@
 
 #include <xcb/shm.h>
 #include <xcb/xcb_image.h>
-#if QT_CONFIG(xcb_render)
 #include <xcb/render.h>
-// 'template' is used as a function argument name in xcb_renderutil.h
-#define template template_param
-// extern "C" is missing too
-extern "C" {
 #include <xcb/xcb_renderutil.h>
-}
-#undef template
-#endif
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -106,7 +98,7 @@ public:
     void put(xcb_drawable_t dst, const QRegion &region, const QPoint &offset);
     void preparePaint(const QRegion &region);
 
-    static bool createSystemVShmSegment(QXcbConnection *c, size_t segmentSize = 1,
+    static bool createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize = 1,
                                         xcb_shm_segment_info_t *shm_info = nullptr);
 
 private:
@@ -406,12 +398,12 @@ void QXcbBackingStoreImage::createShmSegment(size_t segmentSize)
     } else
 #endif
     {
-        if (createSystemVShmSegment(connection(), segmentSize, &m_shm_info))
+        if (createSystemVShmSegment(xcb_connection(), segmentSize, &m_shm_info))
             m_segmentSize = segmentSize;
     }
 }
 
-bool QXcbBackingStoreImage::createSystemVShmSegment(QXcbConnection *c, size_t segmentSize,
+bool QXcbBackingStoreImage::createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize,
                                                     xcb_shm_segment_info_t *shmInfo)
 {
     const int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
@@ -429,17 +421,17 @@ bool QXcbBackingStoreImage::createSystemVShmSegment(QXcbConnection *c, size_t se
     if (shmctl(id, IPC_RMID, 0) == -1)
         qCWarning(lcQpaXcb, "Error while marking the shared memory segment to be destroyed");
 
-    const auto seg = xcb_generate_id(c->xcb_connection());
-    auto cookie = xcb_shm_attach_checked(c->xcb_connection(), seg, id, false);
-    auto *error = xcb_request_check(c->xcb_connection(), cookie);
+    const auto seg = xcb_generate_id(c);
+    auto cookie = xcb_shm_attach_checked(c, seg, id, false);
+    auto *error = xcb_request_check(c, cookie);
     if (error) {
-        c->printXcbError("xcb_shm_attach() failed with error", error);
+        qCWarning(lcQpaXcb(), "xcb_shm_attach() failed");
         free(error);
         if (shmdt(addr) == -1)
             qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p", errno, strerror(errno), addr);
         return false;
     } else if (!shmInfo) { // this was a test run, free the allocated test segment
-        xcb_shm_detach(c->xcb_connection(), seg);
+        xcb_shm_detach(c, seg);
         auto shmaddr = static_cast<quint8 *>(addr);
         if (shmdt(shmaddr) == -1)
             qCWarning(lcQpaXcb, "shmdt() failed (%d: %s) for %p", errno, strerror(errno), shmaddr);
@@ -649,17 +641,17 @@ void QXcbBackingStoreImage::flushPixmap(const QRegion &region, bool fullRegion)
     xcb_subimage.bit_order = m_xcb_image->bit_order;
 
     const bool needsByteSwap = xcb_subimage.byte_order != m_xcb_image->byte_order;
+    // Ensure that we don't send more than maxPutImageRequestDataBytes per request.
+    const auto maxPutImageRequestDataBytes = connection()->maxRequestDataBytes(sizeof(xcb_put_image_request_t));
 
     for (const QRect &rect : region) {
-        // We must make sure that each request is not larger than max_req_size.
-        // Each request takes req_size + m_xcb_image->stride * height bytes.
-        static const uint32_t req_size = sizeof(xcb_put_image_request_t);
-        const uint32_t max_req_size = xcb_get_maximum_request_length(xcb_connection());
-        const int rows_per_put = (max_req_size - req_size) / m_xcb_image->stride;
+        const quint32 stride = round_up_scanline(rect.width() * m_qimage.depth(), xcb_subimage.scanline_pad) >> 3;
+        const int rows_per_put = maxPutImageRequestDataBytes / stride;
 
         // This assert could trigger if a single row has more pixels than fit in
-        // a single PutImage request. However, max_req_size is guaranteed to be
-        // at least 16384 bytes. That should be enough for quite large images.
+        // a single PutImage request. In the absence of the BIG-REQUESTS extension
+        // the theoretical maximum lengths of maxPutImageRequestDataBytes can be
+        // roughly 256kB.
         Q_ASSERT(rows_per_put > 0);
 
         // If we upload the whole image in a single chunk, the result might be
@@ -674,8 +666,9 @@ void QXcbBackingStoreImage::flushPixmap(const QRegion &region, bool fullRegion)
         while (height > 0) {
             const int rows = std::min(height, rows_per_put);
             const QRect subRect(x, y, width, rows);
-            const quint32 stride = round_up_scanline(width * m_qimage.depth(), xcb_subimage.scanline_pad) >> 3;
             const QImage subImage = native_sub_image(&m_flushBuffer, stride, m_qimage, subRect, needsByteSwap);
+
+            Q_ASSERT(static_cast<size_t>(subImage.sizeInBytes()) <= maxPutImageRequestDataBytes);
 
             xcb_subimage.width = width;
             xcb_subimage.height = rows;
@@ -766,7 +759,7 @@ void QXcbBackingStoreImage::preparePaint(const QRegion &region)
     m_pendingFlush |= region;
 }
 
-bool QXcbBackingStore::createSystemVShmSegment(QXcbConnection *c, size_t segmentSize, void *shmInfo)
+bool QXcbBackingStore::createSystemVShmSegment(xcb_connection_t *c, size_t segmentSize, void *shmInfo)
 {
     auto info = reinterpret_cast<xcb_shm_segment_info_t *>(shmInfo);
     return QXcbBackingStoreImage::createSystemVShmSegment(c, segmentSize, info);
@@ -837,6 +830,9 @@ void QXcbBackingStore::endPaint()
 
 QImage QXcbBackingStore::toImage() const
 {
+    // If the backingstore is rgbSwapped, return the internal image type here.
+    if (!m_rgbImage.isNull())
+        return m_rgbImage;
     return m_image && m_image->image() ? *m_image->image() : QImage();
 }
 
@@ -959,16 +955,13 @@ QXcbSystemTrayBackingStore::QXcbSystemTrayBackingStore(QWindow *window)
 
     if (depth != 32) {
         platformWindow->setParentRelativeBackPixmap();
-#if QT_CONFIG(xcb_render)
         initXRenderMode();
-#endif
         m_useGrabbedBackgound = !m_usingXRenderMode;
     }
 }
 
 QXcbSystemTrayBackingStore::~QXcbSystemTrayBackingStore()
 {
-#if QT_CONFIG(xcb_render)
     if (m_xrenderPicture) {
         xcb_render_free_picture(xcb_connection(), m_xrenderPicture);
         m_xrenderPicture = XCB_NONE;
@@ -981,7 +974,6 @@ QXcbSystemTrayBackingStore::~QXcbSystemTrayBackingStore()
         xcb_render_free_picture(xcb_connection(), m_windowPicture);
         m_windowPicture = XCB_NONE;
     }
-#endif // QT_CONFIG(xcb_render)
 }
 
 void QXcbSystemTrayBackingStore::beginPaint(const QRegion &region)
@@ -1003,7 +995,6 @@ void QXcbSystemTrayBackingStore::render(xcb_window_t window, const QRegion &regi
         return;
     }
 
-#if QT_CONFIG(xcb_render)
     m_image->put(m_xrenderPixmap, region, offset);
     const QRect bounds = region.boundingRect();
     const QPoint target = bounds.topLeft();
@@ -1014,7 +1005,6 @@ void QXcbSystemTrayBackingStore::render(xcb_window_t window, const QRegion &regi
                          m_xrenderPicture, 0, m_windowPicture,
                          target.x(), target.y(), 0, 0, target.x(), target.y(),
                          source.width(), source.height());
-#endif // QT_CONFIG(xcb_render)
 }
 
 void QXcbSystemTrayBackingStore::recreateImage(QXcbWindow *win, const QSize &size)
@@ -1031,7 +1021,6 @@ void QXcbSystemTrayBackingStore::recreateImage(QXcbWindow *win, const QSize &siz
         return;
     }
 
-#if QT_CONFIG(xcb_render)
     if (m_xrenderPicture) {
         xcb_render_free_picture(xcb_connection(), m_xrenderPicture);
         m_xrenderPicture = XCB_NONE;
@@ -1054,10 +1043,8 @@ void QXcbSystemTrayBackingStore::recreateImage(QXcbWindow *win, const QSize &siz
         m_image->resize(size);
     else
         m_image = new QXcbBackingStoreImage(this, size, 32, QImage::Format_ARGB32_Premultiplied);
-#endif // QT_CONFIG(xcb_render)
 }
 
-#if QT_CONFIG(xcb_render)
 void QXcbSystemTrayBackingStore::initXRenderMode()
 {
     if (!connection()->hasXRender())
@@ -1101,6 +1088,5 @@ void QXcbSystemTrayBackingStore::initXRenderMode()
 
     m_usingXRenderMode = true;
 }
-#endif // QT_CONFIG(xcb_render)
 
 QT_END_NAMESPACE

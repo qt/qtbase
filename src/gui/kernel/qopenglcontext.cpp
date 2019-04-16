@@ -313,7 +313,7 @@ QOpenGLContext *qt_gl_global_share_context()
 
     \section1 Context Resource Sharing
 
-    Resources, such as framebuffer objects, textures, and vertex buffer objects
+    Resources such as textures and vertex buffer objects
     can be shared between contexts.  Use setShareContext() before calling
     create() to specify that the contexts should share these resources.
     QOpenGLContext internally keeps track of a QOpenGLContextGroup object which
@@ -414,15 +414,14 @@ int QOpenGLContextPrivate::maxTextureSize()
 
 /*!
     Returns the last context which called makeCurrent in the current thread,
-    or 0, if no context is current.
+    or \nullptr, if no context is current.
 */
 QOpenGLContext* QOpenGLContext::currentContext()
 {
     QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
-    if (threadContext) {
+    if (threadContext)
         return threadContext->context;
-    }
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -1118,7 +1117,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 /*!
     Resolves the function pointer to an OpenGL extension function, identified by \a procName
 
-    Returns 0 if no such function can be found.
+    Returns \nullptr if no such function can be found.
 */
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) const
 {
@@ -1236,7 +1235,8 @@ void QOpenGLContext::deleteQGLContext()
   Returns the platform-specific handle for the OpenGL implementation that
   is currently in use. (for example, a HMODULE on Windows)
 
-  On platforms that do not use dynamic GL switch the return value is null.
+  On platforms that do not use dynamic GL switching, the return value
+  is \nullptr.
 
   The library might be GL-only, meaning that windowing system interface
   functions (for example EGL) may live in another, separate library.

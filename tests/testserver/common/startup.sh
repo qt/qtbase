@@ -49,7 +49,9 @@ do $RUN_CMD
 done
 
 # start multicast DNS service discovery (mDNS)
-sed -i "s,#domain-name=local,domain-name=test-net.qt.local," /etc/avahi/avahi-daemon.conf
+sed -i -e "s,#domain-name=local,domain-name=${test_domain:-test-net.qt.local}," \
+    -e "s,#publish-aaaa-on-ipv4=yes,publish-aaaa-on-ipv4=no," \
+    /etc/avahi/avahi-daemon.conf
 service dbus restart
 service avahi-daemon restart
 

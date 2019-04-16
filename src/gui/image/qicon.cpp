@@ -47,8 +47,10 @@
 #include "private/qiconloader_p.h"
 #include "qpainter.h"
 #include "qfileinfo.h"
+#if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
 #include <qmimetype.h>
+#endif
 #include "qpixmapcache.h"
 #include "qvariant.h"
 #include "qcache.h"
@@ -313,9 +315,9 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
                   % HexString<uint>(actualSize.height());
 
     if (mode == QIcon::Active) {
-        if (QPixmapCache::find(key % HexString<uint>(mode), pm))
+        if (QPixmapCache::find(key % HexString<uint>(mode), &pm))
             return pm; // horray
-        if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), pm)) {
+        if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), &pm)) {
             QPixmap active = pm;
             if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
                 active = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(QIcon::Active, pm);
@@ -324,7 +326,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         }
     }
 
-    if (!QPixmapCache::find(key % HexString<uint>(mode), pm)) {
+    if (!QPixmapCache::find(key % HexString<uint>(mode), &pm)) {
         if (pm.size() != actualSize)
             pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (pe->mode != mode && mode != QIcon::Normal) {
@@ -661,7 +663,7 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 /*!
   Constructs a null icon.
 */
-QIcon::QIcon() Q_DECL_NOEXCEPT
+QIcon::QIcon() noexcept
     : d(0)
 {
 }
@@ -1079,10 +1081,10 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
 
         QFileInfo info(fileName);
         QString suffix = info.suffix();
-#ifndef QT_NO_MIMETYPE
+#if QT_CONFIG(mimetype)
         if (suffix.isEmpty())
             suffix = QMimeDatabase().mimeTypeForFile(info).preferredSuffix(); // determination from contents
-#endif // !QT_NO_MIMETYPE
+#endif // mimetype
         QIconEngine *engine = iconEngineFromSuffix(fileName, suffix);
         d = new QIconPrivate(engine ? engine : new QPixmapIconEngine);
     }

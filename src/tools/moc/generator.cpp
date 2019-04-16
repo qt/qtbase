@@ -619,7 +619,7 @@ void Generator::generateCode()
         fprintf(out, "//     a) You are using a NOTIFY signal that does not exist. Fix it.\n");
         fprintf(out, "//     b) You are using a NOTIFY signal that does exist (in a parent class) but has a non-empty parameter list. This is a moc limitation.\n");
         fprintf(out, "Q_DECL_UNUSED static void checkNotifySignalValidity_%s(%s *t) {\n", qualifiedClassNameIdentifier.constData(), cdef->qualified.constData());
-        for (const QByteArray &nonClassSignal : cdef->nonClassSignalList)
+        for (const QByteArray &nonClassSignal : qAsConst(cdef->nonClassSignalList))
             fprintf(out, "    t->%s();\n", nonClassSignal.constData());
         fprintf(out, "}\n");
     }
@@ -1194,9 +1194,9 @@ void Generator::generateStaticMetacall()
 #ifndef QT_NO_DEBUG
             fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
 #endif
-            fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+            fprintf(out, "        auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
         } else {
-            fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+            fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
         }
         fprintf(out, "        Q_UNUSED(_t)\n");
         fprintf(out, "        switch (_id) {\n");
@@ -1359,9 +1359,9 @@ void Generator::generateStaticMetacall()
 #ifndef QT_NO_DEBUG
                 fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
 #endif
-                fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+                fprintf(out, "        auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
             } else {
-                fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+                fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
             }
             fprintf(out, "        Q_UNUSED(_t)\n");
             if (needTempVarForGet)
@@ -1405,9 +1405,9 @@ void Generator::generateStaticMetacall()
 #ifndef QT_NO_DEBUG
                 fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
 #endif
-                fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+                fprintf(out, "        auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
             } else {
-                fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+                fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
             }
             fprintf(out, "        Q_UNUSED(_t)\n");
             fprintf(out, "        void *_v = _a[0];\n");

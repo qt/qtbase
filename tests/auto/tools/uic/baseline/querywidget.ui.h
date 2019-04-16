@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'querywidget.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -153,10 +153,10 @@ public:
 
     void retranslateUi(QMainWindow *QueryWidget)
     {
-        QueryWidget->setWindowTitle(QApplication::translate("QueryWidget", "Recipes XQuery Example", nullptr));
-        inputGroupBox->setTitle(QApplication::translate("QueryWidget", "Input Document", nullptr));
-        queryGroupBox->setTitle(QApplication::translate("QueryWidget", "Select your query:", nullptr));
-        outputGroupBox->setTitle(QApplication::translate("QueryWidget", "Output Document", nullptr));
+        QueryWidget->setWindowTitle(QCoreApplication::translate("QueryWidget", "Recipes XQuery Example", nullptr));
+        inputGroupBox->setTitle(QCoreApplication::translate("QueryWidget", "Input Document", nullptr));
+        queryGroupBox->setTitle(QCoreApplication::translate("QueryWidget", "Select your query:", nullptr));
+        outputGroupBox->setTitle(QCoreApplication::translate("QueryWidget", "Output Document", nullptr));
     } // retranslateUi
 
 };

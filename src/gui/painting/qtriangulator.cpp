@@ -472,7 +472,7 @@ class QInt64Set
 {
 public:
     inline QInt64Set(int capacity = 64);
-    inline ~QInt64Set() {if (m_array) delete[] m_array;}
+    inline ~QInt64Set() {delete[] m_array;}
     inline bool isValid() const {return m_array;}
     void insert(quint64 key);
     bool contains(quint64 key) const;
@@ -493,10 +493,7 @@ inline QInt64Set::QInt64Set(int capacity)
 {
     m_capacity = primeForCount(capacity);
     m_array = new quint64[m_capacity];
-    if (m_array)
-        clear();
-    else
-        m_capacity = 0;
+    clear();
 }
 
 bool QInt64Set::rehash(int capacity)
@@ -506,28 +503,19 @@ bool QInt64Set::rehash(int capacity)
 
     m_capacity = capacity;
     m_array = new quint64[m_capacity];
-    if (m_array) {
-        clear();
-        if (oldArray) {
-            for (int i = 0; i < oldCapacity; ++i) {
-                if (oldArray[i] != UNUSED)
-                    insert(oldArray[i]);
-            }
-            delete[] oldArray;
-        }
-        return true;
-    } else {
-        m_capacity = oldCapacity;
-        m_array = oldArray;
-        return false;
+    clear();
+    for (int i = 0; i < oldCapacity; ++i) {
+        if (oldArray[i] != UNUSED)
+            insert(oldArray[i]);
     }
+    delete[] oldArray;
+    return true;
 }
 
 void QInt64Set::insert(quint64 key)
 {
     if (m_count > 3 * m_capacity / 4)
         rehash(primeForCount(2 * m_capacity));
-    Q_ASSERT_X(m_array, "QInt64Hash<T>::insert", "Hash set not allocated.");
     int index = int(key % m_capacity);
     for (int i = 0; i < m_capacity; ++i) {
         index += i;
@@ -546,7 +534,6 @@ void QInt64Set::insert(quint64 key)
 
 bool QInt64Set::contains(quint64 key) const
 {
-    Q_ASSERT_X(m_array, "QInt64Hash<T>::contains", "Hash set not allocated.");
     int index = int(key % m_capacity);
     for (int i = 0; i < m_capacity; ++i) {
         index += i;
@@ -562,7 +549,6 @@ bool QInt64Set::contains(quint64 key) const
 
 inline void QInt64Set::clear()
 {
-    Q_ASSERT_X(m_array, "QInt64Hash<T>::clear", "Hash set not allocated.");
     for (int i = 0; i < m_capacity; ++i)
         m_array[i] = UNUSED;
     m_count = 0;

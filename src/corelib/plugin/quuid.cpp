@@ -112,7 +112,7 @@ static char *_q_uuidToHex(const QUuid &uuid, char *dst, QUuid::StringFormat mode
 
     Parses the string representation of a UUID (with optional surrounding "{}")
     by reading at most MaxStringUuidLength (38) characters from \a src, which
-    may be \c nullptr. Stops at the first invalid character (which includes a
+    may be \nullptr. Stops at the first invalid character (which includes a
     premature NUL).
 
     Returns the successfully parsed QUuid, or a null QUuid in case of failure.
@@ -397,7 +397,7 @@ QUuid::QUuid(const QString &text)
 
     \sa toString(), QUuid()
 */
-QUuid QUuid::fromString(QStringView text) Q_DECL_NOTHROW
+QUuid QUuid::fromString(QStringView text) noexcept
 {
     if (text.size() > MaxStringUuidLength)
         text = text.left(MaxStringUuidLength); // text.truncate(MaxStringUuidLength);
@@ -427,7 +427,7 @@ QUuid QUuid::fromString(QStringView text) Q_DECL_NOTHROW
 
     \sa toString(), QUuid()
 */
-QUuid QUuid::fromString(QLatin1String text) Q_DECL_NOTHROW
+QUuid QUuid::fromString(QLatin1String text) noexcept
 {
     if (Q_UNLIKELY(text.size() < MaxStringUuidLength - 2
                    || (text.front() == QLatin1Char('{') && text.size() < MaxStringUuidLength - 1))) {
@@ -864,7 +864,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     Returns \c true if this is the null UUID
     {00000000-0000-0000-0000-000000000000}; otherwise returns \c false.
 */
-bool QUuid::isNull() const Q_DECL_NOTHROW
+bool QUuid::isNull() const noexcept
 {
     return data4[0] == 0 && data4[1] == 0 && data4[2] == 0 && data4[3] == 0 &&
            data4[4] == 0 && data4[5] == 0 && data4[6] == 0 && data4[7] == 0 &&
@@ -913,7 +913,7 @@ bool QUuid::isNull() const Q_DECL_NOTHROW
 
     \sa version()
 */
-QUuid::Variant QUuid::variant() const Q_DECL_NOTHROW
+QUuid::Variant QUuid::variant() const noexcept
 {
     if (isNull())
         return VarUnknown;
@@ -934,7 +934,7 @@ QUuid::Variant QUuid::variant() const Q_DECL_NOTHROW
 
     \sa variant()
 */
-QUuid::Version QUuid::version() const Q_DECL_NOTHROW
+QUuid::Version QUuid::version() const noexcept
 {
     // Check the 4 MSB of data3
     Version ver = (Version)(data3>>12);
@@ -957,7 +957,7 @@ QUuid::Version QUuid::version() const Q_DECL_NOTHROW
 
     \sa variant()
 */
-bool QUuid::operator<(const QUuid &other) const Q_DECL_NOTHROW
+bool QUuid::operator<(const QUuid &other) const noexcept
 {
     if (variant() != other.variant())
         return variant() < other.variant();
@@ -984,7 +984,7 @@ bool QUuid::operator<(const QUuid &other) const Q_DECL_NOTHROW
 
     \sa variant()
 */
-bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
+bool QUuid::operator>(const QUuid &other) const noexcept
 {
     return other < *this;
 }
@@ -1089,7 +1089,7 @@ QDebug operator<<(QDebug dbg, const QUuid &id)
     \relates QUuid
     Returns a hash of the UUID \a uuid, using \a seed to seed the calculation.
 */
-uint qHash(const QUuid &uuid, uint seed) Q_DECL_NOTHROW
+uint qHash(const QUuid &uuid, uint seed) noexcept
 {
     return uuid.data1 ^ uuid.data2 ^ (uuid.data3 << 16)
             ^ ((uuid.data4[0] << 24) | (uuid.data4[1] << 16) | (uuid.data4[2] << 8) | uuid.data4[3])

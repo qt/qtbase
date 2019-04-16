@@ -89,7 +89,7 @@ struct AnchorVertex {
         : m_item(item), m_edge(edge), m_type(Normal) {}
 
     AnchorVertex()
-        : m_item(0), m_edge(Qt::AnchorPoint(0)), m_type(Normal) {}
+        : m_item(nullptr), m_edge(Qt::AnchorPoint(0)), m_type(Normal) {}
 
 #ifdef QT_DEBUG
     inline QString toString() const;
@@ -123,18 +123,18 @@ struct AnchorData : public QSimplexVariable {
     };
 
     AnchorData()
-        : QSimplexVariable(), from(0), to(0),
+        : QSimplexVariable(), from(nullptr), to(nullptr),
           minSize(0), prefSize(0), maxSize(0),
           minPrefSize(0), maxPrefSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
-          sizeAtMaximum(0), item(0), graphicsAnchor(0),
+          sizeAtMaximum(0), item(nullptr), graphicsAnchor(nullptr),
           type(Normal), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
           dependency(Independent) {}
     virtual ~AnchorData();
 
     virtual void updateChildrenSizes() {}
-    void refreshSizeHints(const QLayoutStyleInfo *styleInfo = 0);
+    void refreshSizeHints(const QLayoutStyleInfo *styleInfo = nullptr);
 
 #ifdef QT_DEBUG
     void dump(int indent = 2);
@@ -402,7 +402,7 @@ public:
 
     static QGraphicsAnchorLayoutPrivate *get(QGraphicsAnchorLayout *q)
     {
-        return q ? q->d_func() : 0;
+        return q ? q->d_func() : nullptr;
     }
 
     static Qt::AnchorPoint oppositeEdge(
@@ -443,7 +443,7 @@ public:
                             Qt::AnchorPoint firstEdge,
                             QGraphicsLayoutItem *secondItem,
                             Qt::AnchorPoint secondEdge,
-                            qreal *spacing = 0);
+                            qreal *spacing = nullptr);
 
     // Helper for Anchor Manipulation methods
     void addAnchor_helper(QGraphicsLayoutItem *firstItem,

@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 void QCollatorPrivate::init()
 {
     cleanup();
+    if (isC())
+        return;
 
     UErrorCode status = U_ZERO_ERROR;
     QByteArray name = QLocalePrivate::get(locale)->bcp47Name('_');
@@ -76,7 +78,8 @@ void QCollatorPrivate::init()
     // and does case sensitive comparison.
     // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
     // additional differences in those languages.
-    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
+    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive)
+        ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_STRENGTH, val, &status);
@@ -89,7 +92,8 @@ void QCollatorPrivate::init()
         qWarning("ucol_setAttribute: numeric collation failed: %d", status);
 
     status = U_ZERO_ERROR;
-    ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING, ignorePunctuation ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
+    ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING,
+                      ignorePunctuation ? UCOL_SHIFTED : UCOL_NON_IGNORABLE, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Alternate handling failed: %d", status);
 
@@ -103,43 +107,28 @@ void QCollatorPrivate::cleanup()
     collator = nullptr;
 }
 
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+int QCollator::compare(QStringView s1, QStringView s2) const
 {
     if (d->dirty)
         d->init();
 
-    if (d->collator)
-        return ucol_strcoll(d->collator, (const UChar *)s1, len1, (const UChar *)s2, len2);
+    if (d->collator) {
+        return ucol_strcoll(d->collator,
+                            reinterpret_cast<const UChar *>(s1.data()), s1.size(),
+                            reinterpret_cast<const UChar *>(s2.data()), s2.size());
+    }
 
-    return QString::compare_helper(s1, len1, s2, len2, d->caseSensitivity);
-}
-
-int QCollator::compare(const QString &s1, const QString &s2) const
-{
-    if (d->dirty)
-        d->init();
-
-    if (d->collator)
-        return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
-
-    return QString::compare(s1, s2, d->caseSensitivity);
-}
-
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    if (d->dirty)
-        d->init();
-
-    if (d->collator)
-        return compare(s1.constData(), s1.size(), s2.constData(), s2.size());
-
-    return QStringRef::compare(s1, s2, d->caseSensitivity);
+    return QString::compare_helper(s1.data(), s1.size(),
+                                   s2.data(), s2.size(),
+                                   d->caseSensitivity);
 }
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
     if (d->dirty)
         d->init();
+    if (d->isC())
+        return QCollatorSortKey(new QCollatorSortKeyPrivate(string.toUtf8()));
 
     if (d->collator) {
         QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);

@@ -50,10 +50,10 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(Q_QDOC) && !defined(Q_MOC_RUN)
 struct QMetaObject;
-const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT; // defined in qobject.h (which can't be included here)
+const QMetaObject *qt_getQtMetaObject() noexcept; // defined in qobject.h (which can't be included here)
 #define QT_Q_ENUM(ENUM) \
-    inline const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return qt_getQtMetaObject(); } \
-    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+    inline const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return qt_getQtMetaObject(); } \
+    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
 #define QT_Q_FLAG(ENUM) QT_Q_ENUM(ENUM)
 #else
 #define QT_Q_ENUM Q_ENUM
@@ -500,7 +500,9 @@ public:
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
         AA_PluginApplication = 5,
-        AA_MacPluginApplication = AA_PluginApplication,  // ### Qt 6: remove me
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
+        AA_MacPluginApplication Q_DECL_ENUMERATOR_DEPRECATED = AA_PluginApplication,
+#endif
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
@@ -1504,10 +1506,12 @@ public:
         // Metadata
         FontRole = 6,
         TextAlignmentRole = 7,
-        BackgroundColorRole = 8,
         BackgroundRole = 8,
-        TextColorRole = 9,
         ForegroundRole = 9,
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
+        BackgroundColorRole Q_DECL_ENUMERATOR_DEPRECATED = BackgroundRole,
+        TextColorRole Q_DECL_ENUMERATOR_DEPRECATED = ForegroundRole,
+#endif
         CheckStateRole = 10,
         // Accessibility
         AccessibleTextRole = 11,
@@ -1610,7 +1614,7 @@ public:
         TitleBarArea    // For move
     };
 
-#if defined(Q_COMPILER_CLASS_ENUM) && defined(Q_COMPILER_CONSTEXPR)
+#if defined(Q_COMPILER_CONSTEXPR)
     enum class Initialization {
         Uninitialized
     };

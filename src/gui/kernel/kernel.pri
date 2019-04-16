@@ -21,7 +21,7 @@ HEADERS += \
         kernel/qplatforminputcontextplugin_p.h \
         kernel/qplatformintegrationfactory_p.h \
         kernel/qplatformintegrationplugin.h \
-        kernel/qplatformtheme.h\
+        kernel/qplatformtheme.h \
         kernel/qplatformtheme_p.h \
         kernel/qplatformthemefactory_p.h \
         kernel/qplatformthemeplugin.h \

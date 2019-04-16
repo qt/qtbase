@@ -70,6 +70,7 @@ void Data::compact()
     int size = sizeof(Base) + reserve + base->length*sizeof(offset);
     int alloc = sizeof(Header) + size;
     Header *h = (Header *) malloc(alloc);
+    Q_CHECK_PTR(h);
     h->tag = QJsonDocument::BinaryFormatTag;
     h->version = 1;
     Base *b = h->root();

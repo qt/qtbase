@@ -51,7 +51,6 @@
 #ifndef TETRIXWINDOW_H
 #define TETRIXWINDOW_H
 
-#include <QFrame>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -67,7 +66,7 @@ class TetrixWindow : public QWidget
     Q_OBJECT
 
 public:
-    TetrixWindow();
+    TetrixWindow(QWidget *parent = nullptr);
 
 private:
     QLabel *createLabel(const QString &text);

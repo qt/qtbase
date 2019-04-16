@@ -70,7 +70,7 @@ static QVariant variantFromXml(QXmlStreamReader &xml, Converter::Options options
 static QVariantList listFromXml(QXmlStreamReader &xml, Converter::Options options)
 {
     QVariantList list;
-    while (!xml.atEnd() && !xml.isEndElement()) {
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == QLatin1String("list"))) {
         xml.readNext();
         switch (xml.tokenType()) {
         case QXmlStreamReader::StartElement:
@@ -107,7 +107,7 @@ static QVariantList listFromXml(QXmlStreamReader &xml, Converter::Options option
 static VariantOrderedMap::value_type mapEntryFromXml(QXmlStreamReader &xml, Converter::Options options)
 {
     QVariant key, value;
-    while (!xml.atEnd() && !xml.isEndElement()) {
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == QLatin1String("entry"))) {
         xml.readNext();
         switch (xml.tokenType()) {
         case QXmlStreamReader::StartElement:
@@ -150,7 +150,7 @@ static QVariant mapFromXml(QXmlStreamReader &xml, Converter::Options options)
     QVariantMap map1;
     VariantOrderedMap map2;
 
-    while (!xml.atEnd() && !xml.isEndElement()) {
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == QLatin1String("map"))) {
         xml.readNext();
         switch (xml.tokenType()) {
         case QXmlStreamReader::StartElement:

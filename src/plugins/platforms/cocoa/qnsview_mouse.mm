@@ -39,6 +39,22 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+/*
+    The reason for using this helper is to ensure that QNSView doesn't implement
+    the NSResponder callbacks for mouseEntered, mouseExited, and mouseMoved.
+
+    If it did, we would get mouse events though the responder chain as well,
+    for example if a subview has a tracking area of its own and calls super
+    in the handler, which results in forwarding the event though the responder
+    chain. The same applies if NSWindow.acceptsMouseMovedEvents is YES.
+
+    By having a helper as the target for our tracking areas, we know for sure
+    that the events we are getting stem from our own tracking areas.
+
+    FIXME: Ideally we wouldn't need this workaround, and would correctly
+    interact with the responder chain by e.g. calling super if Qt does not
+    accept the mouse event
+*/
 @implementation QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) {
     QNSView *view;
 }
@@ -77,6 +93,7 @@
 
 - (void)resetMouseButtons
 {
+    qCDebug(lcQpaMouse) << "Reseting mouse buttons";
     m_buttons = Qt::NoButton;
     m_frameStrutButtons = Qt::NoButton;
 }
@@ -129,11 +146,49 @@
     QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
 
     ulong timestamp = [theEvent timestamp] * 1000;
+
+    auto eventType = cocoaEvent2QtMouseEvent(theEvent);
+    qCInfo(lcQpaMouse) << "Frame-strut" << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
 }
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QNSView) (Mouse)
+
+- (void)initMouse
+{
+    m_buttons = Qt::NoButton;
+    m_acceptedMouseDowns = Qt::NoButton;
+    m_frameStrutButtons = Qt::NoButton;
+
+    m_scrolling = false;
+    self.cursor = nil;
+
+    m_sendUpAsRightButton = false;
+    m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, m_platformWindow->window(),
+            "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
+
+    m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
+
+    NSUInteger trackingOptions = NSTrackingActiveInActiveApp
+        | NSTrackingMouseEnteredAndExited | NSTrackingCursorUpdate;
+
+    // Ideally, NSTrackingMouseMoved should be turned on only if QWidget::mouseTracking
+    // is enabled, hover is on, or a tool tip is set. Unfortunately, Qt will send "tooltip"
+    // events on mouse moves, so we need to turn it on in ALL case. That means EVERY QWindow
+    // gets to pay the cost of mouse moves delivered to it (Apple recommends keeping it OFF
+    // because there is a performance hit).
+    trackingOptions |= NSTrackingMouseMoved;
+
+    // Using NSTrackingInVisibleRect means AppKit will automatically synchronize the
+    // tracking rect with changes in the view's visible area, so leave it undefined.
+    trackingOptions |= NSTrackingInVisibleRect;
+    static const NSRect trackingRect = NSZeroRect;
+
+    QMacAutoReleasePool pool;
+    [self addTrackingArea:[[[NSTrackingArea alloc] initWithRect:trackingRect
+        options:trackingOptions owner:m_mouseMoveHelper userInfo:nil] autorelease]];
+}
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
@@ -141,6 +196,11 @@
     if (!m_platformWindow)
         return NO;
     if ([self isTransparentForUserInput])
+        return NO;
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint: &windowPoint andScreenPoint: &screenPoint];
+    if (!qt_window_private(m_platformWindow->window())->allowClickThrough(screenPoint.toPoint()))
         return NO;
     return YES;
 }
@@ -202,6 +262,11 @@
     if (button == Qt::LeftButton && m_sendUpAsRightButton)
         button = Qt::RightButton;
     const auto eventType = cocoaEvent2QtMouseEvent(theEvent);
+
+    if (eventType == QEvent::MouseMove)
+        qCDebug(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << buttons;
+    else
+        qCInfo(lcQpaMouse) << eventType << "of" << button << "at" << qtWindowPoint << "with" << buttons;
 
     QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(),
                                              timestamp, qtWindowPoint, qtScreenPoint,
@@ -406,44 +471,18 @@
         [super otherMouseUp:theEvent];
 }
 
-- (void)updateTrackingAreas
-{
-    [super updateTrackingAreas];
-
-    QMacAutoReleasePool pool;
-
-    // NSTrackingInVisibleRect keeps care of updating once the tracking is set up, so bail out early
-    if (m_trackingArea && [[self trackingAreas] containsObject:m_trackingArea])
-        return;
-
-    // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
-    // only be turned on if mouseTracking, hover is on or a tool tip is set.
-    // Unfortunately, Qt will send "tooltip" events on mouse moves, so we need to
-    // turn it on in ALL case. That means EVERY QWindow gets to pay the cost of
-    // mouse moves delivered to it (Apple recommends keeping it OFF because there
-    // is a performance hit). So it goes.
-    NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
-                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved | NSTrackingCursorUpdate;
-    [m_trackingArea release];
-    m_trackingArea = [[NSTrackingArea alloc] initWithRect:[self frame]
-                                                  options:trackingOptions
-                                                    owner:m_mouseMoveHelper
-                                                 userInfo:nil];
-    [self addTrackingArea:m_trackingArea];
-}
-
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    qCDebug(lcQpaMouse) << "[QNSView cursorUpdate:]" << self.cursor;
-
     // Note: We do not get this callback when moving from a subview that
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
     // cursor. See rdar://34183708
 
-    if (self.cursor)
+    if (self.cursor && self.cursor != NSCursor.currentCursor) {
+        qCInfo(lcQpaMouse) << "Updating cursor for" << self << "to" << self.cursor;
         [self.cursor set];
-    else
+    } else {
         [super cursorUpdate:theEvent];
+    }
 }
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent
@@ -498,6 +537,8 @@
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     m_platformWindow->m_enterLeaveTargetWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
+
+    qCInfo(lcQpaMouse) << QEvent::Enter << self << "at" << windowPoint << "with" << currentlyPressedMouseButtons();
     QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
 }
 
@@ -516,6 +557,7 @@
     if (!m_platformWindow->isContentView())
         return;
 
+    qCInfo(lcQpaMouse) << QEvent::Leave << self;
     QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);
     m_platformWindow->m_enterLeaveTargetWindow = 0;
 }
@@ -614,8 +656,10 @@
     // "isInverted": natural OS X scrolling, inverted from the Qt/other platform/Jens perspective.
     bool isInverted  = [theEvent isDirectionInvertedFromDevice];
 
-    qCDebug(lcQpaMouse) << "scroll wheel @ window pos" << qt_windowPoint << "delta px" << pixelDelta
-            << "angle" << angleDelta << "phase" << phase << (isInverted ? "inverted" : "");
+    qCInfo(lcQpaMouse).nospace() << phase << " at " << qt_windowPoint
+        << " pixelDelta=" << pixelDelta << " angleDelta=" << angleDelta
+        << (isInverted ? " inverted=true" : "");
+
     QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint,
             qt_screenPoint, pixelDelta, angleDelta, m_currentWheelModifiers, phase, source, isInverted);
 }

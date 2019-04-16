@@ -70,7 +70,7 @@ public:
     void setServerPort(int port);
     QString userName() const;
     void startBroadcasting();
-    bool isLocalHostAddress(const QHostAddress &address);
+    bool isLocalHostAddress(const QHostAddress &address) const;
 
 signals:
     void newConnection(Connection *connection);

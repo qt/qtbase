@@ -26,7 +26,7 @@
 #include <windows.h>
 #include "common/platform.h"
 
-#if _WIN32_WINNT_WINBLUE && WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if _WIN32_WINNT_WINBLUE
 #include <versionhelpers.h>
 #endif
 

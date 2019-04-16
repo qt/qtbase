@@ -59,6 +59,8 @@ class QAction;
 class QTextCodec;
 class QPlainTextEdit;
 QT_END_NAMESPACE
+
+class EncodingDialog;
 class PreviewForm;
 
 class MainWindow : public QMainWindow
@@ -73,6 +75,7 @@ private slots:
     void save();
     void about();
     void aboutToShowSaveAsMenu();
+    void encodingDialog();
 
 private:
     void findCodecs();
@@ -82,6 +85,7 @@ private:
     QPlainTextEdit *textEdit;
     PreviewForm *previewForm;
     QList<QTextCodec *> codecs;
+    EncodingDialog *m_encodingDialog = nullptr;
 };
 
 #endif

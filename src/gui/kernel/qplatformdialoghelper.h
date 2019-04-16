@@ -414,7 +414,7 @@ public:
     void setOptions(const QSharedPointer<QFileDialogOptions> &options);
 
     static QStringList cleanFilterList(const QString &filter);
-    static const char *filterRegExp;
+    static const char filterRegExp[];
 
 Q_SIGNALS:
     void fileSelected(const QUrl &file);

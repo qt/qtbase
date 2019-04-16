@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'textfinder.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -81,9 +81,9 @@ public:
 
         vboxLayout->addItem(spacerItem);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         searchLabel->setBuddy(lineEdit);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(Form);
         QObject::connect(lineEdit, SIGNAL(returnPressed()), findButton, SLOT(animateClick()));
@@ -93,9 +93,9 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Find Text", nullptr));
-        searchLabel->setText(QApplication::translate("Form", "&Keyword:", nullptr));
-        findButton->setText(QApplication::translate("Form", "&Find", nullptr));
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Find Text", nullptr));
+        searchLabel->setText(QCoreApplication::translate("Form", "&Keyword:", nullptr));
+        findButton->setText(QCoreApplication::translate("Form", "&Find", nullptr));
     } // retranslateUi
 
 };

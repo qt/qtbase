@@ -77,7 +77,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 {
     Q_ASSERT(data);
     Q_ASSERT(data->ref.load() == 0);
-    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(data->model);
+    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(data->index.model());
     // a valid persistent model index with a null model pointer can only happen if the model was destroyed
     if (model) {
         QAbstractItemModelPrivate *p = model->d_func();
@@ -512,10 +512,8 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 
 void QAbstractItemModelPrivate::invalidatePersistentIndexes()
 {
-    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes)) {
+    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes))
         data->index = QModelIndex();
-        data->model = 0;
-    }
     persistent.indexes.clear();
 }
 
@@ -530,7 +528,6 @@ void QAbstractItemModelPrivate::invalidatePersistentIndex(const QModelIndex &ind
         QPersistentModelIndexData *data = *it;
         persistent.indexes.erase(it);
         data->index = QModelIndex();
-        data->model = 0;
     }
 }
 
@@ -863,7 +860,6 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
         QPersistentModelIndexData *data = *it;
         persistent.indexes.erase(persistent.indexes.constFind(data->index));
         data->index = QModelIndex();
-        data->model = 0;
     }
 }
 
@@ -958,7 +954,6 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
         QPersistentModelIndexData *data = *it;
         persistent.indexes.erase(persistent.indexes.constFind(data->index));
         data->index = QModelIndex();
-        data->model = 0;
     }
 }
 
@@ -2334,7 +2329,7 @@ QModelIndex QAbstractItemModel::buddy(const QModelIndex &index) const
     The way the search is performed is defined by the \a flags given. The list
     that is returned may be empty. Note also that the order of results in the
     list may not correspond to the order in the model, if for example a proxy
-    model is used. The order of the results can not be relied upon.
+    model is used. The order of the results cannot be relied upon.
 
     The search begins from the \a start index, and continues until the number
     of matching data items equals \a hits, the search reaches the last row, or
@@ -2360,6 +2355,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
     bool wrap = flags & Qt::MatchWrap;
     bool allHits = (hits == -1);
     QString text; // only convert to a string if it is needed
+    const int column = start.column();
     QModelIndex p = parent(start);
     int from = start.row();
     int to = rowCount(p);
@@ -2367,7 +2363,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
     // iterates twice if wrapping
     for (int i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
         for (int r = from; (r < to) && (allHits || result.count() < hits); ++r) {
-            QModelIndex idx = index(r, start.column(), p);
+            QModelIndex idx = index(r, column, p);
             if (!idx.isValid())
                  continue;
             QVariant v = data(idx, role);
@@ -2406,10 +2402,13 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
                         result.append(idx);
                 }
             }
-            if (recurse && hasChildren(idx)) { // search the hierarchy
-                result += match(index(0, idx.column(), idx), role,
-                                (text.isEmpty() ? value : text),
-                                (allHits ? -1 : hits - result.count()), flags);
+            if (recurse) {
+                const auto parent = column != 0 ? idx.sibling(idx.row(), 0) : idx;
+                if (hasChildren(parent)) { // search the hierarchy
+                    result += match(index(0, column, parent), role,
+                                    (text.isEmpty() ? value : text),
+                                    (allHits ? -1 : hits - result.count()), flags);
+                }
             }
         }
         // prepare for the next iteration
@@ -2908,7 +2907,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 
             Note that other rows may be displaced accordingly. Note also that when moving
             items within the same parent you should not attempt invalid or no-op moves. In
-            the above example, item 2 is at row 2 before the move, so it can not be moved
+            the above example, item 2 is at row 2 before the move, so it cannot be moved
             to row 2 (where it is already) or row 3 (no-op as row 3 means above row 3, where
             it is already)
 
@@ -3294,8 +3293,6 @@ void QAbstractItemModel::changePersistentIndex(const QModelIndex &from, const QM
         data->index = to;
         if (to.isValid())
             d->persistent.insertMultiAtEnd(to, data);
-        else
-            data->model = 0;
     }
 }
 
@@ -3328,8 +3325,6 @@ void QAbstractItemModel::changePersistentIndexList(const QModelIndexList &from,
             data->index = to.at(i);
             if (data->index.isValid())
                 toBeReinserted << data;
-            else
-                data->model = 0;
         }
     }
 
@@ -3959,7 +3954,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
 /*!
     \internal
-    QHash::insertMulti insert the value before the old value. and find() return the new value.
+    QMultiHash::insert inserts the value before the old value. and find() return the new value.
     We need insertMultiAtEnd because we don't want to overwrite the old one, which should be removed later
 
     There should be only one instance QPersistentModelIndexData per index, but in some intermediate state there may be
@@ -3969,9 +3964,9 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
  */
 void QAbstractItemModelPrivate::Persistent::insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data)
 {
-    QHash<QModelIndex,QPersistentModelIndexData *>::iterator newIt =
-            indexes.insertMulti(key, data);
-    QHash<QModelIndex,QPersistentModelIndexData *>::iterator it = newIt + 1;
+    QHash<QModelIndex,QPersistentModelIndexData *>::iterator newIt = indexes.insert(key, data);
+    QHash<QModelIndex,QPersistentModelIndexData *>::iterator it = newIt;
+    ++it;
     while (it != indexes.end() && it.key() == key) {
         qSwap(*newIt,*it);
         newIt = it;

@@ -61,8 +61,7 @@ QPlatformScreen::~QPlatformScreen()
 {
     Q_D(QPlatformScreen);
     if (d->screen) {
-        qWarning("Manually deleting a QPlatformScreen. Call QPlatformIntegration::destroyScreen instead.");
-        QGuiApplicationPrivate::platformIntegration()->removeScreen(d->screen);
+        qWarning("Manually deleting a QPlatformScreen. Call QWindowSystemInterface::handleScreenRemoved instead.");
         delete d->screen;
     }
 }
@@ -370,7 +369,7 @@ QString QPlatformScreen::serialNumber() const
 /*!
     Reimplement this function in subclass to return the cursor of the screen.
 
-    The default implementation returns 0.
+    The default implementation returns \nullptr.
 */
 QPlatformCursor *QPlatformScreen::cursor() const
 {

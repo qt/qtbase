@@ -693,9 +693,9 @@
     \l QAbstractItemDelegate class.
 
     Delegates are expected to be able to render their contents themselves
-    by implementing the \l{QItemDelegate::paint()}{paint()}
-    and \l{QItemDelegate::sizeHint()}{sizeHint()} functions.
-    However, simple widget-based delegates can subclass \l QItemDelegate
+    by implementing the \l{QStyledItemDelegate::paint()}{paint()}
+    and \l{QStyledItemDelegate::sizeHint()}{sizeHint()} functions.
+    However, simple widget-based delegates can subclass \l QStyledItemDelegate
     instead of \l QAbstractItemDelegate, and take advantage of the default
     implementations of these functions.
 
@@ -709,14 +709,14 @@
 
     \section2 Using an existing delegate
 
-    The standard views provided with Qt use instances of \l QItemDelegate
+    The standard views provided with Qt use instances of \l QStyledItemDelegate
     to provide editing facilities. This default implementation of the
     delegate interface renders items in the usual style for each of the
     standard views: \l QListView, \l QTableView, and \l QTreeView.
 
     All the standard roles are handled by the default delegate used by
     the standard views. The way these are interpreted is described in the
-    QItemDelegate documentation.
+    QStyledItemDelegate documentation.
 
     The delegate used by a view is returned by the
     \l{QAbstractItemView::itemDelegate()}{itemDelegate()} function.
@@ -799,7 +799,7 @@
     In this case, we ensure that the spin box is up-to-date, and update
     the model with the value it contains using the index specified.
 
-    The standard \l QItemDelegate class informs the view when it has
+    The standard \l QStyledItemDelegate class informs the view when it has
     finished editing by emitting the
     \l{QAbstractItemDelegate::closeEditor()}{closeEditor()} signal.
     The view ensures that the editor widget is closed and destroyed. In
@@ -838,11 +838,11 @@
     assist any subsequent editing operations. This is achieved by
     emitting the \l{QAbstractItemDelegate::closeEditor()}{closeEditor()}
     signal with a suitable hint. This is taken care of by the default
-    QItemDelegate event filter which we installed on the spin box when
+    QStyledItemDelegate event filter which we installed on the spin box when
     it was constructed.
 
     The behavior of the spin box could be adjusted to make it more user
-    friendly. In the default event filter supplied by QItemDelegate, if
+    friendly. In the default event filter supplied by QStyledItemDelegate, if
     the user hits \uicontrol Return to confirm their choice in the spin box,
     the delegate commits the value to the model and closes the spin box.
     We can change this behavior by installing our own event filter on the
@@ -1003,8 +1003,8 @@
 
     \snippet reading-selections/window.cpp 0
 
-    The above code uses Qt's convenient \l{Container Classes}{foreach
-    keyword} to iterate over, and modify, the items corresponding to the
+    The above code uses a range-based for-loop to iterate over,
+    and modify, the items corresponding to the
     indexes returned by the selection model.
 
     The selection model emits signals to indicate changes in the
@@ -1611,7 +1611,6 @@
     We can obtain a list of matching items with the \c findItems()
     function:
 
-    \snippet qtreewidget-using/mainwindow.cpp 6
     \snippet qtreewidget-using/mainwindow.cpp 7
 
     The above code causes items in a tree widget to be selected if they

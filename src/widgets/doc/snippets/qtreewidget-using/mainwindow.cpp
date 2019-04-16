@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 
@@ -90,16 +90,15 @@ MainWindow::MainWindow()
     treeWidget->setHeaderLabels(headers);
 //! [2]
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(ascendingAction, SIGNAL(triggered()), this, SLOT(sortAscending()));
-    connect(autoSortAction, SIGNAL(triggered()), this, SLOT(updateSortItems()));
-    connect(descendingAction, SIGNAL(triggered()), this, SLOT(sortDescending()));
-    connect(findItemsAction, SIGNAL(triggered()), this, SLOT(findItems()));
-    connect(insertAction, SIGNAL(triggered()), this, SLOT(insertItem()));
-    connect(removeAction, SIGNAL(triggered()), this, SLOT(removeItem()));
-    connect(treeWidget,
-            SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
-            this, SLOT(updateMenus(QTreeWidgetItem*)));
+    connect(quitAction, &QAction::triggered, this, &QWidget::close);
+    connect(ascendingAction, &QAction::triggered, this, &MainWindow::sortAscending);
+    connect(autoSortAction, &QAction::triggered, this, &MainWindow::updateSortItems);
+    connect(descendingAction, &QAction::triggered, this, &MainWindow::sortDescending);
+    connect(findItemsAction, &QAction::triggered, this, &MainWindow::findItems);
+    connect(insertAction, &QAction::triggered, this, &MainWindow::insertItem);
+    connect(removeAction, &QAction::triggered, this, &MainWindow::removeItem);
+    connect(treeWidget, &QTreeWidget::currentItemChanged,
+            this, &MainWindow::updateMenus);
 
     setupTreeItems();
     updateMenus(treeWidget->currentItem());
@@ -150,18 +149,16 @@ void MainWindow::findItems()
     if (itemText.isEmpty())
         return;
 
-//! [6]
-    QTreeWidgetItem *item;
-//! [6]
-    foreach (item, treeWidget->selectedItems())
-        treeWidget->setItemSelected(item, false);
+    const QList<QTreeWidgetItem *> items = treeWidget->selectedItems();
+    for (QTreeWidgetItem *item : items)
+        item->setSelected(false);
 
 //! [7]
-    QList<QTreeWidgetItem *> found = treeWidget->findItems(
+    const QList<QTreeWidgetItem *> found = treeWidget->findItems(
         itemText, Qt::MatchWildcard);
 
-    foreach (item, found) {
-        treeWidget->setItemSelected(item, true);
+    for (QTreeWidgetItem *item : found) {
+        item->setSelected(true);
         // Show the item->text(0) for each item.
     }
 //! [7]

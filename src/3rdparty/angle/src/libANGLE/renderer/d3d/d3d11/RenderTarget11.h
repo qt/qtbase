@@ -11,6 +11,9 @@
 #define LIBANGLE_RENDERER_D3D_D3D11_RENDERTARGET11_H_
 
 #include "libANGLE/renderer/d3d/RenderTargetD3D.h"
+#include "libANGLE/renderer/d3d/d3d11/ResourceManager11.h"
+#include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
+#include "libANGLE/renderer/d3d/d3d11/texture_format_table.h"
 
 namespace rx
 {
@@ -20,28 +23,51 @@ class Renderer11;
 class RenderTarget11 : public RenderTargetD3D
 {
   public:
-    RenderTarget11() { }
-    virtual ~RenderTarget11() { }
+    RenderTarget11(const d3d11::Format &formatSet);
+    ~RenderTarget11() override;
 
-    virtual ID3D11Resource *getTexture() const = 0;
-    virtual ID3D11RenderTargetView *getRenderTargetView() const = 0;
-    virtual ID3D11DepthStencilView *getDepthStencilView() const = 0;
-    virtual ID3D11ShaderResourceView *getShaderResourceView() const = 0;
+    virtual const TextureHelper11 &getTexture() const                  = 0;
+    virtual const d3d11::RenderTargetView &getRenderTargetView() const = 0;
+    virtual const d3d11::DepthStencilView &getDepthStencilView() const = 0;
+    virtual const d3d11::SharedSRV &getShaderResourceView() const      = 0;
+    virtual const d3d11::SharedSRV &getBlitShaderResourceView() const  = 0;
 
     virtual unsigned int getSubresourceIndex() const = 0;
 
-    virtual DXGI_FORMAT getDXGIFormat() const = 0;
+    void signalDirty(const gl::Context *context) override;
+    OnRenderTargetDirtyChannel *getBroadcastChannel() { return &mBroadcastChannel; }
+
+    const d3d11::Format &getFormatSet() const { return mFormatSet; }
+
+  protected:
+    OnRenderTargetDirtyChannel mBroadcastChannel;
+    const d3d11::Format &mFormatSet;
 };
 
 class TextureRenderTarget11 : public RenderTarget11
 {
   public:
     // TextureRenderTarget11 takes ownership of any D3D11 resources it is given and will AddRef them
-    TextureRenderTarget11(ID3D11RenderTargetView *rtv, ID3D11Resource *resource, ID3D11ShaderResourceView *srv,
-                           GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLsizei samples);
-    TextureRenderTarget11(ID3D11DepthStencilView *dsv, ID3D11Resource *resource, ID3D11ShaderResourceView *srv,
-                           GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLsizei samples);
-    virtual ~TextureRenderTarget11();
+    TextureRenderTarget11(d3d11::RenderTargetView &&rtv,
+                          const TextureHelper11 &resource,
+                          const d3d11::SharedSRV &srv,
+                          const d3d11::SharedSRV &blitSRV,
+                          GLenum internalFormat,
+                          const d3d11::Format &formatSet,
+                          GLsizei width,
+                          GLsizei height,
+                          GLsizei depth,
+                          GLsizei samples);
+    TextureRenderTarget11(d3d11::DepthStencilView &&dsv,
+                          const TextureHelper11 &resource,
+                          const d3d11::SharedSRV &srv,
+                          GLenum internalFormat,
+                          const d3d11::Format &formatSet,
+                          GLsizei width,
+                          GLsizei height,
+                          GLsizei depth,
+                          GLsizei samples);
+    ~TextureRenderTarget11() override;
 
     GLsizei getWidth() const override;
     GLsizei getHeight() const override;
@@ -49,35 +75,37 @@ class TextureRenderTarget11 : public RenderTarget11
     GLenum getInternalFormat() const override;
     GLsizei getSamples() const override;
 
-    ID3D11Resource *getTexture() const override;
-    ID3D11RenderTargetView *getRenderTargetView() const override;
-    ID3D11DepthStencilView *getDepthStencilView() const override;
-    ID3D11ShaderResourceView *getShaderResourceView() const override;
+    const TextureHelper11 &getTexture() const override;
+    const d3d11::RenderTargetView &getRenderTargetView() const override;
+    const d3d11::DepthStencilView &getDepthStencilView() const override;
+    const d3d11::SharedSRV &getShaderResourceView() const override;
+    const d3d11::SharedSRV &getBlitShaderResourceView() const override;
 
     unsigned int getSubresourceIndex() const override;
-
-    DXGI_FORMAT getDXGIFormat() const override;
 
   private:
     GLsizei mWidth;
     GLsizei mHeight;
     GLsizei mDepth;
     GLenum mInternalFormat;
-    DXGI_FORMAT mDXGIFormat;
     GLsizei mSamples;
 
     unsigned int mSubresourceIndex;
-    ID3D11Resource *mTexture;
-    ID3D11RenderTargetView *mRenderTarget;
-    ID3D11DepthStencilView *mDepthStencil;
-    ID3D11ShaderResourceView *mShaderResource;
+    TextureHelper11 mTexture;
+    d3d11::RenderTargetView mRenderTarget;
+    d3d11::DepthStencilView mDepthStencil;
+    d3d11::SharedSRV mShaderResource;
+
+    // Shader resource view to use with internal blit shaders. Not set for depth/stencil render
+    // targets.
+    d3d11::SharedSRV mBlitShaderResource;
 };
 
 class SurfaceRenderTarget11 : public RenderTarget11
 {
   public:
     SurfaceRenderTarget11(SwapChain11 *swapChain, Renderer11 *renderer, bool depth);
-    virtual ~SurfaceRenderTarget11();
+    ~SurfaceRenderTarget11() override;
 
     GLsizei getWidth() const override;
     GLsizei getHeight() const override;
@@ -85,21 +113,19 @@ class SurfaceRenderTarget11 : public RenderTarget11
     GLenum getInternalFormat() const override;
     GLsizei getSamples() const override;
 
-    ID3D11Resource *getTexture() const override;
-    ID3D11RenderTargetView *getRenderTargetView() const override;
-    ID3D11DepthStencilView *getDepthStencilView() const override;
-    ID3D11ShaderResourceView *getShaderResourceView() const override;
+    const TextureHelper11 &getTexture() const override;
+    const d3d11::RenderTargetView &getRenderTargetView() const override;
+    const d3d11::DepthStencilView &getDepthStencilView() const override;
+    const d3d11::SharedSRV &getShaderResourceView() const override;
+    const d3d11::SharedSRV &getBlitShaderResourceView() const override;
 
     unsigned int getSubresourceIndex() const override;
 
-    DXGI_FORMAT getDXGIFormat() const override;
-
   private:
     SwapChain11 *mSwapChain;
-    Renderer11 *mRenderer;
     bool mDepth;
 };
 
-}
+}  // namespace rx
 
 #endif // LIBANGLE_RENDERER_D3D_D3D11_RENDERTARGET11_H_

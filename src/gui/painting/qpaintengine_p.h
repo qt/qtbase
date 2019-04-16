@@ -65,7 +65,7 @@ class Q_GUI_EXPORT QPaintEnginePrivate
 {
     Q_DECLARE_PUBLIC(QPaintEngine)
 public:
-    QPaintEnginePrivate() : pdev(0), q_ptr(0), currentClipDevice(0), hasSystemTransform(0),
+    QPaintEnginePrivate() : pdev(nullptr), q_ptr(nullptr), currentClipDevice(nullptr), hasSystemTransform(0),
                             hasSystemViewport(0) {}
     virtual ~QPaintEnginePrivate();
 
@@ -138,8 +138,8 @@ public:
 
     static QPaintEnginePrivate *get(QPaintEngine *paintEngine) { return paintEngine->d_func(); }
 
-    virtual QPaintEngine *aggregateEngine() { return 0; }
-    virtual Qt::HANDLE nativeHandle() { return 0; }
+    virtual QPaintEngine *aggregateEngine() { return nullptr; }
+    virtual Qt::HANDLE nativeHandle() { return nullptr; }
 };
 
 QT_END_NAMESPACE

@@ -105,10 +105,14 @@
 #endif
 #include <qfileinfo.h>
 #include <qdir.h>
+#if QT_CONFIG(settings)
 #include <qsettings.h>
+#endif
 #include <qvariant.h>
 #include <qpixmapcache.h>
+#if QT_CONFIG(animation)
 #include <private/qstyleanimation_p.h>
+#endif
 
 #include <limits.h>
 
@@ -190,12 +194,12 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                         opt->state & (State_Sunken | State_On), 1,
                         &opt->palette.brush(QPalette::Button));
         break;
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
         proxy()->drawPrimitive(PE_IndicatorCheckBox, opt, p, widget);
         break;
     case PE_IndicatorCheckBox:
         if (opt->state & State_NoChange) {
-            p->setPen(opt->palette.foreground().color());
+            p->setPen(opt->palette.windowText().color());
             p->fillRect(opt->rect, opt->palette.brush(QPalette::Button));
             p->drawRect(opt->rect);
             p->drawLine(opt->rect.topLeft(), opt->rect.bottomRight());
@@ -211,7 +215,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->drawArc(opt->rect, 0, 5760);
         if (opt->state & (State_Sunken | State_On)) {
             ir.adjust(2, 2, -2, -2);
-            p->setBrush(opt->palette.foreground());
+            p->setBrush(opt->palette.windowText());
             bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
             p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawEllipse(ir);
@@ -230,7 +234,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 else
                     p->setPen(Qt::white);
             } else {
-                p->setPen(opt->palette.foreground().color());
+                p->setPen(opt->palette.windowText().color());
             }
             QRect focusRect = opt->rect.adjusted(1, 1, -1, -1);
             p->drawRect(focusRect.adjusted(0, 0, -1, -1)); //draw pen inclusive
@@ -277,7 +281,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 qDrawShadePanel(p, frame->rect, frame->palette, frame->state & State_Sunken,
                                 frame->lineWidth);
             } else {
-                qDrawPlainRect(p, frame->rect, frame->palette.foreground().color(), frame->lineWidth);
+                qDrawPlainRect(p, frame->rect, frame->palette.windowText().color(), frame->lineWidth);
             }
         }
         break;
@@ -614,7 +618,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
 
             p->setPen(QPen(tab->palette.dark(), qreal(.8)));
-            p->setBrush(tab->palette.background());
+            p->setBrush(tab->palette.window());
             p->setRenderHint(QPainter::Antialiasing);
             p->drawPath(path);
         }
@@ -747,7 +751,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-")
                                                           % QLatin1String(metaObject()->className()), opt, QSize(size, size))
                                  % HexString<uint>(pe);
-            if (!QPixmapCache::find(pixmapName, pixmap)) {
+            if (!QPixmapCache::find(pixmapName, &pixmap)) {
                 qreal pixelRatio = p->device()->devicePixelRatioF();
                 int border = qRound(pixelRatio*(size/5));
                 int sqsize = qRound(pixelRatio*(2*(size/2)));
@@ -842,13 +846,14 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 }
 #endif // QT_CONFIG(toolbutton)
 
-#if QT_CONFIG(itemviews)
-
-static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
+static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth, int maxHeight = -1, int *lastVisibleLine = nullptr)
 {
+    if (lastVisibleLine)
+        *lastVisibleLine = -1;
     qreal height = 0;
     qreal widthUsed = 0;
     textLayout.beginLayout();
+    int i = 0;
     while (true) {
         QTextLine line = textLayout.createLine();
         if (!line.isValid())
@@ -857,10 +862,98 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
         line.setPosition(QPointF(0, height));
         height += line.height();
         widthUsed = qMax(widthUsed, line.naturalTextWidth());
+        // we assume that the height of the next line is the same as the current one
+        if (maxHeight > 0 && lastVisibleLine && height + line.height() > maxHeight) {
+            const QTextLine nextLine = textLayout.createLine();
+            *lastVisibleLine = nextLine.isValid() ? i : -1;
+            break;
+        }
+        ++i;
     }
     textLayout.endLayout();
     return QSizeF(widthUsed, height);
 }
+
+QString QCommonStylePrivate::calculateElidedText(const QString &text, const QTextOption &textOption,
+                                                 const QFont &font, const QRect &textRect, const Qt::Alignment valign,
+                                                 Qt::TextElideMode textElideMode, int flags,
+                                                 bool lastVisibleLineShouldBeElided, QPointF *paintStartPosition) const
+{
+    QTextLayout textLayout(text, font);
+    textLayout.setTextOption(textOption);
+
+    // In AlignVCenter mode when more than one line is displayed and the height only allows
+    // some of the lines it makes no sense to display those. From a users perspective it makes
+    // more sense to see the start of the text instead something inbetween.
+    const bool vAlignmentOptimization = paintStartPosition && valign.testFlag(Qt::AlignVCenter);
+
+    int lastVisibleLine = -1;
+    viewItemTextLayout(textLayout, textRect.width(), vAlignmentOptimization ? textRect.height() : -1, &lastVisibleLine);
+
+    const QRectF boundingRect = textLayout.boundingRect();
+    // don't care about LTR/RTL here, only need the height
+    const QRect layoutRect = QStyle::alignedRect(Qt::LayoutDirectionAuto, valign,
+                                                 boundingRect.size().toSize(), textRect);
+
+    if (paintStartPosition)
+        *paintStartPosition = QPointF(textRect.x(), layoutRect.top());
+
+    QString ret;
+    qreal height = 0;
+    const int lineCount = textLayout.lineCount();
+    for (int i = 0; i < lineCount; ++i) {
+        const QTextLine line = textLayout.lineAt(i);
+        height += line.height();
+
+        // above visible rect
+        if (height + layoutRect.top() <= textRect.top()) {
+            if (paintStartPosition)
+                paintStartPosition->ry() += line.height();
+            continue;
+        }
+
+        const int start = line.textStart();
+        const int length = line.textLength();
+        const bool drawElided = line.naturalTextWidth() > textRect.width();
+        bool elideLastVisibleLine = lastVisibleLine == i;
+        if (!drawElided && i + 1 < lineCount && lastVisibleLineShouldBeElided) {
+            const QTextLine nextLine = textLayout.lineAt(i + 1);
+            const int nextHeight = height + nextLine.height() / 2;
+            // elide when less than the next half line is visible
+            if (nextHeight + layoutRect.top() > textRect.height() + textRect.top())
+                elideLastVisibleLine = true;
+        }
+
+        QString text = textLayout.text().mid(start, length);
+        if (drawElided || elideLastVisibleLine) {
+            if (elideLastVisibleLine) {
+                if (text.endsWith(QChar::LineSeparator))
+                    text.chop(1);
+                text += QChar(0x2026);
+            }
+            const QStackTextEngine engine(text, font);
+            ret += engine.elidedText(textElideMode, textRect.width(), flags);
+
+            // no newline for the last line (last visible or real)
+            // sometimes drawElided is true but no eliding is done so the text ends
+            // with QChar::LineSeparator - don't add another one. This happened with
+            // arabic text in the testcase for QTBUG-72805
+            if (i < lineCount - 1 &&
+                !ret.endsWith(QChar::LineSeparator))
+                ret += QChar::LineSeparator;
+        } else {
+            ret += text;
+        }
+
+        // below visible text, can stop
+        if ((height + layoutRect.top() >= textRect.bottom()) ||
+                (lastVisibleLine >= 0 && lastVisibleLine == i))
+            break;
+    }
+    return ret;
+}
+
+#if QT_CONFIG(itemviews)
 
 QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int role) const
 {
@@ -934,59 +1027,17 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     textOption.setWrapMode(wrapText ? QTextOption::WordWrap : QTextOption::ManualWrap);
     textOption.setTextDirection(option->direction);
     textOption.setAlignment(QStyle::visualAlignment(option->direction, option->displayAlignment));
-    QTextLayout textLayout(option->text, option->font);
+
+    QPointF paintPosition;
+    const QString newText = calculateElidedText(option->text, textOption,
+                                                option->font, textRect, option->displayAlignment,
+                                                option->textElideMode, 0,
+                                                true, &paintPosition);
+
+    QTextLayout textLayout(newText, option->font);
     textLayout.setTextOption(textOption);
-
     viewItemTextLayout(textLayout, textRect.width());
-
-    const QRectF boundingRect = textLayout.boundingRect();
-    const QRect layoutRect = QStyle::alignedRect(option->direction, option->displayAlignment,
-                                                 boundingRect.size().toSize(), textRect);
-    const QPointF position = layoutRect.topLeft();
-    const int lineCount = textLayout.lineCount();
-
-    qreal height = 0;
-    for (int i = 0; i < lineCount; ++i) {
-        const QTextLine line = textLayout.lineAt(i);
-        height += line.height();
-
-        // above visible rect
-        if (height + layoutRect.top() <= textRect.top())
-            continue;
-
-        const int start = line.textStart();
-        const int length = line.textLength();
-
-        const bool drawElided = line.naturalTextWidth() > textRect.width();
-        bool elideLastVisibleLine = false;
-        if (!drawElided && i + 1 < lineCount) {
-            const QTextLine nextLine = textLayout.lineAt(i + 1);
-            const int nextHeight = height + nextLine.height() / 2;
-            // elide when less than the next half line is visible
-            if (nextHeight + layoutRect.top() > textRect.height() + textRect.top())
-                elideLastVisibleLine = true;
-        }
-
-        if (drawElided || elideLastVisibleLine) {
-            QString text = textLayout.text().mid(start, length);
-            if (elideLastVisibleLine)
-                text += QChar(0x2026);
-            const QStackTextEngine engine(text, option->font);
-            const QString elidedText = engine.elidedText(option->textElideMode, textRect.width());
-            const QPointF pos(position.x() + line.x(),
-                              position.y() + line.y() + line.ascent());
-            p->save();
-            p->setFont(option->font);
-            p->drawText(pos, elidedText);
-            p->restore();
-        } else {
-            line.draw(p, position);
-        }
-
-        // below visible text, can stop
-        if (height + layoutRect.top() >= textRect.bottom())
-            break;
-    }
+    textLayout.draw(p, paintPosition);
 }
 
 /*! \internal
@@ -1126,6 +1177,25 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
 }
 #endif // QT_CONFIG(itemviews)
 
+#if QT_CONFIG(toolbutton)
+QString QCommonStylePrivate::toolButtonElideText(const QStyleOptionToolButton *option,
+                                                 const QRect &textRect, int flags) const
+{
+    if (option->fontMetrics.horizontalAdvance(option->text) <= textRect.width())
+        return option->text;
+
+    QString text = option->text;
+    text.replace('\n', QChar::LineSeparator);
+    QTextOption textOption;
+    textOption.setWrapMode(QTextOption::ManualWrap);
+    textOption.setTextDirection(option->direction);
+
+    return calculateElidedText(text, textOption,
+                               option->font, textRect, Qt::AlignTop,
+                               Qt::ElideMiddle, flags,
+                               false, nullptr);
+}
+#endif // QT_CONFIG(toolbutton)
 
 #if QT_CONFIG(tabbar)
 /*! \internal
@@ -1182,8 +1252,9 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
         // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
         tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
 
-        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
-                    tabIconSize.width(), tabIconSize.height());
+        const int offsetX = (iconSize.width() - tabIconSize.width()) / 2;
+        *iconRect = QRect(tr.left() + offsetX, tr.center().y() - tabIconSize.height() / 2,
+                          tabIconSize.width(), tabIconSize.height());
         if (!verticalTabs)
             *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
         tr.setLeft(tr.left() + tabIconSize.width() + 4);
@@ -1196,7 +1267,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
 }
 #endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 /*! \internal */
 QList<const QObject*> QCommonStylePrivate::animationTargets() const
 {
@@ -1498,7 +1569,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
             QPalette pal2 = pb->palette;
             // Correct the highlight color if it is the same as the background
-            if (pal2.highlight() == pal2.background())
+            if (pal2.highlight() == pal2.window())
                 pal2.setColor(QPalette::Highlight, pb->palette.color(QPalette::Active,
                                                                      QPalette::Highlight));
             bool reverse = ((!vertical && (pb->direction == Qt::RightToLeft)) || vertical);
@@ -1653,7 +1724,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         alignment |= Qt::TextHideMnemonic;
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                        pr.setHeight(pmSize.height() + 6);
+                        pr.setHeight(pmSize.height() + 4); //### 4 is currently hardcoded in QToolButton::sizeHint()
                         tr.adjust(0, pr.height() - 1, 0, -1);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
@@ -1663,7 +1734,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         }
                         alignment |= Qt::AlignCenter;
                     } else {
-                        pr.setWidth(pmSize.width() + 8);
+                        pr.setWidth(pmSize.width() + 4); //### 4 is currently hardcoded in QToolButton::sizeHint()
                         tr.adjust(pr.width(), 0, 0, 0);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
@@ -1674,7 +1745,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
                     tr.translate(shiftX, shiftY);
-                    const QString text = toolbutton->fontMetrics.elidedText(toolbutton->text, Qt::ElideMiddle, tr.width());
+                    const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
                     proxy()->drawItemText(p, QStyle::visualRect(opt->direction, rect, tr), alignment, toolbutton->palette,
                                  toolbutton->state & State_Enabled, text,
                                  QPalette::ButtonText);
@@ -1786,14 +1857,14 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 }
             }
 
-            p->setPen(QPen(tab->palette.foreground(), 0));
+            p->setPen(QPen(tab->palette.windowText(), 0));
             if (selected) {
                 p->setBrush(tab->palette.base());
             } else {
                 if (widget && widget->parentWidget())
-                    p->setBrush(widget->parentWidget()->palette().background());
+                    p->setBrush(widget->parentWidget()->palette().window());
                 else
-                    p->setBrush(tab->palette.background());
+                    p->setBrush(tab->palette.window());
             }
 
             int y;
@@ -2090,7 +2161,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                 const int indent = p->fontMetrics().descent();
                 proxy()->drawItemText(p, r.adjusted(indent + 1, 1, -indent - 1, -1),
-                              Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, dwOpt->palette,
+                              Qt::AlignLeft | Qt::AlignVCenter, dwOpt->palette,
                               dwOpt->state & State_Enabled, dwOpt->title,
                               QPalette::WindowText);
 
@@ -2117,7 +2188,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
     case CE_FocusFrame:
-            p->fillRect(opt->rect, opt->palette.foreground());
+            p->fillRect(opt->rect, opt->palette.windowText());
         break;
     case CE_HeaderSection:
             qDrawShadePanel(p, opt->rect, opt->palette,
@@ -2125,7 +2196,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         &opt->palette.brush(QPalette::Button));
         break;
     case CE_HeaderEmptyArea:
-            p->fillRect(opt->rect, opt->palette.background());
+            p->fillRect(opt->rect, opt->palette.window());
         break;
 #if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
@@ -2229,7 +2300,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     option.state |= QStyle::State_On;
                     break;
                 }
-                proxy()->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &option, p, widget);
+                proxy()->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &option, p, widget);
             }
 
             // draw the icon
@@ -3086,13 +3157,17 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 ///we need to access the widget here because the style option doesn't
                 //have all the information we need (ie. the layout's margin)
                 const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
-                const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
+                const QMargins margins = tb && tb->layout() ? tb->layout()->contentsMargins() : QMargins(2, 2, 2, 2);
                 const int handleExtent = proxy()->pixelMetric(QStyle::PM_ToolBarHandleExtent, opt, tb);
                 if (tbopt->state & QStyle::State_Horizontal) {
-                    r = QRect(margin, margin, handleExtent, tbopt->rect.height() - 2*margin);
+                    r = QRect(margins.left(), margins.top(),
+                              handleExtent,
+                              tbopt->rect.height() - (margins.top() + margins.bottom()));
                     r = QStyle::visualRect(tbopt->direction, tbopt->rect, r);
                 } else {
-                    r = QRect(margin, margin, tbopt->rect.width() - 2*margin, handleExtent);
+                    r = QRect(margins.left(), margins.top(),
+                              tbopt->rect.width() - (margins.left() + margins.right()),
+                              handleExtent);
                 }
             }
         }
@@ -3189,7 +3264,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 // Since there is no subrect for tickmarks do a translation here.
                 p->save();
                 p->translate(slider->rect.x(), slider->rect.y());
-                p->setPen(slider->palette.foreground().color());
+                p->setPen(slider->palette.windowText().color());
                 int v = slider->minimum;
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
@@ -3635,7 +3710,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             QPalette pal = opt->palette;
             // draw notches
             if (dial->subControls & QStyle::SC_DialTickmarks) {
-                p->setPen(pal.foreground().color());
+                p->setPen(pal.windowText().color());
                 p->drawLines(QStyleHelper::calcLines(dial));
             }
 
@@ -4917,8 +4992,8 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
 #if QT_CONFIG(groupbox)
     case CT_GroupBox:
-        if (const QGroupBox *grb = static_cast<const QGroupBox *>(widget))
-            sz += QSize(!grb->isFlat() ? 16 : 0, 0);
+        if (const QStyleOptionGroupBox *styleOpt = qstyleoption_cast<const QStyleOptionGroupBox *>(opt))
+            sz += QSize(styleOpt->features.testFlag(QStyleOptionFrame::Flat) ? 0 : 16, 0);
         break;
 #endif // QT_CONFIG(groupbox)
     case CT_MdiControls:

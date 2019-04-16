@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(thread)
+
 /*
   Locks 2 mutexes in a defined order, avoiding a recursive lock if
   we're trying to lock the same mutex twice.
@@ -65,9 +67,9 @@ QT_BEGIN_NAMESPACE
 class QOrderedMutexLocker
 {
 public:
-    QOrderedMutexLocker(QMutex *m1, QMutex *m2)
-        : mtx1((m1 == m2) ? m1 : (std::less<QMutex *>()(m1, m2) ? m1 : m2)),
-          mtx2((m1 == m2) ?  0 : (std::less<QMutex *>()(m1, m2) ? m2 : m1)),
+    QOrderedMutexLocker(QBasicMutex *m1, QBasicMutex *m2)
+        : mtx1((m1 == m2) ? m1 : (std::less<QBasicMutex *>()(m1, m2) ? m1 : m2)),
+          mtx2((m1 == m2) ?  0 : (std::less<QBasicMutex *>()(m1, m2) ? m2 : m1)),
           locked(false)
     {
         relock();
@@ -95,12 +97,12 @@ public:
         }
     }
 
-    static bool relock(QMutex *mtx1, QMutex *mtx2)
+    static bool relock(QBasicMutex *mtx1, QBasicMutex *mtx2)
     {
         // mtx1 is already locked, mtx2 not... do we need to unlock and relock?
         if (mtx1 == mtx2)
             return false;
-        if (std::less<QMutex *>()(mtx1, mtx2)) {
+        if (std::less<QBasicMutex *>()(mtx1, mtx2)) {
             mtx2->lock();
             return true;
         }
@@ -113,9 +115,57 @@ public:
     }
 
 private:
-    QMutex *mtx1, *mtx2;
+    QBasicMutex *mtx1, *mtx2;
     bool locked;
 };
+
+class QBasicMutexLocker
+{
+public:
+    inline explicit QBasicMutexLocker(QBasicMutex *m) QT_MUTEX_LOCK_NOEXCEPT
+        : m(m), isLocked(true)
+    {
+        m->lock();
+    }
+    inline ~QBasicMutexLocker() { if (isLocked) unlock(); }
+
+    inline void unlock() noexcept
+    {
+        isLocked = false;
+        m->unlock();
+    }
+
+    inline void relock() QT_MUTEX_LOCK_NOEXCEPT
+    {
+        isLocked = true;
+        m->lock();
+    }
+
+private:
+    Q_DISABLE_COPY(QBasicMutexLocker)
+
+    QBasicMutex *m;
+    bool isLocked;
+};
+
+#else
+
+class QOrderedMutexLocker
+{
+public:
+    QOrderedMutexLocker(QBasicMutex *, QBasicMutex *) {}
+    ~QOrderedMutexLocker() {}
+
+    void relock() {}
+    void unlock() {}
+
+    static bool relock(QBasicMutex *, QBasicMutex *) {}
+};
+
+using QBasicMutexLocker = QMutexLocker;
+
+#endif
+
 
 QT_END_NAMESPACE
 

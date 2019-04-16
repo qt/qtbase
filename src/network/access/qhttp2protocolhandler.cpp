@@ -198,7 +198,7 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
         }
     }
 
-    if (!channel->ssl) {
+    if (!channel->ssl && m_connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // We upgraded from HTTP/1.1 to HTTP/2. channel->request was already sent
         // as HTTP/1.1 request. The response with status code 101 triggered
         // protocol switch and now we are waiting for the real response, sent
@@ -1056,6 +1056,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
                                          Qt::ConnectionType connectionType)
 {
     const auto httpReply = stream.reply();
+    const auto &httpRequest = stream.request();
     Q_ASSERT(httpReply || stream.state == Stream::remoteReserved);
 
     if (!httpReply) {
@@ -1114,6 +1115,9 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
         httpReply->setRedirectUrl(redirectUrl);
+
+    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress)
+        httpReplyPrivate->removeAutoDecompressHeader();
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode)
         || statusCode == 401 || statusCode == 407) {

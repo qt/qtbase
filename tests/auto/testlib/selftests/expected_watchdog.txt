@@ -1,0 +1,8 @@
+********* Start testing of tst_Watchdog *********
+Config: Using QtTest library
+PASS   : tst_Watchdog::initTestCase()
+QFATAL : tst_Watchdog::delay() Test function timed out
+FAIL!  : tst_Watchdog::delay() Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_Watchdog *********

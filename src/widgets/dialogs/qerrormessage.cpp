@@ -322,8 +322,8 @@ bool QErrorMessagePrivate::nextPending()
 #else
             errors->setPlainText(message);
 #endif
-            currentMessage = qMove(message);
-            currentType = qMove(type);
+            currentMessage = std::move(message);
+            currentType = std::move(type);
             return true;
         }
     }

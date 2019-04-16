@@ -54,6 +54,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #if QT_CONFIG(libinput)
 #include <QtInputSupport/private/qlibinputhandler_p.h>
@@ -69,12 +70,15 @@
 #include <QtInputSupport/private/qtslib_p.h>
 #endif
 
+#include <QtPlatformHeaders/qlinuxfbfunctions.h>
+
 QT_BEGIN_NAMESPACE
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_primaryScreen(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
-      m_services(new QGenericUnixServices)
+      m_services(new QGenericUnixServices),
+      m_kbdMgr(0)
 {
 #if QT_CONFIG(kms)
     if (qEnvironmentVariableIntValue("QT_QPA_FB_DRM") != 0)
@@ -86,19 +90,17 @@ QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
 
 QLinuxFbIntegration::~QLinuxFbIntegration()
 {
-    destroyScreen(m_primaryScreen);
+    QWindowSystemInterface::handleScreenRemoved(m_primaryScreen);
 }
 
 void QLinuxFbIntegration::initialize()
 {
     if (m_primaryScreen->initialize())
-        screenAdded(m_primaryScreen);
+        QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
     else
         qWarning("linuxfb: Failed to initialize screen");
 
     m_inputContext = QPlatformInputContextFactory::create();
-
-    m_nativeInterface.reset(new QPlatformNativeInterface);
 
     m_vtHandler.reset(new QFbVtHandler);
 
@@ -163,7 +165,7 @@ void QLinuxFbIntegration::createInputHandlers()
 #endif
 
 #if QT_CONFIG(evdev)
-    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
+    m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
 #if QT_CONFIG(tslib)
     if (!useTslib)
@@ -174,7 +176,45 @@ void QLinuxFbIntegration::createInputHandlers()
 
 QPlatformNativeInterface *QLinuxFbIntegration::nativeInterface() const
 {
-    return m_nativeInterface.data();
+    return const_cast<QLinuxFbIntegration *>(this);
+}
+
+QFunctionPointer QLinuxFbIntegration::platformFunction(const QByteArray &function) const
+{
+#if QT_CONFIG(evdev)
+    if (function == QLinuxFbFunctions::loadKeymapTypeIdentifier())
+        return QFunctionPointer(loadKeymapStatic);
+    else if (function == QLinuxFbFunctions::switchLangTypeIdentifier())
+        return QFunctionPointer(switchLangStatic);
+#else
+    Q_UNUSED(function)
+#endif
+
+    return 0;
+}
+
+void QLinuxFbIntegration::loadKeymapStatic(const QString &filename)
+{
+#if QT_CONFIG(evdev)
+    QLinuxFbIntegration *self = static_cast<QLinuxFbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    if (self->m_kbdMgr)
+        self->m_kbdMgr->loadKeymap(filename);
+    else
+        qWarning("QLinuxFbIntegration: Cannot load keymap, no keyboard handler found");
+#else
+    Q_UNUSED(filename);
+#endif
+}
+
+void QLinuxFbIntegration::switchLangStatic()
+{
+#if QT_CONFIG(evdev)
+    QLinuxFbIntegration *self = static_cast<QLinuxFbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    if (self->m_kbdMgr)
+        self->m_kbdMgr->switchLang();
+    else
+        qWarning("QLinuxFbIntegration: Cannot switch language, no keyboard handler found");
+#endif
 }
 
 QT_END_NAMESPACE

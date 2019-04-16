@@ -7,7 +7,7 @@ DESTDIR = ../bin
 winrt:include(../winrt.pri)
 QT = core
 
-win32-msvc: DEFINES += WIN32_MSVC
+msvc: DEFINES += WIN32_MSVC
 
 # This is testdata for the tst_qpluginloader test.
 target.path = $$[QT_INSTALL_TESTS]/tst_qpluginloader/bin

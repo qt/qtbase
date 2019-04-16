@@ -41,9 +41,11 @@
 
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/qendian.h>
+#if QT_CONFIG(settings)
 #include <QtCore/qsettings.h>
+#endif
 #include <QtCore/qoperatingsystemversion.h>
-
+#include <private/qcoregraphics_p.h>
 #include <private/qimage_p.h>
 
 #include <cmath>
@@ -82,6 +84,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 
 static float SYNTHETIC_ITALIC_SKEW = std::tan(14.f * std::acos(0.f) / 90.f);
 
@@ -130,42 +134,6 @@ QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
 
     return ret;
 }
-
-static void loadAdvancesForGlyphs(CTFontRef ctfont,
-                                  QVarLengthArray<CGGlyph> &cgGlyphs,
-                                  QGlyphLayout *glyphs, int len,
-                                  QFontEngine::ShaperFlags flags,
-                                  const QFontDef &fontDef)
-{
-    Q_UNUSED(flags);
-    QVarLengthArray<CGSize> advances(len);
-    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), len);
-
-    for (int i = 0; i < len; ++i) {
-        if (glyphs->glyphs[i] & 0xff000000)
-            continue;
-        glyphs->advances[i] = QFixed::fromReal(advances[i].width);
-    }
-
-    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-        for (int i = 0; i < len; ++i)
-            glyphs->advances[i] = glyphs->advances[i].round();
-    }
-}
-
-static float getTraitValue(CFDictionaryRef allTraits, CFStringRef trait)
-{
-    if (CFDictionaryContainsKey(allTraits, trait)) {
-        CFNumberRef traitNum = (CFNumberRef) CFDictionaryGetValue(allTraits, trait);
-        float v = 0;
-        CFNumberGetValue(traitNum, kCFNumberFloatType, &v);
-        return v;
-    }
-    return 0;
-}
-
-int QCoreTextFontEngine::antialiasingThreshold = 0;
-QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A32;
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
@@ -221,38 +189,36 @@ QCoreTextFontEngine *QCoreTextFontEngine::create(const QByteArray &fontData, qre
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
-    : QFontEngine(Mac)
+    : QCoreTextFontEngine(def)
 {
-    fontDef = def;
-    transform = qt_transform_from_fontdef(fontDef);
-    ctfont = font;
-    CFRetain(ctfont);
-    cgFont = CTFontCopyGraphicsFont(font, NULL);
+    ctfont = QCFType<CTFontRef>::constructFromGet(font);
+    cgFont = CTFontCopyGraphicsFont(font, nullptr);
     init();
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
+    : QCoreTextFontEngine(def)
+{
+    cgFont = QCFType<CGFontRef>::constructFromGet(font);
+    ctfont = CTFontCreateWithGraphicsFont(font, fontDef.pixelSize, &transform, nullptr);
+    init();
+}
+
+QCoreTextFontEngine::QCoreTextFontEngine(const QFontDef &def)
     : QFontEngine(Mac)
 {
     fontDef = def;
     transform = qt_transform_from_fontdef(fontDef);
-    cgFont = font;
-    // Keep reference count balanced
-    CFRetain(cgFont);
-    ctfont = CTFontCreateWithGraphicsFont(font, fontDef.pixelSize, &transform, NULL);
-    init();
 }
 
 QCoreTextFontEngine::~QCoreTextFontEngine()
 {
-    CFRelease(cgFont);
-    CFRelease(ctfont);
 }
 
 void QCoreTextFontEngine::init()
 {
-    Q_ASSERT(ctfont != NULL);
-    Q_ASSERT(cgFont != NULL);
+    Q_ASSERT(ctfont);
+    Q_ASSERT(cgFont);
 
     face_id.index = 0;
     QCFString name = CTFontCopyName(ctfont, kCTFontUniqueNameKey);
@@ -269,18 +235,29 @@ void QCoreTextFontEngine::init()
 
     if (traits & kCTFontColorGlyphsTrait)
         glyphFormat = QFontEngine::Format_ARGB;
+    else if (shouldSmoothFont() && fontSmoothing() == FontSmoothing::Subpixel)
+        glyphFormat = QFontEngine::Format_A32;
     else
-        glyphFormat = defaultGlyphFormat;
+        glyphFormat = QFontEngine::Format_A8;
 
     if (traits & kCTFontItalicTrait)
         fontDef.style = QFont::StyleItalic;
 
-    CFDictionaryRef allTraits = CTFontCopyTraits(ctfont);
+    static const auto getTraitValue = [](CFDictionaryRef allTraits, CFStringRef trait) -> float {
+        if (CFDictionaryContainsKey(allTraits, trait)) {
+            CFNumberRef traitNum = (CFNumberRef) CFDictionaryGetValue(allTraits, trait);
+            float v = 0;
+            CFNumberGetValue(traitNum, kCFNumberFloatType, &v);
+            return v;
+        }
+        return 0;
+    };
+
+    QCFType<CFDictionaryRef> allTraits = CTFontCopyTraits(ctfont);
     fontDef.weight = QCoreTextFontEngine::qtWeightFromCFWeight(getTraitValue(allTraits, kCTFontWeightTrait));
     int slant = static_cast<int>(getTraitValue(allTraits, kCTFontSlantTrait) * 500 + 500);
     if (slant > 500 && !(traits & kCTFontItalicTrait))
         fontDef.style = QFont::StyleOblique;
-    CFRelease(allTraits);
 
     if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait))
         synthesisFlags |= SynthesizedBold;
@@ -359,22 +336,9 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
     *nglyphs = glyph_pos;
     glyphs->numGlyphs = glyph_pos;
 
-    if (flags & GlyphIndicesOnly)
-        return true;
+    if (!(flags & GlyphIndicesOnly))
+        loadAdvancesForGlyphs(cgGlyphs, glyphs);
 
-    QVarLengthArray<CGSize> advances(glyph_pos);
-    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), glyph_pos);
-
-    for (int i = 0; i < glyph_pos; ++i) {
-        if (glyphs->glyphs[i] & 0xff000000)
-            continue;
-        glyphs->advances[i] = QFixed::fromReal(advances[i].width);
-    }
-
-    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-        for (int i = 0; i < glyph_pos; ++i)
-            glyphs->advances[i] = glyphs->advances[i].round();
-    }
     return true;
 }
 
@@ -469,6 +433,11 @@ qreal QCoreTextFontEngine::maxCharWidth() const
     return bb.xoff.toReal();
 }
 
+bool QCoreTextFontEngine::hasColorGlyphs() const
+{
+    return glyphFormat == QFontEngine::Format_ARGB;
+}
+
 void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight)
 {
     QVarLengthArray<QFixedPoint> positions;
@@ -522,9 +491,11 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
 
 struct ConvertPathInfo
 {
-    ConvertPathInfo(QPainterPath *newPath, const QPointF &newPos) : path(newPath), pos(newPos) {}
+    ConvertPathInfo(QPainterPath *newPath, const QPointF &newPos, qreal newStretch = 1.0) :
+        path(newPath), pos(newPos), stretch(newStretch) {}
     QPainterPath *path;
     QPointF pos;
+    qreal stretch;
 };
 
 static void convertCGPathToQPainterPath(void *info, const CGPathElement *element)
@@ -532,32 +503,32 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
     ConvertPathInfo *myInfo = static_cast<ConvertPathInfo *>(info);
     switch(element->type) {
         case kCGPathElementMoveToPoint:
-            myInfo->path->moveTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->moveTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[0].y + myInfo->pos.y());
             break;
         case kCGPathElementAddLineToPoint:
-            myInfo->path->lineTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->lineTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[0].y + myInfo->pos.y());
             break;
         case kCGPathElementAddQuadCurveToPoint:
-            myInfo->path->quadTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->quadTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[0].y + myInfo->pos.y(),
-                                 element->points[1].x + myInfo->pos.x(),
+                                 (element->points[1].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[1].y + myInfo->pos.y());
             break;
         case kCGPathElementAddCurveToPoint:
-            myInfo->path->cubicTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->cubicTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                   element->points[0].y + myInfo->pos.y(),
-                                  element->points[1].x + myInfo->pos.x(),
+                                  (element->points[1].x * myInfo->stretch) + myInfo->pos.x(),
                                   element->points[1].y + myInfo->pos.y(),
-                                  element->points[2].x + myInfo->pos.x(),
+                                  (element->points[2].x * myInfo->stretch) + myInfo->pos.x(),
                                   element->points[2].y + myInfo->pos.y());
             break;
         case kCGPathElementCloseSubpath:
             myInfo->path->closeSubpath();
             break;
         default:
-            qDebug() << "Unhandled path transform type: " << element->type;
+            qCWarning(lcQpaFonts) << "Unhandled path transform type: " << element->type;
     }
 
 }
@@ -565,7 +536,7 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
 void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nGlyphs,
                                           QPainterPath *path, QTextItem::RenderFlags)
 {
-    if (glyphFormat == QFontEngine::Format_ARGB)
+    if (hasColorGlyphs())
         return; // We can't convert color-glyphs to path
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
@@ -574,9 +545,10 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
+    qreal stretch = fontDef.stretch ? qreal(fontDef.stretch) / 100 : 1.0;
     for (int i = 0; i < nGlyphs; ++i) {
         QCFType<CGPathRef> cgpath = CTFontCreatePathForGlyph(ctfont, glyphs[i], &cgMatrix);
-        ConvertPathInfo info(path, positions[i].toPointF());
+        ConvertPathInfo info(path, positions[i].toPointF(), stretch);
         CGPathApply(cgpath, &info, convertCGPathToQPainterPath);
     }
 }
@@ -645,66 +617,190 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed s
     return br;
 }
 
-bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
+/*
+    Apple has gone through many iterations of its font smoothing algorithms,
+    and there are many ways to enable or disable certain aspects of it. As
+    keeping up with all the different toggles and behavior differences between
+    macOS versions is tricky, we resort to rendering a single glyph in a few
+    configurations, picking up the font smoothing algorithm from the observed
+    result.
+
+    The possible values are:
+
+     - Disabled: No font smoothing is applied.
+
+       Possibly triggered by the user unchecking the "Use font smoothing when
+       available" checkbox in the system preferences or setting AppleFontSmoothing
+       to 0. Also controlled by the CGContextSetAllowsFontSmoothing() API,
+       which gets its default from the settings above. This API overrides
+       the more granular CGContextSetShouldSmoothFonts(), which we use to
+       enable (request) or disable font smoothing.
+
+       Note that this does not exclude normal antialiasing, controlled by
+       the CGContextSetShouldAntialias() API.
+
+     - Subpixel: Font smoothing is applied, and affects subpixels.
+
+       This was the default mode on macOS versions prior to 10.14 (Mojave).
+       The font dilation (stem darkening) parameters were controlled by the
+       AppleFontSmoothing setting, ranging from 1 to 3 (light to strong).
+
+       On Mojave it is no longer supported, but can be triggered by a legacy
+       override (CGFontRenderingFontSmoothingDisabled=NO), so we need to
+       still account for it, otherwise users will have a bad time.
+
+     - Grayscale: Font smoothing is applied, but does not affect subpixels.
+
+       This is the default mode on macOS 10.14 (Mojave). The font dilation
+       (stem darkening) parameters are not affected by the AppleFontSmoothing
+       setting, but are instead computed based on the fill color used when
+       drawing the glyphs (white fill gives a lighter dilation than black
+       fill). This affects how we build our glyph cache, since we produce
+       alpha maps by drawing white on black.
+*/
+QCoreTextFontEngine::FontSmoothing QCoreTextFontEngine::fontSmoothing()
 {
-    // Only works well when font-smoothing is enabled
-    return (glyphFormat == Format_A32) && !(fontDef.styleStrategy & (QFont::NoAntialias | QFont::NoSubpixelAntialias));
+    static const FontSmoothing cachedFontSmoothing = [] {
+        static const int kSize = 10;
+        QCFType<CTFontRef> font = CTFontCreateWithName(CFSTR("Helvetica"), kSize, nullptr);
+
+        UniChar character('X'); CGGlyph glyph;
+        CTFontGetGlyphsForCharacters(font, &character, &glyph, 1);
+
+        auto drawGlyph = [&](bool smooth) -> QImage {
+            QImage image(kSize, kSize, QImage::Format_RGB32);
+            image.fill(0);
+
+            QMacCGContext ctx(&image);
+            CGContextSetTextDrawingMode(ctx, kCGTextFill);
+            CGContextSetGrayFillColor(ctx, 1, 1);
+
+            // Will be ignored if CGContextSetAllowsFontSmoothing() has been
+            // set to false by CoreGraphics based on user defaults.
+            CGContextSetShouldSmoothFonts(ctx, smooth);
+
+            CTFontDrawGlyphs(font, &glyph, &CGPointZero, 1, ctx);
+            return image;
+        };
+
+        QImage nonSmoothed = drawGlyph(false);
+        QImage smoothed = drawGlyph(true);
+
+        FontSmoothing fontSmoothing = FontSmoothing::Disabled;
+        [&] {
+            for (int x = 0; x < kSize; ++x) {
+                for (int y = 0; y < kSize; ++y) {
+                    QRgb sp = smoothed.pixel(x, y);
+                    if (qRed(sp) != qGreen(sp) || qRed(sp) != qBlue(sp)) {
+                        fontSmoothing = FontSmoothing::Subpixel;
+                        return;
+                    }
+
+                    if (sp != nonSmoothed.pixel(x, y))
+                        fontSmoothing = FontSmoothing::Grayscale;
+                }
+            }
+        }();
+
+        auto defaults = [NSUserDefaults standardUserDefaults];
+        qCDebug(lcQpaFonts) << "Resolved font smoothing algorithm. Defaults ="
+            << [[defaults dictionaryRepresentation] dictionaryWithValuesForKeys:@[
+                @"AppleFontSmoothing",
+                @"CGFontRenderingFontSmoothingDisabled"
+            ]] << "Result =" << fontSmoothing;
+
+        return fontSmoothing;
+    }();
+
+    return cachedFontSmoothing;
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &matrix)
+bool QCoreTextFontEngine::shouldAntialias() const
+{
+    return !(fontDef.styleStrategy & QFont::NoAntialias);
+}
+
+bool QCoreTextFontEngine::shouldSmoothFont() const
+{
+    if (hasColorGlyphs())
+        return false;
+
+    if (!shouldAntialias())
+        return false;
+
+    switch (fontSmoothing()) {
+    case Disabled: return false;
+    case Subpixel: return !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
+    case Grayscale: return true;
+    }
+
+    Q_UNREACHABLE();
+}
+
+bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
+{
+    return shouldSmoothFont() && fontSmoothing() == Subpixel;
+}
+
+qreal QCoreTextFontEngine::fontSmoothingGamma()
+{
+    return 2.0;
+}
+
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix)
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
-    bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
-    QImage::Format imageFormat = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    QImage::Format imageFormat = hasColorGlyphs() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
     QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
     if (!im.width() || !im.height())
         return im;
 
+    QCFType<CGColorSpaceRef> colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    QCFType<CGContextRef> ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
+                                             8, im.bytesPerLine(), colorspace,
+                                             qt_mac_bitmapInfoForImage(im));
+    Q_ASSERT(ctx);
+
+    CGContextSetShouldAntialias(ctx, shouldAntialias());
+
+    const bool shouldSmooth = shouldSmoothFont();
+    CGContextSetShouldSmoothFonts(ctx, shouldSmooth);
+
 #if defined(Q_OS_MACOS)
-    CGColorRef glyphColor = CGColorGetConstantColor(kCGColorWhite);
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        // macOS 10.14 uses a new font smoothing algorithm that takes the fill color into
-        // account. This means our default approach of drawing white on black to produce
-        // the alpha map will result in non-native looking text when then drawn as black
-        // on white during the final blit. As a workaround we use the application's current
-        // appearance to decide whether to draw with white or black fill, and then invert
-        // the glyph image in the latter case, producing an alpha map. This covers the
-        // most common use-cases, but longer term we should propagate the fill color all
-        // the way from the paint engine, and include it in the key for the glyph cache.
-        if (!qt_mac_applicationIsInDarkMode())
-            glyphColor = CGColorGetConstantColor(kCGColorBlack);
-    }
-    const bool blackOnWhiteGlyphs = !isColorGlyph
-            && CGColorEqualToColor(glyphColor, CGColorGetConstantColor(kCGColorBlack));
+    auto glyphColor = [&] {
+        if (shouldSmooth && fontSmoothing() == Grayscale) {
+            // The grayscale font smoothing algorithm introduced in macOS Mojave (10.14) adjusts
+            // its dilation (stem darkening) parameters based on the fill color. This means our
+            // default approach of drawing white on black to produce the alpha map will result
+            // in non-native looking text when then drawn as black on white during the final blit.
+            // As a workaround we use the application's current appearance to decide whether to
+            // draw with white or black fill, and then invert the glyph image in the latter case,
+            // producing an alpha map. This covers the most common use-cases, but longer term we
+            // should propagate the fill color all the way from the paint engine, and include it
+            //in the key for the glyph cache.
+
+            if (!qt_mac_applicationIsInDarkMode())
+                return kCGColorBlack;
+        }
+        return kCGColorWhite;
+    }();
+
+    const bool blackOnWhiteGlyphs = glyphColor == kCGColorBlack;
     if (blackOnWhiteGlyphs)
         im.fill(Qt::white);
     else
 #endif
-        im.fill(0); // Faster than Qt::black
+        im.fill(0);
 
-    CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-    uint cgflags = isColorGlyph ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
-#ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    cgflags |= kCGBitmapByteOrder32Host;
-#endif
-
-    CGContextRef ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
-                                             8, im.bytesPerLine(), colorspace,
-                                             cgflags);
-    Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    const bool antialias = (aa || fontDef.pointSize > antialiasingThreshold) && !(fontDef.styleStrategy & QFont::NoAntialias);
-    CGContextSetShouldAntialias(ctx, antialias);
-    const bool smoothing = antialias && !(fontDef.styleStrategy & QFont::NoSubpixelAntialias);
-    CGContextSetShouldSmoothFonts(ctx, smoothing);
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
-    if (!isColorGlyph) // CTFontDrawGlyphs incorporates the font's matrix already
+    if (!hasColorGlyphs()) // CTFontDrawGlyphs incorporates the font's matrix already
         cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
     if (matrix.isScaling())
@@ -714,10 +810,10 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     qreal pos_x = -br.x.truncate() + subPixelPosition.toReal();
     qreal pos_y = im.height() + br.y.toReal();
 
-    if (!isColorGlyph) {
+    if (!hasColorGlyphs()) {
         CGContextSetTextMatrix(ctx, cgMatrix);
 #if defined(Q_OS_MACOS)
-        CGContextSetFillColorWithColor(ctx, glyphColor);
+        CGContextSetFillColorWithColor(ctx, CGColorGetConstantColor(glyphColor));
 #else
         CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
 #endif
@@ -742,8 +838,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
     }
 
-    CGContextRelease(ctx);
-    CGColorSpaceRelease(colorspace);
+    if (expectsGammaCorrectedBlending())
+        qGamma_correct_back_to_linear_cs(&im);
 
 #if defined(Q_OS_MACOS)
     if (blackOnWhiteGlyphs)
@@ -763,7 +859,7 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, false, x);
+    QImage im = imageForGlyph(glyph, subPixelPosition, x);
 
     QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
@@ -785,9 +881,7 @@ QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPo
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, true, x);
-    qGamma_correct_back_to_linear_cs(&im);
-    return im;
+    return imageForGlyph(glyph, subPixelPosition, x);
 }
 
 QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
@@ -795,22 +889,35 @@ QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPositio
     if (t.type() > QTransform::TxScale)
         return QFontEngine::bitmapForGlyph(glyph, subPixelPosition, t);
 
-    return imageForGlyph(glyph, subPixelPosition, true, t);
+    return imageForGlyph(glyph, subPixelPosition, t);
 }
 
 void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
 {
-    int i, numGlyphs = glyphs->numGlyphs;
+    Q_UNUSED(flags);
+
+    const int numGlyphs = glyphs->numGlyphs;
     QVarLengthArray<CGGlyph> cgGlyphs(numGlyphs);
 
-    for (i = 0; i < numGlyphs; ++i) {
-        if (glyphs->glyphs[i] & 0xff000000)
-            cgGlyphs[i] = 0;
-        else
-            cgGlyphs[i] = glyphs->glyphs[i];
+    for (int i = 0; i < numGlyphs; ++i) {
+        Q_ASSERT(!QFontEngineMulti::highByte(glyphs->glyphs[i]));
+        cgGlyphs[i] = glyphs->glyphs[i];
     }
 
-    loadAdvancesForGlyphs(ctfont, cgGlyphs, glyphs, numGlyphs, flags, fontDef);
+    loadAdvancesForGlyphs(cgGlyphs, glyphs);
+}
+
+void QCoreTextFontEngine::loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const
+{
+    const int numGlyphs = glyphs->numGlyphs;
+    QVarLengthArray<CGSize> advances(numGlyphs);
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), numGlyphs);
+
+    for (int i = 0; i < numGlyphs; ++i) {
+        QFixed advance = QFixed::fromReal(advances[i].width);
+        glyphs->advances[i] = fontDef.styleStrategy & QFont::ForceIntegerMetrics
+                                    ? advance.round() : advance;
+    }
 }
 
 QFontEngine::FaceId QCoreTextFontEngine::faceId() const
@@ -867,7 +974,7 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
 
 Qt::HANDLE QCoreTextFontEngine::handle() const
 {
-    return (Qt::HANDLE)ctfont;
+    return (Qt::HANDLE)(static_cast<CTFontRef>(ctfont));
 }
 
 bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const

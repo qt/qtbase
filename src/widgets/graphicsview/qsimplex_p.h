@@ -82,7 +82,7 @@ struct QSimplexVariable
 */
 struct QSimplexConstraint
 {
-    QSimplexConstraint() : constant(0), ratio(Equal), artificial(0) {}
+    QSimplexConstraint() : constant(0), ratio(Equal), artificial(nullptr) {}
 
     enum Ratio {
         LessOrEqual = 0,
@@ -150,7 +150,7 @@ struct QSimplexConstraint
 
 class QSimplex
 {
-    Q_DISABLE_COPY(QSimplex)
+    Q_DISABLE_COPY_MOVE(QSimplex)
 public:
     QSimplex();
     ~QSimplex();

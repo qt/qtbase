@@ -216,7 +216,7 @@ private:
 
 template <class Fragment>
 QFragmentMapData<Fragment>::QFragmentMapData()
-    : fragments(0)
+    : fragments(nullptr)
 {
     init();
 }

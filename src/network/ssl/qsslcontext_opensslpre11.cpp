@@ -104,34 +104,30 @@ init_context:
         isDtls = true;
         sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
         break;
+#else // dtls
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_2OrLater:
+        sslContext->ctx = nullptr;
+        unsupportedProtocol = true;
+        qCWarning(lcSsl, "DTLS protocol requested, but feature 'dtls' is disabled");
+        break;
 #endif // dtls
     case QSsl::SslV2:
-#ifndef OPENSSL_NO_SSL2
-        sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv2_client_method() : q_SSLv2_server_method());
-#else
-        // SSL 2 not supported by the system, but chosen deliberately -> error
-        sslContext->ctx = 0;
-        unsupportedProtocol = true;
-#endif
-        break;
     case QSsl::SslV3:
-#ifndef OPENSSL_NO_SSL3_METHOD
-        sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
-#else
-        // SSL 3 not supported by the system, but chosen deliberately -> error
+        // We don't support SSLv2 / SSLv3.
         sslContext->ctx = 0;
         unsupportedProtocol = true;
-#endif
         break;
     case QSsl::SecureProtocols:
         // SSLv2 and SSLv3 will be disabled by SSL options
         // But we need q_SSLv23_server_method() otherwise AnyProtocol will be unable to connect on Win32.
-    case QSsl::TlsV1SslV3:
-        // SSLv2 will will be disabled by SSL options
     case QSsl::AnyProtocol:
     default:
         sslContext->ctx = q_SSL_CTX_new(client ? q_SSLv23_client_method() : q_SSLv23_server_method());
         break;
+    case QSsl::TlsV1SslV3:
     case QSsl::TlsV1_0:
         sslContext->ctx = q_SSL_CTX_new(client ? q_TLSv1_client_method() : q_TLSv1_server_method());
         break;
@@ -168,6 +164,12 @@ init_context:
         unsupportedProtocol = true;
 #endif
         break;
+    case QSsl::TlsV1_3:
+    case QSsl::TlsV1_3OrLater:
+        // TLS 1.3 is not supported by the system, but chosen deliberately -> error
+        sslContext->ctx = nullptr;
+        unsupportedProtocol = true;
+        break;
     }
 
     if (!client && isDtls && configuration.peerVerifyMode() != QSslSocket::VerifyNone) {
@@ -197,12 +199,9 @@ init_context:
     long options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
     // Tell OpenSSL to release memory early
     // http://www.openssl.org/docs/ssl/SSL_CTX_set_mode.html
-    if (q_SSLeay() >= 0x10000000L)
-        q_SSL_CTX_set_mode(sslContext->ctx, SSL_MODE_RELEASE_BUFFERS);
-#endif
+    q_SSL_CTX_set_mode(sslContext->ctx, SSL_MODE_RELEASE_BUFFERS);
 
     // Initialize ciphers
     QByteArray cipherString;

@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#include "filelistmodel.h"
 #include "window.h"
+#include "filelistmodel.h"
 
 #include <QtWidgets>
 
@@ -66,7 +66,7 @@ Window::Window(QWidget *parent)
     QListView *view = new QListView;
     view->setModel(model);
 
-    logViewer = new QTextBrowser;
+    logViewer = new QTextBrowser(this);
     logViewer->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 
     connect(lineEdit, &QLineEdit::textChanged,

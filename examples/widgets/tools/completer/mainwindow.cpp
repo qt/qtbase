@@ -102,10 +102,14 @@ MainWindow::MainWindow(QWidget *parent)
     contentsLabel = new QLabel;
     contentsLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    connect(modelCombo, SIGNAL(activated(int)), this, SLOT(changeModel()));
-    connect(modeCombo, SIGNAL(activated(int)), this, SLOT(changeMode(int)));
-    connect(caseCombo, SIGNAL(activated(int)), this, SLOT(changeCase(int)));
-    connect(maxVisibleSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeMaxVisible(int)));
+    connect(modelCombo, QOverload<int>::of(&QComboBox::activated),
+            this, &MainWindow::changeModel);
+    connect(modeCombo, QOverload<int>::of(&QComboBox::activated),
+            this, &MainWindow::changeMode);
+    connect(caseCombo, QOverload<int>::of(&QComboBox::activated),
+            this, &MainWindow::changeCase);
+    connect(maxVisibleSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &MainWindow::changeMaxVisible);
 //! [2]
 
 //! [3]
@@ -136,9 +140,9 @@ void MainWindow::createMenu()
     QAction *aboutAct = new QAction(tr("About"), this);
     QAction *aboutQtAct = new QAction(tr("About Qt"), this);
 
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(exitAction, &QAction::triggered, qApp, &QApplication::quit);
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
+    connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
     QMenu* fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(exitAction);
@@ -159,7 +163,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
 
 //! [6]
 #ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 #endif
     QStringList words;
 
@@ -170,7 +174,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     }
 
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 //! [6]
 
@@ -271,7 +275,7 @@ void MainWindow::changeModel()
     changeCase(caseCombo->currentIndex());
     completer->setWrapAround(wrapCheckBox->isChecked());
     lineEdit->setCompleter(completer);
-    connect(wrapCheckBox, SIGNAL(clicked(bool)), completer, SLOT(setWrapAround(bool)));
+    connect(wrapCheckBox, &QAbstractButton::clicked, completer, &QCompleter::setWrapAround);
 }
 //! [14]
 

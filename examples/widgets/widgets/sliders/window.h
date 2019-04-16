@@ -69,7 +69,7 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window();
+    Window(QWidget *parent = nullptr);
 
 private:
     void createControls(const QString &title);

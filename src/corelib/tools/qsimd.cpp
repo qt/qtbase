@@ -290,10 +290,14 @@ static void cpuidFeatures07_00(uint &ebx, uint &ecx, uint &edx)
     ebx = info[1];
     ecx = info[2];
     edx = info[3];
+#else
+    Q_UNUSED(ebx);
+    Q_UNUSED(ecx);
+    Q_UNUSED(edx);
 #endif
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !(defined(Q_CC_GNU) || defined(Q_CC_GHS))
 // fallback overload in case this intrinsic does not exist: unsigned __int64 _xgetbv(unsigned int);
 inline quint64 _xgetbv(__int64) { return 0; }
 #endif
@@ -529,7 +533,7 @@ Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC
 Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
 #endif
 
-void qDetectCpuFeatures()
+quint64 qDetectCpuFeatures()
 {
     quint64 f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
@@ -563,6 +567,7 @@ void qDetectCpuFeatures()
 #ifndef Q_ATOMIC_INT64_IS_SUPPORTED
     qt_cpu_features[1].store(f >> 32);
 #endif
+    return f;
 }
 
 void qDumpCPUFeatures()

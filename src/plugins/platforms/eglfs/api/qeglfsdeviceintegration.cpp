@@ -51,7 +51,9 @@
 #include <private/qguiapplication_p.h>
 #include <QScreen>
 #include <QDir>
-#include <QRegularExpression>
+#if QT_CONFIG(regularexpression)
+#  include <QRegularExpression>
+#endif
 #include <QLoggingCategory>
 
 #if defined(Q_OS_LINUX)
@@ -198,10 +200,8 @@ void QEglFSDeviceIntegration::screenInit()
 void QEglFSDeviceIntegration::screenDestroy()
 {
     QGuiApplication *app = qGuiApp;
-    QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(
-        QGuiApplicationPrivate::platformIntegration());
     while (!app->screens().isEmpty())
-        platformIntegration->removeScreen(app->screens().constLast()->handle());
+        QWindowSystemInterface::handleScreenRemoved(app->screens().constLast()->handle());
 }
 
 QSizeF QEglFSDeviceIntegration::physicalScreenSize() const

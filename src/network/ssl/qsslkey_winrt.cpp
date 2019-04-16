@@ -83,6 +83,15 @@ struct SslKeyGlobal
         hr = keyProviderFactory->OpenAlgorithm(HString::MakeReference(L"RC2_CBC").Get(),
                                                &keyProviders[QSslKeyPrivate::Rc2Cbc]);
         Q_ASSERT_SUCCEEDED(hr);
+        hr = keyProviderFactory->OpenAlgorithm(HString::MakeReference(L"AES_CBC").Get(),
+                                               &keyProviders[QSslKeyPrivate::Aes128Cbc]);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = keyProviderFactory->OpenAlgorithm(HString::MakeReference(L"AES_CBC").Get(),
+                                               &keyProviders[QSslKeyPrivate::Aes192Cbc]);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = keyProviderFactory->OpenAlgorithm(HString::MakeReference(L"AES_CBC").Get(),
+                                               &keyProviders[QSslKeyPrivate::Aes256Cbc]);
+        Q_ASSERT_SUCCEEDED(hr);
 
         hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Security_Cryptography_CryptographicBuffer).Get(),
                                   &bufferFactory);

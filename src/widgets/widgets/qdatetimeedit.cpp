@@ -273,7 +273,13 @@ void QDateTimeEdit::setDate(const QDate &date)
             setDateRange(date, date);
 
         d->clearCache();
-        d->setValue(QDateTime(date, d->value.toTime(), d->spec), EmitIfChanged);
+        QDateTime when(date, d->value.toTime(), d->spec);
+        // The specified time might not exist on the specified day,
+        // i.e. the time is in the gap a spring-forward jumps over.
+        if (!when.isValid())
+            when = QDateTime::fromMSecsSinceEpoch(when.toMSecsSinceEpoch(), d->spec);
+        Q_ASSERT(when.isValid());
+        d->setValue(when, EmitIfChanged);
         d->updateTimeSpec();
     }
 }
@@ -547,7 +553,7 @@ void QDateTimeEdit::setMaximumTime(const QTime &max)
 {
     Q_D(QDateTimeEdit);
     if (max.isValid()) {
-        const QDateTime m(d->maximum.toDate(), max);
+        const QDateTime m(d->maximum.toDate(), max, d->spec);
         setMaximumDateTime(m);
     }
 }
@@ -1086,6 +1092,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
         d->setSelected(d->currentSectionIndex, true);
         event->ignore();
         emit editingFinished();
+        emit d->edit->returnPressed();
         return;
     default:
 #ifdef QT_KEYPAD_NAVIGATION
@@ -2592,7 +2599,7 @@ void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
     QVBoxLayout *widgetLayout = qobject_cast<QVBoxLayout*>(layout());
     if (!widgetLayout) {
         widgetLayout = new QVBoxLayout(this);
-        widgetLayout->setMargin(0);
+        widgetLayout->setContentsMargins(QMargins());
         widgetLayout->setSpacing(0);
     }
     delete calendar.data();

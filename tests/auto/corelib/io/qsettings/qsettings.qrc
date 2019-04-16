@@ -7,5 +7,6 @@
         <file>resourcefile5.ini</file>
         <file>resourcefile6.plist</file>
         <file>bom.ini</file>
+        <file>withcomments.ini</file>
     </qresource>
 </RCC>

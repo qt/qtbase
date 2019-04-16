@@ -66,15 +66,15 @@ public:
               ErrorType type = NoError,
               const QString &errorCode = QString());
     QSqlError(const QSqlError& other);
-    QSqlError(QSqlError &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
+    QSqlError(QSqlError &&other) noexcept : d(other.d) { other.d = nullptr; }
     QSqlError& operator=(const QSqlError& other);
-    QSqlError &operator=(QSqlError &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QSqlError &operator=(QSqlError &&other) noexcept { swap(other); return *this; }
 
     bool operator==(const QSqlError& other) const;
     bool operator!=(const QSqlError& other) const;
     ~QSqlError();
 
-    void swap(QSqlError &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QSqlError &other) noexcept { qSwap(d, other.d); }
 
     QString driverText() const;
     QString databaseText() const;

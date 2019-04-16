@@ -65,11 +65,11 @@ class QRingChunk
 {
 public:
     // initialization and cleanup
-    inline QRingChunk() Q_DECL_NOTHROW :
+    inline QRingChunk() noexcept :
         headOffset(0), tailOffset(0)
     {
     }
-    inline QRingChunk(const QRingChunk &other) Q_DECL_NOTHROW :
+    inline QRingChunk(const QRingChunk &other) noexcept :
         chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
     {
     }
@@ -77,30 +77,30 @@ public:
         chunk(alloc, Qt::Uninitialized), headOffset(0), tailOffset(0)
     {
     }
-    explicit inline QRingChunk(const QByteArray &qba) Q_DECL_NOTHROW :
+    explicit inline QRingChunk(const QByteArray &qba) noexcept :
         chunk(qba), headOffset(0), tailOffset(qba.size())
     {
     }
 
-    inline QRingChunk &operator=(const QRingChunk &other) Q_DECL_NOTHROW
+    inline QRingChunk &operator=(const QRingChunk &other) noexcept
     {
         chunk = other.chunk;
         headOffset = other.headOffset;
         tailOffset = other.tailOffset;
         return *this;
     }
-    inline QRingChunk(QRingChunk &&other) Q_DECL_NOTHROW :
+    inline QRingChunk(QRingChunk &&other) noexcept :
         chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
     {
         other.headOffset = other.tailOffset = 0;
     }
-    inline QRingChunk &operator=(QRingChunk &&other) Q_DECL_NOTHROW
+    inline QRingChunk &operator=(QRingChunk &&other) noexcept
     {
         swap(other);
         return *this;
     }
 
-    inline void swap(QRingChunk &other) Q_DECL_NOTHROW
+    inline void swap(QRingChunk &other) noexcept
     {
         chunk.swap(other.chunk);
         qSwap(headOffset, other.headOffset);

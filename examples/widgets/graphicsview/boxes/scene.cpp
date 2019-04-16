@@ -111,7 +111,7 @@ ColorEdit::ColorEdit(QRgb initialColor, int id)
     m_button->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     layout->addWidget(m_button);
 
-    connect(m_lineEdit, SIGNAL(editingFinished()), this, SLOT(editDone()));
+    connect(m_lineEdit, &QLineEdit::editingFinished, this, &ColorEdit::editDone);
 }
 
 void ColorEdit::editDone()
@@ -166,7 +166,7 @@ FloatEdit::FloatEdit(float initialValue, int id)
     m_lineEdit = new QLineEdit(QString::number(m_value));
     layout->addWidget(m_lineEdit);
 
-    connect(m_lineEdit, SIGNAL(editingFinished()), this, SLOT(editDone()));
+    connect(m_lineEdit, &QLineEdit::editingFinished, this, &FloatEdit::editDone);
 }
 
 void FloatEdit::editDone()
@@ -252,7 +252,7 @@ void TwoSidedGraphicsWidget::animateFlip()
         .translate(-r.width() / 2, -r.height() / 2));
 
     if ((m_current == 0 && m_angle > 0) || (m_current == 1 && m_angle < 180))
-        QTimer::singleShot(25, this, SLOT(animateFlip()));
+        QTimer::singleShot(25, this, &TwoSidedGraphicsWidget::animateFlip);
 }
 
 QVariant GraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -307,19 +307,17 @@ RenderOptionsDialog::RenderOptionsDialog()
     check->setCheckState(Qt::Unchecked);
     // Dynamic cube maps are only enabled when multi-texturing and render to texture are available.
     check->setEnabled(glActiveTexture && glGenFramebuffersEXT);
-    connect(check, SIGNAL(stateChanged(int)), this, SIGNAL(dynamicCubemapToggled(int)));
+    connect(check, &QCheckBox::stateChanged, this, &RenderOptionsDialog::dynamicCubemapToggled);
     layout->addWidget(check, 0, 0, 1, 2);
     ++row;
 
-    QPalette palette;
-
     // Load all .par files
     // .par files have a simple syntax for specifying user adjustable uniform variables.
-    QSet<QByteArray> uniforms;
-    QList<QString> filter = QStringList("*.par");
-    QList<QFileInfo> files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
+    const QList<QFileInfo> files = QDir(QStringLiteral(":/res/boxes/"))
+            .entryInfoList({ QStringLiteral("*.par") },
+                           QDir::Files | QDir::Readable);
 
-    foreach (QFileInfo fileInfo, files) {
+    for (const QFileInfo &fileInfo : files) {
         QFile file(fileInfo.absoluteFilePath());
         if (file.open(QIODevice::ReadOnly)) {
             while (!file.atEnd()) {
@@ -356,7 +354,7 @@ RenderOptionsDialog::RenderOptionsDialog()
                         ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
                         m_parameterEdits << colorEdit;
                         layout->addWidget(colorEdit);
-                        connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
+                        connect(colorEdit, &ColorEdit::colorChanged, this, &RenderOptionsDialog::setColorParameter);
                         ++row;
                     } else if (type == "float") {
                         layout->addWidget(new QLabel(m_parameterNames.back()));
@@ -364,7 +362,7 @@ RenderOptionsDialog::RenderOptionsDialog()
                         FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
                         m_parameterEdits << floatEdit;
                         layout->addWidget(floatEdit);
-                        connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
+                        connect(floatEdit, &FloatEdit::valueChanged, this, &RenderOptionsDialog::setFloatParameter);
                         ++row;
                     }
                 }
@@ -375,13 +373,15 @@ RenderOptionsDialog::RenderOptionsDialog()
 
     layout->addWidget(new QLabel(tr("Texture:")));
     m_textureCombo = new QComboBox;
-    connect(m_textureCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(textureChanged(int)));
+    connect(m_textureCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &RenderOptionsDialog::textureChanged);
     layout->addWidget(m_textureCombo);
     ++row;
 
     layout->addWidget(new QLabel(tr("Shader:")));
     m_shaderCombo = new QComboBox;
-    connect(m_shaderCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(shaderChanged(int)));
+    connect(m_shaderCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &RenderOptionsDialog::shaderChanged);
     layout->addWidget(m_shaderCombo);
     ++row;
 
@@ -402,7 +402,7 @@ int RenderOptionsDialog::addShader(const QString &name)
 
 void RenderOptionsDialog::emitParameterChanged()
 {
-    foreach (ParameterEdit *edit, m_parameterEdits)
+    for (ParameterEdit *edit : qAsConst(m_parameterEdits))
         edit->emitChange();
 }
 
@@ -439,15 +439,15 @@ ItemDialog::ItemDialog()
 
     button = new QPushButton(tr("Add Qt box"));
     layout->addWidget(button);
-    connect(button, SIGNAL(clicked()), this, SLOT(triggerNewQtBox()));
+    connect(button, &QAbstractButton::clicked, this, &ItemDialog::triggerNewQtBox);
 
     button = new QPushButton(tr("Add circle"));
     layout->addWidget(button);
-    connect(button, SIGNAL(clicked()), this, SLOT(triggerNewCircleItem()));
+    connect(button, &QAbstractButton::clicked, this, &ItemDialog::triggerNewCircleItem);
 
     button = new QPushButton(tr("Add square"));
     layout->addWidget(button);
-    connect(button, SIGNAL(clicked()), this, SLOT(triggerNewSquareItem()));
+    connect(button, &QAbstractButton::clicked, this, &ItemDialog::triggerNewSquareItem);
 
     layout->addStretch(1);
 }
@@ -506,21 +506,21 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->move(20, 120);
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
-    connect(m_renderOptions, SIGNAL(dynamicCubemapToggled(int)), this, SLOT(toggleDynamicCubemap(int)));
-    connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
-    connect(m_renderOptions, SIGNAL(floatParameterChanged(QString,float)), this, SLOT(setFloatParameter(QString,float)));
-    connect(m_renderOptions, SIGNAL(textureChanged(int)), this, SLOT(setTexture(int)));
-    connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
+    connect(m_renderOptions, &RenderOptionsDialog::dynamicCubemapToggled, this, &Scene::toggleDynamicCubemap);
+    connect(m_renderOptions, &RenderOptionsDialog::colorParameterChanged, this, &Scene::setColorParameter);
+    connect(m_renderOptions, &RenderOptionsDialog::floatParameterChanged, this, &Scene::setFloatParameter);
+    connect(m_renderOptions, &RenderOptionsDialog::textureChanged, this, &Scene::setTexture);
+    connect(m_renderOptions, &RenderOptionsDialog::shaderChanged, this, &Scene::setShader);
 
     m_itemDialog = new ItemDialog;
-    connect(m_itemDialog, SIGNAL(newItemTriggered(ItemDialog::ItemType)), this, SLOT(newItem(ItemDialog::ItemType)));
+    connect(m_itemDialog, &ItemDialog::newItemTriggered, this, &Scene::newItem);
 
     TwoSidedGraphicsWidget *twoSided = new TwoSidedGraphicsWidget(this);
     twoSided->setWidget(0, m_renderOptions);
     twoSided->setWidget(1, m_itemDialog);
 
-    connect(m_renderOptions, SIGNAL(doubleClicked()), twoSided, SLOT(flip()));
-    connect(m_itemDialog, SIGNAL(doubleClicked()), twoSided, SLOT(flip()));
+    connect(m_renderOptions, &RenderOptionsDialog::doubleClicked, twoSided, &TwoSidedGraphicsWidget::flip);
+    connect(m_itemDialog, &ItemDialog::doubleClicked, twoSided, &TwoSidedGraphicsWidget::flip);
 
     addItem(new QtBox(64, width - 64, height - 64));
     addItem(new QtBox(64, width - 64, 64));
@@ -531,7 +531,7 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
     m_timer = new QTimer(this);
     m_timer->setInterval(20);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
+    connect(m_timer, &QTimer::timeout, this, [this](){ update(); });
     m_timer->start();
 
     m_time.start();
@@ -539,24 +539,15 @@ Scene::Scene(int width, int height, int maxTextureSize)
 
 Scene::~Scene()
 {
-    if (m_box)
-        delete m_box;
-    foreach (GLTexture *texture, m_textures)
-        if (texture) delete texture;
-    if (m_mainCubemap)
-        delete m_mainCubemap;
-    foreach (QGLShaderProgram *program, m_programs)
-        if (program) delete program;
-    if (m_vertexShader)
-        delete m_vertexShader;
-    foreach (QGLShader *shader, m_fragmentShaders)
-        if (shader) delete shader;
-    foreach (GLRenderTargetCube *rt, m_cubemaps)
-        if (rt) delete rt;
-    if (m_environmentShader)
-        delete m_environmentShader;
-    if (m_environmentProgram)
-        delete m_environmentProgram;
+    delete m_box;
+    qDeleteAll(m_textures);
+    delete m_mainCubemap;
+    qDeleteAll(m_programs);
+    delete m_vertexShader;
+    qDeleteAll(m_fragmentShaders);
+    qDeleteAll(m_cubemaps);
+    delete m_environmentShader;
+    delete m_environmentProgram;
 }
 
 void Scene::initGL()
@@ -601,15 +592,13 @@ void Scene::initGL()
 
     m_mainCubemap = new GLRenderTargetCube(512);
 
-    QStringList filter;
     QList<QFileInfo> files;
 
     // Load all .png files as textures
     m_currentTexture = 0;
-    filter = QStringList("*.png");
-    files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
+    files = QDir(":/res/boxes/").entryInfoList({ QStringLiteral("*.png") }, QDir::Files | QDir::Readable);
 
-    foreach (QFileInfo file, files) {
+    for (const QFileInfo &file : qAsConst(files)) {
         GLTexture *texture = new GLTexture2D(file.absoluteFilePath(), qMin(256, m_maxTextureSize), qMin(256, m_maxTextureSize));
         if (texture->failed()) {
             delete texture;
@@ -624,9 +613,8 @@ void Scene::initGL()
 
     // Load all .fsh files as fragment shaders
     m_currentShader = 0;
-    filter = QStringList("*.fsh");
-    files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
-    foreach (QFileInfo file, files) {
+    files = QDir(":/res/boxes/").entryInfoList({ QStringLiteral("*.fsh") }, QDir::Files | QDir::Readable);
+    for (const QFileInfo &file : qAsConst(files)) {
         QGLShaderProgram *program = new QGLShaderProgram;
         QGLShader* shader = new QGLShader(QGLShader::Fragment);
         shader->compileSourceFile(file.absoluteFilePath());
@@ -662,7 +650,7 @@ void Scene::initGL()
     m_renderOptions->emitParameterChanged();
 }
 
-static void loadMatrix(const QMatrix4x4& m)
+static void loadMatrix(const QMatrix4x4 &m)
 {
     // static to prevent glLoadMatrixf to fail on certain drivers
     static GLfloat mat[16];
@@ -1051,7 +1039,7 @@ void Scene::toggleDynamicCubemap(int state)
 void Scene::setColorParameter(const QString &name, QRgb color)
 {
     // set the color in all programs
-    foreach (QGLShaderProgram *program, m_programs) {
+    for (QGLShaderProgram *program : qAsConst(m_programs)) {
         program->bind();
         program->setUniformValue(program->uniformLocation(name), QColor(color));
         program->release();
@@ -1061,7 +1049,7 @@ void Scene::setColorParameter(const QString &name, QRgb color)
 void Scene::setFloatParameter(const QString &name, float value)
 {
     // set the color in all programs
-    foreach (QGLShaderProgram *program, m_programs) {
+    for (QGLShaderProgram *program : qAsConst(m_programs)) {
         program->bind();
         program->setUniformValue(program->uniformLocation(name), value);
         program->release();

@@ -18,9 +18,14 @@ add_qt_plugin(qoffscreen
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EventDispatcherSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:offscreen.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:./offscreen.pro:<TRUE>:
 # OTHER_FILES = "offscreen.json"
 # PLUGIN_CLASS_NAME = "QOffscreenIntegrationPlugin"
 # _LOADED = "qt_plugin"
@@ -33,12 +38,9 @@ extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT
         qoffscreenintegration_x11.cpp qoffscreenintegration_x11.h
     LIBRARIES
         Qt::GlxSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::GlxSupport
 )
 
-extend_target(qoffscreen CONDITION QT_FEATURE_opengles2 OR NOT QT_FEATURE_opengl OR NOT QT_FEATURE_xlib
-    SOURCES
-        qoffscreenintegration_dummy.cpp
-)
-
-#### Keys ignored in scope 4:.:offscreen.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 3:.:.:./offscreen.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

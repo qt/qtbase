@@ -59,7 +59,7 @@ class ShapedClock : public QWidget
     Q_OBJECT
 
 public:
-    ShapedClock(QWidget *parent = 0);
+    ShapedClock(QWidget *parent = nullptr);
     QSize sizeHint() const override;
 
 protected:

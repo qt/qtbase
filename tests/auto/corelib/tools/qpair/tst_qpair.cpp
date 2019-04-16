@@ -39,10 +39,11 @@ private Q_SLOTS:
     void testConstexpr();
     void testConversions();
     void taskQTBUG_48780_pairContainingCArray();
+    void testDeducationRules();
 };
 
-class C { char _[4]; };
-class M { char _[4]; };
+class C { C() {} char _[4]; };
+class M { M() {} char _[4]; };
 class P { char _[4]; };
 
 QT_BEGIN_NAMESPACE
@@ -200,6 +201,31 @@ void tst_QPair::taskQTBUG_48780_pairContainingCArray()
     pair.first[1] = 1;
     pair.second = 2;
     Q_UNUSED(pair);
+}
+
+void tst_QPair::testDeducationRules()
+{
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+    QPair p1{1, 2};
+    static_assert(std::is_same<decltype(p1)::first_type, decltype(1)>::value);
+    static_assert(std::is_same<decltype(p1)::second_type, decltype(2)>::value);
+    QCOMPARE(p1.first, 1);
+    QCOMPARE(p1.second, 2);
+
+    QPair p2{QString("string"), 2};
+    static_assert(std::is_same<decltype(p2)::first_type, QString>::value);
+    static_assert(std::is_same<decltype(p2)::second_type, decltype(2)>::value);
+    QCOMPARE(p2.first, "string");
+    QCOMPARE(p2.second, 2);
+
+    QPair p3(p2);
+    static_assert(std::is_same<decltype(p3)::first_type, decltype(p2)::first_type>::value);
+    static_assert(std::is_same<decltype(p3)::second_type, decltype(p2)::second_type>::value);
+    QCOMPARE(p3.first, "string");
+    QCOMPARE(p3.second, 2);
+#else
+    QSKIP("Unsupported");
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QPair)

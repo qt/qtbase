@@ -122,9 +122,7 @@ public:
         SubPath = 0x1
         // Reserved = 0xff000000
     };
-#ifndef Q_QDOC
     Q_DECLARE_FLAGS(VirtualObjectRegisterOptions, VirtualObjectRegisterOption)
-#endif
 
     enum ConnectionCapability {
         UnixFileDescriptorPassing = 0x0001
@@ -134,13 +132,13 @@ public:
     explicit QDBusConnection(const QString &name);
     QDBusConnection(const QDBusConnection &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QDBusConnection(QDBusConnection &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
-    QDBusConnection &operator=(QDBusConnection &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QDBusConnection(QDBusConnection &&other) noexcept : d(other.d) { other.d = nullptr; }
+    QDBusConnection &operator=(QDBusConnection &&other) noexcept { swap(other); return *this; }
 #endif
     QDBusConnection &operator=(const QDBusConnection &other);
     ~QDBusConnection();
 
-    void swap(QDBusConnection &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QDBusConnection &other) noexcept { qSwap(d, other.d); }
 
     bool isConnected() const;
     QString baseService() const;

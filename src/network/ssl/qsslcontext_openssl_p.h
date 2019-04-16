@@ -89,7 +89,7 @@ public:
 #if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
     // must be public because we want to use it from an OpenSSL callback
     struct NPNContext {
-        NPNContext() : data(0),
+        NPNContext() : data(nullptr),
             len(0),
             status(QSslConfiguration::NextProtocolNegotiationNone)
         { }

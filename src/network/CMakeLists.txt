@@ -1,3 +1,5 @@
+# Generated from network.pro.
+
 #####################################################################
 ## Network Module:
 #####################################################################
@@ -146,6 +148,8 @@ extend_target(Network CONDITION UNIX
         kernel/qhostinfo_unix.cpp
         socket/qnativesocketengine_unix.cpp
         socket/qnet_unix_p.h
+    LIBRARIES
+        ${CMAKE_DL_LIBS}
 )
 
 # special case: Do not add this to android!
@@ -206,6 +210,11 @@ extend_target(Network CONDITION APPLE_OSX AND NOT APPLE_UIKIT
     LIBRARIES
         ${FWCoreServices}
         ${FWSystemConfiguration}
+)
+
+extend_target(Network CONDITION QT_FEATURE_gssapi
+    LIBRARIES
+        gssapi_krb5
 )
 
 extend_target(Network CONDITION APPLE_UIKIT
@@ -285,6 +294,7 @@ extend_target(Network CONDITION NOT QT_FEATURE_openssl
 
 extend_target(Network CONDITION QT_FEATURE_ssl
     SOURCES
+        ssl/qocspresponse.cpp ssl/qocspresponse.h ssl/qocspresponse_p.h
         ssl/qsslcipher.cpp ssl/qsslcipher.h ssl/qsslcipher_p.h
         ssl/qsslconfiguration.cpp ssl/qsslconfiguration.h ssl/qsslconfiguration_p.h
         ssl/qssldiffiehellmanparameters.cpp ssl/qssldiffiehellmanparameters.h ssl/qssldiffiehellmanparameters_p.h
@@ -303,6 +313,22 @@ extend_target(Network CONDITION QT_FEATURE_ssl AND WINRT
         ssl/qsslkey_qt.cpp
         ssl/qsslkey_winrt.cpp
         ssl/qsslsocket_winrt.cpp ssl/qsslsocket_winrt_p.h
+)
+
+extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
+    SOURCES
+        ssl/qsslcertificate_schannel.cpp
+        ssl/qssldiffiehellmanparameters_dummy.cpp
+        ssl/qsslellipticcurve_dummy.cpp
+        ssl/qsslkey_qt.cpp
+        ssl/qsslkey_schannel.cpp
+        ssl/qsslsocket_qt.cpp
+        ssl/qsslsocket_schannel.cpp ssl/qsslsocket_schannel_p.h
+    LIBRARIES
+        Crypt32
+        Secur32
+        bcrypt
+        ncrypt
 )
 
 extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FEATURE_ssl
@@ -335,6 +361,11 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl
 extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qdtls_openssl.cpp ssl/qdtls_openssl_p.h
+)
+
+extend_target(Network CONDITION QT_FEATURE_ocsp AND QT_FEATURE_openssl AND QT_FEATURE_ssl
+    SOURCES
+        ssl/qocsp_p.h
 )
 
 extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_opensslv11 AND QT_FEATURE_ssl
@@ -383,5 +414,5 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
 extend_target(Network CONDITION WIN32 LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
 
 add_qt_docs(
-    ./doc/qtnetwork.qdocconf
+    doc/qtnetwork.qdocconf
 )

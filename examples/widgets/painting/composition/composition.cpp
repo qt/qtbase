@@ -57,6 +57,11 @@
 #include <QMouseEvent>
 #include <qmath.h>
 
+#if QT_CONFIG(opengl)
+#include <QOpenGLFunctions>
+#include <QOpenGLWindow>
+#endif
+
 const int animationInterval = 15; // update every 16 ms = ~60FPS
 
 CompositionWidget::CompositionWidget(QWidget *parent)
@@ -71,79 +76,76 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     modesGroup->setTitle(tr("Mode"));
 
     rbClear = new QRadioButton(tr("Clear"), modesGroup);
-    connect(rbClear, SIGNAL(clicked()), view, SLOT(setClearMode()));
+    connect(rbClear, &QAbstractButton::clicked, view, &CompositionRenderer::setClearMode);
     rbSource = new QRadioButton(tr("Source"), modesGroup);
-    connect(rbSource, SIGNAL(clicked()), view, SLOT(setSourceMode()));
+    connect(rbSource, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceMode);
     rbDest = new QRadioButton(tr("Destination"), modesGroup);
-    connect(rbDest, SIGNAL(clicked()), view, SLOT(setDestMode()));
+    connect(rbDest, &QAbstractButton::clicked, view, &CompositionRenderer::setDestMode);
     rbSourceOver = new QRadioButton(tr("Source Over"), modesGroup);
-    connect(rbSourceOver, SIGNAL(clicked()), view, SLOT(setSourceOverMode()));
+    connect(rbSourceOver, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceOverMode);
     rbDestOver = new QRadioButton(tr("Destination Over"), modesGroup);
-    connect(rbDestOver, SIGNAL(clicked()), view, SLOT(setDestOverMode()));
+    connect(rbDestOver, &QAbstractButton::clicked, view, &CompositionRenderer::setDestOverMode);
     rbSourceIn = new QRadioButton(tr("Source In"), modesGroup);
-    connect(rbSourceIn, SIGNAL(clicked()), view, SLOT(setSourceInMode()));
+    connect(rbSourceIn, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceInMode);
     rbDestIn = new QRadioButton(tr("Dest In"), modesGroup);
-    connect(rbDestIn, SIGNAL(clicked()), view, SLOT(setDestInMode()));
+    connect(rbDestIn, &QAbstractButton::clicked, view, &CompositionRenderer::setDestInMode);
     rbSourceOut = new QRadioButton(tr("Source Out"), modesGroup);
-    connect(rbSourceOut, SIGNAL(clicked()), view, SLOT(setSourceOutMode()));
+    connect(rbSourceOut, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceOutMode);
     rbDestOut = new QRadioButton(tr("Dest Out"), modesGroup);
-    connect(rbDestOut, SIGNAL(clicked()), view, SLOT(setDestOutMode()));
+    connect(rbDestOut, &QAbstractButton::clicked, view, &CompositionRenderer::setDestOutMode);
     rbSourceAtop = new QRadioButton(tr("Source Atop"), modesGroup);
-    connect(rbSourceAtop, SIGNAL(clicked()), view, SLOT(setSourceAtopMode()));
+    connect(rbSourceAtop, &QAbstractButton::clicked, view, &CompositionRenderer::setSourceAtopMode);
     rbDestAtop = new QRadioButton(tr("Dest Atop"), modesGroup);
-    connect(rbDestAtop, SIGNAL(clicked()), view, SLOT(setDestAtopMode()));
+    connect(rbDestAtop, &QAbstractButton::clicked, view, &CompositionRenderer::setDestAtopMode);
     rbXor = new QRadioButton(tr("Xor"), modesGroup);
-    connect(rbXor, SIGNAL(clicked()), view, SLOT(setXorMode()));
+    connect(rbXor, &QAbstractButton::clicked, view, &CompositionRenderer::setXorMode);
 
     rbPlus = new QRadioButton(tr("Plus"), modesGroup);
-    connect(rbPlus, SIGNAL(clicked()), view, SLOT(setPlusMode()));
+    connect(rbPlus, &QAbstractButton::clicked, view, &CompositionRenderer::setPlusMode);
     rbMultiply = new QRadioButton(tr("Multiply"), modesGroup);
-    connect(rbMultiply, SIGNAL(clicked()), view, SLOT(setMultiplyMode()));
+    connect(rbMultiply, &QAbstractButton::clicked, view, &CompositionRenderer::setMultiplyMode);
     rbScreen = new QRadioButton(tr("Screen"), modesGroup);
-    connect(rbScreen, SIGNAL(clicked()), view, SLOT(setScreenMode()));
+    connect(rbScreen, &QAbstractButton::clicked, view, &CompositionRenderer::setScreenMode);
     rbOverlay = new QRadioButton(tr("Overlay"), modesGroup);
-    connect(rbOverlay, SIGNAL(clicked()), view, SLOT(setOverlayMode()));
+    connect(rbOverlay, &QAbstractButton::clicked, view, &CompositionRenderer::setOverlayMode);
     rbDarken = new QRadioButton(tr("Darken"), modesGroup);
-    connect(rbDarken, SIGNAL(clicked()), view, SLOT(setDarkenMode()));
+    connect(rbDarken, &QAbstractButton::clicked, view, &CompositionRenderer::setDarkenMode);
     rbLighten = new QRadioButton(tr("Lighten"), modesGroup);
-    connect(rbLighten, SIGNAL(clicked()), view, SLOT(setLightenMode()));
+    connect(rbLighten, &QAbstractButton::clicked, view, &CompositionRenderer::setLightenMode);
     rbColorDodge = new QRadioButton(tr("Color Dodge"), modesGroup);
-    connect(rbColorDodge, SIGNAL(clicked()), view, SLOT(setColorDodgeMode()));
+    connect(rbColorDodge, &QAbstractButton::clicked, view, &CompositionRenderer::setColorDodgeMode);
     rbColorBurn = new QRadioButton(tr("Color Burn"), modesGroup);
-    connect(rbColorBurn, SIGNAL(clicked()), view, SLOT(setColorBurnMode()));
+    connect(rbColorBurn, &QAbstractButton::clicked, view, &CompositionRenderer::setColorBurnMode);
     rbHardLight = new QRadioButton(tr("Hard Light"), modesGroup);
-    connect(rbHardLight, SIGNAL(clicked()), view, SLOT(setHardLightMode()));
+    connect(rbHardLight, &QAbstractButton::clicked, view, &CompositionRenderer::setHardLightMode);
     rbSoftLight = new QRadioButton(tr("Soft Light"), modesGroup);
-    connect(rbSoftLight, SIGNAL(clicked()), view, SLOT(setSoftLightMode()));
+    connect(rbSoftLight, &QAbstractButton::clicked, view, &CompositionRenderer::setSoftLightMode);
     rbDifference = new QRadioButton(tr("Difference"), modesGroup);
-    connect(rbDifference, SIGNAL(clicked()), view, SLOT(setDifferenceMode()));
+    connect(rbDifference, &QAbstractButton::clicked, view, &CompositionRenderer::setDifferenceMode);
     rbExclusion = new QRadioButton(tr("Exclusion"), modesGroup);
-    connect(rbExclusion, SIGNAL(clicked()), view, SLOT(setExclusionMode()));
+    connect(rbExclusion, &QAbstractButton::clicked, view, &CompositionRenderer::setExclusionMode);
 
     QGroupBox *circleColorGroup = new QGroupBox(mainGroup);
     circleColorGroup->setTitle(tr("Circle color"));
     QSlider *circleColorSlider = new QSlider(Qt::Horizontal, circleColorGroup);
     circleColorSlider->setRange(0, 359);
     circleColorSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    connect(circleColorSlider, SIGNAL(valueChanged(int)), view, SLOT(setCircleColor(int)));
+    connect(circleColorSlider, &QAbstractSlider::valueChanged, view, &CompositionRenderer::setCircleColor);
 
     QGroupBox *circleAlphaGroup = new QGroupBox(mainGroup);
     circleAlphaGroup->setTitle(tr("Circle alpha"));
     QSlider *circleAlphaSlider = new QSlider(Qt::Horizontal, circleAlphaGroup);
     circleAlphaSlider->setRange(0, 255);
     circleAlphaSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    connect(circleAlphaSlider, SIGNAL(valueChanged(int)), view, SLOT(setCircleAlpha(int)));
+    connect(circleAlphaSlider, &QAbstractSlider::valueChanged, view, &CompositionRenderer::setCircleAlpha);
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
     enableOpenGLButton->setText(tr("Use OpenGL"));
     enableOpenGLButton->setCheckable(true);
     enableOpenGLButton->setChecked(view->usesOpenGL());
-
-    if (!QGLFormat::hasOpenGL() || !QGLPixelBuffer::hasOpenGLPbuffers())
-        enableOpenGLButton->hide();
 #endif
     QPushButton *whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText(tr("What's This?"));
@@ -166,7 +168,7 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     mainGroupLayout->addWidget(animateButton);
     mainGroupLayout->addWidget(whatsThisButton);
     mainGroupLayout->addWidget(showSourceButton);
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
 
@@ -207,13 +209,13 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     view->loadDescription(":res/composition/composition.html");
     view->loadSourceFile(":res/composition/composition.cpp");
 
-    connect(whatsThisButton, SIGNAL(clicked(bool)), view, SLOT(setDescriptionEnabled(bool)));
-    connect(view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
-    connect(showSourceButton, SIGNAL(clicked()), view, SLOT(showSource()));
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
-    connect(enableOpenGLButton, SIGNAL(clicked(bool)), view, SLOT(enableOpenGL(bool)));
+    connect(whatsThisButton, &QAbstractButton::clicked, view, &ArthurFrame::setDescriptionEnabled);
+    connect(view, &ArthurFrame::descriptionEnabledChanged, whatsThisButton, &QAbstractButton::setChecked);
+    connect(showSourceButton, &QAbstractButton::clicked, view, &ArthurFrame::showSource);
+#if QT_CONFIG(opengl)
+    connect(enableOpenGLButton, &QAbstractButton::clicked, view, &ArthurFrame::enableOpenGL);
 #endif
-    connect(animateButton, SIGNAL(toggled(bool)), view, SLOT(setAnimationEnabled(bool)));
+    connect(animateButton, &QAbstractButton::toggled, view, &CompositionRenderer::setAnimationEnabled);
 
     circleColorSlider->setValue(270);
     circleAlphaSlider->setValue(200);
@@ -258,8 +260,7 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
     m_circle_pos = QPoint(200, 100);
 
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-#ifdef USE_OPENGL
-    m_pbuffer = 0;
+#if QT_CONFIG(opengl)
     m_pbuffer_size = 1024;
 #endif
 }
@@ -340,9 +341,9 @@ void CompositionRenderer::drawSource(QPainter &p)
     QRectF circle_rect = rectangle_around(m_circle_pos);
     QColor color = QColor::fromHsvF(m_circle_hue / 360.0, 1, 1, m_circle_alpha / 255.0);
     QLinearGradient circle_gradient(circle_rect.topLeft(), circle_rect.bottomRight());
-    circle_gradient.setColorAt(0, color.light());
+    circle_gradient.setColorAt(0, color.lighter());
     circle_gradient.setColorAt(0.5, color);
-    circle_gradient.setColorAt(1, color.dark());
+    circle_gradient.setColorAt(1, color.darker());
     p.setBrush(circle_gradient);
 
     p.drawEllipse(circle_rect);
@@ -350,105 +351,62 @@ void CompositionRenderer::drawSource(QPainter &p)
 
 void CompositionRenderer::paint(QPainter *painter)
 {
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
-    if (usesOpenGL()) {
+#if QT_CONFIG(opengl)
+    if (usesOpenGL() && glWindow()->isValid()) {
+
+        if (!m_blitter.isCreated())
+            m_blitter.create();
 
         int new_pbuf_size = m_pbuffer_size;
-        if (size().width() > m_pbuffer_size || size().height() > m_pbuffer_size)
+        while (size().width() > new_pbuf_size || size().height() > new_pbuf_size)
             new_pbuf_size *= 2;
 
-        if (size().width() < m_pbuffer_size/2 && size().height() < m_pbuffer_size/2)
+        while (size().width() < new_pbuf_size/2 && size().height() < new_pbuf_size/2)
             new_pbuf_size /= 2;
 
-        if (!m_pbuffer || new_pbuf_size != m_pbuffer_size) {
-            if (m_pbuffer) {
-                m_pbuffer->deleteTexture(m_base_tex);
-                m_pbuffer->deleteTexture(m_compositing_tex);
-                delete m_pbuffer;
-            }
-
-            m_pbuffer = new QGLPixelBuffer(QSize(new_pbuf_size, new_pbuf_size), QGLFormat::defaultFormat(), glWidget());
-            m_pbuffer->makeCurrent();
-            m_base_tex = m_pbuffer->generateDynamicTexture();
-            m_compositing_tex = m_pbuffer->generateDynamicTexture();
+        if (!m_fbo || new_pbuf_size != m_pbuffer_size) {
+            m_fbo.reset(new QFboPaintDevice(QSize(new_pbuf_size, new_pbuf_size), false, false));
             m_pbuffer_size = new_pbuf_size;
         }
 
         if (size() != m_previous_size) {
             m_previous_size = size();
-            QPainter p(m_pbuffer);
+            QPainter p(m_fbo.data());
             p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.fillRect(QRect(0, 0, m_pbuffer->width(), m_pbuffer->height()), Qt::transparent);
+            p.fillRect(QRect(QPoint(0, 0), size()), Qt::transparent);
+            p.setCompositionMode(QPainter::CompositionMode_SourceOver);
             drawBase(p);
             p.end();
-            m_pbuffer->updateDynamicTexture(m_base_tex);
+            m_base_tex = m_fbo->takeTexture();
         }
 
-        qreal x_fraction = width()/float(m_pbuffer->width());
-        qreal y_fraction = height()/float(m_pbuffer->height());
-
+        painter->beginNativePainting();
         {
-            QPainter p(m_pbuffer);
-            p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.fillRect(QRect(0, 0, m_pbuffer->width(), m_pbuffer->height()), Qt::transparent);
-
-            p.save(); // Needed when using the GL1 engine
-            p.beginNativePainting(); // Needed when using the GL2 engine
-
-            glBindTexture(GL_TEXTURE_2D, m_base_tex);
-            glEnable(GL_TEXTURE_2D);
-            glColor4f(1.,1.,1.,1.);
-
-            glBegin(GL_QUADS);
-            {
-                glTexCoord2f(0, 1.0);
-                glVertex2f(0, 0);
-
-                glTexCoord2f(x_fraction, 1.0);
-                glVertex2f(width(), 0);
-
-                glTexCoord2f(x_fraction, 1.0-y_fraction);
-                glVertex2f(width(), height());
-
-                glTexCoord2f(0, 1.0-y_fraction);
-                glVertex2f(0, height());
-            }
-            glEnd();
-
-            glDisable(GL_TEXTURE_2D);
-
-            p.endNativePainting(); // Needed when using the GL2 engine
-            p.restore(); // Needed when using the GL1 engine
-
+            QPainter p(m_fbo.data());
+            p.beginNativePainting();
+            m_blitter.bind();
+            const QRect targetRect(QPoint(0, 0), m_fbo->size());
+            const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), m_fbo->size()));
+            m_blitter.blit(m_base_tex, target, QOpenGLTextureBlitter::OriginBottomLeft);
+            m_blitter.release();
+            p.endNativePainting();
             drawSource(p);
             p.end();
-            m_pbuffer->updateDynamicTexture(m_compositing_tex);
+            m_compositing_tex = m_fbo->takeTexture();
         }
+        painter->endNativePainting();
 
-        painter->beginNativePainting(); // Needed when using the GL2 engine
-        glWidget()->makeCurrent(); // Needed when using the GL1 engine
-        glBindTexture(GL_TEXTURE_2D, m_compositing_tex);
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        glColor4f(1.,1.,1.,1.);
-        glBegin(GL_QUADS);
-        {
-            glTexCoord2f(0, 1.0);
-            glVertex2f(0, 0);
-
-            glTexCoord2f(x_fraction, 1.0);
-            glVertex2f(width(), 0);
-
-            glTexCoord2f(x_fraction, 1.0-y_fraction);
-            glVertex2f(width(), height());
-
-            glTexCoord2f(0, 1.0-y_fraction);
-            glVertex2f(0, height());
-        }
-        glEnd();
-        glDisable(GL_TEXTURE_2D);
-        painter->endNativePainting(); // Needed when using the GL2 engine
+        painter->beginNativePainting();
+        auto *funcs = QOpenGLContext::currentContext()->functions();
+        funcs->glEnable(GL_BLEND);
+        funcs->glBlendEquation(GL_FUNC_ADD);
+        funcs->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        m_blitter.bind();
+        const QRect targetRect(QPoint(0, 0), m_fbo->size());
+        const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), size()));
+        m_blitter.blit(m_compositing_tex, target, QOpenGLTextureBlitter::OriginBottomLeft);
+        m_blitter.release();
+        painter->endNativePainting();
     } else
 #endif
     {
@@ -520,7 +478,7 @@ void CompositionRenderer::setCirclePos(const QPointF &pos)
     const QRect oldRect = rectangle_around(m_circle_pos).toAlignedRect();
     m_circle_pos = pos;
     const QRect newRect = rectangle_around(m_circle_pos).toAlignedRect();
-#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengl)
     if (usesOpenGL()) {
         update();
         return;

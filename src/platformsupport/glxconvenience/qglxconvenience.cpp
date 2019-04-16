@@ -42,12 +42,17 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QScopedPointer>
 
+#include <QtCore/qmetatype.h>
+#include <QtCore/qtextstream.h>
 #include "qglxconvenience_p.h"
 
+#include <QtCore/QLoggingCategory>
 #include <QtCore/QVector>
 #include <QtCore/QVarLengthArray>
 
 #include <GL/glxext.h>
+
+Q_LOGGING_CATEGORY(lcGlx, "qt.glx")
 
 enum {
     XFocusOut = FocusOut,
@@ -207,6 +212,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
         const int requestedBlue = qMax(0, format.blueBufferSize());
         const int requestedAlpha = qMax(0, format.alphaBufferSize());
 
+        GLXFBConfig compatibleCandidate = nullptr;
         for (int i = 0; i < confcount; i++) {
             GLXFBConfig candidate = configs[i];
 
@@ -218,13 +224,27 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
             }
 
             QXlibPointer<XVisualInfo> visual(glXGetVisualFromFBConfig(display, candidate));
-            if (visual.isNull())
-                continue;
+            int actualRed;
+            int actualGreen;
+            int actualBlue;
+            int actualAlpha;
+            glXGetFBConfigAttrib(display, candidate, GLX_RED_SIZE, &actualRed);
+            glXGetFBConfigAttrib(display, candidate, GLX_GREEN_SIZE, &actualGreen);
+            glXGetFBConfigAttrib(display, candidate, GLX_BLUE_SIZE, &actualBlue);
+            glXGetFBConfigAttrib(display, candidate, GLX_ALPHA_SIZE, &actualAlpha);
+            // Sometimes the visuals don't have a depth that includes the alpha channel.
+            actualAlpha = qMin(actualAlpha, visual->depth - actualRed - actualGreen - actualBlue);
 
-            const int actualRed = qPopulationCount(visual->red_mask);
-            const int actualGreen = qPopulationCount(visual->green_mask);
-            const int actualBlue = qPopulationCount(visual->blue_mask);
-            const int actualAlpha = visual->depth - actualRed - actualGreen - actualBlue;
+            if (requestedRed && actualRed < requestedRed)
+                continue;
+            if (requestedGreen && actualGreen < requestedGreen)
+                continue;
+            if (requestedBlue && actualBlue < requestedBlue)
+                continue;
+            if (requestedAlpha && actualAlpha < requestedAlpha)
+                continue;
+            if (!compatibleCandidate) // Only pick up the first compatible one offered by the server
+                compatibleCandidate = candidate;
 
             if (requestedRed && actualRed != requestedRed)
                 continue;
@@ -237,6 +257,11 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
 
             return candidate;
         }
+        if (compatibleCandidate) {
+            qCDebug(lcGlx) << "qglx_findConfig: Found non-matching but compatible FBConfig";
+            return compatibleCandidate;
+        }
+        qCWarning(lcGlx, "qglx_findConfig: Failed to finding matching FBConfig (%d %d %d %d)", requestedRed, requestedGreen, requestedBlue, requestedAlpha);
     } while (qglx_reduceFormat(&format));
 
     return config;
@@ -352,6 +377,18 @@ void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, 
 bool qglx_reduceFormat(QSurfaceFormat *format)
 {
     Q_ASSERT(format);
+    if (std::max(std::max(format->redBufferSize(), format->greenBufferSize()), format->blueBufferSize()) > 8) {
+        if (format->alphaBufferSize() > 2) {
+            // First try to match 10 10 10 2
+            format->setAlphaBufferSize(2);
+            return true;
+        }
+
+        format->setRedBufferSize(std::min(format->redBufferSize(), 8));
+        format->setGreenBufferSize(std::min(format->greenBufferSize(), 8));
+        format->setBlueBufferSize(std::min(format->blueBufferSize(), 8));
+        return true;
+    }
 
     if (format->redBufferSize() > 1) {
         format->setRedBufferSize(1);

@@ -96,7 +96,7 @@ private:
     int lastError;
 #endif
 
-    Q_DISABLE_COPY(QFileSystemIterator)
+    Q_DISABLE_COPY_MOVE(QFileSystemIterator)
 };
 
 QT_END_NAMESPACE

@@ -386,7 +386,7 @@ const QSqlDriver *QSqlResult::driver() const
 void QSqlResult::setActive(bool active)
 {
     Q_D(QSqlResult);
-    if (active && d->executedQuery.isEmpty())
+    if (active)
         d->executedQuery = d->sql;
 
     d->active = active;

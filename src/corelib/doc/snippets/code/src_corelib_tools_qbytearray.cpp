@@ -470,6 +470,33 @@ ba4.size();                     // Returns 6.
 ba4.constData();                // Returns "ca\0r\0t" without terminating \0.
 //! [48]
 
+//! [49]
+QByteArray ba("ab");
+ba.repeated(4);             // returns "abababab"
+//! [49]
+
+//! [50]
+QByteArray macAddress = QByteArray::fromHex("123456abcdef");
+macAddress.toHex(':'); // returns "12:34:56:ab:cd:ef"
+macAddress.toHex(0);   // returns "123456abcdef"
+//! [50]
+
+//! [51]
+QByteArray text = QByteArray::fromPercentEncoding("Qt%20is%20great%33");
+text.data();            // returns "Qt is great!"
+//! [51]
+
+//! [52]
+QByteArray text = "{a fishy string?}";
+QByteArray ba = text.toPercentEncoding("{}", "s");
+qDebug(ba.constData());
+// prints "{a fi%73hy %73tring%3F}"
+//! [52]
+
+//! [53]
+QByteArray ba = QByteArrayLiteral("byte array contents");
+//! [53]
+
 }
 
 

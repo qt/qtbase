@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'embeddeddialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -83,12 +83,12 @@ public:
 
         formLayout->setWidget(3, QFormLayout::FieldRole, spacing);
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         label->setBuddy(layoutDirection);
         label_2->setBuddy(fontComboBox);
         label_3->setBuddy(style);
         label_4->setBuddy(spacing);
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
         retranslateUi(embeddedDialog);
 
@@ -97,14 +97,14 @@ public:
 
     void retranslateUi(QDialog *embeddedDialog)
     {
-        embeddedDialog->setWindowTitle(QApplication::translate("embeddedDialog", "Embedded Dialog", nullptr));
-        label->setText(QApplication::translate("embeddedDialog", "Layout Direction:", nullptr));
-        layoutDirection->setItemText(0, QApplication::translate("embeddedDialog", "Left to Right", nullptr));
-        layoutDirection->setItemText(1, QApplication::translate("embeddedDialog", "Right to Left", nullptr));
+        embeddedDialog->setWindowTitle(QCoreApplication::translate("embeddedDialog", "Embedded Dialog", nullptr));
+        label->setText(QCoreApplication::translate("embeddedDialog", "Layout Direction:", nullptr));
+        layoutDirection->setItemText(0, QCoreApplication::translate("embeddedDialog", "Left to Right", nullptr));
+        layoutDirection->setItemText(1, QCoreApplication::translate("embeddedDialog", "Right to Left", nullptr));
 
-        label_2->setText(QApplication::translate("embeddedDialog", "Select Font:", nullptr));
-        label_3->setText(QApplication::translate("embeddedDialog", "Style:", nullptr));
-        label_4->setText(QApplication::translate("embeddedDialog", "Layout spacing:", nullptr));
+        label_2->setText(QCoreApplication::translate("embeddedDialog", "Select Font:", nullptr));
+        label_3->setText(QCoreApplication::translate("embeddedDialog", "Style:", nullptr));
+        label_4->setText(QCoreApplication::translate("embeddedDialog", "Layout spacing:", nullptr));
     } // retranslateUi
 
 };

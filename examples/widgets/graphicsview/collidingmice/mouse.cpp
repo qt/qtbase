@@ -160,11 +160,12 @@ void Mouse::advance(int step)
 
     // Try not to crash with any other mice
 //! [7]
-    QList<QGraphicsItem *> dangerMice = scene()->items(QPolygonF()
-                                                       << mapToScene(0, 0)
-                                                       << mapToScene(-30, -50)
-                                                       << mapToScene(30, -50));
-    foreach (QGraphicsItem *item, dangerMice) {
+    const QList<QGraphicsItem *> dangerMice = scene()->items(QPolygonF()
+                           << mapToScene(0, 0)
+                           << mapToScene(-30, -50)
+                           << mapToScene(30, -50));
+
+    for (const QGraphicsItem *item : dangerMice) {
         if (item == this)
             continue;
 

@@ -1,0 +1,22 @@
+TAP version 13
+# tst_TestLib
+ok 1 - initTestCase()
+not ok 2 - basics()
+  ---
+  # Compared pointers are not the same
+  at: tst_TestLib::basics() (qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp:54)
+  file: qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp
+  line: 54
+  ...
+ok 3 - delays()
+ok 4 - reals(zero)
+ok 5 - reals(self-qQNaN)
+ok 6 - reals(self-qInf)
+ok 7 - reals(infineg)
+ok 8 - reals(Sin(turn/4))
+ok 9 - reals(Cos(turn/2))
+ok 10 - cleanupTestCase()
+1..10
+# tests 10
+# pass 9
+# fail 1

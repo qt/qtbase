@@ -41,9 +41,10 @@ useradd -d "/home/$USER/ftp" -s /bin/bash ftptest; echo "ftptest:$PASS" | chpass
 cp $TESTDATA/vsftpd.{conf,user_list} /etc/
 
 # Resolve error message "vsftpd failed - probably invalid config" during boot
-command='start-stop-daemon --start --background -m --oknodo --pidfile /var/run/vsftpd/vsftpd.pid'
-command+=' --exec ${DAEMON}'
-sed -i "s,$command.*$,$command; sleep 10," /etc/init.d/vsftpd
+# This bug has been reported to Debian bug tracking system (ID #911396)
+command='ps -C vsftpd | grep -qs "${_PID}"'
+sed -i -e 's,while [ ${n} -le 5 ].*$,while true,' \
+    -e "s,\t\t\tif ! $command.*$,\t\t\tif $command," /etc/init.d/vsftpd
 
 # Populate the FTP sites:
 su $USER -c "cp -r $TESTDATA/ftp ~/ftp"

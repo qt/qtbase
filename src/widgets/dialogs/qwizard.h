@@ -188,7 +188,11 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+#  else
     bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
+#  endif
 #endif
     void done(int result) override;
     virtual void initializePage(int id);

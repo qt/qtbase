@@ -67,7 +67,7 @@ class QFileSystemModel;
 class QSideBarDelegate : public QStyledItemDelegate
 {
  public:
-     QSideBarDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
+     QSideBarDelegate(QWidget *parent = nullptr) : QStyledItemDelegate(parent) {}
      void initStyleOption(QStyleOptionViewItem *option,
                           const QModelIndex &index) const override;
 };
@@ -82,7 +82,7 @@ public:
         EnabledRole = Qt::UserRole + 2
     };
 
-    QUrlModel(QObject *parent = 0);
+    QUrlModel(QObject *parent = nullptr);
 
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
@@ -127,7 +127,7 @@ Q_SIGNALS:
     void goToUrl(const QUrl &url);
 
 public:
-    QSidebar(QWidget *parent = 0);
+    QSidebar(QWidget *parent = nullptr);
     void setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUrls);
     ~QSidebar();
 

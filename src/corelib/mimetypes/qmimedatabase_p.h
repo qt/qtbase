@@ -54,7 +54,7 @@
 
 #include "qmimetype.h"
 
-#ifndef QT_NO_MIMETYPE
+QT_REQUIRE_CONFIG(mimetype);
 
 #include "qmimetype_p.h"
 #include "qmimeglobpattern_p.h"
@@ -74,7 +74,7 @@ class QMimeProviderBase;
 class QMimeDatabasePrivate
 {
 public:
-    Q_DISABLE_COPY(QMimeDatabasePrivate)
+    Q_DISABLE_COPY_MOVE(QMimeDatabasePrivate)
 
     QMimeDatabasePrivate();
     ~QMimeDatabasePrivate();
@@ -119,5 +119,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MIMETYPE
 #endif // QMIMEDATABASE_P_H

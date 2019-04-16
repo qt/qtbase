@@ -285,7 +285,7 @@ function(QT5_ADD_RESOURCES outfiles )
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
                            MAIN_DEPENDENCY ${infile}
-                           DEPENDS ${_rc_depends} "${out_depends}" VERBATIM)
+                           DEPENDS ${_rc_depends} "${_out_depends}" VERBATIM)
         set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
         set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
         list(APPEND ${outfiles} ${outfile})
@@ -321,10 +321,10 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
-        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOMOC ON)
-        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOUIC ON)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
+        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
+        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
@@ -370,7 +370,7 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
             if (NOT Qt5${_module}_FOUND)
                 find_package(Qt5${_module} PATHS "${_Qt5_COMPONENT_PATH}" NO_DEFAULT_PATH)
                 if (NOT Qt5${_module}_FOUND)
-                    message(FATAL_ERROR "Can not use \"${_module}\" module which has not yet been found.")
+                    message(FATAL_ERROR "Cannot use \"${_module}\" module which has not yet been found.")
                 endif()
             endif()
             target_link_libraries(${_target} ${_qt5_link_type} ${Qt5${_module}_LIBRARIES})

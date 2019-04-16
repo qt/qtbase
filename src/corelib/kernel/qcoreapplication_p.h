@@ -53,7 +53,9 @@
 
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qtranslator.h"
+#if QT_CONFIG(settings)
 #include "QtCore/qsettings.h"
+#endif
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif
@@ -147,7 +149,7 @@ public:
     QString cachedApplicationDirPath;
     static QString *cachedApplicationFilePath;
     static void setApplicationFilePath(const QString &path);
-    static inline void clearApplicationFilePath() { delete cachedApplicationFilePath; cachedApplicationFilePath = 0; }
+    static inline void clearApplicationFilePath() { delete cachedApplicationFilePath; cachedApplicationFilePath = nullptr; }
 
 #ifndef QT_NO_QOBJECT
     void execCleanup();

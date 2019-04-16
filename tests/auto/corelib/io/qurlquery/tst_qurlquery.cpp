@@ -233,6 +233,14 @@ void tst_QUrlQuery::constructing()
     query += qMakePair(QString("prosent"), QString("%"));
     copy.setQueryItems(query);
     QVERIFY(!copy.isEmpty());
+
+    QUrlQuery fromList = {
+        {QString("type"), QString("login")},
+        {QString("name"), QString::fromUtf8("åge nissemannsen")},
+        {QString("ole&du"), QString::fromUtf8("anne+jørgen=sant")},
+        {QString("prosent"), QString("%")}
+    };
+    QCOMPARE(fromList, copy);
 }
 
 void tst_QUrlQuery::addRemove()

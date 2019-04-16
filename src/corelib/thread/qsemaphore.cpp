@@ -515,10 +515,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
     You can use this to reliably release a semaphore to avoid dead-lock
     in the face of exceptions or early returns:
 
-    \code
-    // ... do something that may throw or return early
-    sem.release();
-    \endcode
+    \snippet code/src_corelib_thread_qsemaphore.cpp 4
 
     If an early return is taken or an exception is thrown before the
     \c{sem.release()} call is reached, the semaphore is not released,
@@ -527,11 +524,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     When using RAII instead:
 
-    \code
-    const QSemaphoreReleaser releaser(sem);
-    // ... do something that may throw or early return
-    // implicitly calls sem.release() here and at every other return in between
-    \endcode
+    \snippet code/src_corelib_thread_qsemaphore.cpp 5
 
     this can no longer happen, because the compiler will make sure that
     the QSemaphoreReleaser destructor is always called, and therefore
@@ -541,17 +534,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
     from functions to transfer responsibility for releasing a semaphore
     out of a function or a scope:
 
-    \code
-    { // some scope
-        QSemaphoreReleaser releaser; // does nothing
-        // ...
-        if (someCondition) {
-            releaser = QSemaphoreReleaser(sem);
-            // ...
-        }
-        // ...
-    } // conditionally calls sem.release(), depending on someCondition
-    \endcode
+    \snippet code/src_corelib_thread_qsemaphore.cpp 6
 
     A QSemaphoreReleaser can be canceled by a call to cancel(). A canceled
     semaphore releaser will no longer call QSemaphore::release() in its
@@ -623,7 +606,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
     \fn QSemaphoreReleaser::semaphore() const
 
     Returns a pointer to the QSemaphore object provided to the constructor,
-    or by the last move assignment, if any. Otherwise, returns \c nullptr.
+    or by the last move assignment, if any. Otherwise, returns \nullptr.
 */
 
 /*!
@@ -631,15 +614,11 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     Cancels this QSemaphoreReleaser such that the destructor will no longer
     call \c{semaphore()->release()}. Returns the value of semaphore()
-    before this call. After this call, semaphore() will return \c nullptr.
+    before this call. After this call, semaphore() will return \nullptr.
 
     To enable again, assign a new QSemaphoreReleaser:
 
-    \code
-    releaser.cancel(); // avoid releasing old semaphore()
-    releaser = QSemaphoreReleaser(sem, 42);
-    // now will call sem.release(42) when 'releaser' is destroyed
-    \endcode
+    \snippet code/src_corelib_thread_qsemaphore.cpp 7
 */
 
 

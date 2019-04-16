@@ -1200,11 +1200,13 @@ static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
 static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *font, int start = 0)
 {
     QString family;
+    QStringList families;
     bool shouldAddSpace = false;
     for (int i = start; i < values.count(); ++i) {
         const QCss::Value &v = values.at(i);
         if (v.type == Value::TermOperatorComma) {
-            family += QLatin1Char(',');
+            families << family;
+            family.clear();
             shouldAddSpace = false;
             continue;
         }
@@ -1216,9 +1218,12 @@ static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *f
         family += str;
         shouldAddSpace = true;
     }
-    if (family.isEmpty())
+    if (!family.isEmpty())
+        families << family;
+    if (families.isEmpty())
         return false;
-    font->setFamily(family);
+    font->setFamily(families.at(0));
+    font->setFamilies(families);
     return true;
 }
 
@@ -2003,7 +2008,7 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
 }
 
 void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOrigin origin,
-                               int depth, QMap<uint, StyleRule> *weightedRules)
+                               int depth, QMultiMap<uint, StyleRule> *weightedRules)
 {
     for (int j = 0; j < rule.selectors.count(); ++j) {
         const Selector& selector = rule.selectors.at(j);
@@ -2017,7 +2022,7 @@ void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOri
                 newRule.selectors[0] = selector;
             }
             //We might have rules with the same weight if they came from a rule with several selectors
-            weightedRules->insertMulti(weight, newRule);
+            weightedRules->insert(weight, newRule);
         }
     }
 }
@@ -2030,7 +2035,7 @@ QVector<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
     if (styleSheets.isEmpty())
         return rules;
 
-    QMap<uint, StyleRule> weightedRules; // (spec, rule) that will be sorted below
+    QMultiMap<uint, StyleRule> weightedRules; // (spec, rule) that will be sorted below
 
     //prune using indexed stylesheet
     for (int sheetIdx = 0; sheetIdx < styleSheets.count(); ++sheetIdx) {
@@ -2742,8 +2747,10 @@ bool Parser::parseFunction(QString *name, QString *args)
 {
     *name = lexem();
     name->chop(1);
+    // until(RPAREN) needs FUNCTION token at index-1 to work properly
+    int start = index;
     skipSpace();
-    const int start = index;
+    std::swap(start, index);
     if (!until(RPAREN)) return false;
     for (int i = start; i < index - 1; ++i)
         args->append(symbols.at(i).lexem());

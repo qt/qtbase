@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'myform.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -120,17 +120,17 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Export Document", nullptr));
-        groupBox->setTitle(QApplication::translate("Form", "Export Options", nullptr));
-        radioButton_2->setText(QApplication::translate("Form", "&DocBook", nullptr));
-        radioButton->setText(QApplication::translate("Form", "&LaTeX", nullptr));
-        checkBox_2->setText(QApplication::translate("Form", "Include p&ictures", nullptr));
-        checkBox->setText(QApplication::translate("Form", "&Compress", nullptr));
-        radioButton_2_2->setText(QApplication::translate("Form", "&HTML", nullptr));
-        radioButton_3->setText(QApplication::translate("Form", "&PostScript", nullptr));
-        radioButton_4->setText(QApplication::translate("Form", "PD&F", nullptr));
-        checkBox_3->setText(QApplication::translate("Form", "Include &metadata", nullptr));
-        checkBox_4->setText(QApplication::translate("Form", "Create inde&x", nullptr));
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Export Document", nullptr));
+        groupBox->setTitle(QCoreApplication::translate("Form", "Export Options", nullptr));
+        radioButton_2->setText(QCoreApplication::translate("Form", "&DocBook", nullptr));
+        radioButton->setText(QCoreApplication::translate("Form", "&LaTeX", nullptr));
+        checkBox_2->setText(QCoreApplication::translate("Form", "Include p&ictures", nullptr));
+        checkBox->setText(QCoreApplication::translate("Form", "&Compress", nullptr));
+        radioButton_2_2->setText(QCoreApplication::translate("Form", "&HTML", nullptr));
+        radioButton_3->setText(QCoreApplication::translate("Form", "&PostScript", nullptr));
+        radioButton_4->setText(QCoreApplication::translate("Form", "PD&F", nullptr));
+        checkBox_3->setText(QCoreApplication::translate("Form", "Include &metadata", nullptr));
+        checkBox_4->setText(QCoreApplication::translate("Form", "Create inde&x", nullptr));
     } // retranslateUi
 
 };

@@ -392,6 +392,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             if (!connection->sslContext().isNull())
                 QSslSocketPrivate::checkSettingSslContext(sslSocket, connection->sslContext());
 
+            sslSocket->setPeerVerifyName(connection->d_func()->peerVerifyName);
             sslSocket->connectToHostEncrypted(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
             if (ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
@@ -966,7 +967,10 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         } else if (state != QHttpNetworkConnectionChannel::IdleState && state != QHttpNetworkConnectionChannel::ReadingState) {
             // Try to reconnect/resend before sending an error.
             // While "Reading" the _q_disconnected() will handle this.
-            if (reconnectAttempts-- > 0) {
+            // If we're using ssl then the protocolHandler is not initialized until
+            // "encrypted" has been emitted, since retrying requires the protocolHandler (asserted)
+            // we will not try if encryption is not done.
+            if (!pendingEncrypt && reconnectAttempts-- > 0) {
                 resendCurrentRequest();
                 return;
             } else {

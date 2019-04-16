@@ -8,6 +8,9 @@
 //
 
 #include "compiler/translator/RewriteElseBlocks.h"
+
+#include "compiler/translator/IntermNode.h"
+#include "compiler/translator/IntermNode_util.h"
 #include "compiler/translator/NodeSearch.h"
 #include "compiler/translator/SymbolTable.h"
 
@@ -20,121 +23,98 @@ namespace
 class ElseBlockRewriter : public TIntermTraverser
 {
   public:
-    ElseBlockRewriter();
+    ElseBlockRewriter(TSymbolTable *symbolTable);
 
   protected:
-    bool visitAggregate(Visit visit, TIntermAggregate *aggregate) override;
+    bool visitFunctionDefinition(Visit visit, TIntermFunctionDefinition *aggregate) override;
+    bool visitBlock(Visit visit, TIntermBlock *block) override;
 
   private:
-    const TType *mFunctionType;
+    TIntermNode *rewriteIfElse(TIntermIfElse *ifElse);
 
-    TIntermNode *rewriteSelection(TIntermSelection *selection);
+    const TType *mFunctionType;
 };
 
-TIntermUnary *MakeNewUnary(TOperator op, TIntermTyped *operand)
+ElseBlockRewriter::ElseBlockRewriter(TSymbolTable *symbolTable)
+    : TIntermTraverser(true, false, true, symbolTable), mFunctionType(nullptr)
 {
-    TIntermUnary *unary = new TIntermUnary(op, operand->getType());
-    unary->setOperand(operand);
-    return unary;
 }
 
-ElseBlockRewriter::ElseBlockRewriter()
-    : TIntermTraverser(true, false, true),
-      mFunctionType(NULL)
-{}
-
-bool ElseBlockRewriter::visitAggregate(Visit visit, TIntermAggregate *node)
+bool ElseBlockRewriter::visitFunctionDefinition(Visit visit, TIntermFunctionDefinition *node)
 {
-    switch (node->getOp())
-    {
-      case EOpSequence:
-        if (visit == PostVisit)
-        {
-            for (size_t statementIndex = 0; statementIndex != node->getSequence()->size(); statementIndex++)
-            {
-                TIntermNode *statement = (*node->getSequence())[statementIndex];
-                TIntermSelection *selection = statement->getAsSelectionNode();
-                if (selection && selection->getFalseBlock() != nullptr)
-                {
-                    // Check for if / else if
-                    TIntermSelection *elseIfBranch = selection->getFalseBlock()->getAsSelectionNode();
-                    if (elseIfBranch)
-                    {
-                        selection->replaceChildNode(elseIfBranch, rewriteSelection(elseIfBranch));
-                        delete elseIfBranch;
-                    }
-
-                    (*node->getSequence())[statementIndex] = rewriteSelection(selection);
-                    delete selection;
-                }
-            }
-        }
-        break;
-
-      case EOpFunction:
-        // Store the current function context (see comment below)
-        mFunctionType = ((visit == PreVisit) ? &node->getType() : NULL);
-        break;
-
-      default: break;
-    }
-
+    // Store the current function context (see comment below)
+    mFunctionType = ((visit == PreVisit) ? &node->getFunctionPrototype()->getType() : nullptr);
     return true;
 }
 
-TIntermNode *ElseBlockRewriter::rewriteSelection(TIntermSelection *selection)
+bool ElseBlockRewriter::visitBlock(Visit visit, TIntermBlock *node)
 {
-    ASSERT(selection != nullptr);
+    if (visit == PostVisit)
+    {
+        for (size_t statementIndex = 0; statementIndex != node->getSequence()->size();
+             statementIndex++)
+        {
+            TIntermNode *statement = (*node->getSequence())[statementIndex];
+            TIntermIfElse *ifElse  = statement->getAsIfElseNode();
+            if (ifElse && ifElse->getFalseBlock() != nullptr)
+            {
+                (*node->getSequence())[statementIndex] = rewriteIfElse(ifElse);
+            }
+        }
+    }
+    return true;
+}
 
-    nextTemporaryIndex();
+TIntermNode *ElseBlockRewriter::rewriteIfElse(TIntermIfElse *ifElse)
+{
+    ASSERT(ifElse != nullptr);
 
-    TIntermTyped *typedCondition = selection->getCondition()->getAsTyped();
-    TIntermAggregate *storeCondition = createTempInitDeclaration(typedCondition);
+    nextTemporaryId();
 
-    TIntermSelection *falseBlock = nullptr;
+    TIntermDeclaration *storeCondition = createTempInitDeclaration(ifElse->getCondition());
+
+    TIntermBlock *falseBlock = nullptr;
 
     TType boolType(EbtBool, EbpUndefined, EvqTemporary);
 
-    if (selection->getFalseBlock())
+    if (ifElse->getFalseBlock())
     {
-        TIntermAggregate *negatedElse = nullptr;
+        TIntermBlock *negatedElse = nullptr;
         // crbug.com/346463
         // D3D generates error messages claiming a function has no return value, when rewriting
         // an if-else clause that returns something non-void in a function. By appending dummy
         // returns (that are unreachable) we can silence this compile error.
         if (mFunctionType && mFunctionType->getBasicType() != EbtVoid)
         {
-            TString typeString = mFunctionType->getStruct() ? mFunctionType->getStruct()->name() :
-                mFunctionType->getBasicString();
-            TString rawText = "return (" + typeString + ")0";
-            TIntermRaw *returnNode = new TIntermRaw(*mFunctionType, rawText);
-            negatedElse = new TIntermAggregate(EOpSequence);
-            negatedElse->getSequence()->push_back(returnNode);
+            TIntermNode *returnNode = new TIntermBranch(EOpReturn, CreateZeroNode(*mFunctionType));
+            negatedElse = new TIntermBlock();
+            negatedElse->appendStatement(returnNode);
         }
 
         TIntermSymbol *conditionSymbolElse = createTempSymbol(boolType);
-        TIntermUnary *negatedCondition = MakeNewUnary(EOpLogicalNot, conditionSymbolElse);
-        falseBlock = new TIntermSelection(negatedCondition,
-                                          selection->getFalseBlock(), negatedElse);
+        TIntermUnary *negatedCondition     = new TIntermUnary(EOpLogicalNot, conditionSymbolElse);
+        TIntermIfElse *falseIfElse =
+            new TIntermIfElse(negatedCondition, ifElse->getFalseBlock(), negatedElse);
+        falseBlock = EnsureBlock(falseIfElse);
     }
 
     TIntermSymbol *conditionSymbolSel = createTempSymbol(boolType);
-    TIntermSelection *newSelection = new TIntermSelection(conditionSymbolSel, selection->getTrueBlock(), falseBlock);
+    TIntermIfElse *newIfElse =
+        new TIntermIfElse(conditionSymbolSel, ifElse->getTrueBlock(), falseBlock);
 
-    TIntermAggregate *block = new TIntermAggregate(EOpSequence);
+    TIntermBlock *block = new TIntermBlock();
     block->getSequence()->push_back(storeCondition);
-    block->getSequence()->push_back(newSelection);
+    block->getSequence()->push_back(newIfElse);
 
     return block;
 }
 
-}
+}  // anonymous namespace
 
-void RewriteElseBlocks(TIntermNode *node, unsigned int *temporaryIndex)
+void RewriteElseBlocks(TIntermNode *node, TSymbolTable *symbolTable)
 {
-    ElseBlockRewriter rewriter;
-    rewriter.useTemporaryIndex(temporaryIndex);
+    ElseBlockRewriter rewriter(symbolTable);
     node->traverse(&rewriter);
 }
 
-}
+}  // namespace sh

@@ -35,7 +35,7 @@ public:
     { return QStringLiteral("org.freedesktop.DBus.Properties"); }
 
 public:
-    QIBusProxy(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
+    QIBusProxy(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = nullptr);
 
     ~QIBusProxy();
 

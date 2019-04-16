@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -220,7 +220,10 @@ bool QStringListModel::setData(const QModelIndex &index, const QVariant &value, 
 {
     if (index.row() >= 0 && index.row() < lst.size()
         && (role == Qt::EditRole || role == Qt::DisplayRole)) {
-        lst.replace(index.row(), value.toString());
+        const QString valueString = value.toString();
+        if (lst.at(index.row()) == valueString)
+            return true;
+        lst.replace(index.row(), valueString);
         emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
         return true;
     }
@@ -230,6 +233,7 @@ bool QStringListModel::setData(const QModelIndex &index, const QVariant &value, 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 /*!
     \reimp
+    \since 6.0
  */
 bool QStringListModel::clearItemData(const QModelIndex &index)
 {

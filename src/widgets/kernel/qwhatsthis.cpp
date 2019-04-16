@@ -398,10 +398,10 @@ QWhatsThisPrivate::QWhatsThisPrivate()
 #ifdef QT_NO_CURSOR
         Q_UNUSED(sentEvent);
 #else
-        QApplication::setOverrideCursor((!sentEvent || !e.isAccepted())?
+        QGuiApplication::setOverrideCursor((!sentEvent || !e.isAccepted())?
                                         Qt::ForbiddenCursor:Qt::WhatsThisCursor);
     } else {
-        QApplication::setOverrideCursor(Qt::WhatsThisCursor);
+        QGuiApplication::setOverrideCursor(Qt::WhatsThisCursor);
 #endif
     }
 #ifndef QT_NO_ACCESSIBILITY
@@ -417,7 +417,7 @@ QWhatsThisPrivate::~QWhatsThisPrivate()
         action->setChecked(false);
 #endif // QT_CONFIG(action)
 #ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
+    QGuiApplication::restoreOverrideCursor();
 #endif
 #ifndef QT_NO_ACCESSIBILITY
     QAccessibleEvent event(this, QAccessible::ContextHelpEnd);

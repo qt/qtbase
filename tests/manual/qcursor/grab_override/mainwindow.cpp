@@ -79,10 +79,10 @@ void MainWindow::toggleOverrideCursor()
 {
     switch (override) {
     case 0:
-        QApplication::setOverrideCursor(Qt::BusyCursor);
+        QGuiApplication::setOverrideCursor(Qt::BusyCursor);
         break;
     case 1:
-        QApplication::restoreOverrideCursor();
+        QGuiApplication::restoreOverrideCursor();
         break;
     case 2:
         ui->label->grabMouse(Qt::ForbiddenCursor);

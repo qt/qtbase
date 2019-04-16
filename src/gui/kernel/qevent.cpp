@@ -2533,6 +2533,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
 */
 QTabletEvent::~QTabletEvent()
 {
+    delete static_cast<QTabletEventPrivate *>(mExtra);
 }
 
 /*!
@@ -3071,7 +3072,7 @@ QDropEvent::~QDropEvent()
 /*!
     If the source of the drag operation is a widget in this
     application, this function returns that source; otherwise it
-    returns 0. The source of the operation is the first parameter to
+    returns \nullptr. The source of the operation is the first parameter to
     the QDrag object used instantiate the drag.
 
     This is useful if your widget needs special behavior when dragging
@@ -3513,7 +3514,7 @@ QActionEvent::~QActionEvent()
     \fn QAction *QActionEvent::before() const
 
     If type() is \l ActionAdded, returns the action that should
-    appear before action(). If this function returns 0, the action
+    appear before action(). If this function returns \nullptr, the action
     should be appended to already existing actions on the same
     widget.
 
@@ -5425,7 +5426,7 @@ QPointingDeviceUniqueId QPointingDeviceUniqueId::fromNumericId(qint64 id)
 
     \sa isValid()
 */
-qint64 QPointingDeviceUniqueId::numericId() const Q_DECL_NOTHROW
+qint64 QPointingDeviceUniqueId::numericId() const noexcept
 {
     return m_numericId;
 }
@@ -5437,7 +5438,7 @@ qint64 QPointingDeviceUniqueId::numericId() const Q_DECL_NOTHROW
     Returns whether the two unique pointer IDs \a lhs and \a rhs identify the same pointer
     (\c true) or not (\c false).
 */
-bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL_NOTHROW
+bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
 {
     return lhs.numericId() == rhs.numericId();
 }
@@ -5457,7 +5458,7 @@ bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL
 
     Returns the hash value for \a key, using \a seed to seed the calculation.
 */
-uint qHash(QPointingDeviceUniqueId key, uint seed) Q_DECL_NOTHROW
+uint qHash(QPointingDeviceUniqueId key, uint seed) noexcept
 {
     return qHash(key.numericId(), seed);
 }

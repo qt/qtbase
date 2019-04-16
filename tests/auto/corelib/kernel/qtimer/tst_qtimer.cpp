@@ -51,6 +51,8 @@ private slots:
     void singleShotTimeout();
     void timeout();
     void remainingTime();
+    void remainingTimeInitial_data();
+    void remainingTimeInitial();
     void remainingTimeDuringActivation_data();
     void remainingTimeDuringActivation();
     void basic_chrono();
@@ -71,7 +73,12 @@ private slots:
     void recurseOnTimeoutAndStopTimer();
     void singleShotToFunctors();
     void singleShot_chrono();
+    void singleShot_static();
     void crossThreadSingleShotToFunctor();
+    void timerOrder();
+    void timerOrder_data();
+    void timerOrderBackgroundThread();
+    void timerOrderBackgroundThread_data() { timerOrder_data(); }
 
     void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
@@ -133,14 +140,41 @@ void tst_QTimer::remainingTime()
     QCOMPARE(timeoutSpy.count(), 0);
 
     int remainingTime = timer.remainingTime();
-    QVERIFY2(qAbs(remainingTime - 150) < 50, qPrintable(QString::number(remainingTime)));
+    QVERIFY2(remainingTime >= 50 && remainingTime <= 200, qPrintable(QString::number(remainingTime)));
 
     QVERIFY(timeoutSpy.wait());
     QCOMPARE(timeoutSpy.count(), 1);
 
     // the timer is still active, so it should have a non-zero remaining time
     remainingTime = timer.remainingTime();
-    QVERIFY2(remainingTime > 150, qPrintable(QString::number(remainingTime)));
+    QVERIFY2(remainingTime >= 50, qPrintable(QString::number(remainingTime)));
+}
+
+void tst_QTimer::remainingTimeInitial_data()
+{
+    QTest::addColumn<int>("startTimeMs");
+    QTest::addColumn<Qt::TimerType>("timerType");
+
+    QTest::addRow("precise time 0ms") << 0 << Qt::PreciseTimer;
+    QTest::addRow("precise time 1ms") << 1 << Qt::PreciseTimer;
+    QTest::addRow("precise time 10ms") << 10 << Qt::PreciseTimer;
+
+    QTest::addRow("coarse time 0ms") << 0 << Qt::CoarseTimer;
+    QTest::addRow("coarse time 1ms") << 1 << Qt::CoarseTimer;
+    QTest::addRow("coarse time 10ms") << 10 << Qt::CoarseTimer;
+}
+
+void tst_QTimer::remainingTimeInitial()
+{
+    QFETCH(int, startTimeMs);
+    QFETCH(Qt::TimerType, timerType);
+
+    QTimer timer;
+    timer.setTimerType(timerType);
+    timer.start(startTimeMs);
+
+    const int rt = timer.remainingTime();
+    QVERIFY2(rt >= 0 && rt <= startTimeMs, qPrintable(QString::number(rt)));
 }
 
 void tst_QTimer::remainingTimeDuringActivation_data()
@@ -228,7 +262,7 @@ void tst_QTimer::basic_chrono()
     QCOMPARE(timeoutSpy.count(), 0);
 
     milliseconds rt = timer.remainingTimeAsDuration();
-    QVERIFY2(qAbs(rt.count() - 150) < 50, qPrintable(QString::number(rt.count())));
+    QVERIFY2(rt.count() >= 50 && rt.count() <= 200, qPrintable(QString::number(rt.count())));
 
     timeoutSpy.clear();
     timer.setSingleShot(true);
@@ -739,7 +773,7 @@ public:
         quitEventLoop_noexcept();
     }
 
-    static void quitEventLoop_noexcept() Q_DECL_NOTHROW
+    static void quitEventLoop_noexcept() noexcept
     {
         QVERIFY(!_e.isNull());
         _e->quit();
@@ -1004,5 +1038,121 @@ void tst_QTimer::callOnTimeout()
     QVERIFY(!connection);
 }
 
-QTEST_MAIN(tst_QTimer)
+class OrderHelper : public QObject
+{
+    Q_OBJECT
+public:
+    enum CallType
+    {
+        String,
+        PMF,
+        Functor,
+        FunctorNoCtx
+    };
+    Q_ENUM(CallType)
+    QVector<CallType> calls;
+
+    void triggerCall(CallType callType)
+    {
+        switch (callType)
+        {
+        case String:
+            QTimer::singleShot(0, this, SLOT(stringSlot()));
+            break;
+        case PMF:
+            QTimer::singleShot(0, this, &OrderHelper::pmfSlot);
+            break;
+        case Functor:
+            QTimer::singleShot(0, this, [this]() { functorSlot(); });
+            break;
+        case FunctorNoCtx:
+            QTimer::singleShot(0, [this]() { functorNoCtxSlot(); });
+            break;
+        }
+    }
+
+public slots:
+    void stringSlot() { calls << String; }
+    void pmfSlot() { calls << PMF; }
+    void functorSlot() { calls << Functor; }
+    void functorNoCtxSlot() { calls << FunctorNoCtx; }
+};
+
+Q_DECLARE_METATYPE(OrderHelper::CallType)
+
+void tst_QTimer::timerOrder()
+{
+    QFETCH(QVector<OrderHelper::CallType>, calls);
+
+    OrderHelper helper;
+
+    for (const auto call : calls)
+        helper.triggerCall(call);
+
+    QTRY_COMPARE(helper.calls, calls);
+}
+
+void tst_QTimer::timerOrder_data()
+{
+    QTest::addColumn<QVector<OrderHelper::CallType>>("calls");
+
+    QVector<OrderHelper::CallType> calls = {
+        OrderHelper::String, OrderHelper::PMF,
+        OrderHelper::Functor, OrderHelper::FunctorNoCtx
+    };
+    std::sort(calls.begin(), calls.end());
+
+    int permutation = 0;
+    do {
+        QTest::addRow("permutation=%d", permutation) << calls;
+        ++permutation;
+    } while (std::next_permutation(calls.begin(), calls.end()));
+}
+
+void tst_QTimer::timerOrderBackgroundThread()
+{
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
+    auto *thread = QThread::create([this]() { timerOrder(); });
+    thread->start();
+    QVERIFY(thread->wait());
+    delete thread;
+#endif
+}
+
+struct StaticSingleShotUser
+{
+    StaticSingleShotUser()
+    {
+        for (auto call : calls())
+            helper.triggerCall(call);
+    }
+    OrderHelper helper;
+
+    static QVector<OrderHelper::CallType> calls()
+    {
+        return {OrderHelper::String, OrderHelper::PMF,
+                OrderHelper::Functor, OrderHelper::FunctorNoCtx};
+    }
+};
+
+static StaticSingleShotUser *s_staticSingleShotUser = nullptr;
+
+void tst_QTimer::singleShot_static()
+{
+    QCoreApplication::processEvents();
+    QCOMPARE(s_staticSingleShotUser->helper.calls, s_staticSingleShotUser->calls());
+}
+
+// NOTE: to prevent any static initialization order fiasco, we handle QTEST_MAIN
+//       ourselves, but instantiate the staticSingleShotUser before qApp
+
+int main(int argc, char *argv[])
+{
+    StaticSingleShotUser staticSingleShotUser;
+    s_staticSingleShotUser = &staticSingleShotUser;
+    QTEST_MAIN_IMPL(tst_QTimer)
+}
+
 #include "tst_qtimer.moc"

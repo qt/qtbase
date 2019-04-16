@@ -282,12 +282,12 @@ void tst_QTextEdit::getSetCheck()
 
     // int QTextEdit::tabStopWidth()
     // void QTextEdit::setTabStopWidth(int)
-    obj1.setTabStopWidth(0);
-    QCOMPARE(0, obj1.tabStopWidth());
-    obj1.setTabStopWidth(INT_MIN);
-    QCOMPARE(0, obj1.tabStopWidth()); // Makes no sense to set a negative tabstop value
-    obj1.setTabStopWidth(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.tabStopWidth());
+    obj1.setTabStopDistance(0);
+    QCOMPARE(0, obj1.tabStopDistance());
+    obj1.setTabStopDistance(-1);
+    QCOMPARE(0, obj1.tabStopDistance()); // Makes no sense to set a negative tabstop value
+    obj1.setTabStopDistance(std::numeric_limits<qreal>::max());
+    QCOMPARE(std::numeric_limits<qreal>::max(), obj1.tabStopDistance());
 
     // bool QTextEdit::acceptRichText()
     // void QTextEdit::setAcceptRichText(bool)

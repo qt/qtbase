@@ -52,7 +52,7 @@
 #define TABLEMODEL_H
 
 #include <QAbstractTableModel>
-#include <QList>
+#include <QVector>
 
 //! [0]
 
@@ -82,8 +82,8 @@ class TableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    TableModel(QObject *parent = 0);
-    TableModel(QList<Contact> contacts, QObject *parent = 0);
+    TableModel(QObject *parent = nullptr);
+    TableModel(const QVector<Contact> &contacts, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
@@ -93,10 +93,10 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     bool insertRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
     bool removeRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
-    QList<Contact> getContacts() const;
+    const QVector<Contact> &getContacts() const;
 
 private:
-    QList<Contact> contacts;
+    QVector<Contact> contacts;
 };
 //! [0]
 

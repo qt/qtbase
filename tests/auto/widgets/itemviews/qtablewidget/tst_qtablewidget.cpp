@@ -91,6 +91,7 @@ private slots:
     void itemWithHeaderItems();
     void mimeData();
     void selectedRowAfterSorting();
+    void search();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void clearItemData();
 #endif
@@ -164,6 +165,7 @@ void tst_QTableWidget::initTestCase()
 {
     testWidget = new QTableWidget();
     testWidget->show();
+    QApplication::setKeyboardInputInterval(100);
 }
 
 void tst_QTableWidget::cleanupTestCase()
@@ -196,10 +198,10 @@ void tst_QTableWidget::clear()
 {
     QTableWidgetItem *item = new QTableWidgetItem("foo");
     testWidget->setItem(0, 0, item);
-    testWidget->setItemSelected(item, true);
+    item->setSelected(true);
 
     QVERIFY(testWidget->item(0, 0) == item);
-    QVERIFY(testWidget->isItemSelected(item));
+    QVERIFY(item->isSelected());
 
 
     QPointer<QObjectTableItem> bla = new QObjectTableItem();
@@ -367,11 +369,18 @@ void tst_QTableWidget::takeItem()
         for (int c = 0; c < testWidget->columnCount(); ++c)
             QCOMPARE(testWidget->item(r, c)->text(), QString::number(r * c + c));
 
+    QSignalSpy spy(testWidget, &QTableWidget::cellChanged);
     QTableWidgetItem *item = testWidget->takeItem(row, column);
     QCOMPARE(!!item, expectItem);
     if (expectItem) {
         QCOMPARE(item->text(), QString::number(row * column + column));
         delete item;
+
+        QTRY_COMPARE(spy.count(), 1);
+        const QList<QVariant> arguments = spy.takeFirst();
+        QCOMPARE(arguments.size(), 2);
+        QCOMPARE(arguments.at(0).toInt(), row);
+        QCOMPARE(arguments.at(1).toInt(), column);
     }
     QVERIFY(!testWidget->takeItem(row, column));
 }
@@ -576,7 +585,7 @@ void tst_QTableWidget::selectedItems()
                 continue;
 
             QTableWidgetItem *item = testWidget->item(row, column);
-            if (item && testWidget->isItemSelected(item))
+            if (item && item->isSelected())
                 QVERIFY(selectedItems.contains(item));
         }
     }
@@ -1558,7 +1567,7 @@ void tst_QTableWidget::task262056_sortDuplicate()
     }
     testWidget->sortItems(0, Qt::AscendingOrder);
     QSignalSpy layoutChangedSpy(testWidget->model(), SIGNAL(layoutChanged()));
-    testWidget->item(3,0)->setBackgroundColor(Qt::red);
+    testWidget->item(3,0)->setBackground(Qt::red);
 
     QCOMPARE(layoutChangedSpy.count(),0);
 
@@ -1591,6 +1600,7 @@ public:
 
     using QTableWidget::mimeData;
     using QTableWidget::indexFromItem;
+    using QTableWidget::keyPressEvent;
 };
 
 void tst_QTableWidget::mimeData()
@@ -1663,6 +1673,45 @@ void tst_QTableWidget::selectedRowAfterSorting()
     foreach (QTableWidgetItem *item, table.selectedItems()) {
         QCOMPARE(item->row(),0);
     }
+}
+
+void tst_QTableWidget::search()
+{
+    auto createItem = [](const QString &txt)
+    {
+        auto item = new QTableWidgetItem(txt);
+        item->setFlags(item->flags().setFlag(Qt::ItemIsEditable, false));
+        return item;
+    };
+
+    auto checkSeries = [](TestTableWidget &tw, const QVector<QPair<QKeyEvent, int>> &series)
+    {
+        for (const auto &p : series) {
+            QKeyEvent e = p.first;
+            tw.keyPressEvent(&e);
+            QVERIFY(tw.selectionModel()->isSelected(tw.model()->index(p.second, 0)));
+        }
+    };
+    TestTableWidget tw(5, 1);
+    tw.setItem(0, 0, createItem("12"));
+    tw.setItem(1, 0, createItem("123"));
+    tw.setItem(2, 0, createItem("123 4"));
+    tw.setItem(3, 0, createItem("123 5"));
+    tw.setItem(4, 0, createItem(" "));
+    tw.show();
+
+    QKeyEvent evSpace(QEvent::KeyPress, Qt::Key_Space, Qt::NoModifier, " ");
+    QKeyEvent ev1(QEvent::KeyPress, Qt::Key_1, Qt::NoModifier, "1");
+    QKeyEvent ev2(QEvent::KeyPress, Qt::Key_2, Qt::NoModifier, "2");
+    QKeyEvent ev3(QEvent::KeyPress, Qt::Key_3, Qt::NoModifier, "3");
+    QKeyEvent ev4(QEvent::KeyPress, Qt::Key_4, Qt::NoModifier, "4");
+    QKeyEvent ev5(QEvent::KeyPress, Qt::Key_5, Qt::NoModifier, "5");
+
+    checkSeries(tw, {{evSpace, 4}, {ev1, 4}});
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    checkSeries(tw, {{ev1, 0}, {ev2, 0}, {ev3, 1}, {evSpace, 2}, {ev5, 3}});
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    checkSeries(tw, {{ev1, 0}, {ev2, 0}, {ev3, 1}, {evSpace, 2}, {ev4, 2}});
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

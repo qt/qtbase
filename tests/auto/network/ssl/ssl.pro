@@ -21,6 +21,8 @@ qtConfig(ssl) {
                 qdtlscookie \
                 qdtls
         }
+
+        qtConfig(ocsp): SUBDIRS += qocsp
     }
 }
 

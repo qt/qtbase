@@ -132,15 +132,15 @@ inline QDataStream &operator<<(QDataStream &ds, const QEvdevKeyboardMap::Composi
 class QFdContainer
 {
     int m_fd;
-    Q_DISABLE_COPY(QFdContainer);
+    Q_DISABLE_COPY_MOVE(QFdContainer);
 public:
-    explicit QFdContainer(int fd = -1) Q_DECL_NOTHROW : m_fd(fd) {}
+    explicit QFdContainer(int fd = -1) noexcept : m_fd(fd) {}
     ~QFdContainer() { reset(); }
 
-    int get() const Q_DECL_NOTHROW { return m_fd; }
+    int get() const noexcept { return m_fd; }
 
-    int release() Q_DECL_NOTHROW { int result = m_fd; m_fd = -1; return result; }
-    void reset() Q_DECL_NOTHROW;
+    int release() noexcept { int result = m_fd; m_fd = -1; return result; }
+    void reset() noexcept;
 };
 
 class QEvdevKeyboardHandler : public QObject
@@ -192,6 +192,8 @@ public:
     void readKeycode();
     KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
 
+    void switchLang();
+
 private:
     void processKeyEvent(int nativecode, int unicode, int qtcode,
                          Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
@@ -206,6 +208,7 @@ private:
     quint8 m_locks[3];
     int m_composing;
     quint16 m_dead_unicode;
+    quint8 m_langLock;
 
     bool m_no_zap;
     bool m_do_compose;

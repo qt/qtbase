@@ -28,6 +28,7 @@
 
 #ifdef QT_GUI_LIB
 #  include <QtGui/QGuiApplication>
+#  define tst_QEventDispatcher tst_QGuiEventDispatcher
 #else
 #  include <QtCore/QCoreApplication>
 #endif
@@ -92,77 +93,151 @@ void tst_QEventDispatcher::initTestCase()
     }
 }
 
+class TimerManager {
+    Q_DISABLE_COPY(TimerManager)
+
+public:
+    TimerManager(QAbstractEventDispatcher *eventDispatcher, QObject *parent)
+        : m_eventDispatcher(eventDispatcher), m_parent(parent)
+    {
+    }
+
+    ~TimerManager()
+    {
+        if (!registeredTimers().isEmpty())
+            m_eventDispatcher->unregisterTimers(m_parent);
+    }
+
+    TimerManager(TimerManager &&) = delete;
+    TimerManager &operator=(TimerManager &&) = delete;
+
+    int preciseTimerId() const { return m_preciseTimerId; }
+    int coarseTimerId() const { return m_coarseTimerId; }
+    int veryCoarseTimerId() const { return m_veryCoarseTimerId; }
+
+    bool foundPrecise() const { return m_preciseTimerId > 0; }
+    bool foundCoarse() const { return m_coarseTimerId > 0; }
+    bool foundVeryCoarse() const { return m_veryCoarseTimerId > 0; }
+
+    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers() const
+    {
+        return m_eventDispatcher->registeredTimers(m_parent);
+    }
+
+    void registerAll()
+    {
+        // start 3 timers, each with the different timer types and different intervals
+        m_preciseTimerId = m_eventDispatcher->registerTimer(
+                    PreciseTimerInterval, Qt::PreciseTimer, m_parent);
+        m_coarseTimerId = m_eventDispatcher->registerTimer(
+                    CoarseTimerInterval, Qt::CoarseTimer, m_parent);
+        m_veryCoarseTimerId = m_eventDispatcher->registerTimer(
+                    VeryCoarseTimerInterval, Qt::VeryCoarseTimer, m_parent);
+        QVERIFY(m_preciseTimerId > 0);
+        QVERIFY(m_coarseTimerId > 0);
+        QVERIFY(m_veryCoarseTimerId > 0);
+        findTimers();
+    }
+
+    void unregister(int timerId)
+    {
+        m_eventDispatcher->unregisterTimer(timerId);
+        findTimers();
+    }
+
+    void unregisterAll()
+    {
+        m_eventDispatcher->unregisterTimers(m_parent);
+        findTimers();
+    }
+
+private:
+    void findTimers()
+    {
+        bool foundPrecise = false;
+        bool foundCoarse = false;
+        bool foundVeryCoarse = false;
+        const QList<QAbstractEventDispatcher::TimerInfo> timers = registeredTimers();
+        for (int i = 0; i < timers.count(); ++i) {
+            const QAbstractEventDispatcher::TimerInfo &timerInfo = timers.at(i);
+            if (timerInfo.timerId == m_preciseTimerId) {
+                QCOMPARE(timerInfo.interval, int(PreciseTimerInterval));
+                QCOMPARE(timerInfo.timerType, Qt::PreciseTimer);
+                foundPrecise = true;
+            } else if (timerInfo.timerId == m_coarseTimerId) {
+                QCOMPARE(timerInfo.interval, int(CoarseTimerInterval));
+                QCOMPARE(timerInfo.timerType, Qt::CoarseTimer);
+                foundCoarse = true;
+            } else if (timerInfo.timerId == m_veryCoarseTimerId) {
+                QCOMPARE(timerInfo.interval, int(VeryCoarseTimerInterval));
+                QCOMPARE(timerInfo.timerType, Qt::VeryCoarseTimer);
+                foundVeryCoarse = true;
+            }
+        }
+        if (!foundPrecise)
+            m_preciseTimerId = -1;
+        if (!foundCoarse)
+            m_coarseTimerId = -1;
+        if (!foundVeryCoarse)
+            m_veryCoarseTimerId = -1;
+    }
+
+    QAbstractEventDispatcher *m_eventDispatcher = nullptr;
+
+    int m_preciseTimerId = -1;
+    int m_coarseTimerId = -1;
+    int m_veryCoarseTimerId = -1;
+
+    QObject *m_parent = nullptr;
+};
+
 // test that the eventDispatcher's timer implementation is complete and working
 void tst_QEventDispatcher::registerTimer()
 {
-#define FIND_TIMERS() \
-        do { \
-            foundPrecise = false; \
-            foundCoarse = false; \
-            foundVeryCoarse = false; \
-            for (int i = 0; i < registeredTimers.count(); ++i) { \
-                const QAbstractEventDispatcher::TimerInfo &timerInfo = registeredTimers.at(i); \
-                if (timerInfo.timerId == preciseTimerId) { \
-                    QCOMPARE(timerInfo.interval, int(PreciseTimerInterval)); \
-                    QCOMPARE(timerInfo.timerType, Qt::PreciseTimer); \
-                    foundPrecise = true; \
-                } else if (timerInfo.timerId == coarseTimerId) { \
-                    QCOMPARE(timerInfo.interval, int(CoarseTimerInterval)); \
-                    QCOMPARE(timerInfo.timerType, Qt::CoarseTimer); \
-                    foundCoarse = true; \
-                } else if (timerInfo.timerId == veryCoarseTimerId) { \
-                    QCOMPARE(timerInfo.interval, int(VeryCoarseTimerInterval)); \
-                    QCOMPARE(timerInfo.timerType, Qt::VeryCoarseTimer); \
-                    foundVeryCoarse = true; \
-                } \
-            } \
-        } while (0)
-
-    // start 3 timers, each with the different timer types and different intervals
-    int preciseTimerId = eventDispatcher->registerTimer(PreciseTimerInterval, Qt::PreciseTimer, this);
-    int coarseTimerId = eventDispatcher->registerTimer(CoarseTimerInterval, Qt::CoarseTimer, this);
-    int veryCoarseTimerId = eventDispatcher->registerTimer(VeryCoarseTimerInterval, Qt::VeryCoarseTimer, this);
-    QVERIFY(preciseTimerId > 0);
-    QVERIFY(coarseTimerId > 0);
-    QVERIFY(veryCoarseTimerId > 0);
+    TimerManager timers(eventDispatcher, this);
+    timers.registerAll();
+    if (QTest::currentTestFailed())
+        return;
 
     // check that all 3 are present in the eventDispatcher's registeredTimer() list
-    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers = eventDispatcher->registeredTimers(this);
-    QCOMPARE(registeredTimers.count(), 3);
-    bool foundPrecise, foundCoarse, foundVeryCoarse;
-    FIND_TIMERS();
-    QVERIFY(foundPrecise && foundCoarse && foundVeryCoarse);
+    QCOMPARE(timers.registeredTimers().count(), 3);
+    QVERIFY(timers.foundPrecise());
+    QVERIFY(timers.foundCoarse());
+    QVERIFY(timers.foundVeryCoarse());
 
     // process events, waiting for the next event... this should only fire the precise timer
     receivedEventType = -1;
     timerIdFromEvent = -1;
     QTRY_COMPARE_WITH_TIMEOUT(receivedEventType, int(QEvent::Timer), PreciseTimerInterval * 2);
-    QCOMPARE(timerIdFromEvent, preciseTimerId);
+    QCOMPARE(timerIdFromEvent, timers.preciseTimerId());
     // now unregister it and make sure it's gone
-    eventDispatcher->unregisterTimer(preciseTimerId);
-    registeredTimers = eventDispatcher->registeredTimers(this);
-    QCOMPARE(registeredTimers.count(), 2);
-    FIND_TIMERS();
-    QVERIFY(!foundPrecise && foundCoarse && foundVeryCoarse);
+    timers.unregister(timers.preciseTimerId());
+    if (QTest::currentTestFailed())
+        return;
+    QCOMPARE(timers.registeredTimers().count(), 2);
+    QVERIFY(!timers.foundPrecise());
+    QVERIFY(timers.foundCoarse());
+    QVERIFY(timers.foundVeryCoarse());
 
     // do the same again for the coarse timer
     receivedEventType = -1;
     timerIdFromEvent = -1;
     QTRY_COMPARE_WITH_TIMEOUT(receivedEventType, int(QEvent::Timer), CoarseTimerInterval * 2);
-    QCOMPARE(timerIdFromEvent, coarseTimerId);
+    QCOMPARE(timerIdFromEvent, timers.coarseTimerId());
     // now unregister it and make sure it's gone
-    eventDispatcher->unregisterTimer(coarseTimerId);
-    registeredTimers = eventDispatcher->registeredTimers(this);
-    QCOMPARE(registeredTimers.count(), 1);
-    FIND_TIMERS();
-    QVERIFY(!foundPrecise && !foundCoarse && foundVeryCoarse);
+    timers.unregister(timers.coarseTimerId());
+    if (QTest::currentTestFailed())
+        return;
+    QCOMPARE(timers.registeredTimers().count(), 1);
+    QVERIFY(!timers.foundPrecise());
+    QVERIFY(!timers.foundCoarse());
+    QVERIFY(timers.foundVeryCoarse());
 
     // not going to wait for the VeryCoarseTimer, would take too long, just unregister it
-    eventDispatcher->unregisterTimers(this);
-    registeredTimers = eventDispatcher->registeredTimers(this);
-    QVERIFY(registeredTimers.isEmpty());
-
-#undef FIND_TIMERS
+    timers.unregisterAll();
+    if (QTest::currentTestFailed())
+        return;
+    QVERIFY(timers.registeredTimers().isEmpty());
 }
 
 void tst_QEventDispatcher::sendPostedEvents_data()

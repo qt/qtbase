@@ -133,6 +133,22 @@ std::future<int> f = std::async([]() { return 42; });
 }
 ")
 
+# cxx11_random
+qt_config_compile_test(cxx11_random
+    LABEL "C++11 <random>"
+"
+#include <random>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+std::mt19937 mt(0);
+    /* END TEST: */
+    return 0;
+}
+")
+
 # eventfd
 qt_config_compile_test(eventfd
     LABEL "eventfd"
@@ -147,6 +163,88 @@ eventfd_t value;
 int fd = eventfd(0, EFD_CLOEXEC);
 eventfd_read(fd, &value);
 eventfd_write(fd, value);
+    /* END TEST: */
+    return 0;
+}
+")
+
+# futimens
+qt_config_compile_test(futimens
+    LABEL "futimens()"
+"
+#include <sys/stat.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+futimens(-1, 0);
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: ["# Block futimens() on Apple platforms unless it's available on ALL", '# deployment targets. This simplifies the logic at the call site', "# dramatically, as it isn't strictly needed compared to futimes().", 'darwin: QMAKE_CXXFLAGS += -Werror=unguarded-availability']
+)
+
+# futimes
+qt_config_compile_test(futimes
+    LABEL "futimes()"
+"
+#include <sys/time.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+futimes(-1, 0);
+    /* END TEST: */
+    return 0;
+}
+")
+
+# getauxval
+qt_config_compile_test(getauxval
+    LABEL "getauxval()"
+"
+#include <sys/auxv.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+(void) getauxval(AT_NULL);
+    /* END TEST: */
+    return 0;
+}
+")
+
+# getentropy
+qt_config_compile_test(getentropy
+    LABEL "getentropy()"
+"
+#include <unistd.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+char buf[32];
+(void) getentropy(buf, sizeof(buf));
+    /* END TEST: */
+    return 0;
+}
+")
+
+# glibc
+qt_config_compile_test(glibc
+    LABEL "GNU libc"
+"
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+return __GLIBC__;
     /* END TEST: */
     return 0;
 }
@@ -350,6 +448,39 @@ closelog();
 }
 ")
 
+# xlocalescanprint
+qt_config_compile_test(xlocalescanprint
+    LABEL "xlocale.h (or equivalents)"
+"
+
+#define QT_BEGIN_NAMESPACE
+#define QT_END_NAMESPACE
+
+#ifdef _MSVC_VER
+#define Q_CC_MSVC _MSVC_VER
+#endif
+
+#define QT_NO_DOUBLECONVERSION
+
+#include QDSP_P_H
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+#ifdef _MSVC_VER
+_locale_t invalidLocale = NULL;
+#else
+locale_t invalidLocale = NULL;
+#endif
+double a = 3.4;
+qDoubleSnprintf(argv[0], 1, invalidLocale, \"invalid format\", a);
+qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: DEFINES += QDSP_P_H=$$shell_quote(\"@PWD@/tools/qdoublescanprint_p.h\")
+)
+
 
 
 #### Features
@@ -363,6 +494,10 @@ qt_feature("clock_monotonic" PUBLIC
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
 qt_feature_definition("clock_monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
+qt_feature("dlopen" PRIVATE
+    LABEL "dlopen()"
+    CONDITION UNIX
+)
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
     CONDITION TEST_cxx11_future
@@ -394,6 +529,11 @@ qt_feature("glib" PUBLIC PRIVATE
     CONDITION GLIB2_FOUND
 )
 qt_feature_definition("glib" "QT_NO_GLIB" NEGATE VALUE "1")
+qt_feature("glibc" PRIVATE
+    LABEL "GNU libc"
+    AUTODETECT LINUX
+    CONDITION TEST_glibc
+)
 qt_feature("iconv" PUBLIC PRIVATE
     SECTION "Internationalization"
     LABEL "iconv"
@@ -457,6 +597,10 @@ qt_feature("mimetype" PUBLIC
     CONDITION QT_FEATURE_textcodec
 )
 qt_feature_definition("mimetype" "QT_NO_MIMETYPE" NEGATE VALUE "1")
+qt_feature("mimetype_database" PRIVATE
+    LABEL "Built-in copy of the MIME database"
+    CONDITION QT_FEATURE_mimetype
+)
 qt_feature("poll_ppoll" PRIVATE
     LABEL "Native ppoll()"
     CONDITION NOT WASM AND TEST_ppoll
@@ -515,6 +659,7 @@ qt_feature("regularexpression" PUBLIC
     SECTION "Kernel"
     LABEL "QRegularExpression"
     PURPOSE "Provides an API to Perl-compatible regular expressions."
+    CONDITION ON OR QT_FEATURE_pcre2
 )
 qt_feature_definition("regularexpression" "QT_NO_REGULAREXPRESSION" NEGATE VALUE "1")
 qt_feature("sharedmemory" PUBLIC
@@ -587,7 +732,7 @@ qt_feature("library" PUBLIC
     SECTION "File I/O"
     LABEL "QLibrary"
     PURPOSE "Provides a wrapper for dynamically loaded libraries."
-    CONDITION WIN32 OR HPUX OR ( NOT NACL AND ON )
+    CONDITION WIN32 OR HPUX OR ( NOT NACL AND QT_FEATURE_dlopen )
 )
 qt_feature_definition("library" "QT_NO_LIBRARY" NEGATE VALUE "1")
 qt_feature("settings" PUBLIC
@@ -636,6 +781,13 @@ qt_feature("identityproxymodel" PUBLIC
     CONDITION QT_FEATURE_proxymodel
 )
 qt_feature_definition("identityproxymodel" "QT_NO_IDENTITYPROXYMODEL" NEGATE VALUE "1")
+qt_feature("transposeproxymodel" PUBLIC
+    SECTION "ItemViews"
+    LABEL "QTransposeProxyModel"
+    PURPOSE "Provides a proxy to swap rows and columns of a model."
+    CONDITION QT_FEATURE_proxymodel
+)
+qt_feature_definition("transposeproxymodel" "QT_NO_TRANSPOSEPROXYMODEL" NEGATE VALUE "1")
 qt_feature("concatenatetablesproxymodel" PUBLIC
     SECTION "ItemViews"
     LABEL "QConcatenateTablesProxyModel"

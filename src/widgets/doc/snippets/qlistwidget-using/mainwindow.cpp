@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "mainwindow.h"
 
@@ -77,14 +77,13 @@ MainWindow::MainWindow()
     listWidget = new QListWidget(this);
     listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(ascendingAction, SIGNAL(triggered()), this, SLOT(sortAscending()));
-    connect(descendingAction, SIGNAL(triggered()), this, SLOT(sortDescending()));
-    connect(insertAction, SIGNAL(triggered()), this, SLOT(insertItem()));
-    connect(removeAction, SIGNAL(triggered()), this, SLOT(removeItem()));
-    connect(listWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-            this, SLOT(updateMenus(QListWidgetItem*)));
+    connect(quitAction, &QAction::triggered, this, &QWidget::close);
+    connect(ascendingAction, &QAction::triggered, this, &MainWindow::sortAscending);
+    connect(descendingAction, &QAction::triggered, this, &MainWindow::sortDescending);
+    connect(insertAction, &QAction::triggered, this, &MainWindow::insertItem);
+    connect(removeAction, &QAction::triggered, this, &MainWindow::removeItem);
+    connect(listWidget, &QListWidget::currentItemChanged,
+            this, &MainWindow::updateMenus);
 
     setupListItems();
     updateMenus(listWidget->currentItem());

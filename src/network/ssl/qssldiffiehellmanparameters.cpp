@@ -136,7 +136,7 @@ QSslDiffieHellmanParameters QSslDiffieHellmanParameters::fromEncoded(const QByte
     to check whether the Diffie-Hellman parameters were valid
     and loaded correctly.
 
-    In particular, if \a device is \c nullptr or not open for reading, an invalid
+    In particular, if \a device is \nullptr or not open for reading, an invalid
     object will be returned.
 
     \sa isValid()
@@ -213,7 +213,7 @@ QSslDiffieHellmanParameters &QSslDiffieHellmanParameters::operator=(const QSslDi
     Setting an empty QSslDiffieHellmanParameters instance on a QSslSocket-based
     server will disable Diffie-Hellman key exchange.
 */
-bool QSslDiffieHellmanParameters::isEmpty() const Q_DECL_NOTHROW
+bool QSslDiffieHellmanParameters::isEmpty() const noexcept
 {
     return d->derData.isNull() && d->error == QSslDiffieHellmanParameters::NoError;
 }
@@ -229,7 +229,7 @@ bool QSslDiffieHellmanParameters::isEmpty() const Q_DECL_NOTHROW
 
     \sa error()
 */
-bool QSslDiffieHellmanParameters::isValid() const Q_DECL_NOTHROW
+bool QSslDiffieHellmanParameters::isValid() const noexcept
 {
     return d->error == QSslDiffieHellmanParameters::NoError;
 }
@@ -253,7 +253,7 @@ bool QSslDiffieHellmanParameters::isValid() const Q_DECL_NOTHROW
     Returns the error that caused the QSslDiffieHellmanParameters object
     to be invalid.
 */
-QSslDiffieHellmanParameters::Error QSslDiffieHellmanParameters::error() const Q_DECL_NOTHROW
+QSslDiffieHellmanParameters::Error QSslDiffieHellmanParameters::error() const noexcept
 {
     return d->error;
 }
@@ -262,7 +262,7 @@ QSslDiffieHellmanParameters::Error QSslDiffieHellmanParameters::error() const Q_
     Returns a human-readable description of the error that caused the
     QSslDiffieHellmanParameters object to be invalid.
 */
-QString QSslDiffieHellmanParameters::errorString() const Q_DECL_NOTHROW
+QString QSslDiffieHellmanParameters::errorString() const noexcept
 {
     switch (d->error) {
     case QSslDiffieHellmanParameters::NoError:
@@ -283,7 +283,7 @@ QString QSslDiffieHellmanParameters::errorString() const Q_DECL_NOTHROW
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
 */
-bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) Q_DECL_NOTHROW
+bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
 {
     return lhs.d->derData == rhs.d->derData;
 }
@@ -316,7 +316,7 @@ QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparam)
     Returns an hash value for \a dhparam, using \a seed to seed
     the calculation.
 */
-uint qHash(const QSslDiffieHellmanParameters &dhparam, uint seed) Q_DECL_NOTHROW
+uint qHash(const QSslDiffieHellmanParameters &dhparam, uint seed) noexcept
 {
     return qHash(dhparam.d->derData, seed);
 }

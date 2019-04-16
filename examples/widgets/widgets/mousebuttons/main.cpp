@@ -68,7 +68,7 @@ int main(int argv, char **args)
     testArea->setText("To test your mouse with Qt, press buttons in this area.\nYou may also scroll or tilt your mouse wheel.");
     QPushButton *quitButton = new QPushButton("Quit");
 
-    QObject::connect(quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QObject::connect(quitButton, &QPushButton::clicked, qApp, &QCoreApplication::quit);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(testArea);

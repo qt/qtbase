@@ -9,7 +9,10 @@
 #ifndef LIBANGLE_RENDERER_D3D_D3D11_QUERY11_H_
 #define LIBANGLE_RENDERER_D3D_D3D11_QUERY11_H_
 
+#include <deque>
+
 #include "libANGLE/renderer/QueryImpl.h"
+#include "libANGLE/renderer/d3d/d3d11/ResourceManager11.h"
 
 namespace rx
 {
@@ -19,31 +22,45 @@ class Query11 : public QueryImpl
 {
   public:
     Query11(Renderer11 *renderer, GLenum type);
-    virtual ~Query11();
+    ~Query11() override;
 
-    virtual gl::Error begin();
-    virtual gl::Error end();
-    virtual gl::Error queryCounter();
-    virtual gl::Error getResult(GLint *params);
-    virtual gl::Error getResult(GLuint *params);
-    virtual gl::Error getResult(GLint64 *params);
-    virtual gl::Error getResult(GLuint64 *params);
-    virtual gl::Error isResultAvailable(bool *available);
+    gl::Error begin() override;
+    gl::Error end() override;
+    gl::Error queryCounter() override;
+    gl::Error getResult(GLint *params) override;
+    gl::Error getResult(GLuint *params) override;
+    gl::Error getResult(GLint64 *params) override;
+    gl::Error getResult(GLuint64 *params) override;
+    gl::Error isResultAvailable(bool *available) override;
+
+    gl::Error pause();
+    gl::Error resume();
 
   private:
-    gl::Error testQuery();
+    struct QueryState final : private angle::NonCopyable
+    {
+        QueryState();
+        ~QueryState();
+
+        d3d11::Query query;
+        d3d11::Query beginTimestamp;
+        d3d11::Query endTimestamp;
+        bool finished;
+    };
+
+    gl::Error flush(bool force);
+    gl::Error testQuery(QueryState *queryState);
 
     template <typename T>
     gl::Error getResultBase(T *params);
 
     GLuint64 mResult;
-
-    bool mQueryFinished;
+    GLuint64 mResultSum;
 
     Renderer11 *mRenderer;
-    ID3D11Query *mQuery;
-    ID3D11Query *mTimestampBeginQuery;
-    ID3D11Query *mTimestampEndQuery;
+
+    std::unique_ptr<QueryState> mActiveQuery;
+    std::deque<std::unique_ptr<QueryState>> mPendingQueries;
 };
 
 }

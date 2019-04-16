@@ -187,6 +187,7 @@ public:
     enum CocoaControlType {
         NoControl,    // For when there's no such a control in Cocoa
         Box,          // QGroupBox
+        Box_Dark,     // FIXME See render code in drawPrimitive(PE_FrameTabWidget)
         Button_CheckBox,
         Button_Disclosure,  // Disclosure triangle, like in QTreeView
         Button_PopupButton,  // Non-editable QComboBox

@@ -69,7 +69,7 @@ class LcdNumber : public QFrame
 //! [6]
 public:
 //! [6] //! [7]
-    LcdNumber(QWidget *parent = 0);
+    LcdNumber(QWidget *parent = nullptr);
 //! [7]
 
 //! [8]

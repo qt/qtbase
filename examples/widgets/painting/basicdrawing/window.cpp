@@ -157,22 +157,22 @@ Window::Window()
 //! [7]
 
 //! [8]
-    connect(shapeComboBox, SIGNAL(activated(int)),
-            this, SLOT(shapeChanged()));
-    connect(penWidthSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(penChanged()));
-    connect(penStyleComboBox, SIGNAL(activated(int)),
-            this, SLOT(penChanged()));
-    connect(penCapComboBox, SIGNAL(activated(int)),
-            this, SLOT(penChanged()));
-    connect(penJoinComboBox, SIGNAL(activated(int)),
-            this, SLOT(penChanged()));
-    connect(brushStyleComboBox, SIGNAL(activated(int)),
-            this, SLOT(brushChanged()));
-    connect(antialiasingCheckBox, SIGNAL(toggled(bool)),
-            renderArea, SLOT(setAntialiased(bool)));
-    connect(transformationsCheckBox, SIGNAL(toggled(bool)),
-            renderArea, SLOT(setTransformed(bool)));
+    connect(shapeComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::shapeChanged);
+    connect(penWidthSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &Window::penChanged);
+    connect(penStyleComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::penChanged);
+    connect(penCapComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::penChanged);
+    connect(penJoinComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::penChanged);
+    connect(brushStyleComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &Window::brushChanged);
+    connect(antialiasingCheckBox, &QAbstractButton::toggled,
+            renderArea, &RenderArea::setAntialiased);
+    connect(transformationsCheckBox, &QAbstractButton::toggled,
+            renderArea, &RenderArea::setTransformed);
 //! [8]
 
 //! [9]

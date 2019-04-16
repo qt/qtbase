@@ -339,6 +339,23 @@ struct TCBPoint {
 };
 Q_DECLARE_TYPEINFO(TCBPoint, Q_PRIMITIVE_TYPE);
 
+QDataStream &operator<<(QDataStream &stream, const TCBPoint &point)
+{
+    stream << point._point
+           << point._t
+           << point._c
+           << point._b;
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, TCBPoint &point)
+{
+    stream >> point._point
+           >> point._t
+           >> point._c
+           >> point._b;
+    return stream;
+}
 
 typedef QVector<TCBPoint> TCBPoints;
 
@@ -362,6 +379,34 @@ public:
     TCBPoints _tcbPoints;
 
 };
+
+QDataStream &operator<<(QDataStream &stream, QEasingCurveFunction *func)
+{
+    if (func) {
+        stream << func->_p;
+        stream << func->_a;
+        stream << func->_o;
+        if (stream.version() > QDataStream::Qt_5_12) {
+            stream << func->_bezierCurves;
+            stream << func->_tcbPoints;
+        }
+    }
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, QEasingCurveFunction *func)
+{
+    if (func) {
+        stream >> func->_p;
+        stream >> func->_a;
+        stream >> func->_o;
+        if (stream.version() > QDataStream::Qt_5_12) {
+            stream >> func->_bezierCurves;
+            stream >> func->_tcbPoints;
+        }
+    }
+    return stream;
+}
 
 static QEasingCurve::EasingFunction curveToFunc(QEasingCurve::Type curve);
 
@@ -1480,9 +1525,7 @@ QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
     bool hasConfig = easing.d_ptr->config;
     stream << hasConfig;
     if (hasConfig) {
-        stream << easing.d_ptr->config->_p;
-        stream << easing.d_ptr->config->_a;
-        stream << easing.d_ptr->config->_o;
+        stream << easing.d_ptr->config;
     }
     return stream;
 }
@@ -1515,9 +1558,7 @@ QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
     easing.d_ptr->config = nullptr;
     if (hasConfig) {
         QEasingCurveFunction *config = curveToFunctionObject(type);
-        stream >> config->_p;
-        stream >> config->_a;
-        stream >> config->_o;
+        stream >> config;
         easing.d_ptr->config = config;
     }
     return stream;

@@ -5,5 +5,6 @@ SUBDIRS = \
     ipc \
     mimetypes \
     serialization \
-    threads \
     tools
+
+qtConfig(thread): SUBDIRS += threads

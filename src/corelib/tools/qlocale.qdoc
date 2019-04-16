@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v33.1.
+    QLocale's data is based on Common Locale Data Repository v34.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble(),
     QInputMethod::locale()
@@ -1161,6 +1161,30 @@
 
     An optional argument containing a currency symbol to be used in the
     currency string.
+*/
+
+/*!
+\fn QString QLocale::toString(long i) const
+
+\overload
+
+\sa toLong()
+*/
+
+/*!
+\fn QString QLocale::toString(ulong i) const
+
+\overload
+
+\sa toULong()
+*/
+
+/*!
+\fn QString QLocale::toString(ushort i) const
+
+\overload
+
+\sa toUShort()
 */
 
 

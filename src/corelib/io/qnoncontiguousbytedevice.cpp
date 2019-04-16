@@ -534,7 +534,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer
 */
 QSharedPointer<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::createShared(QSharedPointer<QRingBuffer> ringBuffer)
 {
-    return QSharedPointer<QNonContiguousByteDeviceRingBufferImpl>::create(qMove(ringBuffer));
+    return QSharedPointer<QNonContiguousByteDeviceRingBufferImpl>::create(std::move(ringBuffer));
 }
 
 /*!

@@ -66,10 +66,16 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
+    // QTBUG-68722
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 protected:
+#else
+public:
+#endif
     QSize sizeHint() const override;
     int heightForWidth(int) const override;
     QSize minimumSizeHint() const override;
+protected:
     bool event(QEvent *e) override;
     void paintEvent(QPaintEvent *) override;
 

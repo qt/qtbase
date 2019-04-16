@@ -97,7 +97,7 @@ public:
     static Q_CONSTEXPR int DefaultTimeout = 30000;
 
 private:
-    Q_DISABLE_COPY(QNetworkConfigurationPrivate)
+    Q_DISABLE_COPY_MOVE(QNetworkConfigurationPrivate)
 };
 
 QT_END_NAMESPACE

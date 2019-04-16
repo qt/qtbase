@@ -113,7 +113,8 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
 //! [updateFormatsTable() part1]
 
 //! [updateFormatsTable() part2]
-    for (const QString &format : mimeData->formats()) {
+    const QStringList formats = mimeData->formats();
+    for (const QString &format : formats) {
         QTableWidgetItem *formatItem = new QTableWidgetItem(format);
         formatItem->setFlags(Qt::ItemIsEnabled);
         formatItem->setTextAlignment(Qt::AlignTop | Qt::AlignLeft);

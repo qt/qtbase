@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'sslclient.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -155,20 +155,20 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Secure Socket Client", nullptr));
-        hostNameLabel->setText(QApplication::translate("Form", "Host name:", nullptr));
-        hostNameEdit->setText(QApplication::translate("Form", "imap.example.com", nullptr));
-        portLabel->setText(QApplication::translate("Form", "Port:", nullptr));
-        connectButton->setText(QApplication::translate("Form", "Connect to host", nullptr));
-        sessionBox->setTitle(QApplication::translate("Form", "Active session", nullptr));
-        cipherText->setText(QApplication::translate("Form", "Cryptographic Cipher:", nullptr));
-        cipherLabel->setText(QApplication::translate("Form", "<none>", nullptr));
-        sessionOutput->setHtml(QApplication::translate("Form", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+        Form->setWindowTitle(QCoreApplication::translate("Form", "Secure Socket Client", nullptr));
+        hostNameLabel->setText(QCoreApplication::translate("Form", "Host name:", nullptr));
+        hostNameEdit->setText(QCoreApplication::translate("Form", "imap.example.com", nullptr));
+        portLabel->setText(QCoreApplication::translate("Form", "Port:", nullptr));
+        connectButton->setText(QCoreApplication::translate("Form", "Connect to host", nullptr));
+        sessionBox->setTitle(QCoreApplication::translate("Form", "Active session", nullptr));
+        cipherText->setText(QCoreApplication::translate("Form", "Cryptographic Cipher:", nullptr));
+        cipherLabel->setText(QCoreApplication::translate("Form", "<none>", nullptr));
+        sessionOutput->setHtml(QCoreApplication::translate("Form", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", nullptr));
-        sessionInputLabel->setText(QApplication::translate("Form", "Input:", nullptr));
-        sendButton->setText(QApplication::translate("Form", "&Send", nullptr));
+        sessionInputLabel->setText(QCoreApplication::translate("Form", "Input:", nullptr));
+        sendButton->setText(QCoreApplication::translate("Form", "&Send", nullptr));
     } // retranslateUi
 
 };

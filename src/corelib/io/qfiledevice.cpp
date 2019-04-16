@@ -700,7 +700,7 @@ bool QFileDevice::setPermissions(Permissions permissions)
 
     Any mapping options can be passed through \a flags.
 
-    Returns a pointer to the memory or 0 if there is an error.
+    Returns a pointer to the memory or \nullptr if there is an error.
 
     \sa unmap()
  */
@@ -711,11 +711,11 @@ uchar *QFileDevice::map(qint64 offset, qint64 size, MemoryMapFlags flags)
             && d->fileEngine->supportsExtension(QAbstractFileEngine::MapExtension)) {
         unsetError();
         uchar *address = d->fileEngine->map(offset, size, flags);
-        if (address == 0)
+        if (address == nullptr)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return address;
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

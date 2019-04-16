@@ -166,7 +166,7 @@ public:
     bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const override;
 
 private:
-    Q_DISABLE_COPY(QOpenGL2PaintEngineEx)
+    Q_DISABLE_COPY_MOVE(QOpenGL2PaintEngineEx)
 
     friend class QOpenGLEngineShaderManager;
 };
@@ -187,9 +187,9 @@ public:
 
     QOpenGL2PaintEngineExPrivate(QOpenGL2PaintEngineEx *q_ptr) :
             q(q_ptr),
-            shaderManager(0),
+            shaderManager(nullptr),
             width(0), height(0),
-            ctx(0),
+            ctx(nullptr),
             useSystemClip(true),
             elementIndicesVBOId(0),
             opacityArray(0),
@@ -361,9 +361,9 @@ void QOpenGL2PaintEngineExPrivate::uploadData(unsigned int arrayIndex, const GLf
             opacityBuffer.allocate(data, count * sizeof(float));
         }
         if (arrayIndex == QT_OPACITY_ATTR)
-            funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, 0);
+            funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
         else
-            funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, 0);
+            funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
     } else {
         // If we already uploaded the data we don't have to do it again
         if (data == vertexAttribPointers[arrayIndex])

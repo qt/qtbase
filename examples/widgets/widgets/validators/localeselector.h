@@ -58,7 +58,7 @@ class LocaleSelector : public QComboBox
     Q_OBJECT
 
 public:
-    LocaleSelector(QWidget *parent = 0);
+    LocaleSelector(QWidget *parent = nullptr);
 
 signals:
     void localeSelected(const QLocale &locale);

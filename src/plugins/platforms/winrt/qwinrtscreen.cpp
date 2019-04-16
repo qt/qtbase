@@ -91,13 +91,10 @@ typedef ITypedEventHandler<CoreWindow*, CharacterReceivedEventArgs*> CharacterRe
 typedef ITypedEventHandler<CoreWindow*, InputEnabledEventArgs*> InputEnabledHandler;
 typedef ITypedEventHandler<CoreWindow*, KeyEventArgs*> KeyHandler;
 typedef ITypedEventHandler<CoreWindow*, PointerEventArgs*> PointerHandler;
-typedef ITypedEventHandler<CoreWindow*, WindowSizeChangedEventArgs*> SizeChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*> VisibilityChangedHandler;
 typedef ITypedEventHandler<DisplayInformation*, IInspectable*> DisplayInformationHandler;
 typedef ITypedEventHandler<ICorePointerRedirector*, PointerEventArgs*> RedirectHandler;
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 typedef ITypedEventHandler<ApplicationView*, IInspectable*> VisibleBoundsChangedHandler;
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 QT_BEGIN_NAMESPACE
 
@@ -479,10 +476,8 @@ typedef HRESULT (__stdcall IDisplayInformation::*DisplayCallbackRemover)(EventRe
 uint qHash(DisplayCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 typedef HRESULT (__stdcall ICorePointerRedirector::*RedirectorCallbackRemover)(EventRegistrationToken);
 uint qHash(RedirectorCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 typedef HRESULT (__stdcall IApplicationView2::*ApplicationView2CallbackRemover)(EventRegistrationToken);
 uint qHash(ApplicationView2CallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 class QWinRTScreenPrivate
 {
@@ -509,15 +504,14 @@ public:
     QHash<CoreWindowCallbackRemover, EventRegistrationToken> windowTokens;
     QHash<DisplayCallbackRemover, EventRegistrationToken> displayTokens;
     QHash<RedirectorCallbackRemover, EventRegistrationToken> redirectTokens;
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     QHash<ApplicationView2CallbackRemover, EventRegistrationToken> view2Tokens;
     ComPtr<IApplicationView2> view2;
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     QAtomicPointer<QWinRTWindow> mouseGrabWindow;
     QAtomicPointer<QWinRTWindow> keyboardGrabWindow;
     QWindow *currentPressWindow = nullptr;
     QWindow *currentTargetWindow = nullptr;
     bool firstMouseMove = true;
+    bool resizePending = false;
 };
 
 // To be called from the XAML thread
@@ -603,10 +597,8 @@ QWinRTScreen::QWinRTScreen()
 
     d->cursor.reset(new QWinRTCursor);
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     hr = d->view.As(&d->view2);
     Q_ASSERT_SUCCEEDED(hr);
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 }
 
 QWinRTScreen::~QWinRTScreen()
@@ -630,12 +622,10 @@ QWinRTScreen::~QWinRTScreen()
             hr = (d->redirect.Get()->*i.key())(i.value());
             Q_ASSERT_SUCCEEDED(hr);
         }
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
         for (QHash<ApplicationView2CallbackRemover, EventRegistrationToken>::const_iterator i = d->view2Tokens.begin(); i != d->view2Tokens.end(); ++i) {
             hr = (d->view2.Get()->*i.key())(i.value());
             Q_ASSERT_SUCCEEDED(hr);
         }
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
         return hr;
     });
     RETURN_VOID_IF_FAILED("Failed to unregister screen event callbacks");
@@ -777,14 +767,8 @@ void QWinRTScreen::initialize()
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->add_PointerWheelChanged(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerWheelChanged]);
     Q_ASSERT_SUCCEEDED(hr);
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     hr = d->view2->add_VisibleBoundsChanged(Callback<VisibleBoundsChangedHandler>(this, &QWinRTScreen::onWindowSizeChanged).Get(), &d->view2Tokens[&IApplicationView2::remove_VisibleBoundsChanged]);
     Q_ASSERT_SUCCEEDED(hr);
-#else
-    hr = d->coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onWindowSizeChanged).Get(), &d->windowTokens[&ICoreWindow::remove_SizeChanged]);
-    Q_ASSERT_SUCCEEDED(hr)
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-
     hr = d->coreWindow->add_Activated(Callback<ActivatedHandler>(this, &QWinRTScreen::onActivated).Get(), &d->windowTokens[&ICoreWindow::remove_Activated]);
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->add_Closed(Callback<ClosedHandler>(this, &QWinRTScreen::onClosed).Get(), &d->windowTokens[&ICoreWindow::remove_Closed]);
@@ -820,7 +804,6 @@ void QWinRTScreen::setKeyboardRect(const QRectF &keyboardRect)
         return;
     }
     d->logicalRect = QRectF(windowSize.X, windowSize.Y, windowSize.Width, windowSize.Height);
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     Rect visibleRect;
     hr = d->view2->get_VisibleBounds(&visibleRect);
     if (FAILED(hr)) {
@@ -828,9 +811,6 @@ void QWinRTScreen::setKeyboardRect(const QRectF &keyboardRect)
         return;
     }
     visibleRectF = QRectF(visibleRect.X, visibleRect.Y, visibleRect.Width, visibleRect.Height);
-#else
-    visibleRectF = d->logicalRect;
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     // if keyboard is snapped to the bottom of the screen and would cover the cursor the content is
     // moved up to make it visible
     if (keyboardRect.intersects(mCursorRect)
@@ -1423,6 +1403,18 @@ void QWinRTScreen::emulateMouseMove(const QPointF &point, MousePositionTransitio
                                              Qt::NoModifier);
 }
 
+void QWinRTScreen::setResizePending()
+{
+    Q_D(QWinRTScreen);
+    d->resizePending = true;
+}
+
+bool QWinRTScreen::resizePending() const
+{
+    Q_D(const QWinRTScreen);
+    return d->resizePending;
+}
+
 HRESULT QWinRTScreen::onActivated(ICoreWindow *, IWindowActivatedEventArgs *args)
 {
     Q_D(QWinRTScreen);
@@ -1528,11 +1520,7 @@ HRESULT QWinRTScreen::onRedirectReleased(ICorePointerRedirector *, IPointerEvent
     return onPointerUpdated(nullptr, args);
 }
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-HRESULT QWinRTScreen::onWindowSizeChanged(IApplicationView *, IInspectable *)
-#else
-HRESULT QWinRTScreen::onWindowSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *)
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+HRESULT QWinRTScreen::onWindowSizeChanged(IApplicationView *w, IInspectable *)
 {
     Q_D(QWinRTScreen);
 
@@ -1543,19 +1531,18 @@ HRESULT QWinRTScreen::onWindowSizeChanged(ICoreWindow *, IWindowSizeChangedEvent
     RETURN_OK_IF_FAILED("Failed to get window bounds");
     d->logicalRect = QRectF(windowSize.X, windowSize.Y, windowSize.Width, windowSize.Height);
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     Rect visibleRect;
     hr = d->view2->get_VisibleBounds(&visibleRect);
     RETURN_OK_IF_FAILED("Failed to get window visible bounds");
     d->visibleRect = QRectF(visibleRect.X, visibleRect.Y, visibleRect.Width, visibleRect.Height);
-#else
-    d->visibleRect = QRectF(windowSize.X, windowSize.Y, windowSize.Width, windowSize.Height);
-#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
     qCDebug(lcQpaWindows) << __FUNCTION__ << d->logicalRect;
     QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     QPlatformScreen::resizeMaximizedWindows();
     handleExpose();
+    // If we "emulate" a resize, w will be nullptr.Checking w shows whether it's a real resize
+    if (w)
+        d->resizePending = false;
     return S_OK;
 }
 

@@ -211,7 +211,7 @@ QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
 
     If the desired amount of samples per pixel is not supported by the hardware
     then the maximum number of samples per pixel will be used. Note that
-    multisample framebuffer objects can not be bound as textures. Also, the
+    multisample framebuffer objects cannot be bound as textures. Also, the
     \c{GL_EXT_framebuffer_multisample} extension is required to create a
     framebuffer with more than one sample per pixel.
 

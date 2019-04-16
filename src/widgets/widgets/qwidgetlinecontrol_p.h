@@ -91,7 +91,7 @@ public:
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
         m_validInput(1), m_blinkStatus(0), m_blinkEnabled(false), m_blinkTimer(0), m_deleteAllTimer(0),
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
-        m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
+        m_tripleClickTimer(0), m_maskData(nullptr), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
         , m_passwordEchoTimer(0)
         , m_passwordMaskDelay(-1)
@@ -103,13 +103,19 @@ public:
         , m_passwordMaskDelayOverride(-1)
 #endif
         , m_keyboardScheme(0)
-        , m_accessibleObject(0)
+        , m_accessibleObject(nullptr)
     {
         init(txt);
     }
 
     ~QWidgetLineControl()
     {
+        // If this control is used for password input, we don't want the
+        // password data to stay in the process memory, therefore we need
+        // to zero it out
+        if (m_echoMode != QLineEdit::Normal)
+            m_text.fill('\0');
+
         delete [] m_maskData;
     }
 
@@ -274,6 +280,13 @@ public:
         cancelPasswordEchoTimer();
         m_echoMode = mode;
         m_passwordEchoEditing = false;
+
+        // If this control is used for password input, we want to minimize
+        // the possibility of string reallocation not to leak (parts of)
+        // the password.
+        if (m_echoMode != QLineEdit::Normal)
+            m_text.reserve(30);
+
         updateDisplayText();
     }
 

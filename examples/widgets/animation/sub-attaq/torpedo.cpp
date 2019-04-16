@@ -73,8 +73,8 @@ void Torpedo::launch()
     launchAnimation->setEndValue(QPointF(x(),qobject_cast<GraphicsScene *>(scene())->sealLevel() - 15));
     launchAnimation->setEasingCurve(QEasingCurve::InQuad);
     launchAnimation->setDuration(y()/currentSpeed*10);
-    connect(launchAnimation,SIGNAL(valueChanged(QVariant)),this,SLOT(onAnimationLaunchValueChanged(QVariant)));
-    connect(this,SIGNAL(torpedoExploded()), launchAnimation, SLOT(stop()));
+    connect(launchAnimation,&QVariantAnimation::valueChanged,this,&Torpedo::onAnimationLaunchValueChanged);
+    connect(this,&Torpedo::torpedoExploded, launchAnimation, &QAbstractAnimation::stop);
 
     //We setup the state machine of the torpedo
     QStateMachine *machine = new QStateMachine(this);
@@ -89,13 +89,13 @@ void Torpedo::launch()
     machine->setInitialState(launched);
 
     //### Add a nice animation when the torpedo is destroyed
-    launched->addTransition(this, SIGNAL(torpedoExploded()),final);
+    launched->addTransition(this, &Torpedo::torpedoExploded,final);
 
     //If the animation is finished, then we move to the final state
-    launched->addTransition(launched, SIGNAL(animationFinished()), final);
+    launched->addTransition(launched, &QAnimationState::animationFinished, final);
 
     //The machine has finished to be executed, then the boat is dead
-    connect(machine,SIGNAL(finished()),this, SIGNAL(torpedoExecutionFinished()));
+    connect(machine,&QState::finished,this, &Torpedo::torpedoExecutionFinished);
 
     machine->start();
 }
@@ -111,7 +111,9 @@ void Torpedo::setCurrentSpeed(int speed)
 
 void Torpedo::onAnimationLaunchValueChanged(const QVariant &)
 {
-    foreach (QGraphicsItem *item , collidingItems(Qt::IntersectsItemBoundingRect)) {
+    const QList<QGraphicsItem *> colItems =
+            collidingItems(Qt::IntersectsItemBoundingRect);
+    for (QGraphicsItem *item : colItems) {
         if (Boat *b = qgraphicsitem_cast<Boat*>(item))
             b->destroy();
     }

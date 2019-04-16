@@ -370,6 +370,7 @@ void QDtlsBasePrivate::setConfiguration(const QSslConfiguration &configuration)
     dtlsConfiguration.nextProtocolNegotiationStatus = configuration.nextProtocolNegotiationStatus();
     dtlsConfiguration.dtlsCookieEnabled = configuration.dtlsCookieVerificationEnabled();
     dtlsConfiguration.allowRootCertOnDemandLoading = configuration.d->allowRootCertOnDemandLoading;
+    dtlsConfiguration.backendConfig = configuration.backendConfiguration();
 
     clearDtlsError();
 }

@@ -101,10 +101,10 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
                                     ConnectionType connectionType = ConnectionTypeHTTP,
-                                    QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession
+                                    QObject *parent = nullptr, QSharedPointer<QNetworkSession> networkSession
                                     = QSharedPointer<QNetworkSession>());
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
-                           bool encrypt = false, QObject *parent = 0,
+                           bool encrypt = false, QObject *parent = nullptr,
                            QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>(),
                            ConnectionType connectionType = ConnectionTypeHTTP);
 #else
@@ -154,9 +154,11 @@ public:
 
     void preConnectFinished();
 
+    QString peerVerifyName() const;
+    void setPeerVerifyName(const QString &peerName);
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
-    Q_DISABLE_COPY(QHttpNetworkConnection)
+    Q_DISABLE_COPY_MOVE(QHttpNetworkConnection)
     friend class QHttpThreadDelegate;
     friend class QHttpNetworkReply;
     friend class QHttpNetworkReplyPrivate;
@@ -288,6 +290,8 @@ public:
 #endif
 
     Http2::ProtocolParameters http2Parameters;
+
+    QString peerVerifyName;
 
     friend class QHttpNetworkConnectionChannel;
 };

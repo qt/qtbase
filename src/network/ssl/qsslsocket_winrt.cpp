@@ -207,9 +207,9 @@ void QSslSocketPrivate::resetDefaultCiphers()
 QList<QSslCipher> QSslSocketBackendPrivate::defaultCiphers()
 {
     QList<QSslCipher> ciphers;
-    const QString protocolStrings[] = { QStringLiteral("SSLv3"), QStringLiteral("TLSv1"),
+    const QString protocolStrings[] = { QStringLiteral("TLSv1"),
                                         QStringLiteral("TLSv1.1"), QStringLiteral("TLSv1.2") };
-    const QSsl::SslProtocol protocols[] = { QSsl::SslV3, QSsl::TlsV1_0, QSsl::TlsV1_1, QSsl::TlsV1_2 };
+    const QSsl::SslProtocol protocols[] = { QSsl::TlsV1_0, QSsl::TlsV1_1, QSsl::TlsV1_2 };
     const int size = static_cast<int>(ARRAYSIZE(protocols));
     ciphers.reserve(size);
     for (int i = 0; i < size; ++i) {
@@ -234,10 +234,14 @@ void QSslSocketBackendPrivate::startClientEncryption()
 
     QSsl::SslProtocol protocol = q->protocol();
     switch (q->protocol()) {
-    case QSsl::AnyProtocol:
+    case QSsl::SslV2:
     case QSsl::SslV3:
+        setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
+                        QStringLiteral("unsupported protocol"));
+        return;
+    case QSsl::AnyProtocol:
     case QSsl::TlsV1SslV3:
-        protectionLevel = SocketProtectionLevel_Ssl; // Only use this value if weak cipher support is required
+        protectionLevel = SocketProtectionLevel_Tls10;
         break;
     case QSsl::TlsV1_0:
         protectionLevel = SocketProtectionLevel_Tls10;
@@ -251,6 +255,8 @@ void QSslSocketBackendPrivate::startClientEncryption()
     case QSsl::TlsV1_0OrLater:
     case QSsl::TlsV1_1OrLater:
     case QSsl::TlsV1_2OrLater:
+    case QSsl::TlsV1_3:
+    case QSsl::TlsV1_3OrLater:
         // TlsV1_0OrLater, TlsV1_1OrLater and TlsV1_2OrLater are disabled on WinRT
         // because there is no good way to map them to the native API.
         setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,

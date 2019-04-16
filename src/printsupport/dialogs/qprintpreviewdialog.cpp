@@ -152,8 +152,8 @@ class QPrintPreviewDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QPrintPreviewDialog)
 public:
     QPrintPreviewDialogPrivate()
-        : printDialog(nullptr), ownPrinter(false),
-          initialized(false) {}
+        : printDialog(nullptr), pageSetupDialog(nullptr),
+          ownPrinter(false), initialized(false)  {}
 
     // private slots
     void _q_fit(QAction *action);
@@ -178,6 +178,7 @@ public:
     void updateZoomFactor();
 
     QPrintDialog *printDialog;
+    QPageSetupDialog *pageSetupDialog;
     QPrintPreviewWidget *preview;
     QPrinter *printer;
     bool ownPrinter;
@@ -331,7 +332,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 
     QVBoxLayout *topLayout = new QVBoxLayout;
     topLayout->addWidget(mw);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0, 0, 0, 0);
     q->setLayout(topLayout);
 
     QString caption = QCoreApplication::translate("QPrintPreviewDialog", "Print Preview");
@@ -494,7 +495,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
 
 void QPrintPreviewDialogPrivate::updateZoomFactor()
 {
-    zoomFactor->lineEdit()->setText(QString().sprintf("%.1f%%", preview->zoomFactor()*100));
+    zoomFactor->lineEdit()->setText(QString::asprintf("%.1f%%", preview->zoomFactor()*100));
 }
 
 void QPrintPreviewDialogPrivate::_q_fit(QAction* action)
@@ -602,8 +603,10 @@ void QPrintPreviewDialogPrivate::_q_pageSetup()
 {
     Q_Q(QPrintPreviewDialog);
 
-    QPageSetupDialog pageSetup(printer, q);
-    if (pageSetup.exec() == QDialog::Accepted) {
+    if (!pageSetupDialog)
+        pageSetupDialog = new QPageSetupDialog(printer, q);
+
+    if (pageSetupDialog->exec() == QDialog::Accepted) {
         // update possible orientation changes
         if (preview->orientation() == QPrinter::Portrait) {
             portraitAction->setChecked(true);
@@ -713,6 +716,7 @@ QPrintPreviewDialog::~QPrintPreviewDialog()
     if (d->ownPrinter)
         delete d->printer;
     delete d->printDialog;
+    delete d->pageSetupDialog;
 }
 
 /*!

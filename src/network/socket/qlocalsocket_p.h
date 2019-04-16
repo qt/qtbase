@@ -131,7 +131,6 @@ public:
 #elif defined(Q_OS_WIN)
     ~QLocalSocketPrivate();
     void destroyPipeHandles();
-    void setErrorString(const QString &function);
     void _q_canWrite();
     void _q_pipeClosed();
     void _q_winError(ulong windowsError, const QString &function);

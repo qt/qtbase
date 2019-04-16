@@ -242,7 +242,18 @@ QRectF QWindowsInputContext::keyboardRect() const
 bool QWindowsInputContext::isInputPanelVisible() const
 {
     HWND hwnd = getVirtualKeyboardWindowHandle();
-    return hwnd && ::IsWindowEnabled(hwnd) && ::IsWindowVisible(hwnd);
+    if (hwnd && ::IsWindowEnabled(hwnd) && ::IsWindowVisible(hwnd))
+        return true;
+    // check if the Input Method Editor is open
+    if (inputMethodAccepted()) {
+        if (QWindow *window = QGuiApplication::focusWindow()) {
+            if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(window)) {
+                if (HIMC himc = ImmGetContext(platformWindow->handle()))
+                    return ImmGetOpenStatus(himc);
+            }
+        }
+    }
+    return false;
 }
 
 void QWindowsInputContext::showInputPanel()
@@ -300,10 +311,10 @@ void QWindowsInputContext::setWindowsImeEnabled(QWindowsWindow *platformWindow, 
         return;
     if (enabled) {
         // Re-enable Windows IME by associating default context.
-        ImmAssociateContextEx(platformWindow->handle(), 0, IACE_DEFAULT);
+        ImmAssociateContextEx(platformWindow->handle(), nullptr, IACE_DEFAULT);
     } else {
         // Disable Windows IME by associating 0 context.
-        ImmAssociateContext(platformWindow->handle(), 0);
+        ImmAssociateContext(platformWindow->handle(), nullptr);
     }
 }
 
@@ -434,7 +445,7 @@ static inline QTextFormat standardFormat(StandardFormat format)
         const QPalette palette = QGuiApplication::palette();
         const QColor background = palette.text().color();
         result.setBackground(QBrush(background));
-        result.setForeground(palette.background());
+        result.setForeground(palette.window());
         break;
     }
     }
@@ -528,7 +539,7 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
         // attribute sequence specifying the formatting of the converted part.
         int selStart, selLength;
         m_compositionContext.composition = getCompositionString(himc, GCS_COMPSTR);
-        m_compositionContext.position = ImmGetCompositionString(himc, GCS_CURSORPOS, 0, 0);
+        m_compositionContext.position = ImmGetCompositionString(himc, GCS_CURSORPOS, nullptr, 0);
         getCompositionStringConvertedRange(himc, &selStart, &selLength);
         if ((lParam & CS_INSERTCHAR) && (lParam & CS_NOMOVECARET)) {
             // make Korean work correctly. Hope this is correct for all IMEs
@@ -609,11 +620,11 @@ void QWindowsInputContext::doneContext()
 {
     if (!m_compositionContext.hwnd)
         return;
-    m_compositionContext.hwnd = 0;
+    m_compositionContext.hwnd = nullptr;
     m_compositionContext.composition.clear();
     m_compositionContext.position = 0;
     m_compositionContext.isComposing = false;
-    m_compositionContext.focusObject = 0;
+    m_compositionContext.focusObject = nullptr;
 }
 
 bool QWindowsInputContext::handleIME_Request(WPARAM wParam,

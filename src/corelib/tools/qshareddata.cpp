@@ -142,9 +142,7 @@ QT_BEGIN_NAMESPACE
     would just predeclare the private subclass \c EmployeeData in \c
     {employee.h} this way:
 
-    \code
-    class EmployeeData;
-    \endcode
+    \snippet code/src_corelib_tools_qshareddata.cpp 0
 
     If we had done it that way here, the copy constructor shown would be
     required. Since the copy constructor is trivial, you might as well
@@ -370,7 +368,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn template <class T> bool QSharedDataPointer<T>::operator!() const
-    Returns \c true if the \e{d pointer} of \e this is null.
+    Returns \c true if the \e{d pointer} of \e this is \nullptr.
 */
 
 /*! \fn template <class T> void QSharedDataPointer<T>::detach()
@@ -396,13 +394,7 @@ QT_BEGIN_NAMESPACE
     a template-specialization of this function for your own type, like
     the example below:
 
-    \code
-      template<>
-      EmployeeData *QSharedDataPointer<EmployeeData>::clone()
-      {
-          return d->clone();
-      }
-    \endcode
+    \snippet code/src_corelib_tools_qshareddata.cpp 1
 
     In the example above, the template specialization for the clone()
     function calls the \e {EmployeeData::clone()} virtual function. A
@@ -554,10 +546,7 @@ QT_BEGIN_NAMESPACE
     \warning relying on such \c{static_cast} is potentially dangerous,
     because it allows code like this to compile:
 
-    \code
-        QExplicitlySharedDataPointer<Base> base(new Base);
-        QExplicitlySharedDataPointer<Derived> derived(base); // !!! DANGER !!!
-    \endcode
+    \snippet code/src_corelib_tools_qshareddata.cpp 2
 
     Starting from Qt 5.4 the cast is disabled by default. It is
     possible to enable it back by defining the
@@ -590,12 +579,19 @@ QT_BEGIN_NAMESPACE
     the shared data object if the reference count became 0.
  */
 
+/*! \fn template <class T> T *QExplicitlySharedDataPointer<T>::take()
+    \since 5.12
+
+    Returns a pointer to the shared object, and resets \e this to be null.
+    That is, this function sets the \e{d pointer} of \e this to \nullptr.
+ */
+
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::operator bool () const
     Returns \c true if the \e{d pointer} of \e this is \e not null.
  */
 
 /*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!() const
-    Returns \c true if the \e{d pointer} of \e this is null.
+    Returns \c true if the \e{d pointer} of \e this is \nullptr.
 */
 
 /*! \fn template <class T> void QExplicitlySharedDataPointer<T>::detach()

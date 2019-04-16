@@ -78,7 +78,7 @@ class QLocalServerPrivate : public QObjectPrivate
 public:
     QLocalServerPrivate() :
 #if !defined(QT_LOCALSOCKET_TCP) && !defined(Q_OS_WIN)
-            listenSocket(-1), socketNotifier(0),
+            listenSocket(-1), socketNotifier(nullptr),
 #endif
             maxPendingConnections(30), error(QAbstractSocket::UnknownSocketError),
             socketOptions(QLocalServer::NoOptions)

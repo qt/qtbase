@@ -113,7 +113,7 @@ public:
         , copyAvailable(false)
     {
         QVBoxLayout *layout = new QVBoxLayout;
-        layout->setMargin(0);
+        layout->setContentsMargins(QMargins());
         QFrame *line = new QFrame(this);
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
@@ -209,12 +209,15 @@ public:
     void setupLayout();
     void _q_buttonClicked(QAbstractButton *);
     void _q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
+    void setClickedButton(QAbstractButton *button);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
     void addOldButtons(int button0, int button1, int button2);
 
     QAbstractButton *abstractButtonForId(int id) const;
     int execReturnCode(QAbstractButton *button);
+
+    int dialogCodeForButton(QAbstractButton *button) const;
 
     void detectEscapeButton();
     void updateSize();
@@ -466,6 +469,27 @@ int QMessageBoxPrivate::execReturnCode(QAbstractButton *button)
     return ret;
 }
 
+/*!
+    \internal
+
+    Returns 0 for RejectedRole and NoRole, 1 for AcceptedRole and YesRole, -1 otherwise
+ */
+int QMessageBoxPrivate::dialogCodeForButton(QAbstractButton *button) const
+{
+    Q_Q(const QMessageBox);
+
+    switch (q->buttonRole(button)) {
+    case QMessageBox::AcceptRole:
+    case QMessageBox::YesRole:
+        return QDialog::Accepted;
+    case QMessageBox::RejectRole:
+    case QMessageBox::NoRole:
+        return QDialog::Rejected;
+    default:
+        return -1;
+    }
+}
+
 void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 {
     Q_Q(QMessageBox);
@@ -477,18 +501,28 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     } else
 #endif
     {
-        clickedButton = button;
-        q->done(execReturnCode(button)); // does not trigger closeEvent
-        emit q->buttonClicked(button);
+        setClickedButton(button);
 
         if (receiverToDisconnectOnClose) {
             QObject::disconnect(q, signalToDisconnectOnClose, receiverToDisconnectOnClose,
                                 memberToDisconnectOnClose);
-            receiverToDisconnectOnClose = 0;
+            receiverToDisconnectOnClose = nullptr;
         }
         signalToDisconnectOnClose.clear();
         memberToDisconnectOnClose.clear();
     }
+}
+
+void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
+{
+    Q_Q(QMessageBox);
+
+    clickedButton = button;
+    emit q->buttonClicked(clickedButton);
+
+    auto resultCode = execReturnCode(button);
+    hide(resultCode);
+    finalize(resultCode, dialogCodeForButton(button));
 }
 
 void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role)
@@ -800,7 +834,7 @@ QMessageBox::QMessageBox(QWidget *parent)
     The message box is an \l{Qt::ApplicationModal} {application modal}
     dialog box.
 
-    On \macos, if \a parent is not 0 and you want your message box
+    On \macos, if \a parent is not \nullptr and you want your message box
     to appear as a Qt::Sheet of that parent, set the message box's
     \l{setWindowModality()} {window modality} to Qt::WindowModal
     (default). Otherwise, the message box will be a standard dialog.
@@ -949,7 +983,7 @@ QMessageBox::StandardButton QMessageBox::standardButton(QAbstractButton *button)
     \since 4.2
 
     Returns a pointer corresponding to the standard button \a which,
-    or 0 if the standard button doesn't exist in this message box.
+    or \nullptr if the standard button doesn't exist in this message box.
 
     \sa standardButtons, standardButton()
 */
@@ -1072,7 +1106,7 @@ void QMessageBoxPrivate::detectEscapeButton()
     \since 4.2
 
     Returns the button that was clicked by the user,
-    or 0 if the user hit the \uicontrol Esc key and
+    or \nullptr if the user hit the \uicontrol Esc key and
     no \l{setEscapeButton()}{escape button} was set.
 
     If exec() hasn't been called yet, returns nullptr.
@@ -1139,7 +1173,7 @@ void QMessageBox::setDefaultButton(QMessageBox::StandardButton button)
 /*! \since 5.2
 
     Sets the checkbox \a cb on the message dialog. The message box takes ownership of the checkbox.
-    The argument \a cb can be 0 to remove an existing checkbox from the message box.
+    The argument \a cb can be \nullptr to remove an existing checkbox from the message box.
 
     \sa checkBox()
 */
@@ -1171,7 +1205,7 @@ void QMessageBox::setCheckBox(QCheckBox *cb)
 
 /*! \since 5.2
 
-    Returns the checkbox shown on the dialog. This is 0 if no checkbox is set.
+    Returns the checkbox shown on the dialog. This is \nullptr if no checkbox is set.
     \sa setCheckBox()
 */
 
@@ -1536,7 +1570,7 @@ QList<QAbstractButton *> QMessageBox::buttons() const
     \since 4.5
 
     Returns the button role for the specified \a button. This function returns
-    \l InvalidRole if \a button is 0 or has not been added to the message box.
+    \l InvalidRole if \a button is \nullptr or has not been added to the message box.
 
     \sa buttons(), addButton()
 */
@@ -1801,7 +1835,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
 
 /*!
     Displays a simple message box about Qt, with the given \a title
-    and centered over \a parent (if \a parent is not 0). The message
+    and centered over \a parent (if \a parent is not \nullptr). The message
     includes the version number of Qt being used by the application.
 
     This is useful for inclusion in the \uicontrol Help menu of an application,
@@ -1832,22 +1866,23 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
         ).arg(QLatin1String(QT_VERSION_STR));
-    QString translatedTextAboutQtText;
-    translatedTextAboutQtText = QMessageBox::tr(
+    //: Leave this text untranslated or include a verbatim copy of it below
+    //: and note that it is the authoritative version in case of doubt.
+    const QString translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
         "<p>Qt provides single-source portability across all major desktop "
         "operating systems. It is also available for embedded Linux and other "
         "embedded and mobile operating systems.</p>"
-        "<p>Qt is available under three different licensing options designed "
+        "<p>Qt is available under multiple licensing options designed "
         "to accommodate the needs of our various users.</p>"
         "<p>Qt licensed under our commercial license agreement is appropriate "
         "for development of proprietary/commercial software where you do not "
         "want to share any source code with third parties or otherwise cannot "
-        "comply with the terms of the GNU LGPL version 3.</p>"
-        "<p>Qt licensed under the GNU LGPL version 3 is appropriate for the "
+        "comply with the terms of GNU (L)GPL.</p>"
+        "<p>Qt licensed under GNU (L)GPL is appropriate for the "
         "development of Qt&nbsp;applications provided you can comply with the terms "
-        "and conditions of the GNU LGPL version 3.</p>"
+        "and conditions of the respective licenses.</p>"
         "<p>Please see <a href=\"http://%2/\">%2</a> "
         "for an overview of Qt licensing.</p>"
         "<p>Copyright (C) %1 The Qt Company Ltd and other "
@@ -1855,7 +1890,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Qt and the Qt logo are trademarks of The Qt Company Ltd.</p>"
         "<p>Qt is The Qt Company Ltd product developed as an open source "
         "project. See <a href=\"http://%3/\">%3</a> for more information.</p>"
-        ).arg(QStringLiteral("2018"),
+        ).arg(QStringLiteral("2019"),
               QStringLiteral("qt.io/licensing"),
               QStringLiteral("qt.io"));
     QMessageBox *msgBox = new QMessageBox(parent);

@@ -84,6 +84,8 @@ class QVulkanInstance;
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformIntegration)
+
     enum Capability {
         ThreadedPixmaps = 1,
         OpenGL,
@@ -112,7 +114,7 @@ public:
 
     virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
-    virtual QPlatformWindow *createForeignWindow(QWindow *, WId) const { return 0; }
+    virtual QPlatformWindow *createForeignWindow(QWindow *, WId) const { return nullptr; }
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
 #ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
@@ -190,8 +192,6 @@ public:
 #endif
     virtual void setApplicationIcon(const QIcon &icon) const;
 
-    void removeScreen(QScreen *screen);
-
     virtual void beep() const;
 
 #if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
@@ -199,9 +199,7 @@ public:
 #endif
 
 protected:
-    void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
-    void destroyScreen(QPlatformScreen *screen);
-    void setPrimaryScreen(QPlatformScreen *newPrimary);
+    QPlatformIntegration() = default;
 };
 
 QT_END_NAMESPACE

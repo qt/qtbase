@@ -54,7 +54,10 @@ exampledirs += ../../../examples/gui \
 
 imagedirs   += images \
                ../../../examples/gui/doc/images \
-               ../../../doc/src/images \
+               ../../../doc/src/images
+
+# Included in qttestlib.qdocconf instead
+excludefiles += ../kernel/qtestsupport_gui.cpp
 
 manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example"
 

@@ -124,6 +124,37 @@ static int numberOfBits(const QByteArray &modulus)
     return bits;
 }
 
+static QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase, const QByteArray &iv)
+{
+    // This is somewhat simplified and shortened version of what OpenSSL does.
+    // See, for example, EVP_BytesToKey for the "algorithm" itself and elsewhere
+    // in their code for what they pass as arguments to EVP_BytesToKey when
+    // deriving encryption keys (when reading/writing pems files with encrypted
+    // keys).
+
+    Q_ASSERT(iv.size() >= 8);
+
+    QCryptographicHash hash(QCryptographicHash::Md5);
+
+    QByteArray data(passPhrase);
+    data.append(iv.data(), 8); // AKA PKCS5_SALT_LEN in OpenSSL.
+
+    hash.addData(data);
+
+    if (cipher == QSslKeyPrivate::Aes128Cbc)
+        return hash.result();
+
+    QByteArray key(hash.result());
+    hash.reset();
+    hash.addData(key);
+    hash.addData(data);
+
+    if (cipher == QSslKeyPrivate::Aes192Cbc)
+        return key.append(hash.result().constData(), 8);
+
+    return key.append(hash.result());
+}
+
 static QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase, const QByteArray &iv)
 {
     QByteArray key;
@@ -145,6 +176,10 @@ static QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &pas
     case QSslKeyPrivate::Rc2Cbc:
         key = hash.result();
         break;
+    case QSslKeyPrivate::Aes128Cbc:
+    case QSslKeyPrivate::Aes192Cbc:
+    case QSslKeyPrivate::Aes256Cbc:
+        return deriveAesKey(cipher, passPhrase, iv);
     }
     return key;
 }
@@ -165,6 +200,7 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         switch (algorithm){
         case QSsl::Rsa: return "RSA";
         case QSsl::Dsa: return "DSA";
+        case QSsl::Dh: return "DH";
         case QSsl::Ec: return "EC";
         case QSsl::Opaque: return "Opaque";
         }
@@ -217,6 +253,21 @@ static int extractPkcs8KeyLength(const QVector<QAsn1Element> &items, QSslKeyPriv
         if (dsaInfo.size() != 3 || dsaInfo[0].type() != QAsn1Element::IntegerType)
             return -1;
         keyLength = numberOfBits(dsaInfo[0].value());
+    } else if (value == DH_ENCRYPTION_OID) {
+        if (Q_UNLIKELY(that->algorithm != QSsl::Dh)) {
+            // As above for RSA.
+            qWarning() << "QSslKey: Found DH when asked to use" << getName(that->algorithm)
+                        << "\nLoading will fail.";
+            return -1;
+        }
+        // DH's structure is documented here:
+        // https://www.cryptsoft.com/pkcs11doc/STANDARD/v201-95.pdf in section 11.9.
+        if (pkcs8Info[1].type() != QAsn1Element::SequenceType)
+            return -1;
+        const QVector<QAsn1Element> dhInfo = pkcs8Info[1].toVector();
+        if (dhInfo.size() < 2 || dhInfo.size() > 3 || dhInfo[0].type() != QAsn1Element::IntegerType)
+            return -1;
+        keyLength = numberOfBits(dhInfo[0].value());
     } else {
         // in case of unexpected formats:
         qWarning() << "QSslKey: Unsupported PKCS#8 key algorithm:" << value
@@ -268,6 +319,16 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
             if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(params[0].value());
+        } else if (algorithm == QSsl::Dh) {
+            if (infoItems[0].toObjectId() != DH_ENCRYPTION_OID)
+                return;
+            if (infoItems[1].type() != QAsn1Element::SequenceType)
+                return;
+            // key params
+            const QVector<QAsn1Element> params = infoItems[1].toVector();
+            if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
+                return;
+            keyLength = numberOfBits(params[0].value());
         } else if (algorithm == QSsl::Ec) {
             if (infoItems[0].toObjectId() != EC_ENCRYPTION_OID)
                 return;
@@ -305,6 +366,12 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhra
             if (versionHex != "00")
                 return;
             if (items.size() != 6 || items[1].type() != QAsn1Element::IntegerType)
+                return;
+            keyLength = numberOfBits(items[1].value());
+        } else if (algorithm == QSsl::Dh) {
+            if (versionHex != "00")
+                return;
+            if (items.size() < 5 || items.size() > 6 || items[1].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(items[1].value());
         } else if (algorithm == QSsl::Ec) {
@@ -346,6 +413,12 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
             cipher = DesEde3Cbc;
         } else if (dekInfo.first() == "RC2-CBC") {
             cipher = Rc2Cbc;
+        } else if (dekInfo.first() == "AES-128-CBC") {
+            cipher = Aes128Cbc;
+        } else if (dekInfo.first() == "AES-192-CBC") {
+            cipher = Aes192Cbc;
+        } else if (dekInfo.first() == "AES-256-CBC") {
+            cipher = Aes256Cbc;
         } else {
             clear(deepClear);
             return;
@@ -522,6 +595,10 @@ static EncryptionData readPbes2(const QVector<QAsn1Element> &element, const QByt
             return {};
         break;
     } // @todo(?): case (RC5 , AES)
+    case QSslKeyPrivate::Cipher::Aes128Cbc:
+    case QSslKeyPrivate::Cipher::Aes192Cbc:
+    case QSslKeyPrivate::Cipher::Aes256Cbc:
+        Q_UNREACHABLE();
     }
 
     if (Q_LIKELY(keyDerivationAlgorithm == PKCS5_PBKDF2_ENCRYPTION_OID)) {

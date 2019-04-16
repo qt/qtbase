@@ -14,7 +14,8 @@ add_qt_tool(tracegen
         provider.cpp provider.h
         qtheaders.cpp qtheaders.h
         tracegen.cpp
-    # CONFIG = "force_bootstrap"
-    # _LOADED = "qt_tool"
-    # _OPTION = "host_build"
 )
+
+#### Keys ignored in scope 1:.:.:tracegen.pro:<TRUE>:
+# _LOADED = "qt_tool"
+# _OPTION = "host_build"

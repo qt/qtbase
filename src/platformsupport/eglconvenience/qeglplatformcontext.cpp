@@ -332,14 +332,6 @@ void QEGLPlatformContext::updateFormatFromGL()
                 QByteArray version = QByteArray(reinterpret_cast<const char *>(s));
                 int major, minor;
                 if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor)) {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-                    // Some Android 4.2.2 devices report OpenGL ES 3.0 without the functions being available.
-                    static int apiLevel = QtAndroidPrivate::androidSdkVersion();
-                    if (apiLevel <= 17 && major >= 3) {
-                        major = 2;
-                        minor = 0;
-                    }
-#endif
                     m_format.setMajorVersion(major);
                     m_format.setMinorVersion(minor);
                 }

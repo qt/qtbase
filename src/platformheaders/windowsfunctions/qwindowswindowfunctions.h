@@ -81,6 +81,15 @@ public:
             func(window, border);
     }
 
+    typedef void (*SetHasBorderInFullScreenDefault)(bool border);
+    static const QByteArray setHasBorderInFullScreenDefaultIdentifier() { return QByteArrayLiteral("WindowsSetHasBorderInFullScreenDefault"); }
+    static void setHasBorderInFullScreenDefault(bool border)
+    {
+        auto func = reinterpret_cast<SetHasBorderInFullScreenDefault>(QGuiApplication::platformFunction(setHasBorderInFullScreenDefaultIdentifier()));
+        if (func)
+            func(border);
+    }
+
     typedef void (*SetWindowActivationBehaviorType)(WindowActivationBehavior);
     static const QByteArray setWindowActivationBehaviorIdentifier() { return QByteArrayLiteral("WindowsSetWindowActivationBehavior"); }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -80,7 +80,7 @@ class Q_GUI_EXPORT QStaticTextItem
 public:
     QStaticTextItem() : useBackendOptimizations(false),
                         userDataNeedsUpdate(0), usesRawFont(0),
-                        m_fontEngine(0), m_userData(0) {}
+                        m_fontEngine(nullptr), m_userData(nullptr) {}
 
     void setUserData(QStaticTextUserData *newUserData)
     {

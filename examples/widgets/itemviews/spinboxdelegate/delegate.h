@@ -59,7 +59,7 @@ class SpinBoxDelegate : public QStyledItemDelegate
     Q_OBJECT
 
 public:
-    SpinBoxDelegate(QObject *parent = 0);
+    SpinBoxDelegate(QObject *parent = nullptr);
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const override;
@@ -68,8 +68,8 @@ public:
     void setModelData(QWidget *editor, QAbstractItemModel *model,
                       const QModelIndex &index) const override;
 
-    void updateEditorGeometry(QWidget *editor,
-        const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
+                              const QModelIndex &index) const override;
 };
 //! [0]
 

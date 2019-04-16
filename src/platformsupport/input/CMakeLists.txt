@@ -1,3 +1,5 @@
+# Generated from input.pro.
+
 find_package(Libinput) # special case
 find_package(XKB) # special case
 find_package(Tslib) # special case
@@ -15,9 +17,13 @@ add_qt_module(InputSupport
         Qt::CorePrivate
         Qt::DeviceDiscoverySupportPrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::DeviceDiscoverySupport
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:input.pro:<NONE>:
+#### Keys ignored in scope 3:.:.:input-support.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "input_support"
 # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
@@ -63,7 +69,7 @@ extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_mtdev
 extend_target(InputSupport CONDITION QT_FEATURE_tslib
     SOURCES
         tslib/qtslib.cpp tslib/qtslib_p.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         PkgConfig::Tslib
 )
 
@@ -80,14 +86,12 @@ extend_target(InputSupport CONDITION QT_FEATURE_libinput
         PkgConfig::Libudev
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon_evdev
+extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
     LIBRARIES
+        Qt::XkbCommonSupportPrivate
         XKB::XKB
-)
-
-extend_target(InputSupport CONDITION QT_FEATURE_libinput AND NOT QT_FEATURE_xkbcommon_evdev
-    DEFINES
-        QT_NO_XKBCOMMON_EVDEV
+    PUBLIC_LIBRARIES
+        Qt::XkbCommonSupport
 )
 
 extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
@@ -101,3 +105,7 @@ extend_target(InputSupport CONDITION QT_FEATURE_integrityhid
     LIBRARIES
         integrityhid
 )
+
+if(QT_FEATURE_xkbcommon)
+    add_subdirectory(xkbcommon)
+endif()

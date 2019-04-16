@@ -42,7 +42,9 @@
 
 #include <CommonCrypto/CommonCrypto.h>
 
-QT_USE_NAMESPACE
+#include <cstddef>
+
+QT_BEGIN_NAMESPACE
 
 static QByteArray wrapCCCrypt(CCOperation ccOp,
                               QSslKeyPrivate::Cipher cipher,
@@ -64,17 +66,23 @@ static QByteArray wrapCCCrypt(CCOperation ccOp,
         blockSize = kCCBlockSizeRC2;
         ccAlgorithm = kCCAlgorithmRC2;
         break;
-    };
+    case QSslKeyPrivate::Aes128Cbc:
+    case QSslKeyPrivate::Aes192Cbc:
+    case QSslKeyPrivate::Aes256Cbc:
+        blockSize = kCCBlockSizeAES128;
+        ccAlgorithm = kCCAlgorithmAES;
+        break;
+    }
     size_t plainLength = 0;
     QByteArray plain(data.size() + blockSize, 0);
     CCCryptorStatus status = CCCrypt(
         ccOp, ccAlgorithm, kCCOptionPKCS7Padding,
-        key.constData(), key.size(),
+        key.constData(), std::size_t(key.size()),
         iv.constData(),
-        data.constData(), data.size(),
-        plain.data(), plain.size(), &plainLength);
+        data.constData(), std::size_t(data.size()),
+        plain.data(), std::size_t(plain.size()), &plainLength);
     if (status == kCCSuccess)
-        return plain.left(plainLength);
+        return plain.left(int(plainLength));
     return QByteArray();
 }
 
@@ -87,3 +95,5 @@ QByteArray QSslKeyPrivate::encrypt(Cipher cipher, const QByteArray &data, const 
 {
     return wrapCCCrypt(kCCEncrypt, cipher, data, key, iv);
 }
+
+QT_END_NAMESPACE

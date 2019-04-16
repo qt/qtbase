@@ -39,9 +39,8 @@
     "libraries": {
         "db2": {
             "label": "DB2 (IBM)",
-            "test": {
-                "include": [ "sqlcli.h", "sqlcli1.h" ]
-            },
+            "test": {},
+            "headers": [ "sqlcli.h", "sqlcli1.h" ],
             "sources": [
                 { "libs": "-ldb2cli", "condition": "config.win32" },
                 { "libs": "-ldb2", "condition": "!config.win32" }
@@ -49,9 +48,8 @@
         },
         "ibase": {
             "label": "InterBase",
-            "test": {
-                "include": "ibase.h"
-            },
+            "test": {},
+            "headers": "ibase.h",
             "sources": [
                 { "libs": "-lgds32_ms", "condition": "config.win32" },
                 { "libs": "-lgds", "condition": "!config.win32" }
@@ -65,9 +63,9 @@
                     "#  include <windows.h>",
                     "#endif"
                 ],
-                "include": "mysql.h",
                 "main": "mysql_get_client_version();"
             },
+            "headers": "mysql.h",
             "sources": [
                 { "type": "mysqlConfig", "query": "--libs_r", "cleanlibs": true },
                 { "type": "mysqlConfig", "query": "--libs", "cleanlibs": true },
@@ -81,12 +79,12 @@
         "psql": {
             "label": "PostgreSQL",
             "test": {
-                "include": "libpq-fe.h",
                 "main": [
                     "PQescapeBytea(0, 0, 0);",
                     "PQunescapeBytea(0, 0);"
                 ]
             },
+            "headers": "libpq-fe.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libpq" },
                 { "type": "psqlConfig" },
@@ -96,9 +94,8 @@
         },
         "tds": {
             "label": "TDS (Sybase)",
-            "test": {
-                "include": [ "sybfront.h", "sybdb.h" ]
-            },
+            "test": {},
+            "headers": [ "sybfront.h", "sybdb.h" ],
             "sources": [
                 { "type": "sybaseEnv", "libs": "-lNTWDBLIB", "condition": "config.win32" },
                 { "type": "sybaseEnv", "libs": "-lsybdb", "condition": "!config.win32" }
@@ -106,9 +103,8 @@
         },
         "oci": {
             "label": "OCI (Oracle)",
-            "test": {
-                "include": "oci.h"
-            },
+            "test": {},
+            "headers": "oci.h",
             "sources": [
                 { "libs": "-loci", "condition": "config.win32" },
                 { "libs": "-lclntsh", "condition": "!config.win32" }
@@ -122,12 +118,12 @@
                     "#  include <windows.h>",
                     "#endif"
                 ],
-                "include": [ "sql.h", "sqlext.h" ],
                 "main": [
                     "SQLHANDLE env;",
                     "SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);"
                 ]
             },
+            "headers": [ "sql.h", "sqlext.h" ],
             "sources": [
                 { "libs": "-lodbc32", "condition": "config.win32" },
                 { "libs": "-liodbc", "condition": "config.darwin" },
@@ -136,9 +132,8 @@
         },
         "sqlite2": {
             "label": "SQLite (version 2)",
-            "test": {
-                "include": "sqlite.h"
-            },
+            "test": {},
+            "headers": "sqlite.h",
             "sources": [
                 "-lsqlite"
             ]
@@ -147,9 +142,9 @@
             "label": "SQLite (version 3)",
             "export": "sqlite",
             "test": {
-                "include": "sqlite3.h",
                 "main": "sqlite3_open_v2(0, 0, 0, 0);"
             },
+            "headers": "sqlite3.h",
             "sources": [
                 { "type": "pkgConfig", "args": "sqlite3" },
                 "-lsqlite3"

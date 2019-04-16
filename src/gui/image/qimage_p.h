@@ -51,7 +51,10 @@
 // We mean it.
 //
 
+#include <QtGui/qcolorspace.h>
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qimage.h>
+#include <QtCore/private/qnumeric_p.h>
 
 #include <QMap>
 #include <QVector>
@@ -64,7 +67,7 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     QImageData();
     ~QImageData();
     static QImageData *create(const QSize &size, QImage::Format format);
-    static QImageData *create(uchar *data, int w, int h,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    static QImageData *create(uchar *data, int w, int h,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
 
     QAtomicInt ref;
 
@@ -104,7 +107,47 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     bool doImageIO(const QImage *image, QImageWriter* io, int quality) const;
 
     QPaintEngine *paintEngine;
+
+    QColorSpace colorSpace;
+
+    struct ImageSizeParameters {
+        qsizetype bytesPerLine;
+        qsizetype totalSize;
+        bool isValid() const { return bytesPerLine > 0 && totalSize > 0; }
+    };
+    static ImageSizeParameters calculateImageParameters(qsizetype width, qsizetype height, qsizetype depth);
 };
+
+inline QImageData::ImageSizeParameters
+QImageData::calculateImageParameters(qsizetype width, qsizetype height, qsizetype depth)
+{
+    ImageSizeParameters invalid = { -1, -1 };
+    if (height <= 0)
+        return invalid;
+
+    // calculate the size, taking care of overflows
+    qsizetype bytes_per_line;
+    if (mul_overflow(width, depth, &bytes_per_line))
+        return invalid;
+    if (add_overflow(bytes_per_line, qsizetype(31), &bytes_per_line))
+        return invalid;
+    // bytes per scanline (must be multiple of 4)
+    bytes_per_line = (bytes_per_line >> 5) << 2;    // can't overflow
+
+    qsizetype total_size;
+    if (mul_overflow(height, bytes_per_line, &total_size))
+        return invalid;
+    qsizetype dummy;
+    if (mul_overflow(height, qsizetype(sizeof(uchar *)), &dummy))
+        return invalid;                                 // why is this here?
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // Disallow images where width * depth calculations might overflow
+    if (width > (INT_MAX - 31) / depth)
+        return invalid;
+#endif
+
+    return { bytes_per_line, total_size };
+}
 
 typedef void (*Image_Converter)(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
 typedef bool (*InPlace_Image_Converter)(QImageData *data, Qt::ImageConversionFlags);
@@ -156,6 +199,7 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGB16:
     case QImage::Format_RGB444:
     case QImage::Format_ARGB4444_Premultiplied:
+    case QImage::Format_Grayscale16:
         depth = 16;
         break;
     case QImage::Format_RGB666:

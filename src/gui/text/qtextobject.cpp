@@ -678,7 +678,7 @@ QTextFrame::iterator::iterator(QTextFrame *frame, int block, int begin, int end)
 /*!
     Copy constructor. Constructs a copy of the \a other iterator.
 */
-QTextFrame::iterator::iterator(const iterator &other) Q_DECL_NOTHROW
+QTextFrame::iterator::iterator(const iterator &other) noexcept
 {
     f = other.f;
     b = other.b;
@@ -691,7 +691,7 @@ QTextFrame::iterator::iterator(const iterator &other) Q_DECL_NOTHROW
     Assigns \a other to this iterator and returns a reference to
     this iterator.
 */
-QTextFrame::iterator &QTextFrame::iterator::operator=(const iterator &other) Q_DECL_NOTHROW
+QTextFrame::iterator &QTextFrame::iterator::operator=(const iterator &other) noexcept
 {
     f = other.f;
     b = other.b;
@@ -704,8 +704,8 @@ QTextFrame::iterator &QTextFrame::iterator::operator=(const iterator &other) Q_D
 #endif
 
 /*!
-    Returns the current frame pointed to by the iterator, or 0 if the
-    iterator currently points to a block.
+    Returns the current frame pointed to by the iterator, or \nullptr
+    if the iterator currently points to a block.
 
     \sa currentBlock()
 */
@@ -1291,22 +1291,22 @@ QVector<QTextLayout::FormatRange> QTextBlock::textFormats() const
 }
 
 /*!
-    Returns the text document this text block belongs to, or 0 if the
-    text block does not belong to any document.
+    Returns the text document this text block belongs to, or \nullptr
+    if the text block does not belong to any document.
 */
 const QTextDocument *QTextBlock::document() const
 {
-    return p ? p->document() : 0;
+    return p ? p->document() : nullptr;
 }
 
 /*!
     If the block represents a list item, returns the list that the item belongs
-    to; otherwise returns 0.
+    to; otherwise returns \nullptr.
 */
 QTextList *QTextBlock::textList() const
 {
     if (!isValid())
-        return 0;
+        return nullptr;
 
     const QTextBlockFormat fmt = blockFormat();
     QTextObject *obj = p->document()->objectForFormat(fmt);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -36,131 +36,102 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qcomposeplatforminputcontext.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtGui/QKeyEvent>
-#include <QtCore/QDebug>
 
-#include <algorithm>
+#include <locale.h>
 
 QT_BEGIN_NAMESPACE
 
-//#define DEBUG_COMPOSING
-
-static const int ignoreKeys[] = {
-    Qt::Key_Shift,
-    Qt::Key_Control,
-    Qt::Key_Meta,
-    Qt::Key_Alt,
-    Qt::Key_CapsLock,
-    Qt::Key_Super_L,
-    Qt::Key_Super_R,
-    Qt::Key_Hyper_L,
-    Qt::Key_Hyper_R,
-    Qt::Key_Mode_switch
-};
-
-static const int composingKeys[] = {
-    Qt::Key_Multi_key,
-    Qt::Key_Dead_Grave,
-    Qt::Key_Dead_Acute,
-    Qt::Key_Dead_Circumflex,
-    Qt::Key_Dead_Tilde,
-    Qt::Key_Dead_Macron,
-    Qt::Key_Dead_Breve,
-    Qt::Key_Dead_Abovedot,
-    Qt::Key_Dead_Diaeresis,
-    Qt::Key_Dead_Abovering,
-    Qt::Key_Dead_Doubleacute,
-    Qt::Key_Dead_Caron,
-    Qt::Key_Dead_Cedilla,
-    Qt::Key_Dead_Ogonek,
-    Qt::Key_Dead_Iota,
-    Qt::Key_Dead_Voiced_Sound,
-    Qt::Key_Dead_Semivoiced_Sound,
-    Qt::Key_Dead_Belowdot,
-    Qt::Key_Dead_Hook,
-    Qt::Key_Dead_Horn,
-    Qt::Key_Dead_Stroke,
-    Qt::Key_Dead_Abovecomma,
-    Qt::Key_Dead_Abovereversedcomma,
-    Qt::Key_Dead_Doublegrave,
-    Qt::Key_Dead_Belowring,
-    Qt::Key_Dead_Belowmacron,
-    Qt::Key_Dead_Belowcircumflex,
-    Qt::Key_Dead_Belowtilde,
-    Qt::Key_Dead_Belowbreve,
-    Qt::Key_Dead_Belowdiaeresis,
-    Qt::Key_Dead_Invertedbreve,
-    Qt::Key_Dead_Belowcomma,
-    Qt::Key_Dead_Currency,
-    Qt::Key_Dead_a,
-    Qt::Key_Dead_A,
-    Qt::Key_Dead_e,
-    Qt::Key_Dead_E,
-    Qt::Key_Dead_i,
-    Qt::Key_Dead_I,
-    Qt::Key_Dead_o,
-    Qt::Key_Dead_O,
-    Qt::Key_Dead_u,
-    Qt::Key_Dead_U,
-    Qt::Key_Dead_Small_Schwa,
-    Qt::Key_Dead_Capital_Schwa,
-    Qt::Key_Dead_Greek,
-    Qt::Key_Dead_Lowline,
-    Qt::Key_Dead_Aboveverticalline,
-    Qt::Key_Dead_Belowverticalline,
-    Qt::Key_Dead_Longsolidusoverlay
-};
+Q_LOGGING_CATEGORY(lcXkbCompose, "qt.xkb.compose")
 
 QComposeInputContext::QComposeInputContext()
-    : m_tableState(TableGenerator::EmptyTable)
-    , m_compositionTableInitialized(false)
 {
-    clearComposeBuffer();
+    setObjectName(QStringLiteral("QComposeInputContext"));
+    qCDebug(lcXkbCompose, "using xkb compose input context");
+}
+
+QComposeInputContext::~QComposeInputContext()
+{
+    xkb_compose_state_unref(m_composeState);
+    xkb_compose_table_unref(m_composeTable);
+}
+
+void QComposeInputContext::ensureInitialized()
+{
+    if (m_initialized)
+        return;
+
+    if (!m_XkbContext) {
+        qCWarning(lcXkbCompose) << "error: xkb context has not been set on" << metaObject()->className();
+        return;
+    }
+
+    m_initialized = true;
+    const char *locale = setlocale(LC_CTYPE, "");
+    if (!locale)
+        locale = setlocale(LC_CTYPE, nullptr);
+    qCDebug(lcXkbCompose) << "detected locale (LC_CTYPE):" << locale;
+
+    m_composeTable = xkb_compose_table_new_from_locale(m_XkbContext, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+    if (m_composeTable)
+        m_composeState = xkb_compose_state_new(m_composeTable, XKB_COMPOSE_STATE_NO_FLAGS);
+
+    if (!m_composeTable) {
+        qCWarning(lcXkbCompose, "failed to create compose table");
+        return;
+    }
+    if (!m_composeState) {
+        qCWarning(lcXkbCompose, "failed to create compose state");
+        return;
+    }
 }
 
 bool QComposeInputContext::filterEvent(const QEvent *event)
 {
-    const QKeyEvent *keyEvent = (const QKeyEvent *)event;
-    // should pass only the key presses
-    if (keyEvent->type() != QEvent::KeyPress) {
-        return false;
-    }
-
-    // if there were errors when generating the compose table input
-    // context should not try to filter anything, simply return false
-    if (m_compositionTableInitialized && (m_tableState & TableGenerator::NoErrors) != TableGenerator::NoErrors)
+    auto keyEvent = static_cast<const QKeyEvent *>(event);
+    if (keyEvent->type() != QEvent::KeyPress)
         return false;
 
-    int keyval = keyEvent->key();
-    int keysym = 0;
-
-    if (ignoreKey(keyval))
+    if (!inputMethodAccepted())
         return false;
 
-    if (!composeKey(keyval) && keyEvent->text().isEmpty())
+    // lazy initialization - we don't want to do this on an app startup
+    ensureInitialized();
+
+    if (!m_composeTable || !m_composeState)
         return false;
 
-    keysym = keyEvent->nativeVirtualKey();
+    xkb_compose_state_feed(m_composeState, keyEvent->nativeVirtualKey());
 
-    int nCompose = 0;
-    while (nCompose < QT_KEYSEQUENCE_MAX_LEN && m_composeBuffer[nCompose] != 0)
-        nCompose++;
-
-    if (nCompose == QT_KEYSEQUENCE_MAX_LEN) {
-        reset();
-        nCompose = 0;
-    }
-
-    m_composeBuffer[nCompose] = keysym;
-    // check sequence
-    if (checkComposeTable())
+    switch (xkb_compose_state_get_status(m_composeState)) {
+    case XKB_COMPOSE_COMPOSING:
         return true;
+    case XKB_COMPOSE_CANCELLED:
+        reset();
+        return false;
+    case XKB_COMPOSE_COMPOSED:
+    {
+        const int size = xkb_compose_state_get_utf8(m_composeState, nullptr, 0);
+        QVarLengthArray<char, 32> buffer(size + 1);
+        xkb_compose_state_get_utf8(m_composeState, buffer.data(), buffer.size());
+        QString composedText = QString::fromUtf8(buffer.constData());
 
-    return false;
+        QInputMethodEvent event;
+        event.setCommitString(composedText);
+        QCoreApplication::sendEvent(m_focusObject, &event);
+
+        reset();
+        return true;
+    }
+    case XKB_COMPOSE_NOTHING:
+        return false;
+    default:
+        Q_UNREACHABLE();
+        return false;
+    }
 }
 
 bool QComposeInputContext::isValid() const
@@ -175,133 +146,13 @@ void QComposeInputContext::setFocusObject(QObject *object)
 
 void QComposeInputContext::reset()
 {
-    clearComposeBuffer();
+    if (m_composeState)
+        xkb_compose_state_reset(m_composeState);
 }
 
 void QComposeInputContext::update(Qt::InputMethodQueries q)
 {
     QPlatformInputContext::update(q);
 }
-
-static bool isDuplicate(const QComposeTableElement &lhs, const QComposeTableElement &rhs)
-{
-    return std::equal(lhs.keys, lhs.keys + QT_KEYSEQUENCE_MAX_LEN,
-                      QT_MAKE_CHECKED_ARRAY_ITERATOR(rhs.keys, QT_KEYSEQUENCE_MAX_LEN));
-}
-
-bool QComposeInputContext::checkComposeTable()
-{
-    if (!m_compositionTableInitialized) {
-        TableGenerator reader;
-        m_tableState = reader.tableState();
-
-        m_compositionTableInitialized = true;
-        if ((m_tableState & TableGenerator::NoErrors) == TableGenerator::NoErrors) {
-            m_composeTable = reader.composeTable();
-        } else {
-#ifdef DEBUG_COMPOSING
-            qDebug( "### FAILED_PARSING ###" );
-#endif
-            // if we have errors, don' try to look things up anyways.
-            reset();
-            return false;
-        }
-    }
-    Q_ASSERT(!m_composeTable.isEmpty());
-    QVector<QComposeTableElement>::const_iterator it =
-            std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, ByKeys());
-
-    // prevent dereferencing an 'end' iterator, which would result in a crash
-    if (it == m_composeTable.constEnd())
-        it -= 1;
-
-    QComposeTableElement elem = *it;
-    // would be nicer if qLowerBound had API that tells if the item was actually found
-    if (m_composeBuffer[0] != elem.keys[0]) {
-#ifdef DEBUG_COMPOSING
-        qDebug( "### no match ###" );
-#endif
-        reset();
-        return false;
-    }
-    // check if compose buffer is matched
-    for (int i=0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
-
-        // check if partial match
-        if (m_composeBuffer[i] == 0 && elem.keys[i]) {
-#ifdef DEBUG_COMPOSING
-            qDebug("### partial match ###");
-#endif
-            return true;
-        }
-
-        if (m_composeBuffer[i] != elem.keys[i]) {
-#ifdef DEBUG_COMPOSING
-            qDebug("### different entry ###");
-#endif
-            reset();
-            return i != 0;
-        }
-    }
-#ifdef DEBUG_COMPOSING
-    qDebug("### match exactly ###");
-#endif
-
-    // check if the key sequence is overwriten - see the comment in
-    // TableGenerator::orderComposeTable()
-    int next = 1;
-    do {
-        // if we are at the end of the table, then we have nothing to do here
-        if (it + next != m_composeTable.constEnd()) {
-            QComposeTableElement nextElem = *(it + next);
-            if (isDuplicate(elem, nextElem)) {
-                elem = nextElem;
-                next++;
-                continue;
-            } else {
-                break;
-            }
-        }
-        break;
-    } while (true);
-
-    commitText(elem.value);
-    reset();
-
-    return true;
-}
-
-void QComposeInputContext::commitText(uint character) const
-{
-    QInputMethodEvent event;
-    event.setCommitString(QChar(character));
-    QCoreApplication::sendEvent(m_focusObject, &event);
-}
-
-bool QComposeInputContext::ignoreKey(int keyval) const
-{
-    for (uint i = 0; i < (sizeof(ignoreKeys) / sizeof(ignoreKeys[0])); i++)
-        if (keyval == ignoreKeys[i])
-            return true;
-
-    return false;
-}
-
-bool QComposeInputContext::composeKey(int keyval) const
-{
-    for (uint i = 0; i < (sizeof(composingKeys) / sizeof(composingKeys[0])); i++)
-        if (keyval == composingKeys[i])
-            return true;
-
-    return false;
-}
-
-void QComposeInputContext::clearComposeBuffer()
-{
-    for (uint i=0; i < (sizeof(m_composeBuffer) / sizeof(int)); i++)
-        m_composeBuffer[i] = 0;
-}
-
-QComposeInputContext::~QComposeInputContext() {}
 
 QT_END_NAMESPACE

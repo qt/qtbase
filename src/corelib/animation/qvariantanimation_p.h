@@ -60,7 +60,7 @@
 
 #include <type_traits>
 
-#ifndef QT_NO_ANIMATION
+QT_REQUIRE_CONFIG(animation);
 
 QT_BEGIN_NAMESPACE
 
@@ -128,7 +128,5 @@ template<typename T > inline QVariant _q_interpolateVariant(const T &from, const
 
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ANIMATION
 
 #endif //QVARIANTANIMATION_P_H

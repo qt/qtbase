@@ -193,7 +193,7 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
 /*!
     \internal
 
-    Returns the parent item of this layout, or 0 if this layout is
+    Returns the parent item of this layout, or \nullptr if this layout is
     not installed on any widget.
 
     If this is the item that the layout is installed on, it will return "itself".
@@ -214,7 +214,7 @@ QGraphicsItem *QGraphicsLayoutItemPrivate::parentItem() const
     while (parent && parent->isLayout()) {
         parent = parent->parentLayoutItem();
     }
-    return parent ? parent->graphicsItem() : 0;
+    return parent ? parent->graphicsItem() : nullptr;
 }
 
 /*!
@@ -368,8 +368,8 @@ bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
     passing a QGraphicsLayoutItem pointer to QGraphicsLayoutItem's
     protected constructor, or by calling setParentLayoutItem(). The
     parentLayoutItem() function returns a pointer to the item's layoutItem
-    parent. If the item's parent is 0 or if the parent does not inherit
-    from QGraphicsItem, the parentLayoutItem() function then returns 0.
+    parent. If the item's parent is \nullptr or if the parent does not inherit
+    from QGraphicsItem, the parentLayoutItem() function then returns \nullptr.
     isLayout() returns \c true if the QGraphicsLayoutItem subclass is itself a
     layout, or false otherwise.
 
@@ -737,7 +737,7 @@ QRectF QGraphicsLayoutItem::geometry() const
     This virtual function provides the \a left, \a top, \a right and \a bottom
     contents margins for this QGraphicsLayoutItem. The default implementation
     assumes all contents margins are 0. The parameters point to values stored
-    in qreals. If any of the pointers is 0, that value will not be updated.
+    in qreals. If any of the pointers is \nullptr, that value will not be updated.
 
     \sa QGraphicsWidget::setContentsMargins()
 */
@@ -826,8 +826,8 @@ void QGraphicsLayoutItem::updateGeometry()
 }
 
 /*!
-    Returns the parent of this QGraphicsLayoutItem, or 0 if there is no parent,
-    or if the parent does not inherit from QGraphicsLayoutItem
+    Returns the parent of this QGraphicsLayoutItem, or \nullptr if there is
+    no parent, or if the parent does not inherit from QGraphicsLayoutItem
     (QGraphicsLayoutItem is often used through multiple inheritance with
     QObject-derived classes).
 
@@ -917,7 +917,7 @@ QGraphicsItem *QGraphicsLayoutItem::graphicsItem() const
  * advantage of the automatic reparenting capabilities of QGraphicsLayout it
  * should set this value.
  * Note that if you delete \a item and not delete the layout item, you are
- * responsible of calling setGraphicsItem(0) in order to avoid having a
+ * responsible of calling setGraphicsItem(\nullptr) in order to avoid having a
  * dangling pointer.
  *
  * \sa graphicsItem()

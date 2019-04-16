@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'calculatorform.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -45,7 +45,7 @@ public:
         if (CalculatorForm->objectName().isEmpty())
             CalculatorForm->setObjectName(QString::fromUtf8("CalculatorForm"));
         CalculatorForm->resize(276, 98);
-        QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(5));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(CalculatorForm->sizePolicy().hasHeightForWidth());
@@ -170,13 +170,13 @@ public:
 
     void retranslateUi(QWidget *CalculatorForm)
     {
-        CalculatorForm->setWindowTitle(QApplication::translate("CalculatorForm", "Calculator Builder", nullptr));
-        label->setText(QApplication::translate("CalculatorForm", "Input 1", nullptr));
-        label_3->setText(QApplication::translate("CalculatorForm", "+", nullptr));
-        label_2->setText(QApplication::translate("CalculatorForm", "Input 2", nullptr));
-        label_3_2->setText(QApplication::translate("CalculatorForm", "=", nullptr));
-        label_2_2_2->setText(QApplication::translate("CalculatorForm", "Output", nullptr));
-        outputWidget->setText(QApplication::translate("CalculatorForm", "0", nullptr));
+        CalculatorForm->setWindowTitle(QCoreApplication::translate("CalculatorForm", "Calculator Builder", nullptr));
+        label->setText(QCoreApplication::translate("CalculatorForm", "Input 1", nullptr));
+        label_3->setText(QCoreApplication::translate("CalculatorForm", "+", nullptr));
+        label_2->setText(QCoreApplication::translate("CalculatorForm", "Input 2", nullptr));
+        label_3_2->setText(QCoreApplication::translate("CalculatorForm", "=", nullptr));
+        label_2_2_2->setText(QCoreApplication::translate("CalculatorForm", "Output", nullptr));
+        outputWidget->setText(QCoreApplication::translate("CalculatorForm", "0", nullptr));
     } // retranslateUi
 
 };

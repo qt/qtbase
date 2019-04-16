@@ -77,7 +77,7 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneIndex : public QObject
     Q_OBJECT
 
 public:
-    QGraphicsSceneIndex(QGraphicsScene *scene = 0);
+    QGraphicsSceneIndex(QGraphicsScene *scene = nullptr);
     virtual ~QGraphicsSceneIndex();
 
     QGraphicsScene *scene() const;
@@ -115,7 +115,7 @@ protected:
     friend class QGraphicsItemPrivate;
     friend class QGraphicsSceneBspTreeIndex;
 private:
-    Q_DISABLE_COPY(QGraphicsSceneIndex)
+    Q_DISABLE_COPY_MOVE(QGraphicsSceneIndex)
     Q_DECLARE_PRIVATE(QGraphicsSceneIndex)
 };
 
@@ -151,7 +151,7 @@ inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphi
     if (order == Qt::DescendingOrder) {
         const int n = items->size();
         for (int i = 0; i < n / 2; ++i)
-            items->swap(i, n - i - 1);
+            items->swapItemsAt(i, n - i - 1);
     }
 }
 

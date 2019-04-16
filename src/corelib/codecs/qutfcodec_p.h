@@ -52,7 +52,13 @@
 // We mean it.
 //
 
+#include <QtCore/qstring.h>
+#include <QtCore/qlist.h>
+
+#if QT_CONFIG(textcodec)
 #include "QtCore/qtextcodec.h"
+#endif
+
 #include "private/qtextcodec_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -285,7 +291,7 @@ enum DataEndianness
 
 struct QUtf8
 {
-    static QChar *convertToUnicode(QChar *, const char *, int) Q_DECL_NOTHROW;
+    static QChar *convertToUnicode(QChar *, const char *, int) noexcept;
     static QString convertToUnicode(const char *, int);
     static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *);
     static QByteArray convertFromUnicode(const QChar *, int);
@@ -311,7 +317,7 @@ struct QUtf32
     static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
 };
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 
 class QUtf8Codec : public QTextCodec {
 public:
@@ -391,7 +397,7 @@ public:
 };
 
 
-#endif // QT_NO_TEXTCODEC
+#endif // textcodec
 
 QT_END_NAMESPACE
 

@@ -387,12 +387,25 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         icon = QStyle::SP_DialogNoButton;
         break;
     case QDialogButtonBox::YesToAll:
+        icon = QStyle::SP_DialogYesToAllButton;
+        break;
     case QDialogButtonBox::NoToAll:
+        icon = QStyle::SP_DialogNoToAllButton;
+        break;
     case QDialogButtonBox::SaveAll:
+        icon = QStyle::SP_DialogSaveAllButton;
+        break;
     case QDialogButtonBox::Abort:
+        icon = QStyle::SP_DialogAbortButton;
+        break;
     case QDialogButtonBox::Retry:
+        icon = QStyle::SP_DialogRetryButton;
+        break;
     case QDialogButtonBox::Ignore:
+        icon = QStyle::SP_DialogIgnoreButton;
+        break;
     case QDialogButtonBox::RestoreDefaults:
+        icon = QStyle::SP_RestoreDefaultsButton;
         break;
     case QDialogButtonBox::NoButton:
         return 0;
@@ -820,7 +833,7 @@ QDialogButtonBox::StandardButtons QDialogButtonBox::standardButtons() const
 
 /*!
     Returns the QPushButton corresponding to the standard button \a which,
-    or 0 if the standard button doesn't exist in this button box.
+    or \nullptr if the standard button doesn't exist in this button box.
 
     \sa standardButton(), standardButtons(), buttons()
 */

@@ -421,8 +421,8 @@ struct DefinedTypesFilter {
     pointer of this type. (given by QVariant::data for example)
 
     If the type is an enumeration, flags() contains QMetaType::IsEnumeration, and this function
-    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or 0
-    otherwise
+    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or
+    \nullptr otherwise
 
     \sa QMetaType::metaObjectForType(), QMetaType::flags()
 */
@@ -432,7 +432,7 @@ struct DefinedTypesFilter {
     \since 5.0
 
     Returns a copy of \a copy, assuming it is of the type that this
-    QMetaType instance was created for. If \a copy is null, creates
+    QMetaType instance was created for. If \a copy is \nullptr, creates
     a default constructed instance.
 
     \sa QMetaType::destroy()
@@ -915,7 +915,7 @@ template <int... TypeIds> struct MetaTypeOffsets<QtPrivate::IndexesList<TypeIds.
     short offsets[sizeof...(TypeIds)];
     constexpr MetaTypeOffsets() : offsets{calculateOffsetForTypeId(TypeIds)...} {}
 
-    const char *operator[](int typeId) const Q_DECL_NOTHROW
+    const char *operator[](int typeId) const noexcept
     {
         short o = offsets[typeId];
         return o < 0 ? nullptr : metaTypeStrings + o;
@@ -2323,6 +2323,8 @@ void *QMetaType::createExtended(const void *copy) const
 */
 void QMetaType::destroyExtended(void *data) const
 {
+    if (m_typeId == QMetaType::UnknownType)
+        return;
     if (Q_UNLIKELY(m_typedDestructor && !m_destructor))
         m_typedDestructor(m_typeId, data);
     else
@@ -2339,6 +2341,8 @@ void QMetaType::destroyExtended(void *data) const
 */
 void *QMetaType::constructExtended(void *where, const void *copy) const
 {
+    if (m_typeId == QMetaType::UnknownType)
+        return nullptr;
     if (m_typedConstructor && !m_constructor)
         return m_typedConstructor(m_typeId, where, copy);
     return nullptr;
@@ -2353,6 +2357,8 @@ void *QMetaType::constructExtended(void *where, const void *copy) const
 */
 void QMetaType::destructExtended(void *data) const
 {
+    if (m_typeId == QMetaType::UnknownType)
+        return;
     if (m_typedDestructor && !m_destructor)
         m_typedDestructor(m_typeId, data);
 }

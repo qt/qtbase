@@ -30,24 +30,42 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \fn const QScopeGuard<F> qScopeGuard(F f)
-    \inmodule QtCore
-    \brief The qScopeGuard function can be used to call a function at the end of the scope.
+    \class QScopeGuard
     \since 5.12
+    \inmodule QtCore
+    \brief Provides a scope guard for calling a function at the end of
+           a scope.
+*/
+
+/*! \fn template <typename F> void QScopeGuard<F>::dismiss()
+
+    Disarms the scope guard, so that the function \e F will not be called at
+    the end of the scope.
+*/
+
+/*!
+    \fn template <typename F> const QScopeGuard<F> qScopeGuard(F f)
+    \inmodule QtCore
+    \relates QScopeGuard
+    \brief The qScopeGuard function can be used to call a function at the end
+           of the scope.
     \ingroup misc
 
-    QScopeGuard<F> is a class which sole purpose is to run a function F in its destructor.
-    This is useful for guaranteeing your cleanup code is executed whether the function is exited normally,
-    exited early by a return statement, or exited by an exception.
+    QScopeGuard<F> is a class which sole purpose is to run a function \e F in
+    its destructor. This is useful for guaranteeing your cleanup code is
+    executed, whether the function is exited normally, exited early by a return
+    statement, or exited by an exception.
 
-    If F is a lambda then you cannot instantiate the template directly, therefore the qScopeGuard() helper
-    is provided and QScopeGuard<F> is made a private implementation detail.
+    If \e F is a lambda then you cannot instantiate the template directly,
+    therefore the qScopeGuard() helper is provided and QScopeGuard<F> is made a
+    private implementation detail.
 
     Example usage is as follows:
 
     \snippet code/src_corelib_tools_qscopeguard.cpp 0
 
-    \note Exceptions are not supported. The callable shouldn't throw when executed, copied or moved.
+    \note Exceptions are not supported. The callable shouldn't throw when
+          executed, copied or moved.
 
     \sa QScopedValueRollback
 */

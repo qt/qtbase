@@ -63,12 +63,7 @@ class QAppleTestLogger : public QAbstractTestLogger
 public:
     static bool debugLoggingEnabled();
 
-    QAppleTestLogger(QAbstractTestLogger *logger);
-
-    void startLogging() override
-    { m_logger->startLogging(); }
-    void stopLogging() override
-    { m_logger->stopLogging(); }
+    QAppleTestLogger();
 
     void enterTestFunction(const char *function) override;
     void leaveTestFunction() override;
@@ -77,16 +72,15 @@ public:
                      const char *file = 0, int line = 0) override;
     void addMessage(QtMsgType, const QMessageLogContext &,
             const QString &) override;
+    void addMessage(MessageTypes type, const QString &message,
+                            const char *file = 0, int line = 0) override;
 
     void addBenchmarkResult(const QBenchmarkResult &result) override
-    { m_logger->addBenchmarkResult(result); }
-
-    void addMessage(MessageTypes type, const QString &message,
-                            const char *file = 0, int line = 0) override
-    { m_logger->addMessage(type, message, file, line); }
+    { Q_UNUSED(result); }
 
 private:
-    QScopedPointer<QAbstractTestLogger> m_logger;
+    QString subsystem() const;
+    QString testIdentifier() const;
 };
 #endif
 

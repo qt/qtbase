@@ -72,17 +72,19 @@ public:
 
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions iconOptions = 0) const override;
+                   QPlatformTheme::IconOptions iconOptions = nullptr) const override;
 
     QIconEngine *createIconEngine(const QString &iconName) const override;
 
+#if QT_CONFIG(shortcut)
     QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const override;
+#endif
 
     QString standardButtonText(int button) const override;
 
 private:
     QScopedPointer<QXdgDesktopPortalThemePrivate> d_ptr;
-    Q_DISABLE_COPY(QXdgDesktopPortalTheme)
+    Q_DISABLE_COPY_MOVE(QXdgDesktopPortalTheme)
 };
 
 QT_END_NAMESPACE

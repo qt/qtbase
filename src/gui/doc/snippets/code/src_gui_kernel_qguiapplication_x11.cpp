@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 //! [0]
-QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 calculateHugeMandelbrot();              // lunch time...
-QApplication::restoreOverrideCursor();
+QGuiApplication::restoreOverrideCursor();
 //! [0]

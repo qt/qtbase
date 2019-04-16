@@ -68,8 +68,8 @@ public:
     Q_DECLARE_FLAGS(Flags, Flag)
 
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                        EGLConfig *config = 0, const QVariant &nativeHandle = QVariant(),
-                        Flags flags = 0);
+                        EGLConfig *config = nullptr, const QVariant &nativeHandle = QVariant(),
+                        Flags flags = nullptr);
     ~QEGLPlatformContext();
 
     void initialize() override;

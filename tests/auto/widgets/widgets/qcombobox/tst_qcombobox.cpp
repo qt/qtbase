@@ -1671,6 +1671,13 @@ void tst_QComboBox::setCustomModelAndView()
     QTRY_VERIFY(combo.view()->isVisible());
     const QRect subItemRect = view->visualRect(model->indexFromItem(subItem));
     QWidget *window = view->window();
+
+    // QComboBox sometimes ignores the mouse click event for doubleClickInterval
+    // depending on which tests have been run previously. On arm this happens
+    // more often than on x86. Search for maybeIgnoreMouseButtonRelease to see
+    // why this happens.
+    QTest::qWait(QApplication::doubleClickInterval());
+
     QTest::mouseClick(window->windowHandle(), Qt::LeftButton, 0, view->mapTo(window, subItemRect.center()));
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
@@ -3420,6 +3427,11 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     model->setSourceModel(cbox.model());
     model->setFilterFixedString("foobar1");
     completer->setModel(model);
+
+    if (QGuiApplication::platformName() == "offscreen") {
+        QWARN("Offscreen platform requires explicit activateWindow()");
+        cbox.activateWindow();
+    }
 
     QApplication::setActiveWindow(&cbox);
     QVERIFY(QTest::qWaitForWindowActive(&cbox));

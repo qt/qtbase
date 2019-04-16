@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,43 +42,43 @@
 
 QT_BEGIN_NAMESPACE
 
-static void bm_init_skiptable(const ushort *uc, int len, uchar *skiptable, Qt::CaseSensitivity cs)
+static void bm_init_skiptable(const ushort *uc, qsizetype len, uchar *skiptable, Qt::CaseSensitivity cs)
 {
-    int l = qMin(len, 255);
-    memset(skiptable, l, 256*sizeof(uchar));
+    int l = int(qMin(len, qsizetype(255)));
+    memset(skiptable, l, 256 * sizeof(uchar));
     uc += len - l;
     if (cs == Qt::CaseSensitive) {
         while (l--) {
             skiptable[*uc & 0xff] = l;
-            uc++;
+            ++uc;
         }
     } else {
         const ushort *start = uc;
         while (l--) {
             skiptable[foldCase(uc, start) & 0xff] = l;
-            uc++;
+            ++uc;
         }
     }
 }
 
-static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc, uint pl,
+static inline qsizetype bm_find(const ushort *uc, qsizetype l, qsizetype index, const ushort *puc, qsizetype pl,
                           const uchar *skiptable, Qt::CaseSensitivity cs)
 {
     if (pl == 0)
-        return index > (int)l ? -1 : index;
-    const uint pl_minus_one = pl - 1;
+        return index > l ? -1 : index;
+    const qsizetype pl_minus_one = pl - 1;
 
     const ushort *current = uc + index + pl_minus_one;
     const ushort *end = uc + l;
     if (cs == Qt::CaseSensitive) {
         while (current < end) {
-            uint skip = skiptable[*current & 0xff];
+            qsizetype skip = skiptable[*current & 0xff];
             if (!skip) {
                 // possible match
                 while (skip < pl) {
                     if (*(current - skip) != puc[pl_minus_one-skip])
                         break;
-                    skip++;
+                    ++skip;
                 }
                 if (skip > pl_minus_one) // we have a match
                     return (current - uc) - pl_minus_one;
@@ -95,13 +96,13 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
         }
     } else {
         while (current < end) {
-            uint skip = skiptable[foldCase(current, uc) & 0xff];
+            qsizetype skip = skiptable[foldCase(current, uc) & 0xff];
             if (!skip) {
                 // possible match
                 while (skip < pl) {
                     if (foldCase(current - skip, uc) != foldCase(puc + pl_minus_one - skip, puc))
                         break;
-                    skip++;
+                    ++skip;
                 }
                 if (skip > pl_minus_one) // we have a match
                     return (current - uc) - pl_minus_one;
@@ -175,13 +176,26 @@ QStringMatcher::QStringMatcher(const QString &pattern, Qt::CaseSensitivity cs)
     by \a uc with the given \a length and case sensitivity specified by \a cs.
 */
 QStringMatcher::QStringMatcher(const QChar *uc, int len, Qt::CaseSensitivity cs)
-    : d_ptr(0), q_cs(cs)
+    : QStringMatcher(QStringView(uc, len), cs)
 {
-    p.uc = uc;
-    p.len = len;
-    bm_init_skiptable((const ushort *)p.uc, len, p.q_skiptable, cs);
 }
 
+/*!
+    \fn QStringMatcher::QStringMatcher(QStringView str, Qt::CaseSensitivity cs)
+    \since 5.14
+
+    Constructs a string matcher that will search for \a pattern, with
+    case sensitivity \a cs.
+
+    Call indexIn() to perform a search.
+*/
+QStringMatcher::QStringMatcher(QStringView str, Qt::CaseSensitivity cs)
+    : d_ptr(nullptr), q_cs(cs)
+{
+    p.uc = str.data();
+    p.len = int(str.size());
+    bm_init_skiptable((const ushort *)p.uc, p.len, p.q_skiptable, cs);
+}
 /*!
     Copies the \a other string matcher to this string matcher.
 */
@@ -267,11 +281,7 @@ void QStringMatcher::setCaseSensitivity(Qt::CaseSensitivity cs)
 */
 int QStringMatcher::indexIn(const QString &str, int from) const
 {
-    if (from < 0)
-        from = 0;
-    return bm_find((const ushort *)str.unicode(), str.size(), from,
-                   (const ushort *)p.uc, p.len,
-                   p.q_skiptable, q_cs);
+    return int(indexIn(QStringView(str), from));
 }
 
 /*!
@@ -288,9 +298,25 @@ int QStringMatcher::indexIn(const QString &str, int from) const
 */
 int QStringMatcher::indexIn(const QChar *str, int length, int from) const
 {
+    return int(indexIn(QStringView(str, length), from));
+}
+
+/*!
+    \since 5.14
+
+    Searches the string \a str from character position \a from
+    (default 0, i.e. from the first character), for the string
+    pattern() that was set in the constructor or in the most recent
+    call to setPattern(). Returns the position where the pattern()
+    matched in \a str, or -1 if no match was found.
+
+    \sa setPattern(), setCaseSensitivity()
+*/
+qsizetype QStringMatcher::indexIn(QStringView str, qsizetype from) const
+{
     if (from < 0)
         from = 0;
-    return bm_find((const ushort *)str, length, from,
+    return bm_find((const ushort *)str.data(), str.size(), from,
                    (const ushort *)p.uc, p.len,
                    p.q_skiptable, q_cs);
 }
@@ -307,16 +333,16 @@ int QStringMatcher::indexIn(const QChar *str, int length, int from) const
     \internal
 */
 
-int qFindStringBoyerMoore(
-    const QChar *haystack, int haystackLen, int haystackOffset,
-    const QChar *needle, int needleLen, Qt::CaseSensitivity cs)
+qsizetype qFindStringBoyerMoore(
+    QStringView haystack, qsizetype haystackOffset,
+    QStringView needle, Qt::CaseSensitivity cs)
 {
     uchar skiptable[256];
-    bm_init_skiptable((const ushort *)needle, needleLen, skiptable, cs);
+    bm_init_skiptable((const ushort *)needle.data(), needle.size(), skiptable, cs);
     if (haystackOffset < 0)
         haystackOffset = 0;
-    return bm_find((const ushort *)haystack, haystackLen, haystackOffset,
-                   (const ushort *)needle, needleLen, skiptable, cs);
+    return bm_find((const ushort *)haystack.data(), haystack.size(), haystackOffset,
+                   (const ushort *)needle.data(), needle.size(), skiptable, cs);
 }
 
 QT_END_NAMESPACE

@@ -57,7 +57,9 @@
 #include <private/qabstractitemview_p.h>
 
 #include <QtCore/qabstractitemmodel.h>
+#if QT_CONFIG(animation)
 #include <QtCore/qpropertyanimation.h>
+#endif
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtWidgets/qabstractitemview.h>
 #include <QtWidgets/qitemdelegate.h>
@@ -72,7 +74,7 @@ QT_BEGIN_NAMESPACE
 class QColumnViewPreviewColumn : public QAbstractItemView {
 
 public:
-    explicit QColumnViewPreviewColumn(QWidget *parent) : QAbstractItemView(parent), previewWidget(0) {
+    explicit QColumnViewPreviewColumn(QWidget *parent) : QAbstractItemView(parent), previewWidget(nullptr) {
     }
 
     void setPreviewWidget(QWidget *widget) {
@@ -169,7 +171,7 @@ public:
     QVector<int> columnSizes; // used during init and corner moving
     bool showResizeGrips;
     int offset;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     QPropertyAnimation currentAnimation;
 #endif
     QWidget *previewWidget;
@@ -179,11 +181,12 @@ public:
 /*!
  * This is a delegate that will paint the triangle
  */
+// ### Qt6: QStyledItemDelegate
 class QColumnViewDelegate : public QItemDelegate
 {
 
 public:
-    explicit QColumnViewDelegate(QObject *parent = 0) : QItemDelegate(parent) {}
+    explicit QColumnViewDelegate(QObject *parent = nullptr) : QItemDelegate(parent) {}
     ~QColumnViewDelegate() {}
 
     void paint(QPainter *painter,

@@ -67,7 +67,7 @@ public:
     void ensureBaseStyle() const;
 private:
     QProxyStylePrivate() :
-    QCommonStylePrivate(), baseStyle(0) {}
+    QCommonStylePrivate(), baseStyle(nullptr) {}
     mutable QPointer <QStyle> baseStyle;
 };
 

@@ -40,6 +40,7 @@
 QT_BEGIN_NAMESPACE
 
 class QTextStream;
+class CustomWidgetsInfo;
 class Driver;
 class Uic;
 
@@ -58,9 +59,9 @@ struct WriteIncludes : public TreeWalker
 //
 // actions
 //
-    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
-    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
-    void acceptActionRef(DomActionRef *node) Q_DECL_OVERRIDE;
+    void acceptActionGroup(DomActionGroup *node) override;
+    void acceptAction(DomAction *node) override;
+    void acceptActionRef(DomActionRef *node) override;
 
 //
 // custom widgets
@@ -73,6 +74,9 @@ struct WriteIncludes : public TreeWalker
 //
     void acceptIncludes(DomIncludes *node) override;
     void acceptInclude(DomInclude *node) override;
+
+protected:
+     QTextStream &output() const { return m_output; }
 
 private:
     void add(const QString &className, bool determineHeader = true, const QString &header = QString(), bool global = false);

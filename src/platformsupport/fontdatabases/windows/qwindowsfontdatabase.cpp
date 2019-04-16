@@ -1264,11 +1264,6 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
     removeApplicationFonts();
 }
 
-QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
-{
-    return new QWindowsMultiFontEngine(fontEngine, script);
-}
-
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
     const QString faceName(static_cast<const QChar*>(handle));
@@ -1434,8 +1429,8 @@ QT_WARNING_POP
                     reinterpret_cast<const OS2Table *>(fontData.constData()
                                                        + qFromBigEndian<quint32>(os2TableEntry->offset));
 
-            bool italic = qFromBigEndian<quint16>(os2Table->selection) & 1;
-            bool oblique = qFromBigEndian<quint16>(os2Table->selection) & 128;
+            bool italic = qFromBigEndian<quint16>(os2Table->selection)  & (1 << 0);
+            bool oblique = qFromBigEndian<quint16>(os2Table->selection) & (1 << 9);
 
             if (italic)
                 fontEngine->fontDef.style = QFont::StyleItalic;
@@ -1490,7 +1485,8 @@ static void getFontTable(const uchar *fileBegin, const uchar *data, quint32 tag,
 
 static void getFamiliesAndSignatures(const QByteArray &fontData,
                                      QList<QFontNames> *families,
-                                     QVector<FONTSIGNATURE> *signatures)
+                                     QVector<FONTSIGNATURE> *signatures,
+                                     QVector<QFontValues> *values)
 {
     const uchar *data = reinterpret_cast<const uchar *>(fontData.constData());
 
@@ -1509,11 +1505,27 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
         if (names.name.isEmpty())
             continue;
 
-        families->append(qMove(names));
+        families->append(std::move(names));
+
+        if (values || signatures)
+            getFontTable(data, font, MAKE_TAG('O', 'S', '/', '2'), &table, &length);
+
+        if (values) {
+            QFontValues fontValues;
+            if (table && length >= 64) {
+                // Read in some details about the font, offset calculated based on the specification
+                fontValues.weight = qFromBigEndian<quint16>(table + 4);
+
+                quint16 fsSelection = qFromBigEndian<quint16>(table + 62);
+                fontValues.isItalic = (fsSelection & 1) != 0;
+                fontValues.isUnderlined = (fsSelection & (1 << 1)) != 0;
+                fontValues.isOverstruck = (fsSelection & (1 << 4)) != 0;
+            }
+            values->append(std::move(fontValues));
+        }
 
         if (signatures) {
             FONTSIGNATURE signature;
-            getFontTable(data, font, MAKE_TAG('O', 'S', '/', '2'), &table, &length);
             if (table && length >= 86) {
                 // Offsets taken from OS/2 table in the TrueType spec
                 signature.fsUsb[0] = qFromBigEndian<quint32>(table + 42);
@@ -1536,11 +1548,12 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
     WinApplicationFont font;
     font.fileName = fileName;
     QVector<FONTSIGNATURE> signatures;
+    QVector<QFontValues> fontValues;
     QList<QFontNames> families;
     QStringList familyNames;
 
     if (!fontData.isEmpty()) {
-        getFamiliesAndSignatures(fontData, &families, &signatures);
+        getFamiliesAndSignatures(fontData, &families, &signatures, &fontValues);
         if (families.isEmpty())
             return familyNames;
 
@@ -1553,14 +1566,23 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
         // Memory fonts won't show up in enumeration, so do add them the hard way.
         for (int j = 0; j < families.count(); ++j) {
-            const QString familyName = families.at(j).name;
-            const QString styleName = families.at(j).style;
+            const auto &family = families.at(j);
+            const QString &familyName = family.name;
+            const QString &styleName = family.style;
             familyNames << familyName;
             HDC hdc = GetDC(0);
             LOGFONT lf;
             memset(&lf, 0, sizeof(LOGFONT));
             memcpy(lf.lfFaceName, familyName.utf16(), sizeof(wchar_t) * qMin(LF_FACESIZE - 1, familyName.size()));
             lf.lfCharSet = DEFAULT_CHARSET;
+            const QFontValues &values = fontValues.at(j);
+            lf.lfWeight = values.weight;
+            if (values.isItalic)
+                lf.lfItalic = TRUE;
+            if (values.isOverstruck)
+                lf.lfStrikeOut = TRUE;
+            if (values.isUnderlined)
+                lf.lfUnderline = TRUE;
             HFONT hfont = CreateFontIndirect(&lf);
             HGDIOBJ oldobj = SelectObject(hdc, hfont);
 
@@ -1581,7 +1603,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
         QByteArray data = f.readAll();
         f.close();
 
-        getFamiliesAndSignatures(data, &families, 0);
+        getFamiliesAndSignatures(data, &families, nullptr, nullptr);
         if (families.isEmpty())
             return QStringList();
 

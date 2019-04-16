@@ -89,8 +89,8 @@ public:
     QAppleRefCounted(QAppleRefCounted &&other) : value(other.value) { other.value = T(); }
     QAppleRefCounted(const QAppleRefCounted &other) : value(other.value) { if (value) RetainFunction(value); }
     ~QAppleRefCounted() { if (value) ReleaseFunction(value); }
-    operator T() { return value; }
-    void swap(QAppleRefCounted &other) Q_DECL_NOEXCEPT_EXPR(noexcept(qSwap(value, other.value)))
+    operator T() const { return value; }
+    void swap(QAppleRefCounted &other) noexcept(noexcept(qSwap(value, other.value)))
     { qSwap(value, other.value); }
     QAppleRefCounted &operator=(const QAppleRefCounted &other)
     { QAppleRefCounted copy(other); swap(copy); return *this; }
@@ -202,6 +202,7 @@ class Q_CORE_EXPORT AppleUnifiedLogger
 public:
     static bool messageHandler(QtMsgType msgType, const QMessageLogContext &context, const QString &message,
         const QString &subsystem = QString());
+    static bool willMirrorToStderr();
 private:
     static os_log_type_t logTypeForMessageType(QtMsgType msgType);
     static os_log_t cachedLog(const QString &subsystem, const QString &category);

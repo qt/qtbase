@@ -1,27 +1,30 @@
 load(default_post)
 
 contains(TEMPLATE, .*app) {
-    !macx-xcode {
+    !macx-xcode:if(isEmpty(BUILDS)|build_pass) {
         # Detect changes to the platform SDK
-        QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION
+        QMAKE_EXTRA_VARIABLES += QMAKE_MAC_SDK QMAKE_MAC_SDK_VERSION QMAKE_XCODE_DEVELOPER_PATH
         QMAKE_EXTRA_INCLUDES += $$shell_quote($$PWD/sdk.mk)
     }
 
     # Detect incompatible SDK versions
 
-    !versionAtLeast(QMAKE_MAC_SDK_VERSION, $$QT_MAC_SDK_VERSION): \
-        warning("Qt requires at least version $$QT_MAC_SDK_VERSION of the platform SDK," \
+    isEmpty(QT_MAC_SDK_VERSION_MIN): \
+        QT_MAC_SDK_VERSION_MIN = $$QT_MAC_SDK_VERSION
+
+    !versionAtLeast(QMAKE_MAC_SDK_VERSION, $$QT_MAC_SDK_VERSION_MIN): \
+        warning("Qt requires at least version $$QT_MAC_SDK_VERSION_MIN of the platform SDK," \
               "you're using $${QMAKE_MAC_SDK_VERSION}. Please upgrade.")
 
-    !isEmpty(QT_MAC_SDK_VERSION_TESTED_WITH) {
+    !isEmpty(QT_MAC_SDK_VERSION_MAX) {
         # For Qt developers only
         !isEmpty($$list($$(QT_MAC_SDK_NO_VERSION_CHECK))): \
             CONFIG += sdk_no_version_check
 
-        QMAKE_MAC_SDK_MAJOR_MINOR_VERSION = $$replace(QMAKE_MAC_SDK_VERSION, "(\d+)(\.\d+)(\.\d+)?", \1\2)
+        QMAKE_MAC_SDK_MAJOR_MINOR_VERSION = $$replace(QMAKE_MAC_SDK_VERSION, "(\\d+)(\\.\\d+)(\\.\\d+)?", \\1\\2)
 
-        !sdk_no_version_check:!versionAtMost(QMAKE_MAC_SDK_MAJOR_MINOR_VERSION, $$QT_MAC_SDK_VERSION_TESTED_WITH) {
-            warning("Qt has only been tested with version $$QT_MAC_SDK_VERSION_TESTED_WITH"\
+        !sdk_no_version_check:!versionAtMost(QMAKE_MAC_SDK_MAJOR_MINOR_VERSION, $$QT_MAC_SDK_VERSION_MAX) {
+            warning("Qt has only been tested with version $$QT_MAC_SDK_VERSION_MAX"\
                     "of the platform SDK, you're using $${QMAKE_MAC_SDK_MAJOR_MINOR_VERSION}.")
             warning("This is an unsupported configuration. You may experience build issues," \
                     "and by using")
@@ -29,7 +32,7 @@ contains(TEMPLATE, .*app) {
                     "that Qt has not been prepared for.")
 
             warning("Please downgrade the SDK you use to build your app to version" \
-                    "$$QT_MAC_SDK_VERSION_TESTED_WITH, or configure")
+                    "$$QT_MAC_SDK_VERSION_MAX, or configure")
             warning("with CONFIG+=sdk_no_version_check when running qmake" \
                     "to silence this warning.")
         }
@@ -64,7 +67,7 @@ qt {
 # Add the same default rpaths as Xcode does for new projects.
 # This is especially important for iOS/tvOS/watchOS where no other option is possible.
 !no_default_rpath {
-    QMAKE_RPATHDIR += @executable_path/Frameworks
+    QMAKE_RPATHDIR += @executable_path/../Frameworks
     equals(TEMPLATE, lib):!plugin:lib_bundle: QMAKE_RPATHDIR += @loader_path/Frameworks
 }
 
@@ -256,3 +259,10 @@ isEmpty(xcode_product_bundle_target): \
     xcode_product_bundle_target = ${PRODUCT_NAME:rfc1034identifier}
 xcode_product_bundle_identifier_setting.value = "$${xcode_product_bundle_identifier_setting.value}.$${xcode_product_bundle_target}"
 QMAKE_MAC_XCODE_SETTINGS += xcode_product_bundle_identifier_setting
+
+!macx-xcode {
+    generate_xcode_project.commands = @$(QMAKE) -spec macx-xcode $(EXPORT__PRO_FILE_)
+    generate_xcode_project.target = xcodeproj
+    QMAKE_EXTRA_VARIABLES += _PRO_FILE_
+    QMAKE_EXTRA_TARGETS += generate_xcode_project
+}

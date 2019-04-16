@@ -178,7 +178,7 @@ QRectF QGraphicsEffect::sourceBoundingRect(Qt::CoordinateSystem system) const
 
 /*!
     Returns a pointer to the item if this source is a QGraphicsItem; otherwise
-    returns 0.
+    returns \nullptr.
 
     \sa widget()
 */
@@ -189,7 +189,7 @@ const QGraphicsItem *QGraphicsEffectSource::graphicsItem() const
 
 /*!
     Returns a pointer to the widget if this source is a QWidget; otherwise
-    returns 0.
+    returns \nullptr.
 
     \sa graphicsItem()
 */
@@ -200,7 +200,7 @@ const QWidget *QGraphicsEffectSource::widget() const
 
 /*!
     Returns a pointer to the style options (used when drawing the source) if
-    available; otherwise returns 0.
+    available; otherwise returns \nullptr.
 
     \sa graphicsItem(), widget()
 */

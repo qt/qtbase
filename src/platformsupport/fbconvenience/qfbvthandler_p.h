@@ -63,7 +63,7 @@ class QFbVtHandler : public QObject
     Q_OBJECT
 
 public:
-    QFbVtHandler(QObject *parent = 0);
+    QFbVtHandler(QObject *parent = nullptr);
     ~QFbVtHandler();
 
 signals:

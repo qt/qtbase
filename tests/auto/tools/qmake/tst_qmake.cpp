@@ -30,9 +30,11 @@
 
 #include "testcompiler.h"
 
+#include <QDir>
+#include <QDirIterator>
 #include <QObject>
 #include <QStandardPaths>
-#include <QDir>
+#include <QTemporaryDir>
 
 #if defined(DEBUG_BUILD)
 #  define DIR_INFIX "debug/"
@@ -46,12 +48,17 @@ class tst_qmake : public QObject
 {
     Q_OBJECT
 
+public:
+    tst_qmake();
+
 private slots:
     void initTestCase();
+    void cleanupTestCase();
     void cleanup();
     void simple_app();
     void simple_app_shadowbuild();
     void simple_app_shadowbuild2();
+    void simple_app_versioned();
     void simple_lib();
     void simple_dll();
     void subdirs();
@@ -78,11 +85,41 @@ private slots:
 
 private:
     TestCompiler test_compiler;
+    QTemporaryDir tempWorkDir;
     QString base_path;
+    const QString origCurrentDirPath;
 };
+
+tst_qmake::tst_qmake()
+    : tempWorkDir(QDir::tempPath() + "/tst_qmake"),
+      origCurrentDirPath(QDir::currentPath())
+{
+}
+
+static void copyDir(const QString &sourceDirPath, const QString &targetDirPath)
+{
+    QDir currentDir;
+    QDirIterator dit(sourceDirPath, QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden);
+    while (dit.hasNext()) {
+        dit.next();
+        const QString targetPath = targetDirPath + QLatin1Char('/') + dit.fileName();
+        currentDir.mkpath(targetPath);
+        copyDir(dit.filePath(), targetPath);
+    }
+
+    QDirIterator fit(sourceDirPath, QDir::Files | QDir::Hidden);
+    while (fit.hasNext()) {
+        fit.next();
+        const QString targetPath = targetDirPath + QLatin1Char('/') + fit.fileName();
+        QFile::remove(targetPath);  // allowed to fail
+        QFile src(fit.filePath());
+        QVERIFY2(src.copy(targetPath), qPrintable(src.errorString()));
+    }
+}
 
 void tst_qmake::initTestCase()
 {
+    QVERIFY2(tempWorkDir.isValid(), qPrintable(tempWorkDir.errorString()));
     QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
     QString cmd = QString("%1/qmake").arg(binpath);
 #ifdef Q_CC_MSVC
@@ -99,13 +136,31 @@ void tst_qmake::initTestCase()
 #else
     test_compiler.setBaseCommands( "make", cmd );
 #endif
-    //Detect the location of the testdata
-    QString subProgram  = QLatin1String("testdata/simple_app/main.cpp");
-    base_path = QFINDTESTDATA(subProgram);
-    if (base_path.lastIndexOf(subProgram) > 0)
-        base_path = base_path.left(base_path.lastIndexOf(subProgram));
-    else
-        base_path = QCoreApplication::applicationDirPath();
+    const QString testDataSubDir = QStringLiteral("testdata");
+    const QString subProgram = testDataSubDir + QLatin1String("/simple_app/main.cpp");
+    QString testDataPath = QFINDTESTDATA(subProgram);
+    if (!testDataPath.endsWith(subProgram))
+        QFAIL("Cannot find test data directory.");
+    testDataPath.chop(subProgram.length() - testDataSubDir.length());
+
+    QString userWorkDir = qgetenv("TST_QMAKE_BUILD_DIR");
+    if (userWorkDir.isEmpty()) {
+        base_path = tempWorkDir.path();
+    } else {
+        if (!QFile::exists(userWorkDir)) {
+            QFAIL(qUtf8Printable(QStringLiteral("TST_QMAKE_BUILD_DIR %1 does not exist.")
+                                 .arg(userWorkDir)));
+        }
+        base_path = userWorkDir;
+    }
+
+    copyDir(testDataPath, base_path + QLatin1Char('/') + testDataSubDir);
+}
+
+void tst_qmake::cleanupTestCase()
+{
+    // On Windows, ~QTemporaryDir fails to remove the directory if we're still in there.
+    QDir::setCurrent(origCurrentDirPath);
 }
 
 void tst_qmake::cleanup()
@@ -119,10 +174,15 @@ void tst_qmake::simple_app()
 {
     QString workDir = base_path + "/testdata/simple_app";
     QString destDir = workDir + "/dest dir";
+    QString installDir = workDir + "/dist";
 
-    QVERIFY( test_compiler.qmake( workDir, "simple_app" ));
+    QVERIFY( test_compiler.qmake( workDir, "simple_app", QString() ));
     QVERIFY( test_compiler.make( workDir ));
     QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" ));
+
+    QVERIFY(test_compiler.make(workDir, "install"));
+    QVERIFY(test_compiler.exists(installDir, "simple app", Exe, "1.0.0"));
+
     QVERIFY( test_compiler.makeClean( workDir ));
     QVERIFY( test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should still exist after a make clean
     QVERIFY( test_compiler.makeDistClean( workDir ));
@@ -160,6 +220,40 @@ void tst_qmake::simple_app_shadowbuild2()
     QVERIFY( test_compiler.makeDistClean( buildDir ));
     QVERIFY( !test_compiler.exists( destDir, "simple app", Exe, "1.0.0" )); // Should not exist after a make distclean
     QVERIFY( test_compiler.removeMakefile( buildDir ) );
+}
+
+void tst_qmake::simple_app_versioned()
+{
+    QString workDir = base_path + "/testdata/simple_app";
+    QString buildDir = base_path + "/testdata/simple_app_versioned_build";
+    QString destDir = buildDir + "/dest dir";
+    QString installDir = buildDir + "/dist";
+
+    QString version = "4.5.6";
+    QVERIFY(test_compiler.qmake(workDir, "simple_app", buildDir, QStringList{ "VERSION=" + version }));
+    QString qmakeOutput = test_compiler.commandOutput();
+    QVERIFY(test_compiler.make(buildDir));
+    QVERIFY(test_compiler.exists(destDir, "simple app", Exe, version));
+
+    QString pdbFilePath;
+    bool checkPdb = qmakeOutput.contains("Project MESSAGE: check for pdb, please");
+    if (checkPdb) {
+        QString targetBase = QFileInfo(TestCompiler::targetName(Exe, "simple app", version))
+                .completeBaseName();
+        pdbFilePath = destDir + '/' + targetBase + ".pdb";
+        QVERIFY2(QFile::exists(pdbFilePath), qPrintable(pdbFilePath));
+        QVERIFY(test_compiler.make(buildDir, "install"));
+        QString installedPdbFilePath = installDir + '/' + targetBase + ".pdb";
+        QVERIFY2(QFile::exists(installedPdbFilePath), qPrintable(installedPdbFilePath));
+    }
+
+    QVERIFY(test_compiler.makeClean(buildDir));
+    QVERIFY(test_compiler.exists(destDir, "simple app", Exe, version));
+    QVERIFY(test_compiler.makeDistClean(buildDir));
+    QVERIFY(!test_compiler.exists(destDir, "simple app", Exe, version));
+    if (checkPdb)
+        QVERIFY(!QFile::exists(pdbFilePath));
+    QVERIFY(test_compiler.removeMakefile(buildDir));
 }
 
 void tst_qmake::simple_dll()
@@ -205,12 +299,12 @@ void tst_qmake::subdirs()
     D.remove( workDir + "/simple_dll/Makefile");
     QVERIFY( test_compiler.qmake( workDir, "subdirs" ));
     QVERIFY( test_compiler.make( workDir ));
-    QVERIFY( test_compiler.exists( workDir + "/simple_app/dest dir", "simple app", Exe, "1.0.0" ));
-    QVERIFY( test_compiler.exists( workDir + "/simple_dll/dest dir", "simple dll", Dll, "1.0.0" ));
+    QVERIFY( test_compiler.exists(workDir + "/simple_app/dest dir", "simple app", Exe));
+    QVERIFY( test_compiler.exists(workDir + "/simple_dll/dest dir", "simple dll", Dll));
     QVERIFY( test_compiler.makeClean( workDir ));
     // Should still exist after a make clean
-    QVERIFY( test_compiler.exists( workDir + "/simple_app/dest dir", "simple app", Exe, "1.0.0" ));
-    QVERIFY( test_compiler.exists( workDir + "/simple_dll/dest dir", "simple dll", Dll, "1.0.0" ));
+    QVERIFY( test_compiler.exists(workDir + "/simple_app/dest dir", "simple app", Exe));
+    QVERIFY( test_compiler.exists(workDir + "/simple_dll/dest dir", "simple dll", Dll));
     // Since subdirs templates do not have a make dist clean, we should clean up ourselves
     // properly
     QVERIFY( test_compiler.makeDistClean( workDir ));
@@ -500,8 +594,8 @@ void tst_qmake::resources()
     QVERIFY(test_compiler.qmake(workDir, "resources"));
 
     {
-        QFile qrcFile(workDir + "/.rcc/" DIR_INFIX "qmake_pro_file.qrc");
-        QVERIFY(qrcFile.exists());
+        QFile qrcFile(workDir + '/' + DIR_INFIX "qmake_pro_file.qrc");
+        QVERIFY2(qrcFile.exists(), qPrintable(qrcFile.fileName()));
         QVERIFY(qrcFile.open(QFile::ReadOnly));
         QByteArray qrcXml = qrcFile.readAll();
         QVERIFY(qrcXml.contains("alias=\"resources.pro\""));
@@ -509,7 +603,7 @@ void tst_qmake::resources()
     }
 
     {
-        QFile qrcFile(workDir + "/.rcc/" DIR_INFIX "qmake_subdir.qrc");
+        QFile qrcFile(workDir + '/' + DIR_INFIX "qmake_subdir.qrc");
         QVERIFY(qrcFile.exists());
         QVERIFY(qrcFile.open(QFile::ReadOnly));
         QByteArray qrcXml = qrcFile.readAll();
@@ -517,7 +611,7 @@ void tst_qmake::resources()
     }
 
     {
-        QFile qrcFile(workDir + "/.rcc/" DIR_INFIX "qmake_qmake_immediate.qrc");
+        QFile qrcFile(workDir + '/' + DIR_INFIX "qmake_qmake_immediate.qrc");
         QVERIFY(qrcFile.exists());
         QVERIFY(qrcFile.open(QFile::ReadOnly));
         QByteArray qrcXml = qrcFile.readAll();

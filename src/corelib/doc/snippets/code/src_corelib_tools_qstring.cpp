@@ -102,3 +102,21 @@ QString plain = "#include <QtCore>"
 QString html = plain.toHtmlEscaped();
 // html == "#include &lt;QtCore&gt;"
 //! [7]
+
+//! [8]
+QString str("ab");
+str.repeated(4);            // returns "abababab"
+//! [8]
+
+//! [9]
+// hasAttribute takes a QString argument
+if (node.hasAttribute("http-contents-length")) //...
+//! [9]
+
+//! [10]
+if (node.hasAttribute(QStringLiteral(u"http-contents-length"))) //...
+//! [10]
+
+//! [11]
+if (attribute.name() == QLatin1String("http-contents-length")) //...
+//! [11]

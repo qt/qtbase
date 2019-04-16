@@ -118,8 +118,8 @@ public:
 
     static qint32 generatePeekerId();
     static bool removePeekerId(qint32 peekerId);
-    static bool peekEventQueue(QXcbConnection::PeekerCallback peeker, void *peekerData = nullptr,
-                               QXcbConnection::PeekOptions option = QXcbConnection::PeekDefault,
+    static bool peekEventQueue(QXcbEventQueue::PeekerCallback peeker, void *peekerData = nullptr,
+                               QXcbEventQueue::PeekOptions option = QXcbEventQueue::PeekDefault,
                                qint32 peekerId = -1);
 
     Q_INVOKABLE QString dumpConnectionNativeWindows(const QXcbConnection *connection, WId root) const;

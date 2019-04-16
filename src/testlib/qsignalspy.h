@@ -122,7 +122,7 @@ public:
         }
 
         if (!QMetaObject::connect(obj, sigIndex, this, memberOffset,
-                    Qt::DirectConnection, 0)) {
+                    Qt::DirectConnection, nullptr)) {
             qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
             return;
         }

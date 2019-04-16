@@ -72,7 +72,7 @@ public:
     QJsonArray(const QJsonArray &other);
     QJsonArray &operator =(const QJsonArray &other);
 
-    QJsonArray(QJsonArray &&other) Q_DECL_NOTHROW
+    QJsonArray(QJsonArray &&other) noexcept
         : d(other.d),
           a(other.a)
     {
@@ -80,7 +80,7 @@ public:
         other.a = nullptr;
     }
 
-    QJsonArray &operator =(QJsonArray &&other) Q_DECL_NOTHROW
+    QJsonArray &operator =(QJsonArray &&other) noexcept
     {
         swap(other);
         return *this;
@@ -115,7 +115,7 @@ public:
     bool operator==(const QJsonArray &other) const;
     bool operator!=(const QJsonArray &other) const;
 
-    void swap(QJsonArray &other) Q_DECL_NOTHROW
+    void swap(QJsonArray &other) noexcept
     {
         qSwap(d, other.d);
         qSwap(a, other.a);
@@ -214,9 +214,11 @@ public:
     inline iterator begin() { detach2(); return iterator(this, 0); }
     inline const_iterator begin() const { return const_iterator(this, 0); }
     inline const_iterator constBegin() const { return const_iterator(this, 0); }
+    inline const_iterator cbegin() const { return const_iterator(this, 0); }
     inline iterator end() { detach2(); return iterator(this, size()); }
     inline const_iterator end() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
+    inline const_iterator cend() const { return const_iterator(this, size()); }
     iterator insert(iterator before, const QJsonValue &value) { insert(before.i, value); return before; }
     iterator erase(iterator it) { removeAt(it.i); return it; }
 

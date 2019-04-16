@@ -150,12 +150,12 @@ static int unixCheckClockType()
 #endif
 }
 
-bool QElapsedTimer::isMonotonic() Q_DECL_NOTHROW
+bool QElapsedTimer::isMonotonic() noexcept
 {
     return clockType() == MonotonicClock;
 }
 
-QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
+QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 {
     return unixCheckClockType() == CLOCK_REALTIME ? SystemTime : MonotonicClock;
 }
@@ -169,7 +169,7 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
 }
 
 // used in qcore_unix.cpp and qeventdispatcher_unix.cpp
-struct timespec qt_gettime() Q_DECL_NOTHROW
+struct timespec qt_gettime() noexcept
 {
     qint64 sec, frac;
     do_gettime(&sec, &frac);
@@ -204,17 +204,17 @@ static qint64 elapsedAndRestart(qint64 sec, qint64 frac,
     return (sec * Q_INT64_C(1000000000) + frac) / Q_INT64_C(1000000);
 }
 
-void QElapsedTimer::start() Q_DECL_NOTHROW
+void QElapsedTimer::start() noexcept
 {
     do_gettime(&t1, &t2);
 }
 
-qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
+qint64 QElapsedTimer::restart() noexcept
 {
     return elapsedAndRestart(t1, t2, &t1, &t2);
 }
 
-qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::nsecsElapsed() const noexcept
 {
     qint64 sec, frac;
     do_gettime(&sec, &frac);
@@ -223,34 +223,34 @@ qint64 QElapsedTimer::nsecsElapsed() const Q_DECL_NOTHROW
     return sec * Q_INT64_C(1000000000) + frac;
 }
 
-qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::elapsed() const noexcept
 {
     return nsecsElapsed() / Q_INT64_C(1000000);
 }
 
-qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsSinceReference() const noexcept
 {
     return t1 * Q_INT64_C(1000) + t2 / Q_INT64_C(1000000);
 }
 
-qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const noexcept
 {
     qint64 secs = other.t1 - t1;
     qint64 fraction = other.t2 - t2;
     return (secs * Q_INT64_C(1000000000) + fraction) / Q_INT64_C(1000000);
 }
 
-qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const noexcept
 {
     return other.t1 - t1;
 }
 
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) noexcept
 {
     return v1.t1 < v2.t1 || (v1.t1 == v2.t1 && v1.t2 < v2.t2);
 }
 
-QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) Q_DECL_NOTHROW
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 {
     Q_STATIC_ASSERT(QDeadlineTimerNanosecondsInT2);
     QDeadlineTimer result;

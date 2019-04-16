@@ -65,7 +65,7 @@ class DBusConnection : public QObject
     Q_OBJECT
 
 public:
-    DBusConnection(QObject *parent = 0);
+    DBusConnection(QObject *parent = nullptr);
     QDBusConnection connection() const;
     bool isEnabled() const { return m_enabled; }
 

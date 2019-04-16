@@ -255,6 +255,7 @@ static const uint8_t * const cursor_bits20[] = {
     forbidden_bits, forbiddenm_bits
 };
 
+// ### FIXME This mapping is incomplete - QTBUG-71423
 static const std::vector<const char *> cursorNames[] = {
     { "left_ptr", "default", "top_left_arrow", "left_arrow" },
     { "up_arrow" },
@@ -273,7 +274,7 @@ static const std::vector<const char *> cursorNames[] = {
     { "forbidden", "not-allowed", "crossed_circle", "circle", "03b6e0fcb3499374a867c041f52298f0" },
     { "whats_this", "help", "question_arrow", "5c6cd98b3f3ebcb1f9c7f1c204630408", "d9ce0ab605698f320427677b458ad60b" },
     { "left_ptr_watch", "half-busy", "progress", "00000000000000020006000e7e9ffc3f", "08e8e1c95fe2fc01f976f1e063a24ccd" },
-    { "openhand", "fleur", "5aca4d189052212118709018842178c0", "9d800788f1b08800ae810202380a0822" },
+    { "openhand", "grab", "fleur", "5aca4d189052212118709018842178c0", "9d800788f1b08800ae810202380a0822" },
     { "closedhand", "grabbing", "208530c400c041818281048008011002" },
     { "dnd-copy", "copy" },
     { "dnd-move", "move" },
@@ -606,14 +607,10 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
     QPoint spot = cursor->hotSpot();
     xcb_cursor_t c = XCB_NONE;
     if (cursor->pixmap().depth() > 1) {
-#if QT_CONFIG(xcb_render)
         if (connection()->hasXRender(0, 5))
             c = qt_xcb_createCursorXRender(m_screen, cursor->pixmap().toImage(), spot);
         else
             qCWarning(lcQpaXcb, "xrender >= 0.5 required to create pixmap cursors");
-#else
-        qCWarning(lcQpaXcb, "This build of Qt does not support pixmap cursors");
-#endif
     } else {
         xcb_connection_t *conn = xcb_connection();
         xcb_pixmap_t cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());

@@ -101,7 +101,6 @@ qt*-config.pri
 /bin/qhelpgenerator
 /bin/qlalr
 /bin/qml
-/bin/qml1plugindump
 /bin/qmleasing
 /bin/qmlimportscanner
 /bin/qmljs

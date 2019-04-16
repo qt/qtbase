@@ -210,7 +210,7 @@ static QImage copyImageData(const BITMAPINFOHEADER &header, const RGBQUAD *color
 
 class DisplayHdc
 {
-    Q_DISABLE_COPY(DisplayHdc)
+    Q_DISABLE_COPY_MOVE(DisplayHdc)
 public:
     DisplayHdc() : m_displayDc(GetDC(nullptr)) {}
     ~DisplayHdc() { ReleaseDC(nullptr, m_displayDc); }
@@ -422,8 +422,11 @@ static QImage imageFromWinHBITMAP_GetDiBits(HBITMAP bitmap, bool forceQuads, int
     if (info.bmiHeader.biHeight > 0) // Force top-down
         info.bmiHeader.biHeight = -info.bmiHeader.biHeight;
     info.bmiHeader.biCompression = BI_RGB; // Extract using no compression (can be BI_BITFIELD)
-    if (forceQuads)
+    size_t allocSize = info.bmiHeader.biSizeImage;
+    if (forceQuads) {
        info.bmiHeader.biBitCount = 32;
+       allocSize = info.bmiHeader.biWidth * qAbs(info.bmiHeader.biHeight) * 4;
+    }
 
     const QImage::Format imageFormat = imageFromWinHBITMAP_Format(info.bmiHeader, hbitmapFormat);
     if (imageFormat == QImage::Format_Invalid) {
@@ -431,7 +434,7 @@ static QImage imageFromWinHBITMAP_GetDiBits(HBITMAP bitmap, bool forceQuads, int
         return QImage();
     }
 
-    QScopedPointer<uchar> data(new uchar[info.bmiHeader.biSizeImage]);
+    QScopedArrayPointer<uchar> data(new uchar[allocSize]);
     if (!GetDIBits(displayDc, bitmap, 0, qAbs(info.bmiHeader.biHeight), data.data(), &info, DIB_RGB_COLORS)) {
         qErrnoWarning("%s: GetDIBits() failed to get data.", __FUNCTION__);
         return QImage();

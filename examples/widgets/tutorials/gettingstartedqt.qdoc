@@ -390,10 +390,10 @@
     action concerned. When the QAction has been dragged to the toolbar,
     clicking the icon will launch the associated slot.
 
-    Complete the method \c on_actionNew_triggered():
+    Complete the method \c newDocument():
 
     \quotefromfile tutorials/notepad/notepad.cpp
-    \skipto on_actionNew_triggered()
+    \skipto newDocument()
     \printuntil }
 
     \c current_file is a global variable containing the file presently
@@ -411,10 +411,10 @@
     In \c notepad.ui, right click on \c actionOpen and select \c {Go to
     slot}
 
-    Complete method \c on_actionOpen_triggered().
+    Complete method \c open().
 
     \quotefromfile tutorials/notepad/notepad.cpp
-    \skipto on_actionOpen_triggered()
+    \skipto open()
     \printuntil file.close
     \printuntil }
 
@@ -436,7 +436,7 @@
     \l {Opening a file}, by right clicking on \c actionSave, and
     selecting \c {Go to Slot}.
 
-    \skipto Notepad::on_actionSave_triggered
+    \skipto Notepad::save
     \printuntil file.close
     \printuntil }
 
@@ -449,7 +449,7 @@
 
     \section2 Saving a file with \c {Save as}
 
-    \skipto Notepad::on_actionSave_as_triggered
+    \skipto Notepad::saveAs
     \printuntil file.close
     \printuntil }
 
@@ -475,7 +475,7 @@
 
     \section2 Select a Font
 
-    \skipto Notepad::on_actionFont_triggered
+    \skipto Notepad::selectFont
     \printuntil ui->textEdit->setFont
     \printline }
 

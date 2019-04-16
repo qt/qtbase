@@ -86,7 +86,7 @@ class QComboBoxListView : public QListView
 {
     Q_OBJECT
 public:
-    QComboBoxListView(QComboBox *cmb = 0) : combo(cmb) {}
+    QComboBoxListView(QComboBox *cmb = nullptr) : combo(cmb) {}
 
 protected:
     void resizeEvent(QResizeEvent *event) override
@@ -277,7 +277,7 @@ protected:
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const override {
         QStyleOptionMenuItem opt = getStyleOption(option, index);
-        painter->fillRect(option.rect, opt.palette.background());
+        painter->fillRect(option.rect, opt.palette.window());
         mCombo->style()->drawControl(QStyle::CE_MenuItem, &opt, painter, mCombo);
     }
     QSize sizeHint(const QStyleOptionViewItem &option,
@@ -293,6 +293,7 @@ private:
     QComboBox *mCombo;
 };
 
+// ### Qt6: QStyledItemDelegate ?
 // Note that this class is intentionally not using QStyledItemDelegate
 // Vista does not use the new theme for combo boxes and there might
 // be other side effects from using the new class
@@ -330,7 +331,7 @@ protected:
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &index) const override {
         if (isSeparator(index)) {
-            int pm = mCombo->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, mCombo);
+            int pm = mCombo->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, mCombo);
             return QSize(pm, pm);
         }
         return QItemDelegate::sizeHint(option, index);

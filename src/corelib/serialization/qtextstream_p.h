@@ -54,7 +54,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include "qtextstream.h"
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
 #include "qtextcodec.h"
 #endif
 
@@ -118,7 +118,7 @@ public:
     int stringOffset;
     QIODevice::OpenMode stringOpenMode;
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     // codec
     QTextCodec *codec;
     QTextCodec::ConverterState readConverterState;
@@ -141,7 +141,7 @@ public:
 
     int lastTokenSize;
     bool deleteDevice;
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     bool autoDetectUnicode;
 #endif
 

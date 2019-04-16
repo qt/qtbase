@@ -98,6 +98,15 @@ void HelloWindow::exposeEvent(QExposeEvent *)
         m_renderer->render();
 }
 
+bool HelloWindow::event(QEvent *ev)
+{
+    if (ev->type() == QEvent::UpdateRequest) {
+        m_renderer->render();
+        requestUpdate();
+    }
+    return QWindow::event(ev);
+}
+
 void HelloWindow::mousePressEvent(QMouseEvent *)
 {
     updateColor();
@@ -132,7 +141,7 @@ void Renderer::setAnimating(HelloWindow *window, bool animating)
     if (animating) {
         m_windows << window;
         if (m_windows.size() == 1)
-            QTimer::singleShot(0, this, &Renderer::render);
+            window->requestUpdate();
     } else {
         m_currentWindow = 0;
         m_windows.removeOne(window);
@@ -196,8 +205,6 @@ void Renderer::render()
     m_context->swapBuffers(surface);
 
     m_fAngle += 1.0f;
-
-    QTimer::singleShot(0, this, &Renderer::render);
 }
 
 Q_GLOBAL_STATIC(QMutex, initMutex)

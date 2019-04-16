@@ -10,6 +10,7 @@ osx
 ubuntu-16.04
 ubuntu-18.04
 rhel-7.4
+rhel-7.6
 osx
 [focusProxyAndInputMethods]
 linux
@@ -32,7 +33,6 @@ osx
 [render_systemClip]
 osx
 [showMinimizedKeepsFocus]
-osx-10.11 ci
 osx-10.12 ci
 osx-10.13 ci
 [maskedUpdate]

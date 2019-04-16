@@ -82,12 +82,12 @@ public:
 
     qreal dpiX = 96;
     qreal dpiY = 96;
-    QVncDirtyMap *dirty = 0;
+    QVncDirtyMap *dirty = nullptr;
     QRegion dirtyRegion;
     int refreshRate = 30;
-    QVncServer *vncServer = 0;
+    QVncServer *vncServer = nullptr;
 #if QT_CONFIG(cursor)
-    QVncClientCursor *clientCursor = 0;
+    QVncClientCursor *clientCursor = nullptr;
 #endif
 };
 

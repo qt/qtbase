@@ -67,7 +67,7 @@ class QDBusMenuConnection : public QObject
     Q_OBJECT
 
 public:
-    QDBusMenuConnection(QObject *parent = 0, const QString &serviceName = QString());
+    QDBusMenuConnection(QObject *parent = nullptr, const QString &serviceName = QString());
     QDBusConnection connection() const { return m_connection; }
     QDBusServiceWatcher *dbusWatcher() const { return m_dbusWatcher; }
     bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'chatdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -97,8 +97,8 @@ public:
 
     void retranslateUi(QDialog *ChatDialog)
     {
-        ChatDialog->setWindowTitle(QApplication::translate("ChatDialog", "Chat", nullptr));
-        label->setText(QApplication::translate("ChatDialog", "Message:", nullptr));
+        ChatDialog->setWindowTitle(QCoreApplication::translate("ChatDialog", "Chat", nullptr));
+        label->setText(QCoreApplication::translate("ChatDialog", "Message:", nullptr));
     } // retranslateUi
 
 };

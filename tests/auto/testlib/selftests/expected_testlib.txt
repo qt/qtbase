@@ -1,0 +1,15 @@
+********* Start testing of tst_TestLib *********
+Config: Using QtTest library
+PASS   : tst_TestLib::initTestCase()
+FAIL!  : tst_TestLib::basics() Compared pointers are not the same
+   Loc: [qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp(0)]
+PASS   : tst_TestLib::delays()
+PASS   : tst_TestLib::reals(zero)
+PASS   : tst_TestLib::reals(self-qQNaN)
+PASS   : tst_TestLib::reals(self-qInf)
+PASS   : tst_TestLib::reals(infineg)
+PASS   : tst_TestLib::reals(Sin(turn/4))
+PASS   : tst_TestLib::reals(Cos(turn/2))
+PASS   : tst_TestLib::cleanupTestCase()
+Totals: 9 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_TestLib *********

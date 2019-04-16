@@ -27,11 +27,19 @@ qhp.QtTestLib.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qttestlib/qttestlib.tags
 
-depends                 += qtcore qtdoc qtwidgets qtgui qmake qtquick
+depends                 += qtcore qtdoc qtwidgets qtgui qmake qtqmltest
 
 headerdirs  += ..
 
+headers     += ../../corelib/kernel/qtestsupport_core.h \
+               ../../gui/kernel/qtestsupport_gui.h \
+               ../../widgets/kernel/qtestsupport_widgets.h
+
 sourcedirs  += ..
+
+sources     += ../../corelib/kernel/qtestsupport_core.cpp \
+               ../../gui/kernel/qtestsupport_gui.cpp \
+               ../../widgets/kernel/qtestsupport_widgets.cpp
 
 exampledirs += ../../../examples/qtestlib \
                ../ \

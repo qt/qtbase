@@ -12,9 +12,10 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include "angle_gl.h"
-#include <string>
 #include <math.h>
+#include <string>
+#include <vector>
+#include "angle_gl.h"
 
 #include "common/mathutil.h"
 
@@ -26,10 +27,12 @@ GLenum VariableComponentType(GLenum type);
 size_t VariableComponentSize(GLenum type);
 size_t VariableInternalSize(GLenum type);
 size_t VariableExternalSize(GLenum type);
-GLenum VariableBoolVectorType(GLenum type);
 int VariableRowCount(GLenum type);
 int VariableColumnCount(GLenum type);
 bool IsSamplerType(GLenum type);
+bool IsImageType(GLenum type);
+bool IsAtomicCounterType(GLenum type);
+bool IsOpaqueType(GLenum type);
 GLenum SamplerTypeToTextureType(GLenum samplerType);
 bool IsMatrixType(GLenum type);
 GLenum TransposeMatrixType(GLenum type);
@@ -37,6 +40,7 @@ int VariableRegisterCount(GLenum type);
 int MatrixRegisterCount(GLenum type, bool isRowMajorMatrix);
 int MatrixComponentCount(GLenum type, bool isRowMajorMatrix);
 int VariableSortOrder(GLenum type);
+GLenum VariableBoolVectorType(GLenum type);
 
 int AllocateFirstFreeBits(unsigned int *bits, unsigned int allocationSize, unsigned int bitsSize);
 
@@ -46,9 +50,12 @@ bool IsCubeMapTextureTarget(GLenum target);
 size_t CubeMapTextureTargetToLayerIndex(GLenum target);
 GLenum LayerIndexToCubeMapTextureTarget(size_t index);
 
-// Parse the base uniform name and array index.  Returns the base name of the uniform. outSubscript is
-// set to GL_INVALID_INDEX if the provided name is not an array or the array index is invalid.
-std::string ParseUniformName(const std::string &name, size_t *outSubscript);
+// Parse the base resource name and array indices. Returns the base name of the resource.
+// If the provided name doesn't index an array, the outSubscripts vector will be empty.
+// If the provided name indexes an array, the outSubscripts vector will contain indices with
+// outermost array indices in the back. If an array index is invalid, GL_INVALID_INDEX is added to
+// outSubscripts.
+std::string ParseResourceName(const std::string &name, std::vector<unsigned int> *outSubscripts);
 
 // Find the range of index values in the provided indices pointer.  Primitive restart indices are
 // only counted in the range if primitive restart is disabled.
@@ -61,14 +68,71 @@ IndexRange ComputeIndexRange(GLenum indexType,
 GLuint GetPrimitiveRestartIndex(GLenum indexType);
 
 bool IsTriangleMode(GLenum drawMode);
+bool IsIntegerFormat(GLenum unsizedFormat);
 
-// [OpenGL ES 3.0.2] Section 2.3.1 page 14
-// Data Conversion For State-Setting Commands
-// Floating-point values are rounded to the nearest integer, instead of truncated, as done by static_cast.
-template <typename outT> outT iround(GLfloat value) { return static_cast<outT>(value > 0.0f ? floor(value + 0.5f) : ceil(value - 0.5f)); }
-template <typename outT> outT uiround(GLfloat value) { return static_cast<outT>(value + 0.5f); }
+// Returns the product of the sizes in the vector, or 1 if the vector is empty. Doesn't currently
+// perform overflow checks.
+unsigned int ArraySizeProduct(const std::vector<unsigned int> &arraySizes);
 
-unsigned int ParseAndStripArrayIndex(std::string *name);
+// Return the array index at the end of name, and write the length of name before the final array
+// index into nameLengthWithoutArrayIndexOut. In case name doesn't include an array index, return
+// GL_INVALID_INDEX and write the length of the original string.
+unsigned int ParseArrayIndex(const std::string &name, size_t *nameLengthWithoutArrayIndexOut);
+
+struct UniformTypeInfo final : angle::NonCopyable
+{
+    constexpr UniformTypeInfo(GLenum type,
+                              GLenum componentType,
+                              GLenum samplerTextureType,
+                              GLenum transposedMatrixType,
+                              GLenum boolVectorType,
+                              int rowCount,
+                              int columnCount,
+                              int componentCount,
+                              size_t componentSize,
+                              size_t internalSize,
+                              size_t externalSize,
+                              bool isSampler,
+                              bool isMatrixType,
+                              bool isImageType)
+        : type(type),
+          componentType(componentType),
+          samplerTextureType(samplerTextureType),
+          transposedMatrixType(transposedMatrixType),
+          boolVectorType(boolVectorType),
+          rowCount(rowCount),
+          columnCount(columnCount),
+          componentCount(componentCount),
+          componentSize(componentSize),
+          internalSize(internalSize),
+          externalSize(externalSize),
+          isSampler(isSampler),
+          isMatrixType(isMatrixType),
+          isImageType(isImageType)
+    {
+    }
+
+    GLenum type;
+    GLenum componentType;
+    GLenum samplerTextureType;
+    GLenum transposedMatrixType;
+    GLenum boolVectorType;
+    int rowCount;
+    int columnCount;
+    int componentCount;
+    size_t componentSize;
+    size_t internalSize;
+    size_t externalSize;
+    bool isSampler;
+    bool isMatrixType;
+    bool isImageType;
+};
+
+const UniformTypeInfo &GetUniformTypeInfo(GLenum uniformType);
+
+const char *GetGenericErrorMessage(GLenum error);
+
+unsigned int ElementTypeSize(GLenum elementType);
 
 }  // namespace gl
 
@@ -81,7 +145,9 @@ size_t CubeMapTextureTargetToLayerIndex(EGLenum target);
 EGLenum LayerIndexToCubeMapTextureTarget(size_t index);
 bool IsTextureTarget(EGLenum target);
 bool IsRenderbufferTarget(EGLenum target);
-}
+
+const char *GetGenericErrorMessage(EGLint error);
+}  // namespace egl
 
 namespace egl_gl
 {
@@ -89,6 +155,11 @@ GLenum EGLCubeMapTargetToGLCubeMapTarget(EGLenum eglTarget);
 GLenum EGLImageTargetToGLTextureTarget(EGLenum eglTarget);
 GLuint EGLClientBufferToGLObjectHandle(EGLClientBuffer buffer);
 }
+
+namespace gl_egl
+{
+EGLenum GLComponentTypeToEGLColorComponentType(GLenum glComponentType);
+}  // namespace gl_egl
 
 #if !defined(ANGLE_ENABLE_WINDOWS_STORE)
 std::string getTempPath();

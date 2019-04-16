@@ -48,6 +48,60 @@ but not all the files it references.
     endif()
 endmacro()
 
+!!IF !isEmpty(CMAKE_STATIC_TYPE)
+function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configuration lib_deps link_flags)
+    set(_lib_deps)
+    set(_link_flags)
+
+    get_filename_component(_qt5_install_libs \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/lib\" ABSOLUTE)
+
+    if(EXISTS \"${prl_file_location}\")
+        file(STRINGS \"${prl_file_location}\" _prl_strings REGEX \"QMAKE_PRL_LIBS[ \\t]*=\")
+        string(REGEX REPLACE \"QMAKE_PRL_LIBS[ \\t]*=[ \\t]*([^\\n]*)\" \"\\\\1\" _static_depends ${_prl_strings})
+        string(REGEX REPLACE \"[ \\t]+\" \";\" _static_depends ${_static_depends})
+        set(_search_paths)
+        string(REPLACE \"\\$\\$[QT_INSTALL_LIBS]\" \"${_qt5_install_libs}\" _static_depends \"${_static_depends}\")
+        foreach(_flag ${_static_depends})
+            string(REPLACE \"\\\"\" \"\" _flag ${_flag})
+            if(_flag MATCHES \"^-l(.*)$\")
+                # Handle normal libraries passed as -lfoo
+                set(_lib \"${CMAKE_MATCH_1}\")
+                if(_lib MATCHES \"^pthread$\")
+                    find_package(Threads REQUIRED)
+                    list(APPEND _lib_deps Threads::Threads)
+                else()
+                    if(_search_paths)
+                        find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib} HINTS ${_search_paths} NO_DEFAULT_PATH)
+                    endif()
+                    find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib})
+                    mark_as_advanced(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH)
+                    if(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH)
+                        list(APPEND _lib_deps
+                            ${_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH}
+                        )
+                    else()
+                        message(FATAL_ERROR \"Library not found: ${_lib}\")
+                    endif()
+                endif()
+            elseif(EXISTS \"${_flag}\")
+                # The flag is an absolute path to an existing library
+                list(APPEND _lib_deps \"${_flag}\")
+            elseif(_flag MATCHES \"^-L(.*)$\")
+                # Handle -Lfoo flags by putting their paths in the search path used by find_library above
+                list(APPEND _search_paths \"${CMAKE_MATCH_1}\")
+            else()
+                # Handle all remaining flags by simply passing them to the linker
+                list(APPEND _link_flags ${_flag})
+            endif()
+        endforeach()
+    endif()
+
+    string(REPLACE \";\" \" \" _link_flags \"${_link_flags}\")
+    set(${lib_deps} ${_lib_deps} PARENT_SCOPE)
+    set(${link_flags} \"SHELL:${_link_flags}\" PARENT_SCOPE)
+endfunction()
+!!ENDIF
+
 !!IF !equals(TEMPLATE, aux)
 macro(_populate_$${CMAKE_MODULE_NAME}_target_properties Configuration LIB_LOCATION IMPLIB_LOCATION)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
@@ -58,15 +112,29 @@ macro(_populate_$${CMAKE_MODULE_NAME}_target_properties Configuration LIB_LOCATI
     set(imported_location \"$${CMAKE_DLL_DIR}${LIB_LOCATION}\")
 !!ENDIF
     _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(${imported_location})
+    set(_deps
+        ${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}
+!!IF !isEmpty(CMAKE_STATIC_TYPE)
+        ${_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LIB_DEPENDENCIES}
+!!ENDIF
+    )
     set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
-        \"INTERFACE_LINK_LIBRARIES\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
+        \"INTERFACE_LINK_LIBRARIES\" \"${_deps}\"
         \"IMPORTED_LOCATION_${Configuration}\" ${imported_location}
 !!IF !isEmpty(CMAKE_LIB_SONAME)
         \"IMPORTED_SONAME_${Configuration}\" \"$${CMAKE_LIB_SONAME}\"
 !!ENDIF
         # For backward compatibility with CMake < 2.8.12
-        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
+        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_deps}\"
     )
+!!IF !isEmpty(CMAKE_STATIC_TYPE)
+
+    if(NOT CMAKE_VERSION VERSION_LESS \"3.13\")
+        set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
+            \"INTERFACE_LINK_OPTIONS\" \"${_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LINK_FLAGS}\"
+        )
+    endif()
+!!ENDIF
 
 !!IF !isEmpty(CMAKE_WINDOWS_BUILD)
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
@@ -215,6 +283,40 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_STATIC_TYPE)
+    if(NOT Qt5_EXCLUDE_STATIC_DEPENDENCIES)
+!!IF !isEmpty(CMAKE_DEBUG_TYPE)
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+        _qt5_$${CMAKE_MODULE_NAME}_process_prl_file(
+            \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_DEBUG}\" DEBUG
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_DEBUG_LIB_DEPENDENCIES
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_DEBUG_LINK_FLAGS
+        )
+!!ELSE
+        _qt5_$${CMAKE_MODULE_NAME}_process_prl_file(
+            \"$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_DEBUG}\" DEBUG
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_DEBUG_LIB_DEPENDENCIES
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_DEBUG_LINK_FLAGS
+        )
+!!ENDIF
+!!ENDIF
+
+!!IF !isEmpty(CMAKE_RELEASE_TYPE)
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+        _qt5_$${CMAKE_MODULE_NAME}_process_prl_file(
+            \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_RELEASE}\" RELEASE
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_RELEASE_LIB_DEPENDENCIES
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_RELEASE_LINK_FLAGS
+        )
+!!ELSE
+        _qt5_$${CMAKE_MODULE_NAME}_process_prl_file(
+            \"$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_RELEASE}\" RELEASE
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_RELEASE_LIB_DEPENDENCIES
+            _Qt5$${CMAKE_MODULE_NAME}_STATIC_RELEASE_LINK_FLAGS
+        )
+!!ENDIF
+!!ENDIF
+    endif()
+
     add_library(Qt5::$${CMAKE_MODULE_NAME} STATIC IMPORTED)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
 !!ELSE

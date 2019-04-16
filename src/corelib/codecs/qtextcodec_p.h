@@ -52,12 +52,13 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include "qtextcodec.h"
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
+
+#include "qtextcodec.h"
 
 #if defined(Q_OS_MAC) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_WASM)
 #define QT_LOCALE_IS_UTF8
@@ -82,7 +83,7 @@ struct QTextCodecUnalignedPointer
 
 bool qTextCodecNameMatch(const char *a, const char *b);
 
-#else
+#else // without textcodec:
 
 class QTextCodec
 {
@@ -97,7 +98,7 @@ public:
 
     struct ConverterState {
         ConverterState(ConversionFlags f = DefaultConversion)
-            : flags(f), remainingChars(0), invalidChars(0), d(0) { state_data[0] = state_data[1] = state_data[2] = 0; }
+            : flags(f), remainingChars(0), invalidChars(0), d(nullptr) { state_data[0] = state_data[1] = state_data[2] = 0; }
         ~ConverterState() { }
         ConversionFlags flags;
         int remainingChars;
@@ -109,7 +110,7 @@ public:
     };
 };
 
-#endif //QT_NO_TEXTCODEC
+#endif // textcodec
 
 QT_END_NAMESPACE
 

@@ -98,6 +98,10 @@ QT_BEGIN_NAMESPACE
     ensures that you get integers of the size you want and insulates
     you from compiler and platform differences.
 
+    Enumerations can be serialized through QDataStream without the
+    need of manually defining streaming operators. Enum classes are
+    serialized using the declared size.
+
     To take one example, a \c{char *} string is written as a 32-bit
     integer equal to the length of the string including the '\\0' byte,
     followed by all the characters of the string including the
@@ -170,18 +174,12 @@ QT_BEGIN_NAMESPACE
     will have appropriate stream operators declared as non-member of
     the class:
 
-    \code
-    QDataStream &operator<<(QDataStream &, const QXxx &);
-    QDataStream &operator>>(QDataStream &, QXxx &);
-    \endcode
+    \snippet code/src_corelib_serialization_qdatastream.cpp 0
 
     For example, here are the stream operators declared as non-members
     of the QImage class:
 
-    \code
-    QDataStream & operator<< (QDataStream& stream, const QImage& image);
-    QDataStream & operator>> (QDataStream& stream, QImage& image);
-    \endcode
+    \snippet code/src_corelib_serialization_qdatastream.cpp 1
 
     To see if your favorite Qt class has similar stream operators
     defined, check the \b {Related Non-Members} section of the
@@ -374,7 +372,7 @@ QDataStream::~QDataStream()
 /*!
     \fn QIODevice *QDataStream::device() const
 
-    Returns the I/O device currently set, or 0 if no
+    Returns the I/O device currently set, or \nullptr if no
     device is currently set.
 
     \sa setDevice()
@@ -383,7 +381,7 @@ QDataStream::~QDataStream()
 /*!
     void QDataStream::setDevice(QIODevice *d)
 
-    Sets the I/O device to \a d, which can be 0
+    Sets the I/O device to \a d, which can be \nullptr
     to unset to current I/O device.
 
     \sa device()
@@ -398,17 +396,18 @@ void QDataStream::setDevice(QIODevice *d)
     dev = d;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
     Unsets the I/O device.
-    Use setDevice(0) instead.
+    Use setDevice(nullptr) instead.
 */
 
 void QDataStream::unsetDevice()
 {
-    setDevice(0);
+    setDevice(nullptr);
 }
-
+#endif
 
 /*!
     \fn bool QDataStream::atEnd() const
@@ -565,7 +564,8 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_5_10 Same as Qt_5_6
     \value Qt_5_11 Same as Qt_5_6
     \value Qt_5_12 Version 18 (Qt 5.12)
-    \value Qt_5_13 Same as Qt_5_12
+    \value Qt_5_13 Version 19 (Qt 5.13)
+    \value Qt_5_14 Same as Qt_5_13
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()

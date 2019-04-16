@@ -579,7 +579,7 @@ void QTabWidget::setTabEnabled(int index, bool enable)
 
   All widgets set here will be deleted by the tab widget when it is
   destroyed unless you separately reparent the widget after setting
-  some other corner widget (or 0).
+  some other corner widget (or \nullptr).
 
   Note: Corner widgets are designed for \l North and \l South tab positions;
   other orientations are known to not work properly.
@@ -605,7 +605,7 @@ void QTabWidget::setCornerWidget(QWidget * widget, Qt::Corner corner)
 }
 
 /*!
-    Returns the widget shown in the \a corner of the tab widget or 0.
+    Returns the widget shown in the \a corner of the tab widget or \nullptr.
 */
 QWidget * QTabWidget::cornerWidget(Qt::Corner corner) const
 {
@@ -1146,8 +1146,8 @@ void QTabWidget::keyPressEvent(QKeyEvent *e)
 }
 
 /*!
-    Returns the tab page at index position \a index or 0 if the \a
-    index is out of range.
+    Returns the tab page at index position \a index or \nullptr if the
+    \a index is out of range.
 */
 QWidget *QTabWidget::widget(int index) const
 {

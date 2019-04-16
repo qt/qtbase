@@ -42,6 +42,7 @@
 
 #include <qvector.h>
 #include <qstring.h>
+#include <qstringlist.h>
 #include <qtypeinfo.h>
 
 struct Tracepoint
@@ -86,6 +87,7 @@ struct Provider
 {
     QString name;
     QVector<Tracepoint> tracepoints;
+    QStringList prefixText;
 };
 
 Provider parseProvider(const QString &filename);

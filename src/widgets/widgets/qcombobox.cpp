@@ -80,6 +80,7 @@
 #if QT_CONFIG(effects)
 # include <private/qeffects_p.h>
 #endif
+#include <private/qstyle_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -166,7 +167,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         break;
     }
     if (index.data(Qt::BackgroundRole).canConvert<QBrush>()) {
-        menuOption.palette.setBrush(QPalette::All, QPalette::Background,
+        menuOption.palette.setBrush(QPalette::All, QPalette::Window,
                                     qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
     }
     menuOption.text = index.model()->data(index, Qt::DisplayRole).toString()
@@ -261,16 +262,11 @@ void QComboBoxPrivate::_q_modelDestroyed()
     model = QAbstractItemModelPrivate::staticEmptyModel();
 }
 
-
-//Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QComboBoxPrivate::popupGeometry(int screen) const
 {
-    bool useFullScreenForPopupMenu = false;
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
-        useFullScreenForPopupMenu = theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
-    return useFullScreenForPopupMenu ?
-           QDesktopWidgetPrivate::screenGeometry(screen) :
-           QDesktopWidgetPrivate::availableGeometry(screen);
+    return QStylePrivate::useFullScreenForPopup()
+        ? QDesktopWidgetPrivate::screenGeometry(screen)
+        : QDesktopWidgetPrivate::availableGeometry(screen);
 }
 
 bool QComboBoxPrivate::updateHoverControl(const QPoint &pos)
@@ -472,7 +468,7 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     // we need a vertical layout
     QBoxLayout *layout =  new QBoxLayout(QBoxLayout::TopToBottom, this);
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(QMargins());
 
     // set item view
     setItemView(itemView);
@@ -895,14 +891,21 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     currentIndex was reset.
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QComboBox::currentIndexChanged(const QString &text)
     \since 4.1
+
+    \obsolete
+
+    Use currentTextChanged(const QString &) or currentIndexChanged(int)
+    instead.
 
     This signal is sent whenever the currentIndex in the combobox
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
 */
+#endif
 
 /*!
     \fn void QComboBox::currentTextChanged(const QString &text)
@@ -1357,7 +1360,13 @@ void QComboBoxPrivate::emitActivated(const QModelIndex &index)
         return;
     QString text(itemText(index));
     emit q->activated(index.row());
+    emit q->textActivated(text);
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     emit q->activated(text);
+QT_WARNING_POP
+#endif
 }
 
 void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
@@ -1367,7 +1376,13 @@ void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
         return;
     QString text(itemText(index));
     emit q->highlighted(index.row());
+    emit q->textHighlighted(text);
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     emit q->highlighted(text);
+QT_WARNING_POP
+#endif
 }
 
 void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
@@ -1375,7 +1390,12 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     Q_Q(QComboBox);
     const QString text = itemText(index);
     emit q->currentIndexChanged(index.row());
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     emit q->currentIndexChanged(text);
+    QT_WARNING_POP
+#endif
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);
@@ -1483,6 +1503,7 @@ int QComboBox::maxCount() const
 }
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
 
 /*!
     \property QComboBox::autoCompletion
@@ -1576,6 +1597,7 @@ void QComboBox::setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity
     if (d->lineEdit && d->lineEdit->completer())
         d->lineEdit->completer()->setCaseSensitivity(sensitivity);
 }
+#endif  //  QT_DEPRECATED_SINCE(5, 13)
 
 #endif // QT_CONFIG(completer)
 
@@ -1888,8 +1910,8 @@ void QComboBox::setLineEdit(QLineEdit *edit)
 }
 
 /*!
-    Returns the line edit used to edit items in the combobox, or 0 if there
-    is no line edit.
+    Returns the line edit used to edit items in the combobox, or
+    \nullptr if there is no line edit.
 
     Only editable combo boxes have a line edit.
 */
@@ -2020,7 +2042,7 @@ QAbstractItemModel *QComboBox::model() const
 }
 
 /*!
-    Sets the model to be \a model. \a model must not be 0.
+    Sets the model to be \a model. \a model must not be \nullptr.
     If you want to clear the contents of a model, call clear().
 
     \sa clear()

@@ -188,7 +188,7 @@ static bool read_dib_infoheader(QDataStream &s, BMP_INFOHDR &bi)
     if (!(comp == BMP_RGB || (nbits == 4 && comp == BMP_RLE4) ||
         (nbits == 8 && comp == BMP_RLE8) || ((nbits == 16 || nbits == 32) && comp == BMP_BITFIELDS)))
          return false;                                // weird compression type
-    if (bi.biWidth < 0 || quint64(bi.biWidth) * qAbs(bi.biHeight) > 16384 * 16384)
+    if (bi.biWidth <= 0 || !bi.biHeight || quint64(bi.biWidth) * qAbs(bi.biHeight) > 16384 * 16384)
         return false;
 
     return true;
@@ -866,10 +866,12 @@ void QBmpHandler::setOption(ImageOption option, const QVariant &value)
     Q_UNUSED(value);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 QByteArray QBmpHandler::name() const
 {
     return formatName();
 }
+#endif
 
 QT_END_NAMESPACE
 

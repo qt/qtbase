@@ -52,7 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_BIG_CODECS
 enum {
     Esc = 0x1b,
     So = 0x0e,         // Shift Out
@@ -368,7 +367,5 @@ QList<QByteArray> QJisCodec::_aliases()
     list << "JIS7"; // Qt 3 compat
     return list;
 }
-
-#endif // QT_NO_BIG_CODECS
 
 QT_END_NAMESPACE

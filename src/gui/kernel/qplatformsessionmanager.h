@@ -64,6 +64,8 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QPlatformSessionManager
 {
 public:
+    Q_DISABLE_COPY_MOVE(QPlatformSessionManager)
+
     explicit QPlatformSessionManager(const QString &id, const QString &key);
     virtual ~QPlatformSessionManager();
 
@@ -101,8 +103,6 @@ private:
     QStringList m_restartCommand;
     QStringList m_discardCommand;
     QSessionManager::RestartHint m_restartHint;
-
-    Q_DISABLE_COPY(QPlatformSessionManager)
 };
 
 QT_END_NAMESPACE

@@ -48,30 +48,34 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "window.h"
+#include <QtWidgets>
 
 //! [Window constructor start]
-Window::Window()
+Window::Window(QWidget *parent)
+    : QWidget(parent), thread(new RenderThread(this))
 {
-    thread = new RenderThread();
 //! [Window constructor start] //! [set up widgets and connections]
 
-    label = new QLabel();
+    label = new QLabel(this);
     label->setAlignment(Qt::AlignCenter);
 
-    loadButton = new QPushButton(tr("&Load image..."));
-    resetButton = new QPushButton(tr("&Stop"));
+    loadButton = new QPushButton(tr("&Load image..."), this);
+    resetButton = new QPushButton(tr("&Stop"), this);
     resetButton->setEnabled(false);
 
-    connect(loadButton, SIGNAL(clicked()), this, SLOT(loadImage()));
-    connect(resetButton, SIGNAL(clicked()), thread, SLOT(stopProcess()));
-    connect(thread, SIGNAL(finished()), this, SLOT(resetUi()));
+    connect(loadButton, &QPushButton::clicked,
+            this, QOverload<>::of(&Window::loadImage));
+    connect(resetButton, &QPushButton::clicked,
+            thread, &RenderThread::stopProcess);
+    connect(thread, &RenderThread::finished,
+            this, &Window::resetUi);
 //! [set up widgets and connections] //! [connecting signal with custom type]
-    connect(thread, SIGNAL(sendBlock(Block)), this, SLOT(addBlock(Block)));
+    connect(thread, &RenderThread::sendBlock,
+            this, &Window::addBlock);
 //! [connecting signal with custom type]
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch();
     buttonLayout->addWidget(loadButton);
     buttonLayout->addWidget(resetButton);
@@ -89,9 +93,10 @@ Window::Window()
 void Window::loadImage()
 {
     QStringList formats;
-    foreach (QByteArray format, QImageReader::supportedImageFormats())
+    const QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
+    for (const QByteArray &format : supportedFormats)
         if (format.toLower() == format)
-            formats.append("*." + format);
+            formats.append(QLatin1String("*.") + QString::fromLatin1(format));
 
     QString newPath = QFileDialog::getOpenFileName(this, tr("Open Image"),
         path, tr("Image files (%1)").arg(formats.join(' ')));

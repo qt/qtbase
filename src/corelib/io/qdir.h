@@ -105,12 +105,13 @@ public:
     ~QDir();
 
     QDir &operator=(const QDir &);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QDir::setPath() instead")
     QDir &operator=(const QString &path);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QDir &operator=(QDir &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
+    QDir &operator=(QDir &&other) noexcept { swap(other); return *this; }
 
-    void swap(QDir &other) Q_DECL_NOTHROW
+    void swap(QDir &other) noexcept
     { qSwap(d_ptr, other.d_ptr); }
 
     void setPath(const QString &path);
@@ -118,7 +119,10 @@ public:
     QString absolutePath() const;
     QString canonicalPath() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QDir::addSearchPath() instead")
     static void addResourceSearchPath(const QString &path);
+#endif
 
     static void setSearchPaths(const QString &prefix, const QStringList &searchPaths);
     static void addSearchPath(const QString &prefix, const QString &path);
@@ -184,7 +188,7 @@ public:
 
     static QFileInfoList drives();
 
-    Q_DECL_CONSTEXPR static inline QChar listSeparator() Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR static inline QChar listSeparator() noexcept
     {
 #if defined(Q_OS_WIN)
         return QLatin1Char(';');

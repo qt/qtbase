@@ -104,7 +104,7 @@ public:
 private:
     QFont defaultFnt;
 
-    Q_DISABLE_COPY(QTextFormatCollection)
+    Q_DISABLE_COPY_MOVE(QTextFormatCollection)
 };
 
 QT_END_NAMESPACE

@@ -48,9 +48,11 @@
 #include <QtCore/qstringlist.h>
 #endif
 
+#include <initializer_list>
+
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed = 0) noexcept;
 
 class QUrlQueryPrivate;
 class Q_CORE_EXPORT QUrlQuery
@@ -59,18 +61,23 @@ public:
     QUrlQuery();
     explicit QUrlQuery(const QUrl &url);
     explicit QUrlQuery(const QString &queryString);
+    QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+        : QUrlQuery()
+    {
+        for (const QPair<QString, QString> &item : list)
+            addQueryItem(item.first, item.second);
+    }
+
     QUrlQuery(const QUrlQuery &other);
     QUrlQuery &operator=(const QUrlQuery &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    QUrlQuery &operator=(QUrlQuery &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-#endif
+    QUrlQuery &operator=(QUrlQuery &&other) noexcept { swap(other); return *this; }
     ~QUrlQuery();
 
     bool operator==(const QUrlQuery &other) const;
     bool operator!=(const QUrlQuery &other) const
     { return !(*this == other); }
 
-    void swap(QUrlQuery &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+    void swap(QUrlQuery &other) noexcept { qSwap(d, other.d); }
 
     bool isEmpty() const;
     bool isDetached() const;
@@ -102,7 +109,7 @@ public:
 
 private:
     friend class QUrl;
-    friend Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed) Q_DECL_NOTHROW;
+    friend Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed) noexcept;
     QSharedDataPointer<QUrlQueryPrivate> d;
 public:
     typedef QSharedDataPointer<QUrlQueryPrivate> DataPtr;

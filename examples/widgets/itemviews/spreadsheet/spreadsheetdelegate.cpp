@@ -53,11 +53,12 @@
 #include <QtWidgets>
 
 SpreadSheetDelegate::SpreadSheetDelegate(QObject *parent)
-        : QItemDelegate(parent) {}
+    : QItemDelegate(parent)
+{}
 
 QWidget *SpreadSheetDelegate::createEditor(QWidget *parent,
-                                          const QStyleOptionViewItem &,
-                                          const QModelIndex &index) const
+                                           const QStyleOptionViewItem &,
+                                           const QModelIndex &index) const
 {
     if (index.column() == 1) {
         QDateTimeEdit *editor = new QDateTimeEdit(parent);
@@ -92,7 +93,7 @@ void SpreadSheetDelegate::commitAndCloseEditor()
 }
 
 void SpreadSheetDelegate::setEditorData(QWidget *editor,
-    const QModelIndex &index) const
+                                        const QModelIndex &index) const
 {
     QLineEdit *edit = qobject_cast<QLineEdit*>(editor);
     if (edit) {
@@ -109,7 +110,8 @@ void SpreadSheetDelegate::setEditorData(QWidget *editor,
 }
 
 void SpreadSheetDelegate::setModelData(QWidget *editor,
-    QAbstractItemModel *model, const QModelIndex &index) const
+                                       QAbstractItemModel *model,
+                                       const QModelIndex &index) const
 {
     QLineEdit *edit = qobject_cast<QLineEdit *>(editor);
     if (edit) {

@@ -80,31 +80,31 @@ public:
     explicit QEventDispatcherWin32(QObject *parent = 0);
     ~QEventDispatcherWin32();
 
-    bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags);
-    bool hasPendingEvents();
+    bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasPendingEvents() override;
 
-    void registerSocketNotifier(QSocketNotifier *notifier);
-    void unregisterSocketNotifier(QSocketNotifier *notifier);
+    void registerSocketNotifier(QSocketNotifier *notifier) override;
+    void unregisterSocketNotifier(QSocketNotifier *notifier) override;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
-    bool unregisterTimer(int timerId);
-    bool unregisterTimers(QObject *object);
-    QList<TimerInfo> registeredTimers(QObject *object) const;
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) override;
+    bool unregisterTimer(int timerId) override;
+    bool unregisterTimers(QObject *object) override;
+    QList<TimerInfo> registeredTimers(QObject *object) const override;
 
-    bool registerEventNotifier(QWinEventNotifier *notifier);
-    void unregisterEventNotifier(QWinEventNotifier *notifier);
+    bool registerEventNotifier(QWinEventNotifier *notifier) override;
+    void unregisterEventNotifier(QWinEventNotifier *notifier) override;
     void activateEventNotifiers();
 
-    int remainingTime(int timerId);
+    int remainingTime(int timerId) override;
 
-    void wakeUp();
-    void interrupt();
-    void flush();
+    void wakeUp() override;
+    void interrupt() override;
+    void flush() override;
 
-    void startingUp();
-    void closingDown();
+    void startingUp() override;
+    void closingDown() override;
 
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 
     HWND internalHwnd();
 
@@ -165,8 +165,7 @@ public:
 
     DWORD threadId;
 
-    bool interrupt;
-    bool closingDown;
+    QAtomicInt interrupt;
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;
@@ -193,9 +192,11 @@ public:
     void postActivateSocketNotifiers();
     void doWsaAsyncSelect(int socket, long event);
 
+    bool closingDown = false;
+
+    bool winEventNotifierListModified = false;
     HANDLE winEventNotifierActivatedEvent;
     QList<QWinEventNotifier *> winEventNotifierList;
-    bool winEventNotifierListModified = false;
     void activateEventNotifier(QWinEventNotifier * wen);
 
     QList<MSG> queuedUserInputEvents;

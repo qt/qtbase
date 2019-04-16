@@ -49,6 +49,9 @@ private slots:
     void operator_plus() const;
     void operator_plus_data() const;
 
+    void indexOf_data() const;
+    void indexOf() const;
+
     void initializerList() const;
 };
 
@@ -191,22 +194,22 @@ void tst_QByteArrayList::operator_plus() const
     {
         QByteArrayList bal1 = lhs;
         const QByteArrayList bal2 = rhs;
-        QCOMPARE(qMove(bal1) + bal2, expectedResult);
+        QCOMPARE(std::move(bal1) + bal2, expectedResult);
     }
     {
         QList<QByteArray> lba1 = lhs;
         const QByteArrayList bal2 = rhs;
-        QCOMPARE(qMove(lba1) + bal2, expectedResult);
+        QCOMPARE(std::move(lba1) + bal2, expectedResult);
     }
     {
         QByteArrayList bal1 = lhs;
         const QList<QByteArray> lba2 = rhs;
-        QCOMPARE(qMove(bal1) + lba2, expectedResult);
+        QCOMPARE(std::move(bal1) + lba2, expectedResult);
     }
     {
         QList<QByteArray> lba1 = lhs;
         const QList<QByteArray> lba2 = rhs;
-        QCOMPARE(qMove(lba1) + lba2, QList<QByteArray>(expectedResult)); // check we don't mess with old code
+        QCOMPARE(std::move(lba1) + lba2, QList<QByteArray>(expectedResult)); // check we don't mess with old code
     }
 
     // operator += for const lvalues
@@ -229,7 +232,7 @@ void tst_QByteArrayList::operator_plus() const
     QByteArrayList t1 = lhs;
     QByteArrayList t2 = rhs;
 
-    QCOMPARE(qMove(t1) + t2, expectedResult);
+    QCOMPARE(std::move(t1) + t2, expectedResult);
 }
 
 void tst_QByteArrayList::operator_plus_data() const
@@ -257,6 +260,29 @@ void tst_QByteArrayList::operator_plus_data() const
     QTest::newRow("empty2") << ( QByteArrayList() << "a" )
                             << ( QByteArrayList() << "" << "c" )
                             << ( QByteArrayList() << "a" << "" << "c" );
+}
+
+void tst_QByteArrayList::indexOf_data() const
+{
+    QTest::addColumn<QByteArrayList>("list");
+    QTest::addColumn<QByteArray>("item");
+    QTest::addColumn<int>("expectedResult");
+
+    QTest::newRow("empty") << QByteArrayList() << QByteArray("a") << -1;
+    QTest::newRow("found_1") << ( QByteArrayList() << "a" ) << QByteArray("a") << 0;
+    QTest::newRow("not_found_1") << ( QByteArrayList() << "a" ) << QByteArray("b") << -1;
+    QTest::newRow("found_2") << ( QByteArrayList() << "hello" << "world" ) << QByteArray("world") << 1;
+    QTest::newRow("returns_first") << ( QByteArrayList() << "hello" << "world" << "hello" << "again" ) << QByteArray("hello") << 0;
+}
+
+void tst_QByteArrayList::indexOf() const
+{
+    QFETCH(QByteArrayList, list);
+    QFETCH(QByteArray, item);
+    QFETCH(int, expectedResult);
+
+    QCOMPARE(list.indexOf(item), expectedResult);
+    QCOMPARE(list.indexOf(item.constData()), expectedResult);
 }
 
 void tst_QByteArrayList::initializerList() const

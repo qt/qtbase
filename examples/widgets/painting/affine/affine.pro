@@ -1,10 +1,6 @@
 SOURCES += main.cpp xform.cpp
 HEADERS += xform.h
 
-qtHaveModule(opengl) {
-	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl
-}
 QT += widgets
 
 SHARED_FOLDER = ../shared

@@ -43,35 +43,22 @@
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
 
+#include <QtCore/QTimer>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qxcbexport.h"
 #include <QHash>
 #include <QList>
-#include <QMutex>
-#include <QObject>
-#include <QThread>
 #include <QVector>
-#include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qglobal_p.h>
 
-#include <cstdlib>
-#include <memory>
-
-// This is needed to make Qt compile together with XKB. xkb.h is using a variable
-// which is called 'explicit', this is a reserved keyword in c++
-#if QT_CONFIG(xkb)
-#define explicit dont_use_cxx_explicit
-#include <xcb/xkb.h>
-#undef explicit
-#endif
+#include "qxcbeventqueue.h"
+#include "qxcbconnection_basic.h"
 
 #if QT_CONFIG(tabletevent)
 #include <QTabletEvent>
 #endif
-
-struct xcb_randr_get_output_info_reply_t;
 
 QT_BEGIN_NAMESPACE
 
@@ -80,10 +67,11 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputEvents)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaEvents)
-Q_DECLARE_LOGGING_CATEGORY(lcQpaXcb)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaPeeker)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaKeyboard)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaClipboard)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXDnd)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaEventReader)
 
 class QXcbVirtualDesktop;
 class QXcbScreen;
@@ -95,244 +83,6 @@ class QXcbWMSupport;
 class QXcbNativeInterface;
 class QXcbSystemTrayTracker;
 class QXcbGlIntegration;
-
-namespace QXcbAtom {
-    enum Atom {
-        // window-manager <-> client protocols
-        WM_PROTOCOLS,
-        WM_DELETE_WINDOW,
-        WM_TAKE_FOCUS,
-        _NET_WM_PING,
-        _NET_WM_CONTEXT_HELP,
-        _NET_WM_SYNC_REQUEST,
-        _NET_WM_SYNC_REQUEST_COUNTER,
-        MANAGER, // System tray notification
-        _NET_SYSTEM_TRAY_OPCODE, // System tray operation
-
-        // ICCCM window state
-        WM_STATE,
-        WM_CHANGE_STATE,
-        WM_CLASS,
-        WM_NAME,
-
-        // Session management
-        WM_CLIENT_LEADER,
-        WM_WINDOW_ROLE,
-        SM_CLIENT_ID,
-        WM_CLIENT_MACHINE,
-
-        // Clipboard
-        CLIPBOARD,
-        INCR,
-        TARGETS,
-        MULTIPLE,
-        TIMESTAMP,
-        SAVE_TARGETS,
-        CLIP_TEMPORARY,
-        _QT_SELECTION,
-        _QT_CLIPBOARD_SENTINEL,
-        _QT_SELECTION_SENTINEL,
-        CLIPBOARD_MANAGER,
-
-        RESOURCE_MANAGER,
-
-        _XSETROOT_ID,
-
-        _QT_SCROLL_DONE,
-        _QT_INPUT_ENCODING,
-
-        // Qt/XCB specific
-        _QT_CLOSE_CONNECTION,
-
-        _MOTIF_WM_HINTS,
-
-        DTWM_IS_RUNNING,
-        ENLIGHTENMENT_DESKTOP,
-        _DT_SAVE_MODE,
-        _SGI_DESKS_MANAGER,
-
-        // EWMH (aka NETWM)
-        _NET_SUPPORTED,
-        _NET_VIRTUAL_ROOTS,
-        _NET_WORKAREA,
-
-        _NET_MOVERESIZE_WINDOW,
-        _NET_WM_MOVERESIZE,
-
-        _NET_WM_NAME,
-        _NET_WM_ICON_NAME,
-        _NET_WM_ICON,
-
-        _NET_WM_PID,
-
-        _NET_WM_WINDOW_OPACITY,
-
-        _NET_WM_STATE,
-        _NET_WM_STATE_ABOVE,
-        _NET_WM_STATE_BELOW,
-        _NET_WM_STATE_FULLSCREEN,
-        _NET_WM_STATE_MAXIMIZED_HORZ,
-        _NET_WM_STATE_MAXIMIZED_VERT,
-        _NET_WM_STATE_MODAL,
-        _NET_WM_STATE_STAYS_ON_TOP,
-        _NET_WM_STATE_DEMANDS_ATTENTION,
-
-        _NET_WM_USER_TIME,
-        _NET_WM_USER_TIME_WINDOW,
-        _NET_WM_FULL_PLACEMENT,
-
-        _NET_WM_WINDOW_TYPE,
-        _NET_WM_WINDOW_TYPE_DESKTOP,
-        _NET_WM_WINDOW_TYPE_DOCK,
-        _NET_WM_WINDOW_TYPE_TOOLBAR,
-        _NET_WM_WINDOW_TYPE_MENU,
-        _NET_WM_WINDOW_TYPE_UTILITY,
-        _NET_WM_WINDOW_TYPE_SPLASH,
-        _NET_WM_WINDOW_TYPE_DIALOG,
-        _NET_WM_WINDOW_TYPE_DROPDOWN_MENU,
-        _NET_WM_WINDOW_TYPE_POPUP_MENU,
-        _NET_WM_WINDOW_TYPE_TOOLTIP,
-        _NET_WM_WINDOW_TYPE_NOTIFICATION,
-        _NET_WM_WINDOW_TYPE_COMBO,
-        _NET_WM_WINDOW_TYPE_DND,
-        _NET_WM_WINDOW_TYPE_NORMAL,
-        _KDE_NET_WM_WINDOW_TYPE_OVERRIDE,
-
-        _KDE_NET_WM_FRAME_STRUT,
-        _NET_FRAME_EXTENTS,
-
-        _NET_STARTUP_INFO,
-        _NET_STARTUP_INFO_BEGIN,
-
-        _NET_SUPPORTING_WM_CHECK,
-
-        _NET_WM_CM_S0,
-
-        _NET_SYSTEM_TRAY_VISUAL,
-
-        _NET_ACTIVE_WINDOW,
-
-        // Property formats
-        TEXT,
-        UTF8_STRING,
-        CARDINAL,
-
-        // Xdnd
-        XdndEnter,
-        XdndPosition,
-        XdndStatus,
-        XdndLeave,
-        XdndDrop,
-        XdndFinished,
-        XdndTypelist,
-        XdndActionList,
-
-        XdndSelection,
-
-        XdndAware,
-        XdndProxy,
-
-        XdndActionCopy,
-        XdndActionLink,
-        XdndActionMove,
-        XdndActionPrivate,
-
-        // Motif DND
-        _MOTIF_DRAG_AND_DROP_MESSAGE,
-        _MOTIF_DRAG_INITIATOR_INFO,
-        _MOTIF_DRAG_RECEIVER_INFO,
-        _MOTIF_DRAG_WINDOW,
-        _MOTIF_DRAG_TARGETS,
-
-        XmTRANSFER_SUCCESS,
-        XmTRANSFER_FAILURE,
-
-        // Xkb
-        _XKB_RULES_NAMES,
-
-        // XEMBED
-        _XEMBED,
-        _XEMBED_INFO,
-
-        // XInput2
-        ButtonLeft,
-        ButtonMiddle,
-        ButtonRight,
-        ButtonWheelUp,
-        ButtonWheelDown,
-        ButtonHorizWheelLeft,
-        ButtonHorizWheelRight,
-        AbsMTPositionX,
-        AbsMTPositionY,
-        AbsMTTouchMajor,
-        AbsMTTouchMinor,
-        AbsMTOrientation,
-        AbsMTPressure,
-        AbsMTTrackingID,
-        MaxContacts,
-        RelX,
-        RelY,
-        // XInput2 tablet
-        AbsX,
-        AbsY,
-        AbsPressure,
-        AbsTiltX,
-        AbsTiltY,
-        AbsWheel,
-        AbsDistance,
-        WacomSerialIDs,
-        INTEGER,
-        RelHorizWheel,
-        RelVertWheel,
-        RelHorizScroll,
-        RelVertScroll,
-
-        _XSETTINGS_SETTINGS,
-
-        _COMPIZ_DECOR_PENDING,
-        _COMPIZ_DECOR_REQUEST,
-        _COMPIZ_DECOR_DELETE_PIXMAP,
-        _COMPIZ_TOOLKIT_ACTION,
-        _GTK_LOAD_ICONTHEMES,
-
-        AT_SPI_BUS,
-
-        EDID,
-        EDID_DATA,
-        XFree86_DDC_EDID1_RAWDATA,
-
-        NAtoms
-    };
-}
-
-typedef QVarLengthArray<xcb_generic_event_t *, 64> QXcbEventArray;
-
-class QXcbConnection;
-class QXcbEventReader : public QThread
-{
-    Q_OBJECT
-public:
-    QXcbEventReader(QXcbConnection *connection);
-
-    void run() override;
-
-    QXcbEventArray *lock();
-    void unlock();
-
-    void start();
-
-    void registerEventDispatcher(QAbstractEventDispatcher *dispatcher);
-
-signals:
-    void eventPending();
-
-private:
-    void addEvent(xcb_generic_event_t *event);
-
-    QMutex m_mutex;
-    QXcbEventArray m_events;
-    QXcbConnection *m_connection;
-};
 
 class QXcbWindowEventListener
 {
@@ -358,7 +108,7 @@ public:
     virtual void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource = Qt::MouseEventNotSynthesized) {}
     virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
 #endif
-    virtual QXcbWindow *toWindow() { return 0; }
+    virtual QXcbWindow *toWindow() { return nullptr; }
 };
 
 typedef QHash<xcb_window_t, QXcbWindowEventListener *> WindowMapper;
@@ -375,38 +125,23 @@ private:
     QXcbWindow *m_window;
 };
 
-class QAbstractEventDispatcher;
-class Q_XCB_EXPORT QXcbConnection : public QObject
+class Q_XCB_EXPORT QXcbConnection : public QXcbBasicConnection
 {
     Q_OBJECT
 public:
-    explicit QXcbConnection(xcb_connection_t *c, int primaryScreenNumber,
-                            QXcbNativeInterface *nativeInterface, bool canGrabServer,
-                            xcb_visualid_t defaultVisualId, const QByteArray &displayName,
-                            void *xlibDisplay = nullptr);
-
+    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName = 0);
     ~QXcbConnection();
 
-    static QXcbConnection *create(QXcbNativeInterface *nativeInterface, bool canGrabServer,
-                                  xcb_visualid_t defaultVisualId, const char *displayName = nullptr);
-
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
-    bool isConnected() const;
+    QXcbEventQueue *eventQueue() const { return m_eventQueue; }
 
     const QList<QXcbVirtualDesktop *> &virtualDesktops() const { return m_virtualDesktops; }
     const QList<QXcbScreen *> &screens() const { return m_screens; }
-    int primaryScreenNumber() const { return m_primaryScreenNumber; }
-    QXcbVirtualDesktop *primaryVirtualDesktop() const { return m_virtualDesktops.value(m_primaryScreenNumber); }
+    QXcbVirtualDesktop *primaryVirtualDesktop() const {
+        return m_virtualDesktops.value(primaryScreenNumber());
+    }
     QXcbScreen *primaryScreen() const;
 
-    inline xcb_atom_t atom(QXcbAtom::Atom atom) const { return m_allAtoms[atom]; }
-    QXcbAtom::Atom qatom(xcb_atom_t atom) const;
-    xcb_atom_t internAtom(const char *name);
-    QByteArray atomName(xcb_atom_t atom);
-
-    const char *displayName() const { return m_displayName.constData(); }
-    xcb_connection_t *xcb_connection() const { return m_connection; }
-    const xcb_setup_t *setup() const { return m_setup; }
     const xcb_format_t *formatForDepth(uint8_t depth) const;
 
     bool imageNeedsEndianSwap() const
@@ -414,9 +149,9 @@ public:
         if (!hasShm())
             return false; // The non-Shm path does its own swapping
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        return m_setup->image_byte_order != XCB_IMAGE_ORDER_MSB_FIRST;
+        return setup()->image_byte_order != XCB_IMAGE_ORDER_MSB_FIRST;
 #else
-        return m_setup->image_byte_order != XCB_IMAGE_ORDER_LSB_FIRST;
+        return setup()->image_byte_order != XCB_IMAGE_ORDER_LSB_FIRST;
 #endif
     }
 
@@ -436,9 +171,6 @@ public:
     bool hasDefaultVisualId() const { return m_defaultVisualId != UINT_MAX; }
     xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
 
-#if QT_CONFIG(xcb_xlib)
-    void *xlib_display() const { return m_xlib_display; }
-#endif
     void sync();
 
     void handleXcbError(xcb_generic_error_t *error);
@@ -452,43 +184,11 @@ public:
     QXcbWindowEventListener *windowEventListenerFromId(xcb_window_t id);
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
-    template<typename Functor>
-    inline xcb_generic_event_t *checkEvent(Functor &&filter, bool removeFromQueue = true);
-
-    typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
-    void addPeekFunc(PeekFunc f);
-
-    // Peek at all queued events
-    qint32 generatePeekerId();
-    bool removePeekerId(qint32 peekerId);
-    enum PeekOption { PeekDefault = 0, PeekFromCachedIndex = 1 }; // see qx11info_x11.h
-    Q_DECLARE_FLAGS(PeekOptions, PeekOption)
-    typedef bool (*PeekerCallback)(xcb_generic_event_t *event, void *peekerData);
-    bool peekEventQueue(PeekerCallback peeker, void *peekerData = nullptr,
-                        PeekOptions option = PeekDefault, qint32 peekerId = -1);
-
     inline xcb_timestamp_t time() const { return m_time; }
-    inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
+    inline void setTime(xcb_timestamp_t t) { if (timeGreaterThan(t, m_time)) m_time = t; }
 
     inline xcb_timestamp_t netWmUserTime() const { return m_netWmUserTime; }
-    inline void setNetWmUserTime(xcb_timestamp_t t) { if (t > m_netWmUserTime) m_netWmUserTime = t; }
-
-    bool hasXFixes() const { return has_xfixes; }
-    bool hasXShape() const { return has_shape_extension; }
-    bool hasXRandr() const { return has_randr_extension; }
-    bool hasInputShape() const { return has_input_shape; }
-    bool hasXKB() const { return has_xkb; }
-    bool hasXRender(int major = -1, int minor = -1) const
-    {
-        if (has_render_extension && major != -1 && minor != -1)
-            return m_xrenderVersion >= qMakePair(major, minor);
-
-        return has_render_extension;
-    }
-    bool hasXInput2() const { return m_xi2Enabled; }
-    bool hasShm() const { return has_shm; }
-    bool hasShmFd() const { return has_shm_fd; }
-    bool hasXSync() const { return has_sync_extension; }
+    inline void setNetWmUserTime(xcb_timestamp_t t) { if (timeGreaterThan(t, m_netWmUserTime)) m_netWmUserTime = t; }
 
     xcb_timestamp_t getTimestamp();
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
@@ -523,46 +223,35 @@ public:
     Qt::MouseButtons queryMouseButtons() const;
     Qt::KeyboardModifiers queryKeyboardModifiers() const;
 
+    bool isUserInputEvent(xcb_generic_event_t *event) const;
+
 #if QT_CONFIG(xcb_xinput)
     void xi2SelectStateEvents();
     void xi2SelectDeviceEvents(xcb_window_t window);
     void xi2SelectDeviceEventsCompatibility(xcb_window_t window);
     bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
     bool xi2MouseEventsDisabled() const;
-    bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
-    bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
     void xi2UpdateScrollingDevices();
     bool startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner);
     void abortSystemMoveResizeForTouch();
     bool isTouchScreen(int id);
 #endif
-    QXcbEventReader *eventReader() const { return m_reader; }
 
     bool canGrab() const { return m_canGrabServer; }
 
     QXcbGlIntegration *glIntegration() const;
 
+    void flush() { xcb_flush(xcb_connection()); }
+    void processXcbEvents(QEventLoop::ProcessEventsFlags flags);
+
+    QTimer &focusInTimer() { return m_focusInTimer; }
+
 protected:
     bool event(QEvent *e) override;
 
-public slots:
-    void flush() { xcb_flush(m_connection); }
-
-private slots:
-    void processXcbEvents();
-
 private:
-    void initializeAllAtoms();
-    void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
-    void initializeShm();
-    void initializeXFixes();
-    void initializeXRender();
-    void initializeXRandr();
-    void initializeXinerama();
-    void initializeXShape();
-    void initializeXKB();
-    void initializeXSync();
+    void xrandrSelectEvents();
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc) const;
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output) const;
     QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow) const;
@@ -574,12 +263,11 @@ private:
                              xcb_randr_get_output_info_reply_t *outputInfo);
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens();
-    bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
+    bool compressEvent(xcb_generic_event_t *event) const;
+    inline bool timeGreaterThan(xcb_timestamp_t a, xcb_timestamp_t b) const
+    { return static_cast<int32_t>(a - b) > 0 || b == XCB_CURRENT_TIME; }
 
-    bool m_xi2Enabled = false;
 #if QT_CONFIG(xcb_xinput)
-    int m_xi2Minor = -1;
-    void initializeXInput2();
     void xi2SetupDevice(void *info, bool removeExisting = true);
     void xi2SetupDevices();
     struct TouchDeviceData {
@@ -605,7 +293,6 @@ private:
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleHierarchyEvent(void *event);
     void xi2HandleDeviceChangedEvent(void *event);
-    int m_xiOpCode;
     void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
 #if QT_CONFIG(tabletevent)
     struct TabletData {
@@ -646,23 +333,24 @@ private:
     ScrollingDevice *scrollingDeviceForId(int id);
 
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
-#endif
 
-    xcb_connection_t *const m_connection;
-    const xcb_setup_t *m_setup = nullptr;
+    QHash<int, TouchDeviceData> m_touchDevices;
+    struct StartSystemMoveResizeInfo {
+        xcb_window_t window = XCB_NONE;
+        uint16_t deviceid;
+        uint32_t pointid;
+        int corner;
+    } m_startSystemMoveResizeInfo;
+#endif // QT_CONFIG(xcb_xinput)
+
     const bool m_canGrabServer;
     const xcb_visualid_t m_defaultVisualId;
 
     QList<QXcbVirtualDesktop *> m_virtualDesktops;
     QList<QXcbScreen *> m_screens;
-    const int m_primaryScreenNumber;
-
-    xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     xcb_timestamp_t m_time = XCB_CURRENT_TIME;
     xcb_timestamp_t m_netWmUserTime = XCB_CURRENT_TIME;
-
-    const QByteArray m_displayName;
 
     QXcbKeyboard *m_keyboard = nullptr;
 #ifndef QT_NO_CLIPBOARD
@@ -674,45 +362,11 @@ private:
     QScopedPointer<QXcbWMSupport> m_wmSupport;
     QXcbNativeInterface *m_nativeInterface = nullptr;
 
-#if QT_CONFIG(xcb_xlib)
-    void *const m_xlib_display;
-#endif
-    QXcbEventReader *m_reader = nullptr;
+    QXcbEventQueue *m_eventQueue = nullptr;
 
-#if QT_CONFIG(xcb_xinput)
-    QHash<int, TouchDeviceData> m_touchDevices;
-    struct StartSystemMoveResizeInfo {
-        xcb_window_t window = XCB_NONE;
-        uint16_t deviceid;
-        uint32_t pointid;
-        int corner;
-    } m_startSystemMoveResizeInfo;
-#endif
     WindowMapper m_mapper;
 
-    QVector<PeekFunc> m_peekFuncs;
-
-    uint32_t xfixes_first_event = 0;
-    uint32_t xrandr_first_event = 0;
-    uint32_t xkb_first_event = 0;
-#if QT_CONFIG(xcb_xinput)
-    uint32_t xinput_first_event = 0;
-#endif
-
-    bool has_xfixes = false;
-    bool has_xinerama_extension = false;
-    bool has_shape_extension = false;
-    bool has_randr_extension = false;
-    bool has_input_shape;
-    bool has_xkb = false;
-    bool has_render_extension = false;
-    bool has_shm = false;
-    bool has_shm_fd = false;
-    bool has_sync_extension = false;
-
-    QPair<int, int> m_xrenderVersion;
-
-    Qt::MouseButtons m_buttonState = 0;
+    Qt::MouseButtons m_buttonState = nullptr;
     Qt::MouseButton m_button = Qt::NoButton;
 
     QXcbWindow *m_focusWindow = nullptr;
@@ -729,13 +383,11 @@ private:
 
     xcb_window_t m_qtSelectionOwner = 0;
 
-    bool m_mainEventLoopFlushedQueue = false;
-    qint32 m_peekerIdSource = 0;
-    bool m_peekerIndexCacheDirty = false;
-    QHash<qint32, qint32> m_peekerToCachedIndex;
-    friend class QXcbEventReader;
+    friend class QXcbEventQueue;
 
     QByteArray m_xdgCurrentDesktop;
+    QTimer m_focusInTimer;
+
 };
 #if QT_CONFIG(xcb_xinput)
 #if QT_CONFIG(tabletevent)
@@ -743,24 +395,6 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TY
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif
 #endif
-
-template<typename Functor>
-xcb_generic_event_t *QXcbConnection::checkEvent(Functor &&filter, bool removeFromQueue)
-{
-    QXcbEventArray *eventqueue = m_reader->lock();
-
-    for (int i = 0; i < eventqueue->size(); ++i) {
-        xcb_generic_event_t *event = eventqueue->at(i);
-        if (event && filter(event, event->response_type & ~0x80)) {
-            if (removeFromQueue)
-                (*eventqueue)[i] = nullptr;
-            m_reader->unlock();
-            return event;
-        }
-    }
-    m_reader->unlock();
-    return nullptr;
-}
 
 class QXcbConnectionGrabber
 {
@@ -771,22 +405,6 @@ public:
 private:
     QXcbConnection *m_connection;
 };
-
-#define Q_XCB_REPLY_CONNECTION_ARG(connection, ...) connection
-
-struct QStdFreeDeleter {
-    void operator()(void *p) const Q_DECL_NOTHROW { return std::free(p); }
-};
-
-#define Q_XCB_REPLY(call, ...) \
-    std::unique_ptr<call##_reply_t, QStdFreeDeleter>( \
-        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call(__VA_ARGS__), nullptr) \
-    )
-
-#define Q_XCB_REPLY_UNCHECKED(call, ...) \
-    std::unique_ptr<call##_reply_t, QStdFreeDeleter>( \
-        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call##_unchecked(__VA_ARGS__), nullptr) \
-    )
 
 // The xcb_send_event() requires all events to have 32 bytes. It calls memcpy() on the
 // passed in event. If the passed in event is less than 32 bytes, memcpy() reaches into

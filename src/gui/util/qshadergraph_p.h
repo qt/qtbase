@@ -73,8 +73,8 @@ public:
     class Statement
     {
     public:
-        Q_GUI_EXPORT QUuid uuid() const Q_DECL_NOTHROW;
-        Q_GUI_EXPORT int portIndex(QShaderNodePort::Direction direction, const QString &portName) const Q_DECL_NOTHROW;
+        Q_GUI_EXPORT QUuid uuid() const noexcept;
+        Q_GUI_EXPORT int portIndex(QShaderNodePort::Direction direction, const QString &portName) const noexcept;
 
         QShaderNode node;
         QVector<int> inputs;
@@ -83,11 +83,11 @@ public:
 
     Q_GUI_EXPORT void addNode(const QShaderNode &node);
     Q_GUI_EXPORT void removeNode(const QShaderNode &node);
-    Q_GUI_EXPORT QVector<QShaderNode> nodes() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QVector<QShaderNode> nodes() const noexcept;
 
     Q_GUI_EXPORT void addEdge(const Edge &edge);
     Q_GUI_EXPORT void removeEdge(const Edge &edge);
-    Q_GUI_EXPORT QVector<Edge> edges() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT QVector<Edge> edges() const noexcept;
 
     Q_GUI_EXPORT QVector<Statement> createStatements(const QStringList &enabledLayers = QStringList()) const;
 
@@ -96,16 +96,16 @@ private:
     QVector<Edge> m_edges;
 };
 
-Q_GUI_EXPORT bool operator==(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator==(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) noexcept;
 
-inline bool operator!=(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) Q_DECL_NOTHROW
+inline bool operator!=(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &rhs) noexcept
 {
     return !(lhs == rhs);
 }
 
-Q_GUI_EXPORT bool operator==(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator==(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) noexcept;
 
-inline bool operator!=(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) Q_DECL_NOTHROW
+inline bool operator!=(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) noexcept
 {
     return !(lhs == rhs);
 }

@@ -239,7 +239,6 @@ static QImageScaleInfo* QImageScale::qimageCalcScaleInfo(const QImage &img,
     isi = new QImageScaleInfo;
     if (!isi)
         return 0;
-    memset(isi, 0, sizeof(QImageScaleInfo));
 
     isi->xup_yup = (qAbs(dw) >= sw) + ((qAbs(dh) >= sh) << 1);
 
@@ -529,6 +528,7 @@ static void qt_qimageScaleAARGBA_down_xy(QImageScaleInfo *isi, unsigned int *des
     }
 }
 
+#if QT_CONFIG(raster_64bit)
 static void qt_qimageScaleRgba64_up_x_down_y(QImageScaleInfo *isi, QRgba64 *dest,
                                              int dw, int dh, int dow, int sow);
 
@@ -729,6 +729,7 @@ static void qt_qimageScaleRgba64_down_xy(QImageScaleInfo *isi, QRgba64 *dest,
         }
     }
 }
+#endif
 
 static void qt_qimageScaleAARGB_up_x_down_y(QImageScaleInfo *isi, unsigned int *dest,
                                             int dw, int dh, int dow, int sow);
@@ -946,10 +947,13 @@ QImage qSmoothScaleImage(const QImage &src, int dw, int dh)
         return QImage();
     }
 
+#if QT_CONFIG(raster_64bit)
     if (src.depth() > 32)
         qt_qimageScaleRgba64(scaleinfo, (QRgba64 *)buffer.scanLine(0),
                              dw, dh, dw, src.bytesPerLine() / 8);
-    else if (src.hasAlphaChannel())
+    else
+#endif
+    if (src.hasAlphaChannel())
         qt_qimageScaleAARGBA(scaleinfo, (unsigned int *)buffer.scanLine(0),
                              dw, dh, dw, src.bytesPerLine() / 4);
     else

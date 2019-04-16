@@ -64,12 +64,6 @@ class QScreenPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QScreen)
 public:
-    QScreenPrivate()
-        : platformScreen(0)
-        , orientationUpdateMask(0)
-    {
-    }
-
     void setPlatformScreen(QPlatformScreen *screen);
     void updateHighDpi()
     {
@@ -79,16 +73,16 @@ public:
 
     void updatePrimaryOrientation();
 
-    QPlatformScreen *platformScreen;
+    QPlatformScreen *platformScreen = nullptr;
 
     Qt::ScreenOrientations orientationUpdateMask;
-    Qt::ScreenOrientation orientation;
-    Qt::ScreenOrientation filteredOrientation;
-    Qt::ScreenOrientation primaryOrientation;
+    Qt::ScreenOrientation orientation = Qt::PrimaryOrientation;
+    Qt::ScreenOrientation filteredOrientation = Qt::PrimaryOrientation;
+    Qt::ScreenOrientation primaryOrientation = Qt::LandscapeOrientation;
     QRect geometry;
     QRect availableGeometry;
-    QDpi logicalDpi;
-    qreal refreshRate;
+    QDpi logicalDpi = {96, 96};
+    qreal refreshRate = 60;
 };
 
 QT_END_NAMESPACE

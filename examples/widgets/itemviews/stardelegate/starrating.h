@@ -51,15 +51,15 @@
 #ifndef STARRATING_H
 #define STARRATING_H
 
-#include <QMetaType>
-#include <QPointF>
-#include <QVector>
+#include <QPainter>
+#include <QPolygonF>
+#include <QSize>
 
 //! [0]
 class StarRating
 {
 public:
-    enum EditMode { Editable, ReadOnly };
+    enum class EditMode { Editable, ReadOnly };
 
     explicit StarRating(int starCount = 1, int maxStarCount = 5);
 

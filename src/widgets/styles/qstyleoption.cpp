@@ -3270,7 +3270,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     \fn template <typename T> T qstyleoption_cast<T>(const QStyleOption *option)
     \relates QStyleOption
 
-    Returns a T or 0 depending on the \l{QStyleOption::type}{type} and
+    Returns a T or \nullptr depending on the \l{QStyleOption::type}{type} and
     \l{QStyleOption::version}{version} of the given \a option.
 
     Example:
@@ -3285,7 +3285,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     \overload
     \relates QStyleOption
 
-    Returns a T or 0 depending on the type of the given \a option.
+    Returns a T or \nullptr depending on the type of the given \a option.
 */
 
 #if QT_CONFIG(tabwidget)
@@ -4006,7 +4006,7 @@ QStyleHintReturnVariant::~QStyleHintReturnVariant()
     \fn template <typename T> T qstyleoption_cast<T>(const QStyleHintReturn *hint)
     \relates QStyleHintReturn
 
-    Returns a T or 0 depending on the \l{QStyleHintReturn::type}{type}
+    Returns a T or \nullptr depending on the \l{QStyleHintReturn::type}{type}
     and \l{QStyleHintReturn::version}{version} of \a hint.
 
     Example:
@@ -4021,7 +4021,7 @@ QStyleHintReturnVariant::~QStyleHintReturnVariant()
     \overload
     \relates QStyleHintReturn
 
-    Returns a T or 0 depending on the type of \a hint.
+    Returns a T or \nullptr depending on the type of \a hint.
 */
 
 #if !defined(QT_NO_DEBUG_STREAM)

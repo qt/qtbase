@@ -71,13 +71,14 @@ MainWindow::MainWindow(QWidget *parent)
     markedCount = 0;
     setupFontTree();
 
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(fontTree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
-            this, SLOT(showFont(QTreeWidgetItem*)));
-    connect(fontTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
-            this, SLOT(updateStyles(QTreeWidgetItem*,int)));
+    connect(quitAction, &QAction::triggered,
+            qApp, &QApplication::quit);
+    connect(fontTree, &QTreeWidget::currentItemChanged,
+            this, &MainWindow::showFont);
+    connect(fontTree, &QTreeWidget::itemChanged,
+            this, &MainWindow::updateStyles);
 
-    fontTree->setItemSelected(fontTree->topLevelItem(0), true);
+    fontTree->topLevelItem(0)->setSelected(true);
     showFont(fontTree->topLevelItem(0));
 }
 
@@ -85,9 +86,10 @@ void MainWindow::setupFontTree()
 {
     QFontDatabase database;
     fontTree->setColumnCount(1);
-    fontTree->setHeaderLabels(QStringList() << tr("Font"));
+    fontTree->setHeaderLabels({ tr("Font") });
 
-    foreach (QString family, database.families()) {
+    const QStringList fontFamilies = database.families();
+    for (const QString &family : fontFamilies) {
         const QStringList styles = database.styles(family);
         if (styles.isEmpty())
             continue;
@@ -97,7 +99,7 @@ void MainWindow::setupFontTree()
         familyItem->setCheckState(0, Qt::Unchecked);
         familyItem->setFlags(familyItem->flags() | Qt::ItemIsAutoTristate);
 
-        foreach (QString style, styles) {
+        for (const QString &style : styles) {
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
             styleItem->setText(0, style);
             styleItem->setCheckState(0, Qt::Unchecked);
@@ -109,10 +111,10 @@ void MainWindow::setupFontTree()
 
 void MainWindow::on_clearAction_triggered()
 {
-    QTreeWidgetItem *currentItem = fontTree->currentItem();
-    foreach (QTreeWidgetItem *item, fontTree->selectedItems())
-        fontTree->setItemSelected(item, false);
-    fontTree->setItemSelected(currentItem, true);
+    const QList<QTreeWidgetItem *> items = fontTree->selectedItems();
+    for (QTreeWidgetItem *item : items)
+        item->setSelected(false);
+    fontTree->currentItem()->setSelected(true);
 }
 
 void MainWindow::on_markAction_triggered()
@@ -127,8 +129,8 @@ void MainWindow::on_unmarkAction_triggered()
 
 void MainWindow::markUnmarkFonts(Qt::CheckState state)
 {
-    QList<QTreeWidgetItem *> items = fontTree->selectedItems();
-    foreach (QTreeWidgetItem *item, items) {
+    const QList<QTreeWidgetItem *> items = fontTree->selectedItems();
+    for (QTreeWidgetItem *item : items) {
         if (item->checkState(0) != state)
             item->setCheckState(0, state);
     }
@@ -285,8 +287,8 @@ void MainWindow::on_printPreviewAction_triggered()
 
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, SIGNAL(paintRequested(QPrinter*)),
-            this, SLOT(printDocument(QPrinter*)));
+    connect(&preview, &QPrintPreviewDialog::paintRequested,
+            this, &MainWindow::printDocument);
     preview.exec();
 #endif
 }
@@ -294,19 +296,19 @@ void MainWindow::on_printPreviewAction_triggered()
 void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
-    QString family = pageMap.keys()[index];
-    StyleItems items = pageMap[family];
+    const QString family = (pageMap.begin() + index).key();
+    const StyleItems items = pageMap.value(family);
 
     // Find the dimensions of the text on each page.
     qreal width = 0.0;
     qreal height = 0.0;
-    foreach (QTreeWidgetItem *item, items) {
+    for (const QTreeWidgetItem *item : items) {
         QString style = item->text(0);
         int weight = item->data(0, Qt::UserRole).toInt();
         bool italic = item->data(0, Qt::UserRole + 1).toBool();
 
         // Calculate the maximum width and total height of the text.
-        foreach (int size, sampleSizes) {
+        for (int size : qAsConst(sampleSizes)) {
             QFont font(family, size, weight, italic);
             font.setStyleName(style);
             font = QFont(font, painter->device());
@@ -334,13 +336,13 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
     qreal x = -width / 2.0;
     qreal y = -height / 2.0 - remainingHeight / 4.0 + spaceHeight;
 
-    foreach (QTreeWidgetItem *item, items) {
+    for (const QTreeWidgetItem *item : items) {
         QString style = item->text(0);
         int weight = item->data(0, Qt::UserRole).toInt();
         bool italic = item->data(0, Qt::UserRole + 1).toBool();
 
         // Draw each line of text.
-        foreach (int size, sampleSizes) {
+        for (int size : qAsConst(sampleSizes)) {
             QFont font(family, size, weight, italic);
             font.setStyleName(style);
             font = QFont(font, painter->device());

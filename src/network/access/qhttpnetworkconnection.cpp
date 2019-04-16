@@ -398,11 +398,12 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
 {
     Q_ASSERT(auth);
 
-    // NTLM is a multi phase authentication. Copying credentials between authenticators would mess things up.
+    // NTLM and Negotiate do multi-phase authentication.
+    // Copying credentialsbetween authenticators would mess things up.
     if (fromChannel >= 0) {
-        if (!isProxy && channels[fromChannel].authMethod == QAuthenticatorPrivate::Ntlm)
-            return;
-        if (isProxy && channels[fromChannel].proxyAuthMethod == QAuthenticatorPrivate::Ntlm)
+        const QHttpNetworkConnectionChannel &channel = channels[fromChannel];
+        const QAuthenticatorPrivate::Method method = isProxy ? channel.proxyAuthMethod : channel.authMethod;
+        if (method == QAuthenticatorPrivate::Ntlm || method == QAuthenticatorPrivate::Negotiate)
             return;
     }
 
@@ -592,7 +593,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
         if ((channels[i].authMethod != QAuthenticatorPrivate::Ntlm && request.headerField("Authorization").isEmpty()) || channels[i].lastStatus == 401) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
             if (priv && priv->method != QAuthenticatorPrivate::None) {
-                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false));
+                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false), request.url().host());
                 request.setHeaderField("Authorization", response);
                 channels[i].authenticationCredentialsSent = true;
             }
@@ -604,7 +605,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
         if (!(channels[i].proxyAuthMethod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 407)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].proxyAuthenticator);
             if (priv && priv->method != QAuthenticatorPrivate::None) {
-                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false));
+                QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false), networkProxy.hostName());
                 request.setHeaderField("Proxy-Authorization", response);
                 channels[i].proxyCredentialsSent = true;
             }
@@ -641,7 +642,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     else { // SPDY, HTTP/2 ('h2' mode)
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
-        channels[0].spdyRequestsToSend.insertMulti(request.priority(), pair);
+        channels[0].spdyRequestsToSend.insert(request.priority(), pair);
     }
 
 #ifndef Q_OS_WINRT
@@ -677,7 +678,7 @@ void QHttpNetworkConnectionPrivate::fillHttp2Queue()
     for (auto &pair : highPriorityQueue) {
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
-        channels[0].spdyRequestsToSend.insertMulti(QHttpNetworkRequest::HighPriority, pair);
+        channels[0].spdyRequestsToSend.insert(QHttpNetworkRequest::HighPriority, pair);
     }
 
     highPriorityQueue.clear();
@@ -685,7 +686,7 @@ void QHttpNetworkConnectionPrivate::fillHttp2Queue()
     for (auto &pair : lowPriorityQueue) {
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
-        channels[0].spdyRequestsToSend.insertMulti(pair.first.priority(), pair);
+        channels[0].spdyRequestsToSend.insert(pair.first.priority(), pair);
     }
 
     lowPriorityQueue.clear();
@@ -1317,7 +1318,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt, connectionType)), parent)
 {
     Q_D(QHttpNetworkConnection);
-    d->networkSession = qMove(networkSession);
+    d->networkSession = std::move(networkSession);
     d->init();
 }
 
@@ -1329,7 +1330,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
                                                    connectionType)), parent)
 {
     Q_D(QHttpNetworkConnection);
-    d->networkSession = qMove(networkSession);
+    d->networkSession = std::move(networkSession);
     d->init();
 }
 #else
@@ -1476,7 +1477,7 @@ QSharedPointer<QSslContext> QHttpNetworkConnection::sslContext()
 void QHttpNetworkConnection::setSslContext(QSharedPointer<QSslContext> context)
 {
     Q_D(QHttpNetworkConnection);
-    d->sslContext = qMove(context);
+    d->sslContext = std::move(context);
 }
 
 void QHttpNetworkConnection::ignoreSslErrors(int channel)
@@ -1516,6 +1517,18 @@ void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int
 void QHttpNetworkConnection::preConnectFinished()
 {
     d_func()->preConnectRequests--;
+}
+
+QString QHttpNetworkConnection::peerVerifyName() const
+{
+    Q_D(const QHttpNetworkConnection);
+    return d->peerVerifyName;
+}
+
+void QHttpNetworkConnection::setPeerVerifyName(const QString &peerName)
+{
+    Q_D(QHttpNetworkConnection);
+    d->peerVerifyName = peerName;
 }
 
 #ifndef QT_NO_NETWORKPROXY

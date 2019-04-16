@@ -1160,7 +1160,7 @@ void tst_QStandardItemModel::getSetItemData()
     QColor backgroundColor(Qt::blue);
     roles.insert(Qt::BackgroundRole, backgroundColor);
     QColor textColor(Qt::green);
-    roles.insert(Qt::TextColorRole, textColor);
+    roles.insert(Qt::ForegroundRole, textColor);
     Qt::CheckState checkState(Qt::PartiallyChecked);
     roles.insert(Qt::CheckStateRole, int(checkState));
     QLatin1String accessibleText("accessibleText");

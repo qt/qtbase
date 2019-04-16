@@ -61,9 +61,11 @@ Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGImage);
 QT_BEGIN_NAMESPACE
 
 
+class QColorSpace;
+class QColorTransform;
 class QIODevice;
-class QStringList;
 class QMatrix;
+class QStringList;
 class QTransform;
 class QVariant;
 template <class T> class QList;
@@ -128,17 +130,14 @@ public:
         Format_RGBX64,
         Format_RGBA64,
         Format_RGBA64_Premultiplied,
-#if 0
-        // reserved for future use
         Format_Grayscale16,
-#endif
 #ifndef Q_QDOC
         NImageFormats
 #endif
     };
     Q_ENUM(Format)
 
-    QImage() Q_DECL_NOEXCEPT;
+    QImage() noexcept;
     QImage(const QSize &size, Format format);
     QImage(int width, int height, Format format);
     QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
@@ -153,7 +152,7 @@ public:
 
     QImage(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QImage(QImage &&other) Q_DECL_NOEXCEPT
+    inline QImage(QImage &&other) noexcept
         : QPaintDevice(), d(nullptr)
     { qSwap(d, other.d); }
 #endif
@@ -161,10 +160,10 @@ public:
 
     QImage &operator=(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QImage &operator=(QImage &&other) Q_DECL_NOEXCEPT
+    inline QImage &operator=(QImage &&other) noexcept
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QImage &other) Q_DECL_NOEXCEPT
+    inline void swap(QImage &other) noexcept
     { qSwap(d, other.d); }
 
     bool isNull() const;
@@ -199,6 +198,8 @@ public:
     Q_REQUIRED_RESULT QImage convertToFormat(Format f, const QVector<QRgb> &colorTable, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
     bool reinterpretAsFormat(Format f);
 
+    void convertTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor);
+
     int width() const;
     int height() const;
     QSize size() const;
@@ -227,7 +228,11 @@ public:
     uchar *scanLine(int);
     const uchar *scanLine(int) const;
     const uchar *constScanLine(int) const;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    qsizetype bytesPerLine() const;
+#else
     int bytesPerLine() const;
+#endif
 
     bool valid(int x, int y) const;
     bool valid(const QPoint &pt) const;
@@ -286,17 +291,23 @@ public:
     QImage mirrored(bool horizontally = false, bool vertically = true) const &
         { return mirrored_helper(horizontally, vertically); }
     QImage &&mirrored(bool horizontally = false, bool vertically = true) &&
-        { mirrored_inplace(horizontally, vertically); return qMove(*this); }
+        { mirrored_inplace(horizontally, vertically); return std::move(*this); }
     QImage rgbSwapped() const &
         { return rgbSwapped_helper(); }
     QImage &&rgbSwapped() &&
-        { rgbSwapped_inplace(); return qMove(*this); }
+        { rgbSwapped_inplace(); return std::move(*this); }
 #else
     QImage mirrored(bool horizontally = false, bool vertically = true) const;
     QImage rgbSwapped() const;
 #endif
     void invertPixels(InvertMode = InvertRgb);
 
+    QColorSpace colorSpace() const;
+    QImage convertedToColorSpace(const QColorSpace &) const;
+    void convertToColorSpace(const QColorSpace &);
+    void setColorSpace(const QColorSpace &);
+
+    void applyColorTransform(const QColorTransform &transform);
 
     bool load(QIODevice *device, const char* format);
     bool load(const QString &fileName, const char *format = nullptr);
@@ -330,9 +341,9 @@ public:
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
 
-    QPixelFormat pixelFormat() const Q_DECL_NOTHROW;
-    static QPixelFormat toPixelFormat(QImage::Format format) Q_DECL_NOTHROW;
-    static QImage::Format toImageFormat(QPixelFormat format) Q_DECL_NOTHROW;
+    QPixelFormat pixelFormat() const noexcept;
+    static QPixelFormat toPixelFormat(QImage::Format format) noexcept;
+    static QImage::Format toImageFormat(QPixelFormat format) noexcept;
 
     // Platform specific conversion functions
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

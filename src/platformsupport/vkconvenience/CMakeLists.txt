@@ -13,7 +13,6 @@ add_qt_module(VulkanSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-        Vulkan::Vulkan # special case
 )
 
 #### Keys ignored in scope 1:.:vkconvenience.pro:<NONE>:

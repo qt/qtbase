@@ -139,6 +139,17 @@ void QDBusServiceWatcherPrivate::removeService(const QString &service)
     QDBusConnectionInterface::serviceOwnerChanged() signal because it allows
     one to receive only the signals for which the class is interested in.
 
+    Ending a service name with the character '*' will match all service names
+    within the specified namespace.
+
+    For example "com.example.backend1*" will match
+    \list
+        \li com.example.backend1
+        \li com.example.backend1.foo
+        \li com.example.backend1.foo.bar
+    \endlist
+    Substrings in the same domain will not be matched, i.e "com.example.backend12".
+
     \sa QDBusConnection
 */
 

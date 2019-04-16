@@ -43,7 +43,9 @@
 #include "qtestresult_p.h"
 #include "qtestassert.h"
 
-#include <QtCore/qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -121,13 +123,15 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         return;
     }
 
-    bool ok = type == Pass || type == XPass || type == BlacklistedPass;
+    bool ok = type == Pass || type == XPass || type == BlacklistedPass || type == BlacklistedXPass;
 
     QTestCharBuffer directive;
-    if (type == XFail || type == XPass || type == BlacklistedFail || type == BlacklistedPass)
+    if (type == XFail || type == XPass || type == BlacklistedFail || type == BlacklistedPass
+            || type == BlacklistedXFail || type == BlacklistedXPass) {
         // We treat expected or blacklisted failures/passes as TODO-failures/passes,
         // which should be treated as soft issues by consumers. Not all do though :/
         QTest::qt_asprintf(&directive, " # TODO %s", description);
+    }
 
     int testNumber = QTestLog::totalCount();
     if (type == XFail) {
@@ -146,6 +150,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         outputString(YAML_INDENT "---\n");
 
         if (type != XFail) {
+#if QT_CONFIG(regularexpression)
             // This is fragile, but unfortunately testlib doesn't plumb
             // the expected and actual values to the loggers (yet).
             static QRegularExpression verifyRegex(
@@ -206,6 +211,12 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                     YAML_INDENT "# %s\n", description);
                 outputString(unparsableDescription.data());
             }
+#else
+            QTestCharBuffer unparsableDescription;
+            QTest::qt_asprintf(&unparsableDescription,
+                YAML_INDENT "# %s\n", description);
+            outputString(unparsableDescription.data());
+#endif
         }
 
         if (file) {

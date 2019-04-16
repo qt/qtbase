@@ -941,7 +941,7 @@ foreach my $lib (@modules_to_sync) {
     my %master_contents = ();
 
     #remove the old files
-    if($remove_stale) {
+    if ($remove_stale && !$minimal) {
         my %injections = ();
         for my $p (keys %inject_headers) {
             next unless ($p =~ /^\Q$dir\E(\/|$)/);

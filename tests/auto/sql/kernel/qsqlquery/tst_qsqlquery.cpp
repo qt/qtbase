@@ -158,6 +158,8 @@ private slots:
     void lastInsertId();
     void lastQuery_data() { generic_data(); }
     void lastQuery();
+    void lastQueryTwoQueries_data() { generic_data(); }
+    void lastQueryTwoQueries();
     void bindBool_data() { generic_data(); }
     void bindBool();
     void psql_bindWithDoubleColonCastOperator_data() { generic_data("QPSQL"); }
@@ -633,13 +635,20 @@ void tst_QSqlQuery::bindBool()
         QVERIFY_SQL(q, exec());
     }
 
-    QVERIFY_SQL(q, exec("SELECT id, flag FROM " + tableName));
+    QVERIFY_SQL(q, exec("SELECT id, flag FROM " + tableName + " ORDER BY id"));
     for (int i = 0; i < 2; ++i) {
         bool flag = i;
         QVERIFY_SQL(q, next());
         QCOMPARE(q.value(0).toInt(), i);
         QCOMPARE(q.value(1).toBool(), flag);
     }
+    QVERIFY_SQL(q, prepare("SELECT flag FROM " + tableName + " WHERE flag = :filter"));
+    const bool filter = true;
+    q.bindValue(":filter", filter);
+    QVERIFY_SQL(q, exec());
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toBool(), filter);
+    QFAIL_SQL(q, next());
     QVERIFY_SQL(q, exec("DROP TABLE " + tableName));
 }
 
@@ -1089,7 +1098,7 @@ void tst_QSqlQuery::record()
     for (int i = 0; i < 3; ++i)
         QCOMPARE(q.record().field(i).tableName().toLower(), lowerQTest);
     q.clear();
-    const auto tst_record = qTableName("tst_record", __FILE__, db).toLower();
+    const auto tst_record = qTableName("tst_record", __FILE__, db, false).toLower();
     SETUP_RECORD_TABLE;
     CHECK_RECORD;
     q.clear();
@@ -2806,6 +2815,25 @@ void tst_QSqlQuery::lastQuery()
     QCOMPARE( q.executedQuery(), sql );
 }
 
+void tst_QSqlQuery::lastQueryTwoQueries()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QString sql = QLatin1String("select * from ") + qtest;
+    QVERIFY_SQL(q, exec(sql));
+    QCOMPARE(q.lastQuery(), sql);
+    QCOMPARE(q.executedQuery(), sql);
+
+    sql = QLatin1String("select id from ") + qtest;
+    QVERIFY_SQL(q, exec(sql));
+    QCOMPARE(q.lastQuery(), sql);
+    QCOMPARE(q.executedQuery(), sql);
+}
+
 void tst_QSqlQuery::psql_bindWithDoubleColonCastOperator()
 {
     QFETCH( QString, dbName );
@@ -3735,15 +3763,13 @@ void tst_QSqlQuery::QTBUG_5251()
     const QString timetest(qTableName("timetest", __FILE__, db));
     tst_Databases::safeDropTable(db, timetest);
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE \"") + timetest + QStringLiteral("\" (t TIME)")));
-    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO \"") + timetest +
-                        QStringLiteral("\" VALUES ('1:2:3.666')")));
+    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + timetest + QStringLiteral(" (t TIME)")));
+    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO ") + timetest +
+                        QStringLiteral(" VALUES ('1:2:3.666')")));
 
     QSqlTableModel timetestModel(0,db);
     timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
     timetestModel.setTable(timetest);
-    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL)
-        QEXPECT_FAIL("", "Currently broken for PostgreSQL due to case sensitivity problems - see QTBUG-65788", Abort);
     QVERIFY_SQL(timetestModel, select());
 
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("01:02:03.666"));
@@ -3752,8 +3778,8 @@ void tst_QSqlQuery::QTBUG_5251()
     QVERIFY_SQL(timetestModel, submitAll());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
 
-    QVERIFY_SQL(q, exec(QStringLiteral("UPDATE \"") + timetest +
-                        QStringLiteral("\" SET t = '0:11:22.33'")));
+    QVERIFY_SQL(q, exec(QStringLiteral("UPDATE ") + timetest +
+                        QStringLiteral(" SET t = '0:11:22.33'")));
     QVERIFY_SQL(timetestModel, select());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
 

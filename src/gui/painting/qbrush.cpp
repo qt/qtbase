@@ -111,7 +111,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
     QString key = QLatin1String("$qt-brush$")
                   % HexString<uint>(brushStyle)
                   % QLatin1Char(invert ? '1' : '0');
-    if (!QPixmapCache::find(key, pm)) {
+    if (!QPixmapCache::find(key, &pm)) {
         pm = QBitmap::fromData(QSize(8, 8), qt_patternForBrush(brushStyle, invert),
                                QImage::Format_MonoLSB);
         QPixmapCache::insert(key, pm);
@@ -545,9 +545,11 @@ QBrush::QBrush(const QBrush &other)
 */
 QBrush::QBrush(const QGradient &gradient)
 {
-    Q_ASSERT_X(gradient.type() != QGradient::NoGradient, "QBrush::QBrush",
-               "QGradient should not be used directly, use the linear, radial\n"
-               "or conical gradients instead");
+    if (Q_UNLIKELY(gradient.type() == QGradient::NoGradient)) {
+        d.reset(nullBrushInstance());
+        d->ref.ref();
+        return;
+    }
 
     const Qt::BrushStyle enum_table[] = {
         Qt::LinearGradientPattern,
@@ -1138,11 +1140,11 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
         if (s.version() >= QDataStream::Qt_5_5) {
             QImage img;
             s >> img;
-            b.setTextureImage(qMove(img));
+            b.setTextureImage(std::move(img));
         } else {
             QPixmap pm;
             s >> pm;
-            b.setTexture(qMove(pm));
+            b.setTexture(std::move(pm));
         }
     } else if (style == Qt::LinearGradientPattern
                || style == Qt::RadialGradientPattern

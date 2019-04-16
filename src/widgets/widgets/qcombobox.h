@@ -73,8 +73,10 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
     Q_PROPERTY(bool autoCompletion READ autoCompletion WRITE setAutoCompletion DESIGNABLE false)
     Q_PROPERTY(Qt::CaseSensitivity autoCompletionCaseSensitivity READ autoCompletionCaseSensitivity WRITE setAutoCompletionCaseSensitivity DESIGNABLE false)
+#endif
 #endif // QT_CONFIG(completer)
 
     Q_PROPERTY(bool duplicatesEnabled READ duplicatesEnabled WRITE setDuplicatesEnabled)
@@ -93,11 +95,13 @@ public:
     int maxCount() const;
 
 #if QT_CONFIG(completer)
+#if QT_DEPRECATED_SINCE(5, 13)
     bool autoCompletion() const;
     void setAutoCompletion(bool enable);
 
     Qt::CaseSensitivity autoCompletionCaseSensitivity() const;
     void setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity);
+#endif
 #endif
 
     bool duplicatesEnabled() const;
@@ -216,12 +220,21 @@ public Q_SLOTS:
 Q_SIGNALS:
     void editTextChanged(const QString &);
     void activated(int index);
-    void activated(const QString &);
+    void textActivated(const QString &);
     void highlighted(int index);
-    void highlighted(const QString &);
+    void textHighlighted(const QString &);
     void currentIndexChanged(int index);
-    void currentIndexChanged(const QString &);
     void currentTextChanged(const QString &);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use currentTextChanged() instead")
+    void currentIndexChanged(const QString &);
+#endif
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use textActivated() instead")
+    void activated(const QString &);
+    QT_DEPRECATED_X("Use textHighlighted() instead")
+    void highlighted(const QString &);
+#endif
 
 protected:
     void focusInEvent(QFocusEvent *e) override;

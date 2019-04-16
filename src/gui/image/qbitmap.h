@@ -61,7 +61,7 @@ public:
     QBitmap(const QBitmap &other) : QPixmap(other) {}
     // QBitmap(QBitmap &&other) : QPixmap(std::move(other)) {} // QPixmap doesn't, yet, have a move ctor
     QBitmap &operator=(const QBitmap &other) { QPixmap::operator=(other); return *this; }
-    QBitmap &operator=(QBitmap &&other) Q_DECL_NOTHROW { QPixmap::operator=(std::move(other)); return *this; }
+    QBitmap &operator=(QBitmap &&other) noexcept { QPixmap::operator=(std::move(other)); return *this; }
     ~QBitmap();
 #endif
 
@@ -76,7 +76,10 @@ public:
     static QBitmap fromData(const QSize &size, const uchar *bits,
                             QImage::Format monoFormat = QImage::Format_MonoLSB);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QBitmap::transformed(QTransform) instead")
     QBitmap transformed(const QMatrix &) const;
+#endif
     QBitmap transformed(const QTransform &matrix) const;
 
     typedef QExplicitlySharedDataPointer<QPlatformPixmap> DataPtr;

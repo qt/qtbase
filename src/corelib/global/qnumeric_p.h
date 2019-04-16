@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -58,10 +58,21 @@
 
 #if defined(Q_CC_MSVC)
 #  include <intrin.h>
+#  include <float.h>
+#  if defined(Q_PROCESSOR_X86_64) || defined(Q_PROCESSOR_ARM_64)
+#    define Q_INTRINSIC_MUL_OVERFLOW64
+#    define Q_UMULH(v1, v2) __umulh(v1, v2);
+#    define Q_SMULH(v1, v2) __mulh(v1, v2);
+#    pragma intrinsic(__umulh)
+#    pragma intrinsic(__mulh)
+#  endif
 #endif
 
-#if defined(Q_CC_MSVC)
-#include <float.h>
+# if defined(Q_OS_INTEGRITY) && defined(Q_PROCESSOR_ARM_64)
+#include <arm64_ghs.h>
+#  define Q_INTRINSIC_MUL_OVERFLOW64
+#  define Q_UMULH(v1, v2) __MULUH64(v1, v2);
+#  define Q_SMULH(v1, v2) __MULSH64(v1, v2);
 #endif
 
 #if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || defined(Q_CC_INTEL))
@@ -74,9 +85,11 @@ namespace qnumeric_std_wrapper {
 Q_DECL_CONST_FUNCTION static inline bool math_h_isnan(double d) { using namespace std; return isnan(d); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isinf(double d) { using namespace std; return isinf(d); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isfinite(double d) { using namespace std; return isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline int math_h_fpclassify(double d) { using namespace std; return fpclassify(d); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isnan(float f) { using namespace std; return isnan(f); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isinf(float f) { using namespace std; return isinf(f); }
 Q_DECL_CONST_FUNCTION static inline bool math_h_isfinite(float f) { using namespace std; return isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline int math_h_fpclassify(float f) { using namespace std; return fpclassify(f); }
 }
 QT_END_NAMESPACE
 // These macros from math.h conflict with the real functions in the std namespace.
@@ -84,6 +97,7 @@ QT_END_NAMESPACE
 #    undef isnan
 #    undef isinf
 #    undef isfinite
+#    undef fpclassify
 #  endif // defined(isnan)
 #endif
 
@@ -95,20 +109,24 @@ namespace qnumeric_std_wrapper {
 Q_DECL_CONST_FUNCTION static inline bool isnan(double d) { return math_h_isnan(d); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(double d) { return math_h_isinf(d); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(double d) { return math_h_isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(double d) { return math_h_fpclassify(d); }
 Q_DECL_CONST_FUNCTION static inline bool isnan(float f) { return math_h_isnan(f); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(float f) { return math_h_isinf(f); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(float f) { return math_h_isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return math_h_fpclassify(f); }
 #else
 Q_DECL_CONST_FUNCTION static inline bool isnan(double d) { return std::isnan(d); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(double d) { return std::isinf(d); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(double d) { return std::isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(double d) { return std::fpclassify(d); }
 Q_DECL_CONST_FUNCTION static inline bool isnan(float f) { return std::isnan(f); }
 Q_DECL_CONST_FUNCTION static inline bool isinf(float f) { return std::isinf(f); }
 Q_DECL_CONST_FUNCTION static inline bool isfinite(float f) { return std::isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return std::fpclassify(f); }
 #endif
 }
 
-Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_infinity,
                       "platform has no definition for infinity for type double");
@@ -116,7 +134,7 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() Q_DECL_NOEX
 }
 
 // Signaling NaN
-Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_signaling_NaN,
                       "platform has no definition for signaling NaN for type double");
@@ -124,7 +142,7 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() Q_DECL_NOE
 }
 
 // Quiet NaN
-Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_quiet_NaN,
                       "platform has no definition for quiet NaN for type double");
@@ -146,6 +164,11 @@ Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(double d)
     return qnumeric_std_wrapper::isfinite(d);
 }
 
+Q_DECL_CONST_FUNCTION static inline int qt_fpclassify(double d)
+{
+    return qnumeric_std_wrapper::fpclassify(d);
+}
+
 Q_DECL_CONST_FUNCTION static inline bool qt_is_inf(float f)
 {
     return qnumeric_std_wrapper::isinf(f);
@@ -159,6 +182,11 @@ Q_DECL_CONST_FUNCTION static inline bool qt_is_nan(float f)
 Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(float f)
 {
     return qnumeric_std_wrapper::isfinite(f);
+}
+
+Q_DECL_CONST_FUNCTION static inline int qt_fpclassify(float f)
+{
+    return qnumeric_std_wrapper::fpclassify(f);
 }
 
 #ifndef Q_CLANG_QDOC
@@ -220,7 +248,7 @@ QT_WARNING_POP
 // size_t. Implementations for 8- and 16-bit types will work but may not be as
 // efficient. Implementations for 64-bit may be missing on 32-bit platforms.
 
-#if (defined(Q_CC_GNU) && (Q_CC_GNU >= 500) || (defined(Q_CC_INTEL) && !defined(Q_OS_WIN))) || QT_HAS_BUILTIN(__builtin_add_overflowx)
+#if (defined(Q_CC_GNU) && (Q_CC_GNU >= 500) || (defined(Q_CC_INTEL) && !defined(Q_OS_WIN))) || QT_HAS_BUILTIN(__builtin_add_overflow)
 // GCC 5, ICC 18, and Clang 3.8 have builtins to detect overflows
 
 template <typename T> inline
@@ -323,6 +351,38 @@ mul_overflow(T v1, T v2, T *r)
     return lr > std::numeric_limits<T>::max() || lr < std::numeric_limits<T>::min();
 }
 
+# if defined(Q_INTRINSIC_MUL_OVERFLOW64)
+template <> inline bool mul_overflow(quint64 v1, quint64 v2, quint64 *r)
+{
+    *r = v1 * v2;
+    return Q_UMULH(v1, v2);
+}
+template <> inline bool mul_overflow(qint64 v1, qint64 v2, qint64 *r)
+{
+    // This is slightly more complex than the unsigned case above: the sign bit
+    // of 'low' must be replicated as the entire 'high', so the only valid
+    // values for 'high' are 0 and -1. Use unsigned multiply since it's the same
+    // as signed for the low bits and use a signed right shift to verify that
+    // 'high' is nothing but sign bits that match the sign of 'low'.
+
+    qint64 high = Q_SMULH(v1, v2);
+    *r = qint64(quint64(v1) * quint64(v2));
+    return (*r >> 63) != high;
+}
+
+#   if defined(Q_OS_INTEGRITY) && defined(Q_PROCESSOR_ARM_64)
+template <> inline bool mul_overflow(uint64_t v1, uint64_t v2, uint64_t *r)
+{
+    return mul_overflow<quint64>(v1,v2,reinterpret_cast<quint64*>(r));
+}
+
+template <> inline bool mul_overflow(int64_t v1, int64_t v2, int64_t *r)
+{
+    return mul_overflow<qint64>(v1,v2,reinterpret_cast<qint64*>(r));
+}
+#    endif // OS_INTEGRITY ARM64
+#  endif // Q_INTRINSIC_MUL_OVERFLOW64
+
 #  if defined(Q_CC_MSVC) && defined(Q_PROCESSOR_X86)
 // We can use intrinsics for the unsigned operations with MSVC
 template <> inline bool add_overflow(unsigned v1, unsigned v2, unsigned *r)
@@ -330,40 +390,19 @@ template <> inline bool add_overflow(unsigned v1, unsigned v2, unsigned *r)
 
 // 32-bit mul_overflow is fine with the generic code above
 
-#    if defined(Q_PROCESSOR_X86_64)
 template <> inline bool add_overflow(quint64 v1, quint64 v2, quint64 *r)
-{ return _addcarry_u64(0, v1, v2, reinterpret_cast<unsigned __int64 *>(r)); }
-
-#    pragma intrinsic(_umul128)
-template <> inline bool mul_overflow(quint64 v1, quint64 v2, quint64 *r)
 {
-    // use 128-bit multiplication with the _umul128 intrinsic
-    // https://msdn.microsoft.com/en-us/library/3dayytw9.aspx
-    quint64 high;
-    *r = _umul128(v1, v2, &high);
-    return high;
+#    if defined(Q_PROCESSOR_X86_64)
+    return _addcarry_u64(0, v1, v2, reinterpret_cast<unsigned __int64 *>(r));
+#    else
+    uint low, high;
+    uchar carry = _addcarry_u32(0, unsigned(v1), unsigned(v2), &low);
+    carry = _addcarry_u32(carry, v1 >> 32, v2 >> 32, &high);
+    *r = (quint64(high) << 32) | low;
+    return carry;
+#    endif // !x86-64
 }
-
-#    pragma intrinsic(_mul128)
-template <> inline bool mul_overflow(qint64 v1, qint64 v2, qint64 *r)
-{
-    // Use 128-bit multiplication with the _mul128 intrinsic
-    // https://msdn.microsoft.com/en-us/library/82cxdw50.aspx
-
-    // This is slightly more complex than the unsigned case above: the sign bit
-    // of 'low' must be replicated as the entire 'high', so the only valid
-    // values for 'high' are 0 and -1.
-
-    qint64 high;
-    *r = _mul128(v1, v2, &high);
-    if (high == 0)
-        return *r < 0;
-    if (high == -1)
-        return *r >= 0;
-    return true;
-}
-#    endif // x86-64
-#  endif // MSVC x86
+#  endif // MSVC X86
 #endif // !GCC
 }
 #endif // Q_CLANG_QDOC

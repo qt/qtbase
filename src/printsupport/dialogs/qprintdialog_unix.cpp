@@ -398,12 +398,12 @@ static const char *ppdOriginallySelectedChoiceProperty = "_q_ppd_originally_sele
 // Used to store the warning label pointer for each QComboBox that represents an advanced option
 static const char *warningLabelProperty = "_q_warning_label";
 
-static bool isBlacklistedGroup(const ppd_group_t *group) Q_DECL_NOTHROW
+static bool isBlacklistedGroup(const ppd_group_t *group) noexcept
 {
     return qstrcmp(group->name, "InstallableOptions") == 0;
 };
 
-static bool isBlacklistedOption(const char *keyword) Q_DECL_NOTHROW
+static bool isBlacklistedOption(const char *keyword) noexcept
 {
     // We already let the user set these options elsewhere
     const char *cupsOptionBlacklist[] = {
@@ -734,11 +734,11 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
 }
 
 #if QT_CONFIG(cups)
-static std::vector<std::pair<int, int>> pageRangesFromString(const QString &pagesString) Q_DECL_NOTHROW
+static std::vector<std::pair<int, int>> pageRangesFromString(const QString &pagesString) noexcept
 {
     std::vector<std::pair<int, int>> result;
     const QStringList items = pagesString.split(',');
-    for (const QString item : items) {
+    for (const QString &item : items) {
         if (item.isEmpty())
             return {};
 
@@ -788,7 +788,7 @@ static std::vector<std::pair<int, int>> pageRangesFromString(const QString &page
     return result;
 }
 
-static QString stringFromPageRanges(const std::vector<std::pair<int, int>> &pageRanges) Q_DECL_NOTHROW
+static QString stringFromPageRanges(const std::vector<std::pair<int, int>> &pageRanges) noexcept
 {
     QString result;
 
@@ -805,7 +805,7 @@ static QString stringFromPageRanges(const std::vector<std::pair<int, int>> &page
     return result;
 }
 
-static bool isValidPagesString(const QString &pagesString) Q_DECL_NOTHROW
+static bool isValidPagesString(const QString &pagesString) noexcept
 {
     if (pagesString.isEmpty())
         return false;

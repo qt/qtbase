@@ -40,8 +40,6 @@
 
 #include "qmimetype.h"
 
-#ifndef QT_NO_MIMETYPE
-
 #include "qmimetype_p.h"
 #include "qmimedatabase_p.h"
 #include "qmimeprovider_p.h"
@@ -194,7 +192,7 @@ bool QMimeType::operator==(const QMimeType &other) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
  */
-uint qHash(const QMimeType &key, uint seed) Q_DECL_NOTHROW
+uint qHash(const QMimeType &key, uint seed) noexcept
 {
     return qHash(key.d->name, seed);
 }
@@ -260,6 +258,7 @@ QString QMimeType::comment() const
     QStringList languageList;
     languageList << QLocale().name();
     languageList << QLocale().uiLanguages();
+    languageList << QLatin1String("default"); // use the default locale if possible.
     for (const QString &language : qAsConst(languageList)) {
         const QString lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
         const QString comm = d->localeComments.value(lang);
@@ -526,5 +525,3 @@ QDebug operator<<(QDebug debug, const QMimeType &mime)
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MIMETYPE

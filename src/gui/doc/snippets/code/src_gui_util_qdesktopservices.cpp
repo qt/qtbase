@@ -68,3 +68,31 @@ mailto:user@foo.com?subject=Test&body=Just a test
 //! [2]
 QDesktopServices::openUrl(QUrl("file:///C:/Documents and Settings/All Users/Desktop", QUrl::TolerantMode));
 //! [2]
+
+//! [3]
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>https</string>
+</array>
+//! [3]
+
+//! [4]
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+    </dict>
+</array>
+//! [4]
+
+//! [5]
+QDesktopServices::storageLocation(QDesktopServices::DataLocation)
+//! [5]
+
+//! [6]
+QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
+    "/data/organization/application"
+//! [6]

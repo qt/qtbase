@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'settings.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.12.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -182,13 +182,13 @@ public:
 
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
-        label->setText(QApplication::translate("Dialog", "Audio device:", nullptr));
-        label_6->setText(QApplication::translate("Dialog", "Audio effect:", nullptr));
-        crossFadeLabel->setText(QApplication::translate("Dialog", "Cross fade:", nullptr));
-        label_3->setText(QApplication::translate("Dialog", "-10 Sec", nullptr));
-        label_5->setText(QApplication::translate("Dialog", "0", nullptr));
-        label_4->setText(QApplication::translate("Dialog", "10 Sec", nullptr));
+        Dialog->setWindowTitle(QCoreApplication::translate("Dialog", "Dialog", nullptr));
+        label->setText(QCoreApplication::translate("Dialog", "Audio device:", nullptr));
+        label_6->setText(QCoreApplication::translate("Dialog", "Audio effect:", nullptr));
+        crossFadeLabel->setText(QCoreApplication::translate("Dialog", "Cross fade:", nullptr));
+        label_3->setText(QCoreApplication::translate("Dialog", "-10 Sec", nullptr));
+        label_5->setText(QCoreApplication::translate("Dialog", "0", nullptr));
+        label_4->setText(QCoreApplication::translate("Dialog", "10 Sec", nullptr));
     } // retranslateUi
 
 };
