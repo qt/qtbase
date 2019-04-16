@@ -270,7 +270,9 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
                 // ES does not support any format option
                 m_format.setOptions(QSurfaceFormat::FormatOptions());
             }
-
+            // Robustness must match that of the shared context.
+            if (share && share->format().testOption(QSurfaceFormat::ResetNotification))
+                m_format.setOption(QSurfaceFormat::ResetNotification);
             Q_ASSERT(glVersions.count() > 0);
 
             for (int i = 0; !m_context && i < glVersions.count(); i++) {
