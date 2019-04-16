@@ -29,12 +29,15 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += device_family
 
     ios {
-        # Set up default LaunchScreen
-        qmake_launch_screen = LaunchScreen.storyboard
-        qmake_copy_launch_screen.input = $$QMAKESPEC/$$qmake_launch_screen
-        qmake_copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$qmake_launch_screen
-        QMAKE_SUBSTITUTES += qmake_copy_launch_screen
-        qmake_launch_screens.files = $$qmake_copy_launch_screen.output
+        isEmpty(QMAKE_IOS_LAUNCH_SCREEN) {
+            qmake_launch_screen = LaunchScreen.storyboard
+            qmake_copy_launch_screen.input = $$QMAKESPEC/$$qmake_launch_screen
+            qmake_copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$qmake_launch_screen
+            QMAKE_SUBSTITUTES += qmake_copy_launch_screen
+            qmake_launch_screens.files = $$qmake_copy_launch_screen.output
+        } else {
+            qmake_launch_screens.files = $$QMAKE_IOS_LAUNCH_SCREEN
+        }
         QMAKE_BUNDLE_DATA += qmake_launch_screens
     }
 }

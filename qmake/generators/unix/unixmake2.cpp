@@ -798,6 +798,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             commonSedArgs << "-e \"s,\\$${WATCHOS_DEPLOYMENT_TARGET},"
                           << project->first("QMAKE_WATCHOS_DEPLOYMENT_TARGET").toQString() << ",g\" ";
 
+            QString launchScreen = var("QMAKE_IOS_LAUNCH_SCREEN");
+            if (launchScreen.isEmpty())
+                launchScreen = QLatin1String("LaunchScreen");
+            else
+                launchScreen = QFileInfo(launchScreen).baseName();
+            commonSedArgs << "-e \"s,\\$${IOS_LAUNCH_SCREEN}," << launchScreen << ",g\" ";
+
             if (!isFramework) {
                 ProString app_bundle_name = var("QMAKE_APPLICATION_BUNDLE_NAME");
                 if (app_bundle_name.isEmpty())

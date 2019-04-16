@@ -2260,6 +2260,9 @@
     \row
         \li \c ${WATCHOS_DEPLOYMENT_TARGET}
         \li Expands to the value of QMAKE_WATCHOS_DEPLOYMENT_TARGET.
+    \row
+        \li \c ${IOS_LAUNCH_SCREEN}
+        \li Expands to the value of QMAKE_IOS_LAUNCH_SCREEN.
     \endtable
 
     \note When using the Xcode generator, the above \c{${var}}-style
@@ -2282,6 +2285,13 @@
     Specifies the hard minimum version of iOS that the application supports.
 
     For more information, see \l {Expressing Supported iOS Versions}.
+
+    \section1 QMAKE_IOS_LAUNCH_SCREEN
+
+    \note This variable is used on the iOS platform only.
+
+    Specifies the launch screen that is used by the application. If this is not set
+    then a default launch screen is used.
 
     \section1 QMAKE_LFLAGS
 

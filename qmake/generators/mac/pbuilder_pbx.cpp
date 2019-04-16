@@ -1615,6 +1615,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             plist_in_text.replace(QLatin1String("@TYPEINFO@"),
                                 (project->isEmpty("QMAKE_PKGINFO_TYPEINFO")
                                     ? QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4).toQString()));
+                            QString launchScreen = var("QMAKE_IOS_LAUNCH_SCREEN");
+                            if (launchScreen.isEmpty())
+                                launchScreen = QLatin1String("LaunchScreen");
+                            else
+                                launchScreen = QFileInfo(launchScreen).baseName();
+                            plist_in_text.replace(QLatin1String("${IOS_LAUNCH_SCREEN}"), launchScreen);
                             QFile plist_out_file(Option::output_dir + "/Info.plist");
                             if (plist_out_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
                                 QTextStream plist_out(&plist_out_file);
