@@ -1161,14 +1161,20 @@ function(qt_create_qdbusxml2cpp_command target infile)
         set(file_name ${arg_BASENAME})
     endif()
 
+    # Use absolute file path for the source file and set the current working directory to the
+    # current binary directory, because setting an absolute path for the header:source combo option
+    # does not work. Splitting on ":" breaks inside the dbus tool when running on Windows
+    # due to ":" being contained in the drive path (e.g C:\foo.h:C:\foo.cpp).
+    get_filename_component(absolute_in_file_path "${infile}" ABSOLUTE)
 
-    set(header_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}.h")
-    set(source_file "${CMAKE_CURRENT_BINARY_DIR}/${file_name}.cpp")
+    set(header_file "${file_name}.h")
+    set(source_file "${file_name}.cpp")
 
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
-                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${arg_FLAGS} "${option}" "${header_file}:${source_file}" "${infile}"
-                       DEPENDS "${infile}"
-                       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${arg_FLAGS} "${option}"
+                               "${header_file}:${source_file}" "${absolute_in_file_path}"
+                       DEPENDS "${absolute_in_file_path}"
+                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
                        VERBATIM)
 
     target_sources("${target}" PRIVATE "${header_file}" "${source_file}")
