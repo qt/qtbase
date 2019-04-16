@@ -159,6 +159,9 @@ public abstract class QtLoader {
     protected ComponentInfo m_contextInfo;
     private Class<?> m_delegateClass;
 
+    private static ArrayList<FileOutputStream> m_fileOutputStreams = new ArrayList<FileOutputStream>();
+    // List of open file streams associated with files copied during installation.
+
     QtLoader(ContextWrapper context, Class<?> clazz) {
         m_context = context;
         m_delegateClass = clazz;
@@ -357,7 +360,7 @@ public abstract class QtLoader {
 
         AssetManager assetsManager = m_context.getAssets();
         InputStream inputStream = null;
-        OutputStream outputStream = null;
+        FileOutputStream outputStream = null;
         try {
             inputStream = assetsManager.open(source);
             outputStream = new FileOutputStream(destinationFile);
@@ -369,8 +372,12 @@ public abstract class QtLoader {
                 inputStream.close();
 
             if (outputStream != null)
-                outputStream.close();
+                // Ensure that the buffered data is flushed to the OS for writing.
+                outputStream.flush();
         }
+        // Mark the output stream as still needing to be written to physical disk.
+        // The output stream will be closed after this sync completes.
+        m_fileOutputStreams.add(outputStream);
     }
 
     private static void createBundledBinary(String source, String destination)
@@ -388,7 +395,7 @@ public abstract class QtLoader {
         destinationFile.createNewFile();
 
         InputStream inputStream = null;
-        OutputStream outputStream = null;
+        FileOutputStream outputStream = null;
         try {
             inputStream = new FileInputStream(source);
             outputStream = new FileOutputStream(destinationFile);
@@ -400,8 +407,12 @@ public abstract class QtLoader {
                 inputStream.close();
 
             if (outputStream != null)
-                outputStream.close();
+                // Ensure that the buffered data is flushed to the OS for writing.
+                outputStream.flush();
         }
+        // Mark the output stream as still needing to be written to physical disk.
+        // The output stream will be closed after this sync completes.
+        m_fileOutputStreams.add(outputStream);
     }
 
     private boolean cleanCacheIfNecessary(String pluginsPrefix, long packageVersion)
@@ -450,27 +461,6 @@ public abstract class QtLoader {
             return;
 
         {
-            File versionFile = new File(pluginsPrefix + "cache.version");
-
-            File parentDirectory = versionFile.getParentFile();
-            if (!parentDirectory.exists())
-                parentDirectory.mkdirs();
-
-            versionFile.createNewFile();
-
-            DataOutputStream outputStream = null;
-            try {
-                outputStream = new DataOutputStream(new FileOutputStream(versionFile));
-                outputStream.writeLong(packageVersion);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (outputStream != null)
-                    outputStream.close();
-            }
-        }
-
-        {
             // why can't we load the plugins directly from libs ?!?!
             String key = BUNDLED_IN_LIB_RESOURCE_ID_KEY;
             if (m_contextInfo.metaData.containsKey(key)) {
@@ -499,6 +489,66 @@ public abstract class QtLoader {
             }
 
         }
+
+        // The Java compiler must be assured that variables belonging to this parent thread will not
+        // go out of scope during the runtime of the spawned thread (since in general spawned
+        // threads can outlive their parent threads). Copy variables and declare as 'final' before
+        // passing into the spawned thread.
+        final String pluginsPrefixFinal = pluginsPrefix;
+        final long packageVersionFinal = packageVersion;
+
+        // Spawn a worker thread to write all installed files to physical disk and indicate
+        // successful installation by creating the 'cache.version' file.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    finalizeInstallation(pluginsPrefixFinal, packageVersionFinal);
+                } catch (Exception e) {
+                    Log.e(QtApplication.QtTAG, e.getMessage());
+                    e.printStackTrace();
+                    return;
+                }
+            }
+        }).start();
+    }
+
+    private void finalizeInstallation(String pluginsPrefix, long packageVersion)
+            throws IOException
+    {
+        {
+            // Write all installed files to physical disk and close each output stream
+            for (FileOutputStream fileOutputStream : m_fileOutputStreams) {
+                fileOutputStream.getFD().sync();
+                fileOutputStream.close();
+            }
+
+            m_fileOutputStreams.clear();
+        }
+
+        {
+            // Create 'cache.version' file
+
+            File versionFile = new File(pluginsPrefix + "cache.version");
+
+            File parentDirectory = versionFile.getParentFile();
+            if (!parentDirectory.exists())
+                parentDirectory.mkdirs();
+
+            versionFile.createNewFile();
+
+            DataOutputStream outputStream = null;
+            try {
+                outputStream = new DataOutputStream(new FileOutputStream(versionFile));
+                outputStream.writeLong(packageVersion);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (outputStream != null)
+                    outputStream.close();
+            }
+        }
+
     }
 
     private void deleteRecursively(File directory)

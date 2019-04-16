@@ -204,19 +204,36 @@ QColor QColorTransform::map(const QColor &color) const
     if (!d_ptr)
         return color;
     Q_D(const QColorTransform);
-    QColorVector c = { (float)color.redF(), (float)color.greenF(), (float)color.blueF() };
-    c.x = d->colorSpaceIn->trc[0].apply(c.x);
-    c.y = d->colorSpaceIn->trc[1].apply(c.y);
-    c.z = d->colorSpaceIn->trc[2].apply(c.z);
-    c = d->colorMatrix.map(c);
-    if (d_ptr->colorSpaceOut->lutsGenerated.loadAcquire()) {
-        c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
-        c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
-        c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);
+    QColor clr = color;
+    if (color.spec() != QColor::ExtendedRgb || color.spec() != QColor::Rgb)
+        clr = clr.toRgb();
+
+    QColorVector c = { (float)clr.redF(), (float)clr.greenF(), (float)clr.blueF() };
+    if (clr.spec() == QColor::ExtendedRgb) {
+        c.x = d->colorSpaceIn->trc[0].applyExtended(c.x);
+        c.y = d->colorSpaceIn->trc[1].applyExtended(c.y);
+        c.z = d->colorSpaceIn->trc[2].applyExtended(c.z);
     } else {
-        c.x = d->colorSpaceOut->trc[0].applyInverse(c.x);
-        c.y = d->colorSpaceOut->trc[1].applyInverse(c.y);
-        c.z = d->colorSpaceOut->trc[2].applyInverse(c.z);
+        c.x = d->colorSpaceIn->trc[0].apply(c.x);
+        c.y = d->colorSpaceIn->trc[1].apply(c.y);
+        c.z = d->colorSpaceIn->trc[2].apply(c.z);
+    }
+    c = d->colorMatrix.map(c);
+    bool inGamut = c.x >= 0.0f && c.x <= 1.0f && c.y >= 0.0f && c.y <= 1.0f && c.z >= 0.0f && c.z <= 1.0f;
+    if (inGamut) {
+        if (d_ptr->colorSpaceOut->lutsGenerated.loadAcquire()) {
+            c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
+            c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
+            c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);
+        } else {
+            c.x = d->colorSpaceOut->trc[0].applyInverse(c.x);
+            c.y = d->colorSpaceOut->trc[1].applyInverse(c.y);
+            c.z = d->colorSpaceOut->trc[2].applyInverse(c.z);
+        }
+    } else {
+        c.x = d->colorSpaceOut->trc[0].applyInverseExtended(c.x);
+        c.y = d->colorSpaceOut->trc[1].applyInverseExtended(c.y);
+        c.z = d->colorSpaceOut->trc[2].applyInverseExtended(c.z);
     }
     QColor out;
     out.setRgbF(c.x, c.y, c.z, color.alphaF());

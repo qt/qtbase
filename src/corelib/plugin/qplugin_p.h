@@ -60,7 +60,8 @@ enum class QtPluginMetaDataKeys {
     Requirements,
     IID,
     ClassName,
-    MetaData
+    MetaData,
+    URI
 };
 
 // F(IntKey, StringKey, Description)
@@ -68,7 +69,8 @@ enum class QtPluginMetaDataKeys {
 #define QT_PLUGIN_FOREACH_METADATA(F) \
     F(QtPluginMetaDataKeys::IID, "IID", "Plugin's Interface ID")                \
     F(QtPluginMetaDataKeys::ClassName, "className", "Plugin class name")        \
-    F(QtPluginMetaDataKeys::MetaData, "MetaData", "Other meta data")
+    F(QtPluginMetaDataKeys::MetaData, "MetaData", "Other meta data")            \
+    F(QtPluginMetaDataKeys::URI, "URI", "Plugin URI")
 
 QT_END_NAMESPACE
 

@@ -476,7 +476,7 @@
         "tslib": {
             "label": "tslib",
             "test": {
-                "main": "ts_open(\"foo\", 0);"
+                "main": "ts_setup(nullptr, 0);"
             },
             "headers": "tslib.h",
             "sources": [

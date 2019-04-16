@@ -36,17 +36,27 @@
 #include <QtCore/QTemporaryDir>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QStandardPaths>
+#include <QtCore/QVector>
 
 #include <cstdio>
 
 static const char keepEnvVar[] = "UIC_KEEP_GENERATED_FILES";
 static const char diffToStderrEnvVar[] = "UIC_STDERR_DIFF";
 
+struct TestEntry
+{
+    QByteArray name;
+    QString baselineBaseName;
+    QString generatedFileName;
+};
+
 class tst_uic : public QObject
 {
     Q_OBJECT
 
 public:
+    using TestEntries = QVector<TestEntry>;
+
     tst_uic();
 
 private Q_SLOTS:
@@ -63,13 +73,20 @@ private Q_SLOTS:
     void compare();
     void compare_data() const;
 
+    void python();
+    void python_data() const;
+
     void runCompare();
 
 private:
+    void populateTestEntries();
+
     const QString m_command;
     QString m_baseline;
     QTemporaryDir m_generated;
+    TestEntries m_testEntries;
     QRegularExpression m_versionRegexp;
+    QString m_python;
 };
 
 tst_uic::tst_uic()
@@ -83,6 +100,32 @@ static QByteArray msgProcessStartFailed(const QString &command, const QString &w
     const QString result = QString::fromLatin1("Could not start %1: %2")
             .arg(command, why);
     return result.toLocal8Bit();
+}
+
+// Locate Python and check whether PySide2 is installed
+static QString locatePython(QTemporaryDir &generatedDir)
+{
+    QString python = QStandardPaths::findExecutable(QLatin1String("python"));
+    if (python.isEmpty()) {
+        qWarning("Cannot locate python, skipping tests");
+        return QString();
+    }
+    QFile importTestFile(generatedDir.filePath(QLatin1String("import_test.py")));
+    if (!importTestFile.open(QIODevice::WriteOnly| QIODevice::Text))
+        return QString();
+    importTestFile.write("import PySide2.QtCore\n");
+    importTestFile.close();
+    QProcess process;
+    process.start(python, {importTestFile.fileName()});
+    if (!process.waitForStarted() || !process.waitForFinished())
+        return QString();
+    if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
+        const QString stdErr = QString::fromLocal8Bit(process.readAllStandardError()).simplified();
+        qWarning("PySide2 is not installed (%s)", qPrintable(stdErr));
+        return QString();
+    }
+    importTestFile.remove();
+    return python;
 }
 
 void tst_uic::initTestCase()
@@ -105,7 +148,28 @@ void tst_uic::initTestCase()
                   arg(QDir::currentPath());
     if (!outLines.empty())
         msg += outLines.front();
+    populateTestEntries();
+    QVERIFY(!m_testEntries.isEmpty());
     qDebug("%s", qPrintable(msg));
+
+    m_python = locatePython(m_generated);
+}
+
+void tst_uic::populateTestEntries()
+{
+    const QString generatedPrefix = m_generated.path() + QLatin1Char('/');
+    QDir baseline(m_baseline);
+    const QString baseLinePrefix = baseline.path() + QLatin1Char('/');
+    const QFileInfoList baselineFiles =
+        baseline.entryInfoList(QStringList(QString::fromLatin1("*.ui")), QDir::Files);
+    m_testEntries.reserve(baselineFiles.size());
+    for (const QFileInfo &baselineFile : baselineFiles) {
+        const QString baseName = baselineFile.baseName();
+        const QString baselineBaseName = baseLinePrefix + baseName;
+        const QString generatedFile = generatedPrefix + baselineFile.fileName()
+            + QLatin1String(".h");
+        m_testEntries.append(TestEntry{baseName.toLocal8Bit(), baselineBaseName, generatedFile});
+    }
 }
 
 static const char helpFormat[] = R"(
@@ -171,22 +235,12 @@ void tst_uic::run_data() const
     QTest::addColumn<QString>("generatedFile");
     QTest::addColumn<QStringList>("options");
 
-    QDir generated(m_generated.path());
-    QDir baseline(m_baseline);
-    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList("*.ui"), QDir::Files);
-    foreach (const QFileInfo &baselineFile, baselineFiles) {
-        const QString generatedFile = generated.absolutePath()
-            + QLatin1Char('/') + baselineFile.fileName()
-            + QLatin1String(".h");
-
+    for (const TestEntry &te : m_testEntries) {
         QStringList options;
-        if (baselineFile.fileName() == QLatin1String("qttrid.ui"))
+        if (te.name == QByteArrayLiteral("qttrid"))
             options << QStringList(QLatin1String("-idbased"));
-
-        QTest::newRow(qPrintable(baselineFile.baseName()))
-            << baselineFile.absoluteFilePath()
-            << generatedFile
-            << options;
+        QTest::newRow(te.name.constData()) << (te.baselineBaseName + QLatin1String(".ui"))
+            << te.generatedFileName << options;
     }
 }
 
@@ -264,15 +318,9 @@ void tst_uic::compare_data() const
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
 
-    QDir generated(m_generated.path());
-    QDir baseline(m_baseline);
-    const QFileInfoList baselineFiles = baseline.entryInfoList(QStringList("*.h"), QDir::Files);
-    foreach (const QFileInfo &baselineFile, baselineFiles) {
-        const QString generatedFile = generated.absolutePath()
-                + QLatin1Char('/') + baselineFile.fileName();
-        QTest::newRow(qPrintable(baselineFile.baseName()))
-            << baselineFile.absoluteFilePath()
-            << generatedFile;
+    for (const TestEntry &te : m_testEntries) {
+        QTest::newRow(te.name.constData()) << (te.baselineBaseName + QLatin1String(".ui.h"))
+            << te.generatedFileName;
     }
 }
 
@@ -280,7 +328,7 @@ void tst_uic::runTranslation()
 {
     QProcess process;
 
-    QDir baseline(m_baseline);
+    const QDir baseline(m_baseline);
 
     QDir generated(m_generated.path());
     generated.mkdir(QLatin1String("translation"));
@@ -325,6 +373,76 @@ void tst_uic::runCompare()
     }
 
     QCOMPARE(generatedFileContents, originalFileContents);
+}
+
+// Let uic generate Python code and verify that it is syntactically
+// correct by compiling it into .pyc. This test is executed only
+// when python with an installed Qt for Python is detected (see locatePython()).
+
+static inline QByteArray msgCompilePythonFailed(const QByteArray &error)
+{
+    // If there is a line with blanks and caret indicating an error in the line
+    // above, insert the cursor into the offending line and remove the caret.
+    QByteArrayList lines = error.trimmed().split('\n');
+    for (int i = lines.size() -  1; i > 0; --i) {
+        const auto &line = lines.at(i);
+        const int caret = line.indexOf('^');
+        if (caret == 0 || (caret > 0 && line.at(caret - 1) == ' ')) {
+            lines.removeAt(i);
+            lines[i - 1].insert(caret, '|');
+            break;
+        }
+    }
+    return lines.join('\n');
+}
+
+void tst_uic::python_data() const
+{
+    QTest::addColumn<QString>("originalFile");
+    QTest::addColumn<QString>("generatedFile");
+
+    const int size = m_python.isEmpty()
+        ? qMin(1, m_testEntries.size()) : m_testEntries.size();
+    for (int i = 0; i < size; ++i) {
+        const TestEntry &te = m_testEntries.at(i);
+        // qprintsettingsoutput: variable named 'from' clashes with Python
+        if (!te.baselineBaseName.endsWith(QLatin1String("/qprintsettingsoutput"))) {
+            QString generatedFile = te.generatedFileName;
+            generatedFile.chop(1); // foo.h -> foo.py
+            generatedFile.append(QLatin1String("py"));
+            QTest::newRow(te.name.constData())
+                << (te.baselineBaseName + QLatin1String(".ui"))
+                << generatedFile;
+        }
+    }
+}
+
+void tst_uic::python()
+{
+    QFETCH(QString, originalFile);
+    QFETCH(QString, generatedFile);
+    if (m_python.isEmpty())
+        QSKIP("Python was not found");
+
+    QStringList uicArguments{QLatin1String("-g"), QLatin1String("python"),
+        originalFile, QLatin1String("-o"), generatedFile};
+    QProcess process;
+    process.setWorkingDirectory(m_generated.path());
+    process.start(m_command, uicArguments);
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
+    QVERIFY(QFileInfo::exists(generatedFile));
+
+    // Test Python code generation by compiling the file
+    QStringList compileArguments{QLatin1String("-m"), QLatin1String("py_compile"), generatedFile};
+    process.start(m_python, compileArguments);
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
+    const bool compiled = process.exitStatus() == QProcess::NormalExit
+        && process.exitCode() == 0;
+    QVERIFY2(compiled, msgCompilePythonFailed(process.readAllStandardError()).constData());
 }
 
 QTEST_MAIN(tst_uic)

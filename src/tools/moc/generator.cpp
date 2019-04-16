@@ -1652,6 +1652,12 @@ void Generator::generatePluginMetaData()
         jsonObjectToCbor(&map, o);
     }
 
+    if (!cdef->pluginData.uri.isEmpty()) {
+        dev.nextItem("\"URI\"");
+        cbor_encode_int(&map, int(QtPluginMetaDataKeys::URI));
+        cbor_encode_text_string(&map, cdef->pluginData.uri.constData(), cdef->pluginData.uri.size());
+    }
+
     // Add -M args from the command line:
     for (auto it = cdef->pluginData.metaArgs.cbegin(), end = cdef->pluginData.metaArgs.cend(); it != end; ++it) {
         const QJsonArray &a = it.value();

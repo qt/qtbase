@@ -31,7 +31,7 @@
 class StaticPlugin : public QObject
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "SomeIID")
+    Q_PLUGIN_METADATA(IID "SomeIID" URI "qt.test.pluginloader.staticplugin")
 public:
     StaticPlugin() {}
 };

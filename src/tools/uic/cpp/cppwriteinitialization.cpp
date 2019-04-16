@@ -556,7 +556,7 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     m_output << m_option.indent << language::endFunctionDefinition("setupUi");
 
-    if (!m_mainFormUsedInRetranslateUi) {
+    if (!m_mainFormUsedInRetranslateUi && language::language() == Language::Cpp) {
         m_refreshInitialization += m_indent;
         m_refreshInitialization += QLatin1String("Q_UNUSED(");
         m_refreshInitialization += varName ;
@@ -1760,55 +1760,76 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     // check cache
     const IconHandle iconHandle(i);
     const IconPropertiesNameMap::const_iterator it = m_iconPropertiesNameMap.constFind(iconHandle);
-    if (it != m_iconPropertiesNameMap.constEnd()) {
+    if (it != m_iconPropertiesNameMap.constEnd())
         return it.value();
-    }
 
     // insert with new name
     const QString iconName = m_driver->unique(QLatin1String("icon"));
     m_iconPropertiesNameMap.insert(IconHandle(i), iconName);
-    if (isIconFormat44(i)) {
-        if (i->attributeTheme().isEmpty()) {
-            // No theme: Write resource icon as is
-            m_output << m_indent << "QIcon " << iconName << ";\n";
-            if (m_uic->pixmapFunction().isEmpty())
-                writeResourceIcon(m_output, iconName, m_indent, i);
-            else
-                writePixmapFunctionIcon(m_output, iconName, m_indent, i);
-        } else {
-            // Theme: Generate code to check the theme and default to resource
-            if (iconHasStatePixmaps(i)) {
-                // Theme + default state pixmaps:
-                // Generate code to check the theme and default to state pixmaps
-                m_output << m_indent << "QIcon " << iconName << ";\n";
-                const char themeNameStringVariableC[] = "iconThemeName";
-                // Store theme name in a variable
-                m_output << m_indent;
-                if (m_firstThemeIcon) { // Declare variable string
-                    m_output << "QString ";
-                    m_firstThemeIcon = false;
-                }
-                m_output << themeNameStringVariableC << " = "
-                    << language::qstring(i->attributeTheme()) << ";\n";
-                m_output << m_indent << "if (QIcon::hasThemeIcon("
-                         << themeNameStringVariableC
-                         << ")) {\n"
-                         << m_dindent << iconName << " = QIcon::fromTheme(" << themeNameStringVariableC << ");\n"
-                         << m_indent << "} else {\n";
-                if (m_uic->pixmapFunction().isEmpty())
-                    writeResourceIcon(m_output, iconName, m_dindent, i);
-                else
-                    writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
-                m_output << m_indent << "}\n";
-            } else {
-                // Theme, but no state pixmaps: Construct from theme directly.
-                m_output << m_indent << "QIcon " << iconName << "(QIcon::fromTheme("
-                    << language::qstring(i->attributeTheme()) << "));\n";
-            } // Theme, but not state
-        }     // >= 4.4
-    } else {  // pre-4.4 legacy
-        m_output <<  m_indent << "const QIcon " << iconName << " = " << pixCall(QLatin1String("QIcon"), i->text())<< ";\n";
+
+    const bool isCpp = language::language() == Language::Cpp;
+
+    if (Q_UNLIKELY(!isIconFormat44(i))) { // pre-4.4 legacy
+        m_output <<  m_indent;
+        if (isCpp)
+            m_output << "const QIcon ";
+        m_output << iconName << " = " << pixCall(QLatin1String("QIcon"), i->text())
+            << language::eol;
+        return iconName;
     }
+
+    // 4.4 onwards
+    if (i->attributeTheme().isEmpty()) {
+        // No theme: Write resource icon as is
+        m_output << m_indent << language::stackVariable("QIcon", iconName)
+            << language::eol;
+        if (m_uic->pixmapFunction().isEmpty())
+            writeResourceIcon(m_output, iconName, m_indent, i);
+        else
+            writePixmapFunctionIcon(m_output, iconName, m_indent, i);
+        return iconName;
+    }
+
+    // Theme: Generate code to check the theme and default to resource
+    if (iconHasStatePixmaps(i)) {
+        // Theme + default state pixmaps:
+        // Generate code to check the theme and default to state pixmaps
+        m_output << m_indent << language::stackVariable("QIcon", iconName) << ";\n";
+        const char themeNameStringVariableC[] = "iconThemeName";
+        // Store theme name in a variable
+        m_output << m_indent;
+        if (m_firstThemeIcon) { // Declare variable string
+            if (isCpp)
+                m_output << "QString ";
+            m_firstThemeIcon = false;
+        }
+        m_output << themeNameStringVariableC << " = "
+            << language::qstring(i->attributeTheme()) << language::eol;
+        m_output << m_indent << "if ";
+        if (isCpp)
+            m_output << '(';
+        m_output << "QIcon" << language::qualifier << "hasThemeIcon("
+            << themeNameStringVariableC << ')' << (isCpp ? ") {" : ":") << '\n'
+            << m_dindent << iconName << " = QIcon" << language::qualifier << "fromTheme("
+            << themeNameStringVariableC << ')' << language::eol
+            << m_indent << (isCpp ? "} else {" : "else:") << '\n';
+        if (m_uic->pixmapFunction().isEmpty())
+            writeResourceIcon(m_output, iconName, m_dindent, i);
+        else
+            writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
+        m_output << m_indent;
+        if (isCpp)
+            m_output << '}';
+        m_output  << '\n';
+        return iconName;
+    }
+
+    // Theme, but no state pixmaps: Construct from theme directly.
+    m_output << m_indent
+        << language::stackVariableWithInitParameters("QIcon", iconName)
+        << "QIcon" << language::qualifier << "fromTheme("
+        << language::qstring(i->attributeTheme()) << "))"
+        << language::eol;
     return iconName;
 }
 
@@ -1910,31 +1931,36 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
         const QString gradientType = gradient->attributeType();
         const QString gradientName = m_driver->unique(QLatin1String("gradient"));
         if (gradientType == QLatin1String("LinearGradient")) {
-            m_output << m_indent << "QLinearGradient " << gradientName
-                << '(' << gradient->attributeStartX()
+            m_output << m_indent
+                << language::stackVariableWithInitParameters("QLinearGradient", gradientName)
+                << gradient->attributeStartX()
                 << ", " << gradient->attributeStartY()
                 << ", " << gradient->attributeEndX()
-                << ", " << gradient->attributeEndY() << ");\n";
+                << ", " << gradient->attributeEndY() << ')' << language::eol;
         } else if (gradientType == QLatin1String("RadialGradient")) {
-            m_output << m_indent << "QRadialGradient " << gradientName
-                << '(' << gradient->attributeCentralX()
+            m_output << m_indent
+                << language::stackVariableWithInitParameters("QRadialGradient", gradientName)
+                << gradient->attributeCentralX()
                 << ", " << gradient->attributeCentralY()
                 << ", " << gradient->attributeRadius()
                 << ", " << gradient->attributeFocalX()
-                << ", " << gradient->attributeFocalY() << ");\n";
+                << ", " << gradient->attributeFocalY() << ')' << language::eol;
         } else if (gradientType == QLatin1String("ConicalGradient")) {
-            m_output << m_indent << "QConicalGradient " << gradientName
-                << '(' << gradient->attributeCentralX()
+            m_output << m_indent
+                << language::stackVariableWithInitParameters("QConicalGradient", gradientName)
+                << gradient->attributeCentralX()
                 << ", " << gradient->attributeCentralY()
-                << ", " << gradient->attributeAngle() << ");\n";
+                << ", " << gradient->attributeAngle() << ')' << language::eol;
         }
 
-        m_output << m_indent << gradientName << ".setSpread(QGradient::"
-            << gradient->attributeSpread() << ");\n";
+        m_output << m_indent << gradientName << ".setSpread(QGradient"
+            << language::qualifier << gradient->attributeSpread()
+            << ')' << language::eol;
 
         if (gradient->hasAttributeCoordinateMode()) {
-            m_output << m_indent << gradientName << ".setCoordinateMode(QGradient::"
-                << gradient->attributeCoordinateMode() << ");\n";
+            m_output << m_indent << gradientName << ".setCoordinateMode(QGradient"
+                << language::qualifier << gradient->attributeCoordinateMode()
+                << ')' << language::eol;
         }
 
        const auto &stops = gradient->elementGradientStop();
@@ -1942,19 +1968,22 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
             const DomColor *color = stop->elementColor();
             m_output << m_indent << gradientName << ".setColorAt("
                 << stop->attributePosition() << ", "
-                << domColor2QString(color) << ");\n";
+                << domColor2QString(color) << ')' << language::eol;
         }
-        m_output << m_indent << "QBrush " << brushName << '('
-            << gradientName << ");\n";
+        m_output << m_indent
+            << language::stackVariableWithInitParameters("QBrush", brushName)
+            << gradientName << ')' << language::eol;
     } else if (style == QLatin1String("TexturePattern")) {
         const DomProperty *property = brush->elementTexture();
         const QString iconValue = iconCall(property);
 
-        m_output << m_indent << "QBrush " << brushName << " = QBrush("
-            << iconValue << ");\n";
+        m_output << m_indent
+            << language::stackVariableWithInitParameters("QBrush", brushName)
+            << iconValue << ')' << language::eol;
     } else {
         const DomColor *color = brush->elementColor();
-        m_output << m_indent << "QBrush " << brushName << '('
+        m_output << m_indent
+            << language::stackVariableWithInitParameters("QBrush", brushName)
             << domColor2QString(color) << ')' << language::eol;
 
         m_output << m_indent << brushName << ".setStyle("
