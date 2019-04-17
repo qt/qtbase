@@ -319,7 +319,7 @@
             }
         },
         "c++1z": {
-            "label": "C++1z support",
+            "label": "C++17 support",
             "type": "compile",
             "test": {
                 "head": [
@@ -907,7 +907,7 @@
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++1z": {
-            "label": "C++1z",
+            "label": "C++17",
             "condition": "features.c++14 && tests.c++1z",
             "output": [ "publicFeature", "publicQtConfig" ]
         },

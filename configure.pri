@@ -14,9 +14,6 @@ defineTest(qtConfCommandline_qmakeArgs) {
 }
 
 defineTest(qtConfCommandline_cxxstd) {
-    msvc: \
-        qtConfAddError("Command line option -c++std is not supported with MSVC compilers.")
-
     arg = $${1}
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
@@ -26,7 +23,7 @@ defineTest(qtConfCommandline_cxxstd) {
         } else: contains(val, "(c\+\+)?(14|1y)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "no")
-        } else: contains(val, "(c\+\+)?(1z)") {
+        } else: contains(val, "(c\+\+)?(17|1z)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")
         } else {
