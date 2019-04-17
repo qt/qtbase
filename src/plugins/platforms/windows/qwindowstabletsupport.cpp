@@ -529,7 +529,6 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         return false;
 
     const auto currentDevice = m_devices.at(m_currentDevice).currentDevice;
-    const auto currentPointer = m_devices.at(m_currentDevice).currentPointerType;
     const qint64 uniqueId = m_devices.at(m_currentDevice).uniqueId;
 
     // The tablet can be used in 2 different modes (reflected in enum Mode),
@@ -560,6 +559,27 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         const PACKET &packet = localPacketBuf[i];
 
         const int z = m_devices.at(m_currentDevice).zCapability ? int(packet.pkZ) : 0;
+
+        const auto currentPointer = m_devices.at(m_currentDevice).currentPointerType;
+        const auto packetPointerType = pointerType(packet.pkCursor);
+
+        const Qt::MouseButtons buttons =
+            convertTabletButtons(packet.pkButtons, m_devices.at(m_currentDevice));
+
+        if (buttons == Qt::NoButton && packetPointerType != currentPointer) {
+
+            QWindowSystemInterface::handleTabletLeaveProximityEvent(packet.pkTime,
+                                                                    int(currentDevice),
+                                                                    int(currentPointer),
+                                                                    uniqueId);
+
+            m_devices[m_currentDevice].currentPointerType = packetPointerType;
+
+            QWindowSystemInterface::handleTabletEnterProximityEvent(packet.pkTime,
+                                                                    int(currentDevice),
+                                                                    int(packetPointerType),
+                                                                    uniqueId);
+        }
 
         QPointF globalPosF =
             m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
@@ -626,9 +646,6 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                 << currentPointer << "P:" << pressureNew << "tilt:" << tiltX << ','
                 << tiltY << "tanP:" << tangentialPressure << "rotation:" << rotation;
         }
-
-        Qt::MouseButtons buttons =
-            convertTabletButtons(packet.pkButtons, m_devices.at(m_currentDevice));
 
         QWindowSystemInterface::handleTabletEvent(target, packet.pkTime, QPointF(localPos), globalPosF,
                                                   int(currentDevice), int(currentPointer),
