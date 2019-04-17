@@ -20,12 +20,20 @@ defineTest(qtConfCommandline_cxxstd) {
     !contains(val, "^-.*"):!isEmpty(val) {
         contains(val, "(c\+\+)?11") {
             qtConfCommandlineSetInput("c++14", "no")
+            qtConfCommandlineSetInput("c++1z", "no")
+            qtConfCommandlineSetInput("c++2a", "no")
         } else: contains(val, "(c\+\+)?(14|1y)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "no")
+            qtConfCommandlineSetInput("c++2a", "no")
         } else: contains(val, "(c\+\+)?(17|1z)") {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")
+            qtConfCommandlineSetInput("c++2a", "no")
+        } else: contains(val, "(c\+\+)?(2a)") {
+            qtConfCommandlineSetInput("c++14", "yes")
+            qtConfCommandlineSetInput("c++1z", "yes")
+            qtConfCommandlineSetInput("c++2a", "yes")
         } else {
             qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }

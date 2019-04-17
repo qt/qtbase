@@ -139,7 +139,7 @@ Build options:
   -coverage {trace-pc-guard}
                          Add code coverage instrumentation (Clang only)
 
-  -c++std <edition> .... Select C++ standard <edition> [c++17/c++14/c++11]
+  -c++std <edition> .... Select C++ standard <edition> [c++2a/c++17/c++14/c++11]
                          (Not supported with MSVC 2015)
 
   -sse2 ................ Use SSE2 instructions [auto]
