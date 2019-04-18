@@ -184,9 +184,11 @@ static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
     return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);
 }
 
-static QSize systemCursorSize(const QPlatformScreen *screen = nullptr)
+static QSize systemCursorSize() { return QSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)); }
+
+static QSize screenCursorSize(const QPlatformScreen *screen = nullptr)
 {
-    const QSize primaryScreenCursorSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
+    const QSize primaryScreenCursorSize = systemCursorSize();
     if (screen) {
         // Correct the size if the DPI value of the screen differs from
         // that of the primary screen.
@@ -212,7 +214,7 @@ static inline QSize standardCursorSize() { return QSize(32, 32); }
 // createBitmapCursor() only work for standard sizes (32,48,64...), which does
 // not work when scaling the 16x16 openhand cursor bitmaps to 150% (resulting
 // in a non-standard 24x24 size).
-static QWindowsCursor::PixmapCursor createPixmapCursorFromData(const QSize &systemCursorSize,
+static QWindowsCursor::PixmapCursor createPixmapCursorFromData(const QSize &screenCursorSize,
                                           // The cursor size the bitmap is targeted for
                                           const QSize &bitmapTargetCursorSize,
                                           // The actual size of the bitmap data
@@ -222,7 +224,7 @@ static QWindowsCursor::PixmapCursor createPixmapCursorFromData(const QSize &syst
     QPixmap rawImage = QPixmap::fromImage(QBitmap::fromData(QSize(bitmapSize, bitmapSize), bits).toImage());
     rawImage.setMask(QBitmap::fromData(QSize(bitmapSize, bitmapSize), maskBits));
 
-    const qreal factor = qreal(systemCursorSize.width()) / qreal(bitmapTargetCursorSize.width());
+    const qreal factor = qreal(screenCursorSize.width()) / qreal(bitmapTargetCursorSize.width());
     // Scale images if the cursor size is significantly different, starting with 150% where the system cursor
     // size is 48.
     if (qAbs(factor - 1.0) > 0.4) {
@@ -402,13 +404,13 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
 
     switch (cursorShape) {
     case Qt::SplitVCursor:
-        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
+        return createPixmapCursorFromData(screenCursorSize(screen), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
     case Qt::SplitHCursor:
-        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
+        return createPixmapCursorFromData(screenCursorSize(screen), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
     case Qt::OpenHandCursor:
-        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 16, openhand_bits, openhandm_bits);
+        return createPixmapCursorFromData(screenCursorSize(screen), standardCursorSize(), 16, openhand_bits, openhandm_bits);
     case Qt::ClosedHandCursor:
-        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
+        return createPixmapCursorFromData(screenCursorSize(screen), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
         return QWindowsCursor::PixmapCursor(QPixmap(copyDragCursorXpmC), QPoint(0, 0));
     case Qt::DragMoveCursor:
@@ -454,7 +456,7 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
         { Qt::DragLinkCursor, 64, "draglinkcursor_64.png", 0, 0 }
     };
 
-    const QSize cursorSize = systemCursorSize(screen);
+    const QSize cursorSize = screenCursorSize(screen);
     const QWindowsCustomPngCursor *sEnd = pngCursors + sizeof(pngCursors) / sizeof(pngCursors[0]);
     const QWindowsCustomPngCursor *bestFit = nullptr;
     int sizeDelta = INT_MAX;
@@ -507,7 +509,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const
 
     switch (cursorShape) {
     case Qt::BlankCursor: {
-        QImage blank = QImage(systemCursorSize(screen), QImage::Format_Mono);
+        QImage blank = QImage(systemCursorSize(), QImage::Format_Mono);
         blank.fill(0); // ignore color table
         return createBitmapCursor(blank, blank);
     }
