@@ -1,4 +1,5 @@
 add_subdirectory(largefile)
+add_subdirectory(qabstractfileengine)
 add_subdirectory(qbuffer)
 add_subdirectory(qdataurl)
 if(QT_FEATURE_private_tests)
