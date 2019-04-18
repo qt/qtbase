@@ -432,6 +432,11 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
     if (m_currentDevice < 0) {
         m_currentDevice = m_devices.size();
         m_devices.push_back(tabletInit(uniqueId, cursorType));
+    } else {
+        // The user can switch pressure sensitivity level in the driver,which
+        // will make our saved values invalid (this option is provided by Wacom
+        // drivers for compatibility reasons, and it can be adjusted on the fly)
+        m_devices[m_currentDevice] = tabletInit(uniqueId, cursorType);
     }
 
     /**
