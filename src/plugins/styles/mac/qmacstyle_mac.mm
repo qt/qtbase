@@ -6166,8 +6166,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     switch (ct) {
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
-        if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            const int buttonWidth = 20; // FIXME Use subControlRect()
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            const bool hasButtons = (vopt->buttonSymbols != QAbstractSpinBox::NoButtons);
+            const int buttonWidth = hasButtons ? proxy()->subControlRect(CC_SpinBox, vopt, SC_SpinBoxUp, widget).width() : 0;
             sz += QSize(buttonWidth, 0);
         }
         break;

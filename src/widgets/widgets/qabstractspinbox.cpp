@@ -212,6 +212,7 @@ void QAbstractSpinBox::setButtonSymbols(ButtonSymbols buttonSymbols)
     if (d->buttonSymbols != buttonSymbols) {
         d->buttonSymbols = buttonSymbols;
         d->updateEditFieldGeometry();
+        updateGeometry();
         update();
     }
 }

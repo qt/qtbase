@@ -461,26 +461,30 @@ void tst_QSpinBox::setPrefixSuffix()
     QFETCH(QString, expectedCleanText);
     QFETCH(bool, show);
 
-    QSpinBox spin(0);
+    QSpinBox spin;
+    if (show) {
+        spin.show();
+        spin.setPrefix(QString());  // trigger a recalc of sizeHint
+    }
     const QSize size1 = spin.sizeHint();
     spin.setPrefix(prefix);
     const QSize size2 = spin.sizeHint();
     spin.setSuffix(suffix);
     const QSize size3 = spin.sizeHint();
     spin.setValue(value);
-    if (show)
-        spin.show();
 
     QCOMPARE(spin.prefix(), prefix);
     QCOMPARE(spin.suffix(), suffix);
     QCOMPARE(spin.text(), expectedText);
     QCOMPARE(spin.cleanText(), expectedCleanText);
 
-    if (!prefix.isEmpty() && !suffix.isEmpty()) {
-        QVERIFY(size1.width() < size2.width());
+    if (!suffix.isEmpty()) {
         QVERIFY(size2.width() < size3.width());
         spin.setSuffix(QString());
         QCOMPARE(spin.sizeHint(), size2);
+    }
+    if (!prefix.isEmpty()) {
+        QVERIFY(size1.width() < size2.width());
         spin.setPrefix(QString());
         QCOMPARE(spin.sizeHint(), size1);
     }
