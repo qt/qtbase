@@ -776,7 +776,7 @@ int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent 
         QWindowSystemInterface::handleTouchCancelEvent(window2, getTimestamp(), touchDevice, keyModifier);
 
     QWasmEventDispatcher::maintainTimers();
-    return 0;
+    return 1;
 }
 
 quint64 QWasmEventTranslator::getTimestamp()
