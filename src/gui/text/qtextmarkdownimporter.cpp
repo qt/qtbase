@@ -165,13 +165,14 @@ int QTextMarkdownImporter::cbEnterBlock(MD_BLOCKTYPE type, void *det)
     } break;
     case MD_BLOCK_LI: {
         MD_BLOCK_LI_DETAIL *detail = static_cast<MD_BLOCK_LI_DETAIL *>(det);
-        QTextBlockFormat bfmt = m_cursor->blockFormat();
+        QTextList *list = m_listStack.top();
+        QTextBlockFormat bfmt = list->item(list->count() - 1).blockFormat();
         bfmt.setMarker(detail->is_task ?
                            (detail->task_mark == ' ' ? QTextBlockFormat::Unchecked : QTextBlockFormat::Checked) :
                            QTextBlockFormat::NoMarker);
         if (!m_emptyList) {
             m_cursor->insertBlock(bfmt, QTextCharFormat());
-            m_listStack.top()->add(m_cursor->block());
+            list->add(m_cursor->block());
         }
         m_cursor->setBlockFormat(bfmt);
         m_emptyList = false; // Avoid insertBlock for the first item (because insertList already did that)
