@@ -1105,6 +1105,8 @@
     \header \li Option \li Description
     \row \li app_bundle \li Puts the executable into a bundle (this is the default).
     \row \li lib_bundle \li Puts the library into a library bundle.
+    \row \li plugin_bundle \li Puts the plugin into a plugin bundle. This value
+         is not supported by the Xcode project generator.
     \endtable
 
     The build process for bundles is also influenced by
