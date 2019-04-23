@@ -79,9 +79,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QHostInfo results;
 
 #if defined(QHOSTINFO_DEBUG)
-    qDebug("QHostInfoAgent::fromName(): looking up \"%s\" (IPv6 support is %s)",
-           hostName.toLatin1().constData(),
-           (getaddrinfo && freeaddrinfo) ? "enabled" : "disabled");
+    qDebug("QHostInfoAgent::fromName(%s) looking up...",
+           hostName.toLatin1().constData());
 #endif
 
     QHostAddress address;
@@ -129,6 +128,12 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     if (err == 0) {
         QList<QHostAddress> addresses;
         for (addrinfo *p = res; p != 0; p = p->ai_next) {
+#ifdef QHOSTINFO_DEBUG
+            qDebug() << "getaddrinfo node: flags:" << p->ai_flags << "family:" << p->ai_family
+                     << "ai_socktype:" << p->ai_socktype << "ai_protocol:" << p->ai_protocol
+                     << "ai_addrlen:" << p->ai_addrlen;
+#endif
+
             switch (p->ai_family) {
             case AF_INET: {
                 QHostAddress addr;
@@ -163,7 +168,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         QString tmp;
         QList<QHostAddress> addresses = results.addresses();
         for (int i = 0; i < addresses.count(); ++i) {
-            if (i != 0) tmp += ", ";
+            if (i != 0) tmp += QLatin1String(", ");
             tmp += addresses.at(i).toString();
         }
         qDebug("QHostInfoAgent::run(): found %i entries: {%s}",
