@@ -879,21 +879,16 @@ bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, con
 #if defined(WM_APPCOMMAND)
     const int cmd = GET_APPCOMMAND_LPARAM(msg.lParam);
     // QTBUG-57198, do not send mouse-synthesized commands as key events in addition
+    bool skipPressRelease = false;
     switch (GET_DEVICE_LPARAM(msg.lParam)) {
     case FAPPCOMMAND_MOUSE:
         return false;
     case FAPPCOMMAND_KEY:
-        // QTBUG-62838, swallow WM_KEYDOWN, WM_KEYUP for commands that are
-        // reflected in VK(s) like VK_MEDIA_NEXT_TRACK. Don't do that for
-        // APPCOMMAND_BROWSER_HOME as that one does not trigger two events
-        if (cmd != APPCOMMAND_BROWSER_HOME) {
-            MSG peekedMsg;
-            if (PeekMessage(&peekedMsg, msg.hwnd, 0, 0, PM_NOREMOVE)
-                && peekedMsg.message == WM_KEYDOWN) {
-                PeekMessage(&peekedMsg, msg.hwnd, 0, 0, PM_REMOVE);
-                PeekMessage(&peekedMsg, msg.hwnd, 0, 0, PM_REMOVE);
-            }
-        }
+        // QTBUG-62838, use WM_KEYDOWN/WM_KEYUP for commands that are reflected
+        // in VK(s) like VK_MEDIA_NEXT_TRACK, to get correct codes and autorepeat.
+        // Don't do that for APPCOMMAND_BROWSER_HOME as that one does not trigger two events.
+        if (cmd != APPCOMMAND_BROWSER_HOME)
+            skipPressRelease = true;
         break;
     }
 
@@ -908,7 +903,8 @@ bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, con
         return false;
 
     const int qtKey = int(CmdTbl[cmd]);
-    sendExtendedPressRelease(receiver, qtKey, Qt::KeyboardModifier(state), 0, 0, 0);
+    if (!skipPressRelease)
+        sendExtendedPressRelease(receiver, qtKey, Qt::KeyboardModifier(state), 0, 0, 0);
     // QTBUG-43343: Make sure to return false if Qt does not handle the key, otherwise,
     // the keys are not passed to the active media player.
 # if QT_CONFIG(shortcut)

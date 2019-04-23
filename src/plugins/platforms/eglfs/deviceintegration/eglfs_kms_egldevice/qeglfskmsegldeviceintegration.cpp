@@ -116,6 +116,8 @@ public:
         , m_egl_stream(EGL_NO_STREAM_KHR)
     { }
 
+    ~QEglFSKmsEglDeviceWindow() { destroy(); }
+
     void invalidateSurface() override;
     void resetSurface() override;
 

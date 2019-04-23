@@ -930,7 +930,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int highest)
+    \fn int QRandomGenerator::bounded(int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
@@ -957,7 +957,6 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     \snippet code/src_corelib_global_qrandom.cpp 14
 
-
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
@@ -965,7 +964,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int lowest, int highest)
+    \fn int QRandomGenerator::bounded(int lowest, int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between \a lowest

@@ -1615,6 +1615,14 @@
     The value of this variable is typically handled by qmake or \l{#QMAKESPEC}{qmake.conf}
     and rarely needs to be modified.
 
+    \target QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+    \section1 QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the C compiler flags for release builds where
+    \c{force_debug_info} is set in \c{CONFIG}.
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \target QMAKE_CFLAGS_SHLIB
     \section1 QMAKE_CFLAGS_SHLIB
 
@@ -1680,6 +1688,14 @@
     \section1 QMAKE_CXXFLAGS_RELEASE
 
     Specifies the C++ compiler flags for release builds.
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \target QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+    \section1 QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the C++ compiler flags for release builds where
+    \c{force_debug_info} is set in \c{CONFIG}.
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
@@ -2061,6 +2077,12 @@
 
     Specifies the linker flags for release builds.
     The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the linker flags for release builds where \c{force_debug_info} is
+    set in \c{CONFIG}. The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
     \section1 QMAKE_LFLAGS_APP

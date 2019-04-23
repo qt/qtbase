@@ -519,6 +519,17 @@ defineTest(qtConfSetupLibraries) {
     }
 }
 
+defineReplace(qtGccSysrootifiedPath) {
+    return($$replace(1, ^=, $$[QT_SYSROOT]))
+}
+
+defineReplace(qtGccSysrootifiedPaths) {
+    sysrootified =
+    for (path, 1): \
+        sysrootified += $$qtGccSysrootifiedPath($$path)
+    return($$sysrootified)
+}
+
 # libs-var, libs, in-paths, out-paths-var
 defineTest(qtConfResolveLibs) {
     ret = true
@@ -535,6 +546,7 @@ defineTest(qtConfResolveLibs) {
             out += $$l
         } else: contains(l, "^-L.*") {
             lp = $$replace(l, "^-L", )
+            gcc: lp = $$qtGccSysrootifiedPath($$lp)
             !exists($$lp/.) {
                 qtLog("Library path $$val_escape(lp) is invalid.")
                 ret = false
@@ -608,6 +620,7 @@ defineTest(qtConfResolveAllLibs) {
 # libs-var, in-paths, libs
 defineTest(qtConfResolvePathLibs) {
     ret = true
+    gcc: 2 = $$qtGccSysrootifiedPaths($$2)
     for (libdir, 2) {
         !exists($$libdir/.) {
             qtLog("Library path $$val_escape(libdir) is invalid.")
@@ -658,6 +671,7 @@ defineReplace(qtConfGetTestIncludes) {
 # includes-var, in-paths, test-object-var
 defineTest(qtConfResolvePathIncs) {
     ret = true
+    gcc: 2 = $$qtGccSysrootifiedPaths($$2)
     for (incdir, 2) {
         !exists($$incdir/.) {
             qtLog("Include path $$val_escape(incdir) is invalid.")
