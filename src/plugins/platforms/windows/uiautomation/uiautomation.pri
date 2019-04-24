@@ -39,5 +39,4 @@ HEADERS += \
     $$PWD/qwindowsuiagriditemprovider.h \
     $$PWD/qwindowsuiautils.h
 
-mingw: LIBS *= -luuid
-
+mingw: QMAKE_USE *= uuid

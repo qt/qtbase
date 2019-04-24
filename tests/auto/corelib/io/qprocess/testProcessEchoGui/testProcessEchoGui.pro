@@ -1,6 +1,6 @@
 win32 {
    SOURCES = main_win.cpp
-   LIBS += -luser32
+   QMAKE_USE += user32
 }
 
 CONFIG -= qt app_bundle

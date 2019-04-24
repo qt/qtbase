@@ -8,8 +8,7 @@ QT += \
 
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__
 
-LIBS += -lws2_32
-QMAKE_USE_PRIVATE += d3d11
+QMAKE_USE_PRIVATE += d3d11 ws2_32
 
 SOURCES = \
     main.cpp  \

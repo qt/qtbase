@@ -1,7 +1,7 @@
 CONFIG += testcase
 TARGET = tst_qmakelib
 QT = core testlib
-win32: LIBS += -ladvapi32
+win32: QMAKE_USE += advapi32
 
 INCLUDEPATH += ../../../../qmake/library
 VPATH += ../../../../qmake/library

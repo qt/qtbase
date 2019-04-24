@@ -47,10 +47,8 @@ include(mimetypes/mimetypes.pri)
 include(platform/platform.pri)
 
 win32 {
-    LIBS_PRIVATE += -lws2_32
-    !winrt {
-        LIBS_PRIVATE += -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 -lwinmm
-    }
+    QMAKE_USE_PRIVATE += ws2_32
+    !winrt: QMAKE_USE_PRIVATE += advapi32 kernel32 ole32 shell32 uuid user32 winmm
 }
 
 darwin {

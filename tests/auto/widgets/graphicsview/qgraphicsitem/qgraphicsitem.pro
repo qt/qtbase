@@ -5,4 +5,4 @@ QT += core-private gui-private
 SOURCES  += tst_qgraphicsitem.cpp
 DEFINES += QT_NO_CAST_TO_ASCII
 
-win32:!winrt: LIBS += -luser32
+win32:!winrt: QMAKE_USE += user32

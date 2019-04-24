@@ -5,4 +5,4 @@ QT += core-private network gui-private testlib
 
 SOURCES  += tst_noqteventloop.cpp
 
-qtConfig(dynamicgl):win32:!winrt: LIBS += -luser32
+qtConfig(dynamicgl):win32:!winrt: QMAKE_USE += user32

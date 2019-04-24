@@ -158,7 +158,8 @@ win32 {
             io/qwindowspipereader.cpp \
             io/qwindowspipewriter.cpp
 
-        LIBS += -lmpr -lnetapi32 -luserenv
+        LIBS += -lmpr -luserenv
+        QMAKE_USE_PRIVATE += netapi32
     } else {
         SOURCES += \
                 io/qstandardpaths_winrt.cpp \

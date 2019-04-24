@@ -30,5 +30,5 @@ qtConfig(directwrite):qtConfig(direct2d) {
     DEFINES *= QT_NO_DIRECTWRITE
 }
 
-LIBS += -lole32 -lgdi32 -luser32 -ladvapi32
-mingw: LIBS += -luuid
+QMAKE_USE_PRIVATE += advapi32 ole32 user32 gdi32
+mingw: QMAKE_USE_PRIVATE += uuid

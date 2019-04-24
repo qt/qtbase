@@ -5,4 +5,4 @@ SOURCES = tst_qfileinfo.cpp
 RESOURCES += qfileinfo.qrc \
     testdata.qrc
 
-win32:!winrt: LIBS += -ladvapi32 -lnetapi32
+win32:!winrt: QMAKE_USE += advapi32 netapi32

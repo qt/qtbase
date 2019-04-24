@@ -9,11 +9,11 @@ qtConfig(dbus-linked) {
 }
 
 win32 { 
-    LIBS_PRIVATE += \
-        -lws2_32 \
-        -ladvapi32 \
-        -lnetapi32 \
-        -luser32
+    QMAKE_USE_PRIVATE += \
+        advapi32 \
+        netapi32 \
+        user32 \
+        ws2_32
 }
 
 DEFINES += QT_NO_FOREACH
