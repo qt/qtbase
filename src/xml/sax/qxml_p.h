@@ -229,7 +229,7 @@ private:
     // for the DTD currently being parsed.
     static const int dtdRecursionLimit = 2;
     // The maximum amount of characters an entity value may contain, after expansion.
-    static const int entityCharacterLimit = 1024;
+    static const int entityCharacterLimit = 4096;
 
     const QString &string();
     void stringClear();
