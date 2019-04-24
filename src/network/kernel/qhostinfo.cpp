@@ -137,8 +137,7 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     \inmodule QtNetwork
     \ingroup network
 
-    QHostInfo uses the lookup mechanisms provided by the operating
-    system to find the IP address(es) associated with a host name,
+    QHostInfo finds the IP address(es) associated with a host name,
     or the host name associated with an IP address.
     The class provides two static convenience functions: one that
     works asynchronously and emits a signal once the host is found,
@@ -173,6 +172,11 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     To retrieve the name of the local host, use the static
     QHostInfo::localHostName() function.
 
+    QHostInfo uses the mechanisms provided by the operating system
+    to perform the lookup. As per {https://tools.ietf.org/html/rfc6724}{RFC 6724}
+    there is no guarantee that all IP addresses registered for a domain or
+    host will be returned.
+
     \note Since Qt 4.6.1 QHostInfo is using multiple threads for DNS lookup
     instead of one dedicated DNS thread. This improves performance,
     but also changes the order of signal emissions when using lookupHost()
@@ -180,7 +184,8 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     \note Since Qt 4.6.3 QHostInfo is using a small internal 60 second DNS cache
     for performance improvements.
 
-    \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492}
+    \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492},
+    {https://tools.ietf.org/html/rfc6724}{RFC 6724}
 */
 
 static int nextId()
