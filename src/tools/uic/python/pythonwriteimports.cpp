@@ -40,7 +40,9 @@ QT_BEGIN_NAMESPACE
 static const char *standardImports =
 R"I(from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
     QRect, QSize, QUrl, Qt)
-from PySide2.QtGui import (QColor, QFont, QIcon, QPixmap)
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
+    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
+    QRadialGradient)
 from PySide2.QtWidgets import *
 )I";
 
