@@ -40,6 +40,7 @@
 #include "qshadergenerator_p.h"
 
 #include "qshaderlanguage_p.h"
+#include <QRegularExpression>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +57,10 @@ namespace
             case QShaderLanguage::Const:
                 return "const";
             case QShaderLanguage::Input:
-                return "varying";
+                if (format.shaderType() == QShaderFormat::Vertex)
+                    return "attribute";
+                else
+                    return "varying";
             case QShaderLanguage::Output:
                 return ""; // Although fragment shaders for <=2 only have fixed outputs
             case QShaderLanguage::Uniform:
@@ -314,12 +318,22 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
                            [enabledLayers] (const QString &s) { return enabledLayers.contains(s); });
     };
 
+    QVector<QString> globalInputVariables;
+    const QRegularExpression globalInputExtractRegExp(QStringLiteral("^.*\\s+(\\w+).*;$"));
+
     const QVector<QShaderNode> nodes = graph.nodes();
     for (const QShaderNode &node : nodes) {
         if (intersectsEnabledLayers(node.layers())) {
             const QByteArrayList headerSnippets = node.rule(format).headerSnippets;
             for (const QByteArray &snippet : headerSnippets) {
                 code << replaceParameters(snippet, node, format);
+
+                // If node is an input, record the variable name into the globalInputVariables vector
+                if (node.type() == QShaderNode::Input) {
+                    const QRegularExpressionMatch match = globalInputExtractRegExp.match(QString::fromUtf8(code.last()));
+                    if (match.hasMatch())
+                        globalInputVariables.push_back(match.captured(1));
+                }
             }
         }
     }
@@ -327,6 +341,14 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     code << QByteArray();
     code << QByteArrayLiteral("void main()");
     code << QByteArrayLiteral("{");
+
+    // Table to store temporary variables that should be replaced by global
+    // variables. This avoids having vec3 v56 = vertexPosition; when we could
+    // just use vertexPosition directly.
+    // The added benefit is when having arrays, we don't try to create
+    // mat4 v38 = skinningPalelette[100] which would be invalid
+    QHash<QString, QString> localReferencesToGlobalInputs;
+    const QRegularExpression localToGlobalRegExp(QStringLiteral("^.*\\s+(\\w+)\\s*=\\s*(\\w+).*;$"));
 
     for (const QShaderGraph::Statement &statement : graph.createStatements(enabledLayers)) {
         const QShaderNode node = statement.node;
@@ -338,6 +360,9 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
             const bool isInput = port.direction == QShaderNodePort::Input;
 
             const int portIndex = statement.portIndex(portDirection, portName);
+
+            Q_ASSERT(portIndex >= 0);
+
             const int variableIndex = isInput ? statement.inputs.at(portIndex)
                                               : statement.outputs.at(portIndex);
             if (variableIndex < 0)
@@ -345,15 +370,51 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
 
             const auto placeholder = QByteArray(QByteArrayLiteral("$") + portName.toUtf8());
             const auto variable = QByteArray(QByteArrayLiteral("v") + QByteArray::number(variableIndex));
+
             line.replace(placeholder, variable);
         }
 
-        code << QByteArrayLiteral("    ") + replaceParameters(line, node, format);
+        const QByteArray substitutionedLine = replaceParameters(line, node, format);
+
+        // Record name of temporary variable that possibly references a global input
+        // We will replace the temporary variables by the matching global variables later
+        bool isAGlobalInputVariable = false;
+        if (node.type() == QShaderNode::Input) {
+            const QRegularExpressionMatch match = localToGlobalRegExp.match(QString::fromUtf8(substitutionedLine));
+            if (match.hasMatch()) {
+                const QString globalVariable = match.captured(2);
+                if (globalInputVariables.contains(globalVariable)) {
+                    const QString localVariable = match.captured(1);
+                    // TO DO: Clean globalVariable (remove brackets ...)
+                    localReferencesToGlobalInputs.insert(localVariable, globalVariable);
+                    isAGlobalInputVariable = true;
+                }
+            }
+        }
+
+        // Only insert content for lines aren't inputs or have not matching
+        // globalVariables for now
+        if (!isAGlobalInputVariable)
+            code << QByteArrayLiteral("    ") + substitutionedLine;
     }
 
     code << QByteArrayLiteral("}");
     code << QByteArray();
-    return code.join('\n');
+
+    // Replace occurrences of local variables which reference a global variable
+    // by the global variables directly
+    auto it = localReferencesToGlobalInputs.cbegin();
+    const auto end = localReferencesToGlobalInputs.cend();
+    QString codeString = QString::fromUtf8(code.join('\n'));
+
+    while (it != end) {
+        const QRegularExpression r(QStringLiteral("\\b(%1)([\\b|\\.|;|\\)|\\[|\\s|\\*|\\+|\\/|\\-|,])").arg(it.key()),
+                             QRegularExpression::MultilineOption);
+        codeString.replace(r, QStringLiteral("%1\\2").arg(it.value()));
+        ++it;
+    }
+
+    return codeString.toUtf8();
 }
 
 QT_END_NAMESPACE

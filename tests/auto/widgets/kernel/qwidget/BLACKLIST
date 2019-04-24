@@ -46,3 +46,6 @@ osx
 osx-10.12 ci
 [multipleToplevelFocusCheck]
 linux
+[windowState]
+# QTBUG-75270
+winrt

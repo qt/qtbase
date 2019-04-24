@@ -3619,7 +3619,7 @@ QModelIndex QAbstractTableModel::sibling(int row, int column, const QModelIndex 
 
 bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
 {
-    if (parent.model() == this || !parent.isValid())
+    if (!parent.isValid())
         return rowCount(parent) > 0 && columnCount(parent) > 0;
     return false;
 }

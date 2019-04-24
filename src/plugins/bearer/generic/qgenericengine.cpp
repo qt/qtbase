@@ -300,7 +300,7 @@ void QGenericEngine::doRequestUpdate()
         if (interface.flags() & QNetworkInterface::IsLoopBack)
             continue;
 
-#ifndef Q_OS_WINRT
+#ifndef Q_OS_WIN
         // ignore WLAN interface handled in separate engine
         if (qGetInterfaceType(interface.name()) == QNetworkConfiguration::BearerWLAN)
             continue;

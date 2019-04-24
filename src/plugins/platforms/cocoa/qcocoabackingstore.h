@@ -93,6 +93,7 @@ private:
 
         QRegion dirtyRegion; // In unscaled coordinates
         QImage *asImage();
+        qreal devicePixelRatio() const { return m_devicePixelRatio; }
 
     private:
         qreal m_devicePixelRatio;

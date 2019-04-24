@@ -13,6 +13,7 @@
 #include "common/tls.h"
 
 #include "libANGLE/Thread.h"
+#include "libANGLE/Display.h"
 
 namespace gl
 {
@@ -140,6 +141,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE, DWORD reason, LPVOID)
             return static_cast<BOOL>(egl::DeallocateCurrentThread());
 
         case DLL_PROCESS_DETACH:
+            egl::Display::CleanupDisplays();
             return static_cast<BOOL>(egl::TerminateProcess());
     }
 

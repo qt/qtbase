@@ -2283,13 +2283,15 @@ void QHeaderViewPrivate::_q_sectionsChanged(const QList<QPersistentModelIndex> &
                                      : index.row());
         // the new visualIndices are already adjusted / reset by initializeSections()
         const int newVisualIndex = visualIndex(newLogicalIndex);
-        auto &newSection = sectionItems[newVisualIndex];
-        newSection = item.section;
+        if (newVisualIndex < sectionItems.count()) {
+            auto &newSection = sectionItems[newVisualIndex];
+            newSection = item.section;
 
-        if (newSection.isHidden) {
-            // otherwise setSectionHidden will return without doing anything
-            newSection.isHidden = false;
-            q->setSectionHidden(newLogicalIndex, true);
+            if (newSection.isHidden) {
+                // otherwise setSectionHidden will return without doing anything
+                newSection.isHidden = false;
+                q->setSectionHidden(newLogicalIndex, true);
+            }
         }
     }
 

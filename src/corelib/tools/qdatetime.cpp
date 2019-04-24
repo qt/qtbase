@@ -58,6 +58,9 @@
 #endif
 
 #include <cmath>
+#ifdef Q_CC_MINGW
+#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
+#endif
 #include <time.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>

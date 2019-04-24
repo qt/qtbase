@@ -43,6 +43,7 @@ QT_BEGIN_NAMESPACE
 
 QShaderFormat::QShaderFormat() noexcept
     : m_api(NoApi)
+    , m_shaderType(Fragment)
 {
 }
 
@@ -106,6 +107,9 @@ bool QShaderFormat::supports(const QShaderFormat &other) const noexcept
     if (m_version < other.m_version)
         return false;
 
+    if (m_shaderType != other.m_shaderType)
+        return false;
+
     const auto containsAllExtensionsFromOther = std::includes(m_extensions.constBegin(),
                                                               m_extensions.constEnd(),
                                                               other.m_extensions.constBegin(),
@@ -119,12 +123,23 @@ bool QShaderFormat::supports(const QShaderFormat &other) const noexcept
     return true;
 }
 
+QShaderFormat::ShaderType QShaderFormat::shaderType() const Q_DECL_NOTHROW
+{
+    return m_shaderType;
+}
+
+void QShaderFormat::setShaderType(QShaderFormat::ShaderType shaderType) Q_DECL_NOTHROW
+{
+    m_shaderType = shaderType;
+}
+
 bool operator==(const QShaderFormat &lhs, const QShaderFormat &rhs) noexcept
 {
     return lhs.api() == rhs.api()
         && lhs.version() == rhs.version()
         && lhs.extensions() == rhs.extensions()
-        && lhs.vendor() == rhs.vendor();
+        && lhs.vendor() == rhs.vendor()
+        && lhs.shaderType() == rhs.shaderType();
 }
 
 QT_END_NAMESPACE

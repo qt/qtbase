@@ -1,0 +1,82 @@
+Qt 5.12.3 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.2.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - Changed classification of the wintab license from Public Domain to
+   Custom.
+
+****************************************************************************
+*                                 QtCore                                   *
+****************************************************************************
+
+ - Event system:
+   * [QTBUG-72438] Fixed a possible race condition on Windows that would
+     cause an interrupted event loop to be stuck until more events were
+     posted.
+
+ - Logging system:
+   * [QTBUG-74359] Fixed the compilation of qCDebug("", ...) when debug
+     output was disabled.
+
+ - QCollator:
+   * [QTBUG-74209] Fixed a bug that caused QCompare to incorrect return a
+     sorting order on Windows if the Win32 API failed.
+
+ - QDateTime / QTimeZone:
+   * [QTBUG-74614] Fixed handling of timezones that contain no DST
+     transitions.
+
+ - QProcess:
+   * [QTBUG-73778] Fixed a crash when calling closeWriteChannel() on Windows.
+
+****************************************************************************
+*                                  QtSql                                   *
+****************************************************************************
+
+ - When cross-compiling pg_config, mysql_config are not looked up in PATH
+   anymore. Pass -psql_config path/to/pg_config or -mysql_config
+   path/to/mysql_config to explicitly enable PSQL or MySQL in this setup.
+
+****************************************************************************
+*                        Platform Specific Changes                         *
+****************************************************************************
+
+ - Android:
+   * Text fields with ImhNoPredictiveText set are no longer working around
+     keyboards that disregard this setting. To enforce the workaround, the
+     environment variable
+     QT_ANDROID_ENABLE_WORKAROUND_TO_DISABLE_PREDICTIVE_TEXT should be set.
+
+   * [QTBUG-74029] Added entries in the AndroidManifest.xml for specific
+     portrait and landscape splash screens. If one is present for the current
+     orientation, it will be preferred over the generic one.
+
+ - Linux:
+   * [QTBUG-74526] Changed the way we use the statx() system call to use a
+     fallback mechanism provided by the GNU C library. This should allow Qt
+     applications that are compiled with glibc >= 2.28 to run even on kernels
+     older than 4.11.
+
+ - Windows:
+   * [QTBUG-74062] Fixed QToolTip pop-ups and QComboBox animation pop-ups
+     being off by a few pixels on Windows 10.
+

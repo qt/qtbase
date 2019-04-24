@@ -61,6 +61,9 @@
 #endif
 
 #if defined(__cplusplus)
+#ifdef Q_CC_MINGW
+#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
+#endif
 #include <time.h>
 
 QT_BEGIN_NAMESPACE

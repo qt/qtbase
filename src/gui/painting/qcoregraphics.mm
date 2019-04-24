@@ -366,40 +366,35 @@ void qt_mac_scale_region(QRegion *region, qreal scaleFactor)
 
 // ---------------------- QMacCGContext ----------------------
 
-QMacCGContext::QMacCGContext(QPaintDevice *paintDevice) : context(0)
+QMacCGContext::QMacCGContext(QPaintDevice *paintDevice)
 {
-    // In Qt 5, QWidget and QPixmap (and QImage) paint devices are all QImages under the hood.
-    QImage *image = 0;
-    if (paintDevice->devType() == QInternal::Image) {
-        image = static_cast<QImage *>(paintDevice);
-    } else if (paintDevice->devType() == QInternal::Pixmap) {
-
-        const QPixmap *pm = static_cast<const QPixmap*>(paintDevice);
-        QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
-        if (data && data->classId() == QPlatformPixmap::RasterClass) {
-            image = data->buffer();
-        } else {
-            qDebug("QMacCGContext: Unsupported pixmap class");
-        }
-    } else if (paintDevice->devType() == QInternal::Widget) {
-        // TODO test: image = static_cast<QImage *>(static_cast<const QWidget *>(paintDevice)->backingStore()->paintDevice());
-        qDebug("QMacCGContext: not implemented: Widget class");
-    }
-
-    if (!image)
-        return; // Context type not supported.
-
-    QCFType<CGColorSpaceRef> colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-    context = CGBitmapContextCreate(image->bits(), image->width(), image->height(), 8,
-                                image->bytesPerLine(), colorSpace, qt_mac_bitmapInfoForImage(*image));
-
-    CGContextTranslateCTM(context, 0, image->height());
-    const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
-    CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
-    CGContextScaleCTM(context, 1, -1);
+    initialize(paintDevice);
 }
 
-QMacCGContext::QMacCGContext(QPainter *painter) : context(0)
+void QMacCGContext::initialize(QPaintDevice *paintDevice)
+{
+    // Find the underlying QImage of the paint device
+    switch (int deviceType = paintDevice->devType()) {
+    case QInternal::Pixmap: {
+        auto *platformPixmap = static_cast<QPixmap*>(paintDevice)->handle();
+        if (platformPixmap && platformPixmap->classId() == QPlatformPixmap::RasterClass)
+            initialize(platformPixmap->buffer());
+        else
+            qWarning() << "QMacCGContext: Unsupported pixmap class" << platformPixmap->classId();
+        break;
+    }
+    case QInternal::Image:
+        initialize(static_cast<const QImage *>(paintDevice));
+        break;
+    case QInternal::Widget:
+        qWarning() << "QMacCGContext: not implemented: Widget class";
+        break;
+    default:
+        qWarning() << "QMacCGContext:: Unsupported paint device type" << deviceType;
+    }
+}
+
+QMacCGContext::QMacCGContext(QPainter *painter)
 {
     QPaintEngine *paintEngine = painter->paintEngine();
 
@@ -414,51 +409,68 @@ QMacCGContext::QMacCGContext(QPainter *painter) : context(0)
         return;
     }
 
-    int devType = painter->device()->devType();
-    if (paintEngine->type() == QPaintEngine::Raster
-            && (devType == QInternal::Widget ||
-                devType == QInternal::Pixmap ||
-                devType == QInternal::Image)) {
-
-        const QImage *image = static_cast<const QImage *>(paintEngine->paintDevice());
-        QCFType<CGColorSpaceRef> colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-        context = CGBitmapContextCreate((void *)image->bits(), image->width(), image->height(), 8,
-                                        image->bytesPerLine(), colorSpace, qt_mac_bitmapInfoForImage(*image));
-
-        // Invert y axis
-        CGContextTranslateCTM(context, 0, image->height());
-        CGContextScaleCTM(context, 1, -1);
-
-        const qreal devicePixelRatio = image->devicePixelRatio();
-
-        if (devType == QInternal::Widget) {
-            // Set the clip rect which is an intersection of the system clip
-            // and the painter clip. To make matters more interesting these
-            // are in device pixels and device-independent pixels, respectively.
-            QRegion clip = painter->paintEngine()->systemClip(); // get system clip in device pixels
-            QTransform native = painter->deviceTransform();      // get device transform. dx/dy is in device pixels
-
-            if (painter->hasClipping()) {
-                QRegion r = painter->clipRegion();               // get painter clip, which is in device-independent pixels
-                qt_mac_scale_region(&r, devicePixelRatio); // scale painter clip to device pixels
-                r.translate(native.dx(), native.dy());
-                if (clip.isEmpty())
-                    clip = r;
-                else
-                    clip &= r;
-            }
-            qt_mac_clip_cg(context, clip, 0); // clip in device pixels
-
-            // Scale the context so that painting happens in device-independent pixels
-            CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
-            CGContextTranslateCTM(context, native.dx() / devicePixelRatio, native.dy() / devicePixelRatio);
-        } else {
-            // Scale to paint in device-independent pixels
-            CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
-        }
-    } else {
-        qDebug() << "QMacCGContext:: Unsupported painter devtype type" << devType;
+    if (paintEngine->type() != QPaintEngine::Raster) {
+        qWarning() << "QMacCGContext:: Unsupported paint engine type" << paintEngine->type();
+        return;
     }
+
+    // The raster paint engine always operates on a QImage
+    Q_ASSERT(paintEngine->paintDevice()->devType() == QInternal::Image);
+
+    // On behalf of one of these supported painter devices
+    switch (int painterDeviceType = painter->device()->devType()) {
+    case QInternal::Pixmap:
+    case QInternal::Image:
+    case QInternal::Widget:
+        break;
+    default:
+        qWarning() << "QMacCGContext:: Unsupported paint device type" << painterDeviceType;
+        return;
+    }
+
+    // Applying the clip is so entangled with the rest of the context setup
+    // that for simplicity we just pass in the painter.
+    initialize(static_cast<const QImage *>(paintEngine->paintDevice()), painter);
+}
+
+void QMacCGContext::initialize(const QImage *image, QPainter *painter)
+{
+    QCFType<CGColorSpaceRef> colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    context = CGBitmapContextCreate((void *)image->bits(), image->width(), image->height(), 8,
+                                    image->bytesPerLine(), colorSpace, qt_mac_bitmapInfoForImage(*image));
+
+    // Invert y axis
+    CGContextTranslateCTM(context, 0, image->height());
+    CGContextScaleCTM(context, 1, -1);
+
+    const qreal devicePixelRatio = image->devicePixelRatio();
+
+    if (painter && painter->device()->devType() == QInternal::Widget) {
+        // Set the clip rect which is an intersection of the system clip and the painter clip
+        QRegion clip = painter->paintEngine()->systemClip();
+        QTransform deviceTransform = painter->deviceTransform();
+
+        if (painter->hasClipping()) {
+            // To make matters more interesting the painter clip is in device-independent pixels,
+            // so we need to scale it to match the device-pixels of the system clip.
+            QRegion painterClip = painter->clipRegion();
+            qt_mac_scale_region(&painterClip, devicePixelRatio);
+
+            painterClip.translate(deviceTransform.dx(), deviceTransform.dy());
+
+            if (clip.isEmpty())
+                clip = painterClip;
+            else
+                clip &= painterClip;
+        }
+
+        qt_mac_clip_cg(context, clip, 0);
+
+        CGContextTranslateCTM(context, deviceTransform.dx(), deviceTransform.dy());
+    }
+
+    // Scale the context so that painting happens in device-independent pixels
+    CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
 }
 
 QT_END_NAMESPACE
