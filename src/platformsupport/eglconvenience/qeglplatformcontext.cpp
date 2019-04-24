@@ -134,7 +134,7 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
 
 void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
 {
-    m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig);
+    m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig, format);
     // m_format now has the renderableType() resolved (it cannot be Default anymore)
     // but does not yet contain version, profile, options.
     m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
@@ -248,6 +248,12 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
     value = 0;
     eglQueryContext(m_eglDisplay, context, EGL_CONTEXT_CLIENT_TYPE, &value);
     if (value == EGL_OPENGL_API || value == EGL_OPENGL_ES_API) {
+        // if EGL config supports both OpenGL and OpenGL ES render type,
+        // q_glFormatFromConfig() with the default "referenceFormat" parameter
+        // will always figure it out as OpenGL render type.
+        // We can override it to match user's real render type.
+        if (value == EGL_OPENGL_ES_API)
+            m_format.setRenderableType(QSurfaceFormat::OpenGLES);
         m_api = value;
         eglBindAPI(m_api);
     } else {

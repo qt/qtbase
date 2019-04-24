@@ -460,12 +460,29 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     NSView *backingStoreView = static_cast<QCocoaWindow *>(window()->handle())->view();
     NSView *flushedView = static_cast<QCocoaWindow *>(flushedWindow->handle())->view();
 
+    // If the backingstore is just flushed, without being painted to first, then we may
+    // end in a situation where the backingstore is flushed to a layer with a different
+    // scale factor than the one it was created for in beginPaint. This is the client's
+    // fault in not picking up the change in scale factor of the window and re-painting
+    // the backingstore accordingly. To smoothing things out, we warn about this situation,
+    // and change the layer's contentsScale to match the scale of the back buffer, so that
+    // we at least cover the whole layer. This is necessary since we set the view's
+    // contents placement policy to NSViewLayerContentsPlacementTopLeft, which means
+    // AppKit will not do any scaling on our behalf.
+    if (m_buffers.back()->devicePixelRatio() != flushedView.layer.contentsScale) {
+        qCWarning(lcQpaBackingStore) << "Back buffer dpr of" << m_buffers.back()->devicePixelRatio()
+            << "doesn't match" << flushedView.layer << "contents scale of" << flushedView.layer.contentsScale
+            << "- updating layer to match.";
+        flushedView.layer.contentsScale = m_buffers.back()->devicePixelRatio();
+    }
+
     id backBufferSurface = (__bridge id)m_buffers.back()->surface();
     if (flushedView.layer.contents == backBufferSurface) {
         // We've managed to paint to the back buffer again before Core Animation had time
-        // to flush the transaction and persist the layer changes to the window server.
-        // The layer already knows about the back buffer, and we don't need to re-apply
-        // it to pick up the surface changes, so bail out early.
+        // to flush the transaction and persist the layer changes to the window server, or
+        // we've been asked to flush without painting anything. The layer already knows about
+        // the back buffer, and we don't need to re-apply it to pick up any possible surface
+        // changes, so bail out early.
         qCInfo(lcQpaBackingStore).nospace() << "Skipping flush of " << flushedView
             << ", layer already reflects back buffer";
         return;

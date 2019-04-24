@@ -11343,7 +11343,7 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
 }
 
 // sourceRect must be in the given coordinate system
-QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded) const
+QRectF QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded) const
 {
     QRectF effectRectF;
 
@@ -11371,7 +11371,7 @@ QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem sy
             *unpadded = true;
     }
 
-    return effectRectF.toAlignedRect();
+    return effectRectF;
 }
 
 QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
@@ -11389,7 +11389,8 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
 
     bool unpadded;
     const QRectF sourceRect = boundingRect(system);
-    QRect effectRect = paddedEffectRect(system, mode, sourceRect, &unpadded);
+    QRectF effectRectF = paddedEffectRect(system, mode, sourceRect, &unpadded);
+    QRect effectRect = effectRectF.toAlignedRect();
 
     if (offset)
         *offset = effectRect.topLeft();
@@ -11405,7 +11406,9 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     if (effectRect.isEmpty())
         return QPixmap();
 
-    QPixmap pixmap(effectRect.size());
+    const auto dpr = info ? info->painter->device()->devicePixelRatioF() : 1.0;
+    QPixmap pixmap(QRectF(effectRectF.topLeft(), effectRectF.size() * dpr).toAlignedRect().size());
+    pixmap.setDevicePixelRatio(dpr);
     pixmap.fill(Qt::transparent);
     QPainter pixmapPainter(&pixmap);
     pixmapPainter.setRenderHints(info ? info->painter->renderHints() : QPainter::TextAntialiasing);

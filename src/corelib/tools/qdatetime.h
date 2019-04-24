@@ -335,7 +335,7 @@ public:
     inline bool operator>(const QDateTime &other) const { return other < *this; }
     inline bool operator>=(const QDateTime &other) const { return !(*this < other); }
 
-#if QT_DEPRECATED_SINCE(5, 2)
+#if QT_DEPRECATED_SINCE(5, 2) // ### Qt 6: remove
     QT_DEPRECATED void setUtcOffset(int seconds);
     QT_DEPRECATED int utcOffset() const;
 #endif // QT_DEPRECATED_SINCE

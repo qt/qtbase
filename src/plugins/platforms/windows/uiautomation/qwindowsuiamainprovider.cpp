@@ -146,14 +146,47 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
 void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
-       if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
-           // Notifies changes in values of controls supporting the value interface.
+        if (accessible->role() == QAccessible::ComboBox && accessible->childCount() > 0) {
+            QAccessibleInterface *listacc = accessible->child(0);
+            if (listacc && listacc->role() == QAccessible::List) {
+                int count = listacc->childCount();
+                for (int i = 0; i < count; ++i) {
+                    QAccessibleInterface *item = listacc->child(i);
+                    if (item && item->text(QAccessible::Name) == event->value()) {
+                        if (!item->state().selected) {
+                            if (QAccessibleActionInterface *actionInterface = item->actionInterface())
+                                actionInterface->doAction(QAccessibleActionInterface::toggleAction());
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (event->value().type() == QVariant::String) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+                // Notifies changes in string values.
+                VARIANT oldVal, newVal;
+                clearVariant(&oldVal);
+                setVariantString(event->value().toString(), &newVal);
+                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+            }
+        } else if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
+            if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+                // Notifies changes in values of controls supporting the value interface.
                 VARIANT oldVal, newVal;
                 clearVariant(&oldVal);
                 setVariantDouble(valueInterface->currentValue().toDouble(), &newVal);
                 QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_RangeValueValuePropertyId, oldVal, newVal);
             }
+        }
+    }
+}
+
+void QWindowsUiaMainProvider::notifySelectionChange(QAccessibleEvent *event)
+{
+    if (QAccessibleInterface *accessible = event->accessibleInterface()) {
+        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+            QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_SelectionItem_ElementSelectedEventId);
         }
     }
 }

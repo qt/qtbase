@@ -69,6 +69,7 @@
 QT_BEGIN_NAMESPACE
 
 class QSystemTrayIconSys;
+class QSystemTrayWatcher;
 class QPlatformSystemTrayIcon;
 class QToolButton;
 class QLabel;
@@ -90,6 +91,8 @@ public:
     void showMessage_sys(const QString &title, const QString &msg, const QIcon &icon,
                          QSystemTrayIcon::MessageIcon msgIcon, int msecs);
 
+    void destroyIcon();
+
     static bool isSystemTrayAvailable_sys();
     static bool supportsMessages_sys();
 
@@ -101,6 +104,7 @@ public:
     QSystemTrayIconSys *sys;
     QPlatformSystemTrayIcon *qpa_sys;
     bool visible;
+    QSystemTrayWatcher *trayWatcher;
 
 private:
     void install_sys_qpa();

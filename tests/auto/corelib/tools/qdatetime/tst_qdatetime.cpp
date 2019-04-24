@@ -78,9 +78,11 @@ private slots:
     void toString_isoDate_data();
     void toString_isoDate();
     void toString_isoDate_extra();
+#if QT_CONFIG(datestring)
     void toString_textDate_data();
     void toString_textDate();
     void toString_textDate_extra();
+#endif
     void toString_rfcDate_data();
     void toString_rfcDate();
     void toString_enumformat();
@@ -800,11 +802,11 @@ void tst_QDateTime::toString_isoDate_data()
     QTest::newRow("positive OffsetFromUTC")
             << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34+05:30");
-    dt.setUtcOffset(-7200);
+    dt.setOffsetFromUtc(-7200);
     QTest::newRow("negative OffsetFromUTC")
             << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34-02:00");
-    dt.setUtcOffset(-900);
+    dt.setOffsetFromUtc(-900);
     QTest::newRow("negative non-integral OffsetFromUTC")
             << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34-00:15");
@@ -840,7 +842,7 @@ void tst_QDateTime::toString_isoDate()
         QCOMPARE(resultDatetime.date(), datetime.date());
         QCOMPARE(resultDatetime.time(), datetime.time());
         QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
-        QCOMPARE(resultDatetime.utcOffset(), datetime.utcOffset());
+        QCOMPARE(resultDatetime.offsetFromUtc(), datetime.offsetFromUtc());
     } else {
         QCOMPARE(resultDatetime, QDateTime());
     }
@@ -870,12 +872,14 @@ void tst_QDateTime::toString_isoDate_extra()
 #endif // timezone
 }
 
+#if QT_CONFIG(datestring)
 void tst_QDateTime::toString_textDate_data()
 {
     QTest::addColumn<QDateTime>("datetime");
     QTest::addColumn<QString>("expected");
 
-    QString wednesdayJanuary = QDate::shortDayName(3) + ' ' + QDate::shortMonthName(1);
+    QString wednesdayJanuary = QLocale::system().dayName(3, QLocale::ShortFormat)
+        + ' ' + QLocale::system().monthName(1, QLocale::ShortFormat);
 
     QTest::newRow("localtime")  << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::LocalTime)
                                 << wednesdayJanuary + QString(" 2 01:02:03 2013");
@@ -904,7 +908,7 @@ void tst_QDateTime::toString_textDate()
     QCOMPARE(resultDatetime.date(), datetime.date());
     QCOMPARE(resultDatetime.time(), datetime.time());
     QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
-    QCOMPARE(resultDatetime.utcOffset(), datetime.utcOffset());
+    QCOMPARE(resultDatetime.offsetFromUtc(), datetime.offsetFromUtc());
 }
 
 void tst_QDateTime::toString_textDate_extra()
@@ -953,6 +957,7 @@ void tst_QDateTime::toString_textDate_extra()
     dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
     QVERIFY(dt.toString().endsWith(GMT));
 }
+#endif // datestring
 
 void tst_QDateTime::toString_rfcDate_data()
 {
@@ -968,11 +973,11 @@ void tst_QDateTime::toString_rfcDate_data()
             << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34), Qt::UTC)
             << QString("09 Nov 1978 13:28:34 +0000");
     QDateTime dt(QDate(1978, 11, 9), QTime(13, 28, 34));
-    dt.setUtcOffset(19800);
+    dt.setOffsetFromUtc(19800);
     QTest::newRow("positive OffsetFromUTC")
             << dt
             << QString("09 Nov 1978 13:28:34 +0530");
-    dt.setUtcOffset(-7200);
+    dt.setOffsetFromUtc(-7200);
     QTest::newRow("negative OffsetFromUTC")
             << dt
             << QString("09 Nov 1978 13:28:34 -0200");

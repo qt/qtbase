@@ -117,6 +117,8 @@ public:
         , m_framePending(false)
     { }
 
+    ~QEglFSKmsEglDeviceWindow() { destroy(); }
+
     void invalidateSurface() override;
     void resetSurface() override;
     void flip();

@@ -1559,6 +1559,16 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
             << NtfsTestResource(NtfsTestResource::SymLink, relToRelSymlink, relToRelTarget)
             << relToRelSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
     }
+    {
+        // Symlink to UNC share
+        pwd.mkdir("unc");
+        QString errorMessage;
+        QString uncTarget = QStringLiteral("//") + QtNetworkSettings::winServerName() + "/testshare";
+        QString uncSymlink = QDir::toNativeSeparators(pwd.absolutePath().append("\\unc\\link_to_unc"));
+        QTest::newRow("UNC symlink")
+            << NtfsTestResource(NtfsTestResource::SymLink, uncSymlink, uncTarget)
+            << QDir::fromNativeSeparators(uncSymlink) << true << QDir::fromNativeSeparators(uncTarget) << uncTarget;
+    }
 
     //Junctions
     QString target = "target";
@@ -1630,7 +1640,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
     // Ensure that junctions, mountpoints are removed. If this fails, do not remove
     // temporary directory to prevent it from trashing the system.
     if (fi.isDir()) {
-        if (!QDir().rmdir(fi.fileName())) {
+        if (!QDir().rmdir(fi.filePath())) {
             qWarning("Unable to remove NTFS junction '%s'', keeping '%s'.",
                      qPrintable(fi.fileName()), qPrintable(QDir::toNativeSeparators(m_dir.path())));
             m_dir.setAutoRemove(false);

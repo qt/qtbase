@@ -46,6 +46,8 @@
 #include "qwindow.h"
 #include "qplatformwindow.h"
 
+#include <private/qwindow_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -199,12 +201,18 @@ void QOffscreenSurface::create()
             if (QThread::currentThread() != qGuiApp->thread())
                 qWarning("Attempting to create QWindow-based QOffscreenSurface outside the gui thread. Expect failures.");
             d->offscreenWindow = new QWindow(d->screen);
+            // Make the window frameless to prevent Windows from enlarging it, should it
+            // violate the minimum title bar width on the platform.
+            d->offscreenWindow->setFlags(d->offscreenWindow->flags()
+                                         | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
             d->offscreenWindow->setObjectName(QLatin1String("QOffscreenSurface"));
             // Remove this window from the global list since we do not want it to be destroyed when closing the app.
             // The QOffscreenSurface has to be usable even after exiting the event loop.
             QGuiApplicationPrivate::window_list.removeOne(d->offscreenWindow);
             d->offscreenWindow->setSurfaceType(QWindow::OpenGLSurface);
             d->offscreenWindow->setFormat(d->requestedFormat);
+            // Prevent QPlatformWindow::initialGeometry() and platforms from setting a default geometry.
+            qt_window_private(d->offscreenWindow)->setAutomaticPositionAndResizeEnabled(false);
             d->offscreenWindow->setGeometry(0, 0, d->size.width(), d->size.height());
             d->offscreenWindow->create();
         }
