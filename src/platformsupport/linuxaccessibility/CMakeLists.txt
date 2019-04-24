@@ -1,4 +1,4 @@
-find_package(ATSPI2 REQUIRED) # special case
+qt_find_package(ATSPI2 REQUIRED) # special case
 
 #####################################################################
 ## LinuxAccessibilitySupport Module:

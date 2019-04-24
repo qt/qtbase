@@ -1,5 +1,5 @@
-find_package(EGL)
-find_package(WrapOpenGL)
+qt_find_package(EGL) # special case
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 
 #####################################################################
 ## EglFSDeviceIntegration Module:

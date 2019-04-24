@@ -1,4 +1,4 @@
-find_package(Freetype) # special case
+qt_find_package(Freetype) # special case
 
 #####################################################################
 ## qminimal Plugin:

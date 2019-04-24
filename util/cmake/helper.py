@@ -211,7 +211,7 @@ def substitute_platform(platform: str) -> str:
     return platform_mapping.get(platform, platform)
 
 
-libray_mapping = {
+qmake_library_to_cmake_target_mapping = {
     'atspi': 'PkgConfig::ATSPI2',
     'cups': 'Cups::Cups',
     'drm': 'Libdrm::Libdrm',
@@ -228,7 +228,7 @@ libray_mapping = {
     'libdl': '${CMAKE_DL_LIBS}',
     'libinput': 'Libinput::Libinput',
     'libpng' : 'PNG::PNG',
-    'libproxy': 'LibProxy::LibProxy',
+    'libproxy': 'PkgConfig::Libproxy',
     'librt': 'WrapRt',
     'libudev': 'PkgConfig::Libudev',
     'mtdev': 'PkgConfig::Mtdev',
@@ -269,4 +269,4 @@ def substitute_libs(lib: str) -> str:
     if lib.endswith('/nolink'):
         lib = lib[:-7]
         libpostfix = '_nolink'
-    return libray_mapping.get(lib, lib) + libpostfix
+    return qmake_library_to_cmake_target_mapping.get(lib, lib) + libpostfix

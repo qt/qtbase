@@ -1,6 +1,6 @@
 # Generated from tslib.pro.
 
-find_package(Tslib) # special case
+qt_find_package(Tslib) # special case
 
 #####################################################################
 ## qtslibplugin Plugin:

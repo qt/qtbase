@@ -1,4 +1,4 @@
-find_package(GLIB2) # special case
+qt_find_package(GLIB2) # special case
 set_package_properties(GLib PROPERTIES TYPE OPTIONAL) # special case
 
 #####################################################################

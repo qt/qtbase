@@ -427,7 +427,7 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
 # here (where the feature is available).
 # DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
 # available until the add_qt_module call.
-find_package(WrapOpenGL) # special case
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 
 extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES

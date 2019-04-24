@@ -1,4 +1,4 @@
-find_package(Vulkan) # special case
+qt_find_package(Vulkan) # special case
 
 #####################################################################
 ## VulkanSupport Module:

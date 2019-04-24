@@ -1,7 +1,7 @@
 # Generated from eglfs_kms.pro.
 
-find_package(gbm)
-find_package(Libdrm)
+qt_find_package(gbm)
+qt_find_package(Libdrm)
 
 #####################################################################
 ## qeglfs-kms-integration Plugin:

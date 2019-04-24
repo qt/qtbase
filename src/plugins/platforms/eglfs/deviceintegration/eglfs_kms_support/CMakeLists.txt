@@ -1,6 +1,6 @@
 # Generated from eglfs_kms_support.pro.
 
-find_package(Libdrm)
+qt_find_package(Libdrm)
 
 #####################################################################
 ## EglFsKmsSupport Module:

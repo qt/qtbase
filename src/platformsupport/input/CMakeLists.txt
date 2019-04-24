@@ -1,9 +1,9 @@
 # Generated from input.pro.
 
-find_package(Libinput) # special case
-find_package(XKB) # special case
-find_package(Tslib) # special case
-find_package(Mtdev) # special case
+qt_find_package(Libinput) # special case
+qt_find_package(XKB) # special case
+qt_find_package(Tslib) # special case
+qt_find_package(Mtdev) # special case
 
 #####################################################################
 ## InputSupport Module:

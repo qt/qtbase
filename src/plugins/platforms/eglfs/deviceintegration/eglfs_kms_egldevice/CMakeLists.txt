@@ -1,6 +1,6 @@
 # Generated from eglfs_kms_egldevice.pro.
 
-find_package(Libdrm)
+qt_find_package(Libdrm)
 
 #####################################################################
 ## qeglfs-kms-egldevice-integration Plugin:

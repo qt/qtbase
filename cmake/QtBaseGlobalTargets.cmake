@@ -95,3 +95,12 @@ install(FILES
 install(DIRECTORY cmake/3rdparty
     DESTINATION "${config_install_dir}"
 )
+
+# Install our custom Find modules, which will be used by the find_dependency() calls
+# inside the generated ModuleDependencies cmake files.
+install(DIRECTORY cmake/
+    DESTINATION "${config_install_dir}"
+    FILES_MATCHING PATTERN "Find*.cmake"
+    PATTERN "tests" EXCLUDE
+    PATTERN "3rdparty" EXCLUDE
+)

@@ -1,5 +1,5 @@
-find_package(X11) # special case
-find_package(OpenGL) # special case
+qt_find_package(X11) # special case
+qt_find_package(OpenGL) # special case
 
 #####################################################################
 ## GlxSupport Module:

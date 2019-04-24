@@ -1,5 +1,5 @@
-find_package(Freetype) # special case
-find_package(Fontconfig) # special case
+qt_find_package(Freetype) # special case
+qt_find_package(Fontconfig) # special case
 
 #####################################################################
 ## FontDatabaseSupport Module:

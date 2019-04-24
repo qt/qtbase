@@ -6,9 +6,9 @@
 
 #### Libraries
 
-find_package(Libproxy)
+qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy)
 set_package_properties(Libproxy PROPERTIES TYPE OPTIONAL)
-find_package(OpenSSL)
+qt_find_package(OpenSSL)
 set_package_properties(OpenSSL PROPERTIES TYPE OPTIONAL)
 
 

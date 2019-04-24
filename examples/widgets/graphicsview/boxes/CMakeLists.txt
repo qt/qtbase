@@ -1,7 +1,6 @@
 # Generated from boxes.pro.
 
-find_package(WrapOpenGL)
-
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 #####################################################################
 ## boxes Binary:
 #####################################################################

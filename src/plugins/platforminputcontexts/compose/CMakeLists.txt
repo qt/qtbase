@@ -4,7 +4,7 @@
 ## composeplatforminputcontextplugin Plugin:
 #####################################################################
 
-find_package(XKB) # special case
+qt_find_package(XKB) # special case
 
 pkg_get_variable(PKG_X11_PREFIX x11 prefix) # special case
 

@@ -33,7 +33,7 @@ import re
 import sys
 from typing import Set, Union, List, Dict
 
-from helper import map_qt_library, featureName, substitute_platform
+from helper import map_qt_library, featureName, substitute_platform, qmake_library_to_cmake_target_mapping
 
 knownTests = set()  # type: Set[str]
 
@@ -67,7 +67,6 @@ def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
        'libdl': None,  # handled by CMAKE_DL_LIBS
        'libinput': 'Libinput',
        'libjpeg': 'JPEG',
-       'libpng': 'PNG',
        'libpng': 'PNG',
        'libproxy': 'Libproxy',
        'librt': 'WrapRt',
@@ -260,10 +259,16 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
             isRequired = True
             extra.remove("REQUIRED")
 
+    # If we have a mapping from a qmake library to a CMake target name,
+    # encode that in the qt_find_package call().
+    cmake_target_name = qmake_library_to_cmake_target_mapping.get(lib, None)
+    if cmake_target_name:
+        extra += ['PROVIDED_TARGETS', cmake_target_name]
+
     if extra:
-        cm_fh.write('find_package({} {})\n'.format(newlib, ' '.join(extra)))
+        cm_fh.write('qt_find_package({} {})\n'.format(newlib, ' '.join(extra)))
     else:
-        cm_fh.write('find_package({})\n'.format(newlib))
+        cm_fh.write('qt_find_package({})\n'.format(newlib))
 
     cm_fh.write('set_package_properties({} PROPERTIES TYPE {})\n'
                 .format(newlib, 'REQUIRED' if isRequired else 'OPTIONAL')

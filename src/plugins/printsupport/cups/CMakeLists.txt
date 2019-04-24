@@ -1,6 +1,6 @@
 # Generated from cups.pro.
 
-find_package(Cups)
+qt_find_package(Cups PROVIDED_TARGETS Cups::Cups) # special case
 
 #####################################################################
 ## cupsprintersupport Plugin:

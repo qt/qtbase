@@ -1,8 +1,8 @@
 # Generated from cocoa.pro.
 
 # special case:
-find_package(Cups)
-find_package(WrapOpenGL)
+qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
 
 #####################################################################
 ## qcocoa Plugin:

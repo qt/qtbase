@@ -1,13 +1,13 @@
 # Generated from xcb_qpa_lib.pro.
 
 # special case:
-find_package(X11_XCB)
-find_package(X11)
-find_package(XCB)
-find_package(XKB)
-find_package(PkgConfig)
-find_package(Freetype)
-find_package(GLIB2)
+qt_find_package(X11_XCB)
+qt_find_package(X11)
+qt_find_package(XCB)
+qt_find_package(XKB)
+qt_find_package(PkgConfig)
+qt_find_package(Freetype)
+qt_find_package(GLIB2)
 
 pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET) # special case
 

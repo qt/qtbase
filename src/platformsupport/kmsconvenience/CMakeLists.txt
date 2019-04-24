@@ -1,4 +1,4 @@
-find_package(Libdrm) # special case
+qt_find_package(Libdrm) # special case
 
 #####################################################################
 ## KmsSupport Module:

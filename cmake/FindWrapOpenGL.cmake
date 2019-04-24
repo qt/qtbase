@@ -6,7 +6,7 @@ if(TARGET WrapOpenGL)
     return()
 endif()
 
-add_library(WrapOpenGL INTERFACE)
+add_library(WrapOpenGL INTERFACE IMPORTED)
 
 if(QT_FEATURE_opengles2)
     find_package(GLESv2)
@@ -16,3 +16,5 @@ else()
     target_link_libraries(WrapOpenGL INTERFACE OpenGL::GL)
 endif()
 set(WrapOpenGL_FOUND ON)
+
+set_property(TARGET WrapOpenGL PROPERTY IMPORTED_GLOBAL TRUE)

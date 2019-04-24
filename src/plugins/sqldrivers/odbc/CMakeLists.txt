@@ -1,4 +1,4 @@
-find_package(ODBC) # special case
+qt_find_package(ODBC) # special case
 
 #####################################################################
 ## qsqlodbc Plugin:

@@ -16,7 +16,10 @@ function(qt_internal_create_depends_files)
     message("Generating depends files for ${QT_KNOWN_MODULES}...")
     foreach (target ${QT_KNOWN_MODULES})
         get_target_property(depends "${target}" LINK_LIBRARIES)
+        get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
         set(qtdeps "")
+        set(third_party_deps "")
+        set(third_party_deps_seen "")
         foreach (dep ${depends})
             # Normalize module by stripping leading "Qt::" and trailing "Private"
             if (dep MATCHES "Qt::(.*)")
@@ -32,6 +35,37 @@ function(qt_internal_create_depends_files)
             endif()
         endforeach()
 
+        # If we are doing a non-static Qt build, we only want to propagate public dependencies.
+        # If we are doing a static Qt build, we need to propagate all dependencies.
+        set(depends_var "public_depends")
+        if(NOT QT_BUILD_SHARED_LIBS)
+            set(depends_var "depends")
+        endif()
+
+        foreach(dep ${${depends_var}})
+            # Gather third party packages that should be found when using the Qt module.
+            if(TARGET ${dep})
+                list(FIND third_party_deps_seen ${dep} dep_seen)
+
+                get_target_property(package_name ${dep} INTERFACE_QT_PACKAGE_NAME)
+                if(dep_seen EQUAL -1 AND package_name)
+                    list(APPEND third_party_deps_seen ${dep})
+                    get_target_property(package_version ${dep} INTERFACE_QT_PACKAGE_VERSION)
+                    if(NOT package_version)
+                        set(package_version "")
+                    endif()
+
+                    get_target_property(package_components ${dep} INTERFACE_QT_PACKAGE_COMPONENTS)
+                    if(NOT package_components)
+                        set(package_components "")
+                    endif()
+
+                    list(APPEND third_party_deps
+                                "${package_name}\;${package_version}\;${package_components}")
+                endif()
+            endif()
+        endforeach()
+
         if (DEFINED qtdeps)
             list(REMOVE_DUPLICATES qtdeps)
         endif()
@@ -40,7 +74,26 @@ function(qt_internal_create_depends_files)
         if (${hasModuleHeaders})
             qt_internal_write_depends_file("${target}" ${qtdeps})
         endif()
+
+        if(third_party_deps)
+            # Configure and install dependencies file.
+            configure_file(
+                "${QT_CMAKE_DIR}/QtModuleDependencies.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+                @ONLY
+            )
+
+            set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
+
+            install(FILES
+                "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+                DESTINATION "${config_install_dir}"
+                COMPONENT Devel
+            )
+        endif()
     endforeach()
+
+
 endfunction()
 
 qt_internal_create_depends_files()

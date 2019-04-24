@@ -227,7 +227,7 @@ extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_OSX AND (UNIX 
         kernel/qnetworkproxy_libproxy.cpp
     LIBRARIES
         ${CMAKE_DL_LIBS}
-        LibProxy::LibProxy
+        PkgConfig::Libproxy
 )
 
 extend_target(Network CONDITION NOT APPLE_OSX AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)

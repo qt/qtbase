@@ -1,8 +1,8 @@
 # Generated from corelib.pro.
 
 # special case:
-find_package(Threads)
-find_package(WrapDoubleConversion REQUIRED)
+qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
+qt_find_package(WrapDoubleConversion REQUIRED PROVIDED_TARGETS WrapDoubleConversion)
 
 if (NOT WrapDoubleConversion_FOUND)
     message(FATAL_ERROR "Your C library does not provide \

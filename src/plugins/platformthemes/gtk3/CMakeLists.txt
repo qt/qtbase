@@ -1,7 +1,7 @@
 # Generated from gtk3.pro.
 
-find_package(GTK3)
-find_package(X11)
+qt_find_package(GTK3)
+qt_find_package(X11)
 
 #####################################################################
 ## qgtk3 Plugin:

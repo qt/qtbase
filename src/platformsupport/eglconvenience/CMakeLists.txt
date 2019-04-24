@@ -1,4 +1,4 @@
-find_package(EGL) # special case
+qt_find_package(EGL) # special case
 
 #####################################################################
 ## EglSupport Module:

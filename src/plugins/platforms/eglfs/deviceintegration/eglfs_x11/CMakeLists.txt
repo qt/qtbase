@@ -1,8 +1,8 @@
 # Generated from eglfs_x11.pro.
 
-find_package(XCB)
-find_package(X11)
-find_package(X11_XCB)
+qt_find_package(XCB)
+qt_find_package(X11)
+qt_find_package(X11_XCB)
 
 #####################################################################
 ## qeglfs-x11-integration Plugin:

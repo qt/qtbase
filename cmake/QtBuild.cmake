@@ -1365,3 +1365,59 @@ endfunction()
 function(add_qt_docs qdocFile)
     # TODO
 endfunction()
+
+macro(qt_find_package)
+    # Get the target names we expect to be provided by the package.
+    cmake_parse_arguments(arg "" "" "PROVIDED_TARGETS;COMPONENTS" ${ARGN})
+
+    # Get the version if specified.
+    set(package_version "")
+    if(${ARGC} GREATER_EQUAL 2)
+        if(${ARGV1} MATCHES "^[0-9\.]+$")
+            set(package_version "${ARGV1}")
+        endif()
+    endif()
+
+    if(arg_COMPONENTS)
+        # Re-append components to forward them.
+        list(APPEND arg_UNPARSED_ARGUMENTS "COMPONENTS;${arg_COMPONENTS}")
+    endif()
+
+    # Call original function without our custom arguments.
+    find_package(${arg_UNPARSED_ARGUMENTS})
+
+    if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
+        # If package was found, associate each target with its package name. This will be used
+        # later when creating Config files for Qt libraries, to generate correct find_dependency()
+        # calls. Also make the provided targets global, so that the properties can be read in
+        # all scopes.
+        foreach(qt_find_package_target_name ${arg_PROVIDED_TARGETS})
+            if(TARGET ${qt_find_package_target_name})
+                set_target_properties(${qt_find_package_target_name}
+                                      PROPERTIES INTERFACE_QT_PACKAGE_NAME ${ARGV0})
+                if(package_version)
+                    set_target_properties(${qt_find_package_target_name}
+                                          PROPERTIES INTERFACE_QT_PACKAGE_VERSION ${ARGV1})
+                endif()
+
+                if(arg_COMPONENTS)
+                    set_target_properties(${qt_find_package_target_name}
+                                          PROPERTIES
+                                          INTERFACE_QT_PACKAGE_COMPONENTS ${arg_COMPONENTS})
+                endif()
+
+                get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
+                                                                             IMPORTED_GLOBAL)
+                if(NOT is_global)
+                    set_property(TARGET ${qt_find_package_target_name} PROPERTY
+                                                                       IMPORTED_GLOBAL TRUE)
+                endif()
+            else()
+                message(FATAL_ERROR
+                        "Error while trying to mark target '${qt_find_package_target_name}' as part"
+                        " of the ${ARGV0} package. Provided target name does not exist.")
+            endif()
+
+        endforeach()
+    endif()
+endmacro()

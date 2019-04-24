@@ -1,9 +1,10 @@
 include(CheckCXXSourceCompiles)
 
-add_library(WrapDoubleConversion INTERFACE)
+add_library(WrapDoubleConversion INTERFACE IMPORTED)
 
 find_package(double-conversion)
 if (double-conversion_FOUND)
+    include(FeatureSummary)
     set_package_properties(double-conversion PROPERTIES TYPE REQUIRED)
     target_link_libraries(WrapDoubleConversion INTERFACE double-conversion::double-conversion)
     set(WrapDoubleConversion_FOUND 1)

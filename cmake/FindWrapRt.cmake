@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
 cmake_pop_check_state()
 
-add_library(WrapRt INTERFACE)
+add_library(WrapRt INTERFACE IMPORTED)
 if (LIBRT_FOUND)
     target_link_libraries(WrapRt INTERFACE "${LIBRT}")
 endif()
