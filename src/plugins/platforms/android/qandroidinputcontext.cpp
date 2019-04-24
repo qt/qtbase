@@ -978,14 +978,24 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
     m_composingText.clear();
     m_composingTextStart = -1;
 
-    QString text = query->value(Qt::ImSurroundingText).toString();
-    if (text.isEmpty())
-        return JNI_TRUE;
-
     if (leftLength < 0) {
         rightLength += -leftLength;
         leftLength = 0;
     }
+
+    QVariant textBeforeCursor = query->value(Qt::ImTextBeforeCursor);
+    QVariant textAfterCursor = query->value(Qt::ImTextAfterCursor);
+    if (textBeforeCursor.isValid() && textAfterCursor.isValid()) {
+        leftLength = qMin(leftLength, textBeforeCursor.toString().length());
+        rightLength = qMin(rightLength, textAfterCursor.toString().length());
+    } else {
+        int cursorPos = query->value(Qt::ImCursorPosition).toInt();
+        leftLength = qMin(leftLength, cursorPos);
+        rightLength = qMin(rightLength, query->value(Qt::ImSurroundingText).toString().length() - cursorPos);
+    }
+
+    if (leftLength == 0 && rightLength == 0)
+        return JNI_TRUE;
 
     QInputMethodEvent event;
     event.setCommitString(QString(), -leftLength, leftLength+rightLength);
@@ -1075,6 +1085,14 @@ const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedTex
     int cpos = localPos + composeLength; //actual cursor pos relative to the current block
 
     int localOffset = 0; // start of extracted text relative to the current block
+    if (blockPos > 0) {
+        QString prevBlockEnding = query->value(Qt::ImTextBeforeCursor).toString();
+        prevBlockEnding.chop(localPos);
+        if (prevBlockEnding.endsWith(QLatin1Char('\n'))) {
+            localOffset = -qMin(20, prevBlockEnding.length());
+            blockText = prevBlockEnding.right(-localOffset) + blockText;
+        }
+    }
 
     // It is documented that we should try to return hintMaxChars
     // characters, but that's not what the standard Android controls do, and
