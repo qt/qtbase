@@ -488,6 +488,8 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 
             Q_FALLTHROUGH();
     }
+    case DialogButtonBoxLayout:
+        return QVariant(QPlatformDialogHelper::AndroidLayout);
     default:
         return QPlatformTheme::themeHint(hint);
     }
