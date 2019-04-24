@@ -117,7 +117,7 @@ void QTextMarkdownImporter::import(QTextDocument *doc, const QString &markdown)
 {
     MD_PARSER callbacks = {
         0, // abi_version
-        m_features,
+        unsigned(m_features),
         &CbEnterBlock,
         &CbLeaveBlock,
         &CbEnterSpan,
