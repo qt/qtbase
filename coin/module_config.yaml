@@ -1,0 +1,56 @@
+version: 1
+accept_configuration:
+  condition: property
+  property: host.os
+  equals_property: target.os
+build_instructions:
+  - type: MakeDirectory
+    directory: .git
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: ExecuteCommand
+    command: cmake {{.Env.CONFIGURE_ARGS}}
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to call cmake. Contact Liang then.
+  - type: ExecuteCommand
+    command: make DESTDIR={{.InstallRoot}} -j {{.NumCPU}} install
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to call make install. Contact Liang then.
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: ExecuteCommand
+    command: jom DESTDIR={{.InstallRoot}} -j {{.NumCPU}} install
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to call nmake install. Contact Liang then.
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+  - type: SignPackage
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+    directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
+  - type: UploadArtifact
+    archiveDirectory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
+    transferType: UploadModuleBuildArtifact
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+test_instructions:
+  - type: ExecuteCommand
+    command: echo "hello world - test"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to call echo. Contact Liang then.
