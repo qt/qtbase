@@ -1677,8 +1677,11 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     Q_Q(QNetworkAccessManager);
 
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
-    if (reply)
+    if (reply) {
         emit q->finished(reply);
+        if (reply->request().attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false).toBool())
+            QMetaObject::invokeMethod(reply, [reply] { reply->deleteLater(); }, Qt::QueuedConnection);
+    }
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // If there are no active requests, release our reference to the network session.

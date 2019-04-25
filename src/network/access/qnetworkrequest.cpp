@@ -331,6 +331,12 @@ QT_BEGIN_NAMESPACE
 
     \omitvalue ResourceTypeAttribute
 
+    \value AutoDeleteReplyOnFinishAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        If set, this attribute will make QNetworkAccessManager delete
+        the QNetworkReply after having emitted "finished".
+        (This value was introduced in 5.14.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

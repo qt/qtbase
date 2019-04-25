@@ -503,6 +503,9 @@ private Q_SLOTS:
     void putWithServerClosingConnectionImmediately();
 #endif
 
+    void autoDeleteRepliesAttribute_data();
+    void autoDeleteRepliesAttribute();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -9166,6 +9169,77 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
 }
 
 #endif
+
+void tst_QNetworkReply::autoDeleteRepliesAttribute_data()
+{
+    QTest::addColumn<QUrl>("destination");
+
+    QTest::newRow("http") << QUrl("http://QInvalidDomain.qt/test");
+    QTest::newRow("https") << QUrl("https://QInvalidDomain.qt/test");
+    QTest::newRow("ftp") << QUrl("ftp://QInvalidDomain.qt/test");
+    QTest::newRow("file") << QUrl("file:///thisfolderdoesn'texist/probably.txt");
+#ifdef Q_OS_WIN
+    // Only supported on windows.
+    QTest::newRow("remote-file") << QUrl("file://QInvalidHost/thisfolderdoesn'texist/probably.txt");
+#endif
+    QTest::newRow("qrc") << QUrl("qrc:///path/to/nowhere");
+    QTest::newRow("data") << QUrl("data:,Some%20plaintext%20data");
+}
+
+void tst_QNetworkReply::autoDeleteRepliesAttribute()
+{
+    QFETCH(QUrl, destination);
+    {
+        // Get
+        QNetworkRequest request(destination);
+        request.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, true);
+        QNetworkReply *reply = manager.get(request);
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply, &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QVERIFY(destroyedSpy.wait());
+    }
+    {
+        // Post
+        QNetworkRequest request(destination);
+        request.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, true);
+        QNetworkReply *reply = manager.post(request, QByteArrayLiteral("datastring"));
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply, &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QVERIFY(destroyedSpy.wait());
+    }
+    // Now repeated, but without the attribute to make sure it does not get deleted automatically.
+    // We need two calls to processEvents to test that the QNetworkReply doesn't get deleted.
+    // The first call executes a metacall event which adds the deleteLater meta event which
+    // would be executed in the second call. But that shouldn't happen without the attribute.
+    {
+        // Get
+        QNetworkRequest request(destination);
+        QScopedPointer<QNetworkReply> reply(manager.get(request));
+        QSignalSpy finishedSpy(reply.data(), &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply.data(), &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+        QCOMPARE(destroyedSpy.count(), 0);
+    }
+    {
+        // Post
+        QNetworkRequest request(destination);
+        QScopedPointer<QNetworkReply> reply(manager.post(request, QByteArrayLiteral("datastring")));
+        QSignalSpy finishedSpy(reply.data(), &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply.data(), &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+        QCOMPARE(destroyedSpy.count(), 0);
+    }
+}
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
