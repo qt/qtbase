@@ -93,7 +93,6 @@ public:
     QColorSpacePrivate(QColorSpace::Gamut gamut, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
-    QColorSpacePrivate &operator=(const QColorSpacePrivate &other) = default;
 
     void initialize();
     void setToXyzMatrix();
