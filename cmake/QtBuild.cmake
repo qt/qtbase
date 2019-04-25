@@ -759,6 +759,8 @@ function(add_qt_plugin target)
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
+            # For the syncqt headers
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES ${arg_PUBLIC_INCLUDE_DIRECTORIES}
         LIBRARIES ${arg_LIBRARIES}
