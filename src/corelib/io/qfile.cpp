@@ -832,10 +832,16 @@ QFile::copy(const QString &newName)
                             error = true;
                         }
                     }
-                    if (!error && !out.rename(newName)) {
-                        error = true;
-                        close();
-                        d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
+
+                    if (!error) {
+                        // Sync to disk if possible. Ignore errors (e.g. not supported).
+                        d->fileEngine->syncToDisk();
+
+                        if (!out.rename(newName)) {
+                            error = true;
+                            close();
+                            d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
+                        }
                     }
 #ifdef QT_NO_TEMPORARYFILE
                     if (error)
