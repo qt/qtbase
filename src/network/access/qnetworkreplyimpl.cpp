@@ -368,6 +368,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
 
     outgoingData = data;
     request = req;
+    originalRequest = req;
     url = request.url();
     operation = op;
 
