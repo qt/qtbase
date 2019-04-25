@@ -1,0 +1,51 @@
+Qt 5.9.8 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.9.0 through 5.9.7.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                 QtCore                                   *
+****************************************************************************
+
+ - [QTBUG-71412] Fixed a race condition that would result in a failed
+   assertion when two threads attached a QPointer to the same QObject.
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - SSL:
+   * [QTBUG-68156] OpenSSL >= 1.0 is now required to build Qt with OpenSSL
+     support.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - PCRE2 was updated to version 10.32.
+
+****************************************************************************
+*                                  macOS                                   *
+****************************************************************************
+
+ - Text:
+   * [QTBUG-69955] Fixed font weights on macOS 10.14
+
+ - Gui:
+   * [QTBUG-70062] Offline renderers will be disabled when the application
+     is using Qt WebEngine and running on one of the late 2013 MacPro models.
+
