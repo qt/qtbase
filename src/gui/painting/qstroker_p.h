@@ -104,6 +104,7 @@ struct qfixed2d
     qfixed x;
     qfixed y;
 
+    bool isFinite() { return qIsFinite(x) && qIsFinite(y); }
     bool operator==(const qfixed2d &other) const { return qFuzzyCompare(x, other.x)
                                                        && qFuzzyCompare(y, other.y); }
 };

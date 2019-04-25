@@ -796,7 +796,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     s->flags.fast_pen = pen_style > Qt::NoPen
             && s->penData.blend
             && ((cosmetic && penWidth <= 1)
-                || (!cosmetic && s->flags.tx_noshear && penWidth * s->txscale <= 1));
+                || (!cosmetic && (s->flags.tx_noshear || !s->flags.antialiased) && penWidth * s->txscale <= 1));
 
     s->flags.non_complex_pen = qpen_capStyle(s->lastPen) <= Qt::SquareCap && s->flags.tx_noshear;
 

@@ -447,6 +447,42 @@ static const int toolButtonArrowMargin = 2;
 
 static const qreal focusRingWidth = 3.5;
 
+// An application can force 'Aqua' theme while the system theme is one of
+// the 'Dark' variants. Since in Qt we sometimes use NSControls and even
+// NSCells directly without attaching them to any view hierarchy, we have
+// to set NSAppearance.currentAppearance to 'Aqua' manually, to make sure
+// the correct rendering path is triggered. Apple recommends us to un-set
+// the current appearance back after we finished with drawing. This is what
+// AppearanceSync is for.
+
+class AppearanceSync {
+public:
+    AppearanceSync()
+    {
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
+            && !qt_mac_applicationIsInDarkMode()) {
+            auto requiredAppearanceName = NSApplication.sharedApplication.effectiveAppearance.name;
+            if (![NSAppearance.currentAppearance.name isEqualToString:requiredAppearanceName]) {
+                previous = NSAppearance.currentAppearance;
+                NSAppearance.currentAppearance = [NSAppearance appearanceNamed:requiredAppearanceName];
+            }
+        }
+#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    }
+
+    ~AppearanceSync()
+    {
+        if (previous)
+            NSAppearance.currentAppearance = previous;
+    }
+
+private:
+    NSAppearance *previous = nil;
+
+    Q_DISABLE_COPY(AppearanceSync)
+};
+
 static bool setupScroller(NSScroller *scroller, const QStyleOptionSlider *sb)
 {
     const qreal length = sb->maximum - sb->minimum + sb->pageStep;
@@ -2918,6 +2954,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                               const QWidget *w) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync appSync;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -3443,6 +3480,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                             const QWidget *w) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync sync;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -5033,6 +5071,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                    const QWidget *widget) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync sync;
     QMacCGContext cg(p);
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
