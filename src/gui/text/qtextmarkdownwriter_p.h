@@ -81,6 +81,7 @@ private:
     QTextStream &m_stream;
     QTextDocument::MarkdownFeatures m_features;
     QMap<QTextList *, ListInfo> m_listInfo;
+    QString m_linePrefix;
     int m_wrappedLineIndent = 0;
     int m_lastListIndent = 1;
     bool m_doubleNewlineWritten = false;

@@ -100,25 +100,33 @@ public:
     int cbText(int textType, const char* text, unsigned size);
 
 private:
+    void insertBlock();
+
+private:
     QTextDocument *m_doc = nullptr;
     QTextCursor *m_cursor = nullptr;
     QTextTable *m_currentTable = nullptr; // because m_cursor->currentTable() doesn't work
     QString m_htmlAccumulator;
+    QString m_blockCodeLanguage;
     QVector<int> m_nonEmptyTableCells; // in the current row
     QStack<QTextList *> m_listStack;
     QStack<QTextCharFormat> m_spanFormatStack;
     QFont m_monoFont;
     QPalette m_palette;
     int m_htmlTagDepth = 0;
+    int m_blockQuoteDepth = 0;
     int m_tableColumnCount = 0;
     int m_tableRowCount = 0;
     int m_tableCol = -1; // because relative cell movements (e.g. m_cursor->movePosition(QTextCursor::NextCell)) don't work
+    int m_paragraphMargin = 0;
     Features m_features;
     int m_blockType = 0;
     bool m_emptyList = false; // true when the last thing we did was insertList
     bool m_listItem = false;
     bool m_emptyListItem = false;
+    bool m_codeBlock = false;
     bool m_imageSpan = false;
+    bool m_needsInsertBlock = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextMarkdownImporter::Features)

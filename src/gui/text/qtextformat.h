@@ -176,7 +176,9 @@ public:
         BlockNonBreakableLines = 0x1050,
         BlockTrailingHorizontalRulerWidth = 0x1060,
         HeadingLevel = 0x1070,
-        BlockMarker = 0x1080,
+        BlockQuoteLevel = 0x1080,
+        BlockCodeLanguage = 0x1090,
+        BlockMarker = 0x10A0,
 
         // character properties
         FirstFontProperty = 0x1FE0,

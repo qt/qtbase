@@ -106,7 +106,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
     Q_ASSERT(frame);
     const QTextTable *table = qobject_cast<const QTextTable*> (frame);
     QTextFrame::iterator iterator = frame->begin();
-    QTextFrame *child = 0;
+    QTextFrame *child = nullptr;
     int tableRow = -1;
     bool lastWasList = false;
     QVector<int> tableColumnWidths;
@@ -161,7 +161,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                     m_stream << QString(paddingLen, Space);
                 for (int col = cell.column(); col < spanEndCol; ++col)
                     m_stream << "|";
-            } else if (block.textList()) {
+            } else if (block.textList() || block.blockFormat().hasProperty(QTextFormat::BlockCodeLanguage)) {
                 m_stream << Newline;
             } else if (endingCol > 0) {
                 m_stream << Newline << Newline;
@@ -252,6 +252,8 @@ static void maybeEscapeFirstChar(QString &s)
 int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ignoreFormat)
 {
     int ColumnLimit = 80;
+    QTextBlockFormat blockFmt = block.blockFormat();
+    bool indentedCodeBlock = false;
     if (block.textList()) { // it's a list-item
         auto fmt = block.textList()->format();
         const int listLevel = fmt.indent();
@@ -281,7 +283,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_wrappedLineIndent = 4;
             break;
         }
-        switch (block.blockFormat().marker()) {
+        switch (blockFmt.marker()) {
         case QTextBlockFormat::Checked:
             bullet += " [x]";
             break;
@@ -309,21 +311,35 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             prefix += QLatin1String(bullet) + Space;
         }
         m_stream << prefix;
-    } else if (block.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
+    } else if (blockFmt.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
         m_stream << "- - -\n"; // unambiguous horizontal rule, not an underline under a heading
         return 0;
-    } else if (!block.blockFormat().indent()) {
+    } else if (!blockFmt.indent()) {
         m_wrappedLineIndent = 0;
+        m_linePrefix.clear();
+        if (blockFmt.hasProperty(QTextFormat::BlockQuoteLevel)) {
+            int level = blockFmt.intProperty(QTextFormat::BlockQuoteLevel);
+            QString quoteMarker = QStringLiteral("> ");
+            m_linePrefix.reserve(level * 2);
+            for (int i = 0; i < level; ++i)
+                m_linePrefix += quoteMarker;
+        }
+        if (blockFmt.hasProperty(QTextFormat::BlockCodeLanguage)) {
+            // A block quote can contain an indented code block, but not vice-versa.
+            m_linePrefix += QString(4, Space);
+            indentedCodeBlock = true;
+        }
     }
+    if (blockFmt.headingLevel())
+        m_stream << QByteArray(blockFmt.headingLevel(), '#') << ' ';
+    else
+        m_stream << m_linePrefix;
 
-    if (block.blockFormat().headingLevel())
-        m_stream << QByteArray(block.blockFormat().headingLevel(), '#') << ' ';
-
-    QString wrapIndentString(m_wrappedLineIndent, Space);
+    QString wrapIndentString = m_linePrefix + QString(m_wrappedLineIndent, Space);
     // It would be convenient if QTextStream had a lineCharPos() accessor,
     // to keep track of how many characters (not bytes) have been written on the current line,
     // but it doesn't.  So we have to keep track with this col variable.
-    int col = m_wrappedLineIndent;
+    int col = wrapIndentString.length();
     bool mono = false;
     bool startsOrEndsWithBacktick = false;
     bool bold = false;
@@ -338,7 +354,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         if (block.textList()) { // <li>first line</br>continuation</li>
             QString newlineIndent = QString(Newline) + QString(m_wrappedLineIndent, Space);
             fragmentText.replace(QString(LineBreak), newlineIndent);
-        } else if (block.blockFormat().indent() > 0) { // <li>first line<p>continuation</p></li>
+        } else if (blockFmt.indent() > 0) { // <li>first line<p>continuation</p></li>
             m_stream << QString(m_wrappedLineIndent, Space);
         } else {
             fragmentText.replace(LineBreak, Newline);
@@ -368,7 +384,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             bool monoFrag = fontInfo.fixedPitch();
             QString markers;
             if (!ignoreFormat) {
-                if (monoFrag != mono) {
+                if (monoFrag != mono && !indentedCodeBlock) {
                     if (monoFrag)
                         backticks = QString(adjacentBackticksCount(fragmentText) + 1, Backtick);
                     markers += backticks;
@@ -376,25 +392,25 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         markers += Space;
                     mono = monoFrag;
                 }
-                if (!block.blockFormat().headingLevel() && !mono) {
-                    if (fmt.font().bold() != bold) {
+                if (!blockFmt.headingLevel() && !mono) {
+                    if (fontInfo.bold() != bold) {
                         markers += QLatin1String("**");
-                        bold = fmt.font().bold();
+                        bold = fontInfo.bold();
                     }
-                    if (fmt.font().italic() != italic) {
+                    if (fontInfo.italic() != italic) {
                         markers += QLatin1Char('*');
-                        italic = fmt.font().italic();
+                        italic = fontInfo.italic();
                     }
-                    if (fmt.font().strikeOut() != strikeOut) {
+                    if (fontInfo.strikeOut() != strikeOut) {
                         markers += QLatin1String("~~");
-                        strikeOut = fmt.font().strikeOut();
+                        strikeOut = fontInfo.strikeOut();
                     }
-                    if (fmt.font().underline() != underline) {
+                    if (fontInfo.underline() != underline) {
                         // Markdown doesn't support underline, but the parser will treat a single underline
                         // the same as a single asterisk, and the marked fragment will be rendered in italics.
                         // That will have to do.
                         markers += QLatin1Char('_');
-                        underline = fmt.font().underline();
+                        underline = fontInfo.underline();
                     }
                 }
             }

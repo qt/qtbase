@@ -55,6 +55,9 @@ Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 static const QChar Newline = QLatin1Char('\n');
 static const QChar Space = QLatin1Char(' ');
 
+// TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
+static const int BlockQuoteIndent = 40; // pixels, same as in QTextHtmlParserNode::initializeProperties
+
 // --------------------------------------------------------
 // MD4C callback function wrappers
 
@@ -131,6 +134,7 @@ void QTextMarkdownImporter::import(QTextDocument *doc, const QString &markdown)
         nullptr // syntax
     };
     m_doc = doc;
+    m_paragraphMargin = m_doc->defaultFont().pointSize() * 2 / 3;
     m_cursor = new QTextCursor(doc);
     doc->clear();
     qCDebug(lcMD) << "default font" << doc->defaultFont() << "mono font" << m_monoFont;
@@ -146,11 +150,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
     switch (blockType) {
     case MD_BLOCK_P:
         if (m_listStack.isEmpty()) {
-            QTextBlockFormat blockFmt;
-            int margin = m_doc->defaultFont().pointSize() / 2;
-            blockFmt.setTopMargin(margin);
-            blockFmt.setBottomMargin(margin);
-            m_cursor->insertBlock(blockFmt, QTextCharFormat());
+            m_needsInsertBlock = true;
             qCDebug(lcMD, "P");
         } else {
             if (m_emptyListItem) {
@@ -159,18 +159,25 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
                 m_emptyListItem = false;
             } else {
                 qCDebug(lcMD, "P inside LI at level %d", m_listStack.count());
-                QTextBlockFormat blockFmt;
-                blockFmt.setIndent(m_listStack.count());
-                m_cursor->insertBlock(blockFmt, QTextCharFormat());
+                m_needsInsertBlock = true;
             }
         }
         break;
+    case MD_BLOCK_QUOTE: {
+        ++m_blockQuoteDepth;
+        qCDebug(lcMD, "QUOTE level %d", m_blockQuoteDepth);
+        break;
+    }
     case MD_BLOCK_CODE: {
-        QTextBlockFormat blockFmt;
-        QTextCharFormat charFmt;
-        charFmt.setFont(m_monoFont);
-        m_cursor->insertBlock(blockFmt, charFmt);
-        qCDebug(lcMD, "CODE");
+        MD_BLOCK_CODE_DETAIL *detail = static_cast<MD_BLOCK_CODE_DETAIL *>(det);
+        m_codeBlock = true;
+        m_blockCodeLanguage = QLatin1String(detail->lang.text, int(detail->lang.size));
+        QString info = QLatin1String(detail->info.text, int(detail->info.size));
+        m_needsInsertBlock = true;
+        if (m_blockQuoteDepth)
+            qCDebug(lcMD, "CODE lang '%s' info '%s' inside QUOTE %d", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockQuoteDepth);
+        else
+            qCDebug(lcMD, "CODE lang '%s' info '%s'", qPrintable(m_blockCodeLanguage), qPrintable(info));
     } break;
     case MD_BLOCK_H: {
         MD_BLOCK_H_DETAIL *detail = static_cast<MD_BLOCK_H_DETAIL *>(det);
@@ -180,10 +187,12 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         charFmt.setProperty(QTextFormat::FontSizeAdjustment, sizeAdjustment);
         charFmt.setFontWeight(QFont::Bold);
         blockFmt.setHeadingLevel(int(detail->level));
+        m_needsInsertBlock = false;
         m_cursor->insertBlock(blockFmt, charFmt);
         qCDebug(lcMD, "H%d", detail->level);
     } break;
     case MD_BLOCK_LI: {
+        m_needsInsertBlock = false;
         MD_BLOCK_LI_DETAIL *detail = static_cast<MD_BLOCK_LI_DETAIL *>(det);
         QTextList *list = m_listStack.top();
         QTextBlockFormat bfmt = list->item(list->count() - 1).blockFormat();
@@ -316,9 +325,9 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
         }
     } break;
     case MD_BLOCK_QUOTE: {
-        QTextBlockFormat blockFmt = m_cursor->blockFormat();
-        blockFmt.setIndent(1);
-        m_cursor->setBlockFormat(blockFmt);
+        qCDebug(lcMD, "QUOTE level %d ended", m_blockQuoteDepth);
+        --m_blockQuoteDepth;
+        m_needsInsertBlock = true;
     } break;
     case MD_BLOCK_TABLE:
         qCDebug(lcMD) << "table ended with" << m_currentTable->columns() << "cols and" << m_currentTable->rows() << "rows";
@@ -329,7 +338,15 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
         qCDebug(lcMD, "LI at level %d ended", m_listStack.count());
         m_listItem = false;
         break;
-    case MD_BLOCK_CODE:
+    case MD_BLOCK_CODE: {
+        m_codeBlock = false;
+        m_blockCodeLanguage.clear();
+        if (m_blockQuoteDepth)
+            qCDebug(lcMD, "CODE ended inside QUOTE %d", m_blockQuoteDepth);
+        else
+            qCDebug(lcMD, "CODE ended");
+        m_needsInsertBlock = true;
+    } break;
     case MD_BLOCK_H:
         m_cursor->setCharFormat(QTextCharFormat());
         break;
@@ -365,6 +382,8 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         QString title = QString::fromUtf8(detail->title.text, int(detail->title.size));
         QTextImageFormat img;
         img.setName(src);
+        if (m_needsInsertBlock)
+            insertBlock();
         qCDebug(lcMD) << "image" << src << "title" << title << "relative to" << m_doc->baseUrl();
         m_cursor->insertImage(img);
         break;
@@ -377,6 +396,8 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         break;
     }
     m_spanFormatStack.push(charFmt);
+    qCDebug(lcMD) << spanType << "setCharFormat" << charFmt.font().family() << charFmt.fontWeight()
+                  << (charFmt.fontItalic() ? "italic" : "") << charFmt.foreground().color().name();
     m_cursor->setCharFormat(charFmt);
     return 0; // no error
 }
@@ -391,6 +412,8 @@ int QTextMarkdownImporter::cbLeaveSpan(int spanType, void *detail)
             charFmt = m_spanFormatStack.top();
     }
     m_cursor->setCharFormat(charFmt);
+    qCDebug(lcMD) << spanType << "setCharFormat" << charFmt.font().family() << charFmt.fontWeight()
+                  << (charFmt.fontItalic() ? "italic" : "") << charFmt.foreground().color().name();
     if (spanType == int(MD_SPAN_IMG))
         m_imageSpan = false;
     return 0; // no error
@@ -400,6 +423,8 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 {
     if (m_imageSpan)
         return 0; // it's the alt-text
+    if (m_needsInsertBlock)
+        insertBlock();
     static const QRegularExpression openingBracket(QStringLiteral("<[a-zA-Z]"));
     static const QRegularExpression closingBracket(QStringLiteral("(/>|</)"));
     QString s = QString::fromUtf8(text, int(size));
@@ -467,13 +492,51 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         m_cursor->insertText(s);
     if (m_cursor->currentList()) {
         // The list item will indent the list item's text, so we don't need indentation on the block.
-        QTextBlockFormat blockFmt = m_cursor->blockFormat();
-        blockFmt.setIndent(0);
-        m_cursor->setBlockFormat(blockFmt);
+        QTextBlockFormat bfmt = m_cursor->blockFormat();
+        bfmt.setIndent(0);
+        m_cursor->setBlockFormat(bfmt);
+    }
+    if (lcMD().isEnabled(QtDebugMsg)) {
+        QTextBlockFormat bfmt = m_cursor->blockFormat();
+        QString debugInfo;
+        if (m_cursor->currentList())
+            debugInfo = QLatin1String("in list at depth ") + QString::number(m_cursor->currentList()->format().indent());
+        if (bfmt.hasProperty(QTextFormat::BlockQuoteLevel))
+            debugInfo += QLatin1String("in blockquote at depth ") +
+                    QString::number(bfmt.intProperty(QTextFormat::BlockQuoteLevel));
+        if (bfmt.hasProperty(QTextFormat::BlockCodeLanguage))
+            debugInfo += QLatin1String("in a code block");
+        qCDebug(lcMD) << textType << "in block" << m_blockType << s << qPrintable(debugInfo)
+                      << "bindent" << bfmt.indent() << "tindent" << bfmt.textIndent()
+                      << "margins" << bfmt.leftMargin() << bfmt.topMargin() << bfmt.bottomMargin() << bfmt.rightMargin();
     }
     qCDebug(lcMD) << textType << "in block" << m_blockType << s << "in list?" << m_cursor->currentList()
                   << "indent" << m_cursor->blockFormat().indent();
     return 0; // no error
+}
+
+void QTextMarkdownImporter::insertBlock()
+{
+    QTextCharFormat charFormat;
+    if (!m_spanFormatStack.isEmpty())
+        charFormat = m_spanFormatStack.top();
+    QTextBlockFormat blockFormat;
+    if (m_blockQuoteDepth) {
+        blockFormat.setProperty(QTextFormat::BlockQuoteLevel, m_blockQuoteDepth);
+        blockFormat.setLeftMargin(BlockQuoteIndent * m_blockQuoteDepth);
+        blockFormat.setRightMargin(BlockQuoteIndent);
+    }
+    if (m_listStack.count())
+        blockFormat.setIndent(m_listStack.count());
+    if (m_codeBlock) {
+        blockFormat.setProperty(QTextFormat::BlockCodeLanguage, m_blockCodeLanguage);
+        charFormat.setFont(m_monoFont);
+    } else {
+        blockFormat.setTopMargin(m_paragraphMargin);
+        blockFormat.setBottomMargin(m_paragraphMargin);
+    }
+    m_cursor->insertBlock(blockFormat, charFormat);
+    m_needsInsertBlock = false;
 }
 
 QT_END_NAMESPACE

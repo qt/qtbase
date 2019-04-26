@@ -1125,6 +1125,7 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
             margin[QTextHtmlParser::MarginBottom] = 12;
             margin[QTextHtmlParser::MarginLeft] = 40;
             margin[QTextHtmlParser::MarginRight] = 40;
+            blockFormat.setProperty(QTextFormat::BlockQuoteLevel, 1);
             break;
         case Html_dl:
             margin[QTextHtmlParser::MarginTop] = 8;

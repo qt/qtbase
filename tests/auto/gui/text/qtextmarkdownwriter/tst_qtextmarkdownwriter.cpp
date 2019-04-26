@@ -54,6 +54,7 @@ private slots:
     void testWriteNestedBulletLists();
     void testWriteNestedNumericLists();
     void testWriteTable();
+    void rewriteDocument_data();
     void rewriteDocument();
     void fromHtml_data();
     void fromHtml();
@@ -350,10 +351,19 @@ void tst_QTextMarkdownWriter::testWriteTable()
     QCOMPARE(md, QString::fromLatin1("\n|a ||b|\n|-|-|-|\n|c|d ||\n|e|f| |\n\n"));
 }
 
+void tst_QTextMarkdownWriter::rewriteDocument_data()
+{
+    QTest::addColumn<QString>("inputFile");
+
+    QTest::newRow("block quotes") << "blockquotes.md";
+    QTest::newRow("example") << "example.md";
+}
+
 void tst_QTextMarkdownWriter::rewriteDocument()
 {
+    QFETCH(QString, inputFile);
     QTextDocument doc;
-    QFile f(QFINDTESTDATA("data/example.md"));
+    QFile f(QFINDTESTDATA("data/" + inputFile));
     QVERIFY(f.open(QFile::ReadOnly | QIODevice::Text));
     QString orig = QString::fromUtf8(f.readAll());
     f.close();
@@ -361,7 +371,7 @@ void tst_QTextMarkdownWriter::rewriteDocument()
     QString md = doc.toMarkdown();
 
 #ifdef DEBUG_WRITE_OUTPUT
-    QFile out("/tmp/rewrite.md");
+    QFile out("/tmp/rewrite-" + inputFile);
     out.open(QFile::WriteOnly);
     out.write(md.toUtf8());
     out.close();
@@ -401,6 +411,9 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("thematic break") <<
         "something<hr/>something else" <<
         "something\n\n- - -\nsomething else\n\n";
+    QTest::newRow("block quote") <<
+        "<p>In 1958, Mahatma Gandhi was quoted as follows:</p><blockquote>The Earth provides enough to satisfy every man's need but not for every man's greed.</blockquote>" <<
+        "In 1958, Mahatma Gandhi was quoted as follows:\n\n> The Earth provides enough to satisfy every man's need but not for every man's\n> greed.\n\n";
     // TODO
 //    QTest::newRow("escaped number and paren after double newline") <<
 //        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<
