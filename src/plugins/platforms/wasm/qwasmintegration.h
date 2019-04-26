@@ -81,6 +81,7 @@ public:
     void addScreen(const QString &canvasId);
     void removeScreen(const QString &canvasId);
     void resizeScreen(const QString &canvasId);
+    void resizeAllScreens();
 
 private:
     mutable QWasmFontDatabase *m_fontDb;

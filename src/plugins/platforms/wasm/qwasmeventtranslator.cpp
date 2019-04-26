@@ -375,9 +375,6 @@ void QWasmEventTranslator::initEventHandlers()
     emscripten_set_touchend_callback(canvasId, (void *)this, 1, &touchCallback);
     emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
     emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
-
-    emscripten_set_resize_callback(nullptr, (void *)this, 1, uiEvent_cb); // Note: handles browser window resize
-
 }
 
 template <typename Event>
@@ -907,21 +904,6 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     QWasmEventDispatcher::maintainTimers();
 
     return accepted;
-}
-
-int QWasmEventTranslator::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
-{
-    Q_UNUSED(e)
-    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
-
-    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
-        // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas might also have been resized, so we
-        // update the Qt screen size (and canvas render size).
-        eventTranslator->screen()->updateQScreenAndCanvasRenderSize();
-    }
-
-    return 0;
 }
 
 QT_END_NAMESPACE

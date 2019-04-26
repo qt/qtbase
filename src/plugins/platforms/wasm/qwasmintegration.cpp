@@ -115,6 +115,21 @@ QWasmIntegration::QWasmIntegration()
     }
 
     emscripten::val::global("window").set("onbeforeunload", val::module_property("qtBrowserBeforeUnload"));
+
+    // install browser window resize handler
+    auto onWindowResize = [](int eventType, const EmscriptenUiEvent *e, void *userData) -> int {
+        Q_UNUSED(eventType);
+        Q_UNUSED(e);
+        Q_UNUSED(userData);
+
+        // This resize event is called when the HTML window is resized. Depending
+        // on the page layout the the canvas(es) might also have been resized, so we
+        // update the Qt screen sizes (and canvas render sizes).
+        if (QWasmIntegration *integration = QWasmIntegration::get())
+            integration->resizeAllScreens();
+        return 0;
+    };
+    emscripten_set_resize_callback(nullptr, nullptr, 1, onWindowResize);
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -243,6 +258,13 @@ void QWasmIntegration::removeScreen(const QString &canvasId)
 void QWasmIntegration::resizeScreen(const QString &canvasId)
 {
     m_screens.value(canvasId)->updateQScreenAndCanvasRenderSize();
+}
+
+void QWasmIntegration::resizeAllScreens()
+{
+    qDebug() << "resizeAllScreens";
+    for (QWasmScreen *screen : m_screens)
+        screen->updateQScreenAndCanvasRenderSize();
 }
 
 QT_END_NAMESPACE
