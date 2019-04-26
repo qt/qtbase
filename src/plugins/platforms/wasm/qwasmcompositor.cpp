@@ -255,8 +255,9 @@ void QWasmCompositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScr
         return;
 
     QOpenGLTexture const *texture = backingStore->getUpdatedTexture();
-
-    blit(blitter, screen, texture, window->geometry());
+    QPoint windowCanvasPosition = window->geometry().topLeft() - screen->geometry().topLeft();
+    QRect windowCanvasGeometry = QRect(windowCanvasPosition, window->geometry().size());
+    blit(blitter, screen, texture, windowCanvasGeometry);
 }
 
 QPalette QWasmCompositor::makeWindowPalette()
