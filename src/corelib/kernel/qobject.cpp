@@ -3664,19 +3664,18 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
     if (sender->d_func()->blockSig)
         return;
 
+    Q_TRACE_SCOPE(QMetaObject_activate, sender, signal_index);
+
     if (sender->d_func()->isDeclarativeSignalConnected(signal_index)
             && QAbstractDeclarativeData::signalEmitted) {
-        Q_TRACE(QMetaObject_activate_begin_declarative_signal, sender, signal_index);
+        Q_TRACE_SCOPE(QMetaObject_activate_declarative_signal, sender, signal_index);
         QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender,
                                                 signal_index, argv);
-        Q_TRACE(QMetaObject_activate_end_declarative_signal, sender, signal_index);
     }
 
     if (!sender->d_func()->isSignalConnected(signal_index, /*checkDeclarative =*/ false)
         && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback
-        && !Q_TRACE_ENABLED(QMetaObject_activate_begin_signal)
-        && !Q_TRACE_ENABLED(QMetaObject_activate_end_signal)) {
+        && !qt_signal_spy_callback_set.signal_end_callback) {
         // The possible declarative connection is done, and nothing else is connected, so:
         return;
     }
@@ -3686,7 +3685,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         qt_signal_spy_callback_set.signal_begin_callback(sender, signal_index,
                                                          argv ? argv : empty_argv);
     }
-    Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
 
     {
     QMutexLocker locker(signalSlotLock(sender));
@@ -3717,7 +3715,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         locker.unlock();
         if (qt_signal_spy_callback_set.signal_end_callback != 0)
             qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
-        Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
         return;
     }
 
@@ -3778,9 +3775,11 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 c->slotObj->ref();
                 QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
                 locker.unlock();
-                Q_TRACE(QMetaObject_activate_begin_slot_functor, obj.data());
-                obj->call(receiver, argv ? argv : empty_argv);
-                Q_TRACE(QMetaObject_activate_end_slot_functor, obj.data());
+
+                {
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, obj.data());
+                    obj->call(receiver, argv ? argv : empty_argv);
+                }
 
                 // Make sure the slot object gets destroyed before the mutex is locked again, as the
                 // destructor of the slot object might also lock a mutex from the signalSlotLock() mutex pool,
@@ -3796,11 +3795,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 locker.unlock();
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0)
                     qt_signal_spy_callback_set.slot_begin_callback(receiver, methodIndex, argv ? argv : empty_argv);
-                Q_TRACE(QMetaObject_activate_begin_slot, receiver, methodIndex);
 
-                callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv ? argv : empty_argv);
+                {
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot, receiver, methodIndex);
+                    callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv ? argv : empty_argv);
+                }
 
-                Q_TRACE(QMetaObject_activate_end_slot, receiver, methodIndex);
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
                     qt_signal_spy_callback_set.slot_end_callback(receiver, methodIndex);
                 locker.relock();
@@ -3813,11 +3813,12 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                                                                 method,
                                                                 argv ? argv : empty_argv);
                 }
-                Q_TRACE(QMetaObject_activate_begin_slot, receiver, method);
 
-                metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+                {
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot, receiver, method);
+                    metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
+                }
 
-                Q_TRACE(QMetaObject_activate_end_slot, receiver, method);
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
                     qt_signal_spy_callback_set.slot_end_callback(receiver, method);
 
@@ -3838,7 +3839,6 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 
     if (qt_signal_spy_callback_set.signal_end_callback != 0)
         qt_signal_spy_callback_set.signal_end_callback(sender, signal_index);
-    Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
 }
 
 /*!
