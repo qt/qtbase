@@ -52,6 +52,7 @@ class tst_QTextMarkdownImporter : public QObject
 
 private slots:
     void headingBulletsContinuations();
+    void thematicBreaks();
 };
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
@@ -110,6 +111,47 @@ void tst_QTextMarkdownImporter::headingBulletsContinuations()
 #ifdef DEBUG_WRITE_HTML
     {
         QFile out("/tmp/headingBulletsContinuations.html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+}
+
+void tst_QTextMarkdownImporter::thematicBreaks()
+{
+    int horizontalRuleCount = 0;
+    int textLinesCount = 0;
+
+    QFile f(QFINDTESTDATA("data/thematicBreaks.md"));
+    QVERIFY(f.open(QFile::ReadOnly | QIODevice::Text));
+    QString md = QString::fromUtf8(f.readAll());
+    f.close();
+
+    QTextDocument doc;
+    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, md);
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    QTextFrame *currentFrame = iterator.currentFrame();
+    int i = 0;
+    while (!iterator.atEnd()) {
+        // There are no child frames
+        QCOMPARE(iterator.currentFrame(), currentFrame);
+        // Check whether the block is text or a horizontal rule
+        QTextBlock block = iterator.currentBlock();
+        if (block.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth))
+            ++horizontalRuleCount;
+        else if (!block.text().isEmpty())
+            ++textLinesCount;
+        qCDebug(lcTests) << i << (block.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth) ? QLatin1String("- - -") : block.text());
+        ++iterator;
+        ++i;
+    }
+    QCOMPARE(horizontalRuleCount, 5);
+    QCOMPARE(textLinesCount, 9);
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/thematicBreaks.html");
         out.open(QFile::WriteOnly);
         out.write(doc.toHtml().toLatin1());
         out.close();

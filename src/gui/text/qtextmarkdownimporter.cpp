@@ -273,7 +273,8 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         m_currentTable = m_cursor->insertTable(1, 1); // we don't know the dimensions yet
         break;
     case MD_BLOCK_HR: {
-        QTextBlockFormat blockFmt = m_cursor->blockFormat();
+        qCDebug(lcMD, "HR");
+        QTextBlockFormat blockFmt;
         blockFmt.setProperty(QTextFormat::BlockTrailingHorizontalRulerWidth, 1);
         m_cursor->insertBlock(blockFmt, QTextCharFormat());
     } break;

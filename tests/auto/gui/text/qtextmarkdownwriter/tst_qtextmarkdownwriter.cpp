@@ -398,6 +398,9 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("nested ordered list items with continuations") <<
         "<ol><li>item<p>continuation paragraph</p></li><li>another item<br/>continuation line</li><ol><li>item<p>continuation paragraph</p></li><li>another item<br/>continuation line</li></ol><li>another</li><li>another</li></ol>" <<
         "1.  item\n\n    continuation paragraph\n\n2.  another item\n    continuation line\n\n    1.  item\n\n        continuation paragraph\n\n    2.  another item\n        continuation line\n\n3.  another\n4.  another\n";
+    QTest::newRow("thematic break") <<
+        "something<hr/>something else" <<
+        "something\n\n- - -\nsomething else\n\n";
     // TODO
 //    QTest::newRow("escaped number and paren after double newline") <<
 //        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<

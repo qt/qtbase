@@ -309,6 +309,9 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             prefix += QLatin1String(bullet) + Space;
         }
         m_stream << prefix;
+    } else if (block.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
+        m_stream << "- - -\n"; // unambiguous horizontal rule, not an underline under a heading
+        return 0;
     } else if (!block.blockFormat().indent()) {
         m_wrappedLineIndent = 0;
     }
