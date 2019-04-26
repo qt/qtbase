@@ -1231,6 +1231,8 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
     if (query.isNull())
         return JNI_FALSE;
 
+    if (start == end)
+        return JNI_TRUE;
     if (start > end)
         qSwap(start, end);
 
