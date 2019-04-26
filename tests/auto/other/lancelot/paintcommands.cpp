@@ -1200,7 +1200,10 @@ void PaintCommands::command_drawRoundRect(QRegularExpressionMatch re)
     if (m_verboseMode)
         printf(" -(lance) drawRoundRect(%d, %d, %d, %d, [%d, %d])\n", x, y, w, h, xs, ys);
 
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     m_painter->drawRoundRect(x, y, w, h, xs, ys);
+    QT_WARNING_POP
 }
 
 /***************************************************************************************************/

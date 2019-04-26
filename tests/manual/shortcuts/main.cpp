@@ -108,6 +108,7 @@ void ShortcutTester::setupLayout()
         Qt::ControlModifier + Qt::Key_5, Qt::AltModifier + Qt::Key_5,
         Qt::ControlModifier + Qt::Key_Plus,
         Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_Plus,
+        Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_Equal,
         Qt::ControlModifier + Qt::Key_Y, Qt::ShiftModifier + Qt::Key_Comma,
         Qt::ControlModifier + Qt::Key_Comma, Qt::ControlModifier + Qt::Key_Slash,
         Qt::ControlModifier + Qt::Key_Backslash
@@ -121,6 +122,8 @@ void ShortcutTester::setupLayout()
 
     const int keys3[] = {
         Qt::MetaModifier + Qt::ShiftModifier + Qt::Key_A,
+        Qt::MetaModifier + Qt::Key_A,
+        Qt::MetaModifier + Qt::Key_Q,
         Qt::MetaModifier + Qt::ShiftModifier + Qt::Key_5,
         Qt::ControlModifier + Qt::Key_BracketRight,
         Qt::ShiftModifier + Qt::Key_F3,

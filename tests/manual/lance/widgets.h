@@ -45,30 +45,11 @@
 #include <QPaintEngine>
 #include <QSignalMapper>
 #include <QAction>
+#include <QDebug>
 
 #include <qmath.h>
 
 const int CP_RADIUS = 10;
-
-class StupidWorkaround : public QObject
-{
-    Q_OBJECT
-public:
-    StupidWorkaround(QWidget *widget, int *value)
-        : QObject(widget), w(widget), mode(value)
-    {
-    }
-
-public slots:
-    void setViewMode(int m) {
-        *mode = m;
-        w->update();
-    }
-
-private:
-    QWidget *w;
-    int *mode;
-};
 
 template <class T>
 class OnScreenWidget : public T
@@ -81,7 +62,7 @@ public:
         DifferenceView
     };
 
-    OnScreenWidget(const QString &file, QWidget *parent = 0)
+    OnScreenWidget(const QString &file, QWidget *parent = nullptr)
         : T(parent),
           m_filename(file),
           m_view_mode(RenderView)
@@ -108,33 +89,20 @@ public:
         } else {
             T::setWindowTitle("Rendering: '" + file + "'. Shortcuts: 1=render, 2=baseline, 3=difference");
 
-            StupidWorkaround *workaround = new StupidWorkaround(this, &m_view_mode);
-
-            QSignalMapper *mapper = new QSignalMapper(this);
-            T::connect(mapper, SIGNAL(mapped(int)), workaround, SLOT(setViewMode(int)));
-            T::connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setWindowTitle(QString)));
-
             QAction *renderViewAction = new QAction("Render View", this);
             renderViewAction->setShortcut(Qt::Key_1);
-            T::connect(renderViewAction, SIGNAL(triggered()), mapper, SLOT(map()));
-            mapper->setMapping(renderViewAction, RenderView);
-            mapper->setMapping(renderViewAction, "Render View: " + file);
+            T::connect(renderViewAction, &QAction::triggered, [&] { setMode(RenderView); });
             T::addAction(renderViewAction);
 
             QAction *baselineAction = new QAction("Baseline", this);
             baselineAction->setShortcut(Qt::Key_2);
-            T::connect(baselineAction, SIGNAL(triggered()), mapper, SLOT(map()));
-            mapper->setMapping(baselineAction, BaselineView);
-            mapper->setMapping(baselineAction, "Baseline View: " + file);
+            T::connect(baselineAction, &QAction::triggered, [&] { setMode(BaselineView); });
             T::addAction(baselineAction);
 
-            QAction *differenceAction = new QAction("Differenfe View", this);
+            QAction *differenceAction = new QAction("Difference View", this);
             differenceAction->setShortcut(Qt::Key_3);
-            T::connect(differenceAction, SIGNAL(triggered()), mapper, SLOT(map()));
-            mapper->setMapping(differenceAction, DifferenceView);
-            mapper->setMapping(differenceAction, "Difference View" + file);
+            T::connect(differenceAction, &QAction::triggered, [&] { setMode(DifferenceView); });
             T::addAction(differenceAction);
-
         }
 
     }
@@ -146,6 +114,18 @@ public:
             settings.setValue("cp" + QString::number(i), m_controlPoints.at(i));
         }
         settings.sync();
+    }
+
+    void setMode(ViewMode mode) {
+        m_view_mode = mode;
+        QString title;
+        switch (m_view_mode) {
+        case RenderView: title = "Render"; break;
+        case BaselineView: title = "Baseline"; break;
+        case DifferenceView: title = "Difference"; break;
+        }
+        T::setWindowTitle(title + " View: " + m_filename);
+        T::update();
     }
 
     void setVerboseMode(bool v) { m_verboseMode = v; }
@@ -205,7 +185,7 @@ public:
             pt.begin(this);
             pt.setRenderHint(QPainter::Antialiasing);
             pt.setFont(this->font());
-            pt.resetMatrix();
+            pt.resetTransform();
             pt.setPen(QColor(127, 127, 127, 191));
             pt.setBrush(QColor(191, 191, 255, 63));
             for (int i=0; i<m_controlPoints.size(); ++i) {
@@ -239,7 +219,7 @@ public:
 
         p.drawPixmap(0, 0, m_baseline);
 
-        p.setPen(QColor::fromRgb(0, 0, 0, 0.1));
+        p.setPen(QColor::fromRgbF(0, 0, 0, 0.1));
         p.setFont(QFont("Arial", 128));
         p.rotate(45);
         p.drawText(100, 0, "BASELINE");
@@ -251,7 +231,7 @@ public:
         img.fill(0);
 
         QPainter p(&img);
-        p.drawPixmap(0, 0, m_render_view);
+        p.drawImage(0, 0, m_image);
 
         p.setCompositionMode(QPainter::RasterOp_SourceXorDestination);
         p.drawPixmap(0, 0, m_baseline);
