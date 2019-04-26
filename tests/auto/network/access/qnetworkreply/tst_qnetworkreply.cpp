@@ -505,6 +505,8 @@ private Q_SLOTS:
 
     void autoDeleteRepliesAttribute_data();
     void autoDeleteRepliesAttribute();
+    void autoDeleteReplies_data();
+    void autoDeleteReplies();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -9215,6 +9217,95 @@ void tst_QNetworkReply::autoDeleteRepliesAttribute()
     // We need two calls to processEvents to test that the QNetworkReply doesn't get deleted.
     // The first call executes a metacall event which adds the deleteLater meta event which
     // would be executed in the second call. But that shouldn't happen without the attribute.
+    {
+        // Get
+        QNetworkRequest request(destination);
+        QScopedPointer<QNetworkReply> reply(manager.get(request));
+        QSignalSpy finishedSpy(reply.data(), &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply.data(), &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+        QCOMPARE(destroyedSpy.count(), 0);
+    }
+    {
+        // Post
+        QNetworkRequest request(destination);
+        QScopedPointer<QNetworkReply> reply(manager.post(request, QByteArrayLiteral("datastring")));
+        QSignalSpy finishedSpy(reply.data(), &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply.data(), &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+        QCOMPARE(destroyedSpy.count(), 0);
+    }
+}
+
+void tst_QNetworkReply::autoDeleteReplies_data()
+{
+    autoDeleteRepliesAttribute_data();
+}
+
+void tst_QNetworkReply::autoDeleteReplies()
+{
+    QFETCH(QUrl, destination);
+    manager.setAutoDeleteReplies(true);
+    auto cleanup = qScopeGuard([this] { manager.setAutoDeleteReplies(false); });
+    {
+        // Get
+        QNetworkRequest request(destination);
+        QNetworkReply *reply = manager.get(request);
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply, &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QVERIFY(destroyedSpy.wait());
+    }
+    {
+        // Post
+        QNetworkRequest request(destination);
+        QNetworkReply *reply = manager.post(request, QByteArrayLiteral("datastring"));
+        QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply, &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QVERIFY(destroyedSpy.wait());
+    }
+    // Here we repeat the test, but override the auto-deletion in the QNetworkRequest
+    // We need two calls to processEvents to test that the QNetworkReply doesn't get deleted.
+    // The first call executes a metacall event which adds the deleteLater meta event which
+    // would be executed in the second call. But that shouldn't happen in this case.
+    {
+        // Get
+        QNetworkRequest request(destination);
+        request.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false);
+        QScopedPointer<QNetworkReply> reply(manager.get(request));
+        QSignalSpy finishedSpy(reply.data(), &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply.data(), &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+        QCOMPARE(destroyedSpy.count(), 0);
+    }
+    {
+        // Post
+        QNetworkRequest request(destination);
+        request.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false);
+        QScopedPointer<QNetworkReply> reply(manager.post(request, QByteArrayLiteral("datastring")));
+        QSignalSpy finishedSpy(reply.data(), &QNetworkReply::finished);
+        QSignalSpy destroyedSpy(reply.data(), &QObject::destroyed);
+        QVERIFY(finishedSpy.wait());
+        QCOMPARE(destroyedSpy.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+        QCOMPARE(destroyedSpy.count(), 0);
+    }
+    // Now we repeat the test with autoDeleteReplies set to false
+    cleanup.dismiss();
+    manager.setAutoDeleteReplies(false);
     {
         // Get
         QNetworkRequest request(destination);

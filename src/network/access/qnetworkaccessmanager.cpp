@@ -1402,6 +1402,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
+    if (autoDeleteReplies()
+        && req.attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute).isNull()) {
+        req.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, true);
+    }
+
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
 
@@ -1670,6 +1675,40 @@ void QNetworkAccessManager::clearAccessCache()
 void QNetworkAccessManager::clearConnectionCache()
 {
     QNetworkAccessManagerPrivate::clearConnectionCache(this);
+}
+
+
+/*!
+    \since 5.14
+
+    Returns the true if QNetworkAccessManager is currently configured
+    to automatically delete QNetworkReplies, false otherwise.
+
+    \sa setAutoDeleteReplies,
+    QNetworkRequest::AutoDeleteReplyOnFinishAttribute
+*/
+bool QNetworkAccessManager::autoDeleteReplies()
+{
+    return d_func()->autoDeleteReplies;
+}
+
+/*!
+    \since 5.14
+
+    Enables or disables automatic deletion of \l {QNetworkReply} {QNetworkReplies}.
+
+    Setting \a shouldAutoDelete to true is the same as setting the
+    QNetworkRequest::AutoDeleteReplyOnFinishAttribute attribute to
+    true on all \e{future} \l {QNetworkRequest} {QNetworkRequests}
+    passed to this instance of QNetworkAccessManager unless the
+    attribute was already explicitly set on the QNetworkRequest.
+
+    \sa autoDeleteReplies,
+    QNetworkRequest::AutoDeleteReplyOnFinishAttribute
+*/
+void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
+{
+    d_func()->autoDeleteReplies = shouldAutoDelete;
 }
 
 void QNetworkAccessManagerPrivate::_q_replyFinished()

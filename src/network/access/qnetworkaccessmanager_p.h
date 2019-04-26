@@ -227,6 +227,8 @@ public:
     bool stsEnabled = false;
     mutable QNetworkStatusMonitor statusMonitor;
 
+    bool autoDeleteReplies = false;
+
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_AUTOTEST_EXPORT static const QWeakPointer<const QNetworkSession> getNetworkSession(const QNetworkAccessManager *manager);
 #endif
