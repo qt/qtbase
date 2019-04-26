@@ -77,6 +77,11 @@
 */
 
 /*!
+    \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#autouic
+    \title CMake AUTOUIC Documentation
+*/
+
+/*!
     \externalpage https://cmake.org/cmake/help/latest/prop_tgt/LOCATION.html
     \title CMake LOCATION Documentation
 */
