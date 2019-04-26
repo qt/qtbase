@@ -71,8 +71,19 @@ public:
     void writeFrame(const QTextFrame *frame);
 
 private:
+    struct ListInfo {
+        bool loose;
+    };
+
+    ListInfo listInfo(QTextList *list);
+
+private:
     QTextStream &m_stream;
     QTextDocument::MarkdownFeatures m_features;
+    QMap<QTextList *, ListInfo> m_listInfo;
+    int m_wrappedLineIndent = 0;
+    int m_lastListIndent = 1;
+    bool m_doubleNewlineWritten = false;
 };
 
 QT_END_NAMESPACE

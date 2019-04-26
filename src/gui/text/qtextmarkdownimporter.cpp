@@ -52,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 
+static const QChar Newline = QLatin1Char('\n');
+static const QChar Space = QLatin1Char(' ');
+
 // --------------------------------------------------------
 // MD4C callback function wrappers
 
@@ -141,18 +144,33 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
 {
     m_blockType = blockType;
     switch (blockType) {
-    case MD_BLOCK_P: {
-        QTextBlockFormat blockFmt;
-        int margin = m_doc->defaultFont().pointSize() / 2;
-        blockFmt.setTopMargin(margin);
-        blockFmt.setBottomMargin(margin);
-        m_cursor->insertBlock(blockFmt, QTextCharFormat());
-    } break;
+    case MD_BLOCK_P:
+        if (m_listStack.isEmpty()) {
+            QTextBlockFormat blockFmt;
+            int margin = m_doc->defaultFont().pointSize() / 2;
+            blockFmt.setTopMargin(margin);
+            blockFmt.setBottomMargin(margin);
+            m_cursor->insertBlock(blockFmt, QTextCharFormat());
+            qCDebug(lcMD, "P");
+        } else {
+            if (m_emptyListItem) {
+                qCDebug(lcMD, "LI text block at level %d -> BlockIndent %d",
+                        m_listStack.count(), m_cursor->blockFormat().indent());
+                m_emptyListItem = false;
+            } else {
+                qCDebug(lcMD, "P inside LI at level %d", m_listStack.count());
+                QTextBlockFormat blockFmt;
+                blockFmt.setIndent(m_listStack.count());
+                m_cursor->insertBlock(blockFmt, QTextCharFormat());
+            }
+        }
+        break;
     case MD_BLOCK_CODE: {
         QTextBlockFormat blockFmt;
         QTextCharFormat charFmt;
         charFmt.setFont(m_monoFont);
         m_cursor->insertBlock(blockFmt, charFmt);
+        qCDebug(lcMD, "CODE");
     } break;
     case MD_BLOCK_H: {
         MD_BLOCK_H_DETAIL *detail = static_cast<MD_BLOCK_H_DETAIL *>(det);
@@ -163,6 +181,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         charFmt.setFontWeight(QFont::Bold);
         blockFmt.setHeadingLevel(int(detail->level));
         m_cursor->insertBlock(blockFmt, charFmt);
+        qCDebug(lcMD, "H%d", detail->level);
     } break;
     case MD_BLOCK_LI: {
         MD_BLOCK_LI_DETAIL *detail = static_cast<MD_BLOCK_LI_DETAIL *>(det);
@@ -176,7 +195,10 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
             list->add(m_cursor->block());
         }
         m_cursor->setBlockFormat(bfmt);
+        qCDebug(lcMD) << (m_emptyList ? "LI (first in list)" : "LI");
         m_emptyList = false; // Avoid insertBlock for the first item (because insertList already did that)
+        m_listItem = true;
+        m_emptyListItem = true;
     } break;
     case MD_BLOCK_UL: {
         MD_BLOCK_UL_DETAIL *detail = static_cast<MD_BLOCK_UL_DETAIL *>(det);
@@ -193,6 +215,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
             fmt.setStyle(QTextListFormat::ListDisc);
             break;
         }
+        qCDebug(lcMD, "UL %c level %d", detail->mark, m_listStack.count());
         m_listStack.push(m_cursor->insertList(fmt));
         m_emptyList = true;
     } break;
@@ -202,6 +225,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         fmt.setIndent(m_listStack.count() + 1);
         fmt.setNumberSuffix(QChar::fromLatin1(detail->mark_delimiter));
         fmt.setStyle(QTextListFormat::ListDecimal);
+        qCDebug(lcMD, "OL xx%d level %d", detail->mark_delimiter, m_listStack.count());
         m_listStack.push(m_cursor->insertList(fmt));
         m_emptyList = true;
     } break;
@@ -265,6 +289,7 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
     switch (blockType) {
     case MD_BLOCK_UL:
     case MD_BLOCK_OL:
+        qCDebug(lcMD, "list at level %d ended", m_listStack.count());
         m_listStack.pop();
         break;
     case MD_BLOCK_TR: {
@@ -298,6 +323,14 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
         qCDebug(lcMD) << "table ended with" << m_currentTable->columns() << "cols and" << m_currentTable->rows() << "rows";
         m_currentTable = nullptr;
         m_cursor->movePosition(QTextCursor::End);
+        break;
+    case MD_BLOCK_LI:
+        qCDebug(lcMD, "LI at level %d ended", m_listStack.count());
+        m_listItem = false;
+        break;
+    case MD_BLOCK_CODE:
+    case MD_BLOCK_H:
+        m_cursor->setCharFormat(QTextCharFormat());
         break;
     default:
         break;
@@ -381,10 +414,10 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         s = QString(QChar(0xFFFD)); // CommonMark-required replacement for null
         break;
     case MD_TEXT_BR:
-        s = QLatin1String("\n");
+        s = QString(Newline);
         break;
     case MD_TEXT_SOFTBR:
-        s = QLatin1String(" ");
+        s = QString(Space);
         break;
     case MD_TEXT_CODE:
         // We'll see MD_SPAN_CODE too, which will set the char format, and that's enough.
@@ -431,6 +464,14 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 
     if (!s.isEmpty())
         m_cursor->insertText(s);
+    if (m_cursor->currentList()) {
+        // The list item will indent the list item's text, so we don't need indentation on the block.
+        QTextBlockFormat blockFmt = m_cursor->blockFormat();
+        blockFmt.setIndent(0);
+        m_cursor->setBlockFormat(blockFmt);
+    }
+    qCDebug(lcMD) << textType << "in block" << m_blockType << s << "in list?" << m_cursor->currentList()
+                  << "indent" << m_cursor->blockFormat().indent();
     return 0; // no error
 }
 

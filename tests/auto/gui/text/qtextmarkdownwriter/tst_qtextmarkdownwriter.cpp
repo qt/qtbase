@@ -50,6 +50,7 @@ private slots:
     void testWriteParagraph_data();
     void testWriteParagraph();
     void testWriteList();
+    void testWriteNestedBulletLists_data();
     void testWriteNestedBulletLists();
     void testWriteNestedNumericLists();
     void testWriteTable();
@@ -122,9 +123,44 @@ void tst_QTextMarkdownWriter::testWriteList()
         "- ListItem 1\n- ListItem 2\n"));
 }
 
+void tst_QTextMarkdownWriter::testWriteNestedBulletLists_data()
+{
+    QTest::addColumn<bool>("checkbox");
+    QTest::addColumn<bool>("checked");
+    QTest::addColumn<bool>("continuationLine");
+    QTest::addColumn<bool>("continuationParagraph");
+    QTest::addColumn<QString>("expectedOutput");
+
+    QTest::newRow("plain bullets") << false << false << false << false <<
+        "- ListItem 1\n  * ListItem 2\n    + ListItem 3\n- ListItem 4\n  * ListItem 5\n";
+    QTest::newRow("bullets with continuation lines") << false << false << true << false <<
+        "- ListItem 1\n  * ListItem 2\n    + ListItem 3 with text that won't fit on one line and thus needs a\n      continuation\n- ListItem 4\n  * ListItem 5 with text that won't fit on one line and thus needs a\n    continuation\n";
+    QTest::newRow("bullets with continuation paragraphs") << false << false << false << true <<
+        "- ListItem 1\n\n  * ListItem 2\n    + ListItem 3\n\n      continuation\n\n- ListItem 4\n\n  * ListItem 5\n\n    continuation\n\n";
+    QTest::newRow("unchecked") << true << false << false << false <<
+        "- [ ] ListItem 1\n  * [ ] ListItem 2\n    + [ ] ListItem 3\n- [ ] ListItem 4\n  * [ ] ListItem 5\n";
+    QTest::newRow("checked") << true << true << false << false <<
+        "- [x] ListItem 1\n  * [x] ListItem 2\n    + [x] ListItem 3\n- [x] ListItem 4\n  * [x] ListItem 5\n";
+    QTest::newRow("checked with continuation lines") << true << true << true << false <<
+        "- [x] ListItem 1\n  * [x] ListItem 2\n    + [x] ListItem 3 with text that won't fit on one line and thus needs a\n      continuation\n- [x] ListItem 4\n  * [x] ListItem 5 with text that won't fit on one line and thus needs a\n    continuation\n";
+    QTest::newRow("checked with continuation paragraphs") << true << true << false << true <<
+        "- [x] ListItem 1\n\n  * [x] ListItem 2\n    + [x] ListItem 3\n\n      continuation\n\n- [x] ListItem 4\n\n  * [x] ListItem 5\n\n    continuation\n\n";
+}
+
 void tst_QTextMarkdownWriter::testWriteNestedBulletLists()
 {
+    QFETCH(bool, checkbox);
+    QFETCH(bool, checked);
+    QFETCH(bool, continuationParagraph);
+    QFETCH(bool, continuationLine);
+    QFETCH(QString, expectedOutput);
+
     QTextCursor cursor(document);
+    QTextBlockFormat blockFmt = cursor.blockFormat();
+    if (checkbox) {
+        blockFmt.setMarker(checked ? QTextBlockFormat::Checked : QTextBlockFormat::Unchecked);
+        cursor.setBlockFormat(blockFmt);
+    }
 
     QTextList *list1 = cursor.createList(QTextListFormat::ListDisc);
     cursor.insertText("ListItem 1");
@@ -140,18 +176,42 @@ void tst_QTextMarkdownWriter::testWriteNestedBulletLists()
     fmt3.setStyle(QTextListFormat::ListSquare);
     fmt3.setIndent(3);
     cursor.insertList(fmt3);
-    cursor.insertText("ListItem 3");
+    cursor.insertText(continuationLine ?
+                          "ListItem 3 with text that won't fit on one line and thus needs a continuation" :
+                          "ListItem 3");
+    if (continuationParagraph) {
+        QTextBlockFormat blockFmt;
+        blockFmt.setIndent(2);
+        cursor.insertBlock(blockFmt);
+        cursor.insertText("continuation");
+    }
 
-    cursor.insertBlock();
+    cursor.insertBlock(blockFmt);
     cursor.insertText("ListItem 4");
     list1->add(cursor.block());
 
     cursor.insertBlock();
-    cursor.insertText("ListItem 5");
+    cursor.insertText(continuationLine ?
+                          "ListItem 5 with text that won't fit on one line and thus needs a continuation" :
+                          "ListItem 5");
     list2->add(cursor.block());
+    if (continuationParagraph) {
+        QTextBlockFormat blockFmt;
+        blockFmt.setIndent(2);
+        cursor.insertBlock(blockFmt);
+        cursor.insertText("continuation");
+    }
 
-    QCOMPARE(documentToUnixMarkdown(), QString::fromLatin1(
-                 "- ListItem 1\n  * ListItem 2\n    + ListItem 3\n- ListItem 4\n  * ListItem 5\n"));
+    QString output = documentToUnixMarkdown();
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".md");
+        out.open(QFile::WriteOnly);
+        out.write(output.toUtf8());
+        out.close();
+    }
+#endif
+    QCOMPARE(documentToUnixMarkdown(), expectedOutput);
 }
 
 void tst_QTextMarkdownWriter::testWriteNestedNumericLists()
@@ -185,7 +245,7 @@ void tst_QTextMarkdownWriter::testWriteNestedNumericLists()
 
     // There's no QTextList API to set the starting number so we hard-coded all lists to start at 1 (QTBUG-65384)
     QCOMPARE(documentToUnixMarkdown(), QString::fromLatin1(
-                 "1 ListItem 1\n    1) ListItem 2\n        1 ListItem 3\n2 ListItem 4\n    2) ListItem 5\n"));
+                 "1.  ListItem 1\n    1)  ListItem 2\n        1.  ListItem 3\n2.  ListItem 4\n    2)  ListItem 5\n"));
 }
 
 void tst_QTextMarkdownWriter::testWriteTable()
@@ -312,8 +372,8 @@ void tst_QTextMarkdownWriter::rewriteDocument()
 
 void tst_QTextMarkdownWriter::fromHtml_data()
 {
-    QTest::addColumn<QString>("input");
-    QTest::addColumn<QString>("output");
+    QTest::addColumn<QString>("expectedInput");
+    QTest::addColumn<QString>("expectedOutput");
 
     QTest::newRow("long URL") <<
         "<span style=\"font-style:italic;\">https://www.example.com/dir/subdir/subsubdir/subsubsubdir/subsubsubsubdir/subsubsubsubsubdir/</span>" <<
@@ -329,6 +389,15 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("escaped hyphen after newline") <<
         "The first sentence of this paragraph holds 80 characters, then there's a minus. - This is wrapped, but is <em>not</em> a bullet point." <<
         "The first sentence of this paragraph holds 80 characters, then there's a minus.\n\\- This is wrapped, but is *not* a bullet point.\n\n";
+    QTest::newRow("list items with indented continuations") <<
+        "<ul><li>bullet<p>continuation paragraph</p></li><li>another bullet<br/>continuation line</li></ul>" <<
+        "- bullet\n\n  continuation paragraph\n\n- another bullet\n  continuation line\n";
+    QTest::newRow("nested list items with continuations") <<
+        "<ul><li>bullet<p>continuation paragraph</p></li><li>another bullet<br/>continuation line</li><ul><li>bullet<p>continuation paragraph</p></li><li>another bullet<br/>continuation line</li></ul></ul>" <<
+        "- bullet\n\n  continuation paragraph\n\n- another bullet\n  continuation line\n\n  - bullet\n\n    continuation paragraph\n\n  - another bullet\n    continuation line\n";
+    QTest::newRow("nested ordered list items with continuations") <<
+        "<ol><li>item<p>continuation paragraph</p></li><li>another item<br/>continuation line</li><ol><li>item<p>continuation paragraph</p></li><li>another item<br/>continuation line</li></ol><li>another</li><li>another</li></ol>" <<
+        "1.  item\n\n    continuation paragraph\n\n2.  another item\n    continuation line\n\n    1.  item\n\n        continuation paragraph\n\n    2.  another item\n        continuation line\n\n3.  another\n4.  another\n";
     // TODO
 //    QTest::newRow("escaped number and paren after double newline") <<
 //        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<
@@ -340,11 +409,22 @@ void tst_QTextMarkdownWriter::fromHtml_data()
 
 void tst_QTextMarkdownWriter::fromHtml()
 {
-    QFETCH(QString, input);
-    QFETCH(QString, output);
+    QFETCH(QString, expectedInput);
+    QFETCH(QString, expectedOutput);
 
-    document->setHtml(input);
-    QCOMPARE(documentToUnixMarkdown(), output);
+    document->setHtml(expectedInput);
+    QString output = documentToUnixMarkdown();
+
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".md");
+        out.open(QFile::WriteOnly);
+        out.write(output.toUtf8());
+        out.close();
+    }
+#endif
+
+    QCOMPARE(output, expectedOutput);
 }
 
 QString tst_QTextMarkdownWriter::documentToUnixMarkdown()

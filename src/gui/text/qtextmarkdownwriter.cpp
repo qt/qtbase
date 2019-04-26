@@ -46,12 +46,17 @@
 #include "qtexttable.h"
 #include "qtextcursor.h"
 #include "qtextimagehandler_p.h"
+#include "qloggingcategory.h"
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
+
 static const QChar Space = QLatin1Char(' ');
 static const QChar Newline = QLatin1Char('\n');
+static const QChar LineBreak = QChar(0x2028);
 static const QChar Backtick = QLatin1Char('`');
+static const QChar Period = QLatin1Char('.');
 
 QTextMarkdownWriter::QTextMarkdownWriter(QTextStream &stream, QTextDocument::MarkdownFeatures features)
   : m_stream(stream), m_features(features)
@@ -93,6 +98,7 @@ void QTextMarkdownWriter::writeTable(const QAbstractTableModel &table)
         }
         m_stream << '|'<< Qt::endl;
     }
+    m_listInfo.clear();
 }
 
 void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
@@ -144,6 +150,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                     m_stream << Newline;
             }
             int endingCol = writeBlock(block, !table, table && tableRow == 0);
+            m_doubleNewlineWritten = false;
             if (table) {
                 QTextTableCell cell = table->cellAt(block.position());
                 int paddingLen = -endingCol;
@@ -158,14 +165,48 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                 m_stream << Newline;
             } else if (endingCol > 0) {
                 m_stream << Newline << Newline;
+                m_doubleNewlineWritten = true;
             }
             lastWasList = block.textList();
         }
         child = iterator.currentFrame();
         ++iterator;
     }
-    if (table)
+    if (table) {
         m_stream << Newline << Newline;
+        m_doubleNewlineWritten = true;
+    }
+    m_listInfo.clear();
+}
+
+QTextMarkdownWriter::ListInfo QTextMarkdownWriter::listInfo(QTextList *list)
+{
+    if (!m_listInfo.contains(list)) {
+        // decide whether this list is loose or tight
+        ListInfo info;
+        info.loose = false;
+        if (list->count() > 1) {
+            QTextBlock first = list->item(0);
+            QTextBlock last = list->item(list->count() - 1);
+            QTextBlock next = first.next();
+            while (next.isValid()) {
+                if (next == last)
+                    break;
+                qCDebug(lcMDW) << "next block in list" << list << next.text() << "part of list?" << next.textList();
+                if (!next.textList()) {
+                    // If we find a continuation paragraph, this list is "loose"
+                    // because it will need a blank line to separate that paragraph.
+                    qCDebug(lcMDW) << "decided list beginning with" << first.text() << "is loose after" << next.text();
+                    info.loose = true;
+                    break;
+                }
+                next = next.next();
+            }
+        }
+        m_listInfo.insert(list, info);
+        return info;
+    }
+    return m_listInfo.value(list);
 }
 
 static int nearestWordWrapIndex(const QString &s, int before)
@@ -211,7 +252,6 @@ static void maybeEscapeFirstChar(QString &s)
 int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ignoreFormat)
 {
     int ColumnLimit = 80;
-    int wrapIndent = 0;
     if (block.textList()) { // it's a list-item
         auto fmt = block.textList()->format();
         const int listLevel = fmt.indent();
@@ -219,9 +259,18 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         QByteArray bullet = " ";
         bool numeric = false;
         switch (fmt.style()) {
-        case QTextListFormat::ListDisc: bullet = "-"; break;
-        case QTextListFormat::ListCircle: bullet = "*"; break;
-        case QTextListFormat::ListSquare: bullet = "+"; break;
+        case QTextListFormat::ListDisc:
+            bullet = "-";
+            m_wrappedLineIndent = 2;
+            break;
+        case QTextListFormat::ListCircle:
+            bullet = "*";
+            m_wrappedLineIndent = 2;
+            break;
+        case QTextListFormat::ListSquare:
+            bullet = "+";
+            m_wrappedLineIndent = 2;
+            break;
         case QTextListFormat::ListStyleUndefined: break;
         case QTextListFormat::ListDecimal:
         case QTextListFormat::ListLowerAlpha:
@@ -229,6 +278,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         case QTextListFormat::ListLowerRoman:
         case QTextListFormat::ListUpperRoman:
             numeric = true;
+            m_wrappedLineIndent = 4;
             break;
         }
         switch (block.blockFormat().marker()) {
@@ -241,23 +291,36 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         default:
             break;
         }
-        QString prefix((listLevel - 1) * (numeric ? 4 : 2), Space);
-        if (numeric)
-            prefix += QString::number(number) + fmt.numberSuffix() + Space;
-        else
+        int indentFirstLine = (listLevel - 1) * (numeric ? 4 : 2);
+        m_wrappedLineIndent += indentFirstLine;
+        if (m_lastListIndent != listLevel && !m_doubleNewlineWritten && listInfo(block.textList()).loose)
+            m_stream << Newline;
+        m_lastListIndent = listLevel;
+        QString prefix(indentFirstLine, Space);
+        if (numeric) {
+            QString suffix = fmt.numberSuffix();
+            if (suffix.isEmpty())
+                suffix = QString(Period);
+            QString numberStr = QString::number(number) + suffix + Space;
+            if (numberStr.length() == 3)
+                numberStr += Space;
+            prefix += numberStr;
+        } else {
             prefix += QLatin1String(bullet) + Space;
+        }
         m_stream << prefix;
-        wrapIndent = prefix.length();
+    } else if (!block.blockFormat().indent()) {
+        m_wrappedLineIndent = 0;
     }
 
     if (block.blockFormat().headingLevel())
         m_stream << QByteArray(block.blockFormat().headingLevel(), '#') << ' ';
 
-    QString wrapIndentString(wrapIndent, Space);
+    QString wrapIndentString(m_wrappedLineIndent, Space);
     // It would be convenient if QTextStream had a lineCharPos() accessor,
     // to keep track of how many characters (not bytes) have been written on the current line,
     // but it doesn't.  So we have to keep track with this col variable.
-    int col = wrapIndent;
+    int col = m_wrappedLineIndent;
     bool mono = false;
     bool startsOrEndsWithBacktick = false;
     bool bold = false;
@@ -267,8 +330,16 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     QString backticks(Backtick);
     for (QTextBlock::Iterator frag = block.begin(); !frag.atEnd(); ++frag) {
         QString fragmentText = frag.fragment().text();
-        while (fragmentText.endsWith(QLatin1Char('\n')))
+        while (fragmentText.endsWith(Newline))
             fragmentText.chop(1);
+        if (block.textList()) { // <li>first line</br>continuation</li>
+            QString newlineIndent = QString(Newline) + QString(m_wrappedLineIndent, Space);
+            fragmentText.replace(QString(LineBreak), newlineIndent);
+        } else if (block.blockFormat().indent() > 0) { // <li>first line<p>continuation</p></li>
+            m_stream << QString(m_wrappedLineIndent, Space);
+        } else {
+            fragmentText.replace(LineBreak, Newline);
+        }
         startsOrEndsWithBacktick |= fragmentText.startsWith(Backtick) || fragmentText.endsWith(Backtick);
         QTextCharFormat fmt = frag.fragment().charFormat();
         if (fmt.isImageFormat()) {
@@ -276,7 +347,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             QString s = QLatin1String("![image](") + ifmt.name() + QLatin1Char(')');
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
-                col = wrapIndent;
+                col = m_wrappedLineIndent;
             }
             m_stream << s;
             col += s.length();
@@ -285,7 +356,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                     fmt.property(QTextFormat::AnchorHref).toString() + QLatin1Char(')');
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
-                col = wrapIndent;
+                col = m_wrappedLineIndent;
             }
             m_stream << s;
             col += s.length();
@@ -296,7 +367,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             if (!ignoreFormat) {
                 if (monoFrag != mono) {
                     if (monoFrag)
-                        backticks = QString::fromLatin1(QByteArray(adjacentBackticksCount(fragmentText) + 1, '`'));
+                        backticks = QString(adjacentBackticksCount(fragmentText) + 1, Backtick);
                     markers += backticks;
                     if (startsOrEndsWithBacktick)
                         markers += Space;
@@ -347,12 +418,12 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         m_stream << markers;
                         col += markers.length();
                     }
-                    if (col == wrapIndent)
+                    if (col == m_wrappedLineIndent)
                         maybeEscapeFirstChar(subfrag);
                     m_stream << subfrag;
                     if (breakingLine) {
                         m_stream << Newline << wrapIndentString;
-                        col = wrapIndent;
+                        col = m_wrappedLineIndent;
                     } else {
                         col += subfrag.length();
                     }

@@ -27,8 +27,8 @@ text layout changes.*
 Different kinds of lists can be included in rich text documents. Standard
 bullet lists can be nested, using different symbols for each level of the list:
 
-* Disc symbols are typically used for top-level list items.
-  - Circle symbols can be used to distinguish between items in lower-level
+- Disc symbols are typically used for top-level list items.
+  * Circle symbols can be used to distinguish between items in lower-level
     lists.
     + Square symbols provide a reasonable alternative to discs and circles.
 
@@ -36,13 +36,13 @@ Ordered lists can be created that can be used for tables of contents. Different
 characters can be used to enumerate items, and we can use both Roman and Arabic
 numerals in the same list structure:
 
-1. Introduction
-2. Qt Tools
-    1) Qt Assistant
-    2) Qt Designer
-        1. Form Editor
-        2. Component Architecture
-    3) Qt Linguist
+1.  Introduction
+2.  Qt Tools
+    1)  Qt Assistant
+    2)  Qt Designer
+        1.  Form Editor
+        2.  Component Architecture
+    3)  Qt Linguist
 
 The list will automatically be renumbered if you add or remove items. *Try
 adding new sections to the above list or removing existing item to see the

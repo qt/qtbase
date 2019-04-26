@@ -116,6 +116,8 @@ private:
     Features m_features;
     int m_blockType = 0;
     bool m_emptyList = false; // true when the last thing we did was insertList
+    bool m_listItem = false;
+    bool m_emptyListItem = false;
     bool m_imageSpan = false;
 };
 
