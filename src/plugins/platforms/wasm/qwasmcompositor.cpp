@@ -251,6 +251,8 @@ void QWasmCompositor::blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, 
 void QWasmCompositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window)
 {
     QWasmBackingStore *backingStore = window->backingStore();
+    if (!backingStore)
+        return;
 
     QOpenGLTexture const *texture = backingStore->getUpdatedTexture();
 
