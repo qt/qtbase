@@ -902,37 +902,21 @@ Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED  bool qFuzzyIsNul
     return qAbs(f) <= 0.00001f;
 }
 
-/*
-   This function tests a double for a null value. It doesn't
-   check whether the actual value is 0 or close to 0, but whether
-   it is binary 0, disregarding sign.
-*/
-Q_REQUIRED_RESULT static inline Q_DECL_UNUSED bool qIsNull(double d)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+
+Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qIsNull(double d) noexcept
 {
-    union U {
-        double d;
-        quint64 u;
-    };
-    U val;
-    val.d = d;
-    return (val.u & Q_UINT64_C(0x7fffffffffffffff)) == 0;
+    return d == 0.0;
 }
 
-/*
-   This function tests a float for a null value. It doesn't
-   check whether the actual value is 0 or close to 0, but whether
-   it is binary 0, disregarding sign.
-*/
-Q_REQUIRED_RESULT static inline Q_DECL_UNUSED bool qIsNull(float f)
+Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qIsNull(float f) noexcept
 {
-    union U {
-        float f;
-        quint32 u;
-    };
-    U val;
-    val.f = f;
-    return (val.u & 0x7fffffff) == 0;
+    return f == 0.0f;
 }
+
+QT_WARNING_POP
 
 /*
    Compilers which follow outdated template instantiation rules
