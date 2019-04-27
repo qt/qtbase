@@ -775,6 +775,7 @@ void QProcessPrivate::Channel::clear()
 
 /*!
     \class QProcess::CreateProcessArguments
+    \inmodule QtCore
     \note This struct is only available on the Windows platform.
 
     This struct is a representation of all parameters of the Windows API

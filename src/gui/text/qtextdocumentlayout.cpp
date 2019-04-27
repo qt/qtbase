@@ -145,6 +145,9 @@ struct QTextLayoutStruct {
     inline QFixed absoluteY() const
     { return frameY + y; }
 
+    inline QFixed contentHeight() const
+    { return pageHeight - pageBottomMargin - pageTopMargin; }
+
     inline int currentPage() const
     { return pageHeight == 0 ? 0 : (absoluteY() / pageHeight).truncate(); }
 
@@ -2701,7 +2704,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight, &lineBottom);
 
             while (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom &&
-                layoutStruct->pageHeight >= lineBreakHeight) {
+                layoutStruct->contentHeight() >= lineBreakHeight) {
                 layoutStruct->newPage();
 
                 floatMargins(layoutStruct->y, layoutStruct, &left, &right);

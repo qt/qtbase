@@ -790,6 +790,11 @@ defineTest(qtConfLibrary_makeSpec) {
     !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec), $$2): \
         return(false)
 
+    !isEmpty(QMAKE_EXPORT_INCDIR_$$spec) {
+        $${1}.exportincludedir = $$eval(QMAKE_EXPORT_INCDIR_$$spec)
+        export($${1}.exportincludedir)
+    }
+
     # note that the object is re-exported, because we resolve the libraries.
 
     return(true)
@@ -957,7 +962,8 @@ defineTest(qtConfExportLibrary) {
     }
     defines = $$eval($${spfx}.defines)
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
-    includes = $$eval($${spfx}.includedir)
+    includes = $$eval($${spfx}.exportincludedir)
+    isEmpty(includes): includes = $$eval($${spfx}.includedir)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     uses = $$eval($${lpfx}.dependencies)
     !isEmpty(uses) {
