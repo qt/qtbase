@@ -787,7 +787,7 @@ QOpenGLExtraFunctions *QOpenGLContext::extraFunctions() const
     to the non-template function.
 
     Note that requests for function objects of other versions or profiles can fail and
-    in doing so will return a null pointer. Situations in which creation of the functions
+    in doing so will return \nullptr. Situations in which creation of the functions
     object can fail are if the request cannot be satisfied due to asking for functions
     that are not in the version or profile of this context. For example:
 
@@ -1330,7 +1330,7 @@ bool QOpenGLContext::supportsThreadedOpenGL()
     \since 5.5
 
     Returns the application-wide shared OpenGL context, if present.
-    Otherwise, returns a null pointer.
+    Otherwise, returns \nullptr.
 
     This is useful if you need to upload OpenGL objects (buffers, textures,
     etc.) before creating or showing a QOpenGLWidget or QQuickWidget.

@@ -1038,8 +1038,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \snippet code/src_corelib_tools_qbytearray.cpp 5
 
     All functions except isNull() treat null byte arrays the same as
-    empty byte arrays. For example, data() returns a pointer to a
-    '\\0' character for a null byte array (\e not a null pointer),
+    empty byte arrays. For example, data() returns a valid pointer
+    (\e not nullptr) to a '\\0' character for a byte array
     and QByteArray() compares equal to QByteArray(""). We recommend
     that you always use isEmpty() and avoid isNull().
 

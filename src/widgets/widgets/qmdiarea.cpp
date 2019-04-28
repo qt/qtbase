@@ -1998,9 +1998,9 @@ QMdiSubWindow *QMdiArea::addSubWindow(QWidget *widget, Qt::WindowFlags windowFla
     Removes \a widget from the MDI area. The \a widget must be
     either a QMdiSubWindow or a widget that is the internal widget of
     a subwindow. Note \a widget is never actually deleted by QMdiArea.
-    If a QMdiSubWindow is passed in its parent is set to 0 and it is
-    removed, but if an internal widget is passed in the child widget
-    is set to 0 but the QMdiSubWindow is not removed.
+    If a QMdiSubWindow is passed in, its parent is set to \nullptr and it is
+    removed; but if an internal widget is passed in, the child widget
+    is set to \nullptr and the QMdiSubWindow is \e not removed.
 
     \sa addSubWindow()
 */

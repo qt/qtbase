@@ -417,7 +417,7 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 /*!
     \fn Qt::HANDLE QSslCertificate::handle() const
     Returns a pointer to the native certificate handle, if there is
-    one, or a null pointer otherwise.
+    one, else \nullptr.
 
     You can use this handle, together with the native API, to access
     extended information about the certificate.

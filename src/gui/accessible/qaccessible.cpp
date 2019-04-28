@@ -526,7 +526,7 @@ static void qAccessibleCleanup()
     to it.
 
     If the key and the QObject does not have a corresponding
-    QAccessibleInterface, a null-pointer will be returned.
+    QAccessibleInterface, \nullptr will be returned.
 
     Installed factories are called by queryAccessibilityInterface() until
     one provides an interface.

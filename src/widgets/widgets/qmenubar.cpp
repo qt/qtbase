@@ -897,8 +897,8 @@ QAction *QMenuBar::insertMenu(QAction *before, QMenu *menu)
 }
 
 /*!
-  Returns the QAction that is currently highlighted. A null pointer
-  will be returned if no action is currently selected.
+  Returns the QAction that is currently highlighted, if any,
+  else \nullptr.
 */
 QAction *QMenuBar::activeAction() const
 {

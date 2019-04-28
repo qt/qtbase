@@ -699,7 +699,7 @@ void QCoreApplicationPrivate::initLocale()
     Returns a pointer to the application's QCoreApplication (or
     QGuiApplication/QApplication) instance.
 
-    If no instance has been allocated, \c null is returned.
+    If no instance has been allocated, \nullptr is returned.
 */
 
 /*!

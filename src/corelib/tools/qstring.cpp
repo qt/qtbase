@@ -1685,10 +1685,9 @@ const QString::Null QString::null = { };
     \snippet qstring/main.cpp 8
 
     All functions except isNull() treat null strings the same as empty
-    strings. For example, toUtf8().constData() returns a pointer to a
-    '\\0' character for a null string (\e not a null pointer), and
-    QString() compares equal to QString(""). We recommend that you
-    always use the isEmpty() function and avoid isNull().
+    strings. For example, toUtf8().constData() returns a valid pointer
+    (\e not nullptr) to a '\\0' character for a null string. We
+    recommend that you always use the isEmpty() function and avoid isNull().
 
     \section1 Argument Formats
 
@@ -4553,7 +4552,7 @@ int QString::indexOf(const QRegularExpression& re, int from) const
     expression \a re in the string, searching forward from index
     position \a from. Returns -1 if \a re didn't match anywhere.
 
-    If the match is successful and \a rmatch is not a null pointer, it also
+    If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
     pointed to by \a rmatch.
 
@@ -4604,7 +4603,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from) const
     expression \a re in the string, which starts before the index
     position \a from. Returns -1 if \a re didn't match anywhere.
 
-    If the match is successful and \a rmatch is not a null pointer, it also
+    If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
     pointed to by \a rmatch.
 
@@ -4655,14 +4654,14 @@ bool QString::contains(const QRegularExpression &re) const
     Returns \c true if the regular expression \a re matches somewhere in this
     string; otherwise returns \c false.
 
-    If the match is successful and \a match is not a null pointer, it also
+    If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
-    pointed to by \a match.
+    pointed to by \a rmatch.
 
     \sa QRegularExpression::match()
 */
 
-bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *match) const
+bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch) const
 {
     if (!re.isValid()) {
         qWarning("QString::contains: invalid QRegularExpression object");
@@ -4670,8 +4669,8 @@ bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *ma
     }
     QRegularExpressionMatch m = re.match(*this);
     bool hasMatch = m.hasMatch();
-    if (hasMatch && match)
-        *match = qMove(m);
+    if (hasMatch && rmatch)
+        *rmatch = qMove(m);
     return hasMatch;
 }
 
@@ -10333,8 +10332,8 @@ ownership of it, no memory is freed when instances are destroyed.
 /*!
     \fn bool QStringRef::isNull() const
 
-    Returns \c true if string() returns a null pointer or a pointer to a
-    null string; otherwise returns \c true.
+    Returns \c true if this string reference does not reference a string or if
+    the string it references is null (i.e. QString::isNull() is true).
 
     \sa size()
 */

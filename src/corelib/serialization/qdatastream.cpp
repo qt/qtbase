@@ -1028,8 +1028,7 @@ QDataStream &QDataStream::operator>>(char *&s)
     \c{delete []} operator.
 
     The \a l parameter is set to the length of the buffer. If the
-    string read is empty, \a l is set to 0 and \a s is set to
-    a null pointer.
+    string read is empty, \a l is set to 0 and \a s is set to \nullptr.
 
     The serialization format is a quint32 length specifier first,
     then \a l bytes of data.
