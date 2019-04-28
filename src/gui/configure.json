@@ -445,7 +445,7 @@
             ],
             "sources": [
                 { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
-                { "type": "openglMakeSpec" }
+                { "type": "makeSpec", "spec": "OPENGL" }
             ]
         },
         "opengl_es2": {

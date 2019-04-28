@@ -33,6 +33,13 @@ QMAKE_MAC_SDK_PATH = $$xcodeSDKInfo(Path)
 QMAKE_MAC_SDK_PLATFORM_PATH = $$xcodeSDKInfo(PlatformPath)
 QMAKE_MAC_SDK_VERSION = $$xcodeSDKInfo(SDKVersion)
 
+isEmpty(QMAKE_EXPORT_INCDIR_OPENGL) {
+    QMAKE_EXPORT_INCDIR_OPENGL = $$QMAKE_INCDIR_OPENGL
+    sysrootified =
+    for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
+    QMAKE_INCDIR_OPENGL = $$sysrootified
+}
+
 QMAKESPEC_NAME = $$basename(QMAKESPEC)
 
 # Resolve SDK version of various tools
