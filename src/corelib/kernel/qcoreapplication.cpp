@@ -1013,6 +1013,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
     quitLockRefEnabled = enabled;
 }
 
+#if QT_DEPRECATED_SINCE(5, 6)
 /*!
   \internal
   \deprecated
@@ -1024,6 +1025,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
     return notifyInternal2(receiver, event);
 }
+#endif
 
 /*!
   \internal

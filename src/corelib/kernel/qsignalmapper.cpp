@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+#include "qglobal.h"
+#if QT_DEPRECATED_SINCE(5, 10)
+
 #include "qsignalmapper.h"
 #include "qhash.h"
 #include "qobject_p.h"
@@ -312,3 +315,4 @@ QT_END_NAMESPACE
 
 #include "moc_qsignalmapper.cpp"
 
+#endif
