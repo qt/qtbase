@@ -258,7 +258,9 @@ void QWasmIntegration::addScreen(const QString &canvasId)
 
 void QWasmIntegration::removeScreen(const QString &canvasId)
 {
-    QWindowSystemInterface::handleScreenRemoved(m_screens.take(canvasId));
+    QWasmScreen *exScreen = m_screens.take(canvasId);
+    exScreen->destroy(); // clean up before deleting the screen
+    QWindowSystemInterface::handleScreenRemoved(exScreen);
 }
 
 void QWasmIntegration::resizeScreen(const QString &canvasId)

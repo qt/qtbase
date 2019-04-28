@@ -52,6 +52,7 @@ class QWasmScreen : public QObject, public QPlatformScreen
 public:
     QWasmScreen(const QString &canvasId);
     ~QWasmScreen();
+    void destroy();
 
     static QWasmScreen *get(QPlatformScreen *screen);
     static QWasmScreen *get(QScreen *screen);

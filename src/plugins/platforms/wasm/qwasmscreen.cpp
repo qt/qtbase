@@ -57,7 +57,12 @@ QWasmScreen::QWasmScreen(const QString &canvasId)
 
 QWasmScreen::~QWasmScreen()
 {
+    destroy();
+}
 
+void QWasmScreen::destroy()
+{
+    m_compositor->destroy();
 }
 
 QWasmScreen *QWasmScreen::get(QPlatformScreen *screen)
