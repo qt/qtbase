@@ -35,6 +35,7 @@
 #include "qwasmtheme.h"
 #include "qwasmclipboard.h"
 #include "qwasmservices.h"
+#include "qwasmoffscreensurface.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -187,6 +188,11 @@ QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLCon
     return new QWasmOpenGLContext(context->format());
 }
 #endif
+
+QPlatformOffscreenSurface *QWasmIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    return new QWasmOffscrenSurface(surface);
+}
 
 QPlatformFontDatabase *QWasmIntegration::fontDatabase() const
 {
