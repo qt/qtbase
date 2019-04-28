@@ -41,40 +41,31 @@ QWasmOpenGLContext::QWasmOpenGLContext(const QSurfaceFormat &format)
 
 QWasmOpenGLContext::~QWasmOpenGLContext()
 {
-    if (m_context)
+    if (m_context) {
         emscripten_webgl_destroy_context(m_context);
+        m_context = 0;
+    }
 }
 
-void QWasmOpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surface)
+bool QWasmOpenGLContext::maybeCreateEmscriptenContext(QPlatformSurface *surface)
 {
-    // Native emscripten contexts are tied to a single surface. Recreate
-    // the context if the surface is changed.
-    if (surface != m_surface) {
-        m_surface = surface;
+    // Native emscripten/WebGL contexts are tied to a single screen/canvas. The first
+    // call to this function creates a native canvas for the given screen, subsequent
+    // calls verify that the surface is on/off the same screen.
+    QPlatformScreen *screen = surface->screen();
+    if (m_context && !screen)
+        return false; // Alternative: return true to support makeCurrent on QOffScreenSurface with
+                      // no screen. However, Qt likes to substitute QGuiApplication::primaryScreen()
+                      // for null screens, which foils this plan.
+    if (!screen)
+        return false;
+    if (m_context)
+        return m_screen == screen;
 
-        // Destroy existing context
-        if (m_context)
-            emscripten_webgl_destroy_context(m_context);
-
-        // Create new context
-        const QString canvasId = QWasmScreen::get(surface->screen())->canvasId();
-        m_context = createEmscriptenContext(canvasId, m_requestedFormat);
-
-        // Register context-lost callback.
-        auto callback = [](int eventType, const void *reserved, void *userData) -> EM_BOOL
-        {
-            Q_UNUSED(eventType);
-            Q_UNUSED(reserved);
-            // The application may get contex-lost if e.g. moved to the background. Set
-            // m_contextLost which will make isValid() return false. Application code will
-            // then detect this and recrate the the context, resulting in a new QWasmOpenGLContext
-            // instance.
-            reinterpret_cast<QWasmOpenGLContext *>(userData)->m_contextLost = true;
-            return true;
-        };
-        bool capture = true;
-        emscripten_set_webglcontextlost_callback(canvasId.toLocal8Bit().constData(), this, capture, callback);
-    }
+    QString canvasId = QWasmScreen::get(screen)->canvasId();
+    m_context = createEmscriptenContext(canvasId, m_requestedFormat);
+    m_screen = screen;
+    return true;
 }
 
 EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(const QString &canvasId, QSurfaceFormat format)
@@ -113,7 +104,9 @@ GLuint QWasmOpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) c
 
 bool QWasmOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    maybeRecreateEmscriptenContext(surface);
+    bool ok = maybeCreateEmscriptenContext(surface);
+    if (!ok)
+        return false;
 
     return emscripten_webgl_make_context_current(m_context) == EMSCRIPTEN_RESULT_SUCCESS;
 }
@@ -136,7 +129,9 @@ bool QWasmOpenGLContext::isSharing() const
 
 bool QWasmOpenGLContext::isValid() const
 {
-    return (m_contextLost == false);
+    // Note: we get isValid() calls before we see the surface and can
+    // create a native context, so no context is also a valid state.
+    return !m_context || !emscripten_is_webgl_context_lost(m_context);
 }
 
 QFunctionPointer QWasmOpenGLContext::getProcAddress(const char *procName)
