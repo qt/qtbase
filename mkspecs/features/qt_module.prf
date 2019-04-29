@@ -277,6 +277,8 @@ load(qt_targets)
     } else {
         QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
         QMAKE_PKGCONFIG_CFLAGS = -D$$MODULE_DEFINE -I${includedir}/$$MODULE_INCNAME
+        for(inc, MODULE_AUX_INCLUDES): \
+            QMAKE_PKGCONFIG_CFLAGS += -I${includedir}/$$section(inc, /, 1, 1)
     }
     QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$QT_MAJOR_VERSION ")
     QMAKE_PKGCONFIG_FILE = $$replace(TARGET, ^Qt, Qt$$QT_MAJOR_VERSION)
