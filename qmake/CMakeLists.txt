@@ -12,6 +12,7 @@ find_library(FWFoundation Foundation) # special case
 #####################################################################
 
 add_qt_tool(qmake # special case
+    NO_QT # special case
     # GUI # special case: remove this
     SOURCES
         ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
