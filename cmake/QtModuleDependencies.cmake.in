@@ -32,3 +32,20 @@ endforeach()
 
 # Restore old module path.
 set(CMAKE_MODULE_PATH "${old_CMAKE_MODULE_PATH}")
+
+# Find Qt tool package.
+set(_tool_deps "@main_module_tool_deps@")
+foreach(_target_dep ${_tool_deps})
+    list(GET _target_dep 0 pkg)
+    list(GET _target_dep 1 version)
+
+    if (NOT ${pkg}_FOUND)
+        find_dependency(${pkg} ${version})
+    endif()
+
+    if (NOT ${pkg}_FOUND)
+        set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
+        return()
+    endif()
+endforeach()
+

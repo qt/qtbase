@@ -20,6 +20,8 @@ function(qt_internal_create_depends_files)
         set(qtdeps "")
         set(third_party_deps "")
         set(third_party_deps_seen "")
+        set(tool_deps "")
+        set(tool_deps_seen "")
         foreach (dep ${depends})
             # Normalize module by stripping leading "Qt::" and trailing "Private"
             if (dep MATCHES "Qt::(.*)")
@@ -32,6 +34,14 @@ function(qt_internal_create_depends_files)
             list(FIND QT_KNOWN_MODULES "${dep}" _pos)
             if (_pos GREATER -1)
                 list(APPEND qtdeps "${dep}")
+
+                # Make the ModuleTool package depend on dep's ModuleTool package.
+                list(FIND tool_deps_seen ${dep} dep_seen)
+                if(dep_seen EQUAL -1 AND ${dep} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+                    list(APPEND tool_deps_seen ${dep})
+                    list(APPEND tool_deps
+                                "${INSTALL_CMAKE_NAMESPACE}${dep}Tools\;${PROJECT_VERSION}")
+                endif()
             endif()
         endforeach()
 
@@ -66,6 +76,12 @@ function(qt_internal_create_depends_files)
             endif()
         endforeach()
 
+        # Add dependency to the main ModuleTool package to ModuleDependencies file.
+        if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+            set(main_module_tool_deps
+                "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${PROJECT_VERSION}")
+        endif()
+
         if (DEFINED qtdeps)
             list(REMOVE_DUPLICATES qtdeps)
         endif()
@@ -75,8 +91,9 @@ function(qt_internal_create_depends_files)
             qt_internal_write_depends_file("${target}" ${qtdeps})
         endif()
 
-        if(third_party_deps)
-            # Configure and install dependencies file.
+
+        if(third_party_deps OR main_module_tool_deps)
+            # Configure and install ModuleDependencies file.
             configure_file(
                 "${QT_CMAKE_DIR}/QtModuleDependencies.cmake.in"
                 "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
@@ -87,6 +104,23 @@ function(qt_internal_create_depends_files)
 
             install(FILES
                 "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+                DESTINATION "${config_install_dir}"
+                COMPONENT Devel
+            )
+        endif()
+        if(tool_deps)
+            # Configure and install ModuleToolDependencies file.
+            configure_file(
+                "${QT_CMAKE_DIR}/QtModuleToolsDependencies.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
+                @ONLY
+            )
+
+            set(config_install_dir
+                "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}Tools")
+
+            install(FILES
+                "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
                 DESTINATION "${config_install_dir}"
                 COMPONENT Devel
             )
