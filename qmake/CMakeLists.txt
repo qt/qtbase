@@ -16,13 +16,17 @@ add_qt_tool(qmake # special case
     # GUI # special case: remove this
     SOURCES
         ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
+        ../src/corelib/global/qendian.cpp # special case
         ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
         ../src/corelib/global/qlibraryinfo.cpp
         ../src/corelib/global/qlogging.cpp
         ../src/corelib/global/qmalloc.cpp
         ../src/corelib/global/qnumeric.cpp ../src/corelib/global/qnumeric.h
+        ../src/corelib/global/qoperatingsystemversion.cpp # special case
+        ../src/corelib/global/qrandom.cpp # special case
         ../src/corelib/io/qabstractfileengine.cpp ../src/corelib/io/qabstractfileengine_p.h
         ../src/corelib/io/qbuffer.cpp ../src/corelib/io/qbuffer.h
+        ../src/corelib/io/qdebug.cpp # special case
         ../src/corelib/io/qdir.cpp ../src/corelib/io/qdir.h ../src/corelib/io/qdir_p.h
         ../src/corelib/io/qdiriterator.cpp ../src/corelib/io/qdiriterator.h
         ../src/corelib/io/qfile.cpp ../src/corelib/io/qfile.h
@@ -65,6 +69,7 @@ add_qt_tool(qmake # special case
         ../src/corelib/tools/qlocale_tools.cpp ../src/corelib/tools/qlocale_tools_p.h
         ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
         ../src/corelib/tools/qregexp.cpp ../src/corelib/tools/qregexp.h
+        ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/tools/qstring.cpp ../src/corelib/tools/qstring.h
         ../src/corelib/tools/qstring_compat.cpp
         ../src/corelib/tools/qstringlist.cpp ../src/corelib/tools/qstringlist.h
@@ -184,8 +189,7 @@ extend_target(qmake CONDITION WIN32
         ../src/corelib/io/qfsfileengine_win.cpp
         ../src/corelib/tools/qlocale_win.cpp
         ../src/corelib/io/qsettings_win.cpp
-        ../src/corelib/global/qoperatingsystemversion.cpp
-        ../src/corelib/global/qoperatingsystemversion_win.cpp
+        # ../src/corelib/global/qoperatingsystemversion.cpp special case: remove this
         ../src/corelib/plugin/qsystemlibrary.cpp
         library/registry.cpp
     DEFINES
@@ -211,3 +215,5 @@ set_target_properties(qmake PROPERTIES
     AUTORCC OFF
     AUTOUIC OFF
 )
+
+qt_internal_add_link_flags_gc_sections(qmake PRIVATE) # special case
