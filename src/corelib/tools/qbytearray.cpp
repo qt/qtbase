@@ -1043,6 +1043,23 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     and QByteArray() compares equal to QByteArray(""). We recommend
     that you always use isEmpty() and avoid isNull().
 
+    \section1 Maximum size and out-of-memory conditions
+
+    The current version of QByteArray is limited to just under 2 GB (2^31
+    bytes) in size. The exact value is architecture-dependent, since it depends
+    on the overhead required for managing the data block, but is no more than
+    32 bytes. Raw data blocks are also limited by the use of \c int type in the
+    current version to 2 GB minus 1 byte.
+
+    In case memory allocation fails, QByteArray will throw a \c std::bad_alloc
+    exception. Out of memory conditions in the Qt containers are the only case
+    where Qt will throw exceptions.
+
+    Note that the operating system may impose further limits on applications
+    holding a lot of allocated memory, especially large, contiguous blocks.
+    Such considerations, the configuration of such behavior or any mitigation
+    are outside the scope of the QByteArray API.
+
     \section1 Notes on Locale
 
     \section2 Number-String Conversions
