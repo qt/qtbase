@@ -76,6 +76,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcTray)
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 
 ResourceHelper::ResourceHelper()
 {
@@ -96,6 +97,7 @@ const char *QGenericUnixTheme::name = "generic";
 // Default system font, corresponding to the value returned by 4.8 for
 // XRender/FontConfig which we can now assume as default.
 static const char defaultSystemFontNameC[] = "Sans Serif";
+static const char defaultFixedFontNameC[] = "monospace";
 enum { defaultSystemFontSize = 9 };
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
@@ -136,9 +138,10 @@ public:
     QGenericUnixThemePrivate()
         : QPlatformThemePrivate()
         , systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
-        , fixedFont(QStringLiteral("monospace"), systemFont.pointSize())
+        , fixedFont(QLatin1String(defaultFixedFontNameC), systemFont.pointSize())
     {
         fixedFont.setStyleHint(QFont::TypeWriter);
+        qCDebug(lcQpaFonts) << "default fonts: system" << systemFont << "fixed" << fixedFont;
     }
 
     const QFont systemFont;
@@ -390,7 +393,7 @@ void QKdeThemePrivate::refresh()
     if (QFont *fixedFont = kdeFont(readKdeSetting(QStringLiteral("fixed"), kdeDirs, kdeVersion, kdeSettings))) {
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     } else {
-        fixedFont = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
+        fixedFont = new QFont(QLatin1String(defaultFixedFontNameC), defaultSystemFontSize);
         fixedFont->setStyleHint(QFont::TypeWriter);
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     }
@@ -403,6 +406,8 @@ void QKdeThemePrivate::refresh()
     if (QFont *toolBarFont = kdeFont(readKdeSetting(QStringLiteral("toolBarFont"), kdeDirs, kdeVersion, kdeSettings)))
         resources.fonts[QPlatformTheme::ToolButtonFont] = toolBarFont;
 
+    qCDebug(lcQpaFonts) << "default fonts: system" << resources.fonts[QPlatformTheme::SystemFont]
+                        << "fixed" << resources.fonts[QPlatformTheme::FixedFont];
     qDeleteAll(kdeSettings);
 }
 
@@ -716,8 +721,9 @@ public:
         QString fontName = gtkFontName.left(split);
 
         systemFont = new QFont(fontName, size);
-        fixedFont = new QFont(QLatin1String("monospace"), systemFont->pointSize());
+        fixedFont = new QFont(QLatin1String(defaultFixedFontNameC), systemFont->pointSize());
         fixedFont->setStyleHint(QFont::TypeWriter);
+        qCDebug(lcQpaFonts) << "default fonts: system" << systemFont << "fixed" << fixedFont;
     }
 
     mutable QFont *systemFont;
