@@ -71,6 +71,7 @@ QTOBJS= \
 	qfsfileengine_iterator.obj \
 	qarraydata.obj \
 	qbytearray.obj \
+	qbytearraylist.obj \
 	qvsnprintf.obj \
 	qbytearraymatcher.obj \
 	qdatetime.obj \

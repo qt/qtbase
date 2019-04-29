@@ -70,8 +70,9 @@ SOURCES += \
            ../../corelib/serialization/qxmlutils.cpp \
            ../../corelib/serialization/qxmlstream.cpp \
            ../../corelib/tools/qbitarray.cpp \
-           ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qarraydata.cpp \
+           ../../corelib/tools/qbytearray.cpp \
+           ../../corelib/tools/qbytearraylist.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
            ../../corelib/tools/qcommandlineparser.cpp \
            ../../corelib/tools/qcommandlineoption.cpp \
