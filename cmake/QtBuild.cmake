@@ -808,7 +808,7 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_INSTALL" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_QT;NO_INSTALL" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -828,7 +828,7 @@ function(add_qt_executable name)
     )
 
     set(extra_libraries "")
-    if(NOT arg_BOOTSTRAP)
+    if(NOT arg_BOOTSTRAP AND NOT arg_NO_QT)
         set(extra_libraries "Qt::Core")
     endif()
 
@@ -947,6 +947,11 @@ function(add_qt_tool name)
         set(bootstrap BOOTSTRAP)
     endif()
 
+    set(no_qt "")
+    if(arg_NO_QT)
+        set(no_qt NO_QT)
+    endif()
+
     set(no_install "")
     if(arg_NO_INSTALL)
         set(no_install NO_INSTALL)
@@ -954,6 +959,7 @@ function(add_qt_tool name)
 
     add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
+        ${no_qt}
         ${no_install}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
