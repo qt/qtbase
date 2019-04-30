@@ -13180,7 +13180,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
             if (widget->isWindow())
                 debug << ", window";
             debug << ", " << geometry.width() << 'x' << geometry.height()
-                << forcesign << geometry.x() << geometry.y() << noforcesign;
+                << Qt::forcesign << geometry.x() << geometry.y() << Qt::noforcesign;
             if (frameGeometry != geometry) {
                 const QMargins margins(geometry.x() - frameGeometry.x(),
                                        geometry.y() - frameGeometry.y(),
@@ -13190,7 +13190,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
             }
             debug << ", devicePixelRatio=" << widget->devicePixelRatioF();
             if (const WId wid = widget->internalWinId())
-                debug << ", winId=0x" << hex << wid << dec;
+                debug << ", winId=0x" << Qt::hex << wid << Qt::dec;
         }
         debug << ')';
     } else {

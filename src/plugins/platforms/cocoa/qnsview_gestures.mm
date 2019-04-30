@@ -70,7 +70,7 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     if ([self handleGestureAsBeginEnd:event])
         return;
 
-    qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification] << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification] << "from device" << Qt::hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -85,7 +85,7 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
         return;
 
     static bool zoomIn = true;
-    qCDebug(lcQpaGestures) << "smartMagnifyWithEvent" << zoomIn << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaGestures) << "smartMagnifyWithEvent" << zoomIn << "from device" << Qt::hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -116,7 +116,7 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaGestures) << "swipeWithEvent" << [event deltaX] << [event deltaY] << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaGestures) << "swipeWithEvent" << [event deltaX] << [event deltaY] << "from device" << Qt::hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -145,7 +145,7 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    qCDebug(lcQpaGestures) << "beginGestureWithEvent @" << windowPoint << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaGestures) << "beginGestureWithEvent @" << windowPoint << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), QCocoaTouch::getTouchDevice(QTouchDevice::TouchPad, [event deviceID]),  timestamp, Qt::BeginNativeGesture,
                                                windowPoint, screenPoint);
 }
@@ -155,7 +155,7 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaGestures) << "endGestureWithEvent" << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaGestures) << "endGestureWithEvent" << "from device" << Qt::hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;

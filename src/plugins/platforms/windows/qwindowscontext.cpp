@@ -590,7 +590,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
 
     d->m_registeredWindowClassNames.insert(cname);
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << cname
-        << " style=0x" << hex << style << dec
+        << " style=0x" << Qt::hex << style << Qt::dec
         << " brush=" << brush << " icon=" << icon << " atom=" << atom;
     return cname;
 }
@@ -1570,7 +1570,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {
             qCDebug(lcQpaEvents).nospace() << "EVENT: hwd=" << hwnd << ' ' << eventName
-                << " msg=0x" << hex << message << " et=0x" << et << dec << " wp="
+                << " msg=0x" << Qt::hex << message << " et=0x" << et << Qt::dec << " wp="
                 << int(wParam) << " at " << GET_X_LPARAM(lParam) << ','
                 << GET_Y_LPARAM(lParam) << " handled=" << handled;
         }

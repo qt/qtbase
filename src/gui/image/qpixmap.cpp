@@ -1689,7 +1689,7 @@ QDebug operator<<(QDebug dbg, const QPixmap &r)
     } else {
         dbg << r.size() << ",depth=" << r.depth()
             << ",devicePixelRatio=" << r.devicePixelRatio()
-            << ",cacheKey=" << showbase << hex << r.cacheKey() << dec << noshowbase;
+            << ",cacheKey=" << Qt::showbase << Qt::hex << r.cacheKey() << Qt::dec << Qt::noshowbase;
     }
     dbg << ')';
     return dbg;

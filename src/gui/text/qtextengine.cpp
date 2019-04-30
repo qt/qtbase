@@ -990,7 +990,7 @@ struct QBidiAlgorithm {
             BIDI_DEBUG() << "before implicit level processing:";
             IsolatedRunSequenceIterator it(runs, i);
             while (!it.atEnd()) {
-                BIDI_DEBUG() << "    " << *it << hex << text[*it].unicode() << analysis[*it].bidiDirection;
+                BIDI_DEBUG() << "    " << *it << Qt::hex << text[*it].unicode() << analysis[*it].bidiDirection;
                 ++it;
             }
         }
@@ -1003,7 +1003,7 @@ struct QBidiAlgorithm {
             BIDI_DEBUG() << "after W4/W5";
             IsolatedRunSequenceIterator it(runs, i);
             while (!it.atEnd()) {
-                BIDI_DEBUG() << "    " << *it << hex << text[*it].unicode() << analysis[*it].bidiDirection;
+                BIDI_DEBUG() << "    " << *it << Qt::hex << text[*it].unicode() << analysis[*it].bidiDirection;
                 ++it;
             }
         }
@@ -1089,7 +1089,7 @@ struct QBidiAlgorithm {
         if (BidiDebugEnabled) {
             BIDI_DEBUG() << ">>>> start bidi, text length" << length;
             for (int i = 0; i < length; ++i)
-                BIDI_DEBUG() << hex << "    (" << i << ")" << text[i].unicode() << text[i].direction();
+                BIDI_DEBUG() << Qt::hex << "    (" << i << ")" << text[i].unicode() << text[i].direction();
         }
 
         {
@@ -1158,7 +1158,7 @@ struct QBidiAlgorithm {
         if (BidiDebugEnabled) {
             BIDI_DEBUG() << "final resolved levels:";
             for (int i = 0; i < length; ++i)
-                BIDI_DEBUG() << "    " << i << hex << text[i].unicode() << dec << (int)analysis[i].bidiLevel;
+                BIDI_DEBUG() << "    " << i << Qt::hex << text[i].unicode() << Qt::dec << (int)analysis[i].bidiLevel;
         }
 
         return true;

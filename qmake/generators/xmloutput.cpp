@@ -237,7 +237,7 @@ void XmlOutput::newTagOpen(const QString &tag)
     closeOpen();
 
     if (format == NewLine)
-        xmlFile << endl << currentIndent;
+        xmlFile << Qt::endl << currentIndent;
     xmlFile << '<' << doConversion(tag);
     currentState = Attribute;
     tagStack.append(tag);
@@ -271,7 +271,7 @@ void XmlOutput::closeTag()
         case Tag:
             decreaseIndent(); // <--- Pre-decrease indent
             if (format == NewLine)
-                xmlFile << endl << currentIndent;
+                xmlFile << Qt::endl << currentIndent;
             xmlFile << "</" << doConversion(tagStack.last()) << '>';
             tagStack.pop_back();
             break;
@@ -343,7 +343,7 @@ void XmlOutput::addAttribute(const QString &attribute, const QString &value)
             break;
     }
     if (format == NewLine)
-        xmlFile << endl;
+        xmlFile << Qt::endl;
     xmlFile << currentIndent << doConversion(attribute) << "=\"" << doConversion(value) << "\"";
 }
 

@@ -166,7 +166,7 @@ void QDebug::putUcs4(uint ucs4)
 {
     maybeQuote('\'');
     if (ucs4 < 0x20) {
-        stream->ts << "\\x" << hex << ucs4 << reset;
+        stream->ts << "\\x" << Qt::hex << ucs4 << Qt::reset;
     } else if (ucs4 < 0x80) {
         stream->ts << char(ucs4);
     } else {
@@ -174,7 +174,7 @@ void QDebug::putUcs4(uint ucs4)
             stream->ts << "\\u" << qSetFieldWidth(4);
         else
             stream->ts << "\\U" << qSetFieldWidth(8);
-        stream->ts << hex << qSetPadChar(QLatin1Char('0')) << ucs4 << reset;
+        stream->ts << Qt::hex << qSetPadChar(QLatin1Char('0')) << ucs4 << Qt::reset;
     }
     maybeQuote('\'');
 }
@@ -834,7 +834,7 @@ QDebug &QDebug::resetFormat()
     that QDebugStateSaver stores for the duration of the current block.
 
     The settings of the internal QTextStream are also saved and restored,
-    so that using << hex in a QDebug operator doesn't affect other QDebug
+    so that using << Qt::hex in a QDebug operator doesn't affect other QDebug
     operators.
 
     \since 5.1

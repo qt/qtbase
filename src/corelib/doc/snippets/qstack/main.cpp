@@ -60,6 +60,6 @@ int main(int argc, char *argv[])
     stack.push(2);
     stack.push(3);
     while (!stack.isEmpty())
-        cout << stack.pop() << endl;
+        cout << stack.pop() << Qt::endl;
 //! [0]
 }

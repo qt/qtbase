@@ -89,7 +89,7 @@ QHash<int, QWidget *> hash;
 ...
 for (int i = 0; i < 1000; ++i) {
     if (hash[i] == okButton)
-        cout << "Found button at index " << i << endl;
+        cout << "Found button at index " << i << Qt::endl;
 }
 //! [6]
 
@@ -98,7 +98,7 @@ for (int i = 0; i < 1000; ++i) {
 QHashIterator<QString, int> i(hash);
 while (i.hasNext()) {
     i.next();
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
 }
 //! [7]
 
@@ -106,7 +106,7 @@ while (i.hasNext()) {
 //! [8]
 QHash<QString, int>::const_iterator i = hash.constBegin();
 while (i != hash.constEnd()) {
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
     ++i;
 }
 //! [8]
@@ -122,14 +122,14 @@ hash.insert("plenty", 2000);
 //! [10]
 QList<int> values = hash.values("plenty");
 for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << endl;
+    cout << values.at(i) << Qt::endl;
 //! [10]
 
 
 //! [11]
 QHash<QString, int>::iterator i = hash.find("plenty");
 while (i != hash.end() && i.key() == "plenty") {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [11]
@@ -139,7 +139,7 @@ while (i != hash.end() && i.key() == "plenty") {
 QHash<QString, int> hash;
 ...
 foreach (int value, hash)
-    cout << value << endl;
+    cout << value << Qt::endl;
 //! [12]
 
 
@@ -201,7 +201,7 @@ QHash<QString, int> hash;
 ...
 QHash<QString, int>::const_iterator i = hash.find("HDR");
 while (i != hash.end() && i.key() == "HDR") {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [16]
@@ -216,7 +216,7 @@ hash.insert("December", 12);
 
 QHash<QString, int>::iterator i;
 for (i = hash.begin(); i != hash.end(); ++i)
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
 //! [17]
 
 
@@ -274,7 +274,7 @@ hash.insert("December", 12);
 
 QHash<QString, int>::const_iterator i;
 for (i = hash.constBegin(); i != hash.constEnd(); ++i)
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
 //! [23]
 
 
@@ -296,23 +296,23 @@ hash3 = hash1 + hash2;
 //! [25]
 QList<int> values = hash.values("plenty");
 for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << endl;
+    cout << values.at(i) << Qt::endl;
 //! [25]
 
 
 //! [26]
 QMultiHash<QString, int>::iterator i = hash.find("plenty");
 while (i != hash.end() && i.key() == "plenty") {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [26]
 
 //! [27]
 for (QHash<int, QString>::const_iterator it = hash.cbegin(), end = hash.cend(); it != end; ++it) {
-    cout << "The key: " << it.key() << endl
-    cout << "The value: " << it.value() << endl;
-    cout << "Also the value: " << (*it) << endl;
+    cout << "The key: " << it.key() << Qt::endl
+    cout << "The value: " << it.value() << Qt::endl;
+    cout << "Also the value: " << (*it) << Qt::endl;
 }
 //! [27]
 

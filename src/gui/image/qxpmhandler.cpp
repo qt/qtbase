@@ -1129,8 +1129,8 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
 
     // write header
     QTextStream s(device);
-    s << "/* XPM */" << endl
-      << "static char *" << fbname(fileName) << "[]={" << endl
+    s << "/* XPM */" << Qt::endl
+      << "static char *" << fbname(fileName) << "[]={" << Qt::endl
       << '\"' << w << ' ' << h << ' ' << ncolors << ' ' << cpp << '\"';
 
     // write palette
@@ -1147,7 +1147,7 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
                                      qGreen(color),
                                      qBlue(color));
         ++c;
-        s << ',' << endl << line;
+        s << ',' << Qt::endl << line;
     }
 
     // write pixels, limit to 4 characters per pixel
@@ -1169,9 +1169,9 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
                 }
             }
         }
-        s << ',' << endl << '\"' << line << '\"';
+        s << ',' << Qt::endl << '\"' << line << '\"';
     }
-    s << "};" << endl;
+    s << "};" << Qt::endl;
     return (s.status() == QTextStream::Ok);
 }
 

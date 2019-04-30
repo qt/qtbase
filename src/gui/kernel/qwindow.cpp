@@ -2835,13 +2835,13 @@ QDebug operator<<(QDebug debug, const QWindow *window)
             if (window->isTopLevel())
                 debug << ", toplevel";
             debug << ", " << geometry.width() << 'x' << geometry.height()
-                << forcesign << geometry.x() << geometry.y() << noforcesign;
+                << Qt::forcesign << geometry.x() << geometry.y() << Qt::noforcesign;
             const QMargins margins = window->frameMargins();
             if (!margins.isNull())
                 debug << ", margins=" << margins;
             debug << ", devicePixelRatio=" << window->devicePixelRatio();
             if (const QPlatformWindow *platformWindow = window->handle())
-                debug << ", winId=0x" << hex << platformWindow->winId() << dec;
+                debug << ", winId=0x" << Qt::hex << platformWindow->winId() << Qt::dec;
             if (const QScreen *screen = window->screen())
                 debug << ", on " << screen->name();
         }

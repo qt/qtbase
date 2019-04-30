@@ -1496,7 +1496,7 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
         if (!i.name().isEmpty())
             dbg << i.name() << ',';
         dbg << "availableSizes[normal,Off]=" << i.availableSizes()
-            << ",cacheKey=" << showbase << hex << i.cacheKey() << dec << noshowbase;
+            << ",cacheKey=" << Qt::showbase << Qt::hex << i.cacheKey() << Qt::dec << Qt::noshowbase;
     }
     dbg << ')';
     return dbg;

@@ -41,9 +41,9 @@ void DotGraph::operator () (Automaton *aut)
 {
   Grammar *g = aut->_M_grammar;
 
-  out << "digraph {" << endl << endl;
+  out << "digraph {" << Qt::endl << Qt::endl;
 
-  out << "subgraph Includes {" << endl;
+  out << "subgraph Includes {" << Qt::endl;
   for (Automaton::IncludesGraph::iterator incl = Automaton::IncludesGraph::begin_nodes ();
        incl != Automaton::IncludesGraph::end_nodes (); ++incl)
     {
@@ -53,14 +53,14 @@ void DotGraph::operator () (Automaton *aut)
           out << "\t->\t";
           out << "\"(" << aut->id ((*edge)->data.state) << ", " << (*edge)->data.nt << ")\"\t";
           out << "[label=\"" << incl->data.state->follows [incl->data.nt] << "\"]";
-          out << endl;
+          out << Qt::endl;
         }
     }
-  out << "}" << endl << endl;
+  out << "}" << Qt::endl << Qt::endl;
 
 
-  out << "subgraph LRA {" << endl;
-  //out << "node [shape=record];" << endl << endl;
+  out << "subgraph LRA {" << Qt::endl;
+  //out << "node [shape=record];" << Qt::endl << Qt::endl;
 
   for (StatePointer q = aut->states.begin (); q != aut->states.end (); ++q)
     {
@@ -74,16 +74,16 @@ void DotGraph::operator () (Automaton *aut)
       for (ItemPointer item = q->kernel.begin (); item != q->kernel.end (); ++item)
         out << "| <" << index++ << "> " << *item;
 
-      out << "}\"]" << endl;
+      out << "}\"]" << Qt::endl;
 
       for (Bundle::iterator a = q->bundle.begin (); a != q->bundle.end (); ++a)
         {
           const char *clr = g->isTerminal (a.key ()) ? "blue" : "red";
-          out << "\t" << state << "\t->\t" << aut->id (*a) << "\t[color=\"" << clr << "\",label=\"" << a.key () << "\"]" << endl;
+          out << "\t" << state << "\t->\t" << aut->id (*a) << "\t[color=\"" << clr << "\",label=\"" << a.key () << "\"]" << Qt::endl;
         }
-      out << endl;
+      out << Qt::endl;
     }
 
-  out << "}" << endl;
-  out << endl << endl << "}" << endl;
+  out << "}" << Qt::endl;
+  out << Qt::endl << Qt::endl << "}" << Qt::endl;
 }

@@ -826,9 +826,9 @@ static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QCha
     uint alast = 0;
     uint blast = 0;
     while (a < e) {
-//         qDebug() << hex << alast << blast;
-//         qDebug() << hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
-//         qDebug() << hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
+//         qDebug() << Qt::hex << alast << blast;
+//         qDebug() << Qt::hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
+//         qDebug() << Qt::hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
         int diff = foldCase(a->unicode(), alast) - foldCase(b->unicode(), blast);
         if ((diff))
             return diff;

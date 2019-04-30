@@ -238,7 +238,7 @@ QDebug operator<<(QDebug d, const WINDOWPLACEMENT &wp)
     QDebugStateSaver saver(d);
     d.nospace();
     d.noquote();
-    d <<  "WINDOWPLACEMENT(flags=0x" << hex << wp.flags << dec << ", showCmd="
+    d <<  "WINDOWPLACEMENT(flags=0x" << Qt::hex << wp.flags << Qt::dec << ", showCmd="
         << wp.showCmd << ", ptMinPosition=" << wp.ptMinPosition << ", ptMaxPosition=" << wp.ptMaxPosition
         << ", rcNormalPosition=" << wp.rcNormalPosition;
     return d;
@@ -248,7 +248,7 @@ QDebug operator<<(QDebug d, const GUID &guid)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << '{' << hex << uppercasedigits << qSetPadChar(QLatin1Char('0'))
+    d << '{' << Qt::hex << Qt::uppercasedigits << qSetPadChar(QLatin1Char('0'))
       << qSetFieldWidth(8) << guid.Data1
       << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
       << guid.Data2 << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
@@ -883,7 +883,7 @@ QMargins QWindowsGeometryHint::frame(DWORD style, DWORD exStyle)
     const QMargins result(qAbs(rect.left), qAbs(rect.top),
                           qAbs(rect.right), qAbs(rect.bottom));
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << " style="
-        << showbase << hex << style << " exStyle=" << exStyle << dec << noshowbase
+        << Qt::showbase << Qt::hex << style << " exStyle=" << exStyle << Qt::dec << Qt::noshowbase
         << ' ' << rect << ' ' << result;
     return result;
 }

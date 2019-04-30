@@ -190,7 +190,7 @@ Q_ENUM_PRINTER(Result);
 
 QDebug operator<<(QDebug s, timespec tv)
 {
-    s << tv.tv_sec << "." << qSetFieldWidth(9) << qSetPadChar(QChar(48)) << tv.tv_nsec << reset;
+    s << tv.tv_sec << "." << qSetFieldWidth(9) << qSetPadChar(QChar(48)) << tv.tv_nsec << Qt::reset;
     return s;
 }
 

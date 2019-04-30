@@ -243,7 +243,7 @@ QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &pd)
     QDebugStateSaver saver(d);
     d.nospace();
     d << "PIXELFORMATDESCRIPTOR "
-        << "dwFlags=" << hex << showbase << pd.dwFlags << dec << noshowbase;
+        << "dwFlags=" << Qt::hex << Qt::showbase << pd.dwFlags << Qt::dec << Qt::noshowbase;
     if (pd.dwFlags & PFD_DRAW_TO_WINDOW) d << " PFD_DRAW_TO_WINDOW";
     if (pd.dwFlags & PFD_DRAW_TO_BITMAP) d << " PFD_DRAW_TO_BITMAP";
     if (pd.dwFlags & PFD_SUPPORT_GDI) d << " PFD_SUPPORT_GDI";
@@ -631,10 +631,10 @@ static int choosePixelFormat(HDC hdc,
         nsp << __FUNCTION__;
         if (sampleBuffersRequested)
             nsp << " samples=" << iAttributes[samplesValuePosition];
-        nsp << " Attributes: " << hex << showbase;
+        nsp << " Attributes: " << Qt::hex << Qt::showbase;
         for (int ii = 0; ii < i; ++ii)
             nsp << iAttributes[ii] << ',';
-        nsp << noshowbase << dec << "\n    obtained px #" << pixelFormat
+        nsp << Qt::noshowbase << Qt::dec << "\n    obtained px #" << pixelFormat
             << " of " << numFormats << "\n    " << *obtainedPfd;
         qCDebug(lcQpaGl) << message;
     } // Debug
@@ -784,7 +784,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     if (!result) {
         QString message;
         QDebug(&message).nospace() << __FUNCTION__ << ": wglCreateContextAttribsARB() failed (GL error code: 0x"
-            << hex << staticContext.opengl32.glGetError() << dec << ") for format: " << format << ", shared context: " << shared;
+            << Qt::hex << staticContext.opengl32.glGetError() << Qt::dec << ") for format: " << format << ", shared context: " << shared;
         qErrnoWarning("%s", qPrintable(message));
     }
     return result;

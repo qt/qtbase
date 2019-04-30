@@ -554,7 +554,7 @@ QDebug operator<<(QDebug d, const KeyboardLayoutItem &k)
             if (const quint32 qtKey = k.qtKey[i]) {
                 d << '[' << i << ' ';
                 QtDebugUtils::formatQFlags(d, ModsTbl[i]);
-                d << ' ' << hex << showbase << qtKey << dec << noshowbase << ' ';
+                d << ' ' << Qt::hex << Qt::showbase << qtKey << Qt::dec << Qt::noshowbase << ' ';
                 QtDebugUtils::formatQEnum(d, Qt::Key(qtKey));
                 if (qtKey >= 32 && qtKey < 128)
                     d << " '" << char(qtKey)  << '\'';
@@ -776,7 +776,7 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
         ::ToAscii(vk_key, scancode, kbdBuffer, reinterpret_cast<LPWORD>(&buffer), 0);
     }
     qCDebug(lcQpaEvents) << __FUNCTION__ << "for virtual key="
-        << hex << showbase << vk_key << dec << noshowbase << keyLayout[vk_key];
+        << Qt::hex << Qt::showbase << vk_key << Qt::dec << Qt::noshowbase << keyLayout[vk_key];
 }
 
 static inline QString messageKeyText(const MSG &msg)
@@ -1384,7 +1384,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
         }
     }
     qCDebug(lcQpaEvents) << __FUNCTION__  << e << "nativeVirtualKey="
-        << showbase << hex << e->nativeVirtualKey() << dec << noshowbase
+        << Qt::showbase << Qt::hex << e->nativeVirtualKey() << Qt::dec << Qt::noshowbase
         << e->modifiers() << kbItem << "\n  returns" << formatKeys(result);
     return result;
 }

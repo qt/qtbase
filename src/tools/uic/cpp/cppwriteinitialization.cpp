@@ -1626,7 +1626,7 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     }
     if (f->hasElementWeight() && f->elementWeight() > 0) {
         m_output << m_indent << fontName << ".setWeight("
-            << f->elementWeight() << ");" << endl;
+            << f->elementWeight() << ");" << Qt::endl;
     }
     if (f->hasElementStrikeOut()) {
          m_output << m_indent << fontName << ".setStrikeOut("
@@ -2614,7 +2614,7 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
     outputStream << "#if " << language::qtConfig(list.constFirst());
     for (int i = 1, size = list.size(); i < size; ++i)
         outputStream << " || " << language::qtConfig(list.at(i));
-    outputStream << endl;
+    outputStream << Qt::endl;
 }
 
 static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QString> &directives)
@@ -2622,7 +2622,7 @@ static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QStr
     if (directives.isEmpty())
         return;
 
-    outputStream << "#endif" << endl;
+    outputStream << "#endif" << Qt::endl;
 }
 
 WriteInitialization::Item::Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver)
@@ -2680,7 +2680,7 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
     while (it != m_setupUiData.setters.constEnd()) {
         if (!it.key().isEmpty())
             m_setupUiStream << language::openQtConfig(it.key());
-        m_setupUiStream << m_indent << uniqueName << it.value() << endl;
+        m_setupUiStream << m_indent << uniqueName << it.value() << Qt::endl;
         if (!it.key().isEmpty())
             m_setupUiStream << language::closeQtConfig(it.key());
         ++it;
@@ -2718,7 +2718,7 @@ void WriteInitialization::Item::writeRetranslateUi(const QString &parentPath)
                 m_retranslateUiStream << language::openQtConfig(newDirective);
             oldDirective = newDirective;
         }
-        m_retranslateUiStream << m_indent << uniqueName << it.value() << endl;
+        m_retranslateUiStream << m_indent << uniqueName << it.value() << Qt::endl;
         ++it;
     }
     if (!oldDirective.isEmpty())

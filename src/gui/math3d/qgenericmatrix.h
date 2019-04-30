@@ -351,11 +351,11 @@ QDebug operator<<(QDebug dbg, const QGenericMatrix<N, M, T> &m)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QGenericMatrix<" << N << ", " << M
         << ", " << QTypeInfo<T>::name()
-        << ">(" << endl << qSetFieldWidth(10);
+        << ">(" << Qt::endl << qSetFieldWidth(10);
     for (int row = 0; row < M; ++row) {
         for (int col = 0; col < N; ++col)
             dbg << m(row, col);
-        dbg << endl;
+        dbg << Qt::endl;
     }
     dbg << qSetFieldWidth(0) << ')';
     return dbg;

@@ -315,8 +315,8 @@ static QTouchDevice *createTouchDevice()
         return nullptr;
     const int tabletPc = GetSystemMetrics(SM_TABLETPC);
     const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
-    qCDebug(lcQpaEvents) << "Digitizers:" << hex << showbase << (digitizers & ~NID_READY)
-        << "Ready:" << (digitizers & NID_READY) << dec << noshowbase
+    qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
+        << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
         << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
     QTouchDevice *result = new QTouchDevice;
     result->setType(digitizers & NID_INTEGRATED_TOUCH
@@ -469,19 +469,19 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     QList<QWindowSystemInterface::TouchPoint> touchPoints;
 
     if (QWindowsContext::verbose > 1)
-        qCDebug(lcQpaEvents).noquote().nospace() << showbase
+        qCDebug(lcQpaEvents).noquote().nospace() << Qt::showbase
                 << __FUNCTION__
-                << " message=" << hex << msg.message
-                << " count=" << dec << count;
+                << " message=" << Qt::hex << msg.message
+                << " count=" << Qt::dec << count;
 
     Qt::TouchPointStates allStates = 0;
 
     for (quint32 i = 0; i < count; ++i) {
         if (QWindowsContext::verbose > 1)
-            qCDebug(lcQpaEvents).noquote().nospace() << showbase
+            qCDebug(lcQpaEvents).noquote().nospace() << Qt::showbase
                     << "    TouchPoint id=" << touchInfo[i].pointerInfo.pointerId
                     << " frame=" << touchInfo[i].pointerInfo.frameId
-                    << " flags=" << hex << touchInfo[i].pointerInfo.pointerFlags;
+                    << " flags=" << Qt::hex << touchInfo[i].pointerInfo.pointerFlags;
 
         QWindowSystemInterface::TouchPoint touchPoint;
         const quint32 pointerId = touchInfo[i].pointerInfo.pointerId;
@@ -563,11 +563,11 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
     const int z = 0;
 
     if (QWindowsContext::verbose > 1)
-        qCDebug(lcQpaEvents).noquote().nospace() << showbase
+        qCDebug(lcQpaEvents).noquote().nospace() << Qt::showbase
             << __FUNCTION__ << " sourceDevice=" << sourceDevice
             << " globalPos=" << globalPos << " localPos=" << localPos << " hiResGlobalPos=" << hiResGlobalPos
-            << " message=" << hex << msg.message
-            << " flags=" << hex << penInfo->pointerInfo.pointerFlags;
+            << " message=" << Qt::hex << msg.message
+            << " flags=" << Qt::hex << penInfo->pointerInfo.pointerFlags;
 
     const QTabletEvent::TabletDevice device = QTabletEvent::Stylus;
     QTabletEvent::PointerType type;

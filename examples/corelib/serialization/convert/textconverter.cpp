@@ -66,7 +66,7 @@ static void dumpVariant(QTextStream &out, const QVariant &v)
     case QVariant::String: {
         const QStringList list = v.toStringList();
         for (const QString &s : list)
-            out << s << endl;
+            out << s << Qt::endl;
         break;
     }
 
@@ -80,11 +80,11 @@ static void dumpVariant(QTextStream &out, const QVariant &v)
     }
 
     case QMetaType::Nullptr:
-        out << "(null)" << endl;
+        out << "(null)" << Qt::endl;
         break;
 
     default:
-        out << v.toString() << endl;
+        out << v.toString() << Qt::endl;
         break;
     }
 }

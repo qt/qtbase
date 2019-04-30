@@ -1471,7 +1471,7 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
         while (finalOrder[toMove].form && fixed < len-1) {
             IDEBUG("        fixed = %d, toMove=%d, moving form %d with pos %d", fixed, toMove, finalOrder[toMove].form, finalOrder[toMove].position);
             for (i = fixed; i < len; i++) {
-//                IDEBUG() << "           i=" << i << "uc=" << hex << uc[i] << "form=" << form(uc[i])
+//                IDEBUG() << "           i=" << i << "uc=" << Qt::hex << uc[i] << "form=" << form(uc[i])
 //                         << "position=" << position[i];
                 if (form(uc[i]) == finalOrder[toMove].form &&
                      position[i] == finalOrder[toMove].position) {

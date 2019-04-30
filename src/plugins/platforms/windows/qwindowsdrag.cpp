@@ -428,7 +428,7 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
     if (QWindowsContext::verbose > 1 || result != S_OK) {
         qCDebug(lcQpaMime) << __FUNCTION__ << "fEscapePressed=" << fEscapePressed
             << "grfKeyState=" << grfKeyState << "buttons" << m_currentButtons
-            << "returns 0x" << hex << int(result) << dec;
+            << "returns 0x" << Qt::hex << int(result) << Qt::dec;
     }
     return ResultFromScode(result);
 }
@@ -710,7 +710,7 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
     const Qt::DropActions possibleActions = drag->supportedActions();
     const DWORD allowedEffects = translateToWinDragEffects(possibleActions);
     qCDebug(lcQpaMime) << '>' << __FUNCTION__ << "possible Actions=0x"
-        << hex << int(possibleActions) << "effects=0x" << allowedEffects << dec;
+        << Qt::hex << int(possibleActions) << "effects=0x" << allowedEffects << Qt::dec;
     // Indicate message handlers we are in DoDragDrop() event loop.
     QWindowsDrag::m_dragging = true;
     const HRESULT r = DoDragDrop(dropDataObject, windowDropSource, allowedEffects, &resultEffect);
@@ -734,9 +734,9 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
     dropDataObject->releaseQt();
     dropDataObject->Release();        // Will delete obj if refcount becomes 0
     windowDropSource->Release();        // Will delete src if refcount becomes 0
-    qCDebug(lcQpaMime) << '<' << __FUNCTION__ << hex << "allowedEffects=0x" << allowedEffects
+    qCDebug(lcQpaMime) << '<' << __FUNCTION__ << Qt::hex << "allowedEffects=0x" << allowedEffects
         << "reportedPerformedEffect=0x" << reportedPerformedEffect
-        <<  " resultEffect=0x" << resultEffect << "hr=0x" << int(r) << dec << "dropAction=" << dragResult;
+        <<  " resultEffect=0x" << resultEffect << "hr=0x" << int(r) << Qt::dec << "dropAction=" << dragResult;
     return dragResult;
 }
 

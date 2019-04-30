@@ -133,7 +133,7 @@ QSet<QString> set;
 ...
 QSet<QString>::iterator it = qFind(set.begin(), set.end(), "Jeanette");
 if (it != set.end())
-    cout << "Found Jeanette" << endl;
+    cout << "Found Jeanette" << Qt::endl;
 //! [10]
 
 
@@ -152,7 +152,7 @@ QSet<QString> set;
 ...
 QSet<QString>::iterator it = qFind(set.begin(), set.end(), "Jeanette");
 if (it != set.constEnd())
-    cout << "Found Jeanette" << endl;
+    cout << "Found Jeanette" << Qt::endl;
 //! [12]
 
 

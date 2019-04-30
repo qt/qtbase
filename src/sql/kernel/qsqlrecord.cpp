@@ -535,7 +535,7 @@ QDebug operator<<(QDebug dbg, const QSqlRecord &r)
     dbg << "QSqlRecord(" << count << ')';
     for (int i = 0; i < count; ++i) {
         dbg.nospace();
-        dbg << '\n' << qSetFieldWidth(2) << right << i << left << qSetFieldWidth(0) << ':';
+        dbg << '\n' << qSetFieldWidth(2) << Qt::right << i << Qt::left << qSetFieldWidth(0) << ':';
         dbg.space();
         dbg << r.field(i) << r.value(i).toString();
     }

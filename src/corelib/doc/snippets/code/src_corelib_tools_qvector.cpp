@@ -73,7 +73,7 @@ if (vector[0] == "Liz")
 //! [4]
 for (int i = 0; i < vector.size(); ++i) {
     if (vector.at(i) == "Alfonso")
-        cout << "Found Alfonso at position " << i << endl;
+        cout << "Found Alfonso at position " << i << Qt::endl;
 }
 //! [4]
 
@@ -81,7 +81,7 @@ for (int i = 0; i < vector.size(); ++i) {
 //! [5]
 int i = vector.indexOf("Harumi");
 if (i != -1)
-    cout << "First occurrence of Harumi is at position " << i << endl;
+    cout << "First occurrence of Harumi is at position " << i << Qt::endl;
 //! [5]
 
 

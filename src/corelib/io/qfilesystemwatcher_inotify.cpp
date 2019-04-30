@@ -388,7 +388,7 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
         const inotify_event &event = **it;
         ++it;
 
-        // qDebug() << "inotify event, wd" << event.wd << "mask" << hex << event.mask;
+        // qDebug() << "inotify event, wd" << event.wd << "mask" << Qt::hex << event.mask;
 
         int id = event.wd;
         QString path = getPathFromID(id);

@@ -44,15 +44,15 @@
 
 static void help_me ()
 {
-  qerr() << "Usage: qlalr [options] [input file name]" << endl
-       << endl
-       << "  --help, -h\t\tdisplay this help and exit" << endl
-       << "  --verbose, -v\t\tverbose output" << endl
-       << "  --no-debug\t\tno debug information" << endl
-       << "  --no-lines\t\tno #line directives" << endl
-       << "  --dot\t\t\tgenerate a graph" << endl
-       << "  --qt\t\tadd the Qt copyright header and Qt-specific types and macros" << endl
-       << endl;
+  qerr() << "Usage: qlalr [options] [input file name]" << Qt::endl
+       << Qt::endl
+       << "  --help, -h\t\tdisplay this help and exit" << Qt::endl
+       << "  --verbose, -v\t\tverbose output" << Qt::endl
+       << "  --no-debug\t\tno debug information" << Qt::endl
+       << "  --no-lines\t\tno #line directives" << Qt::endl
+       << "  --dot\t\t\tgenerate a graph" << Qt::endl
+       << "  --qt\t\tadd the Qt copyright header and Qt-specific types and macros" << Qt::endl
+       << Qt::endl;
   exit (0);
 }
 
@@ -91,7 +91,7 @@ int main (int argc, char *argv[])
         file_name = arg;
 
       else
-        qerr() << "*** Warning. Ignore argument `" << arg << "'" << endl;
+        qerr() << "*** Warning. Ignore argument `" << arg << "'" << Qt::endl;
     }
 
   if (file_name.isEmpty ())
@@ -108,13 +108,13 @@ int main (int argc, char *argv[])
 
   if (grammar.rules.isEmpty ())
     {
-      qerr() << "*** Fatal. No rules!" << endl;
+      qerr() << "*** Fatal. No rules!" << Qt::endl;
       exit (EXIT_FAILURE);
     }
 
   else if (grammar.start == grammar.names.end ())
     {
-      qerr() << "*** Fatal. No start symbol!" << endl;
+      qerr() << "*** Fatal. No start symbol!" << Qt::endl;
       exit (EXIT_FAILURE);
     }
 

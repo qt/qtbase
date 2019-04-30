@@ -2356,7 +2356,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
     } else if (negative) {
         // Workaround for backward compatibility for writing negative
         // numbers in octal and hex:
-        // QTextStream(result) << showbase << hex << -1 << oct << -1
+        // QTextStream(result) << Qt::showbase << Qt::hex << -1 << oct << -1
         // should output: -0x1 -0b1
         result = dd->unsLongLongToString(number, -1, base, -1, flags);
         result.prepend(locale.negativeSign());
@@ -2978,7 +2978,7 @@ QTextStream &center(QTextStream &stream)
 */
 QTextStream &endl(QTextStream &stream)
 {
-    return stream << QLatin1Char('\n') << flush;
+    return stream << QLatin1Char('\n') << Qt::flush;
 }
 
 /*!

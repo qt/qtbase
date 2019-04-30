@@ -324,7 +324,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (window->type() == Qt::Desktop) {
         QWindowsDesktopWindow *result = new QWindowsDesktopWindow(window);
         qCDebug(lcQpaWindows) << "Desktop window:" << window
-            << showbase << hex << result->winId() << noshowbase << dec << result->geometry();
+            << Qt::showbase << Qt::hex << result->winId() << Qt::noshowbase << Qt::dec << result->geometry();
         return result;
     }
 
@@ -373,8 +373,8 @@ QPlatformWindow *QWindowsIntegration::createForeignWindow(QWindow *window, WId n
         screen = pScreen->screen();
     if (screen && screen != window->screen())
         window->setScreen(screen);
-    qCDebug(lcQpaWindows) << "Foreign window:" << window << showbase << hex
-        << result->winId() << noshowbase << dec << obtainedGeometry << screen;
+    qCDebug(lcQpaWindows) << "Foreign window:" << window << Qt::showbase << Qt::hex
+        << result->winId() << Qt::noshowbase << Qt::dec << obtainedGeometry << screen;
     return result;
 }
 

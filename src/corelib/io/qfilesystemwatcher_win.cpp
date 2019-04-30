@@ -79,7 +79,7 @@ static Qt::HANDLE createChangeNotification(const QString &path, uint flags)
         nativePath.append(QLatin1Char('\\'));
     const HANDLE result = FindFirstChangeNotification(reinterpret_cast<const wchar_t *>(nativePath.utf16()),
                                                       FALSE, flags);
-    DEBUG() << __FUNCTION__ << nativePath << hex <<showbase << flags << "returns" << result;
+    DEBUG() << __FUNCTION__ << nativePath << Qt::hex <<showbase << flags << "returns" << result;
     return result;
 }
 
@@ -432,7 +432,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 // Requesting to add a file whose directory has been added previously.
                 // Recreate the notification handle to add the missing notification attributes
                 // for files (FILE_NOTIFY_CHANGE_ATTRIBUTES...)
-                DEBUG() << "recreating" << absolutePath << hex << showbase << hit.value().flags
+                DEBUG() << "recreating" << absolutePath << Qt::hex << Qt::showbase << hit.value().flags
                     << "->" << flags;
                 const Qt::HANDLE fileHandle = createChangeNotification(absolutePath, flags);
                 if (fileHandle != INVALID_HANDLE_VALUE) {

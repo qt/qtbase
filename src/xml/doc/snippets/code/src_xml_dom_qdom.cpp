@@ -74,7 +74,7 @@ QDomNode n = d.firstChild();
 while (!n.isNull()) {
     if (n.isElement()) {
         QDomElement e = n.toElement();
-        cout << "Element name: " << e.tagName() << endl;
+        cout << "Element name: " << e.tagName() << Qt::endl;
         break;
     }
     n = n.nextSibling();
@@ -126,10 +126,10 @@ QDomElement element4 = document.createElement("MyElement");
 QDomElement e = //...
 //...
 QDomAttr a = e.attributeNode("href");
-cout << a.value() << endl;                // prints "http://qt-project.org"
+cout << a.value() << Qt::endl;                // prints "http://qt-project.org"
 a.setValue("http://qt-project.org/doc"); // change the node's attribute
 QDomAttr a2 = e.attributeNode("href");
-cout << a2.value() << endl;               // prints "http://qt-project.org/doc"
+cout << a2.value() << Qt::endl;               // prints "http://qt-project.org/doc"
 //! [8]
 
 
@@ -201,7 +201,7 @@ QDomNode n = docElem.firstChild();
 while(!n.isNull()) {
     QDomElement e = n.toElement(); // try to convert the node to an element.
     if(!e.isNull()) {
-        cout << qPrintable(e.tagName()) << endl; // the node really is an element.
+        cout << qPrintable(e.tagName()) << Qt::endl; // the node really is an element.
     }
     n = n.nextSibling();
 }

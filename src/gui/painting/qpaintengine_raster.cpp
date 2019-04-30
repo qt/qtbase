@@ -898,7 +898,7 @@ void QRasterPaintEngine::renderHintsChanged()
     QRasterPaintEngineState *s = state();
 
 #ifdef QT_DEBUG_DRAW
-    qDebug() << "QRasterPaintEngine::renderHintsChanged()" << hex << s->renderHints;
+    qDebug() << "QRasterPaintEngine::renderHintsChanged()" << Qt::hex << s->renderHints;
 #endif
 
     bool was_aa = s->flags.antialiased;
@@ -1745,7 +1745,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     QRectF rf = path.controlPointRect();
     qDebug() << "QRasterPaintEngine::fill(): "
              << "size=" << path.elementCount()
-             << ", hints=" << hex << path.hints()
+             << ", hints=" << Qt::hex << path.hints()
              << rf << brush;
 #endif
 

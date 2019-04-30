@@ -136,7 +136,7 @@ QDebug operator<<(QDebug d, const QOpenGLConfig::Gpu &g)
     d.nospace();
     d << "Gpu(";
     if (g.isValid()) {
-        d << "vendor=" << hex << showbase <<g.vendorId << ", device=" << g.deviceId
+        d << "vendor=" << Qt::hex << Qt::showbase <<g.vendorId << ", device=" << g.deviceId
           << "version=" << g.driverVersion;
     } else {
         d << 0;

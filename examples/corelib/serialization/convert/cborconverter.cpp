@@ -226,7 +226,7 @@ void CborDiagnosticDumper::saveFile(QIODevice *f, const QVariant &contents, cons
 
     QTextStream out(f);
     out << convertFromVariant(contents, Double).toDiagnosticNotation(opts)
-        << endl;
+        << Qt::endl;
 }
 
 CborConverter::CborConverter()

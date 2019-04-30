@@ -54,10 +54,10 @@ void parseHtmlFile(QTextStream &out, const QString &fileName)
 {
     QFile file(fileName);
 
-    out << "Analysis of HTML file: " << fileName << endl;
+    out << "Analysis of HTML file: " << fileName << Qt::endl;
 
     if (!file.open(QIODevice::ReadOnly)) {
-        out << "  Couldn't open the file." << endl << endl << endl;
+        out << "  Couldn't open the file." << Qt::endl << Qt::endl << Qt::endl;
         return;
     }
 
@@ -85,22 +85,22 @@ void parseHtmlFile(QTextStream &out, const QString &fileName)
 //! [2]
     if (reader.hasError()) {
         out << "  The HTML file isn't well-formed: " << reader.errorString()
-            << endl << endl << endl;
+            << Qt::endl << Qt::endl << Qt::endl;
         return;
     }
 //! [2]
 
-    out << "  Title: \"" << title << '"' << endl
-        << "  Number of paragraphs: " << paragraphCount << endl
-        << "  Number of links: " << links.size() << endl
-        << "  Showing first few links:" << endl;
+    out << "  Title: \"" << title << '"' << Qt::endl
+        << "  Number of paragraphs: " << paragraphCount << Qt::endl
+        << "  Number of links: " << links.size() << Qt::endl
+        << "  Showing first few links:" << Qt::endl;
 
     while (links.size() > 5)
         links.removeLast();
 
     for (const QString &link : qAsConst(links))
-        out << "    " << link << endl;
-    out << endl << endl;
+        out << "    " << link << Qt::endl;
+    out << Qt::endl << Qt::endl;
 }
 
 int main(int argc, char **argv)

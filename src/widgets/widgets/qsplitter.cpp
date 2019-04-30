@@ -1793,7 +1793,7 @@ void QSplitter::setStretchFactor(int index, int stretch)
 
 QTextStream& operator<<(QTextStream& ts, const QSplitter& splitter)
 {
-    ts << splitter.saveState() << endl;
+    ts << splitter.saveState() << Qt::endl;
     return ts;
 }
 

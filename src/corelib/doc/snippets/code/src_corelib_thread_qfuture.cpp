@@ -53,7 +53,7 @@ QFuture<QString> future = ...;
 
 QFuture<QString>::const_iterator i;
 for (i = future.constBegin(); i != future.constEnd(); ++i)
-    cout << *i << endl;
+    cout << *i << Qt::endl;
 //! [0]
 
 

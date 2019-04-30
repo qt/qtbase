@@ -146,13 +146,13 @@ QDebug operator<<(QDebug d, const LOGCONTEXT &lc)
     QDebugStateSaver saver(d);
     d.nospace();
     d << "LOGCONTEXT(\"" << QString::fromWCharArray(lc.lcName) << "\", options=0x"
-        << hex << lc.lcOptions << dec;
+        << Qt::hex << lc.lcOptions << Qt::dec;
     formatOptions(d, lc.lcOptions);
-    d << ", status=0x" << hex << lc.lcStatus << ", device=0x" << lc.lcDevice
-        << dec << ", PktRate=" << lc.lcPktRate
+    d << ", status=0x" << Qt::hex << lc.lcStatus << ", device=0x" << lc.lcDevice
+        << Qt::dec << ", PktRate=" << lc.lcPktRate
         << ", PktData=" << lc.lcPktData << ", PktMode=" << lc.lcPktMode
-        << ", MoveMask=0x" << hex << lc.lcMoveMask << ", BtnDnMask=0x" << lc.lcBtnDnMask
-        << ", BtnUpMask=0x" << lc.lcBtnUpMask << dec << ", SysMode=" << lc.lcSysMode
+        << ", MoveMask=0x" << Qt::hex << lc.lcMoveMask << ", BtnDnMask=0x" << lc.lcBtnDnMask
+        << ", BtnUpMask=0x" << lc.lcBtnUpMask << Qt::dec << ", SysMode=" << lc.lcSysMode
         << ", InOrg=(" << lc.lcInOrgX << ", " << lc.lcInOrgY << ", " << lc.lcInOrgZ
         <<  "), InExt=(" << lc.lcInExtX << ", " << lc.lcInExtY << ", " << lc.lcInExtZ
         << ") OutOrg=(" << lc.lcOutOrgX << ", " << lc.lcOutOrgY << ", "
@@ -305,7 +305,7 @@ QString QWindowsTabletSupport::description() const
         << '.' << (specificationVersion & 0xFF) << " implementation: v"
         << (implementationVersion >> 8) << '.' << (implementationVersion & 0xFF)
         << ' ' << devices << " device(s), " << cursors << " cursor(s), "
-        << extensions << " extensions" << ", options: 0x" << hex << opts << dec;
+        << extensions << " extensions" << ", options: 0x" << Qt::hex << opts << Qt::dec;
     formatOptions(str, opts);
     if (m_tiltSupport)
         str << " tilt";

@@ -320,11 +320,11 @@ void Win32MakefileGenerator::processRcFileVar()
         int rcCodePage = project->intValue("RC_CODEPAGE", 1200);    // default: Unicode
 
         ts << "#include <windows.h>\n";
-        ts << endl;
+        ts << Qt::endl;
         if (!rcIcons.isEmpty()) {
             for (int i = 0; i < rcIcons.size(); ++i)
-                ts << QString("IDI_ICON%1\tICON\tDISCARDABLE\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << endl;
-            ts << endl;
+                ts << QString("IDI_ICON%1\tICON\tDISCARDABLE\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << Qt::endl;
+            ts << Qt::endl;
         }
         if (!manifestFile.isEmpty()) {
             QString manifestResourceId;
@@ -335,8 +335,8 @@ void Win32MakefileGenerator::processRcFileVar()
             ts << manifestResourceId << " RT_MANIFEST \"" << manifestFile << "\"\n";
         }
         ts << "VS_VERSION_INFO VERSIONINFO\n";
-        ts << "\tFILEVERSION " << QString(versionString).replace(".", ",") << endl;
-        ts << "\tPRODUCTVERSION " << QString(versionString).replace(".", ",") << endl;
+        ts << "\tFILEVERSION " << QString(versionString).replace(".", ",") << Qt::endl;
+        ts << "\tPRODUCTVERSION " << QString(versionString).replace(".", ",") << Qt::endl;
         ts << "\tFILEFLAGSMASK 0x3fL\n";
         ts << "#ifdef _DEBUG\n";
         ts << "\tFILEFLAGS VS_FF_DEBUG\n";
@@ -369,11 +369,11 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\tBEGIN\n";
         ts << "\t\t\tVALUE \"Translation\", "
            << QString("0x%1").arg(rcLang, 4, 16, QLatin1Char('0'))
-           << ", " << QString("%1").arg(rcCodePage, 4) << endl;
+           << ", " << QString("%1").arg(rcCodePage, 4) << Qt::endl;
         ts << "\t\tEND\n";
         ts << "\tEND\n";
         ts << "/* End of Version info */\n";
-        ts << endl;
+        ts << Qt::endl;
 
         ts.flush();
 
@@ -470,7 +470,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
             }
         }
     }
-    t << endl << endl;
+    t << Qt::endl << Qt::endl;
 
     t << "distclean: clean " << depVar("DISTCLEAN_DEPS");
     {
@@ -503,9 +503,9 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
     {
         QString ofile = fileFixify(Option::output.fileName());
         if(!ofile.isEmpty())
-            t << "\t-$(DEL_FILE) " << escapeFilePath(ofile) << endl;
+            t << "\t-$(DEL_FILE) " << escapeFilePath(ofile) << Qt::endl;
     }
-    t << endl;
+    t << Qt::endl;
 }
 
 void Win32MakefileGenerator::writeIncPart(QTextStream &t)
@@ -519,7 +519,7 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
         if(!inc.isEmpty())
             t << "-I" << escapeFilePath(inc) << ' ';
     }
-    t << endl;
+    t << Qt::endl;
 }
 
 void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
@@ -527,51 +527,51 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeExportedVariables(t);
 
     t << "####### Compiler, tools and options\n\n";
-    t << "CC            = " << var("QMAKE_CC") << endl;
-    t << "CXX           = " << var("QMAKE_CXX") << endl;
+    t << "CC            = " << var("QMAKE_CC") << Qt::endl;
+    t << "CXX           = " << var("QMAKE_CXX") << Qt::endl;
     t << "DEFINES       = "
       << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-      << varGlue("DEFINES","-D"," -D","") << endl;
+      << varGlue("DEFINES","-D"," -D","") << Qt::endl;
     t << "CFLAGS        = " << var("QMAKE_CFLAGS") << " $(DEFINES)\n";
     t << "CXXFLAGS      = " << var("QMAKE_CXXFLAGS") << " $(DEFINES)\n";
 
     writeIncPart(t);
     writeLibsPart(t);
 
-    t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
+    t << "QMAKE         = " << var("QMAKE_QMAKE") << Qt::endl;
     t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") : var("QMAKE_IDC"))
-                            << endl;
+                            << Qt::endl;
     t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") : var("QMAKE_IDL"))
-                            << endl;
-    t << "ZIP           = " << var("QMAKE_ZIP") << endl;
-    t << "DEF_FILE      = " << fileVar("DEF_FILE") << endl;
-    t << "RES_FILE      = " << fileVar("RES_FILE") << endl; // Not on mingw, can't see why not though...
-    t << "COPY          = " << var("QMAKE_COPY") << endl;
-    t << "SED           = " << var("QMAKE_STREAM_EDITOR") << endl;
-    t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
-    t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
-    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
-    t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;
-    t << "MOVE          = " << var("QMAKE_MOVE") << endl;
-    t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
-    t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
-    t << "INSTALL_FILE    = " << var("QMAKE_INSTALL_FILE") << endl;
-    t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
-    t << "INSTALL_DIR     = " << var("QMAKE_INSTALL_DIR") << endl;
-    t << "QINSTALL        = " << var("QMAKE_QMAKE") << " -install qinstall" << endl;
-    t << "QINSTALL_PROGRAM = " << var("QMAKE_QMAKE") << " -install qinstall -exe" << endl;
-    t << endl;
+                            << Qt::endl;
+    t << "ZIP           = " << var("QMAKE_ZIP") << Qt::endl;
+    t << "DEF_FILE      = " << fileVar("DEF_FILE") << Qt::endl;
+    t << "RES_FILE      = " << fileVar("RES_FILE") << Qt::endl; // Not on mingw, can't see why not though...
+    t << "COPY          = " << var("QMAKE_COPY") << Qt::endl;
+    t << "SED           = " << var("QMAKE_STREAM_EDITOR") << Qt::endl;
+    t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << Qt::endl;
+    t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << Qt::endl;
+    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << Qt::endl;
+    t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << Qt::endl;
+    t << "MOVE          = " << var("QMAKE_MOVE") << Qt::endl;
+    t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << Qt::endl;
+    t << "MKDIR         = " << var("QMAKE_MKDIR") << Qt::endl;
+    t << "INSTALL_FILE    = " << var("QMAKE_INSTALL_FILE") << Qt::endl;
+    t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << Qt::endl;
+    t << "INSTALL_DIR     = " << var("QMAKE_INSTALL_DIR") << Qt::endl;
+    t << "QINSTALL        = " << var("QMAKE_QMAKE") << " -install qinstall" << Qt::endl;
+    t << "QINSTALL_PROGRAM = " << var("QMAKE_QMAKE") << " -install qinstall -exe" << Qt::endl;
+    t << Qt::endl;
 
     t << "####### Output directory\n\n";
     if(!project->values("OBJECTS_DIR").isEmpty())
-        t << "OBJECTS_DIR   = " << escapeFilePath(var("OBJECTS_DIR").remove(QRegExp("\\\\$"))) << endl;
+        t << "OBJECTS_DIR   = " << escapeFilePath(var("OBJECTS_DIR").remove(QRegExp("\\\\$"))) << Qt::endl;
     else
         t << "OBJECTS_DIR   = . \n";
-    t << endl;
+    t << Qt::endl;
 
     t << "####### Files\n\n";
     t << "SOURCES       = " << valList(escapeFilePaths(project->values("SOURCES")))
-      << " " << valList(escapeFilePaths(project->values("GENERATED_SOURCES"))) << endl;
+      << " " << valList(escapeFilePaths(project->values("GENERATED_SOURCES"))) << Qt::endl;
 
     // do this here so we can set DEST_TARGET to be the complete path to the final target if it is needed.
     QString orgDestDir = var("DESTDIR");
@@ -587,14 +587,14 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeExtraVariables(t);
 
     t << "DIST          = " << fileVarList("DISTFILES") << ' '
-      << fileVarList("HEADERS") << ' ' << fileVarList("SOURCES") << endl;
-    t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << endl;  // unused
+      << fileVarList("HEADERS") << ' ' << fileVarList("SOURCES") << Qt::endl;
+    t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << Qt::endl;  // unused
     // The comment is important to maintain variable compatibility with Unix
     // Makefiles, while not interpreting a trailing-slash as a linebreak
     t << "DESTDIR        = " << escapeFilePath(destDir) << " #avoid trailing-slash linebreak\n";
-    t << "TARGET         = " << escapeFilePath(target) << endl;
-    t << "DESTDIR_TARGET = " << fileVar("DEST_TARGET") << endl;
-    t << endl;
+    t << "TARGET         = " << escapeFilePath(target) << Qt::endl;
+    t << "DESTDIR_TARGET = " << fileVar("DEST_TARGET") << Qt::endl;
+    t << Qt::endl;
 
     writeImplicitRulesPart(t);
 
@@ -606,10 +606,10 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
             const ProStringList &dlldirs = project->values("DLLDESTDIR");
             for (ProStringList::ConstIterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
                 t << "\t-$(COPY_FILE) $(DESTDIR_TARGET) "
-                  << escapeFilePath(Option::fixPathToTargetOS((*dlldir).toQString(), false)) << endl;
+                  << escapeFilePath(Option::fixPathToTargetOS((*dlldir).toQString(), false)) << Qt::endl;
             }
         }
-        t << endl;
+        t << Qt::endl;
 
         writeRcFilePart(t);
     }
@@ -642,33 +642,33 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
             }
         }
     }
-    t << endl << endl;
+    t << Qt::endl << Qt::endl;
 
     writeCleanParts(t);
     writeExtraTargets(t);
     writeExtraCompilerTargets(t);
-    t << endl << endl;
+    t << Qt::endl << Qt::endl;
 }
 
 void Win32MakefileGenerator::writeLibsPart(QTextStream &t)
 {
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-        t << "LIBAPP        = " << var("QMAKE_LIB") << endl;
-        t << "LIBFLAGS      = " << var("QMAKE_LIBFLAGS") << endl;
+        t << "LIBAPP        = " << var("QMAKE_LIB") << Qt::endl;
+        t << "LIBFLAGS      = " << var("QMAKE_LIBFLAGS") << Qt::endl;
     } else {
-        t << "LINKER        = " << var("QMAKE_LINK") << endl;
-        t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
+        t << "LINKER        = " << var("QMAKE_LINK") << Qt::endl;
+        t << "LFLAGS        = " << var("QMAKE_LFLAGS") << Qt::endl;
         t << "LIBS          = " << fixLibFlags("LIBS").join(' ') << ' '
                                 << fixLibFlags("LIBS_PRIVATE").join(' ') << ' '
                                 << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
-                                << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << endl;
+                                << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << Qt::endl;
     }
 }
 
 void Win32MakefileGenerator::writeObjectsPart(QTextStream &t)
 {
     // Used in both deps and commands.
-    t << "OBJECTS       = " << valList(escapeDependencyPaths(project->values("OBJECTS"))) << endl;
+    t << "OBJECTS       = " << valList(escapeDependencyPaths(project->values("OBJECTS"))) << Qt::endl;
 }
 
 void Win32MakefileGenerator::writeImplicitRulesPart(QTextStream &t)
@@ -710,7 +710,7 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
           << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "")
           << defines << incPathStr << " -fo " << escapeFilePath(res_file)
           << ' ' << escapeFilePath(rc_file);
-        t << endl << endl;
+        t << Qt::endl << Qt::endl;
     }
 }
 

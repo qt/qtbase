@@ -124,8 +124,8 @@ static inline QTouchDevice *createTouchDevice()
         return nullptr;
     const int tabletPc = GetSystemMetrics(SM_TABLETPC);
     const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
-    qCDebug(lcQpaEvents) << "Digitizers:" << hex << showbase << (digitizers & ~NID_READY)
-        << "Ready:" << (digitizers & NID_READY) << dec << noshowbase
+    qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
+        << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
         << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
     QTouchDevice *result = new QTouchDevice;
     result->setType(digitizers & NID_INTEGRATED_TOUCH
