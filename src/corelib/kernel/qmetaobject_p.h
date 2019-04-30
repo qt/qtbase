@@ -180,6 +180,7 @@ struct QMetaObjectPrivate
     // revision 9 is Qt 6.0: It adds the metatype of properties and methods
     enum { OutputRevision = 9 }; // Used by moc, qmetaobjectbuilder and qdbus
     enum { IntsPerMethod = QMetaMethod::Data::Size};
+    enum { IntsPerEnum = QMetaEnum::Data::Size };
 
     int revision;
     int className;

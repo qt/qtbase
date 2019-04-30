@@ -221,7 +221,7 @@ inline bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
 class Q_CORE_EXPORT QMetaEnum
 {
 public:
-    Q_DECL_CONSTEXPR inline QMetaEnum() : mobj(nullptr), handle(0) {}
+    Q_DECL_CONSTEXPR inline QMetaEnum() : mobj(nullptr), data({ nullptr }) {}
 
     const char *name() const;
     const char *enumName() const;
@@ -253,9 +253,23 @@ public:
     }
 
 private:
+    struct Data {
+        enum { Size = 5 };
+        quint32 name() const { return d[0]; }
+        quint32 alias() const { return d[1]; }
+        quint32 flags() const { return d[2]; }
+        qint32 keyCount() const { return static_cast<qint32>(d[3]); }
+        quint32 data() const { return d[4]; }
+
+        const uint *d;
+    };
+
+    QMetaEnum(const QMetaObject *mobj, int index);
+
     const QMetaObject *mobj;
-    uint handle;
+    Data data;
     friend struct QMetaObject;
+    friend struct QMetaObjectPrivate;
 };
 Q_DECLARE_TYPEINFO(QMetaEnum, Q_MOVABLE_TYPE);
 

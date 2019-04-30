@@ -1244,7 +1244,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         pmeta->enumeratorCount = int(d->enumerators.size());
         pmeta->enumeratorData = dataIndex;
-        dataIndex += 5 * int(d->enumerators.size());
+        dataIndex += QMetaObjectPrivate::IntsPerEnum * int(d->enumerators.size());
 
         pmeta->constructorCount = int(d->constructors.size());
         pmeta->constructorData = dataIndex;
@@ -1261,7 +1261,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             dataIndex += int(d->properties.size());
         if (hasRevisionedProperties)
             dataIndex += int(d->properties.size());
-        dataIndex += 5 * int(d->enumerators.size());
+        dataIndex += QMetaObjectPrivate::IntsPerEnum * int(d->enumerators.size());
         dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->constructors.size());
     }
 
@@ -1432,7 +1432,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 data[enumOffset++] = enumerator.values[key];
             }
         }
-        dataIndex += 5;
+        dataIndex += QMetaObjectPrivate::IntsPerEnum;
         enumIndex += 2 * count;
     }
 
