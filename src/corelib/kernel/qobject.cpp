@@ -4526,6 +4526,24 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_NAMESPACE makes an external variable, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
     enums declared with Q_ENUM_NS/Q_FLAG_NS.
+
+    \sa Q_NAMESPACE_EXPORT
+*/
+
+/*!
+    \macro Q_NAMESPACE_EXPORT(EXPORT_MACRO)
+    \relates QObject
+    \since 5.14
+
+    The Q_NAMESPACE_EXPORT macro can be used to add QMetaObject capabilities
+    to a namespace.
+
+    It works exactly like the Q_NAMESPACE macro. However, the external
+    \c{staticMetaObject} variable that gets defined in the namespace
+    is declared with the supplied \c{EXPORT_MACRO} qualifier. This is
+    useful f.i. if the object needs to be exported from a dynamic library.
+
+    \sa Q_NAMESPACE, {Creating Shared Libraries}
 */
 
 /*!

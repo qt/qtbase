@@ -620,6 +620,13 @@ void Moc::parse()
                             case Q_NAMESPACE_TOKEN:
                                 def.hasQNamespace = true;
                                 break;
+                            case Q_NAMESPACE_EXPORT_TOKEN:
+                                next(LPAREN);
+                                while (test(IDENTIFIER))
+                                    {}
+                                next(RPAREN);
+                                def.hasQNamespace = true;
+                                break;
                             case Q_ENUMS_TOKEN:
                             case Q_ENUM_NS_TOKEN:
                                 parseEnumOrFlag(&def, false);
