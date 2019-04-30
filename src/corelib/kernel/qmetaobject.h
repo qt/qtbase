@@ -351,13 +351,22 @@ private:
 class Q_CORE_EXPORT QMetaClassInfo
 {
 public:
-    Q_DECL_CONSTEXPR inline QMetaClassInfo() : mobj(nullptr), handle(0) {}
+    Q_DECL_CONSTEXPR inline QMetaClassInfo() : mobj(nullptr), data({ nullptr }) {}
     const char *name() const;
     const char *value() const;
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 private:
+    struct Data {
+        enum { Size = 2 };
+
+        uint name() const { return d[0]; }
+        uint value() const { return d[1]; }
+
+        const uint *d;
+    };
+
     const QMetaObject *mobj;
-    uint handle;
+    Data data;
     friend struct QMetaObject;
 };
 Q_DECLARE_TYPEINFO(QMetaClassInfo, Q_MOVABLE_TYPE);

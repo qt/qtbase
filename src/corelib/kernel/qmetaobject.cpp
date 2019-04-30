@@ -1163,7 +1163,7 @@ QMetaClassInfo QMetaObject::classInfo(int index) const
     QMetaClassInfo result;
     if (i >= 0 && i < priv(d.data)->classInfoCount) {
         result.mobj = this;
-        result.handle = priv(d.data)->classInfoData + 2*i;
+        result.data = { d.data + priv(d.data)->classInfoData + i * QMetaClassInfo::Data::Size };
     }
     return result;
 }
@@ -3554,7 +3554,7 @@ const char *QMetaClassInfo::name() const
 {
     if (!mobj)
         return nullptr;
-    return rawStringData(mobj, mobj->d.data[handle]);
+    return rawStringData(mobj, data.name());
 }
 
 /*!
@@ -3566,7 +3566,7 @@ const char* QMetaClassInfo::value() const
 {
     if (!mobj)
         return nullptr;
-    return rawStringData(mobj, mobj->d.data[handle + 1]);
+    return rawStringData(mobj, data.value());
 }
 
 /*!
