@@ -75,7 +75,7 @@ QT_END_NAMESPACE
 
 // New atomics
 
-#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+#if defined(Q_COMPILER_CONSTEXPR)
 # if defined(Q_CC_CLANG) && Q_CC_CLANG < 303
    /*
       Do not define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS for Clang before version 3.3.

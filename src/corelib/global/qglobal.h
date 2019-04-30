@@ -422,8 +422,8 @@ typedef double qreal;
    operator to disable copying (the compiler gives an error message).
 */
 #define Q_DISABLE_COPY(Class) \
-    Class(const Class &) Q_DECL_EQ_DELETE;\
-    Class &operator=(const Class &) Q_DECL_EQ_DELETE;
+    Class(const Class &) = delete;\
+    Class &operator=(const Class &) = delete;
 
 #define Q_DISABLE_MOVE(Class) \
     Class(Class &&) = delete; \
@@ -1021,7 +1021,7 @@ template <typename T>
 Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
 // prevent rvalue arguments:
 template <typename T>
-void qAsConst(const T &&) Q_DECL_EQ_DELETE;
+void qAsConst(const T &&) = delete;
 
 #ifndef QT_NO_FOREACH
 

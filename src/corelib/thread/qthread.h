@@ -209,7 +209,6 @@ struct Callable
     {
     }
 
-#if defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
     // Apply the same semantics of a lambda closure type w.r.t. the special
     // member functions, if possible: delete the copy assignment operator,
     // bring back all the others as per the RO5 (cf. §8.1.5.1/11 [expr.prim.lambda.closure])
@@ -218,7 +217,6 @@ struct Callable
     Callable(Callable &&) = default;
     Callable &operator=(const Callable &) = delete;
     Callable &operator=(Callable &&) = default;
-#endif
 
     void operator()()
     {

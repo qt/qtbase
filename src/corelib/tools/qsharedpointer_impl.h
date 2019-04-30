@@ -235,8 +235,8 @@ namespace QtSharedPointer {
         }
     private:
         // prevent construction
-        ExternalRefCountWithCustomDeleter() Q_DECL_EQ_DELETE;
-        ~ExternalRefCountWithCustomDeleter() Q_DECL_EQ_DELETE;
+        ExternalRefCountWithCustomDeleter() = delete;
+        ~ExternalRefCountWithCustomDeleter() = delete;
         Q_DISABLE_COPY(ExternalRefCountWithCustomDeleter)
     };
 
@@ -280,8 +280,8 @@ namespace QtSharedPointer {
 
     private:
         // prevent construction
-        ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
-        ~ExternalRefCountWithContiguousData() Q_DECL_EQ_DELETE;
+        ExternalRefCountWithContiguousData() = delete;
+        ~ExternalRefCountWithContiguousData() = delete;
         Q_DISABLE_COPY(ExternalRefCountWithContiguousData)
     };
 
@@ -705,11 +705,7 @@ template <class T>
 class QEnableSharedFromThis
 {
 protected:
-#ifdef Q_COMPILER_DEFAULT_MEMBERS
     QEnableSharedFromThis() = default;
-#else
-    Q_DECL_CONSTEXPR QEnableSharedFromThis() {}
-#endif
     QEnableSharedFromThis(const QEnableSharedFromThis &) {}
     QEnableSharedFromThis &operator=(const QEnableSharedFromThis &) { return *this; }
 

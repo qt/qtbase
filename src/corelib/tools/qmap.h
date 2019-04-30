@@ -142,7 +142,7 @@ private:
             rightNode()->destroySubTree();
     }
 
-    QMapNode() Q_DECL_EQ_DELETE;
+    QMapNode() = delete;
     Q_DISABLE_COPY(QMapNode)
 };
 

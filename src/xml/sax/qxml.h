@@ -116,12 +116,10 @@ class Q_XML_EXPORT QXmlAttributes
 {
 public:
     QXmlAttributes();
-#ifdef Q_COMPILER_DEFAULT_MEMBERS
     QXmlAttributes(const QXmlAttributes &) = default;
     QXmlAttributes(QXmlAttributes &&) noexcept = default;
     QXmlAttributes &operator=(const QXmlAttributes &) = default;
     QXmlAttributes &operator=(QXmlAttributes &&) noexcept = default;
-#endif // default members
 
     QT6_NOT_VIRTUAL ~QXmlAttributes();
 
