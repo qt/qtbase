@@ -359,9 +359,9 @@ public:
 
     QByteArray bcp47Name(char separator = '-') const;
 
-    inline QLatin1String languageCode() const { return QLocalePrivate::languageToCode(QLocale::Language(m_data->m_language_id)); }
-    inline QLatin1String scriptCode() const { return QLocalePrivate::scriptToCode(QLocale::Script(m_data->m_script_id)); }
-    inline QLatin1String countryCode() const { return QLocalePrivate::countryToCode(QLocale::Country(m_data->m_country_id)); }
+    inline QLatin1String languageCode() const { return languageToCode(QLocale::Language(m_data->m_language_id)); }
+    inline QLatin1String scriptCode() const { return scriptToCode(QLocale::Script(m_data->m_script_id)); }
+    inline QLatin1String countryCode() const { return countryToCode(QLocale::Country(m_data->m_country_id)); }
 
     static QLatin1String languageToCode(QLocale::Language language);
     static QLatin1String scriptToCode(QLocale::Script script);
