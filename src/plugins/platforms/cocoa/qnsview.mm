@@ -328,7 +328,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         // QWindow activation from QCocoaWindow::windowDidBecomeKey instead. The only
         // exception is if the window can never become key, in which case we naturally
         // cannot wait for that to happen.
-        QWindowSystemInterface::handleWindowActivated([self topLevelWindow], Qt::ActiveWindowFocusReason);
+        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
+            [self topLevelWindow], Qt::ActiveWindowFocusReason);
     }
 
     return YES;
