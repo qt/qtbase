@@ -176,7 +176,9 @@ private:
         , m_13(h13), m_23(h23), m_33(h33)
         , m_type(TxNone)
         , m_dirty(TxProject)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         , d(nullptr)
+#endif
     {
     }
     inline QTransform(bool)
@@ -184,7 +186,9 @@ private:
         , m_13(0), m_23(0), m_33(1)
         , m_type(TxNone)
         , m_dirty(TxNone)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         , d(nullptr)
+#endif
     {
     }
     inline TransformationType inline_type() const;
