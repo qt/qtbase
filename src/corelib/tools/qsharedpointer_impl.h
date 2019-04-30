@@ -67,6 +67,8 @@ QT_END_NAMESPACE
 #endif
 #include <QtCore/qhashfunctions.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -994,6 +996,46 @@ QSharedPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObj
 qSharedPointerFromVariant(const QVariant &variant)
 {
     return qSharedPointerObjectCast<T>(QtSharedPointer::sharedPointerFromVariant_internal(variant));
+}
+
+// std::shared_ptr helpers
+
+template <typename X, class T>
+std::shared_ptr<X> qobject_pointer_cast(const std::shared_ptr<T> &src)
+{
+    using element_type = typename std::shared_ptr<X>::element_type;
+    return std::shared_ptr<X>(src, qobject_cast<element_type *>(src.get()));
+}
+
+template <typename X, class T>
+std::shared_ptr<X> qobject_pointer_cast(std::shared_ptr<T> &&src)
+{
+    using element_type = typename std::shared_ptr<X>::element_type;
+    auto castResult = qobject_cast<element_type *>(src.get());
+    if (castResult) {
+        auto result = std::shared_ptr<X>(std::move(src), castResult);
+#if __cplusplus <= 201703L
+        // C++2a's move aliasing constructor will leave src empty.
+        // Before C++2a we don't really know if the compiler has support for it.
+        // The move aliasing constructor is the resolution for LWG2996,
+        // which does not impose a feature-testing macro. So: clear src.
+        src.reset();
+#endif
+        return result;
+    }
+    return std::shared_ptr<X>();
+}
+
+template <typename X, class T>
+std::shared_ptr<X> qSharedPointerObjectCast(const std::shared_ptr<T> &src)
+{
+    return qobject_pointer_cast<X>(src);
+}
+
+template <typename X, class T>
+std::shared_ptr<X> qSharedPointerObjectCast(std::shared_ptr<T> &&src)
+{
+    return qobject_pointer_cast<X>(std::move(src));
 }
 
 #endif

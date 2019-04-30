@@ -1300,6 +1300,57 @@
 */
 
 /*!
+    \fn template <class X, class T> std::shared_ptr<X> qSharedPointerObjectCast(const std::shared_ptr<T> &src)
+    \relates QSharedPointer
+    \since 5.14
+
+    Returns a shared pointer to the pointer held by \a src, using a
+    \l qobject_cast() to type \tt X to obtain an internal pointer of the
+    appropriate type. If the \tt qobject_cast fails, the object
+    returned will be null.
+
+    Note that \tt X must have the same cv-qualifiers (\tt const and
+    \tt volatile) that \tt T has, or the code will fail to
+    compile. Use const_pointer_cast to cast away the constness.
+*/
+
+/*!
+    \fn template <class X, class T> std::shared_ptr<X> qobject_pointer_cast(const std::shared_ptr<T> &src)
+    \relates QSharedPointer
+    \since 5.14
+
+    Same as qSharedPointerObjectCast(). This function is provided for STL
+    compatibility.
+*/
+
+/*!
+    \fn template <class X, class T> std::shared_ptr<X> qSharedPointerObjectCast(std::shared_ptr<T> &&src)
+    \relates QSharedPointer
+    \since 5.14
+
+    Returns a shared pointer to the pointer held by \a src, using a
+    \l qobject_cast() to type \tt X to obtain an internal pointer of the
+    appropriate type.
+
+    If the \tt qobject_cast succeeds, the function will return a valid shared
+    pointer, and \a src is reset to null. If the \tt qobject_cast fails, the
+    object returned will be null, and \a src will not be modified.
+
+    Note that \tt X must have the same cv-qualifiers (\tt const and
+    \tt volatile) that \tt T has, or the code will fail to
+    compile. Use const_pointer_cast to cast away the constness.
+*/
+
+/*!
+    \fn template <class X, class T> std::shared_ptr<X> qobject_pointer_cast(std::shared_ptr<T> &&src)
+    \relates QSharedPointer
+    \since 5.14
+
+    Same as qSharedPointerObjectCast(). This function is provided for STL
+    compatibility.
+*/
+
+/*!
     \fn template <class X> template <class T> QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &src)
     \relates QSharedPointer
     \relates QWeakPointer

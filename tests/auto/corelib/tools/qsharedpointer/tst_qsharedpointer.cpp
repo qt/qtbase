@@ -78,6 +78,7 @@ private slots:
     void sharedPointerFromQObjectWithWeak();
     void weakQObjectFromSharedPointer();
     void objectCast();
+    void objectCastStdSharedPtr();
     void differentPointers();
     void virtualBaseDifferentPointers();
 #ifndef QTEST_NO_RTTI
@@ -1111,6 +1112,60 @@ void tst_QSharedPointer::objectCast()
         QVERIFY(otherptr.isNull());
     }
     safetyCheck();
+}
+
+
+void tst_QSharedPointer::objectCastStdSharedPtr()
+{
+    {
+        OtherObject *data = new OtherObject;
+        std::shared_ptr<QObject> baseptr = std::shared_ptr<QObject>(data);
+        QVERIFY(baseptr.get() == data);
+
+        // perform successful object cast
+        std::shared_ptr<OtherObject> ptr = qobject_pointer_cast<OtherObject>(baseptr);
+        QVERIFY(ptr.get());
+        QVERIFY(ptr.get() == data);
+
+        QVERIFY(baseptr.get() == data);
+    }
+
+    {
+        OtherObject *data = new OtherObject;
+        std::shared_ptr<QObject> baseptr = std::shared_ptr<QObject>(data);
+        QVERIFY(baseptr.get() == data);
+
+        // perform successful object cast
+        std::shared_ptr<OtherObject> ptr = qobject_pointer_cast<OtherObject>(std::move(baseptr));
+        QVERIFY(ptr.get());
+        QVERIFY(ptr.get() == data);
+
+        QVERIFY(!baseptr.get());
+    }
+
+    {
+        QObject *data = new QObject;
+        std::shared_ptr<QObject> baseptr = std::shared_ptr<QObject>(data);
+        QVERIFY(baseptr.get() == data);
+
+        // perform unsuccessful object cast
+        std::shared_ptr<OtherObject> ptr = qobject_pointer_cast<OtherObject>(baseptr);
+        QVERIFY(!ptr.get());
+
+        QVERIFY(baseptr.get() == data);
+    }
+
+    {
+        QObject *data = new QObject;
+        std::shared_ptr<QObject> baseptr = std::shared_ptr<QObject>(data);
+        QVERIFY(baseptr.get() == data);
+
+        // perform unsuccessful object cast
+        std::shared_ptr<OtherObject> ptr = qobject_pointer_cast<OtherObject>(std::move(baseptr));
+        QVERIFY(!ptr.get());
+
+        QVERIFY(baseptr.get() == data);
+    }
 }
 
 void tst_QSharedPointer::differentPointers()
