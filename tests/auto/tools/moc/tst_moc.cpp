@@ -1425,6 +1425,16 @@ void tst_Moc::environmentIncludePaths()
 // plugin_metadata.h contains a plugin which we register here. Since we're not building this
 // application as a plugin, we need top copy some of the initializer code found in qplugin.h:
 extern "C" QObject *qt_plugin_instance();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+extern "C" QPluginMetaData qt_plugin_query_metadata();
+class StaticPluginInstance{
+public:
+    StaticPluginInstance() {
+        QStaticPlugin plugin(qt_plugin_instance, qt_plugin_query_metadata);
+        qRegisterStaticPluginFunction(plugin);
+    }
+};
+#else
 extern "C" const char *qt_plugin_query_metadata();
 class StaticPluginInstance{
 public:
@@ -1433,6 +1443,7 @@ public:
         qRegisterStaticPluginFunction(plugin);
     }
 };
+#endif
 static StaticPluginInstance staticInstance;
 
 void tst_Moc::specifyMetaTagsFromCmdline() {
