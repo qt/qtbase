@@ -115,7 +115,7 @@ static DWORD createSymbolicLink(const QString &symLinkName, const QString &targe
                            reinterpret_cast<const wchar_t*>(nativeTarget.utf16()), flags) == FALSE) {
         result = GetLastError();
         QTextStream(errorMessage) << "CreateSymbolicLink(" <<  nativeSymLinkName << ", "
-            << nativeTarget << ", 0x" << hex << flags << dec << ") failed with error " << result
+            << nativeTarget << ", 0x" << Qt::hex << flags << Qt::dec << ") failed with error " << result
             << ": " << qt_error_string(int(result));
     }
     return result;

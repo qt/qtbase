@@ -54,7 +54,7 @@ QVector<double> mixedvector_fill_and_return_helper()
     std::vector<double> v(N);
     for (int i = 0; i != N; ++i)
         v[i] = i;
-    return QVector<double>::fromStdVector(v);
+    return QVector<double>(v.begin(), v.end());
 }
 
 

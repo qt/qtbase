@@ -272,7 +272,7 @@ void QCocoaIntegration::updateScreens()
            [screens addObject:[NSScreen mainScreen]];
     if ([screens count] == 0)
         return;
-    QSet<QCocoaScreen*> remainingScreens = QSet<QCocoaScreen*>::fromList(mScreens);
+    QSet<QCocoaScreen*> remainingScreens = QSet<QCocoaScreen*>(mScreens.constBegin(), mScreens.constEnd());
     QList<QPlatformScreen *> siblings;
     uint screenCount = [screens count];
     for (uint i = 0; i < screenCount; i++) {
