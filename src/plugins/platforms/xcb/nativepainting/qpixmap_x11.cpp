@@ -2017,7 +2017,7 @@ QImage QX11PlatformPixmap::toImage(const QXImageWrapper &xiWrapper, const QRect 
         }
     } else if (xi->bits_per_pixel == d) {        // compatible depth
         char *xidata = xi->data;                // copy each scanline
-        int bpl = qMin(image.bytesPerLine(),xi->bytes_per_line);
+        int bpl = qMin(int(image.bytesPerLine()),xi->bytes_per_line);
         for (int y=0; y<xi->height; y++) {
             memcpy(image.scanLine(y), xidata, bpl);
             xidata += xi->bytes_per_line;
