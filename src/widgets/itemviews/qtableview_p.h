@@ -53,11 +53,12 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/QList>
-#include <QtCore/QLinkedList>
 #include <QtCore/QMap>
 #include <QtCore/QSet>
 #include <QtCore/QDebug>
 #include "private/qabstractitemview_p.h"
+
+#include <list>
 
 QT_REQUIRE_CONFIG(tableview);
 
@@ -115,7 +116,7 @@ public:
     bool checkConsistency() const;
 #endif
 
-    typedef QLinkedList<Span *> SpanList;
+    typedef std::list<Span *> SpanList;
     SpanList spans; //lists of all spans
 private:
     //the indexes are negative so the QMap::lowerBound do what i need.
@@ -210,7 +211,7 @@ public:
         return span(row, column).width();
     }
     inline bool hasSpans() const {
-        return !spans.spans.isEmpty();
+        return !spans.spans.empty();
     }
     inline int rowSpanHeight(int row, int span) const {
         return sectionSpanSize(verticalHeader, row, span);
