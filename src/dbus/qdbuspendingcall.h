@@ -60,9 +60,7 @@ class Q_DBUS_EXPORT QDBusPendingCall
 public:
     QDBusPendingCall(const QDBusPendingCall &other);
     ~QDBusPendingCall();
-#ifdef Q_COMPILER_RVALUE_REFS
     QDBusPendingCall &operator=(QDBusPendingCall &&other) noexcept { swap(other); return *this; }
-#endif
     QDBusPendingCall &operator=(const QDBusPendingCall &other);
 
     void swap(QDBusPendingCall &other) noexcept { qSwap(d, other.d); }

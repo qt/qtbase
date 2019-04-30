@@ -61,19 +61,15 @@ public:
     QIcon() noexcept;
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QIcon(QIcon &&other) noexcept
         : d(other.d)
     { other.d = nullptr; }
-#endif
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
     ~QIcon();
     QIcon &operator=(const QIcon &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QIcon &operator=(QIcon &&other) noexcept
     { swap(other); return *this; }
-#endif
     inline void swap(QIcon &other) noexcept
     { qSwap(d, other.d); }
 

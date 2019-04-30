@@ -59,9 +59,7 @@ public:
     explicit QSslCipher(const QString &name);
     QSslCipher(const QString &name, QSsl::SslProtocol protocol);
     QSslCipher(const QSslCipher &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QSslCipher &operator=(QSslCipher &&other) noexcept { swap(other); return *this; }
-#endif
     QSslCipher &operator=(const QSslCipher &other);
     ~QSslCipher();
 

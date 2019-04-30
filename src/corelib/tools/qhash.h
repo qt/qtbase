@@ -255,11 +255,9 @@ public:
     ~QHash() { if (!d->ref.deref()) freeData(d); }
 
     QHash &operator=(const QHash &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QHash(QHash &&other) noexcept : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
     QHash &operator=(QHash &&other) noexcept
     { QHash moved(std::move(other)); swap(moved); return *this; }
-#endif
 #ifdef Q_QDOC
     template <typename InputIterator>
     QHash(InputIterator f, InputIterator l);
@@ -1076,9 +1074,7 @@ public:
     // compiler-generated destructor is fine!
 
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QMultiHash(QHash<Key, T> &&other) noexcept : QHash<Key, T>(std::move(other)) {}
-#endif
     void swap(QMultiHash &other) noexcept { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)

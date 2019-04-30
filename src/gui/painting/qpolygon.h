@@ -60,16 +60,12 @@ public:
     inline ~QPolygon() {}
     inline explicit QPolygon(int size);
     inline /*implicit*/ QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     /*implicit*/ QPolygon(QVector<QPoint> &&v) noexcept : QVector<QPoint>(std::move(v)) {}
-#endif
     QPolygon(const QRect &r, bool closed=false);
     QPolygon(int nPoints, const int *points);
     QPolygon(const QPolygon &other) : QVector<QPoint>(other) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QPolygon(QPolygon &&other) noexcept : QVector<QPoint>(std::move(other)) {}
     QPolygon &operator=(QPolygon &&other) noexcept { swap(other); return *this; }
-#endif
     QPolygon &operator=(const QPolygon &other) { QVector<QPoint>::operator=(other); return *this; }
     void swap(QPolygon &other) noexcept { QVector<QPoint>::swap(other); } // prevent QVector<QPoint><->QPolygon swaps
 
@@ -145,16 +141,12 @@ public:
     inline ~QPolygonF() {}
     inline explicit QPolygonF(int size);
     inline /*implicit*/ QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     /* implicit */ QPolygonF(QVector<QPointF> &&v) noexcept : QVector<QPointF>(std::move(v)) {}
-#endif
     QPolygonF(const QRectF &r);
     /*implicit*/ QPolygonF(const QPolygon &a);
     inline QPolygonF(const QPolygonF &a) : QVector<QPointF>(a) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QPolygonF(QPolygonF &&other) noexcept : QVector<QPointF>(std::move(other)) {}
     QPolygonF &operator=(QPolygonF &&other) noexcept { swap(other); return *this; }
-#endif
     QPolygonF &operator=(const QPolygonF &other) { QVector<QPointF>::operator=(other); return *this; }
     inline void swap(QPolygonF &other) { QVector<QPointF>::swap(other); } // prevent QVector<QPointF><->QPolygonF swaps
 

@@ -66,9 +66,7 @@ public:
 
     QGlyphRun();
     QGlyphRun(const QGlyphRun &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QGlyphRun &operator=(QGlyphRun &&other) noexcept { swap(other); return *this; }
-#endif
     QGlyphRun &operator=(const QGlyphRun &other);
     ~QGlyphRun();
 

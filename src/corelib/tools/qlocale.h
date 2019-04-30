@@ -939,9 +939,7 @@ public:
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QLocale &operator=(QLocale &&other) noexcept { swap(other); return *this; }
-#endif
     QLocale &operator=(const QLocale &other);
     ~QLocale();
 

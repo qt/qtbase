@@ -339,7 +339,6 @@ public:
     inline ~QMap() { if (!d->ref.deref()) d->destroy(); }
 
     QMap<Key, T> &operator=(const QMap<Key, T> &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QMap(QMap<Key, T> &&other) noexcept
         : d(other.d)
     {
@@ -349,7 +348,6 @@ public:
 
     inline QMap<Key, T> &operator=(QMap<Key, T> &&other) noexcept
     { QMap moved(std::move(other)); swap(moved); return *this; }
-#endif
     inline void swap(QMap<Key, T> &other) noexcept { qSwap(d, other.d); }
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
@@ -1196,9 +1194,7 @@ public:
     }
 #endif
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QMultiMap(QMap<Key, T> &&other) noexcept : QMap<Key, T>(std::move(other)) {}
-#endif
     void swap(QMultiMap<Key, T> &other) noexcept { QMap<Key, T>::swap(other); }
 
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)

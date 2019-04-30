@@ -509,11 +509,8 @@ namespace QtPrivate {
 
     template <class T> struct AlignOf : AlignOf_Default<T> { };
     template <class T> struct AlignOf<T &> : AlignOf<T> {};
-    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
-
-#ifdef Q_COMPILER_RVALUE_REFS
     template <class T> struct AlignOf<T &&> : AlignOf<T> {};
-#endif
+    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
 
 #if defined(Q_PROCESSOR_X86_32) && !defined(Q_OS_WIN)
     template <class T> struct AlignOf_WorkaroundForI386Abi { enum { Value = sizeof(T) }; };

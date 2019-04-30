@@ -76,9 +76,7 @@ public:
     ~QPrintDevice();
 
     QPrintDevice &operator=(const QPrintDevice &other);
- #ifdef Q_COMPILER_RVALUE_REFS
     QPrintDevice &operator=(QPrintDevice &&other) { swap(other); return *this; }
-#endif
 
     void swap(QPrintDevice &other) { d.swap(other.d); }
 

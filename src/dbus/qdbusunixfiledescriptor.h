@@ -46,9 +46,7 @@
 
 #ifndef QT_NO_DBUS
 
-#ifdef Q_COMPILER_RVALUE_REFS
-# include <utility>
-#endif
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,9 +59,7 @@ public:
     QDBusUnixFileDescriptor();
     explicit QDBusUnixFileDescriptor(int fileDescriptor);
     QDBusUnixFileDescriptor(const QDBusUnixFileDescriptor &other);
-#if defined(Q_COMPILER_RVALUE_REFS)
     QDBusUnixFileDescriptor &operator=(QDBusUnixFileDescriptor &&other) noexcept { swap(other); return *this; }
-#endif
     QDBusUnixFileDescriptor &operator=(const QDBusUnixFileDescriptor &other);
     ~QDBusUnixFileDescriptor();
 

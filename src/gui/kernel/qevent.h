@@ -855,13 +855,11 @@ public:
 
         explicit TouchPoint(int id = -1);
         TouchPoint(const TouchPoint &other);
-#ifdef Q_COMPILER_RVALUE_REFS
         TouchPoint(TouchPoint &&other) noexcept
             : d(nullptr)
         { qSwap(d, other.d); }
         TouchPoint &operator=(TouchPoint &&other) noexcept
         { qSwap(d, other.d); return *this; }
-#endif
         ~TouchPoint();
 
         TouchPoint &operator=(const TouchPoint &other)

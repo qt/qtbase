@@ -76,10 +76,8 @@ public:
 
     QDBusArgument();
     QDBusArgument(const QDBusArgument &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDBusArgument(QDBusArgument &&other) noexcept : d(other.d) { other.d = nullptr; }
     QDBusArgument &operator=(QDBusArgument &&other) noexcept { swap(other); return *this; }
-#endif
     QDBusArgument &operator=(const QDBusArgument &other);
     ~QDBusArgument();
 

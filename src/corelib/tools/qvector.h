@@ -72,11 +72,9 @@ public:
     inline QVector(const QVector<T> &v);
     inline ~QVector() { if (!d->ref.deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
-#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     QVector(QVector<T> &&other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
     QVector<T> &operator=(QVector<T> &&other) noexcept
     { QVector moved(std::move(other)); swap(moved); return *this; }
-#endif
     void swap(QVector<T> &other) noexcept { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
@@ -143,9 +141,7 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
     void append(const T &t);
-#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     void append(T &&t);
-#endif
     inline void append(const QVector<T> &l) { *this += l; }
     void prepend(T &&t);
     void prepend(const T &t);
@@ -268,10 +264,8 @@ public:
     typedef const_iterator ConstIterator;
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
-#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     void push_back(T &&t) { append(std::move(t)); }
     void push_front(T &&t) { prepend(std::move(t)); }
-#endif
     inline void push_front(const T &t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
@@ -799,7 +793,6 @@ void QVector<T>::append(const T &t)
     ++d->size;
 }
 
-#ifdef Q_COMPILER_RVALUE_REFS
 template <typename T>
 void QVector<T>::append(T &&t)
 {
@@ -813,7 +806,6 @@ void QVector<T>::append(T &&t)
 
     ++d->size;
 }
-#endif
 
 template <typename T>
 void QVector<T>::removeLast()

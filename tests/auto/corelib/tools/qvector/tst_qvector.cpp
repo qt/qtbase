@@ -709,7 +709,6 @@ void tst_QVector::appendCustom() const
 
 void tst_QVector::appendRvalue() const
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     QVector<QString> v;
     v.append("hello");
     QString world = "world";
@@ -717,9 +716,6 @@ void tst_QVector::appendRvalue() const
     QVERIFY(world.isEmpty());
     QCOMPARE(v.front(), QString("hello"));
     QCOMPARE(v.back(),  QString("world"));
-#else
-    QSKIP("This test requires that C++11 move semantics support is enabled in the compiler");
-#endif
 }
 
 void tst_QVector::at() const

@@ -278,9 +278,7 @@ public:
     QDateTime(QDateTime &&other) noexcept;
     ~QDateTime();
 
-#ifdef Q_COMPILER_RVALUE_REFS
     QDateTime &operator=(QDateTime &&other) noexcept { swap(other); return *this; }
-#endif
     QDateTime &operator=(const QDateTime &other) noexcept;
 
     void swap(QDateTime &other) noexcept { qSwap(d.d, other.d.d); }

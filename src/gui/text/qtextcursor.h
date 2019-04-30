@@ -73,9 +73,7 @@ public:
     explicit QTextCursor(QTextFrame *frame);
     explicit QTextCursor(const QTextBlock &block);
     QTextCursor(const QTextCursor &cursor);
-#ifdef Q_COMPILER_RVALUE_REFS
     QTextCursor &operator=(QTextCursor &&other) noexcept { swap(other); return *this; }
-#endif
     QTextCursor &operator=(const QTextCursor &other);
     ~QTextCursor();
 

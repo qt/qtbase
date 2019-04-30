@@ -70,12 +70,10 @@ public:
     ~QPen();
 
     QPen &operator=(const QPen &pen) noexcept;
-#ifdef Q_COMPILER_RVALUE_REFS
     QPen(QPen &&other) noexcept
         : d(other.d) { other.d = nullptr; }
     QPen &operator=(QPen &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     void swap(QPen &other) noexcept { qSwap(d, other.d); }
 
     Qt::PenStyle style() const;

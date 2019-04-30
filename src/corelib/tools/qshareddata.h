@@ -112,7 +112,6 @@ public:
         }
         return *this;
     }
-#ifdef Q_COMPILER_RVALUE_REFS
     QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(o.d) { o.d = nullptr; }
     inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other) noexcept
     {
@@ -120,7 +119,6 @@ public:
         swap(moved);
         return *this;
     }
-#endif
 
     inline bool operator!() const { return !d; }
 
@@ -218,7 +216,6 @@ public:
         }
         return *this;
     }
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(o.d) { o.d = nullptr; }
     inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other) noexcept
     {
@@ -226,7 +223,6 @@ public:
         swap(moved);
         return *this;
     }
-#endif
 
     inline bool operator!() const { return !d; }
 

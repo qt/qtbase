@@ -161,12 +161,10 @@ public:
     QList(const QList<T> &l);
     ~QList();
     QList<T> &operator=(const QList<T> &l);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QList(QList<T> &&other) noexcept
         : d(other.d) { other.d = const_cast<QListData::Data *>(&QListData::shared_null); }
     inline QList &operator=(QList<T> &&other) noexcept
     { QList moved(std::move(other)); swap(moved); return *this; }
-#endif
     inline void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args)

@@ -337,7 +337,6 @@ public:
         swap(copy);
         return *this;
     }
-#ifdef Q_COMPILER_RVALUE_REFS
     QSharedPointer(QSharedPointer &&other) noexcept
         : value(other.value), d(other.d)
     {
@@ -366,8 +365,6 @@ public:
         swap(moved);
         return *this;
     }
-
-#endif
 
     template <class X>
     QSharedPointer(const QSharedPointer<X> &other) noexcept : value(other.value), d(other.d)
@@ -590,7 +587,6 @@ public:
 
     QWeakPointer(const QWeakPointer &other) noexcept : d(other.d), value(other.value)
     { if (d) d->weakref.ref(); }
-#ifdef Q_COMPILER_RVALUE_REFS
     QWeakPointer(QWeakPointer &&other) noexcept
         : d(other.d), value(other.value)
     {
@@ -599,7 +595,6 @@ public:
     }
     QWeakPointer &operator=(QWeakPointer &&other) noexcept
     { QWeakPointer moved(std::move(other)); swap(moved); return *this; }
-#endif
     QWeakPointer &operator=(const QWeakPointer &other) noexcept
     {
         QWeakPointer copy(other);

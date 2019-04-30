@@ -130,9 +130,7 @@ public:
     explicit QNetworkRequest(const QUrl &url = QUrl());
     QNetworkRequest(const QNetworkRequest &other);
     ~QNetworkRequest();
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkRequest &operator=(QNetworkRequest &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkRequest &operator=(const QNetworkRequest &other);
 
     void swap(QNetworkRequest &other) noexcept { qSwap(d, other.d); }

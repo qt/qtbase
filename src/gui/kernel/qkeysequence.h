@@ -186,9 +186,7 @@ public:
     operator QVariant() const;
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QKeySequence &operator=(QKeySequence &&other) noexcept { swap(other); return *this; }
-#endif
     void swap(QKeySequence &other) noexcept { qSwap(d, other.d); }
 
     bool operator==(const QKeySequence &other) const;

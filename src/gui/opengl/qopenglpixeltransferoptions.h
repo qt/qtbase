@@ -55,10 +55,8 @@ class Q_GUI_EXPORT QOpenGLPixelTransferOptions
 public:
     QOpenGLPixelTransferOptions();
     QOpenGLPixelTransferOptions(const QOpenGLPixelTransferOptions &);
-#ifdef Q_COMPILER_RVALUE_REFS
     QOpenGLPixelTransferOptions &operator=(QOpenGLPixelTransferOptions &&other) noexcept
     { swap(other); return *this; }
-#endif
     QOpenGLPixelTransferOptions &operator=(const QOpenGLPixelTransferOptions &);
     ~QOpenGLPixelTransferOptions();
 

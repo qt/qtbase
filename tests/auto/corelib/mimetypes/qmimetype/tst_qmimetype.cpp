@@ -91,11 +91,7 @@ static QStringList qMimeTypeGlobPatterns()
 
 // ------------------------------------------------------------------------------------------------
 
-#ifndef Q_COMPILER_RVALUE_REFS
-QMIMETYPE_BUILDER
-#else
 QMIMETYPE_BUILDER_FROM_RVALUE_REFS
-#endif
 
 // ------------------------------------------------------------------------------------------------
 

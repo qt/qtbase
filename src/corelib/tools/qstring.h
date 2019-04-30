@@ -230,11 +230,9 @@ public:
     QString &operator=(QChar c);
     QString &operator=(const QString &) noexcept;
     QString &operator=(QLatin1String latin1);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QString(QString && other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
     inline QString &operator=(QString &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QString &other) noexcept { qSwap(d, other.d); }
     inline int size() const { return d->size; }
     inline int count() const { return d->size; }
@@ -1437,10 +1435,8 @@ public:
     QStringRef(const QStringRef &other) noexcept
         :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
         {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QStringRef(QStringRef &&other) noexcept : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
     QStringRef &operator=(QStringRef &&other) noexcept { return *this = other; }
-#endif
     QStringRef &operator=(const QStringRef &other) noexcept
     {
         m_string = other.m_string; m_position = other.m_position;

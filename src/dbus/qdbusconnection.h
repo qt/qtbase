@@ -131,10 +131,8 @@ public:
 
     explicit QDBusConnection(const QString &name);
     QDBusConnection(const QDBusConnection &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDBusConnection(QDBusConnection &&other) noexcept : d(other.d) { other.d = nullptr; }
     QDBusConnection &operator=(QDBusConnection &&other) noexcept { swap(other); return *this; }
-#endif
     QDBusConnection &operator=(const QDBusConnection &other);
     ~QDBusConnection();
 

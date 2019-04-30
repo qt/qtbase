@@ -73,9 +73,7 @@ public:
     QRegExp(const QRegExp &rx);
     ~QRegExp();
     QRegExp &operator=(const QRegExp &rx);
-#ifdef Q_COMPILER_RVALUE_REFS
     QRegExp &operator=(QRegExp &&other) noexcept { swap(other); return *this; }
-#endif
     void swap(QRegExp &other) noexcept { qSwap(priv, other.priv); }
 
     bool operator==(const QRegExp &rx) const;

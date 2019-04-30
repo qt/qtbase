@@ -225,13 +225,11 @@ struct NoDefaultConstructorConstRef2
     NoDefaultConstructorConstRef2(const QByteArray &ba, int i = 42) : str(QString::fromLatin1(ba)), i(i) {}
 };
 
-#ifdef Q_COMPILER_RVALUE_REFS
 struct NoDefaultConstructorRRef1
 {
     int &i;
     NoDefaultConstructorRRef1(int &&i) : i(i) {}
 };
-#endif
 
 void tst_QSharedPointer::basics_data()
 {
@@ -500,7 +498,6 @@ void tst_QSharedPointer::swap()
 
 void tst_QSharedPointer::moveSemantics()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     QSharedPointer<int> p1, p2(new int(42)), control = p2;
     QVERIFY(p1 != control);
     QVERIFY(p1.isNull());
@@ -553,9 +550,6 @@ void tst_QSharedPointer::moveSemantics()
     QVERIFY(w1.isNull());
     QVERIFY(w2.isNull());
     QVERIFY(w3.isNull());
-#else
-    QSKIP("This test requires C++11 rvalue/move semantics support in the compiler.");
-#endif
 }
 
 void tst_QSharedPointer::useOfForwardDeclared()

@@ -586,7 +586,6 @@ void tst_QVersionNumber::serialize()
 
 void tst_QVersionNumber::moveSemantics()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     // QVersionNumber(QVersionNumber &&)
     {
         QVersionNumber v1(1, 2, 3);
@@ -609,7 +608,6 @@ void tst_QVersionNumber::moveSemantics()
         QVERIFY(!v2.isNull());
         QCOMPARE(v1, v2);
     }
-#endif
 #ifdef Q_COMPILER_REF_QUALIFIERS
     // normalized()
     {
@@ -635,9 +633,6 @@ void tst_QVersionNumber::moveSemantics()
         segments = std::move(v).segments();
         QVERIFY(!segments.empty());
     }
-#endif
-#if !defined(Q_COMPILER_RVALUE_REFS) && !defined(Q_COMPILER_REF_QUALIFIERS)
-    QSKIP("This test requires C++11 move semantics support in the compiler.");
 #endif
 }
 

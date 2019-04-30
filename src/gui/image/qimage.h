@@ -151,18 +151,14 @@ public:
     explicit QImage(const QString &fileName, const char *format = nullptr);
 
     QImage(const QImage &);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QImage(QImage &&other) noexcept
         : QPaintDevice(), d(nullptr)
     { qSwap(d, other.d); }
-#endif
     ~QImage();
 
     QImage &operator=(const QImage &);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QImage &operator=(QImage &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QImage &other) noexcept
     { qSwap(d, other.d); }
 

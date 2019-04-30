@@ -236,9 +236,7 @@ public:
                        const QString &name = QString(),
                        SizeMatchPolicy matchPolicy = FuzzyMatch);
     QPageSize(const QPageSize &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QPageSize &operator=(QPageSize &&other) noexcept { swap(other); return *this; }
-#endif
     QPageSize &operator=(const QPageSize &other);
     ~QPageSize();
 

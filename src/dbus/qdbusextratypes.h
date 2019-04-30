@@ -66,9 +66,7 @@ public:
     inline explicit QDBusObjectPath(const char *path);
     inline explicit QDBusObjectPath(QLatin1String path);
     inline explicit QDBusObjectPath(const QString &path);
-#ifdef Q_COMPILER_RVALUE_REFS
     explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
-#endif
 
     void swap(QDBusObjectPath &other) noexcept { qSwap(m_path, other.m_path); }
 
@@ -121,9 +119,7 @@ public:
     inline explicit QDBusSignature(const char *signature);
     inline explicit QDBusSignature(QLatin1String signature);
     inline explicit QDBusSignature(const QString &signature);
-#ifdef Q_COMPILER_RVALUE_REFS
     explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
-#endif
 
     void swap(QDBusSignature &other) noexcept { qSwap(m_signature, other.m_signature); }
 
@@ -173,9 +169,7 @@ public:
     // compiler-generated destructor is ok!
 
     inline explicit QDBusVariant(const QVariant &variant);
-#ifdef Q_COMPILER_RVALUE_REFS
     explicit QDBusVariant(QVariant &&v) noexcept : m_variant(std::move(v)) {}
-#endif
 
     void swap(QDBusVariant &other) noexcept { qSwap(m_variant, other.m_variant); }
 

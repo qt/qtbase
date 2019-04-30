@@ -141,7 +141,6 @@ void tst_QPalette::copySemantics()
 
 void tst_QPalette::moveSemantics()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     QPalette src(Qt::red), dst;
     const QPalette control = src;
     QVERIFY(src != dst);
@@ -163,9 +162,6 @@ void tst_QPalette::moveSemantics()
     QVERIFY(dst2.isCopyOf(dst));
     QVERIFY(dst2.isCopyOf(control));
     // check moved-from 'src' can still be destroyed (doesn't crash)
-#else
-    QSKIP("Compiler doesn't support C++11 move semantics");
-#endif
 }
 
 void tst_QPalette::setBrush()

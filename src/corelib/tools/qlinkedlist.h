@@ -95,12 +95,10 @@ public:
     }
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
-#ifdef Q_COMPILER_RVALUE_REFS
     QLinkedList(QLinkedList<T> &&other) noexcept
         : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
     QLinkedList<T> &operator=(QLinkedList<T> &&other) noexcept
     { QLinkedList moved(std::move(other)); swap(moved); return *this; }
-#endif
     inline void swap(QLinkedList<T> &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QLinkedList<T> &l) const;
     inline bool operator!=(const QLinkedList<T> &l) const { return !(*this == l); }

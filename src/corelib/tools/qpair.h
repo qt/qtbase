@@ -71,7 +71,6 @@ struct QPair
         noexcept((std::is_nothrow_assignable<T1, TT1&>::value &&
                               std::is_nothrow_assignable<T2, TT2&>::value))
     { first = p.first; second = p.second; return *this; }
-#ifdef Q_COMPILER_RVALUE_REFS
     template <typename TT1, typename TT2>
     Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p)
         noexcept((std::is_nothrow_constructible<T1, TT1>::value &&
@@ -83,7 +82,6 @@ struct QPair
         noexcept((std::is_nothrow_assignable<T1, TT1>::value &&
                               std::is_nothrow_assignable<T2, TT2>::value))
     { first = std::move(p.first); second = std::move(p.second); return *this; }
-#endif
 
     Q_DECL_RELAXED_CONSTEXPR void swap(QPair &other)
         noexcept(noexcept(qSwap(other.first, other.first)) && noexcept(qSwap(other.second, other.second)))

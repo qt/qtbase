@@ -98,12 +98,10 @@ public:
 #endif
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDBusError(QDBusError &&other) noexcept
         : code(other.code), msg(std::move(other.msg)), nm(std::move(other.nm))
     {}
     QDBusError &operator=(QDBusError &&other) noexcept { swap(other); return *this; }
-#endif
     QDBusError &operator=(const QDBusError &other);
 #ifndef QT_BOOTSTRAPPED
     QDBusError &operator=(const QDBusMessage &msg);

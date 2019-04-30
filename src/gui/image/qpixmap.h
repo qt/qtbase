@@ -73,10 +73,8 @@ public:
     ~QPixmap();
 
     QPixmap &operator=(const QPixmap &);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QPixmap &operator=(QPixmap &&other) noexcept
     { qSwap(data, other.data); return *this; }
-#endif
     inline void swap(QPixmap &other) noexcept
     { qSwap(data, other.data); }
 
@@ -139,12 +137,10 @@ public:
     QImage toImage() const;
     static QPixmap fromImage(const QImage &image, Qt::ImageConversionFlags flags = Qt::AutoColor);
     static QPixmap fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags = Qt::AutoColor);
-#ifdef Q_COMPILER_RVALUE_REFS
     static QPixmap fromImage(QImage &&image, Qt::ImageConversionFlags flags = Qt::AutoColor)
     {
         return fromImageInPlace(image, flags);
     }
-#endif
 
     bool load(const QString& fileName, const char *format = nullptr, Qt::ImageConversionFlags flags = Qt::AutoColor);
     bool loadFromData(const uchar *buf, uint len, const char* format = nullptr, Qt::ImageConversionFlags flags = Qt::AutoColor);

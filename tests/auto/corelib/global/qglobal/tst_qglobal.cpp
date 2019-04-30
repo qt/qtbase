@@ -456,12 +456,8 @@ typedef int (Empty::*memFun) ();
     } while (false)                                                         \
     /**/
 
-#ifdef Q_COMPILER_RVALUE_REFS
 #define TEST_AlignOf_RValueRef(type, alignment) \
         TEST_AlignOf_impl(type, alignment)
-#else
-#define TEST_AlignOf_RValueRef(type, alignment) do {} while (false)
-#endif
 
 #define TEST_AlignOf_impl(type, alignment) \
     do { \

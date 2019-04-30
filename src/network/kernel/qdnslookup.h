@@ -64,9 +64,7 @@ class Q_NETWORK_EXPORT QDnsDomainNameRecord
 public:
     QDnsDomainNameRecord();
     QDnsDomainNameRecord(const QDnsDomainNameRecord &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDnsDomainNameRecord &operator=(QDnsDomainNameRecord &&other) noexcept { swap(other); return *this; }
-#endif
     QDnsDomainNameRecord &operator=(const QDnsDomainNameRecord &other);
     ~QDnsDomainNameRecord();
 
@@ -88,9 +86,7 @@ class Q_NETWORK_EXPORT QDnsHostAddressRecord
 public:
     QDnsHostAddressRecord();
     QDnsHostAddressRecord(const QDnsHostAddressRecord &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDnsHostAddressRecord &operator=(QDnsHostAddressRecord &&other) noexcept { swap(other); return *this; }
-#endif
     QDnsHostAddressRecord &operator=(const QDnsHostAddressRecord &other);
     ~QDnsHostAddressRecord();
 
@@ -112,9 +108,7 @@ class Q_NETWORK_EXPORT QDnsMailExchangeRecord
 public:
     QDnsMailExchangeRecord();
     QDnsMailExchangeRecord(const QDnsMailExchangeRecord &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDnsMailExchangeRecord &operator=(QDnsMailExchangeRecord &&other) noexcept { swap(other); return *this; }
-#endif
     QDnsMailExchangeRecord &operator=(const QDnsMailExchangeRecord &other);
     ~QDnsMailExchangeRecord();
 
@@ -137,9 +131,7 @@ class Q_NETWORK_EXPORT QDnsServiceRecord
 public:
     QDnsServiceRecord();
     QDnsServiceRecord(const QDnsServiceRecord &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDnsServiceRecord &operator=(QDnsServiceRecord &&other) noexcept { swap(other); return *this; }
-#endif
     QDnsServiceRecord &operator=(const QDnsServiceRecord &other);
     ~QDnsServiceRecord();
 
@@ -164,9 +156,7 @@ class Q_NETWORK_EXPORT QDnsTextRecord
 public:
     QDnsTextRecord();
     QDnsTextRecord(const QDnsTextRecord &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDnsTextRecord &operator=(QDnsTextRecord &&other) noexcept { swap(other); return *this; }
-#endif
     QDnsTextRecord &operator=(const QDnsTextRecord &other);
     ~QDnsTextRecord();
 

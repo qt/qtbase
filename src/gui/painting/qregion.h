@@ -74,10 +74,8 @@ public:
     QRegion(const QBitmap &bitmap);
     ~QRegion();
     QRegion &operator=(const QRegion &);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QRegion &operator=(QRegion &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QRegion &other) noexcept { qSwap(d, other.d); }
     bool isEmpty() const;
     bool isNull() const;
