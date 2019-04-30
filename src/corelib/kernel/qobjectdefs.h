@@ -427,7 +427,7 @@ struct Q_CORE_EXPORT QMetaObject
 #endif
     };
 
-    struct { // private data
+    struct Data { // private data
         SuperData superdata;
         const uint *stringdata;
         const uint *data;

@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QMetaMethod
 {
 public:
-    Q_DECL_CONSTEXPR inline QMetaMethod() : mobj(nullptr), handle(0) {}
+    Q_DECL_CONSTEXPR inline QMetaMethod() : mobj(nullptr), data({ nullptr }) {}
 
     QByteArray methodSignature() const;
     QByteArray name() const;
@@ -72,6 +72,7 @@ public:
     enum Attributes { Compatibility = 0x1, Cloned = 0x2, Scriptable = 0x4 };
     int attributes() const;
     int methodIndex() const;
+    int relativeMethodIndex() const;
     int revision() const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
@@ -184,9 +185,25 @@ private:
     char *signature(struct renamedInQt5_warning_checkTheLifeTime * = nullptr) = delete;
 #endif
     static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
+    static QMetaMethod fromRelativeMethodIndex(const QMetaObject *mobj, int index);
+    static QMetaMethod fromRelativeConstructorIndex(const QMetaObject *mobj, int index);
+
+    struct Data {
+        enum { Size = 6 };
+
+        uint name() const { return d[0]; }
+        uint argc() const { return d[1]; }
+        uint parameters() const { return d[2]; }
+        uint tag() const { return d[3]; }
+        uint flags() const { return d[4]; }
+        uint metaTypeOffset() const { return d[5]; }
+        bool operator==(const Data &other) const { return d == other.d; }
+
+        const uint *d;
+    };
 
     const QMetaObject *mobj;
-    uint handle;
+    Data data;
     friend class QMetaMethodPrivate;
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
@@ -197,7 +214,7 @@ private:
 Q_DECLARE_TYPEINFO(QMetaMethod, Q_MOVABLE_TYPE);
 
 inline bool operator==(const QMetaMethod &m1, const QMetaMethod &m2)
-{ return m1.mobj == m2.mobj && m1.handle == m2.handle; }
+{ return m1.data == m2.data; }
 inline bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
 { return !(m1 == m2); }
 

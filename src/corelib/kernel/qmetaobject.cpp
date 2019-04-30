@@ -884,20 +884,19 @@ int QMetaObjectPrivate::signalIndex(const QMetaMethod &m)
 */
 QMetaMethod QMetaObjectPrivate::signal(const QMetaObject *m, int signal_index)
 {
-    QMetaMethod result;
     if (signal_index < 0)
-        return result;
+        return QMetaMethod();
+
     Q_ASSERT(m != nullptr);
     int i = signal_index;
     i -= signalOffset(m);
     if (i < 0 && m->d.superdata)
         return signal(m->d.superdata, signal_index);
 
-    if (i >= 0 && i < priv(m->d.data)->signalCount) {
-        result.mobj = m;
-        result.handle = priv(m->d.data)->methodData + QMetaObjectPrivate::IntsPerMethod*i;
-    }
-    return result;
+
+    if (i >= 0 && i < priv(m->d.data)->signalCount)
+        return QMetaMethod::fromRelativeMethodIndex(m, i);
+    return QMetaMethod();
 }
 
 /*!
@@ -1074,13 +1073,9 @@ int QMetaObject::indexOfClassInfo(const char *name) const
 QMetaMethod QMetaObject::constructor(int index) const
 {
     int i = index;
-    QMetaMethod result;
-    Q_ASSERT(priv(d.data)->revision >= 2);
-    if (i >= 0 && i < priv(d.data)->constructorCount) {
-        result.mobj = this;
-        result.handle = priv(d.data)->constructorData + QMetaObjectPrivate::IntsPerMethod*i;
-    }
-    return result;
+    if (i >= 0 && i < priv(d.data)->constructorCount)
+        return QMetaMethod::fromRelativeConstructorIndex(this, i);
+    return QMetaMethod();
 }
 
 /*!
@@ -1095,12 +1090,9 @@ QMetaMethod QMetaObject::method(int index) const
     if (i < 0 && d.superdata)
         return d.superdata->method(index);
 
-    QMetaMethod result;
-    if (i >= 0 && i < priv(d.data)->methodCount) {
-        result.mobj = this;
-        result.handle = priv(d.data)->methodData + QMetaObjectPrivate::IntsPerMethod*i;
-    }
-    return result;
+    if (i >= 0 && i < priv(d.data)->methodCount)
+        return QMetaMethod::fromRelativeMethodIndex(this, i);
+    return QMetaMethod();
 }
 
 /*!
@@ -1725,6 +1717,27 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
+    \internal
+*/
+QMetaMethod QMetaMethod::fromRelativeMethodIndex(const QMetaObject *mobj, int index)
+{
+    Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->methodCount);
+    QMetaMethod m;
+    m.mobj = mobj;
+    m.data = { mobj->d.data + priv(mobj->d.data)->methodData + index * Data::Size };
+    return m;
+}
+
+QMetaMethod QMetaMethod::fromRelativeConstructorIndex(const QMetaObject *mobj, int index)
+{
+    Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->constructorCount);
+    QMetaMethod m;
+    m.mobj = mobj;
+    m.data = { mobj->d.data + priv(mobj->d.data)->constructorData + index * Data::Size };
+    return m;
+}
+
+/*!
     \macro Q_METAMETHOD_INVOKE_MAX_ARGS
     \relates QMetaMethod
 
@@ -1752,13 +1765,13 @@ QByteArray QMetaMethodPrivate::signature() const
 QByteArray QMetaMethodPrivate::name() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return stringData(mobj, mobj->d.data[handle]);
+    return stringData(mobj, data.name());
 }
 
 int QMetaMethodPrivate::typesDataIndex() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return mobj->d.data[handle + 2];
+    return data.parameters();
 }
 
 const char *QMetaMethodPrivate::rawReturnTypeName() const
@@ -1779,7 +1792,7 @@ int QMetaMethodPrivate::returnType() const
 int QMetaMethodPrivate::parameterCount() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return mobj->d.data[handle + 1];
+    return data.argc();
 }
 
 int QMetaMethodPrivate::parametersDataIndex() const
@@ -1838,13 +1851,13 @@ QList<QByteArray> QMetaMethodPrivate::parameterNames() const
 QByteArray QMetaMethodPrivate::tag() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    return stringData(mobj, mobj->d.data[handle + 3]);
+    return stringData(mobj, data.tag());
 }
 
 int QMetaMethodPrivate::ownMethodIndex() const
 {
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
-    return (handle - priv(mobj->d.data)->methodData) / QMetaObjectPrivate::IntsPerMethod;
+    return ( data.d - mobj->d.data - priv(mobj->d.data)->methodData)/Data::Size;
 }
 
 /*!
@@ -1903,7 +1916,7 @@ QMetaType QMetaMethod::returnMetaType() const
 {
     if (!mobj || methodType() == QMetaMethod::Constructor)
         return QMetaType{};
-    auto mt = QMetaType(mobj->d.metaTypes[mobj->d.data[handle + 5]]);
+    auto mt = QMetaType(mobj->d.metaTypes[data.metaTypeOffset()]);
     if (mt.id() == QMetaType::UnknownType)
         return QMetaType(QMetaMethodPrivate::get(this)->returnType());
     else
@@ -1958,7 +1971,7 @@ QMetaType QMetaMethod::parameterMetaType(int index) const
         return {};
     // + 1 if there exists a return type
     auto parameterOffset = index + (methodType() == QMetaMethod::Constructor ? 0 : 1);
-    auto mt = QMetaType(mobj->d.metaTypes[mobj->d.data[handle + 5] + parameterOffset]);
+    auto mt = QMetaType(mobj->d.metaTypes[data.metaTypeOffset() + parameterOffset]);
     if (mt.id() == QMetaType::UnknownType)
         return QMetaType(QMetaMethodPrivate::get(this)->parameterType(index));
     else
@@ -2058,7 +2071,7 @@ int QMetaMethod::attributes() const
 {
     if (!mobj)
         return false;
-    return ((mobj->d.data[handle + 4])>>4);
+    return data.flags() >> 4;
 }
 
 /*!
@@ -2073,6 +2086,18 @@ int QMetaMethod::methodIndex() const
     return QMetaMethodPrivate::get(this)->ownMethodIndex() + mobj->methodOffset();
 }
 
+/*!
+  \since 6.0
+
+  Returns this method's local index inside.
+*/
+int QMetaMethod::relativeMethodIndex() const
+{
+    if (!mobj)
+        return -1;
+    return QMetaMethodPrivate::get(this)->ownMethodIndex();
+}
+
 // This method has been around for a while, but the documentation was marked \internal until 5.1
 /*!
     \since 5.1
@@ -2083,9 +2108,9 @@ int QMetaMethod::revision() const
 {
     if (!mobj)
         return 0;
-    if ((QMetaMethod::Access)(mobj->d.data[handle + 4] & MethodRevisioned)) {
+    if (data.flags() & MethodRevisioned) {
         int offset = priv(mobj->d.data)->methodData
-                     + priv(mobj->d.data)->methodCount * QMetaObjectPrivate::IntsPerMethod
+                     + priv(mobj->d.data)->methodCount * Data::Size
                      + QMetaMethodPrivate::get(this)->ownMethodIndex();
         return mobj->d.data[offset];
     }
@@ -2106,7 +2131,7 @@ QMetaMethod::Access QMetaMethod::access() const
 {
     if (!mobj)
         return Private;
-    return (QMetaMethod::Access)(mobj->d.data[handle + 4] & AccessMask);
+    return (QMetaMethod::Access)(data.flags() & AccessMask);
 }
 
 /*!
@@ -2118,7 +2143,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
 {
     if (!mobj)
         return QMetaMethod::Method;
-    return (QMetaMethod::MethodType)((mobj->d.data[handle + 4] & MethodTypeMask)>>2);
+    return (QMetaMethod::MethodType)((data.flags() & MethodTypeMask)>>2);
 }
 
 /*!
@@ -2145,16 +2170,12 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
 {
     int i = -1;
     void *args[] = { &i, signal };
-    QMetaMethod result;
     for (const QMetaObject *m = metaObject; m; m = m->d.superdata) {
         m->static_metacall(QMetaObject::IndexOfMethod, 0, args);
-        if (i >= 0) {
-            result.mobj = m;
-            result.handle = priv(m->d.data)->methodData + QMetaObjectPrivate::IntsPerMethod*i;
-            break;
-        }
+        if (i >= 0)
+            return QMetaMethod::fromRelativeMethodIndex(m, i);
     }
-    return result;
+    return QMetaMethod();
 }
 
 /*!

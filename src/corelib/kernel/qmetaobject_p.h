@@ -55,6 +55,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qmetaobject.h>
 #ifndef QT_NO_QOBJECT
 #include <private/qobject_p.h> // For QObjectPrivate::Connection
 #endif
@@ -178,7 +179,7 @@ struct QMetaObjectPrivate
     // revision 8 is Qt 5.12: It adds the enum name to QMetaEnum
     // revision 9 is Qt 6.0: It adds the metatype of properties and methods
     enum { OutputRevision = 9 }; // Used by moc, qmetaobjectbuilder and qdbus
-    enum { IntsPerMethod = 6};
+    enum { IntsPerMethod = QMetaMethod::Data::Size};
 
     int revision;
     int className;
