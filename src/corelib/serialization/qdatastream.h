@@ -102,9 +102,17 @@ public:
         Qt_5_13 = 19,
         Qt_5_14 = Qt_5_13,
 #if QT_VERSION >= 0x050f00
+        Qt_5_15 = Qt_5_14,
+        Qt_DefaultCompiledVersion = Qt_5_15
+#elif QT_VERSION >= 0x060000
+        Qt_6_0 = Qt_5_15,
+        Qt_DefaultCompiledVersion = Qt_6_0
+#else
+        Qt_DefaultCompiledVersion = Qt_5_14
+#endif
+#if QT_VERSION >= 0x060100
 #error Add the datastream version for this Qt version and update Qt_DefaultCompiledVersion
 #endif
-        Qt_DefaultCompiledVersion = Qt_5_14
     };
 
     enum ByteOrder {
