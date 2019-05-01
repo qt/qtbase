@@ -1,15 +1,10 @@
 # Status
 
-Initial port is on-going. Some modules of QtBase are ported, incl. some of the platform modules. Most are missing still.
+Initial port is on-going. Some modules of QtBase are ported, incl. some of the platform modules. Many libraries, tests and examples are still missing.
 
-Basic functionality is there (moc, uic, etc.), but documentation, translations, qdbusxml2cpp, etc. are missing.
+Basic functionality is there (moc, uic, etc.), but documentation, translations, etc. are missing.
 
-NOTE: YOU WILL NEED CMAKE 3.15 or later (for example, master branch,
-after 168c11f70e52f9b4f00ef289a95023be3f273d2d, for more details see
-https://gitlab.kitware.com/cmake/cmake/merge_requests/2679
-and
-https://gitlab.kitware.com/cmake/cmake/merge_requests/3049
-).
+NOTE: YOU NEED CMAKE 3.14 or later.
 
 # Intro
 
@@ -33,21 +28,33 @@ You may use vcpkg to install dependencies needed to build QtBase.
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
   * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to
     * Linux: ``x64-linux``
+    * macOS: ``x64-osx``
     * Windows: ``qt-x86-windows-static``
-  * Build Qt dependencies:  ``vcpkg install zlib pcre2 double-conversion harfbuzz``
+  * Build Qt dependencies:  ``vcpkg install zlib pcre2 double-conversion harfbuzz freetype``
   * When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake``
-    Previously CMAKE_PREFIX_PATH was mentioned instead of CMAKE_TOOLCHAIN_PATH. Setting CMAKE_PREFIX_PATH to the vcpkg installed folder is not enough, because then find_package is not overridden by vcpkg and cmake might not propagate all library dependencies for static packages (freetype is one such package).
+    Previously CMAKE_PREFIX_PATH was mentioned instead of CMAKE_TOOLCHAIN_FILE. Setting CMAKE_PREFIX_PATH to the vcpkg installed folder is not enough, because then find_package is not overridden by vcpkg and cmake might not propagate all library dependencies for static packages (freetype is one such package).
 
+# Building VCPKG on macOS
+
+vcpkg doesn't currently buid on macOS with Xcode provided clang, due to missing filesystem headers. It's expected to be fixed in Xcode 11.
+
+See https://github.com/Microsoft/vcpkg/issues/4475 and https://github.com/Microsoft/vcpkg/issues/6068.
+
+Vcpkg can be built with homebrew provided gcc though.
+
+  * Install homebrew: ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
+  * Install gcc via homebrew:  ``brew install gcc``
+
+After installing gcc, just follow the vcpkg instructions in the section above.
 
 # Building against homebrew on macOS
 
-vcpkg doesn't support clang on macOS, see https://github.com/Microsoft/vcpkg/issues/4475 .
+Instead of using vcpkg, you can also use homebrew to get the 3rd party dependencies.
 
   * Install homebrew: ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
-  * Build Qt dependencies:  ``brew install pcre2 harfbuzz``
-  * Build cmake from HEAD (or you can build your own):  ``brew install --HEAD cmake``
+  * Build Qt dependencies:  ``brew install pcre2 harfbuzz freetype``
+  * Install cmake:  ``brew install cmake``
   * When running cmake in qtbase, pass ``-DCMAKE_PREFIX_PATH=/usr/local``
-
 
 # Building
 
@@ -80,7 +87,25 @@ When you're done with the build, you may want to install it, using ``ninja insta
     ninja install
 ```
 
+Make sure to remove CMakeCache.txt if you forgot to set the CMAKE_INSTALL_PREFIX on the first configuration, otherwise a second re-configuration will not pick up the new install prefix.
+
 You can use ``cmake-gui {path to build directory}`` or ``ccmake {path to build directory}`` to configure the values of individual cmake variables or Qt features. After changing a value, you need to choose the *configure* step (usually several times:-/), followed by the *generate* step (to generate makefiles/ninja files).
+
+## Ninja reconfiguration bug
+
+If you use the Ninja generator, there's a bug that after the first CMake configuration, if you run ninja, it will do the reconfiguration step again. This is quite annoying and time consuming.
+
+There is an open pull request that fixes the issue at https://github.com/ninja-build/ninja/pull/1527. You can build your own Ninja executable until the request is merged.
+
+```
+    cd {some directory}
+    git clone https://github.com/ninja-build/ninja.git
+    cd ninja && mkdir build && cd build
+    git remote add fix git@github.com:mathstuf/ninja.git && git fetch --all
+    git cherry-pick 29a565f18e01ce83ca14801f4684cd2acaf00d4c
+    ../configure.py --bootstrap
+    cp ninja /usr/local/bin/ninja
+```
 
 ## Building with CCache
 
