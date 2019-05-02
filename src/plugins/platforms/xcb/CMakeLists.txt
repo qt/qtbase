@@ -165,3 +165,42 @@ extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_p
     LIBRARIES
         Freetype::Freetype
 )
+
+# Generated from xcb-plugin.pro.
+
+#####################################################################
+## qxcb Plugin:
+#####################################################################
+
+add_qt_plugin(qxcb
+    TYPE platforms
+    SOURCES
+        qxcbmain.cpp
+    DEFINES
+        QT_NO_FOREACH
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::XcbQpaPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
+        Qt::XcbQpa
+)
+
+#### Keys ignored in scope 1:.:.:./xcb-plugin.pro:<TRUE>:
+# OTHER_FILES = "xcb.json" "README"
+# PLUGIN_CLASS_NAME = "QXcbIntegrationPlugin"
+# _LOADED = "qt_plugin"
+
+## Scopes:
+#####################################################################
+
+#### Keys ignored in scope 2:.:.:./xcb-plugin.pro:APPLE_OSX:
+# CONFIG = "no_app_extension_api_only"
+
+#### Keys ignored in scope 3:.:.:./xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"
+
+#### TODO: xcb-static sub folder
+#### TODO: gl_integrations sub folder
