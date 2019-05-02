@@ -1182,7 +1182,7 @@ void tst_QFileInfo::fileTimes()
         QTest::qSleep(sleepTime);
         beforeWrite = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
         QTextStream ts(&file);
-        ts << fileName << endl;
+        ts << fileName << Qt::endl;
     }
     {
         QFileInfo fileInfo(fileName);

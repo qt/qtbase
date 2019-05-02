@@ -681,7 +681,7 @@ static bool checkPixels(const QImage &image,
             if (pixel != expectedRgb1 && pixel != expectedRgb2) {
                 QString message;
                 QDebug(&message) << "Color mismatch in image" << image
-                    << "at" << x << ',' << y << ':' << showbase << hex << pixel
+                    << "at" << x << ',' << y << ':' << Qt::showbase << Qt::hex << pixel
                     << "(expected: " << expectedRgb1 << ',' << expectedRgb2 << ')';
                 *errorMessage = message.toLocal8Bit();
                 return false;

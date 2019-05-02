@@ -2099,7 +2099,7 @@ void tst_QFile::i18nFileName()
         QVERIFY2(file.open(QFile::WriteOnly | QFile::Text), msgOpenFailed(file).constData());
         QTextStream ts(&file);
         ts.setCodec("UTF-8");
-        ts << fileName << endl;
+        ts << fileName << Qt::endl;
      }
      {
         QFile file(fileName);
@@ -2149,7 +2149,7 @@ void tst_QFile::longFileName()
         QFile file(fileName);
         QVERIFY2(file.open(QFile::WriteOnly | QFile::Text), msgOpenFailed(file).constData());
         QTextStream ts(&file);
-        ts << fileName << endl;
+        ts << fileName << Qt::endl;
     }
     {
         QFile file(fileName);

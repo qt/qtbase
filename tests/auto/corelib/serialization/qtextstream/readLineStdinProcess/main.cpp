@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     do {
         line = qin.readLine();
         if (!line.isNull())
-            qerr << line << flush;
+            qerr << line << Qt::flush;
     } while (!line.isNull());
     return 0;
 }

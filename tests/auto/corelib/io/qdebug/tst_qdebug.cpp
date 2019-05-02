@@ -309,7 +309,7 @@ void tst_QDebug::stateSaver() const
         QDebug d = qDebug();
         {
             QDebugStateSaver saver(d);
-            d.nospace() << hex << right << qSetFieldWidth(3) << qSetPadChar('0') << 42;
+            d.nospace() << Qt::hex << Qt::right << qSetFieldWidth(3) << qSetPadChar('0') << 42;
         }
         d << 42;
     }
@@ -327,7 +327,7 @@ void tst_QDebug::stateSaver() const
 
     {
         QDebug d = qDebug();
-        d.noquote().nospace() << QStringLiteral("Hello") << hex << 42;
+        d.noquote().nospace() << QStringLiteral("Hello") << Qt::hex << 42;
         {
             QDebugStateSaver saver(d);
             d.resetFormat();
@@ -660,7 +660,7 @@ void tst_QDebug::textStreamModifiers() const
     QString file, function;
     int line = 0;
     MessageHandlerSetter mhs(myMessageHandler);
-    { qDebug() << hex << short(0xf) << int(0xf) << unsigned(0xf) << long(0xf) << qint64(0xf) << quint64(0xf); }
+    { qDebug() << Qt::hex << short(0xf) << int(0xf) << unsigned(0xf) << long(0xf) << qint64(0xf) << quint64(0xf); }
 #ifndef QT_NO_MESSAGELOGCONTEXT
     file = __FILE__; line = __LINE__ - 2; function = Q_FUNC_INFO;
 #endif
@@ -678,7 +678,7 @@ void tst_QDebug::resetFormat() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
-        d.nospace().noquote() << hex <<  int(0xf);
+        d.nospace().noquote() << Qt::hex <<  int(0xf);
         d.resetFormat() << int(0xf) << QStringLiteral("foo");
     }
 #ifndef QT_NO_MESSAGELOGCONTEXT
