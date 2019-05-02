@@ -67,10 +67,6 @@ endif()
 #    TODO   add_subdirectory(wasm)
 #endif()
 
-if(QT_FEATURE_mirclient)
-#    TODO   add_subdirectory(mirclient)
-endif()
-
 if(QT_FEATURE_integrityfb)
 #    TODO   add_subdirectory(integrityfb)
 endif()
