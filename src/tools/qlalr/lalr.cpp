@@ -754,7 +754,7 @@ void Automaton::buildDefaultReduceActions ()
           if (item->dot != item->end_rhs ())
             continue;
 
-          int la = lookaheads.value (item).size ();
+          int la = static_cast<int>(lookaheads.value(item).size());
           if (def == state->closure.end () || la > size)
             {
               def = item;

@@ -127,8 +127,8 @@ void CppGenerator::operator () ()
 {
   // action table...
   state_count = aut.states.size ();
-  terminal_count = grammar.terminals.size ();
-  non_terminal_count = grammar.non_terminals.size ();
+  terminal_count = static_cast<int>(grammar.terminals.size());
+  non_terminal_count = static_cast<int>(grammar.non_terminals.size());
 
 #define ACTION(i, j) table [(i) * terminal_count + (j)]
 #define GOTO(i, j) pgoto [(i) * non_terminal_count + (j)]
