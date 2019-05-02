@@ -59,7 +59,8 @@ import android.view.ViewGroup;
 import android.R;
 
 // Helper class that manages a cursor or selection handle
-public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditContextView.OnClickListener
+public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayoutChangeListener,
+        EditContextView.OnClickListener
 {
     private View m_layout = null;
     private EditContextView m_view = null;
@@ -67,10 +68,15 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditCo
     private int m_posX;
     private int m_posY;
     private int m_buttons;
+    private CursorHandle m_cursorHandle;
+    private CursorHandle m_leftSelectionHandle;
+    private CursorHandle m_rightSelectionHandle;
 
     public EditPopupMenu(Activity activity, View layout)
     {
         m_view = new EditContextView(activity, this);
+        m_view.addOnLayoutChangeListener(this);
+
         m_layout = layout;
     }
 
@@ -90,13 +96,9 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditCo
         m_layout.getViewTreeObserver().addOnPreDrawListener(this);
     }
 
-    public int getHeight()
-    {
-        return m_view.getHeight();
-    }
-
     // Show the handle at a given position (or move it if it is already shown)
-    public void setPosition(final int x, final int y, final int buttons)
+    public void setPosition(final int x, final int y, final int buttons,
+                            CursorHandle cursorHandle, CursorHandle leftSelectionHandle, CursorHandle rightSelectionHandle)
     {
         initOverlay();
 
@@ -108,6 +110,14 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditCo
         int y2 = y + location[1];
 
         x2 -= m_view.getWidth() / 2 ;
+
+        y2 -= m_view.getHeight();
+        if (y2 < 0) {
+            if (cursorHandle != null)
+                y2 = cursorHandle.bottom();
+            else if (leftSelectionHandle != null && rightSelectionHandle != null)
+                y2 = Math.max(leftSelectionHandle.bottom(), rightSelectionHandle.bottom());
+        }
 
         if (m_layout.getWidth() < x + m_view.getWidth() / 2)
             x2 = m_layout.getWidth() - m_view.getWidth();
@@ -123,6 +133,9 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditCo
         m_posX = x;
         m_posY = y;
         m_buttons = buttons;
+        m_cursorHandle = cursorHandle;
+        m_leftSelectionHandle = leftSelectionHandle;
+        m_rightSelectionHandle = rightSelectionHandle;
     }
 
     public void hide() {
@@ -138,9 +151,18 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditCo
         // For example if the keyboard appears.
         // Adjust the position of the handle accordingly
         if (m_popup != null && m_popup.isShowing())
-            setPosition(m_posX, m_posY, m_buttons);
+            setPosition(m_posX, m_posY, m_buttons, m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
 
         return true;
+    }
+
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                               int oldLeft, int oldTop, int oldRight, int oldBottom)
+    {
+        if ((right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop) &&
+                m_popup != null && m_popup.isShowing())
+            setPosition(m_posX, m_posY, m_buttons, m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
     }
 
     @Override

@@ -552,16 +552,8 @@ public class QtActivityDelegate
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
         if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
-            editY -= m_editPopupMenu.getHeight();
-            if (editY < 0) {
-                if (m_cursorHandle != null)
-                    editY = m_cursorHandle.bottom();
-                else if (m_leftSelectionHandle != null && m_rightSelectionHandle != null)
-                    editY = Math.max(m_leftSelectionHandle.bottom(), m_rightSelectionHandle.bottom());
-                else
-                    return;
-            }
-            m_editPopupMenu.setPosition(editX, editY, editButtons);
+            m_editPopupMenu.setPosition(editX, editY, editButtons, m_cursorHandle, m_leftSelectionHandle,
+                                        m_rightSelectionHandle);
         } else {
             if (m_editPopupMenu != null)
                 m_editPopupMenu.hide();
