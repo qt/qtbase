@@ -91,6 +91,12 @@ Make sure to remove CMakeCache.txt if you forgot to set the CMAKE_INSTALL_PREFIX
 
 You can use ``cmake-gui {path to build directory}`` or ``ccmake {path to build directory}`` to configure the values of individual cmake variables or Qt features. After changing a value, you need to choose the *configure* step (usually several times:-/), followed by the *generate* step (to generate makefiles/ninja files).
 
+## Specifying configure.json features on the command line
+
+QMake defines most features in configure.json files, like -developer-build or -no-opengl.
+
+In CMake land, we currently generate configure.cmake files from the configure.json files. If the feature in configure.json has the name "dlopen", you can specify whether to enable or disable that feature in CMake with a -D flag on the CMake command line. So for example -DFEATURE_dlopen=ON or -DFEATURE_sql_mysql=OFF. At the moment, if you change a FEATURE flag's value, you have to remove the CMakeCache.txt file and reconfigure with CMake. And even then you might stumble on some issues when reusing an existing build, because of an automoc bug in upstream CMake.
+
 ## Ninja reconfiguration bug
 
 If you use the Ninja generator, there's a bug that after the first CMake configuration, if you run ninja, it will do the reconfiguration step again. This is quite annoying and time consuming.
