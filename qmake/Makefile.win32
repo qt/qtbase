@@ -88,7 +88,6 @@ QTOBJS= \
 	qringbuffer.obj \
 	qdebug.obj \
 	qlist.obj \
-	qlinkedlist.obj \
 	qlocale.obj \
 	qlocale_tools.obj \
 	qlocale_win.obj \

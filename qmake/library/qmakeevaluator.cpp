@@ -601,14 +601,16 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProBlock(
         case TokBypassNesting:
             blockLen = getBlockLen(tokPtr);
             if ((m_cumulative || okey != or_op) && blockLen) {
-                ProValueMapStack savedValuemapStack = m_valuemapStack;
+                ProValueMapStack savedValuemapStack = std::move(m_valuemapStack);
                 m_valuemapStack.clear();
-                m_valuemapStack.append(savedValuemapStack.takeFirst());
+                m_valuemapStack.splice(m_valuemapStack.end(),
+                                       savedValuemapStack, savedValuemapStack.begin());
                 traceMsg("visiting nesting-bypassing block");
                 ret = visitProBlock(tokPtr);
                 traceMsg("visited nesting-bypassing block");
-                savedValuemapStack.prepend(m_valuemapStack.first());
-                m_valuemapStack = savedValuemapStack;
+                savedValuemapStack.splice(savedValuemapStack.begin(),
+                                          m_valuemapStack, m_valuemapStack.begin());
+                m_valuemapStack = std::move(savedValuemapStack);
             } else {
                 traceMsg("skipped nesting-bypassing block");
                 ret = ReturnTrue;

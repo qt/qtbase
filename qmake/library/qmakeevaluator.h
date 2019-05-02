@@ -38,7 +38,6 @@
 #include "ioutils.h"
 
 #include <qlist.h>
-#include <qlinkedlist.h>
 #include <qmap.h>
 #include <qset.h>
 #include <qstack.h>
@@ -53,6 +52,8 @@
 #ifdef PROEVALUATOR_THREAD_SAFE
 # include <qmutex.h>
 #endif
+
+#include <list>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,9 +95,9 @@ public:
 #endif
 };
 
-// We use a QLinkedList based stack instead of a QVector based one (QStack), so that
+// We use a list-based stack instead of a vector-based one, so that
 // the addresses of value maps stay constant. The qmake generators rely on that.
-class QMAKE_EXPORT ProValueMapStack : public QLinkedList<ProValueMap>
+class QMAKE_EXPORT ProValueMapStack : public std::list<ProValueMap>
 {
 public:
     inline void push(const ProValueMap &t) { push_back(t); }

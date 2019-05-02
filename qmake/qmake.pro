@@ -136,7 +136,6 @@ SOURCES += \
     qjsonparser.cpp \
     qjsonvalue.cpp \
     qlibraryinfo.cpp \
-    qlinkedlist.cpp \
     qlist.cpp \
     qlocale.cpp \
     qlocale_tools.cpp \
@@ -189,7 +188,6 @@ HEADERS += \
     qjsonparser_p.h \
     qjsonvalue.h \
     qjsonwriter_p.h \
-    qlinkedlist.h \
     qlist.h \
     qlocale.h \
     qlocale_tools_p.h \

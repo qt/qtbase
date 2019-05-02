@@ -28,7 +28,7 @@ QOBJS = \
 	qmetatype.o qsystemerror.o qvariant.o \
 	quuid.o \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraymatcher.o \
-	qcryptographichash.o qdatetime.o qhash.o qlinkedlist.o qlist.o \
+	qcryptographichash.o qdatetime.o qhash.o qlist.o \
 	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
 	qstringbuilder.o qstring_compat.o qstring.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o qxmlstream.o qxmlutils.o \
@@ -112,7 +112,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
@@ -440,9 +439,6 @@ qmap.o: $(SOURCE_PATH)/src/corelib/tools/qmap.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qhash.o: $(SOURCE_PATH)/src/corelib/tools/qhash.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qlinkedlist.o: $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcryptographichash.o: $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
