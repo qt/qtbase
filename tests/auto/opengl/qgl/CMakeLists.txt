@@ -1,7 +1,30 @@
-add_qt_test("tst_qgl" SOURCES qgl.qrc tst_qgl.cpp
+# Generated from qgl.pro.
+
+#####################################################################
+## tst_qgl Test:
+#####################################################################
+
+add_qt_test(tst_qgl
+    SOURCES
+        tst_qgl.cpp
     LIBRARIES
-        Qt::WidgetsPrivate
-        Qt::OpenGLPrivate
-        Qt::GuiPrivate
         Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::OpenGLPrivate
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
+        Qt::OpenGL
+        Qt::Widgets
 )
+
+# Resources:
+set_source_files_properties("../../gui/image/qpixmap/images/designer.png"
+    PROPERTIES alias "designer.png")
+add_qt_resource(tst_qgl "qgl" FILES
+    ../../gui/image/qpixmap/images/designer.png)
+
+
+#### Keys ignored in scope 1:.:.:qgl.pro:<TRUE>:
+# CONFIG = "testcase"
