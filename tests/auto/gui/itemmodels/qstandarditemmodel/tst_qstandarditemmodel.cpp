@@ -734,7 +734,7 @@ void tst_QStandardItemModel::data()
     currentRoles.clear();
     // bad args
     m_model->setData(QModelIndex(), "bla", Qt::DisplayRole);
-    QCOMPARE(currentRoles, {});
+    QCOMPARE(currentRoles, QVector<int>{});
 
     QIcon icon;
     for (int r=0; r < m_model->rowCount(); ++r) {
@@ -742,9 +742,9 @@ void tst_QStandardItemModel::data()
             m_model->setData(m_model->index(r,c), "initialitem", Qt::DisplayRole);
             QCOMPARE(currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
             m_model->setData(m_model->index(r,c), "tooltip", Qt::ToolTipRole);
-            QCOMPARE(currentRoles, {Qt::ToolTipRole});
+            QCOMPARE(currentRoles, QVector<int>{Qt::ToolTipRole});
             m_model->setData(m_model->index(r,c), icon, Qt::DecorationRole);
-            QCOMPARE(currentRoles, {Qt::DecorationRole});
+            QCOMPARE(currentRoles, QVector<int>{Qt::DecorationRole});
         }
     }
 
@@ -761,7 +761,7 @@ void tst_QStandardItemModel::clearItemData()
 {
     currentRoles.clear();
     QVERIFY(!m_model->clearItemData(QModelIndex()));
-    QCOMPARE(currentRoles, {});
+    QCOMPARE(currentRoles, QVector<int>{});
     const QModelIndex idx = m_model->index(0, 0);
     const QMap<int, QVariant> oldData = m_model->itemData(idx);
     m_model->setData(idx, QLatin1String("initialitem"), Qt::DisplayRole);
@@ -773,7 +773,7 @@ void tst_QStandardItemModel::clearItemData()
     QCOMPARE(idx.data(Qt::ToolTipRole), QVariant());
     QCOMPARE(idx.data(Qt::DisplayRole), QVariant());
     QCOMPARE(idx.data(Qt::EditRole), QVariant());
-    QCOMPARE(currentRoles, {});
+    QCOMPARE(currentRoles, QVector<int>{});
     m_model->setItemData(idx, oldData);
     currentRoles.clear();
 }
