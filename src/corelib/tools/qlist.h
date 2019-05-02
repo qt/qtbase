@@ -707,8 +707,7 @@ inline void QList<T>::swapItemsAt(int i, int j)
     Q_ASSERT_X(i >= 0 && i < p.size() && j >= 0 && j < p.size(),
                 "QList<T>::swap", "index out of range");
     detach();
-    using std::swap;
-    swap(d->array[d->begin + i], d->array[d->begin + j]);
+    qSwap(d->array[d->begin + i], d->array[d->begin + j]);
 }
 
 template <typename T>
