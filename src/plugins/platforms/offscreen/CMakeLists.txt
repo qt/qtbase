@@ -42,9 +42,5 @@ extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND TAR
         Qt::GlxSupport
 )
 
-extend_target(qoffscreen CONDITION NOT TARGET OpenGL::GLX OR NOT QT_FEATURE_opengl OR NOT QT_FEATURE_xlib # special case
-    SOURCES
-        qoffscreenintegration_dummy.cpp
-)
-
+#### Keys ignored in scope 3:.:.:offscreen.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
