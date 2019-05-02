@@ -44,7 +44,7 @@ if(QT_FEATURE_opengl)
     add_subdirectory(platformcompositor)
 endif()
 
-if (QT_FEATURE_xlib AND QT_FEATURE_opengl AND (NOT QT_FEATURE_opengles2))
+if (QT_FEATURE_xlib AND QT_FEATURE_opengl AND TARGET OpenGL::GLX) # special case
     add_subdirectory(glxconvenience)
 endif()
 
