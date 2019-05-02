@@ -620,7 +620,6 @@ class tst_Moc : public QObject
 
     Q_PROPERTY(bool user1 READ user1 USER true )
     Q_PROPERTY(bool user2 READ user2 USER false)
-    Q_PROPERTY(bool user3 READ user3 USER userFunction())
     Q_PROPERTY(QString member1 MEMBER sMember)
     Q_PROPERTY(QString member2 MEMBER sMember READ member2)
     Q_PROPERTY(QString member3 MEMBER sMember WRITE setMember3)
@@ -744,8 +743,6 @@ signals:
 private:
     bool user1() { return true; };
     bool user2() { return false; };
-    bool user3() { return false; };
-    bool userFunction(){ return false; };
     template <class T> void revisions_T();
     QString member2() const { return sMember; }
     void setMember3( const QString &sVal ) { sMember = sVal; }
@@ -919,10 +916,6 @@ void tst_Moc::userProperties()
     property = mobj->property(mobj->indexOfProperty("user2"));
     QVERIFY(property.isValid());
     QVERIFY(!property.isUser());
-
-    property = mobj->property(mobj->indexOfProperty("user3"));
-    QVERIFY(property.isValid());
-    QVERIFY(!property.isUser(this));
 }
 
 void tst_Moc::supportConstSignals()

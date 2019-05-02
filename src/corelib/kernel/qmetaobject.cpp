@@ -133,11 +133,6 @@ QT_BEGIN_NAMESPACE
     \value ReadProperty
     \value WriteProperty
     \value ResetProperty
-    \value QueryPropertyDesignable
-    \value QueryPropertyScriptable
-    \value QueryPropertyStored
-    \value QueryPropertyEditable
-    \value QueryPropertyUser
     \value CreateInstance
 */
 
@@ -3401,82 +3396,67 @@ bool QMetaProperty::isWritable() const
 
 
 /*!
-    Returns \c true if this property is designable for the given \a object;
+    Returns \c true if this property is designable;
     otherwise returns \c false.
 
     If no \a object is given, the function returns \c false if the
     \c{Q_PROPERTY()}'s \c DESIGNABLE attribute is false; otherwise
-    returns \c true (if the attribute is true or is a function or expression).
+    returns \c true.
 
     \sa isScriptable(), isStored()
 */
-bool QMetaProperty::isDesignable(const QObject *object) const
+bool QMetaProperty::isDesignable() const
 {
     if (!mobj)
         return false;
     int flags = mobj->d.data[handle + 2];
     bool b = flags & Designable;
-    if (object) {
-        void *argv[] = { &b };
-        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyDesignable,
-                              idx + mobj->propertyOffset(), argv);
-    }
     return b;
 
 
 }
 
 /*!
-    Returns \c true if the property is scriptable for the given \a object;
+    Returns \c true if the property is scriptable;
     otherwise returns \c false.
 
     If no \a object is given, the function returns \c false if the
     \c{Q_PROPERTY()}'s \c SCRIPTABLE attribute is false; otherwise returns
-    true (if the attribute is true or is a function or expression).
+    true.
 
     \sa isDesignable(), isStored()
 */
-bool QMetaProperty::isScriptable(const QObject *object) const
+bool QMetaProperty::isScriptable() const
 {
     if (!mobj)
         return false;
     int flags = mobj->d.data[handle + 2];
     bool b = flags & Scriptable;
-    if (object) {
-        void *argv[] = { &b };
-        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyScriptable,
-                              idx + mobj->propertyOffset(), argv);
-    }
     return b;
 }
 
 /*!
-    Returns \c true if the property is stored for \a object; otherwise returns
+    Returns \c true if the property is stored; otherwise returns
     false.
 
-    If no \a object is given, the function returns \c false if the
+    The function returns \c false if the
     \c{Q_PROPERTY()}'s \c STORED attribute is false; otherwise returns
-    true (if the attribute is true or is a function or expression).
+    true.
 
     \sa isDesignable(), isScriptable()
 */
-bool QMetaProperty::isStored(const QObject *object) const
+bool QMetaProperty::isStored() const
 {
     if (!mobj)
         return false;
     int flags = mobj->d.data[handle + 2];
     bool b = flags & Stored;
-    if (object) {
-        void *argv[] = { &b };
-        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyStored,
-                              idx + mobj->propertyOffset(), argv);
-    }
     return b;
 }
 
 /*!
     Returns \c true if this property is designated as the \c USER
-    property, i.e., the one that the user can edit for \a object or
+    property, i.e., the one that the user can edit or
     that is significant in some other way.  Otherwise it returns
     false. e.g., the \c text property is the \c USER editable property
     of a QLineEdit.
@@ -3487,17 +3467,12 @@ bool QMetaProperty::isStored(const QObject *object) const
 
     \sa QMetaObject::userProperty(), isDesignable(), isScriptable()
 */
-bool QMetaProperty::isUser(const QObject *object) const
+bool QMetaProperty::isUser() const
 {
     if (!mobj)
         return false;
     int flags = mobj->d.data[handle + 2];
     bool b = flags & User;
-    if (object) {
-        void *argv[] = { &b };
-        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyUser,
-                              idx + mobj->propertyOffset(), argv);
-    }
     return b;
 }
 
@@ -3564,7 +3539,7 @@ bool QMetaProperty::isQProperty() const
 /*!
     \obsolete
 
-    Returns \c true if the property is editable for the given \a object;
+    Returns \c true if the property is editable;
     otherwise returns \c false.
 
     If no \a object is given, the function returns \c false if the
@@ -3574,17 +3549,12 @@ bool QMetaProperty::isQProperty() const
     \sa isDesignable(), isScriptable(), isStored()
 */
 #if QT_DEPRECATED_SINCE(5, 15)
-bool QMetaProperty::isEditable(const QObject *object) const
+bool QMetaProperty::isEditable() const
 {
     if (!mobj)
         return false;
     int flags = mobj->d.data[handle + 2];
     bool b = flags & Editable;
-    if (object) {
-        void *argv[] = { &b };
-        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::QueryPropertyEditable,
-                              idx + mobj->propertyOffset(), argv);
-    }
     return b;
 }
 #endif

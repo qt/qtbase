@@ -1267,8 +1267,7 @@ void Moc::createPropertyDef(PropertyDef &propDef)
     if (typeWrappedInQProperty)
         next(RANGLE);
     propDef.designable = propDef.scriptable = propDef.stored = "true";
-    propDef.user = "false";
-
+    propDef.user = propDef.editable = "false";
     /*
       The Q_PROPERTY construct cannot contain any commas, since
       commas separate macro arguments. We therefore expect users
@@ -1301,8 +1300,8 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         if (def.endsWith(')')) {
             QByteArray msg = "Providing a function for ";
             msg += name;
-            msg += " in a property declaration is deprecated and will not be supported in Qt 6 anymore.";
-            warning(msg.constData());
+            msg += " in a property declaration is not be supported in Qt 6.";
+            error(msg.constData());
         }
     };
 

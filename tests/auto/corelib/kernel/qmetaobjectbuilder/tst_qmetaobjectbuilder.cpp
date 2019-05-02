@@ -1565,16 +1565,6 @@ int TestObject::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         _id -= ownPropertyCount;
     } else if (_c == QMetaObject::ResetProperty) {
         _id -= ownPropertyCount;
-    } else if (_c == QMetaObject::QueryPropertyDesignable) {
-        _id -= ownPropertyCount;
-    } else if (_c == QMetaObject::QueryPropertyScriptable) {
-        _id -= ownPropertyCount;
-    } else if (_c == QMetaObject::QueryPropertyStored) {
-        _id -= ownPropertyCount;
-    } else if (_c == QMetaObject::QueryPropertyEditable) {
-        _id -= ownPropertyCount;
-    } else if (_c == QMetaObject::QueryPropertyUser) {
-        _id -= ownPropertyCount;
     }
 #endif // QT_NO_PROPERTIES
     return _id;

@@ -869,35 +869,23 @@ void Generator::generateProperties()
             if (p.stdCppSet())
                 flags |= StdCppSet;
         }
+
         if (!p.reset.isEmpty())
             flags |= Resettable;
 
-//         if (p.override)
-//             flags |= Override;
-
-        if (p.designable.isEmpty())
-            flags |= ResolveDesignable;
-        else if (p.designable != "false")
+        if (p.designable != "false")
             flags |= Designable;
 
-        if (p.scriptable.isEmpty())
-            flags |= ResolveScriptable;
-        else if (p.scriptable != "false")
+        if (p.scriptable != "false")
             flags |= Scriptable;
 
-        if (p.stored.isEmpty())
-            flags |= ResolveStored;
-        else if (p.stored != "false")
+        if (p.stored != "false")
             flags |= Stored;
 
-        if (p.editable.isEmpty())
-            flags |= ResolveEditable;
-        else if (p.editable != "false")
+        if (p.editable != "false")
             flags |= Editable;
 
-        if (p.user.isEmpty())
-            flags |= ResolveUser;
-        else if (p.user != "false")
+        if (p.user != "false")
             flags |= User;
 
         if (p.notifyId != -1)
@@ -1045,19 +1033,6 @@ void Generator::generateMetacall()
     }
 
     if (cdef->propertyList.size()) {
-        bool needDesignable = false;
-        bool needScriptable = false;
-        bool needStored = false;
-        bool needEditable = false;
-        bool needUser = false;
-        for (int i = 0; i < cdef->propertyList.size(); ++i) {
-            const PropertyDef &p = cdef->propertyList.at(i);
-            needDesignable |= p.designable.endsWith(')');
-            needScriptable |= p.scriptable.endsWith(')');
-            needStored |= p.stored.endsWith(')');
-            needEditable |= p.editable.endsWith(')');
-            needUser |= p.user.endsWith(')');
-        }
 
         fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n    ");
         if (needElse)
@@ -1069,103 +1044,6 @@ void Generator::generateMetacall()
             "            || _c == QMetaObject::SetQPropertyBinding) {\n"
             "        qt_static_metacall(this, _c, _id, _a);\n"
             "        _id -= %d;\n    }", cdef->propertyList.count());
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::QueryPropertyDesignable) {\n");
-        if (needDesignable) {
-            fprintf(out, "        bool *_b = reinterpret_cast<bool*>(_a[0]);\n");
-            fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
-                const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.designable.endsWith(')'))
-                    continue;
-                fprintf(out, "        case %d: *_b = %s; break;\n",
-                         propindex, p.designable.constData());
-            }
-            fprintf(out, "        default: break;\n");
-            fprintf(out, "        }\n");
-        }
-        fprintf(out,
-                "        _id -= %d;\n"
-                "    }", cdef->propertyList.count());
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::QueryPropertyScriptable) {\n");
-        if (needScriptable) {
-            fprintf(out, "        bool *_b = reinterpret_cast<bool*>(_a[0]);\n");
-            fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
-                const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.scriptable.endsWith(')'))
-                    continue;
-                fprintf(out, "        case %d: *_b = %s; break;\n",
-                         propindex, p.scriptable.constData());
-            }
-            fprintf(out, "        default: break;\n");
-            fprintf(out, "        }\n");
-        }
-        fprintf(out,
-                "        _id -= %d;\n"
-                "    }", cdef->propertyList.count());
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::QueryPropertyStored) {\n");
-        if (needStored) {
-            fprintf(out, "        bool *_b = reinterpret_cast<bool*>(_a[0]);\n");
-            fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
-                const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.stored.endsWith(')'))
-                    continue;
-                fprintf(out, "        case %d: *_b = %s; break;\n",
-                         propindex, p.stored.constData());
-            }
-            fprintf(out, "        default: break;\n");
-            fprintf(out, "        }\n");
-        }
-        fprintf(out,
-                "        _id -= %d;\n"
-                "    }", cdef->propertyList.count());
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::QueryPropertyEditable) {\n");
-        if (needEditable) {
-            fprintf(out, "        bool *_b = reinterpret_cast<bool*>(_a[0]);\n");
-            fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
-                const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.editable.endsWith(')'))
-                    continue;
-                fprintf(out, "        case %d: *_b = %s; break;\n",
-                         propindex, p.editable.constData());
-            }
-            fprintf(out, "        default: break;\n");
-            fprintf(out, "        }\n");
-        }
-        fprintf(out,
-                "        _id -= %d;\n"
-                "    }", cdef->propertyList.count());
-
-
-        fprintf(out, " else ");
-        fprintf(out, "if (_c == QMetaObject::QueryPropertyUser) {\n");
-        if (needUser) {
-            fprintf(out, "        bool *_b = reinterpret_cast<bool*>(_a[0]);\n");
-            fprintf(out, "        switch (_id) {\n");
-            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
-                const PropertyDef &p = cdef->propertyList.at(propindex);
-                if (!p.user.endsWith(')'))
-                    continue;
-                fprintf(out, "        case %d: *_b = %s; break;\n",
-                         propindex, p.user.constData());
-            }
-            fprintf(out, "        default: break;\n");
-            fprintf(out, "        }\n");
-        }
-        fprintf(out,
-                "        _id -= %d;\n"
-                "    }", cdef->propertyList.count());
-
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
     }
     if (methodList.size() || cdef->propertyList.size())

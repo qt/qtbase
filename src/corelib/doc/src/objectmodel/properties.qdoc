@@ -110,13 +110,11 @@
     \li The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
     \l {Qt Designer Manual}{Qt Designer}). Most properties are \c DESIGNABLE
-    (default true). Instead of true or false, you can specify a boolean
-    member function.
+    (default true). Valid values are true and false.
 
     \li The \c SCRIPTABLE attribute indicates whether this property
     should be accessible by a scripting engine (default true).
-    Instead of true or false, you can specify a boolean member
-    function.
+    Valid values are true and false.
 
     \li The \c STORED attribute indicates whether the property should
     be thought of as existing on its own or as depending on other
