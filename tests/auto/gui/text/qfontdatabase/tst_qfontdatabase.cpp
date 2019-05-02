@@ -198,8 +198,8 @@ void tst_QFontDatabase::widthTwoTimes()
     f.setPixelSize(pixelSize);
 
     QFontMetrics fm(f);
-    int w1 = fm.charWidth(text, 0);
-    int w2 = fm.charWidth(text, 0);
+    int w1 = fm.horizontalAdvance(text, 0);
+    int w2 = fm.horizontalAdvance(text, 0);
 
     QCOMPARE(w1, w2);
 }
