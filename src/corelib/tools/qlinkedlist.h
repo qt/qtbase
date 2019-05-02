@@ -43,6 +43,7 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qdatastream.h>
 
 #include <algorithm>
 #include <initializer_list>
@@ -560,6 +561,20 @@ QLinkedList<T> QLinkedList<T>::operator+(const QLinkedList<T> &l) const
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(LinkedList)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(LinkedList)
+
+#ifndef QT_NO_DATASTREAM
+template <typename T>
+inline QDataStream &operator>>(QDataStream &s, QLinkedList<T> &l)
+{
+    return QtPrivate::readListBasedContainer(s, l);
+}
+
+template <typename T>
+inline QDataStream &operator<<(QDataStream &s, const QLinkedList<T> &l)
+{
+    return QtPrivate::writeSequentialContainer(s, l);
+}
+#endif
 
 QT_END_NAMESPACE
 
