@@ -1457,15 +1457,15 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
     }
     case T_EXPORT: {
         const ProKey &var = map(args.at(0));
-        for (ProValueMapStack::Iterator vmi = m_valuemapStack.end();
+        for (ProValueMapStack::iterator vmi = m_valuemapStack.end();
              --vmi != m_valuemapStack.begin(); ) {
             ProValueMap::Iterator it = (*vmi).find(var);
             if (it != (*vmi).end()) {
                 if (it->constBegin() == statics.fakeValue.constBegin()) {
                     // This is stupid, but qmake doesn't propagate deletions
-                    m_valuemapStack.first()[var] = ProStringList();
+                    m_valuemapStack.front()[var] = ProStringList();
                 } else {
-                    m_valuemapStack.first()[var] = *it;
+                    m_valuemapStack.front()[var] = *it;
                 }
                 (*vmi).erase(it);
                 while (--vmi != m_valuemapStack.begin())
@@ -1476,7 +1476,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         return ReturnTrue;
     }
     case T_DISCARD_FROM: {
-        if (m_valuemapStack.count() != 1) {
+        if (m_valuemapStack.size() != 1) {
             evalError(fL1S("discard_from() cannot be called from functions."));
             return ReturnFalse;
         }
@@ -1486,7 +1486,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         int pro = m_vfs->idForFileName(fn, flags | QMakeVfs::VfsAccessedOnly);
         if (!pro)
             return ReturnFalse;
-        ProValueMap &vmap = m_valuemapStack.first();
+        ProValueMap &vmap = m_valuemapStack.front();
         for (auto vit = vmap.begin(); vit != vmap.end(); ) {
             if (!vit->isEmpty()) {
                 auto isFrom = [pro](const ProString &s) {
@@ -1514,7 +1514,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             else
                 ++fit;
         }
-        ProStringList &iif = m_valuemapStack.first()[ProKey("QMAKE_INTERNAL_INCLUDED_FILES")];
+        ProStringList &iif = m_valuemapStack.front()[ProKey("QMAKE_INTERNAL_INCLUDED_FILES")];
         int idx = iif.indexOf(ProString(fn));
         if (idx >= 0)
             iif.removeAt(idx);

@@ -99,10 +99,10 @@ public:
 class QMAKE_EXPORT ProValueMapStack : public QLinkedList<ProValueMap>
 {
 public:
-    inline void push(const ProValueMap &t) { append(t); }
-    inline ProValueMap pop() { return takeLast(); }
-    ProValueMap &top() { return last(); }
-    const ProValueMap &top() const { return last(); }
+    inline void push(const ProValueMap &t) { push_back(t); }
+    inline ProValueMap pop() { auto r = std::move(back()); pop_back(); return r; }
+    ProValueMap &top() { return back(); }
+    const ProValueMap &top() const { return back(); }
 };
 
 namespace QMakeInternal { struct QMakeBuiltin; }
