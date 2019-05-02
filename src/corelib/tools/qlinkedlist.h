@@ -44,6 +44,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qtypeinfo.h>
 
 #include <algorithm>
 #include <initializer_list>
@@ -267,6 +268,8 @@ private:
     iterator detach_helper2(iterator);
     void freeData(QLinkedListData*);
 };
+template <typename T>
+Q_DECLARE_TYPEINFO_BODY(QLinkedList<T>, Q_MOVABLE_TYPE|Q_RELOCATABLE_TYPE);
 
 template <typename T>
 inline QLinkedList<T>::~QLinkedList()
