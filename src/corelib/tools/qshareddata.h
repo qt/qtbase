@@ -60,9 +60,8 @@ public:
     inline QSharedData() : ref(0) { }
     inline QSharedData(const QSharedData &) : ref(0) { }
 
-private:
     // using the assignment operator would lead to corruption in the ref-counting
-    QSharedData &operator=(const QSharedData &);
+    QSharedData &operator=(const QSharedData &) = delete;
 };
 
 template <class T> class QSharedDataPointer
