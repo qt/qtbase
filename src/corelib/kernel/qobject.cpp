@@ -58,6 +58,7 @@
 #include <qdebug.h>
 #include <qpair.h>
 #include <qvarlengtharray.h>
+#include <qscopeguard.h>
 #include <qset.h>
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
@@ -851,6 +852,8 @@ static bool check_parent_thread(QObject *parent,
 QObject::QObject(QObject *parent)
     : d_ptr(new QObjectPrivate)
 {
+    Q_ASSERT_X(this != parent, Q_FUNC_INFO, "Cannot parent a QObject to itself");
+
     Q_D(QObject);
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
@@ -879,6 +882,8 @@ QObject::QObject(QObject *parent)
 QObject::QObject(QObjectPrivate &dd, QObject *parent)
     : d_ptr(&dd)
 {
+    Q_ASSERT_X(this != parent, Q_FUNC_INFO, "Cannot parent a QObject to itself");
+
     Q_D(QObject);
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
@@ -2069,8 +2074,25 @@ void QObjectPrivate::deleteChildren()
 void QObjectPrivate::setParent_helper(QObject *o)
 {
     Q_Q(QObject);
+    Q_ASSERT_X(q != o, Q_FUNC_INFO, "Cannot parent a QObject to itself");
+#ifdef QT_DEBUG
+    const auto checkForParentChildLoops = qScopeGuard([&](){
+        int depth = 0;
+        auto p = parent;
+        while (p) {
+            if (++depth == CheckForParentChildLoopsWarnDepth) {
+                qWarning("QObject %p (class: '%s', object name: '%s') may have a loop in its parent-child chain; "
+                         "this is undefined behavior",
+                         q, q->metaObject()->className(), qPrintable(q->objectName()));
+            }
+            p = p->parent();
+        }
+    });
+#endif
+
     if (o == parent)
         return;
+
     if (parent) {
         QObjectPrivate *parentD = parent->d_func();
         if (parentD->isDeletingChildren && wasDeleted

@@ -113,6 +113,10 @@ public:
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;
+
+#ifdef QT_DEBUG
+    enum { CheckForParentChildLoopsWarnDepth = 4096 };
+#endif
 };
 
 

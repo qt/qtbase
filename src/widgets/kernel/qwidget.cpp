@@ -79,6 +79,7 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qfileinfo.h"
+#include "qscopeguard.h"
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qopenglcontext.h>
@@ -1123,6 +1124,8 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
+    Q_ASSERT_X(q != parentWidget, Q_FUNC_INFO, "Cannot parent a QWidget to itself");
+
     if (Q_UNLIKELY(!qobject_cast<QApplication *>(QCoreApplication::instance())))
         qFatal("QWidget: Cannot create a QWidget without QApplication");
 
@@ -10677,6 +10680,22 @@ static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget)
 void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QWidget);
+    Q_ASSERT_X(this != parent, Q_FUNC_INFO, "Cannot parent a QWidget to itself");
+#ifdef QT_DEBUG
+    const auto checkForParentChildLoops = qScopeGuard([&](){
+        int depth = 0;
+        auto p = parentWidget();
+        while (p) {
+            if (++depth == QObjectPrivate::CheckForParentChildLoopsWarnDepth) {
+                qWarning("QWidget %p (class: '%s', object name: '%s') may have a loop in its parent-child chain; "
+                         "this is undefined behavior",
+                         this, metaObject()->className(), qPrintable(objectName()));
+            }
+            p = p->parentWidget();
+        }
+    });
+#endif
+
     bool resized = testAttribute(Qt::WA_Resized);
     bool wasCreated = testAttribute(Qt::WA_WState_Created);
     QWidget *oldtlw = window();
