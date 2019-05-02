@@ -580,73 +580,73 @@ void tst_Collections::list()
         list1 << 0 << 1 << 2 << 3;
         list1.removeFirst();
 
-        list1.swap(0, 0);
+        list1.swapItemsAt(0, 0);
         QVERIFY(list1 == QList<int>() << 1 << 2 << 3);
 
-        list1.swap(1, 1);
+        list1.swapItemsAt(1, 1);
         QVERIFY(list1 == QList<int>() << 1 << 2 << 3);
 
-        list1.swap(2, 2);
+        list1.swapItemsAt(2, 2);
         QVERIFY(list1 == QList<int>() << 1 << 2 << 3);
 
-        list1.swap(0, 1);
+        list1.swapItemsAt(0, 1);
         QVERIFY(list1 == QList<int>() << 2 << 1 << 3);
 
-        list1.swap(0, 2);
+        list1.swapItemsAt(0, 2);
         QVERIFY(list1 == QList<int>() << 3 << 1 << 2);
 
-        list1.swap(1, 2);
+        list1.swapItemsAt(1, 2);
         QVERIFY(list1 == QList<int>() << 3 << 2 << 1);
 
-        list1.swap(1, 2);
+        list1.swapItemsAt(1, 2);
         QVERIFY(list1 == QList<int>() << 3 << 1 << 2);
 
         QList<QString> list2;
         list2 << "1" << "2" << "3";
 
-        list2.swap(0, 0);
+        list2.swapItemsAt(0, 0);
         QVERIFY(list2 == QList<QString>() << "1" << "2" << "3");
 
-        list2.swap(1, 1);
+        list2.swapItemsAt(1, 1);
         QVERIFY(list2 == QList<QString>() << "1" << "2" << "3");
 
-        list2.swap(2, 2);
+        list2.swapItemsAt(2, 2);
         QVERIFY(list2 == QList<QString>() << "1" << "2" << "3");
 
-        list2.swap(0, 1);
+        list2.swapItemsAt(0, 1);
         QVERIFY(list2 == QList<QString>() << "2" << "1" << "3");
 
-        list2.swap(0, 2);
+        list2.swapItemsAt(0, 2);
         QVERIFY(list2 == QList<QString>() << "3" << "1" << "2");
 
-        list2.swap(1, 2);
+        list2.swapItemsAt(1, 2);
         QVERIFY(list2 == QList<QString>() << "3" << "2" << "1");
 
-        list2.swap(1, 2);
+        list2.swapItemsAt(1, 2);
         QVERIFY(list2 == QList<QString>() << "3" << "1" << "2");
 
         QList<double> list3;
         list3 << 1.0 << 2.0 << 3.0;
 
-        list3.swap(0, 0);
+        list3.swapItemsAt(0, 0);
         QVERIFY(list3 == QList<double>() << 1.0 << 2.0 << 3.0);
 
-        list3.swap(1, 1);
+        list3.swapItemsAt(1, 1);
         QVERIFY(list3 == QList<double>() << 1.0 << 2.0 << 3.0);
 
-        list3.swap(2, 2);
+        list3.swapItemsAt(2, 2);
         QVERIFY(list3 == QList<double>() << 1.0 << 2.0 << 3.0);
 
-        list3.swap(0, 1);
+        list3.swapItemsAt(0, 1);
         QVERIFY(list3 == QList<double>() << 2.0 << 1.0 << 3.0);
 
-        list3.swap(0, 2);
+        list3.swapItemsAt(0, 2);
         QVERIFY(list3 == QList<double>() << 3.0 << 1.0 << 2.0);
 
-        list3.swap(1, 2);
+        list3.swapItemsAt(1, 2);
         QVERIFY(list3 == QList<double>() << 3.0 << 2.0 << 1.0);
 
-        list3.swap(1, 2);
+        list3.swapItemsAt(1, 2);
         QVERIFY(list3 == QList<double>() << 3.0 << 1.0 << 2.0);
     }
 

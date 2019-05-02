@@ -1457,11 +1457,11 @@ void tst_QList::swap() const
     list << T_FOO << T_BAR << T_BAZ;
 
     // swap
-    list.swap(0, 2);
+    list.swapItemsAt(0, 2);
     QCOMPARE(list, QList<T>() << T_BAZ << T_BAR << T_FOO);
 
     // swap again
-    list.swap(1, 2);
+    list.swapItemsAt(1, 2);
     QCOMPARE(list, QList<T>() << T_BAZ << T_FOO << T_BAR);
 
     QList<T> list2;
