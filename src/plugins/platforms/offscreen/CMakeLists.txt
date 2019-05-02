@@ -33,7 +33,7 @@ add_qt_plugin(qoffscreen
 ## Scopes:
 #####################################################################
 
-extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND TARGET OpenGL::GLX # special case
+extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
         qoffscreenintegration_x11.cpp qoffscreenintegration_x11.h
     LIBRARIES
