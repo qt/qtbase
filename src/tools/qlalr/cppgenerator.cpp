@@ -36,6 +36,8 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qmap.h>
 
+#include <iterator>
+
 namespace {
 
 void generateSeparator(int i, QTextStream &out)
@@ -126,7 +128,7 @@ QString CppGenerator::endIncludeGuard(const QString &fileName)
 void CppGenerator::operator () ()
 {
   // action table...
-  state_count = aut.states.size ();
+  state_count = static_cast<int>(aut.states.size());
   terminal_count = static_cast<int>(grammar.terminals.size());
   non_terminal_count = static_cast<int>(grammar.non_terminals.size());
 
@@ -156,7 +158,7 @@ void CppGenerator::operator () ()
 
           if (grammar.isNonTerminal (a.key ()))
             {
-              Q_ASSERT (symbol >= terminal_count && symbol < grammar.names.size ());
+              Q_ASSERT(symbol >= terminal_count && symbol < static_cast<int>(grammar.names.size()));
               GOTO (q, symbol - terminal_count) = r;
             }
 
@@ -245,7 +247,7 @@ void CppGenerator::operator () ()
              << Qt::endl;
     }
 
-  QBitArray used_rules (grammar.rules.count ());
+  QBitArray used_rules{static_cast<int>(grammar.rules.size())};
 
   int q = 0;
   for (StatePointer state = aut.states.begin (); state != aut.states.end (); ++state, ++q)
@@ -259,12 +261,11 @@ void CppGenerator::operator () ()
         }
     }
 
-  for (int i = 0; i < used_rules.count (); ++i)
+  auto rule = grammar.rules.begin();
+  for (int i = 0; i < used_rules.count (); ++i, ++rule)
     {
       if (! used_rules.testBit (i))
         {
-          RulePointer rule = grammar.rules.begin () + i;
-
           if (rule != grammar.goal)
             qerr() << "*** Warning: Rule ``" << *rule << "'' is useless!" << Qt::endl;
         }
@@ -280,7 +281,7 @@ void CppGenerator::operator () ()
           if (u >= 0)
             continue;
 
-          RulePointer rule = grammar.rules.begin () + (- u - 1);
+          RulePointer rule = std::next(grammar.rules.begin(), - u - 1);
 
           if (state->defaultReduce == rule)
             u = 0;
@@ -619,7 +620,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
       out << "const int " << grammar.table_name << "::rule_index [] = {";
       idx = 0;
-      int offset = 0;
+      size_t offset = 0;
       for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
         {
           generateSeparator(idx, out);

@@ -51,34 +51,22 @@ class Automaton;
 
 
 // names
-typedef QLinkedList<QString>::iterator Name;
-QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(QLinkedList<QString>::iterator, Q_PRIMITIVE_TYPE);
-QT_END_NAMESPACE
-typedef QLinkedList<Name> NameList;
+typedef std::list<QString>::iterator Name;
+typedef std::list<Name> NameList;
 typedef std::set<Name> NameSet;
 
 // items
-typedef QLinkedList<Item> ItemList;
+typedef std::list<Item> ItemList;
 typedef ItemList::iterator ItemPointer;
-QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(ItemList::iterator, Q_PRIMITIVE_TYPE);
-QT_END_NAMESPACE
 
 // rules
-typedef QLinkedList<Rule> debug_infot;
+typedef std::list<Rule> debug_infot;
 typedef debug_infot::iterator RulePointer;
-QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(debug_infot::iterator, Q_PRIMITIVE_TYPE);
-QT_END_NAMESPACE
 typedef QMultiMap<Name, RulePointer> RuleMap;
 
 // states
-typedef QLinkedList<State> StateList;
+typedef std::list<State> StateList;
 typedef StateList::iterator StatePointer;
-QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(StateList::iterator, Q_PRIMITIVE_TYPE);
-QT_END_NAMESPACE
 
 // arrows
 typedef QMap<Name, StatePointer> Bundle;
@@ -175,7 +163,7 @@ class Node
 public:
   typedef std::set<Node<_Tp> > Repository;
   typedef typename Repository::iterator iterator;
-  typedef typename QLinkedList<iterator>::iterator edge_iterator;
+  typedef typename std::list<iterator>::iterator edge_iterator;
 
 public:
   static iterator get (_Tp data);
@@ -213,7 +201,7 @@ public: // attributes
   mutable bool root;
   mutable int dfn;
   mutable _Tp data;
-  mutable QLinkedList<iterator> outs;
+  mutable std::list<iterator> outs;
 
 protected:
   inline Node () {}
@@ -235,7 +223,7 @@ typename Node<_Tp>::iterator Node<_Tp>::get (_Tp data)
 }
 
 template <typename _Tp>
-QPair<typename QLinkedList<typename Node<_Tp>::iterator>::iterator, bool> Node<_Tp>::insertEdge (typename Node<_Tp>::iterator other) const
+QPair<typename std::list<typename Node<_Tp>::iterator>::iterator, bool> Node<_Tp>::insertEdge(typename Node<_Tp>::iterator other) const
 {
   edge_iterator it = std::find (outs.begin (), outs.end (), other);
 
@@ -272,7 +260,7 @@ public:
   QString decl_file_name;
   QString impl_file_name;
   QString token_prefix;
-  QLinkedList<QString> names;
+  std::list<QString> names;
   Name start;
   NameSet terminals;
   NameSet non_terminals;
@@ -401,11 +389,11 @@ private:
   int _M_includes_dfn;
 };
 
-QT_BEGIN_NAMESPACE
+namespace std {
 bool operator < (Name a, Name b);
 bool operator < (StatePointer a, StatePointer b);
 bool operator < (ItemPointer a, ItemPointer b);
-QT_END_NAMESPACE
+}
 
 QTextStream &operator << (QTextStream &out, const Name &n);
 QTextStream &operator << (QTextStream &out, const Rule &r);
