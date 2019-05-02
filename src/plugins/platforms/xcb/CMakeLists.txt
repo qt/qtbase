@@ -202,5 +202,6 @@ add_qt_plugin(qxcb
 #### Keys ignored in scope 3:.:.:./xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
+add_subdirectory(gl_integrations)
+
 #### TODO: xcb-static sub folder
-#### TODO: gl_integrations sub folder
