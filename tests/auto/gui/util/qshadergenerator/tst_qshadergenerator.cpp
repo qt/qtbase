@@ -137,7 +137,7 @@ namespace
             createPort(QShaderNodePort::Output, "color")
         });
         sampleTexture.addRule(openGLES2, QShaderNode::Rule("highp vec4 $color = texture2D($sampler, $coord);"));
-        sampleTexture.addRule(openGL3, QShaderNode::Rule("vec4 $color = texture2D($sampler, $coord);"));
+        sampleTexture.addRule(openGL3, QShaderNode::Rule("vec4 $color = texture($sampler, $coord);"));
 
         auto lightFunction = createNode({
             createPort(QShaderNodePort::Input, "baseColor"),
@@ -197,6 +197,7 @@ private slots:
     void shouldProcessLanguageQualifierAndTypeEnums();
     void shouldGenerateDifferentCodeDependingOnActiveLayers();
     void shouldUseGlobalVariableRatherThanTemporaries();
+    void shouldGenerateTemporariesWisely();
 };
 
 void tst_QShaderGenerator::shouldHaveDefaultState()
@@ -237,10 +238,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
                                           << ""
                                           << "void main()"
                                           << "{"
-                                          << "    highp vec4 v5 = texture2D(texture, texCoord);"
-                                          << "    highp vec4 v6 = lightModel(v5, worldPosition, lightIntensity);"
-                                          << "    highp vec4 v7 = v6 * pow(2.0, exposure);"
-                                          << "    gl_fragColor = v7;"
+                                          << "    gl_fragColor = (((((lightModel(((texture2D(texture, texCoord))), worldPosition, lightIntensity)))) * pow(2.0, exposure)));"
                                           << "}"
                                           << "";
 
@@ -254,10 +252,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
                                           << ""
                                           << "void main()"
                                           << "{"
-                                          << "    vec4 v5 = texture2D(texture, texCoord);"
-                                          << "    vec4 v6 = lightModel(v5, worldPosition, lightIntensity);"
-                                          << "    vec4 v7 = v6 * pow(2.0, exposure);"
-                                          << "    fragColor = v7;"
+                                          << "    fragColor = (((((lightModel(((texture(texture, texCoord))), worldPosition, lightIntensity)))) * pow(2.0, exposure)));"
                                           << "}"
                                           << "";
 
@@ -869,8 +864,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec4 v2 = lightModel(diffuseUniform, normalUniform);"
-                << "    fragColor = v2;"
+                << "    fragColor = ((lightModel(diffuseUniform, normalUniform)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -892,9 +886,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec3 v2 = texture2D(normalTexture, texCoord).rgb;"
-                << "    vec4 v3 = lightModel(diffuseUniform, v2);"
-                << "    fragColor = v3;"
+                << "    fragColor = ((lightModel(diffuseUniform, texture2D(normalTexture, texCoord).rgb)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -916,9 +908,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec4 v1 = texture2D(diffuseTexture, texCoord);"
-                << "    vec4 v3 = lightModel(v1, normalUniform);"
-                << "    fragColor = v3;"
+                << "    fragColor = ((lightModel(texture2D(diffuseTexture, texCoord), normalUniform)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -940,10 +930,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec3 v2 = texture2D(normalTexture, texCoord).rgb;"
-                << "    vec4 v1 = texture2D(diffuseTexture, texCoord);"
-                << "    vec4 v3 = lightModel(v1, v2);"
-                << "    fragColor = v3;"
+                << "    fragColor = ((lightModel(texture2D(diffuseTexture, texCoord), texture2D(normalTexture, texCoord).rgb)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -967,13 +954,13 @@ void tst_QShaderGenerator::shouldUseGlobalVariableRatherThanTemporaries()
                                                   createPort(QShaderNodePort::Input, "varName"),
                                                   createPort(QShaderNodePort::Output, "out")
                                               });
-        fakeMultiPlyNoSpace.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName*v11;"));
+        fakeMultiPlyNoSpace.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName*speed;"));
 
         auto fakeMultiPlySpace = createNode({
                                                   createPort(QShaderNodePort::Input, "varName"),
                                                   createPort(QShaderNodePort::Output, "out")
                                               });
-        fakeMultiPlySpace.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName * v11;"));
+        fakeMultiPlySpace.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName * speed;"));
 
         auto fakeJoinNoSpace = createNode({
                                                   createPort(QShaderNodePort::Input, "varName"),
@@ -1063,17 +1050,182 @@ void tst_QShaderGenerator::shouldUseGlobalVariableRatherThanTemporaries()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec4 v7 = vertexPosition / vertexPosition;"
-                << "    vec4 v6 = vertexPosition.xyzw - vertexPosition;"
-                << "    vec4 v5 = vertexPosition.xyzw + vertexPosition;"
-                << "    vec4 v4 = vec4(vertexPosition.xyz, vertexPosition.w);"
-                << "    vec4 v3 = vec4(vertexPosition.xyz,vertexPosition.w);"
-                << "    vec4 v2 = vertexPosition * v11;"
-                << "    vec4 v1 = vertexPosition*v11;"
-                << "    fragColor = v1 + v2 + v3 + v4 + v5 + v6 + v7;"
+                << "    fragColor = (((((((vertexPosition*speed + vertexPosition * speed + ((vec4(vertexPosition.xyz,vertexPosition.w))) + ((vec4(vertexPosition.xyz, vertexPosition.w))) + ((vertexPosition.xyzw + vertexPosition)) + ((vertexPosition.xyzw - vertexPosition)) + ((vertexPosition / vertexPosition)))))))));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
+    }
+}
+
+void tst_QShaderGenerator::shouldGenerateTemporariesWisely()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    {
+        auto attribute = createNode({
+                                        createPort(QShaderNodePort::Output, "vertexPosition")
+                                    });
+        attribute.addRule(gl4, QShaderNode::Rule("vec4 $vertexPosition = vertexPosition;",
+                                                 QByteArrayList() << "in vec4 vertexPosition;"));
+
+        auto complexFunction = createNode({
+                                              createPort(QShaderNodePort::Input, "inputVarName"),
+                                              createPort(QShaderNodePort::Output, "out")
+                                          });
+        complexFunction.addRule(gl4, QShaderNode::Rule("vec4 $out = $inputVarName * 2.0;"));
+
+        auto complexFunction2 = createNode({
+                                              createPort(QShaderNodePort::Input, "inputVarName"),
+                                              createPort(QShaderNodePort::Output, "out")
+                                          });
+        complexFunction2.addRule(gl4, QShaderNode::Rule("vec4 $out = $inputVarName * 4.0;"));
+
+        auto complexFunction3 = createNode({
+                                               createPort(QShaderNodePort::Input, "a"),
+                                               createPort(QShaderNodePort::Input, "b"),
+                                               createPort(QShaderNodePort::Output, "out")
+                                           });
+        complexFunction3.addRule(gl4, QShaderNode::Rule("vec4 $out = $a + $b;"));
+
+        auto shaderOutput1 = createNode({
+                                            createPort(QShaderNodePort::Input, "input")
+                                        });
+
+        shaderOutput1.addRule(gl4, QShaderNode::Rule("shaderOutput1 = $input;",
+                                                     QByteArrayList() << "out vec4 shaderOutput1;"));
+
+        auto shaderOutput2 = createNode({
+                                            createPort(QShaderNodePort::Input, "input")
+                                        });
+
+        shaderOutput2.addRule(gl4, QShaderNode::Rule("shaderOutput2 = $input;",
+                                                     QByteArrayList() << "out vec4 shaderOutput2;"));
+
+        {
+            // WHEN
+            const auto graph = [=] {
+                auto res = QShaderGraph();
+
+                res.addNode(attribute);
+                res.addNode(complexFunction);
+                res.addNode(shaderOutput1);
+
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction.uuid(), "inputVarName"));
+                res.addEdge(createEdge(complexFunction.uuid(), "out", shaderOutput1.uuid(), "input"));
+
+                return res;
+            }();
+
+            auto generator = QShaderGenerator();
+            generator.graph = graph;
+            generator.format = gl4;
+
+            const auto code = generator.createShaderCode();
+
+            // THEN
+            const auto expected = QByteArrayList()
+                    << "#version 400 core"
+                    << ""
+                    << "in vec4 vertexPosition;"
+                    << "out vec4 shaderOutput1;"
+                    << ""
+                    << "void main()"
+                    << "{"
+                    << "    shaderOutput1 = vertexPosition * 2.0;"
+                    << "}"
+                    << "";
+            QCOMPARE(code, expected.join("\n"));
+        }
+
+        {
+            // WHEN
+            const auto graph = [=] {
+                auto res = QShaderGraph();
+
+                res.addNode(attribute);
+                res.addNode(complexFunction);
+                res.addNode(shaderOutput1);
+                res.addNode(shaderOutput2);
+
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction.uuid(), "inputVarName"));
+                res.addEdge(createEdge(complexFunction.uuid(), "out", shaderOutput1.uuid(), "input"));
+                res.addEdge(createEdge(complexFunction.uuid(), "out", shaderOutput2.uuid(), "input"));
+
+                return res;
+            }();
+
+            auto generator = QShaderGenerator();
+            generator.graph = graph;
+            generator.format = gl4;
+
+            const auto code = generator.createShaderCode();
+
+            // THEN
+            const auto expected = QByteArrayList()
+                    << "#version 400 core"
+                    << ""
+                    << "in vec4 vertexPosition;"
+                    << "out vec4 shaderOutput1;"
+                    << "out vec4 shaderOutput2;"
+                    << ""
+                    << "void main()"
+                    << "{"
+                    << "    vec4 v1 = vertexPosition * 2.0;"
+                    << "    shaderOutput2 = v1;"
+                    << "    shaderOutput1 = v1;"
+                    << "}"
+                    << "";
+            QCOMPARE(code, expected.join("\n"));
+        }
+
+        {
+            // WHEN
+            const auto graph = [=] {
+                auto res = QShaderGraph();
+
+                res.addNode(attribute);
+                res.addNode(complexFunction);
+                res.addNode(complexFunction2);
+                res.addNode(complexFunction3);
+                res.addNode(shaderOutput1);
+                res.addNode(shaderOutput2);
+
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction.uuid(), "inputVarName"));
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction2.uuid(), "inputVarName"));
+
+                res.addEdge(createEdge(complexFunction.uuid(), "out", complexFunction3.uuid(), "a"));
+                res.addEdge(createEdge(complexFunction2.uuid(), "out", complexFunction3.uuid(), "b"));
+
+                res.addEdge(createEdge(complexFunction3.uuid(), "out", shaderOutput1.uuid(), "input"));
+                res.addEdge(createEdge(complexFunction2.uuid(), "out", shaderOutput2.uuid(), "input"));
+
+                return res;
+            }();
+
+            auto generator = QShaderGenerator();
+            generator.graph = graph;
+            generator.format = gl4;
+
+            const auto code = generator.createShaderCode();
+
+            // THEN
+            const auto expected = QByteArrayList()
+                    << "#version 400 core"
+                    << ""
+                    << "in vec4 vertexPosition;"
+                    << "out vec4 shaderOutput1;"
+                    << "out vec4 shaderOutput2;"
+                    << ""
+                    << "void main()"
+                    << "{"
+                    << "    vec4 v2 = vertexPosition * 4.0;"
+                    << "    shaderOutput2 = v2;"
+                    << "    shaderOutput1 = (vertexPosition * 2.0 + v2);"
+                    << "}"
+                    << "";
+            QCOMPARE(code, expected.join("\n"));
+        }
     }
 }
 

@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(ShaderGenerator, "ShaderGenerator", QtWarningMsg)
+
 namespace
 {
     QByteArray toGlsl(QShaderLanguage::StorageQualifier qualifier, const QShaderFormat &format)
@@ -342,18 +344,120 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     code << QByteArrayLiteral("void main()");
     code << QByteArrayLiteral("{");
 
-    // Table to store temporary variables that should be replaced by global
-    // variables. This avoids having vec3 v56 = vertexPosition; when we could
+    const QRegularExpression localToGlobalRegExp(QStringLiteral("^.*\\s+(\\w+)\\s*=\\s*((?:\\w+\\(.*\\))|(?:\\w+)).*;$"));
+    const QRegularExpression temporaryVariableToAssignmentRegExp(QStringLiteral("^(.*\\s+(v\\d+))\\s*=\\s*(.*);$"));
+    const QRegularExpression temporaryVariableInAssignmentRegExp(QStringLiteral("\\W*(v\\d+)\\W*"));
+    const QRegularExpression outputToTemporaryAssignmentRegExp(QStringLiteral("^\\s*(\\w+)\\s*=\\s*(.*);$"));
+
+    struct Variable;
+
+    struct Assignment
+    {
+        QString expression;
+        QVector<Variable *> referencedVariables;
+    };
+
+    struct Variable
+    {
+        enum Type {
+            GlobalInput,
+            TemporaryAssignment,
+            Output
+        };
+
+        QString name;
+        QString declaration;
+        int referenceCount = 0;
+        Assignment assignment;
+        Type type = TemporaryAssignment;
+        bool substituted = false;
+
+        static void substitute(Variable *v)
+        {
+            if (v->substituted)
+                return;
+
+            qCDebug(ShaderGenerator) << "Begin Substituting " << v->name << " = " << v->assignment.expression;
+            for (Variable *ref : qAsConst(v->assignment.referencedVariables)) {
+                // Recursively substitute
+                Variable::substitute(ref);
+
+                // Replace all variables referenced only once in the assignment
+                // by their actual expression
+                if (ref->referenceCount == 1 || ref->type == Variable::GlobalInput) {
+                    const QRegularExpression r(QStringLiteral("(.*\\b)(%1)(\\b.*)").arg(ref->name));
+                    if (v->assignment.referencedVariables.size() == 1)
+                        v->assignment.expression.replace(r,
+                                                         QStringLiteral("\\1%2\\3").arg(ref->assignment.expression));
+                    else
+                        v->assignment.expression.replace(r,
+                                                         QStringLiteral("(\\1%2\\3)").arg(ref->assignment.expression));
+                }
+            }
+            qCDebug(ShaderGenerator) << "Done Substituting " << v->name << " = " << v->assignment.expression;
+            v->substituted = true;
+        }
+    };
+
+    struct LineContent
+    {
+        QByteArray rawContent;
+        Variable *var = nullptr;
+    };
+
+    // Table to store temporary variables that should be replaced:
+    // - If variable references a a global variables
+    //   -> we will use the global variable directly
+    // - If variable references a function results
+    //   -> will be kept only if variable is referenced more than once.
+    // This avoids having vec3 v56 = vertexPosition; when we could
     // just use vertexPosition directly.
     // The added benefit is when having arrays, we don't try to create
     // mat4 v38 = skinningPalelette[100] which would be invalid
-    QHash<QString, QString> localReferencesToGlobalInputs;
-    const QRegularExpression localToGlobalRegExp(QStringLiteral("^.*\\s+(\\w+)\\s*=\\s*(\\w+).*;$"));
+    QVector<Variable> temporaryVariables;
+    // Reserve more than enough space to ensure no reallocation will take place
+    temporaryVariables.reserve(nodes.size() * 8);
+
+    QVector<LineContent> lines;
+
+    auto createVariable = [&] () -> Variable * {
+        Q_ASSERT(temporaryVariables.capacity() > 0);
+        temporaryVariables.resize(temporaryVariables.size() + 1);
+        return &temporaryVariables.last();
+    };
+
+    auto findVariable = [&] (const QString &name) -> Variable * {
+        const auto end = temporaryVariables.end();
+        auto it = std::find_if(temporaryVariables.begin(), end,
+                               [=] (const Variable &a) { return a.name == name; });
+        if (it != end)
+            return &(*it);
+        return nullptr;
+    };
+
+    auto gatherTemporaryVariablesFromAssignment = [&] (Variable *v, const QString &assignmentContent) {
+        QRegularExpressionMatchIterator subMatchIt = temporaryVariableInAssignmentRegExp.globalMatch(assignmentContent);
+        while (subMatchIt.hasNext()) {
+            const QRegularExpressionMatch subMatch = subMatchIt.next();
+            const QString variableName = subMatch.captured(1);
+
+            // Variable we care about should already exists -> an expression cannot reference a variable that hasn't been defined
+            Variable *u = findVariable(variableName);
+            Q_ASSERT(u);
+
+            // Increase reference count for u
+            ++u->referenceCount;
+            // Insert u as reference for variable v
+            v->assignment.referencedVariables.push_back(u);
+        }
+    };
 
     for (const QShaderGraph::Statement &statement : graph.createStatements(enabledLayers)) {
         const QShaderNode node = statement.node;
         QByteArray line = node.rule(format).substitution;
         const QVector<QShaderNodePort> ports = node.ports();
+
+        // Generate temporary variable names vN
         for (const QShaderNodePort &port : ports) {
             const QString portName = port.name;
             const QShaderNodePort::Direction portDirection = port.direction;
@@ -374,47 +478,117 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
             line.replace(placeholder, variable);
         }
 
+        // Substitute variable names by generated vN variable names
         const QByteArray substitutionedLine = replaceParameters(line, node, format);
 
+        Variable *v = nullptr;
+
+        switch (node.type()) {
         // Record name of temporary variable that possibly references a global input
         // We will replace the temporary variables by the matching global variables later
-        bool isAGlobalInputVariable = false;
-        if (node.type() == QShaderNode::Input) {
+        case QShaderNode::Input: {
             const QRegularExpressionMatch match = localToGlobalRegExp.match(QString::fromUtf8(substitutionedLine));
             if (match.hasMatch()) {
+                const QString localVariable = match.captured(1);
                 const QString globalVariable = match.captured(2);
-                if (globalInputVariables.contains(globalVariable)) {
-                    const QString localVariable = match.captured(1);
-                    // TO DO: Clean globalVariable (remove brackets ...)
-                    localReferencesToGlobalInputs.insert(localVariable, globalVariable);
-                    isAGlobalInputVariable = true;
-                }
+
+                v = createVariable();
+                v->name = localVariable;
+                v->type = Variable::GlobalInput;
+
+                Assignment assignment;
+                assignment.expression = globalVariable;
+                v->assignment = assignment;
             }
+            break;
         }
 
-        // Only insert content for lines aren't inputs or have not matching
-        // globalVariables for now
-        if (!isAGlobalInputVariable)
-            code << QByteArrayLiteral("    ") + substitutionedLine;
+        case QShaderNode::Function: {
+            const QRegularExpressionMatch match = temporaryVariableToAssignmentRegExp.match(QString::fromUtf8(substitutionedLine));
+            if (match.hasMatch()) {
+                const QString localVariableDeclaration = match.captured(1);
+                const QString localVariableName = match.captured(2);
+                const QString assignmentContent = match.captured(3);
+
+                // Add new variable -> it cannot exist already
+                v = createVariable();
+                v->name = localVariableName;
+                v->declaration = localVariableDeclaration;
+                v->assignment.expression = assignmentContent;
+
+                // Find variables that may be referenced in the assignment
+                gatherTemporaryVariablesFromAssignment(v, assignmentContent);
+            }
+            break;
+        }
+
+        case QShaderNode::Output: {
+            const QRegularExpressionMatch match = outputToTemporaryAssignmentRegExp.match(QString::fromUtf8(substitutionedLine));
+            if (match.hasMatch()) {
+                const QString outputDeclaration = match.captured(1);
+                const QString assignmentContent = match.captured(2);
+
+                v = createVariable();
+                v->name = outputDeclaration;
+                v->declaration = outputDeclaration;
+                v->type = Variable::Output;
+
+                Assignment assignment;
+                assignment.expression = assignmentContent;
+                v->assignment = assignment;
+
+                // Find variables that may be referenced in the assignment
+                gatherTemporaryVariablesFromAssignment(v, assignmentContent);
+            }
+            break;
+        }
+        case QShaderNode::Invalid:
+            break;
+        }
+
+        LineContent lineContent;
+        lineContent.rawContent = QByteArray(QByteArrayLiteral("    ") + substitutionedLine);
+        lineContent.var = v;
+        lines << lineContent;
+    }
+
+    // Go through all lines
+    // Perform substitution of line with temporary variables substitution
+    for (LineContent &lineContent : lines) {
+        Variable *v = lineContent.var;
+        qCDebug(ShaderGenerator) << lineContent.rawContent;
+        if (v != nullptr) {
+            Variable::substitute(v);
+
+            qCDebug(ShaderGenerator) << "Line " << lineContent.rawContent << "is assigned to temporary" << v->name;
+
+            // Check number of occurrences a temporary variable is referenced
+            if (v->referenceCount == 1 || v->type == Variable::GlobalInput) {
+                // If it is referenced only once, no point in creating a temporary
+                // Clear content for current line
+                lineContent.rawContent.clear();
+                // We assume expression that were referencing vN will have vN properly substituted
+            } else {
+                lineContent.rawContent = QStringLiteral("    %1 = %2;").arg(v->declaration)
+                                                                       .arg(v->assignment.expression)
+                                                                       .toUtf8();
+            }
+
+            qCDebug(ShaderGenerator) << "Updated Line is " << lineContent.rawContent;
+        }
+    }
+
+    // Go throug all lines and insert content
+    for (const LineContent &lineContent : qAsConst(lines)) {
+        if (!lineContent.rawContent.isEmpty()) {
+            code << lineContent.rawContent;
+        }
     }
 
     code << QByteArrayLiteral("}");
     code << QByteArray();
 
-    // Replace occurrences of local variables which reference a global variable
-    // by the global variables directly
-    auto it = localReferencesToGlobalInputs.cbegin();
-    const auto end = localReferencesToGlobalInputs.cend();
-    QString codeString = QString::fromUtf8(code.join('\n'));
-
-    while (it != end) {
-        const QRegularExpression r(QStringLiteral("\\b(%1)([\\b|\\.|;|\\)|\\[|\\s|\\*|\\+|\\/|\\-|,])").arg(it.key()),
-                             QRegularExpression::MultilineOption);
-        codeString.replace(r, QStringLiteral("%1\\2").arg(it.value()));
-        ++it;
-    }
-
-    return codeString.toUtf8();
+    return code.join('\n');
 }
 
 QT_END_NAMESPACE
