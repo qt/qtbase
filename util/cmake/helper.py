@@ -240,6 +240,7 @@ qmake_library_to_cmake_target_mapping = {
     'SQLite3': 'SQLite::SQLite3',
     'tslib': 'PkgConfig::Tslib',
     'x11sm': '${X11_SM_LIB} ${X11_ICE_LIB}',
+    'xcb_glx': 'XCB::GLX',
     'xcb_icccm': 'XCB::ICCCM',
     'xcb_image': 'XCB::IMAGE',
     'xcb_keysyms': 'XCB::KEYSYMS',

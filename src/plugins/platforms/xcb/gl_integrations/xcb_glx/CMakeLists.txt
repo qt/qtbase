@@ -38,7 +38,7 @@ add_qt_plugin(qxcb-glx-integration
 
 extend_target(qxcb-glx-integration CONDITION QT_FEATURE_xcb_glx
     PUBLIC_LIBRARIES
-        xcb_glx
+        XCB::GLX
 )
 
 extend_target(qxcb-glx-integration CONDITION NOT static
