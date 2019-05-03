@@ -7,11 +7,8 @@
 #### Libraries
 
 qt_find_package(PostgreSQL PROVIDED_TARGETS PostgreSQL::PostgreSQL)
-set_package_properties(PostgreSQL PROPERTIES TYPE OPTIONAL)
 qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC)
-set_package_properties(ODBC PROPERTIES TYPE OPTIONAL)
 qt_find_package(SQLite3)
-set_package_properties(SQLite3 PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests

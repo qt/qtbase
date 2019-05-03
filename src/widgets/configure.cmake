@@ -7,7 +7,6 @@
 #### Libraries
 
 qt_find_package(GTK3)
-set_package_properties(GTK3 PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests

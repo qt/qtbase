@@ -270,9 +270,8 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
     else:
         cm_fh.write('qt_find_package({})\n'.format(newlib))
 
-    cm_fh.write('set_package_properties({} PROPERTIES TYPE {})\n'
-                .format(newlib, 'REQUIRED' if isRequired else 'OPTIONAL')
-    )
+    if isRequired:
+        cm_fh.write('set_package_properties({} PROPERTIES TYPE REQUIRED)\n'.format(newlib))
 
 def lineify(label, value, quote=True):
     if value:

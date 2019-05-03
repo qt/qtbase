@@ -7,7 +7,6 @@
 #### Libraries
 
 qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
-set_package_properties(Cups PROPERTIES TYPE OPTIONAL)
 
 
 #### Tests
