@@ -1,3 +1,20 @@
+Qt 5.13 introduces many new features and improvements as well as bugfixes
+over the 5.12.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.13 series is binary compatible with the 5.12.x series.
+Applications compiled for 5.12 will continue to run with 5.13.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
 ****************************************************************************
 *                 Important Source Incompatible Changes                    *
 ****************************************************************************
@@ -5,3 +22,287 @@
  - Moc generated files include the standard <memory> header file now.
    A side effect of this is that code including the Moc output from within
    a namespace will fail to compile.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - The Qt resource system now supports compressing content using the
+   Zstandard (https://zstd.net) algorithm. Compared to zlib, it compresses
+   better for the same CPU time, so this algorithm is the default.
+   QResource::isCompressed() returns true for either compression algorithm.
+   Use QResource::compressionAlgorithm() to find out which algorithm to
+   decompress. QFile will automatically decompress using the correct
+   algorithm.
+
+ - QDataStream version bumped up to 19 to account for changes in the
+   serialization of QFont.
+
+ - [QTBUG-73048] Qt now enables by default warnings when using APIs
+   marked as deprecated. It is possible to disable such warnings by
+   defining the QT_NO_DEPRECATED_WARNINGS macro. The old
+   QT_DEPRECATED_WARNINGS macro which was used to enable this warning
+   now has no effect (warnings are automatically enabled).
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - Updated bundled SQLite to version 3.27.1.
+ - [QTBUG-72623] Updated DNS public suffix list
+ - [QTBUG-73883] libjpeg-turbo was updated to version 2.0.2
+ - Bundled libpng was updated to version 1.6.37
+
+****************************************************************************
+*                        Platform-Specific Changes                         *
+****************************************************************************
+
+ - X11 / XCB:
+   * [QTBUG-45375] QTabletEvent coordinates now come from AbsX/AbsY
+     valuators in the X11 event, in more precise 32.32 fixed-point format,
+     scaled to fit the virtual desktop. It's possible to revert to using
+     the legacy 16.16-format event_x/event_y coordinates as in previous
+     releases by setting the QT_XCB_TABLET_LEGACY_COORDINATES environment
+     variable.
+   * [plugins] platforminputcontexts now use libxkbcommon-compose APIs for
+     compose key input, instead of Qt's own implementation.
+
+ - Android
+   * Increased the minimum supported Android version to Android 5.0
+     (API level 21).
+
+ - Windows
+   * [QTBUG-47247][QTBUG-71855] Add a default setting for
+     hasBorderInFullScreen in QtPlatformHeaders, QWindowsWindowFunctions
+   * [QTBUG-57180] Removed confusing DirectWrite warning when loading
+     bitmap fonts.
+
+ - macOS
+   * Accessibility: VoiceOver now reads all lines in multiline text
+     components when navigating by lines.
+
+****************************************************************************
+*                                  Tools                                   *
+****************************************************************************
+
+ - configure & build system:
+   * Added --linker=[bfg,lld,gold] configure flag.
+   * The default OpenGL configuration changed from ANGLE to dynamic OpenGL.
+   * Added -schannel option to enable Schannel support on Desktop Windows.
+   * Added -coverage option for recording coverage data during execution
+
+ - CMake
+   * Added support for automatic linking of transitive dependencies in
+     static builds
+
+ - qmake
+   * [QTBUG-53654] Introduced the variables WINDOWS_TARGET_PLATFORM_VERSION
+     and WINDOWS_TARGET_PLATFORM_MIN_VERSION for overriding the default
+     values of WindowsTargetPlatformVersion and
+     WindowsTargetPlatformMinVersion in Visual Studio project files.
+
+ - RCC now supports compressing content using the Zstandard
+   (https://zstd.net) algorithm. Compared to zlib, it compresses better for
+   the same CPU time, so this algorithm is the default. To go back to the
+   previous algorithm, pass command-line option --compress-algo=zlib.
+   Compression levels range from 1 (fastest, least compression) to 19
+   (slowest, best compression). Level 0 tells the library to choose an
+   implementation-defined default. The default compression level is
+   "heuristic" (level -1): under this mode, RCC will attempt a very fast
+   compression (level 1) and check if the file was sufficiently compressed.
+   If it was, then RCC will compress again using an implementation-defined
+   level.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - New class QConcatenateTablesProxyModel, to concatenate the rows from
+   multiple source models.
+ - New class QTransposeProxyModel to swap rows and columns of the source
+   model.
+ - Added macros Q_DISABLE_MOVE and Q_DISABLE_COPY_MOVE complementing
+   Q_DISABLE_COPY.
+ - Qt Containers and meta type system now use C++11 type traits
+   (std::is_trivial, std::is_trivially_copyable and
+   std::is_trivially_destructible) to detect the class of a type not
+   explicitly set by Q_DECLARE_TYPEINFO. (Q_DECLARE_TYPEINFO is still
+   needed for QList.)
+
+ - QCommandLineParser:
+   * [QTBUG-58490] The application name (if set in QCoreApplication) is now
+     shown in error messages.
+
+ - QDateTime:
+   * [QTBUG-71030] Fixed race conditions in getting the local time zone. Qt now
+     has a mutex lock around all calls to tzset() and mktime(). Application
+     code should avoid calling those functions directly.
+
+ - QFile:
+   * Made QFile::copy() issue a filesystem-synchronization system call,
+     which would make it less likely to result in incomplete or corrupt
+     files if the system reboots or uncleanly shuts down soon after the
+     function returns. New code is advised to use QSaveFile instead, which
+     also allows display of a progress report while copying.
+
+ - QFileInfo:
+   * [QTBUG-63970][QTBUG-30401][QTBUG-20791] Fixed resolving of symbolic
+     links to UNC shares on NTFS file systems.
+
+ - QJsonArray:
+   * [QTBUG-32793] Added cbegin() and cend() methods for compatibility with
+     the Standard Library container concepts.
+
+ - QJsonDocument:
+   * [QTBUG-71445] Added the ability to stream QJsonDocument into and from
+     QDataStream if it is contained in a QVariant.
+
+ - QLocale:
+   * Added support for Western Balochi, Ido, Lojban, Sicilian and
+     Southern Kurdish.
+   * [QTBUG-71445] Added a const overload for formattedDataSize().
+   * [QTBUG-782] Added toLong() and toULong().
+
+ - QMetaObject:
+   * Non-copyable lambdas can now be used with invokeMethod(). For
+     consistency reasons, the functor object is now always moved.
+
+ - QMimeDatabase:
+   * Added configure option -no-mimetype-database that tells Qt not to
+     bundle its own copy of the XDG MIME database. If this option is
+     passed, QMimeDatabase will only work if there's a system copy in
+     $XDG_DATA_DIRS/mime. This option is useful for Linux distributions
+     that ensure the data is always present.
+
+ - QSettings:
+   * Added QSettings(Scope...) constructor to avoid using #ifdef in Qt
+     applications.
+
+ - QStringListModel:
+   * [QTBUG-69807] Implemented moveRows
+
+ - QUrlQuery:
+   * QUrlQuery now provides an initializer list constructor. It can be
+     created using a list of key/value pairs.
+
+ - QVector:
+   * QVector no longer requires a default constructor for its template
+     argument.
+
+****************************************************************************
+*                                 QtDBus                                   *
+****************************************************************************
+
+ - Matching namespace prefixes using QDBusServiceWatcher (instead of full
+   service names) is now possible. For example, "com.example.backend1*"
+   will match "com.example.backend1", "com.example.backend1.foo" and
+   "com.example.backend1.foo.bar", but not "com.example.backend12".
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - CSS:
+   * Added support for HSL/HSLA colors.
+   * Fix the range of the hue parameter when parsing a color given in HSL
+     or HSV.
+
+ - QFont:
+   * Add setFamilies()/families() to support use of font families with
+     commas and quotes in their name.
+
+ - QImage:
+   * [QTBUG-41176] Added support for 16-bit grayscale format.
+   * A new method convertTo has been added to change the format of a QImage
+     in place.
+
+ - QPainterPath:
+   * Added clear(), reserve(), capacity(). clear() removes allocated
+     QPainterPath elements but preserves allocated memory, which can be
+     useful for application with complex paths that are often recreated.
+     reserve() and capacity() follow QVector semantics.
+
+ - QWindow:
+   * [QTBUG-67903][QTBUG-52944] QWindow::transientParent is now a property.
+
+ - Text:
+   * [QTBUG-60813] Deprecated QFont::lastResortFamily() and
+     QFont::lastResortFont() which are not in use in Qt 5 and did not
+     provide any useful information.
+   * [QTBUG-22813] Added support for setting the font's style name in
+     QTextCharFormat.
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - TLS (SSL):
+   * Support for SSLv2 and SSLv3 sockets has been dropped, as per RFC 6176
+     (2011) and RFC 7568 (2015).
+   * The Schannel backend now supports ALPN and thus HTTP/2.
+   * [QTBUG-62637] Added support for Schannel on Desktop Windows. To build
+     Qt with Schannel support use '-schannel' during configure.
+   * Added class QOcspResponse as a part of OCSP stapling support.
+   * [QTBUG-12812][QTBUG-17158] Added OCSP-stapling support for OpenSSL
+     backend
+   * [QTBUG-71828][QTBUG-73289] Fixed SSL verification when connecting to IP
+     address (no host name) if that IP address is listed in the certificate.
+
+****************************************************************************
+*                                QtTestLib                                 *
+****************************************************************************
+
+ - Added QTest::toString(const QModelIndex &idx)
+
+ - Removed support for GPU_BLACKLIST files. Reimplementations or
+   equivalents of QTEST_MAIN() should remove their uses of
+   QTEST_ADD_GPU_BLACKLIST_SUPPORT and its _DEFS; they are still vacuously
+   defined, but serve no remaining purpose and shall be undefined in due
+   course.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QAbstractScrollArea:
+   * [QTBUG-69120] QTableView/QTreeView, when reporting their
+     viewportSizeHint(), now correctly take into account their scroll
+     bars' visibility and visibilityPolicy.
+
+ - QHeaderView:
+   * dataChanged now respects the given roles to avoid useless
+     recomputations.
+
+ - QLabel:
+   * Minor performance improvement when painting a label with an image.
+
+ - QListWidget:
+   * [QTBUG-69807] Implemented moveRows in model
+   * [QTBUG-68977] Sped up handling of hidden items when working with large
+     data sets.
+
+ - QPlainTextEdit:
+   * Added QRegularExpression find() method overload.
+
+ - QTextEdit:
+   * Added QRegularExpression find() method overload.
+
+ - QTreeView:
+   * Added expandRecursively() to expand all items below a given index.
+
+ - QWidgetTextControlPrivate:
+   * [QTBUG-69735] Moved cursor selection to start.
+
+****************************************************************************
+*                                  QtSql                                   *
+****************************************************************************
+
+ - SQLite:
+   * [QTBUG-63498] The json1-extension for the SQLite3 plugin is now enabled
+     by default.
+
+ - PostgreSQL:
+   * QSqlDatabase is now stricter about table names when used with record()
+     and primaryIndex(). If the tablename was not quoted when it was
+     created, then the table name passed to record() and primaryIndex()
+     needs to be in lower case so that PostgreSQL is able to find it.
