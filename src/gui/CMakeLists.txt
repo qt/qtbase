@@ -579,7 +579,7 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
     PUBLIC_LIBRARIES
-        Vulkan::Vulkan_nolink # special case
+        Vulkan::Vulkan_nolink
 )
 
 # special case:

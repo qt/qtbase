@@ -8,6 +8,7 @@
 
 qt_find_package(ZLIB PROVIDED_TARGETS ZLIB::ZLIB)
 qt_find_package(ZSTD PROVIDED_TARGETS ZSTD::ZSTD)
+qt_find_package(DBus1 PROVIDED_TARGETS dbus-1)
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
 
 
@@ -414,7 +415,7 @@ qt_feature("dbus" PUBLIC PRIVATE
 qt_feature_definition("dbus" "QT_NO_DBUS" NEGATE VALUE "1")
 qt_feature("dbus_linked" PRIVATE
     LABEL "Qt D-Bus directly linked to libdbus"
-    CONDITION QT_FEATURE_dbus AND libs.dbus OR FIXME
+    CONDITION QT_FEATURE_dbus AND DBus1_FOUND
     ENABLE INPUT_dbus STREQUAL 'linked'
     DISABLE INPUT_dbus STREQUAL 'runtime'
 )

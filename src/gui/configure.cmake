@@ -24,25 +24,40 @@ set_property(CACHE INPUT_xcb PROPERTY STRINGS undefined no yes qt system)
 
 qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2)
 qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm)
-qt_find_package(EGL)
+qt_find_package(EGL PROVIDED_TARGETS EGL::EGL)
 qt_find_package(Freetype PROVIDED_TARGETS Freetype::Freetype)
 set_package_properties(Freetype PROPERTIES TYPE REQUIRED)
 qt_find_package(Fontconfig PROVIDED_TARGETS Fontconfig::Fontconfig)
 qt_find_package(gbm PROVIDED_TARGETS gbm::gbm)
 qt_find_package(harfbuzz PROVIDED_TARGETS harfbuzz::harfbuzz)
 qt_find_package(Libinput PROVIDED_TARGETS Libinput::Libinput)
-qt_find_package(JPEG)
+qt_find_package(JPEG PROVIDED_TARGETS JPEG::JPEG)
 qt_find_package(PNG PROVIDED_TARGETS PNG::PNG)
 qt_find_package(Mtdev PROVIDED_TARGETS PkgConfig::Mtdev)
-qt_find_package(OpenGL)
-qt_find_package(GLESv2)
+qt_find_package(OpenGL PROVIDED_TARGETS OpenGL::GL)
+qt_find_package(GLESv2 PROVIDED_TARGETS GLESv2::GLESv2)
 qt_find_package(Tslib PROVIDED_TARGETS PkgConfig::Tslib)
-qt_find_package(Vulkan)
-qt_find_package(Wayland)
-qt_find_package(X11)
+qt_find_package(Vulkan PROVIDED_TARGETS Vulkan::Vulkan)
+qt_find_package(Wayland PROVIDED_TARGETS Wayland::Server)
+qt_find_package(X11 PROVIDED_TARGETS X11::XCB)
+qt_find_package(X11 PROVIDED_TARGETS ${X11_SM_LIB} ${X11_ICE_LIB})
 qt_find_package(XCB 1.9 PROVIDED_TARGETS XCB::XCB)
-qt_find_package(X11_XCB PROVIDED_TARGETS X11::XCB)
+qt_find_package(XCB COMPONENTS ICCCM PROVIDED_TARGETS XCB::ICCCM)
+qt_find_package(XCB COMPONENTS IMAGE PROVIDED_TARGETS XCB::IMAGE)
+qt_find_package(XCB COMPONENTS KEYSYMS PROVIDED_TARGETS XCB::KEYSYMS)
+qt_find_package(XCB COMPONENTS RENDERUTIL PROVIDED_TARGETS XCB::RENDERUTIL)
+qt_find_package(XCB COMPONENTS RANDR PROVIDED_TARGETS XCB::RANDR)
+qt_find_package(XCB COMPONENTS SHAPE PROVIDED_TARGETS XCB::SHAPE)
+qt_find_package(XCB COMPONENTS SHM PROVIDED_TARGETS XCB::SHM)
+qt_find_package(XCB COMPONENTS SYNC PROVIDED_TARGETS XCB::SYNC)
+qt_find_package(XCB COMPONENTS XFIXES PROVIDED_TARGETS XCB::XFIXES)
+qt_find_package(XCB COMPONENTS XINERAMA PROVIDED_TARGETS XCB::XINERAMA)
+qt_find_package(XCB COMPONENTS XKB PROVIDED_TARGETS XCB::XKB)
+qt_find_package(XCB PROVIDED_TARGETS XCB::RENDER)
+qt_find_package(XCB PROVIDED_TARGETS XCB::GLX)
+qt_find_package(XCB COMPONENTS XINPUT PROVIDED_TARGETS XCB::XINPUT)
 qt_find_package(XKB 0.4.1 PROVIDED_TARGETS XKB::XKB)
+qt_find_package(XRender PROVIDED_TARGETS PkgConfig::xrender)
 
 
 #### Tests
@@ -728,7 +743,7 @@ qt_feature("xcb_egl_plugin" PRIVATE
 )
 qt_feature("xcb_native_painting" PRIVATE
     LABEL "Native painting (experimental)"
-    CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_fontconfig AND XCB_RENDER_FOUND
+    CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_fontconfig AND XRender_FOUND
     EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xrender" PRIVATE
@@ -738,7 +753,7 @@ qt_feature("xrender" PRIVATE
 )
 qt_feature("xkb" PRIVATE
     LABEL "XCB XKB"
-    CONDITION ( NOT ON OR XCB_XKB_FOUND ) AND libs.xkbcommon_x11 OR FIXME
+    CONDITION ( NOT ON OR XCB_XKB_FOUND ) AND XKB_FOUND
     EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xcb_xlib" PRIVATE

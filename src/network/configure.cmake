@@ -7,7 +7,8 @@
 #### Libraries
 
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy)
-qt_find_package(OpenSSL)
+qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
+qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
 
 
 #### Tests

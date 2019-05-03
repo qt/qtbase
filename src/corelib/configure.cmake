@@ -12,14 +12,14 @@ set_property(CACHE INPUT_iconv PROPERTY STRINGS undefined no yes posix sun gnu)
 
 qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2)
 qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
-qt_find_package(Libsystemd)
+qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd)
 qt_find_package(Atomic PROVIDED_TARGETS Atomic)
 qt_find_package(WrapRt PROVIDED_TARGETS WrapRt)
-qt_find_package(LTTngUST)
+qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST)
 qt_find_package(PCRE2 PROVIDED_TARGETS PCRE2)
 set_package_properties(PCRE2 PROPERTIES TYPE REQUIRED)
-qt_find_package(PPS)
-qt_find_package(Slog2)
+qt_find_package(PPS PROVIDED_TARGETS PPS::PPS)
+qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2)
 
 
 #### Tests

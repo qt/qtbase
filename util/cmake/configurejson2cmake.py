@@ -33,7 +33,7 @@ import re
 import sys
 from typing import Set, Union, List, Dict
 
-from helper import map_qt_library, featureName, substitute_platform, qmake_library_to_cmake_target_mapping
+from helper import map_qt_library, featureName, substitute_platform, find_library_mapping
 
 knownTests = set()  # type: Set[str]
 
@@ -43,70 +43,6 @@ class LibraryMapping:
         self.package = package
         self.resultVariable = resultVariable
         self.appendFoundSuffix = appendFoundSuffix
-
-
-def map_library(lib: str) -> Union[str, LibraryMapping, List[str]]:
-    libmap = {
-       'atspi': 'ATSPI2',
-       'corewlan': None, # Framework
-       'cups': 'Cups',
-       'double-conversion': None,
-       'drm': 'Libdrm',
-       'egl': 'EGL',
-       'fontconfig': LibraryMapping(package='Fontconfig', resultVariable="FONTCONFIG"),
-       'freetype': ['Freetype', 'REQUIRED'],
-       'gbm': 'gbm',
-       'glib': 'GLIB2',
-       'gnu_iconv': None,
-       'gtk3': 'GTK3',
-       'harfbuzz': 'harfbuzz',
-       'host_dbus': None,
-       'icu': ['ICU', 'COMPONENTS', 'i18n', 'uc', 'data'],
-       'journald': 'Libsystemd',
-       'libatomic': 'Atomic',
-       'libdl': None,  # handled by CMAKE_DL_LIBS
-       'libinput': 'Libinput',
-       'libjpeg': 'JPEG',
-       'libpng': 'PNG',
-       'libproxy': 'Libproxy',
-       'librt': 'WrapRt',
-       'libudev': 'Libudev',
-       'lttng-ust': LibraryMapping(package='LTTngUST', resultVariable="LTTNGUST"),
-       'mtdev': 'Mtdev',
-       'odbc': 'ODBC',
-       'opengl': LibraryMapping(package="OpenGL", resultVariable="OpenGL_OpenGL"),
-       'openssl': 'OpenSSL',
-       'openssl_headers': LibraryMapping(package="OpenSSL", resultVariable="OPENSSL_INCLUDE_DIR", appendFoundSuffix=False),
-       'pcre2': ['PCRE2', 'REQUIRED'],
-       'posix_iconv': None,
-       'pps': 'PPS',
-       'psql': 'PostgreSQL',
-       'slog2': 'Slog2',
-       'sqlite3': 'SQLite3',
-       'sun_iconv': None,
-       'tslib': 'Tslib',
-       'udev': 'Libudev',
-       'vulkan': 'Vulkan',
-       'wayland_server': 'Wayland',
-       'x11sm': LibraryMapping(package="X11", resultVariable="X11_SM"),
-       'xcb_glx': LibraryMapping(package="XCB", resultVariable="XCB_GLX"),
-       'xcb_render': LibraryMapping(package="XCB", resultVariable="XCB_RENDER"),
-       'xcb': ['XCB', '1.9'],
-       'xcb_xinput': LibraryMapping(package="XCB", resultVariable="XCB_XINPUT"),
-       'xcb_xkb': LibraryMapping(package="XCB", resultVariable="XCB_XKB"),
-       'xcb_xlib': 'X11_XCB',
-       'xkbcommon': ['XKB', '0.4.1'],
-       'xlib': 'X11',
-       'xrender': LibraryMapping(package="XCB", resultVariable="XCB_RENDER"),
-       'zlib': 'ZLIB',
-       'zstd': 'ZSTD',
-       'opengl_es2': 'GLESv2',
-    }  # type: Dict[str, Union[str, List[str], LibraryMapping]]
-    if lib not in libmap:
-        raise Exception('    XXXX Unknown library "{}".'.format(lib))
-
-    return libmap[lib]
-
 
 def map_tests(test: str) -> str:
     testmap = {
@@ -229,49 +165,48 @@ def processFiles(ctx, data):
     return ctx
 
 def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
-    extra = []
-    try:
-        newlib = map_library(lib)
-        if isinstance(newlib, list):
-            extra = newlib[1:]
-            newlib = newlib[0]
-        elif isinstance(newlib, LibraryMapping):
-            newlib = newlib.package
-    except Exception:
-        return ctx
+    newlib = find_library_mapping(lib)
+    if not newlib:
+        print('    XXXX Unknown library "{}".'.format(lib))
+        return
 
-    if newlib is None:
+    if newlib.packageName is None:
         print('    **** Skipping library "{}" -- was masked.'.format(lib))
         return
 
     print('    mapped library {} to {}.'.format(lib, newlib))
 
     # Avoid duplicate find_package calls.
-    if newlib in cmake_find_packages_set:
+    if newlib.targetName in cmake_find_packages_set:
         return
 
-    cmake_find_packages_set.add(newlib)
+    cmake_find_packages_set.add(newlib.targetName)
 
     isRequired = False
+
+    extra = newlib.extra.copy()
 
     if extra:
         if "REQUIRED" in extra:
             isRequired = True
             extra.remove("REQUIRED")
 
-    # If we have a mapping from a qmake library to a CMake target name,
-    # encode that in the qt_find_package call().
-    cmake_target_name = qmake_library_to_cmake_target_mapping.get(lib, None)
+    cmake_target_name = newlib.targetName
+
+    # _nolink or not does not matter at this point:
+    if cmake_target_name.endswith('_nolink') or cmake_target_name.endswith('/nolink'):
+        cmake_target_name = cmake_target_name[:-7]
+
     if cmake_target_name:
         extra += ['PROVIDED_TARGETS', cmake_target_name]
 
     if extra:
-        cm_fh.write('qt_find_package({} {})\n'.format(newlib, ' '.join(extra)))
+        cm_fh.write('qt_find_package({} {})\n'.format(newlib.packageName, ' '.join(extra)))
     else:
-        cm_fh.write('qt_find_package({})\n'.format(newlib))
+        cm_fh.write('qt_find_package({})\n'.format(newlib.packageName))
 
     if isRequired:
-        cm_fh.write('set_package_properties({} PROPERTIES TYPE REQUIRED)\n'.format(newlib))
+        cm_fh.write('set_package_properties({} PROPERTIES TYPE REQUIRED)\n'.format(newlib.packageName))
 
 def lineify(label, value, quote=True):
     if value:
@@ -316,18 +251,14 @@ def map_condition(condition):
         substitution = None
         appendFoundSuffix = True
         if match.group(1) == 'libs':
-            try:
-                substitution = map_library(match.group(2))
-                if isinstance(substitution, list):
-                    substitution = substitution[0]
-                elif isinstance(substitution, LibraryMapping):
-                    appendFoundSuffix = substitution.appendFoundSuffix
-                    substitution = substitution.resultVariable
-            except Exception:
-                substitution = None
+            libmapping = find_library_mapping(match.group(2))
 
-            if substitution is not None and appendFoundSuffix:
-                substitution += '_FOUND'
+            if libmapping and libmapping.packageName:
+                substitution = libmapping.packageName
+                if libmapping.resultVariable:
+                    substitution = libmapping.resultVariable
+                if libmapping.appendFoundSuffix:
+                    substitution += '_FOUND'
 
         elif match.group(1) == 'features':
             feature = match.group(2)

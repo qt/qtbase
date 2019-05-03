@@ -42,7 +42,7 @@ import typing
 from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
 
-from helper import map_qt_library, map_qt_base_library, featureName, \
+from helper import map_qt_library, featureName, \
     substitute_platform, substitute_libs
 
 
