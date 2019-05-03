@@ -65,6 +65,9 @@ if(WIN32)
         set(QT_DEFAULT_PLATFORM_DEFINITION_DIR mkspecs/win32-msvc)
     elseif(CLANG)
         set(QT_DEFAULT_PLATFORM_DEFINITION_DIR mkspecs/win32-clang)
+    elseif(MINGW)
+        set(QT_DEFAULT_PLATFORM_DEFINITION_DIR mkspecs/win32-g++)
+        list(APPEND QT_DEFAULT_PLATFORM_DEFINITIONS _WIN32_WINNT=0x0601)
     endif()
 elseif(LINUX)
     if(GCC)
@@ -278,7 +281,7 @@ function(qt_internal_add_link_flags_no_undefined target)
     if (GCC OR CLANG)
         if(APPLE)
             set(no_undefined_flag "-Wl,-undefined,error")
-        elseif(LINUX)
+        elseif(LINUX OR MINGW)
             set(no_undefined_flag "-Wl,--no-undefined")
         else()
             message(FATAL_ERROR "Platform linker doesn't support erroring upon encountering undefined symbols. Target:\"${target}\".")
@@ -1449,7 +1452,10 @@ endfunction()
 
 macro(qt_find_package)
     # Get the target names we expect to be provided by the package.
-    cmake_parse_arguments(arg "" "" "PROVIDED_TARGETS;COMPONENTS" ${ARGN})
+    set(options CONFIG NO_MODULE MODULE REQUIRED)
+    set(oneValueArgs)
+    set(multiValueArgs PROVIDED_TARGETS COMPONENTS)
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Get the version if specified.
     set(package_version "")
@@ -1464,8 +1470,24 @@ macro(qt_find_package)
         list(APPEND arg_UNPARSED_ARGUMENTS "COMPONENTS;${arg_COMPONENTS}")
     endif()
 
-    # Call original function without our custom arguments.
-    find_package(${arg_UNPARSED_ARGUMENTS})
+    if(NOT (arg_CONFIG OR arg_NO_MODULE OR arg_MODULE))
+        # Try to find a config package first in quiet mode
+        set(config_package_arg ${arg_UNPARSED_ARGUMENTS})
+        list(APPEND config_package_arg "CONFIG;QUIET")
+        find_package(${config_package_arg})
+    endif()
+
+    # Ensure the options are back in the original unparsed arguments
+    foreach(opt IN LISTS options)
+        if(arg_${opt})
+            list(APPEND arg_UNPARSED_ARGUMENTS ${opt})
+        endif()
+    endforeach()
+
+    if (NOT ${ARGV0}_FOUND)
+        # Call original function without our custom arguments.
+        find_package(${arg_UNPARSED_ARGUMENTS})
+    endif()
 
     if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
         # If package was found, associate each target with its package name. This will be used
