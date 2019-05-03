@@ -55,7 +55,7 @@
 #include "qnetworkaccessmanager.h"
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkaccessbackend_p.h"
-#include "qnetconmonitor_p.h"
+#include "private/qnetconmonitor_p.h"
 #include "qnetworkrequest.h"
 #include "qhsts_p.h"
 #include "private/qobject_p.h"
