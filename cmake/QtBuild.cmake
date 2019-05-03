@@ -130,6 +130,23 @@ endif()
 
 # Functions and macros:
 
+function(qt_internal_export_modern_cmake_config_targets_file)
+    cmake_parse_arguments(__arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
+
+    foreach(target ${__arg_TARGETS})
+        if (TARGET "${target}Versionless")
+            continue()
+        endif()
+
+        add_library("${target}Versionless" INTERFACE)
+        target_link_libraries("${target}Versionless" INTERFACE "${target}")
+        set_target_properties("${target}Versionless" PROPERTIES EXPORT_NAME "${target}")
+        install(TARGETS "${target}Versionless" EXPORT "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets")
+    endforeach()
+
+    install(EXPORT "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets" NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
+endfunction()
+
 # Print all variables defined in the current scope.
 macro(qt_debug_print_variables)
     cmake_parse_arguments(__arg "DEDUP" "" "MATCH;IGNORE" ${ARGN})
@@ -678,9 +695,12 @@ function(add_qt_module target)
         PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
         PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
         )
-
     set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
     install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${config_install_dir})
+
+    qt_internal_export_modern_cmake_config_targets_file(TARGETS "${target}" "${target_private}"
+                                                        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+                                                        CONFIG_INSTALL_DIR "${config_install_dir}")
 
     set(extra_cmake_files)
     set(extra_cmake_includes)
@@ -816,6 +836,10 @@ endif()
     install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
         NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
         DESTINATION "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
+
+    qt_internal_export_modern_cmake_config_targets_file(TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
+                                                        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+                                                        CONFIG_INSTALL_DIR ${config_install_dir})
 endfunction()
 
 function(qt_internal_check_directory_or_type name dir type default result_var)

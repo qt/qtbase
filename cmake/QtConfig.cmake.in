@@ -9,6 +9,8 @@ get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
 
+include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+
 # if (NOT @INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS)
 #     set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "The Qt package requires at least one component")
 #     set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)

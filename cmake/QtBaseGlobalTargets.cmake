@@ -80,6 +80,10 @@ install(TARGETS Platform GlobalConfig GlobalConfigPrivate EXPORT "${INSTALL_CMAK
 install(EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION "${config_install_dir}")
 export(EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets")
 
+qt_internal_export_modern_cmake_config_targets_file(TARGETS Platform GlobalConfig GlobalConfigPrivate
+                                                    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}
+                                                    CONFIG_INSTALL_DIR ${config_install_dir})
+
 ## Install some QtBase specific CMake files:
 install(FILES
         cmake/QtBuild.cmake
