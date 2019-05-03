@@ -1156,6 +1156,8 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
     Q_D(QLayout);
     if (!from || !to)
         return 0;
+    if (from == to)     // Do not return a QLayoutItem for \a from, since ownership still
+        return nullptr; // belongs to the layout (since nothing was changed)
 
     int index = -1;
     QLayoutItem *item = 0;
