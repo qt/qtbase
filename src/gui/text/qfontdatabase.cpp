@@ -707,7 +707,8 @@ static QStringList familyList(const QFontDef &req)
             if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
                 || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\''))))
                 str = str.mid(1, str.length() - 2);
-            family_list << str.toString();
+            if (!family_list.contains(str))
+                family_list << str.toString();
         }
     }
     // append the substitute list for each family in family_list
