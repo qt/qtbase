@@ -1428,7 +1428,7 @@ macro(qt_find_package)
                                                                        IMPORTED_GLOBAL TRUE)
                 endif()
             else()
-                message(FATAL_ERROR
+                message(AUTHOR_WARNING
                         "Error while trying to mark target '${qt_find_package_target_name}' as part"
                         " of the ${ARGV0} package. Provided target name does not exist.")
             endif()
