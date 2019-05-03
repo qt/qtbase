@@ -17,11 +17,15 @@ function(qt_internal_create_depends_files)
     foreach (target ${QT_KNOWN_MODULES})
         get_target_property(depends "${target}" LINK_LIBRARIES)
         get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
+        get_target_property(target_deps "${target}" _qt_target_deps)
+        set(target_deps_seen "")
+
         set(qtdeps "")
         set(third_party_deps "")
         set(third_party_deps_seen "")
         set(tool_deps "")
         set(tool_deps_seen "")
+
         foreach (dep ${depends})
             # Normalize module by stripping leading "Qt::" and trailing "Private"
             if (dep MATCHES "Qt::(.*)")
@@ -82,6 +86,24 @@ function(qt_internal_create_depends_files)
                 "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${PROJECT_VERSION}")
         endif()
 
+        # Dirty hack because https://gitlab.kitware.com/cmake/cmake/issues/19200
+        foreach(dep ${target_deps})
+            if(dep)
+                list(FIND target_deps_seen "${dep}" dep_seen)
+                if(dep_seen EQUAL -1)
+                    list(LENGTH dep len)
+                    if(NOT (len EQUAL 2))
+                        message(FATAL_ERROR "List '${dep}' should look like QtFoo;version")
+                    endif()
+                    list(GET dep 0 dep_name)
+                    list(GET dep 1 dep_ver)
+
+                    list(APPEND target_deps_seen "${dep_name}\;${dep_ver}")
+                endif()
+            endif()
+        endforeach()
+        set(target_deps "${target_deps_seen}")
+
         if (DEFINED qtdeps)
             list(REMOVE_DUPLICATES qtdeps)
         endif()
@@ -92,7 +114,7 @@ function(qt_internal_create_depends_files)
         endif()
 
 
-        if(third_party_deps OR main_module_tool_deps)
+        if(third_party_deps OR main_module_tool_deps OR target_deps)
             # Configure and install ModuleDependencies file.
             configure_file(
                 "${QT_CMAKE_DIR}/QtModuleDependencies.cmake.in"

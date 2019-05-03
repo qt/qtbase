@@ -422,6 +422,22 @@ function(extend_target target)
             endif()
         endforeach()
 
+        # Find dependencies to internal libraries
+        get_target_property(target_deps "${target}" _qt_target_deps)
+        if(NOT target_deps)
+            set(target_deps "")
+        endif()
+
+        foreach(lib ${arg_LIBRARIES})
+            if (TARGET "${lib}")
+                get_target_property(_is_exported "${lib}" INTERFACE_QT_EXPORTED_LIBRARY)
+                if("${_is_exported}")
+                    list(APPEND target_deps "${lib}\;${PROJECT_VERSION}")
+                endif()
+            endif()
+        endforeach()
+
+        # Set-up the target
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
         if (arg_COMPILE_FLAGS)
             set_source_files_properties(${arg_SOURCES} PROPERTIES COMPILE_FLAGS "${arg_COMPILE_FLAGS}")
@@ -431,7 +447,11 @@ function(extend_target target)
         target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
         target_compile_options("${target}" PUBLIC ${arg_PUBLIC_COMPILE_OPTIONS} PRIVATE ${arg_COMPILE_OPTIONS})
         target_link_options("${target}" PUBLIC ${arg_PUBLIC_LINK_OPTIONS} PRIVATE ${arg_LINK_OPTIONS})
-        set_target_properties("${target}" PROPERTIES AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}")
+
+        set_target_properties("${target}" PROPERTIES
+            AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
+            _qt_target_deps "${target_deps}"
+        )
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("extend_target(${target} CONDITION ${arg_CONDITION} ...): Skipped")
@@ -698,7 +718,13 @@ function(add_qt_module target)
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
 
-    set(target_deps)
+    get_target_property(target_deps "${target}" _qt_target_deps)
+    if(NOT target_deps)
+        set(target_deps "")
+    endif()
+
+    # TODO: should this also be in extend_target ? From the looks of it I would say that
+    # it is not necessary but I'm not sure
     foreach(lib IN LISTS arg_PUBLIC_LIBRARIES qt_libs_private)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
@@ -712,14 +738,7 @@ function(add_qt_module target)
         endif()
     endforeach()
 
-    foreach(lib ${arg_LIBRARIES})
-        if (TARGET "${lib}")
-            get_target_property(_is_exported "${lib}" INTERFACE_QT_EXPORTED_LIBRARY)
-            if("${_is_exported}")
-                list(APPEND target_deps "${lib}\;${PROJECT_VERSION}")
-            endif()
-        endif()
-    endforeach()
+    set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
 
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
