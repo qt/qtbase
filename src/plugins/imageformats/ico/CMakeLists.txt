@@ -13,6 +13,8 @@ add_qt_plugin(qico
         Qt::GuiPrivate # special case
     PUBLIC_LIBRARIES # special case
         Qt::Gui # special case
+    CLASS_NAME
+        QICOPlugin
 )
 
 #### Keys ignored in scope 1:.:.:ico.pro:<TRUE>:

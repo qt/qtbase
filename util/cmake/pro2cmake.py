@@ -1193,11 +1193,6 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     # mark RESOURCES as visited:
     scope.get('RESOURCES')
 
-    plugin_type = scope.get_string('PLUGIN_TYPE')
-
-    if plugin_type:
-        cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type))
-
     write_all_source_file_lists(cm_fh, scope, 'SOURCES', indent=indent + 1)
 
     write_source_file_list(cm_fh, scope, 'DBUS_ADAPTOR_SOURCES', ['DBUS_ADAPTORS',], indent + 1)
@@ -1611,6 +1606,10 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
     if len(module_config):
         extra.append('QMAKE_MODULE_CONFIG {}'.format(" ".join(module_config)))
 
+    module_plugin_types = scope.get_files('MODULE_PLUGIN_TYPES')
+    if module_plugin_types:
+        extra.append('PLUGIN_TYPES {}'.format(" ".join(module_plugin_types)))
+
     write_main_part(cm_fh, module_name[2:], 'Module', 'add_qt_module', scope,
                     extra_lines=extra, indent=indent,
                     known_libraries={}, extra_keys=[])
@@ -1726,8 +1725,18 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
     plugin_name = scope.TARGET
     assert plugin_name
 
+    extra = []
+
+    plugin_type = scope.get_string('PLUGIN_TYPE')
+    if plugin_type:
+        extra.append('TYPE {}'.format(plugin_type))
+
+    plugin_class_name = scope.get_string('PLUGIN_CLASS_NAME')
+    if plugin_class_name:
+        extra.append('CLASS_NAME {}'.format(plugin_class_name))
+
     write_main_part(cm_fh, plugin_name, 'Plugin', 'add_qt_plugin', scope,
-                    indent=indent, known_libraries={}, extra_keys=[])
+                    indent=indent, extra_lines=extra, known_libraries={}, extra_keys=[])
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,

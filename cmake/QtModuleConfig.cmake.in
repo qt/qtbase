@@ -17,7 +17,6 @@ endif()
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Targets.cmake")
 
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@VersionlessTargets.cmake")
-
 foreach(extra_cmake_include @extra_cmake_includes@)
     include("${CMAKE_CURRENT_LIST_DIR}/${extra_cmake_include}")
 endforeach()
@@ -25,3 +24,8 @@ endforeach()
 include(${_import_prefix}/../@INSTALL_CMAKE_NAMESPACE@/QtFeature.cmake)
 
 qt_make_features_available(@QT_CMAKE_EXPORT_NAMESPACE@::@target@)
+
+set("@INSTALL_CMAKE_NAMESPACE@@target@_FOUND" TRUE)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
+endif()

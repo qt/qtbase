@@ -12,157 +12,248 @@ function(qt_internal_write_depends_file target)
     file(GENERATE OUTPUT "${outfile}" CONTENT "${contents}")
 endfunction()
 
-function(qt_internal_create_depends_files)
-    message("Generating depends files for ${QT_KNOWN_MODULES}...")
-    foreach (target ${QT_KNOWN_MODULES})
-        get_target_property(depends "${target}" LINK_LIBRARIES)
-        get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
-        get_target_property(target_deps "${target}" _qt_target_deps)
-        set(target_deps_seen "")
+macro(qt_collect_third_party_deps)
+    # If we are doing a non-static Qt build, we only want to propagate public dependencies.
+    # If we are doing a static Qt build, we need to propagate all dependencies.
+    set(depends_var "public_depends")
+    if(NOT QT_BUILD_SHARED_LIBS)
+        set(depends_var "depends")
+    endif()
 
-        set(qtdeps "")
-        set(third_party_deps "")
-        set(third_party_deps_seen "")
-        set(tool_deps "")
-        set(tool_deps_seen "")
-        set(main_module_tool_deps "")
+    foreach(dep ${${depends_var}})
+        # Gather third party packages that should be found when using the Qt module.
+        # Also handle nolink target dependencies.
+        string(REGEX REPLACE "_nolink$" "" base_dep "${dep}")
+        if(NOT base_dep STREQUAL dep)
+            # Resets target name like Vulkan_nolink to Vulkan, because we need to call
+            # find_package(Vulkan).
+            set(dep ${base_dep})
+        endif()
 
-        foreach (dep ${depends})
-            # Normalize module by stripping leading "Qt::" and trailing "Private"
-            if (dep MATCHES "Qt::(.*)")
-                set(dep "${CMAKE_MATCH_1}")
-            endif()
-            if (dep MATCHES "(.*)Private")
-                set(dep "${CMAKE_MATCH_1}")
-            endif()
+        if(TARGET ${dep})
+            list(FIND third_party_deps_seen ${dep} dep_seen)
 
-            list(FIND QT_KNOWN_MODULES "${dep}" _pos)
-            if (_pos GREATER -1)
-                list(APPEND qtdeps "${dep}")
-
-                # Make the ModuleTool package depend on dep's ModuleTool package.
-                list(FIND tool_deps_seen ${dep} dep_seen)
-                if(dep_seen EQUAL -1 AND ${dep} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
-                    list(APPEND tool_deps_seen ${dep})
-                    list(APPEND tool_deps
-                                "${INSTALL_CMAKE_NAMESPACE}${dep}Tools\;${PROJECT_VERSION}")
+            get_target_property(package_name ${dep} INTERFACE_QT_PACKAGE_NAME)
+            if(dep_seen EQUAL -1 AND package_name)
+                list(APPEND third_party_deps_seen ${dep})
+                get_target_property(package_version ${dep} INTERFACE_QT_PACKAGE_VERSION)
+                if(NOT package_version)
+                    set(package_version "")
                 endif()
-            endif()
-        endforeach()
 
-        # If we are doing a non-static Qt build, we only want to propagate public dependencies.
-        # If we are doing a static Qt build, we need to propagate all dependencies.
-        set(depends_var "public_depends")
-        if(NOT QT_BUILD_SHARED_LIBS)
-            set(depends_var "depends")
-        endif()
-
-        foreach(dep ${${depends_var}})
-            # Gather third party packages that should be found when using the Qt module.
-            # Also handle nolink target dependencies.
-            string(REGEX REPLACE "_nolink$" "" base_dep "${dep}")
-            if(NOT base_dep STREQUAL dep)
-                # Resets target name like Vulkan_nolink to Vulkan, because we need to call
-                # find_package(Vulkan).
-                set(dep ${base_dep})
-            endif()
-
-            if(TARGET ${dep})
-                list(FIND third_party_deps_seen ${dep} dep_seen)
-
-                get_target_property(package_name ${dep} INTERFACE_QT_PACKAGE_NAME)
-                if(dep_seen EQUAL -1 AND package_name)
-                    list(APPEND third_party_deps_seen ${dep})
-                    get_target_property(package_version ${dep} INTERFACE_QT_PACKAGE_VERSION)
-                    if(NOT package_version)
-                        set(package_version "")
-                    endif()
-
-                    get_target_property(package_components ${dep} INTERFACE_QT_PACKAGE_COMPONENTS)
-                    if(NOT package_components)
-                        set(package_components "")
-                    endif()
-
-                    list(APPEND third_party_deps
-                                "${package_name}\;${package_version}\;${package_components}")
+                get_target_property(package_components ${dep} INTERFACE_QT_PACKAGE_COMPONENTS)
+                if(NOT package_components)
+                    set(package_components "")
                 endif()
+
+                list(APPEND third_party_deps
+                            "${package_name}\;${package_version}\;${package_components}")
             endif()
-        endforeach()
+        endif()
+    endforeach()
+endmacro()
 
-        # Add dependency to the main ModuleTool package to ModuleDependencies file.
-        if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
-            set(main_module_tool_deps
-                "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${PROJECT_VERSION}")
+function(qt_internal_create_module_depends_file target)
+    get_target_property(depends "${target}" LINK_LIBRARIES)
+    get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
+    get_target_property(target_deps "${target}" _qt_target_deps)
+    set(target_deps_seen "")
+
+    set(qtdeps "")
+    set(third_party_deps "")
+    set(third_party_deps_seen "")
+    set(tool_deps "")
+    set(tool_deps_seen "")
+    set(main_module_tool_deps "")
+
+    foreach (dep ${depends})
+        # Normalize module by stripping leading "Qt::" and trailing "Private"
+        if (dep MATCHES "Qt::(.*)")
+            set(dep "${CMAKE_MATCH_1}")
+        endif()
+        if (dep MATCHES "(.*)Private")
+            set(dep "${CMAKE_MATCH_1}")
         endif()
 
-        # Dirty hack because https://gitlab.kitware.com/cmake/cmake/issues/19200
-        foreach(dep ${target_deps})
-            if(dep)
-                list(FIND target_deps_seen "${dep}" dep_seen)
-                if(dep_seen EQUAL -1)
-                    list(LENGTH dep len)
-                    if(NOT (len EQUAL 2))
-                        message(FATAL_ERROR "List '${dep}' should look like QtFoo;version")
-                    endif()
-                    list(GET dep 0 dep_name)
-                    list(GET dep 1 dep_ver)
+        list(FIND QT_KNOWN_MODULES "${dep}" _pos)
+        if (_pos GREATER -1)
+            list(APPEND qtdeps "${dep}")
 
-                    list(APPEND target_deps_seen "${dep_name}\;${dep_ver}")
-                endif()
+            # Make the ModuleTool package depend on dep's ModuleTool package.
+            list(FIND tool_deps_seen ${dep} dep_seen)
+            if(dep_seen EQUAL -1 AND ${dep} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+                list(APPEND tool_deps_seen ${dep})
+                list(APPEND tool_deps
+                            "${INSTALL_CMAKE_NAMESPACE}${dep}Tools\;${PROJECT_VERSION}")
             endif()
-        endforeach()
-        set(target_deps "${target_deps_seen}")
-
-        if (DEFINED qtdeps)
-            list(REMOVE_DUPLICATES qtdeps)
-        endif()
-
-        get_target_property(hasModuleHeaders "${target}" MODULE_HAS_HEADERS)
-        if (${hasModuleHeaders})
-            qt_internal_write_depends_file("${target}" ${qtdeps})
-        endif()
-
-        if(third_party_deps OR main_module_tool_deps OR target_deps)
-            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
-            qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
-            qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
-
-            # Configure and install ModuleDependencies file.
-            configure_file(
-                "${QT_CMAKE_DIR}/QtModuleDependencies.cmake.in"
-                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
-                @ONLY
-            )
-
-            qt_install(FILES
-                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
-                DESTINATION "${config_install_dir}"
-                COMPONENT Devel
-            )
-
-        endif()
-        if(tool_deps)
-            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}Tools")
-            qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
-            qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
-
-            # Configure and install ModuleToolDependencies file.
-            configure_file(
-                "${QT_CMAKE_DIR}/QtModuleToolsDependencies.cmake.in"
-                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
-                @ONLY
-            )
-
-            qt_install(FILES
-                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
-                DESTINATION "${config_install_dir}"
-                COMPONENT Devel
-            )
-
         endif()
     endforeach()
 
+    qt_collect_third_party_deps()
 
+    # Add dependency to the main ModuleTool package to ModuleDependencies file.
+    if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+        set(main_module_tool_deps
+            "${INSTALL_CMAKE_NAMESPACE}${target}Tools\;${PROJECT_VERSION}")
+    endif()
+
+    # Dirty hack because https://gitlab.kitware.com/cmake/cmake/issues/19200
+    foreach(dep ${target_deps})
+        if(dep)
+            list(FIND target_deps_seen "${dep}" dep_seen)
+            if(dep_seen EQUAL -1)
+                list(LENGTH dep len)
+                if(NOT (len EQUAL 2))
+                    message(FATAL_ERROR "List '${dep}' should look like QtFoo;version")
+                endif()
+                list(GET dep 0 dep_name)
+                list(GET dep 1 dep_ver)
+
+                list(APPEND target_deps_seen "${dep_name}\;${dep_ver}")
+            endif()
+        endif()
+    endforeach()
+    set(target_deps "${target_deps_seen}")
+
+    if (DEFINED qtdeps)
+        list(REMOVE_DUPLICATES qtdeps)
+    endif()
+
+    get_target_property(hasModuleHeaders "${target}" MODULE_HAS_HEADERS)
+    if (${hasModuleHeaders})
+        qt_internal_write_depends_file("${target}" ${qtdeps})
+    endif()
+
+    if(third_party_deps OR main_module_tool_deps OR target_deps)
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
+        # Configure and install ModuleDependencies file.
+        configure_file(
+            "${QT_CMAKE_DIR}/QtModuleDependencies.cmake.in"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+            @ONLY
+        )
+
+        qt_install(FILES
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+            DESTINATION "${config_install_dir}"
+            COMPONENT Devel
+        )
+
+    endif()
+    if(tool_deps)
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}Tools")
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
+        # Configure and install ModuleToolDependencies file.
+        configure_file(
+            "${QT_CMAKE_DIR}/QtModuleToolsDependencies.cmake.in"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
+            @ONLY
+        )
+
+        qt_install(FILES
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
+            DESTINATION "${config_install_dir}"
+            COMPONENT Devel
+        )
+
+    endif()
+endfunction()
+
+function(qt_internal_create_plugin_depends_file target)
+    get_target_property(qt_module "${target}" QT_MODULE)
+    get_target_property(target_deps "${target}" _qt_target_deps)
+    set(target_deps_seen "")
+
+    qt_collect_third_party_deps()
+
+    # Dirty hack because https://gitlab.kitware.com/cmake/cmake/issues/19200
+    foreach(dep ${target_deps})
+        if(dep)
+            list(FIND target_deps_seen "${dep}" dep_seen)
+            if(dep_seen EQUAL -1)
+                list(LENGTH dep len)
+                if(NOT (len EQUAL 2))
+                    message(FATAL_ERROR "List '${dep}' should look like QtFoo;version")
+                endif()
+                list(GET dep 0 dep_name)
+                list(GET dep 1 dep_ver)
+
+                list(APPEND target_deps_seen "${dep_name}\;${dep_ver}")
+            endif()
+        endif()
+    endforeach()
+    set(target_deps "${target_deps_seen}")
+
+    if(third_party_deps OR target_deps)
+        # Setup build and install paths
+        if(qt_module)
+            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${qt_module}")
+        else()
+            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+        endif()
+
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
+        # Configure and install ModuleDependencies file.
+        configure_file(
+            "${QT_CMAKE_DIR}/QtPluginDependencies.cmake.in"
+            "${config_build_dir}/${target}Dependencies.cmake"
+            @ONLY
+        )
+
+        qt_install(FILES
+            "${config_build_dir}/${target}Dependencies.cmake"
+            DESTINATION "${config_install_dir}"
+            COMPONENT Devel
+        )
+    endif()
+endfunction()
+
+# Create Depends.cmake & Depends.h files for all modules and plug-ins.
+function(qt_internal_create_depends_files)
+    message("Generating depends files for ${QT_KNOWN_MODULES}...")
+    foreach (target ${QT_KNOWN_MODULES})
+        qt_internal_create_module_depends_file(${target})
+    endforeach()
+
+    message("Generating depends files for ${QT_KNOWN_PLUGINS}...")
+    foreach (target ${QT_KNOWN_PLUGINS})
+        qt_internal_create_plugin_depends_file(${target})
+    endforeach()
+endfunction()
+
+# This function creates the Qt<Module>Plugins.cmake used to list all
+# the plug-in target files.
+function(qt_internal_create_plugins_files)
+    message("Generating Plugins files for ${QT_KNOWN_MODULES}...")
+    foreach (target ${QT_KNOWN_MODULES})
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${INSTALL_CMAKE_NAMESPACE}${target})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE}${target})
+
+        set(_plugins_file "")
+        get_target_property(qt_plugins "${target}" QT_PLUGINS)
+        if(qt_plugins)
+            foreach (plugin ${qt_plugins})
+                set(_plugins_file "${_plugins_file}include(\"\${CMAKE_CURRENT_LIST_DIR}/${plugin}Config.cmake\")\n")
+            endforeach()
+
+            if(NOT ("x${_plugins_file}" STREQUAL "x"))
+                file(WRITE "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Plugins.cmake" "${_plugins_file}")
+
+                qt_install(FILES
+                    "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Plugins.cmake"
+                    DESTINATION "${config_install_dir}"
+                    COMPONENT Devel
+                )
+            endif()
+        endif()
+    endforeach()
 endfunction()
 
 function(qt_generate_build_internals_extra_cmake_code)
@@ -203,3 +294,4 @@ endfunction()
 
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
+qt_internal_create_plugins_files()

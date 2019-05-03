@@ -5,6 +5,8 @@
 #####################################################################
 
 add_qt_module(Sql
+    PLUGIN_TYPES
+        sqldrivers
     SOURCES
         kernel/qsqlcachedresult.cpp kernel/qsqlcachedresult_p.h
         kernel/qsqldatabase.cpp kernel/qsqldatabase.h

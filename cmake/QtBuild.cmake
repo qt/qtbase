@@ -119,9 +119,13 @@ endif()
 macro(qt_internal_set_qt_known_modules)
     set(QT_KNOWN_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
 endmacro()
+macro(qt_internal_set_qt_known_plugins)
+    set(QT_KNOWN_PLUGINS ${ARGN} CACHE INTERNAL "Known Qt plugins" FORCE)
+endmacro()
 
 # Reset:
 qt_internal_set_qt_known_modules("")
+qt_internal_set_qt_known_plugins("")
 
 set(QT_KNOWN_MODULES_WITH_TOOLS "" CACHE INTERNAL "Known Qt modules with tools" FORCE)
 macro(qt_internal_append_known_modules_with_tools module)
@@ -652,7 +656,8 @@ function(qt_internal_module_info result target)
 endfunction()
 
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS;DISABLE_AUTOGEN_TOOLS;ENABLE_AUTOGEN_TOOLS")
+set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS;DISABLE_AUTOGEN_TOOLS;ENABLE_AUTOGEN_TOOLS;PLUGIN_TYPES")
+
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
 
 
@@ -713,6 +718,32 @@ function(qt_autogen_tools target)
           qt_enable_autogen_tool(${target} ${tool} OFF)
       endforeach()
   endif()
+endfunction()
+
+# This function stores the list of Qt modules a library depend on,
+# along with their version info, for usage in ${target}Depends.cmake file
+function(qt_register_target_dependencies target public_libs private_libs)
+    get_target_property(target_deps "${target}" _qt_target_deps)
+    if(NOT target_deps)
+        set(target_deps "")
+    endif()
+
+    # TODO: should this also be in extend_target ? From the looks of it I would say that
+    # it is not necessary but I'm not sure
+    foreach(lib IN LISTS public_libs private_libs)
+        if ("${lib}" MATCHES "^Qt::(.*)")
+            set(lib "${CMAKE_MATCH_1}")
+            if (lib STREQUAL Platform OR lib STREQUAL GlobalConfig)
+                list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
+            elseif ("${lib}" MATCHES "(.*)Private")
+                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${CMAKE_MATCH_1}\;${PROJECT_VERSION}")
+            else()
+                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
+            endif()
+        endif()
+    endforeach()
+
+    set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
 endfunction()
 
 # This function can be used to add sources/libraries/etc. to the specified CMake target
@@ -1003,6 +1034,11 @@ function(add_qt_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
     endif()
 
+    # Plugin types associated to a module
+    if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
+        set_target_properties("${target}" PROPERTIES MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
+    endif()
+
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
@@ -1121,15 +1157,15 @@ function(add_qt_module target)
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
     endif()
 
-        set(extra_cmake_code "")
+    set(extra_cmake_code "")
 
-        if(target STREQUAL Core)
-            # Propagate non-build related variables that are needed for consuming Qt packages.
-            # Do this in CoreConfig instead of Qt5Config, so that consumers can also use
-            # find_package(Qt5Core) instead of find_package(Qt5 COMPONENTS Core)
-            string(APPEND extra_cmake_code "
+    if(target STREQUAL Core)
+        # Propagate non-build related variables that are needed for consuming Qt packages.
+        # Do this in CoreConfig instead of Qt5Config, so that consumers can also use
+        # find_package(Qt5Core) instead of find_package(Qt5 COMPONENTS Core)
+        string(APPEND extra_cmake_code "
 set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
-        endif()
+    endif()
 
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
@@ -1137,7 +1173,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         INSTALL_DESTINATION "${config_install_dir}"
     )
     write_basic_package_version_file(
-        ${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
@@ -1198,27 +1234,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
 
-    get_target_property(target_deps "${target}" _qt_target_deps)
-    if(NOT target_deps)
-        set(target_deps "")
-    endif()
-
-    # TODO: should this also be in extend_target ? From the looks of it I would say that
-    # it is not necessary but I'm not sure
-    foreach(lib IN LISTS arg_PUBLIC_LIBRARIES qt_libs_private)
-        if ("${lib}" MATCHES "^Qt::(.*)")
-            set(lib "${CMAKE_MATCH_1}")
-            if (lib STREQUAL Platform OR lib STREQUAL GlobalConfig)
-                list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
-            elseif ("${lib}" MATCHES "(.*)Private")
-                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${CMAKE_MATCH_1}\;${PROJECT_VERSION}")
-            else()
-                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
-            endif()
-        endif()
-    endforeach()
-
-    set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
+    qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
 
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
@@ -1299,17 +1315,40 @@ function(qt_internal_check_directory_or_type name dir type default result_var)
     endif()
 endfunction()
 
+# Utility function to find the module to which a plug-in belongs.
+# This will set the QT_MODULE target property on the plug-in - e.g. "Gui", "Sql"...
+function(qt_get_module_for_plugin target target_type)
+    foreach(qt_module ${QT_KNOWN_MODULES})
+        get_target_property(plugin_types "${qt_module}" MODULE_PLUGIN_TYPES)
+        if(plugin_types)
+            foreach(plugin_type ${plugin_types})
+                if("${target_type}" STREQUAL "${plugin_type}")
+                    set_target_properties("${target}" PROPERTIES QT_MODULE "${qt_module}")
+                    return()
+                endif()
+            endforeach()
+        endif()
+    endforeach()
+    message(AUTHOR_WARNING "The plug-in '${target}' does not belong to any Qt module.")
+endfunction()
+
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
 function(add_qt_plugin target)
     qt_internal_module_info(module "${target}")
 
+    qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
+
     qt_parse_all_arguments(arg "add_qt_plugin" "STATIC"
-        "TYPE;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
+        "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
         "${__default_private_args};${__default_public_args}" ${ARGN})
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
+
+    if ("x${arg_CLASS_NAME}" STREQUAL x)
+        message(AUTHOR_WARNING "add_qt_plugin called without setting CLASS_NAME.")
+    endif()
 
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
         "${output_directory_default}" output_directory)
@@ -1329,7 +1368,8 @@ function(add_qt_plugin target)
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
-        ARCHIVE_OUTPUT_DIRECTORY "${output_directory}")
+        ARCHIVE_OUTPUT_DIRECTORY "${output_directory}"
+        QT_PLUGIN_CLASS_NAME "${arg_CLASS_NAME}")
 
     qt_internal_library_deprecation_level(deprecation_define)
 
@@ -1338,6 +1378,15 @@ function(add_qt_plugin target)
     set(static_plugin_define "")
     if (arg_STATIC OR NOT QT_BUILD_SHARED_LIBS)
         set(static_plugin_define "QT_STATICPLUGIN")
+    endif()
+
+    # Save the Qt module in the plug-in's properties
+    qt_get_module_for_plugin("${target}" "${arg_TYPE}")
+    get_target_property(qt_module "${target}" QT_MODULE)
+
+    # Add the plug-in to the list of plug-ins of this module
+    if(TARGET "${qt_module}")
+        set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
     endif()
 
     extend_target("${target}"
@@ -1379,14 +1428,55 @@ function(add_qt_plugin target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
+    set(qt_libs_private "")
+    foreach(it ${QT_KNOWN_MODULES})
+        list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
+        if(pos GREATER -1)
+            list(APPEND qt_libs_private "Qt::${it}Private")
+        endif()
+    endforeach()
+
+    qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
+
+    # Handle creation of cmake files for consumers of find_package().
+    # If we are part of a Qt module, the plugin cmake files are installed as part of that module.
+    if(qt_module)
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${qt_module}")
+    else()
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+    endif()
+
+    qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
+    configure_package_config_file(
+        "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
+        "${config_build_dir}/${target}Config.cmake"
+        INSTALL_DESTINATION "${config_install_dir}"
+    )
+    write_basic_package_version_file(
+        "${config_build_dir}/${target}ConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
+
+    qt_install(FILES
+        "${config_build_dir}/${target}Config.cmake"
+        "${config_build_dir}/${target}ConfigVersion.cmake"
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
+
     set(export_name "${target}Targets")
     qt_install(TARGETS "${target}"
                EXPORT ${export_name}
                LIBRARY DESTINATION "${install_directory}"
-               ARCHIVE DESTINATION "${archive_install_directory}")
+               ARCHIVE DESTINATION "${archive_install_directory}"
+    )
     qt_install(EXPORT ${export_name}
                NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
-               DESTINATION ${QT_CONFIG_INSTALL_DIR})
+               DESTINATION "${config_install_dir}"
+    )
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.

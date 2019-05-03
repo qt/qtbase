@@ -39,6 +39,16 @@ endif()
 # special case end
 
 add_qt_module(Gui
+    PLUGIN_TYPES
+        platforms
+        platforms/darwin
+        xcbglintegrations
+        platformthemes
+        platforminputcontexts
+        generic
+        iconengines
+        imageformats
+        egldeviceintegrations
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network # special case:
     SOURCES
