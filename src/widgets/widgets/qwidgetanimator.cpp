@@ -50,8 +50,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout) : m_mainWindowLayout(layout)
+QWidgetAnimator::QWidgetAnimator(QMainWindowLayout *layout)
+#if QT_CONFIG(mainwindow)
+: m_mainWindowLayout(layout)
+#endif
 {
+    Q_UNUSED(layout)
 }
 
 void QWidgetAnimator::abort(QWidget *w)

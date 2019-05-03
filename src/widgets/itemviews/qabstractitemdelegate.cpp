@@ -386,6 +386,8 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
                                       const QModelIndex &index)
 {
     Q_D(QAbstractItemDelegate);
+    Q_UNUSED(d);
+    Q_UNUSED(index);
     Q_UNUSED(option);
 
     if (!event || !view)
