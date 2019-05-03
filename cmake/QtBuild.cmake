@@ -193,7 +193,7 @@ macro(assert)
 endmacro()
 
 
-function(qt_create_nolink_target target)
+function(qt_create_nolink_target target export_target)
     if(NOT TARGET "${target}")
         message(FATAL_ERROR "${target} does not exist when trying to build a nolink target.")
     endif()
@@ -205,9 +205,18 @@ function(qt_create_nolink_target target)
         message(FATAL_ERROR "${target} must not be an object library.")
     endif()
 
-    set(nolink_target "${target}_nolink")
+    # Strip off the namespace prefix, so from Vulkan::Vulkan to Vulkan, and then append _nolink.
+    string(REGEX REPLACE "^.*::" "" non_prefixed_target ${target})
+    set(nolink_target "${non_prefixed_target}_nolink")
+
+    # Create the nolink interface target, assign the properties from the original target,
+    # associate the nolink target with the same export which contains
+    # the target that uses the _nolink target.
+    # Also create a namespaced alias of the form {$target}::${target}_nolink which is used by
+    # our modules.
     if(NOT TARGET "${nolink_target}")
-        add_library("${nolink_target}" INTERFACE IMPORTED)
+        add_library("${nolink_target}" INTERFACE)
+        set(prefixed_nolink_target "${target}_nolink")
         set_target_properties("${nolink_target}" PROPERTIES
                               INTERFACE_INCLUDE_DIRECTORIES
                               $<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>
@@ -219,6 +228,8 @@ function(qt_create_nolink_target target)
                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_OPTIONS>
                               INTERFACE_COMPILE_FEATURES
                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
+        install(TARGETS ${nolink_target} EXPORT ${export_target})
+        add_library(${prefixed_nolink_target} ALIAS ${nolink_target})
     endif()
 endfunction()
 
@@ -435,7 +446,8 @@ function(extend_target target)
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
             string(REGEX REPLACE "_nolink$" "" base_lib "${lib}")
             if(NOT base_lib STREQUAL lib)
-                qt_create_nolink_target("${base_lib}")
+                set(export_target "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+                qt_create_nolink_target("${base_lib}" ${export_target})
             endif()
         endforeach()
 

@@ -58,6 +58,14 @@ function(qt_internal_create_depends_files)
 
         foreach(dep ${${depends_var}})
             # Gather third party packages that should be found when using the Qt module.
+            # Also handle nolink target dependencies.
+            string(REGEX REPLACE "_nolink$" "" base_dep "${dep}")
+            if(NOT base_dep STREQUAL dep)
+                # Resets target name like Vulkan_nolink to Vulkan, because we need to call
+                # find_package(Vulkan).
+                set(dep ${base_dep})
+            endif()
+
             if(TARGET ${dep})
                 list(FIND third_party_deps_seen ${dep} dep_seen)
 
