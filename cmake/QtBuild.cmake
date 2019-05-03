@@ -996,6 +996,7 @@ function(add_qt_test name)
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             "${arg_INCLUDE_DIRECTORIES}"
         DEFINES "${arg_DEFINES}"
         LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_LIBRARIES}
