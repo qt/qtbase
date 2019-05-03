@@ -257,7 +257,6 @@ private slots:
     void fromListInt() const;
     void fromListMovable() const;
     void fromListCustom() const;
-    void fromStdVector() const;
     void indexOf() const;
     void insertInt() const;
     void insertMovable() const;
@@ -296,7 +295,10 @@ private slots:
     void swapMovable() const;
     void swapCustom() const;
     void toList() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    void fromStdVector() const;
     void toStdVector() const;
+#endif
     void value() const;
 
     void testOperators() const;
@@ -1426,6 +1428,7 @@ void tst_QVector::fromListCustom() const
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 void tst_QVector::fromStdVector() const
 {
     // stl = :(
@@ -1439,6 +1442,7 @@ void tst_QVector::fromStdVector() const
     // test it converts ok
     QCOMPARE(myvec, QVector<QString>() << "aaa" << "bbb" << "ninjas" << "pirates");
 }
+#endif
 
 void tst_QVector::indexOf() const
 {
@@ -2331,6 +2335,7 @@ void tst_QVector::toList() const
     QCOMPARE(myvec, QVector<QString>() << "A" << "B" << "C");
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 void tst_QVector::toStdVector() const
 {
     QVector<QString> myvec;
@@ -2343,6 +2348,7 @@ void tst_QVector::toStdVector() const
 
     QCOMPARE(myvec, QVector<QString>() << "A" << "B" << "C");
 }
+#endif
 
 void tst_QVector::value() const
 {

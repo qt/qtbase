@@ -367,9 +367,11 @@ private slots:
     void toSetOptimal() const;
     void toSetMovable() const;
     void toSetComplex() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void toStdListOptimal() const;
     void toStdListMovable() const;
     void toStdListComplex() const;
+#endif
     void toVectorOptimal() const;
     void toVectorMovable() const;
     void toVectorComplex() const;
@@ -427,7 +429,9 @@ private:
     template<typename T> void takeFirst() const;
     template<typename T> void takeLast() const;
     template<typename T> void toSet() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     template<typename T> void toStdList() const;
+#endif
     template<typename T> void toVector() const;
     template<typename T> void value() const;
 
@@ -1633,6 +1637,7 @@ void tst_QList::toSetComplex() const
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template<typename T>
 void tst_QList::toStdList() const
 {
@@ -1669,6 +1674,7 @@ void tst_QList::toStdListComplex() const
     toStdList<Complex>();
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
+#endif
 
 template<typename T>
 void tst_QList::toVector() const

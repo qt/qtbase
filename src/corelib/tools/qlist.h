@@ -51,7 +51,9 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <list>
+#endif
 
 #include <stdlib.h>
 #include <new>
@@ -403,10 +405,14 @@ public:
     static QList<T> fromVector(const QVector<T> &vector);
     static QList<T> fromSet(const QSet<T> &set);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
     static inline QList<T> fromStdList(const std::list<T> &list)
     { QList<T> tmp; std::copy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
+    Q_DECL_DEPRECATED_X("Use std::list<T>(list.begin(), list.end()) instead.")
     inline std::list<T> toStdList() const
     { std::list<T> tmp; std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+#endif
 
 private:
     Node *detach_helper_grow(int i, int n);

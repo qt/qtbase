@@ -49,7 +49,9 @@
 
 #include <iterator>
 #include <initializer_list>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <vector>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -292,10 +294,14 @@ public:
 
     static QVector<T> fromList(const QList<T> &list);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
     { QVector<T> tmp; tmp.reserve(int(vector.size())); std::copy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    Q_DECL_DEPRECATED_X("Use std::vector<T>(vector.begin(), vector.end()) instead.")
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
+#endif
 private:
     // ### Qt6: remove methods, they are unused
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
