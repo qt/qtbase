@@ -90,6 +90,9 @@ install(FILES
         cmake/QtPostProcess.cmake
         cmake/QtSetup.cmake
         cmake/QtModuleConfig.cmake.in
+        cmake/QtModuleDependencies.cmake.in
+        cmake/QtModuleToolsDependencies.cmake.in
+        cmake/QtModuleToolsConfig.cmake.in
     DESTINATION "${config_install_dir}"
 )
 # TODO: Check whether this is the right place to install these
