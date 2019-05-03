@@ -659,7 +659,7 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
         if (!tzif.open(QIODevice::ReadOnly)) {
             tzif.setFileName(QLatin1String("/usr/lib/zoneinfo/") + QString::fromLocal8Bit(ianaId));
             if (!tzif.open(QIODevice::ReadOnly)) {
-                // ianaId may be a POSIX rule, taken from $TZ
+                // ianaId may be a POSIX rule, taken from $TZ or /etc/TZ
                 const QByteArray zoneInfo = ianaId.split(',').at(0);
                 const char *begin = zoneInfo.constBegin();
                 if (PosixZone::parse(begin, zoneInfo.constEnd()).hasValidOffset()
@@ -1112,6 +1112,13 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
                 }
             }
         }
+    }
+
+    // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
+    if (ianaId.isEmpty()) {
+        QFile zone(QStringLiteral("/etc/TZ"));
+        if (zone.open(QIODevice::ReadOnly))
+            ianaId = zone.readAll().trimmed();
     }
 
     // Give up for now and return UTC
