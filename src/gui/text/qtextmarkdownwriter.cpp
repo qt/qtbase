@@ -80,10 +80,10 @@ void QTextMarkdownWriter::writeTable(const QAbstractTableModel &table)
         QString s = table.headerData(col, Qt::Horizontal).toString();
         m_stream << "|" << s << QString(tableColumnWidths[col] - s.length(), Space);
     }
-    m_stream << "|" << endl;
+    m_stream << "|" << Qt::endl;
     for (int col = 0; col < tableColumnWidths.length(); ++col)
         m_stream << '|' << QString(tableColumnWidths[col], QLatin1Char('-'));
-    m_stream << '|'<< endl;
+    m_stream << '|'<< Qt::endl;
 
     // write the body
     for (int row = 0; row < table.rowCount(); ++row) {
@@ -91,7 +91,7 @@ void QTextMarkdownWriter::writeTable(const QAbstractTableModel &table)
             QString s = table.data(table.index(row, col)).toString();
             m_stream << "|" << s << QString(tableColumnWidths[col] - s.length(), Space);
         }
-        m_stream << '|'<< endl;
+        m_stream << '|'<< Qt::endl;
     }
 }
 
