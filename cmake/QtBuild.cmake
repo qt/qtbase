@@ -1037,6 +1037,14 @@ function(add_qt_tool name)
         # not get the proper prefix when using PATHS.
         set(BACKUP_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
         set(CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
+
+        # Search both with sysroots prepended as well as in the host system. When cross compiling
+        # the mode_package might be set to ONLY only, and the Qt5 tools packages are actually
+        # in the host system.
+        set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
+        set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
+        set(BACKUP_CMAKE_SIZEOF_VOID_P "${CMAKE_SIZEOF_VOID_P}")
+        set(CMAKE_SIZEOF_VOID_P "")
         find_package(
             ${tools_package_name}
             ${PROJECT_VERSION}
@@ -1046,7 +1054,9 @@ function(add_qt_tool name)
             NO_CMAKE_PACKAGE_REGISTRY
             NO_CMAKE_SYSTEM_PATH
             NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-        set(CMAKE_PREFIX_PATH ${BACKUP_CMAKE_PREFIX_PATH})
+        set(CMAKE_SIZEOF_VOID_P "${BACKUP_CMAKE_SIZEOF_VOID_P}")
+        set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE}")
+        set(CMAKE_PREFIX_PATH "${BACKUP_CMAKE_PREFIX_PATH}")
 
         if(${${tools_package_name}_FOUND} AND TARGET ${full_name})
             get_property(path TARGET ${full_name} PROPERTY LOCATION)
