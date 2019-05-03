@@ -409,7 +409,6 @@ void tst_QDBusMetaObject::types()
         QMetaProperty constructed = result->property(propIdx);
 
         QCOMPARE(constructed.isDesignable(), expected.isDesignable());
-        QCOMPARE(constructed.isEditable(), expected.isEditable());
         QCOMPARE(constructed.isEnumType(), expected.isEnumType());
         QCOMPARE(constructed.isFlagType(), expected.isFlagType());
         QCOMPARE(constructed.isReadable(), expected.isReadable());

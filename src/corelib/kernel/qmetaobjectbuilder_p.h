@@ -269,7 +269,6 @@ public:
     void setDesignable(bool value);
     void setScriptable(bool value);
     void setStored(bool value);
-    void setEditable(bool value);
     void setUser(bool value);
     void setStdCppSet(bool value);
     void setEnumOrFlag(bool value);

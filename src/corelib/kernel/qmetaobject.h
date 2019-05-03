@@ -289,9 +289,6 @@ public:
     bool isDesignable() const;
     bool isScriptable() const;
     bool isStored() const;
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_5_15 bool isEditable() const;
-#endif
     bool isUser() const;
     bool isConstant() const;
     bool isFinal() const;

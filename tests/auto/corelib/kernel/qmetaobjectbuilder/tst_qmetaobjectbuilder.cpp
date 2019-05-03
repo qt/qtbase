@@ -556,7 +556,6 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!nullProp.isDesignable());
     QVERIFY(!nullProp.isScriptable());
     QVERIFY(!nullProp.isStored());
-    QVERIFY(!nullProp.isEditable());
     QVERIFY(!nullProp.isUser());
     QVERIFY(!nullProp.hasStdCppSet());
     QVERIFY(!nullProp.isEnumOrFlag());
@@ -576,7 +575,6 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop1.isDesignable());
     QVERIFY(prop1.isScriptable());
     QVERIFY(!prop1.isStored());
-    QVERIFY(!prop1.isEditable());
     QVERIFY(!prop1.isUser());
     QVERIFY(!prop1.hasStdCppSet());
     QVERIFY(!prop1.isEnumOrFlag());
@@ -597,7 +595,6 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isDesignable());
     QVERIFY(prop2.isScriptable());
     QVERIFY(!prop2.isStored());
-    QVERIFY(!prop2.isEditable());
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
@@ -621,7 +618,6 @@ void tst_QMetaObjectBuilder::property()
     prop1.setDesignable(true);
     prop1.setScriptable(false);
     prop1.setStored(true);
-    prop1.setEditable(true);
     prop1.setUser(true);
     prop1.setStdCppSet(true);
     prop1.setEnumOrFlag(true);
@@ -638,7 +634,6 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prop1.isDesignable());
     QVERIFY(!prop1.isScriptable());
     QVERIFY(prop1.isStored());
-    QVERIFY(prop1.isEditable());
     QVERIFY(prop1.isUser());
     QVERIFY(prop1.hasStdCppSet());
     QVERIFY(prop1.isEnumOrFlag());
@@ -653,7 +648,6 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isDesignable());
     QVERIFY(prop2.isScriptable());
     QVERIFY(!prop2.isStored());
-    QVERIFY(!prop2.isEditable());
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
@@ -671,7 +665,6 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isDesignable());
     QVERIFY(prop2.isScriptable());
     QVERIFY(!prop2.isStored());
-    QVERIFY(!prop2.isEditable());
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
@@ -697,7 +690,6 @@ void tst_QMetaObjectBuilder::property()
             prop2.setDesignable(false); \
             prop2.setScriptable(false); \
             prop2.setStored(false); \
-            prop2.setEditable(false); \
             prop2.setUser(false); \
             prop2.setStdCppSet(false); \
             prop2.setEnumOrFlag(false); \
@@ -711,7 +703,6 @@ void tst_QMetaObjectBuilder::property()
          (prop2.isDesignable() ? 1 : 0) + \
          (prop2.isScriptable() ? 1 : 0) + \
          (prop2.isStored() ? 1 : 0) + \
-         (prop2.isEditable() ? 1 : 0) + \
          (prop2.isUser() ? 1 : 0) + \
          (prop2.hasStdCppSet() ? 1 : 0) + \
          (prop2.isEnumOrFlag() ? 1 : 0) + \
@@ -731,7 +722,6 @@ void tst_QMetaObjectBuilder::property()
     CHECK_FLAG(setDesignable, isDesignable);
     CHECK_FLAG(setScriptable, isScriptable);
     CHECK_FLAG(setStored, isStored);
-    CHECK_FLAG(setEditable, isEditable);
     CHECK_FLAG(setUser, isUser);
     CHECK_FLAG(setStdCppSet, hasStdCppSet);
     CHECK_FLAG(setEnumOrFlag, isEnumOrFlag);
@@ -1231,7 +1221,6 @@ static bool sameProperty(const QMetaProperty& prop1, const QMetaProperty& prop2)
         prop1.isDesignable() != prop2.isDesignable() ||
         prop1.isScriptable() != prop2.isScriptable() ||
         prop1.isStored() != prop2.isStored() ||
-        prop1.isEditable() != prop2.isEditable() ||
         prop1.isUser() != prop2.isUser() ||
         prop1.isFlagType() != prop2.isFlagType() ||
         prop1.isEnumType() != prop2.isEnumType() ||

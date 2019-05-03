@@ -1267,7 +1267,7 @@ void Moc::createPropertyDef(PropertyDef &propDef)
     if (typeWrappedInQProperty)
         next(RANGLE);
     propDef.designable = propDef.scriptable = propDef.stored = "true";
-    propDef.user = propDef.editable = "false";
+    propDef.user = "false";
     /*
       The Q_PROPERTY construct cannot contain any commas, since
       commas separate macro arguments. We therefore expect users
@@ -1375,13 +1375,6 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         case 'D': if (l != "DESIGNABLE") error(2);
             propDef.designable = v + v2;
             checkIsFunction(propDef.designable, "DESIGNABLE");
-            break;
-        case 'E': if (l != "EDITABLE") error(2); {
-            const QByteArray msg = "EDITABLE flag for property declaration is deprecated.";
-            warning(msg.constData());
-            propDef.editable = v + v2;
-            checkIsFunction(propDef.editable, "EDITABLE");
-        }
             break;
         case 'N': if (l != "NOTIFY") error(2);
             propDef.notify = v;

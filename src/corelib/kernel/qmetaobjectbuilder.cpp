@@ -2292,21 +2292,6 @@ bool QMetaPropertyBuilder::isStored() const
 }
 
 /*!
-    Returns \c true if the property is editable; otherwise returns \c false.
-    This default value is false.
-
-    \sa setEditable(), isDesignable(), isScriptable(), isStored()
-*/
-bool QMetaPropertyBuilder::isEditable() const
-{
-    QMetaPropertyBuilderPrivate *d = d_func();
-    if (d)
-        return d->flag(Editable);
-    else
-        return false;
-}
-
-/*!
     Returns \c true if this property is designated as the \c USER
     property, i.e., the one that the user can edit or that is
     significant in some other way.  Otherwise it returns
@@ -2452,18 +2437,6 @@ void QMetaPropertyBuilder::setStored(bool value)
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d)
         d->setFlag(Stored, value);
-}
-
-/*!
-    Sets this property to editable if \a value is true.
-
-    \sa isEditable(), setDesignable(), setScriptable(), setStored()
-*/
-void QMetaPropertyBuilder::setEditable(bool value)
-{
-    QMetaPropertyBuilderPrivate *d = d_func();
-    if (d)
-        d->setFlag(Editable, value);
 }
 
 /*!

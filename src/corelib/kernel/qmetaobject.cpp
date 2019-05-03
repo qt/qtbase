@@ -3497,27 +3497,6 @@ bool QMetaProperty::isQProperty() const
 }
 
 /*!
-    \obsolete
-
-    Returns \c true if the property is editable;
-    otherwise returns \c false.
-
-    If no \a object is given, the function returns \c false if the
-    \c{Q_PROPERTY()}'s \c EDITABLE attribute is false; otherwise returns
-    true (if the attribute is true or is a function or expression).
-
-    \sa isDesignable(), isScriptable(), isStored()
-*/
-#if QT_DEPRECATED_SINCE(5, 15)
-bool QMetaProperty::isEditable() const
-{
-    if (!mobj)
-        return false;
-    return data.flags() & Editable;
-}
-#endif
-
-/*!
     \class QMetaClassInfo
     \inmodule QtCore
 

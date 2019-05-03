@@ -77,7 +77,6 @@ enum PropertyFlags  {
     Designable = 0x00001000,
     Scriptable = 0x00004000,
     Stored = 0x00010000,
-    Editable = 0x00040000,
     User = 0x00100000,
     Required = 0x01000000,
     IsQProperty = 0x02000000

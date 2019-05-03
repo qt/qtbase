@@ -878,9 +878,6 @@ void Generator::generateProperties()
         if (p.stored != "false")
             flags |= Stored;
 
-        if (p.editable != "false")
-            flags |= Editable;
-
         if (p.user != "false")
             flags |= User;
 
