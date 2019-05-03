@@ -915,6 +915,14 @@ void tst_QTimeZone::tzTest()
     QTzTimeZonePrivate tzp("Europe/Berlin");
     QVERIFY(tzp.isValid());
 
+    // Test POSIX-format value for $TZ:
+    QTzTimeZonePrivate tzposix("MET-1METDST-2,M3.5.0/02:00:00,M10.5.0/03:00:00");
+    QVERIFY(tzposix.isValid());
+
+    QTimeZone tzBrazil("BRT+3"); // parts of Northern Brazil, as a POSIX rule
+    QVERIFY(tzBrazil.isValid());
+    QCOMPARE(tzBrazil.offsetFromUtc(QDateTime(QDate(1111, 11, 11).startOfDay())), -10800);
+
     // Test display names by type, either ICU or abbreviation only
     QLocale enUS("en_US");
     // Only test names in debug mode, names used can vary by ICU version installed
