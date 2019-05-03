@@ -2903,6 +2903,8 @@ int main(int argc, char *argv[])
             return CannotCopyQtFiles;
         if (!copyAndroidExtraResources(options))
             return CannotCopyAndroidExtraResources;
+        if (!copyAndroidExtraLibs(options))
+            return CannotCopyAndroidExtraLibs;
         if (!stripLibraries(options))
             return CannotStripLibraries;
         if (!updateAndroidFiles(options))
