@@ -241,7 +241,7 @@ _library_map = [
     LibraryMapping('xkbcommon', 'XKB', 'XKB::XKB', extra = ['0.4.1']),
     LibraryMapping('xlib', 'X11', 'X11::XCB'), # FIXME: Is this correct?
     LibraryMapping('xrender', 'XRender', 'PkgConfig::xrender'),
-    LibraryMapping('zlib', 'ZLIB', 'ZLIB::ZLIB'),
+    LibraryMapping('zlib', 'ZLIB', 'ZLIB::ZLIB', extra=['REQUIRED']),
     LibraryMapping('zstd', 'ZSTD', 'ZSTD::ZSTD'),
 ]
 

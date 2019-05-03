@@ -7,6 +7,7 @@
 #### Libraries
 
 qt_find_package(ZLIB PROVIDED_TARGETS ZLIB::ZLIB)
+set_package_properties(ZLIB PROPERTIES TYPE REQUIRED)
 qt_find_package(ZSTD PROVIDED_TARGETS ZSTD::ZSTD)
 qt_find_package(DBus1 PROVIDED_TARGETS dbus-1)
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
