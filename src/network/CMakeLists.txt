@@ -152,11 +152,13 @@ extend_target(Network CONDITION UNIX
         ${CMAKE_DL_LIBS}
 )
 
-# special case: Do not add this to android!
+# special case begin
+# Do not add this to android!
 extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY AND NOT ANDROID
     SOURCES
         kernel/qdnslookup_unix.cpp
 )
+# special case end
 
 extend_target(Network CONDITION QT_FEATURE_linux_netlink AND UNIX
     SOURCES
