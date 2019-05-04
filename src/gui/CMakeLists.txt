@@ -1,12 +1,12 @@
 # Generated from gui.pro.
 
-# special case:
-set(OpenGL_GL_PREFERENCE GLVND)
+set(OpenGL_GL_PREFERENCE GLVND) # special case:
 
 #####################################################################
 ## Gui Module:
 #####################################################################
 
+# special case begin
 if (QT_FEATURE_gui)
     if (WINRT)
         set(_default_platform "winrt")
@@ -34,10 +34,11 @@ if (QT_FEATURE_gui)
 
     set(QT_QPA_DEFAULT_PLATFORM "${_default_platform}" CACHE STRING "QPA default platform")
 endif()
+# special case end
 
 add_qt_module(Gui
     FEATURE_DEPENDENCIES  # special case:
-        Qt::Network
+        Qt::Network # special case:
     SOURCES
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
@@ -247,11 +248,12 @@ add_qt_module(Gui
 
 # Resources:
 
-# special case:
+# special case begin
 # This name is fixed in the code:-/
 add_qt_resource(Gui qmake_webgradients PREFIX "/qgradient" BASE "painting" FILES
     webgradients.binaryjson
 )
+# special case end
 
 set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
     PROPERTIES alias "sRGB2014.icc")
@@ -297,18 +299,21 @@ add_qt_simd_part(Gui SIMD mips_dspr2
         painting/qdrawhelper_mips_dspr2_asm.S
 )
 
-# special case: Replace arch_haswell with avx2 feature. That is what is used in the code requireing
+# special case begin
+# Replace arch_haswell with avx2 feature. That is what is used in the code requireing
 # this file, too!
 add_qt_simd_part(Gui SIMD avx2
     SOURCES
         painting/qdrawhelper_avx2.cpp
 )
+# special case end
 
-#special case:
+# special case begin
 extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
     SOURCES
         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
 )
+# special case end
 
 
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
@@ -420,14 +425,15 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
 
-# special case:
+# special case begin
 # With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
 # acted like WrapOpenGL: direct linkage against either libGLESv2 or
 # libGL, depending on the opengl _feature_. This is done by hand now
 # here (where the feature is available).
 # DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
 # available until the add_qt_module call.
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
+# special case end
 
 extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
@@ -462,7 +468,7 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
     LIBRARIES # special case
-        WrapOpenGL
+        WrapOpenGL # special case
 )
 
 extend_target(Gui CONDITION QT_FEATURE_movie
@@ -503,8 +509,7 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-# special case:
-# extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5 ...
+# extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5 ... # special case:
 
 #### Keys ignored in scope 45:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
@@ -514,13 +519,13 @@ extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
-# special case:
+# special case begin
 extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64" AND QT_FEATURE_neon)
     SOURCES
         ../3rdparty/pixman/pixman-arm-neon-asm.S
         painting/qdrawhelper_neon_asm.S
 )
-
+# special case end
 
 #### Keys ignored in scope 46:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND NOT INTEGRITY AND NOT QT_ARCH___contains___arm64:
 # NEON_ASM = "../3rdparty/pixman/pixman-arm-neon-asm.S" "painting/qdrawhelper_neon_asm.S"
@@ -565,12 +570,13 @@ extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
         opengl/qopenglfunctions_es2.cpp opengl/qopenglfunctions_es2.h
 )
 
-# special case
+# special case begin
 # Make Vulkan a global imported target, so that generator expressions involving Vulkan
 # can be correctly evaluated in any sub project directory.
 if(TARGET Vulkan::Vulkan)
     set_property(TARGET Vulkan::Vulkan PROPERTY IMPORTED_GLOBAL TRUE)
 endif()
+# special case end
 
 extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
@@ -582,7 +588,7 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-# special case:
+# special case begin
 if (QT_FEATURE_vulkan)
     set(qvkgen_command "${HOST_QVKGEN}")
     if (TARGET qvkgen)
@@ -620,6 +626,7 @@ if (QT_FEATURE_vulkan)
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p_cpp}"
     )
 endif()
+# special case end
 
 #### Keys ignored in scope 62:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # CONFIG = "generated_privates"
@@ -632,14 +639,15 @@ extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
-# special case:
+# special case begin
 # qpa headers are expected to be located right next to QtGui's private
 # headers. So a private QtGui header is #include <private/qfoo_p.h> and
 # a qpa header is #include <qpa/qplatformfoo.h>, both of them implying
 # linkage against Qt::GuiPrivate.
-qt_read_headers_pri("Gui" "module_headers") # special case
+qt_read_headers_pri("Gui" "module_headers")
 install(FILES ${module_headers_qpa}
-    DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa) # special case
+    DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa)
+# special case end
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
 add_qt_docs(
