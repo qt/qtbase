@@ -1,6 +1,6 @@
 # Generated from corelib.pro.
 
-# special case:
+# special case begin
 qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapDoubleConversion REQUIRED PROVIDED_TARGETS WrapDoubleConversion)
 
@@ -9,6 +9,7 @@ if (NOT WrapDoubleConversion_FOUND)
                          sscanf_l/snprintf_l _snprintf_l/_sscanf_l. \
                          You need to use libdouble-conversion for double/string conversion.")
 endif()
+# special case end
 
 #####################################################################
 ## Core Module:
@@ -232,13 +233,13 @@ add_qt_module(Core
         tinycbor # special case
         WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
-        Qt::Platform
+        Qt::Platform # special case:
     DISABLE_AUTOGEN_TOOLS # special case:
-        uic
+        uic # special case:
     DISABLE_TOOLS_EXPORT # special case:
 )
 
-# special case:
+# special case begin
 add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
 add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
 add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
@@ -305,7 +306,7 @@ add_qt_simd_part(Core SIMD mips_dsp
         ../gui/painting/qt_mips_asm_dsp_p.h
         tools/qstring_mips_dsp_asm.S
 )
-
+# special case end
 
 #### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
 # ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroid.jar"
@@ -480,8 +481,7 @@ extend_target(Core CONDITION INTEGRITY
 #### Keys ignored in scope 24:.:global:global/global.pri:else:
 # f16c_cxx = "false"
 
-# special case: Handled manually:
-# extend_target(Core CONDITION _ss_f16c_cxx ...
+# extend_target(Core CONDITION _ss_f16c_cxx ... # special case: Handled manually:
 
 #### Keys ignored in scope 26:.:global:global/global.pri:else:
 # F16C_SOURCES = "global/qfloat16_f16c.c"
@@ -1021,7 +1021,7 @@ extend_target(Core CONDITION WASM
         platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
 )
 
-# special case:
+# special case begin
 # needs refinement for the other compiler specific cases.
 if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
     # Equivalent to contains(QT_CPU_FEATURES.$$QT_ARCH, f16c)
@@ -1036,7 +1036,7 @@ else()
     )
 endif()
 
-# special case:
+
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
                    COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qfloat16-tables
                    ARGS "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
@@ -1045,7 +1045,7 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp
                    VERBATIM)
 target_sources(Core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp")
 
-# special case:
+
 set_source_files_properties(
     thread/qmutex_linux.cpp
     thread/qmutex_mac.cpp
@@ -1053,7 +1053,7 @@ set_source_files_properties(
     thread/qmutex_win.cpp
     PROPERTIES HEADER_FILE_ONLY ON)  # special case: These files are included by qmutex.cpp!
 
-# special case
+
 # Remove QT_NO_CAST_TO_ASCII to ensure that the symbols are included in the library.
 if(WIN32)
     get_target_property(defines Core COMPILE_DEFINITIONS)
@@ -1061,7 +1061,8 @@ if(WIN32)
     set_target_properties(Core PROPERTIES COMPILE_DEFINITIONS "${defines}")
 endif()
 
-qt_internal_add_link_flags_gc_sections(Core PRIVATE)  # special case
+qt_internal_add_link_flags_gc_sections(Core PRIVATE)
+# special case end
 
 qt_create_tracepoints(Core ./qtcore.tracepoints)
 add_qt_docs(
