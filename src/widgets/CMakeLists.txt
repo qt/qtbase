@@ -60,7 +60,7 @@ add_qt_module(Widgets
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES  # special case
+    PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
     # CONFIG = "$$MODULE_CONFIG" "qt_tracepoints"
