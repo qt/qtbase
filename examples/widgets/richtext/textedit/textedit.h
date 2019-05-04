@@ -97,6 +97,8 @@ private slots:
     void textColor();
     void textAlign(QAction *a);
     void setChecked(bool checked);
+    void indent();
+    void unindent();
 
     void currentCharFormatChanged(const QTextCharFormat &format);
     void cursorPositionChanged();
@@ -111,6 +113,7 @@ private:
     void setupTextActions();
     bool maybeSave();
     void setCurrentFileName(const QString &fileName);
+    void modifyIndentation(int amount);
 
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -126,6 +129,8 @@ private:
     QAction *actionAlignCenter;
     QAction *actionAlignRight;
     QAction *actionAlignJustify;
+    QAction *actionIndentLess;
+    QAction *actionIndentMore;
     QAction *actionToggleCheckState;
     QAction *actionUndo;
     QAction *actionRedo;

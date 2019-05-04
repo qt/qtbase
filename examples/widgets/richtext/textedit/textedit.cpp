@@ -317,6 +317,14 @@ void TextEdit::setupTextActions()
     actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
     actionAlignJustify->setCheckable(true);
     actionAlignJustify->setPriority(QAction::LowPriority);
+    const QIcon indentMoreIcon = QIcon::fromTheme("format-indent-more", QIcon(rsrcPath + "/format-indent-more.png"));
+    actionIndentMore = menu->addAction(indentMoreIcon, tr("&Indent"), this, &TextEdit::indent);
+    actionIndentMore->setShortcut(Qt::CTRL + Qt::Key_BracketRight);
+    actionIndentMore->setPriority(QAction::LowPriority);
+    const QIcon indentLessIcon = QIcon::fromTheme("format-indent-less", QIcon(rsrcPath + "/format-indent-less.png"));
+    actionIndentLess = menu->addAction(indentLessIcon, tr("&Unindent"), this, &TextEdit::unindent);
+    actionIndentLess->setShortcut(Qt::CTRL + Qt::Key_BracketLeft);
+    actionIndentLess->setPriority(QAction::LowPriority);
 
     // Make sure the alignLeft  is always left of the alignRight
     QActionGroup *alignGroup = new QActionGroup(this);
@@ -335,6 +343,10 @@ void TextEdit::setupTextActions()
 
     tb->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
+    tb->addAction(actionIndentMore);
+    tb->addAction(actionIndentLess);
+    menu->addAction(actionIndentMore);
+    menu->addAction(actionIndentLess);
 
     menu->addSeparator();
 
@@ -734,6 +746,40 @@ void TextEdit::textAlign(QAction *a)
 void TextEdit::setChecked(bool checked)
 {
     textStyle(checked ? 5 : 4);
+}
+
+void TextEdit::indent()
+{
+    modifyIndentation(1);
+}
+
+void TextEdit::unindent()
+{
+    modifyIndentation(-1);
+}
+
+void TextEdit::modifyIndentation(int amount)
+{
+    QTextCursor cursor = textEdit->textCursor();
+    cursor.beginEditBlock();
+    if (cursor.currentList()) {
+        QTextListFormat listFmt = cursor.currentList()->format();
+        // See whether the line above is the list we want to move this item into,
+        // or whether we need a new list.
+        QTextCursor above(cursor);
+        above.movePosition(QTextCursor::Up);
+        if (above.currentList() && listFmt.indent() + amount == above.currentList()->format().indent()) {
+            above.currentList()->add(cursor.block());
+        } else {
+            listFmt.setIndent(listFmt.indent() + amount);
+            cursor.createList(listFmt);
+        }
+    } else {
+        QTextBlockFormat blockFmt = cursor.blockFormat();
+        blockFmt.setIndent(blockFmt.indent() + amount);
+        cursor.setBlockFormat(blockFmt);
+    }
+    cursor.endEditBlock();
 }
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
