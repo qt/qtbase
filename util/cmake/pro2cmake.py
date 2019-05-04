@@ -45,6 +45,9 @@ import pyparsing as pp
 from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_library, \
     featureName, map_platform
 
+from shutil import copyfile
+from special_case_helper import SpecialCaseHandler
+
 
 def _parse_commandline():
     parser = ArgumentParser(description='Generate CMakeLists.txt files from .'
@@ -67,10 +70,21 @@ def _parse_commandline():
                         dest='debug_full_pro_structure', action='store_true',
                         help='Dump the full structure of the qmake .pro-file '
                         '(with includes).')
+    parser.add_argument('--debug-special-case-preservation',
+                        dest='debug_special_case_preservation', action='store_true',
+                        help='Show all git commands and file copies.')
 
     parser.add_argument('--example', action='store_true',
                         dest="is_example",
                         help='Treat the input .pro file as an example.')
+    parser.add_argument('-s', '--skip-special-case-preservation',
+                        dest='skip_special_case_preservation', action='store_true',
+                        help='Skips behavior to reapply '
+                             'special case modifications (requires git in PATH)')
+    parser.add_argument('-k', '--keep-temporary-files',
+                        dest='keep_temporary_files', action='store_true',
+                        help='Don\'t automatically remove CMakeLists.gen.txt and other '
+                             'intermediate files.')
 
     parser.add_argument('files', metavar='<.pro/.pri file>', type=str,
                         nargs='+', help='The .pro/.pri file to process')
@@ -448,7 +462,12 @@ class Scope(object):
         return self._file or ''
 
     @property
-    def cMakeListsFile(self) -> str:
+    def generated_cmake_lists_path(self) -> str:
+        assert self.basedir
+        return os.path.join(self.basedir, 'CMakeLists.gen.txt')
+
+    @property
+    def original_cmake_lists_path(self) -> str:
         assert self.basedir
         return os.path.join(self.basedir, 'CMakeLists.txt')
 
@@ -1596,8 +1615,9 @@ def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
               .format(scope.file, template))
 
 
-def generate_cmakelists(scope: Scope, *, is_example: bool=False) -> None:
-    with open(scope.cMakeListsFile, 'w') as cm_fh:
+def generate_new_cmakelists(scope: Scope, *, is_example: bool=False) -> None:
+    print('Generating CMakeLists.gen.txt')
+    with open(scope.generated_cmake_lists_path, 'w') as cm_fh:
         assert scope.file
         cm_fh.write('# Generated from {}.\n\n'
                     .format(os.path.basename(scope.file)))
@@ -1624,6 +1644,14 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         do_include(include_scope)
 
         scope.merge(include_scope)
+
+
+def copy_generated_file_to_final_location(scope: Scope, keep_temporary_files=False) -> None:
+    print('Copying {} to {}'.format(scope.generated_cmake_lists_path,
+                                    scope.original_cmake_lists_path))
+    copyfile(scope.generated_cmake_lists_path, scope.original_cmake_lists_path)
+    if not keep_temporary_files:
+        os.remove(scope.generated_cmake_lists_path)
 
 
 def main() -> None:
@@ -1665,7 +1693,22 @@ def main() -> None:
             file_scope.dump()
             print('\n#### End of full .pro/.pri file structure.\n')
 
-        generate_cmakelists(file_scope, is_example=args.is_example)
+        generate_new_cmakelists(file_scope, is_example=args.is_example)
+
+        copy_generated_file = True
+        if not args.skip_special_case_preservation:
+            debug_special_case = args.debug_special_case_preservation or args.debug
+            handler = SpecialCaseHandler(file_scope.original_cmake_lists_path,
+                                         file_scope.generated_cmake_lists_path,
+                                         file_scope.basedir,
+                                         keep_temporary_files=args.keep_temporary_files,
+                                         debug=debug_special_case)
+
+            copy_generated_file = handler.handle_special_cases()
+
+        if copy_generated_file:
+            copy_generated_file_to_final_location(file_scope,
+                                                  keep_temporary_files=args.keep_temporary_files)
         os.chdir(backup_current_dir)
 
 
