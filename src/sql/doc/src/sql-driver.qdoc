@@ -54,9 +54,9 @@
          \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
             ODBC-compliant databases
     \row \li \l{#QPSQL}{QPSQL} \li PostgreSQL (versions 7.3 and above)
-    \row \li \l{#QSQLITE2}{QSQLITE2} \li SQLite version 2
+    \row \li \l{#QSQLITE2}{QSQLITE2} \li SQLite version 2 \note obsolete since Qt 5.14
     \row \li \l{#QSQLITE}{QSQLITE} \li SQLite version 3
-    \row \li \l{#QTDS}{QTDS} \li Sybase Adaptive Server \note obsolete from Qt 4.7
+    \row \li \l{#QTDS}{QTDS} \li Sybase Adaptive Server \note obsolete since Qt 4.7
     \endtable
 
     SQLite is the in-process database system with the best test coverage

@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 
+// ### Qt6: remove, obsolete since 4.7
 class QTDSDriverPlugin : public QSqlDriverPlugin
 {
     Q_OBJECT
