@@ -908,7 +908,9 @@ void tst_QApplication::libraryPaths()
 
         QStringList actual = QApplication::libraryPaths();
         actual.sort();
-        QStringList expected = QSet<QString>::fromList((QStringList() << testDir << appDirPath)).toList();
+        QStringList expected;
+        expected << testDir << appDirPath;
+        expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
         expected.sort();
 
         QVERIFY2(isPathListIncluded(actual, expected),
@@ -925,7 +927,9 @@ void tst_QApplication::libraryPaths()
         QStringList actual = QApplication::libraryPaths();
         actual.sort();
 
-        QStringList expected = QSet<QString>::fromList((QStringList() << installPathPlugins << appDirPath)).toList();
+        QStringList expected;
+        expected << installPathPlugins << appDirPath;
+        expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
         expected.sort();
 
 #ifdef Q_OS_WINRT

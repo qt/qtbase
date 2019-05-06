@@ -6352,7 +6352,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                         << "delivering override to"
                         << item.data() << gestures;
                 // send gesture override
-                QGestureEvent ev(gestures.toList());
+                QGestureEvent ev(gestures.values());
                 ev.t = QEvent::GestureOverride;
                 ev.setWidget(event->widget());
                 // mark event and individual gestures as ignored
@@ -6442,7 +6442,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
                 << "delivering to"
                 << receiver.data() << gestures;
-        QGestureEvent ev(gestures.toList());
+        QGestureEvent ev(gestures.values());
         ev.setWidget(event->widget());
         sendEvent(receiver.data(), &ev);
         QSet<QGesture *> ignoredGestures;
@@ -6473,7 +6473,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             // look for new potential targets for gestures that were ignored
             // and should be propagated.
 
-            QSet<QGraphicsObject *> targetsSet = cachedTargetItems.toSet();
+            QSet<QGraphicsObject *> targetsSet(cachedTargetItems.constBegin(), cachedTargetItems.constEnd());
 
             if (receiver) {
                 // first if the gesture should be propagated to parents only
@@ -6505,7 +6505,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             gestureTargetsAtHotSpots(ignoredGestures, Qt::ReceivePartialGestures,
                                      &cachedItemGestures, &targetsSet, 0, 0);
 
-            cachedTargetItems = targetsSet.toList();
+            cachedTargetItems = targetsSet.values();
             std::sort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);
             DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
                     << "new targets:" << cachedTargetItems;
@@ -6583,7 +6583,7 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
         }
         Q_ASSERT(target);
 
-        const QList<QGesture *> list = gestures.toList();
+        const QList<QGesture *> list = gestures.values();
         QGestureEvent ev(list);
         sendEvent(target, &ev);
 

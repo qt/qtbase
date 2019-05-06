@@ -1007,7 +1007,7 @@ bool QTextOdfWriter::writeAll()
 
     // add objects for lists, frames and tables
     const QVector<QTextFormat> allFormats = m_document->allFormats();
-    const QList<int> copy = formats.toList();
+    const QList<int> copy = formats.values();
     for (auto index : copy) {
         QTextObject *object = m_document->objectForFormat(allFormats[index]);
         if (object) {

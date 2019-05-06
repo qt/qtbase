@@ -171,7 +171,7 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
         if (objectGesture.gesture == type && target == objectGesture.object) {
-            QSet<QGesture *> gestures = iter.value().toSet();
+            QSet<QGesture *> gestures = QSet<QGesture *>(iter.value().constBegin(), iter.value().constEnd());
             for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
                  it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
                 it.value() -= gestures;

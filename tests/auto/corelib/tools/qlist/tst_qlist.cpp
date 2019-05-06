@@ -364,10 +364,10 @@ private slots:
     void takeLastOptimal() const;
     void takeLastMovable() const;
     void takeLastComplex() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void toSetOptimal() const;
     void toSetMovable() const;
     void toSetComplex() const;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void toStdListOptimal() const;
     void toStdListMovable() const;
     void toStdListComplex() const;
@@ -428,8 +428,8 @@ private:
     template<typename T> void takeAt() const;
     template<typename T> void takeFirst() const;
     template<typename T> void takeLast() const;
-    template<typename T> void toSet() const;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    template<typename T> void toSet() const;
     template<typename T> void toStdList() const;
 #endif
     template<typename T> void toVector() const;
@@ -1599,6 +1599,7 @@ void tst_QList::takeLastComplex() const
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template<typename T>
 void tst_QList::toSet() const
 {
@@ -1637,7 +1638,6 @@ void tst_QList::toSetComplex() const
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template<typename T>
 void tst_QList::toStdList() const
 {

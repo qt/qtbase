@@ -1721,7 +1721,7 @@ QWidgetList QApplication::topLevelWidgets()
 QWidgetList QApplication::allWidgets()
 {
     if (QWidgetPrivate::allWidgets)
-        return QWidgetPrivate::allWidgets->toList();
+        return QWidgetPrivate::allWidgets->values();
     return QWidgetList();
 }
 

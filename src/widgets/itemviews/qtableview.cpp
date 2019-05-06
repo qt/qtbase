@@ -191,7 +191,7 @@ QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w,
             break;
         --it_y;
     }
-    return list.toList();
+    return list.values();
 }
 
 #undef DEBUG_SPAN_UPDATE
@@ -875,7 +875,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
             for(int y = firstVisualRow; y <= lastVisualRow; y++)
                 set.insert(spans.spanAt(x,y));
         set.remove(0);
-        visibleSpans = set.toList();
+        visibleSpans = set.values();
     }
 
     for (QSpanCollection::Span *span : qAsConst(visibleSpans)) {

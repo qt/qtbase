@@ -693,7 +693,7 @@ static QStringList libraryPathList()
     // discover paths of already loaded libraries
     QSet<QString> loadedPaths;
     dl_iterate_phdr(dlIterateCallback, &loadedPaths);
-    paths.append(loadedPaths.toList());
+    paths.append(loadedPaths.values());
 #endif
 
     return paths;

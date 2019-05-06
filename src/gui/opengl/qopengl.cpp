@@ -80,7 +80,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     if (extensionStr) {
         QByteArray ba(extensionStr);
         QList<QByteArray> extensions = ba.split(' ');
-        m_extensions = extensions.toSet();
+        m_extensions = QSet<QByteArray>(extensions.constBegin(), extensions.constEnd());
     } else {
 #ifdef QT_OPENGL_3
         // clear error state

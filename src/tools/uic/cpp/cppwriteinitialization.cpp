@@ -2607,7 +2607,7 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
         return;
     }
 
-    auto list = directives.toList();
+    auto list = directives.values();
     // sort (always generate in the same order):
     std::sort(list.begin(), list.end());
 

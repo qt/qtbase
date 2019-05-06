@@ -164,7 +164,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
         for (auto it = v.cbegin(), end = v.cend(); it != end; ++it)
             variablesSet.insert(it.key());
     }
-    variables = variablesSet.toList();
+    variables = variablesSet.values();
 
     // Set Variables reverse mapping
     // We also need to be able to find the index for a given variable, to do that

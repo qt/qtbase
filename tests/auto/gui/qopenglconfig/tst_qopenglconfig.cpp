@@ -200,7 +200,7 @@ static void dumpGlConfiguration(QOpenGLContext &context, QTextStream &str)
         << "\nShading language : " << reinterpret_cast<const char *>(functions.glGetString(GL_SHADING_LANGUAGE_VERSION))
         << "\nFormat           : " << context.format();
 
-    QList<QByteArray> extensionList = context.extensions().toList();
+    QList<QByteArray> extensionList = context.extensions().values();
     std::sort(extensionList.begin(), extensionList.end());
     const int extensionCount = extensionList.size();
     str << "\n\nFound " << extensionCount << " extensions:\n";
@@ -233,9 +233,9 @@ void tst_QOpenGlConfig::testGlConfiguration()
 static inline QByteArray msgSetMismatch(const QSet<QString> &expected,
                                         const QSet<QString> &actual)
 {
-    const QString result = QStringList(expected.toList()).join(QLatin1Char(','))
+    const QString result = QStringList(expected.values()).join(QLatin1Char(','))
         + QLatin1String(" != ")
-        + QStringList(actual.toList()).join(QLatin1Char(','));
+        + QStringList(actual.values()).join(QLatin1Char(','));
     return result.toLatin1();
 }
 

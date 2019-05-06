@@ -370,10 +370,11 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
             QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(historyState)->configuration;
             if (!historyConfiguration.isEmpty()) {
                 // There is a saved history, so apply that.
-                targets.unite(historyConfiguration.toSet());
+                targets.unite(QSet<QAbstractState *>(historyConfiguration.constBegin(), historyConfiguration.constEnd()));
             } else if (QAbstractTransition *defaultTransition = historyState->defaultTransition()) {
                 // No saved history, take all default transition targets.
-                targets.unite(defaultTransition->targetStates().toSet());
+                const auto &targetStates = defaultTransition->targetStates();
+                targets.unite(QSet<QAbstractState *>(targetStates.constBegin(), targetStates.constEnd()));
             } else {
                 // Woops, we found a history state without a default state. That's not valid!
                 QStateMachinePrivate *m = QStateMachinePrivate::get(historyState->machine());
@@ -384,7 +385,7 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
         }
     }
 
-    targetsList = targets.toList();
+    targetsList = targets.values();
     cache->insert(transition, targetsList);
     return targetsList;
 }
@@ -740,7 +741,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeExitSet(const QList<QAbstrac
 {
     Q_ASSERT(cache);
 
-    QList<QAbstractState*> statesToExit_sorted = computeExitSet_Unordered(enabledTransitions, cache).toList();
+    QList<QAbstractState*> statesToExit_sorted = computeExitSet_Unordered(enabledTransitions, cache).values();
     std::sort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
     return statesToExit_sorted;
 }
@@ -777,7 +778,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
         // makes the state machine invalid.
         if (error == QStateMachine::NoError)
             setError(QStateMachine::NoCommonAncestorForTransitionError, t->sourceState());
-        QList<QAbstractState *> lst = pendingErrorStates.toList();
+        QList<QAbstractState *> lst = pendingErrorStates.values();
         lst.prepend(t->sourceState());
 
         domain = findLCCA(lst);
@@ -879,7 +880,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstra
         pendingErrorStatesForDefaultEntry.clear();
     }
 
-    QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
+    QList<QAbstractState*> statesToEnter_sorted = statesToEnter.values();
     std::sort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
     return statesToEnter_sorted;
 }

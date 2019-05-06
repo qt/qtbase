@@ -2066,7 +2066,7 @@ QList<AnchorData *> getVariables(const QList<QSimplexConstraint *> &constraints)
         for (auto it = c->variables.cbegin(), end = c->variables.cend(); it != end; ++it)
             variableSet.insert(static_cast<AnchorData *>(it.key()));
     }
-    return variableSet.toList();
+    return variableSet.values();
 }
 
 /*!

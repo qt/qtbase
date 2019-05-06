@@ -2696,7 +2696,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             QSet<QString> recurse;
             const ProKey rkey(*qut_it + ".recurse");
             if (project->isSet(rkey)) {
-                recurse = project->values(rkey).toQStringList().toSet();
+                const QStringList values = project->values(rkey).toQStringList();
+                recurse = QSet<QString>(values.begin(), values.end());
             } else {
                 for(int target = 0; target < targets.size(); ++target)
                     recurse.insert(targets.at(target)->name);

@@ -245,10 +245,13 @@ public:
     inline QSet<T> operator-(const QSet<T> &other) const
         { QSet<T> result = *this; result -= other; return result; }
 
-    QList<T> toList() const;
-    inline QList<T> values() const { return toList(); }
-
+    QList<T> values() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use values() instead.")
+    QList<T> toList() const { return values(); }
+    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
     static QSet<T> fromList(const QList<T> &list);
+#endif
 
 private:
     Hash q_hash;
@@ -368,7 +371,7 @@ Q_INLINE_TEMPLATE bool QSet<T>::contains(const QSet<T> &other) const
 }
 
 template <typename T>
-Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::toList() const
+Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::values() const
 {
     QList<T> result;
     result.reserve(size());
@@ -380,6 +383,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::toList() const
     return result;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QSet<T> QList<T>::toSet() const
 {
@@ -401,6 +405,7 @@ QList<T> QList<T>::fromSet(const QSet<T> &set)
 {
     return set.toList();
 }
+#endif
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Set)
 

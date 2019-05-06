@@ -297,9 +297,8 @@ public:
     inline QVector<T> &operator<<(T &&t)
     { append(std::move(t)); return *this; }
 
-    QList<T> toList() const;
-
     static QVector<T> fromList(const QList<T> &list);
+    QList<T> toList() const;
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")

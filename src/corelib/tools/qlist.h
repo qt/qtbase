@@ -403,13 +403,15 @@ public:
     inline QList<T> &operator<<(const QList<T> &l)
     { *this += l; return *this; }
 
-    QVector<T> toVector() const;
-    QSet<T> toSet() const;
-
     static QList<T> fromVector(const QVector<T> &vector);
-    static QList<T> fromSet(const QSet<T> &set);
+    QVector<T> toVector() const;
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use QList<T>(set.begin(), set.end()) instead.")
+    static QList<T> fromSet(const QSet<T> &set);
+    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
+    QSet<T> toSet() const;
+
     Q_DECL_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
     static inline QList<T> fromStdList(const std::list<T> &list)
     { QList<T> tmp; std::copy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }

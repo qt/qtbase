@@ -346,7 +346,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         QHash<QString, QString> fileNames;
         bool duplicatesFound = false;
         const QStringList sourceFilesFilter = sourceFilesForImplicitRulesFilter();
-        QStringList fixifiedSourceDirs = fileFixify(source_directories.toList(), FileFixifyAbsolute);
+        QStringList fixifiedSourceDirs = fileFixify(QList<QString>(source_directories.constBegin(), source_directories.constEnd()), FileFixifyAbsolute);
         fixifiedSourceDirs.removeDuplicates();
         for (const QString &sourceDir : qAsConst(fixifiedSourceDirs)) {
             QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
