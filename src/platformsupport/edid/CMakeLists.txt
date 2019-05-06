@@ -12,9 +12,11 @@ add_qt_module(EdidSupport
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
         Qt::CorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
 )
 
-#### Keys ignored in scope 1:.:edid.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:edid.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "edid_support"
 # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
