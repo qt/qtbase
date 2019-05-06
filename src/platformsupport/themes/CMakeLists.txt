@@ -13,9 +13,12 @@ add_qt_module(ThemeSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:themes.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:themes.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "theme_support"
 # _LOADED = "qt_module"
