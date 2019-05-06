@@ -13,9 +13,12 @@ add_qt_module(ServiceSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:services.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:services.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "service_support"
 # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
@@ -25,6 +28,6 @@ add_qt_module(ServiceSupport
 #####################################################################
 
 extend_target(ServiceSupport CONDITION QT_FEATURE_dbus
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )
