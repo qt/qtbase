@@ -142,7 +142,6 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
             weight = QFont::Bold;
 
         bool fixedPitch = (face->face_flags & FT_FACE_FLAG_FIXED_WIDTH);
-
         QSupportedWritingSystems writingSystems;
         // detect symbol fonts
         for (int i = 0; i < face->num_charmaps; ++i) {
