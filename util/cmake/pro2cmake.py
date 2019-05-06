@@ -42,8 +42,8 @@ import typing
 from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
 
-from helper import map_qt_library, featureName, \
-    substitute_platform, substitute_libs
+from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_library, \
+    featureName, map_platform
 
 
 def _parse_commandline():
@@ -810,15 +810,14 @@ def map_condition(condition: str) -> str:
                 part = 'TARGET {}'.format(map_qt_library(feature.group(2)))
             else:
                 feature = featureName(feature.group(2))
-                if feature.startswith('system_') and substitute_libs(feature[7:]) != feature[7:]:
-                    # Qt6 always uses system libraries!
+                if feature.startswith('system_') and is_known_3rd_party_library(feature[7:]):
                     part = 'ON'
                 elif feature == 'dlopen':
                     part = 'ON'
                 else:
                     part = 'QT_FEATURE_' + feature
         else:
-            part = substitute_platform(part)
+            part = map_platform(part)
 
         part = part.replace('true', 'ON')
         part = part.replace('false', 'OFF')
@@ -939,7 +938,9 @@ def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
         if d.startswith('-'):
             d = '# Remove: {}'.format(d[1:])
         else:
-            d = substitute_libs(d)
+            d = map_3rd_party_library(d)
+        if not d or d in dependencies_to_print:
+            continue
         dependencies_to_print.append(d)
         is_framework = False
 
@@ -954,18 +955,24 @@ def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
 def write_library_section(cm_fh: typing.IO[str], scope: Scope,
                           public: typing.List[str],
                           private: typing.List[str],
-                          mixed: typing.List[str], *,
+                          qt_private: typing.List[str],
+                          qt_mixed: typing.List[str], *,
                           indent: int = 0, known_libraries=set()):
-    public_dependencies = []  # typing.List[str]
-    private_dependencies = []  # typing.List[str]
+    public_dependencies = []  # type: typing.List[str]
+    private_dependencies = []  # type: typing.List[str]
 
     for key in public:
-        public_dependencies += [map_qt_library(q) for q in scope.expand(key)
-                                if map_qt_library(q) not in known_libraries]
+        public_dependencies += [q for q in scope.expand(key)
+                                if q not in known_libraries]
     for key in private:
+        private_dependencies += [q for q in scope.expand(key)
+                                 if q not in known_libraries]
+
+    for key in qt_private:
         private_dependencies += [map_qt_library(q) for q in scope.expand(key)
                                  if map_qt_library(q) not in known_libraries]
-    for key in mixed:
+
+    for key in qt_mixed:
         for lib in scope.expand(key):
             mapped_lib = map_qt_library(lib)
             if mapped_lib in known_libraries:
@@ -1028,7 +1035,8 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
 
     write_library_section(cm_fh, scope,
                           ['QMAKE_USE', 'LIBS'],
-                          ['QT_FOR_PRIVATE', 'QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE'],
+                          ['QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE'],
+                          ['QT_FOR_PRIVATE',],
                           ['QT',],
                           indent=indent, known_libraries=known_libraries)
 

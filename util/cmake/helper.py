@@ -67,7 +67,7 @@ _qt_library_map = [
     LibraryMapping('core', 'Qt5', 'Qt::Core', extra = ['COMPONENTS', 'Core']),
     LibraryMapping('coretest', 'Qt5', 'Qt::3DCoreTest', extra = ['COMPONENTS', '3DCoreTest']),
     LibraryMapping('crypto-lib', 'Qt5', 'Qt::AppManCrypto', extra = ['COMPONENTS', 'AppManCrypto']),
-    LibraryMapping('dbus', 'Qt5', 'Qt::Dbus', extra = ['COMPONENTS', 'DBus']),
+    LibraryMapping('dbus', 'Qt5', 'Qt::DBus', extra = ['COMPONENTS', 'DBus']),
     LibraryMapping('devicediscovery', 'Qt5', 'Qt::DeviceDiscoverySupport', extra = ['COMPONENTS', 'DeviceDiscoverySupport']),
     LibraryMapping('devicediscovery_support', 'Qt5', 'Qt::DeviceDiscoverySupport', extra = ['COMPONENTS', 'DeviceDiscoverySupport']),
     LibraryMapping('edid', 'Qt5', 'Qt::EdidSupport', extra = ['COMPONENTS', 'EdidSupport']),
@@ -189,10 +189,11 @@ _library_map = [
     LibraryMapping('host_dbus', None, None),
     LibraryMapping('icu', 'ICU', 'ICU::i18n ICU::uc ICU::data', extra=['COMPONENTS', 'i18n', 'uc', 'data']),
     LibraryMapping('journald', 'Libsystemd', 'PkgConfig::Libsystemd'),
+    LibraryMapping('jpeg', 'JPEG', 'JPEG::JPEG'), # see also libjpeg
     LibraryMapping('libatomic', 'Atomic', 'Atomic'),
-    LibraryMapping('libdl', None, None),
+    LibraryMapping('libdl', None, '${CMAKE_DL_LIBS}'),
     LibraryMapping('libinput', 'Libinput', 'Libinput::Libinput'),
-    LibraryMapping('libjpeg', 'JPEG', 'JPEG::JPEG'),
+    LibraryMapping('libjpeg', 'JPEG', 'JPEG::JPEG'), # see also jpeg
     LibraryMapping('libpng', 'PNG', 'PNG::PNG'),
     LibraryMapping('libproxy', 'Libproxy', 'PkgConfig::Libproxy'),
     LibraryMapping('librt', 'WrapRt','WrapRt'),
@@ -246,7 +247,7 @@ _library_map = [
 ]
 
 
-def find_library_mapping(soName: str) -> typing.Optional[LibraryMapping]:
+def find_3rd_party_library_mapping(soName: str) -> typing.Optional[LibraryMapping]:
     for i in _library_map:
         if i.soName == soName:
             return i
@@ -272,6 +273,7 @@ def map_qt_library(lib: str) -> str:
     mapped = find_qt_library_mapping(lib)
     qt_name = lib
     if mapped:
+        assert mapped.targetName # Qt libs must have a target name set
         qt_name = mapped.targetName
     if private:
         qt_name += 'Private'
@@ -314,19 +316,25 @@ platform_mapping = {
 }
 
 
-def substitute_platform(platform: str) -> str:
+def map_platform(platform: str) -> str:
     """ Return the qmake platform as cmake platform or the unchanged string. """
     return platform_mapping.get(platform, platform)
 
 
-def substitute_libs(lib: str) -> str:
+def is_known_3rd_party_library(lib: str) -> bool:
+    if lib.endswith('/nolink') or lib.endswith('_nolink'):
+        lib = lib[:-7]
+    mapping = find_3rd_party_library_mapping(lib)
+
+    return mapping is not None and mapping.targetName is not None
+
+
+def map_3rd_party_library(lib: str) -> str:
     libpostfix = ''
     if lib.endswith('/nolink'):
         lib = lib[:-7]
         libpostfix = '_nolink'
-    mapping = find_qt_library_mapping(lib)
-    if not mapping:
-        mapping = find_library_mapping(lib)
-    if not mapping:
-        return lib + libpostfix
+    mapping = find_3rd_party_library_mapping(lib)
+    if not mapping or not mapping.targetName:
+        return lib
     return mapping.targetName + libpostfix

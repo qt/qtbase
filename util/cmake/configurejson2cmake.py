@@ -33,7 +33,7 @@ import re
 import sys
 from typing import Set, Union, List, Dict
 
-from helper import map_qt_library, featureName, substitute_platform, find_library_mapping
+from helper import map_qt_library, featureName, map_platform, find_3rd_party_library_mapping
 
 knownTests = set()  # type: Set[str]
 
@@ -165,7 +165,7 @@ def processFiles(ctx, data):
     return ctx
 
 def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
-    newlib = find_library_mapping(lib)
+    newlib = find_3rd_party_library_mapping(lib)
     if not newlib:
         print('    XXXX Unknown library "{}".'.format(lib))
         return
@@ -174,7 +174,7 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
         print('    **** Skipping library "{}" -- was masked.'.format(lib))
         return
 
-    print('    mapped library {} to {}.'.format(lib, newlib))
+    print('    mapped library {} to {}.'.format(lib, newlib.targetName))
 
     # Avoid duplicate find_package calls.
     if newlib.targetName in cmake_find_packages_set:
@@ -251,7 +251,7 @@ def map_condition(condition):
         substitution = None
         appendFoundSuffix = True
         if match.group(1) == 'libs':
-            libmapping = find_library_mapping(match.group(2))
+            libmapping = find_3rd_party_library_mapping(match.group(2))
 
             if libmapping and libmapping.packageName:
                 substitution = libmapping.packageName
@@ -282,7 +282,7 @@ def map_condition(condition):
             substitution = 'INPUT_{}'.format(featureName(match.group(2)))
 
         elif match.group(1) == 'config':
-            substitution = substitute_platform(match.group(2))
+            substitution = map_platform(match.group(2))
 
         elif match.group(1) == 'arch':
             if match.group(2) == 'i386':
