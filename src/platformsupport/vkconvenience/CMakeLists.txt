@@ -1,3 +1,5 @@
+# Generated from vkconvenience.pro.
+
 qt_find_package(Vulkan) # special case
 
 #####################################################################
@@ -13,9 +15,12 @@ add_qt_module(VulkanSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:vkconvenience.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:vkconvenience.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "vulkan_support"
 # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
