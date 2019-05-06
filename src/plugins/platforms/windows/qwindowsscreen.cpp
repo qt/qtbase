@@ -435,6 +435,12 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
 
 QWindowsScreenManager::QWindowsScreenManager() = default;
 
+
+bool QWindowsScreenManager::isSingleScreen()
+{
+    return QWindowsContext::instance()->screenManager().screens().size() < 2;
+}
+
 /*!
     \brief Triggers synchronization of screens (WM_DISPLAYCHANGE).
 

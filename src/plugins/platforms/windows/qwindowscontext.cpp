@@ -210,6 +210,7 @@ void QWindowsUser32DLL::init()
 
     if (QOperatingSystemVersion::current()
         >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 14393)) {
+        adjustWindowRectExForDpi = (AdjustWindowRectExForDpi)library.resolve("AdjustWindowRectExForDpi");
         enableNonClientDpiScaling = (EnableNonClientDpiScaling)library.resolve("EnableNonClientDpiScaling");
         getWindowDpiAwarenessContext = (GetWindowDpiAwarenessContext)library.resolve("GetWindowDpiAwarenessContext");
         getAwarenessFromDpiAwarenessContext = (GetAwarenessFromDpiAwarenessContext)library.resolve("GetAwarenessFromDpiAwarenessContext");
@@ -977,7 +978,7 @@ static inline bool resizeOnDpiChanged(const QWindow *w)
     return result;
 }
 
-static bool shouldHaveNonClientDpiScaling(const QWindow *window)
+bool QWindowsContext::shouldHaveNonClientDpiScaling(const QWindow *window)
 {
     return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
         && window->isTopLevel()
@@ -1589,6 +1590,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
             marginsFromRects(ncCalcSizeFrame, rectFromNcCalcSize(message, wParam, lParam, 0));
         if (margins.left() >= 0) {
             if (platformWindow) {
+                qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_NCCALCSIZE for" << hwnd << margins;
                 platformWindow->setFullFrameMargins(margins);
             } else {
                 const QSharedPointer<QWindowCreationContext> ctx = QWindowsContext::instance()->windowCreationContext();
