@@ -14,12 +14,14 @@ add_qt_plugin(qnmbearer
         qnetworkmanagerengine.cpp qnetworkmanagerengine.h
         qnetworkmanagerservice.cpp qnetworkmanagerservice.h
     LIBRARIES
+        Qt::NetworkPrivate
+    PUBLIC_LIBRARIES
         Qt::Core
         Qt::DBus
-        Qt::NetworkPrivate
+        Qt::Network
 )
 
-#### Keys ignored in scope 1:.:networkmanager.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:networkmanager.pro:<TRUE>:
 # OTHER_FILES = "networkmanager.json"
 # PLUGIN_CLASS_NAME = "QNetworkManagerEnginePlugin"
 # _LOADED = "qt_plugin"

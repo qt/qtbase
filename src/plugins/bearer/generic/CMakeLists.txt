@@ -15,9 +15,12 @@ add_qt_plugin(qgenericbearer
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Network
 )
 
-#### Keys ignored in scope 1:.:generic.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:generic.pro:<TRUE>:
 # OTHER_FILES = "generic.json"
 # PLUGIN_CLASS_NAME = "QGenericEnginePlugin"
 # _LOADED = "qt_plugin"
@@ -26,6 +29,6 @@ add_qt_plugin(qgenericbearer
 #####################################################################
 
 extend_target(qgenericbearer CONDITION WIN32 AND NOT WINRT
-    LIBRARIES
+    PUBLIC_LIBRARIES
         iphlpapi
 )
