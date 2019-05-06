@@ -1039,13 +1039,10 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
 void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config)
 {
     Q_D(QNetworkAccessManager);
-    if (!d->statusMonitor.isEnabled()) {
-        d->networkConfiguration = config;
-        d->customNetworkConfiguration = true;
-        d->createSession(config);
-    } else {
-        qWarning(lcNetMon, "No network configuration can be set with network status monitor enabled");
-    }
+
+    d->networkConfiguration = config;
+    d->customNetworkConfiguration = true;
+    d->createSession(config);
 }
 
 /*!
@@ -1106,11 +1103,6 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkAccessibility accessible)
 {
     Q_D(QNetworkAccessManager);
-
-    if (d->statusMonitor.isEnabled()) {
-        qWarning(lcNetMon, "Can not manually set network accessibility with the network status monitor enabled");
-        return;
-    }
 
     d->defaultAccessControl = accessible == NotAccessible ? false : true;
 
