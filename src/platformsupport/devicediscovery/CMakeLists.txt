@@ -12,9 +12,11 @@ add_qt_module(DeviceDiscoverySupport
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
         Qt::CorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
 )
 
-#### Keys ignored in scope 1:.:devicediscovery.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:devicediscovery.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "devicediscovery_support"
 # QT_FOR_CONFIG = "gui-private"
