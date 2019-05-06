@@ -671,8 +671,6 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
         return;
     }
 
-    finishComposingText();
-
     auto im = qGuiApp->inputMethod();
     auto leftRect = im->cursorRectangle();
     // The handle is down of the cursor, but we want the position in the middle.
@@ -682,12 +680,9 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
         : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
     QPointF point(x / pixelDensity, y / pixelDensity);
     point.setY(point.y() - leftRect.width() / 2);
-    if (handleId == 1) {
-        setSelectionOnFocusObject(point, point);
-        return;
-    }
 
-    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImCurrentSelection);
+    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition
+                                 | Qt::ImAbsolutePosition | Qt::ImCurrentSelection);
     QCoreApplication::sendEvent(m_focusObject, &query);
     int cpos = query.value(Qt::ImCursorPosition).toInt();
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
@@ -729,16 +724,62 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
     };
 
     if (handleId == 2) {
-        QPointF rightPoint(rightRect.center());
         if ((!rtl && !checkLeftHandle(point)) || (rtl && !checkRtlRightHandle(point)))
             return;
-        setSelectionOnFocusObject(point, rightPoint);
     } else if (handleId == 3) {
-        QPointF leftPoint(leftRect.center());
         if ((!rtl && !checkRightHandle(point)) || (rtl && !checkRtlLeftHandle(point)))
             return;
-        setSelectionOnFocusObject(leftPoint, point);
     }
+
+    const QPointF pointLocal = im->inputItemTransform().inverted().map(point);
+    bool ok;
+    const int handlePos =
+            QInputMethod::queryFocusObject(Qt::ImCursorPosition, pointLocal).toInt(&ok);
+    if (!ok)
+        return;
+
+    int newCpos = cpos;
+    int newAnchor = anchor;
+    if (newAnchor > newCpos)
+        std::swap(newAnchor, newCpos);
+
+    if (handleId == 1) {
+        newCpos = handlePos;
+        newAnchor = handlePos;
+    } else if (handleId == 2) {
+        newAnchor = handlePos;
+    } else if (handleId == 3) {
+        newCpos = handlePos;
+    }
+
+    // Check if handle has been dragged far enough
+    if (m_composingText.isEmpty() && newCpos == cpos && newAnchor == anchor)
+        return;
+
+    /*
+      If there is composing text, we have to compare newCpos with m_composingCursor instead of cpos.
+      And since there is nothing to compare with newAnchor, we perform the check only when user
+      drags the cursor handle.
+     */
+    if (!m_composingText.isEmpty() && handleId == 1) {
+        int absoluteCpos = query.value(Qt::ImAbsolutePosition).toInt(&ok);
+        if (!ok)
+            absoluteCpos = cpos;
+        const int blockPos = absoluteCpos - cpos;
+
+        if (blockPos + newCpos == m_composingCursor)
+            return;
+    }
+
+    finishComposingText();
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append({ QInputMethodEvent::Selection, newAnchor, newCpos - newAnchor });
+    if (newCpos != newAnchor)
+        attributes.append({ QInputMethodEvent::Cursor, 0, 0 });
+
+    QInputMethodEvent event(QString(), attributes);
+    QGuiApplication::sendEvent(m_focusObject, &event);
 }
 
 void QAndroidInputContext::touchDown(int x, int y)
