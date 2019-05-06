@@ -1,5 +1,6 @@
+# Generated from eventdispatchers.pro.
+
 qt_find_package(GLIB2) # special case
-set_package_properties(GLib PROPERTIES TYPE OPTIONAL) # special case
 
 #####################################################################
 ## EventDispatcherSupport Module:
@@ -12,9 +13,12 @@ add_qt_module(EventDispatcherSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:eventdispatchers.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:eventdispatchers.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "eventdispatcher_support"
 # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
