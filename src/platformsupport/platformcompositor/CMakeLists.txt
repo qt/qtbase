@@ -14,9 +14,12 @@ add_qt_module(PlatformCompositorSupport
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:platformcompositor.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:platformcompositor.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "platformcompositor_support"
 # _LOADED = "qt_module"
