@@ -1686,12 +1686,10 @@ bool QDate::isLeapYear(int y)
     \brief The QTime class provides clock time functions.
 
 
-    A QTime object contains a clock time, which it can express as the
-    numbers of hours, minutes, seconds, and milliseconds since
-    midnight. It can read the current time from the system clock and
-    measure a span of elapsed time. It provides functions for
-    comparing times and for manipulating a time by adding a number of
-    milliseconds.
+    A QTime object contains a clock time, which it can express as the numbers of
+    hours, minutes, seconds, and milliseconds since midnight. It provides
+    functions for comparing times and for manipulating a time by adding a number
+    of milliseconds.
 
     QTime uses the 24-hour clock format; it has no concept of AM/PM.
     Unlike QDateTime, QTime knows nothing about time zones or
@@ -1717,9 +1715,6 @@ bool QDate::isLeapYear(int y)
     QTime provides a full set of operators to compare two QTime
     objects; an earlier time is considered smaller than a later one;
     if A.msecsTo(B) is positive, then A < B.
-
-    QTime can be used to measure a span of elapsed time using the
-    start(), restart(), and elapsed() functions.
 
     \sa QDate, QDateTime
 */
@@ -2364,7 +2359,7 @@ bool QTime::isValid(int h, int m, int s, int ms)
     return (uint)h < 24 && (uint)m < 60 && (uint)s < 60 && (uint)ms < 1000;
 }
 
-
+#if QT_DEPRECATED_SINCE(5, 14) // ### Qt 6: remove
 /*!
     Sets this time to the current time. This is practical for timing:
 
@@ -2433,6 +2428,7 @@ int QTime::elapsed() const
         n += 86400 * 1000;
     return n;
 }
+#endif // Use QElapsedTimer instead !
 
 /*****************************************************************************
   QDateTime static helper functions
