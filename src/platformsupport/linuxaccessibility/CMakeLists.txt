@@ -1,3 +1,5 @@
+# Generated from linuxaccessibility.pro.
+
 qt_find_package(ATSPI2 REQUIRED) # special case
 
 #####################################################################
@@ -29,12 +31,16 @@ add_qt_module(LinuxAccessibilitySupport
     LIBRARIES
         Qt::AccessibilitySupportPrivate
         Qt::CorePrivate
-        Qt::DBus
         Qt::GuiPrivate
-        PkgConfig::ATSPI2
+    PUBLIC_LIBRARIES
+        PkgConfig::ATSPI2_nolink
+        Qt::AccessibilitySupport
+        Qt::Core
+        Qt::DBus
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:linuxaccessibility.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:linuxaccessibility.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "linuxaccessibility_support"
 # PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
