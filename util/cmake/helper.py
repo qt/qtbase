@@ -324,7 +324,7 @@ def is_known_3rd_party_library(lib: str) -> bool:
         lib = lib[:-7]
     mapping = find_3rd_party_library_mapping(lib)
 
-    return mapping is not None and mapping.targetName is not None
+    return mapping is not None
 
 
 def map_3rd_party_library(lib: str) -> str:
