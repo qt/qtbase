@@ -686,49 +686,15 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
     QCoreApplication::sendEvent(m_focusObject, &query);
     int cpos = query.value(Qt::ImCursorPosition).toInt();
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
-    bool rtl = query.value(Qt::ImCurrentSelection).toString().isRightToLeft();
     auto rightRect = im->anchorRectangle();
     if (cpos > anchor)
         std::swap(leftRect, rightRect);
 
-    auto checkLeftHandle = [&rightRect](QPointF &handlePos) {
-        if (handlePos.y() > rightRect.center().y())
-            handlePos.setY(rightRect.center().y()); // adjust Y handle pos
-        if (handlePos.y() >= rightRect.y() && handlePos.y() <= rightRect.bottom() && handlePos.x() >= rightRect.x())
-            return false; // same line and wrong X pos ?
-        return true;
-    };
-
-    auto checkRtlRightHandle = [&rightRect](QPointF &handlePos) {
-        if (handlePos.y() > rightRect.center().y())
-            handlePos.setY(rightRect.center().y()); // adjust Y handle pos
-        if (handlePos.y() >= rightRect.y() && handlePos.y() <= rightRect.bottom() && rightRect.x() >= handlePos.x())
-            return false; // same line and wrong X pos ?
-        return true;
-    };
-
-    auto checkRightHandle = [&leftRect](QPointF &handlePos) {
-        if (handlePos.y() < leftRect.center().y())
-            handlePos.setY(leftRect.center().y()); // adjust Y handle pos
-        if (handlePos.y() >= leftRect.y() && handlePos.y() <= leftRect.bottom() && leftRect.x() >= handlePos.x())
-            return false; // same line and wrong X pos ?
-        return true;
-    };
-
-    auto checkRtlLeftHandle = [&leftRect](QPointF &handlePos) {
-        if (handlePos.y() < leftRect.center().y())
-            handlePos.setY(leftRect.center().y()); // adjust Y handle pos
-        if (handlePos.y() >= leftRect.y() && handlePos.y() <= leftRect.bottom() && handlePos.x() >= leftRect.x())
-            return false; // same line and wrong X pos ?
-        return true;
-    };
-
-    if (handleId == 2) {
-        if ((!rtl && !checkLeftHandle(point)) || (rtl && !checkRtlRightHandle(point)))
-            return;
-    } else if (handleId == 3) {
-        if ((!rtl && !checkRightHandle(point)) || (rtl && !checkRtlLeftHandle(point)))
-            return;
+    // Do not allow dragging left handle below right handle, or right handle above left handle
+    if (handleId == 2 && point.y() > rightRect.center().y()) {
+        point.setY(rightRect.center().y());
+    } else if (handleId == 3 && point.y() < leftRect.center().y()) {
+        point.setY(leftRect.center().y());
     }
 
     const QPointF pointLocal = im->inputItemTransform().inverted().map(point);
@@ -750,6 +716,28 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
         newAnchor = handlePos;
     } else if (handleId == 3) {
         newCpos = handlePos;
+    }
+
+    /*
+      Do not allow clearing selection by dragging selection handles and do not allow swapping
+      selection handles for consistency with Android's native text editing controls. Ensure that at
+      least one symbol remains selected.
+     */
+    if ((handleId == 2 || handleId == 3) && newCpos <= newAnchor) {
+        QTextBoundaryFinder finder(QTextBoundaryFinder::Grapheme,
+                                   query.value(Qt::ImCurrentSelection).toString());
+
+        const int oldSelectionStartPos = qMin(cpos, anchor);
+
+        if (handleId == 2) {
+            finder.toEnd();
+            finder.toPreviousBoundary();
+            newAnchor = finder.position() + oldSelectionStartPos;
+        } else {
+            finder.toStart();
+            finder.toNextBoundary();
+            newCpos = finder.position() + oldSelectionStartPos;
+        }
     }
 
     // Check if handle has been dragged far enough
