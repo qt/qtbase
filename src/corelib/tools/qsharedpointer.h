@@ -48,6 +48,8 @@
 # include <QtCore/qsharedpointer_impl.h>
 #else
 
+#include <memory> // for std::shared_ptr
+
 QT_BEGIN_NAMESPACE
 
 
@@ -167,6 +169,10 @@ template <class X, class T> QSharedPointer<X> qSharedPointerConstCast(const QSha
 template <class X, class T> QSharedPointer<X> qSharedPointerConstCast(const QWeakPointer<T> &src);
 template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src);
 template <class X, class T> QSharedPointer<X> qSharedPointerObjectCast(const QWeakPointer<T> &src);
+template <typename X, class T> std::shared_ptr<X> qobject_pointer_cast(const std::shared_ptr<T> &src);
+template <typename X, class T> std::shared_ptr<X> qobject_pointer_cast(std::shared_ptr<T> &&src);
+template <typename X, class T> std::shared_ptr<X> qSharedPointerObjectCast(const std::shared_ptr<T> &src);
+template <typename X, class T> std::shared_ptr<X> qSharedPointerObjectCast(std::shared_ptr<T> &&src);
 
 template <class X, class T> QWeakPointer<X> qWeakPointerCast(const QWeakPointer<T> &src);
 
