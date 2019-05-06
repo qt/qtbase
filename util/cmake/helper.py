@@ -219,8 +219,6 @@ _library_map = [
     LibraryMapping('vulkan', 'Vulkan', 'Vulkan::Vulkan'),
     LibraryMapping('wayland_server', 'Wayland', 'Wayland::Server'),
     LibraryMapping('x11sm', 'X11', '${X11_SM_LIB} ${X11_ICE_LIB}', resultVariable="X11_SM"),
-    LibraryMapping('xcb_glx', 'XCB', 'XCB::GLX', resultVariable='XCB_GLX'),
-    LibraryMapping('xcb_render', 'XCB', 'XCB::RENDER', resultVariable='XCB_RENDER'),
     LibraryMapping('xcb', 'XCB', 'XCB::XCB', extra = ['1.9']),
     LibraryMapping('xcb_glx', 'XCB', 'XCB::GLX', extra = ['COMPONENTS', 'GLX'], resultVariable='XCB_GLX'),
     LibraryMapping('xcb_icccm', 'XCB', 'XCB::ICCCM', extra = ['COMPONENTS', 'ICCCM'], resultVariable='XCB_ICCCM'),
