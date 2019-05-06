@@ -31,12 +31,13 @@ add_qt_module(OpenGL
         Qt::GuiPrivate
         Qt::WidgetsPrivate
         WrapOpenGL # special case
-    PUBLIC_LIBRARIES # special case
+    PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:opengl.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:opengl.pro:<TRUE>:
 # _LOADED = "qt_module"
 
 ## Scopes:
@@ -47,18 +48,19 @@ extend_target(OpenGL CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
         "/BASE:0x63000000"
 )
 
-#### Keys ignored in scope 3:.:opengl.pro:solaris-cc_x_:
+#### Keys ignored in scope 3:.:.:opengl.pro:solaris-cc_x_:
 # QMAKE_CXXFLAGS_RELEASE = "--O2"
 
-#### Keys ignored in scope 4:.:opengl.pro:QT_FEATURE_opengl:
+#### Keys ignored in scope 4:.:.:opengl.pro:QT_FEATURE_opengl:
 # CONFIG = "opengl"
 
-#### Keys ignored in scope 5:.:opengl.pro:QT_FEATURE_opengles2:
+#### Keys ignored in scope 5:.:.:opengl.pro:QT_FEATURE_opengles2:
 # CONFIG = "opengles2"
 
 extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
     SOURCES
         qgraphicsshadereffect.cpp qgraphicsshadereffect_p.h
 )
-
-add_qt_docs(./doc/qtopengl.qdocconf)
+add_qt_docs(
+    doc/qtopengl.qdocconf
+)
