@@ -26,12 +26,14 @@ add_qt_module(Concurrent
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
-    PUBLIC_LIBRARIES  # special case
+    PUBLIC_LIBRARIES
         Qt::Core
-    # CONFIG = "exceptions"
-    # PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
-    # _LOADED = "qt_module"
 )
+
+#### Keys ignored in scope 1:.:.:concurrent.pro:<TRUE>:
+# CONFIG = "exceptions"
+# PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -40,5 +42,6 @@ extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
     LINK_OPTIONS
         "/BASE:0x66000000"
 )
-
-add_qt_docs(./doc/qtconcurrent.qdocconf)
+add_qt_docs(
+    doc/qtconcurrent.qdocconf
+)
