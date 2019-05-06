@@ -691,7 +691,7 @@ void TextEdit::textStyle(int styleIndex)
 
     if (style == QTextListFormat::ListStyleUndefined) {
         blockFmt.setObjectIndex(-1);
-        int headingLevel = styleIndex >= 9 ? styleIndex - 9 + 1 : 0; // H1 to H6, or Standard
+        int headingLevel = styleIndex >= 11 ? styleIndex - 11 + 1 : 0; // H1 to H6, or Standard
         blockFmt.setHeadingLevel(headingLevel);
         cursor.setBlockFormat(blockFmt);
 
@@ -837,7 +837,7 @@ void TextEdit::cursorPositionChanged()
         }
     } else {
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
-        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
+        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
 }
 
