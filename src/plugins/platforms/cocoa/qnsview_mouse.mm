@@ -147,9 +147,34 @@
 
     ulong timestamp = [theEvent timestamp] * 1000;
 
-    auto eventType = cocoaEvent2QtMouseEvent(theEvent);
-    qCInfo(lcQpaMouse) << "Frame-strut" << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
-    QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
+    const auto button = cocoaButton2QtButton(theEvent);
+    auto eventType = [&]() {
+        switch (theEvent.type) {
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeOtherMouseDown:
+            return QEvent::NonClientAreaMouseButtonPress;
+
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+            return QEvent::NonClientAreaMouseButtonRelease;
+
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged:
+            return QEvent::NonClientAreaMouseMove;
+
+        default:
+            break;
+        }
+
+        return QEvent::None;
+    }();
+
+    qCInfo(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
+    QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(),
+        timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons, button, eventType);
 }
 @end
 
