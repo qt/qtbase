@@ -44,14 +44,15 @@ add_qt_module(DBus
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Qt::Core # special case
-    # MODULE_CONFIG = "dbusadaptors" "dbusinterfaces"
-    # _LOADED = "qt_module"
+        Qt::Core
 )
 
 set_source_files_properties(qdbusmarshaller.cpp
     PROPERTIES HEADER_FILE_ONLY ON)  # special case: This file is included by qdbusargument.cpp
 
+#### Keys ignored in scope 1:.:.:dbus.pro:<TRUE>:
+# MODULE_CONFIG = "dbusadaptors" "dbusinterfaces"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -60,15 +61,16 @@ extend_target(DBus CONDITION QT_FEATURE_dbus_linked
     DEFINES
         QT_LINKED_LIBDBUS
     LIBRARIES
-        dbus
+        dbus-1
 )
 
 extend_target(DBus CONDITION WIN32
     LIBRARIES
-        ws2_32
         advapi32
         netapi32
         user32
+        ws2_32
 )
-
-add_qt_docs(./doc/qtdbus.qdocconf)
+add_qt_docs(
+    doc/qtdbus.qdocconf
+)
