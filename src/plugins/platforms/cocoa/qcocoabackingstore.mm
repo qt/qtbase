@@ -523,6 +523,7 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     // the window server.
 }
 
+#ifndef QT_NO_OPENGL
 void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                                     QPlatformTextureList *textures, bool translucentBackground)
 {
@@ -531,6 +532,7 @@ void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &regio
 
     QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
 }
+#endif
 
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const
 {
