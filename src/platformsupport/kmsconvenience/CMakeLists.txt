@@ -1,3 +1,5 @@
+# Generated from kmsconvenience.pro.
+
 qt_find_package(Libdrm) # special case
 
 #####################################################################
@@ -10,14 +12,16 @@ add_qt_module(KmsSupport
         qkmsdevice.cpp qkmsdevice_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    PUBLIC_LIBRARIES # special case
-        Libdrm::Libdrm
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Libdrm::Libdrm
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:kmsconvenience.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:kmsconvenience.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "kms_support"
 # _LOADED = "qt_module"
