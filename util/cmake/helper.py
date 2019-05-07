@@ -181,7 +181,7 @@ _library_map = [
     LibraryMapping('drm', 'Libdrm', 'Libdrm::Libdrm'),
     LibraryMapping('egl', 'EGL', 'EGL::EGL'),
     LibraryMapping('fontconfig', 'Fontconfig', 'Fontconfig::Fontconfig', resultVariable="FONTCONFIG"),
-    LibraryMapping('freetype', 'Freetype', 'Freetype::Freetype', extra=['REQUIRED']),
+    LibraryMapping('freetype', 'WrapFreetype', 'WrapFreetype::WrapFreetype', extra=['REQUIRED']),
     LibraryMapping('gbm', 'gbm', 'gbm::gbm'),
     LibraryMapping('glib', 'GLIB2', 'GLIB2::GLIB2'),
     LibraryMapping('gnu_iconv', None, None),

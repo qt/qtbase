@@ -1,6 +1,6 @@
 # Generated from fontdatabases.pro.
 
-qt_find_package(Freetype) # special case
+qt_find_package(WrapFreetype) # special case
 qt_find_package(Fontconfig) # special case
 
 #####################################################################
@@ -54,7 +54,7 @@ extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
         freetype/qfontengine_ft.cpp freetype/qfontengine_ft_p.h
         freetype/qfreetypefontdatabase.cpp freetype/qfreetypefontdatabase_p.h
     LIBRARIES
-        Freetype::Freetype
+        WrapFreetype::WrapFreetype
 )
 
 extend_target(FontDatabaseSupport CONDITION UNIX

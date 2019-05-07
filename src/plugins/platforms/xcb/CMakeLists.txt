@@ -6,7 +6,7 @@ qt_find_package(X11)
 qt_find_package(XCB)
 qt_find_package(XKB)
 qt_find_package(PkgConfig)
-qt_find_package(Freetype)
+qt_find_package(WrapFreetype)
 qt_find_package(GLIB2)
 
 pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET) # special case
@@ -165,7 +165,7 @@ extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xre
 
 extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting
     LIBRARIES
-        Freetype::Freetype
+        WrapFreetype::WrapFreetype
 )
 #####################################################################
 ## qxcb Plugin:

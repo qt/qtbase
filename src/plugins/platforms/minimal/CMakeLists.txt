@@ -1,4 +1,4 @@
-qt_find_package(Freetype) # special case
+qt_find_package(WrapFreetype) # special case
 
 #####################################################################
 ## qminimal Plugin:
@@ -29,7 +29,7 @@ add_qt_plugin(qminimal
 
 extend_target(qminimal CONDITION QT_FEATURE_freetype
     LIBRARIES
-        Freetype::Freetype
+        WrapFreetype::WrapFreetype
 )
 
 #### Keys ignored in scope 3:.:minimal.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
