@@ -404,7 +404,7 @@ function QtLoader(config)
         Module.preRun = Module.preRun || []
         Module.preRun.push(function() {
             for (var [key, value] of Object.entries(config.environment)) {
-                Module.ENV[key.toUpperCase()] = value;
+                ENV[key.toUpperCase()] = value;
             }
         });
 

@@ -999,6 +999,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
     quitLockRefEnabled = enabled;
 }
 
+#if QT_DEPRECATED_SINCE(5, 6)
 /*!
   \internal
   \deprecated
@@ -1010,6 +1011,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
     return notifyInternal2(receiver, event);
 }
+#endif
 
 /*!
   \internal
@@ -1183,28 +1185,26 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
     // Note: when adjusting the tracepoints in here
     // consider adjusting QApplicationPrivate::notify_helper too.
-    Q_TRACE_SCOPE(QCoreApplication_notify, receiver, event, event->type());
+    Q_TRACE(QCoreApplication_notify_entry, receiver, event, event->type());
+    bool consumed = false;
+    bool filtered = false;
+    Q_TRACE_EXIT(QCoreApplication_notify_exit, consumed, filtered);
 
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
             && receiver->d_func()->threadData->thread == mainThread()
             && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event)) {
-        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
-        return true;
+        filtered = true;
+        return filtered;
     }
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, event)) {
-        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
-        return true;
+        filtered = true;
+        return filtered;
     }
 
-    Q_TRACE(QCoreApplication_notify_before_delivery, receiver, event, event->type());
-
     // deliver the event
-    const bool consumed = receiver->event(event);
-
-    Q_TRACE(QCoreApplication_notify_after_delivery, receiver, event, event->type(), consumed);
-
+    consumed = receiver->event(event);
     return consumed;
 }
 

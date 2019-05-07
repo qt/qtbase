@@ -393,10 +393,13 @@ class Q_CORE_EXPORT QVariant
             : type(variantType), is_shared(false), is_null(false)
         {}
 
-        inline Private(const Private &other) noexcept
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        Private(const Private &other) noexcept
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}
+        Private &operator=(const Private &other) noexcept = default;
+#endif
         union Data
         {
             char c;

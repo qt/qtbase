@@ -97,8 +97,8 @@ public:
     template <class X> QSharedPointer<X> constCast() const;
     template <class X> QSharedPointer<X> objectCast() const;
 
-    static inline QSharedPointer<T> create();
-    static inline QSharedPointer<T> create(...);
+    template <typename... Args>
+    static inline QSharedPointer<T> create(Args &&... args);
 };
 
 template <class T>

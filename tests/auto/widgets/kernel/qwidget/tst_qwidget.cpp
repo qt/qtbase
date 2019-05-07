@@ -10161,7 +10161,8 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         // We should see propagation of the TouchBegin into a MouseButtonPress
         TouchMouseWidget parent;
         TouchMouseWidget child(&parent);
-        child.move(5, 5);
+        const QPoint childPos(5, 5);
+        child.move(childPos);
         child.setAcceptMouse(false);
         parent.show();
         QVERIFY(QTest::qWaitForWindowExposed(parent.windowHandle()));
@@ -10170,13 +10171,14 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(child.m_touchEventCount, 0);
         QCOMPARE(child.m_mouseEventCount, 0);
 
-        QTest::touchEvent(parent.window(), m_touchScreen).press(0, QPoint(10, 10), &child);
+        const QPoint touchPos(20, 20);
+        QTest::touchEvent(parent.window(), m_touchScreen).press(0, touchPos, &child);
         QCOMPARE(parent.m_touchEventCount, 0);
         QCOMPARE(parent.m_mouseEventCount, 1);
-        QCOMPARE(parent.m_lastMouseEventPos, QPointF(15, 15));
+        QCOMPARE(parent.m_lastMouseEventPos, childPos + touchPos);
         QCOMPARE(child.m_touchEventCount, 0);
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
-        QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
+        QCOMPARE(child.m_lastMouseEventPos, touchPos);
     }
 }
 

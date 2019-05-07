@@ -818,7 +818,6 @@ void QHttp2ProtocolHandler::handleGOAWAY()
         // and a NO_ERROR code."
         if (lastStreamID != Http2::lastValidStreamID || errorCode != HTTP2_NO_ERROR)
             return connectionError(PROTOCOL_ERROR, "GOAWAY invalid stream/error code");
-        lastStreamID = 1;
     } else {
         lastStreamID += 2;
     }
@@ -835,6 +834,14 @@ void QHttp2ProtocolHandler::handleGOAWAY()
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     QString message;
     qt_error(errorCode, error, message);
+
+    // Even if the GOAWAY frame contains NO_ERROR we must send an error
+    // when terminating streams to ensure users can distinguish from a
+    // successful completion.
+    if (errorCode == HTTP2_NO_ERROR) {
+        error = QNetworkReply::ContentReSendError;
+        message = QLatin1String("Server stopped accepting new streams before this stream was established");
+    }
 
     for (quint32 id = lastStreamID; id < nextID; id += 2) {
         const auto it = activeStreams.find(id);
