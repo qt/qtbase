@@ -649,19 +649,7 @@
 */
 
 /*!
-    \fn template <class T> QSharedPointer<T> QSharedPointer<T>::create()
-    \since 5.1
-
-    Creates a QSharedPointer object and allocates a new item of type \tt T. The
-    QSharedPointer internals and the object are allocated in one single memory
-    allocation, which could help reduce memory fragmentation in a long-running
-    application.
-
-    This function calls the default constructor for type \tt T.
-*/
-
-/*!
-    \fn template <class T> QSharedPointer<T> QSharedPointer<T>::create(...)
+    \fn template <class T> template <typename... Args> QSharedPointer<T> QSharedPointer<T>::create(Args &&... args)
     \overload
     \since 5.1
 
@@ -671,18 +659,7 @@
     application.
 
     This function will attempt to call a constructor for type \tt T that can
-    accept all the arguments passed. Arguments will be perfectly-forwarded.
-
-    \note This function is only fully available with a C++11 compiler that
-    supports perfect forwarding of an arbitrary number of arguments.
-
-    If the compiler does not support the necessary C++11 features,
-    then a restricted version is available since Qt 5.4: you may pass
-    one (but just one) argument, and it will always be passed by const
-    reference.
-
-    If you target Qt before version 5.4, you must use the overload
-    that calls the default constructor.
+    accept all the arguments passed (\a args). Arguments will be perfectly-forwarded.
 */
 
 /*!

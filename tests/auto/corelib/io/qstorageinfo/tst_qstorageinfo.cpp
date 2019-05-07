@@ -195,6 +195,10 @@ void tst_QStorageInfo::tempFile()
     file.close();
 
     QStorageInfo storage2(file.fileName());
+    if (free == storage2.bytesFree() && storage2.fileSystemType() == "apfs") {
+        QEXPECT_FAIL("", "This test is likely to fail on APFS", Continue);
+    }
+
     QVERIFY(free != storage2.bytesFree());
 }
 
@@ -221,6 +225,9 @@ void tst_QStorageInfo::caching()
     QCOMPARE(free, storage2.bytesFree());
     storage2.refresh();
     QCOMPARE(storage1, storage2);
+    if (free == storage2.bytesFree() && storage2.fileSystemType() == "apfs") {
+        QEXPECT_FAIL("", "This test is likely to fail on APFS", Continue);
+    }
     QVERIFY(free != storage2.bytesFree());
 }
 #endif

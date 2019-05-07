@@ -970,8 +970,10 @@ defineTest(qtConfExportLibrary) {
     defines = $$eval($${spfx}.defines)
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     includes = $$eval($${spfx}.exportincludedir)
-    isEmpty(includes): includes = $$eval($${spfx}.includedir)
-    !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
+    !equals(includes, -) {
+        isEmpty(includes): includes = $$eval($${spfx}.includedir)
+        !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
+    }
     uses = $$eval($${lpfx}.dependencies)
     !isEmpty(uses) {
         # FIXME: ideally, we would export transitive deps only for static

@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PDF
+
 // This map is used for symbol fonts to get the correct glyph names for the latin range
 static const unsigned short symbol_map[0x100] = {
     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
@@ -90,7 +92,7 @@ static const unsigned short symbol_map[0x100] = {
 
 // ---------------------------- PS/PDF helper methods -----------------------------------
 
-#ifndef QT_NO_PDF
+
 
 QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
 {

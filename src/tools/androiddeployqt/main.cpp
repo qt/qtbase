@@ -1730,6 +1730,11 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             .arg(shellQuote(rootPath))
             .arg(importPaths.join(QLatin1Char(' ')));
 
+    if (options->verbose) {
+        fprintf(stdout, "Running qmlimportscanner with the following command: %s\n",
+            qmlImportScanner.toLocal8Bit().constData());
+    }
+
     FILE *qmlImportScannerCommand = popen(qmlImportScanner.toLocal8Bit().constData(), QT_POPEN_READ);
     if (qmlImportScannerCommand == 0) {
         fprintf(stderr, "Couldn't run qmlimportscanner.\n");
@@ -2898,6 +2903,8 @@ int main(int argc, char *argv[])
             return CannotCopyQtFiles;
         if (!copyAndroidExtraResources(options))
             return CannotCopyAndroidExtraResources;
+        if (!copyAndroidExtraLibs(options))
+            return CannotCopyAndroidExtraLibs;
         if (!stripLibraries(options))
             return CannotStripLibraries;
         if (!updateAndroidFiles(options))

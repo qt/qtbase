@@ -4567,7 +4567,10 @@
        \c QMAKEFEATURES environment variable)
     \li \c $$QMAKEFEATURES/myfeatures.prf (for each directory listed in the
        \c QMAKEFEATURES property variable)
-    \li \c myfeatures.prf (in the project's root directory)
+    \li \c myfeatures.prf (in the project's root directory). The project root
+        is determined by the top-level \c{.pro} file. However, if you place the
+        \c{.qmake.cache} file in a sub-directory or the directory of a
+        sub-project, then the project root becomes the sub-directory itself.
     \li \c $QMAKEPATH/mkspecs/features/unix/myfeatures.prf and
        \c $QMAKEPATH/mkspecs/features/myfeatures.prf (for each directory
        listed in the \c QMAKEPATH environment variable)

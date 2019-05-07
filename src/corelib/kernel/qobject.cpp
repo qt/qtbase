@@ -1457,8 +1457,9 @@ QThread *QObject::thread() const
 
     \snippet code/src_corelib_kernel_qobject.cpp 7
 
-    If \a targetThread is zero, all event processing for this object
-    and its children stops.
+    If \a targetThread is \nullptr, all event processing for this object
+    and its children stops, as they are no longer associated with any
+    thread.
 
     Note that all active timers for the object will be reset. The
     timers are first stopped in the current thread and restarted (with
@@ -1469,13 +1470,18 @@ QThread *QObject::thread() const
     A QEvent::ThreadChange event is sent to this object just before
     the thread affinity is changed. You can handle this event to
     perform any special processing. Note that any new events that are
-    posted to this object will be handled in the \a targetThread.
+    posted to this object will be handled in the \a targetThread,
+    provided it is non-null: when it is \nullptr, no event processing
+    for this object or its children can happen, as they are no longer
+    associated with any thread.
 
     \warning This function is \e not thread-safe; the current thread
     must be same as the current thread affinity. In other words, this
     function can only "push" an object from the current thread to
     another thread, it cannot "pull" an object from any arbitrary
-    thread to the current thread.
+    thread to the current thread. There is one exception to this rule
+    however: objects with no thread affinity can be "pulled" to the
+    current thread.
 
     \sa thread()
  */
@@ -3653,12 +3659,13 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     if (sp->blockSig)
         return;
 
+    Q_TRACE_SCOPE(QMetaObject_activate, sender, signal_index);
+
     if (sp->isDeclarativeSignalConnected(signal_index)
             && QAbstractDeclarativeData::signalEmitted) {
-        Q_TRACE(QMetaObject_activate_begin_declarative_signal, sender, signal_index);
+        Q_TRACE_SCOPE(QMetaObject_activate_declarative_signal, sender, signal_index);
         QAbstractDeclarativeData::signalEmitted(sp->declarativeData, sender,
                                                 signal_index, argv);
-        Q_TRACE(QMetaObject_activate_end_declarative_signal, sender, signal_index);
     }
 
     const QSignalSpyCallbackSet *signal_spy_set = callbacks_enabled ? qt_signal_spy_callback_set.load() : nullptr;
@@ -3671,8 +3678,6 @@ void doActivate(QObject *sender, int signal_index, void **argv)
         // The possible declarative connection is done, and nothing else is connected
         if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
             signal_spy_set->signal_begin_callback(sender, signal_index, argv);
-        Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
-        Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
         if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
             signal_spy_set->signal_end_callback(sender, signal_index);
         return;
@@ -3680,7 +3685,6 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
     if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
         signal_spy_set->signal_begin_callback(sender, signal_index, argv);
-    Q_TRACE(QMetaObject_activate_begin_signal, sender, signal_index);
 
     bool senderDeleted = false;
     {
@@ -3758,9 +3762,11 @@ void doActivate(QObject *sender, int signal_index, void **argv)
             if (c->isSlotObject) {
                 c->slotObj->ref();
                 QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
-                Q_TRACE(QMetaObject_activate_begin_slot_functor, obj.data());
-                obj->call(receiver, argv);
-                Q_TRACE(QMetaObject_activate_end_slot_functor, obj.data());
+
+                {
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, obj.data());
+                    obj->call(receiver, argv);
+                }
             } else if (c->callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
                 //we compare the vtable to make sure we are not in the destructor of the object.
                 const int method_relative = c->method_relative;
@@ -3768,11 +3774,12 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 const int methodIndex = (Q_HAS_TRACEPOINTS || callbacks_enabled) ? c->method() : 0;
                 if (callbacks_enabled && signal_spy_set->slot_begin_callback != nullptr)
                     signal_spy_set->slot_begin_callback(receiver, methodIndex, argv);
-                Q_TRACE(QMetaObject_activate_begin_slot, receiver, methodIndex);
 
-                callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv);
+                {
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot, receiver, methodIndex);
+                    callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv);
+                }
 
-                Q_TRACE(QMetaObject_activate_end_slot, receiver, methodIndex);
                 if (callbacks_enabled && signal_spy_set->slot_end_callback != nullptr)
                     signal_spy_set->slot_end_callback(receiver, methodIndex);
             } else {
@@ -3781,11 +3788,12 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 if (callbacks_enabled && signal_spy_set->slot_begin_callback != nullptr) {
                     signal_spy_set->slot_begin_callback(receiver, method, argv);
                 }
-                Q_TRACE(QMetaObject_activate_begin_slot, receiver, method);
 
-                QMetaObject::metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv);
+                {
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot, receiver, method);
+                    QMetaObject::metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv);
+                }
 
-                Q_TRACE(QMetaObject_activate_end_slot, receiver, method);
                 if (callbacks_enabled && signal_spy_set->slot_end_callback != nullptr)
                     signal_spy_set->slot_end_callback(receiver, method);
             }
@@ -3803,8 +3811,6 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
     if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
         signal_spy_set->signal_end_callback(sender, signal_index);
-    Q_TRACE(QMetaObject_activate_end_signal, sender, signal_index);
-
 }
 
 /*!
