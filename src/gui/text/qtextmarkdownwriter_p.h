@@ -64,8 +64,8 @@ class Q_GUI_EXPORT QTextMarkdownWriter
 {
 public:
     QTextMarkdownWriter(QTextStream &stream, QTextDocument::MarkdownFeatures features);
-    bool writeAll(const QTextDocument &document);
-    void writeTable(const QAbstractTableModel &table);
+    bool writeAll(const QTextDocument *document);
+    void writeTable(const QAbstractItemModel *table);
 
     int writeBlock(const QTextBlock &block, bool table, bool ignoreFormat);
     void writeFrame(const QTextFrame *frame);

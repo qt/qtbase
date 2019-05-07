@@ -4579,7 +4579,7 @@ void tst_QTableView::markdownWriter()
     {
         QTextStream stream(&md);
         QTextMarkdownWriter writer(stream, QTextDocument::MarkdownDialectGitHub);
-        writer.writeTable(model);
+        writer.writeTable(&model);
     }
 
 #ifdef DEBUG_WRITE_OUTPUT

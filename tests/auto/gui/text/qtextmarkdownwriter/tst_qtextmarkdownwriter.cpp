@@ -435,7 +435,7 @@ QString tst_QTextMarkdownWriter::documentToUnixMarkdown()
     QString ret;
     QTextStream ts(&ret, QIODevice::WriteOnly);
     QTextMarkdownWriter writer(ts, QTextDocument::MarkdownDialectGitHub);
-    writer.writeAll(*document);
+    writer.writeAll(document);
     return ret;
 }
 

@@ -63,26 +63,26 @@ QTextMarkdownWriter::QTextMarkdownWriter(QTextStream &stream, QTextDocument::Mar
 {
 }
 
-bool QTextMarkdownWriter::writeAll(const QTextDocument &document)
+bool QTextMarkdownWriter::writeAll(const QTextDocument *document)
 {
-    writeFrame(document.rootFrame());
+    writeFrame(document->rootFrame());
     return true;
 }
 
-void QTextMarkdownWriter::writeTable(const QAbstractTableModel &table)
+void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
 {
-    QVector<int> tableColumnWidths(table.columnCount());
-    for (int col = 0; col < table.columnCount(); ++col) {
-        tableColumnWidths[col] = table.headerData(col, Qt::Horizontal).toString().length();
-        for (int row = 0; row < table.rowCount(); ++row) {
+    QVector<int> tableColumnWidths(table->columnCount());
+    for (int col = 0; col < table->columnCount(); ++col) {
+        tableColumnWidths[col] = table->headerData(col, Qt::Horizontal).toString().length();
+        for (int row = 0; row < table->rowCount(); ++row) {
             tableColumnWidths[col] = qMax(tableColumnWidths[col],
-                table.data(table.index(row, col)).toString().length());
+                table->data(table->index(row, col)).toString().length());
         }
     }
 
     // write the header and separator
-    for (int col = 0; col < table.columnCount(); ++col) {
-        QString s = table.headerData(col, Qt::Horizontal).toString();
+    for (int col = 0; col < table->columnCount(); ++col) {
+        QString s = table->headerData(col, Qt::Horizontal).toString();
         m_stream << "|" << s << QString(tableColumnWidths[col] - s.length(), Space);
     }
     m_stream << "|" << Qt::endl;
@@ -91,9 +91,9 @@ void QTextMarkdownWriter::writeTable(const QAbstractTableModel &table)
     m_stream << '|'<< Qt::endl;
 
     // write the body
-    for (int row = 0; row < table.rowCount(); ++row) {
-        for (int col = 0; col < table.columnCount(); ++col) {
-            QString s = table.data(table.index(row, col)).toString();
+    for (int row = 0; row < table->rowCount(); ++row) {
+        for (int col = 0; col < table->columnCount(); ++col) {
+            QString s = table->data(table->index(row, col)).toString();
             m_stream << "|" << s << QString(tableColumnWidths[col] - s.length(), Space);
         }
         m_stream << '|'<< Qt::endl;

@@ -278,7 +278,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
         }
         QTextStream s(d->device);
         QTextMarkdownWriter writer(s, QTextDocument::MarkdownDialectGitHub);
-        return writer.writeAll(*document);
+        return writer.writeAll(document);
     }
 #endif // textmarkdownwriter
 

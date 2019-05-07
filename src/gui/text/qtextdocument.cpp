@@ -3301,7 +3301,7 @@ QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) cons
     QString ret;
     QTextStream s(&ret);
     QTextMarkdownWriter w(s, features);
-    if (w.writeAll(*this))
+    if (w.writeAll(this))
         return ret;
     return QString();
 }
