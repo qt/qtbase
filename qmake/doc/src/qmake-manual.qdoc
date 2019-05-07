@@ -1160,6 +1160,10 @@
 
     \snippet code/doc_src_qmake-manual.pro 30
 
+    \note The list of supported characters can depend on
+    the used build tool. In particular, parentheses do not
+    work with \c{make}.
+
     \target DISTFILES
     \section1 DISTFILES
 
