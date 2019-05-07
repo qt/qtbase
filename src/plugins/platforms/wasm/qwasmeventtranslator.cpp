@@ -337,8 +337,6 @@ QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
 
 void QWasmEventTranslator::initEventHandlers()
 {
-    qDebug() << "QWasmEventTranslator::initEventHandlers";
-
     QByteArray _canvasId = screen()->canvasId().toUtf8();
     const char *canvasId = _canvasId.constData();
 
