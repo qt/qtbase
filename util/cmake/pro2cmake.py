@@ -1566,8 +1566,14 @@ def main() -> None:
 
     debug_parsing = args.debug_parser or args.debug
 
+    backup_current_dir = os.getcwd()
+
     for file in args.files:
-        parseresult = parseProFile(file, debug=debug_parsing)
+        new_current_dir = os.path.dirname(file)
+        file_relative_path = os.path.basename(file)
+        os.chdir(new_current_dir)
+
+        parseresult = parseProFile(file_relative_path, debug=debug_parsing)
 
         if args.debug_parse_result or args.debug:
             print('\n\n#### Parser result:')
@@ -1578,7 +1584,7 @@ def main() -> None:
             print(parseresult.asDict())
             print('\n#### End of parser result dictionary.\n')
 
-        file_scope = Scope.FromDict(None, file,
+        file_scope = Scope.FromDict(None, file_relative_path,
                                     parseresult.asDict().get('statements'))
 
         if args.debug_pro_structure or args.debug:
@@ -1594,6 +1600,7 @@ def main() -> None:
             print('\n#### End of full .pro/.pri file structure.\n')
 
         generate_cmakelists(file_scope)
+        os.chdir(backup_current_dir)
 
 
 if __name__ == '__main__':
