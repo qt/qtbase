@@ -39,7 +39,8 @@ HEADERS = \
 
 wasmfonts.files = \
     ../../../3rdparty/wasm/Vera.ttf \
-    ../../../3rdparty/wasm/DejaVuSans.ttf
+    ../../../3rdparty/wasm/DejaVuSans.ttf \
+    ../../../3rdparty/wasm/DejaVuSansMono.ttf
 wasmfonts.prefix = /fonts
 wasmfonts.base = ../../../3rdparty/wasm
 RESOURCES += wasmfonts

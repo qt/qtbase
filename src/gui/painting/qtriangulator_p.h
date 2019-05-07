@@ -93,6 +93,8 @@ public:
         return indices16.size();
     }
 
+    QVertexIndexVector() = default;
+    QVertexIndexVector(const QVertexIndexVector &other) = default;
     inline QVertexIndexVector &operator = (const QVertexIndexVector &other)
     {
         if (t == UnsignedInt)

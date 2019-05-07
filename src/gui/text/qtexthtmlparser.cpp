@@ -1721,6 +1721,8 @@ QStringList QTextHtmlStyleSelector::nodeNames(NodePtr node) const
 
 #endif // QT_NO_CSSPARSER
 
+#ifndef QT_NO_CSSPARSER
+
 static inline int findAttribute(const QStringList &attributes, const QString &name)
 {
     int idx = -1;
@@ -1729,8 +1731,6 @@ static inline int findAttribute(const QStringList &attributes, const QString &na
     } while (idx != -1 && (idx % 2 == 1));
     return idx;
 }
-
-#ifndef QT_NO_CSSPARSER
 
 QString QTextHtmlStyleSelector::attribute(NodePtr node, const QString &name) const
 {

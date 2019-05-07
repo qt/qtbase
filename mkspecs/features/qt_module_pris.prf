@@ -60,8 +60,12 @@ defineReplace(qtExportLibsForModule) {
             QMAKE_LIBS_$$NAME QMAKE_LIBS_$${NAME}_DEBUG QMAKE_LIBS_$${NAME}_RELEASE \
             QMAKE_DEFINES_$$NAME QMAKE_INCDIR_$$NAME
         for (var, vars) {
-            defined($$var, var): \
-                result += "$$var = $$val_escape($$var)"
+            expvar = $$var
+            expvar ~= s/^QMAKE_/QMAKE_EXPORT_/
+            defined($$expvar, var):equals($$expvar, -): next()
+            !defined($$expvar, var): expvar = $$var
+            defined($$expvar, var): \
+                result += "$$var = $$val_escape($$expvar)"
         }
     }
     return($$result)

@@ -568,11 +568,8 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     switch (eventType) {
     case EMSCRIPTEN_EVENT_MOUSEDOWN:
     {
-        if (window2) {
-            window2->raise();
-            if (!window2->isActive())
-                window2->requestActivate();
-        }
+        if (window2)
+            window2->requestActivate();
 
         pressedButtons.setFlag(button);
 
