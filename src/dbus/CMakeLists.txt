@@ -60,9 +60,17 @@ set_source_files_properties(qdbusmarshaller.cpp
 extend_target(DBus CONDITION QT_FEATURE_dbus_linked
     DEFINES
         QT_LINKED_LIBDBUS
-    LIBRARIES
+    PUBLIC_LIBRARIES # special case
         dbus-1
 )
+
+# begin special case:
+extend_target(DBus CONDITION NOT QT_FEATURE_dbus_linked
+    PUBLIC_LIBRARIES
+        dbus-1_nolink
+)
+# end special case:
+
 
 extend_target(DBus CONDITION WIN32
     LIBRARIES
