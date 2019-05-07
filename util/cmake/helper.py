@@ -164,6 +164,7 @@ _qt_library_map = [
     LibraryMapping('windowsuiautomation_support', 'Qt5', 'Qt::WindowsUIAutomationSupport', extra = ['COMPONENTS', 'WindowsUIAutomationSupport']),
     LibraryMapping('winextras', 'Qt5', 'Qt::WinExtras', extra = ['COMPONENTS', 'WinExtras']),
     LibraryMapping('x11extras', 'Qt5', 'Qt::X11Extras', extra = ['COMPONENTS', 'X11Extras']),
+    LibraryMapping('xcb_qpa_lib', 'Qt5', 'Qt::XcbQpa', extra = ['COMPONENTS', 'XcbQpa']),
     LibraryMapping('xkbcommon_support', 'Qt5', 'Qt::XkbCommonSupport', extra = ['COMPONENTS', 'XkbCommonSupport']),
     LibraryMapping('xmlpatterns', 'Qt5', 'Qt::XmlPatterns', extra = ['COMPONENTS', 'XmlPatterns']),
     LibraryMapping('xml', 'Qt5', 'Qt::Xml', extra = ['COMPONENTS', 'Xml']),
