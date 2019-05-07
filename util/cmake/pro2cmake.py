@@ -67,6 +67,11 @@ def _parse_commandline():
                         dest='debug_full_pro_structure', action='store_true',
                         help='Dump the full structure of the qmake .pro-file '
                         '(with includes).')
+
+    parser.add_argument('--example', action='store_true',
+                        dest="is_example",
+                        help='Treat the input .pro file as an example.')
+
     parser.add_argument('files', metavar='<.pro/.pri file>', type=str,
                         nargs='+', help='The .pro/.pri file to process')
 
@@ -826,7 +831,7 @@ def map_condition(condition: str) -> str:
 
 
 def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
-                  indent: int = 0) -> None:
+                  indent: int = 0, is_example: bool=False) -> None:
     ind = '    ' * indent
     for sd in scope.get_files('SUBDIRS'):
         if os.path.isdir(sd):
@@ -839,7 +844,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
                                  '', scope.basedir)
 
             do_include(subdir_scope)
-            cmakeify_scope(subdir_scope, cm_fh, indent=indent)
+            cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
         elif sd.startswith('-'):
             cm_fh.write('{}### remove_subdirectory'
                         '("{}")\n'.format(ind, sd[1:]))
@@ -853,7 +858,7 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
         elif cond:
             cm_fh.write('\n{}if({})\n'.format(ind, cond))
 
-        handle_subdir(c, cm_fh, indent=indent + 1)
+        handle_subdir(c, cm_fh, indent=indent + 1, is_example=is_example)
 
         if cond:
             cm_fh.write('{}endif()\n'.format(ind))
@@ -914,10 +919,10 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
     cm_fh.write(header)
     extra_indent = ''
     if cmake_parameter:
-        cm_fh.write('{}    {}\n'.format(ind, cmake_parameter))
+        cm_fh.write('{}{}\n'.format(ind, cmake_parameter))
         extra_indent = '    '
     for s in sort_sources(sources):
-        cm_fh.write('{}    {}{}\n'.format(ind, extra_indent, s))
+        cm_fh.write('{}{}{}\n'.format(ind, extra_indent, s))
     cm_fh.write(footer)
 
 
@@ -950,6 +955,54 @@ def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
         for d in sorted(list(set(dependencies_to_print))):
             cm_fh.write('{}        {}\n'.format(ind, d))
 
+
+def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+                                indent: int = 0, footer: str = ''):
+    write_source_file_list(cm_fh, scope, header,
+                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'],
+                           indent)
+
+
+def write_defines(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+                  indent: int = 0, footer: str = ''):
+    ind = spaces(indent)
+
+    defines = scope.expand('DEFINES')
+    defines += [d[2:] for d in scope.expand('QMAKE_CXXFLAGS') if d.startswith('-D')]
+    if defines:
+        cm_fh.write('{}{}\n'.format(ind, header))
+        for d in defines:
+            d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
+                          '="${CMAKE_CURRENT_SOURCE_DIR}/"')
+            cm_fh.write('{}    {}\n'.format(ind, d))
+        if footer:
+            cm_fh.write('{}{}\n'.format(ind, footer))
+
+def write_include_paths(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+                        indent: int = 0, footer: str = ''):
+    ind = spaces(indent)
+
+    includes = scope.get_files('INCLUDEPATH')
+    if includes:
+        cm_fh.write('{}{}\n'.format(ind, header))
+        for i in includes:
+            i = i.rstrip('/') or ('/')
+            cm_fh.write('{}    {}\n'.format(ind, i))
+        if footer:
+            cm_fh.write('{}{}\n'.format(ind, footer))
+
+
+def write_compile_options(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+                          indent: int = 0, footer: str = ''):
+    ind = spaces(indent)
+
+    compile_options = [d for d in scope.expand('QMAKE_CXXFLAGS') if not d.startswith('-D')]
+    if compile_options:
+        cm_fh.write('{}{}\n'.format(ind, header))
+        for co in compile_options:
+            cm_fh.write('{}    "{}"\n'.format(ind, co))
+        if footer:
+            cm_fh.write('{}{}\n'.format(ind, footer))
 
 
 def write_library_section(cm_fh: typing.IO[str], scope: Scope,
@@ -1001,37 +1054,23 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     if plugin_type:
         cm_fh.write('{}    TYPE {}\n'.format(ind, plugin_type))
 
-    source_keys: typing.List[str] = []
-    write_source_file_list(cm_fh, scope, 'SOURCES',
-                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'],
-                           indent)
+    write_all_source_file_lists(cm_fh, scope, 'SOURCES', indent=indent + 1)
 
-    write_source_file_list(cm_fh, scope, 'DBUS_ADAPTOR_SOURCES', ['DBUS_ADAPTORS',], indent)
+    write_source_file_list(cm_fh, scope, 'DBUS_ADAPTOR_SOURCES', ['DBUS_ADAPTORS',], indent + 1)
     dbus_adaptor_flags = scope.expand('QDBUSXML2CPP_ADAPTOR_HEADER_FLAGS')
     if dbus_adaptor_flags:
         cm_fh.write('{}    DBUS_ADAPTOR_FLAGS\n'.format(ind))
         cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_adaptor_flags)))
 
-    write_source_file_list(cm_fh, scope, 'DBUS_INTERFACE_SOURCES', ['DBUS_INTERFACES',], indent)
+    write_source_file_list(cm_fh, scope, 'DBUS_INTERFACE_SOURCES', ['DBUS_INTERFACES',], indent + 1)
     dbus_interface_flags = scope.expand('QDBUSXML2CPP_INTERFACE_HEADER_FLAGS')
     if dbus_interface_flags:
         cm_fh.write('{}    DBUS_INTERFACE_FLAGS\n'.format(ind))
         cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_interface_flags)))
 
-    defines = scope.expand('DEFINES')
-    defines += [d[2:] for d in scope.expand('QMAKE_CXXFLAGS') if d.startswith('-D')]
-    if defines:
-        cm_fh.write('{}    DEFINES\n'.format(ind))
-        for d in defines:
-            d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
-                          '="${CMAKE_CURRENT_SOURCE_DIR}/"')
-            cm_fh.write('{}        {}\n'.format(ind, d))
-    includes = scope.get_files('INCLUDEPATH')
-    if includes:
-        cm_fh.write('{}    INCLUDE_DIRECTORIES\n'.format(ind))
-        for i in includes:
-            i = i.rstrip('/') or ('/')
-            cm_fh.write('{}        {}\n'.format(ind, i))
+    write_defines(cm_fh, scope, 'DEFINES', indent=indent + 1)
+
+    write_include_paths(cm_fh, scope, 'INCLUDE_DIRECTORIES', indent=indent + 1)
 
     write_library_section(cm_fh, scope,
                           ['QMAKE_USE', 'LIBS'],
@@ -1040,11 +1079,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                           ['QT',],
                           indent=indent, known_libraries=known_libraries)
 
-    compile_options = [d for d in scope.expand('QMAKE_CXXFLAGS') if not d.startswith('-D')]
-    if compile_options:
-        cm_fh.write('{}    COMPILE_OPTIONS\n'.format(ind))
-        for co in compile_options:
-            cm_fh.write('{}        "{}"\n'.format(ind, co))
+    write_compile_options(cm_fh, scope, 'COMPILE_OPTIONS', indent=indent + 1)
 
     link_options = scope.get('QMAKE_LFLAGS')
     if link_options:
@@ -1482,6 +1517,43 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
                     known_libraries={'Qt::Core', }, extra_keys=['target.path', 'INSTALLS'])
 
 
+def write_example(cm_fh: typing.IO[str], scope: Scope,
+                 gui: bool = False, *, indent: int = 0) -> None:
+    binary_name = scope.TARGET
+    assert binary_name
+
+#find_package(Qt5 COMPONENTS Widgets REQUIRED)
+#target_link_libraries(mimetypebrowser Qt::Widgets)
+
+    cm_fh.write('cmake_minimum_required(VERSION 3.14)\n' +
+                'project(mimetypebrowser LANGUAGES CXX)\n\n' +
+                'set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n' +
+                'set(CMAKE_AUTOMOC ON)\n' +
+                'set(CMAKE_AUTORCC ON)\n' +
+                'set(CMAKE_AUTOUIC ON)\n\n' +
+                'set(INSTALL_EXAMPLEDIR "examples")\n\n')
+
+    add_executable = 'add_executable({}'.format(binary_name);
+    if gui:
+        add_executable += ' WIN32_EXECUTABLE MACOSX_BUNDLE'
+
+    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0)
+
+    cm_fh.write(')\n')
+
+    write_include_paths(cm_fh, scope, 'target_include_directories({}'.format(binary_name),
+                        indent=0, footer=')')
+    write_defines(cm_fh, scope, 'target_compile_definitions({}'.format(binary_name),
+                  indent=0, footer=')')
+    write_compile_options(cm_fh, scope, 'target_compile_options({}'.format(binary_name),
+                          indent=0, footer=')')
+
+    cm_fh.write('\ninstall(TARGETS mimetypebrowser\n' +
+                '    RUNTIME_DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
+                '    BUNDLE_DESTINATION "${INSTALL_EXAMPLESDIR}"\n' +
+                ')\n')
+
+
 def write_plugin(cm_fh, scope, *, indent: int = 0):
     plugin_name = scope.TARGET
     assert plugin_name
@@ -1491,52 +1563,59 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
-                      indent: int = 0) -> None:
+                      indent: int = 0, is_example: bool=False) -> None:
     assert scope.TEMPLATE in ('app', 'lib')
 
     is_lib = scope.TEMPLATE == 'lib'
     is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED'))
 
     if is_lib or 'qt_module' in scope.get('_LOADED'):
+        assert not is_example
         write_module(cm_fh, scope, indent=indent)
     elif is_plugin:
+        assert not is_example
         write_plugin(cm_fh, scope, indent=indent)
     elif 'qt_tool' in scope.get('_LOADED'):
+        assert not is_example
         write_tool(cm_fh, scope, indent=indent)
     else:
         if 'testcase' in scope.get('CONFIG') \
                 or 'testlib' in scope.get('CONFIG'):
+            assert not is_example
             write_test(cm_fh, scope, indent=indent)
         else:
             gui = 'console' not in scope.get('CONFIG')
-            write_binary(cm_fh, scope, gui, indent=indent)
+            if is_example:
+                write_example(cm_fh, scope, gui, indent=indent)
+            else:
+                write_binary(cm_fh, scope, gui, indent=indent)
 
     ind = spaces(indent)
     write_source_file_list(cm_fh, scope, '',
                            ['QMAKE_DOCS',],
-                           indent,
+                           indent + 1,
                            header = '{}add_qt_docs(\n'.format(ind),
                            footer = '{})\n'.format(ind))
 
 
 def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
-                   indent: int = 0) -> None:
+                   indent: int = 0, is_example: bool=False) -> None:
     template = scope.TEMPLATE
     if template == 'subdirs':
-        handle_subdir(scope, cm_fh, indent=indent)
+        handle_subdir(scope, cm_fh, indent=indent, is_example=is_example)
     elif template in ('app', 'lib'):
-        handle_app_or_lib(scope, cm_fh, indent=indent)
+        handle_app_or_lib(scope, cm_fh, indent=indent, is_example=is_example)
     else:
         print('    XXXX: {}: Template type {} not yet supported.'
               .format(scope.file, template))
 
 
-def generate_cmakelists(scope: Scope) -> None:
+def generate_cmakelists(scope: Scope, *, is_example: bool=False) -> None:
     with open(scope.cMakeListsFile, 'w') as cm_fh:
         assert scope.file
         cm_fh.write('# Generated from {}.\n\n'
                     .format(os.path.basename(scope.file)))
-        cmakeify_scope(scope, cm_fh)
+        cmakeify_scope(scope, cm_fh, is_example=is_example)
 
 
 def do_include(scope: Scope, *, debug: bool = False) -> None:
@@ -1600,7 +1679,7 @@ def main() -> None:
             print(file_scope.dump())
             print('\n#### End of full .pro/.pri file structure.\n')
 
-        generate_cmakelists(file_scope)
+        generate_cmakelists(file_scope, is_example=args.is_example)
         os.chdir(backup_current_dir)
 
 
