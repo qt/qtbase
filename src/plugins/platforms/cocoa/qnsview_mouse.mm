@@ -497,12 +497,15 @@
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
     // cursor. See rdar://34183708
 
-    if (self.cursor && self.cursor != NSCursor.currentCursor) {
-        qCInfo(lcQpaMouse) << "Updating cursor for" << self << "to" << self.cursor;
+    auto previousCursor = NSCursor.currentCursor;
+
+    if (self.cursor)
         [self.cursor set];
-    } else {
+    else
         [super cursorUpdate:theEvent];
-    }
+
+    if (NSCursor.currentCursor != previousCursor)
+        qCInfo(lcQpaMouse) << "Cursor update for" << self << "resulted in new cursor" << NSCursor.currentCursor;
 }
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent
