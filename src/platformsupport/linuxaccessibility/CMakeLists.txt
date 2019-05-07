@@ -1,6 +1,6 @@
 # Generated from linuxaccessibility.pro.
 
-qt_find_package(ATSPI2 REQUIRED) # special case
+qt_find_package(ATSPI2) # special case
 
 #####################################################################
 ## LinuxAccessibilitySupport Module:
