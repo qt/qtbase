@@ -46,6 +46,7 @@
 #include <QTextDocumentFragment>
 #include <QTextList>
 #include <QTextTable>
+#include "../../3rdparty/md4c/md4c.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -57,31 +58,31 @@ Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 static int CbEnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
     QTextMarkdownImporter *mdi = static_cast<QTextMarkdownImporter *>(userdata);
-    return mdi->cbEnterBlock(type, detail);
+    return mdi->cbEnterBlock(int(type), detail);
 }
 
 static int CbLeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata)
 {
     QTextMarkdownImporter *mdi = static_cast<QTextMarkdownImporter *>(userdata);
-    return mdi->cbLeaveBlock(type, detail);
+    return mdi->cbLeaveBlock(int(type), detail);
 }
 
 static int CbEnterSpan(MD_SPANTYPE type, void *detail, void *userdata)
 {
     QTextMarkdownImporter *mdi = static_cast<QTextMarkdownImporter *>(userdata);
-    return mdi->cbEnterSpan(type, detail);
+    return mdi->cbEnterSpan(int(type), detail);
 }
 
 static int CbLeaveSpan(MD_SPANTYPE type, void *detail, void *userdata)
 {
     QTextMarkdownImporter *mdi = static_cast<QTextMarkdownImporter *>(userdata);
-    return mdi->cbLeaveSpan(type, detail);
+    return mdi->cbLeaveSpan(int(type), detail);
 }
 
 static int CbText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata)
 {
     QTextMarkdownImporter *mdi = static_cast<QTextMarkdownImporter *>(userdata);
-    return mdi->cbText(type, text, size);
+    return mdi->cbText(int(type), text, size);
 }
 
 static void CbDebugLog(const char *msg, void *userdata)
@@ -131,15 +132,15 @@ void QTextMarkdownImporter::import(QTextDocument *doc, const QString &markdown)
     doc->clear();
     qCDebug(lcMD) << "default font" << doc->defaultFont() << "mono font" << m_monoFont;
     QByteArray md = markdown.toUtf8();
-    md_parse(md.constData(), md.size(), &callbacks, this);
+    md_parse(md.constData(), MD_SIZE(md.size()), &callbacks, this);
     delete m_cursor;
     m_cursor = nullptr;
 }
 
-int QTextMarkdownImporter::cbEnterBlock(MD_BLOCKTYPE type, void *det)
+int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
 {
-    m_blockType = type;
-    switch (type) {
+    m_blockType = blockType;
+    switch (blockType) {
     case MD_BLOCK_P: {
         QTextBlockFormat blockFmt;
         int margin = m_doc->defaultFont().pointSize() / 2;
@@ -157,10 +158,10 @@ int QTextMarkdownImporter::cbEnterBlock(MD_BLOCKTYPE type, void *det)
         MD_BLOCK_H_DETAIL *detail = static_cast<MD_BLOCK_H_DETAIL *>(det);
         QTextBlockFormat blockFmt;
         QTextCharFormat charFmt;
-        int sizeAdjustment = 4 - detail->level; // H1 to H6: +3 to -2
+        int sizeAdjustment = 4 - int(detail->level); // H1 to H6: +3 to -2
         charFmt.setProperty(QTextFormat::FontSizeAdjustment, sizeAdjustment);
         charFmt.setFontWeight(QFont::Bold);
-        blockFmt.setHeadingLevel(detail->level);
+        blockFmt.setHeadingLevel(int(detail->level));
         m_cursor->insertBlock(blockFmt, charFmt);
     } break;
     case MD_BLOCK_LI: {
@@ -258,10 +259,10 @@ int QTextMarkdownImporter::cbEnterBlock(MD_BLOCKTYPE type, void *det)
     return 0; // no error
 }
 
-int QTextMarkdownImporter::cbLeaveBlock(MD_BLOCKTYPE type, void *detail)
+int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
 {
     Q_UNUSED(detail)
-    switch (type) {
+    switch (blockType) {
     case MD_BLOCK_UL:
     case MD_BLOCK_OL:
         m_listStack.pop();
@@ -304,10 +305,10 @@ int QTextMarkdownImporter::cbLeaveBlock(MD_BLOCKTYPE type, void *detail)
     return 0; // no error
 }
 
-int QTextMarkdownImporter::cbEnterSpan(MD_SPANTYPE type, void *det)
+int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
 {
     QTextCharFormat charFmt;
-    switch (type) {
+    switch (spanType) {
     case MD_SPAN_EM:
         charFmt.setFontItalic(true);
         break;
@@ -316,8 +317,8 @@ int QTextMarkdownImporter::cbEnterSpan(MD_SPANTYPE type, void *det)
         break;
     case MD_SPAN_A: {
         MD_SPAN_A_DETAIL *detail = static_cast<MD_SPAN_A_DETAIL *>(det);
-        QString url = QString::fromLatin1(detail->href.text, detail->href.size);
-        QString title = QString::fromLatin1(detail->title.text, detail->title.size);
+        QString url = QString::fromLatin1(detail->href.text, int(detail->href.size));
+        QString title = QString::fromLatin1(detail->title.text, int(detail->title.size));
         charFmt.setAnchorHref(url);
         charFmt.setAnchorNames(QStringList(title));
         charFmt.setForeground(m_palette.link());
@@ -326,8 +327,8 @@ int QTextMarkdownImporter::cbEnterSpan(MD_SPANTYPE type, void *det)
     case MD_SPAN_IMG: {
         m_imageSpan = true;
         MD_SPAN_IMG_DETAIL *detail = static_cast<MD_SPAN_IMG_DETAIL *>(det);
-        QString src = QString::fromUtf8(detail->src.text, detail->src.size);
-        QString title = QString::fromUtf8(detail->title.text, detail->title.size);
+        QString src = QString::fromUtf8(detail->src.text, int(detail->src.size));
+        QString title = QString::fromUtf8(detail->title.text, int(detail->title.size));
         QTextImageFormat img;
         img.setName(src);
         qCDebug(lcMD) << "image" << src << "title" << title << "relative to" << m_doc->baseUrl();
@@ -346,7 +347,7 @@ int QTextMarkdownImporter::cbEnterSpan(MD_SPANTYPE type, void *det)
     return 0; // no error
 }
 
-int QTextMarkdownImporter::cbLeaveSpan(MD_SPANTYPE type, void *detail)
+int QTextMarkdownImporter::cbLeaveSpan(int spanType, void *detail)
 {
     Q_UNUSED(detail)
     QTextCharFormat charFmt;
@@ -356,20 +357,20 @@ int QTextMarkdownImporter::cbLeaveSpan(MD_SPANTYPE type, void *detail)
             charFmt = m_spanFormatStack.top();
     }
     m_cursor->setCharFormat(charFmt);
-    if (type == MD_SPAN_IMG)
+    if (spanType == int(MD_SPAN_IMG))
         m_imageSpan = false;
     return 0; // no error
 }
 
-int QTextMarkdownImporter::cbText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size)
+int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 {
     if (m_imageSpan)
         return 0; // it's the alt-text
     static const QRegularExpression openingBracket(QStringLiteral("<[a-zA-Z]"));
     static const QRegularExpression closingBracket(QStringLiteral("(/>|</)"));
-    QString s = QString::fromUtf8(text, size);
+    QString s = QString::fromUtf8(text, int(size));
 
-    switch (type) {
+    switch (textType) {
     case MD_TEXT_NORMAL:
         if (m_htmlTagDepth) {
             m_htmlAccumulator += s;

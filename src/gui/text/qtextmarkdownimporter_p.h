@@ -57,8 +57,6 @@
 #include <QtGui/qtextlist.h>
 #include <QtCore/qstack.h>
 
-#include "../../3rdparty/md4c/md4c.h"
-
 QT_BEGIN_NAMESPACE
 
 class QTextCursor;
@@ -69,22 +67,23 @@ class Q_GUI_EXPORT QTextMarkdownImporter
 {
 public:
     enum Feature {
-        FeatureCollapseWhitespace = MD_FLAG_COLLAPSEWHITESPACE,
-        FeaturePermissiveATXHeaders = MD_FLAG_PERMISSIVEATXHEADERS,
-        FeaturePermissiveURLAutoLinks = MD_FLAG_PERMISSIVEURLAUTOLINKS,
-        FeaturePermissiveMailAutoLinks = MD_FLAG_PERMISSIVEEMAILAUTOLINKS,
-        FeatureNoIndentedCodeBlocks = MD_FLAG_NOINDENTEDCODEBLOCKS,
-        FeatureNoHTMLBlocks = MD_FLAG_NOHTMLBLOCKS,
-        FeatureNoHTMLSpans = MD_FLAG_NOHTMLSPANS,
-        FeatureTables = MD_FLAG_TABLES,
-        FeatureStrikeThrough = MD_FLAG_STRIKETHROUGH,
-        FeaturePermissiveWWWAutoLinks = MD_FLAG_PERMISSIVEWWWAUTOLINKS,
-        FeatureTasklists = MD_FLAG_TASKLISTS,
+        // Must be kept in sync with MD_FLAG_* in md4c.h
+        FeatureCollapseWhitespace =       0x0001, // MD_FLAG_COLLAPSEWHITESPACE
+        FeaturePermissiveATXHeaders =     0x0002, // MD_FLAG_PERMISSIVEATXHEADERS
+        FeaturePermissiveURLAutoLinks =   0x0004, // MD_FLAG_PERMISSIVEURLAUTOLINKS
+        FeaturePermissiveMailAutoLinks =  0x0008, // MD_FLAG_PERMISSIVEEMAILAUTOLINKS
+        FeatureNoIndentedCodeBlocks =     0x0010, // MD_FLAG_NOINDENTEDCODEBLOCKS
+        FeatureNoHTMLBlocks =             0x0020, // MD_FLAG_NOHTMLBLOCKS
+        FeatureNoHTMLSpans =              0x0040, // MD_FLAG_NOHTMLSPANS
+        FeatureTables =                   0x0100, // MD_FLAG_TABLES
+        FeatureStrikeThrough =            0x0200, // MD_FLAG_STRIKETHROUGH
+        FeaturePermissiveWWWAutoLinks =   0x0400, // MD_FLAG_PERMISSIVEWWWAUTOLINKS
+        FeatureTasklists =                0x0800, // MD_FLAG_TASKLISTS
         // composite flags
-        FeaturePermissiveAutoLinks = MD_FLAG_PERMISSIVEAUTOLINKS,
-        FeatureNoHTML = MD_FLAG_NOHTML,
-        DialectCommonMark = MD_DIALECT_COMMONMARK,
-        DialectGitHub = MD_DIALECT_GITHUB
+        FeaturePermissiveAutoLinks =  FeaturePermissiveMailAutoLinks | FeaturePermissiveURLAutoLinks | FeaturePermissiveWWWAutoLinks, // MD_FLAG_PERMISSIVEAUTOLINKS
+        FeatureNoHTML = FeatureNoHTMLBlocks | FeatureNoHTMLSpans, // MD_FLAG_NOHTML
+        DialectCommonMark = 0,                   // MD_DIALECT_COMMONMARK
+        DialectGitHub = FeaturePermissiveAutoLinks | FeatureTables | FeatureStrikeThrough | FeatureTasklists // MD_DIALECT_GITHUB
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
@@ -94,11 +93,11 @@ public:
 
 public:
     // MD4C callbacks
-    int cbEnterBlock(MD_BLOCKTYPE type, void* detail);
-    int cbLeaveBlock(MD_BLOCKTYPE type, void* detail);
-    int cbEnterSpan(MD_SPANTYPE type, void* detail);
-    int cbLeaveSpan(MD_SPANTYPE type, void* detail);
-    int cbText(MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size);
+    int cbEnterBlock(int blockType, void* detail);
+    int cbLeaveBlock(int blockType, void* detail);
+    int cbEnterSpan(int spanType, void* detail);
+    int cbLeaveSpan(int spanType, void* detail);
+    int cbText(int textType, const char* text, unsigned size);
 
 private:
     QTextDocument *m_doc = nullptr;
@@ -115,7 +114,7 @@ private:
     int m_tableRowCount = 0;
     int m_tableCol = -1; // because relative cell movements (e.g. m_cursor->movePosition(QTextCursor::NextCell)) don't work
     Features m_features;
-    MD_BLOCKTYPE m_blockType = MD_BLOCK_DOC;
+    int m_blockType = 0;
     bool m_emptyList = false; // true when the last thing we did was insertList
     bool m_imageSpan = false;
 };
