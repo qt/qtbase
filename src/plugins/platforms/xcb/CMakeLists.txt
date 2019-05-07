@@ -1,6 +1,6 @@
-# Generated from xcb_qpa_lib.pro.
+# Generated from xcb.pro.
 
-# special case:
+# begin special case:
 qt_find_package(X11_XCB)
 qt_find_package(X11)
 qt_find_package(XCB)
@@ -10,6 +10,7 @@ qt_find_package(Freetype)
 qt_find_package(GLIB2)
 
 pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET) # special case
+# end special case:
 
 #####################################################################
 ## XcbQpa Module:
@@ -55,6 +56,7 @@ add_qt_module(XcbQpa
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate
         Qt::XkbCommonSupportPrivate
+        PkgConfig::XKB_COMMON_X11 # special case
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
         Qt::Core
@@ -79,7 +81,7 @@ add_qt_module(XcbQpa
         XKB::XKB
 )
 
-#### Keys ignored in scope 1:.:.:xcb_qpa_lib.pro:<TRUE>:
+#### Keys ignored in scope 3:.:.:xcb_qpa_lib.pro:<TRUE>:
 # CONFIG = "no_module_headers" "internal_module"
 # _LOADED = "qt_build_paths" "qt_module"
 
@@ -158,16 +160,13 @@ extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
 
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xrender
     PUBLIC_LIBRARIES
-        X11::Xrender # special case
+        PkgConfig::xrender
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting
     LIBRARIES
         Freetype::Freetype
 )
-
-# Generated from xcb-plugin.pro.
-
 #####################################################################
 ## qxcb Plugin:
 #####################################################################
@@ -188,7 +187,7 @@ add_qt_plugin(qxcb
         Qt::XcbQpa
 )
 
-#### Keys ignored in scope 1:.:.:./xcb-plugin.pro:<TRUE>:
+#### Keys ignored in scope 24:.:.:xcb-plugin.pro:<TRUE>:
 # OTHER_FILES = "xcb.json" "README"
 # PLUGIN_CLASS_NAME = "QXcbIntegrationPlugin"
 # _LOADED = "qt_plugin"
@@ -196,12 +195,11 @@ add_qt_plugin(qxcb
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:./xcb-plugin.pro:APPLE_OSX:
+#### Keys ignored in scope 25:.:.:xcb-plugin.pro:APPLE_OSX:
 # CONFIG = "no_app_extension_api_only"
 
-#### Keys ignored in scope 3:.:.:./xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 26:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
-
 add_subdirectory(gl_integrations)
 
-#### TODO: xcb-static sub folder
+#### TODO: xcb-static sub folder # special case
