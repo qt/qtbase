@@ -110,17 +110,10 @@ public:
     void lower(QWasmWindow *window);
     void setParent(QWasmWindow *window, QWasmWindow *parent);
 
-    void flush(QWasmWindow *surface, const QRegion &region);
-
     int windowCount() const;
-
-    void redrawWindowContent();
-    void requestRedraw();
 
     QWindow *windowAt(QPoint globalPoint, int padding = 0) const;
     QWindow *keyWindow() const;
-
-    bool event(QEvent *event);
 
     static QWasmTitleBarOptions makeTitleBarOptions(const QWasmWindow *window);
     static QRect titlebarRect(QWasmTitleBarOptions tb, QWasmCompositor::SubControls subcontrol);
@@ -128,7 +121,13 @@ public:
     QWasmScreen *screen();
     QOpenGLContext *context();
 
-private slots:
+    enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
+    void requestUpdateAllWindows();
+    void requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
+    void requestUpdate();
+    void deliverUpdateRequests();
+    void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
+    void handleBackingStoreFlush();
     void frame();
 
 private:
@@ -152,6 +151,10 @@ private:
     bool m_isEnabled;
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio;
+    QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;
+    bool m_requestUpdateAllWindows = false;
+    int m_requestAnimationFrameId = -1;
+    bool m_inDeliverUpdateRequest = false;
 
     static QPalette makeWindowPalette();
 

@@ -111,8 +111,6 @@ void QWasmWindow::setGeometry(const QRect &rect)
     }
     QWindowSystemInterface::handleGeometryChange(window(), r);
     QPlatformWindow::setGeometry(r);
-
-    QWindowSystemInterface::flushWindowSystemEvents();
     invalidate();
 }
 
@@ -128,7 +126,6 @@ void QWasmWindow::setVisible(bool visible)
         else if (m_windowState & Qt::WindowMaximized)
             newGeom = platformScreen()->availableGeometry();
     }
-    QPlatformWindow::setVisible(visible);
 
     m_compositor->setVisible(this, visible);
 
@@ -366,7 +363,7 @@ QRegion QWasmWindow::titleControlRegion() const
 
 void QWasmWindow::invalidate()
 {
-    m_compositor->requestRedraw();
+    m_compositor->requestUpdateWindow(this);
 }
 
 QWasmCompositor::SubControls QWasmWindow::activeSubControl() const
@@ -397,6 +394,11 @@ qreal QWasmWindow::devicePixelRatio() const
 
 void QWasmWindow::requestUpdate()
 {
+    if (m_compositor) {
+        m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
+        return;
+    }
+
     static auto frame = [](double time, void *context) -> int {
         Q_UNUSED(time);
         QWasmWindow *window = static_cast<QWasmWindow *>(context);

@@ -216,7 +216,7 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     QPoint position(rect["left"].as<int>() - offset.x(), rect["top"].as<int>() - offset.y());
 
     setGeometry(QRect(position, cssSize.toSize()));
-    m_compositor->redrawWindowContent();
+    m_compositor->requestUpdateAllWindows();
 }
 
 void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscripten::val)

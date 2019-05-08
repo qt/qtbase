@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include "qwasmcompositor.h"
+#include "qwasmeventdispatcher.h"
 #include "qwasmwindow.h"
 #include "qwasmstylepixmaps_p.h"
 
@@ -69,6 +70,8 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
 
 QWasmCompositor::~QWasmCompositor()
 {
+    if (m_requestAnimationFrameId != -1)
+        emscripten_cancel_animation_frame(m_requestAnimationFrameId);
     destroy();
 }
 
@@ -148,7 +151,7 @@ void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
     else
         m_globalDamage = compositedWindow.window->geometry(); // repaint previously covered area.
 
-    requestRedraw();
+    requestUpdateWindow(window, QWasmCompositor::ExposeEventDelivery);
 }
 
 void QWasmCompositor::raise(QWasmWindow *window)
@@ -181,43 +184,12 @@ void QWasmCompositor::setParent(QWasmWindow *window, QWasmWindow *parent)
 {
     m_compositedWindows[window].parentWindow = parent;
 
-    requestRedraw();
-}
-
-void QWasmCompositor::flush(QWasmWindow *window, const QRegion &region)
-{
-    QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
-    compositedWindow.flushPending = true;
-    compositedWindow.damage = region;
-
-    requestRedraw();
+    requestUpdate();
 }
 
 int QWasmCompositor::windowCount() const
 {
     return m_windowStack.count();
-}
-
-
-void QWasmCompositor::redrawWindowContent()
-{
-    // Redraw window content by sending expose events. This redraw
-    // will cause a backing store flush, which will call requestRedraw()
-    // to composit.
-    for (QWasmWindow *platformWindow : m_windowStack) {
-        QWindow *window = platformWindow->window();
-        QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(
-            window, QRect(QPoint(0, 0), window->geometry().size()));
-    }
-}
-
-void QWasmCompositor::requestRedraw()
-{
-    if (m_needComposit)
-        return;
-
-    m_needComposit = true;
-    QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
 
 QWindow *QWasmCompositor::windowAt(QPoint globalPoint, int padding) const
@@ -243,17 +215,6 @@ QWindow *QWasmCompositor::windowAt(QPoint globalPoint, int padding) const
 QWindow *QWasmCompositor::keyWindow() const
 {
     return m_windowStack.at(m_windowStack.count() - 1)->window();
-}
-
-bool QWasmCompositor::event(QEvent *ev)
-{
-    if (ev->type() == QEvent::UpdateRequest) {
-        if (m_isEnabled)
-            frame();
-        return true;
-    }
-
-    return QObject::event(ev);
 }
 
 void QWasmCompositor::blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QOpenGLTexture *texture, QRect targetGeometry)
@@ -364,6 +325,97 @@ QRect QWasmCompositor::titlebarRect(QWasmTitleBarOptions tb, QWasmCompositor::Su
                    ret.width() - tb.rect.width(), 0);
 
     return rect;
+}
+
+void QWasmCompositor::requestUpdateAllWindows()
+{
+    m_requestUpdateAllWindows = true;
+    requestUpdate();
+}
+
+void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType)
+{
+    auto it = m_requestUpdateWindows.find(window);
+    if (it == m_requestUpdateWindows.end()) {
+        m_requestUpdateWindows.insert(window, updateType);
+    } else {
+        // Already registered, but upgrade ExposeEventDeliveryType to UpdateRequestDeliveryType.
+        // if needed, to make sure QWindow::updateRequest's are matched.
+        if (it.value() == ExposeEventDelivery && updateType == UpdateRequestDelivery)
+            it.value() = UpdateRequestDelivery;
+    }
+
+    requestUpdate();
+}
+
+// Requests an upate/new frame using RequestAnimationFrame
+void QWasmCompositor::requestUpdate()
+{
+    if (m_requestAnimationFrameId != -1)
+        return;
+
+    static auto frame = [](double frameTime, void *context) -> int {
+        Q_UNUSED(frameTime);
+        QWasmCompositor *compositor = reinterpret_cast<QWasmCompositor *>(context);
+        compositor->m_requestAnimationFrameId = -1;
+        compositor->deliverUpdateRequests();
+        return 0;
+    };
+    m_requestAnimationFrameId = emscripten_request_animation_frame(frame, this);
+}
+
+void QWasmCompositor::deliverUpdateRequests()
+{
+    // We may get new update requests during the window content update below:
+    // prepare for recording the new update set by setting aside the current
+    // update set.
+    auto requestUpdateWindows = m_requestUpdateWindows;
+    m_requestUpdateWindows.clear();
+    bool requestUpdateAllWindows = m_requestUpdateAllWindows;
+    m_requestUpdateAllWindows = false;
+
+    // Update window content, either all windows or a spesific set of windows. Use the correct update
+    // type: QWindow subclasses expect that requested and delivered updateRequests matches exactly.
+    m_inDeliverUpdateRequest = true;
+    if (requestUpdateAllWindows) {
+        for (QWasmWindow *window : m_windowStack) {
+            auto it = requestUpdateWindows.find(window);
+            UpdateRequestDeliveryType updateType =
+                (it == m_requestUpdateWindows.end() ? ExposeEventDelivery : it.value());
+            deliverUpdateRequest(window, updateType);
+        }
+    } else {
+        for (auto it = requestUpdateWindows.constBegin(); it != requestUpdateWindows.constEnd(); ++it) {
+            auto *window = it.key();
+            UpdateRequestDeliveryType updateType = it.value();
+            deliverUpdateRequest(window, updateType);
+        }
+    }
+    m_inDeliverUpdateRequest = false;
+
+    // Compose window content
+    frame();
+}
+
+void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType)
+{
+    // update by deliverUpdateRequest and expose event accordingly.
+    if (updateType == UpdateRequestDelivery) {
+        window->QPlatformWindow::deliverUpdateRequest();
+    } else {
+        QWindow *qwindow = window->window();
+        QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(
+            qwindow, QRect(QPoint(0, 0), qwindow->geometry().size()));
+    }
+}
+
+void QWasmCompositor::handleBackingStoreFlush()
+{
+    // Request update to flush the updated backing store content,
+    // unless we are currently processing an update, in which case
+    // the new content will flushed as a part of that update.
+    if (!m_inDeliverUpdateRequest)
+        requestUpdate();
 }
 
 int dpiScaled(qreal value)
@@ -678,11 +730,6 @@ void QWasmCompositor::drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *sc
 
 void QWasmCompositor::frame()
 {
-    if (!m_needComposit)
-        return;
-
-    m_needComposit = false;
-
     if (!m_isEnabled || m_windowStack.empty() || !screen())
         return;
 
@@ -748,8 +795,7 @@ void QWasmCompositor::notifyTopWindowChanged(QWasmWindow *window)
         return;
     }
 
-    requestRedraw();
-
+    requestUpdate();
 }
 
 QWasmScreen *QWasmCompositor::screen()
