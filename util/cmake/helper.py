@@ -30,8 +30,9 @@ import re
 import typing
 
 class LibraryMapping:
-    def __init__(self, soName: typing.Optional[str],
-                 packageName: str, targetName: str, *,
+    def __init__(self, soName: str,
+                 packageName: typing.Optional[str],
+                 targetName: typing.Optional[str], *,
                  resultVariable: typing.Optional[str] = None,
                  extra: typing.List[str] = [],
                  appendFoundSuffix: bool = True) -> None:
@@ -42,7 +43,7 @@ class LibraryMapping:
         self.extra = extra
         self.targetName = targetName
 
-    def is_qt() -> bool:
+    def is_qt(self) -> bool:
         return self.packageName == 'Qt' \
             or self.packageName == 'Qt5' \
             or self.packageName == 'Qt6'

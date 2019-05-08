@@ -332,7 +332,7 @@ class Scope(object):
     @property
     def scope_debug(self) -> bool:
         merge = self.get_string('PRO2CMAKE_SCOPE_DEBUG').lower()
-        return merge and (merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true')
+        return merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true'
 
     @property
     def parent(self) -> typing.Optional[Scope]:
@@ -557,7 +557,7 @@ class Scope(object):
     def _map_files(self, files: typing.List[str], *,
                    use_vpath: bool = True, is_include: bool = False) -> typing.List[str]:
 
-        expanded_files = []  # typing.List[str]
+        expanded_files = []  # type: typing.List[str]
         for f in files:
             r = self._expand_value(f)
             expanded_files += r
@@ -814,13 +814,13 @@ def map_condition(condition: str) -> str:
             if (feature.group(1) == "qtHaveModule"):
                 part = 'TARGET {}'.format(map_qt_library(feature.group(2)))
             else:
-                feature = featureName(feature.group(2))
-                if feature.startswith('system_') and is_known_3rd_party_library(feature[7:]):
+                feature_name = featureName(feature.group(2))
+                if feature_name.startswith('system_') and is_known_3rd_party_library(feature_name[7:]):
                     part = 'ON'
                 elif feature == 'dlopen':
                     part = 'ON'
                 else:
-                    part = 'QT_FEATURE_' + feature
+                    part = 'QT_FEATURE_' + feature_name
         else:
             part = map_platform(part)
 
@@ -928,7 +928,7 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
 
 def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
                        dependencies: typing.List[str], *, indent: int = 0):
-    dependencies_to_print = []
+    dependencies_to_print = []  # type: typing.List[str]
     is_framework = False
 
     for d in dependencies:
@@ -1301,11 +1301,11 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
     return current_condition
 
 
-def map_to_cmake_condition(condition: str) -> str:
+def map_to_cmake_condition(condition: typing.Optional[str]) -> str:
     condition = re.sub(r'\bQT_ARCH___equals___([a-zA-Z_0-9]*)',
-                       r'(TEST_architecture_arch STREQUAL "\1")', condition)
+                       r'(TEST_architecture_arch STREQUAL "\1")', condition or '')
     condition = re.sub(r'\bQT_ARCH___contains___([a-zA-Z_0-9]*)',
-                       r'(TEST_architecture_arch STREQUAL "\1")', condition)
+                       r'(TEST_architecture_arch STREQUAL "\1")', condition or '')
     return condition
 
 
@@ -1366,6 +1366,7 @@ def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
     known_scopes = {}  # type: typing.Mapping[str, Scope]
     for scope in scopes:
         total_condition = scope.total_condition
+        assert total_condition
         if total_condition == 'OFF':
             # ignore this scope entirely!
             pass
@@ -1669,14 +1670,14 @@ def main() -> None:
 
         if args.debug_pro_structure or args.debug:
             print('\n\n#### .pro/.pri file structure:')
-            print(file_scope.dump())
+            file_scope.dump()
             print('\n#### End of .pro/.pri file structure.\n')
 
         do_include(file_scope, debug=debug_parsing)
 
         if args.debug_full_pro_structure or args.debug:
             print('\n\n#### Full .pro/.pri file structure:')
-            print(file_scope.dump())
+            file_scope.dump()
             print('\n#### End of full .pro/.pri file structure.\n')
 
         generate_cmakelists(file_scope, is_example=args.is_example)
