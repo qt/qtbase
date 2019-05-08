@@ -23,6 +23,7 @@
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
 #include <qscopeguard.h>
+#include <qspan.h>
 #include <qstandardpaths.h>
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
@@ -1709,11 +1710,16 @@ bool QCoreApplicationPrivate::compressEvent(QEvent *event, QObject *receiver, QP
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
 
+    // Events before startOffset have already been delivered by
+    // sendPostedEvents() and have a null event pointer, so there is no
+    // need to look at them.
+    const auto pending = QSpan(std::as_const(*postedEvents)).subspan(postedEvents->startOffset);
+
     // compress posted timers to this object.
     if (event->type() == QEvent::Timer) {
         const int timerId = static_cast<QTimerEvent *>(event)->timerId();
-        auto it = postedEvents->cbegin();
-        const auto end = postedEvents->cend();
+        auto it = pending.begin();
+        const auto end = pending.end();
         while (it != end) {
             if (it->event && it->event->type() == QEvent::Timer && it->receiver == receiver) {
                 if (static_cast<QTimerEvent *>(it->event)->timerId() == timerId) {
@@ -1727,7 +1733,7 @@ bool QCoreApplicationPrivate::compressEvent(QEvent *event, QObject *receiver, QP
     }
 
     if (event->type() == QEvent::Quit) {
-        for (const QPostEvent &cur : std::as_const(*postedEvents)) {
+        for (const QPostEvent &cur : pending) {
             if (cur.receiver != receiver
                     || cur.event == nullptr
                     || cur.event->type() != event->type())

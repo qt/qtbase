@@ -57,6 +57,7 @@
 
 #include "private/qkeymapper_p.h"
 
+#include <qspan.h>
 #include <qthread.h>
 #include <private/qthread_p.h>
 
@@ -800,7 +801,9 @@ bool QApplicationPrivate::compressEvent(QEvent *event, QObject *receiver, QPostE
         return QGuiApplicationPrivate::compressEvent(event, receiver, postedEvents);
     }
 
-    for (const auto &postedEvent : std::as_const(*postedEvents)) {
+    // Events before startOffset have already been delivered by sendPostedEvents()
+    const auto pending = QSpan(std::as_const(*postedEvents)).subspan(postedEvents->startOffset);
+    for (const auto &postedEvent : pending) {
 
         // Continue, unless a valid event of the same type exists for the same receiver
         if (postedEvent.receiver != receiver
