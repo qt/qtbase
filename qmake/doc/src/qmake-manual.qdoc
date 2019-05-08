@@ -974,6 +974,9 @@
             the compiler does not support C++17, or can't select the C++ standard.
             By default, support is disabled.
     \row    \li c++17 \li Same as c++1z.
+    \row    \li c++2a \li C++2a support is enabled. This option has no effect if
+            the compiler does not support C++2a, or can't select the C++ standard.
+            By default, support is disabled.
     \row    \li strict_c++ \li Disables support for C++ compiler extensions.
             By default, they are enabled.
     \row    \li depend_includepath \li Appending the value of INCLUDEPATH to
