@@ -3,6 +3,8 @@
 ##teamcity[testFinished name='initTestCase()' flowId='tst_Sleep']
 ##teamcity[testStarted name='sleep()' flowId='tst_Sleep']
 ##teamcity[testFinished name='sleep()' flowId='tst_Sleep']
+##teamcity[testStarted name='wait()' flowId='tst_Sleep']
+##teamcity[testFinished name='wait()' flowId='tst_Sleep']
 ##teamcity[testStarted name='cleanupTestCase()' flowId='tst_Sleep']
 ##teamcity[testFinished name='cleanupTestCase()' flowId='tst_Sleep']
 ##teamcity[testSuiteFinished name='tst_Sleep' flowId='tst_Sleep']

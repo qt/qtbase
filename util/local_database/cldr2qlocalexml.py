@@ -31,7 +31,7 @@
 The CLDR data can be downloaded from CLDR_, which has a sub-directory
 for each version; you need the ``core.zip`` file for your version of
 choice (typically the latest).  This script has had updates to cope up
-to v29; for later versions, we may need adaptations.  Unpack the
+to v35; for later versions, we may need adaptations.  Unpack the
 downloaded ``core.zip`` and check it has a common/main/ sub-directory:
 pass the path of that sub-directory to this script as its single
 command-line argument.  Save its standard output (but not error) to a

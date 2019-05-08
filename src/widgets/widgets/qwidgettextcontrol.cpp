@@ -1972,6 +1972,8 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
 
+    int oldCursorPos = cursor.position();
+
     cursor.beginEditBlock();
     if (isGettingInput) {
         cursor.removeSelectedText();
@@ -2076,6 +2078,8 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 
     if (cursor.d)
         cursor.d->setX();
+    if (oldCursorPos != cursor.position())
+        emit q->cursorPositionChanged();
     if (oldPreeditCursor != preeditCursor)
         emit q->microFocusChanged();
 }

@@ -9,4 +9,5 @@ defines                  += onlinedocs
 #uncomment if navigation bar is not wanted
 #HTML.nonavigationbar      = "true"
 
-sourcedirs += includes-online
+sourcedirs += includes-online \
+              includes

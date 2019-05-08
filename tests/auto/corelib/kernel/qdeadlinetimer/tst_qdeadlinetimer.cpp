@@ -29,6 +29,7 @@
 #include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QDeadlineTimer>
+#include <QtCore/QElapsedTimer>
 #include <QtTest/QtTest>
 
 #if QT_HAS_INCLUDE(<chrono>)
@@ -50,6 +51,7 @@ private Q_SLOTS:
     void current();
     void deadlines();
     void setDeadline();
+    void overflow();
     void expire();
     void stdchrono();
 };
@@ -415,6 +417,83 @@ void tst_QDeadlineTimer::setDeadline()
     QVERIFY(deadline.remainingTimeNSecs() <= (4000000 * minResolution));
     QCOMPARE(deadline.deadline(), nsec / (1000 * 1000));
     QCOMPARE(deadline.deadlineNSecs(), nsec);
+}
+
+void tst_QDeadlineTimer::overflow()
+{
+    QFETCH_GLOBAL(Qt::TimerType, timerType);
+    // Check the constructor for overflows (should also cover saturating the result of the deadline() method if overflowing)
+    QDeadlineTimer now = QDeadlineTimer::current(timerType), deadline(std::numeric_limits<qint64>::max() - 1, timerType);
+    QVERIFY(deadline.isForever() || deadline.deadline() >= now.deadline());
+
+    // Check the setDeadline with milliseconds (should also cover implicitly setting the nanoseconds as qint64 max)
+    deadline.setDeadline(std::numeric_limits<qint64>::max() - 1, timerType);
+    QVERIFY(deadline.isForever() || deadline.deadline() >= now.deadline());
+
+    // Check the setRemainingTime with milliseconds (should also cover implicitly setting the nanoseconds as qint64 max)
+    deadline.setRemainingTime(std::numeric_limits<qint64>::max() - 1, timerType);
+    QVERIFY(deadline.isForever() || deadline.deadline() >= now.deadline());
+
+    // Check that the deadline gets saturated when the arguments of setPreciseDeadline are large
+    deadline.setPreciseDeadline(std::numeric_limits<qint64>::max() - 1, std::numeric_limits<qint64>::max() - 1, timerType);
+    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::max());
+    QVERIFY(deadline.isForever());
+
+    // Check that remainingTime gets saturated if we overflow
+    deadline.setPreciseRemainingTime(std::numeric_limits<qint64>::max() - 1, std::numeric_limits<qint64>::max() - 1, timerType);
+    QCOMPARE(deadline.remainingTime(), qint64(-1));
+    QVERIFY(deadline.isForever());
+
+    // Check that we saturate the getter for nanoseconds
+    deadline.setPreciseDeadline(std::numeric_limits<qint64>::max() - 1, 0, timerType);
+    QCOMPARE(deadline.deadlineNSecs(), std::numeric_limits<qint64>::max());
+
+    // Check that adding nanoseconds and overflowing is consistent and saturates the timer
+    deadline = QDeadlineTimer::addNSecs(deadline, std::numeric_limits<qint64>::max() - 1);
+    QVERIFY(deadline.isForever());
+
+    // Make sure forever is forever, regardless of us subtracting time from it
+    deadline = QDeadlineTimer(QDeadlineTimer::Forever, timerType);
+    deadline = QDeadlineTimer::addNSecs(deadline, -10000);
+    QVERIFY(deadline.isForever());
+
+    // Make sure we get the correct result when moving the deadline back and forth in time
+    QDeadlineTimer current = QDeadlineTimer::current(timerType);
+    QDeadlineTimer takenNSecs = QDeadlineTimer::addNSecs(current, -1000);
+    QVERIFY(takenNSecs.deadlineNSecs() - current.deadlineNSecs() == -1000);
+    QDeadlineTimer addedNSecs = QDeadlineTimer::addNSecs(current, 1000);
+    QVERIFY(addedNSecs.deadlineNSecs() - current.deadlineNSecs() == 1000);
+
+    // Make sure the calculation goes as expected when we need to subtract nanoseconds
+    // We make use of an additional timer to be certain that
+    // even when the environment is under load we can track the
+    // time needed to do the calls
+    static constexpr qint64 nsExpected = 1000 * 1000 * 1000 - 1000;     // 1s - 1000ns, what we pass to setPreciseRemainingTime() later
+
+    QElapsedTimer callTimer;
+    callTimer.start();
+
+    deadline = QDeadlineTimer::current(timerType);
+    qint64 nsDeadline = deadline.deadlineNSecs();
+    // We adjust in relation to current() here, so we expect the difference to be a tad over the exact number.
+    // However we are tracking the elapsed time, so it shouldn't be a problem.
+    deadline.setPreciseRemainingTime(1, -1000, timerType);
+    qint64 difference = (deadline.deadlineNSecs() - nsDeadline) - nsExpected;
+    QVERIFY(difference >= 0);        // Should always be true, but just in case
+    QVERIFY(difference <= callTimer.nsecsElapsed()); // Ideally difference should be 0 exactly
+
+    // Make sure setRemainingTime underflows gracefully
+    deadline.setPreciseRemainingTime(std::numeric_limits<qint64>::min() / 10, 0, timerType);
+    QVERIFY(!deadline.isForever());     // On Win/macOS the above underflows, make sure we don't saturate to Forever
+    QVERIFY(deadline.remainingTime() == 0);
+    // If the timer is saturated we don't want to get a valid number of milliseconds
+    QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
+
+    // Check that the conversion to milliseconds and nanoseconds underflows gracefully
+    deadline.setPreciseDeadline(std::numeric_limits<qint64>::min() / 10, 0, timerType);
+    QVERIFY(!deadline.isForever());     // On Win/macOS the above underflows, make sure we don't saturate to Forever
+    QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
+    QVERIFY(deadline.deadlineNSecs() == std::numeric_limits<qint64>::min());
 }
 
 void tst_QDeadlineTimer::expire()
