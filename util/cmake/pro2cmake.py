@@ -903,27 +903,37 @@ def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
                 '##########################\n'.format(spaces(indent)))
 
 
+def write_list(cm_fh: typing.IO[str], entries: typing.List[str],
+               cmake_parameter: str,
+               indent: int = 0, *,
+               header: str = '', footer: str = ''):
+    if not entries:
+        return
+
+    ind = spaces(indent)
+    extra_indent = ''
+
+    if header:
+        cm_fh.write('{}{}'.format(ind, header))
+        extra_indent += '    '
+    if cmake_parameter:
+        cm_fh.write('{}{}{}\n'.format(ind, extra_indent, cmake_parameter))
+        extra_indent += '    '
+    for s in sort_sources(entries):
+        cm_fh.write('{}{}{}\n'.format(ind, extra_indent, s))
+    if footer:
+        cm_fh.write('{}{}'.format(ind, footer))
+
+
 def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
                            keys: typing.List[str], indent: int = 0, *,
                            header: str = '', footer: str = ''):
-    ind = spaces(indent)
-
     # collect sources
     sources: typing.List[str] = []
     for key in keys:
         sources += scope.get_files(key, use_vpath=True)
 
-    if not sources:
-        return
-
-    cm_fh.write(header)
-    extra_indent = ''
-    if cmake_parameter:
-        cm_fh.write('{}{}\n'.format(ind, cmake_parameter))
-        extra_indent = '    '
-    for s in sort_sources(sources):
-        cm_fh.write('{}{}{}\n'.format(ind, extra_indent, s))
-    cm_fh.write(footer)
+    write_list(cm_fh, sources, cmake_parameter, indent, header=header, footer=footer)
 
 
 def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
@@ -949,11 +959,7 @@ def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
         dependencies_to_print.append(d)
         is_framework = False
 
-    if dependencies_to_print:
-        ind = spaces(indent)
-        cm_fh.write('{}    {}\n'.format(ind, cmake_keyword))
-        for d in sorted(list(set(dependencies_to_print))):
-            cm_fh.write('{}        {}\n'.format(ind, d))
+    write_list(cm_fh, dependencies_to_print, cmake_keyword, indent + 1)
 
 
 def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
@@ -963,46 +969,28 @@ def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str
                            indent)
 
 
-def write_defines(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+def write_defines(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
                   indent: int = 0, footer: str = ''):
-    ind = spaces(indent)
-
     defines = scope.expand('DEFINES')
     defines += [d[2:] for d in scope.expand('QMAKE_CXXFLAGS') if d.startswith('-D')]
-    if defines:
-        cm_fh.write('{}{}\n'.format(ind, header))
-        for d in defines:
-            d = d.replace('=\\\\\\"$$PWD/\\\\\\"',
-                          '="${CMAKE_CURRENT_SOURCE_DIR}/"')
-            cm_fh.write('{}    {}\n'.format(ind, d))
-        if footer:
-            cm_fh.write('{}{}\n'.format(ind, footer))
+    defines = [d.replace('=\\\\\\"$$PWD/\\\\\\"',
+                         '="${CMAKE_CURRENT_SOURCE_DIR}/"') for d in defines]
 
-def write_include_paths(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+    write_list(cm_fh, defines, cmake_parameter, indent)
+
+
+def write_include_paths(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
                         indent: int = 0, footer: str = ''):
-    ind = spaces(indent)
+    includes = [i.rstrip('/') or ('/') for i in scope.get_files('INCLUDEPATH')]
 
-    includes = scope.get_files('INCLUDEPATH')
-    if includes:
-        cm_fh.write('{}{}\n'.format(ind, header))
-        for i in includes:
-            i = i.rstrip('/') or ('/')
-            cm_fh.write('{}    {}\n'.format(ind, i))
-        if footer:
-            cm_fh.write('{}{}\n'.format(ind, footer))
+    write_list(cm_fh, includes, cmake_parameter, indent)
 
 
-def write_compile_options(cm_fh: typing.IO[str], scope: Scope, header: str, *,
+def write_compile_options(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
                           indent: int = 0, footer: str = ''):
-    ind = spaces(indent)
-
     compile_options = [d for d in scope.expand('QMAKE_CXXFLAGS') if not d.startswith('-D')]
-    if compile_options:
-        cm_fh.write('{}{}\n'.format(ind, header))
-        for co in compile_options:
-            cm_fh.write('{}    "{}"\n'.format(ind, co))
-        if footer:
-            cm_fh.write('{}{}\n'.format(ind, footer))
+
+    write_list(cm_fh, compile_options, cmake_parameter, indent)
 
 
 def write_library_section(cm_fh: typing.IO[str], scope: Scope,
@@ -1386,18 +1374,16 @@ def write_simd_part(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
                      'avx512vl', 'avx512ifma', 'avx512vbmi', 'f16c', 'rdrnd', 'neon', 'mips_dsp',
                      'mips_dspr2',
                      'arch_haswell', 'avx512common', 'avx512core'];
-    ind = spaces(indent)
-
     for simd in simd_options:
         SIMD = simd.upper();
         write_source_file_list(cm_fh, scope, 'SOURCES',
-                           ['{}_HEADERS'.format(SIMD),
-                            '{}_SOURCES'.format(SIMD),
-                            '{}_C_SOURCES'.format(SIMD),
-                            '{}_ASM'.format(SIMD)],
-                           indent,
-                           header = '{}add_qt_simd_part({} SIMD {}\n'.format(ind, target, simd),
-                           footer = '{})\n\n'.format(ind))
+                               ['{}_HEADERS'.format(SIMD),
+                                '{}_SOURCES'.format(SIMD),
+                                '{}_C_SOURCES'.format(SIMD),
+                                '{}_ASM'.format(SIMD)],
+                               indent,
+                               header = 'add_qt_simd_part({} SIMD {}\n'.format(target, simd),
+                               footer = ')\n\n')
 
 
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
@@ -1594,9 +1580,9 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
     ind = spaces(indent)
     write_source_file_list(cm_fh, scope, '',
                            ['QMAKE_DOCS',],
-                           indent + 1,
-                           header = '{}add_qt_docs(\n'.format(ind),
-                           footer = '{})\n'.format(ind))
+                           indent,
+                           header = 'add_qt_docs(\n',
+                           footer = ')\n')
 
 
 def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
