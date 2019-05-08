@@ -90,7 +90,7 @@ void QWasmBackingStore::flush(QWindow *window, const QRegion &region, const QPoi
     Q_UNUSED(offset);
 
     m_dirty |= region;
-    m_compositor->requestRedraw();
+    m_compositor->handleBackingStoreFlush();
 }
 
 void QWasmBackingStore::updateTexture()
