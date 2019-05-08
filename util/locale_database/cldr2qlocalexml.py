@@ -95,6 +95,34 @@ def parse_number_format(patterns, data):
         result.append(pattern)
     return result
 
+def raiseUnknownCode(code, form, cache={}):
+    """Check whether an unknown code could be supported.
+
+    We declare a language, script or country code unknown if it's not
+    known to enumdata.py; however, if it's present in main/en.xml's
+    mapping of codes to names, we have the option of adding support.
+    This caches the necessary look-up (so we only read main/en.xml
+    once) and returns the name we should use if we do add support.
+
+    First parameter, code, is the unknown code.  Second parameter,
+    form, is one of 'language', 'script' or 'country' to select the
+    type of code to look up.  Do not pass further parameters (the next
+    will deprive you of the cache).
+
+    Raises xpathlite.Error with a suitable message, that includes the
+    unknown code's full name if found.
+
+    Relies on global cldr_dir being set before it's called; see tail
+    of this file.
+    """
+    if not cache:
+        cache.update(xpathlite.codeMapsFromFile(os.path.join(cldr_dir, 'en.xml')))
+    name = cache[form].get(code)
+    msg = 'unknown %s code "%s"' % (form, code)
+    if name:
+        msg += ' - could use "%s"' % name
+    raise xpathlite.Error(msg)
+
 def parse_list_pattern_part_format(pattern):
     # This is a very limited parsing of the format for list pattern part only.
     return pattern.replace("{0}", "%1").replace("{1}", "%2").replace("{2}", "%3")
@@ -193,18 +221,18 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
 
     language_id = enumdata.languageCodeToId(language_code)
     if language_id <= 0:
-        raise xpathlite.Error('unknown language code "%s"' % language_code)
+        raiseUnknownCode(language_code, 'language')
 
     script_id = enumdata.scriptCodeToId(script_code)
     if script_id == -1:
-        raise xpathlite.Error('unknown script code "%s"' % script_code)
+        raiseUnknownCode(script_code, 'script')
 
     # we should handle fully qualified names with the territory
     if not country_code:
         return {}
     country_id = enumdata.countryCodeToId(country_code)
     if country_id <= 0:
-        raise xpathlite.Error('unknown country code "%s"' % country_code)
+        raiseUnknownCode(country_code, 'country')
 
     # So we say we accept only those values that have "contributed" or
     # "approved" resolution. see http://www.unicode.org/cldr/process.html
