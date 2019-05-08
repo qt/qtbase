@@ -1571,7 +1571,8 @@ def main() -> None:
     for file in args.files:
         new_current_dir = os.path.dirname(file)
         file_relative_path = os.path.basename(file)
-        os.chdir(new_current_dir)
+        if new_current_dir:
+            os.chdir(new_current_dir)
 
         parseresult = parseProFile(file_relative_path, debug=debug_parsing)
 
