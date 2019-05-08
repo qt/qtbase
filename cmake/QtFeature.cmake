@@ -337,7 +337,19 @@ function(qt_internal_feature_write_file file features extra)
     file(GENERATE OUTPUT "${file}" CONTENT "${contents}")
 endfunction()
 
-function(qt_feature_module_end target)
+function(qt_feature_module_end)
+    set(flags)
+    set(options OUT_VAR_PREFIX)
+    set(multiopts)
+    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+    set(target ${arg_UNPARSED_ARGUMENTS})
+
+    # The value of OUT_VAR_PREFIX is used as a prefix for output variables that should be
+    # set in the parent scope.
+    if(NOT arg_OUT_VAR_PREFIX)
+        set(arg_OUT_VAR_PREFIX "")
+    endif()
+
     set(all_features ${__QtFeature_public_features} ${__QtFeature_private_features} ${__QtFeature_internal_features})
     list(REMOVE_DUPLICATES all_features)
 
@@ -378,12 +390,22 @@ function(qt_feature_module_end target)
     qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
         "${__QtFeature_private_features}" "${__QtFeature_private_extra}"
     )
-    qt_generate_forwarding_headers("${__QtFeature_library}" SOURCE "${__QtFeature_private_file}" PRIVATE)
 
     qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_public_file}"
         "${__QtFeature_public_features}" "${__QtFeature_public_extra}"
     )
-    qt_generate_forwarding_headers("${__QtFeature_library}" SOURCE "${__QtFeature_public_file}")
+
+    # Extra header injections which have to have forwarding headers created by
+    # qt_install_injections.
+    set(injections "")
+    qt_compute_injection_forwarding_header("${__QtFeature_library}"
+                                             SOURCE "${__QtFeature_public_file}"
+                                             OUT_VAR injections)
+    qt_compute_injection_forwarding_header("${__QtFeature_library}"
+                                            SOURCE "${__QtFeature_private_file}" PRIVATE
+                                            OUT_VAR injections)
+
+    set(${arg_OUT_VAR_PREFIX}extra_library_injections ${injections} PARENT_SCOPE)
 
     if (NOT ("${target}" STREQUAL "NO_MODULE"))
         get_target_property(targetType "${target}" TYPE)

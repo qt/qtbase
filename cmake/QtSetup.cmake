@@ -34,6 +34,20 @@ set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
+if(FEATURE_developer_build)
+    set(QT_WILL_INSTALL OFF)
+    # Handle non-prefix builds by setting the cmake install prefix to the project binary dir.
+    if(PROJECT_NAME STREQUAL "QtBase")
+        set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH
+            "Install path prefix, prepended onto install directories." FORCE)
+    else()
+        # No-op. While building another module, the CMAKE_INSTALL_PREFIX should be set on the
+        # command line to point to the qtbase build dir.
+    endif()
+else()
+    set(QT_WILL_INSTALL ON)
+endif()
+
 ## Enable testing:
 include(CTest)
 enable_testing()
@@ -52,6 +66,9 @@ include(QtCompilerOptimization)
 
 ## Compiler flags:
 include(QtCompilerFlags)
+
+## Set up developer build:
+qt_set_up_developer_build()
 
 ## Find host tools (if non native):
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")

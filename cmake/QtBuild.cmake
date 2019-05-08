@@ -130,12 +130,155 @@ else()
     set(QT_PATH_SEPARATOR ":")
 endif()
 
+# Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
+# taking into account whether the current build is a prefix build or a non-prefix build.
+#
+# These values should be prepended to file paths in commands or properties,
+# in order to correctly place generated Config files, generated Targets files,
+# excutables / libraries, when copying / installing files, etc.
+#
+# The build dir variables will always be absolute paths.
+# The QT_INSTALL_DIR variable will have a relative path in a prefix build,
+# which means that it can be empty, so use qt_join_path to prevent accidental absolute paths.
+if(QT_WILL_INSTALL)
+    # In the usual prefix build case, the build dir is the current module build dir,
+    # and the install dir is the prefix, so we don't set it.
+    set(QT_BUILD_DIR "${CMAKE_BINARY_DIR}")
+    set(QT_INSTALL_DIR "")
+else()
+    # When doing a non-prefix build, both the build dir and install dir are the same,
+    # pointing to the qtbase build dir.
+    set(QT_BUILD_DIR "${CMAKE_INSTALL_PREFIX}")
+    set(QT_INSTALL_DIR "${QT_BUILD_DIR}")
+endif()
+set(__config_path_part "${INSTALL_LIBDIR}/cmake")
+set(QT_CONFIG_BUILD_DIR "${QT_BUILD_DIR}/${__config_path_part}")
+set(QT_CONFIG_INSTALL_DIR "${QT_INSTALL_DIR}")
+if(QT_CONFIG_INSTALL_DIR)
+    string(APPEND QT_CONFIG_INSTALL_DIR "/")
+endif()
+string(APPEND QT_CONFIG_INSTALL_DIR ${__config_path_part})
+unset(__config_path_part)
 
 # Functions and macros:
+
+# Wraps install() command. In a prefix build, simply passes along arguments to install().
+# In a non-prefix build, handles association of targets to export names, and also calls export().
+function(qt_install)
+    set(flags)
+    set(options EXPORT DESTINATION NAMESPACE)
+    set(multiopts TARGETS)
+    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+
+    if(arg_TARGETS)
+        set(is_install_targets TRUE)
+    endif()
+
+    # In a prefix build, always invoke install() without modification.
+    # In a non-prefix build, pass install(TARGETS) commands to allow
+    # association of targets to export names, so we can later use the export names
+    # in export() commands.
+    if(QT_WILL_INSTALL OR is_install_targets)
+        install(${ARGV})
+    endif()
+
+    # Exit early if this is a prefix build.
+    if(QT_WILL_INSTALL)
+        return()
+    endif()
+
+    # In a non-prefix build, when install(EXPORT) is called,
+    # also call export(EXPORT) to generate build tree target files.
+    if(NOT is_install_targets AND arg_EXPORT)
+        set(namespace_option "")
+        if(arg_NAMESPACE)
+            set(namespace_option NAMESPACE ${arg_NAMESPACE})
+        endif()
+        export(EXPORT ${arg_EXPORT}
+               ${namespace_option}
+               FILE "${arg_DESTINATION}/${arg_EXPORT}.cmake")
+    endif()
+endfunction()
+
+# Copies files using file(COPY) signature in non-prefix builds.
+function(qt_non_prefix_copy)
+    if(NOT QT_WILL_INSTALL)
+        file(${ARGV})
+    endif()
+endfunction()
+
+# Use case is installing files in a prefix build, or copying them to the correct build dir
+# in a non-prefix build.
+# Pass along arguments as you would pass them to install().
+# Only supports FILES, PROGRAMS and DIRECTORY signature, and without fancy things
+# like OPTIONAL or RENAME or COMPONENT.
+function(qt_copy_or_install)
+    set(flags FILES PROGRAMS DIRECTORY)
+    set(options)
+    set(multiopts)
+    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+
+    # Remember which option has to be passed to the install command.
+    set(argv_copy ${ARGV})
+    if(arg_FILES)
+        set(install_option "FILES")
+    elseif(arg_PROGRAMS)
+        set(install_option "PROGRAMS")
+    elseif(arg_DIRECTORY)
+        set(install_option "DIRECTORY")
+    endif()
+
+    list(REMOVE_AT argv_copy 0)
+    qt_install(${install_option} ${argv_copy})
+    qt_non_prefix_copy(COPY ${argv_copy})
+endfunction()
+
+# Hacky way to remove the install target in non-prefix builds.
+# We need to associate targets with export names, and that is only possible to do with the
+# install(TARGETS) command. But in a non-prefix build, we don't want to install anything.
+# To make sure that developers don't accidentally run make install, replace the generated
+# cmake_install.cmake file with an empty file. To do this, always create a new temporary file
+# at CMake configuration step, and use it as an input to a custom command that replaces the
+# cmake_install.cmake file with an empty one. This means we will always replace the file on
+# every reconfiguration, but not when doing null builds.
+function(remove_install_target)
+    set(file_in "${CMAKE_BINARY_DIR}/.remove_cmake_install_in.txt")
+    set(file_generated "${CMAKE_BINARY_DIR}/.remove_cmake_install_generated.txt")
+    set(cmake_install_file "${CMAKE_BINARY_DIR}/cmake_install.cmake")
+    file(WRITE ${file_in} "")
+
+    add_custom_command(OUTPUT ${file_generated}
+        COMMAND ${CMAKE_COMMAND} -E copy ${file_in} ${file_generated}
+        COMMAND ${CMAKE_COMMAND} -E remove ${cmake_install_file}
+        COMMAND ${CMAKE_COMMAND} -E touch ${cmake_install_file}
+        COMMENT "Removing cmake_install.cmake"
+        MAIN_DEPENDENCY ${file_in})
+
+    add_custom_target(remove_cmake_install ALL DEPENDS ${file_generated})
+endfunction()
+
+function(qt_set_up_developer_build)
+    if(NOT QT_WILL_INSTALL)
+        remove_install_target()
+    endif()
+endfunction()
+
+# Takes a list of path components and joins them into one path separated by forward slashes "/",
+# and saves the path in out_var.
+function(qt_path_join out_var)
+    # Remove output variable.
+    set(argv ${ARGV})
+    list(REMOVE_AT argv 0)
+
+    # Join the path components.
+    string(JOIN "/" path ${argv})
+    set(${out_var} ${path} PARENT_SCOPE)
+endfunction()
 
 function(qt_internal_export_modern_cmake_config_targets_file)
     cmake_parse_arguments(__arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
 
+    set(export_name "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets")
     foreach(target ${__arg_TARGETS})
         if (TARGET "${target}Versionless")
             continue()
@@ -144,10 +287,9 @@ function(qt_internal_export_modern_cmake_config_targets_file)
         add_library("${target}Versionless" INTERFACE)
         target_link_libraries("${target}Versionless" INTERFACE "${target}")
         set_target_properties("${target}Versionless" PROPERTIES EXPORT_NAME "${target}")
-        install(TARGETS "${target}Versionless" EXPORT "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets")
+        qt_install(TARGETS "${target}Versionless" EXPORT ${export_name})
     endforeach()
-
-    install(EXPORT "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets" NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
+    qt_install(EXPORT ${export_name} NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
 endfunction()
 
 # Print all variables defined in the current scope.
@@ -196,7 +338,7 @@ macro(assert)
 endmacro()
 
 
-function(qt_create_nolink_target target export_target)
+function(qt_create_nolink_target target dependee_target)
     if(NOT TARGET "${target}")
         message(FATAL_ERROR "${target} does not exist when trying to build a nolink target.")
     endif()
@@ -231,8 +373,11 @@ function(qt_create_nolink_target target export_target)
                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_OPTIONS>
                               INTERFACE_COMPILE_FEATURES
                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
-        install(TARGETS ${nolink_target} EXPORT ${export_target})
+
         add_library(${prefixed_nolink_target} ALIAS ${nolink_target})
+
+        set(export_name "${INSTALL_CMAKE_NAMESPACE}${dependee_target}Targets")
+        qt_install(TARGETS ${nolink_target} EXPORT ${export_name})
     endif()
 endfunction()
 
@@ -257,7 +402,10 @@ function(qt_ensure_sync_qt)
     if(EXISTS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl")
         set(QT_SYNCQT "${PROJECT_SOURCE_DIR}/bin/syncqt.pl" CACHE FILEPATH "syncqt script")
         message(STATUS "Using source syncqt found at: ${QT_SYNCQT}")
-        install(PROGRAMS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl" DESTINATION "${INSTALL_LIBEXECDIR}")
+
+        qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
+        qt_copy_or_install(PROGRAMS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl"
+                           DESTINATION "${syncqt_install_dir}")
     else()
         get_filename_component(syncqt_absolute_path
                                "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
@@ -374,7 +522,7 @@ function(qt_internal_module_info result target)
     string(TOLOWER "${target}" lower)
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
-    set("${result}_include_dir" "${PROJECT_BINARY_DIR}/include/${module}" PARENT_SCOPE)
+    set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
 endfunction()
 
 
@@ -449,8 +597,7 @@ function(extend_target target)
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
             string(REGEX REPLACE "_nolink$" "" base_lib "${lib}")
             if(NOT base_lib STREQUAL lib)
-                set(export_target "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
-                qt_create_nolink_target("${base_lib}" ${export_target})
+                qt_create_nolink_target("${base_lib}" ${target})
             endif()
         endforeach()
 
@@ -504,7 +651,7 @@ function(qt_internal_library_deprecation_level result)
 endfunction()
 
 
-function(qt_install_injections module)
+function(qt_install_injections module build_dir install_dir)
     set(injections ${ARGN})
     # examples:
     #  SYNCQT.INJECTIONS = src/corelib/global/qconfig.h:qconfig.h:QtConfig src/corelib/global/qconfig_p.h:5.12.0/QtCore/private/qconfig_p.h
@@ -519,10 +666,46 @@ function(qt_install_injections module)
         set(fwd_hdrs ${injection})
         get_filename_component(destinationdir ${destination} DIRECTORY)
         get_filename_component(destinationname ${destination} NAME)
-        install(FILES ${PROJECT_BINARY_DIR}/${file} DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${destinationdir} RENAME ${destinationname} OPTIONAL)
+        get_filename_component(original_file_name ${file} NAME)
+
+        # Generate lower case forwarding header located in include/${module},
+        # which points to the injected (generated) file, for example qconfig.h.
+        set(lower_case_forwarding_header_path "${build_dir}/${INSTALL_INCLUDEDIR}/${module}")
+        if(destinationdir)
+            string(APPEND lower_case_forwarding_header_path "/${destinationdir}")
+        endif()
+
+        file(RELATIVE_PATH relpath
+                           "${lower_case_forwarding_header_path}"
+                           "${build_dir}/${file}")
+        set(main_contents "#include \"${relpath}\"")
+        file(GENERATE OUTPUT "${lower_case_forwarding_header_path}/${original_file_name}"
+             CONTENT "${main_contents}")
+
+        # Copy the actual injected (generated) header file (not the just created forwarding one)
+        # to its install location.
+        qt_path_join(install_destination
+                     ${install_dir} ${INSTALL_INCLUDEDIR} ${module} ${destinationdir})
+        qt_install(FILES ${build_dir}/${file}
+                   DESTINATION ${install_destination}
+                   RENAME ${destinationname} OPTIONAL)
+
+        # Generate upper case forwarding headers.
         foreach(fwd_hdr ${fwd_hdrs})
-            file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${fwd_hdr}" CONTENT "#include \"${destinationname}\"\n")
-            install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${fwd_hdr}" DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${destinationdir} OPTIONAL)
+            set(upper_case_forwarding_header_path "${INSTALL_INCLUDEDIR}/${module}")
+            if(destinationdir)
+                string(APPEND upper_case_forwarding_header_path "/${destinationdir}")
+            endif()
+
+            # Generate upper case forwarding header like QVulkanFunctions or QtConfig.
+            file(GENERATE OUTPUT "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
+                 CONTENT "#include \"${destinationname}\"\n")
+
+            # Install the forwarding header.
+            qt_path_join(install_destination
+                         ${install_dir} ${upper_case_forwarding_header_path})
+            qt_install(FILES "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
+                       DESTINATION ${install_destination} OPTIONAL)
         endforeach()
     endforeach()
 endfunction()
@@ -617,8 +800,11 @@ function(add_qt_module target)
     if(${arg_NO_MODULE_HEADERS})
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
     else()
+        # Use QT_BUILD_DIR for the syncqt call.
+        # So we either write the generated files into the qtbase non-prefix build root, or the
+        # module specific build root.
         qt_ensure_sync_qt()
-        execute_process(COMMAND "${HOST_PERL}" -w "${QT_SYNCQT}" -quiet -module "${module}" -version "${PROJECT_VERSION}" -outdir "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
+        execute_process(COMMAND "${HOST_PERL}" -w "${QT_SYNCQT}" -quiet -module "${module}" -version "${PROJECT_VERSION}" -outdir "${QT_BUILD_DIR}" "${PROJECT_SOURCE_DIR}")
 
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS ON)
 
@@ -627,12 +813,12 @@ function(add_qt_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
-        qt_install_injections("${module}" ${module_headers_injections})
     endif()
 
     set_target_properties("${target}" PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_LIBDIR}"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
+        LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+        ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
         OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}")
@@ -704,18 +890,27 @@ function(add_qt_module target)
         qt_internal_add_linker_version_script("${target}")
     endif()
 
-    install(TARGETS "${target}" "${target_private}" EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
-        LIBRARY DESTINATION ${INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
-        PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
-        )
-    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
-    install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${config_install_dir})
+    # Handle injections. Aka create forwarding headers for certain headers that have been
+    # automatically generated in the build dir (for example qconfig.h, qtcore-config.h,
+    # qvulkanfunctions.h, etc)
+    # module_headers_injections come from the qt_read_headers_pri() call.
+    # extra_library_injections come from the qt_feature_module_end() call.
+    set(final_injections "")
+    if(module_headers_injections)
+        string(APPEND final_injections "${module_headers_injections} ")
+    endif()
+    if(extra_library_injections)
+        string(APPEND final_injections "${extra_library_injections} ")
+    endif()
 
-    qt_internal_export_modern_cmake_config_targets_file(TARGETS "${target}" "${target_private}"
-                                                        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-                                                        CONFIG_INSTALL_DIR "${config_install_dir}")
+    if(final_injections)
+        qt_install_injections("${module}" "${QT_BUILD_DIR}" "${QT_INSTALL_DIR}" ${final_injections})
+    endif()
+
+    # Handle creation of cmake files for consumers of find_package().
+    set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+    qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
 
     set(extra_cmake_files)
     set(extra_cmake_includes)
@@ -725,11 +920,57 @@ function(add_qt_module target)
     endif()
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in")
         configure_file("${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in"
-            "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake"
             @ONLY)
-        list(APPEND extra_cmake_files "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
+        list(APPEND extra_cmake_files "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
     endif()
+
+    set(extra_cmake_code "")
+
+    # Propagate developer builds to other modules via QtCore module.
+    if(FEATURE_developer_build AND target STREQUAL Core)
+        string(APPEND extra_cmake_code "
+set(FEATURE_developer_build ON CACHE BOOL \"Developer build.\" FORCE)")
+    endif()
+
+    configure_package_config_file(
+        "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        INSTALL_DESTINATION "${config_install_dir}"
+    )
+    write_basic_package_version_file(
+        ${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
+
+    qt_install(FILES
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+        ${extra_cmake_files}
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
+    qt_non_prefix_copy(COPY ${extra_cmake_files} DESTINATION "${config_install_dir}")
+
+    set(exported_targets ${target} ${target_private})
+    set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+    qt_install(TARGETS ${exported_targets}
+        EXPORT ${export_name}
+        LIBRARY DESTINATION ${INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
+        PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
+        )
+    qt_install(EXPORT ${export_name}
+               NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
+               DESTINATION ${config_install_dir})
+
+    qt_internal_export_modern_cmake_config_targets_file(
+        TARGETS ${exported_targets}
+        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+        CONFIG_INSTALL_DIR "${config_install_dir}")
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
@@ -775,25 +1016,6 @@ function(add_qt_module target)
 
     set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
 
-    configure_package_config_file(
-        "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
-        INSTALL_DESTINATION "${config_install_dir}"
-    )
-    write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
-    )
-
-    install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
-        ${extra_cmake_files}
-        DESTINATION "${config_install_dir}"
-        COMPONENT Devel
-    )
-
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
     endif()
@@ -810,7 +1032,10 @@ function(qt_export_tools module_name)
 
     # The tools target name. For example: CoreTools
     set(target "${module_name}Tools")
-    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
+
+    set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+    qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
 
     # Add the extra cmake statements to make the tool targets global, so it doesn't matter where
     # find_package is called.
@@ -832,25 +1057,27 @@ endif()
 
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleToolsConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
     write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
 
-    install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+    qt_install(FILES
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
 
-    install(EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
-        NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
-        DESTINATION "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}${target}")
+    set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+    qt_install(EXPORT "${export_name}"
+               NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
+               DESTINATION "${config_install_dir}")
+
 
     qt_internal_export_modern_cmake_config_targets_file(TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
                                                         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
@@ -878,8 +1105,10 @@ function(add_qt_plugin target)
         "TYPE;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
         "${__default_private_args};${__default_public_args}" ${ARGN})
 
+    set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
+
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
-        "${CMAKE_BINARY_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}" output_directory)
+        "${output_directory_default}" output_directory)
     qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
         "${INSTALL_PLUGINSDIR}/${arg_TYPE}" install_directory)
     qt_internal_check_directory_or_type(ARCHIVE_INSTALL_DIRECTORY
@@ -946,10 +1175,14 @@ function(add_qt_plugin target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
     )
 
-    install(TARGETS "${target}" EXPORT "${target}Targets"
-        LIBRARY DESTINATION "${install_directory}"
-        ARCHIVE DESTINATION "${archive_install_directory}")
-    install(EXPORT "${target}Targets" NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}:: DESTINATION ${INSTALL_LIBDIR}/cmake)
+    set(export_name "${target}Targets")
+    qt_install(TARGETS "${target}"
+               EXPORT ${export_name}
+               LIBRARY DESTINATION "${install_directory}"
+               ARCHIVE DESTINATION "${archive_install_directory}")
+    qt_install(EXPORT ${export_name}
+               NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
+               DESTINATION ${QT_CONFIG_INSTALL_DIR})
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
@@ -1017,7 +1250,7 @@ function(add_qt_executable name)
     endif()
 
     if(NOT arg_NO_INSTALL)
-        install(TARGETS "${name}"
+        qt_install(TARGETS "${name}"
             RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
             BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}")
     endif()
@@ -1165,7 +1398,7 @@ function(add_qt_tool name)
         set(no_install NO_INSTALL)
     endif()
 
-    add_qt_executable("${name}" OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}"
+    add_qt_executable("${name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
         ${no_qt}
         ${no_install}
@@ -1189,9 +1422,9 @@ function(add_qt_tool name)
         # Also append the tool to the module list.
         qt_internal_append_known_module_tool("${arg_TOOLS_TARGET}" "${name}")
 
-        install(TARGETS "${name}"
-                EXPORT "Qt${PROJECT_VERSION_MAJOR}${arg_TOOLS_TARGET}ToolsTargets"
-                DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+        qt_install(TARGETS "${name}"
+                   EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets"
+                   DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
     endif()
 endfunction()
 
@@ -1304,7 +1537,7 @@ function(add_qt_simd_part target)
         target_link_libraries("${target}" PRIVATE "${name}")
 
         if(NOT BUILD_SHARED_LIBS)
-            install(
+            qt_install(
               TARGETS ${name}
               EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets"
             )
@@ -1420,32 +1653,23 @@ function(qt_create_qdbusxml2cpp_command target infile)
     target_sources("${target}" PRIVATE "${header_file}" "${source_file}")
 endfunction()
 
-
-function(qt_generate_forwarding_headers target)
-    qt_parse_all_arguments(arg "qt_generate_forwarding_headers"
-                           "PRIVATE" "SOURCE;DESTINATION" "CLASSES" ${ARGN})
+function(qt_compute_injection_forwarding_header target)
+    qt_parse_all_arguments(arg "qt_compute_injection_forwarding_header"
+                           "PRIVATE" "SOURCE;OUT_VAR" "" ${ARGN})
     qt_internal_module_info(module "${target}")
+    get_filename_component(file_name "${arg_SOURCE}" NAME)
 
-    if (NOT arg_DESTINATION)
-        get_filename_component(arg_DESTINATION "${arg_SOURCE}" NAME)
-    endif()
+    set(source_absolute_path "${CMAKE_CURRENT_BINARY_DIR}/${arg_SOURCE}")
+    file(RELATIVE_PATH relpath "${CMAKE_BINARY_DIR}" "${source_absolute_path}")
 
     if (arg_PRIVATE)
-        set(main_fwd "${module_include_dir}/${PROJECT_VERSION}/${module}/private/${arg_DESTINATION}")
+        set(fwd "${PROJECT_VERSION}/${module}/private/${file_name}")
     else()
-        set(main_fwd "${module_include_dir}/${arg_DESTINATION}")
+        set(fwd "${file_name}")
     endif()
 
-    get_filename_component(main_fwd_dir "${main_fwd}" DIRECTORY)
-    file(RELATIVE_PATH relpath "${main_fwd_dir}" "${CMAKE_CURRENT_BINARY_DIR}/${arg_SOURCE}")
-    set(main_contents "#include \"${relpath}\"")
-    file(GENERATE OUTPUT "${main_fwd}" CONTENT "${main_contents}")
-
-    foreach(class_fwd ${arg_CLASSES})
-        set(class_fwd_contents "#include \"${fwd_hdr}\"")
-        message("Generating forwarding header: ${class_fwd} -> ${relpath}.")
-        file(GENERATE OUTPUT "${module_include_dir}/${class_fwd}" CONTENT "${class_fwd_contents}")
-    endforeach()
+    string(APPEND ${arg_OUT_VAR} " ${relpath}:${fwd}")
+    set(${arg_OUT_VAR} ${${arg_OUT_VAR}} PARENT_SCOPE)
 endfunction()
 
 
@@ -1541,24 +1765,23 @@ function(qt_install_static_target_export target)
     qt_parse_all_arguments(arg "qt_install_3rdparty_config_files" "" "EXPORT" "" ${ARGN})
     # TODO mark EXPORT as required
 
-    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${arg_EXPORT}")
-
     set_target_properties(${target}
         PROPERTIES
             INTERFACE_QT_EXPORTED_LIBRARY 1)
 
-    install(
+    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${arg_EXPORT})
+
+    set(export_name "${arg_EXPORT}Targets")
+    qt_install(
         TARGETS ${target}
-        EXPORT ${arg_EXPORT}Targets
+        EXPORT ${export_name}
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR})
 
-    install(
-        EXPORT ${arg_EXPORT}Targets
+    qt_install(
+        EXPORT ${export_name}
         DESTINATION "${config_install_dir}"
     )
-
-    export(EXPORT ${arg_EXPORT}Targets)
 endfunction()
 
 # Create a set of ${target}Config.cmake and ${target}Version.cmake for a
@@ -1576,22 +1799,25 @@ function(qt_install_3rdparty_config_files target)
       list(APPEND 3RDPARTY_ADDITIONAL_SETUP_CODE "find_package(${package})\n")
     endforeach()
 
-    set(config_install_dir "${INSTALL_LIBDIR}/cmake/${arg_EXPORT}")
+    set(path_suffix "${arg_EXPORT}")
+    qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
     configure_package_config_file(
         "${PROJECT_SOURCE_DIR}/cmake/3rdpartyConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${target}Config.cmake"
+        "${config_build_dir}/${target}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
 
     write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/${target}ConfigVersion.cmake"
+        "${config_build_dir}/${target}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
 
-    install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${target}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${target}ConfigVersion.cmake"
+    qt_install(FILES
+        "${config_build_dir}/${target}Config.cmake"
+        "${config_build_dir}/${target}ConfigVersion.cmake"
         ${arg_ADDITIONAL_FILES}
         DESTINATION "${config_install_dir}"
         COMPONENT Devel

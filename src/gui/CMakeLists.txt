@@ -611,14 +611,6 @@ if (QT_FEATURE_vulkan)
         COMMENT "Generating vulkan data"
     )
 
-    qt_generate_forwarding_headers("Gui" SOURCE "vulkan/${vulkan_fun}"
-        DESTINATION "qvulkanfunctions.h"
-        CLASSES QVulkanFunctions QVulkanDeviceFunctions
-    )
-    qt_generate_forwarding_headers("Gui" SOURCE "vulkan/${vulkan_fun_p}"
-        DESTINATION "qvulkanfunctions_p.h" PRIVATE
-    )
-
     extend_target(Gui CONDITION QT_FEATURE_vulkan
         SOURCES
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun}"
@@ -645,7 +637,10 @@ extend_target(Gui CONDITION WASM
 # a qpa header is #include <qpa/qplatformfoo.h>, both of them implying
 # linkage against Qt::GuiPrivate.
 qt_read_headers_pri("Gui" "module_headers")
-install(FILES ${module_headers_qpa}
+
+# No need to copy these in a non-prefix build, syncqt.pl takes care of generating the files
+# in the build dir.
+qt_install(FILES ${module_headers_qpa}
     DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa)
 # special case end
 
