@@ -334,7 +334,8 @@ public:
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
 
-    void checkForScreenChanged();
+    enum ScreenChangeMode { FromGeometryChange, FromDpiChange };
+    void checkForScreenChanged(ScreenChangeMode mode = FromGeometryChange);
 
     static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
     void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);

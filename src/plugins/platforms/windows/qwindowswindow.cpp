@@ -1861,28 +1861,41 @@ void QWindowsWindow::handleResized(int wParam)
     }
 }
 
-void QWindowsWindow::checkForScreenChanged()
+static inline bool equalDpi(const QDpi &d1, const QDpi &d2)
 {
-    if (parent())
+    return qFuzzyCompare(d1.first, d2.first) && qFuzzyCompare(d1.second, d2.second);
+}
+
+void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode)
+{
+    if (parent() || QWindowsScreenManager::isSingleScreen())
         return;
 
     QPlatformScreen *currentScreen = screen();
-    const auto &screenManager = QWindowsContext::instance()->screenManager();
-    const QWindowsScreen *newScreen = screenManager.screenForHwnd(m_data.hwnd);
-    if (newScreen != nullptr && newScreen != currentScreen) {
-        qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
-            << ' ' << window() << " \"" << currentScreen->name()
-            << "\"->\"" << newScreen->name() << '"';
-        updateFullFrameMargins();
-        setFlag(SynchronousGeometryChangeEvent);
-        QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+    const QWindowsScreen *newScreen =
+        QWindowsContext::instance()->screenManager().screenForHwnd(m_data.hwnd);
+    if (newScreen == nullptr || newScreen == currentScreen)
+        return;
+    // For screens with different DPI: postpone until WM_DPICHANGE
+    if (mode == FromGeometryChange
+        && !equalDpi(currentScreen->logicalDpi(), newScreen->logicalDpi())) {
+        return;
     }
+    qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
+        << ' ' << window() << " \"" << currentScreen->name()
+        << "\"->\"" << newScreen->name() << '"';
+    if (mode == FromGeometryChange)
+        setFlag(SynchronousGeometryChangeEvent);
+    updateFullFrameMargins();
+    QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 }
 
 void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
+    if (testFlag(WithinDpiChanged))
+        return;  // QGuiApplication will send resize
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE) do not receive
     // expose events when shrinking, synthesize.

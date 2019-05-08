@@ -1322,17 +1322,24 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     }   break;
     case QtWindows::DpiChangedEvent: {
-        if (!resizeOnDpiChanged(platformWindow->window()))
-            return false;
-        platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
-        const RECT *prcNewWindow = reinterpret_cast<RECT *>(lParam);
-        qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_DPICHANGED"
-            << platformWindow->window() << *prcNewWindow;
-        SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
-                     prcNewWindow->right - prcNewWindow->left,
-                     prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
-        platformWindow->clearFlag(QWindowsWindow::WithinDpiChanged);
-        return true;
+        // Try to apply the suggested size first and then notify ScreenChanged
+        // so that the resize event sent from QGuiApplication incorporates it
+        // WM_DPICHANGED is sent with a size that avoids resize loops (by
+        // snapping back to the previous screen, see QTBUG-65580).
+        const bool doResize = resizeOnDpiChanged(platformWindow->window());
+        if (doResize) {
+            platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
+            platformWindow->updateFullFrameMargins();
+            const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
+            qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_DPICHANGED"
+                << platformWindow->window() << *prcNewWindow;
+            SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
+                         prcNewWindow->right - prcNewWindow->left,
+                         prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+            platformWindow->clearFlag(QWindowsWindow::WithinDpiChanged);
+        }
+        platformWindow->checkForScreenChanged(QWindowsWindow::FromDpiChange);
+        return doResize;
     }
 #if QT_CONFIG(sessionmanager)
     case QtWindows::QueryEndSessionApplicationEvent: {
