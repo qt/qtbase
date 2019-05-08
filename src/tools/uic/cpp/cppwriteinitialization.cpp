@@ -2465,8 +2465,10 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
 
 QString WriteInitialization::trCall(const QString &str, const QString &commentHint, const QString &id) const
 {
-    if (str.isEmpty())
-        return QLatin1String("QString()");
+    if (str.isEmpty()) {
+        return language::language() == Language::Cpp
+            ? QLatin1String("QString()") : QLatin1String("\"\"");
+    }
 
     QString result;
     QTextStream ts(&result);
