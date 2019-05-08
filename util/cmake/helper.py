@@ -177,7 +177,7 @@ _library_map = [
     LibraryMapping('atspi', 'ATSPI2', 'PkgConfig::ATSPI2'),
     LibraryMapping('corewlan', None, None),
     LibraryMapping('cups', 'Cups', 'Cups::Cups'),
-    LibraryMapping('dbus', 'DBus1', 'dbus-1'),
+    LibraryMapping('dbus', 'WrapDBus1', 'dbus-1', resultVariable="DBus1"),
     LibraryMapping('doubleconversion', None, None),
     LibraryMapping('drm', 'Libdrm', 'Libdrm::Libdrm'),
     LibraryMapping('egl', 'EGL', 'EGL::EGL'),
