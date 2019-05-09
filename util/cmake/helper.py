@@ -338,3 +338,42 @@ def map_3rd_party_library(lib: str) -> str:
     if not mapping or not mapping.targetName:
         return lib
     return mapping.targetName + libpostfix
+
+
+def generate_find_package_info(lib: LibraryMapping, use_qt_find_package: bool=True, *,
+                               indent: int = 0) -> str:
+    isRequired = False
+
+    extra = lib.extra.copy()
+
+    if "REQUIRED" in extra and use_qt_find_package:
+        isRequired = True
+        extra.remove("REQUIRED")
+
+    cmake_target_name = lib.targetName
+
+    # _nolink or not does not matter at this point:
+    if cmake_target_name.endswith('_nolink') or cmake_target_name.endswith('/nolink'):
+        cmake_target_name = cmake_target_name[:-7]
+
+    if cmake_target_name and use_qt_find_package:
+        extra += ['PROVIDED_TARGETS', cmake_target_name]
+
+    result = ''
+    ind = '    ' * indent
+
+    if use_qt_find_package:
+        if extra:
+            result = '{}qt_find_package({} {})\n'.format(ind, lib.packageName, ' '.join(extra))
+        else:
+            result = '{}qt_find_package({})\n'.format(ind, lib.packageName)
+
+        if isRequired:
+            result += '{}set_package_properties({} PROPERTIES TYPE REQUIRED)\n'.format(ind, lib.packageName)
+    else:
+        if extra:
+            result = '{}find_package({} {})\n'.format(ind, lib.packageName, ' '.join(extra))
+        else:
+            result = '{}find_package({})\n'.format(ind, lib.packageName)
+
+    return result

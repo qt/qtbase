@@ -33,7 +33,8 @@ import re
 import sys
 from typing import Set, Union, List, Dict
 
-from helper import map_qt_library, featureName, map_platform, find_3rd_party_library_mapping
+from helper import map_qt_library, featureName, map_platform, \
+    find_3rd_party_library_mapping, generate_find_package_info
 
 knownTests = set()  # type: Set[str]
 
@@ -182,31 +183,8 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
 
     cmake_find_packages_set.add(newlib.targetName)
 
-    isRequired = False
+    cm_fh.write(generate_find_package_info(newlib))
 
-    extra = newlib.extra.copy()
-
-    if extra:
-        if "REQUIRED" in extra:
-            isRequired = True
-            extra.remove("REQUIRED")
-
-    cmake_target_name = newlib.targetName
-
-    # _nolink or not does not matter at this point:
-    if cmake_target_name.endswith('_nolink') or cmake_target_name.endswith('/nolink'):
-        cmake_target_name = cmake_target_name[:-7]
-
-    if cmake_target_name:
-        extra += ['PROVIDED_TARGETS', cmake_target_name]
-
-    if extra:
-        cm_fh.write('qt_find_package({} {})\n'.format(newlib.packageName, ' '.join(extra)))
-    else:
-        cm_fh.write('qt_find_package({})\n'.format(newlib.packageName))
-
-    if isRequired:
-        cm_fh.write('set_package_properties({} PROPERTIES TYPE REQUIRED)\n'.format(newlib.packageName))
 
 def lineify(label, value, quote=True):
     if value:
