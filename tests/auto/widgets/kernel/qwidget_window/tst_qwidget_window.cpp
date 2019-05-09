@@ -54,12 +54,25 @@
 
 using namespace QTestPrivate;
 
+// Compare a window position that may go through scaling in the platform plugin with fuzz.
+static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
+{
+    return (p1 - p2).manhattanLength() <= fuzz;
+}
+
+static QString msgPointMismatch(const QPoint &p1, const QPoint p2)
+{
+    QString result;
+    QDebug(&result) << p1 << "!=" << p2 << ", manhattanLength=" << (p1 - p2).manhattanLength();
+    return result;
+}
+
 class tst_QWidget_window : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QWidget_window(){};
+    tst_QWidget_window();
 
 public slots:
     void initTestCase();
@@ -110,7 +123,19 @@ private slots:
     void nativeShow();
 
     void QTBUG_56277_resize_on_showEvent();
+
+private:
+    QSize m_testWidgetSize;
+    const int m_fuzz;
 };
+
+tst_QWidget_window::tst_QWidget_window() :
+     m_fuzz(int(QHighDpiScaling::factor(QGuiApplication::primaryScreen())))
+{
+    const int screenWidth =  QGuiApplication::primaryScreen()->geometry().width();
+    const int width = qMax(200, 100 * ((screenWidth + 500) / 1000));
+    m_testWidgetSize = QSize(width, width);
+}
 
 void tst_QWidget_window::initTestCase()
 {
@@ -162,65 +187,65 @@ void tst_QWidget_window::tst_min_max_size()
 void tst_QWidget_window::tst_move_show()
 {
     QWidget w;
-    w.move(100, 100);
+    const QPoint pos(100, 100);
+    w.move(pos);
     w.show();
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Winrt does not support move", Abort);
 #endif
-    QCOMPARE(w.pos(), QPoint(100, 100));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 3000);
+    QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
+             qPrintable(msgPointMismatch(w.pos(), pos)));
 }
 
 void tst_QWidget_window::tst_show_move()
 {
     QWidget w;
     w.show();
-    w.move(100, 100);
-    QCOMPARE(w.pos(), QPoint(100, 100));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    const QPoint pos(100, 100);
+    w.move(pos);
+    QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
+             qPrintable(msgPointMismatch(w.pos(), pos)));
 }
 
 void tst_QWidget_window::tst_show_move_hide_show()
 {
     QWidget w;
     w.show();
-    w.move(100, 100);
+    const QPoint pos(100, 100);
+    w.move(pos);
     w.hide();
     w.show();
-    QCOMPARE(w.pos(), QPoint(100, 100));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
+             qPrintable(msgPointMismatch(w.pos(), pos)));
 }
 
 void tst_QWidget_window::tst_resize_show()
 {
     QWidget w;
-    w.resize(200, 200);
+    w.resize(m_testWidgetSize);
     w.show();
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Winrt does not support resize", Abort);
 #endif
-    QCOMPARE(w.size(), QSize(200, 200));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    QCOMPARE(w.size(), m_testWidgetSize);
 }
 
 void tst_QWidget_window::tst_show_resize()
 {
     QWidget w;
     w.show();
-    w.resize(200, 200);
-    QCOMPARE(w.size(), QSize(200, 200));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    w.resize(m_testWidgetSize);
+    QCOMPARE(w.size(), m_testWidgetSize);
 }
 
 void tst_QWidget_window::tst_show_resize_hide_show()
 {
     QWidget w;
     w.show();
-    w.resize(200, 200);
+    w.resize(m_testWidgetSize);
     w.hide();
     w.show();
-    QCOMPARE(w.size(), QSize(200, 200));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    QCOMPARE(w.size(), m_testWidgetSize);
 }
 
 class PaintTestWidget : public QWidget
@@ -857,7 +882,7 @@ void tst_QWidget_window::tst_updateWinId_QTBUG40681()
     lbl->setAttribute(Qt::WA_NativeWindow);
     lbl->setObjectName("label1");
     vl->addWidget(lbl);
-    w.setMinimumWidth(200);
+    w.setMinimumWidth(m_testWidgetSize.width());
 
     w.show();
 
@@ -880,6 +905,7 @@ void tst_QWidget_window::tst_updateWinId_QTBUG40681()
 void tst_QWidget_window::tst_recreateWindow_QTBUG40817()
 {
     QTabWidget tab;
+    tab.setMinimumWidth(m_testWidgetSize.width());
 
     QWidget *w = new QWidget;
     tab.addTab(w, "Tab1");
@@ -946,7 +972,7 @@ void tst_QWidget_window::tst_resize_count()
         resize.resizeCount = 0;
 
         ResizeWidget child(&resize);
-        child.resize(200,200);
+        child.resize(m_testWidgetSize);
         child.winId();
         child.show();
         QVERIFY(QTest::qWaitForWindowExposed(&child));
@@ -963,7 +989,7 @@ void tst_QWidget_window::tst_resize_count()
     {
         ResizeWidget parent;
         ResizeWidget child(&parent);
-        child.resize(200,200);
+        child.resize(m_testWidgetSize);
         child.winId();
         parent.show();
         QVERIFY(QTest::qWaitForWindowExposed(&parent));
@@ -1076,6 +1102,7 @@ void tst_QWidget_window::QTBUG_50561_QCocoaBackingStore_paintDevice_crash()
     ApplicationStateSaver as;
 
     QMainWindow w;
+    w.setMinimumWidth(m_testWidgetSize.width());
     w.addToolBar(new QToolBar(&w));
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
