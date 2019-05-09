@@ -888,6 +888,63 @@ def sort_sources(sources: typing.List[str]) -> typing.List[str]:
     return lines
 
 
+def _map_libraries_to_cmake(libraries: typing.List[str],
+                            known_libraries: typing.Set[str]) -> typing.List[str]:
+    result = []  # type: typing.List[str]
+    is_framework = False
+
+    for l in libraries:
+        if l == '-framework':
+            is_framework = True
+            continue
+        if is_framework:
+            l = '${FW%s}' % l
+        if l.startswith('-l'):
+            l = l[2:]
+
+        if l.startswith('-'):
+            l = '# Remove: {}'.format(l[1:])
+        else:
+            l = map_3rd_party_library(l)
+
+        if not l or l in result or l in known_libraries:
+            continue
+
+        result.append(l)
+        is_framework = False
+
+    return result
+
+
+def extract_cmake_libraries(scope: Scope, *, known_libraries: typing.Set[str]=set()) \
+        -> typing.Tuple[typing.List[str], typing.List[str]]:
+    public_dependencies = []  # type: typing.List[str]
+    private_dependencies = []  # type: typing.List[str]
+
+    for key in ['QMAKE_USE', 'LIBS',]:
+        public_dependencies += scope.expand(key)
+    for key in ['QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE',]:
+        private_dependencies += scope.expand(key)
+
+    for key in ['QT_FOR_PRIVATE',]:
+        private_dependencies += [map_qt_library(q) for q in scope.expand(key)]
+
+    for key in ['QT',]:
+        # Qt public libs: These may include FooPrivate in which case we get
+        # a private dependency on FooPrivate as well as a public dependency on Foo
+        for lib in scope.expand(key):
+            mapped_lib = map_qt_library(lib)
+
+            if mapped_lib.endswith('Private'):
+                private_dependencies.append(mapped_lib)
+                public_dependencies.append(mapped_lib[:-7])
+            else:
+                public_dependencies.append(mapped_lib)
+
+    return (_map_libraries_to_cmake(public_dependencies, known_libraries),
+            _map_libraries_to_cmake(private_dependencies, known_libraries))
+
+
 def write_header(cm_fh: typing.IO[str], name: str,
                  typename: str, *, indent: int = 0):
     cm_fh.write('{}###########################################'
@@ -936,32 +993,6 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
     write_list(cm_fh, sources, cmake_parameter, indent, header=header, footer=footer)
 
 
-def write_library_list(cm_fh: typing.IO[str], cmake_keyword: str,
-                       dependencies: typing.List[str], *, indent: int = 0):
-    dependencies_to_print = []  # type: typing.List[str]
-    is_framework = False
-
-    for d in dependencies:
-        if d == '-framework':
-            is_framework = True
-            continue
-        if is_framework:
-            d = '${FW%s}' % d
-        if d.startswith('-l'):
-            d = d[2:]
-
-        if d.startswith('-'):
-            d = '# Remove: {}'.format(d[1:])
-        else:
-            d = map_3rd_party_library(d)
-        if not d or d in dependencies_to_print:
-            continue
-        dependencies_to_print.append(d)
-        is_framework = False
-
-    write_list(cm_fh, dependencies_to_print, cmake_keyword, indent + 1)
-
-
 def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
                                 indent: int = 0, footer: str = ''):
     write_source_file_list(cm_fh, scope, header,
@@ -993,40 +1024,13 @@ def write_compile_options(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: 
     write_list(cm_fh, compile_options, cmake_parameter, indent)
 
 
-def write_library_section(cm_fh: typing.IO[str], scope: Scope,
-                          public: typing.List[str],
-                          private: typing.List[str],
-                          qt_private: typing.List[str],
-                          qt_mixed: typing.List[str], *,
-                          indent: int = 0, known_libraries=set()):
-    public_dependencies = []  # type: typing.List[str]
-    private_dependencies = []  # type: typing.List[str]
+def write_library_section(cm_fh: typing.IO[str], scope: Scope, *,
+                          indent: int = 0, known_libraries: typing.Set[str]=set()):
+    (public_dependencies, private_dependencies) \
+        = extract_cmake_libraries(scope, known_libraries=known_libraries)
 
-    for key in public:
-        public_dependencies += [q for q in scope.expand(key)
-                                if q not in known_libraries]
-    for key in private:
-        private_dependencies += [q for q in scope.expand(key)
-                                 if q not in known_libraries]
-
-    for key in qt_private:
-        private_dependencies += [map_qt_library(q) for q in scope.expand(key)
-                                 if map_qt_library(q) not in known_libraries]
-
-    for key in qt_mixed:
-        for lib in scope.expand(key):
-            mapped_lib = map_qt_library(lib)
-            if mapped_lib in known_libraries:
-                continue
-
-            if mapped_lib.endswith('Private'):
-                private_dependencies.append(mapped_lib)
-                public_dependencies.append(mapped_lib[:-7])
-            else:
-                public_dependencies.append(mapped_lib)
-
-    write_library_list(cm_fh, 'LIBRARIES', private_dependencies, indent=indent)
-    write_library_list(cm_fh, 'PUBLIC_LIBRARIES', public_dependencies, indent=indent)
+    write_list(cm_fh, private_dependencies, 'LIBRARIES', indent + 1)
+    write_list(cm_fh, public_dependencies, 'PUBLIC_LIBRARIES', indent + 1)
 
 
 
@@ -1060,12 +1064,7 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
 
     write_include_paths(cm_fh, scope, 'INCLUDE_DIRECTORIES', indent=indent + 1)
 
-    write_library_section(cm_fh, scope,
-                          ['QMAKE_USE', 'LIBS'],
-                          ['QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE'],
-                          ['QT_FOR_PRIVATE',],
-                          ['QT',],
-                          indent=indent, known_libraries=known_libraries)
+    write_library_section(cm_fh, scope, indent=indent, known_libraries=known_libraries)
 
     write_compile_options(cm_fh, scope, 'COMPILE_OPTIONS', indent=indent + 1)
 

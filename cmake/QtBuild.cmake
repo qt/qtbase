@@ -994,7 +994,8 @@ function(add_qt_executable name)
             "${CMAKE_CURRENT_BINARY_DIR}"
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
-        LIBRARIES ${arg_LIBRARIES} ${extra_libraries}
+        LIBRARIES ${arg_LIBRARIES}
+        PUBLIC_LIBRARIES ${extra_libraries}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
@@ -1038,7 +1039,8 @@ function(add_qt_test name)
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             "${arg_INCLUDE_DIRECTORIES}"
         DEFINES "${arg_DEFINES}"
-        LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_LIBRARIES}
+        PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test
+        LIBRARIES ${arg_LIBRARIES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
@@ -1171,7 +1173,8 @@ function(add_qt_tool name)
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
-        LIBRARIES ${corelib} ${arg_LIBRARIES}
+        PUBLIC_LIBRARIES ${corelib}
+        LIBRARIES ${arg_LIBRARIES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
