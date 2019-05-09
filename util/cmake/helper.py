@@ -261,6 +261,22 @@ def find_qt_library_mapping(soName: str) -> typing.Optional[LibraryMapping]:
     return None
 
 
+def find_library_info_for_target(targetName: str) -> typing.Optional[LibraryMapping]:
+    qt_target = targetName
+    if targetName.endswith('Private'):
+        qt_target = qt_target[:-7]
+
+    for i in _qt_library_map:
+        if i.targetName == qt_target:
+            return i
+
+    for i in _library_map:
+        if i.targetName == targetName:
+            return i
+
+    return None
+
+
 def featureName(input: str) -> str:
     return re.sub(r'[^a-zA-Z0-9_]', '_', input)
 

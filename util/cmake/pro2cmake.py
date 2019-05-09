@@ -43,7 +43,7 @@ from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
 
 from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_library, \
-    featureName, map_platform
+    featureName, map_platform, find_library_info_for_target, generate_find_package_info
 
 from shutil import copyfile
 from special_case_helper import SpecialCaseHandler
@@ -74,7 +74,7 @@ def _parse_commandline():
                         dest='debug_special_case_preservation', action='store_true',
                         help='Show all git commands and file copies.')
 
-    parser.add_argument('--example', action='store_true',
+    parser.add_argument('--is-example', action='store_true',
                         dest="is_example",
                         help='Treat the input .pro file as an example.')
     parser.add_argument('-s', '--skip-special-case-preservation',
@@ -1522,25 +1522,45 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
                     known_libraries={'Qt::Core', }, extra_keys=['target.path', 'INSTALLS'])
 
 
+def write_find_package_section(cm_fh: typing.IO[str],
+                               public_libs: typing.List[str],
+                               private_libs: typing.List[str], *, indent: int=0):
+    packages = []  # type: typing.List[LibraryMapping]
+    all_libs = public_libs + private_libs
+
+    for l in all_libs:
+        info = find_library_info_for_target(l)
+        if info and info not in packages:
+            packages.append(info)
+
+    ind = spaces(indent)
+
+    for p in packages:
+        cm_fh.write(generate_find_package_info(p, use_qt_find_package=False, indent=indent))
+
+    if packages:
+        cm_fh.write('\n')
+
+
 def write_example(cm_fh: typing.IO[str], scope: Scope,
                  gui: bool = False, *, indent: int = 0) -> None:
     binary_name = scope.TARGET
     assert binary_name
 
-#find_package(Qt5 COMPONENTS Widgets REQUIRED)
-#target_link_libraries(mimetypebrowser Qt::Widgets)
-
     cm_fh.write('cmake_minimum_required(VERSION 3.14)\n' +
-                'project(mimetypebrowser LANGUAGES CXX)\n\n' +
+                'project({} LANGUAGES CXX)\n\n'.format(binary_name) +
                 'set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n' +
                 'set(CMAKE_AUTOMOC ON)\n' +
                 'set(CMAKE_AUTORCC ON)\n' +
                 'set(CMAKE_AUTOUIC ON)\n\n' +
                 'set(INSTALL_EXAMPLEDIR "examples")\n\n')
 
+    (public_libs, private_libs) = extract_cmake_libraries(scope)
+    write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
+
     add_executable = 'add_executable({}'.format(binary_name);
     if gui:
-        add_executable += ' WIN32_EXECUTABLE MACOSX_BUNDLE'
+        add_executable += ' WIN32 MACOSX_BUNDLE'
 
     write_all_source_file_lists(cm_fh, scope, add_executable, indent=0)
 
@@ -1553,9 +1573,9 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
     write_compile_options(cm_fh, scope, 'target_compile_options({}'.format(binary_name),
                           indent=0, footer=')')
 
-    cm_fh.write('\ninstall(TARGETS mimetypebrowser\n' +
-                '    RUNTIME_DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
-                '    BUNDLE_DESTINATION "${INSTALL_EXAMPLESDIR}"\n' +
+    cm_fh.write('\ninstall(TARGETS {}\n'.format(binary_name) +
+                '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
+                '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
                 ')\n')
 
 
