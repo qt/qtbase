@@ -4290,12 +4290,15 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                                      alpha:pc.alphaF()];
 
                     s = qt_mac_removeMnemonics(s);
-                    const auto textRect = CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height());
 
                     QMacCGContext cgCtx(p);
                     d->setupNSGraphicsContext(cgCtx, YES);
 
-                    [s.toNSString() drawInRect:textRect
+                    // Draw at point instead of in rect, as the rect we've computed for the menu item
+                    // is based on the font metrics we got from HarfBuzz, so we may risk having CoreText
+                    // line-break the string if it doesn't fit the given rect. It's better to draw outside
+                    // the rect and possibly overlap something than to have part of the text disappear.
+                    [s.toNSString() drawAtPoint:CGPointMake(xpos, yPos)
                                 withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
                                                   NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
 
