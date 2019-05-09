@@ -1570,6 +1570,10 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
                         indent=0, footer=')')
     write_defines(cm_fh, scope, 'target_compile_definitions({}'.format(binary_name),
                   indent=0, footer=')')
+    write_list(cm_fh, private_libs, '', indent=indent,
+               header='target_link_libraries({} PRIVATE\n'.format(binary_name), footer=')')
+    write_list(cm_fh, public_libs, '', indent=indent,
+               header='target_link_libraries({} PUBLIC\n'.format(binary_name), footer=')')
     write_compile_options(cm_fh, scope, 'target_compile_options({}'.format(binary_name),
                           indent=0, footer=')')
 
