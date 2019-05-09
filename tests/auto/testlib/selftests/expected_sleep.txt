@@ -2,6 +2,7 @@
 Config: Using QtTest library
 PASS   : tst_Sleep::initTestCase()
 PASS   : tst_Sleep::sleep()
+PASS   : tst_Sleep::wait()
 PASS   : tst_Sleep::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Sleep *********

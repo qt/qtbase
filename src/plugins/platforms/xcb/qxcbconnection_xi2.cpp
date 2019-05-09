@@ -240,6 +240,10 @@ void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
     } else if (name.contains("uc-logic") && isTablet) {
         tabletData.pointerType = QTabletEvent::Pen;
         dbgType = QLatin1String("pen");
+    } else if (name.contains("ugee")) {
+        isTablet = true;
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
     } else {
         isTablet = false;
     }

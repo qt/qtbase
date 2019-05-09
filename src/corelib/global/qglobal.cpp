@@ -1426,6 +1426,13 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \macro Q_OS_WINDOWS
+    \relates <QtGlobal>
+
+    This is a synonym for Q_OS_WIN.
+*/
+
+/*!
     \macro Q_OS_WIN32
     \relates <QtGlobal>
 

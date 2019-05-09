@@ -39,17 +39,293 @@
 
 #include "qdeadlinetimer.h"
 #include "qdeadlinetimer_p.h"
+#include "private/qnumeric_p.h"
 
 QT_BEGIN_NAMESPACE
 
-Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 nsecs)
-{
-    qint64 secs = nsecs / (1000*1000*1000);
-    if (nsecs < 0)
-        --secs;
-    nsecs -= secs * 1000*1000*1000;
-    return qMakePair(secs, nsecs);
+namespace {
+    class TimeReference
+    {
+        enum : unsigned {
+            umega = 1000 * 1000,
+            ugiga = umega * 1000
+        };
+
+        enum : qint64 {
+            kilo = 1000,
+            mega = kilo * 1000,
+            giga = mega * 1000
+        };
+
+    public:
+        enum RoundingStrategy {
+            RoundDown,
+            RoundUp,
+            RoundDefault = RoundDown
+        };
+
+        static constexpr qint64 Min = std::numeric_limits<qint64>::min();
+        static constexpr qint64 Max = std::numeric_limits<qint64>::max();
+
+        inline TimeReference(qint64 = 0, unsigned = 0);
+        inline void updateTimer(qint64 &, unsigned &);
+
+        inline bool addNanoseconds(qint64);
+        inline bool addMilliseconds(qint64);
+        bool addSecsAndNSecs(qint64, qint64);
+
+        inline bool subtract(const qint64, const unsigned);
+
+        inline bool toMilliseconds(qint64 *, RoundingStrategy = RoundDefault) const;
+        inline bool toNanoseconds(qint64 *) const;
+
+        inline void saturate(bool toMax);
+        static bool sign(qint64, qint64);
+
+    private:
+        bool adjust(const qint64, const unsigned, qint64 = 0);
+
+    private:
+        qint64 secs;
+        unsigned nsecs;
+    };
 }
+
+inline TimeReference::TimeReference(qint64 t1, unsigned t2)
+    : secs(t1), nsecs(t2)
+{
+}
+
+inline void TimeReference::updateTimer(qint64 &t1, unsigned &t2)
+{
+    t1 = secs;
+    t2 = nsecs;
+}
+
+inline void TimeReference::saturate(bool toMax)
+{
+    secs = toMax ? Max : Min;
+}
+
+/*!
+ * \internal
+ *
+ * Determines the sign of a (seconds, nanoseconds) pair
+ * for differentiating overflow from underflow. It doesn't
+ * deal with equality as it shouldn't ever be called in that case.
+ *
+ * Returns true if the pair represents a positive time offset
+ * false otherwise.
+ */
+bool TimeReference::sign(qint64 secs, qint64 nsecs)
+{
+    if (secs > 0) {
+        if (nsecs > 0)
+            return true;
+    } else {
+        if (nsecs < 0)
+            return false;
+    }
+
+    // They are different in sign
+    secs += nsecs / giga;
+    if (secs > 0)
+        return true;
+    else if (secs < 0)
+        return false;
+
+    // We should never get over|underflow out of
+    // the case: secs * giga == -nsecs
+    // So the sign of nsecs is the deciding factor
+    Q_ASSERT(nsecs % giga != 0);
+    return nsecs > 0;
+}
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+inline bool TimeReference::addNanoseconds(qint64 arg)
+{
+    return addSecsAndNSecs(arg / giga, arg % giga);
+}
+
+inline bool TimeReference::addMilliseconds(qint64 arg)
+{
+    return addSecsAndNSecs(arg / kilo, (arg % kilo) * mega);
+}
+
+/*!
+ * \internal
+ *
+ * Adds \a t1 addSecs seconds and \a addNSecs nanoseconds to the
+ * time reference. The arguments are normalized to seconds (qint64)
+ * and nanoseconds (unsigned) before the actual calculation is
+ * delegated to adjust(). If the nanoseconds are negative the
+ * owed second used for the normalization is passed on to adjust()
+ * as third argument.
+ *
+ * Returns true if operation was successful, false on over|underflow
+ */
+bool TimeReference::addSecsAndNSecs(qint64 addSecs, qint64 addNSecs)
+{
+    // Normalize the arguments
+    if (qAbs(addNSecs) >= giga) {
+        if (add_overflow<qint64>(addSecs, addNSecs / giga, &addSecs))
+            return false;
+
+        addNSecs %= giga;
+    }
+
+    if (addNSecs < 0)
+        return adjust(addSecs, ugiga - unsigned(-addNSecs), -1);
+
+    return adjust(addSecs, unsigned(addNSecs));
+}
+
+/*!
+ * \internal
+ *
+ * Adds \a t1 seconds and \a t2 nanoseconds to the internal members.
+ * Takes into account the additional \a carrySeconds we may owe or need to carry over.
+ *
+ * Returns true if operation was successful, false on over|underflow
+ */
+bool TimeReference::adjust(const qint64 t1, const unsigned t2, qint64 carrySeconds)
+{
+    Q_STATIC_ASSERT(QDeadlineTimerNanosecondsInT2);
+    nsecs += t2;
+    if (nsecs >= ugiga) {
+        nsecs -= ugiga;
+        carrySeconds++;
+    }
+
+    // We don't worry about the order of addition, because the result returned by
+    // callers of this function is unchanged regardless of us over|underflowing.
+    // If we do, we do so by no more than a second, thus saturating the timer to
+    // Forever has the same effect as if we did the arithmetic exactly and salvaged
+    // the overflow.
+    return !add_overflow<qint64>(secs, t1, &secs) && !add_overflow<qint64>(secs, carrySeconds, &secs);
+}
+
+/*!
+ * \internal
+ *
+ * Subtracts \a t1 seconds and \a t2 nanoseconds from the time reference.
+ * When normalizing the nanoseconds to a positive number the owed seconds is
+ * passed as third argument to adjust() as the seconds may over|underflow
+ * if we do the calculation directly. There is little sense to check the
+ * seconds for over|underflow here in case we are going to need to carry
+ * over a second _after_ we add the nanoseconds.
+ *
+ * Returns true if operation was successful, false on over|underflow
+ */
+inline bool TimeReference::subtract(const qint64 t1, const unsigned t2)
+{
+    Q_ASSERT(t2 < ugiga);
+    return adjust(-t1, ugiga - t2, -1);
+}
+
+/*!
+ * \internal
+ *
+ * Converts the time reference to milliseconds.
+ *
+ * Checks are done without making use of mul_overflow because it may
+ * not be implemented on some 32bit platforms.
+ *
+ * Returns true if operation was successful, false on over|underflow
+ */
+inline bool TimeReference::toMilliseconds(qint64 *result, RoundingStrategy rounding) const
+{
+    static constexpr qint64 maxSeconds = Max / kilo;
+    static constexpr qint64 minSeconds = Min / kilo;
+    if (secs > maxSeconds || secs < minSeconds)
+        return false;
+
+    unsigned ns = rounding == RoundDown ? nsecs : nsecs + umega - 1;
+
+    return !add_overflow<qint64>(secs * kilo, ns / umega, result);
+}
+
+/*!
+ * \internal
+ *
+ * Converts the time reference to nanoseconds.
+ *
+ * Checks are done without making use of mul_overflow because it may
+ * not be implemented on some 32bit platforms.
+ *
+ * Returns true if operation was successful, false on over|underflow
+ */
+inline bool TimeReference::toNanoseconds(qint64 *result) const
+{
+    static constexpr qint64 maxSeconds = Max / giga;
+    static constexpr qint64 minSeconds = Min / giga;
+    if (secs > maxSeconds || secs < minSeconds)
+        return false;
+
+    return !add_overflow<qint64>(secs * giga, nsecs, result);
+}
+#else
+inline bool TimeReference::addNanoseconds(qint64 arg)
+{
+    return adjust(arg, 0);
+}
+
+inline bool TimeReference::addMilliseconds(qint64 arg)
+{
+    static constexpr qint64 maxMilliseconds = Max / mega;
+    if (qAbs(arg) > maxMilliseconds)
+        return false;
+
+    return addNanoseconds(arg * mega);
+}
+
+inline bool TimeReference::addSecsAndNSecs(qint64 addSecs, qint64 addNSecs)
+{
+    static constexpr qint64 maxSeconds = Max / giga;
+    static constexpr qint64 minSeconds = Min / giga;
+    if (addSecs > maxSeconds || addSecs < minSeconds || add_overflow<qint64>(addSecs * giga, addNSecs, &addNSecs))
+        return false;
+
+    return addNanoseconds(addNSecs);
+}
+
+inline bool TimeReference::adjust(const qint64 t1, const unsigned t2, qint64 carrySeconds)
+{
+    Q_STATIC_ASSERT(!QDeadlineTimerNanosecondsInT2);
+    Q_UNUSED(t2);
+    Q_UNUSED(carrySeconds);
+
+    return !add_overflow<qint64>(secs, t1, &secs);
+}
+
+inline bool TimeReference::subtract(const qint64 t1, const unsigned t2)
+{
+    Q_UNUSED(t2);
+
+    return addNanoseconds(-t1);
+}
+
+inline bool TimeReference::toMilliseconds(qint64 *result, RoundingStrategy rounding) const
+{
+    // Force QDeadlineTimer to treat the border cases as
+    // over|underflow and saturate the results returned to the user.
+    // We don't want to get valid milliseconds out of saturated timers.
+    if (secs == Max || secs == Min)
+        return false;
+
+    *result = secs / mega;
+    if (rounding == RoundUp && secs > *result * mega)
+        (*result)++;
+
+    return true;
+}
+
+inline bool TimeReference::toNanoseconds(qint64 *result) const
+{
+    *result = secs;
+    return true;
+}
+#endif
 
 /*!
     \class QDeadlineTimer
@@ -262,10 +538,17 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
 */
 void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) Q_DECL_NOTHROW
 {
-    if (msecs == -1)
+    if (msecs == -1) {
         *this = QDeadlineTimer(Forever, timerType);
-    else
-        setPreciseRemainingTime(0, msecs * 1000 * 1000, timerType);
+        return;
+    }
+
+    *this = current(timerType);
+
+    TimeReference ref(t1, t2);
+    if (!ref.addMilliseconds(msecs))
+        ref.saturate(msecs > 0);
+    ref.updateTimer(t1, t2);
 }
 
 /*!
@@ -287,16 +570,10 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
     }
 
     *this = current(timerType);
-    if (QDeadlineTimerNanosecondsInT2) {
-        t1 += secs + toSecsAndNSecs(nsecs).first;
-        t2 += toSecsAndNSecs(nsecs).second;
-        if (t2 > 1000*1000*1000) {
-            t2 -= 1000*1000*1000;
-            ++t1;
-        }
-    } else {
-        t1 += secs * 1000 * 1000 * 1000 + nsecs;
-    }
+    TimeReference ref(t1, t2);
+    if (!ref.addSecsAndNSecs(secs, nsecs))
+        ref.saturate(TimeReference::sign(secs, nsecs));
+    ref.updateTimer(t1, t2);
 }
 
 /*!
@@ -391,8 +668,22 @@ void QDeadlineTimer::setTimerType(Qt::TimerType timerType)
 */
 qint64 QDeadlineTimer::remainingTime() const Q_DECL_NOTHROW
 {
-    qint64 ns = remainingTimeNSecs();
-    return ns <= 0 ? ns : (ns + 999999) / (1000 * 1000);
+    if (isForever())
+        return -1;
+
+    QDeadlineTimer now = current(timerType());
+    TimeReference ref(t1, t2);
+
+    qint64 msecs;
+    if (!ref.subtract(now.t1, now.t2))
+        return 0;   // We can only underflow here
+
+    // If we fail the conversion, t1 < now.t1 means we underflowed,
+    // thus the deadline had long expired
+    if (!ref.toMilliseconds(&msecs, TimeReference::RoundUp))
+        return t1 < now.t1 ? 0 : -1;
+
+    return msecs < 0 ? 0 : msecs;
 }
 
 /*!
@@ -414,14 +705,23 @@ qint64 QDeadlineTimer::remainingTimeNSecs() const Q_DECL_NOTHROW
 /*!
     \internal
     Same as remainingTimeNSecs, but may return negative remaining times. Does
-    not deal with Forever.
+    not deal with Forever. In case of underflow the result is saturated to
+    the minimum possible value, on overflow  - the maximum possible value.
 */
 qint64 QDeadlineTimer::rawRemainingTimeNSecs() const Q_DECL_NOTHROW
 {
     QDeadlineTimer now = current(timerType());
-    if (QDeadlineTimerNanosecondsInT2)
-        return (t1 - now.t1) * (1000*1000*1000) + t2 - now.t2;
-    return t1 - now.t1;
+    TimeReference ref(t1, t2);
+
+    qint64 nsecs;
+    if (!ref.subtract(now.t1, now.t2))
+        return TimeReference::Min;  // We can only underflow here
+
+    // If we fail the conversion, t1 < now.t1 means we underflowed,
+    // thus the deadline had long expired
+    if (!ref.toNanoseconds(&nsecs))
+        return t1 < now.t1 ? TimeReference::Min : TimeReference::Max;
+    return nsecs;
 }
 
 /*!
@@ -447,8 +747,13 @@ qint64 QDeadlineTimer::rawRemainingTimeNSecs() const Q_DECL_NOTHROW
 qint64 QDeadlineTimer::deadline() const Q_DECL_NOTHROW
 {
     if (isForever())
-        return t1;
-    return deadlineNSecs() / (1000 * 1000);
+        return TimeReference::Max;
+
+    qint64 result;
+    if (!TimeReference(t1, t2).toMilliseconds(&result))
+        return t1 < 0 ? TimeReference::Min : TimeReference::Max;
+
+    return result;
 }
 
 /*!
@@ -457,7 +762,8 @@ qint64 QDeadlineTimer::deadline() const Q_DECL_NOTHROW
     same as QElapsedTimer::msecsSinceReference(). The value will be in the past
     if this QDeadlineTimer has expired.
 
-    If this QDeadlineTimer never expires, this function returns
+    If this QDeadlineTimer never expires or the number of nanoseconds until the
+    deadline can't be accommodated in the return type, this function returns
     \c{std::numeric_limits<qint64>::max()}.
 
     This function can be used to calculate the amount of time a timer is
@@ -474,10 +780,13 @@ qint64 QDeadlineTimer::deadline() const Q_DECL_NOTHROW
 qint64 QDeadlineTimer::deadlineNSecs() const Q_DECL_NOTHROW
 {
     if (isForever())
-        return t1;
-    if (QDeadlineTimerNanosecondsInT2)
-        return t1 * 1000 * 1000 * 1000 + t2;
-    return t1;
+        return TimeReference::Max;
+
+    qint64 result;
+    if (!TimeReference(t1, t2).toNanoseconds(&result))
+        return t1 < 0 ? TimeReference::Min : TimeReference::Max;
+
+    return result;
 }
 
 /*!
@@ -487,18 +796,25 @@ qint64 QDeadlineTimer::deadlineNSecs() const Q_DECL_NOTHROW
     timerType. If the value is in the past, this QDeadlineTimer will be marked
     as expired.
 
-    If \a msecs is \c{std::numeric_limits<qint64>::max()}, this QDeadlineTimer
-    will be set to never expire.
+    If \a msecs is \c{std::numeric_limits<qint64>::max()} or the deadline is
+    beyond a representable point in the future, this QDeadlineTimer will be set
+    to never expire.
 
     \sa setPreciseDeadline(), deadline(), deadlineNSecs(), setRemainingTime()
 */
 void QDeadlineTimer::setDeadline(qint64 msecs, Qt::TimerType timerType) Q_DECL_NOTHROW
 {
-    if (msecs == (std::numeric_limits<qint64>::max)()) {
-        setPreciseDeadline(msecs, 0, timerType);    // msecs == MAX implies Forever
-    } else {
-        setPreciseDeadline(msecs / 1000, msecs % 1000 * 1000 * 1000, timerType);
+    if (msecs == TimeReference::Max) {
+        *this = QDeadlineTimer(Forever, timerType);
+        return;
     }
+
+    type = timerType;
+
+    TimeReference ref;
+    if (!ref.addMilliseconds(msecs))
+        ref.saturate(msecs > 0);
+    ref.updateTimer(t1, t2);
 }
 
 /*!
@@ -516,14 +832,13 @@ void QDeadlineTimer::setDeadline(qint64 msecs, Qt::TimerType timerType) Q_DECL_N
 void QDeadlineTimer::setPreciseDeadline(qint64 secs, qint64 nsecs, Qt::TimerType timerType) Q_DECL_NOTHROW
 {
     type = timerType;
-    if (secs == (std::numeric_limits<qint64>::max)() || nsecs == (std::numeric_limits<qint64>::max)()) {
-        *this = QDeadlineTimer(Forever, timerType);
-    } else if (QDeadlineTimerNanosecondsInT2) {
-        t1 = secs + toSecsAndNSecs(nsecs).first;
-        t2 = toSecsAndNSecs(nsecs).second;
-    } else {
-        t1 = secs * (1000*1000*1000) + nsecs;
-    }
+
+    // We don't pass the seconds to the constructor, because we don't know
+    // at this point if t1 holds the seconds or nanoseconds; it's platform specific.
+    TimeReference ref;
+    if (!ref.addSecsAndNSecs(secs, nsecs))
+        ref.saturate(TimeReference::sign(secs, nsecs));
+    ref.updateTimer(t1, t2);
 }
 
 /*!
@@ -536,18 +851,14 @@ void QDeadlineTimer::setPreciseDeadline(qint64 secs, qint64 nsecs, Qt::TimerType
 */
 QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_NOTHROW
 {
-    if (dt.isForever() || nsecs == (std::numeric_limits<qint64>::max)()) {
-        dt = QDeadlineTimer(Forever, dt.timerType());
-    } else if (QDeadlineTimerNanosecondsInT2) {
-        dt.t1 += toSecsAndNSecs(nsecs).first;
-        dt.t2 += toSecsAndNSecs(nsecs).second;
-        if (dt.t2 > 1000*1000*1000) {
-            dt.t2 -= 1000*1000*1000;
-            ++dt.t1;
-        }
-    } else {
-        dt.t1 += nsecs;
-    }
+    if (dt.isForever())
+        return dt;
+
+    TimeReference ref(dt.t1, dt.t2);
+    if (!ref.addNanoseconds(nsecs))
+        ref.saturate(nsecs > 0);
+    ref.updateTimer(dt.t1, dt.t2);
+
     return dt;
 }
 
@@ -655,6 +966,19 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
     To add times of precision greater than 1 millisecond, use addNSecs().
 */
+
+QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs)
+{
+    if (dt.isForever())
+        return dt;
+
+    TimeReference ref(dt.t1, dt.t2);
+    if (!ref.addMilliseconds(msecs))
+        ref.saturate(msecs > 0);
+    ref.updateTimer(dt.t1, dt.t2);
+
+    return dt;
+}
 
 /*!
     \fn QDeadlineTimer operator+(qint64 msecs, QDeadlineTimer dt)

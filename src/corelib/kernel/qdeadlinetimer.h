@@ -108,8 +108,7 @@ public:
     friend bool operator>=(QDeadlineTimer d1, QDeadlineTimer d2) Q_DECL_NOTHROW
     { return !(d1 < d2); }
 
-    friend QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs)
-    { return QDeadlineTimer::addNSecs(dt, msecs * 1000 * 1000); }
+    friend Q_CORE_EXPORT QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs);
     friend QDeadlineTimer operator+(qint64 msecs, QDeadlineTimer dt)
     { return dt + msecs; }
     friend QDeadlineTimer operator-(QDeadlineTimer dt, qint64 msecs)

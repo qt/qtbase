@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -25,13 +25,28 @@
 **
 ****************************************************************************/
 
-/*!
-    \module QtCore
-    \title Qt Core C++ Classes
-    \ingroup modules
-    \qtvariable core
+//! [using qt module]
 
-    \brief Provides core non-GUI functionality.
+    \section1 Using the Module
 
-    All other Qt modules rely on this module.
-*/
+    Using a Qt module requires linking against the module library, either
+    directly or through other dependencies. Several build tools have dedicated
+    support for this, including \l{CMake Documentation}{CMake} and
+    \l{qmake}.
+
+    \section2 Building with CMake
+
+    Use the \c{find_package()} command to locate the needed module components in
+    the \c{Qt5} package:
+
+//! [using qt module]
+
+
+//! [building with qmake]
+
+    \section2 Building with qmake
+
+    To configure the module for building with qmake, add the module as a value
+    of the \c QT variable in the project's .pro file:
+
+//! [building with qmake]

@@ -1383,11 +1383,12 @@ void QTextEngine::shapeText(int item) const
             if (QChar::isHighSurrogate(ucs4) && i + 1 < itemLength) {
                 uint low = string[i + 1];
                 if (QChar::isLowSurrogate(low)) {
+                    // high part never changes in simple casing
+                    uc[i] = ucs4;
                     ++i;
                     ucs4 = QChar::surrogateToUcs4(ucs4, low);
                     ucs4 = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
                                                                            : QChar::toUpper(ucs4);
-                    // high part never changes in simple casing
                     uc[i] = QChar::lowSurrogate(ucs4);
                 }
             } else {

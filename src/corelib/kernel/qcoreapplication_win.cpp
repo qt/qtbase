@@ -48,6 +48,7 @@
 #include "qmutex.h"
 #include <private/qthread_p.h>
 #endif
+#include "qtextstream.h"
 #include <ctype.h>
 #include <qt_windows.h>
 
@@ -480,6 +481,7 @@ static const char *findWMstr(uint msg)
  { 0x02DD, "WM_TABLET_FIRST + 29" },
  { 0x02DE, "WM_TABLET_FIRST + 30" },
  { 0x02DF, "WM_TABLET_LAST" },
+ { 0x02E0, "WM_DPICHANGED" },
  { 0x0300, "WM_CUT" },
  { 0x0301, "WM_COPY" },
  { 0x0302, "WM_PASTE" },
@@ -764,6 +766,13 @@ QString decodeMSG(const MSG& msg)
             break;
         case WM_DESTROY:
             parameters = QLatin1String("Destroy hwnd ") + hwndS;
+            break;
+        case 0x02E0u: { // WM_DPICHANGED
+            auto rect = reinterpret_cast<const RECT *>(lParam);
+            QTextStream(&parameters) << "DPI: " << HIWORD(wParam) << ','
+                << LOWORD(wParam) << ' ' << (rect->right - rect->left) << 'x'
+                << (rect->bottom - rect->top) << forcesign << rect->left << rect->top;
+            }
             break;
         case WM_IME_NOTIFY:
             {

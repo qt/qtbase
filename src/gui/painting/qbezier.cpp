@@ -261,9 +261,9 @@ static ShiftResult good_offset(const QBezier *b1, const QBezier *b2, qreal offse
 static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qreal threshold)
 {
     int map[4];
-    bool p1_p2_equal = (orig->x1 == orig->x2 && orig->y1 == orig->y2);
-    bool p2_p3_equal = (orig->x2 == orig->x3 && orig->y2 == orig->y3);
-    bool p3_p4_equal = (orig->x3 == orig->x4 && orig->y3 == orig->y4);
+    bool p1_p2_equal = qFuzzyCompare(orig->x1, orig->x2) && qFuzzyCompare(orig->y1, orig->y2);
+    bool p2_p3_equal = qFuzzyCompare(orig->x2, orig->x3) && qFuzzyCompare(orig->y2, orig->y3);
+    bool p3_p4_equal = qFuzzyCompare(orig->x3, orig->x4) && qFuzzyCompare(orig->y3, orig->y4);
 
     QPointF points[4];
     int np = 0;

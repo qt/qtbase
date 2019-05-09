@@ -1369,6 +1369,12 @@ void QLineEdit::setReadOnly(bool enable)
         QEvent event(QEvent::ReadOnlyChange);
         QCoreApplication::sendEvent(this, &event);
         update();
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::State changedState;
+        changedState.readOnly = true;
+        QAccessibleStateChangeEvent ev(this, changedState);
+        QAccessible::updateAccessibility(&ev);
+#endif
     }
 }
 

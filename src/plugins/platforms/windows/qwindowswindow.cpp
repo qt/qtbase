@@ -1876,6 +1876,9 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
 {
     if (message == WM_ERASEBKGND) // Backing store - ignored.
         return true;
+    // QTBUG-75455: Suppress WM_PAINT sent to invisible windows when setting WS_EX_LAYERED
+    if (!window()->isVisible() && (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) != 0)
+        return false;
     // Ignore invalid update bounding rectangles
     RECT updateRect;
     if (!GetUpdateRect(m_data.hwnd, &updateRect, FALSE))

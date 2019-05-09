@@ -76,8 +76,10 @@ public:
     void endPaint() override;
 
     void flush(QWindow *, const QRegion &, const QPoint &) override;
+#ifndef QT_NO_OPENGL
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
         QPlatformTextureList *textures, bool translucentBackground) override;
+#endif
 
     QPlatformGraphicsBuffer *graphicsBuffer() const override;
 
