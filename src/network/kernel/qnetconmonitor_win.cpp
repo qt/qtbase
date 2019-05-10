@@ -634,9 +634,9 @@ void QNetworkStatusMonitorPrivate::setConnectivity(NLM_CONNECTIVITY newConnectiv
 {
     Q_Q(QNetworkStatusMonitor);
 
-    const bool oldAccessibility = q->isNetworkAccesible();
+    const bool oldAccessibility = q->isNetworkAccessible();
     connectivity = newConnectivity;
-    const bool accessibility = q->isNetworkAccesible();
+    const bool accessibility = q->isNetworkAccessible();
     if (oldAccessibility != accessibility)
         emit q->onlineStateChanged(accessibility);
 }
@@ -689,7 +689,7 @@ bool QNetworkStatusMonitor::isMonitoring() const
     return d_func()->monitoring;
 }
 
-bool QNetworkStatusMonitor::isNetworkAccesible()
+bool QNetworkStatusMonitor::isNetworkAccessible()
 {
     return d_func()->connectivity
             & (NLM_CONNECTIVITY_IPV4_INTERNET | NLM_CONNECTIVITY_IPV6_INTERNET

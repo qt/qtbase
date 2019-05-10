@@ -493,9 +493,9 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
         connect(&d->statusMonitor, SIGNAL(onlineStateChanged(bool)),
                 SLOT(_q_onlineStateChanged(bool)));
 #ifdef QT_NO_BEARERMANAGEMENT
-        d->networkAccessible = d->statusMonitor.isNetworkAccesible();
+        d->networkAccessible = d->statusMonitor.isNetworkAccessible();
 #else
-        d->networkAccessible = d->statusMonitor.isNetworkAccesible() ? Accessible : NotAccessible;
+        d->networkAccessible = d->statusMonitor.isNetworkAccessible() ? Accessible : NotAccessible;
     } else {
         // if a session is required, we track online state through
         // the QNetworkSession's signals if a request is already made.

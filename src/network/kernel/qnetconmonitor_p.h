@@ -99,7 +99,7 @@ public:
     QNetworkStatusMonitor();
     ~QNetworkStatusMonitor();
 
-    bool isNetworkAccesible();
+    bool isNetworkAccessible();
 
     bool start();
     void stop();

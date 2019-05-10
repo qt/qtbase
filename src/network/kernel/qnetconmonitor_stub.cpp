@@ -123,7 +123,7 @@ bool QNetworkStatusMonitor::isMonitoring() const
     return false;
 }
 
-bool QNetworkStatusMonitor::isNetworkAccesible()
+bool QNetworkStatusMonitor::isNetworkAccessible()
 {
     return false;
 }
