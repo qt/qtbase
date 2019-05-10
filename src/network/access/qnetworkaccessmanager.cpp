@@ -89,6 +89,8 @@
 #endif
 #ifdef Q_OS_WASM
 #include "qnetworkreplywasmimpl_p.h"
+#include "qhttpmultipart.h"
+#include "qhttpmultipart_p.h"
 #endif
 
 #include "qnetconmonitor_p.h"
@@ -823,7 +825,7 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
     return reply;
 }
 
-#if QT_CONFIG(http)
+#if QT_CONFIG(http) || defined(Q_OS_WASM)
 /*!
     \since 4.8
 
@@ -1090,7 +1092,7 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
     return reply;
 }
 
-#if QT_CONFIG(http)
+#if QT_CONFIG(http) || defined(Q_OS_WASM)
 /*!
     \since 5.8
 
@@ -1189,13 +1191,14 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 #endif
     QNetworkRequest request = req;
+#ifndef Q_OS_WASM // Content-length header is not allowed to be set by user in wasm
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
         outgoingData && !outgoingData->isSequential()) {
         // request has no Content-Length
         // but the data that is outgoing is random-access
         request.setHeader(QNetworkRequest::ContentLengthHeader, outgoingData->size());
     }
-
+#endif
     if (static_cast<QNetworkRequest::LoadControl>
         (request.attribute(QNetworkRequest::CookieLoadControlAttribute,
                            QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
@@ -1644,7 +1647,9 @@ void QNetworkAccessManagerPrivate::destroyThread()
     }
 }
 
-#if QT_CONFIG(http)
+
+#if QT_CONFIG(http) || defined(Q_OS_WASM)
+
 QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
     // copy the request, we probably need to add some headers

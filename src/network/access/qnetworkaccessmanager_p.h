@@ -126,7 +126,7 @@ public:
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
     QStringList backendSupportedSchemes() const;
 
-#if QT_CONFIG(http)
+#if QT_CONFIG(http) || defined(Q_OS_WASM)
     QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
 #endif
 

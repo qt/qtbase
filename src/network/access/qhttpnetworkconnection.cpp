@@ -259,6 +259,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     QByteArray value;
     // check if Content-Length is provided
     QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
+#ifndef Q_OS_WASM
     if (uploadByteDevice) {
         const qint64 contentLength = request.contentLength();
         const qint64 uploadDeviceSize = uploadByteDevice->size();
@@ -274,6 +275,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
             qFatal("QHttpNetworkConnectionPrivate: Neither content-length nor upload device size were given");
         }
     }
+#endif
     // set the Connection/Proxy-Connection: Keep-Alive headers
 #ifndef QT_NO_NETWORKPROXY
     if (networkProxy.type() == QNetworkProxy::HttpCachingProxy)  {

@@ -115,3 +115,14 @@ qtConfig(http) {
         QMAKE_USE_PRIVATE += zstd
     }
 }
+
+wasm: {
+    SOURCES += \
+        access/qhttpmultipart.cpp \
+        access/qhttpnetworkheader.cpp
+
+    HEADERS += \
+        access/qhttpmultipart.h \
+        access/qhttpmultipart_p.h \
+        access/qhttpnetworkheader_p.h
+}

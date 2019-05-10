@@ -56,7 +56,9 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <qmetatype.h>
 
+#ifndef Q_OS_WASM
 QT_REQUIRE_CONFIG(http);
+#endif
 
 QT_BEGIN_NAMESPACE
 
