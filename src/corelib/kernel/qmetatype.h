@@ -208,6 +208,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(LongLong, -1, qlonglong, "qint64") \
     F(ULongLong, -1, qulonglong, "quint64") \
     F(QVariantList, -1, QVariantList, "QVector<QVariant>") \
+    F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
     F(QByteArrayList, -1, QByteArrayList, "QVector<QByteArray>") \
