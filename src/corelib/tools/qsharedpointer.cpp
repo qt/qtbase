@@ -65,14 +65,19 @@
 
     \section1 Thread-Safety
 
-    QSharedPointer and QWeakPointer are thread-safe and operate
-    atomically on the pointer value. Different threads can also access
-    the QSharedPointer or QWeakPointer pointing to the same object at
-    the same time without need for locking mechanisms.
+    QSharedPointer and QWeakPointer are reentrant classes. This means that, in
+    general, a given QSharedPointer or QWeakPointer object \b{cannot} be
+    accessed by multiple threads at the same time without synchronization.
 
-    It should be noted that, while the pointer value can be accessed
-    in this manner, QSharedPointer and QWeakPointer provide no
-    guarantee about the object being pointed to. Thread-safety and
+    Different QSharedPointer and QWeakPointer objects can safely be accessed
+    by multiple threads at the same time. This includes the case where they
+    hold pointers to the same object; the reference counting mechanism
+    is atomic, and no manual synchronization is required.
+
+    It should be noted that, while the pointer value can be accessed in this
+    manner (that is, by multiple threads at the same time, without
+    synchronization), QSharedPointer and QWeakPointer provide no guarantee
+    about the object being pointed to. The specific thread-safety and
     reentrancy rules for that object still apply.
 
     \section1 Other Pointer Classes
