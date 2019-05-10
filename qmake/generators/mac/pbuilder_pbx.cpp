@@ -60,11 +60,6 @@ static QString qtSha1(const QByteArray &src)
     return QString::fromLatin1(digest.toHex());
 }
 
-ProjectBuilderMakefileGenerator::ProjectBuilderMakefileGenerator() : UnixMakefileGenerator()
-{
-
-}
-
 bool
 ProjectBuilderMakefileGenerator::writeMakefile(QTextStream &t)
 {

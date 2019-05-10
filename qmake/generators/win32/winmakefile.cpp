@@ -40,10 +40,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Win32MakefileGenerator::Win32MakefileGenerator() : MakefileGenerator()
-{
-}
-
 ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 {
     if (lib.startsWith("-l"))  // Fallback for unresolved -l libs.

@@ -38,10 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator()
-{
-}
-
 QString MingwMakefileGenerator::escapeDependencyPath(const QString &path) const
 {
     QString ret = path;

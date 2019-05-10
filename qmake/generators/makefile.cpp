@@ -94,13 +94,6 @@ bool MakefileGenerator::mkdir(const QString &in_path) const
     return QDir().mkpath(path);
 }
 
-// ** base makefile generator
-MakefileGenerator::MakefileGenerator() :
-    no_io(false), project(nullptr)
-{
-}
-
-
 void
 MakefileGenerator::verifyCompilers()
 {

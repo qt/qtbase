@@ -61,19 +61,12 @@ class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
     QString writeSettings(const QString &var, const ProStringList &vals, int flags=0, int indent_level=0);
 
 public:
-    ProjectBuilderMakefileGenerator();
-    ~ProjectBuilderMakefileGenerator();
-
     bool supportsMetaBuild() override { return false; }
     bool openOutput(QFile &, const QString &) const override;
 protected:
     bool doPrecompiledHeaders() const override { return false; }
     bool doDepends() const override { return writingUnixMakefileGenerator && UnixMakefileGenerator::doDepends(); }
 };
-
-inline ProjectBuilderMakefileGenerator::~ProjectBuilderMakefileGenerator()
-{ }
-
 QT_END_NAMESPACE
 
 #endif // PBUILDER_PBX_H

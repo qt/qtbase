@@ -54,16 +54,9 @@ protected:
     QString var(const ProKey &value) const override;
     QString precompH, precompObj, precompPch;
     QString precompObjC, precompPchC;
-    bool usePCH, usePCHC;
-
-public:
-    NmakeMakefileGenerator();
-    ~NmakeMakefileGenerator();
-
+    bool usePCH = false;
+    bool usePCHC = false;
 };
-
-inline NmakeMakefileGenerator::~NmakeMakefileGenerator()
-{ }
 
 QT_END_NAMESPACE
 
