@@ -68,7 +68,6 @@ private slots:
     void const_shared_null();
 
     void equal_range();
-    void setSharable();
 
     void insert();
     void checkMostLeftNode();
@@ -1065,13 +1064,6 @@ void tst_QMap::qmultimap_specific()
 void tst_QMap::const_shared_null()
 {
     QMap<int, QString> map2;
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QMap<int, QString> map1;
-    map1.setSharable(false);
-    QVERIFY(map1.isDetached());
-
-    map2.setSharable(true);
-#endif
     QVERIFY(!map2.isDetached());
 }
 
@@ -1158,61 +1150,6 @@ template <class T>
 const T &const_(const T &t)
 {
     return t;
-}
-
-void tst_QMap::setSharable()
-{
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QMap<int, QString> map;
-
-    map.insert(1, "um");
-    map.insert(2, "dois");
-    map.insert(4, "quatro");
-    map.insert(5, "cinco");
-
-    map.setSharable(true);
-    QCOMPARE(map.size(), 4);
-    QCOMPARE(const_(map)[4], QString("quatro"));
-
-    {
-        QMap<int, QString> copy(map);
-
-        QVERIFY(!map.isDetached());
-        QVERIFY(copy.isSharedWith(map));
-        sanityCheckTree(copy, __LINE__);
-    }
-
-    map.setSharable(false);
-    sanityCheckTree(map, __LINE__);
-    QVERIFY(map.isDetached());
-    QCOMPARE(map.size(), 4);
-    QCOMPARE(const_(map)[4], QString("quatro"));
-
-    {
-        QMap<int, QString> copy(map);
-
-        QVERIFY(map.isDetached());
-        QVERIFY(copy.isDetached());
-
-        QCOMPARE(copy.size(), 4);
-        QCOMPARE(const_(copy)[4], QString("quatro"));
-
-        QCOMPARE(map, copy);
-        sanityCheckTree(map, __LINE__);
-        sanityCheckTree(copy, __LINE__);
-    }
-
-    map.setSharable(true);
-    QCOMPARE(map.size(), 4);
-    QCOMPARE(const_(map)[4], QString("quatro"));
-
-    {
-        QMap<int, QString> copy(map);
-
-        QVERIFY(!map.isDetached());
-        QVERIFY(copy.isSharedWith(map));
-    }
-#endif
 }
 
 void tst_QMap::insert()

@@ -86,15 +86,9 @@
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
 #define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-// ### Qt6: FIXME and get rid of unsharable containers
-//#  define QT_NO_UNSHARABLE_CONTAINERS
-#  define QT6_VIRTUAL virtual
-#  define QT6_NOT_VIRTUAL
-#else
-#  define QT6_VIRTUAL
-#  define QT6_NOT_VIRTUAL virtual
-#endif
+// ### Clean those up, once all code is adjusted
+#define QT6_VIRTUAL virtual
+#define QT6_NOT_VIRTUAL
 
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */

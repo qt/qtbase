@@ -164,8 +164,6 @@ static const QArrayData qt_array[3] = {
 QT_WARNING_POP
 
 static const QArrayData &qt_array_empty = qt_array[0];
-static const QArrayData &qt_array_unsharable_empty = qt_array[1];
-
 static inline size_t calculateBlockSize(size_t &capacity, size_t objectSize, size_t headerSize,
                                         uint options)
 {
@@ -197,13 +195,8 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
             && !(alignment & (alignment - 1)));
 
     // Don't allocate empty headers
-    if (!(options & RawData) && !capacity) {
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        if (options & Unsharable)
-            return const_cast<QArrayData *>(&qt_array_unsharable_empty);
-#endif
+    if (!(options & RawData) && !capacity)
         return const_cast<QArrayData *>(&qt_array_empty);
-    }
 
     size_t headerSize = sizeof(QArrayData);
 
@@ -223,11 +216,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
                 & ~(alignment - 1);
 
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        header->ref.atomic.storeRelaxed(bool(!(options & Unsharable)));
-#else
         header->ref.atomic.storeRelaxed(1);
-#endif
         header->size = 0;
         header->alloc = capacity;
         header->capacityReserved = bool(options & CapacityReserved);
@@ -259,11 +248,6 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
     Q_ASSERT(alignment >= alignof(QArrayData)
             && !(alignment & (alignment - 1)));
     Q_UNUSED(objectSize) Q_UNUSED(alignment)
-
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    if (data == &qt_array_unsharable_empty)
-        return;
-#endif
 
     Q_ASSERT_X(data == 0 || !data->ref.isStatic(), "QArrayData::deallocate",
                "Static data cannot be deleted");

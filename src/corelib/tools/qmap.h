@@ -356,17 +356,6 @@ public:
 
     inline void detach() { if (d->ref.isShared()) detach_helper(); }
     inline bool isDetached() const { return !d->ref.isShared(); }
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    inline void setSharable(bool sharable)
-    {
-        if (sharable == d->ref.isSharable())
-            return;
-        if (!sharable)
-            detach();
-        // Don't call on shared_null
-        d->ref.setSharable(sharable);
-    }
-#endif
     inline bool isSharedWith(const QMap<Key, T> &other) const { return d == other.d; }
 
     void clear();

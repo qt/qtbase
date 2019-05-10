@@ -102,9 +102,6 @@ public:
 
     inline void detach() { if (d->ref.loadRelaxed() != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref.loadRelaxed() == 1; }
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
-#endif
 
     QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
     inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other) noexcept
