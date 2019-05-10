@@ -83,7 +83,7 @@ public:
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
     inline T* data() const
-    { return static_cast<T*>( wp.data()); }
+    { return static_cast<T*>(wp.d == nullptr || wp.d->strongref.load() == 0 ? nullptr : wp.value); }
     inline T* operator->() const
     { return data(); }
     inline T& operator*() const

@@ -565,7 +565,11 @@ public:
     bool isNull() const noexcept { return d == nullptr || d->strongref.load() == 0 || value == nullptr; }
     operator RestrictedBool() const noexcept { return isNull() ? nullptr : &QWeakPointer::value; }
     bool operator !() const noexcept { return isNull(); }
+
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("Use toStrongRef() instead, and data() on the returned QSharedPointer")
     T *data() const noexcept { return d == nullptr || d->strongref.load() == 0 ? nullptr : value; }
+#endif
 
     inline QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }

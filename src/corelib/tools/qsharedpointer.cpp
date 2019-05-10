@@ -343,12 +343,6 @@
     if you obtain a non-null object, you may use the pointer. See
     QWeakPointer::toStrongRef() for an example.
 
-    QWeakPointer also provides the QWeakPointer::data() method that returns
-    the tracked pointer without ensuring that it remains valid. This function
-    is provided if you can guarantee by external means that the object will
-    not get deleted (or if you only need the pointer value) and the cost of
-    creating a QSharedPointer using toStrongRef() is too high.
-
     \omit
     \section1 QWeakPointer internals
 
@@ -853,6 +847,7 @@
 /*!
     \fn template <class T> T *QWeakPointer<T>::data() const
     \since 4.6
+    \obsolete Use toStrongRef() instead, and data() on the returned QSharedPointer.
 
     Returns the value of the pointer being tracked by this QWeakPointer,
     \b without ensuring that it cannot get deleted. To have that guarantee,
