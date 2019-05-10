@@ -386,7 +386,7 @@ public:
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
     { internalSet(other.d, other.value); return *this; }
 
-    inline void swap(QSharedPointer &other)
+    inline void swap(QSharedPointer &other) noexcept
     { this->internalSwap(other); }
 
     inline void reset() { clear(); }
@@ -880,18 +880,12 @@ Q_INLINE_TEMPLATE QWeakPointer<T> QSharedPointer<T>::toWeakRef() const
 }
 
 template <class T>
-inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
-{
-    p1.swap(p2);
-}
+inline void swap(QSharedPointer<T> &p1, QSharedPointer<T> &p2) noexcept
+{ p1.swap(p2); }
 
-QT_END_NAMESPACE
-namespace std {
-    template <class T>
-    inline void swap(QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p2)
-    { p1.swap(p2); }
-}
-QT_BEGIN_NAMESPACE
+template <class T>
+inline void swap(QWeakPointer<T> &p1, QWeakPointer<T> &p2) noexcept
+{ p1.swap(p2); }
 
 namespace QtSharedPointer {
 // helper functions:
