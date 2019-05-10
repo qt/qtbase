@@ -533,29 +533,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 
     writeIncPart(t);
     writeLibsPart(t);
-
-    t << "QMAKE         = " << var("QMAKE_QMAKE") << Qt::endl;
-    t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") : var("QMAKE_IDC"))
-                            << Qt::endl;
-    t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") : var("QMAKE_IDL"))
-                            << Qt::endl;
-    t << "ZIP           = " << var("QMAKE_ZIP") << Qt::endl;
-    t << "DEF_FILE      = " << fileVar("DEF_FILE") << Qt::endl;
-    t << "RES_FILE      = " << fileVar("RES_FILE") << Qt::endl; // Not on mingw, can't see why not though...
-    t << "COPY          = " << var("QMAKE_COPY") << Qt::endl;
-    t << "SED           = " << var("QMAKE_STREAM_EDITOR") << Qt::endl;
-    t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << Qt::endl;
-    t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << Qt::endl;
-    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << Qt::endl;
-    t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << Qt::endl;
-    t << "MOVE          = " << var("QMAKE_MOVE") << Qt::endl;
-    t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << Qt::endl;
-    t << "MKDIR         = " << var("QMAKE_MKDIR") << Qt::endl;
-    t << "INSTALL_FILE    = " << var("QMAKE_INSTALL_FILE") << Qt::endl;
-    t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << Qt::endl;
-    t << "INSTALL_DIR     = " << var("QMAKE_INSTALL_DIR") << Qt::endl;
-    t << "QINSTALL        = " << var("QMAKE_QMAKE") << " -install qinstall" << Qt::endl;
-    t << "QINSTALL_PROGRAM = " << var("QMAKE_QMAKE") << " -install qinstall -exe" << Qt::endl;
+    writeDefaultVariables(t);
     t << Qt::endl;
 
     t << "####### Output directory\n\n";
@@ -783,6 +761,20 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
         uninst.append("-$(DEL_FILE) " + dst_targ);
     }
     return ret;
+}
+
+void Win32MakefileGenerator::writeDefaultVariables(QTextStream &t)
+{
+    MakefileGenerator::writeDefaultVariables(t);
+    t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") : var("QMAKE_IDC"))
+                            << Qt::endl;
+    t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") : var("QMAKE_IDL"))
+                            << Qt::endl;
+    t << "ZIP           = " << var("QMAKE_ZIP") << Qt::endl;
+    t << "DEF_FILE      = " << fileVar("DEF_FILE") << Qt::endl;
+    t << "RES_FILE      = " << fileVar("RES_FILE") << Qt::endl; // Not on mingw, can't see why not though...
+    t << "SED           = " << var("QMAKE_STREAM_EDITOR") << Qt::endl;
+    t << "MOVE          = " << var("QMAKE_MOVE") << Qt::endl;
 }
 
 QString Win32MakefileGenerator::escapeFilePath(const QString &path) const

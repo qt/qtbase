@@ -37,6 +37,7 @@ class Win32MakefileGenerator : public MakefileGenerator
 {
 protected:
     QString defaultInstall(const QString &) override;
+    void writeDefaultVariables(QTextStream &t) override;
     virtual void writeCleanParts(QTextStream &t);
     virtual void writeStandardParts(QTextStream &t);
     virtual void writeIncPart(QTextStream &t);
