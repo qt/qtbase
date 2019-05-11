@@ -7056,7 +7056,7 @@ void tst_QWidget::renderWithPainter()
 
     // Make sure QWidget::render does not modify the render hints set on the painter.
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform
-                           | QPainter::NonCosmeticDefaultPen | QPainter::TextAntialiasing);
+                           | QPainter::TextAntialiasing);
     QPainter::RenderHints oldRenderHints = painter.renderHints();
     widget.render(&painter);
     QCOMPARE(painter.renderHints(), oldRenderHints);

@@ -1393,7 +1393,10 @@ void QGL2PaintEngineEx::renderHintsChanged()
 #if !defined(QT_OPENGL_ES_2)
     if (!d->ctx->contextHandle()->isOpenGLES()) {
         if ((state()->renderHints & QPainter::Antialiasing)
-            || (state()->renderHints & QPainter::HighQualityAntialiasing))
+#if QT_DEPRECATED_SINCE(5, 14)
+            || (state()->renderHints & QPainter::HighQualityAntialiasing)
+#endif
+            )
             d->glEnable(GL_MULTISAMPLE);
         else
             d->glDisable(GL_MULTISAMPLE);
