@@ -534,6 +534,21 @@ void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &regio
 }
 #endif
 
+QImage QCALayerBackingStore::toImage() const
+{
+    if (!const_cast<QCALayerBackingStore*>(this)->prepareForFlush())
+        return QImage();
+
+    // We need to make a copy here, as the returned image could be used just
+    // for reading, in which case it won't detach, and then the underlying
+    // image data might change under the feet of the client when we re-use
+    // the buffer at a later point.
+    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWReadAccess);
+    QImage imageCopy = m_buffers.back()->asImage()->copy();
+    m_buffers.back()->unlock();
+    return imageCopy;
+}
+
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const
 {
     return m_buffers.back().get();

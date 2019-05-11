@@ -65,6 +65,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \macro QT_NO_FLOAT16_OPERATORS
+    \relates <QFloat16>
+    \since 5.12.4
+
+    Defining this macro disables the arithmetic operators for qfloat16.
+
+    This is only necessary on Visual Studio 2017 (and earlier) when including
+    \c {<QFloat16>} and \c{<bitset>} in the same translation unit, which would
+    otherwise cause a compilation error due to a toolchain bug (see
+    [QTBUG-72073]).
+*/
+
+/*!
     Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
     \relates <QFloat16>
 

@@ -211,10 +211,10 @@ CMAKE_INTERFACE_QT5_MODULE_DEPS = $$join(aux_lib_deps, ";")
 
 mac {
     !isEmpty(CMAKE_STATIC_TYPE) {
-        CMAKE_LIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}_debug.a
+        CMAKE_LIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}.a
         CMAKE_LIB_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.a
 
-        CMAKE_PRL_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}_debug.prl
+        CMAKE_PRL_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}.prl
         CMAKE_PRL_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.prl
     } else {
         qt_framework {
@@ -222,7 +222,7 @@ mac {
             CMAKE_LIB_FILE_LOCATION_RELEASE = $${CMAKE_QT_STEM}.framework/$${CMAKE_QT_STEM}
             CMAKE_BUILD_IS_FRAMEWORK = "true"
         } else {
-            CMAKE_LIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}_debug.$$eval(QT.$${MODULE}.VERSION).dylib
+            CMAKE_LIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}.$$eval(QT.$${MODULE}.VERSION).dylib
             CMAKE_LIB_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.$$eval(QT.$${MODULE}.VERSION).dylib
         }
     }

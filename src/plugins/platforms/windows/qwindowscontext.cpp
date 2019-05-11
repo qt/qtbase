@@ -1325,6 +1325,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             return false;
         platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
         const RECT *prcNewWindow = reinterpret_cast<RECT *>(lParam);
+        qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_DPICHANGED"
+            << platformWindow->window() << *prcNewWindow;
         SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
                      prcNewWindow->right - prcNewWindow->left,
                      prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);

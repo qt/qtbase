@@ -81,6 +81,7 @@ public:
         QPlatformTextureList *textures, bool translucentBackground) override;
 #endif
 
+    QImage toImage() const override;
     QPlatformGraphicsBuffer *graphicsBuffer() const override;
 
 private:
