@@ -48,7 +48,6 @@
 #include <WF/wfd.h>
 
 #include <QtCore/QVarLengthArray>
-#include <QtCore/QLinkedList>
 
 #define BUFFER_NUM 4
 
