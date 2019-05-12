@@ -129,6 +129,7 @@ public:
 
     static Qt::WindowState effectiveState(Qt::WindowStates);
 
+    // ### Qt6: unused
     virtual bool allowClickThrough(const QPoint &) const { return true; }
 
     QWindow::SurfaceType surfaceType = QWindow::RasterSurface;

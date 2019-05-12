@@ -87,7 +87,7 @@ public:
 protected:
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const
     {
-        if (query == Qt::ImMicroFocus)
+        if (query == Qt::ImCursorRectangle)
             return QRect(width() / 2, height() / 2, 5, 5);
         return QWidget::inputMethodQuery(query);
     }
@@ -110,7 +110,7 @@ void tst_QScrollArea::ensureMicroFocusVisible_Task_167838()
     parent->resize(300, 300);
     scrollArea.setWidget(parent);
     scrollArea.ensureWidgetVisible(child, 10, 10);
-    QRect microFocus = child->inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QRect microFocus = child->inputMethodQuery(Qt::ImCursorRectangle).toRect();
     QPoint p = child->mapTo(scrollArea.viewport(), microFocus.topLeft());
     microFocus.translate(p - microFocus.topLeft());
     QVERIFY(scrollArea.viewport()->rect().contains(microFocus));

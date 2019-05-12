@@ -3996,7 +3996,7 @@ void tst_QLineEdit::QTBUG7174_inputMaskCursorBlink()
     edit.setFocus();
     edit.setText(QLatin1String("AAAA"));
     edit.show();
-    QRect cursorRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QRect cursorRect = edit.inputMethodQuery(Qt::ImCursorRectangle).toRect();
     QVERIFY(QTest::qWaitForWindowExposed(&edit));
     edit.updateRegion = QRegion();
     QTest::qWait(QApplication::cursorFlashTime());
