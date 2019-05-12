@@ -871,8 +871,10 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QLineEdit *>(widg))
             ct = QStyle::CT_LineEdit;
 #endif
+#if QT_CONFIG(itemviews)
         else if (qobject_cast<const QHeaderView *>(widg))
             ct = QStyle::CT_HeaderSection;
+#endif
 #if QT_CONFIG(menubar)
         else if (qobject_cast<const QMenuBar *>(widg))
             ct = QStyle::CT_MenuBar;
@@ -2846,9 +2848,11 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             ret = [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay;
         }
         break;
+#if QT_CONFIG(itemviews)
     case SH_ItemView_ScrollMode:
         ret = QAbstractItemView::ScrollPerPixel;
         break;
+#endif
     case SH_TitleBar_ShowToolTipsOnButtons:
         // min/max/close buttons on windows don't show tool tips
         ret = false;
@@ -4546,6 +4550,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     const int controlSize = getControlSize(opt, widget);
 
     switch (sr) {
+#if QT_CONFIG(itemviews)
     case SE_ItemViewItemText:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int fw = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, widget);
@@ -4555,6 +4560,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.adjust(-fw, 0, 0, 0);
         }
         break;
+#endif
     case SE_ToolBoxTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
@@ -6382,12 +6388,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = sz.expandedTo(QSize(sz.width(), minimumSize));
         }
         break;
+#if QT_CONFIG(itemviews)
     case CT_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             sz = QCommonStyle::sizeFromContents(ct, vopt, csz, widget);
             sz.setHeight(sz.height() + 2);
         }
         break;
+#endif
 
     default:
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
