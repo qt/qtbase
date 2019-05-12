@@ -77,7 +77,7 @@ public:
     ~QPointer();
 #endif
 
-    inline void swap(QPointer &other) { wp.swap(other.wp); }
+    inline void swap(QPointer &other) noexcept { wp.swap(other.wp); }
 
     inline QPointer<T> &operator=(T* p)
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
@@ -145,6 +145,10 @@ qPointerFromVariant(const QVariant &variant)
 {
     return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
 }
+
+template <class T>
+inline void swap(QPointer<T> &p1, QPointer<T> &p2) noexcept
+{ p1.swap(p2); }
 
 QT_END_NAMESPACE
 
