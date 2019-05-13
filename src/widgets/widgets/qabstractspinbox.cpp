@@ -1319,6 +1319,7 @@ void QAbstractSpinBox::contextMenuEvent(QContextMenuEvent *event)
     d->reset();
 
     QAction *selAll = new QAction(tr("&Select All"), menu);
+    selAll->setShortcut(QKeySequence::SelectAll);
     menu->insertAction(d->edit->d_func()->selectAllAction,
                       selAll);
     menu->removeAction(d->edit->d_func()->selectAllAction);
