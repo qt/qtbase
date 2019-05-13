@@ -1378,7 +1378,7 @@ bool QSplitter::event(QEvent *e)
     default:
         ;
     }
-    return QWidget::event(e);
+    return QFrame::event(e);
 }
 
 /*!
