@@ -52,7 +52,11 @@ QT_BEGIN_NAMESPACE
 
 template <class T> class QSharedDataPointer;
 
-class Q_CORE_EXPORT QSharedData
+class
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_CORE_EXPORT
+#endif
+QSharedData
 {
 public:
     mutable QAtomicInt ref;
