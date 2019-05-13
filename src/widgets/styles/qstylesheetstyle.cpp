@@ -3446,7 +3446,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *btn = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             if (rule.hasBox() || btn->features & QStyleOptionToolButton::Arrow) {
-                QCommonStyle::drawControl(ce, opt, p, w);
+                QWindowsStyle::drawControl(ce, opt, p, w);
             } else {
                 QStyleOptionToolButton butOpt(*btn);
                 rule.configurePalette(&butOpt.palette, QPalette::ButtonText, QPalette::Button);
@@ -3827,7 +3827,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
             if (subRule.hasDrawable()) {
                 subRule.drawRule(p, opt->rect);
-                QCommonStyle::drawControl(ce, &mi, p, w);
+                QCommonStyle::drawControl(ce, &mi, p, w); // deliberate bypass of the base
             } else {
                 if (rule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
                     // So that the menu bar background is not hidden by the items
