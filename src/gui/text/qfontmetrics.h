@@ -170,10 +170,10 @@ public:
 
     QFontMetricsF &operator=(const QFontMetricsF &);
     QFontMetricsF &operator=(const QFontMetrics &);
-    inline QFontMetricsF &operator=(QFontMetricsF &&other)
+    inline QFontMetricsF &operator=(QFontMetricsF &&other) noexcept
     { qSwap(d, other.d); return *this; }
 
-    void swap(QFontMetricsF &other) { qSwap(d, other.d); }
+    void swap(QFontMetricsF &other) noexcept { qSwap(d, other.d); }
 
     qreal ascent() const;
     qreal capHeight() const;
