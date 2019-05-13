@@ -438,7 +438,7 @@ public:
     QSize minimumSizeHint() const override {
         if (!pixmap().isNull())
             return pixmap().deviceIndependentSize().toSize();
-        return QFrame::minimumSizeHint();
+        return QLabel::minimumSizeHint();
     }
 
     void setSideWidget(QWidget *widget) {
