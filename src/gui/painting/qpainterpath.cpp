@@ -75,7 +75,7 @@ struct QPainterPathPrivateDeleter
 {
     static inline void cleanup(QPainterPathPrivate *d)
     {
-        // note - we must up-cast to QPainterPathData since QPainterPathPrivate
+        // note - we must downcast to QPainterPathData since QPainterPathPrivate
         // has a non-virtual destructor!
         if (d && !d->ref.deref())
             delete static_cast<QPainterPathData *>(d);
