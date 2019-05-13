@@ -510,6 +510,7 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
 
             writer.writeAttribute(svgNS, QString::fromLatin1("width"), pixelToPoint(width));
             writer.writeAttribute(svgNS, QString::fromLatin1("height"), pixelToPoint(height));
+            writer.writeAttribute(textNS, QStringLiteral("anchor-type"), QStringLiteral("as-char"));
             writer.writeStartElement(drawNS, QString::fromLatin1("image"));
             writer.writeAttribute(xlinkNS, QString::fromLatin1("href"), filename);
             writer.writeEndElement(); // image
