@@ -44,10 +44,8 @@
 #include "qdatetime.h"
 
 #ifdef Q_OS_DARWIN
-#include "qtimezone.h"
 #include "private/qcore_mac_p.h"
 #include <CoreFoundation/CoreFoundation.h>
-QT_REQUIRE_CONFIG(timezone);
 #endif
 
 QT_BEGIN_NAMESPACE
