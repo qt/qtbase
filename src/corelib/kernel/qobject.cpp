@@ -173,6 +173,12 @@ int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QO
 bool (*QAbstractDeclarativeData::isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 void (*QAbstractDeclarativeData::setWidgetParent)(QObject *, QObject *) = 0;
 
+/*!
+    \fn QObjectData::QObjectData()
+    \internal
+ */
+
+
 QObjectData::~QObjectData() {}
 
 QMetaObject *QObjectData::dynamicMetaObject() const
@@ -4167,6 +4173,11 @@ uint QObject::registerUserData()
     static int user_data_registration = 0;
     return user_data_registration++;
 }
+
+/*!
+    \fn QObjectUserData::QObjectUserData()
+    \internal
+ */
 
 /*!
     \internal

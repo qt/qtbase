@@ -93,7 +93,9 @@ Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegular
 Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
 class Q_CORE_EXPORT QObjectData {
+    Q_DISABLE_COPY(QObjectData)
 public:
+    QObjectData() = default;
     virtual ~QObjectData() = 0;
     QObject *q_ptr;
     QObject *parent;
@@ -472,7 +474,9 @@ inline const QMetaObject *qt_getQtMetaObject() noexcept
 
 #ifndef QT_NO_USERDATA
 class Q_CORE_EXPORT QObjectUserData {
+    Q_DISABLE_COPY(QObjectUserData)
 public:
+    QObjectUserData() = default;
     virtual ~QObjectUserData();
 };
 #endif
