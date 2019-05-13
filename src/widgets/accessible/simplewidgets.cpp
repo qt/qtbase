@@ -454,6 +454,13 @@ QAccessible::Role QAccessibleDisplay::role() const
     return QAccessibleWidget::role();
 }
 
+QAccessible::State QAccessibleDisplay::state() const
+{
+    QAccessible::State s = QAccessibleWidget::state();
+    s.readOnly = true;
+    return s;
+}
+
 QString QAccessibleDisplay::text(QAccessible::Text t) const
 {
     QString str;
@@ -732,10 +739,9 @@ QAccessible::State QAccessibleLineEdit::state() const
     QAccessible::State state = QAccessibleWidget::state();
 
     QLineEdit *l = lineEdit();
+    state.editable = true;
     if (l->isReadOnly())
         state.readOnly = true;
-    else
-        state.editable = true;
 
     if (l->echoMode() != QLineEdit::Normal)
         state.passwordEdit = true;

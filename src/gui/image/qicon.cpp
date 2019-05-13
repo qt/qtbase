@@ -1523,7 +1523,7 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
     foo@3x.png, then foo@2x, then fall back to foo.png if not found.
 
     \a sourceDevicePixelRatio will be set to the value of N if the argument is
-    a non-null pointer
+    not \nullptr
 */
 QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
                         qreal *sourceDevicePixelRatio)

@@ -4023,7 +4023,7 @@ QGLWidget::~QGLWidget()
     \fn QFunctionPointer QGLContext::getProcAddress(const QString &proc) const
 
     Returns a function pointer to the GL extension function passed in
-    \a proc. 0 is returned if a pointer to the function could not be
+    \a proc. \nullptr is returned if a pointer to the function could not be
     obtained.
 */
 QFunctionPointer QGLContext::getProcAddress(const QString &procName) const

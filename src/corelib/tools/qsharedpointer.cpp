@@ -401,7 +401,8 @@
 /*!
     \fn template <class T> QSharedPointer<T>::QSharedPointer()
 
-    Creates a QSharedPointer that points to null (0).
+    Creates a QSharedPointer that is null (the object is holding
+    a reference to \nullptr).
 */
 
 /*!
@@ -547,6 +548,7 @@
 
     Provides access to the shared pointer's members.
 
+    If the contained pointer is \nullptr, behavior is undefined.
     \sa isNull()
 */
 
@@ -555,21 +557,21 @@
 
     Provides access to the shared pointer's members.
 
+    If the contained pointer is \nullptr, behavior is undefined.
     \sa isNull()
 */
 
 /*!
     \fn template <class T> bool QSharedPointer<T>::isNull() const
 
-    Returns \c true if this object is holding a reference to a null
-    pointer.
+    Returns \c true if this object refers to \nullptr.
 */
 
 /*!
     \fn template <class T> QSharedPointer<T>::operator bool() const
 
-    Returns \c true if this object is not null. This function is suitable
-    for use in \tt if-constructs, like:
+    Returns \c true if the contained pointer is not \nullptr.
+    This function is suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qsharedpointer.cpp 4
 
@@ -579,8 +581,8 @@
 /*!
     \fn template <class T> bool QSharedPointer<T>::operator !() const
 
-    Returns \c true if this object is \nullptr. This function is
-    suitable for use in \tt if-constructs, like:
+    Returns \c true if this object refers to \nullptr.
+    This function is suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qsharedpointer.cpp 5
 
@@ -803,11 +805,10 @@
 /*!
     \fn template <class T> bool QWeakPointer<T>::isNull() const
 
-    Returns \c true if this object is holding a reference to a null
-    pointer.
+    Returns \c true if this object refers to \nullptr.
 
     Note that, due to the nature of weak references, the pointer that
-    QWeakPointer references can become null at any moment, so
+    QWeakPointer references can become \nullptr at any moment, so
     the value returned from this function can change from false to
     true from one call to the next.
 */
@@ -815,13 +816,13 @@
 /*!
     \fn template <class T> QWeakPointer<T>::operator bool() const
 
-    Returns \c true if this object is not null. This function is suitable
-    for use in \tt if-constructs, like:
+    Returns \c true if the contained pointer is not \nullptr.
+    This function is suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qsharedpointer.cpp 8
 
     Note that, due to the nature of weak references, the pointer that
-    QWeakPointer references can become null at any moment, so
+    QWeakPointer references can become \nullptr at any moment, so
     the value returned from this function can change from true to
     false from one call to the next.
 
@@ -831,13 +832,13 @@
 /*!
     \fn template <class T> bool QWeakPointer<T>::operator !() const
 
-    Returns \c true if this object is \nullptr. This function is
-    suitable for use in \tt if-constructs, like:
+    Returns \c true if this object refers to \nullptr.
+    This function is suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qsharedpointer.cpp 9
 
     Note that, due to the nature of weak references, the pointer that
-    QWeakPointer references can become null at any moment, so
+    QWeakPointer references can become \nullptr at any moment, so
     the value returned from this function can change from false to
     true from one call to the next.
 
@@ -918,7 +919,7 @@
 
     If \c this (that is, the subclass instance invoking this method) is being
     managed by a QSharedPointer, returns a shared pointer instance pointing to
-    \c this; otherwise returns a QSharedPointer holding a null pointer.
+    \c this; otherwise returns a null QSharedPointer.
 */
 
 /*!
@@ -933,8 +934,7 @@
     \fn template <class T> template <class X> bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
 
     If \a ptr2's template parameter is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -947,8 +947,7 @@
     \fn template <class T> template <class X> bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is not the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
 
     If \a ptr2's template parameter is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -961,8 +960,7 @@
     \fn template <class T> template <class X> bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2)
     \relates QSharedPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is the
-    same pointer as \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
 
     If \a ptr2's type is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -975,8 +973,7 @@
     \fn template <class T> template <class X> bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
     \relates QSharedPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is not the
-    same pointer as \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
 
     If \a ptr2's type is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -1017,8 +1014,7 @@
     \fn template <class T> template <class X> bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
 
     If \a ptr2's template parameter is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -1031,8 +1027,7 @@
     \fn template <class T> template <class X> bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is not the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
 
     If \a ptr2's template parameter is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -1045,8 +1040,7 @@
     \fn template <class T> template <class X> bool operator==(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
 
     If \a ptr2's template parameter is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast
@@ -1060,7 +1054,7 @@
     \relates QSharedPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a lhs is a null pointer.
+    Returns \c true if \a lhs refers to \nullptr.
 
     \sa QSharedPointer::isNull()
 */
@@ -1070,7 +1064,7 @@
     \relates QSharedPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a rhs is a null pointer.
+    Returns \c true if \a rhs refers to \nullptr.
 
     \sa QSharedPointer::isNull()
 */
@@ -1080,8 +1074,7 @@
     \relates QSharedPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a lhs is a valid (i.e.
-    non-null) pointer.
+    Returns \c true if \a lhs refers to a valid (i.e. non-null) pointer.
 
     \sa QSharedPointer::isNull()
 */
@@ -1091,8 +1084,7 @@
     \relates QSharedPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a rhs is a valid (i.e.
-    non-null) pointer.
+    Returns \c true if \a rhs refers to a valid (i.e. non-null) pointer.
 
     \sa QSharedPointer::isNull()
 */
@@ -1102,7 +1094,7 @@
     \relates QWeakPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a lhs is a null pointer.
+    Returns \c true if \a lhs refers to \nullptr.
 
     \sa QWeakPointer::isNull()
 */
@@ -1112,7 +1104,7 @@
     \relates QWeakPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a rhs is a null pointer.
+    Returns \c true if \a rhs refers to \nullptr.
 
     \sa QWeakPointer::isNull()
 */
@@ -1122,8 +1114,7 @@
     \relates QWeakPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a lhs is a valid (i.e.
-    non-null) pointer.
+    Returns \c true if \a lhs refers to a valid (i.e. non-null) pointer.
 
     \sa QWeakPointer::isNull()
 */
@@ -1133,8 +1124,7 @@
     \relates QWeakPointer
     \since 5.8
 
-    Returns \c true if the pointer referenced by \a rhs is a valid (i.e.
-    non-null) pointer.
+    Returns \c true if \a rhs refers to a valid (i.e. non-null) pointer.
 
     \sa QWeakPointer::isNull()
 */
@@ -1143,8 +1133,7 @@
     \fn template <class T> template <class X> bool operator!=(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns \c true if the pointer referenced by \a ptr1 is not the
-    same pointer as that referenced by \a ptr2.
+    Returns \c true if \a ptr1 and \a ptr2 refer to distinct pointers.
 
     If \a ptr2's template parameter is different from \a ptr1's,
     QSharedPointer will attempt to perform an automatic \tt static_cast

@@ -157,7 +157,7 @@ QT_BEGIN_NAMESPACE
 
     Provides access to the scoped pointer's object.
 
-    If the contained pointer is \c null, behavior is undefined.
+    If the contained pointer is \nullptr, behavior is undefined.
     \sa isNull()
 */
 
@@ -166,7 +166,7 @@ QT_BEGIN_NAMESPACE
 
     Provides access to the scoped pointer's object.
 
-    If the contained pointer is \c null, behavior is undefined.
+    If the contained pointer is \nullptr, behavior is undefined.
 
     \sa isNull()
 */
@@ -174,8 +174,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T, typename Cleanup> QScopedPointer<T, Cleanup>::operator bool() const
 
-    Returns \c true if this object is not \c null. This function is suitable
-    for use in \tt if-constructs, like:
+    Returns \c true if the contained pointer is not \nullptr.
+    This function is suitable for use in \tt if-constructs, like:
 
     \snippet code/src_corelib_tools_qscopedpointer.cpp 3
 
@@ -185,18 +185,14 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T, typename Cleanup> bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
 
-    Equality operator. Returns \c true if the scoped pointers
-    \a lhs and \a rhs are pointing to the same object.
-    Otherwise returns \c false.
+    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
 */
 
 
 /*!
     \fn template <typename T, typename Cleanup> bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
 
-    Inequality operator. Returns \c true if the scoped pointers
-    \a lhs and \a rhs are \e not pointing to the same object.
-    Otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs refer to distinct pointers.
 */
 
 /*!
@@ -204,7 +200,7 @@ QT_BEGIN_NAMESPACE
     \relates QScopedPointer
     \since 5.8
 
-    Returns \c true if the scoped pointer \a lhs is a null pointer.
+    Returns \c true if \a lhs refers to \nullptr.
 
     \sa QScopedPointer::isNull()
 */
@@ -214,7 +210,7 @@ QT_BEGIN_NAMESPACE
     \relates QScopedPointer
     \since 5.8
 
-    Returns \c true if the scoped pointer \a rhs is a null pointer.
+    Returns \c true if \a rhs refers to \nullptr.
 
     \sa QScopedPointer::isNull()
 */
@@ -224,8 +220,7 @@ QT_BEGIN_NAMESPACE
     \relates QScopedPointer
     \since 5.8
 
-    Returns \c true if the scoped pointer \a lhs is a valid (i.e. a non-null)
-    pointer.
+    Returns \c true if \a lhs refers to a valid (i.e. non-null) pointer.
 
     \sa QScopedPointer::isNull()
 */
@@ -235,8 +230,7 @@ QT_BEGIN_NAMESPACE
     \relates QScopedPointer
     \since 5.8
 
-    Returns \c true if the scoped pointer \a rhs is a valid (i.e. a non-null)
-    pointer.
+    Returns \c true if \a rhs refers to a valid (i.e. non-null) pointer.
 
     \sa QScopedPointer::isNull()
 */
@@ -244,7 +238,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::isNull() const
 
-    Returns \c true if this object is holding a pointer that is \c null.
+    Returns \c true if this object refers to \nullptr.
 */
 
 /*!
@@ -262,15 +256,14 @@ QT_BEGIN_NAMESPACE
     \fn template <typename T, typename Cleanup> T *QScopedPointer<T, Cleanup>::take()
 
     Returns the value of the pointer referenced by this object. The pointer of this
-    QScopedPointer object will be reset to \c null.
+    QScopedPointer object will be reset to \nullptr.
 
     Callers of this function take ownership of the pointer.
 */
 
 /*! \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator!() const
 
-    Returns \c true if the pointer referenced by this object is \c null, otherwise
-    returns \c false.
+    Returns \c true if this object refers to \nullptr.
 
     \sa isNull()
 */
@@ -325,7 +318,7 @@ QT_BEGIN_NAMESPACE
     Provides access to entry \a i of the scoped pointer's array of
     objects.
 
-    If the contained pointer is \c null, behavior is undefined.
+    If the contained pointer is \nullptr, behavior is undefined.
 
     \sa isNull()
 */
@@ -336,7 +329,7 @@ QT_BEGIN_NAMESPACE
     Provides access to entry \a i of the scoped pointer's array of
     objects.
 
-    If the contained pointer is \c null, behavior is undefined.
+    If the contained pointer is \nullptr behavior is undefined.
 
     \sa isNull()
 */

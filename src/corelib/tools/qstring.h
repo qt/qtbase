@@ -375,7 +375,7 @@ public:
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
     int lastIndexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
     bool contains(const QRegularExpression &re) const;
-    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const; // ### Qt 6: merge overloads
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
     int count(const QRegularExpression &re) const;
 #endif
 

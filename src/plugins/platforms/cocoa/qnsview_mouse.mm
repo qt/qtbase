@@ -147,9 +147,34 @@
 
     ulong timestamp = [theEvent timestamp] * 1000;
 
-    auto eventType = cocoaEvent2QtMouseEvent(theEvent);
-    qCInfo(lcQpaMouse) << "Frame-strut" << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
-    QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
+    const auto button = cocoaButton2QtButton(theEvent);
+    auto eventType = [&]() {
+        switch (theEvent.type) {
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeOtherMouseDown:
+            return QEvent::NonClientAreaMouseButtonPress;
+
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+            return QEvent::NonClientAreaMouseButtonRelease;
+
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged:
+            return QEvent::NonClientAreaMouseMove;
+
+        default:
+            break;
+        }
+
+        return QEvent::None;
+    }();
+
+    qCInfo(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << m_frameStrutButtons << "in" << self.window;
+    QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(),
+        timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons, button, eventType);
 }
 @end
 
@@ -477,12 +502,15 @@
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
     // cursor. See rdar://34183708
 
-    if (self.cursor && self.cursor != NSCursor.currentCursor) {
-        qCInfo(lcQpaMouse) << "Updating cursor for" << self << "to" << self.cursor;
+    auto previousCursor = NSCursor.currentCursor;
+
+    if (self.cursor)
         [self.cursor set];
-    } else {
+    else
         [super cursorUpdate:theEvent];
-    }
+
+    if (NSCursor.currentCursor != previousCursor)
+        qCInfo(lcQpaMouse) << "Cursor update for" << self << "resulted in new cursor" << NSCursor.currentCursor;
 }
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent

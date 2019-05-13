@@ -614,6 +614,9 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         if (m_needsEnterOnPointerUpdate) {
             m_needsEnterOnPointerUpdate = false;
             if (window != m_currentWindow) {
+                // make sure we subscribe to leave events for this window
+                trackLeave(hwnd);
+
                 QWindowSystemInterface::handleEnterEvent(window, localPos, globalPos);
                 m_currentWindow = window;
                 if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(target))

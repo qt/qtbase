@@ -51,7 +51,9 @@ static QRegExp whitespaceRegex = QRegExp(QStringLiteral("\\s*"));
 
 static QCocoaWindow *toPlatformWindow(NSWindow *window)
 {
-    return qnsview_cast(window.contentView).platformWindow;
+    if ([window conformsToProtocol:@protocol(QNSWindowProtocol)])
+        return static_cast<QCocoaNSWindow *>(window).platformWindow;
+    return nullptr;
 }
 
 @implementation QNSWindowDelegate

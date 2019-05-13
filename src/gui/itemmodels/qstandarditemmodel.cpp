@@ -1846,7 +1846,7 @@ bool QStandardItem::hasChildren() const
     item) takes ownership of \a item. If necessary, the row count and column
     count are increased to fit the item.
 
-    \note Passing a null pointer as \a item removes the item.
+    \note Passing \nullptr as \a item removes the item.
 
     \sa child()
 */

@@ -116,6 +116,7 @@ public:
 
     QString text(QAccessible::Text t) const override;
     QAccessible::Role role() const override;
+    QAccessible::State state() const override;
 
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
     void *interface_cast(QAccessible::InterfaceType t) override;

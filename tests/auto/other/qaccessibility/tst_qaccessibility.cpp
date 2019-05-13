@@ -2045,6 +2045,15 @@ void tst_QAccessibility::lineEditTest()
     QVERIFY(!iface->state().selectable);
     QVERIFY(iface->state().selectableText);
     QVERIFY(!iface->state().hasPopup);
+    QVERIFY(!iface->state().readOnly);
+    QVERIFY(iface->state().editable);
+
+    le->setReadOnly(true);
+    QVERIFY(iface->state().editable);
+    QVERIFY(iface->state().readOnly);
+    le->setReadOnly(false);
+    QVERIFY(!iface->state().readOnly);
+
     QCOMPARE(bool(iface->state().focused), le->hasFocus());
 
     QString secret(QLatin1String("secret"));
@@ -3640,6 +3649,12 @@ void tst_QAccessibility::labelTest()
     QVERIFY(acc_label);
 
     QCOMPARE(acc_label->text(QAccessible::Name), text);
+    QCOMPARE(acc_label->state().editable, false);
+    QCOMPARE(acc_label->state().passwordEdit, false);
+    QCOMPARE(acc_label->state().disabled, false);
+    QCOMPARE(acc_label->state().focused, false);
+    QCOMPARE(acc_label->state().focusable, false);
+    QCOMPARE(acc_label->state().readOnly, true);
 
     QVector<QPair<QAccessibleInterface *, QAccessible::Relation> > rels =  acc_label->relations();
     QCOMPARE(rels.count(), 1);

@@ -435,6 +435,27 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
         m_currentDevice = m_devices.size();
         m_devices.push_back(tabletInit(uniqueId, cursorType));
     }
+
+    /**
+     * We should check button map for changes on every proximity event, not
+     * only during initialization phase.
+     *
+     * WARNING: in 2016 there were some Wacom table drivers, which could mess up
+     *          button mapping if the remapped button was pressed, while the
+     *          application **didn't have input focus**. This bug is somehow
+     *          related to the fact that Wacom drivers allow user to configure
+     *          per-application button-mappings. If the bug shows up again,
+     *          just move this button-map fetching into initialization block.
+     *
+     *          See https://bugs.kde.org/show_bug.cgi?id=359561
+     */
+    BYTE logicalButtons[32];
+    memset(logicalButtons, 0, 32);
+    m_winTab32DLL.wTInfo(WTI_CURSORS + currentCursor, CSR_SYSBTNMAP, &logicalButtons);
+    m_devices[m_currentDevice].buttonsMap[0x1] = logicalButtons[0];
+    m_devices[m_currentDevice].buttonsMap[0x2] = logicalButtons[1];
+    m_devices[m_currentDevice].buttonsMap[0x4] = logicalButtons[2];
+
     m_devices[m_currentDevice].currentPointerType = pointerType(currentCursor);
     m_state = PenProximity;
     qCDebug(lcQpaTablet) << "enter proximity for device #"
@@ -444,6 +465,52 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
                                                             m_devices.at(m_currentDevice).currentPointerType,
                                                             m_devices.at(m_currentDevice).uniqueId);
     return true;
+}
+
+Qt::MouseButton buttonValueToEnum(DWORD button,
+                                  const QWindowsTabletDeviceData &tdd) {
+
+    enum : unsigned {
+        leftButtonValue = 0x1,
+        middleButtonValue = 0x2,
+        rightButtonValue = 0x4,
+        doubleClickButtonValue = 0x7
+    };
+
+    button = tdd.buttonsMap.value(button);
+
+    return button == leftButtonValue ? Qt::LeftButton :
+        button == rightButtonValue ? Qt::RightButton :
+        button == doubleClickButtonValue ? Qt::MiddleButton :
+        button == middleButtonValue ? Qt::MiddleButton :
+        button ? Qt::LeftButton /* fallback item */ :
+        Qt::NoButton;
+}
+
+Qt::MouseButtons convertTabletButtons(DWORD btnNew,
+                                      const QWindowsTabletDeviceData &tdd) {
+
+    Qt::MouseButtons buttons = Qt::NoButton;
+    for (unsigned int i = 0; i < 3; i++) {
+        unsigned int btn = 0x1 << i;
+
+        if (btn & btnNew) {
+            Qt::MouseButton convertedButton =
+                buttonValueToEnum(btn, tdd);
+
+            buttons |= convertedButton;
+
+            /**
+             * If a button that is present in hardware input is
+             * mapped to a Qt::NoButton, it means that it is going
+             * to be eaten by the driver, for example by its
+             * "Pan/Scroll" feature. Therefore we shouldn't handle
+             * any of the events associated to it. We'll just return
+             * Qt::NoButtons here.
+             */
+        }
+    }
+    return buttons;
 }
 
 bool QWindowsTabletSupport::translateTabletPacketEvent()
@@ -552,9 +619,12 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                 << tiltY << "tanP:" << tangentialPressure << "rotation:" << rotation;
         }
 
+        Qt::MouseButtons buttons =
+            convertTabletButtons(packet.pkButtons, m_devices.at(m_currentDevice));
+
         QWindowSystemInterface::handleTabletEvent(target, packet.pkTime, QPointF(localPos), globalPosF,
                                                   currentDevice, currentPointer,
-                                                  static_cast<Qt::MouseButtons>(packet.pkButtons),
+                                                  buttons,
                                                   pressureNew, tiltX, tiltY,
                                                   tangentialPressure, rotation, z,
                                                   uniqueId,
