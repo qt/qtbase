@@ -93,6 +93,7 @@ public:
 private slots:
     void _q_uploadDataReadyRead();
     void _q_replyDestroyed(QObject* reply);
+    void _q_uploadDataDestroyed(QObject* uploadData);
 
 private:
     using Stream = Http2::Stream;
@@ -156,6 +157,7 @@ private:
     HPack::Decoder decoder;
     HPack::Encoder encoder;
 
+    QHash<QObject *, int> streamIDs;
     QHash<quint32, Stream> activeStreams;
     std::deque<quint32> suspendedStreams[3]; // 3 for priorities: High, Normal, Low.
     static const std::deque<quint32>::size_type maxRecycledStreams;
