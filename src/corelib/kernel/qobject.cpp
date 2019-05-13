@@ -93,12 +93,6 @@ QAbstractDynamicMetaObject::~QAbstractDynamicMetaObject()
 {
 }
 
-
-struct QSlotObjectBaseDeleter { // for use with QScopedPointer<QSlotObjectBase,...>
-    static void cleanup(QtPrivate::QSlotObjectBase *slot) {
-        if (slot) slot->destroyIfLastRef();
-    }
-};
 static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
 {
     int *types = new int [typeNames.count() + 1];
@@ -3380,7 +3374,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
         type &= Qt::UniqueConnection - 1;
     }
 
-    QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
+    std::unique_ptr<QObjectPrivate::Connection> c{new QObjectPrivate::Connection};
     c->sender = s;
     c->signal_index = signal_index;
     c->receiver.storeRelaxed(r);
@@ -3394,14 +3388,14 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
     c->argumentTypes.storeRelaxed(types);
     c->callFunction = callFunction;
 
-    QObjectPrivate::get(s)->addConnection(signal_index, c.data());
+    QObjectPrivate::get(s)->addConnection(signal_index, c.get());
 
     locker.unlock();
     QMetaMethod smethod = QMetaObjectPrivate::signal(smeta, signal_index);
     if (smethod.isValid())
         s->connectNotify(smethod);
 
-    return c.take();
+    return c.release();
 }
 
 /*!
@@ -3791,10 +3785,16 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
             if (c->isSlotObject) {
                 c->slotObj->ref();
-                QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
+
+                struct Deleter {
+                    void operator()(QtPrivate::QSlotObjectBase *slot) const {
+                        if (slot) slot->destroyIfLastRef();
+                    }
+                };
+                const std::unique_ptr<QtPrivate::QSlotObjectBase, Deleter> obj{c->slotObj};
 
                 {
-                    Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, obj.data());
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, obj.get());
                     obj->call(receiver, argv);
                 }
             } else if (c->callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
@@ -4947,7 +4947,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
         type = static_cast<Qt::ConnectionType>(type ^ Qt::UniqueConnection);
     }
 
-    QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
+    std::unique_ptr<QObjectPrivate::Connection> c{new QObjectPrivate::Connection};
     c->sender = s;
     c->signal_index = signal_index;
     QThreadData *td = r->d_func()->threadData;
@@ -4962,8 +4962,8 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
         c->ownArgumentTypes = false;
     }
 
-    QObjectPrivate::get(s)->addConnection(signal_index, c.data());
-    QMetaObject::Connection ret(c.take());
+    QObjectPrivate::get(s)->addConnection(signal_index, c.get());
+    QMetaObject::Connection ret(c.release());
     locker.unlock();
 
     QMetaMethod method = QMetaObjectPrivate::signal(senderMetaObject, signal_index);
