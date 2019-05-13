@@ -84,8 +84,6 @@ public:
     explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = nullptr);
     ~QAbstractPrintDialog();
 
-    int exec() override = 0;
-
     // obsolete
     void addEnabledOption(PrintDialogOption option);
     void setEnabledOptions(PrintDialogOptions options);
