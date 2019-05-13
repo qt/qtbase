@@ -524,6 +524,7 @@ private:
 
 #ifdef Q_MOC_RUN
     int xx = 11'11; // digit separator must not confuse moc (QTBUG-59351)
+    int xx = 0b11'11; // digit separator in a binary literal must not confuse moc (QTBUG-75656)
 #endif
 
 private slots:

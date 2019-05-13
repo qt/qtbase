@@ -1086,9 +1086,11 @@ void QCocoaWindow::setEmbeddedInForeignView()
 
 void QCocoaWindow::viewDidChangeFrame()
 {
-    if (isContentView())
-        return; // Handled below
-
+    // Note: When the view is the content view, it would seem redundant
+    // to deliver geometry changes both from windowDidResize and this
+    // callback, but in some cases such as when macOS native tabbed
+    // windows are enabled we may end up with the wrong geometry in
+    // the initial windowDidResize callback when a new tab is created.
     handleGeometryChange();
 }
 
