@@ -1044,8 +1044,11 @@ inline QString QString::fromWCharArray(const wchar_t *string, int size)
                                             : fromUcs4(reinterpret_cast<const uint *>(string), size);
 }
 
-
-class Q_CORE_EXPORT QCharRef {
+class
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_CORE_EXPORT
+#endif
+QCharRef {
     QString &s;
     int i;
     inline QCharRef(QString &str, int idx)

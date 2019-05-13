@@ -528,7 +528,11 @@ inline void QByteArray::squeeze()
     }
 }
 
-class Q_CORE_EXPORT QByteRef {
+class
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_CORE_EXPORT
+#endif
+QByteRef {
     QByteArray &a;
     int i;
     inline QByteRef(QByteArray &array, int idx)
