@@ -64,6 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt 6: merge with QPainterPathData
 class QPainterPathPrivate
 {
 public:
@@ -80,7 +81,19 @@ public:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
 #endif
 
-    QPainterPathPrivate() : ref(1) {}
+    QPainterPathPrivate() noexcept
+        : ref(1)
+    {
+    }
+
+    QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
+        : ref(1),
+          elements(other.elements)
+    {
+    }
+
+    QPainterPathPrivate &operator=(const QPainterPathPrivate &) = delete;
+    ~QPainterPathPrivate() = default;
 
 private:
     QAtomicInt ref;
@@ -166,28 +179,32 @@ public:
     QPainterPathData() :
         cStart(0),
         fillRule(Qt::OddEvenFill),
+        require_moveTo(false),
         dirtyBounds(false),
         dirtyControlBounds(false),
+        convex(false),
         pathConverter(nullptr)
     {
-        require_moveTo = false;
-        convex = false;
     }
 
     QPainterPathData(const QPainterPathData &other) :
-        QPainterPathPrivate(), cStart(other.cStart), fillRule(other.fillRule),
+        QPainterPathPrivate(other),
+        cStart(other.cStart),
+        fillRule(other.fillRule),
         bounds(other.bounds),
         controlBounds(other.controlBounds),
+        require_moveTo(false),
         dirtyBounds(other.dirtyBounds),
         dirtyControlBounds(other.dirtyControlBounds),
         convex(other.convex),
         pathConverter(nullptr)
     {
-        require_moveTo = false;
-        elements = other.elements;
     }
 
-    ~QPainterPathData() {
+    QPainterPathData &operator=(const QPainterPathData &) = delete;
+
+    ~QPainterPathData()
+    {
         delete pathConverter;
     }
 
