@@ -43,6 +43,8 @@
 #include <QtCore/qabstractproxymodel.h>
 #include <QtCore/qscopedpointer.h>
 
+QT_REQUIRE_CONFIG(transposeproxymodel);
+
 QT_BEGIN_NAMESPACE
 
 class QTransposeProxyModelPrivate;
