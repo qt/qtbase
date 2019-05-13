@@ -123,14 +123,15 @@ private:
     int m_tableRowCount = 0;
     int m_tableCol = -1; // because relative cell movements (e.g. m_cursor->movePosition(QTextCursor::NextCell)) don't work
     int m_paragraphMargin = 0;
-    Features m_features;
     int m_blockType = 0;
-    bool m_emptyList = false; // true when the last thing we did was insertList
-    bool m_listItem = false;
-    bool m_emptyListItem = false;
+    Features m_features;
+    QTextListFormat m_listFormat;
+    QTextBlockFormat::MarkerType m_markerType = QTextBlockFormat::NoMarker;
+    bool m_needsInsertBlock = false;
+    bool m_needsInsertList = false;
+    bool m_listItem = false; // true from the beginning of LI to the end of the first P
     bool m_codeBlock = false;
     bool m_imageSpan = false;
-    bool m_needsInsertBlock = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextMarkdownImporter::Features)
