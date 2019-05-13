@@ -61,11 +61,12 @@ QSharedData
 public:
     mutable QAtomicInt ref;
 
-    inline QSharedData() : ref(0) { }
-    inline QSharedData(const QSharedData &) : ref(0) { }
+    inline QSharedData() noexcept : ref(0) { }
+    inline QSharedData(const QSharedData &) noexcept : ref(0) { }
 
     // using the assignment operator would lead to corruption in the ref-counting
     QSharedData &operator=(const QSharedData &) = delete;
+    ~QSharedData() = default;
 };
 
 template <class T> class QSharedDataPointer
