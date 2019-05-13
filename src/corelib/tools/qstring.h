@@ -1060,10 +1060,29 @@ public:
 
     // all this is not documented: We just say "like QChar" and let it be.
     inline operator QChar() const
-    { return i < s.d->size ? s.d->data()[i] : 0; }
+    {
+        using namespace QtPrivate::DeprecatedRefClassBehavior;
+        if (Q_LIKELY(i < s.d->size))
+            return s.d->data()[i];
+#ifdef QT_DEBUG
+        warn(EmittingClass::QCharRef);
+#endif
+        return 0;
+    }
     inline QCharRef &operator=(QChar c)
-    { if (i >= s.d->size) s.resize(i + 1, QLatin1Char(' ')); else s.detach();
-      s.d->data()[i] = c.unicode(); return *this; }
+    {
+        using namespace QtPrivate::DeprecatedRefClassBehavior;
+        if (Q_UNLIKELY(i >= s.d->size)) {
+#ifdef QT_DEBUG
+            warn(EmittingClass::QCharRef);
+#endif
+            s.resize(i + 1, QLatin1Char(' '));
+        } else {
+            s.detach();
+        }
+        s.d->data()[i] = c.unicode();
+        return *this;
+    }
 
     // An operator= for each QChar cast constructors
 #ifndef QT_NO_CAST_FROM_ASCII

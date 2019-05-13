@@ -1537,6 +1537,12 @@ QByteArray &QByteArray::operator=(const char *str)
     will apply to the character in the QByteArray from which you got
     the reference.
 
+    \note Before Qt 5.14 it was possible to use this operator to access
+    a character at an out-of-bounds position in the byte array, and
+    then assign to such position, causing the byte array to be
+    automatically resized. This behavior is deprecated, and will be
+    changed in a future version of Qt.
+
     \sa at()
 */
 
@@ -5053,5 +5059,33 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     \sa QStringLiteral
 */
+
+namespace QtPrivate {
+namespace DeprecatedRefClassBehavior {
+void warn(EmittingClass c)
+{
+    const char *emittingClassName = nullptr;
+    const char *containerClassName = nullptr;
+    switch (c) {
+    case EmittingClass::QByteRef:
+        emittingClassName = "QByteRef";
+        containerClassName = "QByteArray";
+        break;
+    case EmittingClass::QCharRef:
+        emittingClassName = "QCharRef";
+        containerClassName = "QString";
+        break;
+    }
+
+    qWarning("Using %s with an index pointing outside"
+             " the valid range of a %s."
+             " The corresponding behavior is deprecated, and will be changed"
+             " in a future version of Qt.",
+             emittingClassName,
+             containerClassName);
+}
+} // namespace DeprecatedRefClassBehavior
+} // namespace QtPrivate
+
 
 QT_END_NAMESPACE

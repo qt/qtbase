@@ -133,10 +133,10 @@ while (*data) {
 
 
 //! [9]
-QByteArray ba;
-for (int i = 0; i < 10; ++i)
-    ba[i] = 'A' + i;
-// ba == "ABCDEFGHIJ"
+QByteArray ba("Hello, world");
+cout << ba[0]; // prints H
+ba[7] = 'W';
+// ba == "Hello, World"
 //! [9]
 
 

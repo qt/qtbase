@@ -5782,6 +5782,12 @@ QString QString::trimmed_helper(QString &str)
     were a QChar &. If you assign to it, the assignment will apply to
     the character in the QString from which you got the reference.
 
+    \note Before Qt 5.14 it was possible to use this operator to access
+    a character at an out-of-bounds position in the string, and
+    then assign to such position, causing the string to be
+    automatically resized. This behavior is deprecated, and will be
+    changed in a future version of Qt.
+
     \sa at()
 */
 
