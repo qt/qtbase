@@ -63,16 +63,15 @@ class QMessageLogContext
 {
     Q_DISABLE_COPY(QMessageLogContext)
 public:
-    Q_DECL_CONSTEXPR QMessageLogContext()
-        : version(2), line(0), file(nullptr), function(nullptr), category(nullptr) {}
-    Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber, const char *functionName, const char *categoryName)
-        : version(2), line(lineNumber), file(fileName), function(functionName), category(categoryName) {}
+    Q_DECL_CONSTEXPR QMessageLogContext() noexcept = default;
+    Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber, const char *functionName, const char *categoryName) noexcept
+        : line(lineNumber), file(fileName), function(functionName), category(categoryName) {}
 
-    int version;
-    int line;
-    const char *file;
-    const char *function;
-    const char *category;
+    int version = 2;
+    int line = 0;
+    const char *file = nullptr;
+    const char *function = nullptr;
+    const char *category = nullptr;
 
 private:
     QMessageLogContext &copyContextFrom(const QMessageLogContext &logContext) noexcept;
