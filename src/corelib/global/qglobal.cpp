@@ -3806,6 +3806,17 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
+    \fn template <typename T, typename U = T> T qExchange(T &obj, U &&newValue)
+    \relates <QtGlobal>
+    \since 5.14
+
+    Replaces the value of \a obj with \a newValue and returns the old value of \a obj.
+
+    This is Qt's implementation of std::exchange(). It differs from std::exchange()
+    only in that it is \c constexpr already in C++14, and available on all supported
+    compilers.
+*/
+/*!
     \macro QT_TR_NOOP(sourceText)
     \relates <QtGlobal>
 

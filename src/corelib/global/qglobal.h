@@ -1008,6 +1008,15 @@ Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) noexcept { ret
 template <typename T>
 void qAsConst(const T &&) = delete;
 
+// like std::exchange
+template <typename T, typename U = T>
+Q_DECL_RELAXED_CONSTEXPR T qExchange(T &t, U &&newValue)
+{
+    T old = std::move(t);
+    t = std::forward<U>(newValue);
+    return old;
+}
+
 #ifndef QT_NO_FOREACH
 
 namespace QtPrivate {
