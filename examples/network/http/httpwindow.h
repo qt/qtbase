@@ -55,6 +55,8 @@
 #include <QNetworkAccessManager>
 #include <QUrl>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 class QFile;
 class QLabel;
@@ -72,6 +74,7 @@ class ProgressDialog : public QProgressDialog {
 
 public:
     explicit ProgressDialog(const QUrl &url, QWidget *parent = nullptr);
+    ~ProgressDialog();
 
 public slots:
    void networkReplyProgress(qint64 bytesRead, qint64 totalBytes);
@@ -83,6 +86,7 @@ class HttpWindow : public QDialog
 
 public:
     explicit HttpWindow(QWidget *parent = nullptr);
+    ~HttpWindow();
 
     void startRequest(const QUrl &requestedUrl);
 
@@ -98,7 +102,7 @@ private slots:
 #endif
 
 private:
-    QFile *openFileForWrite(const QString &fileName);
+    std::unique_ptr<QFile> openFileForWrite(const QString &fileName);
 
     QLabel *statusLabel;
     QLineEdit *urlLineEdit;
@@ -110,7 +114,7 @@ private:
     QUrl url;
     QNetworkAccessManager qnam;
     QNetworkReply *reply;
-    QFile *file;
+    std::unique_ptr<QFile> file;
     bool httpRequestAborted;
 };
 
