@@ -1431,7 +1431,7 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         l.append(it.fileInfo());
     }
     QStringList ret;
-    d->sortFileList(sort, l, &ret, 0);
+    d->sortFileList(sort, l, &ret, nullptr);
     return ret;
 }
 
@@ -1473,7 +1473,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
         l.append(it.fileInfo());
     }
     QFileInfoList ret;
-    d->sortFileList(sort, l, 0, &ret);
+    d->sortFileList(sort, l, nullptr, &ret);
     return ret;
 }
 

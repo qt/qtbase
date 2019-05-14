@@ -262,7 +262,7 @@ inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::Compon
     if (!(encoding & QUrl::EncodeDelimiters)) {
         QString output;
         if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
-                         encoding, 0))
+                         encoding, nullptr))
             return output;
         return input;
     }
@@ -290,7 +290,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
     const QChar *const end = pos + query.size();
     while (pos != end) {
         const QChar *begin = pos;
-        const QChar *delimiter = 0;
+        const QChar *delimiter = nullptr;
         while (pos != end) {
             // scan for the component parts of this pair
             if (!delimiter && pos->unicode() == valueDelimiter)
@@ -345,7 +345,7 @@ QSharedDataPointer<QUrlQueryPrivate>::clone()
     \sa setQuery(), addQueryItem()
 */
 QUrlQuery::QUrlQuery()
-    : d(0)
+    : d(nullptr)
 {
 }
 
@@ -356,7 +356,7 @@ QUrlQuery::QUrlQuery()
     set the query with setQuery().
 */
 QUrlQuery::QUrlQuery(const QString &queryString)
-    : d(queryString.isEmpty() ? 0 : new QUrlQueryPrivate(queryString))
+    : d(queryString.isEmpty() ? nullptr : new QUrlQueryPrivate(queryString))
 {
 }
 
@@ -369,7 +369,7 @@ QUrlQuery::QUrlQuery(const QString &queryString)
     \sa QUrl::query()
 */
 QUrlQuery::QUrlQuery(const QUrl &url)
-    : d(0)
+    : d(nullptr)
 {
     // use internals to avoid unnecessary recoding
     // ### FIXME: actually do it

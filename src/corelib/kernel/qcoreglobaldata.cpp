@@ -48,7 +48,7 @@ Q_GLOBAL_STATIC(QCoreGlobalData, globalInstance)
 
 QCoreGlobalData::QCoreGlobalData()
 #if QT_CONFIG(textcodec)
-    : codecForLocale(0)
+    : codecForLocale(nullptr)
 #endif
 {
 }
@@ -56,7 +56,7 @@ QCoreGlobalData::QCoreGlobalData()
 QCoreGlobalData::~QCoreGlobalData()
 {
 #if QT_CONFIG(textcodec)
-    codecForLocale = 0;
+    codecForLocale = nullptr;
     QList<QTextCodec *> tmp = allCodecs;
     allCodecs.clear();
     codecCache.clear();

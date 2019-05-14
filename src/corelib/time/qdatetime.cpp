@@ -615,7 +615,7 @@ int QDate::weekNumber(int *yearNumber) const
         Q_ASSERT(week == 53 || week == 1);
     }
 
-    if (yearNumber != 0)
+    if (yearNumber)
         *yearNumber = year;
     return week;
 }
@@ -2265,7 +2265,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
-        return fromIsoTimeString(QStringRef(&string), format, 0);
+        return fromIsoTimeString(QStringRef(&string), format, nullptr);
     }
 }
 
@@ -2512,7 +2512,7 @@ int QDateTimeParser::startsWithLocalTimeZone(const QStringRef name)
 // then null date/time will be returned, you should adjust the date first if
 // you need a guaranteed result.
 static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStatus *daylightStatus,
-                        QString *abbreviation, bool *ok = 0)
+                        QString *abbreviation, bool *ok = nullptr)
 {
     const qint64 msec = time->msec();
     int yy, mm, dd;
@@ -2601,7 +2601,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // Use the reentrant version of localtime() where available
     // as is thread-safe and doesn't use a shared static data area
-    tm *res = 0;
+    tm *res = nullptr;
     res = localtime_r(&secsSinceEpoch, &local);
     if (res)
         valid = true;
@@ -2611,7 +2611,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
 #else
     // Returns shared static data which may be overwritten at any time
     // So copy the result asap
-    tm *res = 0;
+    tm *res = nullptr;
     res = localtime(&secsSinceEpoch);
     if (res) {
         local = *res;
@@ -2674,7 +2674,7 @@ static qint64 timeToMSecs(const QDate &date, const QTime &time)
 
 // Convert an MSecs Since Epoch into Local Time
 static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
-                                  QDateTimePrivate::DaylightStatus *daylightStatus = 0)
+                                  QDateTimePrivate::DaylightStatus *daylightStatus = nullptr)
 {
     if (msecs < 0) {
         // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
@@ -2714,8 +2714,8 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
 // values from mktime for the adjusted local date and time.
 static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                                      QDateTimePrivate::DaylightStatus *daylightStatus,
-                                     QDate *localDate = 0, QTime *localTime = 0,
-                                     QString *abbreviation = 0)
+                                     QDate *localDate = nullptr, QTime *localTime = nullptr,
+                                     QString *abbreviation = nullptr)
 {
     QDate dt;
     QTime tm;
@@ -3018,7 +3018,7 @@ static void setDateTime(QDateTimeData &d, const QDate &date, const QTime &time)
     if (!useTime.isValid() && date.isValid())
         useTime = QTime::fromMSecsSinceStartOfDay(0);
 
-    QDateTimePrivate::StatusFlags newStatus = 0;
+    QDateTimePrivate::StatusFlags newStatus = { };
 
     // Set date value and status
     qint64 days = 0;
@@ -3096,7 +3096,7 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
         d->ref.ref();
-        d->m_status = mergeSpec(0, spec);
+        d->m_status = mergeSpec(nullptr, spec);
     }
 }
 
@@ -3550,7 +3550,7 @@ QDate QDateTime::date() const
     if (!status.testFlag(QDateTimePrivate::ValidDate))
         return QDate();
     QDate dt;
-    msecsToTime(getMSecs(d), &dt, 0);
+    msecsToTime(getMSecs(d), &dt, nullptr);
     return dt;
 }
 
@@ -3566,7 +3566,7 @@ QTime QDateTime::time() const
     if (!status.testFlag(QDateTimePrivate::ValidTime))
         return QTime();
     QTime tm;
-    msecsToTime(getMSecs(d), 0, &tm);
+    msecsToTime(getMSecs(d), nullptr, &tm);
     return tm;
 }
 
@@ -3684,7 +3684,7 @@ QString QDateTime::timeZoneAbbreviation() const
     case Qt::LocalTime:  {
         QString abbrev;
         auto status = extractDaylightStatus(getStatus(d));
-        localMSecsToEpochMSecs(getMSecs(d), &status, 0, 0, &abbrev);
+        localMSecsToEpochMSecs(getMSecs(d), &status, nullptr, nullptr, &abbrev);
         return abbrev;
         }
     }
@@ -4769,14 +4769,14 @@ qint64 QDateTime::currentMSecsSinceEpoch() noexcept
     // posix compliant system
     // we have milliseconds
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
 }
 
 qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return qint64(tv.tv_sec);
 }
 #else

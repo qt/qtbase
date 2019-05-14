@@ -471,7 +471,7 @@ static int countBits(int hint)
 const int MinNumBits = 4;
 
 const QHashData QHashData::shared_null = {
-    0, 0, Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, MinNumBits, 0, 0, 0, true, false, 0
+    nullptr, nullptr, Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, MinNumBits, 0, 0, 0, true, false, 0
 };
 
 void *QHashData::allocateNode(int nodeAlign)
@@ -501,8 +501,8 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
     if (this == &shared_null)
         qt_initialize_qhash_seed(); // may throw
     d = new QHashData;
-    d->fakeNext = 0;
-    d->buckets = 0;
+    d->fakeNext = nullptr;
+    d->buckets = nullptr;
     d->ref.initializeOwned();
     d->size = size;
     d->nodeSize = nodeSize;

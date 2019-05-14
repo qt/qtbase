@@ -301,9 +301,9 @@ QByteArray QLocaleId::name(char separator) const
 
     const unsigned char *lang = language_code_list + 3 * language_id;
     const unsigned char *script =
-            (script_id != QLocale::AnyScript ? script_code_list + 4 * script_id : 0);
+            (script_id != QLocale::AnyScript ? script_code_list + 4 * script_id : nullptr);
     const unsigned char *country =
-            (country_id != QLocale::AnyCountry ? country_code_list + 3 * country_id : 0);
+            (country_id != QLocale::AnyCountry ? country_code_list + 3 * country_id : nullptr);
     char len = (lang[2] != 0 ? 3 : 2) + (script ? 4+1 : 0) + (country ? (country[2] != 0 ? 3 : 2)+1 : 0);
     QByteArray name(len, Qt::Uninitialized);
     char *uc = name.data();
@@ -373,7 +373,7 @@ static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
         } while (data->m_language_id && data->m_language_id == localeId.language_id);
     }
 
-    return 0;
+    return nullptr;
 }
 
 const QLocaleData *QLocaleData::findLocaleData(QLocale::Language language, QLocale::Script script, QLocale::Country country)
@@ -604,7 +604,7 @@ int qt_repeatCount(QStringView s)
     return int(j);
 }
 
-static const QLocaleData *default_data = 0;
+static const QLocaleData *default_data = nullptr;
 static QLocale::NumberOptions default_number_options = QLocale::DefaultNumberOptions;
 
 static const QLocaleData *const c_data = locale_data;

@@ -215,7 +215,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         headerSize += (alignment - Q_ALIGNOF(QArrayData));
 
     if (headerSize > size_t(MaxAllocSize))
-        return 0;
+        return nullptr;
 
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
     QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));

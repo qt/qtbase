@@ -1339,7 +1339,7 @@ static const unsigned short * QT_FASTCALL decompositionHelper
     if (index == 0xffff) {
         *length = 0;
         *tag = QChar::NoDecomposition;
-        return 0;
+        return nullptr;
     }
 
     const unsigned short *decomposition = uc_decomposition_map+index;

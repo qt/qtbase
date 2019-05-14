@@ -3612,7 +3612,7 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
     (void)getenv_s(&requiredSize, 0, 0, varName);
     return requiredSize != 0;
 #else
-    return ::getenv(varName) != 0;
+    return ::getenv(varName) != nullptr;
 #endif
 }
 

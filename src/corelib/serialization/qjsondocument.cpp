@@ -84,7 +84,7 @@ QT_BEGIN_NAMESPACE
  * Constructs an empty and invalid document.
  */
 QJsonDocument::QJsonDocument()
-    : d(0)
+    : d(nullptr)
 {
 }
 
@@ -92,7 +92,7 @@ QJsonDocument::QJsonDocument()
  * Creates a QJsonDocument from \a object.
  */
 QJsonDocument::QJsonDocument(const QJsonObject &object)
-    : d(0)
+    : d(nullptr)
 {
     setObject(object);
 }
@@ -101,7 +101,7 @@ QJsonDocument::QJsonDocument(const QJsonObject &object)
  * Constructs a QJsonDocument from \a array.
  */
 QJsonDocument::QJsonDocument(const QJsonArray &array)
-    : d(0)
+    : d(nullptr)
 {
     setArray(array);
 }
@@ -236,7 +236,7 @@ const char *QJsonDocument::rawData(int *size) const
 {
     if (!d) {
         *size = 0;
-        return 0;
+        return nullptr;
     }
     *size = d->alloc;
     return d->rawData;
@@ -635,7 +635,7 @@ bool QJsonDocument::operator==(const QJsonDocument &other) const
  */
 bool QJsonDocument::isNull() const
 {
-    return (d == 0);
+    return (d == nullptr);
 }
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)

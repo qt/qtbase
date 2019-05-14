@@ -52,7 +52,7 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
         return fileNames[(int)name];
 
     QString ret;
-    if (fileEngine == 0) { // local file; use the QFileSystemEngine directly
+    if (fileEngine == nullptr) { // local file; use the QFileSystemEngine directly
         switch (name) {
             case QAbstractFileEngine::CanonicalName:
             case QAbstractFileEngine::CanonicalPathName: {
@@ -103,7 +103,7 @@ QString QFileInfoPrivate::getFileOwner(QAbstractFileEngine::FileOwner own) const
     if (cache_enabled && !fileOwners[(int)own].isNull())
         return fileOwners[(int)own];
     QString ret;
-    if (fileEngine == 0) {
+    if (fileEngine == nullptr) {
         switch (own) {
         case QAbstractFileEngine::OwnerUser:
             ret = QFileSystemEngine::resolveUserName(fileEntry, metaData);
@@ -134,7 +134,7 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
     // extra syscall. Bundle detecton on Mac can be slow, expecially on network
     // paths, so we separate out that as well.
 
-    QAbstractFileEngine::FileFlags req = 0;
+    QAbstractFileEngine::FileFlags req = nullptr;
     uint cachedFlags = 0;
 
     if (request & (QAbstractFileEngine::FlagsMask | QAbstractFileEngine::TypesMask)) {
@@ -434,7 +434,7 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
         return true;
 
     Qt::CaseSensitivity sensitive;
-    if (d->fileEngine == 0 || fileinfo.d_ptr->fileEngine == 0) {
+    if (d->fileEngine == nullptr || fileinfo.d_ptr->fileEngine == nullptr) {
         if (d->fileEngine != fileinfo.d_ptr->fileEngine) // one is native, the other is a custom file-engine
             return false;
 
@@ -649,7 +649,7 @@ bool QFileInfo::isRelative() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return true;
-    if (d->fileEngine == 0)
+    if (d->fileEngine == nullptr)
         return d->fileEntry.isRelative();
     return d->fileEngine->isRelativePath();
 }
@@ -682,7 +682,7 @@ bool QFileInfo::exists() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return false;
-    if (d->fileEngine == 0) {
+    if (d->fileEngine == nullptr) {
         if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::ExistsAttribute))
             QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::ExistsAttribute);
         return d->metaData.exists();
@@ -982,7 +982,7 @@ bool QFileInfo::isNativePath() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return false;
-    if (d->fileEngine == 0)
+    if (d->fileEngine == nullptr)
         return true;
     return d->getFileFlags(QAbstractFileEngine::LocalDiskFlag);
 }
@@ -1075,7 +1075,7 @@ bool QFileInfo::isRoot() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return false;
-    if (d->fileEngine == 0) {
+    if (d->fileEngine == nullptr) {
         if (d->fileEntry.isRoot()) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
             //the path is a drive root, but the drive may not exist

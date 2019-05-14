@@ -159,7 +159,7 @@ static QTextCodec *setupLocaleMapper()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
 
-    QTextCodec *locale = 0;
+    QTextCodec *locale = nullptr;
 
     {
         QMutexLocker locker(textCodecsMutex());
@@ -208,7 +208,7 @@ static QTextCodec *setupLocaleMapper()
         // First part is getting that locale name.  First try setlocale() which
         // definitely knows it, but since we cannot fully trust it, get ready
         // to fall back to environment variables.
-        const QByteArray ctype = setlocale(LC_CTYPE, 0);
+        const QByteArray ctype = setlocale(LC_CTYPE, nullptr);
 
         // Get the first nonempty value from $LC_ALL, $LC_CTYPE, and $LANG
         // environment variables.
@@ -532,13 +532,13 @@ QTextCodec::~QTextCodec()
 QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 {
     if (name.isEmpty())
-        return 0;
+        return nullptr;
 
     QMutexLocker locker(textCodecsMutex());
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
-        return 0;
+        return nullptr;
     setup();
 
 #if !QT_CONFIG(icu)
@@ -567,7 +567,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
         }
     }
 
-    return 0;
+    return nullptr;
 #else
     return QIcuCodec::codecForNameUnlocked(name);
 #endif
@@ -585,7 +585,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
-        return 0;
+        return nullptr;
     if (globalData->allCodecs.isEmpty())
         setup();
 
@@ -611,7 +611,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 #if QT_CONFIG(icu)
     return QIcuCodec::codecForMibUnlocked(mib);
 #else
-    return 0;
+    return nullptr;
 #endif
 }
 
@@ -704,7 +704,7 @@ QTextCodec* QTextCodec::codecForLocale()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
-        return 0;
+        return nullptr;
 
     QTextCodec *codec = globalData->codecForLocale.loadAcquire();
     if (!codec) {
@@ -830,7 +830,7 @@ QTextEncoder* QTextCodec::makeEncoder(QTextCodec::ConversionFlags flags) const
 */
 QByteArray QTextCodec::fromUnicode(const QString& str) const
 {
-    return convertFromUnicode(str.constData(), str.length(), 0);
+    return convertFromUnicode(str.constData(), str.length(), nullptr);
 }
 #endif
 
@@ -863,7 +863,7 @@ QByteArray QTextCodec::fromUnicode(QStringView str) const
 */
 QString QTextCodec::toUnicode(const QByteArray& a) const
 {
-    return convertToUnicode(a.constData(), a.length(), 0);
+    return convertToUnicode(a.constData(), a.length(), nullptr);
 }
 
 /*!
@@ -915,7 +915,7 @@ bool QTextCodec::canEncode(QStringView s) const
 QString QTextCodec::toUnicode(const char *chars) const
 {
     int len = qstrlen(chars);
-    return convertToUnicode(chars, len, 0);
+    return convertToUnicode(chars, len, nullptr);
 }
 
 
@@ -1110,7 +1110,7 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec)
 {
     // determine charset
-    QTextCodec *c = QTextCodec::codecForUtfText(ba, 0);
+    QTextCodec *c = QTextCodec::codecForUtfText(ba, nullptr);
     if (!c) {
         static Q_RELAXED_CONSTEXPR auto matcher = qMakeStaticByteArrayMatcher("meta ");
         QByteArray header = ba.left(1024).toLower();

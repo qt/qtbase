@@ -216,11 +216,11 @@ QString QCoreApplicationPrivate::appVersion() const
 }
 #endif
 
-QString *QCoreApplicationPrivate::cachedApplicationFilePath = 0;
+QString *QCoreApplicationPrivate::cachedApplicationFilePath = nullptr;
 
 bool QCoreApplicationPrivate::checkInstance(const char *function)
 {
-    bool b = (QCoreApplication::self != 0);
+    bool b = (QCoreApplication::self != nullptr);
     if (!b)
         qWarning("QApplication::%s: Please instantiate the QApplication object first", function);
     return b;
@@ -257,7 +257,7 @@ void QCoreApplicationPrivate::processCommandLineArguments()
     }
 
     if (j < argc) {
-        argv[j] = 0;
+        argv[j] = nullptr;
         argc = j;
     }
 }
@@ -367,11 +367,11 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
 }
 
-QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
+QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = nullptr;
 
 #endif // QT_NO_QOBJECT
 
-QCoreApplication *QCoreApplication::self = 0;
+QCoreApplication *QCoreApplication::self = nullptr;
 uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents) |
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
@@ -455,12 +455,12 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , aboutToQuitEmitted(false)
     , threadData_clean(false)
 #else
-    , q_ptr(0)
+    , q_ptr(nullptr)
 #endif
 {
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
-    if (argc == 0 || argv == 0) {
+    if (argc == 0 || argv == nullptr) {
         argc = 0;
         argv = const_cast<char **>(&empty);
     }
@@ -886,7 +886,7 @@ QCoreApplication::~QCoreApplication()
 {
     qt_call_post_routines();
 
-    self = 0;
+    self = nullptr;
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = true;
     QCoreApplicationPrivate::is_app_running = false;
@@ -894,7 +894,7 @@ QCoreApplication::~QCoreApplication()
 
 #if QT_CONFIG(thread)
     // Synchronize and stop the global thread pool threads.
-    QThreadPool *globalThreadPool = 0;
+    QThreadPool *globalThreadPool = nullptr;
     QT_TRY {
         globalThreadPool = QThreadPool::globalInstance();
     } QT_CATCH (...) {
@@ -905,10 +905,10 @@ QCoreApplication::~QCoreApplication()
 #endif
 
 #ifndef QT_NO_QOBJECT
-    d_func()->threadData->eventDispatcher = 0;
+    d_func()->threadData->eventDispatcher = nullptr;
     if (QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher->closingDown();
-    QCoreApplicationPrivate::eventDispatcher = 0;
+    QCoreApplicationPrivate::eventDispatcher = nullptr;
 #endif
 
 #if QT_CONFIG(library)

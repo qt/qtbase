@@ -523,7 +523,7 @@ public:
     Error *cloneError() const;
     void clearError();
     void setError(ErrorCode errorCode, const QString &source, int supplement = -1);
-    ErrorCode validityError(QString *source = 0, int *position = 0) const;
+    ErrorCode validityError(QString *source = nullptr, int *position = nullptr) const;
     bool validateComponent(Section section, const QString &input, int begin, int end);
     bool validateComponent(Section section, const QString &input)
     { return validateComponent(section, input, 0, uint(input.length())); }
@@ -591,7 +591,7 @@ public:
 
 inline QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),
-      error(0),
+      error(nullptr),
       sectionIsPresent(0),
       flags(0)
 {
@@ -619,13 +619,13 @@ inline QUrlPrivate::~QUrlPrivate()
 
 inline QUrlPrivate::Error *QUrlPrivate::cloneError() const
 {
-    return error ? new Error(*error) : 0;
+    return error ? new Error(*error) : nullptr;
 }
 
 inline void QUrlPrivate::clearError()
 {
     delete error;
-    error = 0;
+    error = nullptr;
 }
 
 inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, int supplement)
@@ -826,7 +826,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
     QString output;
     const QChar *begin = input.constData() + from;
     const QChar *end = input.constData() + to;
-    if (qt_urlRecode(output, begin, end, 0, actions))
+    if (qt_urlRecode(output, begin, end, nullptr, actions))
         return output;
 
     return input.mid(from, to - from);
@@ -954,7 +954,7 @@ inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptio
 {
     appendToUser(appendTo, fragment, options,
                  options & QUrl::EncodeDelimiters ? fragmentInUrl :
-                 appendingTo == FullUrl ? 0 : fragmentInIsolation);
+                 appendingTo == FullUrl ? nullptr : fragmentInIsolation);
 }
 
 inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
@@ -1179,7 +1179,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
     if (host.at(0).unicode() == '[') {
         // IPv6 addresses might contain a zone-id which needs to be recoded
         if (options != 0)
-            if (qt_urlRecode(appendTo, host.constBegin(), host.constEnd(), options, 0))
+            if (qt_urlRecode(appendTo, host.constBegin(), host.constEnd(), options, nullptr))
                 return;
         appendTo += host;
     } else {
@@ -1221,7 +1221,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
         --end;
 
         QString decoded;
-        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, begin, end, QUrl::FullyDecoded, 0)) {
+        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, begin, end, QUrl::FullyDecoded, nullptr)) {
             begin = decoded.constBegin();
             end = decoded.constEnd();
         }
@@ -1233,13 +1233,13 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
                 host += *begin;
             else if (begin->unicode() >= '0' && begin->unicode() <= '9')
                 host += *begin;
-            else if (begin->unicode() < 0x80 && strchr(acceptable, begin->unicode()) != 0)
+            else if (begin->unicode() < 0x80 && strchr(acceptable, begin->unicode()) != nullptr)
                 host += *begin;
             else
                 return decoded.isEmpty() ? begin : &origBegin[2];
         }
         host += QLatin1Char(']');
-        return 0;
+        return nullptr;
     }
     return &origBegin[2];
 }
@@ -1286,7 +1286,7 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
         host += zoneId;
     }
     host += QLatin1Char(']');
-    return 0;
+    return nullptr;
 }
 
 inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::ParsingMode mode)
@@ -1352,7 +1352,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
 
     // check for percent-encoding first
     QString s;
-    if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, 0, 0)) {
+    if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, { }, nullptr)) {
         // something was decoded
         // anything encoded left?
         int pos = s.indexOf(QChar(0x25)); // '%'
@@ -1837,7 +1837,7 @@ inline void QUrlPrivate::validate() const
 
     \sa setUrl(), fromEncoded(), TolerantMode
 */
-QUrl::QUrl(const QString &url, ParsingMode parsingMode) : d(0)
+QUrl::QUrl(const QString &url, ParsingMode parsingMode) : d(nullptr)
 {
     setUrl(url, parsingMode);
 }
@@ -1845,7 +1845,7 @@ QUrl::QUrl(const QString &url, ParsingMode parsingMode) : d(0)
 /*!
     Constructs an empty QUrl object.
 */
-QUrl::QUrl() : d(0)
+QUrl::QUrl() : d(nullptr)
 {
 }
 
@@ -1879,7 +1879,7 @@ QUrl::~QUrl()
 bool QUrl::isValid() const
 {
     if (isEmpty()) {
-        // also catches d == 0
+        // also catches d == nullptr
         return false;
     }
     return d->validityError() == QUrlPrivate::NoError;
@@ -1907,7 +1907,7 @@ void QUrl::clear()
 {
     if (d && !d->ref.deref())
         delete d;
-    d = 0;
+    d = nullptr;
 }
 
 /*!
@@ -4187,7 +4187,7 @@ static QUrl adjustFtpPath(QUrl url)
 static bool isIp6(const QString &text)
 {
     QIPAddressUtils::IPv6Address address;
-    return !text.isEmpty() && QIPAddressUtils::parseIp6(address, text.begin(), text.end()) == 0;
+    return !text.isEmpty() && QIPAddressUtils::parseIp6(address, text.begin(), text.end()) == nullptr;
 }
 
 /*!

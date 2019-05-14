@@ -105,7 +105,7 @@ const char *QRingBuffer::readPointerAtPosition(qint64 pos, qint64 &length) const
     }
 
     length = 0;
-    return 0;
+    return nullptr;
 }
 
 void QRingBuffer::free(qint64 bytes)

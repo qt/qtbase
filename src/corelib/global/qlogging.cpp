@@ -1100,8 +1100,8 @@ Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_MOVABLE_TYPE);
 QBasicMutex QMessagePattern::mutex;
 
 QMessagePattern::QMessagePattern()
-    : literals(0)
-    , tokens(0)
+    : literals(nullptr)
+    , tokens(nullptr)
     , fromEnvironment(false)
 {
 #ifndef QT_BOOTSTRAPPED
@@ -1121,9 +1121,9 @@ QMessagePattern::~QMessagePattern()
     for (int i = 0; literals[i]; ++i)
         delete [] literals[i];
     delete [] literals;
-    literals = 0;
+    literals = nullptr;
     delete [] tokens;
-    tokens = 0;
+    tokens = nullptr;
 }
 
 void QMessagePattern::setPattern(const QString &pattern)
@@ -1173,7 +1173,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     // tokenizer
     QVarLengthArray<const char*> literalsVar;
     tokens = new const char*[lexemes.size() + 1];
-    tokens[lexemes.size()] = 0;
+    tokens[lexemes.size()] = nullptr;
 
     bool nestedIfError = false;
     bool inIf = false;
@@ -1280,7 +1280,7 @@ void QMessagePattern::setPattern(const QString &pattern)
         qt_message_print(error);
 
     literals = new const char*[literalsVar.size() + 1];
-    literals[literalsVar.size()] = 0;
+    literals[literalsVar.size()] = nullptr;
     memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
 }
 
@@ -1406,7 +1406,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 #endif
 
     // we do not convert file, function, line literals to local encoding due to overhead
-    for (int i = 0; pattern->tokens[i] != 0; ++i) {
+    for (int i = 0; pattern->tokens[i]; ++i) {
         const char *token = pattern->tokens[i];
         if (token == endifTokenC) {
             skip = false;

@@ -517,12 +517,12 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
     QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
     QT_FOR_EACH_STATIC_HACKS_TYPE(QT_ADD_STATIC_METATYPE_HACKS_ITER)
-    {0, 0, QMetaType::UnknownType}
+    {nullptr, 0, QMetaType::UnknownType}
 };
 
-Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper = 0;
-Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper = 0;
-Q_CORE_EXPORT const QMetaObject *qMetaObjectWidgetsHelper = 0;
+Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper = nullptr;
+Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper = nullptr;
+Q_CORE_EXPORT const QMetaObject *qMetaObjectWidgetsHelper = nullptr;
 
 class QCustomTypeInfo : public QMetaTypeInterface
 {
@@ -557,7 +557,7 @@ public:
     {
         const QWriteLocker locker(&lock);
         const T* &fun = map[k];
-        if (fun != 0)
+        if (fun)
             return false;
         fun = f;
         return true;
@@ -566,7 +566,7 @@ public:
     const T *function(Key k) const
     {
         const QReadLocker locker(&lock);
-        return map.value(k, 0);
+        return map.value(k, nullptr);
     }
 
     void remove(int from, int to)
@@ -973,7 +973,7 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
     The extra \a firstInvalidIndex parameter is an easy way to avoid
     iterating over customTypes() a second time in registerNormalizedType().
 */
-static int qMetaTypeCustomType_unlocked(const char *typeName, int length, int *firstInvalidIndex = 0)
+static int qMetaTypeCustomType_unlocked(const char *typeName, int length, int *firstInvalidIndex = nullptr)
 {
     const QVector<QCustomTypeInfo> * const ct = customTypes();
     if (!ct)
@@ -1006,7 +1006,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
 {
     return registerType(typeName, deleter, creator,
                         QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
-                        QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct, 0, TypeFlags(), 0);
+                        QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct, 0, TypeFlags(), nullptr);
 }
 
 /*!
@@ -1613,7 +1613,7 @@ void *QMetaType::create(int type, const void *copy)
     QMetaType info(type);
     if (int size = info.sizeOf())
         return info.construct(operator new(size), copy);
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -1639,14 +1639,18 @@ class TypeConstructor {
         static void *Construct(const int type, void *where, const void *copy)
         {
             if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
-                return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor(where, copy) : 0;
+                return Q_LIKELY(qMetaTypeGuiHelper)
+                    ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor(where, copy)
+                    : nullptr;
 
             if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
-                return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor(where, copy) : 0;
+                return Q_LIKELY(qMetaTypeWidgetsHelper)
+                    ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor(where, copy)
+                    : nullptr;
 
             // This point can be reached only for known types that definition is not available, for example
             // in bootstrap mode. We have no other choice then ignore it.
-            return 0;
+            return nullptr;
         }
     };
 public:
@@ -1670,7 +1674,7 @@ private:
         {
             QReadLocker locker(customTypesLock());
             if (Q_UNLIKELY(type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User))
-                return 0;
+                return nullptr;
             const auto &typeInfo = ct->at(type - QMetaType::User);
             ctor = typeInfo.constructor;
             tctor = typeInfo.typedConstructor;
@@ -1715,7 +1719,7 @@ private:
 void *QMetaType::construct(int type, void *where, const void *copy)
 {
     if (!where)
-        return 0;
+        return nullptr;
     TypeConstructor constructor(type, where);
     return QMetaTypeSwitcher::switcher<void*>(constructor, type, copy);
 }
@@ -1861,7 +1865,7 @@ private:
 int QMetaType::sizeOf(int type)
 {
     SizeOf sizeOf(type);
-    return QMetaTypeSwitcher::switcher<int>(sizeOf, type, 0);
+    return QMetaTypeSwitcher::switcher<int>(sizeOf, type);
 }
 
 namespace {
@@ -1925,7 +1929,7 @@ private:
 QMetaType::TypeFlags QMetaType::typeFlags(int type)
 {
     Flags flags(type);
-    return static_cast<QMetaType::TypeFlags>(QMetaTypeSwitcher::switcher<quint32>(flags, type, 0));
+    return static_cast<QMetaType::TypeFlags>(QMetaTypeSwitcher::switcher<quint32>(flags, type));
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -1948,17 +1952,21 @@ public:
     {
         static const QMetaObject *MetaObject(int type) {
             if (QModulesPrivate::QTypeModuleInfo<T>::IsGui)
-                return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].metaObject : 0;
+                return Q_LIKELY(qMetaTypeGuiHelper)
+                    ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].metaObject
+                    : nullptr;
             if (QModulesPrivate::QTypeModuleInfo<T>::IsWidget)
-                return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].metaObject : 0;
+                return Q_LIKELY(qMetaTypeWidgetsHelper)
+                    ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].metaObject
+                    : nullptr;
             return 0;
         }
     };
 
     template <typename T>
     const QMetaObject *delegate(const T *) { return MetaObjectImpl<T>::MetaObject(m_type); }
-    const QMetaObject *delegate(const void*) { return 0; }
-    const QMetaObject *delegate(const QMetaTypeSwitcher::UnknownType*) { return 0; }
+    const QMetaObject *delegate(const void*) { return nullptr; }
+    const QMetaObject *delegate(const QMetaTypeSwitcher::UnknownType*) { return nullptr; }
     const QMetaObject *delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customMetaObject(m_type); }
 private:
     const int m_type;
@@ -1966,10 +1974,10 @@ private:
     {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         if (Q_UNLIKELY(!ct || type < QMetaType::User))
-            return 0;
+            return nullptr;
         QReadLocker locker(customTypesLock());
         if (Q_UNLIKELY(ct->count() <= type - QMetaType::User))
-            return 0;
+            return nullptr;
         return ct->at(type - QMetaType::User).metaObject;
     }
 };
@@ -1987,10 +1995,10 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 {
 #ifndef QT_BOOTSTRAPPED
     MetaObject mo(type);
-    return QMetaTypeSwitcher::switcher<const QMetaObject*>(mo, type, 0);
+    return QMetaTypeSwitcher::switcher<const QMetaObject*>(mo, type);
 #else
     Q_UNUSED(type);
-    return 0;
+    return nullptr;
 #endif
 }
 
@@ -2187,7 +2195,7 @@ private:
 QMetaType QMetaType::typeInfo(const int type)
 {
     TypeInfo typeInfo(type);
-    QMetaTypeSwitcher::switcher<void>(typeInfo, type, 0);
+    QMetaTypeSwitcher::switcher<void>(typeInfo, type);
     return (typeInfo.info.constructor || typeInfo.info.typedConstructor)
                 ? QMetaType(static_cast<ExtensionFlag>(QMetaType::CreateEx | QMetaType::DestroyEx |
                                                        (typeInfo.info.typedConstructor ? QMetaType::ConstructEx | QMetaType::DestructEx : 0))
@@ -2307,7 +2315,7 @@ void QMetaType::dtor()
 void *QMetaType::createExtended(const void *copy) const
 {
     if (m_typeId == QMetaType::UnknownType)
-        return 0;
+        return nullptr;
     if (Q_UNLIKELY(m_typedConstructor && !m_constructor))
         return m_typedConstructor(m_typeId, operator new(m_size), copy);
     return m_constructor(operator new(m_size), copy);
@@ -2387,7 +2395,7 @@ uint QMetaType::sizeExtended() const
 */
 QMetaType::TypeFlags QMetaType::flagsExtended() const
 {
-    return 0;
+    return { };
 }
 
 /*!
@@ -2400,7 +2408,7 @@ QMetaType::TypeFlags QMetaType::flagsExtended() const
 */
 const QMetaObject *QMetaType::metaObjectExtended() const
 {
-    return 0;
+    return nullptr;
 }
 
 
@@ -2409,7 +2417,7 @@ namespace QtPrivate
 const QMetaObject *metaObjectForQWidget()
 {
     if (!qMetaTypeWidgetsHelper)
-        return 0;
+        return nullptr;
     return qMetaObjectWidgetsHelper;
 }
 }

@@ -3044,7 +3044,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
 {
     // Copy after if it lies inside our own d->data() area (which we could
     // possibly invalidate via a realloc or modify by replacement).
-    QChar *afterBuffer = 0;
+    QChar *afterBuffer = nullptr;
     if (pointsIntoRange(after, d->data(), d->size)) // Use copy in place of vulnerable original:
         after = afterBuffer = textCopy(after, alen);
 
@@ -3129,7 +3129,7 @@ QString &QString::replace(const QChar *before, int blen,
         return *this;
 
     QStringMatcher matcher(before, blen, cs);
-    QChar *beforeBuffer = 0, *afterBuffer = 0;
+    QChar *beforeBuffer = nullptr, *afterBuffer = nullptr;
 
     int index = 0;
     while (1) {
@@ -5591,7 +5591,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf16::convertToUnicode((const char *)unicode, size*2, 0);
+    return QUtf16::convertToUnicode((const char *)unicode, size*2, nullptr);
 }
 
 /*!
@@ -5645,7 +5645,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf32::convertToUnicode((const char *)unicode, size*4, 0);
+    return QUtf32::convertToUnicode((const char *)unicode, size*4, nullptr);
 }
 
 
@@ -8060,7 +8060,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         version = QChar::currentUnicodeVersion();
     } else if (int(version) <= NormalizationCorrectionsVersionMax) {
         const QString &s = *data;
-        QChar *d = 0;
+        QChar *d = nullptr;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {

@@ -124,7 +124,7 @@ static inline bool _q_checkEntry(QAbstractFileEngine *&engine, bool resolvingEnt
     if (resolvingEntry) {
         if (!(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)) {
             delete engine;
-            engine = 0;
+            engine = nullptr;
             return false;
         }
     }
@@ -191,7 +191,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
 QAbstractFileEngine *QFileSystemEngine::resolveEntryAndCreateLegacyEngine(
         QFileSystemEntry &entry, QFileSystemMetaData &data) {
     QFileSystemEntry copy = entry;
-    QAbstractFileEngine *engine = 0;
+    QAbstractFileEngine *engine = nullptr;
 
     if (_q_resolveEntryAndCreateLegacyEngine_recursive(copy, data, engine))
         // Reset entry to resolved copy.

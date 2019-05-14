@@ -214,8 +214,8 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     Note that \a category must be kept valid during the lifetime of this object.
 */
 QLoggingCategory::QLoggingCategory(const char *category)
-    : d(0),
-      name(0)
+    : d(nullptr),
+      name(nullptr)
 {
     init(category, QtDebugMsg);
 }
@@ -231,8 +231,8 @@ QLoggingCategory::QLoggingCategory(const char *category)
     \since 5.4
 */
 QLoggingCategory::QLoggingCategory(const char *category, QtMsgType enableForLevel)
-    : d(0),
-      name(0)
+    : d(nullptr),
+      name(nullptr)
 {
     init(category, enableForLevel);
 }

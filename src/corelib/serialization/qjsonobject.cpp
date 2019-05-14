@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
     \sa isEmpty()
  */
 QJsonObject::QJsonObject()
-    : d(0), o(0)
+    : d(nullptr), o(nullptr)
 {
 }
 
@@ -149,8 +149,8 @@ QJsonObject::QJsonObject(QJsonPrivate::Data *data, QJsonPrivate::Object *object)
 
 void QJsonObject::initialize()
 {
-    d = 0;
-    o = 0;
+    d = nullptr;
+    o = nullptr;
 }
 
 /*!
