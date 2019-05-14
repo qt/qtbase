@@ -73,6 +73,8 @@ public:
     virtual void animationInsertedAt(int) { }
     virtual void animationRemoved(int, QAbstractAnimation *);
 
+    void clear(bool onDestruction);
+
     void disconnectUncontrolledAnimation(QAbstractAnimation *anim)
     {
         //0 for the signal here because we might be called from the animation destructor
