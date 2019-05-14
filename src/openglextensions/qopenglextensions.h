@@ -66,9 +66,9 @@
 
 #include <QtGui/qopengl.h>
 
-class QOpenGLContext;
-
 QT_BEGIN_NAMESPACE
+
+class QOpenGLContext;
 
 #if 0
 // silence syncqt warnings
