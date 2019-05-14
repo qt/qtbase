@@ -62,6 +62,8 @@
 #include <private/qvectorpath_p.h>
 #include <private/qstroker_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 // ### Qt 6: merge with QPainterPathData
@@ -202,11 +204,7 @@ public:
     }
 
     QPainterPathData &operator=(const QPainterPathData &) = delete;
-
-    ~QPainterPathData()
-    {
-        delete pathConverter;
-    }
+    ~QPainterPathData() = default;
 
     inline bool isClosed() const;
     inline void close();
@@ -215,7 +213,7 @@ public:
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
-            pathConverter = new QVectorPathConverter(elements, fillRule, convex);
+            pathConverter.reset(new QVectorPathConverter(elements, fillRule, convex));
         return pathConverter->path;
     }
 
@@ -230,7 +228,7 @@ public:
     uint dirtyControlBounds : 1;
     uint convex : 1;
 
-    QVectorPathConverter *pathConverter;
+    std::unique_ptr<QVectorPathConverter> pathConverter;
 };
 
 
@@ -324,8 +322,7 @@ inline void QPainterPathData::clear()
     dirtyControlBounds = false;
     convex = false;
 
-    delete pathConverter;
-    pathConverter = nullptr;
+    pathConverter.reset();
 }
 #define KAPPA qreal(0.5522847498)
 

@@ -3499,8 +3499,7 @@ void QPainterPath::setDirty(bool dirty)
 {
     d_func()->dirtyBounds        = dirty;
     d_func()->dirtyControlBounds = dirty;
-    delete d_func()->pathConverter;
-    d_func()->pathConverter = 0;
+    d_func()->pathConverter.reset();
     d_func()->convex = false;
 }
 
