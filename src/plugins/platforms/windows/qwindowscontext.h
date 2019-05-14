@@ -102,6 +102,7 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *GetDisplayAutoRotationPreferences)(DWORD *);
     typedef BOOL (WINAPI *SetDisplayAutoRotationPreferences)(DWORD);
+    typedef BOOL (WINAPI *AdjustWindowRectExForDpi)(LPRECT,DWORD,BOOL,DWORD,UINT);
     typedef BOOL (WINAPI *EnableNonClientDpiScaling)(HWND);
     typedef int  (WINAPI *GetWindowDpiAwarenessContext)(HWND);
     typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
@@ -131,6 +132,7 @@ struct QWindowsUser32DLL
     GetDisplayAutoRotationPreferences getDisplayAutoRotationPreferences = nullptr;
     SetDisplayAutoRotationPreferences setDisplayAutoRotationPreferences = nullptr;
 
+    AdjustWindowRectExForDpi adjustWindowRectExForDpi = nullptr;
     EnableNonClientDpiScaling enableNonClientDpiScaling = nullptr;
     GetWindowDpiAwarenessContext getWindowDpiAwarenessContext = nullptr;
     GetAwarenessFromDpiAwarenessContext getAwarenessFromDpiAwarenessContext = nullptr;
@@ -200,6 +202,8 @@ public:
     QWindow *findWindow(HWND) const;
     QWindowsWindow *findPlatformWindowAt(HWND parent, const QPoint &screenPoint,
                                              unsigned cwex_flags) const;
+
+    static bool shouldHaveNonClientDpiScaling(const QWindow *window);
 
     QWindow *windowUnderMouse() const;
     void clearWindowUnderMouse();
