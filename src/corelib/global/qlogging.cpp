@@ -439,7 +439,7 @@ void QMessageLogger::debug(const QLoggingCategory &cat, const char *msg, ...) co
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -466,7 +466,7 @@ void QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc,
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -489,7 +489,7 @@ QDebug QMessageLogger::debug() const
 {
     QDebug dbg = QDebug(QtDebugMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     return dbg;
 }
 
@@ -506,7 +506,7 @@ QDebug QMessageLogger::debug(const QLoggingCategory &cat) const
         dbg.stream->message_output = false;
 
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     return dbg;
@@ -550,7 +550,7 @@ void QMessageLogger::info(const QLoggingCategory &cat, const char *msg, ...) con
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -577,7 +577,7 @@ void QMessageLogger::info(QMessageLogger::CategoryFunction catFunc,
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -601,7 +601,7 @@ QDebug QMessageLogger::info() const
 {
     QDebug dbg = QDebug(QtInfoMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     return dbg;
 }
 
@@ -618,7 +618,7 @@ QDebug QMessageLogger::info(const QLoggingCategory &cat) const
         dbg.stream->message_output = false;
 
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     return dbg;
@@ -668,7 +668,7 @@ void QMessageLogger::warning(const QLoggingCategory &cat, const char *msg, ...) 
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -695,7 +695,7 @@ void QMessageLogger::warning(QMessageLogger::CategoryFunction catFunc,
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -717,7 +717,7 @@ QDebug QMessageLogger::warning() const
 {
     QDebug dbg = QDebug(QtWarningMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     return dbg;
 }
 
@@ -733,7 +733,7 @@ QDebug QMessageLogger::warning(const QLoggingCategory &cat) const
         dbg.stream->message_output = false;
 
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     return dbg;
@@ -784,7 +784,7 @@ void QMessageLogger::critical(const QLoggingCategory &cat, const char *msg, ...)
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -811,7 +811,7 @@ void QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc,
         return;
 
     QMessageLogContext ctxt;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     va_list ap;
@@ -833,7 +833,7 @@ QDebug QMessageLogger::critical() const
 {
     QDebug dbg = QDebug(QtCriticalMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     return dbg;
 }
 
@@ -850,7 +850,7 @@ QDebug QMessageLogger::critical(const QLoggingCategory &cat) const
         dbg.stream->message_output = false;
 
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.copy(context);
+    ctxt.copyContextFrom(context);
     ctxt.category = cat.categoryName();
 
     return dbg;
@@ -2108,15 +2108,20 @@ void qSetMessagePattern(const QString &pattern)
 
 
 /*!
-    Copies context information from \a logContext into this QMessageLogContext
+    Copies context information from \a logContext into this QMessageLogContext.
+    Returns a reference to this object.
+
+    Note that the version is \b not copied, only the context information.
+
     \internal
 */
-void QMessageLogContext::copy(const QMessageLogContext &logContext)
+QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext &logContext) noexcept
 {
     this->category = logContext.category;
     this->file = logContext.file;
     this->line = logContext.line;
     this->function = logContext.function;
+    return *this;
 }
 
 /*!

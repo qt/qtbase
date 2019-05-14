@@ -68,8 +68,6 @@ public:
     Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber, const char *functionName, const char *categoryName)
         : version(2), line(lineNumber), file(fileName), function(functionName), category(categoryName) {}
 
-    void copy(const QMessageLogContext &logContext);
-
     int version;
     int line;
     const char *file;
@@ -77,6 +75,8 @@ public:
     const char *category;
 
 private:
+    QMessageLogContext &copyContextFrom(const QMessageLogContext &logContext) noexcept;
+
     friend class QMessageLogger;
     friend class QDebug;
 };
