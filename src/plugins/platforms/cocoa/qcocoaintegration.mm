@@ -347,13 +347,11 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     switch (cap) {
 #ifndef QT_NO_OPENGL
     case ThreadedOpenGL:
-        // Qt's threaded OpenGL implementation does not work well for layer-backed
-        // views, where we can easily end up in situations where rendering on secondary
-        // threads will result in visual artifacts, bugs, or even deadlocks. It is
-        // not possible to determine here if the the app will be using layer-backed
-        // views (it can opt-in using SDK 10.14+ on macOS 10.4+, or by setting
-        // NSWindow flags such as NSWindowStyleMaskFullSizeContentView).
-        return false;
+        // AppKit expects rendering to happen on the main thread, and we can
+        // easily end up in situations where rendering on secondary threads
+        // will result in visual artifacts, bugs, or even deadlocks, when
+        // building with SDK 10.14 or higher which enbles view layer-backing.
+        return QMacVersion::buildSDK() < QOperatingSystemVersion(QOperatingSystemVersion::MacOSMojave);
     case OpenGL:
     case BufferQueueingOpenGL:
 #endif
