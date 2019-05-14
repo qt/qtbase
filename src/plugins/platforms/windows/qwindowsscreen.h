@@ -138,6 +138,8 @@ public:
     const QWindowsScreen *screenAtDp(const QPoint &p) const;
     const QWindowsScreen *screenForHwnd(HWND hwnd) const;
 
+    static bool isSingleScreen();
+
 private:
     void removeScreen(int index);
 
