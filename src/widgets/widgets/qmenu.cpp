@@ -1485,6 +1485,8 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 {
     Q_Q(QMenu);
 
+    emit q->aboutToShow();
+
 #ifdef Q_OS_OSX
     if (platformMenu) {
         const auto actions = q->actions();
@@ -1498,8 +1500,6 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
         }
     }
 #endif
-
-    emit q->aboutToShow();
 }
 
 bool QMenuPrivate::hasMouseMoved(const QPoint &globalPos)
