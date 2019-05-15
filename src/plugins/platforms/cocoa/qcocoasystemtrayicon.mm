@@ -383,9 +383,9 @@ QT_END_NAMESPACE
 }
 
 - (QRectF)geometry {
-    if (NSWindow *window = [[item view] window]) {
-        if (QCocoaScreen *screen = QCocoaIntegration::instance()->screenForNSScreen([window screen]))
-            return screen->mapFromNative([window frame]);
+    if (NSWindow *window = item.view.window) {
+        if (QCocoaScreen *screen = QCocoaScreen::get(window.screen))
+            return screen->mapFromNative(window.frame);
     }
     return QRectF();
 }

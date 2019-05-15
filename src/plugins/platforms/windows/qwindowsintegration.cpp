@@ -353,6 +353,9 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
     Q_ASSERT(result);
 
+    if (window->isTopLevel() && !QWindowsContext::shouldHaveNonClientDpiScaling(window))
+        result->setFlag(QWindowsWindow::DisableNonClientScaling);
+
     if (QWindowsMenuBar *menuBarToBeInstalled = QWindowsMenuBar::menuBarOf(window))
         menuBarToBeInstalled->install(result);
 
