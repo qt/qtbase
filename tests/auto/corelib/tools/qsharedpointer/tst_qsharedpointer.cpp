@@ -40,6 +40,7 @@
 #include "nontracked.h"
 #include "wrapper.h"
 
+#include <memory>
 #include <stdlib.h>
 #include <time.h>
 
@@ -231,6 +232,12 @@ struct NoDefaultConstructorRRef1
 {
     int &i;
     NoDefaultConstructorRRef1(int &&i) : i(i) {}
+};
+
+struct NoDefaultConstructorRRef2
+{
+    std::unique_ptr<int> i;
+    NoDefaultConstructorRRef2(std::unique_ptr<int> &&i) : i(std::move(i)) {}
 };
 #endif
 
@@ -1820,13 +1827,18 @@ void tst_QSharedPointer::creatingVariadic()
         QCOMPARE(&ptr->i, &i);
     }
     {
-        NoDefaultConstructorRRef1(1); // control check
-        QSharedPointer<NoDefaultConstructorRRef1> ptr = QSharedPointer<NoDefaultConstructorRRef1>::create(1);
-        QCOMPARE(ptr->i, 1);
-
         NoDefaultConstructorRRef1(std::move(i)); // control check
-        ptr = QSharedPointer<NoDefaultConstructorRRef1>::create(std::move(i));
+        QSharedPointer<NoDefaultConstructorRRef1> ptr = QSharedPointer<NoDefaultConstructorRRef1>::create(std::move(i));
         QCOMPARE(ptr->i, i);
+    }
+    {
+        NoDefaultConstructorRRef2(std::unique_ptr<int>(new int(1))); // control check
+        QSharedPointer<NoDefaultConstructorRRef2> ptr = QSharedPointer<NoDefaultConstructorRRef2>::create(std::unique_ptr<int>(new int(1)));
+        QCOMPARE(*ptr->i, 1);
+
+        std::unique_ptr<int> p(new int(i));
+        ptr = QSharedPointer<NoDefaultConstructorRRef2>::create(std::move(p));
+        QCOMPARE(*ptr->i, i);
     }
     {
         QString text("Hello, World");
