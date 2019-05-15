@@ -1516,19 +1516,17 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         if (parts.count() != 4)
             return QDate();
 
-        QStringRef monthName = parts.at(1);
-        const int month = fromShortMonthName(monthName);
-        if (month == -1) {
-            // Month name matches neither English nor other localised name.
-            return QDate();
-        }
-
         bool ok = false;
         int year = parts.at(3).toInt(&ok);
-        if (!ok)
+        int day = ok ? parts.at(2).toInt(&ok) : 0;
+        if (!ok || !day)
             return QDate();
 
-        return QDate(year, month, parts.at(2).toInt());
+        const int month = fromShortMonthName(parts.at(1));
+        if (month == -1) // Month name matches no English or localised name.
+            return QDate();
+
+        return QDate(year, month, day);
         }
 #endif // textdate
     case Qt::ISODate: {
@@ -5098,48 +5096,45 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             return QDateTime();
 
         // Accept "Sun Dec 1 13:02:00 1974" and "Sun 1. Dec 13:02:00 1974"
+
+        // Year and time can be in either order.
+        // Guess which by looking for ':' in the time
+        int yearPart = 3;
+        int timePart = 3;
+        if (parts.at(3).contains(QLatin1Char(':')))
+            yearPart = 4;
+        else if (parts.at(4).contains(QLatin1Char(':')))
+            timePart = 4;
+        else
+            return QDateTime();
+
         int month = 0;
         int day = 0;
         bool ok = false;
 
-        // First try month then day
+        int year = parts.at(yearPart).toInt(&ok);
+        if (!ok || year == 0)
+            return QDateTime();
+
+        // Next try month then day
         month = fromShortMonthName(parts.at(1));
         if (month)
-            day = parts.at(2).toInt();
+            day = parts.at(2).toInt(&ok);
 
-        // If failed try day then month
-        if (!month || !day) {
+        // If failed, try day then month
+        if (!ok || !month || !day) {
             month = fromShortMonthName(parts.at(2));
             if (month) {
                 QStringRef dayStr = parts.at(1);
                 if (dayStr.endsWith(QLatin1Char('.'))) {
                     dayStr = dayStr.left(dayStr.size() - 1);
-                    day = dayStr.toInt();
+                    day = dayStr.toInt(&ok);
                 }
             }
         }
 
         // If both failed, give up
-        if (!month || !day)
-            return QDateTime();
-
-        // Year can be before or after time, "Sun Dec 1 1974 13:02:00" or "Sun Dec 1 13:02:00 1974"
-        // Guess which by looking for ':' in the time
-        int year = 0;
-        int yearPart = 0;
-        int timePart = 0;
-        if (parts.at(3).contains(QLatin1Char(':'))) {
-            yearPart = 4;
-            timePart = 3;
-        } else if (parts.at(4).contains(QLatin1Char(':'))) {
-            yearPart = 3;
-            timePart = 4;
-        } else {
-            return QDateTime();
-        }
-
-        year = parts.at(yearPart).toInt(&ok);
-        if (!ok)
+        if (!ok || !month || !day)
             return QDateTime();
 
         QDate date(year, month, day);
