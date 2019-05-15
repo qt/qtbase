@@ -34,6 +34,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include <unordered_set>
+
 class tst_QHashFunctions : public QObject
 {
     Q_OBJECT
@@ -58,6 +60,8 @@ private Q_SLOTS:
     void qthash();
     void range();
     void rangeCommutative();
+
+    void stdHash();
 
     void setGlobalQHashSeed();
 };
@@ -279,6 +283,38 @@ void tst_QHashFunctions::rangeCommutative()
     static const size_t numHashables = sizeof hashables / sizeof *hashables;
     // compile check: is qHash() found using ADL?
     (void)qHashRangeCommutative(hashables, hashables + numHashables, seed);
+}
+
+void tst_QHashFunctions::stdHash()
+{
+    {
+        std::unordered_set<QString> s = {QStringLiteral("Hello"), QStringLiteral("World")};
+        QCOMPARE(s.size(), 2UL);
+        s.insert(QStringLiteral("Hello"));
+        QCOMPARE(s.size(), 2UL);
+    }
+
+    {
+        std::unordered_set<QStringView> s = {QStringLiteral("Hello"), QStringLiteral("World")};
+        QCOMPARE(s.size(), 2UL);
+        s.insert(QStringLiteral("Hello"));
+        QCOMPARE(s.size(), 2UL);
+    }
+
+    {
+        std::unordered_set<QLatin1String> s = {QLatin1String("Hello"), QLatin1String("World")};
+        QCOMPARE(s.size(), 2UL);
+        s.insert(QLatin1String("Hello"));
+        QCOMPARE(s.size(), 2UL);
+    }
+
+    {
+        std::unordered_set<QByteArray> s = {QByteArrayLiteral("Hello"), QByteArrayLiteral("World")};
+        QCOMPARE(s.size(), 2UL);
+        s.insert(QByteArray("Hello"));
+        QCOMPARE(s.size(), 2UL);
+    }
+
 }
 
 void tst_QHashFunctions::setGlobalQHashSeed()
