@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QBasicMutex QColorSpacePrivate::s_lutWriteLock;
+
 QColorSpacePrimaries::QColorSpacePrimaries(QColorSpace::Gamut gamut)
 {
     switch (gamut) {
