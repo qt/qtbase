@@ -500,8 +500,6 @@ QMacPasteboard::retrieveData(const QString &format, QVariant::Type) const
                 if (!str.isEmpty())
                     return str;
             }
-            if (checkForUtf16 && hasFlavor(QLatin1String("public.utf16-plain-text")))
-                c_flavor = QLatin1String("public.utf16-plain-text");
 
             QVariant ret;
             QList<QByteArray> retList;
