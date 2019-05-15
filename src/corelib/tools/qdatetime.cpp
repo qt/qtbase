@@ -172,8 +172,6 @@ static ParsedDate getDateFromJulianDay(qint64 julianDay)
   Date/Time formatting helper functions
  *****************************************************************************/
 
-static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
 #if QT_CONFIG(textdate)
 static const char qt_shortMonthNames[][4] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -304,6 +302,12 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcep
     return sign * ((hour * 60) + minute) * 60;
 }
 #endif // datestring
+
+static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
+{
+    // Long if odd up to July = 7, or if even from 8 = August onwards:
+    return Q_ASSERT(month != 2 && month > 0 && month <= 12), 30 | ((month & 1) ^ (month >> 3));
+}
 
 /*****************************************************************************
   QDate member functions
@@ -546,10 +550,10 @@ int QDate::daysInMonth() const
         return 0;
 
     const ParsedDate pd = getDateFromJulianDay(jd);
-    if (pd.month == 2 && isLeapYear(pd.year))
-        return 29;
-    else
-        return monthDays[pd.month];
+    if (pd.month == 2)
+        return isLeapYear(pd.year) ? 29 : 28;
+
+    return daysInUsualMonth(pd.month);
 }
 
 /*!
@@ -1635,12 +1639,9 @@ QDate QDate::fromString(const QString &string, const QString &format)
 
 bool QDate::isValid(int year, int month, int day)
 {
-    // there is no year 0 in the Gregorian calendar
-    if (year == 0)
-        return false;
-
-    return (day > 0 && month > 0 && month <= 12) &&
-           (day <= monthDays[month] || (day == 29 && month == 2 && isLeapYear(year)));
+    // There is no year 0 in the Gregorian calendar.
+    return year && day > 0 && month > 0 && month <= 12 &&
+        day <= (month == 2 ? isLeapYear(year) ? 29 : 28 : daysInUsualMonth(month));
 }
 
 /*!
