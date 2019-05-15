@@ -622,11 +622,11 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case LastSection: return 0;
 
     case AmPmSection: {
-        const int lowerMax = qMin(getAmPmText(AmText, LowerCase).size(),
+        const int lowerMax = qMax(getAmPmText(AmText, LowerCase).size(),
                                   getAmPmText(PmText, LowerCase).size());
-        const int upperMax = qMin(getAmPmText(AmText, UpperCase).size(),
+        const int upperMax = qMax(getAmPmText(AmText, UpperCase).size(),
                                   getAmPmText(PmText, UpperCase).size());
-        return qMin(4, qMin(lowerMax, upperMax));
+        return qMax(lowerMax, upperMax);
     }
 
     case Hour24Section:
@@ -1665,13 +1665,16 @@ QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
 /*!
   \internal
 
-  Returns
-  AM if str == tr("AM")
-  PM if str == tr("PM")
-  PossibleAM if str can become tr("AM")
-  PossiblePM if str can become tr("PM")
-  PossibleBoth if str can become tr("PM") and can become tr("AM")
-  Neither if str can't become anything sensible
+  Compares str to the am/pm texts returned by getAmPmText().
+  Returns AM or PM if str is one of those texts. Failing that, it looks to see
+  whether, ignoring spaces and case, each character of str appears in one of
+  the am/pm texts.
+  If neither text can be the result of the user typing more into str, returns
+  Neither. If both texts are possible results of further typing, returns
+  PossibleBoth. Otherwise, only one of them is a possible completion, so this
+  returns PossibleAM or PossiblePM to indicate which.
+
+  \sa getAmPmText()
 */
 QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionIndex, int *used) const
 {
@@ -1700,10 +1703,10 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
 
     QDTPDEBUG << "findAmPm" << str << ampm[0] << ampm[1];
 
-    if (str.indexOf(ampm[amindex], 0, Qt::CaseInsensitive) == 0) {
+    if (str.startsWith(ampm[amindex], Qt::CaseInsensitive)) {
         str = ampm[amindex];
         return AM;
-    } else if (str.indexOf(ampm[pmindex], 0, Qt::CaseInsensitive) == 0) {
+    } else if (str.startsWith(ampm[pmindex], Qt::CaseInsensitive)) {
         str = ampm[pmindex];
         return PM;
     } else if (context == FromString || (str.count(space) == 0 && str.size() >= size)) {
