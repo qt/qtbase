@@ -52,6 +52,7 @@
 //
 
 #include "QtCore/qcoreapplication.h"
+#include "QtCore/qcommandlineoption.h"
 #include "QtCore/qtranslator.h"
 #if QT_CONFIG(settings)
 #include "QtCore/qsettings.h"
@@ -103,6 +104,8 @@ public:
     static void initLocale();
 
     static bool checkInstance(const char *method);
+
+    virtual void addQtOptions(QList<QCommandLineOption> *options);
 
 #ifndef QT_NO_QOBJECT
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);

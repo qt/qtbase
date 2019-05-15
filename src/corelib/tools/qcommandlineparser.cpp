@@ -41,6 +41,7 @@
 #include "qcommandlineparser.h"
 
 #include <qcoreapplication.h>
+#include <private/qcoreapplication_p.h>
 #include <qhash.h>
 #include <qvector.h>
 #include <qdebug.h>
@@ -70,11 +71,12 @@ public:
     bool parse(const QStringList &args);
     void checkParsed(const char *method);
     QStringList aliases(const QString &name) const;
-    QString helpText() const;
+    QString helpText(bool includeQtOptions) const;
     bool registerFoundOption(const QString &optionName);
     bool parseOptionValue(const QString &optionName, const QString &argument,
                           QStringList::const_iterator *argumentIterator,
                           QStringList::const_iterator argsEnd);
+    Q_NORETURN void showHelp(int exitCode, bool includeQtOptions);
 
     //! Error text set when parse() returns false
     QString errorText;
@@ -419,7 +421,9 @@ QCommandLineOption QCommandLineParser::addVersionOption()
 
 /*!
     Adds the help option (\c{-h}, \c{--help} and \c{-?} on Windows)
-    This option is handled automatically by QCommandLineParser.
+    as well as an option \c{--help-all} to include Qt-specific options in the output.
+
+    These options are handled automatically by QCommandLineParser.
 
     Remember to use setApplicationDescription to set the application description,
     which will be displayed when this option is used.
@@ -436,8 +440,10 @@ QCommandLineOption QCommandLineParser::addHelpOption()
                 << QStringLiteral("?")
 #endif
                 << QStringLiteral("h")
-                << QStringLiteral("help"), tr("Displays this help."));
+                << QStringLiteral("help"), tr("Displays help on commandline options."));
     addOption(opt);
+    QCommandLineOption optHelpAll(QStringLiteral("help-all"), tr("Displays help including Qt specific options."));
+    addOption(optHelpAll);
     d->builtinHelpOption = true;
     return opt;
 }
@@ -581,7 +587,8 @@ static void showParserMessage(const QString &message, MessageType type)
     In addition to parsing the options (like parse()), this function also handles the builtin
     options and handles errors.
 
-    The builtin options are \c{--version} if addVersionOption was called and \c{--help} if addHelpOption was called.
+    The builtin options are \c{--version} if addVersionOption was called and
+    \c{--help} / \c{--help-all} if addHelpOption was called.
 
     When invoking one of these options, or when an error happens (for instance an unknown option was
     passed), the current process will then stop, using the exit() function.
@@ -600,7 +607,10 @@ void QCommandLineParser::process(const QStringList &arguments)
         showVersion();
 
     if (d->builtinHelpOption && isSet(QStringLiteral("help")))
-        showHelp(EXIT_SUCCESS);
+        d->showHelp(EXIT_SUCCESS, false);
+
+    if (d->builtinHelpOption && isSet(QStringLiteral("help-all")))
+        d->showHelp(EXIT_SUCCESS, true);
 }
 
 /*!
@@ -1033,7 +1043,12 @@ Q_NORETURN void QCommandLineParser::showVersion()
 */
 Q_NORETURN void QCommandLineParser::showHelp(int exitCode)
 {
-    showParserMessage(d->helpText(), UsageMessage);
+    d->showHelp(exitCode, false);
+}
+
+Q_NORETURN void QCommandLineParserPrivate::showHelp(int exitCode, bool includeQtOptions)
+{
+    showParserMessage(helpText(includeQtOptions), UsageMessage);
     qt_call_post_routines();
     ::exit(exitCode);
 }
@@ -1045,7 +1060,7 @@ Q_NORETURN void QCommandLineParser::showHelp(int exitCode)
 */
 QString QCommandLineParser::helpText() const
 {
-    return d->helpText();
+    return d->helpText(false);
 }
 
 static QString wrapText(const QString &names, int longestOptionNameString, const QString &description)
@@ -1103,13 +1118,16 @@ static QString wrapText(const QString &names, int longestOptionNameString, const
     return text;
 }
 
-QString QCommandLineParserPrivate::helpText() const
+QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
 {
     const QLatin1Char nl('\n');
     QString text;
     QString usage;
     usage += QCoreApplication::instance()->arguments().constFirst(); // executable name
-    if (!commandLineOptionList.isEmpty())
+    QList<QCommandLineOption> options = commandLineOptionList;
+    if (includeQtOptions)
+        QCoreApplication::instance()->d_func()->addQtOptions(&options);
+    if (!options.isEmpty())
         usage += QLatin1Char(' ') + QCommandLineParser::tr("[options]");
     for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
         usage += QLatin1Char(' ') + arg.syntax;
@@ -1117,12 +1135,12 @@ QString QCommandLineParserPrivate::helpText() const
     if (!description.isEmpty())
        text += description + nl;
     text += nl;
-    if (!commandLineOptionList.isEmpty())
+    if (!options.isEmpty())
         text += QCommandLineParser::tr("Options:") + nl;
     QStringList optionNameList;
-    optionNameList.reserve(commandLineOptionList.size());
+    optionNameList.reserve(options.size());
     int longestOptionNameString = 0;
-    for (const QCommandLineOption &option : commandLineOptionList) {
+    for (const QCommandLineOption &option : qAsConst(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
         const QStringList optionNames = option.names();
@@ -1141,14 +1159,14 @@ QString QCommandLineParserPrivate::helpText() const
     }
     ++longestOptionNameString;
     auto optionNameIterator = optionNameList.cbegin();
-    for (const QCommandLineOption &option : commandLineOptionList) {
+    for (const QCommandLineOption &option : qAsConst(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
         text += wrapText(*optionNameIterator, longestOptionNameString, option.description());
         ++optionNameIterator;
     }
     if (!positionalArgumentDefinitions.isEmpty()) {
-        if (!commandLineOptionList.isEmpty())
+        if (!options.isEmpty())
             text += nl;
         text += QCommandLineParser::tr("Arguments:") + nl;
         for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
