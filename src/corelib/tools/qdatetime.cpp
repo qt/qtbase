@@ -177,7 +177,8 @@ static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30,
 #if QT_CONFIG(textdate)
 static const char qt_shortMonthNames[][4] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 static int qt_monthNumberFromShortName(QStringRef shortName)
 {
@@ -422,7 +423,6 @@ QDate::QDate(int y, int m, int d)
     \sa isValid()
 */
 
-
 /*!
     \fn bool QDate::isValid() const
 
@@ -430,7 +430,6 @@ QDate::QDate(int y, int m, int d)
 
     \sa isNull()
 */
-
 
 /*!
     Returns the year of this date. Negative numbers indicate years
@@ -880,6 +879,7 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
 #endif // timezone
 
 #if QT_DEPRECATED_SINCE(5, 11) && QT_CONFIG(textdate)
+
 /*!
     \since 4.5
     \deprecated
@@ -1475,8 +1475,6 @@ qint64 QDate::daysTo(const QDate &d) const
 
 #if QT_CONFIG(datestring)
 /*!
-    \fn QDate QDate::fromString(const QString &string, Qt::DateFormat format)
-
     Returns the QDate represented by the \a string, using the
     \a format given, or an invalid date if the string cannot be
     parsed.
@@ -1487,7 +1485,8 @@ qint64 QDate::daysTo(const QDate &d) const
 
     \sa toString(), QLocale::toDate()
 */
-QDate QDate::fromString(const QString& string, Qt::DateFormat format)
+
+QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QDate();
@@ -1544,8 +1543,6 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDate QDate::fromString(const QString &string, const QString &format)
-
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
 
@@ -2239,8 +2236,6 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
 }
 
 /*!
-    \fn QTime QTime::fromString(const QString &string, Qt::DateFormat format)
-
     Returns the time represented in the \a string as a QTime using the
     \a format given, or an invalid time if this is not possible.
 
@@ -2252,7 +2247,7 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
 
     \sa toString(), QLocale::toTime()
 */
-QTime QTime::fromString(const QString& string, Qt::DateFormat format)
+QTime QTime::fromString(const QString &string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QTime();
@@ -2279,8 +2274,6 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QTime QTime::fromString(const QString &string, const QString &format)
-
     Returns the QTime represented by the \a string, using the \a
     format given, or an invalid time if the string cannot be parsed.
 
@@ -5000,8 +4993,6 @@ int QDateTime::utcOffset() const
 #if QT_CONFIG(datestring)
 
 /*!
-    \fn QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
-
     Returns the QDateTime represented by the \a string, using the
     \a format given, or an invalid datetime if this is not possible.
 
@@ -5011,7 +5002,7 @@ int QDateTime::utcOffset() const
 
     \sa toString(), QLocale::toDateTime()
 */
-QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
+QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QDateTime();
@@ -5218,8 +5209,6 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format)
-
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
 
