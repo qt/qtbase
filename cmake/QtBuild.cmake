@@ -928,10 +928,21 @@ function(add_qt_module target)
 
     set(extra_cmake_code "")
 
-    # Propagate developer builds to other modules via QtCore module.
-    if(FEATURE_developer_build AND target STREQUAL Core)
+    if(target STREQUAL Core)
+        # Propagate common variables via QtCore package.
+        string(APPEND extra_cmake_code "set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})")
         string(APPEND extra_cmake_code "
+option(BUILD_SHARED_LIBS \"Build Qt statically or dynamically\" ${BUILD_SHARED_LIBS})")
+        string(APPEND extra_cmake_code "
+set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
+        string(APPEND extra_cmake_code "
+set(_qt_core_cmake_dir \${CMAKE_CURRENT_LIST_DIR})")
+
+        # Propagate developer builds to other modules via QtCore package.
+        if(FEATURE_developer_build)
+            string(APPEND extra_cmake_code "
 set(FEATURE_developer_build ON CACHE BOOL \"Developer build.\" FORCE)")
+        endif()
     endif()
 
     configure_package_config_file(
