@@ -58,6 +58,7 @@ public:
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;
+    const QFont *font(Font type = SystemFont) const override;
 
     static QVariant styleHint(QPlatformIntegration::StyleHint hint);
     QVariant themeHint(ThemeHint hint) const override;
