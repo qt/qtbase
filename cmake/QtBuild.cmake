@@ -160,6 +160,10 @@ endif()
 string(APPEND QT_CONFIG_INSTALL_DIR ${__config_path_part})
 unset(__config_path_part)
 
+# This is used to hold extra cmake code that should be put into QtBuildInternalsExtra.cmake file
+# at the QtPostProcess stage.
+set(QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "")
+
 # Functions and macros:
 
 # Wraps install() command. In a prefix build, simply passes along arguments to install().
@@ -924,25 +928,6 @@ function(add_qt_module target)
             @ONLY)
         list(APPEND extra_cmake_files "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
-    endif()
-
-    set(extra_cmake_code "")
-
-    if(target STREQUAL Core)
-        # Propagate common variables via QtCore package.
-        string(APPEND extra_cmake_code "set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})")
-        string(APPEND extra_cmake_code "
-option(BUILD_SHARED_LIBS \"Build Qt statically or dynamically\" ${BUILD_SHARED_LIBS})")
-        string(APPEND extra_cmake_code "
-set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
-        string(APPEND extra_cmake_code "
-set(_qt_core_cmake_dir \${CMAKE_CURRENT_LIST_DIR})")
-
-        # Propagate developer builds to other modules via QtCore package.
-        if(FEATURE_developer_build)
-            string(APPEND extra_cmake_code "
-set(FEATURE_developer_build ON CACHE BOOL \"Developer build.\" FORCE)")
-        endif()
     endif()
 
     configure_package_config_file(

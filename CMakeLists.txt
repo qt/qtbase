@@ -14,11 +14,13 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin"
 )
 
-## Qt specific setup common for all modules:
-include(QtSetup)
+## Find the build internals package.
+list(APPEND CMAKE_PREFIX_PATH
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+)
+find_package(QtBuildInternals)
 
-## Enable feature summary at the end of the configure run:
-include(FeatureSummary)
+qt_build_repo_begin(SKIP_CMAKE_MODULE_PATH_ADDITION)
 
 ## QtBase specific configure tests:
 include(QtBaseConfigureTests)
@@ -52,13 +54,4 @@ if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-## Delayed actions on some of the Qt targets:
-include(QtPostProcess)
-
-## Print a feature summary:
-feature_summary(WHAT PACKAGES_FOUND
-                     REQUIRED_PACKAGES_NOT_FOUND
-                     RECOMMENDED_PACKAGES_NOT_FOUND
-                     OPTIONAL_PACKAGES_NOT_FOUND
-                     RUNTIME_PACKAGES_NOT_FOUND
-                     FATAL_ON_MISSING_REQUIRED_PACKAGES)
+qt_build_repo_end()

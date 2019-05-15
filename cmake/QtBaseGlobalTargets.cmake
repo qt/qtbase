@@ -122,3 +122,21 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "tests" EXCLUDE
     PATTERN "3rdparty" EXCLUDE
 )
+
+# Configure and install the QtBuildInternals package.
+set(__build_internals_path_suffix "${INSTALL_CMAKE_NAMESPACE}BuildInternals")
+qt_path_join(__build_internals_build_dir ${QT_CONFIG_BUILD_DIR} ${__build_internals_path_suffix})
+qt_path_join(__build_internals_install_dir ${QT_CONFIG_INSTALL_DIR}
+                                           ${__build_internals_path_suffix})
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsConfig.cmake"
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
+    @ONLY
+    )
+
+qt_install(FILES
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
+    "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
+    DESTINATION "${__build_internals_install_dir}"
+    COMPONENT Devel
+)

@@ -38,29 +38,6 @@
 
 include(CMakeParseArguments)
 
-macro(qt_build_repo_begin)
-    # Set up the paths for the modules.
-    set(QT_CMAKE_MODULE_PATH "${_qt_core_cmake_dir}/../${QT_CMAKE_EXPORT_NAMESPACE}")
-    list(APPEND CMAKE_MODULE_PATH ${QT_CMAKE_MODULE_PATH})
-
-    # Qt specific setup common for all modules:
-    include(QtSetup)
-    include(FeatureSummary)
-endmacro()
-
-macro(qt_build_repo_end)
-    # Delayed actions on some of the Qt targets:
-    include(QtPostProcess)
-
-    # Print a feature summary:
-    feature_summary(WHAT PACKAGES_FOUND
-                         REQUIRED_PACKAGES_NOT_FOUND
-                         RECOMMENDED_PACKAGES_NOT_FOUND
-                         OPTIONAL_PACKAGES_NOT_FOUND
-                         RUNTIME_PACKAGES_NOT_FOUND
-                         FATAL_ON_MISSING_REQUIRED_PACKAGES)
-endmacro()
-
 # macro used to create the names of output files preserving relative dirs
 macro(QT5_MAKE_OUTPUT_FILE infile prefix ext outfile )
     string(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)

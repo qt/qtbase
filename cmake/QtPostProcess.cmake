@@ -164,4 +164,31 @@ function(qt_internal_create_depends_files)
 
 endfunction()
 
+function(qt_generate_build_internals_extra_cmake_code)
+    if(PROJECT_NAME STREQUAL "QtBase")
+        # Propagate common variables via BuildInternals package.
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE
+               "set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})")
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+option(BUILD_SHARED_LIBS \"Build Qt statically or dynamically\" ${BUILD_SHARED_LIBS})")
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+set(QT_BUILD_INTERNALS_PATH \"\${CMAKE_CURRENT_LIST_DIR}\")")
+
+        # Propagate developer builds to other modules via BuildInternals package.
+        if(FEATURE_developer_build)
+            string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+set(FEATURE_developer_build ON CACHE BOOL \"Developer build.\" FORCE)")
+        endif()
+
+        qt_path_join(extra_file_path
+                     ${QT_CONFIG_BUILD_DIR}
+                     ${INSTALL_CMAKE_NAMESPACE}BuildInternals/QtBuildInternalsExtra.cmake)
+        file(GENERATE OUTPUT "${extra_file_path}"
+            CONTENT "${QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE}")
+    endif()
+endfunction()
+
 qt_internal_create_depends_files()
+qt_generate_build_internals_extra_cmake_code()
