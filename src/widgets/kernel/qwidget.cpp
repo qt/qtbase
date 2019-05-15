@@ -9356,6 +9356,12 @@ bool QWidget::event(QEvent *event)
         d->renderToTextureReallyDirty = 1;
 #endif
         break;
+    case QEvent::PlatformSurface: {
+        auto surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
+        if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+            d->setWinId(0);
+        break;
+    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();

@@ -207,9 +207,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     // which will resolve to an actual value and result in screen invalidation.
     cocoaApplication.presentationOptions = NSApplicationPresentationDefault;
 
-    m_screensObserver = QMacScopedObserver([NSApplication sharedApplication],
-        NSApplicationDidChangeScreenParametersNotification, [&]() { updateScreens(); });
-    updateScreens();
+    QCocoaScreen::initializeScreens();
 
     QMacInternalPasteboardMime::initializeMimeTypes();
     QCocoaMimeTypes::initializeMimeTypes();
@@ -242,10 +240,7 @@ QCocoaIntegration::~QCocoaIntegration()
     QMacInternalPasteboardMime::destroyMimeTypes();
 #endif
 
-    // Delete screens in reverse order to avoid crash in case of multiple screens
-    while (!mScreens.isEmpty()) {
-        QWindowSystemInterface::handleScreenRemoved(mScreens.takeLast());
-    }
+    QCocoaScreen::cleanupScreens();
 
     clearToolbars();
 }
@@ -258,88 +253,6 @@ QCocoaIntegration *QCocoaIntegration::instance()
 QCocoaIntegration::Options QCocoaIntegration::options() const
 {
     return mOptions;
-}
-
-/*!
-    \brief Synchronizes the screen list, adds new screens, removes deleted ones
-*/
-void QCocoaIntegration::updateScreens()
-{
-    NSArray<NSScreen *> *scrs = [NSScreen screens];
-    NSMutableArray<NSScreen *> *screens = [NSMutableArray<NSScreen *> arrayWithArray:scrs];
-    if ([screens count] == 0)
-        if ([NSScreen mainScreen])
-           [screens addObject:[NSScreen mainScreen]];
-    if ([screens count] == 0)
-        return;
-    QSet<QCocoaScreen*> remainingScreens = QSet<QCocoaScreen*>::fromList(mScreens);
-    QList<QPlatformScreen *> siblings;
-    uint screenCount = [screens count];
-    for (uint i = 0; i < screenCount; i++) {
-        NSScreen* scr = [screens objectAtIndex:i];
-        CGDirectDisplayID dpy = scr.qt_displayId;
-        // If this screen is a mirror and is not the primary one of the mirror set, ignore it.
-        // Exception: The NSScreen API has been observed to a return a screen list with one
-        // mirrored, non-primary screen when Qt is running as a startup item. Always use the
-        // screen if there's only one screen in the list.
-        if (screenCount > 1 && CGDisplayIsInMirrorSet(dpy)) {
-            CGDirectDisplayID primary = CGDisplayMirrorsDisplay(dpy);
-            if (primary != kCGNullDirectDisplay && primary != dpy)
-                continue;
-        }
-        QCocoaScreen* screen = nullptr;
-        foreach (QCocoaScreen* existingScr, mScreens) {
-            // NSScreen documentation says do not cache the array returned from [NSScreen screens].
-            // However in practice, we can identify a screen by its pointer: if resolution changes,
-            // the NSScreen object will be the same instance, just with different values.
-            if (existingScr->nativeScreen() == scr) {
-                screen = existingScr;
-                break;
-            }
-        }
-        if (screen) {
-            remainingScreens.remove(screen);
-            screen->updateProperties();
-        } else {
-            screen = new QCocoaScreen(i);
-            mScreens.append(screen);
-            qCDebug(lcQpaScreen) << "Adding" << screen;
-            QWindowSystemInterface::handleScreenAdded(screen);
-        }
-        siblings << screen;
-    }
-
-    // Set virtual siblings list. All screens in mScreens are siblings, because we ignored the
-    // mirrors. Note that some of the screens we update the siblings list for here may be deleted
-    // below, but update anyway to keep the to-be-deleted screens out of the siblings list.
-    foreach (QCocoaScreen* screen, mScreens)
-        screen->setVirtualSiblings(siblings);
-
-    // Now the leftovers in remainingScreens are no longer current, so we can delete them.
-    foreach (QCocoaScreen* screen, remainingScreens) {
-        mScreens.removeOne(screen);
-        // Prevent stale references to NSScreen during destroy
-        screen->m_screenIndex = -1;
-        qCDebug(lcQpaScreen) << "Removing" << screen;
-        QWindowSystemInterface::handleScreenRemoved(screen);
-    }
-}
-
-QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
-{
-    NSUInteger index = [[NSScreen screens] indexOfObject:nsScreen];
-    if (index == NSNotFound)
-        return nullptr;
-
-    if (index >= unsigned(mScreens.count()))
-        updateScreens();
-
-    for (QCocoaScreen *screen : mScreens) {
-        if (screen->nativeScreen() == nsScreen)
-            return screen;
-    }
-
-    return nullptr;
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const

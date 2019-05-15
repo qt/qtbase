@@ -240,7 +240,8 @@ QWindow *QWindowsScreen::topLevelAt(const QPoint &point) const
     QWindow *result = nullptr;
     if (QWindow *child = QWindowsScreen::windowAt(point, CWP_SKIPINVISIBLE))
         result = QWindowsWindow::topLevelOf(child);
-    qCDebug(lcQpaWindows) <<__FUNCTION__ << point << result;
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaWindows) <<__FUNCTION__ << point << result;
     return result;
 }
 
@@ -250,7 +251,8 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
     if (QPlatformWindow *bw = QWindowsContext::instance()->
             findPlatformWindowAt(GetDesktopWindow(), screenPoint, flags))
         result = bw->window();
-    qCDebug(lcQpaWindows) <<__FUNCTION__ << screenPoint << " returns " << result;
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaWindows) <<__FUNCTION__ << screenPoint << " returns " << result;
     return result;
 }
 
@@ -437,6 +439,12 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
 */
 
 QWindowsScreenManager::QWindowsScreenManager() = default;
+
+
+bool QWindowsScreenManager::isSingleScreen()
+{
+    return QWindowsContext::instance()->screenManager().screens().size() < 2;
+}
 
 /*!
     \brief Triggers synchronization of screens (WM_DISPLAYCHANGE).

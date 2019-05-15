@@ -791,7 +791,7 @@ void QAndroidInputContext::longPress(int x, int y)
             return;
         }
         QList<QInputMethodEvent::Attribute> imAttributes;
-        imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursor, 0, QVariant()));
+        imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, 0, 0, QVariant()));
         imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, anchor, cursor - anchor, QVariant()));
         QInputMethodEvent event(QString(), imAttributes);
         QGuiApplication::sendEvent(m_focusObject, &event);

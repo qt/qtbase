@@ -50,6 +50,7 @@
 #include <QtCore/qcoreapplication.h>
 
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 
 // this is where EGL headers are pulled in, make sure it is last
 #include "qwasmscreen.h"
@@ -80,12 +81,18 @@ static void resizeCanvasElement(emscripten::val canvas)
     QWasmIntegration::get()->resizeScreen(canvasId);
 }
 
+static void qtUpdateDpi()
+{
+    QWasmIntegration::get()->updateDpi();
+}
+
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
     function("qtBrowserBeforeUnload", &browserBeforeUnload);
     function("qtAddCanvasElement", &addCanvasElement);
     function("qtRemoveCanvasElement", &removeCanvasElement);
     function("qtResizeCanvasElement", &resizeCanvasElement);
+    function("qtUpdateDpi", &qtUpdateDpi);
 }
 
 QWasmIntegration *QWasmIntegration::s_instance;
@@ -243,6 +250,16 @@ void QWasmIntegration::removeScreen(const QString &canvasId)
 void QWasmIntegration::resizeScreen(const QString &canvasId)
 {
     m_screens.value(canvasId)->updateQScreenAndCanvasRenderSize();
+}
+
+void QWasmIntegration::updateDpi()
+{
+    emscripten::val dpi = emscripten::val::module_property("qtFontDpi");
+    if (dpi.isUndefined())
+        return;
+    qreal dpiValue = dpi.as<qreal>();
+    for (QWasmScreen *screen : m_screens)
+        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen->screen(), dpiValue, dpiValue);
 }
 
 QT_END_NAMESPACE

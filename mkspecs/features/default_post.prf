@@ -120,6 +120,7 @@ breakpad {
 }
 
 c++17: CONFIG += c++1z
+c++latest: CONFIG *= c++2a c++1z c++14 c++11
 
 !c++11:!c++14:!c++1z:!c++2a {
     # Qt requires C++11 since 5.7, check if we need to force a compiler option

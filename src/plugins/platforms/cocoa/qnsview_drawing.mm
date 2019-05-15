@@ -189,6 +189,15 @@
 
 - (void)displayLayer:(CALayer *)layer
 {
+    if (!NSThread.isMainThread) {
+        // Qt is calling AppKit APIs such as -[NSOpenGLContext setView:] on secondary threads,
+        // which we shouldn't do. This may result in AppKit (wrongly) triggering a display on
+        // the thread where we made the call, so block it here and defer to the main thread.
+        qCWarning(lcQpaDrawing) << "Display non non-main thread! Deferring to main thread";
+        dispatch_async(dispatch_get_main_queue(), ^{ self.needsDisplay = YES; });
+        return;
+    }
+
     Q_ASSERT(layer == self.layer);
 
     if (!m_platformWindow)

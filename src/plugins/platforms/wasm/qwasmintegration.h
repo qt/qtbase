@@ -81,6 +81,7 @@ public:
     void addScreen(const QString &canvasId);
     void removeScreen(const QString &canvasId);
     void resizeScreen(const QString &canvasId);
+    void updateDpi();
 
 private:
     mutable QWasmFontDatabase *m_fontDb;
@@ -89,6 +90,7 @@ private:
 
     QHash<QString, QWasmScreen *> m_screens;
     mutable QWasmClipboard *m_clipboard;
+    qreal m_fontDpi = -1;
     static QWasmIntegration *s_instance;
 };
 

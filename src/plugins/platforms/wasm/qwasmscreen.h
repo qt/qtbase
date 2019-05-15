@@ -63,6 +63,7 @@ public:
     QRect geometry() const override;
     int depth() const override;
     QImage::Format format() const override;
+    QDpi logicalDpi() const override;
     qreal devicePixelRatio() const override;
     QString name() const override;
     QPlatformCursor *cursor() const override;

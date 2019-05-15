@@ -113,7 +113,7 @@ public:
     void connectToScreen(QScreen *topLevelScreen);
     void disconnectFromScreen();
     void emitScreenChangedRecursion(QScreen *newScreen);
-    QScreen *screenForGeometry(const QRect &rect);
+    QScreen *screenForGeometry(const QRect &rect) const;
     void setTransientParent(QWindow *parent);
 
     virtual void clearFocusObject();
