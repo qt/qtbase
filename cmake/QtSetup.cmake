@@ -41,8 +41,8 @@ if(FEATURE_developer_build)
         set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     else()
-        # No-op. While building another module, the CMAKE_INSTALL_PREFIX should be set on the
-        # command line to point to the qtbase build dir.
+        # No-op. While building another module, the CMAKE_INSTALL_PREFIX or CMAKE_PREFIX_PATH
+        # (either work) should be set on the command line to point to the qtbase build dir.
     endif()
 else()
     set(QT_WILL_INSTALL ON)

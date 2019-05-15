@@ -176,6 +176,12 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
 set(QT_BUILD_INTERNALS_PATH \"\${CMAKE_CURRENT_LIST_DIR}\")")
 
+        # Propagate the original install prefix, so that a developer building a child module can
+        # specify CMAKE_PREFIX_PATH for finding the Qt modules instead of CMAKE_INSTALL_PREFIX.
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH
+\"Install path prefix, prepended onto install directories.\" FORCE)")
+
         # Propagate developer builds to other modules via BuildInternals package.
         if(FEATURE_developer_build)
             string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
