@@ -471,6 +471,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ItemViewActivateItemOnSingleClick);
     case QPlatformTheme::UiEffects:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::UiEffects);
+    case QPlatformTheme::ShowShortcutsInContextMenus:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }
@@ -521,7 +523,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case QPlatformTheme::StyleNames:
         return QVariant(QStringList());
     case QPlatformTheme::ShowShortcutsInContextMenus:
-        return QVariant(false);
+        return QVariant(true);
     case TextCursorWidth:
         return QVariant(1);
     case DropShadow:

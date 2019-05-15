@@ -150,6 +150,16 @@ static QWindow *qt_getWindow(const QWidget *widget)
 QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 
 @implementation NotificationReceiver
+{
+    QMacStylePrivate *privateStyle;
+}
+
+- (instancetype)initWithPrivateStyle:(QMacStylePrivate *)style
+{
+    if (self = [super init])
+        privateStyle = style;
+    return self;
+}
 
 - (void)scrollBarStyleDidChange:(NSNotification *)notification
 {
@@ -162,6 +172,23 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
     for (const auto &o : QMacStylePrivate::scrollBars)
         QCoreApplication::sendEvent(o, &event);
 }
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
+{
+    Q_UNUSED(keyPath);
+    Q_UNUSED(object);
+    Q_UNUSED(change);
+    Q_UNUSED(context);
+
+    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
+    Q_ASSERT(object == NSApp);
+
+    for (NSView *b : privateStyle->cocoaControls)
+        [b release];
+    privateStyle->cocoaControls.clear();
+}
+
 @end
 
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
@@ -2068,11 +2095,17 @@ QMacStyle::QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    d->receiver = [[NotificationReceiver alloc] init];
+    d->receiver = [[NotificationReceiver alloc] initWithPrivateStyle:d];
     [[NSNotificationCenter defaultCenter] addObserver:d->receiver
                                              selector:@selector(scrollBarStyleDidChange:)
                                                  name:NSPreferredScrollerStyleDidChangeNotification
                                                object:nil];
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
+        [NSApplication.sharedApplication addObserver:d->receiver forKeyPath:@"effectiveAppearance"
+         options:NSKeyValueObservingOptionNew context:nullptr];
+    }
+#endif
 }
 
 QMacStyle::~QMacStyle()
@@ -2081,6 +2114,10 @@ QMacStyle::~QMacStyle()
     QMacAutoReleasePool pool;
 
     [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
+        [NSApplication.sharedApplication removeObserver:d->receiver forKeyPath:@"effectiveAppearance"];
+#endif
     [d->receiver release];
 }
 

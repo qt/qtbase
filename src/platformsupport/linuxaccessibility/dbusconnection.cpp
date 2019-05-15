@@ -71,6 +71,10 @@ DBusConnection::DBusConnection(QObject *parent)
 {
     // Start monitoring if "org.a11y.Bus" is registered as DBus service.
     QDBusConnection c = QDBusConnection::sessionBus();
+    if (!c.isConnected()) {
+        return;
+    }
+
     dbusWatcher = new QDBusServiceWatcher(A11Y_SERVICE, c, QDBusServiceWatcher::WatchForRegistration, this);
     connect(dbusWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(serviceRegistered()));
 
