@@ -328,6 +328,11 @@ void Moc::parseFunctionArguments(FunctionDef *def)
         def->arguments.removeLast();
         def->isPrivateSignal = true;
     }
+    if (def->arguments.size() == 1
+        && def->arguments.constLast().normalizedType == "QMethodRawArguments") {
+        def->arguments.removeLast();
+        def->isRawSlot = true;
+    }
 }
 
 bool Moc::testFunctionAttribute(FunctionDef *def)

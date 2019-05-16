@@ -285,6 +285,10 @@ class QMetaEnum;
 class QMetaProperty;
 class QMetaClassInfo;
 
+struct QMethodRawArguments
+{
+    void **arguments;
+};
 
 class Q_CORE_EXPORT QGenericArgument
 {

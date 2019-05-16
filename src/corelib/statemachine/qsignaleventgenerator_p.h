@@ -62,13 +62,12 @@ class QStateMachine;
 
 class QSignalEventGenerator : public QObject
 {
-    Q_OBJECT_FAKE
+    Q_OBJECT
 public:
     QSignalEventGenerator(QStateMachine *parent);
 
-private:
-// slots
-    void execute(void **_a);
+private Q_SLOTS:
+    void execute(QMethodRawArguments a);
 
 private:
     Q_DISABLE_COPY_MOVE(QSignalEventGenerator)

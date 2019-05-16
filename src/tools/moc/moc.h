@@ -115,6 +115,7 @@ struct FunctionDef
     bool isConstructor = false;
     bool isDestructor = false;
     bool isAbstract = false;
+    bool isRawSlot = false;
 
     QJsonObject toJson() const;
     static void accessToJson(QJsonObject *obj, Access acs);

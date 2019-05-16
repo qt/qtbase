@@ -3655,6 +3655,21 @@ const char* QMetaClassInfo::value() const
 }
 
 /*!
+    \class QMethodRawArguments
+    \internal
+
+    A wrapper class for the void ** arguments array used by the meta
+    object system. If a slot uses a single argument of this type,
+    the meta object system will pass the raw arguments array directly
+    to the slot and set the arguments count in the slot description to
+    zero, so that any signal can connect to it.
+
+    This is used internally to implement signal relay functionality in
+    our state machine and dbus.
+*/
+
+
+/*!
     \macro QGenericArgument Q_ARG(Type, const Type &value)
     \relates QMetaObject
 
