@@ -145,7 +145,7 @@ static QString macTimeToString(const QTime &time, bool short_format)
 
 // Mac uses the Unicode CLDR format codes
 // http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-// See also qtbase/util/local_database/dateconverter.py
+// See also qtbase/util/locale_database/dateconverter.py
 // Makes the assumption that input formats are always well formed and consecutive letters
 // never exceed the maximum for the format code.
 static QString macToQtFormat(QStringView sys_fmt)

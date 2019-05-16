@@ -370,7 +370,7 @@ def main():
 
     Do not edit this section: instead regenerate it using
     cldr2qlocalexml.py and qlocalexml2cpp.py on updated (or
-    edited) CLDR data; see qtbase/util/local_database/.
+    edited) CLDR data; see qtbase/util/locale_database/.
 */
 
 """ % (str(datetime.date.today()), cldr_version) )
