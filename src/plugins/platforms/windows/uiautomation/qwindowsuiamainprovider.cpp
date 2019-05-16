@@ -52,6 +52,7 @@
 #include "qwindowsuiatableitemprovider.h"
 #include "qwindowsuiagridprovider.h"
 #include "qwindowsuiagriditemprovider.h"
+#include "qwindowsuiawindowprovider.h"
 #include "qwindowscombase.h"
 #include "qwindowscontext.h"
 #include "qwindowsuiautils.h"
@@ -263,6 +264,11 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     switch (idPattern) {
+    case UIA_WindowPatternId:
+        if (accessible->parent() && (accessible->parent()->role() == QAccessible::Application)) {
+            *pRetVal = new QWindowsUiaWindowProvider(id());
+        }
+        break;
     case UIA_TextPatternId:
     case UIA_TextPattern2Id:
         // All text controls.
