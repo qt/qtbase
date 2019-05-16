@@ -17,7 +17,7 @@ build_instructions:
     userMessageOnFailure: >
       Failed to call cmake. Contact Liang then.
   - type: ExecuteCommand
-    command: make DESTDIR={{.InstallRoot}} -j {{.NumCPU}} install
+    command: make DESTDIR={{.InstallRoot}} install
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
@@ -27,7 +27,7 @@ build_instructions:
       property: host.os
       equals_value: Windows
   - type: ExecuteCommand
-    command: jom DESTDIR={{.InstallRoot}} -j {{.NumCPU}} install
+    command: jom DESTDIR={{.InstallRoot}} install
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
