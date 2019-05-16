@@ -31,7 +31,7 @@ build_instructions:
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
-      Failed to call nmake install. Contact Liang then.
+      Failed to call jom install. Contact Liang then.
     disable_if:
       condition: property
       property: host.os
