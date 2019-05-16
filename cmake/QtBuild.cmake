@@ -930,6 +930,16 @@ function(add_qt_module target)
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
     endif()
 
+        set(extra_cmake_code "")
+
+        if(target STREQUAL Core)
+            # Propagate non-build related variables that are needed for consuming Qt packages.
+            # Do this in CoreConfig instead of Qt5Config, so that consumers can also use
+            # find_package(Qt5Core) instead of find_package(Qt5 COMPONENTS Core)
+            string(APPEND extra_cmake_code "
+set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
+        endif()
+
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
