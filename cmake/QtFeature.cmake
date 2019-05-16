@@ -427,6 +427,7 @@ function(qt_feature_module_end)
                 set_property(TARGET "${target}" PROPERTY ${propertyPrefix}QT_${capitalState}_${capitalVisibility}_FEATURES "${${state}_${visibility}_features}")
             endforeach()
         endforeach()
+        qt_feature_copy_global_config_features_to_core(${target})
     endif()
 
     unset(__QtFeature_library PARENT_SCOPE)
@@ -441,6 +442,30 @@ function(qt_feature_module_end)
     unset(__QtFeature_public_extra PARENT_SCOPE)
 
     unset(__QtFeature_define_definitions PARENT_SCOPE)
+endfunction()
+
+function(qt_feature_copy_global_config_features_to_core target)
+    # CMake doesn't support setting custom properties on exported INTERFACE libraries
+    # See https://gitlab.kitware.com/cmake/cmake/issues/19261.
+    # To circumvent that, copy the properties from GlobalConfig to Core target.
+    # This way the global features actually get set in the generated CoreTargets.cmake file.
+    if(target STREQUAL Core)
+        foreach(visibility public private)
+            string(TOUPPER "${visibility}" capitalVisibility)
+            foreach(state enabled disabled)
+                string(TOUPPER "${state}" capitalState)
+
+                set(core_property_name "QT_${capitalState}_${capitalVisibility}_FEATURES")
+                set(global_property_name "INTERFACE_${core_property_name}")
+
+                get_property(core_values TARGET Core PROPERTY ${core_property_name})
+                get_property(global_values TARGET GlobalConfig PROPERTY ${global_property_name})
+
+                set(total_values ${core_values} ${global_values})
+                set_property(TARGET Core PROPERTY ${core_property_name} ${total_values})
+            endforeach()
+        endforeach()
+    endif()
 endfunction()
 
 function(qt_config_compile_test name)
