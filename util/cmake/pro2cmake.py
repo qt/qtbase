@@ -43,7 +43,8 @@ from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
 
 from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_library, \
-    featureName, map_platform, find_library_info_for_target, generate_find_package_info
+    featureName, map_platform, find_library_info_for_target, generate_find_package_info, \
+    LibraryMapping
 
 from shutil import copyfile
 from special_case_helper import SpecialCaseHandler
@@ -205,13 +206,11 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
 
 
 class Operation:
-    def __init__(self, value):
-        if isinstance(value, list):
-            self._value = value
-        else:
-            self._value = [str(value), ]
+    def __init__(self, value: typing.List[str]):
+        self._value = value
 
-    def process(self, key, input, transformer):
+    def process(self, key: str, input: typing.List[str],
+                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
         assert(False)
 
     def __repr__(self):
@@ -234,7 +233,8 @@ class Operation:
 
 
 class AddOperation(Operation):
-    def process(self, key, input, transformer):
+    def process(self, key: str, input: typing.List[str],
+                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
         return input + transformer(self._value)
 
     def __repr__(self):
@@ -242,7 +242,8 @@ class AddOperation(Operation):
 
 
 class UniqueAddOperation(Operation):
-    def process(self, key, input, transformer):
+    def process(self, key: str, input: typing.List[str],
+                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
         result = input
         for v in transformer(self._value):
             if v not in result:
@@ -254,10 +255,11 @@ class UniqueAddOperation(Operation):
 
 
 class SetOperation(Operation):
-    def process(self, key, input, transformer):
+    def process(self, key: str, input: typing.List[str],
+                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
         values = []  # typing.List[str]
         for v in self._value:
-            if v != '$$' + key:
+            if v != '$${}'.format(key):
                 values.append(v)
             else:
                 values += input
@@ -275,7 +277,8 @@ class RemoveOperation(Operation):
     def __init__(self, value):
         super().__init__(value)
 
-    def process(self, key, input, transformer):
+    def process(self, key: str, input: typing.List[str],
+                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
         input_set = set(input)
         value_set = set(self._value)
         result = []
@@ -305,8 +308,8 @@ class Scope(object):
                  file: typing.Optional[str] = None, condition: str = '',
                  base_dir: str = '',
                  operations: typing.Mapping[str, typing.List[Operation]] = {
-                    'QT_SOURCE_TREE': [SetOperation('${PROJECT_SOURCE_DIR}')],
-                    'QT_BUILD_TREE': [SetOperation('${PROJECT_BUILD_DIR}')],
+                    'QT_SOURCE_TREE': [SetOperation(['${PROJECT_SOURCE_DIR}'])],
+                    'QT_BUILD_TREE': [SetOperation(['${PROJECT_BUILD_DIR}'])],
                  }) -> None:
         if parent_scope:
             parent_scope._add_child(self)

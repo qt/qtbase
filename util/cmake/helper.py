@@ -367,6 +367,7 @@ def generate_find_package_info(lib: LibraryMapping, use_qt_find_package: bool=Tr
         extra.remove("REQUIRED")
 
     cmake_target_name = lib.targetName
+    assert(cmake_target_name);
 
     # _nolink or not does not matter at this point:
     if cmake_target_name.endswith('_nolink') or cmake_target_name.endswith('/nolink'):
