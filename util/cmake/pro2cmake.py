@@ -1482,7 +1482,7 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
 
     write_main_part(cm_fh, module_name[2:], 'Module', 'add_qt_module', scope,
                     extra_lines=extra, indent=indent,
-                    known_libraries={'Qt::Core', }, extra_keys=[])
+                    known_libraries={}, extra_keys=[])
 
     if 'qt_tracepoints' in scope.get('CONFIG'):
         tracepoints = scope.get_files('TRACEPOINT_PROVIDER')
@@ -1596,7 +1596,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
     assert plugin_name
 
     write_main_part(cm_fh, plugin_name, 'Plugin', 'add_qt_plugin', scope,
-                    indent=indent, known_libraries={'QtCore', }, extra_keys=[])
+                    indent=indent, known_libraries={}, extra_keys=[])
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
