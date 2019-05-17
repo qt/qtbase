@@ -155,6 +155,27 @@ def fixup_linecontinuation(contents: str) -> str:
     return contents
 
 
+def fixup_comments(contents: str) -> str:
+    # Get rid of completely commented out lines.
+    # So any line which starts with a '#' char and ends with a new line
+    # will be replaced by a single new line.
+    #
+    # This is needed because qmake syntax is weird. In a multi line
+    # assignment (separated by backslashes and newlines aka
+    # # \\\n ), if any of the lines are completely commented out, in
+    # principle the assignment should fail.
+    #
+    # It should fail because you would have a new line separating
+    # the previous value from the next value, and the next value would
+    # not be interpreted as a value, but as a new token / operation.
+    # qmake is lenient though, and accepts that, so we need to take
+    # care of it as well, as if the commented line didn't exist in the
+    # first place.
+
+    contents = re.sub(r'\n#[^\n]*?\n', '\n', contents, re.DOTALL)
+    return contents
+
+
 def spaces(indent: int) -> str:
     return '    ' * indent
 
@@ -782,12 +803,7 @@ class QmakeParser:
                 expr.setDebug()
 
         Grammar = StatementGroup('statements')
-
-        # Ignore comment lines, including the final line break,
-        # otherwise parsing fails when looking at multi line assignments
-        # with comments in between.
-        Comment = pp.Regex(r"#.*\n").setName("qmake style comment")
-        Grammar.ignore(Comment())
+        Grammar.ignore(pp.pythonStyleComment())
 
         return Grammar
 
@@ -799,6 +815,7 @@ class QmakeParser:
 
             old_contents = contents
             contents = fixup_linecontinuation(contents)
+            contents = fixup_comments(contents)
 
             if old_contents != contents:
                 print('Warning: Fixed line continuation in .pro-file!\n'
