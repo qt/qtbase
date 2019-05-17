@@ -55,7 +55,6 @@ add_qt_module(Network
         kernel
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB # special case
     PUBLIC_LIBRARIES
         Qt::Core
 )
@@ -160,14 +159,6 @@ extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX
         ${CMAKE_DL_LIBS}
 )
 
-# special case begin
-# Do not add this to android!
-extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY AND NOT ANDROID
-    SOURCES
-        kernel/qdnslookup_unix.cpp
-)
-# special case end
-
 extend_target(Network CONDITION QT_FEATURE_linux_netlink AND UNIX
     SOURCES
         kernel/qnetworkinterface_linux.cpp
@@ -180,7 +171,7 @@ extend_target(Network CONDITION UNIX AND NOT QT_FEATURE_linux_netlink
 
 extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
     SOURCES
-        # kernel/qdnslookup_unix.cpp # special case: No more need to remove this
+        -kernel/qdnslookup_unix.cpp
         kernel/qdnslookup_android.cpp
 )
 
@@ -420,9 +411,6 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
     LIBRARIES
         crypt32
 )
-
-extend_target(Network CONDITION WIN32 LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
-
 add_qt_docs(
     doc/qtnetwork.qdocconf
 )
