@@ -5320,7 +5320,7 @@ QScrollEvent::ScrollState QScrollEvent::scrollState() const
 
 /*!
     Creates a new QScreenOrientationChangeEvent
-    \a orientation is the new orientation of the screen.
+    \a screenOrientation is the new orientation of the \a screen.
 */
 QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation screenOrientation)
     : QEvent(QEvent::OrientationChange), m_screen(screen), m_orientation(screenOrientation)

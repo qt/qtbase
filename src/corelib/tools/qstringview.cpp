@@ -721,9 +721,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qsizetype QStringView::indexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
-    \fn qsizetype QStringView::indexOf(QLatin1String l1, qsizetype from Qt::CaseSensitivity cs) const
-    \fn qsizetype QStringView::indexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
     Returns the index position of the first occurrence of the string-view \a str,
@@ -819,16 +819,16 @@ QT_BEGIN_NAMESPACE
 
     Transcribes this string into the given \a array.
 
-    Caller is responsible for ensuring \a array is large enough to hold the \t
-    wchar_t encoding of this string (allocating the array with the same length
+    Caller is responsible for ensuring \a array is large enough to hold the
+    \c wchar_t encoding of this string (allocating the array with the same length
     as the string is always sufficient). The array is encoded in UTF-16 on
-    platforms where \t wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
-    systems), \t wchar_t is assumed to be 4 bytes wide and the data is written
+    platforms where \c wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
+    systems), \c wchar_t is assumed to be 4 bytes wide and the data is written
     in UCS-4.
 
     \note This function writes no null terminator to the end of \a array.
 
-    Returns the number of \t wchar_t entries written to \a array.
+    Returns the number of \c wchar_t entries written to \a array.
 
     \sa QString::toWCharArray()
 */

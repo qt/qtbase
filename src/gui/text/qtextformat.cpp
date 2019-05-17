@@ -565,6 +565,15 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value HeadingLevel     The level of a heading, for example 1 corresponds to an HTML H1 tag; otherwise 0.
                             This enum value has been added in Qt 5.12.
 
+    \value BlockQuoteLevel  The depth of nested quoting on this block: 1 means the block is a top-level block quote.
+                            Blocks that are not block quotes should not have this property.
+                            This enum value has been added in Qt 5.14.
+    \value BlockCodeLanguage The programming language in a preformatted or code block.
+                            Blocks that do not contain code should not have this property.
+                            This enum value has been added in Qt 5.14.
+    \value BlockMarker      The \l{QTextBlockFormat::MarkerType}{type of adornment} to be shown alongside the block.
+                            This enum value has been added in Qt 5.14.
+
     Character properties
 
     \value FontFamily

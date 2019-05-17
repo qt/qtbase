@@ -181,7 +181,7 @@ QStringMatcher::QStringMatcher(const QChar *uc, int len, Qt::CaseSensitivity cs)
 }
 
 /*!
-    \fn QStringMatcher::QStringMatcher(QStringView str, Qt::CaseSensitivity cs)
+    \fn QStringMatcher::QStringMatcher(QStringView pattern, Qt::CaseSensitivity cs = Qt::CaseSensitive)
     \since 5.14
 
     Constructs a string matcher that will search for \a pattern, with

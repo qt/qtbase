@@ -9509,9 +9509,9 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
-    \fn int QLatin1String::indexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
-    \fn int QLatin1String::indexOf(QLatin1String l1, int from Qt::CaseSensitivity cs) const
-    \fn int QLatin1String::indexOf(QChar c, int from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::indexOf(QStringView str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn int QLatin1String::indexOf(QLatin1String l1, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn int QLatin1String::indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
     Returns the index position of the first occurrence of the string-view \a str,

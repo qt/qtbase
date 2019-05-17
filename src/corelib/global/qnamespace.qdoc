@@ -2477,6 +2477,9 @@
     \value AutoText The text string is interpreted as for
         Qt::RichText if Qt::mightBeRichText() returns \c true, otherwise
         as Qt::PlainText.
+
+    \value MarkdownText The text string is interpreted as Markdown-formatted text.
+        This enum value was added in Qt 5.14.
 */
 
 /*!

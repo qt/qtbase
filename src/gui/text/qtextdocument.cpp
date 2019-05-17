@@ -3292,8 +3292,11 @@ QString QTextDocument::toHtml(const QByteArray &encoding) const
 #endif // QT_NO_TEXTHTMLPARSER
 
 /*!
-    Returns a string containing a Markdown representation of the document,
-    or an empty string if writing fails for any reason.
+    \since 5.14
+    Returns a string containing a Markdown representation of the document with
+    the given \a features, or an empty string if writing fails for any reason.
+
+    \sa setMarkdown
 */
 #if QT_CONFIG(textmarkdownwriter)
 QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) const
@@ -3308,6 +3311,7 @@ QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) cons
 #endif
 
 /*!
+    \since 5.14
     Replaces the entire contents of the document with the given
     Markdown-formatted text in the \a markdown string, with the given
     \a features supported.  By default, all supported GitHub-style
