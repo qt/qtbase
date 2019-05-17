@@ -64,8 +64,6 @@ add_qt_module(Widgets
         Qt::Gui
 )
 
-add_dependencies(Widgets ${QT_CMAKE_EXPORT_NAMESPACE}::uic)  # special case
-
 # Resources:
 add_qt_resource(Widgets "qstyle" PREFIX "/qt-project.org/styles/commonstyle" BASE "styles" FILES
     images/cdr-128.png
@@ -279,8 +277,6 @@ extend_target(Widgets CONDITION APPLE_OSX
         ${FWAppKit}
         z
 )
-
-# extend_target(Widgets CONDITION ((APPLE_OSX) AND (APPLE_OSX)) AND (_x_-mwerks) # special case
 
 extend_target(Widgets CONDITION WIN32
     INCLUDE_DIRECTORIES
