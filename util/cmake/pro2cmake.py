@@ -206,8 +206,11 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
 
 
 class Operation:
-    def __init__(self, value: typing.List[str]):
-        self._value = value
+    def __init__(self, value: typing.Union[typing.List[str], str]):
+        if isinstance(value, list):
+            self._value = value
+        else:
+            self._value = [str(value), ]
 
     def process(self, key: str, input: typing.List[str],
                 transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
