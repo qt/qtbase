@@ -19,23 +19,25 @@ add_qt_module(Sql
         kernel/qsqlresult.cpp kernel/qsqlresult.h kernel/qsqlresult_p.h
         kernel/qtsqlglobal.h kernel/qtsqlglobal_p.h
     DEFINES
-        QT_NO_USING_NAMESPACE
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
+        QT_NO_USING_NAMESPACE
     LIBRARIES
         Qt::CorePrivate
-    PUBLIC_LIBRARIES  # special case
+    PUBLIC_LIBRARIES
         Qt::Core
-    # MODULE_PLUGIN_TYPES = "sqldrivers"
-    # PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
-    # SQL_P = "sql"
-    # _LOADED = "qt_module"
 )
+
+#### Keys ignored in scope 1:.:.:sql.pro:<TRUE>:
+# MODULE_PLUGIN_TYPES = "sqldrivers"
+# PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
+# SQL_P = "sql"
+# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
 
-extend_target(Sql CONDITION MSVC AND (TEST_architecture_arch  STREQUAL "i386")
+extend_target(Sql CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x62000000"
 )
@@ -47,5 +49,6 @@ extend_target(Sql CONDITION QT_FEATURE_sqlmodel
         models/qsqlrelationaltablemodel.cpp models/qsqlrelationaltablemodel.h
         models/qsqltablemodel.cpp models/qsqltablemodel.h models/qsqltablemodel_p.h
 )
-
-add_qt_docs(./doc/qtsql.qdocconf)
+add_qt_docs(
+    doc/qtsql.qdocconf
+)
