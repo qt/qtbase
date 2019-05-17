@@ -1624,7 +1624,8 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
             assert not is_example
             write_test(cm_fh, scope, indent=indent)
         else:
-            gui = 'console' not in scope.get('CONFIG')
+            config = scope.get('CONFIG')
+            gui = all(val not in config for val in ['console', 'cmdline'])
             if is_example:
                 write_example(cm_fh, scope, gui, indent=indent)
             else:
