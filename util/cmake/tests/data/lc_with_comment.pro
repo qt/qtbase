@@ -1,0 +1,4 @@
+SUBDIRS = \
+#    dds \
+    tga \
+    wbmp

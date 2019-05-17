@@ -779,7 +779,12 @@ class QmakeParser:
                 expr.setDebug()
 
         Grammar = StatementGroup('statements')
-        Grammar.ignore(pp.pythonStyleComment())
+
+        # Ignore comment lines, including the final line break,
+        # otherwise parsing fails when looking at multi line assignments
+        # with comments in between.
+        Comment = pp.Regex(r"#.*\n").setName("qmake style comment")
+        Grammar.ignore(Comment())
 
         return Grammar
 

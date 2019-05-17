@@ -305,3 +305,7 @@ def test_realworld_lc():
     result = parse_file(_tests_path + '/data/lc.pro')
     assert len(result) == 3
 
+
+def test_realworld_lc_with_comment_in_between():
+    result = parse_file(_tests_path + '/data/lc_with_comment.pro')
+    assert len(result) == 1
