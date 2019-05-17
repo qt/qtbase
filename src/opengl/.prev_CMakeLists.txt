@@ -30,7 +30,6 @@ add_qt_module(OpenGL
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::WidgetsPrivate
-        WrapOpenGL # special case
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
