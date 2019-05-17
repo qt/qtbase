@@ -18,7 +18,9 @@ qt_find_package(WrapRt PROVIDED_TARGETS WrapRt)
 qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST)
 qt_find_package(PCRE2 PROVIDED_TARGETS PCRE2)
 set_package_properties(PCRE2 PROPERTIES TYPE REQUIRED)
-qt_find_package(PPS PROVIDED_TARGETS PPS::PPS)
+if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(PPS PROVIDED_TARGETS PPS::PPS)
+endif()
 qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2)
 
 

@@ -35,13 +35,18 @@ class LibraryMapping:
                  targetName: typing.Optional[str], *,
                  resultVariable: typing.Optional[str] = None,
                  extra: typing.List[str] = [],
-                 appendFoundSuffix: bool = True) -> None:
+                 appendFoundSuffix: bool = True,
+                 emit_if: str = '') -> None:
         self.soName = soName
         self.packageName = packageName
         self.resultVariable = resultVariable
         self.appendFoundSuffix = appendFoundSuffix
         self.extra = extra
         self.targetName = targetName
+
+        # if emit_if is non-empty, the generated find_package call
+        # for a library will be surrounded by this condition.
+        self.emit_if = emit_if
 
     def is_qt(self) -> bool:
         return self.packageName == 'Qt' \
@@ -172,6 +177,7 @@ _qt_library_map = [
     # qtzlib: No longer supported.
 ]
 
+# Note that the library map is adjusted dynamically further down.
 _library_map = [
     # 3rd party:
     LibraryMapping('atspi', 'ATSPI2', 'PkgConfig::ATSPI2'),
@@ -245,6 +251,20 @@ _library_map = [
     LibraryMapping('zlib', 'ZLIB', 'ZLIB::ZLIB', extra=['REQUIRED']),
     LibraryMapping('zstd', 'ZSTD', 'ZSTD::ZSTD'),
 ]
+
+
+def _adjust_library_map():
+    # Assign a Linux condition on all x and wayland related packages.
+    # We don't want to get pages of package not found messages on
+    # Windows and macOS, and this also improves configure time on
+    # those platforms.
+    linux_package_prefixes = ['xcb', 'x11', 'xkb', 'xrender', 'xlib', 'wayland']
+    for i, _ in enumerate(_library_map):
+        if any([_library_map[i].soName.startswith(p) for p in linux_package_prefixes]):
+            _library_map[i].emit_if = 'config.linux'
+
+
+_adjust_library_map()
 
 
 def find_3rd_party_library_mapping(soName: str) -> typing.Optional[LibraryMapping]:
@@ -356,8 +376,10 @@ def map_3rd_party_library(lib: str) -> str:
     return mapping.targetName + libpostfix
 
 
-def generate_find_package_info(lib: LibraryMapping, use_qt_find_package: bool=True, *,
-                               indent: int = 0) -> str:
+def generate_find_package_info(lib: LibraryMapping,
+                               use_qt_find_package: bool=True, *,
+                               indent: int = 0,
+                               emit_if: str = '') -> str:
     isRequired = False
 
     extra = lib.extra.copy()
@@ -377,7 +399,8 @@ def generate_find_package_info(lib: LibraryMapping, use_qt_find_package: bool=Tr
         extra += ['PROVIDED_TARGETS', cmake_target_name]
 
     result = ''
-    ind = '    ' * indent
+    one_ind = '    '
+    ind = one_ind * indent
 
     if use_qt_find_package:
         if extra:
@@ -392,5 +415,13 @@ def generate_find_package_info(lib: LibraryMapping, use_qt_find_package: bool=Tr
             result = '{}find_package({} {})\n'.format(ind, lib.packageName, ' '.join(extra))
         else:
             result = '{}find_package({})\n'.format(ind, lib.packageName)
+
+    # If a package should be found only in certain conditions, wrap
+    # the find_package call within that condition.
+    if emit_if:
+        result = "if(({emit_if}) OR QT_FIND_ALL_PACKAGES_ALWAYS)\n" \
+                 "{ind}{result}endif()\n".format(emit_if=emit_if,
+                                                 result=result,
+                                                 ind=one_ind)
 
     return result

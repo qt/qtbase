@@ -181,9 +181,29 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
     if newlib.targetName in cmake_find_packages_set:
         return
 
+    # If certain libraries are used within a feature, but the feature
+    # is only emitted conditionally with a simple condition (like
+    # 'on Windows' or 'on Linux'), we should enclose the find_package
+    # call for the library into the same condition.
+    emit_if = newlib.emit_if
+
+    # Only look through features if a custom emit_if wasn't provided.
+    if not emit_if:
+        for feature in data['features']:
+            feature_data = data['features'][feature]
+            if 'condition' in feature_data and \
+                    'libs.{}'.format(lib) in feature_data['condition'] and \
+                    'emitIf' in feature_data and \
+                    'config.' in feature_data['emitIf']:
+                emit_if = feature_data['emitIf']
+                break
+
+    if emit_if:
+        emit_if = map_condition(emit_if)
+
     cmake_find_packages_set.add(newlib.targetName)
 
-    cm_fh.write(generate_find_package_info(newlib))
+    cm_fh.write(generate_find_package_info(newlib, emit_if=emit_if))
 
 
 def lineify(label, value, quote=True):
@@ -890,7 +910,7 @@ def processLibraries(ctx, data, cm_fh):
         return
 
     for lib in data['libraries']:
-        parseLib(ctx, lib, data['libraries'][lib], cm_fh, cmake_find_packages_set)
+        parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set)
 
 
 def processSubconfigs(dir, ctx, data):
