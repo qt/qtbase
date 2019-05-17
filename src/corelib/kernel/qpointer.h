@@ -83,7 +83,7 @@ public:
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
     inline T* data() const
-    { return static_cast<T*>(wp.d == nullptr || wp.d->strongref.load() == 0 ? nullptr : wp.value); }
+    { return static_cast<T*>(wp.internalData()); }
     inline T* operator->() const
     { return data(); }
     inline T& operator*() const
@@ -143,7 +143,7 @@ template<typename T>
 QPointer<T>
 qPointerFromVariant(const QVariant &variant)
 {
-    return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
+    return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
 }
 
 template <class T>

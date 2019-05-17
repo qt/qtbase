@@ -568,7 +568,7 @@ public:
 
 #if QT_DEPRECATED_SINCE(5, 14)
     QT_DEPRECATED_X("Use toStrongRef() instead, and data() on the returned QSharedPointer")
-    T *data() const noexcept { return d == nullptr || d->strongref.load() == 0 ? nullptr : value; }
+    T *data() const noexcept { return internalData(); }
 #endif
 
     inline QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
@@ -678,6 +678,12 @@ public:
 #else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QPointer;
+    template<typename X>
+    friend QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<X*>::Value, X>::type>
+    qWeakPointerFromVariant(const QVariant &variant);
+    template<typename X>
+    friend QPointer<X>
+    qPointerFromVariant(const QVariant &variant);
 #endif
 
     template <class X>
@@ -699,6 +705,13 @@ public:
             delete d;
         d = o;
         value = actual;
+    }
+
+    // ### Qt 6: remove users of this API; no one should ever access
+    // a weak pointer's data but the weak pointer itself
+    inline T *internalData() const noexcept
+    {
+        return d == nullptr || d->strongref.load() == 0 ? nullptr : value;
     }
 
     Data *d;
@@ -974,11 +987,13 @@ qobject_cast(const QWeakPointer<T> &src)
     return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
 }
 
+/// ### Qt 6: make this use toStrongRef() (once support for storing
+/// non-managed QObjects in QWeakPointer is removed)
 template<typename T>
 QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
 qWeakPointerFromVariant(const QVariant &variant)
 {
-    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
+    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
 }
 template<typename T>
 QSharedPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
