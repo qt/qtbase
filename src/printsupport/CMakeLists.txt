@@ -18,21 +18,22 @@ add_qt_module(PrintSupport
         kernel/qprinterinfo.cpp kernel/qprinterinfo.h kernel/qprinterinfo_p.h
         kernel/qtprintsupportglobal.h kernel/qtprintsupportglobal_p.h
     DEFINES
-        QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
+        QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
-        widgets
         dialogs
+        widgets
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES # special case
+    PUBLIC_LIBRARIES
+        Qt::Core
         Qt::Gui
         Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:printsupport.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:printsupport.pro:<TRUE>:
 # MODULE_PLUGIN_TYPES = "printsupport"
 # QMAKE_LIBS = "$$QMAKE_LIBS_PRINTSUPPORT"
 # _LOADED = "qt_module"
@@ -143,5 +144,6 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog
     SOURCES
         dialogs/qprintpreviewdialog.cpp dialogs/qprintpreviewdialog.h
 )
-
-add_qt_docs(./doc/qtprintsupport.qdocconf)
+add_qt_docs(
+    doc/qtprintsupport.qdocconf
+)
