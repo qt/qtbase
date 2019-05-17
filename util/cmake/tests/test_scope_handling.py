@@ -37,7 +37,7 @@ ScopeList = typing.List[Scope]
 def _map_to_operation(**kwargs):
     result = {}  # type: typing.Mapping[str, typing.List[SetOperation]]
     for (key, value) in kwargs.items():
-        result[key] = [SetOperation(value)]
+        result[key] = [SetOperation([value])]
     return result
 
 
@@ -75,13 +75,13 @@ def test_evaluate_child_scope():
 
     assert scope.total_condition == 'QT_FEATURE_foo'
     assert len(scope.children) == 1
-    assert scope.getString('test1') == 'bar'
-    assert scope.getString('test2', 'not found') == 'not found'
+    assert scope.get_string('test1') == 'bar'
+    assert scope.get_string('test2', 'not found') == 'not found'
 
     child = scope.children[0]
     assert child.total_condition == 'QT_FEATURE_bar AND QT_FEATURE_foo'
-    assert child.getString('test1', 'not found') == 'not found'
-    assert child.getString('test2') == 'bar'
+    assert child.get_string('test1', 'not found') == 'not found'
+    assert child.get_string('test2') == 'bar'
 
 
 def test_evaluate_two_child_scopes():
@@ -94,21 +94,21 @@ def test_evaluate_two_child_scopes():
 
     assert scope.total_condition == 'QT_FEATURE_foo'
     assert len(scope.children) == 2
-    assert scope.getString('test1') == 'bar'
-    assert scope.getString('test2', 'not found') == 'not found'
-    assert scope.getString('test3', 'not found') == 'not found'
+    assert scope.get_string('test1') == 'bar'
+    assert scope.get_string('test2', 'not found') == 'not found'
+    assert scope.get_string('test3', 'not found') == 'not found'
 
     child1 = scope.children[0]
     assert child1.total_condition == 'QT_FEATURE_bar AND QT_FEATURE_foo'
-    assert child1.getString('test1', 'not found') == 'not found'
-    assert child1.getString('test2') == 'bar'
-    assert child1.getString('test3', 'not found') == 'not found'
+    assert child1.get_string('test1', 'not found') == 'not found'
+    assert child1.get_string('test2') == 'bar'
+    assert child1.get_string('test3', 'not found') == 'not found'
 
     child2 = scope.children[1]
     assert child2.total_condition == 'QT_FEATURE_buz AND QT_FEATURE_foo'
-    assert child2.getString('test1', 'not found') == 'not found'
-    assert child2.getString('test2') == ''
-    assert child2.getString('test3', 'not found') == 'buz'
+    assert child2.get_string('test1', 'not found') == 'not found'
+    assert child2.get_string('test2') == ''
+    assert child2.get_string('test3', 'not found') == 'buz'
 
 
 def test_evaluate_else_child_scopes():
@@ -121,21 +121,21 @@ def test_evaluate_else_child_scopes():
 
     assert scope.total_condition == 'QT_FEATURE_foo'
     assert len(scope.children) == 2
-    assert scope.getString('test1') == 'bar'
-    assert scope.getString('test2', 'not found') == 'not found'
-    assert scope.getString('test3', 'not found') == 'not found'
+    assert scope.get_string('test1') == 'bar'
+    assert scope.get_string('test2', 'not found') == 'not found'
+    assert scope.get_string('test3', 'not found') == 'not found'
 
     child1 = scope.children[0]
     assert child1.total_condition == 'QT_FEATURE_bar AND QT_FEATURE_foo'
-    assert child1.getString('test1', 'not found') == 'not found'
-    assert child1.getString('test2') == 'bar'
-    assert child1.getString('test3', 'not found') == 'not found'
+    assert child1.get_string('test1', 'not found') == 'not found'
+    assert child1.get_string('test2') == 'bar'
+    assert child1.get_string('test3', 'not found') == 'not found'
 
     child2 = scope.children[1]
     assert child2.total_condition == 'QT_FEATURE_foo AND NOT QT_FEATURE_bar'
-    assert child2.getString('test1', 'not found') == 'not found'
-    assert child2.getString('test2') == ''
-    assert child2.getString('test3', 'not found') == 'buz'
+    assert child2.get_string('test1', 'not found') == 'not found'
+    assert child2.get_string('test2') == ''
+    assert child2.get_string('test3', 'not found') == 'buz'
 
 
 def test_evaluate_invalid_else_child_scopes():
@@ -196,8 +196,8 @@ def test_merge_two_scopes_with_same_condition():
     assert len(result) == 1
     r0 = result[0]
     assert r0.total_condition == 'QT_FEATURE_bar'
-    assert r0.getString('test') == 'foo'
-    assert r0.getString('test2') == 'bar'
+    assert r0.get_string('test') == 'foo'
+    assert r0.get_string('test2') == 'bar'
 
 
 def test_merge_three_scopes_two_with_same_condition():
@@ -214,8 +214,8 @@ def test_merge_three_scopes_two_with_same_condition():
     assert len(result) == 2
     r0 = result[0]
     assert r0.total_condition == 'QT_FEATURE_bar'
-    assert r0.getString('test') == 'foo'
-    assert r0.getString('test2') == 'bar'
+    assert r0.get_string('test') == 'foo'
+    assert r0.get_string('test2') == 'bar'
 
     assert result[1] == scopes[1]
 
@@ -261,8 +261,8 @@ def test_merge_parent_child_scopes_with_same_conditions():
     r0 = result[0]
     assert r0.parent == None
     assert r0.total_condition == 'FOO AND bar'
-    assert r0.getString('test1') == 'parent'
-    assert r0.getString('test2') == 'child'
+    assert r0.get_string('test1') == 'parent'
+    assert r0.get_string('test2') == 'child'
 
 
 def test_merge_parent_child_scopes_with_on_child_condition():
@@ -277,8 +277,8 @@ def test_merge_parent_child_scopes_with_on_child_condition():
     r0 = result[0]
     assert r0.parent == None
     assert r0.total_condition == 'FOO AND bar'
-    assert r0.getString('test1') == 'parent'
-    assert r0.getString('test2') == 'child'
+    assert r0.get_string('test1') == 'parent'
+    assert r0.get_string('test2') == 'child'
 
 
 # Real world examples:
