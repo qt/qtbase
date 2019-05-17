@@ -1,44 +1,10 @@
 # Generated from gui.pro.
 
-set(OpenGL_GL_PREFERENCE GLVND) # special case:
-
 #####################################################################
 ## Gui Module:
 #####################################################################
 
-# special case begin
-if (QT_FEATURE_gui)
-    if (WINRT)
-        set(_default_platform "winrt")
-    elseif(WIN32)
-        set(_default_platform "windows")
-    elseif(ANDROID)
-        set(_default_platform "android")
-    elseif(APPLE_OSX)
-        set(_default_platform "cocoa")
-    elseif(APPLE_TVOS OR APPLE_IOS)
-        set(_default_platform "ios")
-    elseif(APPLE_WATCHOS)
-        set(_default_platform "minimal")
-    elseif(QNX)
-        set(_default_platform "qnx")
-    elseif(INTEGRITY)
-        set(_default_platform "integrityfb")
-    elseif(HAIKU)
-        set(_default_platform "haiku")
-    elseif(WASM)
-        set(_default_platform "webassembly")
-    else()
-        set(_default_platform "xcb")
-    endif()
-
-    set(QT_QPA_DEFAULT_PLATFORM "${_default_platform}" CACHE STRING "QPA default platform")
-endif()
-# special case end
-
 add_qt_module(Gui
-    FEATURE_DEPENDENCIES  # special case:
-        Qt::Network # special case:
     SOURCES
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
@@ -65,7 +31,7 @@ add_qt_module(Gui
         image/qppmhandler.cpp image/qppmhandler_p.h
         image/qxbmhandler.cpp image/qxbmhandler_p.h
         image/qxpmhandler.cpp image/qxpmhandler_p.h
-        # itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h # special case
+        itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
         kernel/qclipboard.cpp kernel/qclipboard.h
         kernel/qcursor.cpp kernel/qcursor.h kernel/qcursor_p.h
         kernel/qevent.cpp kernel/qevent.h kernel/qevent_p.h
@@ -238,23 +204,13 @@ add_qt_module(Gui
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
-        QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}" # special case
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB # special case
     PUBLIC_LIBRARIES
         Qt::Core
 )
 
 # Resources:
-
-# special case begin
-# This name is fixed in the code:-/
-add_qt_resource(Gui qmake_webgradients PREFIX "/qgradient" BASE "painting" FILES
-    webgradients.binaryjson
-)
-# special case end
-
 set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
     PROPERTIES alias "sRGB2014.icc")
 add_qt_resource(Gui "qpdf" PREFIX "qpdf/" BASE "painting" FILES
@@ -299,21 +255,10 @@ add_qt_simd_part(Gui SIMD mips_dspr2
         painting/qdrawhelper_mips_dspr2_asm.S
 )
 
-# special case begin
-# Replace arch_haswell with avx2 feature. That is what is used in the code requireing
-# this file, too!
-add_qt_simd_part(Gui SIMD avx2
+add_qt_simd_part(Gui SIMD arch_haswell
     SOURCES
         painting/qdrawhelper_avx2.cpp
 )
-# special case end
-
-# special case begin
-extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
-    SOURCES
-        itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
-)
-# special case end
 
 
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
@@ -425,16 +370,6 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
 
-# special case begin
-# With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
-# acted like WrapOpenGL: direct linkage against either libGLESv2 or
-# libGL, depending on the opengl _feature_. This is done by hand now
-# here (where the feature is available).
-# DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
-# available until the add_qt_module call.
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
-# special case end
-
 extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
         kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
@@ -467,8 +402,6 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
-    LIBRARIES # special case
-        WrapOpenGL # special case
 )
 
 extend_target(Gui CONDITION QT_FEATURE_movie
@@ -509,7 +442,11 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-# extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5 ... # special case:
+extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5
+    SOURCES
+        -painting/qdrawhelper.cpp
+        painting/qdrawhelper.cpp
+)
 
 #### Keys ignored in scope 45:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
@@ -518,14 +455,6 @@ extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )
-
-# special case begin
-extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64" AND QT_FEATURE_neon)
-    SOURCES
-        ../3rdparty/pixman/pixman-arm-neon-asm.S
-        painting/qdrawhelper_neon_asm.S
-)
-# special case end
 
 #### Keys ignored in scope 46:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND NOT INTEGRITY AND NOT QT_ARCH___contains___arm64:
 # NEON_ASM = "../3rdparty/pixman/pixman-arm-neon-asm.S" "painting/qdrawhelper_neon_asm.S"
@@ -570,14 +499,6 @@ extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
         opengl/qopenglfunctions_es2.cpp opengl/qopenglfunctions_es2.h
 )
 
-# special case begin
-# Make Vulkan a global imported target, so that generator expressions involving Vulkan
-# can be correctly evaluated in any sub project directory.
-if(TARGET Vulkan::Vulkan)
-    set_property(TARGET Vulkan::Vulkan PROPERTY IMPORTED_GLOBAL TRUE)
-endif()
-# special case end
-
 extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
@@ -587,38 +508,6 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
     PUBLIC_LIBRARIES
         Vulkan::Vulkan_nolink
 )
-
-# special case begin
-if (QT_FEATURE_vulkan)
-    set(qvkgen_command "${HOST_QVKGEN}")
-    if (TARGET qvkgen)
-        set(qvkgen_command qvkgen)
-    endif()
-
-    set(vulkan_fun "qvulkanfunctions.h")
-    set(vulkan_fun_p "qvulkanfunctions_p.h")
-    set(vulkan_fun_p_cpp "qvulkanfunctions_p.cpp")
-
-    add_custom_command(
-        OUTPUT "vulkan/${vulkan_fun}" "vulkan/${vulkan_fun_p}" "vulkan/${vulkan_fun_p_cpp}"
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/vulkan/"
-        COMMAND "${qvkgen_command}"
-            "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
-            "${PROJECT_SOURCE_DIR}/header.LGPL"
-            "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
-        DEPENDS vulkan/vk.xml
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Generating vulkan data"
-    )
-
-    extend_target(Gui CONDITION QT_FEATURE_vulkan
-        SOURCES
-            "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun}"
-            "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p}"
-            "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p_cpp}"
-    )
-endif()
-# special case end
 
 #### Keys ignored in scope 62:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # CONFIG = "generated_privates"
@@ -631,18 +520,6 @@ extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
-# special case begin
-# qpa headers are expected to be located right next to QtGui's private
-# headers. So a private QtGui header is #include <private/qfoo_p.h> and
-# a qpa header is #include <qpa/qplatformfoo.h>, both of them implying
-# linkage against Qt::GuiPrivate.
-qt_read_headers_pri("Gui" "module_headers")
-
-# No need to copy these in a non-prefix build, syncqt.pl takes care of generating the files
-# in the build dir.
-qt_install(FILES ${module_headers_qpa}
-    DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa)
-# special case end
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
 add_qt_docs(
