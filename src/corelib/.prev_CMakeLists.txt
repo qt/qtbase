@@ -1,23 +1,20 @@
 # Generated from corelib.pro.
 
-# special case begin
-qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
-qt_find_package(WrapDoubleConversion REQUIRED PROVIDED_TARGETS WrapDoubleConversion)
-
-if (NOT WrapDoubleConversion_FOUND)
-    message(FATAL_ERROR "Your C library does not provide \
-                         sscanf_l/snprintf_l _snprintf_l/_sscanf_l. \
-                         You need to use libdouble-conversion for double/string conversion.")
-endif()
-# special case end
-
 #####################################################################
 ## Core Module:
 #####################################################################
 
 add_qt_module(Core
     SOURCES
-        # special case: remove ../3rdparty/harfbuzz
+        ../3rdparty/harfbuzz/src/harfbuzz.h
+        ../3rdparty/harfbuzz/src/harfbuzz-buffer.c
+        ../3rdparty/harfbuzz/src/harfbuzz-gdef.c
+        ../3rdparty/harfbuzz/src/harfbuzz-gpos.c
+        ../3rdparty/harfbuzz/src/harfbuzz-gsub.c
+        ../3rdparty/harfbuzz/src/harfbuzz-impl.c
+        ../3rdparty/harfbuzz/src/harfbuzz-open.c
+        ../3rdparty/harfbuzz/src/harfbuzz-shaper-all.cpp
+        ../3rdparty/harfbuzz/src/harfbuzz-stream.c
         codecs/qtextcodec_p.h
         codecs/qutfcodec.cpp codecs/qutfcodec_p.h
         global/archdetect.cpp
@@ -32,7 +29,7 @@ add_qt_module(Core
         global/qlibraryinfo.cpp global/qlibraryinfo.h
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp
-        # global/qnamespace.h  # special case
+        global/qnamespace.h
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
@@ -41,7 +38,7 @@ add_qt_module(Core
         global/qsystemdetection.h
         global/qtypeinfo.h
         global/qtypetraits.h
-        global/qversiontagging.cpp global/qversiontagging.h  # special case
+        global/qversiontagging.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
         io/qdataurl.cpp io/qdataurl_p.h
@@ -97,7 +94,7 @@ add_qt_module(Core
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmetatypeswitcher_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
-        # kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h  # special case
+        kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
         kernel/qobject_impl.h
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
@@ -222,86 +219,16 @@ add_qt_module(Core
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_BINARY_DIR}/global # special case
-        # special case: remove ../3rdparty/...
+        ${PROJECT_BUILD_DIR}/src/corelib/global
+        ../3rdparty/harfbuzz/src
+        ../3rdparty/md4
+        ../3rdparty/md5
+        ../3rdparty/sha3
+        ../3rdparty/tinycbor/src
     LIBRARIES
         ZLIB::ZLIB
-        # double-conversion # special case
-        Qt::GlobalConfigPrivate # special case
-        QtHarfBuzz # special case
-        Threads::Threads # special case
-        tinycbor # special case
-        WrapDoubleConversion # special case
-    PUBLIC_LIBRARIES  # special case:
-        Qt::Platform # special case:
-    DISABLE_AUTOGEN_TOOLS # special case:
-        uic # special case:
-    DISABLE_TOOLS_EXPORT # special case:
+        doubleconversion
 )
-
-# special case begin
-add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
-add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
-add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
-add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
-
-if (QT_NAMESPACE STREQUAL "")
-else()
-    target_compile_definitions(Core PUBLIC "QT_NAMESPACE=${QT_NAMESPACE}")
-endif()
-
-configure_file(global/qconfig.cpp.in global/qconfig.cpp)
-
-# Handle QObject: Automoc does not work for this as it would
-# require to spill internals into users:
-add_library(Core_qobject OBJECT)
-qt_manual_moc(qobject_moc_files kernel/qobject.h global/qnamespace.h)
-set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
-target_sources(Core_qobject PRIVATE
-    global/qnamespace.h
-    kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h ${qobject_moc_files})
-set_target_properties(Core_qobject PROPERTIES
-    COMPILE_OPTIONS $<TARGET_PROPERTY:Core,COMPILE_OPTIONS>
-    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Core,COMPILE_DEFINITIONS>
-    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
-)
-target_include_directories(Core_qobject PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/kernel") # for moc_qobject.cpp
-target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
-target_link_libraries(Core PRIVATE Core_qobject)
-
-if(NOT BUILD_SHARED_LIBS)
-    install(
-      TARGETS Core_qobject
-      EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets"
-    )
-endif()
-
-set_property(TARGET Core APPEND PROPERTY
-    PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
-set_property(TARGET Core APPEND PROPERTY
-    PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
-
-# Find ELF interpreter and define a macro for that:
-if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
-    if (NOT DEFINED ELF_INTERPRETER)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C readelf -l /bin/ls
-                        RESULT_VARIABLE readelf_ok
-                        OUTPUT_VARIABLE readelf_output
-                       )
-        if ("${readelf_ok}" STREQUAL "0"
-                AND "${readelf_output}" MATCHES "program interpreter: (.*)]")
-            set(ELF_INTERPRETER "${CMAKE_MATCH_1}" CACHE INTERNAL "ELF interpreter location")
-        else()
-            set(ELF_INTERPRETER "" CACHE INTERNAL "ELF interpreter location")
-        endif()
-    endif()
-    if (ELF_INTERPRETER)
-        target_link_options(Core PRIVATE "-Wl,-e,qt_core_boilerplate")
-        target_compile_definitions(Core PRIVATE ELF_INTERPRETER="${ELF_INTERPRETER}")
-    endif()
-endif()
-# special case end
-
 add_qt_simd_part(Core SIMD mips_dsp
     SOURCES
         ../gui/painting/qt_mips_asm_dsp_p.h
@@ -392,7 +319,8 @@ extend_target(Core CONDITION WIN32
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
         thread/qatomic_msvc.h
         thread/qthread_win.cpp
-    # DEFINES # special case: remove
+    DEFINES
+        -QT_NO_CAST_TO_ASCII
     LIBRARIES
         ws2_32
 )
@@ -482,7 +410,10 @@ extend_target(Core CONDITION INTEGRITY
 #### Keys ignored in scope 24:.:global:global/global.pri:else:
 # f16c_cxx = "false"
 
-# extend_target(Core CONDITION _ss_f16c_cxx ... # special case: Handled manually:
+extend_target(Core CONDITION _ss_f16c_cxx
+    DEFINES
+        QFLOAT16_INCLUDE_FAST
+)
 
 #### Keys ignored in scope 26:.:global:global/global.pri:else:
 # F16C_SOURCES = "global/qfloat16_f16c.c"
@@ -1025,48 +956,6 @@ extend_target(Core CONDITION WASM
         platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
 )
 
-# special case begin
-# needs refinement for the other compiler specific cases.
-if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
-    # Equivalent to contains(QT_CPU_FEATURES.$$QT_ARCH, f16c)
-    extend_target(Core
-        DEFINES
-            QFLOAT16_INCLUDE_FAST
-    )
-else()
-    add_qt_simd_part(Core SIMD f16c
-        SOURCES
-            global/qfloat16_f16c.c
-    )
-endif()
-
-
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
-                   COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qfloat16-tables
-                   ARGS "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
-                   DEPENDS global/qfloat16.h
-                   COMMENT qfloat16-tables
-                   VERBATIM)
-target_sources(Core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp")
-
-
-set_source_files_properties(
-    thread/qmutex_linux.cpp
-    thread/qmutex_mac.cpp
-    thread/qmutex_unix.cpp
-    thread/qmutex_win.cpp
-    PROPERTIES HEADER_FILE_ONLY ON)  # special case: These files are included by qmutex.cpp!
-
-
-# Remove QT_NO_CAST_TO_ASCII to ensure that the symbols are included in the library.
-if(WIN32)
-    get_target_property(defines Core COMPILE_DEFINITIONS)
-    list(REMOVE_ITEM defines QT_NO_CAST_TO_ASCII)
-    set_target_properties(Core PROPERTIES COMPILE_DEFINITIONS "${defines}")
-endif()
-
-qt_internal_add_link_flags_gc_sections(Core PRIVATE)
-# special case end
 
 qt_create_tracepoints(Core qtcore.tracepoints)
 add_qt_docs(
