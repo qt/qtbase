@@ -22,8 +22,8 @@ add_qt_module(Concurrent
         qtconcurrentstoredfunctioncall.h
         qtconcurrentthreadengine.cpp qtconcurrentthreadengine.h
     DEFINES
-        QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
+        QT_NO_USING_NAMESPACE
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES
