@@ -92,6 +92,7 @@ private slots:
     void focusIndicator();
     void focusHistory();
     void urlEncoding();
+    void markdown();
 
 private:
     TestBrowser *browser;
@@ -676,6 +677,21 @@ void tst_QTextBrowser::urlEncoding()
     QCOMPARE(url.toEncoded(), QByteArray("http://www.google.com/q=%22"));
 
     delete browser;
+}
+
+void tst_QTextBrowser::markdown()
+{
+    browser->setSource(QUrl::fromLocalFile(QFINDTESTDATA("markdown.md")));
+    QTextFrame::iterator iterator = browser->document()->rootFrame()->begin();
+    int maxHeadingLevel = -1;
+    while (!iterator.atEnd())
+        maxHeadingLevel = qMax(iterator++.currentBlock().blockFormat().intProperty(QTextFormat::HeadingLevel), maxHeadingLevel);
+#if QT_CONFIG(textmarkdownreader)
+    QCOMPARE(maxHeadingLevel, 3);
+#else
+    // If Qt doesn't support markdown, this document will be misidentified as HTML, so it won't have any H3's.
+    QCOMPARE(maxHeadingLevel, 0);
+#endif
 }
 
 QTEST_MAIN(tst_QTextBrowser)
