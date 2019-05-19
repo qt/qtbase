@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qscopeguard.h>
 #include <qsocketnotifier.h>
 #include <qvarlengtharray.h>
 
@@ -268,12 +269,11 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
         QFileInfo fi(path);
         bool isDir = fi.isDir();
+        auto sg = qScopeGuard([&]{ unhandled.push_back(path); });
         if (isDir) {
             if (directories->contains(path))
                 continue;
@@ -305,7 +305,7 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
             continue;
         }
 
-        it.remove();
+        sg.dismiss();
 
         int id = isDir ? -wd : wd;
         if (id < 0) {
@@ -318,18 +318,18 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
         idToPath.insert(id, path);
     }
 
-    return p;
+    return unhandled;
 }
 
 QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &paths,
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
         int id = pathToID.take(path);
+
+        auto sg = qScopeGuard([&]{ unhandled.push_back(path); });
 
         // Multiple paths could be associated to the same watch descriptor
         // when a file is moved and added with the new name.
@@ -349,7 +349,8 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
             inotify_rm_watch(inotifyFd, wd);
         }
 
-        it.remove();
+        sg.dismiss();
+
         if (id < 0) {
             directories->removeAll(path);
         } else {
@@ -357,7 +358,7 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
         }
     }
 
-    return p;
+    return unhandled;
 }
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()
