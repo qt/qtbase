@@ -311,6 +311,17 @@ bool QFileSystemWatcher::addPath(const QString &path)
     return paths.isEmpty();
 }
 
+static QStringList empty_paths_pruned(const QStringList &paths)
+{
+    QStringList p;
+    p.reserve(paths.size());
+    const auto isEmpty = [](const QString &s) { return s.isEmpty(); };
+    std::remove_copy_if(paths.begin(), paths.end(),
+                        std::back_inserter(p),
+                        isEmpty);
+    return p;
+}
+
 /*!
     Adds each path in \a paths to the file system watcher. Paths are
     not added if they not exist, or if they are already being
@@ -338,18 +349,11 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
 {
     Q_D(QFileSystemWatcher);
 
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-
-    while (it.hasNext()) {
-        const QString &path = it.next();
-        if (path.isEmpty())
-            it.remove();
-    }
+    QStringList p = empty_paths_pruned(paths);
 
     if (p.isEmpty()) {
         qWarning("QFileSystemWatcher::addPaths: list is empty");
-        return QStringList();
+        return p;
     }
 
     const auto selectEngine = [this, d]() -> QFileSystemWatcherEngine* {
@@ -421,18 +425,11 @@ QStringList QFileSystemWatcher::removePaths(const QStringList &paths)
 {
     Q_D(QFileSystemWatcher);
 
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-
-    while (it.hasNext()) {
-        const QString &path = it.next();
-        if (path.isEmpty())
-            it.remove();
-    }
+    QStringList p = empty_paths_pruned(paths);
 
     if (p.isEmpty()) {
         qWarning("QFileSystemWatcher::removePaths: list is empty");
-        return QStringList();
+        return p;
     }
 
     if (d->native)
