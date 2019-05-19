@@ -473,9 +473,7 @@ void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &for
 {
     writer.writeStartElement(officeNS, QString::fromLatin1("automatic-styles"));
     QVector<QTextFormat> allStyles = m_document->allFormats();
-    QSetIterator<int> formatId(formats);
-    while(formatId.hasNext()) {
-        int formatIndex = formatId.next();
+    for (int formatIndex : formats) {
         QTextFormat textFormat = allStyles.at(formatIndex);
         switch (textFormat.type()) {
         case QTextFormat::CharFormat:
