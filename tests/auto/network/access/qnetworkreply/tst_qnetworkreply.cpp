@@ -4147,10 +4147,10 @@ void tst_QNetworkReply::ioGetFromHttpWithCache()
     request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
 
     QFETCH(QStringList, extraHttpHeaders);
-    QStringListIterator it(extraHttpHeaders);
-    while (it.hasNext()) {
-        QString header = it.next();
-        QString value = it.next();
+    QVERIFY(extraHttpHeaders.size() % 2 == 0);
+    for (auto it = extraHttpHeaders.cbegin(), end = extraHttpHeaders.cend(); it != end; /*double-stepping*/) {
+        QString header = *it++;
+        QString value = *it++;
         request.setRawHeader(header.toLatin1(), value.toLatin1()); // To latin1? Deal with it!
     }
 

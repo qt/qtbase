@@ -870,12 +870,14 @@ void tst_qmessagehandler::setMessagePattern()
 #endif
 
     // make sure there is no QT_MESSAGE_PATTERN in the environment
-    QStringList environment = m_baseEnvironment;
-    QMutableListIterator<QString> iter(environment);
-    while (iter.hasNext()) {
-        if (iter.next().startsWith("QT_MESSAGE_PATTERN"))
-            iter.remove();
-    }
+    QStringList environment;
+    environment.reserve(m_baseEnvironment.size());
+    const auto doesNotStartWith = [](QLatin1String s) {
+        return [s](const QString &str) { return !str.startsWith(s); };
+    };
+    std::copy_if(m_baseEnvironment.cbegin(), m_baseEnvironment.cend(),
+                 std::back_inserter(environment),
+                 doesNotStartWith(QLatin1String("QT_MESSAGE_PATTERN")));
     process.setEnvironment(environment);
 
     process.start(appExe);
