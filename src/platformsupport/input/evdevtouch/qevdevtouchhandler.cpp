@@ -575,9 +575,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
 
-        QMutableHashIterator<int, Contact> it(m_contacts);
-        while (it.hasNext()) {
-            it.next();
+        for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
+            auto it = i++;
+
             Contact &contact(it.value());
 
             if (!contact.state)
@@ -600,7 +600,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             // Avoid reporting a contact in released state more than once.
             if (!m_typeB && contact.state == Qt::TouchPointReleased
                     && !m_lastContacts.contains(key)) {
-                it.remove();
+                m_contacts.erase(it);
                 continue;
             }
 
@@ -608,9 +608,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         }
 
         // Now look for contacts that have disappeared since the last sync.
-        it = m_lastContacts;
-        while (it.hasNext()) {
-            it.next();
+        for (auto it = m_lastContacts.begin(), end = m_lastContacts.end(); it != end; ++it) {
             Contact &contact(it.value());
             int key = m_typeB ? it.key() : contact.trackingId;
             if (m_typeB) {
@@ -627,9 +625,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         }
 
         // Remove contacts that have just been reported as released.
-        it = m_contacts;
-        while (it.hasNext()) {
-            it.next();
+        for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
+            auto it = i++;
+
             Contact &contact(it.value());
 
             if (!contact.state)
@@ -639,7 +637,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 if (m_typeB)
                     contact.state = static_cast<Qt::TouchPointState>(0);
                 else
-                    it.remove();
+                    m_contacts.erase(it);
             } else {
                 contact.state = Qt::TouchPointStationary;
             }
