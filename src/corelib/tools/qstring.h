@@ -271,9 +271,9 @@ public:
 
     inline const QChar at(int i) const;
     const QChar operator[](int i) const;
-    QCharRef operator[](int i);
+    Q_REQUIRED_RESULT QCharRef operator[](int i);
     const QChar operator[](uint i) const;
-    QCharRef operator[](uint i);
+    Q_REQUIRED_RESULT QCharRef operator[](uint i);
 
     Q_REQUIRED_RESULT inline QChar front() const { return at(0); }
     Q_REQUIRED_RESULT inline QCharRef front();
@@ -1089,7 +1089,7 @@ public:
         if (Q_LIKELY(i < s.d->size))
             return s.d->data()[i];
 #ifdef QT_DEBUG
-        warn(EmittingClass::QCharRef);
+        warn(WarningType::OutOfRange, EmittingClass::QCharRef);
 #endif
         return 0;
     }
@@ -1098,10 +1098,14 @@ public:
         using namespace QtPrivate::DeprecatedRefClassBehavior;
         if (Q_UNLIKELY(i >= s.d->size)) {
 #ifdef QT_DEBUG
-            warn(EmittingClass::QCharRef);
+            warn(WarningType::OutOfRange, EmittingClass::QCharRef);
 #endif
             s.resize(i + 1, QLatin1Char(' '));
         } else {
+#ifdef QT_DEBUG
+            if (Q_UNLIKELY(!s.isDetached()))
+                warn(WarningType::DelayedDetach, EmittingClass::QCharRef);
+#endif
             s.detach();
         }
         s.d->data()[i] = c.unicode();
@@ -1215,9 +1219,9 @@ inline void QString::squeeze()
 inline QString &QString::setUtf16(const ushort *autf16, int asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 inline QCharRef QString::operator[](int i)
-{ Q_ASSERT(i >= 0); return QCharRef(*this, i); }
+{ Q_ASSERT(i >= 0); detach(); return QCharRef(*this, i); }
 inline QCharRef QString::operator[](uint i)
-{ return QCharRef(*this, i); }
+{  detach(); return QCharRef(*this, i); }
 inline QCharRef QString::front() { return operator[](0); }
 inline QCharRef QString::back() { return operator[](size() - 1); }
 inline QString::iterator QString::begin()

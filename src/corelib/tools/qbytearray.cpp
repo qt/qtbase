@@ -1540,8 +1540,11 @@ QByteArray &QByteArray::operator=(const char *str)
     \note Before Qt 5.14 it was possible to use this operator to access
     a character at an out-of-bounds position in the byte array, and
     then assign to such position, causing the byte array to be
-    automatically resized. This behavior is deprecated, and will be
-    changed in a future version of Qt.
+    automatically resized. Furthermore, assigning a value to the
+    returned QByteRef would cause a detach of the byte array, even if the
+    byte array has been copied in the meanwhile (and the QByteRef kept
+    alive while the copy was taken). These behaviors are deprecated,
+    and will be changed in a future version of Qt.
 
     \sa at()
 */
@@ -5062,10 +5065,15 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
 namespace QtPrivate {
 namespace DeprecatedRefClassBehavior {
-void warn(EmittingClass c)
+void warn(WarningType w, EmittingClass c)
 {
+    static const char deprecatedBehaviorString[] =
+            "The corresponding behavior is deprecated, and will be changed"
+             " in a future version of Qt.";
+
     const char *emittingClassName = nullptr;
     const char *containerClassName = nullptr;
+
     switch (c) {
     case EmittingClass::QByteRef:
         emittingClassName = "QByteRef";
@@ -5077,12 +5085,16 @@ void warn(EmittingClass c)
         break;
     }
 
-    qWarning("Using %s with an index pointing outside"
-             " the valid range of a %s."
-             " The corresponding behavior is deprecated, and will be changed"
-             " in a future version of Qt.",
-             emittingClassName,
-             containerClassName);
+    switch (w) {
+    case WarningType::OutOfRange:
+        qWarning("Using %s with an index pointing outside the valid range of a %s. %s",
+                 emittingClassName, containerClassName, deprecatedBehaviorString);
+        break;
+    case WarningType::DelayedDetach:
+        qWarning("Using %s with on a %s that is not already detached. %s",
+                 emittingClassName, containerClassName, deprecatedBehaviorString);
+        break;
+    }
 }
 } // namespace DeprecatedRefClassBehavior
 } // namespace QtPrivate
