@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -38,7 +38,7 @@
 class TestBrowser : public QTextBrowser
 {
 public:
-    inline TestBrowser() : htmlLoadAttempts(0) {
+    inline TestBrowser() {
         show();
         QApplication::setActiveWindow(this);
         activateWindow();
@@ -47,11 +47,12 @@ public:
         QVERIFY(hasFocus());
     }
 
-    virtual QVariant loadResource(int type, const QUrl &name);
+    QVariant loadResource(int type, const QUrl &name) override;
 
-    int htmlLoadAttempts;
+    int htmlLoadAttempts = 0;
     QUrl lastResource;
     QUrl sourceInsideLoadResource;
+    QUrl baseInsideLoadResource;
 };
 
 QVariant TestBrowser::loadResource(int type, const QUrl &name)
@@ -60,6 +61,7 @@ QVariant TestBrowser::loadResource(int type, const QUrl &name)
         htmlLoadAttempts++;
     lastResource = name;
     sourceInsideLoadResource = source();
+    baseInsideLoadResource = document()->baseUrl();
     return QTextBrowser::loadResource(type, name);
 }
 
@@ -108,7 +110,7 @@ void tst_QTextBrowser::init()
 void tst_QTextBrowser::cleanup()
 {
     delete browser;
-    browser = 0;
+    browser = nullptr;
 }
 
 void tst_QTextBrowser::noReloadOnAnchorJump()
@@ -428,11 +430,18 @@ void tst_QTextBrowser::sourceInsideLoadResource()
 #ifdef Q_OS_WINRT
     QSKIP("Paths cannot be compared if applications are sandboxed.");
 #endif
-    QUrl url = QUrl::fromLocalFile("pagewithimage.html");
+    QUrl url = QUrl::fromLocalFile("pagewithimage.html"); // "file://pagewithimage.html"
     browser->setSource(url);
     QCOMPARE(browser->lastResource, QUrl::fromLocalFile(QDir::current().filePath("foobar.png")));
+    // baseUrl was not set because the source URL was a relative one
+    QCOMPARE(browser->baseInsideLoadResource, QUrl());
     QEXPECT_FAIL("", "This is currently not supported", Continue);
     QCOMPARE(browser->sourceInsideLoadResource.toString(), url.toString());
+    url = QUrl::fromLocalFile(QDir::current().filePath("pagewithimage.html")); // "file:///home/user/path/to/pagewithimage.html"
+    browser->setSource(url);
+    QCOMPARE(browser->lastResource, QUrl::fromLocalFile(QDir::current().filePath("foobar.png")));
+    // baseUrl has the full path, and that's where relative-path resources come from
+    QCOMPARE(browser->baseInsideLoadResource, QUrl::fromLocalFile(QDir::currentPath() + QLatin1Char('/')));
 }
 
 void tst_QTextBrowser::textInteractionFlags_vs_readOnly()

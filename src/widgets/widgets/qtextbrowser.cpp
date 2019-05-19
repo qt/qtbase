@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -327,9 +327,15 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
         home = url;
 
     if (doSetText) {
+        // Setting the base URL helps QTextDocument::resource() to find resources with relative paths.
+        // But don't set it unless it contains the document's path, because QTextBrowserPrivate::resolveUrl()
+        // can already deal with local files on the filesystem in case the base URL was not set.
+        QUrl baseUrl = currentURL.adjusted(QUrl::RemoveFilename);
+        if (!baseUrl.path().isEmpty())
+            q->document()->setBaseUrl(baseUrl);
+        q->document()->setMetaInformation(QTextDocument::DocumentUrl, currentURL.toString());
 #ifndef QT_NO_TEXTHTMLPARSER
         q->QTextEdit::setHtml(txt);
-        q->document()->setMetaInformation(QTextDocument::DocumentUrl, currentURL.toString());
 #else
         q->QTextEdit::setPlainText(txt);
 #endif
