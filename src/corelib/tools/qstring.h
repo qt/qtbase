@@ -1103,7 +1103,7 @@ class
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 Q_CORE_EXPORT
 #endif
-QCharRef {
+QCharRef { // ### Qt 7: remove
     QString &s;
     int i;
     inline QCharRef(QString &str, int idx)
