@@ -46,11 +46,13 @@ public:
     tst_QFileSystemWatcher();
 
 private slots:
+#ifdef QT_BUILD_INTERNAL
     void basicTest_data();
     void basicTest();
 
     void watchDirectory_data();
     void watchDirectory();
+#endif
 
     void addPath();
     void removePath();
@@ -58,8 +60,10 @@ private slots:
     void removePaths();
     void removePathsFilesInSameDirectory();
 
+#ifdef QT_BUILD_INTERNAL
     void watchFileAndItsDirectory_data() { basicTest_data(); }
     void watchFileAndItsDirectory();
+#endif
 
     void nonExistingFile();
 
@@ -67,8 +71,10 @@ private slots:
 
     void destroyAfterQCoreApplication();
 
+#ifdef QT_BUILD_INTERNAL
     void QTBUG2331();
     void QTBUG2331_data() { basicTest_data(); }
+#endif
 
     void signalsEmittedAfterFileMoved();
 
@@ -90,6 +96,7 @@ tst_QFileSystemWatcher::tst_QFileSystemWatcher()
 #endif
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QFileSystemWatcher::basicTest_data()
 {
     QTest::addColumn<QString>("backend");
@@ -360,6 +367,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     for (const auto &testDirName : testDirs)
         QVERIFY(temporaryDir.rmdir(testDirName));
 }
+#endif // QT_BUILD_INTERNAL
 
 void tst_QFileSystemWatcher::addPath()
 {
@@ -502,6 +510,7 @@ void tst_QFileSystemWatcher::removePathsFilesInSameDirectory()
     QCOMPARE(watcher.files().size(), 0);
 }
 
+#ifdef QT_BUILD_INTERNAL
 static QByteArray msgFileOperationFailed(const char *what, const QFile &f)
 {
     return what + QByteArrayLiteral(" failed on \"")
@@ -601,6 +610,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 
     QVERIFY(temporaryDir.rmdir(testDirName));
 }
+#endif // QT_BUILD_INTERNAL
 
 void tst_QFileSystemWatcher::nonExistingFile()
 {
@@ -673,6 +683,7 @@ void tst_QFileSystemWatcher::destroyAfterQCoreApplication()
     QTest::qWait(30);
 }
 
+#ifdef QT_BUILD_INTERNAL
 // regression test for QTBUG2331.
 // essentially, on windows, directories were not unwatched after being deleted
 // from the disk, causing all sorts of interesting problems.
@@ -696,6 +707,7 @@ void tst_QFileSystemWatcher::QTBUG2331()
     QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(watcher.directories(), QStringList());
 }
+#endif // QT_BUILD_INTERNAL
 
 class SignalReceiver : public QObject
 {

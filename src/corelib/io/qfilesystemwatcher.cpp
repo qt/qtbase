@@ -352,33 +352,34 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
         return QStringList();
     }
 
-    QFileSystemWatcherEngine *engine = 0;
+    const auto selectEngine = [this, d]() -> QFileSystemWatcherEngine* {
+#ifdef QT_BUILD_INTERNAL
+        const QString on = objectName();
 
-    const QString on = objectName();
-
-    if (!on.startsWith(QLatin1String("_qt_autotest_force_engine_"))) {
+        if (Q_UNLIKELY(on.startsWith(QLatin1String("_qt_autotest_force_engine_")))) {
+            // Autotest override case - use the explicitly selected engine only
+            const QStringRef forceName = on.midRef(26);
+            if (forceName == QLatin1String("poller")) {
+                qDebug("QFileSystemWatcher: skipping native engine, using only polling engine");
+                d_func()->initPollerEngine();
+                return d->poller;
+            } else if (forceName == QLatin1String("native")) {
+                qDebug("QFileSystemWatcher: skipping polling engine, using only native engine");
+                return d->native;
+            }
+            return nullptr;
+        }
+#endif
         // Normal runtime case - search intelligently for best engine
         if(d->native) {
-            engine = d->native;
+            return d->native;
         } else {
             d_func()->initPollerEngine();
-            engine = d->poller;
+            return d->poller;
         }
+    };
 
-    } else {
-        // Autotest override case - use the explicitly selected engine only
-        const QStringRef forceName = on.midRef(26);
-        if(forceName == QLatin1String("poller")) {
-            qDebug("QFileSystemWatcher: skipping native engine, using only polling engine");
-            d_func()->initPollerEngine();
-            engine = d->poller;
-        } else if(forceName == QLatin1String("native")) {
-            qDebug("QFileSystemWatcher: skipping polling engine, using only native engine");
-            engine = d->native;
-        }
-    }
-
-    if(engine)
+    if (auto engine = selectEngine())
         p = engine->addPaths(p, &d->files, &d->directories);
 
     return p;
