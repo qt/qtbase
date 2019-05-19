@@ -49,6 +49,9 @@
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+
+#include <mutex>
+
 #ifdef Q_OS_FREEBSD
 #include <dev/evdev/input.h>
 #else
@@ -560,8 +563,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         if (!m_contacts.isEmpty() && m_contacts.constBegin().value().trackingId == -1)
             assignIds();
 
+        std::unique_lock<QMutex> locker;
         if (m_filtered)
-            m_mutex.lock();
+            locker = std::unique_lock<QMutex>{m_mutex};
 
         // update timestamps
         m_lastTimeStamp = m_timeStamp;
@@ -648,9 +652,6 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
             reportPoints();
-
-        if (m_filtered)
-            m_mutex.unlock();
     }
 
     m_lastEventType = data->type;
