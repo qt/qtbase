@@ -61,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkConnectionMonitorPrivate;
-class QNetworkConnectionMonitor : public QObject
+class Q_AUTOTEST_EXPORT QNetworkConnectionMonitor : public QObject
 {
     Q_OBJECT
 
@@ -91,7 +91,7 @@ private:
 };
 
 class QNetworkStatusMonitorPrivate;
-class QNetworkStatusMonitor : public QObject
+class Q_AUTOTEST_EXPORT QNetworkStatusMonitor : public QObject
 {
     Q_OBJECT
 
