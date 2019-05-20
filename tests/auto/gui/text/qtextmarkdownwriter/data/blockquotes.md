@@ -20,21 +20,43 @@ MacFarlane writes:
 > equivalent sample of Markdown. Here is a sample of AsciiDoc from the AsciiDoc
 > manual:
 
->     1. List item one.
->     +
->     List item one continued with a second paragraph followed by an
->     Indented block.
->     +
->     .................
->     $ ls *.sh
->     $ mv *.sh ~/tmp
->     .................
->     +
->     List item continued with a third paragraph.
->     
->     2. List item two continued with an open block.
->     ...
->     
+> ``` AsciiDoc
+> 1. List item one.
+> +
+> List item one continued with a second paragraph followed by an
+> Indented block.
+> +
+> .................
+> $ ls *.sh
+> $ mv *.sh ~/tmp
+> .................
+> +
+> List item continued with a third paragraph.
+> 
+> 2. List item two continued with an open block.
+> ...
+> ```
 The quotation includes an embedded quotation and a code quotation and ends with
 an ellipsis due to being incomplete.
+
+Now let's have an indented code block:
+
+    #include <stdio.h>
+    
+    int main(void)
+    {
+        printf("# hello markdown\n");
+        return 0;
+    }
+
+and end with a fenced code block:
+~~~ pseudocode
+#include <something.h>
+#include <else.h>
+
+a block {
+    a statement;
+    another statement;
+}
+~~~
 
