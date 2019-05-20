@@ -1014,7 +1014,11 @@ void tst_QMdiSubWindow::setSystemMenu()
     mdiArea->addSubWindow(subWindow);
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.menuBar()->setNativeMenuBar(false);
-    mainWindow.show();
+    // Prevent the window from spanning screens
+    if (QGuiApplication::screens().size() > 1)
+        mainWindow.showMaximized();
+    else
+        mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QTRY_VERIFY(subWindow->isVisible());
