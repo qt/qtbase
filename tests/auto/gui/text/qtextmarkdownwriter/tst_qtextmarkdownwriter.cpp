@@ -358,6 +358,7 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
     QTest::newRow("block quotes") << "blockquotes.md";
     QTest::newRow("example") << "example.md";
     QTest::newRow("list items after headings") << "headingsAndLists.md";
+    QTest::newRow("word wrap") << "wordWrap.md";
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument()
