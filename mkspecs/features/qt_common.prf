@@ -48,6 +48,8 @@ contains(TEMPLATE, .*lib) {
         lib_replace.match = $$rplbase/lib
         lib_replace.replace = $$qqt_libdir
     }
+    !equals(qt_libdir, $$rplbase/lib): \
+        lib_replace.match = \\($$lib_replace.match\\)\\|\\($$qt_libdir\\)
     lib_replace.CONFIG = path
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
