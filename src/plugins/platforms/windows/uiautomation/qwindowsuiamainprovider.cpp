@@ -358,8 +358,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    bool clientTopLevel = (accessible->role() == QAccessible::Client)
-            && accessible->parent() && (accessible->parent()->role() == QAccessible::Application);
+    bool topLevelWindow = accessible->parent() && (accessible->parent()->role() == QAccessible::Application);
 
     switch (idProp) {
     case UIA_ProcessIdPropertyId:
@@ -385,7 +384,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         setVariantString(QStringLiteral("Qt"), pRetVal);
         break;
     case UIA_ControlTypePropertyId:
-        if (clientTopLevel) {
+        if (topLevelWindow) {
             // Reports a top-level widget as a window, instead of "custom".
             setVariantI4(UIA_WindowControlTypeId, pRetVal);
         } else {
@@ -397,10 +396,20 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         setVariantString(accessible->text(QAccessible::Help), pRetVal);
         break;
     case UIA_HasKeyboardFocusPropertyId:
-        setVariantBool(accessible->state().focused, pRetVal);
+        if (topLevelWindow) {
+            // Windows set the active state to true when they are focused
+            setVariantBool(accessible->state().active, pRetVal);
+        } else {
+            setVariantBool(accessible->state().focused, pRetVal);
+        }
         break;
     case UIA_IsKeyboardFocusablePropertyId:
-        setVariantBool(accessible->state().focusable, pRetVal);
+        if (topLevelWindow) {
+            // Windows should always be focusable
+            setVariantBool(true, pRetVal);
+        } else {
+            setVariantBool(accessible->state().focusable, pRetVal);
+        }
         break;
     case UIA_IsOffscreenPropertyId:
         setVariantBool(accessible->state().offscreen, pRetVal);
@@ -430,7 +439,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         break;
     case UIA_NamePropertyId: {
         QString name = accessible->text(QAccessible::Name);
-        if (name.isEmpty() && clientTopLevel)
+        if (name.isEmpty() && topLevelWindow)
            name = QCoreApplication::applicationName();
         setVariantString(name, pRetVal);
         break;
