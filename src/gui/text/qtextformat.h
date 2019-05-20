@@ -253,6 +253,8 @@ public:
 
         // image properties
         ImageName = 0x5000,
+        ImageTitle = 0x5001,
+        ImageAltText = 0x5002,
         ImageWidth = 0x5010,
         ImageHeight = 0x5011,
         ImageQuality = 0x5014,

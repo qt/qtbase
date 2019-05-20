@@ -55,6 +55,7 @@ Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 static const QChar Space = QLatin1Char(' ');
 static const QChar Newline = QLatin1Char('\n');
 static const QChar LineBreak = QChar(0x2028);
+static const QChar DoubleQuote = QLatin1Char('"');
 static const QChar Backtick = QLatin1Char('`');
 static const QChar Period = QLatin1Char('.');
 
@@ -372,7 +373,14 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         QTextCharFormat fmt = frag.fragment().charFormat();
         if (fmt.isImageFormat()) {
             QTextImageFormat ifmt = fmt.toImageFormat();
-            QString s = QLatin1String("![image](") + ifmt.name() + QLatin1Char(')');
+            QString desc = ifmt.stringProperty(QTextFormat::ImageAltText);
+            if (desc.isEmpty())
+                desc = QLatin1String("image");
+            QString s = QLatin1String("![") + desc + QLatin1String("](") + ifmt.name();
+            QString title = ifmt.stringProperty(QTextFormat::ImageTitle);
+            if (!title.isEmpty())
+                s += Space + DoubleQuote + title + DoubleQuote;
+            s += QLatin1Char(')');
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;

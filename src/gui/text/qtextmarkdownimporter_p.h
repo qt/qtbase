@@ -125,6 +125,7 @@ private:
     int m_paragraphMargin = 0;
     int m_blockType = 0;
     Features m_features;
+    QTextImageFormat m_imageFormat;
     QTextListFormat m_listFormat;
     QTextBlockFormat::MarkerType m_markerType = QTextBlockFormat::NoMarker;
     bool m_needsInsertBlock = false;

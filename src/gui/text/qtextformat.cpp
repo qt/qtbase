@@ -659,7 +659,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     Image properties
 
-    \value ImageName
+    \value ImageName        The filename or source of the image.
+    \value ImageTitle       The title attribute of an HTML image tag, or
+                            the quoted string that comes after the URL in a Markdown image link.
+                            This enum value has been added in Qt 5.14.
+    \value ImageAltText     The alt attribute of an HTML image tag, or
+                            the image description in a Markdown image link.
+                            This enum value has been added in Qt 5.14.
     \value ImageWidth
     \value ImageHeight
     \value ImageQuality

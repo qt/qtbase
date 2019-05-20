@@ -362,15 +362,10 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         } break;
     case MD_SPAN_IMG: {
         m_imageSpan = true;
+        m_imageFormat = QTextImageFormat();
         MD_SPAN_IMG_DETAIL *detail = static_cast<MD_SPAN_IMG_DETAIL *>(det);
-        QString src = QString::fromUtf8(detail->src.text, int(detail->src.size));
-        QString title = QString::fromUtf8(detail->title.text, int(detail->title.size));
-        QTextImageFormat img;
-        img.setName(src);
-        if (m_needsInsertBlock)
-            insertBlock();
-        qCDebug(lcMD) << "image" << src << "title" << title << "relative to" << m_doc->baseUrl();
-        m_cursor->insertImage(img);
+        m_imageFormat.setName(QString::fromUtf8(detail->src.text, int(detail->src.size)));
+        m_imageFormat.setProperty(QTextFormat::ImageTitle, QString::fromUtf8(detail->title.text, int(detail->title.size)));
         break;
     }
     case MD_SPAN_CODE:
@@ -406,8 +401,6 @@ int QTextMarkdownImporter::cbLeaveSpan(int spanType, void *detail)
 
 int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 {
-    if (m_imageSpan)
-        return 0; // it's the alt-text
     if (m_needsInsertBlock)
         insertBlock();
 #if QT_CONFIG(regularexpression)
@@ -479,6 +472,17 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         break;
     default:
         break;
+    }
+
+    if (m_imageSpan) {
+        // TODO we don't yet support alt text with formatting, because of the cases where m_cursor
+        // already inserted the text above.  Rather need to accumulate it in case we need it here.
+        m_imageFormat.setProperty(QTextFormat::ImageAltText, s);
+        qCDebug(lcMD) << "image" << m_imageFormat.name()
+                      << "title" << m_imageFormat.stringProperty(QTextFormat::ImageTitle)
+                      << "alt" << s << "relative to" << m_doc->baseUrl();
+        m_cursor->insertImage(m_imageFormat);
+        return 0; // no error
     }
 
     if (!s.isEmpty())
