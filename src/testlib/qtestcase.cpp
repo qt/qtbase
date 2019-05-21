@@ -2550,9 +2550,9 @@ bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual,
 bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return compare_helper(floatingCompare(t1, t2),
-                          "Compared floats are not the same (fuzzy compare)",
-                          toString(t1), toString(t2), actual, expected, file, line);
+    return QTestResult::compare(floatingCompare(t1, t2),
+                                "Compared floats are not the same (fuzzy compare)",
+                                t1, t2, actual, expected, file, line);
 }
 
 /*! \fn bool QTest::qCompare(const double &t1, const double &t2, const char *actual, const char *expected, const char *file, int line)
@@ -2561,9 +2561,33 @@ bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const
 bool QTest::qCompare(double const &t1, double const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return compare_helper(floatingCompare(t1, t2),
-                          "Compared doubles are not the same (fuzzy compare)",
-                          toString(t1), toString(t2), actual, expected, file, line);
+    return QTestResult::compare(floatingCompare(t1, t2),
+                                "Compared doubles are not the same (fuzzy compare)",
+                                t1, t2, actual, expected, file, line);
+}
+
+/*! \fn bool QTest::qCompare(int t1, int t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+bool QTest::qCompare(int t1, int t2, const char *actual, const char *expected,
+                    const char *file, int line)
+{
+    return QTestResult::compare(t1 == t2,
+                                "Compared values are not the same",
+                                t1, t2, actual, expected, file, line);
+}
+
+/*! \fn bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected,
+                    const char *file, int line)
+{
+    return QTestResult::compare(t1 == t2,
+                                "Compared values are not the same",
+                                t1, t2, actual, expected, file, line);
 }
 
 /*! \fn bool QTest::qCompare(const double &t1, const float &t2, const char *actual, const char *expected, const char *file, int line)

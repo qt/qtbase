@@ -79,7 +79,22 @@ public:
                         char *val1, char *val2,
                         const char *actual, const char *expected,
                         const char *file, int line);
-
+    static bool compare(bool success, const char *failureMsg,
+                        double val1, double val2,
+                        const char *actual, const char *expected,
+                        const char *file, int line);
+    static bool compare(bool success, const char *failureMsg,
+                        float val1, float val2,
+                        const char *actual, const char *expected,
+                        const char *file, int line);
+    static bool compare(bool success, const char *failureMsg,
+                        int val1, int val2,
+                        const char *actual, const char *expected,
+                        const char *file, int line);
+    static bool compare(bool success, const char *failureMsg,
+                        unsigned val1, unsigned val2,
+                        const char *actual, const char *expected,
+                        const char *file, int line);
     static void setCurrentGlobalTestData(QTestData *data);
     static void setCurrentTestData(QTestData *data);
     static void setCurrentTestFunction(const char *func);

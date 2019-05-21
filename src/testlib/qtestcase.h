@@ -363,6 +363,12 @@ namespace QTest
     Q_TESTLIB_EXPORT bool qCompare(double const &t1, double const &t2,
                     const char *actual, const char *expected, const char *file, int line);
 
+    Q_TESTLIB_EXPORT bool qCompare(int t1, int t2, const char *actual, const char *expected,
+                                   const char *file, int line);
+
+    Q_TESTLIB_EXPORT bool qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected,
+                                   const char *file, int line);
+
     inline bool compare_ptr_helper(const volatile void *t1, const volatile void *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {

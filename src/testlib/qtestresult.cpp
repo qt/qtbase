@@ -42,6 +42,7 @@
 
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/qtestdata.h>
+#include <QtTest/qtestcase.h>
 #include <QtTest/qtestassert.h>
 
 #include <stdlib.h>
@@ -265,16 +266,53 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     return checkStatement(statement, msg, file, line);
 }
 
-bool QTestResult::compare(bool success, const char *failureMsg,
-                          char *val1, char *val2,
-                          const char *actual, const char *expected,
-                          const char *file, int line)
+// Format failures using the toString() template
+template <class Actual, class Expected>
+void formatFailMessage(char *msg, size_t maxMsgLen,
+                       const char *failureMsg,
+                       const Actual &val1, const Expected &val2,
+                       const char *actual, const char *expected)
 {
-    QTEST_ASSERT(expected);
-    QTEST_ASSERT(actual);
+    auto val1S = QTest::toString(val1);
+    auto val2S = QTest::toString(val2);
 
+    size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
+    size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
+    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
+              failureMsg,
+              actual, qMax(len1, len2) - len1 + 1, ":", val1S ? val1S : "<null>",
+              expected, qMax(len1, len2) - len2 + 1, ":", val2S ? val2S : "<null>");
+
+    delete [] val1S;
+    delete [] val2S;
+}
+
+// Overload to format failures for "const char *" - no need to strdup().
+void formatFailMessage(char *msg, size_t maxMsgLen,
+                       const char *failureMsg,
+                       const char *val1, const char *val2,
+                       const char *actual, const char *expected)
+{
+    size_t len1 = mbstowcs(nullptr, actual, maxMsgLen);    // Last parameter is not ignored on QNX
+    size_t len2 = mbstowcs(nullptr, expected, maxMsgLen);  // (result is never larger than this).
+    qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
+              failureMsg,
+              actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
+              expected, qMax(len1, len2) - len2 + 1, ":", val2 ? val2 : "<null>");
+}
+
+template <class Actual, class Expected>
+static bool compareHelper(bool success, const char *failureMsg,
+                          const Actual &val1, const Expected &val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line,
+                          bool hasValues = true)
+{
     const size_t maxMsgLen = 1024;
     char msg[maxMsgLen] = {'\0'};
+
+    QTEST_ASSERT(expected);
+    QTEST_ASSERT(actual);
 
     if (QTestLog::verboseLevel() >= 2) {
         qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
@@ -289,20 +327,68 @@ bool QTestResult::compare(bool success, const char *failureMsg,
             qsnprintf(msg, maxMsgLen,
                       "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
         }
-    } else if (val1 || val2) {
-        size_t len1 = mbstowcs(NULL, actual, maxMsgLen);    // Last parameter is not ignored on QNX
-        size_t len2 = mbstowcs(NULL, expected, maxMsgLen);  // (result is never larger than this).
-        qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
-                  failureMsg,
-                  actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
-                  expected, qMax(len1, len2) - len2 + 1, ":", val2 ? val2 : "<null>");
-    } else
-        qsnprintf(msg, maxMsgLen, "%s", failureMsg);
+        return checkStatement(success, msg, file, line);
+    }
 
+
+    if (!hasValues) {
+        qsnprintf(msg, maxMsgLen, "%s", failureMsg);
+        return checkStatement(success, msg, file, line);
+    }
+
+    formatFailMessage(msg, maxMsgLen, failureMsg, val1, val2, actual, expected);
+
+    return checkStatement(success, msg, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          char *val1, char *val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    const bool result = compareHelper(success, failureMsg,
+                                      val1 != nullptr ? val1 : "<null>",
+                                      val2 != nullptr ? val2 : "<null>",
+                                      actual, expected, file, line,
+                                      val1 != nullptr && val2 != nullptr);
+
+    // Our caller got these from QTest::toString()
     delete [] val1;
     delete [] val2;
 
-    return checkStatement(success, msg, file, line);
+    return result;
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          double val1, double val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          float val1, float val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          int val1, int val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          unsigned val1, unsigned val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
 }
 
 void QTestResult::addFailure(const char *message, const char *file, int line)
