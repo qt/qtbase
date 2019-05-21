@@ -539,6 +539,13 @@ void tst_QTextBoundaryFinder::sentenceBoundaries_manual_data()
 
         QTest::newRow("data3") << testString << expectedBreakPositions;
     }
+    {
+        QString testString(QString::fromUtf8("Doing TEST, doing another test."));
+        QList<int> expectedBreakPositions;
+        expectedBreakPositions << 0 << 31;
+
+        QTest::newRow("data4") << testString << expectedBreakPositions;
+    }
 }
 
 void tst_QTextBoundaryFinder::sentenceBoundaries_manual()
