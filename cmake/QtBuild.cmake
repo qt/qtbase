@@ -1480,7 +1480,7 @@ function(add_qt_resource target resourceName)
     # </qresource></RCC>
     string(APPEND qrcContents "  </qresource>\n</RCC>\n")
 
-    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/${resourceName}.qrc")
+    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/generated_${resourceName}.qrc")
     file(GENERATE OUTPUT "${generatedResourceFile}" CONTENT "${qrcContents}")
 
     # Process .qrc file:
