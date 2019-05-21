@@ -53,3 +53,23 @@ macro(qt_build_repo_end)
                          RUNTIME_PACKAGES_NOT_FOUND
                          FATAL_ON_MISSING_REQUIRED_PACKAGES)
 endmacro()
+
+macro(qt_build_repo)
+    qt_build_repo_begin(${ARGN})
+
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src")
+        add_subdirectory(src)
+    endif()
+
+    if (BUILD_TESTING)
+        find_package(Qt5 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test Xml)
+        add_subdirectory(tests)
+    endif()
+
+    if (BUILD_EXAMPLES)
+        # TODO: Implement me
+        #add_subdirectory(examples)
+    endif()
+
+    qt_build_repo_end()
+endmacro()
