@@ -1,15 +1,16 @@
-include(CheckCXXSourceCompiles)
-
-add_library(WrapDoubleConversion INTERFACE IMPORTED)
+add_library(WrapDoubleConversion::WrapDoubleConversion INTERFACE IMPORTED)
 
 find_package(double-conversion)
 if (double-conversion_FOUND)
     include(FeatureSummary)
     set_package_properties(double-conversion PROPERTIES TYPE REQUIRED)
-    target_link_libraries(WrapDoubleConversion INTERFACE double-conversion::double-conversion)
+    target_link_libraries(WrapDoubleConversion::WrapDoubleConversion
+                          INTERFACE double-conversion::double-conversion)
     set(WrapDoubleConversion_FOUND 1)
     return()
 endif()
+
+include(CheckCXXSourceCompiles)
 
 check_cxx_source_compiles("
 #include <stdio.h>
@@ -36,8 +37,17 @@ int main(int argc, char *argv[]) {
     return 0;
 }" HAVE_SPRINTF_L)
 
+# In a static build, we need to find the package to bring the target into scope.
+find_package(QtDoubleConversion QUIET)
+
 if (HAVE__SPRINTF_L OR HAVE_SPRINTF_L)
-    target_compile_definitions(WrapDoubleConversion INTERFACE QT_NO_DOUBLECONVERSION)
+    target_compile_definitions(WrapDoubleConversion::WrapDoubleConversion
+                               INTERFACE QT_NO_DOUBLECONVERSION)
+    set(WrapDoubleConversion_FOUND 1)
+elseif(TARGET QtDoubleConversion)
+    # If a Config package wasn't found, and the C++ library doesn't contain the necessary functions,
+    # use the library bundled with Qt.
+    target_link_libraries(WrapDoubleConversion::WrapDoubleConversion INTERFACE QtDoubleConversion)
     set(WrapDoubleConversion_FOUND 1)
 else()
     set(WrapDoubleConversion_FOUND 0)

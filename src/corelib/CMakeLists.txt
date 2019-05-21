@@ -2,7 +2,8 @@
 
 # special case begin
 qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
-qt_find_package(WrapDoubleConversion REQUIRED PROVIDED_TARGETS WrapDoubleConversion)
+qt_find_package(WrapDoubleConversion REQUIRED
+                                     PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion)
 
 if (NOT WrapDoubleConversion_FOUND)
     message(FATAL_ERROR "Your C library does not provide \
@@ -231,7 +232,7 @@ add_qt_module(Core
         QtHarfBuzz # special case
         Threads::Threads # special case
         tinycbor # special case
-        WrapDoubleConversion # special case
+        WrapDoubleConversion::WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     DISABLE_AUTOGEN_TOOLS # special case:
