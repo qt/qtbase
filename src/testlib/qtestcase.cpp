@@ -2587,6 +2587,57 @@ bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *e
                                 t1, t2, actual, expected, file, line);
 }
 
+/*! \fn bool QTest::qCompare(QStringView t1, QStringView t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+bool QTest::qCompare(QStringView t1, QStringView t2, const char *actual, const char *expected,
+                     const char *file, int line)
+{
+    return QTestResult::compare(t1 == t2,
+                                "Compared values are not the same",
+                                t1, t2, actual, expected, file, line);
+}
+
+/*! \fn bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+bool QTest::qCompare(QStringView t1, const QLatin1String &t2, const char *actual, const char *expected,
+                     const char *file, int line)
+{
+    return QTestResult::compare(t1 == t2,
+                                "Compared values are not the same",
+                                t1, t2, actual, expected, file, line);
+}
+
+/*! \fn bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+bool QTest::qCompare(const QLatin1String &t1, QStringView t2, const char *actual, const char *expected,
+                     const char *file, int line)
+{
+    return QTestResult::compare(t1 == t2,
+                                "Compared values are not the same",
+                                t1, t2, actual, expected, file, line);
+}
+
+/*! \fn bool QTest::qCompare(const QString &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+
+/*! \fn bool QTest::qCompare(const QString &t1, const QLatin1String &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+
+/*! \fn bool QTest::qCompare(const QLatin1String &t1, const QString &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 5.14
+ */
+
 /*! \fn bool QTest::qCompare(const double &t1, const float &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
  */

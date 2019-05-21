@@ -39,8 +39,10 @@
 
 #include <QtTest/private/qtestresult_p.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qstringview.h>
 
 #include <QtTest/private/qtestlog_p.h>
+#include <QtTest/qtest.h> // toString() specializations for QStringView
 #include <QtTest/qtestdata.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/qtestassert.h>
@@ -383,6 +385,30 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 
 bool QTestResult::compare(bool success, const char *failureMsg,
                           unsigned val1, unsigned val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          QStringView val1, QStringView val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          QStringView val1, const QLatin1String &val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          const QLatin1String & val1, QStringView val2,
                           const char *actual, const char *expected,
                           const char *file, int line)
 {
