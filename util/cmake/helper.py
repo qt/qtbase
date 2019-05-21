@@ -250,6 +250,9 @@ _library_map = [
     LibraryMapping('xrender', 'XRender', 'PkgConfig::xrender'),
     LibraryMapping('zlib', 'ZLIB', 'ZLIB::ZLIB', extra=['REQUIRED']),
     LibraryMapping('zstd', 'ZSTD', 'ZSTD::ZSTD'),
+    LibraryMapping('tiff', 'TIFF', 'TIFF::TIFF'),
+    LibraryMapping('webp', 'WrapWebP', 'WrapWebP::WrapWebP'),
+    LibraryMapping('jasper', 'WrapJasper', 'WrapJasper::WrapJasper'),
 ]
 
 
