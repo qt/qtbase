@@ -51,8 +51,9 @@ template <typename F> QScopeGuard<F> qScopeGuard(F f);
 
 template <typename F>
 class
-#ifndef __INTEL_COMPILER
-// error #2621: attribute "__warn_unused_result__" does not apply here
+#if QT_HAS_CPP_ATTRIBUTE(nodiscard)
+// Q_REQUIRED_RESULT can be defined as __warn_unused_result__ or as [[nodiscard]]
+// but the 1st one has some limitations for example can be placed only on functions.
 Q_REQUIRED_RESULT
 #endif
 QScopeGuard
@@ -90,8 +91,7 @@ private:
 
 
 template <typename F>
-#ifndef __INTEL_COMPILER
-// Causes "error #3058: GNU attributes on a template redeclaration have no effect"
+#if QT_HAS_CPP_ATTRIBUTE(nodiscard)
 Q_REQUIRED_RESULT
 #endif
 QScopeGuard<F> qScopeGuard(F f)
