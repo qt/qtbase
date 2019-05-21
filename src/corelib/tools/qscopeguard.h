@@ -60,9 +60,8 @@ QScopeGuard
 public:
     QScopeGuard(QScopeGuard &&other) noexcept
         : m_func(std::move(other.m_func))
-        , m_invoke(other.m_invoke)
+        , m_invoke(qExchange(other.m_invoke, false))
     {
-        other.dismiss();
     }
 
     ~QScopeGuard()
@@ -77,7 +76,7 @@ public:
     }
 
 private:
-    explicit QScopeGuard(F f) noexcept
+    explicit QScopeGuard(F &&f) noexcept
         : m_func(std::move(f))
     {
     }
