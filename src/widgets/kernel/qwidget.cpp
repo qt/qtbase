@@ -2580,14 +2580,15 @@ void QWidgetPrivate::createWinId()
 /*!
 \internal
 Ensures that the widget is set on the screen point is on. This is handy getting a correct
-size hint before a resize in e.g QMenu and QToolTip
+size hint before a resize in e.g QMenu and QToolTip.
+Returns if the screen was changed.
 */
 
-void QWidgetPrivate::setScreenForPoint(const QPoint &pos)
+bool QWidgetPrivate::setScreenForPoint(const QPoint &pos)
 {
     Q_Q(QWidget);
     if (!q->isWindow())
-        return;
+        return false;
     // Find the screen for pos and make the widget undertand it is on that screen.
     const QScreen *currentScreen = windowHandle() ? windowHandle()->screen() : nullptr;
     QScreen *actualScreen = QGuiApplication::screenAt(pos);
@@ -2596,7 +2597,9 @@ void QWidgetPrivate::setScreenForPoint(const QPoint &pos)
             createWinId();
         if (windowHandle())
             windowHandle()->setScreen(actualScreen);
+        return true;
     }
+    return false;
 }
 
 /*!

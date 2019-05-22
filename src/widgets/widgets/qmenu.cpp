@@ -73,6 +73,7 @@
 #endif
 #include "qpushbutton.h"
 #include "qtooltip.h"
+#include <qwindow.h>
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qguiapplication_p.h>
@@ -2356,8 +2357,10 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->motions = 0;
     d->doChildEffects = true;
     d->updateLayoutDirection();
-    // Ensure that we get correct sizeHints by placing this window on the right screen.
-    d->setScreenForPoint(p);
+
+    // Ensure that we get correct sizeHints by placing this window on the correct screen.
+    if (d->setScreenForPoint(p))
+        d->itemsDirty = true;
 
     const bool contextMenu = d->isContextMenu();
     if (d->lastContextMenu != contextMenu) {
