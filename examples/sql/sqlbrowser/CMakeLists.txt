@@ -14,16 +14,18 @@ add_qt_executable(sqlbrowser
         connectionwidget.cpp connectionwidget.h
         main.cpp
         qsqlconnectiondialog.cpp qsqlconnectiondialog.h qsqlconnectiondialog.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Sql
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
-#### Keys ignored in scope 1:.:sqlbrowser.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:sqlbrowser.pro:<TRUE>:
 # TEMPLATE = "app"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:sqlbrowser.pro:build_all AND NOT build_pass:
+#### Keys ignored in scope 2:.:.:sqlbrowser.pro:build_all AND NOT build_pass:
 # CONFIG = "-build_all" "release"

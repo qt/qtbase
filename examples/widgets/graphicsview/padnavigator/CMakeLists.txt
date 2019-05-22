@@ -14,8 +14,10 @@ add_qt_executable(padnavigator
         padnavigator.cpp padnavigator.h
         roundrectitem.cpp roundrectitem.h
         splashitem.cpp splashitem.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:
@@ -31,13 +33,13 @@ add_qt_resource(padnavigator "padnavigator" FILES
     images/minitools.png)
 
 
-#### Keys ignored in scope 1:.:padnavigator.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:padnavigator.pro:<TRUE>:
 # CONFIG = "console"
 
 ## Scopes:
 #####################################################################
 
 extend_target(padnavigator CONDITION TARGET Qt::OpenGL
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::OpenGL
 )

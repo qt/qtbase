@@ -11,8 +11,10 @@ add_qt_executable(styleexample
     SOURCES
         main.cpp
         stylewidget.cpp stylewidget.h stylewidget.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:

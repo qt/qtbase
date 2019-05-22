@@ -12,14 +12,16 @@ add_qt_executable(fontsampler
         main.cpp
         mainwindow.cpp mainwindow.h
         mainwindowbase.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 ## Scopes:
 #####################################################################
 
 extend_target(fontsampler CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::PrintSupport
 )

@@ -34,8 +34,6 @@ add_qt_tool(uic
         cpp
         # ${CMAKE_CURRENT_BINARY_DIR} # special case: remove
         python
-    DISABLE_AUTOGEN_TOOLS # special case:
-        uic rcc
 )
 
 #### Keys ignored in scope 1:.:.:uic.pro:<TRUE>:

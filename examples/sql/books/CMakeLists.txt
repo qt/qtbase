@@ -14,11 +14,12 @@ add_qt_executable(books
         initdb.h
         main.cpp
     INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    LIBRARIES
+        .
+    PUBLIC_LIBRARIES
         Qt::Sql
         Qt::Widgets
-        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:
@@ -26,5 +27,5 @@ add_qt_resource(books "books" PREFIX "/" FILES
     images/star.png)
 
 
-#### Keys ignored in scope 1:.:books.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:books.pro:<TRUE>:
 # TEMPLATE = "app"

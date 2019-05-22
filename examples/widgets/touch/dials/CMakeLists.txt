@@ -11,6 +11,8 @@ add_qt_executable(dials
     SOURCES
         dials.ui
         main.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )

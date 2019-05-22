@@ -16,7 +16,9 @@ add_qt_executable(chat
         org.example.chat.xml
     DBUS_INTERFACE_SOURCES
         org.example.chat.xml
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )

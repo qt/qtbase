@@ -11,9 +11,11 @@ add_qt_executable(flightinfo
     SOURCES
         flightinfo.cpp
         form.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Network
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:
@@ -21,5 +23,5 @@ add_qt_resource(flightinfo "flightinfo" PREFIX "/" FILES
     aircraft.png)
 
 
-#### Keys ignored in scope 1:.:flightinfo.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:flightinfo.pro:<TRUE>:
 # TEMPLATE = "app"

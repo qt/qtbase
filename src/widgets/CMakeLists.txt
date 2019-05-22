@@ -590,6 +590,8 @@ extend_target(Widgets CONDITION QT_FEATURE_filedialog
     SOURCES
         dialogs/qfiledialog.cpp dialogs/qfiledialog.h dialogs/qfiledialog.ui dialogs/qfiledialog_p.h
         dialogs/qsidebar.cpp dialogs/qsidebar_p.h
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 extend_target(Widgets CONDITION QT_FEATURE_filesystemmodel

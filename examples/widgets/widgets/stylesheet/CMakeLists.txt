@@ -12,8 +12,10 @@ add_qt_executable(stylesheet
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
         stylesheeteditor.cpp stylesheeteditor.h stylesheeteditor.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:

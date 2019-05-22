@@ -15,7 +15,9 @@ add_qt_executable(network-chat
         main.cpp
         peermanager.cpp peermanager.h
         server.cpp server.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Network
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )

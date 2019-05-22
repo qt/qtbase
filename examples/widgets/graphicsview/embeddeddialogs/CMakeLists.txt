@@ -12,8 +12,10 @@ add_qt_executable(embeddeddialogs
         customproxy.cpp customproxy.h
         embeddeddialog.cpp embeddeddialog.h embeddeddialog.ui
         main.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:
@@ -24,5 +26,5 @@ add_qt_resource(embeddeddialogs "embeddeddialogs" FILES
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:embeddeddialogs.pro:build_all AND NOT build_pass:
+#### Keys ignored in scope 2:.:.:embeddeddialogs.pro:build_all AND NOT build_pass:
 # CONFIG = "-build_all" "release"

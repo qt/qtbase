@@ -13,8 +13,10 @@ add_qt_executable(undo
         document.cpp document.h
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:
@@ -40,5 +42,5 @@ add_qt_resource(undo "undo" PREFIX "/" FILES
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:undo.pro:build_all AND NOT build_pass:
+#### Keys ignored in scope 2:.:.:undo.pro:build_all AND NOT build_pass:
 # CONFIG = "-build_all" "release"

@@ -13,8 +13,10 @@ add_qt_executable(editabletreemodel
         mainwindow.cpp mainwindow.h mainwindow.ui
         treeitem.cpp treeitem.h
         treemodel.cpp treemodel.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:

@@ -11,9 +11,11 @@ add_qt_executable(sharedmemory
     SOURCES
         dialog.cpp dialog.h dialog.ui
         main.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
-#### Keys ignored in scope 1:.:sharedmemory.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:sharedmemory.pro:<TRUE>:
 # EXAMPLE_FILES = "*.png"

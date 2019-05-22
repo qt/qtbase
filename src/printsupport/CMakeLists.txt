@@ -68,6 +68,8 @@ extend_target(PrintSupport CONDITION QT_FEATURE_cups AND UNIX AND NOT APPLE
 extend_target(PrintSupport CONDITION QT_FEATURE_cupsjobwidget AND UNIX AND NOT APPLE
     SOURCES
         widgets/qcupsjobwidget.cpp widgets/qcupsjobwidget.ui widgets/qcupsjobwidget_p.h
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
@@ -76,6 +78,8 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
         dialogs/qpagesetupdialog.cpp dialogs/qpagesetupdialog.h dialogs/qpagesetupdialog_p.h
         dialogs/qpagesetupwidget.ui
         dialogs/qprintdialog.h
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:
@@ -138,6 +142,8 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX AND NOT APP
         dialogs/qprintwidget.ui
     INCLUDE_DIRECTORIES
         ${PROJECT_SOURCE_DIR}/src/plugins/printsupport/cups
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog

@@ -12,7 +12,9 @@ add_qt_executable(http
         authenticationdialog.ui
         httpwindow.cpp httpwindow.h
         main.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Network
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )

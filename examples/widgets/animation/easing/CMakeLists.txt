@@ -13,8 +13,10 @@ add_qt_executable(easing
         form.ui
         main.cpp
         window.cpp window.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:

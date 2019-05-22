@@ -16,6 +16,8 @@ add_qt_executable(validators
         validatorwidget.cpp validatorwidget.h
     PUBLIC_LIBRARIES
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:

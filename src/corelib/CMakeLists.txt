@@ -235,8 +235,6 @@ add_qt_module(Core
         WrapDoubleConversion::WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
-    DISABLE_AUTOGEN_TOOLS # special case:
-        uic # special case:
     DISABLE_TOOLS_EXPORT # special case:
 )
 

@@ -13,8 +13,6 @@ add_qt_executable(notepad
         notepad.cpp notepad.h notepad.ui
     ENABLE_AUTOGEN_TOOLS
         uic
-    LIBRARIES # special case
-        Qt::Widgets # special case
 )
 
 # Resources:
