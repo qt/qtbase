@@ -40,7 +40,9 @@
 #include "qtextmarkdownimporter_p.h"
 #include "qtextdocumentfragment_p.h"
 #include <QLoggingCategory>
+#if QT_CONFIG(regularexpression)
 #include <QRegularExpression>
+#endif
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextDocumentFragment>
@@ -425,16 +427,20 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         return 0; // it's the alt-text
     if (m_needsInsertBlock)
         insertBlock();
+#if QT_CONFIG(regularexpression)
     static const QRegularExpression openingBracket(QStringLiteral("<[a-zA-Z]"));
     static const QRegularExpression closingBracket(QStringLiteral("(/>|</)"));
+#endif
     QString s = QString::fromUtf8(text, int(size));
 
     switch (textType) {
     case MD_TEXT_NORMAL:
+#if QT_CONFIG(regularexpression)
         if (m_htmlTagDepth) {
             m_htmlAccumulator += s;
             s = QString();
         }
+#endif
         break;
     case MD_TEXT_NULLCHAR:
         s = QString(QChar(0xFFFD)); // CommonMark-required replacement for null
@@ -448,12 +454,15 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
     case MD_TEXT_CODE:
         // We'll see MD_SPAN_CODE too, which will set the char format, and that's enough.
         break;
+#if QT_CONFIG(texthtmlparser)
     case MD_TEXT_ENTITY:
         m_cursor->insertHtml(s);
         s = QString();
         break;
+#endif
     case MD_TEXT_HTML:
         // count how many tags are opened and how many are closed
+#if QT_CONFIG(regularexpression)
         {
             int startIdx = 0;
             while ((startIdx = s.indexOf(openingBracket, startIdx)) >= 0) {
@@ -467,7 +476,6 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
             }
         }
         m_htmlAccumulator += s;
-        s = QString();
         if (!m_htmlTagDepth) { // all open tags are now closed
             qCDebug(lcMD) << "HTML" << m_htmlAccumulator;
             m_cursor->insertHtml(m_htmlAccumulator);
@@ -477,6 +485,8 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
                 m_cursor->setCharFormat(m_spanFormatStack.top());
             m_htmlAccumulator = QString();
         }
+#endif
+        s = QString();
         break;
     }
 

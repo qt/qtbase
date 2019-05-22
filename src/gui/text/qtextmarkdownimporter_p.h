@@ -106,14 +106,18 @@ private:
     QTextDocument *m_doc = nullptr;
     QTextCursor *m_cursor = nullptr;
     QTextTable *m_currentTable = nullptr; // because m_cursor->currentTable() doesn't work
+#if QT_CONFIG(regularexpression)
     QString m_htmlAccumulator;
+#endif
     QString m_blockCodeLanguage;
     QVector<int> m_nonEmptyTableCells; // in the current row
     QStack<QTextList *> m_listStack;
     QStack<QTextCharFormat> m_spanFormatStack;
     QFont m_monoFont;
     QPalette m_palette;
+#if QT_CONFIG(regularexpression)
     int m_htmlTagDepth = 0;
+#endif
     int m_blockQuoteDepth = 0;
     int m_tableColumnCount = 0;
     int m_tableRowCount = 0;
