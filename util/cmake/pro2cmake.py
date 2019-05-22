@@ -1080,6 +1080,12 @@ def write_library_section(cm_fh: typing.IO[str], scope: Scope, *,
     write_list(cm_fh, public_dependencies, 'PUBLIC_LIBRARIES', indent + 1)
 
 
+def write_autogen_section(cm_fh: typing.IO[str], scope: Scope, *,
+                          indent: int = 0):
+    forms = scope.get_files('FORMS')
+    if forms:
+        write_list(cm_fh, ['uic'], 'ENABLE_AUTOGEN_TOOLS', indent)
+
 
 def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
                           indent: int = 0, known_libraries=set()):
@@ -1114,6 +1120,8 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
     write_library_section(cm_fh, scope, indent=indent, known_libraries=known_libraries)
 
     write_compile_options(cm_fh, scope, 'COMPILE_OPTIONS', indent=indent + 1)
+
+    write_autogen_section(cm_fh, scope, indent=indent + 1)
 
     link_options = scope.get('QMAKE_LFLAGS')
     if link_options:
