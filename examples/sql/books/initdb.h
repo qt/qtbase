@@ -79,6 +79,32 @@ QVariant addAuthor(QSqlQuery &q, const QString &name, const QDate &birthdate)
     return q.lastInsertId();
 }
 
+const auto BOOKS_SQL = QLatin1String(R"(
+    create table books(id integer primary key, title varchar, author integer,
+                       genre integer, year integer, rating integer)
+    )");
+
+const auto AUTHORS_SQL =  QLatin1String(R"(
+    create table authors(id integer primary key, name varchar, birthdate date)
+    )");
+
+const auto GENRES_SQL = QLatin1String(R"(
+    create table genres(id integer primary key, name varchar)
+    )");
+
+const auto INSERT_AUTHOR_SQL = QLatin1String(R"(
+    insert into authors(name, birthdate) values(?, ?)
+    )");
+
+const auto INSERT_BOOK_SQL = QLatin1String(R"(
+    insert into books(title, year, author, genre, rating)
+                      values(?, ?, ?, ?, ?)
+    )");
+
+const auto INSERT_GENRE_SQL = QLatin1String(R"(
+    insert into genres(name) values(?)
+    )");
+
 QSqlError initDb()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -93,26 +119,26 @@ QSqlError initDb()
         return QSqlError();
 
     QSqlQuery q;
-    if (!q.exec(QLatin1String("create table books(id integer primary key, title varchar, author integer, genre integer, year integer, rating integer)")))
+    if (!q.exec(BOOKS_SQL))
         return q.lastError();
-    if (!q.exec(QLatin1String("create table authors(id integer primary key, name varchar, birthdate date)")))
+    if (!q.exec(AUTHORS_SQL))
         return q.lastError();
-    if (!q.exec(QLatin1String("create table genres(id integer primary key, name varchar)")))
+    if (!q.exec(GENRES_SQL))
         return q.lastError();
 
-    if (!q.prepare(QLatin1String("insert into authors(name, birthdate) values(?, ?)")))
+    if (!q.prepare(INSERT_AUTHOR_SQL))
         return q.lastError();
     QVariant asimovId = addAuthor(q, QLatin1String("Isaac Asimov"), QDate(1920, 2, 1));
     QVariant greeneId = addAuthor(q, QLatin1String("Graham Greene"), QDate(1904, 10, 2));
     QVariant pratchettId = addAuthor(q, QLatin1String("Terry Pratchett"), QDate(1948, 4, 28));
 
-    if (!q.prepare(QLatin1String("insert into genres(name) values(?)")))
+    if (!q.prepare(INSERT_GENRE_SQL))
         return q.lastError();
     QVariant sfiction = addGenre(q, QLatin1String("Science Fiction"));
     QVariant fiction = addGenre(q, QLatin1String("Fiction"));
     QVariant fantasy = addGenre(q, QLatin1String("Fantasy"));
 
-    if (!q.prepare(QLatin1String("insert into books(title, year, author, genre, rating) values(?, ?, ?, ?, ?)")))
+    if (!q.prepare(INSERT_BOOK_SQL))
         return q.lastError();
     addBook(q, QLatin1String("Foundation"), 1951, asimovId, sfiction, 3);
     addBook(q, QLatin1String("Foundation and Empire"), 1952, asimovId, sfiction, 4);
