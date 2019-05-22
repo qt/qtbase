@@ -74,7 +74,7 @@ template <typename T>
 class QTypeModuleInfo
 {
 public:
-    enum Module {
+    enum Module : bool {
         IsCore = false,
         IsWidget = false,
         IsGui = false,
@@ -87,7 +87,7 @@ template<> \
 class QTypeModuleInfo<TYPE > \
 { \
 public: \
-    enum Module { \
+    enum Module : bool { \
         IsCore = (((MODULE) == (QModulesPrivate::Core))), \
         IsWidget = (((MODULE) == (QModulesPrivate::Widgets))), \
         IsGui = (((MODULE) == (QModulesPrivate::Gui))), \
