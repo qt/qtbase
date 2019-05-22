@@ -25,6 +25,7 @@ function(qt_internal_create_depends_files)
         set(third_party_deps_seen "")
         set(tool_deps "")
         set(tool_deps_seen "")
+        set(main_module_tool_deps "")
 
         foreach (dep ${depends})
             # Normalize module by stripping leading "Qt::" and trailing "Private"
