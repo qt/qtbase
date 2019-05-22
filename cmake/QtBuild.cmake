@@ -36,9 +36,17 @@ set(INSTALL_SYSCONFDIR "etc/xdg" CACHE PATH
 set(INSTALL_EXAMPLESDIR "examples" CACHE PATH "Examples [PREFIX/examples]")
 set(INSTALL_TESTSDIR "tests" CACHE PATH "Tests [PREFIX/tests]")
 
-set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
+# The variables might have already been set in QtBuildInternalsExtra.cmake if the file is included
+# while building a new module and not QtBase. In that case, stop overriding the value.
+if(NOT INSTALL_CMAKE_NAMESPACE)
+    set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}"
+        CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
+endif()
+if(NOT QT_CMAKE_EXPORT_NAMESPACE)
+    set(QT_CMAKE_EXPORT_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}"
+        CACHE STRING "CMake namespace used when exporting targets [Qt${PROJECT_VERSION_MAJOR}]")
+endif()
 
-set(QT_CMAKE_EXPORT_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}" CACHE STRING "CMake namespace used when exporting targets [Qt${PROJECT_VERSION_MAJOR}]")
 set(QT_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # the default RPATH to be used when installing, but only if it's not a system directory
@@ -1837,3 +1845,26 @@ function(qt_install_3rdparty_library target)
     qt_install_3rdparty_config_files(${target} EXPORT ${target} ${ARGN})
 endfunction()
 
+macro(qt_find_apple_system_frameworks)
+    if(APPLE)
+        find_library(FWAppKit AppKit)
+        find_library(FWApplicationServices ApplicationServices)
+        find_library(FWCarbon Carbon)
+        find_library(FWCoreFoundation CoreFoundation)
+        find_library(FWCoreServices CoreServices)
+        find_library(FWCoreVideo CoreVideo)
+        find_library(FWcups cups)
+        find_library(FWDiskArbitration DiskArbitration)
+        find_library(FWFoundation Foundation)
+        find_library(FWIOKit IOKit)
+        find_library(FWIOSurface IOSurface)
+        find_library(FWImageIO ImageIO)
+        find_library(FWMetal Metal)
+        find_library(FWMobileCoreServices MobileCoreServices)
+        find_library(FWQuartzCore QuartzCore)
+        find_library(FWSecurity Security)
+        find_library(FWSystemConfiguration SystemConfiguration)
+        find_library(FWUIKit UIKit)
+        find_library(FWWatchKit WatchKit)
+    endif()
+endmacro()

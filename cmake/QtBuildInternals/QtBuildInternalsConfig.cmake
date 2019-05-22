@@ -12,18 +12,22 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake")
     include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake)
 endif()
 
+macro(qt_set_up_build_internals_paths)
+    # Set up the paths for the modules.
+    set(QT_CMAKE_MODULE_PATH "${QT_BUILD_INTERNALS_PATH}/../${QT_CMAKE_EXPORT_NAMESPACE}")
+    list(APPEND CMAKE_MODULE_PATH ${QT_CMAKE_MODULE_PATH})
+
+    # If the repo has its own cmake modules, include those in the module path.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+    endif()
+endmacro()
+
 macro(qt_build_repo_begin)
     if(${ARGC} EQUAL 1 AND "${ARGV0}" STREQUAL "SKIP_CMAKE_MODULE_PATH_ADDITION")
         # No-op.
     else()
-        # Set up the paths for the modules.
-        set(QT_CMAKE_MODULE_PATH "${QT_BUILD_INTERNALS_PATH}/../${QT_CMAKE_EXPORT_NAMESPACE}")
-        list(APPEND CMAKE_MODULE_PATH ${QT_CMAKE_MODULE_PATH})
-
-        # If the repo has its own cmake modules, include those in the module path.
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-            list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-        endif()
+        qt_set_up_build_internals_paths()
     endif()
 
     # Qt specific setup common for all modules:
@@ -72,4 +76,19 @@ macro(qt_build_repo)
     endif()
 
     qt_build_repo_end()
+endmacro()
+
+macro(qt_set_up_standalone_tests_build)
+    qt_set_up_build_internals_paths()
+    include(QtSetup)
+    qt_find_apple_system_frameworks()
+endmacro()
+
+macro(qt_build_tests)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/auto/CMakeLists.txt")
+        add_subdirectory(auto)
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/CMakeLists.txt")
+        add_subdirectory(benchmarks)
+    endif()
 endmacro()

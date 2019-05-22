@@ -8,9 +8,7 @@ qt_copy_or_install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs"
                    DESTINATION ${mkspecs_install_dir})
 # special case end
 
-find_library(FWApplicationServices ApplicationServices) # special case
-find_library(FWCoreServices CoreServices) # special case
-find_library(FWFoundation Foundation) # special case
+qt_find_apple_system_frameworks() # special case
 
 #####################################################################
 ## qmake Binary:

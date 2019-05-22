@@ -174,6 +174,10 @@ option(BUILD_SHARED_LIBS \"Build Qt statically or dynamically\" ${BUILD_SHARED_L
         string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
 set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+set(INSTALL_CMAKE_NAMESPACE ${INSTALL_CMAKE_NAMESPACE})")
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})")
+        string(APPEND QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "
 set(QT_BUILD_INTERNALS_PATH \"\${CMAKE_CURRENT_LIST_DIR}\")")
 
         # Propagate the original install prefix, so that a developer building a child module can
