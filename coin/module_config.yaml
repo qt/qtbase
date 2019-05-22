@@ -11,31 +11,20 @@ build_instructions:
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
   - type: ExecuteCommand
-    command: cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} {{.SourceDir}}
+    command: cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -GNinja {{.SourceDir}}
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
       Failed to call cmake. Contact Liang then.
+  - type: EnvironmentVariable
+    variableName: DESTDIR
+    variableValue: "{{.InstallRoot}}"
   - type: ExecuteCommand
-    command: make DESTDIR={{.InstallRoot}} install
+    command: ninja install
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
-      Failed to call make install. Contact Liang then.
-    disable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
-  - type: ExecuteCommand
-    command: jom DESTDIR={{.InstallRoot}} install
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 120
-    userMessageOnFailure: >
-      Failed to call jom install. Contact Liang then.
-    disable_if:
-      condition: property
-      property: host.os
-      not_equals_value: Windows
+      Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
   - type: SignPackage
     disable_if:
       condition: property
