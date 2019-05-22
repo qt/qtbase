@@ -59,11 +59,30 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+   template <typename V, typename U> int indexOf(const QVector<V> &list, const U &u, int from);
+   template <typename V, typename U> int lastIndexOf(const QVector<V> &list, const U &u, int from);
+}
+
+template <typename T> struct QVectorSpecialMethods
+{
+protected:
+    ~QVectorSpecialMethods() = default;
+};
+template <> struct QVectorSpecialMethods<QByteArray>;
+template <> struct QVectorSpecialMethods<QString>;
+
 template <typename T>
 class QVector
+#ifndef Q_QDOC
+    : public QVectorSpecialMethods<T>
+#endif
 {
     typedef QTypedArrayData<T> Data;
     Data *d;
+
+    template <typename V, typename U> friend int QtPrivate::indexOf(const QVector<V> &list, const U &u, int from);
+    template <typename V, typename U> friend int QtPrivate::lastIndexOf(const QVector<V> &list, const U &u, int from);
 
 public:
     inline QVector() noexcept : d(Data::sharedNull()) { }
@@ -1004,37 +1023,51 @@ QVector<T> &QVector<T>::operator+=(const QVector &l)
     return *this;
 }
 
+namespace QtPrivate {
+template <typename T, typename U>
+int indexOf(const QVector<T> &vector, const U &u, int from)
+{
+    if (from < 0)
+        from = qMax(from + vector.size(), 0);
+    if (from < vector.size()) {
+        auto n = vector.begin() + from - 1;
+        auto e = vector.end();
+        while (++n != e)
+            if (*n == u)
+                return n - vector.begin();
+    }
+    return -1;
+}
+
+template <typename T, typename U>
+int lastIndexOf(const QVector<T> &vector, const U &u, int from)
+{
+    if (from < 0)
+        from += vector.d->size;
+    else if (from >= vector.size())
+        from = vector.size() - 1;
+    if (from >= 0) {
+        auto b = vector.begin();
+        auto n = vector.begin() + from + 1;
+        while (n != b) {
+            if (*--n == u)
+                return n - b;
+        }
+    }
+    return -1;
+}
+}
+
 template <typename T>
 int QVector<T>::indexOf(const T &t, int from) const
 {
-    if (from < 0)
-        from = qMax(from + d->size, 0);
-    if (from < d->size) {
-        T* n = d->begin() + from - 1;
-        T* e = d->end();
-        while (++n != e)
-            if (*n == t)
-                return n - d->begin();
-    }
-    return -1;
+    return QtPrivate::indexOf<T, T>(*this, t, from);
 }
 
 template <typename T>
 int QVector<T>::lastIndexOf(const T &t, int from) const
 {
-    if (from < 0)
-        from += d->size;
-    else if (from >= d->size)
-        from = d->size-1;
-    if (from >= 0) {
-        T* b = d->begin();
-        T* n = d->begin() + from + 1;
-        while (n != b) {
-            if (*--n == t)
-                return n - b;
-        }
-    }
-    return -1;
+    return QtPrivate::lastIndexOf(*this, t, from);
 }
 
 template <typename T>
@@ -1152,5 +1185,8 @@ QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt:
 
 
 QT_END_NAMESPACE
+
+#include <QtCore/qbytearraylist.h>
+#include <QtCore/qstringlist.h>
 
 #endif // QVECTOR_H

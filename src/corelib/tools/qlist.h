@@ -71,14 +71,6 @@ QT_BEGIN_NAMESPACE
 template <typename T> class QVector;
 template <typename T> class QSet;
 
-template <typename T> struct QListSpecialMethods
-{
-protected:
-    ~QListSpecialMethods() = default;
-};
-template <> struct QListSpecialMethods<QByteArray>;
-template <> struct QListSpecialMethods<QString>;
-
 struct Q_CORE_EXPORT QListData {
     // tags for tag-dispatching of QList implementations,
     // based on QList's three different memory layouts:
@@ -126,9 +118,6 @@ namespace QtPrivate {
 
 template <typename T>
 class QList
-#ifndef Q_QDOC
-    : public QListSpecialMethods<T>
-#endif
 {
 public:
     struct MemoryLayout
@@ -848,7 +837,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T>::QList(const QList<T> &l)
-    : QListSpecialMethods<T>(l), d(l.d)
+    : d(l.d)
 {
     if (!d->ref.ref()) {
         p.detach(d->alloc);

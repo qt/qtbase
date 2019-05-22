@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qlist.h>
+#include <QtCore/qvector.h>
 
 #ifndef QSTRINGLIST_H
 #define QSTRINGLIST_H
@@ -55,21 +55,21 @@ class QRegExp;
 class QRegularExpression;
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
-typedef QListIterator<QString> QStringListIterator;
-typedef QMutableListIterator<QString> QMutableStringListIterator;
+typedef QVectorIterator<QString> QStringListIterator;
+typedef QMutableVectorIterator<QString> QMutableStringListIterator;
 #endif
 
 class QStringList;
 
 #ifdef Q_QDOC
-class QStringList : public QList<QString>
+class QStringList : public QVector<QString>
 #else
-template <> struct QListSpecialMethods<QString>
+template <> struct QVectorSpecialMethods<QString>
 #endif
 {
 #ifndef Q_QDOC
 protected:
-    ~QListSpecialMethods() = default;
+    ~QVectorSpecialMethods() = default;
 #endif
 public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);
@@ -108,23 +108,23 @@ private:
 };
 
 // ### Qt6: check if there's a better way
-class QStringList : public QList<QString>
+class QStringList : public QVector<QString>
 {
 #endif
 public:
     inline QStringList() noexcept { }
     inline explicit QStringList(const QString &i) { append(i); }
-    inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
-    inline QStringList(QList<QString> &&l) noexcept : QList<QString>(std::move(l)) { }
-    inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
+    inline QStringList(const QVector<QString> &l) : QVector<QString>(l) { }
+    inline QStringList(QVector<QString> &&l) noexcept : QVector<QString>(std::move(l)) { }
+    inline QStringList(std::initializer_list<QString> args) : QVector<QString>(args) { }
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QStringList(InputIterator first, InputIterator last)
-        : QList<QString>(first, last) { }
+        : QVector<QString>(first, last) { }
 
-    QStringList &operator=(const QList<QString> &other)
-    { QList<QString>::operator=(other); return *this; }
-    QStringList &operator=(QList<QString> &&other) noexcept
-    { QList<QString>::operator=(std::move(other)); return *this; }
+    QStringList &operator=(const QVector<QString> &other)
+    { QVector<QString>::operator=(other); return *this; }
+    QStringList &operator=(QVector<QString> &&other) noexcept
+    { QVector<QString>::operator=(std::move(other)); return *this; }
 
 #if QT_STRINGVIEW_LEVEL < 2
     inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -138,7 +138,7 @@ public:
     { append(str); return *this; }
     inline QStringList &operator<<(const QStringList &l)
     { *this += l; return *this; }
-    inline QStringList &operator<<(const QList<QString> &l)
+    inline QStringList &operator<<(const QVector<QString> &l)
     { *this += l; return *this; }
 
     inline int indexOf(QStringView str, int from = 0) const;
@@ -159,16 +159,16 @@ public:
     inline int lastIndexOf(const QRegularExpression &re, int from = -1) const;
 #endif // QT_CONFIG(regularexpression)
 
-    using QList<QString>::indexOf;
-    using QList<QString>::lastIndexOf;
+    using QVector<QString>::indexOf;
+    using QVector<QString>::lastIndexOf;
 };
 
 Q_DECLARE_TYPEINFO(QStringList, Q_MOVABLE_TYPE);
 
 #ifndef Q_QDOC
-inline QStringList *QListSpecialMethods<QString>::self()
+inline QStringList *QVectorSpecialMethods<QString>::self()
 { return static_cast<QStringList *>(this); }
-inline const QStringList *QListSpecialMethods<QString>::self() const
+inline const QStringList *QVectorSpecialMethods<QString>::self() const
 { return static_cast<const QStringList *>(this); }
 
 namespace QtPrivate {
@@ -213,45 +213,45 @@ namespace QtPrivate {
 #endif // QT_CONFIG(regularexpression)
 }
 
-inline void QListSpecialMethods<QString>::sort(Qt::CaseSensitivity cs)
+inline void QVectorSpecialMethods<QString>::sort(Qt::CaseSensitivity cs)
 {
     QtPrivate::QStringList_sort(self(), cs);
 }
 
-inline int QListSpecialMethods<QString>::removeDuplicates()
+inline int QVectorSpecialMethods<QString>::removeDuplicates()
 {
     return QtPrivate::QStringList_removeDuplicates(self());
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-inline QString QListSpecialMethods<QString>::join(const QString &sep) const
+inline QString QVectorSpecialMethods<QString>::join(const QString &sep) const
 {
     return QtPrivate::QStringList_join(self(), sep.constData(), sep.length());
 }
 #endif
 
-inline QString QListSpecialMethods<QString>::join(QStringView sep) const
+inline QString QVectorSpecialMethods<QString>::join(QStringView sep) const
 {
     return QtPrivate::QStringList_join(self(), sep);
 }
 
-QString QListSpecialMethods<QString>::join(QLatin1String sep) const
+QString QVectorSpecialMethods<QString>::join(QLatin1String sep) const
 {
     return QtPrivate::QStringList_join(*self(), sep);
 }
 
-inline QString QListSpecialMethods<QString>::join(QChar sep) const
+inline QString QVectorSpecialMethods<QString>::join(QChar sep) const
 {
     return QtPrivate::QStringList_join(self(), &sep, 1);
 }
 
-inline QStringList QListSpecialMethods<QString>::filter(QStringView str, Qt::CaseSensitivity cs) const
+inline QStringList QVectorSpecialMethods<QString>::filter(QStringView str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_filter(self(), str, cs);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-inline QStringList QListSpecialMethods<QString>::filter(const QString &str, Qt::CaseSensitivity cs) const
+inline QStringList QVectorSpecialMethods<QString>::filter(const QString &str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_filter(self(), str, cs);
 }
@@ -274,33 +274,33 @@ inline bool QStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
     return QtPrivate::QStringList_contains(this, str, cs);
 }
 
-inline QStringList &QListSpecialMethods<QString>::replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs)
+inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs)
 {
     QtPrivate::QStringList_replaceInStrings(self(), before, after, cs);
     return *self();
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
+inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 {
     QtPrivate::QStringList_replaceInStrings(self(), before, after, cs);
     return *self();
 }
 
-inline QStringList &QListSpecialMethods<QString>::replaceInStrings(QStringView before, const QString &after, Qt::CaseSensitivity cs)
+inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(QStringView before, const QString &after, Qt::CaseSensitivity cs)
 {
     QtPrivate::QStringList_replaceInStrings(self(), before, qToStringViewIgnoringNull(after), cs);
     return *self();
 }
 
-inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QString &before, QStringView after, Qt::CaseSensitivity cs)
+inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(const QString &before, QStringView after, Qt::CaseSensitivity cs)
 {
     QtPrivate::QStringList_replaceInStrings(self(), QStringView(before), after, cs);
     return *self();
 }
 #endif
 
-inline QStringList operator+(const QList<QString> &one, const QStringList &other)
+inline QStringList operator+(const QVector<QString> &one, const QStringList &other)
 {
     QStringList n = one;
     n += other;
@@ -328,13 +328,13 @@ inline int QStringList::lastIndexOf(QLatin1String string, int from) const
 }
 
 #ifndef QT_NO_REGEXP
-inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QRegExp &rx, const QString &after)
+inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(const QRegExp &rx, const QString &after)
 {
     QtPrivate::QStringList_replaceInStrings(self(), rx, after);
     return *self();
 }
 
-inline QStringList QListSpecialMethods<QString>::filter(const QRegExp &rx) const
+inline QStringList QVectorSpecialMethods<QString>::filter(const QRegExp &rx) const
 {
     return QtPrivate::QStringList_filter(self(), rx);
 }
@@ -361,13 +361,13 @@ inline int QStringList::lastIndexOf(QRegExp &rx, int from) const
 #endif
 
 #if QT_CONFIG(regularexpression)
-inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QRegularExpression &rx, const QString &after)
+inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(const QRegularExpression &rx, const QString &after)
 {
     QtPrivate::QStringList_replaceInStrings(self(), rx, after);
     return *self();
 }
 
-inline QStringList QListSpecialMethods<QString>::filter(const QRegularExpression &rx) const
+inline QStringList QVectorSpecialMethods<QString>::filter(const QRegularExpression &rx) const
 {
     return QtPrivate::QStringList_filter(self(), rx);
 }

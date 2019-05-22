@@ -1999,7 +1999,7 @@ typedef QHash<QString, QVariant> QVariantHash;
 #ifdef Q_CLANG_QDOC
 class QByteArrayList;
 #else
-typedef QList<QByteArray> QByteArrayList;
+typedef QVector<QByteArray> QByteArrayList;
 #endif
 
 #define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \
