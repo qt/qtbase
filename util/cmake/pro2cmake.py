@@ -683,6 +683,33 @@ class QmakeParser:
     def __init__(self, *, debug: bool = False) -> None:
         self._Grammar = self._generate_grammar(debug)
 
+    @staticmethod
+    def set_up_py_parsing_nicer_debug_output():
+        indent = -1
+
+        def increase_indent(fn):
+            def wrapper_function(*args):
+                nonlocal indent
+                indent += 1
+                print("> " * indent, end="")
+                return fn(*args)
+
+            return wrapper_function
+
+        def decrease_indent(fn):
+            def wrapper_function(*args):
+                nonlocal indent
+                print("> " * indent, end="")
+                indent -= 1
+                return fn(*args)
+
+            return wrapper_function
+
+        pp._defaultStartDebugAction = increase_indent(pp._defaultStartDebugAction)
+        pp._defaultSuccessDebugAction = decrease_indent(pp._defaultSuccessDebugAction)
+        pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
+
+
     def _generate_grammar(self, debug: bool):
         # Define grammar:
         pp.ParserElement.setDefaultWhitespaceChars(' \t')
@@ -827,6 +854,9 @@ class QmakeParser:
             print(pe)
             raise pe
         return result
+
+
+QmakeParser.set_up_py_parsing_nicer_debug_output()
 
 
 def parseProFile(file: str, *, debug=False):
