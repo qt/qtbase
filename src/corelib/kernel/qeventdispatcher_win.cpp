@@ -610,7 +610,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
-                // WinCE doesn't support hooks at all, so we have to call this by hand :(
+                // The Direct2d integration unsets getMessageHook. See QTBUG-42428
                 if (!d->getMessageHook)
                     (void) qt_GetMessageHook(0, PM_REMOVE, reinterpret_cast<LPARAM>(&msg));
 
