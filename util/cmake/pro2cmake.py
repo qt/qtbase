@@ -681,7 +681,8 @@ class Scope(object):
 
 class QmakeParser:
     def __init__(self, *, debug: bool = False) -> None:
-        self._Grammar = self._generate_grammar(debug)
+        self.debug = debug
+        self._Grammar = self._generate_grammar()
 
     @staticmethod
     def set_up_py_parsing_nicer_debug_output():
@@ -709,54 +710,72 @@ class QmakeParser:
         pp._defaultSuccessDebugAction = decrease_indent(pp._defaultSuccessDebugAction)
         pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
 
-
-    def _generate_grammar(self, debug: bool):
+    def _generate_grammar(self):
         # Define grammar:
         pp.ParserElement.setDefaultWhitespaceChars(' \t')
 
-        LC = pp.Suppress(pp.Literal('\\\n'))
-        EOL = pp.Suppress(pp.LineEnd())
-        Else = pp.Keyword('else')
-        Identifier = pp.Word(pp.alphas + '_', bodyChars=pp.alphanums+'_-./')
-        BracedValue = pp.nestedExpr(ignoreExpr=pp.quotedString \
-                                        | pp.QuotedString(quoteChar='$(',
-                                                          endQuoteChar=')',
-                                                          escQuote='\\',
-                                                          unquoteResults=False)
-                                   ).setParseAction(lambda s, l, t: ['(', *t[0], ')'])
+        def add_element(name: str, value: pp.ParserElement):
+            nonlocal self
+            if self.debug:
+                value.setName(name)
+                value.setDebug()
+            return value
+
+        LC = add_element('LC', pp.Suppress(pp.Literal('\\\n')))
+
+        EOL = add_element('EOL', pp.Suppress(pp.LineEnd()))
+        Else = add_element('Else', pp.Keyword('else'))
+        Identifier = add_element('Identifier', pp.Word(pp.alphas + '_',
+                                                       bodyChars=pp.alphanums+'_-./'))
+        BracedValue = add_element('BracedValue',
+                                  pp.nestedExpr(
+                                      ignoreExpr=pp.quotedString |
+                                                 pp.QuotedString(quoteChar='$(',
+                                                                 endQuoteChar=')',
+                                                                 escQuote='\\',
+                                                                 unquoteResults=False)
+                                  ).setParseAction(lambda s, l, t: ['(', *t[0], ')']))
 
         Substitution \
-            = pp.Combine(pp.Literal('$')
-                         + (((pp.Literal('$') + Identifier
-                              + pp.Optional(pp.nestedExpr()))
-                             | (pp.Literal('(') + Identifier + pp.Literal(')'))
-                             | (pp.Literal('{') + Identifier + pp.Literal('}'))
-                             | (pp.Literal('$') + pp.Literal('{')
-                                + Identifier + pp.Optional(pp.nestedExpr())
-                                + pp.Literal('}'))
-                             | (pp.Literal('$') + pp.Literal('[') + Identifier
-                                + pp.Literal(']'))
-                             )))
-        LiteralValuePart = pp.Word(pp.printables, excludeChars='$#{}()')
+            = add_element('Substitution',
+                          pp.Combine(pp.Literal('$')
+                          + (((pp.Literal('$') + Identifier
+                               + pp.Optional(pp.nestedExpr()))
+                              | (pp.Literal('(') + Identifier + pp.Literal(')'))
+                              | (pp.Literal('{') + Identifier + pp.Literal('}'))
+                              | (pp.Literal('$') + pp.Literal('{')
+                                 + Identifier + pp.Optional(pp.nestedExpr())
+                                 + pp.Literal('}'))
+                              | (pp.Literal('$') + pp.Literal('[') + Identifier
+                                 + pp.Literal(']'))
+                              ))))
+        LiteralValuePart = add_element('LiteralValuePart',
+                                       pp.Word(pp.printables, excludeChars='$#{}()'))
         SubstitutionValue \
-            = pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart
-                                      | pp.Literal('$')))
-        Value = pp.NotAny(Else | pp.Literal('}') | EOL) \
-            + (pp.QuotedString(quoteChar='"', escChar='\\')
-                | SubstitutionValue
-                | BracedValue)
+            = add_element('SubstitutionValue',
+                          pp.Combine(pp.OneOrMore(Substitution
+                                                  | LiteralValuePart
+                                                  | pp.Literal('$'))))
+        Value \
+            = add_element('Value',
+                          pp.NotAny(Else | pp.Literal('}') | EOL) \
+                          + (pp.QuotedString(quoteChar='"', escChar='\\')
+                              | SubstitutionValue
+                              | BracedValue))
 
-        Values = pp.ZeroOrMore(Value + pp.Optional(LC))('value')
+        Values = add_element('Values', pp.ZeroOrMore(Value + pp.Optional(LC))('value'))
 
-        Op = pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') \
-            | pp.Literal('*=')
+        Op = add_element('OP',
+                         pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') \
+                         | pp.Literal('*='))
 
-        Key = Identifier
+        Key = add_element('Key', Identifier)
 
-        Operation = Key('key') + pp.Optional(LC) \
-            + Op('operation') + pp.Optional(LC) \
-            + Values('value')
-        CallArgs = pp.Optional(LC) + pp.nestedExpr()\
+        Operation = add_element('Operation',
+                                Key('key') + pp.Optional(LC) \
+                                + Op('operation') + pp.Optional(LC) \
+                                + Values('value'))
+        CallArgs = add_element('CallArgs', pp.Optional(LC) + pp.nestedExpr())
 
         def parse_call_args(results):
             out = ''
@@ -768,79 +787,94 @@ class QmakeParser:
             return out
 
         CallArgs.setParseAction(parse_call_args)
-        Load = pp.Keyword('load') + CallArgs('loaded')
-        Include = pp.Keyword('include') + CallArgs('included')
-        Option = pp.Keyword('option') + CallArgs('option')
-        DefineTestDefinition = pp.Suppress(pp.Keyword('defineTest') + CallArgs
-             + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd()))  # ignore the whole thing...
-        ForLoop = pp.Suppress(pp.Keyword('for') + CallArgs
-             + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd()))  # ignore the whole thing...
-        ForLoopSingleLine = pp.Suppress(pp.Keyword('for') + CallArgs
-             + pp.Literal(':') + pp.SkipTo(EOL, ignore=LC))  # ignore the whole thing...
-        FunctionCall = pp.Suppress(Identifier + pp.nestedExpr())
 
-        Scope = pp.Forward()
+        Load = add_element('Load', pp.Keyword('load') + CallArgs('loaded'))
+        Include = add_element('Include', pp.Keyword('include') + CallArgs('included'))
+        Option = add_element('Option', pp.Keyword('option') + CallArgs('option'))
 
-        Statement = pp.Group(Load | Include | Option | ForLoop | ForLoopSingleLine \
-            | DefineTestDefinition | FunctionCall | Operation)
-        StatementLine = Statement + (EOL | pp.FollowedBy('}'))
-        StatementGroup = pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL))
+        # ignore the whole thing...
+        DefineTestDefinition = add_element(
+            'DefineTestDefinition',
+            pp.Suppress(pp.Keyword('defineTest') + CallArgs
+                        + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd())))
 
-        Block = pp.Suppress('{')  + pp.Optional(LC | EOL) \
-            + StatementGroup + pp.Optional(LC | EOL) \
-            + pp.Suppress('}') + pp.Optional(LC | EOL)
+        # ignore the whole thing...
+        ForLoop = add_element(
+            'ForLoop',
+            pp.Suppress(pp.Keyword('for') + CallArgs
+                        + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd())))
 
-        ConditionEnd = pp.FollowedBy((pp.Optional(pp.White())
-            + pp.Optional(LC) + (pp.Literal(':') \
-                 | pp.Literal('{') \
-                 | pp.Literal('|'))))
+        # ignore the whole thing...
+        ForLoopSingleLine = add_element(
+            'ForLoopSingleLine',
+            pp.Suppress(pp.Keyword('for') + CallArgs
+                        + pp.Literal(':') + pp.SkipTo(EOL, ignore=LC)))
 
-        ConditionPart1 = (pp.Optional('!') + Identifier + pp.Optional(BracedValue))
-        ConditionPart2 = pp.CharsNotIn('#{}|:=\\\n')
-        ConditionPart = (ConditionPart1 ^ ConditionPart2) + pp.Optional(LC) + ConditionEnd
+        # ignore the whole thing...
+        FunctionCall = add_element('FunctionCall', pp.Suppress(Identifier + pp.nestedExpr()))
 
-        ConditionOp = pp.Literal('|') ^ pp.Literal(':')
-        ConditionLC = pp.Suppress(pp.Optional(pp.White(' ') + LC + pp.White(' ')))
+        Scope = add_element('Scope', pp.Forward())
 
-        ConditionRepeated = pp.ZeroOrMore((ConditionOp) + ConditionLC + ConditionPart)
+        Statement = add_element('Statement',
+                                pp.Group(Load | Include | Option | ForLoop | ForLoopSingleLine
+                                         | DefineTestDefinition | FunctionCall | Operation))
+        StatementLine = add_element('StatementLine', Statement + (EOL | pp.FollowedBy('}')))
+        StatementGroup = add_element('StatementGroup',
+                                     pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL)))
 
-        Condition = pp.Combine(ConditionPart + ConditionRepeated)
+        Block = add_element('Block',
+                            pp.Suppress('{')  + pp.Optional(LC | EOL)
+                            + StatementGroup + pp.Optional(LC | EOL)
+                            + pp.Suppress('}') + pp.Optional(LC | EOL))
+
+        ConditionEnd = add_element('ConditionEnd',
+                                   pp.FollowedBy((pp.Optional(pp.White())
+                                                  + pp.Optional(LC) + (pp.Literal(':')
+                                                                       | pp.Literal('{')
+                                                                       | pp.Literal('|')))))
+
+        ConditionPart1 = add_element('ConditionPart1',
+                                     (pp.Optional('!') + Identifier + pp.Optional(BracedValue)))
+        ConditionPart2 = add_element('ConditionPart2', pp.CharsNotIn('#{}|:=\\\n'))
+        ConditionPart = add_element(
+            'ConditionPart',
+            (ConditionPart1 ^ ConditionPart2) + pp.Optional(LC) + ConditionEnd)
+
+        ConditionOp = add_element('ConditionOp', pp.Literal('|') ^ pp.Literal(':'))
+        ConditionLC = add_element('ConditionLC',
+                                  pp.Suppress(pp.Optional(pp.White(' ') + LC + pp.White(' '))))
+
+        ConditionRepeated = add_element('ConditionRepeated',
+                                        pp.ZeroOrMore((ConditionOp) + ConditionLC + ConditionPart))
+
+        Condition = add_element('Condition', pp.Combine(ConditionPart + ConditionRepeated))
         Condition.setParseAction(lambda x: ' '.join(x).strip().replace(':', ' && ').strip(' && '))
 
         # Weird thing like write_file(a)|error() where error() is the alternative condition
         # which happens to be a function call. In this case there is no scope, but our code expects
         # a scope with a list of statements, so create a fake empty statement.
-        ConditionEndingInFunctionCall = pp.Suppress(ConditionOp) + FunctionCall \
-                                        + pp.Empty().setParseAction(lambda x: [[]])\
-                                            .setResultsName('statements')
+        ConditionEndingInFunctionCall = add_element(
+            'ConditionEndingInFunctionCall', pp.Suppress(ConditionOp) + FunctionCall
+                                             + pp.Empty().setParseAction(lambda x: [[]])
+                                             .setResultsName('statements'))
 
-        SingleLineScope = pp.Suppress(pp.Literal(':')) + pp.Optional(LC) \
-            + pp.Group(Block | (Statement + EOL))('statements')
-        MultiLineScope = pp.Optional(LC) + Block('statements')
+        SingleLineScope = add_element('SingleLineScope',
+                                      pp.Suppress(pp.Literal(':')) + pp.Optional(LC)
+                                      + pp.Group(Block | (Statement + EOL))('statements'))
+        MultiLineScope = add_element('MultiLineScope',
+                                     pp.Optional(LC) + Block('statements'))
 
-        SingleLineElse = pp.Suppress(pp.Literal(':')) + pp.Optional(LC) \
-            + (Scope | Block | (Statement + pp.Optional(EOL)))
-        MultiLineElse = Block
-        ElseBranch = pp.Suppress(Else) + (SingleLineElse | MultiLineElse)
+        SingleLineElse = add_element('SingleLineElse',
+                                     pp.Suppress(pp.Literal(':')) + pp.Optional(LC)
+                                     + (Scope | Block | (Statement + pp.Optional(EOL))))
+        MultiLineElse = add_element('MultiLineElse', Block)
+        ElseBranch = add_element('ElseBranch', pp.Suppress(Else) + (SingleLineElse | MultiLineElse))
+
+        # Scope is already add_element'ed in the forward declaration above.
         Scope <<= pp.Optional(LC) \
-            + pp.Group(Condition('condition') \
-            + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall) \
+            + pp.Group(Condition('condition')
+            + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall)
             + pp.Optional(ElseBranch)('else_statements'))
-
-        if debug:
-            for ename in 'LC EOL ' \
-                         'Condition ConditionPart ConditionEnd ' \
-                         'Else ElseBranch SingleLineElse MultiLineElse ' \
-                         'SingleLineScope MultiLineScope ' \
-                         'Identifier ' \
-                         'Key Op Values Value BracedValue ' \
-                         'Scope Block ' \
-                         'StatementGroup StatementLine Statement '\
-                         'Load Include Option DefineTestDefinition ForLoop ' \
-                         'FunctionCall CallArgs Operation'.split():
-                expr = locals()[ename]
-                expr.setName(ename)
-                expr.setDebug()
 
         Grammar = StatementGroup('statements')
         Grammar.ignore(pp.pythonStyleComment())
