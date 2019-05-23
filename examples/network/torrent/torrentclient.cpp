@@ -1084,25 +1084,25 @@ void TorrentClient::scheduleUploads()
     // seeding, we sort by upload speed. Seeds are left out; there's
     // no use in unchoking them.
     QList<PeerWireClient *> allClients = d->connections;
-    QMultiMap<int, PeerWireClient *> transferSpeeds;
+    QVector<QPair<qint64, PeerWireClient *>> transferSpeeds;
     for (PeerWireClient *client : qAsConst(allClients)) {
         if (client->state() == QAbstractSocket::ConnectedState
             && client->availablePieces().count(true) != d->pieceCount) {
             if (d->state == Seeding) {
-                transferSpeeds.insert(client->uploadSpeed(), client);
+                transferSpeeds.push_back({client->uploadSpeed(), client});
             } else {
-                transferSpeeds.insert(client->downloadSpeed(), client);
+                transferSpeeds.push_back({client->downloadSpeed(), client});
             }
         }
     }
 
+    std::sort(transferSpeeds.begin(), transferSpeeds.end());
+
     // Unchoke the top 'MaxUploads' downloaders (peers that we are
     // uploading to) and choke all others.
     int maxUploaders = MaxUploads;
-    QMapIterator<int, PeerWireClient *> it(transferSpeeds);
-    it.toBack();
-    while (it.hasPrevious()) {
-        PeerWireClient *client = it.previous().value();
+    for (auto rit = transferSpeeds.crbegin(), rend = transferSpeeds.crend(); rit != rend; ++rit) {
+        PeerWireClient *client = rit->second;
         bool interested = (client->peerWireState() & PeerWireClient::PeerIsInterested);
 
         if (maxUploaders) {
