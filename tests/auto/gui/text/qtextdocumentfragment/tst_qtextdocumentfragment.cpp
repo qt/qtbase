@@ -944,7 +944,7 @@ void tst_QTextDocumentFragment::namedAnchorFragments3()
 
     QCOMPARE(it.fragment().text(), QString::fromLatin1("T"));
     QVERIFY(it.fragment().charFormat().isAnchor());
-    QCOMPARE(it.fragment().charFormat().anchorName(), QString("target"));
+    QCOMPARE(it.fragment().charFormat().anchorNames().constFirst(), QLatin1String("target"));
     QStringList targets; targets << "target" << "target2";
     QCOMPARE(it.fragment().charFormat().anchorNames(), targets);
 

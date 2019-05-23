@@ -1315,7 +1315,9 @@ void tst_QPrinter::pageSize()
         // Test set/get
         QPrinter::PaperSize expected = QPrinter::A4;
         QPrinterInfo info = QPrinterInfo::printerInfo(native.printerName());
-        foreach (QPrinter::PaperSize supported, info.supportedPaperSizes()) {
+        const auto &pageSizes = info.supportedPageSizes();
+        for (const auto &pageSize : pageSizes) {
+            const QPrinter::PaperSize supported = QPrinter::PaperSize(pageSize.id());
             if (supported != QPrinter::Custom && supported != native.paperSize()) {
                 expected = supported;
                 break;
@@ -1359,7 +1361,9 @@ void tst_QPrinter::paperSize()
         // Test set/get
         QPrinter::PaperSize expected = QPrinter::A4;
         QPrinterInfo info = QPrinterInfo::printerInfo(native.printerName());
-        foreach (QPrinter::PaperSize supported, info.supportedPaperSizes()) {
+        const auto &pageSizes = info.supportedPageSizes();
+        for (const auto &pageSize : pageSizes) {
+            const QPrinter::PaperSize supported = QPrinter::PaperSize(pageSize.id());
             if (supported != QPrinter::Custom && supported != native.paperSize()) {
                 expected = supported;
                 break;

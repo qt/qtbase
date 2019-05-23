@@ -2228,7 +2228,6 @@ void tst_QTextLayout::superscriptCrash_qtbug53911()
         for (int j = 0; j < 4; ++j) {
             QTextLayout* newTextLayout = new QTextLayout();
             newTextLayout->setText(layoutText);
-            QList<QTextLayout::FormatRange> formatRanges;
             QTextLayout::FormatRange formatRange;
 
             formatRange.format.setFont(QFont());
@@ -2257,8 +2256,7 @@ void tst_QTextLayout::superscriptCrash_qtbug53911()
 
             formatRange.start = 0;
             formatRange.length = layoutText.size();
-            formatRanges << formatRange;
-            newTextLayout->setAdditionalFormats(formatRanges);
+            newTextLayout->setFormats({formatRange});
 
             textLayouts.push_front(newTextLayout);
         }
@@ -2289,10 +2287,7 @@ void tst_QTextLayout::nbspWithFormat()
     formatRange.length = 1;
     formatRange.format.setFontUnderline(true);
 
-    QList<QTextLayout::FormatRange> overrides;
-    overrides.append(formatRange);
-
-    layout.setAdditionalFormats(overrides);
+    layout.setFormats({formatRange});
 
     layout.beginLayout();
     forever {
@@ -2327,7 +2322,7 @@ void tst_QTextLayout::koreanWordWrap()
         QTextLine line = layout.createLine();
         if (!line.isValid())
             break;
-        line.setLineWidth(metrics.width(s) * 0.8);
+        line.setLineWidth(metrics.horizontalAdvance(s) * 0.8);
     }
     layout.endLayout();
     QCOMPARE(layout.lineCount(), 2);

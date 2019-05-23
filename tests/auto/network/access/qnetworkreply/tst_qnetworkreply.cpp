@@ -1557,7 +1557,7 @@ void tst_QNetworkReply::initTestCase()
 
     QDir::setSearchPaths("testdata", QStringList() << testDataDir);
 #ifndef QT_NO_SSL
-    QSslSocket::defaultCaCertificates(); //preload certificates
+    QSslConfiguration::defaultConfiguration().caCertificates(); //preload certificates
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
@@ -8148,16 +8148,17 @@ void tst_QNetworkReply::backgroundRequest()
         SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
 
-    const QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    QVERIFY(session);
-    QNetworkSession::UsagePolicies original = session.data()->usagePolicies();
-    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::UsagePolicies(policy));
+    const QWeakPointer<const QNetworkSession> sessionWeakPtr = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
+    QVERIFY(!sessionWeakPtr.isNull());
+    auto session = const_cast<QNetworkSession *>(sessionWeakPtr.toStrongRef().data());
+    QNetworkSession::UsagePolicies original = session->usagePolicies();
+    QNetworkSessionPrivate::setUsagePolicies(*session, QNetworkSession::UsagePolicies(policy));
 
     QNetworkReplyPtr reply(manager.get(request));
 
     QVERIFY(waitForFinish(reply) != Timeout);
     if (session)
-        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
+        QNetworkSessionPrivate::setUsagePolicies(*session, original);
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), error);
@@ -8212,10 +8213,11 @@ void tst_QNetworkReply::backgroundRequestInterruption()
         SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
 
-    const QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    QVERIFY(session);
-    QNetworkSession::UsagePolicies original = session.data()->usagePolicies();
-    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::NoPolicy);
+    const QWeakPointer<const QNetworkSession> sessionWeakPtr = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
+    QVERIFY(!sessionWeakPtr.isNull());
+    auto session = const_cast<QNetworkSession *>(sessionWeakPtr.toStrongRef().data());
+    QNetworkSession::UsagePolicies original = session->usagePolicies();
+    QNetworkSessionPrivate::setUsagePolicies(*session, QNetworkSession::NoPolicy);
 
     request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 8192);
     QNetworkReplyPtr reply(manager.get(request));
@@ -8224,14 +8226,14 @@ void tst_QNetworkReply::backgroundRequestInterruption()
     QSignalSpy spy(reply.data(), SIGNAL(readyRead()));
     QTRY_VERIFY(spy.count() > 0);
 
-    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::NoBackgroundTrafficPolicy);
+    QNetworkSessionPrivate::setUsagePolicies(*session, QNetworkSession::NoBackgroundTrafficPolicy);
 
     // After we have changed the policy we can download at full speed.
     reply->setReadBufferSize(0);
 
     QVERIFY(waitForFinish(reply) != Timeout);
     if (session)
-        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
+        QNetworkSessionPrivate::setUsagePolicies(*session, original);
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), error);
@@ -8271,8 +8273,8 @@ void tst_QNetworkReply::backgroundRequestConnectInBackground()
 
     QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
     //force QNAM to reopen the session.
-    if (session && session.data()->isOpen()) {
-        const_cast<QNetworkSession *>(session.data())->close();
+    if (session && session.toStrongRef().data()->isOpen()) {
+        const_cast<QNetworkSession *>(session.toStrongRef().data())->close();
         QCoreApplication::processEvents(); //let signals propagate inside QNAM
     }
 
@@ -8281,19 +8283,19 @@ void tst_QNetworkReply::backgroundRequestConnectInBackground()
 
     session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
     QVERIFY(session);
-    QNetworkSession::UsagePolicies original = session.data()->usagePolicies();
-    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::NoPolicy);
+    QNetworkSession::UsagePolicies original = session.toStrongRef().data()->usagePolicies();
+    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.toStrongRef().data()), QNetworkSession::NoPolicy);
 
     QNetworkReplyPtr reply(manager.get(request));
 
     QVERIFY(waitForFinish(reply) != Timeout);
     session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
     if (session) {
-        QVariant cib = session.data()->sessionProperty(QStringLiteral("ConnectInBackground"));
+        QVariant cib = session.toStrongRef().data()->sessionProperty(QStringLiteral("ConnectInBackground"));
         if (!cib.isValid())
             QSKIP("inconclusive - ConnectInBackground session property not supported by the bearer plugin");
         QCOMPARE(cib.toBool(), background);
-        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
+        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.toStrongRef().data()), original);
     } else {
         QSKIP("inconclusive - network session has been destroyed");
     }
