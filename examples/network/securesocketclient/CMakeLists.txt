@@ -13,9 +13,11 @@ add_qt_executable(securesocketclient
         main.cpp
         sslclient.cpp sslclient.h sslclient.ui
         sslerrors.ui
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Network
         Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 # Resources:

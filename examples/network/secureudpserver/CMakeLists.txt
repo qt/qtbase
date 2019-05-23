@@ -13,10 +13,12 @@ add_qt_executable(secureudpserver
         mainwindow.cpp mainwindow.h mainwindow.ui
         nicselector.cpp nicselector.h nicselector.ui
         server.cpp server.h
-    LIBRARIES
-        Qt::Widgets
+    PUBLIC_LIBRARIES
         Qt::Network
+        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
-#### Keys ignored in scope 1:.:secureudpserver.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:secureudpserver.pro:<TRUE>:
 # TEMPLATE = "app"

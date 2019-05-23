@@ -22,8 +22,6 @@ add_qt_executable(torrent
         torrentclient.cpp torrentclient.h
         torrentserver.cpp torrentserver.h
         trackerclient.cpp trackerclient.h
-    INCLUDE_DIRECTORIES # special case
-        forms # special case
     PUBLIC_LIBRARIES
         Qt::Network
         Qt::Widgets

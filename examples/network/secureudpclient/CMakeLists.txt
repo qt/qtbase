@@ -13,10 +13,12 @@ add_qt_executable(secureudpclient
         association.cpp association.h
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
-    LIBRARIES
-        Qt::Widgets
+    PUBLIC_LIBRARIES
         Qt::Network
+        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
-#### Keys ignored in scope 1:.:secureudpclient.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:secureudpclient.pro:<TRUE>:
 # TEMPLATE = "app"
