@@ -149,9 +149,12 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '') -> str:
 
 
 def fixup_linecontinuation(contents: str) -> str:
-    contents = re.sub(r'([^\t ])\\[ \t]*\n', '\\1 \\\n', contents)
-    contents = re.sub(r'\\[ \t]*\n', '\\\n', contents)
-
+    # Remove all line continuations, aka a backslash followed by
+    # a newline character with an arbitrary amount of whitespace
+    # between the backslash and the newline.
+    # This greatly simplifies the qmake parsing grammar.
+    contents = re.sub(r'([^\t ])\\[ \t]*\n', '\\1 ', contents)
+    contents = re.sub(r'\\[ \t]*\n', '', contents)
     return contents
 
 
@@ -721,8 +724,6 @@ class QmakeParser:
                 value.setDebug()
             return value
 
-        LC = add_element('LC', pp.Suppress(pp.Literal('\\\n')))
-
         EOL = add_element('EOL', pp.Suppress(pp.LineEnd()))
         Else = add_element('Else', pp.Keyword('else'))
         Identifier = add_element('Identifier', pp.Word(pp.alphas + '_',
@@ -763,7 +764,7 @@ class QmakeParser:
                               | SubstitutionValue
                               | BracedValue))
 
-        Values = add_element('Values', pp.ZeroOrMore(Value + pp.Optional(LC))('value'))
+        Values = add_element('Values', pp.ZeroOrMore(Value)('value'))
 
         Op = add_element('OP',
                          pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') \
@@ -771,11 +772,8 @@ class QmakeParser:
 
         Key = add_element('Key', Identifier)
 
-        Operation = add_element('Operation',
-                                Key('key') + pp.Optional(LC) \
-                                + Op('operation') + pp.Optional(LC) \
-                                + Values('value'))
-        CallArgs = add_element('CallArgs', pp.Optional(LC) + pp.nestedExpr())
+        Operation = add_element('Operation', Key('key') + Op('operation') + Values('value'))
+        CallArgs = add_element('CallArgs', pp.nestedExpr())
 
         def parse_call_args(results):
             out = ''
@@ -807,8 +805,7 @@ class QmakeParser:
         # ignore the whole thing...
         ForLoopSingleLine = add_element(
             'ForLoopSingleLine',
-            pp.Suppress(pp.Keyword('for') + CallArgs
-                        + pp.Literal(':') + pp.SkipTo(EOL, ignore=LC)))
+            pp.Suppress(pp.Keyword('for') + CallArgs + pp.Literal(':') + pp.SkipTo(EOL)))
 
         # ignore the whole thing...
         FunctionCall = add_element('FunctionCall', pp.Suppress(Identifier + pp.nestedExpr()))
@@ -823,29 +820,30 @@ class QmakeParser:
                                      pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL)))
 
         Block = add_element('Block',
-                            pp.Suppress('{')  + pp.Optional(LC | EOL)
-                            + StatementGroup + pp.Optional(LC | EOL)
-                            + pp.Suppress('}') + pp.Optional(LC | EOL))
+                            pp.Suppress('{')  + pp.Optional(EOL)
+                            + StatementGroup + pp.Optional(EOL)
+                            + pp.Suppress('}') + pp.Optional(EOL))
 
         ConditionEnd = add_element('ConditionEnd',
                                    pp.FollowedBy((pp.Optional(pp.White())
-                                                  + pp.Optional(LC) + (pp.Literal(':')
-                                                                       | pp.Literal('{')
-                                                                       | pp.Literal('|')))))
+                                                  + (pp.Literal(':')
+                                                     | pp.Literal('{')
+                                                     | pp.Literal('|')))))
 
         ConditionPart1 = add_element('ConditionPart1',
                                      (pp.Optional('!') + Identifier + pp.Optional(BracedValue)))
         ConditionPart2 = add_element('ConditionPart2', pp.CharsNotIn('#{}|:=\\\n'))
         ConditionPart = add_element(
             'ConditionPart',
-            (ConditionPart1 ^ ConditionPart2) + pp.Optional(LC) + ConditionEnd)
+            (ConditionPart1 ^ ConditionPart2) + ConditionEnd)
 
         ConditionOp = add_element('ConditionOp', pp.Literal('|') ^ pp.Literal(':'))
-        ConditionLC = add_element('ConditionLC',
-                                  pp.Suppress(pp.Optional(pp.White(' ') + LC + pp.White(' '))))
+        ConditionWhiteSpace = add_element('ConditionWhiteSpace',
+                                          pp.Suppress(pp.Optional(pp.White(' '))))
 
         ConditionRepeated = add_element('ConditionRepeated',
-                                        pp.ZeroOrMore((ConditionOp) + ConditionLC + ConditionPart))
+                                        pp.ZeroOrMore(ConditionOp
+                                                      + ConditionWhiteSpace + ConditionPart))
 
         Condition = add_element('Condition', pp.Combine(ConditionPart + ConditionRepeated))
         Condition.setParseAction(lambda x: ' '.join(x).strip().replace(':', ' && ').strip(' && '))
@@ -859,22 +857,21 @@ class QmakeParser:
                                              .setResultsName('statements'))
 
         SingleLineScope = add_element('SingleLineScope',
-                                      pp.Suppress(pp.Literal(':')) + pp.Optional(LC)
+                                      pp.Suppress(pp.Literal(':'))
                                       + pp.Group(Block | (Statement + EOL))('statements'))
-        MultiLineScope = add_element('MultiLineScope',
-                                     pp.Optional(LC) + Block('statements'))
+        MultiLineScope = add_element('MultiLineScope', Block('statements'))
 
         SingleLineElse = add_element('SingleLineElse',
-                                     pp.Suppress(pp.Literal(':')) + pp.Optional(LC)
+                                     pp.Suppress(pp.Literal(':'))
                                      + (Scope | Block | (Statement + pp.Optional(EOL))))
         MultiLineElse = add_element('MultiLineElse', Block)
         ElseBranch = add_element('ElseBranch', pp.Suppress(Else) + (SingleLineElse | MultiLineElse))
 
         # Scope is already add_element'ed in the forward declaration above.
-        Scope <<= pp.Optional(LC) \
-            + pp.Group(Condition('condition')
-            + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall)
-            + pp.Optional(ElseBranch)('else_statements'))
+        Scope <<= \
+             pp.Group(Condition('condition')
+                      + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall)
+                      + pp.Optional(ElseBranch)('else_statements'))
 
         Grammar = StatementGroup('statements')
         Grammar.ignore(pp.pythonStyleComment())
