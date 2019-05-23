@@ -604,7 +604,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                 dst = escapeFilePath(filePrefixRoot(root, targetdir + src.section('/', -1)));
         if(!ret.isEmpty())
             ret += "\n\t";
-        ret += "-$(QINSTALL) " + escapeFilePath(Option::fixPathToTargetOS(src, false)) + ' ' + dst;
+        ret += "$(QINSTALL) " + escapeFilePath(Option::fixPathToTargetOS(src, false)) + ' ' + dst;
         if(!uninst.isEmpty())
             uninst.append("\n\t");
         uninst.append("-$(DEL_FILE) " + dst);
@@ -640,16 +640,16 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
 
         QString copy_cmd;
         if (bundle == SolidBundle) {
-            copy_cmd += "-$(QINSTALL) " + src_targ + ' ' + plain_targ;
+            copy_cmd += "$(QINSTALL) " + src_targ + ' ' + plain_targ;
         } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
-            copy_cmd += "-$(QINSTALL) " + src_targ + ' ' + dst_targ;
+            copy_cmd += "$(QINSTALL) " + src_targ + ' ' + dst_targ;
         } else if (!isAux) {
             if (bundle == SlicedBundle) {
                 if (!ret.isEmpty())
                     ret += "\n\t";
                 ret += mkdir_p_asstring("\"`dirname " + dst_targ + "`\"", false);
             }
-            copy_cmd += "-$(QINSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
+            copy_cmd += "$(QINSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
         }
         if(project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib")
            && project->values(ProKey(t + ".CONFIG")).indexOf("fix_rpath") != -1) {
@@ -702,7 +702,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                     ret += "\n\t";
                 ret += mkdir_p_asstring("\"`dirname " + dst + "`\"", false) + "\n\t";
                 ret += "-$(DEL_FILE) " + dst + "\n\t"; // Can't overwrite symlinks to directories
-                ret += "-$(QINSTALL) " + escapeFilePath(src) + " " + dst;
+                ret += "$(QINSTALL) " + escapeFilePath(src) + " " + dst;
                 if (!uninst.isEmpty())
                     uninst.append("\n\t");
                 uninst.append("-$(DEL_FILE) " + dst);

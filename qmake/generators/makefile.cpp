@@ -1294,9 +1294,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     dst_file += fi.fileName();
                     QString cmd;
                     if (is_target || (!fi.isDir() && fi.isExecutable()))
-                       cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
+                       cmd = QLatin1String("$(QINSTALL_PROGRAM)");
                     else
-                       cmd = QLatin1String("-$(QINSTALL)");
+                       cmd = QLatin1String("$(QINSTALL)");
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!noStrip && !project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
@@ -1316,9 +1316,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     dst_file += filestr;
                     QString cmd;
                     if (installConfigValues.contains("executable"))
-                        cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
+                        cmd = QLatin1String("$(QINSTALL_PROGRAM)");
                     else
-                        cmd = QLatin1String("-$(QINSTALL)");
+                        cmd = QLatin1String("$(QINSTALL)");
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + filestr, FileFixifyAbsolute, false))));
@@ -1331,7 +1331,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     if (!dst_file.endsWith(Option::dir_sep))
                         dst_file += Option::dir_sep;
                     dst_file += fi.fileName();
-                    QString cmd = QLatin1String("-$(QINSTALL) ") +
+                    QString cmd = QLatin1String("$(QINSTALL) ") +
                                   escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!noStrip && !project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
