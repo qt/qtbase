@@ -64,8 +64,6 @@ using namespace Microsoft::WRL::Wrappers;
 
 QT_BEGIN_NAMESPACE
 
-int appCmdShow = 0;
-
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
 {
     /*
@@ -175,16 +173,12 @@ Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app
 
 Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
 {
-#if defined(Q_OS_WINCE)
-    return appCmdShow;
-#else
     STARTUPINFO startupInfo;
     GetStartupInfo(&startupInfo);
 
     return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
         ? startupInfo.wShowWindow
         : SW_SHOWDEFAULT;
-#endif
 }
 #endif
 

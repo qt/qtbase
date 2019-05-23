@@ -29,14 +29,14 @@
 
 #include <QtCore>
 #include <QtNetwork>
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) && defined(Q_CC_MSVC)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && defined(Q_CC_MSVC)
 #  include <crtdbg.h>
 #endif
 
 int main(int argc, char *argv[])
 {
      // Windows: Suppress crash notification dialog.
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) && defined(Q_CC_MSVC)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && defined(Q_CC_MSVC)
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 #endif
     QCoreApplication app(argc, argv);

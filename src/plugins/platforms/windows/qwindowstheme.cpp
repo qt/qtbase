@@ -170,15 +170,9 @@ public:
             if (m_params) {
                 const QString fileName = m_params->fileName;
                 SHFILEINFO info;
-#ifndef Q_OS_WINCE
-                const UINT oldErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
-#endif
                 const bool result = SHGetFileInfo(reinterpret_cast<const wchar_t *>(fileName.utf16()),
                                                   m_params->attributes, &info, sizeof(SHFILEINFO),
                                                   m_params->flags);
-#ifndef Q_OS_WINCE
-                SetErrorMode(oldErrorMode);
-#endif
                 m_doneMutex.lock();
                 if (!m_cancelled.load()) {
                     *m_params->result = result;

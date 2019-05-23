@@ -255,11 +255,7 @@ public:
 protected:
 
     void resizeEvent(QResizeEvent*) {
-#if defined(Q_OS_WINCE_WM)
-        touchDevice = true;
-#else
         touchDevice = false;
-#endif
         if (touchDevice) {
             if (width() < height()) {
                 trackPad = QRect(0, height() / 2, width(), height() / 2);

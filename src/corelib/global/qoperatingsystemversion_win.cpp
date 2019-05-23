@@ -84,7 +84,6 @@ static inline OSVERSIONINFOEX determineWinOsVersion()
 #define pGetModuleHandle GetModuleHandleW
 #endif
 
-#ifndef Q_OS_WINCE
     HMODULE ntdll = pGetModuleHandle(L"ntdll.dll");
     if (Q_UNLIKELY(!ntdll))
         return result;
@@ -104,9 +103,6 @@ static inline OSVERSIONINFOEX determineWinOsVersion()
     // GetVersionEx() has been deprecated in Windows 8.1 and will return
     // only Windows 8 from that version on, so use the kernel API function.
     pRtlGetVersion(reinterpret_cast<LPOSVERSIONINFO>(&result)); // always returns STATUS_SUCCESS
-#else // !Q_OS_WINCE
-    GetVersionEx(&result);
-#endif
     return result;
 }
 
