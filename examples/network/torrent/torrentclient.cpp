@@ -720,9 +720,9 @@ QList<TorrentPeer *> TorrentClient::weighedFreePeers() const
     qint64 now = QDateTime::currentSecsSinceEpoch();
     QList<TorrentPeer *> freePeers;
     QMap<QString, int> connectionsPerPeer;
-    for (TorrentPeer *peer : d->peers) {
+    for (TorrentPeer *peer : qAsConst(d->peers)) {
         bool busy = false;
-        for (PeerWireClient *client : d->connections) {
+        for (PeerWireClient *client : qAsConst(d->connections)) {
             if (client->state() == PeerWireClient::ConnectedState
                 && client->peerAddress() == peer->address
                 && client->peerPort() == peer->port) {
