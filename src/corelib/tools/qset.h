@@ -402,6 +402,7 @@ QList<T> QList<T>::fromSet(const QSet<T> &set)
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Set)
 
+#if !defined(QT_NO_JAVA_STYLE_ITERATORS)
 template <typename T>
 class QMutableSetIterator
 {
@@ -433,6 +434,7 @@ public:
     { while (c->constBegin() != i) if (*(n = --i) == t) return true;
       n = c->end(); return false;  }
 };
+#endif // QT_NO_JAVA_STYLE_ITERATORS
 
 QT_END_NAMESPACE
 

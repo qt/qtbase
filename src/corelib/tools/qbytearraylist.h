@@ -48,8 +48,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_JAVA_STYLE_ITERATORS)
 typedef QListIterator<QByteArray> QByteArrayListIterator;
 typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
+#endif
+
 #ifndef Q_CLANG_QDOC
 typedef QList<QByteArray> QByteArrayList;
 

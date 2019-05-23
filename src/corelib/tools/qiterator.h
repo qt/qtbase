@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_JAVA_STYLE_ITERATORS)
+
 #define Q_DECLARE_SEQUENTIAL_ITERATOR(C) \
 \
 template <class T> \
@@ -178,6 +180,13 @@ public: \
     { while (const_iterator(i) != c->constBegin()) if (*(n = --i) == t) return true; \
       n = c->end(); return false; } \
 };
+
+#else // QT_NO_JAVA_STYLE_ITERATORS
+#define Q_DECLARE_SEQUENTIAL_ITERATOR(C)
+#define Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(C)
+#define Q_DECLARE_ASSOCIATIVE_ITERATOR(C)
+#define Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(C)
+#endif // QT_NO_JAVA_STYLE_ITERATORS
 
 template<typename Key, typename T, class Iterator>
 class QKeyValueIterator

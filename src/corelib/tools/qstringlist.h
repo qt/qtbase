@@ -54,8 +54,10 @@ QT_BEGIN_NAMESPACE
 class QRegExp;
 class QRegularExpression;
 
+#if !defined(QT_NO_JAVA_STYLE_ITERATORS)
 typedef QListIterator<QString> QStringListIterator;
 typedef QMutableListIterator<QString> QMutableStringListIterator;
+#endif
 
 class QStringList;
 
