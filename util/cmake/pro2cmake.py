@@ -794,12 +794,25 @@ class QmakeParser:
             + pp.Optional(LC) + (pp.Literal(':') \
                  | pp.Literal('{') \
                  | pp.Literal('|'))))
-        ConditionPart = ((pp.Optional('!') + Identifier + pp.Optional(BracedValue)) \
-            ^ pp.CharsNotIn('#{}|:=\\\n')) + pp.Optional(LC) + ConditionEnd
-        Condition = pp.Combine(ConditionPart \
-            + pp.ZeroOrMore((pp.Literal('|') ^ pp.Literal(':')) \
-            + ConditionPart))
+
+        ConditionPart1 = (pp.Optional('!') + Identifier + pp.Optional(BracedValue))
+        ConditionPart2 = pp.CharsNotIn('#{}|:=\\\n')
+        ConditionPart = (ConditionPart1 ^ ConditionPart2) + pp.Optional(LC) + ConditionEnd
+
+        ConditionOp = pp.Literal('|') ^ pp.Literal(':')
+        ConditionLC = pp.Suppress(pp.Optional(pp.White(' ') + LC + pp.White(' ')))
+
+        ConditionRepeated = pp.ZeroOrMore((ConditionOp) + ConditionLC + ConditionPart)
+
+        Condition = pp.Combine(ConditionPart + ConditionRepeated)
         Condition.setParseAction(lambda x: ' '.join(x).strip().replace(':', ' && ').strip(' && '))
+
+        # Weird thing like write_file(a)|error() where error() is the alternative condition
+        # which happens to be a function call. In this case there is no scope, but our code expects
+        # a scope with a list of statements, so create a fake empty statement.
+        ConditionEndingInFunctionCall = pp.Suppress(ConditionOp) + FunctionCall \
+                                        + pp.Empty().setParseAction(lambda x: [[]])\
+                                            .setResultsName('statements')
 
         SingleLineScope = pp.Suppress(pp.Literal(':')) + pp.Optional(LC) \
             + pp.Group(Block | (Statement + EOL))('statements')
@@ -811,7 +824,7 @@ class QmakeParser:
         ElseBranch = pp.Suppress(Else) + (SingleLineElse | MultiLineElse)
         Scope <<= pp.Optional(LC) \
             + pp.Group(Condition('condition') \
-            + (SingleLineScope | MultiLineScope) \
+            + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall) \
             + pp.Optional(ElseBranch)('else_statements'))
 
         if debug:

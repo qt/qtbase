@@ -309,3 +309,18 @@ def test_realworld_lc():
 def test_realworld_lc_with_comment_in_between():
     result = parse_file(_tests_path + '/data/lc_with_comment.pro')
     assert len(result) == 6
+
+
+def test_condition_without_scope():
+    result = parse_file(_tests_path + '/data/condition_without_scope.pro')
+    assert len(result) == 1
+
+
+def test_multi_condition_divided_by_lc():
+    result = parse_file(_tests_path + '/data/multi_condition_divided_by_lc.pro')
+    assert len(result) == 1
+
+
+def test_nested_function_calls():
+    result = parse_file(_tests_path + '/data/nested_function_calls.pro')
+    assert len(result) == 1
