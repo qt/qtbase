@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -51,6 +51,21 @@
 #else
 #define QT_POPEN_READ "r"
 #endif
+
+class ActionTimer
+{
+    qint64 started;
+public:
+    ActionTimer() = default;
+    void start()
+    {
+        started = QDateTime::currentMSecsSinceEpoch();
+    }
+    int elapsed()
+    {
+        return int(QDateTime::currentMSecsSinceEpoch() - started);
+    }
+};
 
 static const bool mustReadOutputAnyway = true; // pclose seems to return the wrong error code unless we read the output
 
@@ -138,7 +153,7 @@ struct Options
     bool gradle;
     bool auxMode;
     bool stripLibraries = true;
-    QTime timer;
+    ActionTimer timer;
 
     // External tools
     QString sdkPath;
