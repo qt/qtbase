@@ -3152,7 +3152,9 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             theStroker.setCapStyle(Qt::FlatCap);
             theStroker.setDashPattern(QVector<qreal>() << 1 << 2);
             path = theStroker.createStroke(path);
-            p->fillPath(path, QColor(0, 0, 0, 119));
+            const auto dark = qt_mac_applicationIsInDarkMode() ? opt->palette.dark().color().darker()
+                                                               : QColor(0, 0, 0, 119);
+            p->fillPath(path, dark);
         }
         break;
     case PE_FrameWindow:
