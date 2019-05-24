@@ -1799,7 +1799,6 @@ void QWidgetPrivate::createTLExtra()
         x->inTopLevelResize = false;
         x->embedded = 0;
         x->window = 0;
-        x->shareContext = 0;
         x->initialScreenIndex = -1;
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
         x->wasMaximized = false;
@@ -1903,8 +1902,7 @@ void QWidgetPrivate::deleteTLSysExtra()
         deleteBackingStore(this);
 #ifndef QT_NO_OPENGL
         extra->topextra->widgetTextures.clear();
-        delete extra->topextra->shareContext;
-        extra->topextra->shareContext = 0;
+        extra->topextra->shareContext.reset();
 #endif
 
         //the toplevel might have a context with a "qglcontext associated with it. We need to
@@ -12413,16 +12411,15 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     if (Q_UNLIKELY(!extra || !extra->topextra || !extra->topextra->window))
         return 0;
 
-    QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
     if (!extra->topextra->shareContext) {
-        QOpenGLContext *ctx = new QOpenGLContext;
+        auto ctx = qt_make_unique<QOpenGLContext>();
         ctx->setShareContext(qt_gl_global_share_context());
         ctx->setFormat(extra->topextra->window->format());
         ctx->setScreen(extra->topextra->window->screen());
         ctx->create();
-        that->extra->topextra->shareContext = ctx;
+        extra->topextra->shareContext = std::move(ctx);
     }
-    return that->extra->topextra->shareContext;
+    return extra->topextra->shareContext.get();
 #endif // QT_NO_OPENGL
 }
 

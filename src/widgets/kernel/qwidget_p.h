@@ -169,7 +169,9 @@ struct QTLWExtra {
     QBackingStore *backingStore;
     QPainter *sharedPainter;
     QWidgetWindow *window;
-    QOpenGLContext *shareContext;
+#ifndef QT_NO_OPENGL
+    mutable std::unique_ptr<QOpenGLContext> shareContext;
+#endif
 
     // Implicit pointers (shared_null).
     QString caption; // widget caption
