@@ -390,7 +390,25 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept
     \sa expandedTo(), scale()
 */
 
+/*!
+    \fn QSize QSize::grownBy(QMargins margins) const
+    \fn QSizeF QSizeF::grownBy(QMarginsF margins) const
+    \since 5.14
 
+    Returns the size that results from growing this size by \a margins.
+
+    \sa shrunkBy()
+*/
+
+/*!
+    \fn QSize QSize::shrunkBy(QMargins margins) const
+    \fn QSizeF QSizeF::shrunkBy(QMarginsF margins) const
+    \since 5.14
+
+    Returns the size that results from shrinking this size by \a margins.
+
+    \sa grownBy()
+*/
 
 /*****************************************************************************
   QSize stream functions

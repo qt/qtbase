@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <qsize.h>
 
+Q_DECLARE_METATYPE(QMarginsF)
 
 class tst_QSizeF : public QObject
 {
@@ -44,6 +45,9 @@ private slots:
 
     void boundedTo_data();
     void boundedTo();
+
+    void grownOrShrunkBy_data();
+    void grownOrShrunkBy();
 
     void transpose_data();
     void transpose();
@@ -150,6 +154,46 @@ void tst_QSizeF::boundedTo() {
     QFETCH( QSizeF, expected);
 
     QCOMPARE( input1.boundedTo(input2), expected);
+}
+
+void tst_QSizeF::grownOrShrunkBy_data()
+{
+    QTest::addColumn<QSizeF>("input");
+    QTest::addColumn<QMarginsF>("margins");
+    QTest::addColumn<QSizeF>("grown");
+    QTest::addColumn<QSizeF>("shrunk");
+
+    auto row = [](QSizeF i, QMarginsF m, QSizeF g, QSizeF s) {
+        QTest::addRow("{%g,%g}/{%g,%g,%g,%g}", i.width(), i.height(),
+                      m.left(), m.top(), m.right(), m.bottom())
+                << i << m << g << s;
+    };
+
+    const QSizeF zero = {0, 0};
+    const QSizeF some = {100, 200};
+    const QMarginsF zeroMargins = {};
+    const QMarginsF negative = {-1, -2, -3, -4};
+    const QMarginsF positive = { 1,  2,  3,  4};
+
+    row(zero, zeroMargins, zero, zero);
+    row(zero, negative, {-4, -6}, { 4,  6});
+    row(zero, positive, { 4,  6}, {-4, -6});
+    row(some, zeroMargins, some, some);
+    row(some, negative, { 96, 194}, {104, 206});
+    row(some, positive, {104, 206}, { 96, 194});
+}
+
+void tst_QSizeF::grownOrShrunkBy()
+{
+    QFETCH(const QSizeF, input);
+    QFETCH(const QMarginsF, margins);
+    QFETCH(const QSizeF, grown);
+    QFETCH(const QSizeF, shrunk);
+
+    QCOMPARE(input.grownBy(margins), grown);
+    QCOMPARE(input.shrunkBy(margins), shrunk);
+    QCOMPARE(grown.shrunkBy(margins), input);
+    QCOMPARE(shrunk.grownBy(margins), input);
 }
 
 void tst_QSizeF::transpose_data() {

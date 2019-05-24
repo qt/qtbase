@@ -381,11 +381,10 @@ QSize QDockWidgetLayout::sizeFromContent(const QSize &content, bool floating) co
     if (content.height() < 0)
         result.setHeight(-1);
 
-    int left, top, right, bottom;
-    w->getContentsMargins(&left, &top, &right, &bottom);
+    const QMargins margins = w->contentsMargins();
     //we need to subtract the contents margin (it will be added by the caller)
-    QSize min = w->minimumSize() - QSize(left + right, top + bottom);
-    QSize max = w->maximumSize() - QSize(left + right, top + bottom);
+    QSize min = w->minimumSize().shrunkBy(margins);
+    QSize max = w->maximumSize().shrunkBy(margins);
 
     /* A floating dockwidget will automatically get its minimumSize set to the layout's
        minimum size + deco. We're *not* interested in this, we only take minimumSize()
