@@ -121,6 +121,8 @@
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
 
+#include <private/qmemory_p.h>
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -1784,7 +1786,6 @@ void QWidgetPrivate::createTLExtra()
         createExtra();
     if (!extra->topextra) {
         QTLWExtra* x = extra->topextra = new QTLWExtra;
-        x->icon = 0;
         x->backingStore = 0;
         x->sharedPainter = 0;
         x->incw = x->inch = 0;
@@ -1872,7 +1873,6 @@ void QWidgetPrivate::deleteExtra()
         if (extra->topextra) {
             deleteTLSysExtra();
             // extra->topextra->backingStore destroyed in QWidgetPrivate::deleteTLSysExtra()
-            delete extra->topextra->icon;
             delete extra->topextra;
         }
         delete extra;
@@ -6265,8 +6265,9 @@ void QWidget::setWindowIcon(const QIcon &icon)
     d->createTLExtra();
 
     if (!d->extra->topextra->icon)
-        d->extra->topextra->icon = new QIcon();
-    *d->extra->topextra->icon = icon;
+        d->extra->topextra->icon = qt_make_unique<QIcon>(icon);
+    else
+        *d->extra->topextra->icon = icon;
 
     d->setWindowIcon_sys();
     d->setWindowIcon_helper();

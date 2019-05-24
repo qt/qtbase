@@ -164,7 +164,7 @@ struct QTLWExtra {
     // *************************** Cross-platform variables *****************************
 
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
-    QIcon *icon; // widget icon
+    std::unique_ptr<QIcon> icon; // widget icon
     QWidgetBackingStoreTracker backingStoreTracker;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
