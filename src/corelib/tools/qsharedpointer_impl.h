@@ -684,6 +684,7 @@ public:
     template<typename X>
     friend QPointer<X>
     qPointerFromVariant(const QVariant &variant);
+    friend QtPrivate::QSmartPointerConvertFunctor<QWeakPointer>;
 #endif
 
     template <class X>
