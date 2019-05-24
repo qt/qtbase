@@ -59,7 +59,7 @@ class QColor;
 class QWindowsDirect2DBitmap
 {
     Q_DECLARE_PRIVATE(QWindowsDirect2DBitmap)
-    Q_DISABLE_COPY(QWindowsDirect2DBitmap)
+    Q_DISABLE_COPY_MOVE(QWindowsDirect2DBitmap)
 public:
     QWindowsDirect2DBitmap();
     QWindowsDirect2DBitmap(ID2D1Bitmap1 *bitmap, ID2D1DeviceContext *dc);

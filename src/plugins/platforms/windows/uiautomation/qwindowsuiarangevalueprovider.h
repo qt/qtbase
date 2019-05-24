@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaRangeValueProvider : public QWindowsUiaBaseProvider,
                                       public QWindowsComBase<IRangeValueProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaRangeValueProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaRangeValueProvider)
 public:
     explicit QWindowsUiaRangeValueProvider(QAccessible::Id id);
     virtual ~QWindowsUiaRangeValueProvider();

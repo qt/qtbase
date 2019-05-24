@@ -128,7 +128,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsDirect2DPaintEngine::Flags)
 class QWindowsDirect2DPaintEngineSuspenderPrivate;
 class QWindowsDirect2DPaintEngineSuspender
 {
-    Q_DISABLE_COPY(QWindowsDirect2DPaintEngineSuspender)
+    Q_DISABLE_COPY_MOVE(QWindowsDirect2DPaintEngineSuspender)
     Q_DECLARE_PRIVATE(QWindowsDirect2DPaintEngineSuspender)
     QScopedPointer<QWindowsDirect2DPaintEngineSuspenderPrivate> d_ptr;
 public:

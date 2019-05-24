@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaTableProvider : public QWindowsUiaBaseProvider,
                                  public QWindowsComBase<ITableProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaTableProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaTableProvider)
 public:
     explicit QWindowsUiaTableProvider(QAccessible::Id id);
     virtual ~QWindowsUiaTableProvider();

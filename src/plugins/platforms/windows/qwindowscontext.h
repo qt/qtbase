@@ -155,7 +155,7 @@ struct QWindowsShcoreDLL {
 
 class QWindowsContext
 {
-    Q_DISABLE_COPY(QWindowsContext)
+    Q_DISABLE_COPY_MOVE(QWindowsContext)
 public:
 
     enum SystemInfoFlags

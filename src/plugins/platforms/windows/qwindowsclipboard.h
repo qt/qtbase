@@ -58,7 +58,7 @@ protected:
 
 class QWindowsClipboard : public QPlatformClipboard
 {
-    Q_DISABLE_COPY(QWindowsClipboard)
+    Q_DISABLE_COPY_MOVE(QWindowsClipboard)
 public:
     QWindowsClipboard();
     ~QWindowsClipboard() override;

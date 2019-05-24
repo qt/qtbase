@@ -64,7 +64,7 @@ namespace QWindowsDialogs
 template <class BaseClass>
 class QWindowsDialogHelperBase : public BaseClass
 {
-    Q_DISABLE_COPY(QWindowsDialogHelperBase)
+    Q_DISABLE_COPY_MOVE(QWindowsDialogHelperBase)
 public:
     typedef QSharedPointer<QWindowsNativeDialogBase> QWindowsNativeDialogBasePtr;
     ~QWindowsDialogHelperBase() { cleanupThread(); }

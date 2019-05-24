@@ -1800,7 +1800,7 @@ void QWindowsDirect2DPaintEngine::resume()
 
 class QWindowsDirect2DPaintEngineSuspenderImpl
 {
-    Q_DISABLE_COPY(QWindowsDirect2DPaintEngineSuspenderImpl)
+    Q_DISABLE_COPY_MOVE(QWindowsDirect2DPaintEngineSuspenderImpl)
     QWindowsDirect2DPaintEngine *m_engine;
     bool m_active;
 public:

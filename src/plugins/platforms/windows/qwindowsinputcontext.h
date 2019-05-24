@@ -53,7 +53,7 @@ class QWindowsWindow;
 
 class QWindowsInputContext : public QPlatformInputContext
 {
-    Q_DISABLE_COPY(QWindowsInputContext)
+    Q_DISABLE_COPY_MOVE(QWindowsInputContext)
     Q_OBJECT
 
     struct CompositionContext

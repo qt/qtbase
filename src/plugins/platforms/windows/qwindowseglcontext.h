@@ -109,7 +109,7 @@ private:
 
 class QWindowsEGLStaticContext : public QWindowsStaticOpenGLContext
 {
-    Q_DISABLE_COPY(QWindowsEGLStaticContext)
+    Q_DISABLE_COPY_MOVE(QWindowsEGLStaticContext)
 
 public:
     static QWindowsEGLStaticContext *create(QWindowsOpenGLTester::Renderers preferredType);

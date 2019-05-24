@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaTextProvider : public QWindowsUiaBaseProvider,
                                 public QWindowsComBase<ITextProvider2>
 {
-    Q_DISABLE_COPY(QWindowsUiaTextProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaTextProvider)
 public:
     explicit QWindowsUiaTextProvider(QAccessible::Id id);
     ~QWindowsUiaTextProvider();

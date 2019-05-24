@@ -110,7 +110,7 @@ QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t);
 
 class QWindowsTabletSupport
 {
-    Q_DISABLE_COPY(QWindowsTabletSupport)
+    Q_DISABLE_COPY_MOVE(QWindowsTabletSupport)
 
     explicit QWindowsTabletSupport(HWND window, HCTX context);
 

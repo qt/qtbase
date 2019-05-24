@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaInvokeProvider : public QWindowsUiaBaseProvider,
                                   public QWindowsComBase<IInvokeProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaInvokeProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaInvokeProvider)
 public:
     explicit QWindowsUiaInvokeProvider(QAccessible::Id id);
     virtual ~QWindowsUiaInvokeProvider();

@@ -51,7 +51,7 @@ class QWindow;
 
 class QWindowsTheme : public QPlatformTheme
 {
-    Q_DISABLE_COPY(QWindowsTheme)
+    Q_DISABLE_COPY_MOVE(QWindowsTheme)
 public:
     QWindowsTheme();
     ~QWindowsTheme() override;

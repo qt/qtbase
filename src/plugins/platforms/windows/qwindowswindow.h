@@ -117,7 +117,7 @@ struct QWindowsWindowData
 
 class QWindowsBaseWindow : public QPlatformWindow
 {
-    Q_DISABLE_COPY(QWindowsBaseWindow)
+    Q_DISABLE_COPY_MOVE(QWindowsBaseWindow)
 public:
     explicit QWindowsBaseWindow(QWindow *window) : QPlatformWindow(window) {}
 

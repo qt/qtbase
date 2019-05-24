@@ -51,7 +51,7 @@ class QWindowsOpenGLContext;
 
 class QWindowsStaticOpenGLContext
 {
-    Q_DISABLE_COPY(QWindowsStaticOpenGLContext)
+    Q_DISABLE_COPY_MOVE(QWindowsStaticOpenGLContext)
 public:
     static QWindowsStaticOpenGLContext *create();
     virtual ~QWindowsStaticOpenGLContext() = default;
@@ -75,7 +75,7 @@ private:
 
 class QWindowsOpenGLContext : public QPlatformOpenGLContext
 {
-    Q_DISABLE_COPY(QWindowsOpenGLContext)
+    Q_DISABLE_COPY_MOVE(QWindowsOpenGLContext)
 public:
     // Returns the native context handle (e.g. HGLRC for WGL, EGLContext for EGL).
     virtual void *nativeContext() const = 0;

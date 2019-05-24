@@ -54,7 +54,7 @@ class QTouchDevice;
 
 class QWindowsMouseHandler
 {
-    Q_DISABLE_COPY(QWindowsMouseHandler)
+    Q_DISABLE_COPY_MOVE(QWindowsMouseHandler)
 public:
     QWindowsMouseHandler();
 

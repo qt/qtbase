@@ -134,7 +134,7 @@ private:
 
 class QOpenGLStaticContext : public QWindowsStaticOpenGLContext
 {
-    Q_DISABLE_COPY(QOpenGLStaticContext)
+    Q_DISABLE_COPY_MOVE(QOpenGLStaticContext)
     QOpenGLStaticContext();
 public:
     enum Extensions
