@@ -61,18 +61,17 @@ endmacro()
 macro(qt_build_repo)
     qt_build_repo_begin(${ARGN})
 
-    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")
         add_subdirectory(src)
     endif()
 
-    if (BUILD_TESTING)
+    if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         find_package(Qt5 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test Xml)
         add_subdirectory(tests)
     endif()
 
-    if (BUILD_EXAMPLES)
-        # TODO: Implement me
-        #add_subdirectory(examples)
+    if (BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
+        add_subdirectory(examples)
     endif()
 
     qt_build_repo_end()
