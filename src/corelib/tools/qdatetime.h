@@ -107,8 +107,8 @@ public:
     QString toString(QStringView format) const;
 #endif
 #if QT_DEPRECATED_SINCE(5,0)
-QT_DEPRECATED inline bool setYMD(int y, int m, int d)
-{ if (uint(y) <= 99) y += 1900; return setDate(y, m, d); }
+    QT_DEPRECATED_X("Use setDate() instead") inline bool setYMD(int y, int m, int d)
+    { if (uint(y) <= 99) y += 1900; return setDate(y, m, d); }
 #endif
 
     bool setDate(int year, int month, int day);
@@ -342,8 +342,8 @@ public:
     inline bool operator>=(const QDateTime &other) const { return !(*this < other); }
 
 #if QT_DEPRECATED_SINCE(5, 2) // ### Qt 6: remove
-    QT_DEPRECATED void setUtcOffset(int seconds);
-    QT_DEPRECATED int utcOffset() const;
+    QT_DEPRECATED_X("Use setOffsetFromUtc() instead") void setUtcOffset(int seconds);
+    QT_DEPRECATED_X("Use offsetFromUtc() instead") int utcOffset() const;
 #endif // QT_DEPRECATED_SINCE
 
     static QDateTime currentDateTime();
