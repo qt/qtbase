@@ -58,7 +58,7 @@ class QWindowsInputContext : public QPlatformInputContext
 
     struct CompositionContext
     {
-        HWND hwnd = 0;
+        HWND hwnd = nullptr;
         QString composition;
         int position = 0;
         bool isComposing = false;

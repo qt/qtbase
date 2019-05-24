@@ -106,7 +106,7 @@ struct QWindowsWindowData
     QRect geometry;
     QMargins fullFrameMargins; // Do not use directly for windows, see FrameDirty.
     QMargins customMargins;    // User-defined, additional frame for NCCALCSIZE
-    HWND hwnd = 0;
+    HWND hwnd = nullptr;
     bool embedded = false;
     bool hasFrame = false;
 
@@ -357,7 +357,7 @@ private:
     inline void setParent_sys(const QPlatformWindow *parent);
     inline void updateTransientParent() const;
     void destroyWindow();
-    inline bool isDropSiteEnabled() const { return m_dropTarget != 0; }
+    inline bool isDropSiteEnabled() const { return m_dropTarget != nullptr; }
     void setDropSiteEnabled(bool enabled);
     void updateDropSite(bool topLevel);
     void handleGeometryChange();
@@ -368,7 +368,7 @@ private:
     mutable QWindowsWindowData m_data;
     QPointer<QWindowsMenuBar> m_menuBar;
     mutable unsigned m_flags = WithinCreate;
-    HDC m_hdc = 0;
+    HDC m_hdc = nullptr;
     Qt::WindowStates m_windowState = Qt::WindowNoState;
     qreal m_opacity = 1;
 #ifndef QT_NO_CURSOR
@@ -378,15 +378,15 @@ private:
     unsigned m_savedStyle = 0;
     QRect m_savedFrameGeometry;
     const QSurfaceFormat m_format;
-    HICON m_iconSmall = 0;
-    HICON m_iconBig = 0;
+    HICON m_iconSmall = nullptr;
+    HICON m_iconBig = nullptr;
     void *m_surface = nullptr;
 
     static bool m_screenForGLInitialized;
 
 #if QT_CONFIG(vulkan)
     // note: intentionally not using void * in order to avoid breaking x86
-    VkSurfaceKHR m_vkSurface = 0;
+    VkSurfaceKHR m_vkSurface = VK_NULL_HANDLE;
 #endif
     static bool m_borderInFullScreenDefault;
 };
@@ -471,11 +471,11 @@ inline void QWindowsWindow::destroyIcon()
 {
     if (m_iconBig) {
         DestroyIcon(m_iconBig);
-        m_iconBig = 0;
+        m_iconBig = nullptr;
     }
     if (m_iconSmall) {
         DestroyIcon(m_iconSmall);
-        m_iconSmall = 0;
+        m_iconSmall = nullptr;
     }
 }
 

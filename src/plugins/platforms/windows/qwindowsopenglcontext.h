@@ -63,7 +63,7 @@ public:
 
     // If the windowing system interface needs explicitly created window surfaces (like EGL),
     // reimplement these.
-    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/, int * /*err*/) { return 0; }
+    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/, int * /*err*/) { return nullptr; }
     virtual void destroyWindowSurface(void * /*nativeSurface*/) { }
 
 protected:
@@ -82,7 +82,7 @@ public:
 
     // These should be implemented only for some winsys interfaces, for example EGL.
     // For others, like WGL, they are not relevant.
-    virtual void *nativeDisplay() const { return 0; }
+    virtual void *nativeDisplay() const { return nullptr; }
     virtual void *nativeConfig() const { return 0; }
 
 protected:
