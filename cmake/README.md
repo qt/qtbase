@@ -20,36 +20,20 @@ to be supplied from the outside to the build now. You may find apt-get/brew/etc.
 * For the time being we try to keep qmake working so that we do not interfere too much with ongoing development.
 
 
-# Building against VCPKG
+# Building against VCPKG on Windows
 
 You may use vcpkg to install dependencies needed to build QtBase.
 
   * ```git clone -b qt https://github.com/tronical/vcpkg```
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
-  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to
-    * Linux: ``x64-linux``
-    * macOS: ``x64-osx``
-    * Windows: ``qt-x86-windows-static``
-  * Build Qt dependencies:  ``vcpkg install zlib pcre2 double-conversion harfbuzz freetype``
-  * When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake``
+  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``qt-x64-windows-static`` or ``qt-x86-windows-static``
+  * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl``
+  * When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=%VCPKG_DEFAULT_TRIPLET%``
     Previously CMAKE_PREFIX_PATH was mentioned instead of CMAKE_TOOLCHAIN_FILE. Setting CMAKE_PREFIX_PATH to the vcpkg installed folder is not enough, because then find_package is not overridden by vcpkg and cmake might not propagate all library dependencies for static packages (freetype is one such package).
-
-# Building VCPKG on macOS
-
-vcpkg doesn't currently buid on macOS with Xcode provided clang, due to missing filesystem headers. It's expected to be fixed in Xcode 11.
-
-See https://github.com/Microsoft/vcpkg/issues/4475 and https://github.com/Microsoft/vcpkg/issues/6068.
-
-Vcpkg can be built with homebrew provided gcc though.
-
-  * Install homebrew: ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
-  * Install gcc via homebrew:  ``brew install gcc``
-
-After installing gcc, just follow the vcpkg instructions in the section above.
 
 # Building against homebrew on macOS
 
-Instead of using vcpkg, you can also use homebrew to get the 3rd party dependencies.
+You may use brew to install dependencies needed to build QtBase.
 
   * Install homebrew: ```/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"```
   * Build Qt dependencies:  ``brew install pcre2 harfbuzz freetype``
