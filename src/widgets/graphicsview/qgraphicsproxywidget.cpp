@@ -697,9 +697,7 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     if (!newWidget->testAttribute(Qt::WA_Resized))
         newWidget->adjustSize();
 
-    int left, top, right, bottom;
-    newWidget->getContentsMargins(&left, &top, &right, &bottom);
-    q->setContentsMargins(left, top, right, bottom);
+    q->setContentsMargins(newWidget->contentsMargins());
     q->setWindowTitle(newWidget->windowTitle());
 
     // size policies and constraints..

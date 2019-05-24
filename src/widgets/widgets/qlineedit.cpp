@@ -1129,7 +1129,7 @@ bool QLineEdit::hasAcceptableInput() const
     sizes \a left, \a top, \a right, and \a bottom.
     \since 4.5
 
-    See also getTextMargins().
+    See also textMargins().
 */
 void QLineEdit::setTextMargins(int left, int top, int right, int bottom)
 {
@@ -1150,7 +1150,11 @@ void QLineEdit::setTextMargins(const QMargins &margins)
     update();
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
+    \obsolete
+    Use textMargins()
+
     Returns the widget's text margins for \a left, \a top, \a right, and \a bottom.
     \since 4.5
 
@@ -1168,6 +1172,7 @@ void QLineEdit::getTextMargins(int *left, int *top, int *right, int *bottom) con
     if (bottom)
         *bottom = m.bottom();
 }
+#endif
 
 /*!
     \since 4.6

@@ -142,9 +142,7 @@ public:
 #endif
         if (style() != p->style())
             setStyle(p->style());
-        int leftMargin, topMargin, rightMargin, bottomMargin;
-        p->getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
-        setContentsMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+        setContentsMargins(p->contentsMargins());
         setLayoutDirection(p->layoutDirection());
         //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
         //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));

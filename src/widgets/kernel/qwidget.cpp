@@ -7634,7 +7634,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 
   Changing the margins will trigger a resizeEvent().
 
-  \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), contentsMargins()
 */
 void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 {
@@ -7664,7 +7664,7 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 
   Changing the margins will trigger a resizeEvent().
 
-  \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), contentsMargins()
 */
 void QWidget::setContentsMargins(const QMargins &margins)
 {
@@ -7693,7 +7693,11 @@ void QWidgetPrivate::updateContentsRect()
     QCoreApplication::sendEvent(q, &e);
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
+    \obsolete
+    Use contentsMargins().
+
   Returns the widget's contents margins for \a left, \a top, \a
   right, and \a bottom.
 
@@ -7711,6 +7715,7 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     if (bottom)
         *bottom = m.bottom();
 }
+#endif
 
 // FIXME: Move to qmargins.h for next minor Qt release
 QMargins operator|(const QMargins &m1, const QMargins &m2)
@@ -7724,7 +7729,7 @@ QMargins operator|(const QMargins &m1, const QMargins &m2)
 
   \brief The contentsMargins function returns the widget's contents margins.
 
-  \sa getContentsMargins(), setContentsMargins(), contentsRect()
+  \sa setContentsMargins(), contentsRect()
  */
 QMargins QWidget::contentsMargins() const
 {
@@ -7737,7 +7742,7 @@ QMargins QWidget::contentsMargins() const
 /*!
     Returns the area inside the widget's margins.
 
-    \sa setContentsMargins(), getContentsMargins()
+    \sa setContentsMargins(), contentsMargins()
 */
 QRect QWidget::contentsRect() const
 {
