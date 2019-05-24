@@ -609,8 +609,8 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
                                                QtWindows::WindowsEventType,
                                                MSG msg, LRESULT *)
 {
-    typedef QWindowSystemInterface::TouchPoint QTouchPoint;
-    typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
+    using QTouchPoint = QWindowSystemInterface::TouchPoint;
+    using QTouchPointList = QList<QWindowSystemInterface::TouchPoint>;
 
     if (!QWindowsContext::instance()->initTouch()) {
         qWarning("Unable to initialize touch handling.");

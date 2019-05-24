@@ -72,7 +72,7 @@ static inline QDpi monitorDPI(HMONITOR hMonitor)
     return {0, 0};
 }
 
-typedef QList<QWindowsScreenData> WindowsScreenDataList;
+using WindowsScreenDataList = QList<QWindowsScreenData>;
 
 static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
 {

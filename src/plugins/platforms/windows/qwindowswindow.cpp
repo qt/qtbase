@@ -86,7 +86,7 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QSharedPointer<QWindowCreationContext> QWindowCreationContextPtr;
+using QWindowCreationContextPtr = QSharedPointer<QWindowCreationContext>;
 
 enum {
     defaultWindowWidth = 160,
@@ -494,7 +494,7 @@ static QMargins invisibleMargins(QPoint screenPoint)
 
 struct WindowCreationData
 {
-    typedef QWindowsWindowData WindowData;
+    using WindowData = QWindowsWindowData;
     enum Flags { ForceChild = 0x1, ForceTopLevel = 0x2 };
 
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);

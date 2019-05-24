@@ -76,7 +76,7 @@ class QWindowsScreen : public QPlatformScreen
 {
 public:
 #ifndef QT_NO_CURSOR
-    typedef QScopedPointer<QPlatformCursor> CursorPtr;
+    using CursorPtr = QScopedPointer<QPlatformCursor>;
 #endif
 
     explicit QWindowsScreen(const QWindowsScreenData &data);
@@ -127,7 +127,7 @@ private:
 class QWindowsScreenManager
 {
 public:
-    typedef QList<QWindowsScreen *> WindowsScreenList;
+    using WindowsScreenList = QList<QWindowsScreen *>;
 
     QWindowsScreenManager();
 
