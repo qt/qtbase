@@ -41,6 +41,8 @@ import typing
 
 from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
+from helper import _set_up_py_parsing_nicer_debug_output
+_set_up_py_parsing_nicer_debug_output(pp)
 
 from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_library, \
     featureName, map_platform, find_library_info_for_target, generate_find_package_info, \
@@ -687,32 +689,6 @@ class QmakeParser:
         self.debug = debug
         self._Grammar = self._generate_grammar()
 
-    @staticmethod
-    def set_up_py_parsing_nicer_debug_output():
-        indent = -1
-
-        def increase_indent(fn):
-            def wrapper_function(*args):
-                nonlocal indent
-                indent += 1
-                print("> " * indent, end="")
-                return fn(*args)
-
-            return wrapper_function
-
-        def decrease_indent(fn):
-            def wrapper_function(*args):
-                nonlocal indent
-                print("> " * indent, end="")
-                indent -= 1
-                return fn(*args)
-
-            return wrapper_function
-
-        pp._defaultStartDebugAction = increase_indent(pp._defaultStartDebugAction)
-        pp._defaultSuccessDebugAction = decrease_indent(pp._defaultSuccessDebugAction)
-        pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
-
     def _generate_grammar(self):
         # Define grammar:
         pp.ParserElement.setDefaultWhitespaceChars(' \t')
@@ -898,9 +874,6 @@ class QmakeParser:
             print(pe)
             raise pe
         return result
-
-
-QmakeParser.set_up_py_parsing_nicer_debug_output()
 
 
 def parseProFile(file: str, *, debug=False):

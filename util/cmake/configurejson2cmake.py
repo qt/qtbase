@@ -27,7 +27,7 @@
 ##
 #############################################################################
 
-import json
+import json_parser
 import os.path
 import re
 import sys
@@ -154,8 +154,8 @@ def readJsonFromDir(dir):
     print('Reading {}...'.format(path))
     assert os.path.exists(path)
 
-    with open(path, 'r') as fh:
-        return json.load(fh)
+    parser = json_parser.QMakeSpecificJSONParser()
+    return parser.parse(path)
 
 
 def processFiles(ctx, data):

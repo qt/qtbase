@@ -428,3 +428,29 @@ def generate_find_package_info(lib: LibraryMapping,
                                                  ind=one_ind)
 
     return result
+
+
+def _set_up_py_parsing_nicer_debug_output(pp):
+    indent = -1
+
+    def increase_indent(fn):
+        def wrapper_function(*args):
+            nonlocal indent
+            indent += 1
+            print("> " * indent, end="")
+            return fn(*args)
+
+        return wrapper_function
+
+    def decrease_indent(fn):
+        def wrapper_function(*args):
+            nonlocal indent
+            print("> " * indent, end="")
+            indent -= 1
+            return fn(*args)
+
+        return wrapper_function
+
+    pp._defaultStartDebugAction = increase_indent(pp._defaultStartDebugAction)
+    pp._defaultSuccessDebugAction = decrease_indent(pp._defaultSuccessDebugAction)
+    pp._defaultExceptionDebugAction = decrease_indent(pp._defaultExceptionDebugAction)
