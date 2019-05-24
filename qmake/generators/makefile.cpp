@@ -1046,9 +1046,9 @@ MakefileGenerator::writeProjectMakefile()
 
         //install
         t << "install: ";
-        for(it = targets.begin(); it != targets.end(); ++it)
-            t << (*it)->target << "-install ";
-        t << Qt::endl;
+        for (SubTarget *s : qAsConst(targets))
+            t << s->target << '-';
+        t << "install " << Qt::endl;
 
         //uninstall
         t << "uninstall: ";
@@ -2498,6 +2498,16 @@ MakefileGenerator::writeSubTargetCall(QTextStream &t,
     writeSubMakeCall(t, out_directory_cdin + pfx, makefilein);
 }
 
+static void chopEndLines(QString *s)
+{
+    while (!s->isEmpty()) {
+        const ushort c = s->at(s->size() - 1).unicode();
+        if (c != '\n' && c != '\r')
+            break;
+        s->chop(1);
+    }
+}
+
 void
 MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubTarget*> targets, int flags)
 {
@@ -2523,6 +2533,14 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                        << QString((flags & SubTargetInstalls) ? "uninstall_subtargets" : "uninstall");
     }
 
+    struct SequentialInstallData
+    {
+        QString targetPrefix;
+        QString commands;
+        QTextStream commandsStream;
+        SequentialInstallData() : commandsStream(&commands) {}
+    };
+    std::unique_ptr<SequentialInstallData> sequentialInstallData;
     bool dont_recurse = project->isActiveConfig("dont_recurse");
 
     // generate target rules
@@ -2591,6 +2609,16 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             else if(s == "make_first")
                 s = QString();
 
+            if (project->isActiveConfig("build_all") && s == "install") {
+                if (!sequentialInstallData)
+                    sequentialInstallData.reset(new SequentialInstallData);
+                sequentialInstallData->targetPrefix += subtarget->target + '-';
+                writeSubTargetCall(sequentialInstallData->commandsStream, in_directory, in,
+                                   out_directory, out, out_directory_cdin,
+                                   makefilein + " " + s);
+                chopEndLines(&sequentialInstallData->commands);
+            }
+
             if(flags & SubTargetOrdered) {
                 t << subtarget->target << "-" << targetSuffixes.at(suffix) << "-ordered:";
                 if(target)
@@ -2609,6 +2637,11 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         }
     }
     t << Qt::endl;
+
+    if (sequentialInstallData) {
+        t << sequentialInstallData->targetPrefix << "install: FORCE"
+          << sequentialInstallData->commands << Qt::endl << Qt::endl;
+    }
 
     if (!(flags & SubTargetSkipDefaultTargets)) {
         writeMakeQmake(t, true);
