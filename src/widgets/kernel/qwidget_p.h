@@ -244,7 +244,7 @@ struct QWExtra {
     QGraphicsProxyWidget *proxyWidget; // if the widget is embedded
 #endif
 #ifndef QT_NO_CURSOR
-    QCursor *curs;
+    std::unique_ptr<QCursor> curs;
 #endif
     QPointer<QStyle> style;
     QPointer<QWidget> focus_proxy;

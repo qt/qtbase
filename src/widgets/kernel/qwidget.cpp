@@ -1824,9 +1824,6 @@ void QWidgetPrivate::createExtra()
 #if QT_CONFIG(graphicsview)
         extra->proxyWidget = 0;
 #endif
-#ifndef QT_NO_CURSOR
-        extra->curs = 0;
-#endif
         extra->minw = 0;
         extra->minh = 0;
         extra->maxw = QWIDGETSIZE_MAX;
@@ -1860,9 +1857,6 @@ void QWidgetPrivate::createSysExtra()
 void QWidgetPrivate::deleteExtra()
 {
     if (extra) {                                // if exists
-#ifndef QT_NO_CURSOR
-        delete extra->curs;
-#endif
         deleteSysExtra();
 #ifndef QT_NO_STYLE_STYLESHEET
         // dereference the stylesheet style
@@ -5019,9 +5013,7 @@ void QWidget::setCursor(const QCursor &cursor)
 #endif
     {
         d->createExtra();
-        QCursor *newCursor = new QCursor(cursor);
-        delete d->extra->curs;
-        d->extra->curs = newCursor;
+        d->extra->curs = qt_make_unique<QCursor>(cursor);
     }
     setAttribute(Qt::WA_SetCursor);
     d->setCursor_sys(cursor);
@@ -5040,10 +5032,8 @@ void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
 void QWidget::unsetCursor()
 {
     Q_D(QWidget);
-    if (d->extra) {
-        delete d->extra->curs;
-        d->extra->curs = 0;
-    }
+    if (d->extra)
+        d->extra->curs.reset();
     if (!isWindow())
         setAttribute(Qt::WA_SetCursor, false);
     d->unsetCursor_sys();
