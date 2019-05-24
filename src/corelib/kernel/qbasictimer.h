@@ -63,7 +63,7 @@ public:
 #endif
 
 public:
-    inline QBasicTimer() : id(0) {}
+    constexpr QBasicTimer() noexcept : id{0} {}
     inline ~QBasicTimer() { if (id) stop(); }
 
     QBasicTimer(QBasicTimer &&other) noexcept
@@ -78,8 +78,8 @@ public:
 
     void swap(QBasicTimer &other) noexcept { qSwap(id, other.id); }
 
-    inline bool isActive() const { return id != 0; }
-    inline int timerId() const { return id; }
+    bool isActive() const noexcept { return id != 0; }
+    int timerId() const noexcept { return id; }
 
     void start(int msec, QObject *obj);
     void start(int msec, Qt::TimerType timerType, QObject *obj);
