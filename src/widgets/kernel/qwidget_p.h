@@ -75,6 +75,9 @@
 #include <private/qgesture_p.h>
 #include <qpa/qplatformbackingstore.h>
 
+#include <vector>
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 // Extra QWidget data
@@ -184,7 +187,7 @@ struct QTLWExtra {
     // ### TODO replace initialScreenIndex with QScreen *, in case the screens change at runtime
     int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
 
-    QVector<QPlatformTextureList *> widgetTextures;
+    std::vector<std::unique_ptr<QPlatformTextureList>> widgetTextures;
 
     // *************************** Cross-platform bit fields ****************************
     uint opacity : 8;

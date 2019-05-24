@@ -68,6 +68,8 @@
 #  include <qpa/qplatformnativeinterface.h>
 #endif
 
+#include <private/qmemory_p.h>
+
 QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
@@ -963,15 +965,15 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
     // textureChildSeen does not take native child widgets into account and that's good.
     if (QWidgetPrivate::get(widget)->textureChildSeen) {
         QVector<QWidget *> nativeChildren;
-        QScopedPointer<QPlatformTextureList> tl(new QPlatformTextureList);
+        auto tl = qt_make_unique<QPlatformTextureList>();
         // Look for texture widgets (incl. widget itself) from 'widget' down,
         // but skip subtrees with a parent of a native child widget.
-        findTextureWidgetsRecursively(tlw, widget, tl.data(), &nativeChildren);
+        findTextureWidgetsRecursively(tlw, widget, tl.get(), &nativeChildren);
         // tl may be empty regardless of textureChildSeen if we have native or hidden children.
         if (!tl->isEmpty())
-            QWidgetPrivate::get(tlw)->topData()->widgetTextures.append(tl.take());
+            QWidgetPrivate::get(tlw)->topData()->widgetTextures.push_back(std::move(tl));
         // Native child widgets, if there was any, get their own separate QPlatformTextureList.
-        foreach (QWidget *ncw, nativeChildren) {
+        for (QWidget *ncw : qAsConst(nativeChildren)) {
             if (QWidgetPrivate::get(ncw)->textureChildSeen)
                 findAllTextureWidgetsRecursively(tlw, ncw);
         }
@@ -980,12 +982,12 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
 
 static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 {
-    foreach (QPlatformTextureList *tl, QWidgetPrivate::get(tlw)->topData()->widgetTextures) {
+    for (const auto &tl : QWidgetPrivate::get(tlw)->topData()->widgetTextures) {
         Q_ASSERT(!tl->isEmpty());
         for (int i = 0; i < tl->count(); ++i) {
             QWidget *w = static_cast<QWidget *>(tl->source(i));
             if ((hasPlatformWindow(w) && w == widget) || (!hasPlatformWindow(w) && w->nativeParentWidget() == widget))
-                return tl;
+                return tl.get();
         }
     }
 
@@ -1064,14 +1066,14 @@ bool QWidgetBackingStore::syncAllowed()
     if (textureListWatcher && !textureListWatcher->isLocked()) {
         textureListWatcher->deleteLater();
         textureListWatcher = 0;
-    } else if (!tlwExtra->widgetTextures.isEmpty()) {
+    } else if (!tlwExtra->widgetTextures.empty()) {
         bool skipSync = false;
-        foreach (QPlatformTextureList *tl, tlwExtra->widgetTextures) {
+        for (const auto &tl : tlwExtra->widgetTextures) {
             if (tl->isLocked()) {
                 if (!textureListWatcher)
                     textureListWatcher = new QPlatformTextureListWatcher(this);
                 if (!textureListWatcher->isLocked())
-                    textureListWatcher->watch(tl);
+                    textureListWatcher->watch(tl.get());
                 skipSync = true;
             }
         }
@@ -1243,7 +1245,6 @@ void QWidgetBackingStore::doSync()
     // The search is cut at native widget boundaries, meaning that each native child widget
     // has its own list for the subtree below it.
     QTLWExtra *tlwExtra = tlw->d_func()->topData();
-    qDeleteAll(tlwExtra->widgetTextures);
     tlwExtra->widgetTextures.clear();
     findAllTextureWidgetsRecursively(tlw, tlw);
     qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in qt_flush()
@@ -1289,7 +1290,7 @@ void QWidgetBackingStore::doSync()
     }
 
 #ifndef QT_NO_OPENGL
-    foreach (QPlatformTextureList *tl, tlwExtra->widgetTextures) {
+    for (const auto &tl : tlwExtra->widgetTextures) {
         for (int i = 0; i < tl->count(); ++i) {
             QWidget *w = static_cast<QWidget *>(tl->source(i));
             if (dirtyRenderToTextureWidgets.contains(w)) {
@@ -1386,7 +1387,7 @@ void QWidgetBackingStore::flush(QWidget *widget)
     // Render-to-texture widgets are not in dirtyOnScreen so flush if we have not done it above.
     if (!flushed && !hasDirtyOnScreenWidgets) {
 #ifndef QT_NO_OPENGL
-        if (!tlw->d_func()->topData()->widgetTextures.isEmpty()) {
+        if (!tlw->d_func()->topData()->widgetTextures.empty()) {
             QPlatformTextureList *tl = widgetTexturesFor(tlw, tlw);
             if (tl) {
                 QWidget *target = widget ? widget : tlw;

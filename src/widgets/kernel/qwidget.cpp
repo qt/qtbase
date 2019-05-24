@@ -1902,7 +1902,6 @@ void QWidgetPrivate::deleteTLSysExtra()
         extra->topextra->backingStoreTracker.destroy();
         deleteBackingStore(this);
 #ifndef QT_NO_OPENGL
-        qDeleteAll(extra->topextra->widgetTextures);
         extra->topextra->widgetTextures.clear();
         delete extra->topextra->shareContext;
         extra->topextra->shareContext = 0;
