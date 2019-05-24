@@ -27,7 +27,7 @@ find_path(ZSTD_INCLUDE_DIRS
           PATH_SUFFIXES zstd)
 
 find_library(ZSTD_LIBRARIES
-             NAMES zstd
+             NAMES zstd zstd_static
              HINTS ${PC_ZSTD_LIBDIR}
 )
 

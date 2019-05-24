@@ -27,7 +27,7 @@ You may use vcpkg to install dependencies needed to build QtBase.
   * ```git clone -b qt https://github.com/tronical/vcpkg```
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
   * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``qt-x64-windows-static`` or ``qt-x86-windows-static``
-  * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl``
+  * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl zstd``
   * When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=%VCPKG_DEFAULT_TRIPLET%``
     Previously CMAKE_PREFIX_PATH was mentioned instead of CMAKE_TOOLCHAIN_FILE. Setting CMAKE_PREFIX_PATH to the vcpkg installed folder is not enough, because then find_package is not overridden by vcpkg and cmake might not propagate all library dependencies for static packages (freetype is one such package).
 
