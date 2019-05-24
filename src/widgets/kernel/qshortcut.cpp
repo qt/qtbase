@@ -178,7 +178,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
     // Below is Qt::WindowShortcut context
     QWidget *tlw = w->window();
 #if QT_CONFIG(graphicsview)
-    if (auto topData = static_cast<QWidgetPrivate *>(QObjectPrivate::get(tlw))->extra) {
+    if (auto topData = static_cast<QWidgetPrivate *>(QObjectPrivate::get(tlw))->extra.get()) {
         if (topData->proxyWidget) {
             bool res = correctGraphicsWidgetContext(context, topData->proxyWidget, active_window);
             return res;
