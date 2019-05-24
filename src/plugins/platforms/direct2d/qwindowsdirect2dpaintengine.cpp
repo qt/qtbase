@@ -253,7 +253,7 @@ struct D2DVectorPathCache {
 
     static void cleanup_func(QPaintEngineEx *engine, void *data) {
         Q_UNUSED(engine);
-        D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(data);
+        auto *e = static_cast<D2DVectorPathCache *>(data);
         delete e;
     }
 };
@@ -689,7 +689,7 @@ public:
                 *needsEmulation = true;
             } else {
                 ComPtr<ID2D1LinearGradientBrush> linear;
-                const QLinearGradient *qlinear = static_cast<const QLinearGradient *>(newBrush.gradient());
+                const auto *qlinear = static_cast<const QLinearGradient *>(newBrush.gradient());
 
                 D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES linearGradientBrushProperties;
                 ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
@@ -727,7 +727,7 @@ public:
                 *needsEmulation = true;
             } else {
                 ComPtr<ID2D1RadialGradientBrush> radial;
-                const QRadialGradient *qradial = static_cast<const QRadialGradient *>(newBrush.gradient());
+                const auto *qradial = static_cast<const QRadialGradient *>(newBrush.gradient());
 
                 D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES radialGradientBrushProperties;
                 ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
@@ -807,7 +807,7 @@ public:
                                                                  : nullptr;
 
         if (cacheEntry) {
-            D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+            auto *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
             if (alias && e->aliased)
                 return e->aliased;
             else if (!alias && e->antiAliased)
@@ -885,7 +885,7 @@ public:
             if (!cacheEntry)
                 cacheEntry = path.addCacheData(q, new D2DVectorPathCache, D2DVectorPathCache::cleanup_func);
 
-            D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+            auto *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
             if (alias)
                 e->aliased = geometry;
             else
@@ -1481,7 +1481,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
         return;
     }
 
-    QWindowsDirect2DPlatformPixmap *pp = static_cast<QWindowsDirect2DPlatformPixmap *>(pm.handle());
+    auto *pp = static_cast<QWindowsDirect2DPlatformPixmap *>(pm.handle());
     QWindowsDirect2DBitmap *bitmap = pp->bitmap();
 
     ensurePen();
@@ -1593,7 +1593,7 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawTextItemTag);
 
-    const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+    const auto &ti = static_cast<const QTextItemInt &>(textItem);
     if (ti.glyphs.numGlyphs == 0)
         return;
 
@@ -1686,7 +1686,7 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
         p.setBrush(state()->brush);
         p.setPen(state()->pen);
 
-        QPaintEngineEx *extended = static_cast<QPaintEngineEx *>(engine);
+        auto *extended = static_cast<QPaintEngineEx *>(engine);
         for (const QPainterClipInfo &info : qAsConst(state()->clipInfo)) {
             extended->state()->matrix = info.matrix;
             extended->transformChanged();

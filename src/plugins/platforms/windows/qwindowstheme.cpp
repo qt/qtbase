@@ -583,7 +583,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
 {
     if (const HMODULE hmod = QSystemLibrary::load(L"shell32")) {
-        HICON iconHandle =
+        auto iconHandle =
             static_cast<HICON>(LoadImage(hmod, MAKEINTRESOURCE(resourceId),
                                          IMAGE_ICON, int(size.width()), int(size.height()), 0));
         if (iconHandle) {

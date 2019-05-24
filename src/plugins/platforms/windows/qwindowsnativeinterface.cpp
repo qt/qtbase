@@ -98,7 +98,7 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
         qWarning("%s: '%s' requested for null window or window without handle.", __FUNCTION__, resource.constData());
         return nullptr;
     }
-    QWindowsWindow *bw = static_cast<QWindowsWindow *>(window->handle());
+    auto *bw = static_cast<QWindowsWindow *>(window->handle());
     int type = resourceType(resource);
     if (type == HandleType)
         return bw->handle();
@@ -131,7 +131,7 @@ void *QWindowsNativeInterface::nativeResourceForScreen(const QByteArray &resourc
         qWarning("%s: '%s' requested for null screen or screen without handle.", __FUNCTION__, resource.constData());
         return nullptr;
     }
-    QWindowsScreen *bs = static_cast<QWindowsScreen *>(screen->handle());
+    auto *bs = static_cast<QWindowsScreen *>(screen->handle());
     int type = resourceType(resource);
     if (type == HandleType)
         return bs->handle();
@@ -157,7 +157,7 @@ static const char customMarginPropertyC[] = "WindowsCustomMargins";
 
 QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const QString &name) const
 {
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window);
+    auto *platformWindow = static_cast<QWindowsWindow *>(window);
     if (name == QLatin1String(customMarginPropertyC))
         return QVariant::fromValue(platformWindow->customMargins());
     return QVariant();
@@ -171,7 +171,7 @@ QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const 
 
 void QWindowsNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
 {
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window);
+    auto *platformWindow = static_cast<QWindowsWindow *>(window);
     if (name == QLatin1String(customMarginPropertyC))
         platformWindow->setCustomMargins(qvariant_cast<QMargins>(value));
 }
@@ -206,7 +206,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
         return nullptr;
     }
 
-    QWindowsOpenGLContext *glcontext = static_cast<QWindowsOpenGLContext *>(context->handle());
+    auto *glcontext = static_cast<QWindowsOpenGLContext *>(context->handle());
     switch (resourceType(resource)) {
     case RenderingContextType: // Fall through.
     case EglContextType:

@@ -91,7 +91,7 @@ static QVersionNumber systemD2DVersion()
 
                     if (VerQueryValue(info.constData(), __TEXT("\\"),
                                       reinterpret_cast<void **>(&fi), &size) && size) {
-                        const VS_FIXEDFILEINFO *verInfo = reinterpret_cast<const VS_FIXEDFILEINFO *>(fi);
+                        const auto *verInfo = reinterpret_cast<const VS_FIXEDFILEINFO *>(fi);
                         return QVersionNumber{HIWORD(verInfo->dwFileVersionMS), LOWORD(verInfo->dwFileVersionMS),
                                               HIWORD(verInfo->dwFileVersionLS), LOWORD(verInfo->dwFileVersionLS)};
                     }
@@ -140,7 +140,7 @@ QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringLi
         return nullptr;
     }
 
-    QWindowsDirect2DIntegration *integration = new QWindowsDirect2DIntegration(paramList);
+    auto *integration = new QWindowsDirect2DIntegration(paramList);
 
     if (!integration->init()) {
         delete integration;

@@ -57,7 +57,7 @@ static inline bool shellExecute(const QUrl &url)
     const QString nativeFilePath = url.isLocalFile() && !url.hasFragment() && !url.hasQuery()
         ? QDir::toNativeSeparators(url.toLocalFile())
         : url.toString(QUrl::FullyEncoded);
-    const quintptr result =
+    const auto result =
         reinterpret_cast<quintptr>(ShellExecute(nullptr, nullptr,
                                                 reinterpret_cast<const wchar_t *>(nativeFilePath.utf16()),
                                                 nullptr, nullptr, SW_SHOWNORMAL));

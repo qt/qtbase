@@ -120,7 +120,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
 {
     QWindowsScreenData data;
     if (monitorData(hMonitor, &data)) {
-        WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
+        auto *result = reinterpret_cast<WindowsScreenDataList *>(p);
         // QWindowSystemInterface::handleScreenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
@@ -552,7 +552,7 @@ bool QWindowsScreenManager::handleScreenChanges()
         if (existingIndex != -1) {
             m_screens.at(existingIndex)->handleChanges(newData);
         } else {
-            QWindowsScreen *newScreen = new QWindowsScreen(newData);
+            auto *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
             QWindowSystemInterface::handleScreenAdded(newScreen,
                                                              newData.flags & QWindowsScreenData::PrimaryScreen);

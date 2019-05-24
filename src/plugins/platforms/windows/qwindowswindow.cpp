@@ -764,8 +764,8 @@ QWindowsWindowData
     if (title.isEmpty() && (result.flags & Qt::WindowTitleHint))
         title = topLevel ? qAppName() : w->objectName();
 
-    const wchar_t *titleUtf16 = reinterpret_cast<const wchar_t *>(title.utf16());
-    const wchar_t *classNameUtf16 = reinterpret_cast<const wchar_t *>(windowClassName.utf16());
+    const auto *titleUtf16 = reinterpret_cast<const wchar_t *>(title.utf16());
+    const auto *classNameUtf16 = reinterpret_cast<const wchar_t *>(windowClassName.utf16());
 
     // Capture events before CreateWindowEx() returns. The context is cleared in
     // the QWindowsWindow constructor.
@@ -980,7 +980,7 @@ bool QWindowsGeometryHint::handleCalculateSize(const QMargins &customMargins, co
     if (!msg.wParam || customMargins.isNull())
         return false;
     *result = DefWindowProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-    NCCALCSIZE_PARAMS *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(msg.lParam);
+    auto *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(msg.lParam);
     const RECT oldClientArea = ncp->rgrc[0];
     ncp->rgrc[0].left += customMargins.left();
     ncp->rgrc[0].top += customMargins.top();
@@ -1500,7 +1500,7 @@ QWindow *QWindowsWindow::topLevelOf(QWindow *w)
         w = parent;
 
     if (const QPlatformWindow *handle = w->handle()) {
-        const QWindowsWindow *ww = static_cast<const QWindowsWindow *>(handle);
+        const auto *ww = static_cast<const QWindowsWindow *>(handle);
         if (ww->isEmbedded()) {
             HWND parentHWND = GetAncestor(ww->handle(), GA_PARENT);
             const HWND desktopHwnd = GetDesktopWindow();
@@ -1574,7 +1574,7 @@ bool QWindowsWindow::isActive() const
 
 bool QWindowsWindow::isAncestorOf(const QPlatformWindow *child) const
 {
-    const QWindowsWindow *childWindow = static_cast<const QWindowsWindow *>(child);
+    const auto *childWindow = static_cast<const QWindowsWindow *>(child);
     return IsChild(m_data.hwnd, childWindow->handle());
 }
 
@@ -1723,7 +1723,7 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
     HWND oldParentHWND = parentHwnd();
     HWND newParentHWND = nullptr;
     if (parent) {
-        const QWindowsWindow *parentW = static_cast<const QWindowsWindow *>(parent);
+        const auto *parentW = static_cast<const QWindowsWindow *>(parent);
         newParentHWND = parentW->handle();
 
     }
@@ -2366,7 +2366,7 @@ void QWindowsWindow::propagateSizeHints()
 
 bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &margins)
 {
-    WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
+    auto *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
     if ((windowPos->flags & SWP_NOZORDER) == 0) {
         if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(qWindow)) {
             QWindow *parentWindow = qWindow->parent();

@@ -310,7 +310,7 @@ void QWindowsDirect2DWindow::setupBitmap()
     QWindowsDirect2DPaintEngine::Flags flags = QWindowsDirect2DPaintEngine::NoFlag;
     if (!m_directRendering)
         flags |= QWindowsDirect2DPaintEngine::TranslucentTopLevelWindow;
-    QWindowsDirect2DPlatformPixmap *pp = new QWindowsDirect2DPlatformPixmap(QPlatformPixmap::PixmapType,
+    auto *pp = new QWindowsDirect2DPlatformPixmap(QPlatformPixmap::PixmapType,
                                                                             flags,
                                                                             m_bitmap.data());
     m_pixmap.reset(new QPixmap(pp));

@@ -133,8 +133,8 @@ static inline bool useRTL_Extensions()
 #if QT_CONFIG(sessionmanager)
 static inline QWindowsSessionManager *platformSessionManager()
 {
-    QGuiApplicationPrivate *guiPrivate = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
-    QSessionManagerPrivate *managerPrivate = static_cast<QSessionManagerPrivate*>(QObjectPrivate::get(guiPrivate->session_manager));
+    auto *guiPrivate = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
+    auto *managerPrivate = static_cast<QSessionManagerPrivate*>(QObjectPrivate::get(guiPrivate->session_manager));
     return static_cast<QWindowsSessionManager *>(managerPrivate->platformSessionManager);
 }
 
@@ -545,7 +545,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
     // add an instance-specific ID, the address of the window proc.
     static int classExists = -1;
 
-    const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
+    const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
     if (classExists == -1) {
         WNDCLASS wcinfo;
         classExists = GetClassInfo(appInstance, reinterpret_cast<LPCWSTR>(cname.utf16()), &wcinfo);
@@ -598,7 +598,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
 
 void QWindowsContext::unregisterWindowClasses()
 {
-    const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
+    const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
 
     for (const QString &name : qAsConst(d->m_registeredWindowClassNames)) {
         if (!UnregisterClass(reinterpret_cast<LPCWSTR>(name.utf16()), appInstance) && QWindowsContext::verbose)
@@ -1351,7 +1351,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         sessionManager->blocksInteraction();
         sessionManager->clearCancellation();
 
-        QGuiApplicationPrivate *qGuiAppPriv = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
+        auto *qGuiAppPriv = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
         qGuiAppPriv->commitData();
 
         if (lParam & ENDSESSION_LOGOFF)
@@ -1369,7 +1369,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
         // we receive the message for each toplevel window included internal hidden ones,
         // but the aboutToQuit signal should be emitted only once.
-        QGuiApplicationPrivate *qGuiAppPriv = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
+        auto *qGuiAppPriv = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
         if (endsession && !qGuiAppPriv->aboutToQuitEmitted) {
             qGuiAppPriv->aboutToQuitEmitted = true;
             int index = QGuiApplication::staticMetaObject.indexOfSignal("aboutToQuit()");
