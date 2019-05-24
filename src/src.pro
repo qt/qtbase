@@ -57,6 +57,10 @@ src_tools_androiddeployqt.subdir = tools/androiddeployqt
 src_tools_androiddeployqt.target = sub-androiddeployqt
 src_tools_androiddeployqt.depends = src_corelib
 
+src_tools_androidtestrunner.subdir = tools/androidtestrunner
+src_tools_androidtestrunner.target = sub-androidtestrunner
+src_tools_androidtestrunner.depends = src_corelib
+
 src_tools_qvkgen.subdir = tools/qvkgen
 src_tools_qvkgen.target = sub-qvkgen
 force_bootstrap: src_tools_qvkgen.depends = src_tools_bootstrap
@@ -189,8 +193,10 @@ qtConfig(dbus) {
 }
 
 android {
-    SUBDIRS += src_tools_androiddeployqt
-    TOOLS += src_tools_androiddeployqt
+    SUBDIRS += src_tools_androiddeployqt \
+               src_tools_androidtestrunner
+    TOOLS += src_tools_androiddeployqt \
+             src_tools_androidtestrunner
 }
 
 qtConfig(concurrent): SUBDIRS += src_concurrent
