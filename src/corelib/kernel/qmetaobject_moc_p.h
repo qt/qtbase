@@ -213,6 +213,9 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
         }
     }
 
+    // Qt 5 compatibility, make sure we use the correct type name for QList
+    result.replace("QList<", "QVector<");
+
     return result;
 }
 

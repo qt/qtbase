@@ -317,9 +317,6 @@ public:
     inline QVector<T> &operator<<(T &&t)
     { append(std::move(t)); return *this; }
 
-    static QVector<T> fromList(const QList<T> &list);
-    QList<T> toList() const;
-
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
@@ -328,6 +325,14 @@ public:
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
 #endif
+
+    // Consider deprecating in 6.4 or later
+    static QVector<T> fromList(const QVector<T> &list) { return list; }
+    QVector<T> toList() const { return *this; }
+
+    static inline QVector<T> fromVector(const QVector<T> &vector) { return vector; }
+    inline QVector<T> toVector() const { return *this; }
+
 private:
     // ### Qt6: remove methods, they are unused
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);

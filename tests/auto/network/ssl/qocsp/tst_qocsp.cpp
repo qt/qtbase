@@ -60,7 +60,6 @@ using VectorOfErrors = QT_PREPEND_NAMESPACE(QVector<SslError>);
 using Latin1String = QT_PREPEND_NAMESPACE(QLatin1String);
 
 Q_DECLARE_METATYPE(SslError)
-Q_DECLARE_METATYPE(VectorOfErrors)
 Q_DECLARE_METATYPE(Latin1String)
 
 QT_BEGIN_NAMESPACE

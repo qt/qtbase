@@ -542,7 +542,7 @@
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QVector<int>())]]></Description>
 </Message>
 <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QVector<int>())]]></Description>

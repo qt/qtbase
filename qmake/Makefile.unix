@@ -29,7 +29,7 @@ QOBJS = \
 	quuid.o \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
-	qcryptographichash.o qdatetime.o qhash.o qlist.o \
+        qcryptographichash.o qdatetime.o qhash.o \
 	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
 	qstringbuilder.o qstring.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o qxmlstream.o qxmlutils.o \
@@ -125,7 +125,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp \
@@ -369,9 +368,6 @@ qversionnumber.o: $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbuffer.o: $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qlist.o: $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfile.o: $(SOURCE_PATH)/src/corelib/io/qfile.cpp

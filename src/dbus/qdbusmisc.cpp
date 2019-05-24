@@ -153,7 +153,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
     QList<QByteArray>::ConstIterator it = parameterTypes.constBegin();
     QList<QByteArray>::ConstIterator end = parameterTypes.constEnd();
     for ( ; it != end; ++it) {
-        const QByteArray &type = *it;
+        QByteArray type = *it;
         if (type.endsWith('*')) {
             errorMsg = QLatin1String("Pointers are not supported: ") + QLatin1String(type);
             return -1;
@@ -179,6 +179,9 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
             errorMsg = QLatin1String("Invalid method, non-output parameters after message or after output parameters: ") + QLatin1String(type);
             return -1;          // not allowed
         }
+
+        if (type.startsWith("QList<"))
+            type = "QVector<" + type.mid(sizeof("QList<") - 1);
 
         int id = QMetaType::type(type);
 #ifdef QT_BOOTSTRAPPED

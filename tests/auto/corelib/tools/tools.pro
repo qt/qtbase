@@ -18,8 +18,6 @@ SUBDIRS=\
     qhashfunctions \
     qline \
     qlinkedlist \
-    qlist \
-    qlist_strictiterators \
     qmakearray \
     qmap \
     qmap_strictiterators \

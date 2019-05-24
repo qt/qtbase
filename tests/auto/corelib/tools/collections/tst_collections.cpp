@@ -84,10 +84,6 @@ void foo()
 #include "qvector.h"
 #include "qqueue.h"
 
-QT_BEGIN_NAMESPACE
-template class QList<int>;
-QT_END_NAMESPACE
-
 class tst_Collections : public QObject
 {
     Q_OBJECT
@@ -551,19 +547,12 @@ void tst_Collections::list()
         list << "foo" << "bar";
         QVERIFY(!list.isEmpty());
 
-        list.insert(-1, "lessthanzero");
-        QCOMPARE(list.at(0), QString("lessthanzero"));
-
         list.insert(0, "atzero");
         QCOMPARE(list.at(0), QString("atzero"));
 
         int listCount = list.count();
         list.insert(listCount, "atcount");
         QCOMPARE(list.at(listCount), QString("atcount"));
-
-        listCount = list.count();
-        list.insert(listCount + 1, "beyondcount");
-        QCOMPARE(list.at(listCount), QString("beyondcount"));
     }
 
     {
@@ -2332,12 +2321,6 @@ void populate(QList<int> &container)
 
 template <>
 void populate(QLinkedList<int> &container)
-{
-    container << 1 << 2 << 4 << 8;
-}
-
-template <>
-void populate(QVector<int> &container)
 {
     container << 1 << 2 << 4 << 8;
 }

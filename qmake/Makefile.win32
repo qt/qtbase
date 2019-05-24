@@ -90,7 +90,6 @@ QTOBJS= \
 	qiodevice.obj \
 	qringbuffer.obj \
 	qdebug.obj \
-	qlist.obj \
 	qlocale.obj \
 	qlocale_tools.obj \
 	qlocale_win.obj \

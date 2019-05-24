@@ -72,9 +72,8 @@ static const char includeList[] =
 
 static const char forwardDeclarations[] =
     "QT_BEGIN_NAMESPACE\n"
+    "#include <QtCore/qcontainerfwd.h>\n"
     "class QByteArray;\n"
-    "template<class T> class QList;\n"
-    "template<class Key, class Value> class QMap;\n"
     "class QString;\n"
     "class QStringList;\n"
     "class QVariant;\n"

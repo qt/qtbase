@@ -389,18 +389,6 @@ typename std::enable_if<std::is_enum<T>::value, QDataStream &>::type&
 operator>>(QDataStream &s, T &t)
 { return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
 
-template <typename T>
-inline QDataStream &operator>>(QDataStream &s, QList<T> &l)
-{
-    return QtPrivate::readArrayBasedContainer(s, l);
-}
-
-template <typename T>
-inline QDataStream &operator<<(QDataStream &s, const QList<T> &l)
-{
-    return QtPrivate::writeSequentialContainer(s, l);
-}
-
 template<typename T>
 inline QDataStream &operator>>(QDataStream &s, QVector<T> &v)
 {

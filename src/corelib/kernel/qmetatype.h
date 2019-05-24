@@ -207,10 +207,10 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(UInt, -1, uint, "quint32") \
     F(LongLong, -1, qlonglong, "qint64") \
     F(ULongLong, -1, qulonglong, "quint64") \
-    F(QVariantList, -1, QVariantList, "QList<QVariant>") \
+    F(QVariantList, -1, QVariantList, "QVector<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
-    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
+    F(QByteArrayList, -1, QByteArrayList, "QVector<QByteArray>") \
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -225,7 +225,6 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     TypeName = Id,
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(F) \
-    F(QList) \
     F(QVector) \
     F(QQueue) \
     F(QStack) \
@@ -1002,10 +1001,6 @@ struct ContainerAPI : CapabilitiesImpl<T>
 {
     static int size(const T *t) { return int(std::distance(t->begin(), t->end())); }
 };
-
-template<typename T>
-struct ContainerAPI<QList<T> > : CapabilitiesImpl<QList<T> >
-{ static int size(const QList<T> *t) { return t->size(); } };
 
 template<typename T>
 struct ContainerAPI<QVector<T> > : CapabilitiesImpl<QVector<T> >
