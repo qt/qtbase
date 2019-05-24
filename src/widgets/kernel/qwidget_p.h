@@ -239,7 +239,7 @@ struct QWExtra {
 
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     void *glContext; // if the widget is hijacked by QGLWindowSurface
-    QTLWExtra *topextra; // only useful for TLWs
+    std::unique_ptr<QTLWExtra> topextra; // only useful for TLWs
 #if QT_CONFIG(graphicsview)
     QGraphicsProxyWidget *proxyWidget; // if the widget is embedded
 #endif
@@ -993,12 +993,12 @@ inline QWExtra *QWidgetPrivate::extraData() const
 inline QTLWExtra *QWidgetPrivate::topData() const
 {
     const_cast<QWidgetPrivate *>(this)->createTLExtra();
-    return extra->topextra;
+    return extra->topextra.get();
 }
 
 inline QTLWExtra *QWidgetPrivate::maybeTopData() const
 {
-    return extra ? extra->topextra : nullptr;
+    return extra ? extra->topextra.get() : nullptr;
 }
 
 inline QPainter *QWidgetPrivate::sharedPainter() const

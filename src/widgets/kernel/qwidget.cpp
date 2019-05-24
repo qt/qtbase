@@ -1785,7 +1785,8 @@ void QWidgetPrivate::createTLExtra()
     if (!extra)
         createExtra();
     if (!extra->topextra) {
-        QTLWExtra* x = extra->topextra = new QTLWExtra;
+        extra->topextra = qt_make_unique<QTLWExtra>();
+        QTLWExtra* x = extra->topextra.get();
         x->backingStore = 0;
         x->sharedPainter = 0;
         x->incw = x->inch = 0;
@@ -1820,7 +1821,6 @@ void QWidgetPrivate::createExtra()
     if (!extra) {                                // if not exists
         extra = new QWExtra;
         extra->glContext = 0;
-        extra->topextra = 0;
 #if QT_CONFIG(graphicsview)
         extra->proxyWidget = 0;
 #endif
@@ -1866,7 +1866,6 @@ void QWidgetPrivate::deleteExtra()
         if (extra->topextra) {
             deleteTLSysExtra();
             // extra->topextra->backingStore destroyed in QWidgetPrivate::deleteTLSysExtra()
-            delete extra->topextra;
         }
         delete extra;
         // extra->xic destroyed in QWidget::destroy()
