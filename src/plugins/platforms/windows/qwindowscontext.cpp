@@ -931,7 +931,7 @@ bool QWindowsContext::systemParametersInfo(unsigned action, unsigned param, void
 bool QWindowsContext::systemParametersInfoForScreen(unsigned action, unsigned param, void *out,
                                                     const QPlatformScreen *screen)
 {
-    return systemParametersInfo(action, param, out, screen ? screen->logicalDpi().first : 0);
+    return systemParametersInfo(action, param, out, screen ? unsigned(screen->logicalDpi().first) : 0u);
 }
 
 bool QWindowsContext::systemParametersInfoForWindow(unsigned action, unsigned param, void *out,
@@ -950,7 +950,8 @@ bool QWindowsContext::nonClientMetrics(NONCLIENTMETRICS *ncm, unsigned dpi)
 bool QWindowsContext::nonClientMetricsForScreen(NONCLIENTMETRICS *ncm,
                                                 const QPlatformScreen *screen)
 {
-    return nonClientMetrics(ncm, screen ? screen->logicalDpi().first : 0);
+    const int dpi = screen ? qRound(screen->logicalDpi().first) : 0;
+    return nonClientMetrics(ncm, unsigned(dpi));
 }
 
 bool QWindowsContext::nonClientMetricsForWindow(NONCLIENTMETRICS *ncm, const QPlatformWindow *win)

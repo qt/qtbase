@@ -851,10 +851,12 @@ static QSize toNativeSizeConstrained(QSize dip, const QWindow *w)
 {
     if (QHighDpiScaling::isActive()) {
         const qreal factor = QHighDpiScaling::factor(w);
-        if (dip.width() > 0 && dip.width() < QWINDOWSIZE_MAX)
-            dip.rwidth() *= factor;
-        if (dip.height() > 0 && dip.height() < QWINDOWSIZE_MAX)
-            dip.rheight() *= factor;
+        if (!qFuzzyCompare(factor, qreal(1))) {
+            if (dip.width() > 0 && dip.width() < QWINDOWSIZE_MAX)
+                dip.setWidth(qRound(qreal(dip.width()) * factor));
+            if (dip.height() > 0 && dip.height() < QWINDOWSIZE_MAX)
+                dip.setHeight(qRound(qreal(dip.height()) * factor));
+        }
     }
     return dip;
 }

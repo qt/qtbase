@@ -114,7 +114,7 @@ void setVariantBool(bool value, VARIANT *variant)
 void setVariantDouble(double value, VARIANT *variant)
 {
     variant->vt = VT_R8;
-    variant->boolVal = value;
+    variant->dblVal = value;
 }
 
 BSTR bStrFromQString(const QString &value)
