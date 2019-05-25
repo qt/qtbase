@@ -707,11 +707,11 @@ bool QFileInfo::exists(const QString &file)
         return false;
     QFileSystemEntry entry(file);
     QFileSystemMetaData data;
-    QAbstractFileEngine *engine =
-        QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data);
+    std::unique_ptr<QAbstractFileEngine> engine
+        {QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data)};
     // Expensive fallback to non-QFileSystemEngine implementation
     if (engine)
-        return QFileInfo(new QFileInfoPrivate(entry, data, engine)).exists();
+        return QFileInfo(new QFileInfoPrivate(entry, data, std::move(engine))).exists();
 
     QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
     return data.exists();

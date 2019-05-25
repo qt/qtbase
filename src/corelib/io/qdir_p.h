@@ -54,6 +54,8 @@
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QDirPrivate : public QSharedData
@@ -98,7 +100,7 @@ public:
     QDir::SortFlags sort;
     QDir::Filters filters;
 
-    QScopedPointer<QAbstractFileEngine> fileEngine;
+    std::unique_ptr<QAbstractFileEngine> fileEngine;
 
     QFileSystemEntry dirEntry;
     mutable QFileSystemEntry absoluteDirEntry;
