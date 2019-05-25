@@ -158,6 +158,9 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
 #endif // !QT_BOOTSTRAPPED
 
 #include <cstdlib>
+#include <algorithm>
+#include <memory>
+#include <vector>
 
 #include <stdio.h>
 
@@ -1076,8 +1079,8 @@ struct QMessagePattern {
     void setPattern(const QString &pattern);
 
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
-    const char **literals;
-    const char **tokens;
+    std::unique_ptr<std::unique_ptr<const char[]>[]> literals;
+    std::unique_ptr<const char*[]> tokens;
     QList<QString> timeArgs;   // timeFormats in sequence of %{time
 #ifndef QT_BOOTSTRAPPED
     QElapsedTimer timer;
@@ -1100,9 +1103,6 @@ Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_MOVABLE_TYPE);
 QBasicMutex QMessagePattern::mutex;
 
 QMessagePattern::QMessagePattern()
-    : literals(nullptr)
-    , tokens(nullptr)
-    , fromEnvironment(false)
 {
 #ifndef QT_BOOTSTRAPPED
     timer.start();
@@ -1110,6 +1110,7 @@ QMessagePattern::QMessagePattern()
     const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
     if (envPattern.isEmpty()) {
         setPattern(QLatin1String(defaultPattern));
+        fromEnvironment = false;
     } else {
         setPattern(envPattern);
         fromEnvironment = true;
@@ -1117,23 +1118,10 @@ QMessagePattern::QMessagePattern()
 }
 
 QMessagePattern::~QMessagePattern()
-{
-    for (int i = 0; literals[i]; ++i)
-        delete [] literals[i];
-    delete [] literals;
-    literals = nullptr;
-    delete [] tokens;
-    tokens = nullptr;
-}
+    = default;
 
 void QMessagePattern::setPattern(const QString &pattern)
 {
-    if (literals) {
-        for (int i = 0; literals[i]; ++i)
-            delete [] literals[i];
-        delete [] literals;
-    }
-    delete [] tokens;
     timeArgs.clear();
 #ifdef QLOGGING_HAVE_BACKTRACE
     backtraceArgs.clear();
@@ -1171,8 +1159,8 @@ void QMessagePattern::setPattern(const QString &pattern)
         lexemes.append(lexeme);
 
     // tokenizer
-    QVarLengthArray<const char*> literalsVar;
-    tokens = new const char*[lexemes.size() + 1];
+    std::vector<std::unique_ptr<const char[]>> literalsVar;
+    tokens.reset(new const char*[lexemes.size() + 1]);
     tokens[lexemes.size()] = nullptr;
 
     bool nestedIfError = false;
@@ -1267,7 +1255,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             char *literal = new char[lexeme.size() + 1];
             strncpy(literal, lexeme.toLatin1().constData(), lexeme.size());
             literal[lexeme.size()] = '\0';
-            literalsVar.append(literal);
+            literalsVar.emplace_back(literal);
             tokens[i] = literal;
         }
     }
@@ -1279,9 +1267,8 @@ void QMessagePattern::setPattern(const QString &pattern)
     if (!error.isEmpty())
         qt_message_print(error);
 
-    literals = new const char*[literalsVar.size() + 1];
-    literals[literalsVar.size()] = nullptr;
-    memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
+    literals.reset(new std::unique_ptr<const char[]>[literalsVar.size() + 1]);
+    std::move(literalsVar.begin(), literalsVar.end(), &literals[0]);
 }
 
 #if defined(QLOGGING_HAVE_BACKTRACE) && !defined(QT_BOOTSTRAPPED)
