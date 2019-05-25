@@ -544,10 +544,10 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
 QAbstractFileEngine *QTemporaryFilePrivate::engine() const
 {
     if (!fileEngine) {
-        fileEngine = new QTemporaryFileEngine(&templateName);
+        fileEngine.reset(new QTemporaryFileEngine(&templateName));
         resetFileEngine();
     }
-    return fileEngine;
+    return fileEngine.get();
 }
 
 void QTemporaryFilePrivate::resetFileEngine() const
@@ -555,7 +555,7 @@ void QTemporaryFilePrivate::resetFileEngine() const
     if (!fileEngine)
         return;
 
-    QTemporaryFileEngine *tef = static_cast<QTemporaryFileEngine *>(fileEngine);
+    QTemporaryFileEngine *tef = static_cast<QTemporaryFileEngine *>(fileEngine.get());
     if (fileName.isEmpty())
         tef->initialize(templateName, 0600);
     else
@@ -568,7 +568,7 @@ void QTemporaryFilePrivate::materializeUnnamedFile()
     if (!fileName.isEmpty() || !fileEngine)
         return;
 
-    auto *tef = static_cast<QTemporaryFileEngine *>(fileEngine);
+    auto *tef = static_cast<QTemporaryFileEngine *>(fileEngine.get());
     fileName = tef->fileName(QAbstractFileEngine::DefaultName);
 #endif
 }
@@ -792,7 +792,7 @@ void QTemporaryFile::setAutoRemove(bool b)
 QString QTemporaryFile::fileName() const
 {
     Q_D(const QTemporaryFile);
-    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine.get());
     if (tef && tef->isReallyOpen())
         const_cast<QTemporaryFilePrivate *>(d)->materializeUnnamedFile();
 
@@ -841,7 +841,7 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 bool QTemporaryFile::rename(const QString &newName)
 {
     Q_D(QTemporaryFile);
-    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine.get());
     if (!tef || !tef->isReallyOpen() || !tef->filePathWasTemplate)
         return QFile::rename(newName);
 
@@ -947,7 +947,7 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
 bool QTemporaryFile::open(OpenMode flags)
 {
     Q_D(QTemporaryFile);
-    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine.get());
     if (tef && tef->isReallyOpen()) {
         setOpenMode(flags);
         return true;
@@ -961,7 +961,7 @@ bool QTemporaryFile::open(OpenMode flags)
     d->resetFileEngine();
 
     if (QFile::open(flags)) {
-        tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+        tef = static_cast<QTemporaryFileEngine *>(d->fileEngine.get());
         if (tef->isUnnamedFile())
             d->fileName.clear();
         else

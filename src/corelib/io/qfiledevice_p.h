@@ -53,6 +53,8 @@
 
 #include "private/qiodevice_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractFileEngine;
@@ -75,7 +77,7 @@ protected:
     void setError(QFileDevice::FileError err, const QString &errorString);
     void setError(QFileDevice::FileError err, int errNum);
 
-    mutable QAbstractFileEngine *fileEngine;
+    mutable std::unique_ptr<QAbstractFileEngine> fileEngine;
     mutable qint64 cachedSize;
 
     QFileDevice::FileHandleFlags handleFlags;
