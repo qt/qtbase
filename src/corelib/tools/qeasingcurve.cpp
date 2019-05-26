@@ -907,6 +907,10 @@ struct TCBEase : public BezierEase
         return BezierEase::value(x);
     }
 
+    QEasingCurveFunction *copy() const override
+    {
+        return new TCBEase{*this};
+    }
 };
 
 struct ElasticEase : public QEasingCurveFunction
