@@ -421,6 +421,7 @@
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
 #include "private/qdir_p.h"
+#include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -520,7 +521,7 @@ public:
     bool isEmpty() const
     { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
 
-    Error *cloneError() const;
+    std::unique_ptr<Error> cloneError() const;
     void clearError();
     void setError(ErrorCode errorCode, const QString &source, int supplement = -1);
     ErrorCode validityError(QString *source = nullptr, int *position = nullptr) const;
@@ -576,7 +577,7 @@ public:
     QString query;
     QString fragment;
 
-    Error *error;
+    std::unique_ptr<Error> error;
 
     // not used for:
     //  - Port (port == -1 means absence)
@@ -591,7 +592,6 @@ public:
 
 inline QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),
-      error(nullptr),
       sectionIsPresent(0),
       flags(0)
 {
@@ -613,19 +613,16 @@ inline QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
 }
 
 inline QUrlPrivate::~QUrlPrivate()
-{
-    delete error;
-}
+    = default;
 
-inline QUrlPrivate::Error *QUrlPrivate::cloneError() const
+std::unique_ptr<QUrlPrivate::Error> QUrlPrivate::cloneError() const
 {
-    return error ? new Error(*error) : nullptr;
+    return error ? qt_make_unique<Error>(*error) : nullptr;
 }
 
 inline void QUrlPrivate::clearError()
 {
-    delete error;
-    error = nullptr;
+    error.reset();
 }
 
 inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, int supplement)
@@ -634,7 +631,7 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
         // don't overwrite an error set in a previous section during parsing
         return;
     }
-    error = new Error;
+    error = qt_make_unique<Error>();
     error->code = errorCode;
     error->source = source;
     error->position = supplement;
