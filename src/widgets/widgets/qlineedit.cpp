@@ -684,11 +684,12 @@ QSize QLineEdit::sizeHint() const
     ensurePolished();
     QFontMetrics fm(font());
     const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+    const QMargins tm = d->effectiveTextMargins();
     int h = qMax(fm.height(), qMax(14, iconSize - 2)) + 2 * QLineEditPrivate::verticalMargin
-            + d->topTextMargin + d->bottomTextMargin
+            + tm.top() + tm.bottom()
             + d->topmargin + d->bottommargin;
     int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2 * QLineEditPrivate::horizontalMargin
-            + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
+            + tm.left() + tm.right()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrame opt;
     initStyleOption(&opt);
@@ -708,11 +709,12 @@ QSize QLineEdit::minimumSizeHint() const
     Q_D(const QLineEdit);
     ensurePolished();
     QFontMetrics fm = fontMetrics();
+    const QMargins tm = d->effectiveTextMargins();
     int h = fm.height() + qMax(2 * QLineEditPrivate::verticalMargin, fm.leading())
-            + d->topTextMargin + d->bottomTextMargin
+            + tm.top() + tm.bottom()
             + d->topmargin + d->bottommargin;
     int w = fm.maxWidth()
-            + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
+            + tm.left() + tm.right()
             + d->leftmargin + d->rightmargin;
     QStyleOptionFrame opt;
     initStyleOption(&opt);
@@ -1131,13 +1133,7 @@ bool QLineEdit::hasAcceptableInput() const
 */
 void QLineEdit::setTextMargins(int left, int top, int right, int bottom)
 {
-    Q_D(QLineEdit);
-    d->leftTextMargin = left;
-    d->topTextMargin = top;
-    d->rightTextMargin = right;
-    d->bottomTextMargin = bottom;
-    updateGeometry();
-    update();
+    setTextMargins({left, top, right, bottom});
 }
 
 /*!
@@ -1148,7 +1144,10 @@ void QLineEdit::setTextMargins(int left, int top, int right, int bottom)
 */
 void QLineEdit::setTextMargins(const QMargins &margins)
 {
-    setTextMargins(margins.left(), margins.top(), margins.right(), margins.bottom());
+    Q_D(QLineEdit);
+    d->textMargins = margins;
+    updateGeometry();
+    update();
 }
 
 /*!
@@ -1159,15 +1158,15 @@ void QLineEdit::setTextMargins(const QMargins &margins)
 */
 void QLineEdit::getTextMargins(int *left, int *top, int *right, int *bottom) const
 {
-    Q_D(const QLineEdit);
+    QMargins m = textMargins();
     if (left)
-        *left = d->leftTextMargin;
+        *left = m.left();
     if (top)
-        *top = d->topTextMargin;
+        *top = m.top();
     if (right)
-        *right = d->rightTextMargin;
+        *right = m.right();
     if (bottom)
-        *bottom = d->bottomTextMargin;
+        *bottom = m.bottom();
 }
 
 /*!
@@ -1179,7 +1178,7 @@ void QLineEdit::getTextMargins(int *left, int *top, int *right, int *bottom) con
 QMargins QLineEdit::textMargins() const
 {
     Q_D(const QLineEdit);
-    return QMargins(d->leftTextMargin, d->topTextMargin, d->rightTextMargin, d->bottomTextMargin);
+    return d->textMargins;
 }
 
 /*!
@@ -1950,10 +1949,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     initStyleOption(&panel);
     style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
     QRect r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
-    r.setX(r.x() + d->effectiveLeftTextMargin());
-    r.setY(r.y() + d->topTextMargin);
-    r.setRight(r.right() - d->effectiveRightTextMargin());
-    r.setBottom(r.bottom() - d->bottomTextMargin);
+    r = r.marginsRemoved(d->effectiveTextMargins());
     p.setClipRect(r);
 
     QFontMetrics fm = fontMetrics();
