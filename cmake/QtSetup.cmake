@@ -35,6 +35,11 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 if(FEATURE_developer_build)
+    if(DEFINED QT_CMAKE_EXPORT_COMPILE_COMMANDS)
+        set(CMAKE_EXPORT_COMPILE_COMMANDS ${QT_CMAKE_EXPORT_COMPILE_COMMANDS})
+    else()
+        set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    endif()
     set(QT_WILL_INSTALL OFF)
     # Handle non-prefix builds by setting the cmake install prefix to the project binary dir.
     if(PROJECT_NAME STREQUAL "QtBase")
