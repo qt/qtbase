@@ -292,6 +292,8 @@ public:
     static inline QPoint origin(const QPlatformScreen *) { return QPoint(); }
     static inline QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *) { return pos; }
     static inline QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *) { return pos; }
+    static inline QPoint mapPositionToGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window) { return pos; }
+    static inline QPoint mapPositionFromGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window) { return pos; }
     static inline QDpi logicalDpi() { return QDpi(-1,-1); }
 };
 
