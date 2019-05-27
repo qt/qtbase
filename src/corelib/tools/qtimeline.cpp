@@ -529,7 +529,6 @@ QTimeLine::CurveShape QTimeLine::curveShape() const
 void QTimeLine::setCurveShape(CurveShape shape)
 {
     switch (shape) {
-    default:
     case EaseInOutCurve:
         setEasingCurve(QEasingCurve(QEasingCurve::InOutSine));
         break;
