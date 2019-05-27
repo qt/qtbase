@@ -73,7 +73,7 @@ enum class QOcspRevocationReason
 };
 
 class QOcspResponse;
-Q_NETWORK_EXPORT uint qHash(const QOcspResponse &response, uint seed = 0);
+Q_NETWORK_EXPORT uint qHash(const QOcspResponse &response, uint seed = 0) noexcept;
 
 class QOcspResponsePrivate;
 class Q_NETWORK_EXPORT QOcspResponse
@@ -100,7 +100,7 @@ private:
 
     friend class QSslSocketBackendPrivate;
     friend Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs);
-    friend Q_NETWORK_EXPORT uint qHash(const QOcspResponse &response, uint seed);
+    friend Q_NETWORK_EXPORT uint qHash(const QOcspResponse &response, uint seed) noexcept;
 
     QSharedDataPointer<QOcspResponsePrivate> d;
 };

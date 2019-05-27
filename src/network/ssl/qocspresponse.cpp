@@ -239,7 +239,7 @@ Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &
     \since 5.13
     \relates QHash
 */
-uint qHash(const QOcspResponse &response, uint seed)
+uint qHash(const QOcspResponse &response, uint seed) noexcept
 {
     const QOcspResponsePrivate *d = response.d.data();
     Q_ASSERT(d);
