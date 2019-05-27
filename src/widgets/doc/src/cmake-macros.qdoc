@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,27 +26,35 @@
 ****************************************************************************/
 
 /*!
-    \module QtXml
-    \title Qt XML C++ Classes
-    \ingroup modules
-    \qtvariable xml
+\page qtwidgets-cmake-qt5-wrap-ui.html
+\ingroup cmake-macros-qtwidgets
 
-    \brief The Qt XML module provides C++ implementations of the SAX and DOM standards for XML.
+\title qt5_wrap_ui
 
-    Note that the module will not receive additional features anymore. For reading or writing XML
-    documents iteratively (SAX), we recommend using Qt Core's QXmlStreamReader and
-    QXmlStreamWriter classes. The classes are both easier to use and more compliant with the
-    XML standard.
+\brief Creates sources for \c{.ui} files.
 
-    To include the definitions of the module's classes, use the
-    following directive:
+\section1 Synopsis
 
-    \snippet code/doc_src_qtxml.cpp 0
+\badcode
+qt5_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
+             [OPTIONS ...])
+\endcode
 
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
+\section1 Description
 
-    \snippet code/doc_src_qtxml.pro 1
-    \endif
+Creates rules for calling \l{uic}{User Interface Compiler (uic)} on the given
+\c{.ui} files. For each input file, an header file is generated in the build
+directory. The paths of the generated header files are added to\c{<VAR>}.
+
+\note This is a low-level macro. See the \l{CMake AUTOUIC Documentation} for a
+more convenient way to process \c{.ui} files with \c{uic}.
+
+\section1 Options
+
+You can set additional \c{OPTIONS} that should be added to the \c{uic} calls.
+You can find possible options in the \l{uic}{uic documentation}.
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt5_wrap_ui
 */
