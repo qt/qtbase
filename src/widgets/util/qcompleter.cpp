@@ -145,7 +145,9 @@
 
 #include "QtWidgets/qscrollbar.h"
 #include "QtCore/qdir.h"
+#if QT_CONFIG(stringlistmodel)
 #include "QtCore/qstringlistmodel.h"
+#endif
 #if QT_CONFIG(dirmodel)
 #include "QtWidgets/qdirmodel.h"
 #endif
