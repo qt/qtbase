@@ -121,7 +121,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
             break;
         const QRect widgetRect = widget->rect().marginsAdded(QMargins(range, range, range, range));
         const QPoint cursorPoint = widget->mapFromGlobal(e->globalPos());
-        if (!widgetRect.contains(cursorPoint) || mode == Nowhere)
+        if (!widgetRect.contains(cursorPoint))
             return false;
         if (e->button() == Qt::LeftButton) {
 #if 0 // Used to be included in Qt4 for Q_WS_X11
