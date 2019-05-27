@@ -14,4 +14,5 @@ SUBDIRS = \
    serialization \
    statemachine \
    thread \
+   time \
    tools

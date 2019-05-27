@@ -32,7 +32,7 @@ Script to parse the CLDR supplemental/windowsZones.xml file and encode
 for use in QTimeZone.  See ``./cldr2qlocalexml.py`` for where to get
 the CLDR data.  Pass its common/ directory as first parameter to this
 script and the qtbase root directory as second parameter.  It shall
-update qtbase's src/corelib/tools/qtimezoneprivate_data_p.h ready for
+update qtbase's src/corelib/time/qtimezoneprivate_data_p.h ready for
 use.
 
 The XML structure is as follows:
@@ -268,7 +268,7 @@ if not os.path.isdir(cldrPath) or not os.path.isdir(qtPath):
 
 windowsZonesPath = cldrPath + "/supplemental/windowsZones.xml"
 tempFileDir = qtPath
-dataFilePath = qtPath + "/src/corelib/tools/qtimezoneprivate_data_p.h"
+dataFilePath = qtPath + "/src/corelib/time/qtimezoneprivate_data_p.h"
 
 if not os.path.isfile(windowsZonesPath):
     usage()
