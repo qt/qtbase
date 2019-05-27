@@ -277,20 +277,19 @@
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     const auto modifiers = [QNSView convertKeyModifiers:theEvent.modifierFlags];
-    const auto buttons = currentlyPressedMouseButtons();
     auto button = cocoaButton2QtButton(theEvent);
     if (button == Qt::LeftButton && m_sendUpAsRightButton)
         button = Qt::RightButton;
     const auto eventType = cocoaEvent2QtMouseEvent(theEvent);
 
     if (eventType == QEvent::MouseMove)
-        qCDebug(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << buttons;
+        qCDebug(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << m_buttons;
     else
-        qCInfo(lcQpaMouse) << eventType << "of" << button << "at" << qtWindowPoint << "with" << buttons;
+        qCInfo(lcQpaMouse) << eventType << "of" << button << "at" << qtWindowPoint << "with" << m_buttons;
 
     QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(),
                                              timestamp, qtWindowPoint, qtScreenPoint,
-                                             buttons, button, eventType, modifiers);
+                                             m_buttons, button, eventType, modifiers);
 }
 
 - (bool)handleMouseDownEvent:(NSEvent *)theEvent
