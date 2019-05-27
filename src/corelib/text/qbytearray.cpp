@@ -40,7 +40,7 @@
 
 #include "qbytearray.h"
 #include "qbytearraymatcher.h"
-#include "qtools_p.h"
+#include "private/qtools_p.h"
 #include "qstring.h"
 #include "qlist.h"
 #include "qlocale.h"

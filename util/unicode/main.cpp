@@ -3096,7 +3096,7 @@ int main(int, char **)
         "// We mean it.\n"
         "//\n\n";
 
-    QFile f("../../src/corelib/tools/qunicodetables.cpp");
+    QFile f("../../src/corelib/text/qunicodetables.cpp");
     f.open(QFile::WriteOnly|QFile::Truncate);
     f.write(header);
     f.write(note);
@@ -3116,7 +3116,7 @@ int main(int, char **)
     f.write("QT_END_NAMESPACE\n");
     f.close();
 
-    f.setFileName("../../src/corelib/tools/qunicodetables_p.h");
+    f.setFileName("../../src/corelib/text/qunicodetables_p.h");
     f.open(QFile::WriteOnly | QFile::Truncate);
     f.write(header);
     f.write(note);

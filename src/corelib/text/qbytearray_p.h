@@ -52,7 +52,7 @@
 //
 
 #include <QtCore/qbytearray.h>
-#include "qtools_p.h"
+#include "private/qtools_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -74,32 +74,32 @@ SOURCES += \
            ../../corelib/serialization/qtextstream.cpp \
            ../../corelib/serialization/qxmlutils.cpp \
            ../../corelib/serialization/qxmlstream.cpp \
+           ../../corelib/text/qbytearray.cpp \
+           ../../corelib/text/qbytearraymatcher.cpp \
+           ../../corelib/text/qlocale.cpp \
+           ../../corelib/text/qlocale_tools.cpp \
+           ../../corelib/text/qregexp.cpp \
+           ../../corelib/text/qstring.cpp \
+           ../../corelib/text/qstringbuilder.cpp \
+           ../../corelib/text/qstring_compat.cpp \
+           ../../corelib/text/qstringlist.cpp \
+           ../../corelib/text/qstringview.cpp \
+           ../../corelib/text/qvsnprintf.cpp \
            ../../corelib/time/qdatetime.cpp \
-           ../../corelib/tools/qbitarray.cpp \
-           ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qarraydata.cpp \
-           ../../corelib/tools/qbytearraymatcher.cpp \
+           ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qcommandlineparser.cpp \
            ../../corelib/tools/qcommandlineoption.cpp \
            ../../corelib/tools/qcryptographichash.cpp \
            ../../corelib/tools/qhash.cpp \
            ../../corelib/tools/qlist.cpp \
-           ../../corelib/tools/qlocale.cpp \
-           ../../corelib/tools/qlocale_tools.cpp \
            ../../corelib/tools/qmap.cpp \
-           ../../corelib/tools/qregexp.cpp \
            ../../corelib/tools/qringbuffer.cpp \
            ../../corelib/tools/qpoint.cpp \
            ../../corelib/tools/qrect.cpp \
            ../../corelib/tools/qsize.cpp \
            ../../corelib/tools/qline.cpp \
-           ../../corelib/tools/qstring.cpp \
-           ../../corelib/tools/qstringbuilder.cpp \
-           ../../corelib/tools/qstring_compat.cpp \
-           ../../corelib/tools/qstringlist.cpp \
-           ../../corelib/tools/qstringview.cpp \
            ../../corelib/tools/qversionnumber.cpp \
-           ../../corelib/tools/qvsnprintf.cpp \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 

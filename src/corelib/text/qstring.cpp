@@ -49,8 +49,8 @@
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
-#include <private/qlocale_tools_p.h>
-#include "qsimd_p.h"
+#include "qlocale_tools_p.h"
+#include "private/qsimd_p.h"
 #include <qnumeric.h>
 #include <qdatastream.h>
 #include <qlist.h>
@@ -59,7 +59,6 @@
 #include "qstringbuilder.h"
 #include "qstringmatcher.h"
 #include "qvarlengtharray.h"
-#include "qtools_p.h"
 #include "qdebug.h"
 #include "qendian.h"
 #include "qcollator.h"
