@@ -825,7 +825,7 @@ static QString wc2rx(const QString &wc_str, const bool enableEscaping)
                 if (wc[i] == QLatin1Char('^'))
                     rx += wc[i++];
                 if (i < wclen) {
-                    if (rx[i] == QLatin1Char(']'))
+                    if (wc[i] == QLatin1Char(']'))
                         rx += wc[i++];
                     while (i < wclen && wc[i] != QLatin1Char(']')) {
                         if (wc[i] == QLatin1Char('\\'))
