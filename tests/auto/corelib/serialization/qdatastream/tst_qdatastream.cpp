@@ -174,6 +174,7 @@ private slots:
 
     void floatingPointPrecision();
 
+    void compatibility_Qt5();
     void compatibility_Qt3();
     void compatibility_Qt2();
 
@@ -260,17 +261,17 @@ static int NColorRoles[] = {
     QPalette::HighlightedText + 1, // Qt_4_0, Qt_4_1
     QPalette::HighlightedText + 1, // Qt_4_2
     QPalette::AlternateBase + 1,   // Qt_4_3
-    QPalette::PlaceholderText + 1,     // Qt_4_4
-    QPalette::PlaceholderText + 1,     // Qt_4_5
-    QPalette::PlaceholderText + 1,     // Qt_4_6
-    QPalette::PlaceholderText + 1,     // Qt_5_0
-    QPalette::PlaceholderText + 1,     // Qt_5_1
-    QPalette::PlaceholderText + 1,     // Qt_5_2
-    QPalette::PlaceholderText + 1,     // Qt_5_3
-    QPalette::PlaceholderText + 1,     // Qt_5_4
-    QPalette::PlaceholderText + 1,     // Qt_5_5
-    QPalette::PlaceholderText + 1,     // Qt_5_6
-    0                              // add the correct value for Qt_5_7 here later
+    QPalette::ToolTipText + 1,     // Qt_4_4
+    QPalette::ToolTipText + 1,     // Qt_4_5
+    QPalette::ToolTipText + 1,     // Qt_4_6, Qt_4_7, Qt_4_8, Qt_4_9
+    QPalette::ToolTipText + 1,     // Qt_5_0
+    QPalette::ToolTipText + 1,     // Qt_5_1
+    QPalette::ToolTipText + 1,     // Qt_5_2, Qt_5_3
+    QPalette::ToolTipText + 1,     // Qt_5_4, Qt_5_5
+    QPalette::ToolTipText + 1,     // Qt_5_6, Qt_5_7, Qt_5_8, Qt_5_9, Qt_5_10, Qt_5_11
+    QPalette::PlaceholderText + 1, // Qt_5_12
+    QPalette::PlaceholderText + 1, // Qt_5_13
+    0                              // add the correct value for Qt_5_14 here later
 };
 
 // Testing get/set functions
@@ -3100,6 +3101,37 @@ void tst_QDataStream::streamRealDataTypes()
 
         QCOMPARE(stream.status(), QDataStream::Ok);
     }
+}
+
+void tst_QDataStream::compatibility_Qt5()
+{
+    QLinearGradient gradient(QPointF(0,0), QPointF(1,1));
+    gradient.setColorAt(0, Qt::red);
+    gradient.setColorAt(1, Qt::blue);
+
+    QBrush brush(gradient);
+    QPalette palette;
+    palette.setBrush(QPalette::Button, brush);
+    palette.setColor(QPalette::Light, Qt::green);
+
+    QByteArray stream;
+    {
+        QDataStream out(&stream, QIODevice::WriteOnly);
+        out.setVersion(QDataStream::Qt_5_7);
+        out << palette;
+        out << brush;
+    }
+    QBrush in_brush;
+    QPalette in_palette;
+    {
+        QDataStream in(stream);
+        in.setVersion(QDataStream::Qt_5_7);
+        in >> in_palette;
+        in >> in_brush;
+    }
+    QCOMPARE(in_brush.style(), Qt::LinearGradientPattern);
+    QCOMPARE(in_palette.brush(QPalette::Button).style(), Qt::LinearGradientPattern);
+    QCOMPARE(in_palette.color(QPalette::Light), QColor(Qt::green));
 }
 
 void tst_QDataStream::compatibility_Qt3()

@@ -1006,6 +1006,8 @@ QDataStream &operator<<(QDataStream &s, const QPalette &p)
                 max = QPalette::HighlightedText + 1;
             else if (s.version() <= QDataStream::Qt_4_3)
                 max = QPalette::AlternateBase + 1;
+            else if (s.version() <= QDataStream::Qt_5_11)
+                max = QPalette::ToolTipText + 1;
             for (int r = 0; r < max; r++)
                 s << p.d->br[grp][r];
         }
@@ -1046,6 +1048,9 @@ QDataStream &operator>>(QDataStream &s, QPalette &p)
         } else if (s.version() <= QDataStream::Qt_4_3) {
             p = QPalette();
             max = QPalette::AlternateBase + 1;
+        } else if (s.version() <= QDataStream::Qt_5_11) {
+            p = QPalette();
+            max = QPalette::ToolTipText + 1;
         }
 
         QBrush tmp;

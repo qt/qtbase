@@ -43,6 +43,7 @@
 
 #include "qtextodfwriter_p.h"
 
+#include <QImageReader>
 #include <QImageWriter>
 #include <QTextListFormat>
 #include <QTextList>
@@ -410,6 +411,29 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         writer.writeEndElement(); // list-item
 }
 
+static bool probeImageData(QIODevice *device, QImage *image, QString *mimeType, qreal *width, qreal *height)
+{
+    QImageReader reader(device);
+    const QByteArray format = reader.format().toLower();
+    if (format == "png") {
+        *mimeType = QStringLiteral("image/png");
+    } else if (format == "jpg") {
+        *mimeType = QStringLiteral("image/jpg");
+    } else if (format == "svg") {
+        *mimeType = QStringLiteral("image/svg+xml");
+    } else {
+        *image = reader.read();
+        return false;
+    }
+
+    const QSize size = reader.size();
+
+    *width = size.width();
+    *height = size.height();
+
+    return true;
+}
+
 void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextFragment &fragment) const
 {
     writer.writeStartElement(drawNS, QString::fromLatin1("frame"));
@@ -420,47 +444,73 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
         QTextImageFormat imageFormat = fragment.charFormat().toImageFormat();
         writer.writeAttribute(drawNS, QString::fromLatin1("name"), imageFormat.name());
 
+        QByteArray data;
+        QString mimeType;
+        qreal width = 0;
+        qreal height = 0;
+
         QImage image;
         QString name = imageFormat.name();
         if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
             name.prepend(QLatin1String("qrc"));
         QUrl url = QUrl(name);
-        const QVariant data = m_document->resource(QTextDocument::ImageResource, url);
-        if (data.type() == QVariant::Image) {
-            image = qvariant_cast<QImage>(data);
-        } else if (data.type() == QVariant::ByteArray) {
-            image.loadFromData(data.toByteArray());
-        }
+        const QVariant variant = m_document->resource(QTextDocument::ImageResource, url);
+        if (variant.type() == QVariant::Image) {
+            image = qvariant_cast<QImage>(variant);
+        } else if (variant.type() == QVariant::ByteArray) {
+            data = variant.toByteArray();
 
-        if (image.isNull()) {
-            if (image.isNull()) { // try direct loading
-                name = imageFormat.name(); // remove qrc:/ prefix again
-                image.load(name);
+            QBuffer buffer(&data);
+            buffer.open(QIODevice::ReadOnly);
+            probeImageData(&buffer, &image, &mimeType, &width, &height);
+        } else {
+            // try direct loading
+            QFile file(imageFormat.name());
+            if (file.open(QIODevice::ReadOnly) && !probeImageData(&file, &image, &mimeType, &width, &height)) {
+                file.seek(0);
+                data = file.readAll();
             }
         }
 
         if (! image.isNull()) {
             QBuffer imageBytes;
-            QString filename = m_strategy->createUniqueImageName();
+
             int imgQuality = imageFormat.quality();
             if (imgQuality >= 100 || imgQuality < 0 || image.hasAlphaChannel()) {
                 QImageWriter imageWriter(&imageBytes, "png");
                 imageWriter.write(image);
-                m_strategy->addFile(filename, QString::fromLatin1("image/png"), imageBytes.data());
+
+                data = imageBytes.data();
+                mimeType = QStringLiteral("image/png");
             } else {
                 // Write images without alpha channel as jpg with quality set by QTextImageFormat
                 QImageWriter imageWriter(&imageBytes, "jpg");
                 imageWriter.setQuality(imgQuality);
                 imageWriter.write(image);
-                m_strategy->addFile(filename, QString::fromLatin1("image/jpg"), imageBytes.data());
+
+                data = imageBytes.data();
+                mimeType = QStringLiteral("image/jpg");
             }
-            // get the width/height from the format.
-            qreal width = imageFormat.hasProperty(QTextFormat::ImageWidth)
-                    ? imageFormat.width() : image.width();
+
+            width = image.width();
+            height = image.height();
+        }
+
+        if (!data.isEmpty()) {
+            if (imageFormat.hasProperty(QTextFormat::ImageWidth)) {
+                width = imageFormat.width();
+            }
+            if (imageFormat.hasProperty(QTextFormat::ImageHeight)) {
+                height = imageFormat.height();
+            }
+
+            QString filename = m_strategy->createUniqueImageName();
+
+            m_strategy->addFile(filename, mimeType, data);
+
             writer.writeAttribute(svgNS, QString::fromLatin1("width"), pixelToPoint(width));
-            qreal height = imageFormat.hasProperty(QTextFormat::ImageHeight)
-                    ? imageFormat.height() : image.height();
             writer.writeAttribute(svgNS, QString::fromLatin1("height"), pixelToPoint(height));
+            writer.writeAttribute(textNS, QStringLiteral("anchor-type"), QStringLiteral("as-char"));
             writer.writeStartElement(drawNS, QString::fromLatin1("image"));
             writer.writeAttribute(xlinkNS, QString::fromLatin1("href"), filename);
             writer.writeEndElement(); // image

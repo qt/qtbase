@@ -355,7 +355,7 @@ public:
     void createRecursively();
     void createWinId();
 
-    void setScreenForPoint(const QPoint &pos);
+    bool setScreenForPoint(const QPoint &pos);
 
     void createTLExtra();
     void createExtra();
