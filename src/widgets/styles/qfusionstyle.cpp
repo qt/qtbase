@@ -2769,8 +2769,16 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         buttonOption.state &= ~State_MouseOver;
                     }
 
-                    if (comboBox->frame)
+                    if (comboBox->frame) {
+                        cachePainter.save();
+                        cachePainter.setRenderHint(QPainter::Antialiasing, true);
+                        cachePainter.translate(0.5, 0.5);
+                        cachePainter.setPen(Qt::NoPen);
+                        cachePainter.setBrush(buttonOption.palette.base());
+                        cachePainter.drawRoundedRect(rect.adjusted(0, 0, -1, -1), 2, 2);
+                        cachePainter.restore();
                         proxy()->drawPrimitive(PE_FrameLineEdit, &buttonOption, &cachePainter, widget);
+                    }
 
                     // Draw button clipped
                     cachePainter.save();
