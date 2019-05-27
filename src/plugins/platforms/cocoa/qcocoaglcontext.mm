@@ -404,13 +404,13 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     m_updateObservers.clear();
 
     if (view.layer) {
-        m_updateObservers.append(QMacScopedObserver(view, NSViewFrameDidChangeNotification, updateCallback));
-        m_updateObservers.append(QMacScopedObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
+        m_updateObservers.append(QMacNotificationObserver(view, NSViewFrameDidChangeNotification, updateCallback));
+        m_updateObservers.append(QMacNotificationObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
     } else {
-        m_updateObservers.append(QMacScopedObserver(view, NSViewGlobalFrameDidChangeNotification, updateCallback));
+        m_updateObservers.append(QMacNotificationObserver(view, NSViewGlobalFrameDidChangeNotification, updateCallback));
     }
 
-    m_updateObservers.append(QMacScopedObserver([NSApplication sharedApplication],
+    m_updateObservers.append(QMacNotificationObserver([NSApplication sharedApplication],
         NSApplicationDidChangeScreenParametersNotification, updateCallback));
 
     // If any of the observers fire at this point it's fine. We check the

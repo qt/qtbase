@@ -207,7 +207,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     // which will resolve to an actual value and result in screen invalidation.
     cocoaApplication.presentationOptions = NSApplicationPresentationDefault;
 
-    m_screensObserver = QMacScopedObserver([NSApplication sharedApplication],
+    m_screensObserver = QMacNotificationObserver([NSApplication sharedApplication],
         NSApplicationDidChangeScreenParametersNotification, [&]() { updateScreens(); });
     updateScreens();
 
