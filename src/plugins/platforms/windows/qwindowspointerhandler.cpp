@@ -336,6 +336,12 @@ QTouchDevice *QWindowsPointerHandler::ensureTouchDevice()
     return m_touchDevice;
 }
 
+void QWindowsPointerHandler::clearEvents()
+{
+    m_lastEventType = QEvent::None;
+    m_lastEventButton = Qt::NoButton;
+}
+
 void QWindowsPointerHandler::handleCaptureRelease(QWindow *window,
                                                   QWindow *currentWindowUnderPointer,
                                                   HWND hwnd,
@@ -732,10 +738,35 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     }
 
     const MouseEvent mouseEvent = eventFromMsg(msg);
+    Qt::MouseButtons mouseButtons;
+
+    if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick)
+        mouseButtons = queryMouseButtons();
+    else
+        mouseButtons = mouseButtonsFromKeyState(msg.wParam);
+
+    // When the left/right mouse buttons are pressed over the window title bar
+    // WM_NCLBUTTONDOWN/WM_NCRBUTTONDOWN messages are received. But no UP
+    // messages are received on release, only WM_NCMOUSEMOVE/WM_MOUSEMOVE.
+    // We detect it and generate the missing release events here. (QTBUG-75678)
+    // The last event vars are cleared on QWindowsContext::handleExitSizeMove()
+    // to avoid generating duplicated release events.
+    if (m_lastEventType == QEvent::NonClientAreaMouseButtonPress
+            && (mouseEvent.type == QEvent::NonClientAreaMouseMove || mouseEvent.type == QEvent::MouseMove)
+            && (m_lastEventButton & mouseButtons) == 0) {
+            if (mouseEvent.type == QEvent::NonClientAreaMouseMove) {
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons, m_lastEventButton,
+                                                                   QEvent::NonClientAreaMouseButtonRelease, keyModifiers, source);
+            } else {
+                QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos, mouseButtons, m_lastEventButton,
+                                                         QEvent::MouseButtonRelease, keyModifiers, source);
+            }
+    }
+    m_lastEventType = mouseEvent.type;
+    m_lastEventButton = mouseEvent.button;
 
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        const Qt::MouseButtons nonclientButtons = queryMouseButtons();
-        QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, nonclientButtons,
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons,
                                                            mouseEvent.button, mouseEvent.type, keyModifiers, source);
         return false; // Allow further event processing
     }
@@ -750,8 +781,6 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
         }
         return true;
     }
-
-    const Qt::MouseButtons mouseButtons = mouseButtonsFromKeyState(msg.wParam);
 
     handleCaptureRelease(window, currentWindowUnderPointer, hwnd, mouseEvent.type, mouseButtons);
     handleEnterLeave(window, currentWindowUnderPointer, globalPos);

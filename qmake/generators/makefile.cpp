@@ -1995,14 +1995,11 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
                     dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
                     if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
-                        QString indeps;
-                        while(!feof(proc)) {
-                            int read_in = (int)fread(buff, 1, 255, proc);
-                            if(!read_in)
-                                break;
-                            indeps += QByteArray(buff, read_in);
-                        }
+                        QByteArray depData;
+                        while (int read_in = feof(proc) ? 0 : (int)fread(buff, 1, 255, proc))
+                            depData.append(buff, read_in);
                         QT_PCLOSE(proc);
+                        const QString indeps = QString::fromLocal8Bit(depData);
                         if(!indeps.isEmpty()) {
                             QDir outDir(Option::output_dir);
                             QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
@@ -2083,14 +2080,11 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, out, LocalShell);
                 dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
                 if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
-                    QString indeps;
-                    while(!feof(proc)) {
-                        int read_in = (int)fread(buff, 1, 255, proc);
-                        if(!read_in)
-                            break;
-                        indeps += QByteArray(buff, read_in);
-                    }
+                    QByteArray depData;
+                    while (int read_in = feof(proc) ? 0 : (int)fread(buff, 1, 255, proc))
+                        depData.append(buff, read_in);
                     QT_PCLOSE(proc);
+                    const QString indeps = QString::fromLocal8Bit(depData);
                     if(!indeps.isEmpty()) {
                         QDir outDir(Option::output_dir);
                         QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);

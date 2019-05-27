@@ -1864,6 +1864,9 @@ void QColorDialogPrivate::_q_addCustom()
 
 void QColorDialogPrivate::retranslateStrings()
 {
+    if (nativeDialogInUse)
+        return;
+
     if (!smallDisplay) {
         lblBasicColors->setText(QColorDialog::tr("&Basic colors"));
         lblCustomColors->setText(QColorDialog::tr("&Custom colors"));

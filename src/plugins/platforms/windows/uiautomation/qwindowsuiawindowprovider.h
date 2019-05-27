@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,36 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QWINRTTHEME_H
-#define QWINRTTHEME_H
+#ifndef QWINDOWSUIAWINDOWPROVIDER_H
+#define QWINDOWSUIAWINDOWPROVIDER_H
 
-#include <qpa/qplatformtheme.h>
-#include <qpa/qplatformintegration.h>
-#include <QtCore/QLoggingCategory>
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
+
+#include "qwindowsuiabaseprovider.h"
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaTheme)
-
-class QWinRTThemePrivate;
-class QWinRTTheme : public QPlatformTheme
+class QWindowsUiaWindowProvider : public QWindowsUiaBaseProvider,
+                                  public QWindowsComBase<IWindowProvider>
 {
+    Q_DISABLE_COPY(QWindowsUiaWindowProvider)
 public:
-    QWinRTTheme();
+    explicit QWindowsUiaWindowProvider(QAccessible::Id id);
+    ~QWindowsUiaWindowProvider() override;
 
-    bool usePlatformNativeDialog(DialogType type) const override;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
-
-    const QPalette *palette(Palette type = SystemPalette) const override;
-    const QFont *font(Font type = SystemFont) const override;
-
-    static QVariant styleHint(QPlatformIntegration::StyleHint hint);
-    QVariant themeHint(ThemeHint hint) const override;
-private:
-    QScopedPointer<QWinRTThemePrivate> d_ptr;
-    Q_DECLARE_PRIVATE(QWinRTTheme)
+    HRESULT STDMETHODCALLTYPE SetVisualState(WindowVisualState state) override;
+    HRESULT STDMETHODCALLTYPE Close( void) override;
+    HRESULT STDMETHODCALLTYPE WaitForInputIdle(int milliseconds, __RPC__out BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_CanMaximize(__RPC__out BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_CanMinimize(__RPC__out BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_IsModal(__RPC__out BOOL *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_WindowVisualState(__RPC__out WindowVisualState *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_WindowInteractionState(__RPC__out WindowInteractionState *pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_IsTopmost(__RPC__out BOOL *pRetVal) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINRTTHEME_H
+#endif // QT_CONFIG(accessibility)
+
+#endif // QWINDOWSUIAWINDOWPROVIDER_H

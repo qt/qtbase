@@ -46,6 +46,7 @@
 #include "qcoreevent.h"
 #include "qeventloop.h"
 #endif
+#include "qmetaobject.h"
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
@@ -952,6 +953,10 @@ bool QCoreApplication::isSetuidAllowed()
     Sets the attribute \a attribute if \a on is true;
     otherwise clears the attribute.
 
+    \note Some application attributes must be set \b before creating a
+    QCoreApplication instance. Refer to the Qt::ApplicationAttribute
+    documentation for more information.
+
     \sa testAttribute()
 */
 void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
@@ -960,6 +965,27 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
+    if (Q_UNLIKELY(qApp)) {
+        switch (attribute) {
+            case Qt::AA_EnableHighDpiScaling:
+            case Qt::AA_DisableHighDpiScaling:
+            case Qt::AA_PluginApplication:
+            case Qt::AA_UseDesktopOpenGL:
+            case Qt::AA_UseOpenGLES:
+            case Qt::AA_UseSoftwareOpenGL:
+            case Qt::AA_ShareOpenGLContexts:
+#ifdef QT_BOOTSTRAPPED
+                qWarning("Attribute %d must be set before QCoreApplication is created.",
+                         attribute);
+#else
+                qWarning("Attribute Qt::%s must be set before QCoreApplication is created.",
+                         QMetaEnum::fromType<Qt::ApplicationAttribute>().valueToKey(attribute));
+#endif
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 /*!

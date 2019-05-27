@@ -48,6 +48,7 @@
 #include <QtGui/qscreen.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
+#include <qpa/qplatforminputcontextfactory_p.h>
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
@@ -179,6 +180,18 @@ QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLCon
     return new QWasmOpenGLContext(context->format());
 }
 #endif
+
+void QWasmIntegration::initialize()
+{
+    QString icStr = QPlatformInputContextFactory::requested();
+    if (!icStr.isNull())
+        m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+}
+
+QPlatformInputContext *QWasmIntegration::inputContext() const
+{
+    return m_inputContext.data();
+}
 
 QPlatformFontDatabase *QWasmIntegration::fontDatabase() const
 {

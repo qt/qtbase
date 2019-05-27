@@ -492,5 +492,13 @@ QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
     return platformScreen->geometry().topLeft();
 }
 
+QPoint QHighDpiScaling::origin(const QWindow *window)
+{
+    if (window && window->isTopLevel() && window->screen())
+        return window->screen()->geometry().topLeft();
+
+    return QPoint(0, 0);
+}
+
 #endif //QT_NO_HIGHDPISCALING
 QT_END_NAMESPACE

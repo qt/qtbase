@@ -360,4 +360,27 @@ __CRT_UUID_DECL(IGridItemProvider, 0xd02541f1, 0xfb81, 0x4d64, 0xae,0x32, 0xf5,0
 #endif
 #endif
 
+
+#ifndef __IWindowProvider_INTERFACE_DEFINED__
+#define __IWindowProvider_INTERFACE_DEFINED__
+DEFINE_GUID(IID_IWindowProvider, 0x987df77b, 0xdb06, 0x4d77, 0x8f,0x8a, 0x86,0xa9,0xc3,0xbb,0x90,0xb9);
+MIDL_INTERFACE("987df77b-db06-4d77-8f8a-86a9c3bb90b9")
+IWindowProvider : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE SetVisualState(enum WindowVisualState state) = 0;
+    virtual HRESULT STDMETHODCALLTYPE Close( void) = 0;
+    virtual HRESULT STDMETHODCALLTYPE WaitForInputIdle(int milliseconds, __RPC__out BOOL *pRetVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_CanMaximize(__RPC__out BOOL *pRetVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_CanMinimize(__RPC__out BOOL *pRetVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_IsModal(__RPC__out BOOL *pRetVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_WindowVisualState(__RPC__out enum WindowVisualState *pRetVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_WindowInteractionState(__RPC__out enum WindowInteractionState *pRetVal) = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_IsTopmost(__RPC__out BOOL *pRetVal) = 0;
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IWindowProvider, 0x987df77b, 0xdb06, 0x4d77, 0x8f,0x8a, 0x86,0xa9,0xc3,0xbb,0x90,0xb9)
+#endif
+#endif
+
 #endif

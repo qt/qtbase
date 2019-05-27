@@ -202,7 +202,7 @@ void QXcbDrag::startDrag()
     if (connection()->mouseGrabber() == nullptr)
         shapedPixmapWindow()->setMouseGrabEnabled(true);
 
-    auto nativePixelPos = QHighDpi::toNativePixels(QCursor::pos(), initiatorWindow);
+    auto nativePixelPos = QHighDpi::toNativePixels(QCursor::pos(), initiatorWindow.data());
     move(nativePixelPos, QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
 }
 

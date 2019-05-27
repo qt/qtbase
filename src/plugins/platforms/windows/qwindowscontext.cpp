@@ -1486,6 +1486,10 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
                                                      keyboardModifiers);
         }
     }
+    if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
+        d->m_pointerHandler.clearEvents();
+    else
+        d->m_mouseHandler.clearEvents();
 }
 
 bool QWindowsContext::asyncExpose() const

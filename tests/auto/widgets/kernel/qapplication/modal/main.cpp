@@ -26,8 +26,6 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-
 #include <QApplication>
 #include "base.h"
 
@@ -35,7 +33,6 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     QApplication::setAttribute(Qt::AA_NativeWindows); //QTBUG-15774
-    base *b = new base();
-    Q_UNUSED(b);
+    base b;
     return app.exec();
 }

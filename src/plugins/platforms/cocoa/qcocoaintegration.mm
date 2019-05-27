@@ -403,8 +403,13 @@ QCocoaServices *QCocoaIntegration::services() const
 
 QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 {
-    if (hint == QPlatformIntegration::FontSmoothingGamma)
+    switch (hint) {
+    case FontSmoothingGamma:
         return QCoreTextFontEngine::fontSmoothingGamma();
+    case ShowShortcutsInContextMenus:
+        return QVariant(false);
+    default: break;
+    }
 
     return QPlatformIntegration::styleHint(hint);
 }

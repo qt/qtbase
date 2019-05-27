@@ -834,9 +834,14 @@ static void executeBlockWithoutAnimation(Block block)
 - (void)updateSelection
 {
     if (!hasSelection()) {
-        _cursorLayer.visible = NO;
-        _anchorLayer.visible = NO;
-        QIOSTextInputOverlay::s_editMenu.visible = NO;
+        if (_cursorLayer.visible) {
+            _cursorLayer.visible = NO;
+            _anchorLayer.visible = NO;
+            // Only hide the edit menu if we had a selection from before, since
+            // the edit menu can also be used for other purposes by others (in
+            // which case we try our best not to interfere).
+            QIOSTextInputOverlay::s_editMenu.visible = NO;
+        }
         return;
     }
 

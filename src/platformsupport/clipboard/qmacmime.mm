@@ -435,8 +435,23 @@ QList<QByteArray> QMacPasteboardMimeUnicodeText::convertFromMime(const QString &
     if (flavor == QLatin1String("public.utf8-plain-text"))
         ret.append(string.toUtf8());
 #if QT_CONFIG(textcodec)
-    else if (flavor == QLatin1String("public.utf16-plain-text"))
-        ret.append(QTextCodec::codecForName("UTF-16")->fromUnicode(string));
+    else if (flavor == QLatin1String("public.utf16-plain-text")) {
+        QTextCodec::ConverterState state;
+#if defined(Q_OS_MACOS)
+        // Some applications such as Microsoft Excel, don't deal well with
+        // a BOM present, so we follow the traditional approach of Qt on
+        // macOS to not generate public.utf16-plain-text with a BOM.
+        state.flags = QTextCodec::IgnoreHeader;
+#else
+        // Whereas iOS applications will fail to paste if we do _not_
+        // include a BOM in the public.utf16-plain-text content, most
+        // likely due to converting the data using NSUTF16StringEncoding
+        // which assumes big-endian byte order if there is no BOM.
+        state.flags = QTextCodec::DefaultConversion;
+#endif
+        ret.append(QTextCodec::codecForName("UTF-16")->fromUnicode(
+            string.constData(), string.length(), &state));
+    }
 #endif
     return ret;
 }
