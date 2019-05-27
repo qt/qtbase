@@ -1154,8 +1154,9 @@
     \target DEPENDPATH
     \section1 DEPENDPATH
 
-    Specifies a list of all directories to look in to resolve dependencies. This
-    variable is used when crawling through \c included files.
+    Specifies a list of directories for qmake to scan, to resolve dependencies.
+    This variable is used when qmake crawls through the header files that you
+    \c{#include} in your source code.
 
     \target DESTDIR
     \section1 DESTDIR

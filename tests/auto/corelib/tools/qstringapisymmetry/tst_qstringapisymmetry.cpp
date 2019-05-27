@@ -1203,7 +1203,7 @@ void tst_QStringApiSymmetry::trimmed_data()
         for (int len = 0; len < latin1Whitespace.size(); ++len) {
             for (int pos = 0; pos < latin1Whitespace.size() - len; ++pos) {
                 const QString unicode = latin1Whitespace.mid(pos, len) + str + latin1Whitespace.mid(pos, len);
-                const QScopedPointer<const char> escaped(QTest::toString(unicode));
+                const QScopedArrayPointer<const char> escaped(QTest::toString(unicode));
                 QTest::addRow("%s", escaped.data()) << unicode << QStringRef(&str);
             }
         }

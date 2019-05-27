@@ -1734,7 +1734,8 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             }
             // draw background for the branch (selection + alternate row)
             opt.rect = branches;
-            style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
+            if (style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, &opt, this))
+                style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, this);
 
             // draw background of the item (only alternate row). rest of the background
             // is provided by the delegate
