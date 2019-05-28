@@ -889,6 +889,17 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)',
                        r'\1___equals___\2', condition)
     condition = re.sub(r'\s*==\s*', '___STREQUAL___', condition)
+    condition = re.sub(r'\bexists\s*\((.*?)\)', r'EXISTS \1', condition)
+
+    pattern = r'CONFIG\((debug|release),debug\|release\)'
+    match_result = re.match(pattern, condition)
+    if match_result:
+        build_type = match_result.group(1)
+        if build_type == 'debug':
+            build_type = 'Debug'
+        elif build_type == 'release':
+            build_type = 'Release'
+        condition = re.sub(pattern, '(CMAKE_BUILD_TYPE STREQUAL {})'.format(build_type), condition)
 
     condition = condition.replace('*', '_x_')
     condition = condition.replace('.$$', '__ss_')
