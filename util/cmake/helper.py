@@ -114,6 +114,7 @@ _qt_library_map = [
     LibraryMapping('multimedia', 'Qt5', 'Qt::Multimedia', extra = ['COMPONENTS', 'Multimedia']),
     LibraryMapping('multimediawidgets', 'Qt5', 'Qt::MultimediaWidgets', extra = ['COMPONENTS', 'MultimediaWidgets']),
     LibraryMapping('network', 'Qt5', 'Qt::Network', extra = ['COMPONENTS', 'Network']),
+    LibraryMapping('networkauth', 'Qt5', 'Qt::NetworkAuth', extra = ['COMPONENTS', 'NetworkAuth']),
     LibraryMapping('nfc', 'Qt5', 'Qt::Nfc', extra = ['COMPONENTS', 'Nfc']),
     LibraryMapping('oauth', 'Qt5', 'Qt::NetworkAuth', extra = ['COMPONENTS', 'NetworkAuth']),
     LibraryMapping('openglextensions', 'Qt5', 'Qt::OpenGLExtensions', extra = ['COMPONENTS', 'OpenGLExtensions']),
