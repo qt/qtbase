@@ -38,17 +38,16 @@ use.
 The XML structure is as follows:
 
  <supplementalData>
-     <version number="$Revision: 7825 $"/>
-     <generation date="$Date: 2012-10-10 14:45:31 -0700 (Wed, 10 Oct 2012) $"/>
+     <version number="$Revision:...$"/>
+     <generation date="$Date:...$"/>
      <windowsZones>
-         <mapTimezones otherVersion="7dc0101" typeVersion="2012f">
+         <mapTimezones otherVersion="..." typeVersion="...">
              <!-- (UTC-08:00) Pacific Time (US & Canada) -->
              <mapZone other="Pacific Standard Time" territory="001" type="America/Los_Angeles"/>
-             <mapZone other="Pacific Standard Time" territory="CA"  type="America/Vancouver America/Dawson America/Whitehorse"/>
-             <mapZone other="Pacific Standard Time" territory="MX"  type="America/Tijuana"/>
-             <mapZone other="Pacific Standard Time" territory="US"  type="America/Los_Angeles"/>
-             <mapZone other="Pacific Standard Time" territory="ZZ"  type="PST8PDT"/>
-       </mapTimezones>
+             <mapZone other="Pacific Standard Time" territory="CA" type="America/Vancouver America/Dawson America/Whitehorse"/>
+             <mapZone other="Pacific Standard Time" territory="US" type="America/Los_Angeles America/Metlakatla"/>
+             <mapZone other="Pacific Standard Time" territory="ZZ" type="PST8PDT"/>
+         </mapTimezones>
      </windowsZones>
  </supplementalData>
 """
@@ -272,10 +271,7 @@ windowsZonesPath = cldrPath + "/supplemental/windowsZones.xml"
 tempFileDir = qtPath
 dataFilePath = qtPath + "/src/corelib/time/qtimezoneprivate_data_p.h"
 
-if not os.path.isfile(windowsZonesPath):
-    usage()
-
-if not os.path.isfile(dataFilePath):
+if not (os.path.isfile(windowsZonesPath) and os.path.isfile(dataFilePath)):
     usage()
 
 cldr_version = 'unknown'
