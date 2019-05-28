@@ -293,6 +293,7 @@ defaultDict = {}
 windowsIdDict = {}
 
 if mapTimezones:
+    badZones = set()
     for mapZone in mapTimezones:
         # [u'mapZone', [(u'territory', u'MH'), (u'other', u'UTC+12'), (u'type', u'Pacific/Majuro Pacific/Kwajalein')]]
         if mapZone[0] == u'mapZone':
@@ -307,7 +308,7 @@ if mapTimezones:
 
             data['windowsKey'] = windowsIdToKey(data['windowsId'])
             if data['windowsKey'] <= 0:
-                raise xpathlite.Error("Unknown Windows ID, please add \"%s\"" % data['windowsId'])
+                badZones.add(data['windowsId'])
 
             countryId = 0
             if data['countryCode'] == u'001':
@@ -318,6 +319,10 @@ if mapTimezones:
                     raise xpathlite.Error("Unknown Country Code \"%s\"" % data['countryCode'])
                 data['country'] = enumdata.country_list[data['countryId']][0]
                 windowsIdDict[data['windowsKey'], data['countryId']] = data
+    if badZones:
+        sys.stderr.write('\n\t'.join(["\nUnknown Windows ID, please add:"] + sorted(badZones))
+                         + "\nto the windowIdList in cldr2qtimezone.py\n\n")
+        raise xpathlite.Error("Unknown Windows IDs")
 
 print "Input file parsed, now writing data"
 
