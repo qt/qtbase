@@ -177,7 +177,7 @@ NSString *macRole(QAccessibleInterface *interface)
     if (roleMap.isEmpty())
         populateRoleMap();
 
-    // MAC_ACCESSIBILTY_DEBUG() << "role for" << interface.object() << "interface role" << hex << qtRole;
+    // MAC_ACCESSIBILTY_DEBUG() << "role for" << interface.object() << "interface role" << Qt::hex << qtRole;
 
     if (roleMap.contains(qtRole)) {
        // MAC_ACCESSIBILTY_DEBUG() << "return" <<  roleMap[qtRole];

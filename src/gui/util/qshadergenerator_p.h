@@ -54,8 +54,12 @@
 #include <QtGui/private/qtguiglobal_p.h>
 
 #include <QtGui/private/qshadergraph_p.h>
+#include <QtCore/QLoggingCategory>
+
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(ShaderGenerator)
 
 class QShaderGenerator
 {

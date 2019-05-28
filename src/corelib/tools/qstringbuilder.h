@@ -150,7 +150,7 @@ class QStringBuilder <QString, QString> : public QStringBuilderBase<QStringBuild
         const QString &b;
 
     private:
-        QStringBuilder &operator=(const QStringBuilder &) Q_DECL_EQ_DELETE;
+        QStringBuilder &operator=(const QStringBuilder &) = delete;
 };
 
 template <>
@@ -167,7 +167,7 @@ class QStringBuilder <QByteArray, QByteArray> : public QStringBuilderBase<QStrin
         const QByteArray &b;
 
     private:
-        QStringBuilder &operator=(const QStringBuilder &) Q_DECL_EQ_DELETE;
+        QStringBuilder &operator=(const QStringBuilder &) = delete;
 };
 
 

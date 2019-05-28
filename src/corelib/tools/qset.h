@@ -41,10 +41,9 @@
 #define QSET_H
 
 #include <QtCore/qhash.h>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
+#include <QtCore/qcontainertools_impl.h>
 
+#include <initializer_list>
 #include <iterator>
 
 QT_BEGIN_NAMESPACE
@@ -57,14 +56,16 @@ class QSet
 
 public:
     inline QSet() noexcept {}
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QSet(std::initializer_list<T> list)
+        : QSet(list.begin(), list.end()) {}
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QSet(InputIterator first, InputIterator last)
     {
-        reserve(int(list.size()));
-        for (typename std::initializer_list<T>::const_iterator it = list.begin(); it != list.end(); ++it)
-            insert(*it);
+        QtPrivate::reserveIfForwardIterator(this, first, last);
+        for (; first != last; ++first)
+            insert(*first);
     }
-#endif
+
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated destructor is fine!
 
@@ -244,10 +245,13 @@ public:
     inline QSet<T> operator-(const QSet<T> &other) const
         { QSet<T> result = *this; result -= other; return result; }
 
-    QList<T> toList() const;
-    inline QList<T> values() const { return toList(); }
-
+    QList<T> values() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use values() instead.")
+    QList<T> toList() const { return values(); }
+    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
     static QSet<T> fromList(const QList<T> &list);
+#endif
 
 private:
     Hash q_hash;
@@ -367,7 +371,7 @@ Q_INLINE_TEMPLATE bool QSet<T>::contains(const QSet<T> &other) const
 }
 
 template <typename T>
-Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::toList() const
+Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::values() const
 {
     QList<T> result;
     result.reserve(size());
@@ -379,6 +383,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::toList() const
     return result;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QSet<T> QList<T>::toSet() const
 {
@@ -400,6 +405,7 @@ QList<T> QList<T>::fromSet(const QSet<T> &set)
 {
     return set.toList();
 }
+#endif
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Set)
 

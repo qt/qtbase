@@ -167,6 +167,9 @@ void QEglFSWindow::create()
 
 void QEglFSWindow::destroy()
 {
+    if (!m_flags.testFlag(Created))
+        return; // already destroyed
+
 #ifndef QT_NO_OPENGL
     QOpenGLCompositor::instance()->removeWindow(this);
 #endif

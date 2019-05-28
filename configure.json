@@ -110,6 +110,7 @@
             "profile": "boolean",
             "qreal": "string",
             "qtlibinfix": { "type": "string", "name": "qt_libinfix" },
+            "qtlibinfix-plugins": { "type": "boolean", "name": "qt_libinfix_plugins" },
             "qtnamespace": { "type": "string", "name": "qt_namespace" },
             "reduce-exports": { "type": "boolean", "name": "reduce_exports" },
             "reduce-relocations": { "type": "boolean", "name": "reduce_relocations" },
@@ -319,7 +320,7 @@
             }
         },
         "c++1z": {
-            "label": "C++1z support",
+            "label": "C++17 support",
             "type": "compile",
             "test": {
                 "head": [
@@ -337,6 +338,20 @@
                     "std::visit([](const auto &) { return 1; }, v);"
                 ],
                 "qmake": "CONFIG += c++11 c++14 c++1z"
+            }
+        },
+        "c++2a": {
+            "label": "C++2a support",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#if __cplusplus > 201703L",
+                    "// Compiler claims to support experimental C++2a, trust it",
+                    "#else",
+                    "#  error __cplusplus must be > 201703L (the value for C++17)",
+                    "#endif"
+                ],
+                "qmake": "CONFIG += c++11 c++14 c++1z c++2a"
             }
         },
         "precompile_header": {
@@ -624,7 +639,7 @@
         "shared": {
             "label": "Building shared libraries",
             "autoDetect": "!config.uikit",
-            "condition": "!config.integrity && !config.wasm",
+            "condition": "!config.integrity && !config.wasm && !config.rtems",
             "output": [
                 "shared",
                 "publicFeature",
@@ -677,7 +692,7 @@
             "autoDetect": "false",
             "enable" : "input.linker == 'gold' || features.use_gold_linker_alias" ,
             "disable" : "input.linker == 'bfd' || input.linker == 'lld'",
-            "condition": "!config.win32 && !config.integrity && !config.wasm && tests.use_gold_linker",
+            "condition": "!config.win32 && !config.integrity && !config.wasm && !config.rtems && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
         },
         "use_lld_linker": {
@@ -810,7 +825,7 @@
         },
         "largefile": {
             "label": "Large file support",
-            "condition": "!config.android && !config.integrity && !config.winrt",
+            "condition": "!config.android && !config.integrity && !config.winrt && !config.rtems",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_LARGEFILE_SUPPORT", "value": 64 }
@@ -907,8 +922,14 @@
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++1z": {
-            "label": "C++1z",
+            "label": "C++17",
             "condition": "features.c++14 && tests.c++1z",
+            "output": [ "publicFeature", "publicQtConfig" ]
+        },
+        "c++2a": {
+            "label": "C++2a",
+            "autoDetect": false,
+            "condition": "features.c++1z && tests.c++2a",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c89": {
@@ -1281,6 +1302,12 @@
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
         },
+        "qt_libinfix_plugins": {
+            "label": "Use QT_LIBINFIX for Plugins",
+            "autoDetect": false,
+            "enable": "input.qt_libinfix != '' && input.qt_libinfix_plugins == 'yes'",
+            "output": [ "privateConfig" ]
+        },
         "compile_examples": {
             "label": "Compile examples",
             "autoDetect": "!config.wasm",
@@ -1408,7 +1435,7 @@
                 {
                     "message": "Using C++ standard",
                     "type": "firstAvailableFeature",
-                    "args": "c++1z c++14 c++11"
+                    "args": "c++2a c++1z c++14 c++11"
                 },
                 {
                     "type": "feature",

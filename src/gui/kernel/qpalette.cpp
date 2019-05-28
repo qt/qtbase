@@ -1204,7 +1204,7 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
     QDebugStateSaver saver(dbg);
     QDebug nospace = dbg.nospace();
     const uint mask = p.resolve();
-    nospace << "QPalette(resolve=" << hex << showbase << mask << ',';
+    nospace << "QPalette(resolve=" << Qt::hex << Qt::showbase << mask << ',';
     for (int role = 0; role < (int)QPalette::NColorRoles; ++role) {
         if (mask & (1<<role)) {
             if (role)
@@ -1220,7 +1220,7 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
             nospace << ']';
         }
     }
-    nospace << ')' << noshowbase << dec;
+    nospace << ')' << Qt::noshowbase << Qt::dec;
     return dbg;
 }
 #endif

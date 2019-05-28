@@ -190,7 +190,6 @@ add_qt_module(Gui
         util/qlayoutpolicy.cpp util/qlayoutpolicy_p.h
         util/qpkmhandler.cpp util/qpkmhandler_p.h
         util/qshaderformat.cpp util/qshaderformat_p.h
-        util/qshadergenerator.cpp util/qshadergenerator_p.h
         util/qshadergraph.cpp util/qshadergraph_p.h
         util/qshadergraphloader.cpp util/qshadergraphloader_p.h
         util/qshaderlanguage.cpp util/qshaderlanguage_p.h
@@ -436,6 +435,28 @@ extend_target(Gui CONDITION QT_FEATURE_textodfwriter
         text/qzipwriter_p.h
 )
 
+extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader
+    SOURCES
+        text/qtextmarkdownimporter.cpp text/qtextmarkdownimporter_p.h
+)
+
+extend_target(Gui CONDITION QT_FEATURE_system_textmarkdownreader AND QT_FEATURE_textmarkdownreader
+    PUBLIC_LIBRARIES
+        libmd4c
+)
+
+extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader AND NOT QT_FEATURE_system_textmarkdownreader
+    SOURCES
+        ../3rdparty/md4c/md4c.c ../3rdparty/md4c/md4c.h
+    INCLUDE_DIRECTORIES
+        ../3rdparty/md4c
+)
+
+extend_target(Gui CONDITION QT_FEATURE_textmarkdownwriter
+    SOURCES
+        text/qtextmarkdownwriter.cpp text/qtextmarkdownwriter_p.h
+)
+
 extend_target(Gui CONDITION QT_FEATURE_cssparser
     SOURCES
         painting/qcssutil.cpp
@@ -448,7 +469,7 @@ extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5
         painting/qdrawhelper.cpp
 )
 
-#### Keys ignored in scope 45:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
+#### Keys ignored in scope 50:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
 
 extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
@@ -456,10 +477,15 @@ extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
-#### Keys ignored in scope 46:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND NOT INTEGRITY AND NOT QT_ARCH___contains___arm64:
+#### Keys ignored in scope 51:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND NOT INTEGRITY AND NOT QT_ARCH___contains___arm64:
 # NEON_ASM = "../3rdparty/pixman/pixman-arm-neon-asm.S" "painting/qdrawhelper_neon_asm.S"
 
-#### Keys ignored in scope 55:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
+extend_target(Gui CONDITION QT_FEATURE_regularexpression
+    SOURCES
+        util/qshadergenerator.cpp util/qshadergenerator_p.h
+)
+
+#### Keys ignored in scope 61:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
 # CONFIG = "opengles2"
 
 extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
@@ -509,10 +535,10 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 62:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 68:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # CONFIG = "generated_privates"
 
-#### Keys ignored in scope 64:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 70:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 extend_target(Gui CONDITION WASM

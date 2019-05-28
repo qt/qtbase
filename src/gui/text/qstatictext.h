@@ -64,9 +64,7 @@ public:
     QStaticText();
     explicit QStaticText(const QString &text);
     QStaticText(const QStaticText &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QStaticText &operator=(QStaticText &&other) noexcept { swap(other); return *this; }
-#endif
     QStaticText &operator=(const QStaticText &);
     ~QStaticText();
 

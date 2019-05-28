@@ -1320,6 +1320,10 @@ QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 
     Q_D(QHttpNetworkConnection);
     d->networkSession = std::move(networkSession);
     d->init();
+    if (QNetworkStatusMonitor::isEnabled()) {
+        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
+                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
+    }
 }
 
 QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
@@ -1332,6 +1336,10 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
     Q_D(QHttpNetworkConnection);
     d->networkSession = std::move(networkSession);
     d->init();
+    if (QNetworkStatusMonitor::isEnabled()) {
+        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
+                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
+    }
 }
 #else
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
@@ -1340,6 +1348,10 @@ QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 
 {
     Q_D(QHttpNetworkConnection);
     d->init();
+    if (QNetworkStatusMonitor::isEnabled()) {
+        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
+                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
+    }
 }
 
 QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
@@ -1350,8 +1362,12 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
 {
     Q_D(QHttpNetworkConnection);
     d->init();
+    if (QNetworkStatusMonitor::isEnabled()) {
+        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
+                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
+    }
 }
-#endif
+#endif // QT_NO_BEARERMANAGEMENT
 
 QHttpNetworkConnection::~QHttpNetworkConnection()
 {
@@ -1529,6 +1545,26 @@ void QHttpNetworkConnection::setPeerVerifyName(const QString &peerName)
 {
     Q_D(QHttpNetworkConnection);
     d->peerVerifyName = peerName;
+}
+
+void QHttpNetworkConnection::onlineStateChanged(bool isOnline)
+{
+    Q_D(QHttpNetworkConnection);
+
+    if (isOnline) {
+        // If we did not have any 'isOffline' previously - well, good
+        // to know, we are 'online' apparently.
+        return;
+    }
+
+    for (int i = 0; i < d->activeChannelCount; i++) {
+        auto &channel = d->channels[i];
+        channel.emitFinishedWithError(QNetworkReply::TemporaryNetworkFailureError, "Temporary network failure.");
+        channel.close();
+    }
+
+    // We don't care, this connection is broken from our POV.
+    d->connectionMonitor.stopMonitoring();
 }
 
 #ifndef QT_NO_NETWORKPROXY

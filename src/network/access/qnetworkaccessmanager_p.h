@@ -55,6 +55,7 @@
 #include "qnetworkaccessmanager.h"
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkaccessbackend_p.h"
+#include "private/qnetconmonitor_p.h"
 #include "qnetworkrequest.h"
 #include "qhsts_p.h"
 #include "private/qobject_p.h"
@@ -151,6 +152,7 @@ public:
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
     QStringList backendSupportedSchemes() const;
 
+    void _q_onlineStateChanged(bool isOnline);
 #ifndef QT_NO_BEARERMANAGEMENT
     void createSession(const QNetworkConfiguration &config);
     QSharedPointer<QNetworkSession> getNetworkSession() const;
@@ -160,12 +162,11 @@ public:
     void _q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &config,
                                                         bool isSeamless);
     void _q_networkSessionStateChanged(QNetworkSession::State state);
-    void _q_onlineStateChanged(bool isOnline);
+
     void _q_configurationChanged(const QNetworkConfiguration &configuration);
     void _q_networkSessionFailed(QNetworkSession::SessionError error);
 
     QSet<QString> onlineConfigurations;
-
 #endif
 
 #if QT_CONFIG(http)
@@ -199,6 +200,8 @@ public:
     int activeReplyCount;
     bool online;
     bool initializeSession;
+#else
+    bool networkAccessible = true;
 #endif
 
     bool cookieJarCreated;
@@ -222,6 +225,9 @@ public:
     QScopedPointer<QHstsStore> stsStore;
 #endif // QT_CONFIG(settings)
     bool stsEnabled = false;
+    mutable QNetworkStatusMonitor statusMonitor;
+
+    bool autoDeleteReplies = false;
 
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_AUTOTEST_EXPORT static const QWeakPointer<const QNetworkSession> getNetworkSession(const QNetworkAccessManager *manager);

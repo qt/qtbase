@@ -34,6 +34,7 @@ add_qt_module(Core
         global/qlibraryinfo.cpp global/qlibraryinfo.h
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp
+        global/qmemory_p.h
         # global/qnamespace.h  # special case
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
@@ -164,6 +165,7 @@ add_qt_module(Core
         tools/qchar.h
         tools/qcollator.cpp tools/qcollator.h tools/qcollator_p.h
         tools/qcontainerfwd.h
+        tools/qcontainertools_impl.h
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
         tools/qdatetime.cpp tools/qdatetime.h tools/qdatetime_p.h
@@ -407,6 +409,7 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
     LIBRARIES
         advapi32
         kernel32
+        netapi32
         ole32
         shell32
         user32
@@ -415,7 +418,6 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
         winmm
     PUBLIC_LIBRARIES
         mpr
-        netapi32
         userenv
 )
 

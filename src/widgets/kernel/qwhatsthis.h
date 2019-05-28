@@ -54,7 +54,7 @@ class QAction;
 
 class Q_WIDGETS_EXPORT QWhatsThis
 {
-    QWhatsThis() Q_DECL_EQ_DELETE;
+    QWhatsThis() = delete;
 
 public:
     static void enterWhatsThisMode();

@@ -1,0 +1,3 @@
+[rewriteDocument]
+winrt # QTBUG-54623
+

@@ -119,7 +119,6 @@ class QVersionNumber
             return *this;
         }
 
-#ifdef Q_COMPILER_RVALUE_REFS
         SegmentStorage(SegmentStorage &&other) noexcept
             : dummy(other.dummy)
         {
@@ -139,8 +138,6 @@ class QVersionNumber
             else
                 pointer_segments = new QVector<int>(std::move(seg));
         }
-#endif
-#ifdef Q_COMPILER_INITIALIZER_LISTS
         SegmentStorage(std::initializer_list<int> args)
         {
             if (dataFitsInline(args.begin(), int(args.size()))) {
@@ -149,7 +146,6 @@ class QVersionNumber
                 pointer_segments = new QVector<int>(args);
             }
         }
-#endif
 
         ~SegmentStorage() { if (isUsingPointer()) delete pointer_segments; }
 
@@ -227,17 +223,13 @@ public:
 
     // compiler-generated copy/move ctor/assignment operators and the destructor are ok
 
-#ifdef Q_COMPILER_RVALUE_REFS
     explicit QVersionNumber(QVector<int> &&seg)
         : m_segments(std::move(seg))
     {}
-#endif
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVersionNumber(std::initializer_list<int> args)
         : m_segments(args)
     {}
-#endif
 
     inline explicit QVersionNumber(int maj)
     { m_segments.setSegments(1, maj); }

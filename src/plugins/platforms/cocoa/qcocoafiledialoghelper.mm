@@ -51,7 +51,6 @@
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
-#include <qregexp.h>
 #include <qbuffer.h>
 #include <qdebug.h>
 #include <qstringlist.h>

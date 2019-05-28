@@ -43,13 +43,13 @@ void ParseTable::operator () (Automaton *aut)
 
   int rindex = 1;
   for (RulePointer rule = g->rules.begin (); rule != g->rules.end (); ++rule)
-    out << rindex++ << ")\t" << *rule << endl;
-  out << endl << endl;
+    out << rindex++ << ")\t" << *rule << Qt::endl;
+  out << Qt::endl << Qt::endl;
 
   int index = 0;
   for (StatePointer state = aut->states.begin (); state != aut->states.end (); ++state)
     {
-      out << "state " << index++ << endl << endl;
+      out << "state " << index++ << Qt::endl << Qt::endl;
 
       for (ItemPointer item = state->kernel.begin (); item != state->kernel.end (); ++item)
         {
@@ -58,7 +58,7 @@ void ParseTable::operator () (Automaton *aut)
           if (item->dot == item->end_rhs ())
             out << " " << aut->lookaheads [item];
 
-          out << endl;
+          out << Qt::endl;
         }
 
       bool first = true;
@@ -68,11 +68,11 @@ void ParseTable::operator () (Automaton *aut)
             continue;
 
           if (first)
-            out << endl;
+            out << Qt::endl;
 
           first = false;
 
-          out << "    " << *arrow.key () << " shift, and go to state " << std::distance (aut->states.begin (), *arrow) << endl;
+          out << "    " << *arrow.key () << " shift, and go to state " << std::distance (aut->states.begin (), *arrow) << Qt::endl;
         }
 
       first = true;
@@ -82,13 +82,13 @@ void ParseTable::operator () (Automaton *aut)
             continue;
 
           if (first)
-            out << endl;
+            out << Qt::endl;
 
           first = false;
 
           const auto lookaheads = aut->lookaheads.value(item);
           for (const Name &la : lookaheads)
-            out << "    " << *la << " reduce using rule " << aut->id (item->rule) << " (" << *item->rule->lhs << ")" << endl;
+            out << "    " << *la << " reduce using rule " << aut->id (item->rule) << " (" << *item->rule->lhs << ")" << Qt::endl;
         }
 
       first = true;
@@ -98,19 +98,19 @@ void ParseTable::operator () (Automaton *aut)
             continue;
 
           if (first)
-            out << endl;
+            out << Qt::endl;
 
           first = false;
 
-          out << "    " << *arrow.key () << " go to state " << std::distance (aut->states.begin (), *arrow) << endl;
+          out << "    " << *arrow.key () << " go to state " << std::distance (aut->states.begin (), *arrow) << Qt::endl;
         }
 
       if (state->defaultReduce != g->rules.end ())
         {
-          out << endl
-              << "    $default reduce using rule " << aut->id (state->defaultReduce) << " (" << *state->defaultReduce->lhs << ")" << endl;
+          out << Qt::endl
+              << "    $default reduce using rule " << aut->id (state->defaultReduce) << " (" << *state->defaultReduce->lhs << ")" << Qt::endl;
         }
 
-      out << endl;
+      out << Qt::endl;
     }
 }

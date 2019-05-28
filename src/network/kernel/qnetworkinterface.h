@@ -64,9 +64,7 @@ public:
 
     QNetworkAddressEntry();
     QNetworkAddressEntry(const QNetworkAddressEntry &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkAddressEntry &operator=(QNetworkAddressEntry &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkAddressEntry &operator=(const QNetworkAddressEntry &other);
     ~QNetworkAddressEntry();
 
@@ -142,9 +140,7 @@ public:
 
     QNetworkInterface();
     QNetworkInterface(const QNetworkInterface &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkInterface &operator=(QNetworkInterface &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkInterface &operator=(const QNetworkInterface &other);
     ~QNetworkInterface();
 

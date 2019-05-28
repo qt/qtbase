@@ -150,6 +150,16 @@ static QWindow *qt_getWindow(const QWidget *widget)
 QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 
 @implementation NotificationReceiver
+{
+    QMacStylePrivate *privateStyle;
+}
+
+- (instancetype)initWithPrivateStyle:(QMacStylePrivate *)style
+{
+    if (self = [super init])
+        privateStyle = style;
+    return self;
+}
 
 - (void)scrollBarStyleDidChange:(NSNotification *)notification
 {
@@ -162,6 +172,23 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
     for (const auto &o : QMacStylePrivate::scrollBars)
         QCoreApplication::sendEvent(o, &event);
 }
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
+{
+    Q_UNUSED(keyPath);
+    Q_UNUSED(object);
+    Q_UNUSED(change);
+    Q_UNUSED(context);
+
+    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
+    Q_ASSERT(object == NSApp);
+
+    for (NSView *b : privateStyle->cocoaControls)
+        [b release];
+    privateStyle->cocoaControls.clear();
+}
+
 @end
 
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
@@ -446,6 +473,42 @@ static const int toolButtonArrowSize = 7;
 static const int toolButtonArrowMargin = 2;
 
 static const qreal focusRingWidth = 3.5;
+
+// An application can force 'Aqua' theme while the system theme is one of
+// the 'Dark' variants. Since in Qt we sometimes use NSControls and even
+// NSCells directly without attaching them to any view hierarchy, we have
+// to set NSAppearance.currentAppearance to 'Aqua' manually, to make sure
+// the correct rendering path is triggered. Apple recommends us to un-set
+// the current appearance back after we finished with drawing. This is what
+// AppearanceSync is for.
+
+class AppearanceSync {
+public:
+    AppearanceSync()
+    {
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
+            && !qt_mac_applicationIsInDarkMode()) {
+            auto requiredAppearanceName = NSApplication.sharedApplication.effectiveAppearance.name;
+            if (![NSAppearance.currentAppearance.name isEqualToString:requiredAppearanceName]) {
+                previous = NSAppearance.currentAppearance;
+                NSAppearance.currentAppearance = [NSAppearance appearanceNamed:requiredAppearanceName];
+            }
+        }
+#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    }
+
+    ~AppearanceSync()
+    {
+        if (previous)
+            NSAppearance.currentAppearance = previous;
+    }
+
+private:
+    NSAppearance *previous = nil;
+
+    Q_DISABLE_COPY(AppearanceSync)
+};
 
 static bool setupScroller(NSScroller *scroller, const QStyleOptionSlider *sb)
 {
@@ -1155,66 +1218,6 @@ static QStyleHelper::WidgetSizePolicy qt_aqua_guess_size(const QWidget *widg, QS
     return QStyleHelper::SizeLarge;
 }
 #endif
-
-static NSColor *qt_convertColorForContext(CGContextRef context, NSColor *color)
-{
-    Q_ASSERT(color);
-    Q_ASSERT(context);
-
-    CGColorSpaceRef targetCGColorSpace = CGBitmapContextGetColorSpace(context);
-    NSColorSpace *targetNSColorSpace = [[NSColorSpace alloc] initWithCGColorSpace:targetCGColorSpace];
-    NSColor *adjusted = [color colorUsingColorSpace:targetNSColorSpace];
-    [targetNSColorSpace release];
-
-    return adjusted;
-}
-
-static NSColor *qt_colorForContext(CGContextRef context, const CGFloat (&rgba)[4])
-{
-    Q_ASSERT(context);
-
-    auto colorSpace = CGBitmapContextGetColorSpace(context);
-    if (!colorSpace)
-        return nil;
-
-    return qt_convertColorForContext(context, [NSColor colorWithSRGBRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:rgba[3]]);
-}
-
-static void qt_drawDisclosureButton(CGContextRef context, NSInteger state, bool selected, CGRect rect)
-{
-    Q_ASSERT(context);
-
-    static const CGFloat gray[] = {0.55, 0.55, 0.55, 0.97};
-    static const CGFloat white[] = {1.0, 1.0, 1.0, 0.9};
-
-    NSColor *fillColor = qt_colorForContext(context, selected ? white : gray);
-    [fillColor setFill];
-
-    if (state == NSOffState) {
-        static NSBezierPath *triangle = [[NSBezierPath alloc] init];
-        [triangle removeAllPoints];
-        // In off state, a disclosure button is an equilateral triangle
-        // ('pointing' to the right) with a bound rect that can be described
-        // as NSMakeRect(0, 0, 8, 9). Inside the 'rect' it's translated by
-        //  (2, 4).
-        [triangle moveToPoint:NSMakePoint(rect.origin.x + 2, rect.origin.y + 4)];
-        [triangle lineToPoint:NSMakePoint(rect.origin.x + 2, rect.origin.y + 4 + 9)];
-        [triangle lineToPoint:NSMakePoint(rect.origin.x + 2 + 8, rect.origin.y + 4 + 4.5)];
-        [triangle closePath];
-        [triangle fill];
-    } else {
-        static NSBezierPath *openTriangle = [[NSBezierPath alloc] init];
-        [openTriangle removeAllPoints];
-        // In 'on' state, the button is an equilateral triangle (looking down)
-        // with the bounding rect NSMakeRect(0, 0, 9, 8). Inside the 'rect'
-        // it's translated by (1, 4).
-        [openTriangle moveToPoint:NSMakePoint(rect.origin.x + 1, rect.origin.y + 4 + 8)];
-        [openTriangle lineToPoint:NSMakePoint(rect.origin.x + 1 + 9, rect.origin.y + 4 + 8)];
-        [openTriangle lineToPoint:NSMakePoint(rect.origin.x + 1 + 4.5, rect.origin.y + 4)];
-        [openTriangle closePath];
-        [openTriangle fill];
-    }
-}
 
 void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
 {
@@ -2092,11 +2095,17 @@ QMacStyle::QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    d->receiver = [[NotificationReceiver alloc] init];
+    d->receiver = [[NotificationReceiver alloc] initWithPrivateStyle:d];
     [[NSNotificationCenter defaultCenter] addObserver:d->receiver
                                              selector:@selector(scrollBarStyleDidChange:)
                                                  name:NSPreferredScrollerStyleDidChangeNotification
                                                object:nil];
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
+        [NSApplication.sharedApplication addObserver:d->receiver forKeyPath:@"effectiveAppearance"
+         options:NSKeyValueObservingOptionNew context:nullptr];
+    }
+#endif
 }
 
 QMacStyle::~QMacStyle()
@@ -2105,6 +2114,10 @@ QMacStyle::~QMacStyle()
     QMacAutoReleasePool pool;
 
     [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
+        [NSApplication.sharedApplication removeObserver:d->receiver forKeyPath:@"effectiveAppearance"];
+#endif
     [d->receiver release];
 }
 
@@ -2978,6 +2991,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                               const QWidget *w) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync appSync;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -3301,15 +3315,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         CGContextScaleCTM(cg, 1, -1);
         CGContextTranslateCTM(cg, -rect.origin.x, -rect.origin.y);
 
-        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave && !qt_mac_applicationIsInDarkMode()) {
-            // When the real system theme is one of the 'Dark' themes, and an application forces the 'Aqua' theme,
-            // under some conditions (see QTBUG-74515 for more details) NSButtonCell seems to select the 'Dark'
-            // code path and is becoming transparent, thus 'invisible' on the white background. To workaround this,
-            // we draw the disclose triangle manually:
-            qt_drawDisclosureButton(cg, triangleCell.state, (opt->state & State_Selected) && viewHasFocus, rect);
-        } else {
-            [triangleCell drawBezelWithFrame:NSRectFromCGRect(rect) inView:[triangleCell controlView]];
-        }
+        [triangleCell drawBezelWithFrame:NSRectFromCGRect(rect) inView:[triangleCell controlView]];
+
         d->restoreNSGraphicsContext(cg);
         break; }
 
@@ -3510,6 +3517,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                             const QWidget *w) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync sync;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -4319,12 +4327,15 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                                      alpha:pc.alphaF()];
 
                     s = qt_mac_removeMnemonics(s);
-                    const auto textRect = CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height());
 
                     QMacCGContext cgCtx(p);
                     d->setupNSGraphicsContext(cgCtx, YES);
 
-                    [s.toNSString() drawInRect:textRect
+                    // Draw at point instead of in rect, as the rect we've computed for the menu item
+                    // is based on the font metrics we got from HarfBuzz, so we may risk having CoreText
+                    // line-break the string if it doesn't fit the given rect. It's better to draw outside
+                    // the rect and possibly overlap something than to have part of the text disappear.
+                    [s.toNSString() drawAtPoint:CGPointMake(xpos, yPos)
                                 withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
                                                   NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
 
@@ -5100,6 +5111,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                    const QWidget *widget) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync sync;
     QMacCGContext cg(p);
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -6154,8 +6166,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     switch (ct) {
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
-        if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            const int buttonWidth = 20; // FIXME Use subControlRect()
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            const bool hasButtons = (vopt->buttonSymbols != QAbstractSpinBox::NoButtons);
+            const int buttonWidth = hasButtons ? proxy()->subControlRect(CC_SpinBox, vopt, SC_SpinBoxUp, widget).width() : 0;
             sz += QSize(buttonWidth, 0);
         }
         break;

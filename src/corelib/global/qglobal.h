@@ -307,6 +307,14 @@ typedef double qreal;
 #  define QT_DEPRECATED_CONSTRUCTOR
 #endif
 
+#ifndef QT_DEPRECATED_WARNINGS_SINCE
+# ifdef QT_DISABLE_DEPRECATED_BEFORE
+#  define QT_DEPRECATED_WARNINGS_SINCE QT_DISABLE_DEPRECATED_BEFORE
+# else
+#  define QT_DEPRECATED_WARNINGS_SINCE QT_VERSION
+# endif
+#endif
+
 #ifndef QT_DISABLE_DEPRECATED_BEFORE
 #define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
 #endif
@@ -328,6 +336,51 @@ typedef double qreal;
 #else
 #define QT_DEPRECATED_SINCE(major, minor) 0
 #endif
+
+/*
+  QT_DEPRECATED_VERSION(major, minor) and QT_DEPRECATED_VERSION_X(major, minor, text)
+  outputs a deprecation warning if QT_DEPRECATED_WARNINGS_SINCE is equal or greater
+  than the version specified as major, minor. This makes it possible to deprecate a
+  function without annoying a user who needs to stick at a specified minimum version
+  and therefore can't use the new function.
+*/
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 12, 0)
+# define QT_DEPRECATED_VERSION_X_5_12(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_12         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_12(text)
+# define QT_DEPRECATED_VERSION_5_12
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 13, 0)
+# define QT_DEPRECATED_VERSION_X_5_13(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_13         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_13(text)
+# define QT_DEPRECATED_VERSION_5_13
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 14, 0)
+# define QT_DEPRECATED_VERSION_X_5_14(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_14         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_14(text)
+# define QT_DEPRECATED_VERSION_5_14
+#endif
+
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(5, 15, 0)
+# define QT_DEPRECATED_VERSION_X_5_15(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_5_15         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_5_15(text)
+# define QT_DEPRECATED_VERSION_5_15
+#endif
+
+#define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
+#define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major(minor, text)
+
+#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor()
+#define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
 
 /*
    The Qt modules' export macros.
@@ -369,8 +422,8 @@ typedef double qreal;
    operator to disable copying (the compiler gives an error message).
 */
 #define Q_DISABLE_COPY(Class) \
-    Class(const Class &) Q_DECL_EQ_DELETE;\
-    Class &operator=(const Class &) Q_DECL_EQ_DELETE;
+    Class(const Class &) = delete;\
+    Class &operator=(const Class &) = delete;
 
 #define Q_DISABLE_MOVE(Class) \
     Class(Class &&) = delete; \
@@ -456,11 +509,8 @@ namespace QtPrivate {
 
     template <class T> struct AlignOf : AlignOf_Default<T> { };
     template <class T> struct AlignOf<T &> : AlignOf<T> {};
-    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
-
-#ifdef Q_COMPILER_RVALUE_REFS
     template <class T> struct AlignOf<T &&> : AlignOf<T> {};
-#endif
+    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
 
 #if defined(Q_PROCESSOR_X86_32) && !defined(Q_OS_WIN)
     template <class T> struct AlignOf_WorkaroundForI386Abi { enum { Value = sizeof(T) }; };
@@ -852,37 +902,22 @@ Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED  bool qFuzzyIsNul
     return qAbs(f) <= 0.00001f;
 }
 
-/*
-   This function tests a double for a null value. It doesn't
-   check whether the actual value is 0 or close to 0, but whether
-   it is binary 0, disregarding sign.
-*/
-Q_REQUIRED_RESULT static inline Q_DECL_UNUSED bool qIsNull(double d)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
+
+Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qIsNull(double d) noexcept
 {
-    union U {
-        double d;
-        quint64 u;
-    };
-    U val;
-    val.d = d;
-    return (val.u & Q_UINT64_C(0x7fffffffffffffff)) == 0;
+    return d == 0.0;
 }
 
-/*
-   This function tests a float for a null value. It doesn't
-   check whether the actual value is 0 or close to 0, but whether
-   it is binary 0, disregarding sign.
-*/
-Q_REQUIRED_RESULT static inline Q_DECL_UNUSED bool qIsNull(float f)
+Q_REQUIRED_RESULT Q_DECL_CONSTEXPR static inline Q_DECL_UNUSED bool qIsNull(float f) noexcept
 {
-    union U {
-        float f;
-        quint32 u;
-    };
-    U val;
-    val.f = f;
-    return (val.u & 0x7fffffff) == 0;
+    return f == 0.0f;
 }
+
+QT_WARNING_POP
 
 /*
    Compilers which follow outdated template instantiation rules
@@ -971,7 +1006,16 @@ template <typename T>
 Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
 // prevent rvalue arguments:
 template <typename T>
-void qAsConst(const T &&) Q_DECL_EQ_DELETE;
+void qAsConst(const T &&) = delete;
+
+// like std::exchange
+template <typename T, typename U = T>
+Q_DECL_RELAXED_CONSTEXPR T qExchange(T &t, U &&newValue)
+{
+    T old = std::move(t);
+    t = std::forward<U>(newValue);
+    return old;
+}
 
 #ifndef QT_NO_FOREACH
 

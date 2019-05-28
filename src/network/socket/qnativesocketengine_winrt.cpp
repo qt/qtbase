@@ -875,8 +875,14 @@ void QNativeSocketEngine::close()
     if (d->closingDown)
         return;
 
-    if (d->pendingReadNotification)
+    if (d->pendingReadNotification) {
+        // We use QPointer here to see if this QNativeSocketEngine was deleted as a result of
+        // finishing and cleaning up a network request when calling "processReadReady".
+        QPointer<QNativeSocketEngine> alive(this);
         processReadReady();
+        if (alive.isNull())
+            return;
+    }
 
     d->closingDown = true;
 

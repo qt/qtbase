@@ -61,8 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaScreen;
-
 class QCocoaIntegration : public QObject, public QPlatformIntegration
 {
     Q_OBJECT
@@ -113,9 +111,6 @@ public:
     Qt::KeyboardModifiers queryKeyboardModifiers() const override;
     QList<int> possibleKeys(const QKeyEvent *event) const override;
 
-    void updateScreens();
-    QCocoaScreen *screenForNSScreen(NSScreen *nsScreen);
-
     void setToolbar(QWindow *window, NSToolbar *toolbar);
     NSToolbar *toolbar(QWindow *window) const;
     void clearToolbars();
@@ -143,8 +138,6 @@ private:
     QScopedPointer<QCocoaAccessibility> mAccessibility;
 #endif
     QScopedPointer<QPlatformTheme> mPlatformTheme;
-    QList<QCocoaScreen *> mScreens;
-    QMacScopedObserver m_screensObserver;
 #ifndef QT_NO_CLIPBOARD
     QCocoaClipboard  *mCocoaClipboard;
 #endif

@@ -127,15 +127,16 @@ Q_SIGNALS:
     void resultsReady(const QHostInfo &info);
 };
 
-// needs to be QObject because fromName calls tr()
-class QHostInfoAgent : public QObject
+class QHostInfoAgent
 {
-    Q_OBJECT
 public:
     static QHostInfo fromName(const QString &hostName);
 #ifndef QT_NO_BEARERMANAGEMENT
     static QHostInfo fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession);
 #endif
+private:
+    static QHostInfo lookup(const QString &hostName);
+    static QHostInfo reverseLookup(const QHostAddress &address);
 };
 
 class QHostInfoPrivate

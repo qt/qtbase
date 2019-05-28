@@ -145,7 +145,7 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
             return;
         }
 
-        knownHosts.insert(pos, {hostName, newPolicy});
+        knownHosts.insert({hostName, newPolicy});
 #if QT_CONFIG(settings)
         if (hstsStore)
             hstsStore->addToObserved(newPolicy);
@@ -156,7 +156,7 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
     if (newPolicy.isExpired())
         knownHosts.erase(pos);
     else  if (pos->second != newPolicy)
-        pos->second = std::move(newPolicy);
+        pos->second = newPolicy;
     else
         return;
 

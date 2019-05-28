@@ -261,10 +261,8 @@ public:
     bool operator<(const QFont &) const;
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QFont &operator=(QFont &&other) noexcept
     { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
-#endif
 
 #if QT_DEPRECATED_SINCE(5, 3)
     // needed for X11

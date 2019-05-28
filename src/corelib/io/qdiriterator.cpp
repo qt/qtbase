@@ -93,6 +93,7 @@
 #include "qdir_p.h"
 #include "qabstractfileengine_p.h"
 
+#include <QtCore/qregexp.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
@@ -320,7 +321,8 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
 
 bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInfo &fi) const
 {
-    Q_ASSERT(!fileName.isEmpty());
+    if (fileName.isEmpty())
+        return false;
 
     // filter . and ..?
     const int fileNameSize = fileName.size();

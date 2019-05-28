@@ -1,15 +1,21 @@
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
-LIBS += -lole32 -luser32 -lwinspool -limm32 -lwinmm -loleaut32
+LIBS += -lwinspool -limm32 -loleaut32
 
 QT_FOR_CONFIG += gui
 
 qtConfig(opengl):!qtConfig(opengles2):!qtConfig(dynamicgl): LIBS *= -lopengl32
 
-mingw: LIBS *= -luuid
+mingw: QMAKE_USE *= uuid
 # For the dialog helpers:
-LIBS += -lshlwapi -lshell32 -ladvapi32 -lwtsapi32
+LIBS += -lshlwapi -lwtsapi32
 
-QMAKE_USE_PRIVATE += d3d9/nolink
+QMAKE_USE_PRIVATE += \
+    advapi32 \
+    d3d9/nolink \
+    ole32 \
+    shell32 \
+    user32 \
+    winmm
 
 DEFINES *= QT_NO_CAST_FROM_ASCII QT_NO_FOREACH
 

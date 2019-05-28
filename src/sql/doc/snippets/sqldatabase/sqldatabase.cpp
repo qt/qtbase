@@ -213,7 +213,7 @@ void QSqlQuery_snippets()
     while (i.hasNext()) {
         i.next();
         cout << i.key().toUtf8().data() << ": "
-             << i.value().toString().toUtf8().data() << endl;
+             << i.value().toString().toUtf8().data() << Qt::endl;
     }
 //! [14]
     }
@@ -223,7 +223,7 @@ void QSqlQuery_snippets()
 //! [15]
     QList<QVariant> list = query.boundValues().values();
     for (int i = 0; i < list.size(); ++i)
-        cout << i << ": " << list.at(i).toString().toUtf8().data() << endl;
+        cout << i << ": " << list.at(i).toString().toUtf8().data() << Qt::endl;
 //! [15]
     }
 }

@@ -86,11 +86,9 @@ public:
     QCursor(const QCursor &cursor);
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
-#ifdef Q_COMPILER_RVALUE_REFS
     QCursor(QCursor &&other) noexcept : d(other.d) { other.d = nullptr; }
     inline QCursor &operator=(QCursor &&other) noexcept
     { swap(other); return *this; }
-#endif
 
     void swap(QCursor &other) noexcept { qSwap(d, other.d); }
 

@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qfilesystemwatcher_polling_p.h"
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qtimer.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,10 +54,9 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&]{ unhandled.push_back(path); });
         QFileInfo fi(path);
         if (!fi.exists())
             continue;
@@ -73,7 +73,7 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
             files->append(path);
             this->files.insert(path, fi);
         }
-        it.remove();
+        sg.dismiss();
     }
 
     if ((!this->files.isEmpty() ||
@@ -82,23 +82,21 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
         timer.start(PollingInterval);
     }
 
-    return p;
+    return unhandled;
 }
 
 QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &paths,
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
         if (this->directories.remove(path)) {
             directories->removeAll(path);
-            it.remove();
         } else if (this->files.remove(path)) {
             files->removeAll(path);
-            it.remove();
+        } else {
+            unhandled.push_back(path);
         }
     }
 
@@ -107,7 +105,7 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
         timer.stop();
     }
 
-    return p;
+    return unhandled;
 }
 
 void QPollingFileSystemWatcherEngine::timeout()

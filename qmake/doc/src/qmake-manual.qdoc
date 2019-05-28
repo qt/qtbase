@@ -974,6 +974,12 @@
             the compiler does not support C++17, or can't select the C++ standard.
             By default, support is disabled.
     \row    \li c++17 \li Same as c++1z.
+    \row    \li c++2a \li C++2a support is enabled. This option has no effect if
+            the compiler does not support C++2a, or can't select the C++ standard.
+            By default, support is disabled.
+    \row    \li c++latest \li Support for the latest C++ language standard is
+            enabled that is supported by the compiler. By default, this option is
+            disabled.
     \row    \li strict_c++ \li Disables support for C++ compiler extensions.
             By default, they are enabled.
     \row    \li depend_includepath \li Appending the value of INCLUDEPATH to
@@ -1105,6 +1111,8 @@
     \header \li Option \li Description
     \row \li app_bundle \li Puts the executable into a bundle (this is the default).
     \row \li lib_bundle \li Puts the library into a library bundle.
+    \row \li plugin_bundle \li Puts the plugin into a plugin bundle. This value
+         is not supported by the Xcode project generator.
     \endtable
 
     The build process for bundles is also influenced by
@@ -1146,8 +1154,9 @@
     \target DEPENDPATH
     \section1 DEPENDPATH
 
-    Specifies a list of all directories to look in to resolve dependencies. This
-    variable is used when crawling through \c included files.
+    Specifies a list of directories for qmake to scan, to resolve dependencies.
+    This variable is used when qmake crawls through the header files that you
+    \c{#include} in your source code.
 
     \target DESTDIR
     \section1 DESTDIR
@@ -1157,6 +1166,10 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 30
+
+    \note The list of supported characters can depend on
+    the used build tool. In particular, parentheses do not
+    work with \c{make}.
 
     \target DISTFILES
     \section1 DISTFILES
@@ -1270,6 +1283,41 @@
     build target to the list of existing resources to be installed:
 
     \snippet code/doc_src_qmake-manual.pro 36
+
+    \c INSTALLS has a \c{.CONFIG} member that can take several values:
+
+    \table
+        \header
+            \li Value
+            \li Description
+        \row
+            \li no_check_exists
+            \li If not set, qmake looks to see if the files to install actually
+                exist. If these files don't exist, qmake doesn’t create the
+                install rule. Use this config value if you need to install
+                files that are generated as part of your build process, like
+                HTML files created by qdoc.
+        \row
+            \li nostrip
+            \li If set, the typical Unix strip functionality is turned off and
+                the debug information will remain in the binary.
+        \row
+            \li executable
+            \li On Unix, this sets the executable flag.
+        \row
+            \li no_build
+            \li When you do a \c{make install}, and you don't have a build of
+                the project yet, the project is first built, and then installed.
+                If you don't want this behavior, set this config value to ensure
+                that the build target is not added as a dependency to the install
+                target.
+        \row
+            \li no_default_install
+            \li A project has a top-level project target where, when you do a
+                \c{make install}, everything is installed. But, if you have an
+                install target with this config value set, it's not installed by
+                default. You then have to explicitly say \c{make install_<file>}.
+    \endtable
 
     For more information, see \l{Installing Files}.
 
@@ -1580,6 +1628,14 @@
     The value of this variable is typically handled by qmake or \l{#QMAKESPEC}{qmake.conf}
     and rarely needs to be modified.
 
+    \target QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+    \section1 QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the C compiler flags for release builds where
+    \c{force_debug_info} is set in \c{CONFIG}.
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \target QMAKE_CFLAGS_SHLIB
     \section1 QMAKE_CFLAGS_SHLIB
 
@@ -1645,6 +1701,14 @@
     \section1 QMAKE_CXXFLAGS_RELEASE
 
     Specifies the C++ compiler flags for release builds.
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \target QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+    \section1 QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the C++ compiler flags for release builds where
+    \c{force_debug_info} is set in \c{CONFIG}.
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
@@ -2026,6 +2090,12 @@
 
     Specifies the linker flags for release builds.
     The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the linker flags for release builds where \c{force_debug_info} is
+    set in \c{CONFIG}. The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
     \section1 QMAKE_LFLAGS_APP
@@ -4508,7 +4578,10 @@
        \c QMAKEFEATURES environment variable)
     \li \c $$QMAKEFEATURES/myfeatures.prf (for each directory listed in the
        \c QMAKEFEATURES property variable)
-    \li \c myfeatures.prf (in the project's root directory)
+    \li \c myfeatures.prf (in the project's root directory). The project root
+        is determined by the top-level \c{.pro} file. However, if you place the
+        \c{.qmake.cache} file in a sub-directory or the directory of a
+        sub-project, then the project root becomes the sub-directory itself.
     \li \c $QMAKEPATH/mkspecs/features/unix/myfeatures.prf and
        \c $QMAKEPATH/mkspecs/features/myfeatures.prf (for each directory
        listed in the \c QMAKEPATH environment variable)
@@ -4813,6 +4886,7 @@
     \li Unix
         \list
         \li GCC 3.4 and above
+        \li clang
         \endlist
     \endlist
 

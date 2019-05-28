@@ -8386,7 +8386,7 @@ void tst_QGraphicsItem::focusProxy()
     QString err;
     QTextStream stream(&err);
     stream << "QGraphicsItem::setFocusProxy: "
-           << (void*)item << " is already in the focus proxy chain" << flush;
+           << (void*)item << " is already in the focus proxy chain" << Qt::flush;
     QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     item2->setFocusProxy(item); // fails
     QCOMPARE(item->focusProxy(), (QGraphicsItem *)item2);

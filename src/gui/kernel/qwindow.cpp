@@ -1682,9 +1682,9 @@ void QWindow::setGeometry(const QRect &rect)
   chicken and egg problem here: we cannot convert to native coordinates
   before we know which screen we are on.
 */
-QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
+QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry) const
 {
-    Q_Q(QWindow);
+    Q_Q(const QWindow);
     QScreen *currentScreen = q->screen();
     QScreen *fallback = currentScreen;
     QPoint center = newGeometry.center();
@@ -2559,6 +2559,10 @@ QPoint QWindow::mapToGlobal(const QPoint &pos) const
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
+
+    if (QHighDpiScaling::isActive())
+        return QHighDpiScaling::mapPositionToGlobal(pos, d->globalPosition(), this);
+
     return pos + d->globalPosition();
 }
 
@@ -2579,6 +2583,10 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
         && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
+
+    if (QHighDpiScaling::isActive())
+        return QHighDpiScaling::mapPositionFromGlobal(pos, d->globalPosition(), this);
+
     return pos - d->globalPosition();
 }
 
@@ -2835,13 +2843,13 @@ QDebug operator<<(QDebug debug, const QWindow *window)
             if (window->isTopLevel())
                 debug << ", toplevel";
             debug << ", " << geometry.width() << 'x' << geometry.height()
-                << forcesign << geometry.x() << geometry.y() << noforcesign;
+                << Qt::forcesign << geometry.x() << geometry.y() << Qt::noforcesign;
             const QMargins margins = window->frameMargins();
             if (!margins.isNull())
                 debug << ", margins=" << margins;
             debug << ", devicePixelRatio=" << window->devicePixelRatio();
             if (const QPlatformWindow *platformWindow = window->handle())
-                debug << ", winId=0x" << hex << platformWindow->winId() << dec;
+                debug << ", winId=0x" << Qt::hex << platformWindow->winId() << Qt::dec;
             if (const QScreen *screen = window->screen())
                 debug << ", on " << screen->name();
         }
@@ -2867,7 +2875,7 @@ void QWindow::setVulkanInstance(QVulkanInstance *instance)
 }
 
 /*!
-    \return the associated Vulkan instance or \c null if there is none.
+    \return the associated Vulkan instance if any was set, otherwise \nullptr.
  */
 QVulkanInstance *QWindow::vulkanInstance() const
 {

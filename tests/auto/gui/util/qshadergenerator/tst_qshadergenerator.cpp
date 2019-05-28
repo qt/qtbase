@@ -35,11 +35,13 @@
 
 namespace
 {
-    QShaderFormat createFormat(QShaderFormat::Api api, int majorVersion, int minorVersion)
+    QShaderFormat createFormat(QShaderFormat::Api api, int majorVersion, int minorVersion,
+                               QShaderFormat::ShaderType shaderType= QShaderFormat::Fragment)
     {
         auto format = QShaderFormat();
         format.setApi(api);
         format.setVersion(QVersionNumber(majorVersion, minorVersion));
+        format.setShaderType(shaderType);
         return format;
     }
 
@@ -74,7 +76,7 @@ namespace
         return edge;
     }
 
-    QShaderGraph createGraph()
+    QShaderGraph createFragmentShaderGraph()
     {
         const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
         const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
@@ -135,7 +137,7 @@ namespace
             createPort(QShaderNodePort::Output, "color")
         });
         sampleTexture.addRule(openGLES2, QShaderNode::Rule("highp vec4 $color = texture2D($sampler, $coord);"));
-        sampleTexture.addRule(openGL3, QShaderNode::Rule("vec4 $color = texture2D($sampler, $coord);"));
+        sampleTexture.addRule(openGL3, QShaderNode::Rule("vec4 $color = texture($sampler, $coord);"));
 
         auto lightFunction = createNode({
             createPort(QShaderNodePort::Input, "baseColor"),
@@ -194,6 +196,8 @@ private slots:
     void shouldProcessLanguageQualifierAndTypeEnums_data();
     void shouldProcessLanguageQualifierAndTypeEnums();
     void shouldGenerateDifferentCodeDependingOnActiveLayers();
+    void shouldUseGlobalVariableRatherThanTemporaries();
+    void shouldGenerateTemporariesWisely();
 };
 
 void tst_QShaderGenerator::shouldHaveDefaultState()
@@ -213,7 +217,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
     QTest::addColumn<QShaderFormat>("format");
     QTest::addColumn<QByteArray>("expectedCode");
 
-    const auto graph = createGraph();
+    const auto graph = createFragmentShaderGraph();
 
     const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
     const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
@@ -234,15 +238,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
                                           << ""
                                           << "void main()"
                                           << "{"
-                                          << "    highp vec2 v2 = texCoord;"
-                                          << "    sampler2D v1 = texture;"
-                                          << "    highp float v3 = lightIntensity;"
-                                          << "    highp vec4 v5 = texture2D(v1, v2);"
-                                          << "    highp vec3 v0 = worldPosition;"
-                                          << "    highp float v4 = exposure;"
-                                          << "    highp vec4 v6 = lightModel(v5, v0, v3);"
-                                          << "    highp vec4 v7 = v6 * pow(2.0, v4);"
-                                          << "    gl_fragColor = v7;"
+                                          << "    gl_fragColor = (((((lightModel(((texture2D(texture, texCoord))), worldPosition, lightIntensity)))) * pow(2.0, exposure)));"
                                           << "}"
                                           << "";
 
@@ -256,15 +252,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
                                           << ""
                                           << "void main()"
                                           << "{"
-                                          << "    vec2 v2 = texCoord;"
-                                          << "    sampler2D v1 = texture;"
-                                          << "    float v3 = lightIntensity;"
-                                          << "    vec4 v5 = texture2D(v1, v2);"
-                                          << "    vec3 v0 = worldPosition;"
-                                          << "    float v4 = exposure;"
-                                          << "    vec4 v6 = lightModel(v5, v0, v3);"
-                                          << "    vec4 v7 = v6 * pow(2.0, v4);"
-                                          << "    fragColor = v7;"
+                                          << "    fragColor = (((((lightModel(((texture(texture, texCoord))), worldPosition, lightIntensity)))) * pow(2.0, exposure)));"
                                           << "}"
                                           << "";
 
@@ -580,120 +568,190 @@ void tst_QShaderGenerator::shouldProcessLanguageQualifierAndTypeEnums_data()
     QTest::addColumn<QShaderFormat>("format");
     QTest::addColumn<QByteArray>("expectedCode");
 
-    const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
-    const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0);
-    const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0);
-    const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
-    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+    {
+        const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
+        const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0);
+        const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0);
+        const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
+        const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
 
-    const auto qualifierEnum = QMetaEnum::fromType<QShaderLanguage::StorageQualifier>();
-    const auto typeEnum = QMetaEnum::fromType<QShaderLanguage::VariableType>();
+        const auto qualifierEnum = QMetaEnum::fromType<QShaderLanguage::StorageQualifier>();
+        const auto typeEnum = QMetaEnum::fromType<QShaderLanguage::VariableType>();
 
-    for (int qualifierIndex = 0; qualifierIndex < qualifierEnum.keyCount(); qualifierIndex++) {
-        const auto qualifierName = qualifierEnum.key(qualifierIndex);
-        const auto qualifierValue = static_cast<QShaderLanguage::StorageQualifier>(qualifierEnum.value(qualifierIndex));
+        for (int qualifierIndex = 0; qualifierIndex < qualifierEnum.keyCount(); qualifierIndex++) {
+            const auto qualifierName = qualifierEnum.key(qualifierIndex);
+            const auto qualifierValue = static_cast<QShaderLanguage::StorageQualifier>(qualifierEnum.value(qualifierIndex));
 
-        for (int typeIndex = 0; typeIndex < typeEnum.keyCount(); typeIndex++) {
-            const auto typeName = typeEnum.key(typeIndex);
-            const auto typeValue = static_cast<QShaderLanguage::VariableType>(typeEnum.value(typeIndex));
+            for (int typeIndex = 0; typeIndex < typeEnum.keyCount(); typeIndex++) {
+                const auto typeName = typeEnum.key(typeIndex);
+                const auto typeValue = static_cast<QShaderLanguage::VariableType>(typeEnum.value(typeIndex));
+
+                auto graph = QShaderGraph();
+
+                auto worldPosition = createNode({
+                    createPort(QShaderNodePort::Output, "value")
+                });
+                worldPosition.setParameter("name", "worldPosition");
+                worldPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(qualifierValue));
+                worldPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(typeValue));
+                worldPosition.addRule(es2, QShaderNode::Rule("highp $type $value = $name;",
+                                                             QByteArrayList() << "$qualifier highp $type $name;"));
+                worldPosition.addRule(gl2, QShaderNode::Rule("$type $value = $name;",
+                                                             QByteArrayList() << "$qualifier $type $name;"));
+                worldPosition.addRule(gl3, QShaderNode::Rule("$type $value = $name;",
+                                                             QByteArrayList() << "$qualifier $type $name;"));
+
+                auto fragColor = createNode({
+                    createPort(QShaderNodePort::Input, "fragColor")
+                });
+                fragColor.addRule(es2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+                fragColor.addRule(gl2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+                fragColor.addRule(gl3, QShaderNode::Rule("fragColor = $fragColor;",
+                                                         QByteArrayList() << "out vec4 fragColor;"));
+
+                graph.addNode(worldPosition);
+                graph.addNode(fragColor);
+
+                graph.addEdge(createEdge(worldPosition.uuid(), "value", fragColor.uuid(), "fragColor"));
+
+                const auto gl2Code = (QByteArrayList() << "#version 110"
+                                                       << ""
+                                                       << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl2))
+                                                                                                .arg(toGlsl(typeValue))
+                                                                                                .toUtf8()
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << "    gl_fragColor = worldPosition;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto gl3Code = (QByteArrayList() << "#version 130"
+                                                       << ""
+                                                       << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl3))
+                                                                                                .arg(toGlsl(typeValue))
+                                                                                                .toUtf8()
+                                                       << "out vec4 fragColor;"
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << "    fragColor = worldPosition;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto gl4Code = (QByteArrayList() << "#version 400 core"
+                                                       << ""
+                                                       << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl4))
+                                                                                                .arg(toGlsl(typeValue))
+                                                                                                .toUtf8()
+                                                       << "out vec4 fragColor;"
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << "    fragColor = worldPosition;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto es2Code = (QByteArrayList() << "#version 100"
+                                                       << ""
+                                                       << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es2))
+                                                                                                      .arg(toGlsl(typeValue))
+                                                                                                      .toUtf8()
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << "    gl_fragColor = worldPosition;"
+                                                       << "}"
+                                                       << "").join("\n");
+                const auto es3Code = (QByteArrayList() << "#version 300 es"
+                                                       << ""
+                                                       << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es3))
+                                                                                                      .arg(toGlsl(typeValue))
+                                                                                                      .toUtf8()
+                                                       << ""
+                                                       << "void main()"
+                                                       << "{"
+                                                       << "    gl_fragColor = worldPosition;"
+                                                       << "}"
+                                                       << "").join("\n");
+
+                QTest::addRow("%s %s ES2", qualifierName, typeName) << graph << es2 << es2Code;
+                QTest::addRow("%s %s ES3", qualifierName, typeName) << graph << es3 << es3Code;
+                QTest::addRow("%s %s GL2", qualifierName, typeName) << graph << gl2 << gl2Code;
+                QTest::addRow("%s %s GL3", qualifierName, typeName) << graph << gl3 << gl3Code;
+                QTest::addRow("%s %s GL4", qualifierName, typeName) << graph << gl4 << gl4Code;
+            }
+        }
+    }
+
+    {
+            const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0, QShaderFormat::Vertex);
+            const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0, QShaderFormat::Vertex);
+            const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0, QShaderFormat::Vertex);
+            const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0, QShaderFormat::Vertex);
+            const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0, QShaderFormat::Vertex);
 
             auto graph = QShaderGraph();
 
-            auto worldPosition = createNode({
+            auto vertexPosition = createNode({
                 createPort(QShaderNodePort::Output, "value")
             });
-            worldPosition.setParameter("name", "worldPosition");
-            worldPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(qualifierValue));
-            worldPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(typeValue));
-            worldPosition.addRule(es2, QShaderNode::Rule("highp $type $value = $name;",
+            vertexPosition.setParameter("name", "vertexPosition");
+            vertexPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(QShaderLanguage::Input));
+            vertexPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(QShaderLanguage::Vec4));
+
+            vertexPosition.addRule(es2, QShaderNode::Rule("",
                                                          QByteArrayList() << "$qualifier highp $type $name;"));
-            worldPosition.addRule(gl2, QShaderNode::Rule("$type $value = $name;",
+            vertexPosition.addRule(gl2, QShaderNode::Rule("",
                                                          QByteArrayList() << "$qualifier $type $name;"));
-            worldPosition.addRule(gl3, QShaderNode::Rule("$type $value = $name;",
+            vertexPosition.addRule(gl3, QShaderNode::Rule("",
                                                          QByteArrayList() << "$qualifier $type $name;"));
 
-            auto fragColor = createNode({
-                createPort(QShaderNodePort::Input, "fragColor")
-            });
-            fragColor.addRule(es2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
-            fragColor.addRule(gl2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
-            fragColor.addRule(gl3, QShaderNode::Rule("fragColor = $fragColor;",
-                                                     QByteArrayList() << "out vec4 fragColor;"));
-
-            graph.addNode(worldPosition);
-            graph.addNode(fragColor);
-
-            graph.addEdge(createEdge(worldPosition.uuid(), "value", fragColor.uuid(), "fragColor"));
+            graph.addNode(vertexPosition);
 
             const auto gl2Code = (QByteArrayList() << "#version 110"
                                                    << ""
-                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl2))
-                                                                                            .arg(toGlsl(typeValue))
-                                                                                            .toUtf8()
+                                                   << "attribute vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    gl_fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto gl3Code = (QByteArrayList() << "#version 130"
                                                    << ""
-                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl3))
-                                                                                            .arg(toGlsl(typeValue))
-                                                                                            .toUtf8()
-                                                   << "out vec4 fragColor;"
+                                                   << "in vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto gl4Code = (QByteArrayList() << "#version 400 core"
                                                    << ""
-                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl4))
-                                                                                            .arg(toGlsl(typeValue))
-                                                                                            .toUtf8()
-                                                   << "out vec4 fragColor;"
+                                                   << "in vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto es2Code = (QByteArrayList() << "#version 100"
                                                    << ""
-                                                   << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es2))
-                                                                                                  .arg(toGlsl(typeValue))
-                                                                                                  .toUtf8()
+                                                   << "attribute highp vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    gl_fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
             const auto es3Code = (QByteArrayList() << "#version 300 es"
                                                    << ""
-                                                   << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es3))
-                                                                                                  .arg(toGlsl(typeValue))
-                                                                                                  .toUtf8()
+                                                   << "in highp vec4 vertexPosition;"
                                                    << ""
                                                    << "void main()"
                                                    << "{"
-                                                   << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
-                                                   << "    gl_fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
 
-            QTest::addRow("%s %s ES2", qualifierName, typeName) << graph << es2 << es2Code;
-            QTest::addRow("%s %s ES3", qualifierName, typeName) << graph << es3 << es3Code;
-            QTest::addRow("%s %s GL2", qualifierName, typeName) << graph << gl2 << gl2Code;
-            QTest::addRow("%s %s GL3", qualifierName, typeName) << graph << gl3 << gl3Code;
-            QTest::addRow("%s %s GL4", qualifierName, typeName) << graph << gl4 << gl4Code;
-        }
+            QTest::addRow("Attribute header substitution ES2") << graph << es2 << es2Code;
+            QTest::addRow("Attribute header substitution ES3") << graph << es3 << es3Code;
+            QTest::addRow("Attribute header substitution GL2") << graph << gl2 << gl2Code;
+            QTest::addRow("Attribute header substitution GL3") << graph << gl3 << gl3Code;
+            QTest::addRow("Attribute header substitution GL4") << graph << gl4 << gl4Code;
     }
 }
 
@@ -806,10 +864,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec3 v1 = normalUniform;"
-                << "    vec4 v0 = diffuseUniform;"
-                << "    vec4 v2 = lightModel(v0, v1);"
-                << "    fragColor = v2;"
+                << "    fragColor = ((lightModel(diffuseUniform, normalUniform)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -831,11 +886,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec2 v0 = texCoord;"
-                << "    vec3 v2 = texture2D(normalTexture, v0).rgb;"
-                << "    vec4 v1 = diffuseUniform;"
-                << "    vec4 v3 = lightModel(v1, v2);"
-                << "    fragColor = v3;"
+                << "    fragColor = ((lightModel(diffuseUniform, texture2D(normalTexture, texCoord).rgb)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -857,11 +908,7 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec2 v0 = texCoord;"
-                << "    vec3 v2 = normalUniform;"
-                << "    vec4 v1 = texture2D(diffuseTexture, v0);"
-                << "    vec4 v3 = lightModel(v1, v2);"
-                << "    fragColor = v3;"
+                << "    fragColor = ((lightModel(texture2D(diffuseTexture, texCoord), normalUniform)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
@@ -883,14 +930,302 @@ void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
                 << ""
                 << "void main()"
                 << "{"
-                << "    vec2 v0 = texCoord;"
-                << "    vec3 v2 = texture2D(normalTexture, v0).rgb;"
-                << "    vec4 v1 = texture2D(diffuseTexture, v0);"
-                << "    vec4 v3 = lightModel(v1, v2);"
-                << "    fragColor = v3;"
+                << "    fragColor = ((lightModel(texture2D(diffuseTexture, texCoord), texture2D(normalTexture, texCoord).rgb)));"
                 << "}"
                 << "";
         QCOMPARE(code, expected.join("\n"));
+    }
+}
+
+void tst_QShaderGenerator::shouldUseGlobalVariableRatherThanTemporaries()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    {
+        // WHEN
+        auto vertexPosition = createNode({
+                                             createPort(QShaderNodePort::Output, "vertexPosition")
+                                         });
+        vertexPosition.addRule(gl4, QShaderNode::Rule("vec4 $vertexPosition = vertexPosition;",
+                                                      QByteArrayList() << "in vec4 vertexPosition;"));
+
+        auto fakeMultiPlyNoSpace = createNode({
+                                                  createPort(QShaderNodePort::Input, "varName"),
+                                                  createPort(QShaderNodePort::Output, "out")
+                                              });
+        fakeMultiPlyNoSpace.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName*speed;"));
+
+        auto fakeMultiPlySpace = createNode({
+                                                  createPort(QShaderNodePort::Input, "varName"),
+                                                  createPort(QShaderNodePort::Output, "out")
+                                              });
+        fakeMultiPlySpace.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName * speed;"));
+
+        auto fakeJoinNoSpace = createNode({
+                                                  createPort(QShaderNodePort::Input, "varName"),
+                                                  createPort(QShaderNodePort::Output, "out")
+                                          });
+        fakeJoinNoSpace.addRule(gl4, QShaderNode::Rule("vec4 $out = vec4($varName.xyz,$varName.w);"));
+
+        auto fakeJoinSpace = createNode({
+                                              createPort(QShaderNodePort::Input, "varName"),
+                                              createPort(QShaderNodePort::Output, "out")
+                                          });
+        fakeJoinSpace.addRule(gl4, QShaderNode::Rule("vec4 $out = vec4($varName.xyz, $varName.w);"));
+
+        auto fakeAdd = createNode({
+                                            createPort(QShaderNodePort::Input, "varName"),
+                                            createPort(QShaderNodePort::Output, "out")
+                                        });
+        fakeAdd.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName.xyzw + $varName;"));
+
+        auto fakeSub = createNode({
+                                            createPort(QShaderNodePort::Input, "varName"),
+                                            createPort(QShaderNodePort::Output, "out")
+                                        });
+        fakeSub.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName.xyzw - $varName;"));
+
+        auto fakeDiv = createNode({
+                                            createPort(QShaderNodePort::Input, "varName"),
+                                            createPort(QShaderNodePort::Output, "out")
+                                        });
+        fakeDiv.addRule(gl4, QShaderNode::Rule("vec4 $out = $varName / v0;"));
+
+        auto fragColor = createNode({
+            createPort(QShaderNodePort::Input, "input1"),
+            createPort(QShaderNodePort::Input, "input2"),
+            createPort(QShaderNodePort::Input, "input3"),
+            createPort(QShaderNodePort::Input, "input4"),
+            createPort(QShaderNodePort::Input, "input5"),
+            createPort(QShaderNodePort::Input, "input6"),
+            createPort(QShaderNodePort::Input, "input7")
+        });
+        fragColor.addRule(gl4, QShaderNode::Rule("fragColor = $input1 + $input2 + $input3 + $input4 + $input5 + $input6 + $input7;",
+                                                 QByteArrayList() << "out vec4 fragColor;"));
+
+        const auto graph = [=] {
+            auto res = QShaderGraph();
+
+            res.addNode(vertexPosition);
+            res.addNode(fakeMultiPlyNoSpace);
+            res.addNode(fakeMultiPlySpace);
+            res.addNode(fakeJoinNoSpace);
+            res.addNode(fakeJoinSpace);
+            res.addNode(fakeAdd);
+            res.addNode(fakeSub);
+            res.addNode(fakeDiv);
+            res.addNode(fragColor);
+
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeMultiPlyNoSpace.uuid(), "varName"));
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeMultiPlySpace.uuid(), "varName"));
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeJoinNoSpace.uuid(), "varName"));
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeJoinSpace.uuid(), "varName"));
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeAdd.uuid(), "varName"));
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeSub.uuid(), "varName"));
+            res.addEdge(createEdge(vertexPosition.uuid(), "vertexPosition", fakeDiv.uuid(), "varName"));
+            res.addEdge(createEdge(fakeMultiPlyNoSpace.uuid(), "out", fragColor.uuid(), "input1"));
+            res.addEdge(createEdge(fakeMultiPlySpace.uuid(), "out", fragColor.uuid(), "input2"));
+            res.addEdge(createEdge(fakeJoinNoSpace.uuid(), "out", fragColor.uuid(), "input3"));
+            res.addEdge(createEdge(fakeJoinSpace.uuid(), "out", fragColor.uuid(), "input4"));
+            res.addEdge(createEdge(fakeAdd.uuid(), "out", fragColor.uuid(), "input5"));
+            res.addEdge(createEdge(fakeSub.uuid(), "out", fragColor.uuid(), "input6"));
+            res.addEdge(createEdge(fakeDiv.uuid(), "out", fragColor.uuid(), "input7"));
+
+            return res;
+        }();
+
+        auto generator = QShaderGenerator();
+        generator.graph = graph;
+        generator.format = gl4;
+
+        const auto code = generator.createShaderCode({"diffuseUniform", "normalUniform"});
+
+        // THEN
+        const auto expected = QByteArrayList()
+                << "#version 400 core"
+                << ""
+                << "in vec4 vertexPosition;"
+                << "out vec4 fragColor;"
+                << ""
+                << "void main()"
+                << "{"
+                << "    fragColor = (((((((vertexPosition*speed + vertexPosition * speed + ((vec4(vertexPosition.xyz,vertexPosition.w))) + ((vec4(vertexPosition.xyz, vertexPosition.w))) + ((vertexPosition.xyzw + vertexPosition)) + ((vertexPosition.xyzw - vertexPosition)) + ((vertexPosition / vertexPosition)))))))));"
+                << "}"
+                << "";
+        QCOMPARE(code, expected.join("\n"));
+    }
+}
+
+void tst_QShaderGenerator::shouldGenerateTemporariesWisely()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    {
+        auto attribute = createNode({
+                                        createPort(QShaderNodePort::Output, "vertexPosition")
+                                    });
+        attribute.addRule(gl4, QShaderNode::Rule("vec4 $vertexPosition = vertexPosition;",
+                                                 QByteArrayList() << "in vec4 vertexPosition;"));
+
+        auto complexFunction = createNode({
+                                              createPort(QShaderNodePort::Input, "inputVarName"),
+                                              createPort(QShaderNodePort::Output, "out")
+                                          });
+        complexFunction.addRule(gl4, QShaderNode::Rule("vec4 $out = $inputVarName * 2.0;"));
+
+        auto complexFunction2 = createNode({
+                                              createPort(QShaderNodePort::Input, "inputVarName"),
+                                              createPort(QShaderNodePort::Output, "out")
+                                          });
+        complexFunction2.addRule(gl4, QShaderNode::Rule("vec4 $out = $inputVarName * 4.0;"));
+
+        auto complexFunction3 = createNode({
+                                               createPort(QShaderNodePort::Input, "a"),
+                                               createPort(QShaderNodePort::Input, "b"),
+                                               createPort(QShaderNodePort::Output, "out")
+                                           });
+        complexFunction3.addRule(gl4, QShaderNode::Rule("vec4 $out = $a + $b;"));
+
+        auto shaderOutput1 = createNode({
+                                            createPort(QShaderNodePort::Input, "input")
+                                        });
+
+        shaderOutput1.addRule(gl4, QShaderNode::Rule("shaderOutput1 = $input;",
+                                                     QByteArrayList() << "out vec4 shaderOutput1;"));
+
+        auto shaderOutput2 = createNode({
+                                            createPort(QShaderNodePort::Input, "input")
+                                        });
+
+        shaderOutput2.addRule(gl4, QShaderNode::Rule("shaderOutput2 = $input;",
+                                                     QByteArrayList() << "out vec4 shaderOutput2;"));
+
+        {
+            // WHEN
+            const auto graph = [=] {
+                auto res = QShaderGraph();
+
+                res.addNode(attribute);
+                res.addNode(complexFunction);
+                res.addNode(shaderOutput1);
+
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction.uuid(), "inputVarName"));
+                res.addEdge(createEdge(complexFunction.uuid(), "out", shaderOutput1.uuid(), "input"));
+
+                return res;
+            }();
+
+            auto generator = QShaderGenerator();
+            generator.graph = graph;
+            generator.format = gl4;
+
+            const auto code = generator.createShaderCode();
+
+            // THEN
+            const auto expected = QByteArrayList()
+                    << "#version 400 core"
+                    << ""
+                    << "in vec4 vertexPosition;"
+                    << "out vec4 shaderOutput1;"
+                    << ""
+                    << "void main()"
+                    << "{"
+                    << "    shaderOutput1 = vertexPosition * 2.0;"
+                    << "}"
+                    << "";
+            QCOMPARE(code, expected.join("\n"));
+        }
+
+        {
+            // WHEN
+            const auto graph = [=] {
+                auto res = QShaderGraph();
+
+                res.addNode(attribute);
+                res.addNode(complexFunction);
+                res.addNode(shaderOutput1);
+                res.addNode(shaderOutput2);
+
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction.uuid(), "inputVarName"));
+                res.addEdge(createEdge(complexFunction.uuid(), "out", shaderOutput1.uuid(), "input"));
+                res.addEdge(createEdge(complexFunction.uuid(), "out", shaderOutput2.uuid(), "input"));
+
+                return res;
+            }();
+
+            auto generator = QShaderGenerator();
+            generator.graph = graph;
+            generator.format = gl4;
+
+            const auto code = generator.createShaderCode();
+
+            // THEN
+            const auto expected = QByteArrayList()
+                    << "#version 400 core"
+                    << ""
+                    << "in vec4 vertexPosition;"
+                    << "out vec4 shaderOutput1;"
+                    << "out vec4 shaderOutput2;"
+                    << ""
+                    << "void main()"
+                    << "{"
+                    << "    vec4 v1 = vertexPosition * 2.0;"
+                    << "    shaderOutput2 = v1;"
+                    << "    shaderOutput1 = v1;"
+                    << "}"
+                    << "";
+            QCOMPARE(code, expected.join("\n"));
+        }
+
+        {
+            // WHEN
+            const auto graph = [=] {
+                auto res = QShaderGraph();
+
+                res.addNode(attribute);
+                res.addNode(complexFunction);
+                res.addNode(complexFunction2);
+                res.addNode(complexFunction3);
+                res.addNode(shaderOutput1);
+                res.addNode(shaderOutput2);
+
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction.uuid(), "inputVarName"));
+                res.addEdge(createEdge(attribute.uuid(), "vertexPosition", complexFunction2.uuid(), "inputVarName"));
+
+                res.addEdge(createEdge(complexFunction.uuid(), "out", complexFunction3.uuid(), "a"));
+                res.addEdge(createEdge(complexFunction2.uuid(), "out", complexFunction3.uuid(), "b"));
+
+                res.addEdge(createEdge(complexFunction3.uuid(), "out", shaderOutput1.uuid(), "input"));
+                res.addEdge(createEdge(complexFunction2.uuid(), "out", shaderOutput2.uuid(), "input"));
+
+                return res;
+            }();
+
+            auto generator = QShaderGenerator();
+            generator.graph = graph;
+            generator.format = gl4;
+
+            const auto code = generator.createShaderCode();
+
+            // THEN
+            const auto expected = QByteArrayList()
+                    << "#version 400 core"
+                    << ""
+                    << "in vec4 vertexPosition;"
+                    << "out vec4 shaderOutput1;"
+                    << "out vec4 shaderOutput2;"
+                    << ""
+                    << "void main()"
+                    << "{"
+                    << "    vec4 v2 = vertexPosition * 4.0;"
+                    << "    shaderOutput2 = v2;"
+                    << "    shaderOutput1 = (vertexPosition * 2.0 + v2);"
+                    << "}"
+                    << "";
+            QCOMPARE(code, expected.join("\n"));
+        }
     }
 }
 

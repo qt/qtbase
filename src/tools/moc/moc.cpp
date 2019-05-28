@@ -1194,6 +1194,15 @@ void Moc::createPropertyDef(PropertyDef &propDef)
 
     propDef.type = type;
 
+    auto checkIsFunction = [&](const QByteArray &def, const char *name) {
+        if (def.endsWith(')')) {
+            QByteArray msg = "Providing a function for ";
+            msg += name;
+            msg += " in a property declaration is deprecated and will not be supported in Qt 6 anymore.";
+            warning(msg.constData());
+        }
+    };
+
     next();
     propDef.name = lexem();
     while (test(IDENTIFIER)) {
@@ -1243,11 +1252,13 @@ void Moc::createPropertyDef(PropertyDef &propDef)
                 error(2);
             break;
         case 'S':
-            if (l == "SCRIPTABLE")
+            if (l == "SCRIPTABLE") {
                 propDef.scriptable = v + v2;
-            else if (l == "STORED")
+                checkIsFunction(propDef.scriptable, "SCRIPTABLE");
+            } else if (l == "STORED") {
                 propDef.stored = v + v2;
-            else
+                checkIsFunction(propDef.stored, "STORED");
+            } else
                 error(2);
             break;
         case 'W': if (l != "WRITE") error(2);
@@ -1255,15 +1266,18 @@ void Moc::createPropertyDef(PropertyDef &propDef)
             break;
         case 'D': if (l != "DESIGNABLE") error(2);
             propDef.designable = v + v2;
+            checkIsFunction(propDef.designable, "DESIGNABLE");
             break;
         case 'E': if (l != "EDITABLE") error(2);
             propDef.editable = v + v2;
+            checkIsFunction(propDef.editable, "EDITABLE");
             break;
         case 'N': if (l != "NOTIFY") error(2);
             propDef.notify = v;
             break;
         case 'U': if (l != "USER") error(2);
             propDef.user = v + v2;
+            checkIsFunction(propDef.user, "USER");
             break;
         default:
             error(2);

@@ -955,7 +955,6 @@ void tst_QSet::makeSureTheComfortFunctionsCompile()
 
 void tst_QSet::initializerList()
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QSet<int> set = {1, 1, 2, 3, 4, 5};
     QCOMPARE(set.count(), 5);
     QVERIFY(set.contains(1));
@@ -976,9 +975,6 @@ void tst_QSet::initializerList()
 
     QSet<int> set3{{}, {}, {}};
     QVERIFY(!set3.isEmpty());
-#else
-    QSKIP("Compiler doesn't support initializer lists");
-#endif
 }
 
 void tst_QSet::qhash()
@@ -1011,15 +1007,7 @@ void tst_QSet::qhash()
     // check that sets of sets work:
     //
     {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
         QSet<QSet<int> > intSetSet = { { 0, 1, 2 }, { 0, 1 }, { 1, 2 } };
-#else
-        QSet<QSet<int> > intSetSet;
-        QSet<int> intSet01, intSet12;
-        intSet01 << 0 << 1;
-        intSet12 << 1 << 2;
-        intSetSet << intSet01 << intSet12 << (intSet01|intSet12);
-#endif
         QCOMPARE(intSetSet.size(), 3);
     }
 }

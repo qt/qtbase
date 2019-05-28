@@ -2,8 +2,9 @@ TAP version 13
 # tst_Sleep
 ok 1 - initTestCase()
 ok 2 - sleep()
-ok 3 - cleanupTestCase()
-1..3
-# tests 3
-# pass 3
+ok 3 - wait()
+ok 4 - cleanupTestCase()
+1..4
+# tests 4
+# pass 4
 # fail 0

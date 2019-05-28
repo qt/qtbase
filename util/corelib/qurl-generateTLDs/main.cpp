@@ -90,15 +90,15 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
     if (argc < 3) {
-        printf("\nusage: %s inputFile outputFile\n\n", argv[0]);
+        printf("\nUsage: ./%s inputFile outputFile\n\n", argv[0]);
         printf("'inputFile' should be a list of effective TLDs, one per line,\n");
-        printf("as obtained from http://publicsuffix.org . To create indices and data file\n");
+        printf("as obtained from http://publicsuffix.org/. To create indices and data\n");
         printf("file, do the following:\n\n");
-        printf("       wget https://publicsuffix.org/list/effective_tld_names.dat -O effective_tld_names.dat\n");
-        printf("       grep '^[^\\/\\/]' effective_tld_names.dat > effective_tld_names.dat.trimmed\n");
-        printf("       %s effective_tld_names.dat.trimmed effective_tld_names.dat.qt\n\n", argv[0]);
-        printf("Now copy the data from effective_tld_names.dat.qt to the file src/corelib/io/qurltlds_p.h in your Qt repo\n\n");
-        exit(1);
+        printf("       wget https://publicsuffix.org/list/public_suffix_list.dat -O public_suffix_list.dat\n");
+        printf("       grep -v '^//' public_suffix_list.dat | grep . > public_suffix_list.dat.trimmed\n");
+        printf("       ./%s public_suffix_list.dat.trimmed public_suffix_list.cpp\n\n", argv[0]);
+        printf("Now replace the code in qtbase/src/corelib/io/qurltlds_p.h with public_suffix_list.cpp's contents\n\n");
+        return 1;
     }
     QFile file(argv[1]);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
         entry.append("\\0");
     }
     outFile.write("static const quint32 tldIndices[] = {\n");
-    outDataBuffer.write("\nstatic const char *tldData[] = {\n");
+    outDataBuffer.write("\nstatic const char *tldData[] = {");
 
     int totalUtf8Size = 0;
     int chunkSize = 0; // strlen of the current chunk (sizeof is bigger by 1)
@@ -165,22 +165,22 @@ int main(int argc, char **argv)
             if (chunkSize >= 0xffff) {
                 static int chunkCount = 0;
                 qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
-                outDataBuffer.write(",\n\n");
+                outDataBuffer.write(",\n");
                 chunks.append(QString::number(totalUtf8Size));
                 chunkSize = 0;
             }
             totalUtf8Size += stringUtf8Size;
 
-            outDataBuffer.write("\"");
+            outDataBuffer.write("\n\"");
             outDataBuffer.write(entry.toUtf8());
-            outDataBuffer.write("\"\n");
+            outDataBuffer.write("\"");
         }
     }
     chunks.append(QString::number(totalUtf8Size));
     outFile.write(QByteArray::number(totalUtf8Size));
-    outFile.write("};\n");
+    outFile.write("\n};\n");
 
-    outDataBuffer.write("};\n");
+    outDataBuffer.write("\n};\n");
     outDataBuffer.close();
     outFile.write(outDataBufferBA);
 

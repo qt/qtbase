@@ -18,6 +18,7 @@ HEADERS +=  \
         tools/qcollator.h \
         tools/qcollator_p.h \
         tools/qcontainerfwd.h \
+        tools/qcontainertools_impl.h \
         tools/qcryptographichash.h \
         tools/qdatetime.h \
         tools/qdatetime_p.h \

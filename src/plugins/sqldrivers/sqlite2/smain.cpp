@@ -43,6 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt6: remove, obsolete since 5.14
 class QSQLite2DriverPlugin : public QSqlDriverPlugin
 {
     Q_OBJECT

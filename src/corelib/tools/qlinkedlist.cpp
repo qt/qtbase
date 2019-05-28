@@ -153,6 +153,14 @@ const QLinkedListData QLinkedListData::shared_null = {
     initializer lists.
 */
 
+/*! \fn template <class T> template<typename InputIterator> QLinkedList<T>::QLinkedList(InputIterator first, InputIterator last)
+    \since 5.14
+
+    Constructs a list with the contents in the iterator range [\a first, \a last).
+
+    The value type of \c InputIterator must be convertible to \c T.
+*/
+
 /*! \fn template <class T> QLinkedList<T>::~QLinkedList()
 
     Destroys the list. References to the values in the list, and all

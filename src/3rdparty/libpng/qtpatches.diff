@@ -1,5 +1,5 @@
 diff --git a/src/3rdparty/libpng/pngpriv.h b/src/3rdparty/libpng/pngpriv.h
-index 3581f67919..e43862a886 100644
+index 583c26f9bd..2ab9b70d73 100644
 --- a/src/3rdparty/libpng/pngpriv.h
 +++ b/src/3rdparty/libpng/pngpriv.h
 @@ -23,6 +23,12 @@
@@ -15,7 +15,7 @@ index 3581f67919..e43862a886 100644
  /* Feature Test Macros.  The following are defined here to ensure that correctly
   * implemented libraries reveal the APIs libpng needs to build and hide those
   * that are not needed and potentially damaging to the compilation.
-@@ -305,6 +311,11 @@
+@@ -308,6 +314,11 @@
  #  endif
  #endif /* Setting PNG_BUILD_DLL if required */
  
@@ -27,7 +27,7 @@ index 3581f67919..e43862a886 100644
  /* See pngconf.h for more details: the builder of the library may set this on
   * the command line to the right thing for the specific compilation system or it
   * may be automagically set above (at present we know of no system where it does
-@@ -543,6 +554,9 @@
+@@ -546,6 +557,9 @@
  #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
      defined(_WIN32) || defined(__WIN32__)
  #  include <windows.h>  /* defines _WINDOWS_ macro */
@@ -37,7 +37,7 @@ index 3581f67919..e43862a886 100644
  #endif
  #endif /* PNG_VERSION_INFO_ONLY */
  
-@@ -553,7 +567,7 @@
+@@ -556,7 +570,7 @@
  
  /* Memory model/platform independent fns */
  #ifndef PNG_ABORT

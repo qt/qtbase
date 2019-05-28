@@ -46,12 +46,10 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qhashfunctions.h>
-
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
+#include <QtCore/qcontainertools_impl.h>
 
 #include <algorithm>
+#include <initializer_list>
 
 #if defined(Q_CC_MSVC)
 #pragma warning( push )
@@ -241,7 +239,6 @@ class QHash
 
 public:
     inline QHash() noexcept : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QHash(std::initializer_list<std::pair<Key,T> > list)
         : d(const_cast<QHashData *>(&QHashData::shared_null))
     {
@@ -249,15 +246,34 @@ public:
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
-#endif
     QHash(const QHash &other) : d(other.d) { d->ref.ref(); if (!d->sharable) detach(); }
     ~QHash() { if (!d->ref.deref()) freeData(d); }
 
     QHash &operator=(const QHash &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QHash(QHash &&other) noexcept : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
     QHash &operator=(QHash &&other) noexcept
     { QHash moved(std::move(other)); swap(moved); return *this; }
+#ifdef Q_QDOC
+    template <typename InputIterator>
+    QHash(InputIterator f, InputIterator l);
+#else
+    template <typename InputIterator, QtPrivate::IfAssociativeIteratorHasKeyAndValue<InputIterator> = true>
+    QHash(InputIterator f, InputIterator l)
+        : QHash()
+    {
+        QtPrivate::reserveIfForwardIterator(this, f, l);
+        for (; f != l; ++f)
+            insert(f.key(), f.value());
+    }
+
+    template <typename InputIterator, QtPrivate::IfAssociativeIteratorHasFirstAndSecond<InputIterator> = true>
+    QHash(InputIterator f, InputIterator l)
+        : QHash()
+    {
+        QtPrivate::reserveIfForwardIterator(this, f, l);
+        for (; f != l; ++f)
+            insert(f->first, f->second);
+    }
 #endif
     void swap(QHash &other) noexcept { qSwap(d, other.d); }
 
@@ -1021,21 +1037,37 @@ class QMultiHash : public QHash<Key, T>
 {
 public:
     QMultiHash() noexcept {}
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMultiHash(std::initializer_list<std::pair<Key,T> > list)
     {
         this->reserve(int(list.size()));
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
+#ifdef Q_QDOC
+    template <typename InputIterator>
+    QMultiHash(InputIterator f, InputIterator l);
+#else
+    template <typename InputIterator, QtPrivate::IfAssociativeIteratorHasKeyAndValue<InputIterator> = true>
+    QMultiHash(InputIterator f, InputIterator l)
+    {
+        QtPrivate::reserveIfForwardIterator(this, f, l);
+        for (; f != l; ++f)
+            insert(f.key(), f.value());
+    }
+
+    template <typename InputIterator, QtPrivate::IfAssociativeIteratorHasFirstAndSecond<InputIterator> = true>
+    QMultiHash(InputIterator f, InputIterator l)
+    {
+        QtPrivate::reserveIfForwardIterator(this, f, l);
+        for (; f != l; ++f)
+            insert(f->first, f->second);
+    }
 #endif
     // compiler-generated copy/move ctors/assignment operators are fine!
     // compiler-generated destructor is fine!
 
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QMultiHash(QHash<Key, T> &&other) noexcept : QHash<Key, T>(std::move(other)) {}
-#endif
     void swap(QMultiHash &other) noexcept { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)

@@ -2578,14 +2578,15 @@ void QWidgetPrivate::createWinId()
 /*!
 \internal
 Ensures that the widget is set on the screen point is on. This is handy getting a correct
-size hint before a resize in e.g QMenu and QToolTip
+size hint before a resize in e.g QMenu and QToolTip.
+Returns if the screen was changed.
 */
 
-void QWidgetPrivate::setScreenForPoint(const QPoint &pos)
+bool QWidgetPrivate::setScreenForPoint(const QPoint &pos)
 {
     Q_Q(QWidget);
     if (!q->isWindow())
-        return;
+        return false;
     // Find the screen for pos and make the widget undertand it is on that screen.
     const QScreen *currentScreen = windowHandle() ? windowHandle()->screen() : nullptr;
     QScreen *actualScreen = QGuiApplication::screenAt(pos);
@@ -2594,7 +2595,9 @@ void QWidgetPrivate::setScreenForPoint(const QPoint &pos)
             createWinId();
         if (windowHandle())
             windowHandle()->setScreen(actualScreen);
+        return true;
     }
+    return false;
 }
 
 /*!
@@ -9356,6 +9359,12 @@ bool QWidget::event(QEvent *event)
         d->renderToTextureReallyDirty = 1;
 #endif
         break;
+    case QEvent::PlatformSurface: {
+        auto surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
+        if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+            d->setWinId(0);
+        break;
+    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -13180,7 +13189,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
             if (widget->isWindow())
                 debug << ", window";
             debug << ", " << geometry.width() << 'x' << geometry.height()
-                << forcesign << geometry.x() << geometry.y() << noforcesign;
+                << Qt::forcesign << geometry.x() << geometry.y() << Qt::noforcesign;
             if (frameGeometry != geometry) {
                 const QMargins margins(geometry.x() - frameGeometry.x(),
                                        geometry.y() - frameGeometry.y(),
@@ -13190,7 +13199,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
             }
             debug << ", devicePixelRatio=" << widget->devicePixelRatioF();
             if (const WId wid = widget->internalWinId())
-                debug << ", winId=0x" << hex << wid << dec;
+                debug << ", winId=0x" << Qt::hex << wid << Qt::dec;
         }
         debug << ')';
     } else {

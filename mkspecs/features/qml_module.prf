@@ -50,10 +50,7 @@ builtin_resources {
 
 # Install rules
 qmldir.base = $$qmldir_path
-# Tools need qmldir and plugins.qmltypes always installed on the file system
-
 qmldir.files = $$qmldir_file
-install_qml_files: qmldir.files += $$fq_qml_files
 qmldir.path = $$[QT_INSTALL_QML]/$$TARGETPATH
 INSTALLS += qmldir
 
@@ -65,12 +62,12 @@ INSTALLS += qmlfiles
 
 !debug_and_release|!build_all|CONFIG(release, debug|release) {
     !prefix_build {
-        COPIES += qmldir
+        COPIES += qmldir qmlfiles
     } else {
         # For non-installed static builds, tools need qmldir and plugins.qmltypes
         # files in the build dir
-        qmldir2build.files = $$qmldir_file $$fq_aux_qml_files
-        qmldir2build.path = $$DESTDIR
-        COPIES += qmldir2build
+        qml2build.files = $$qmldir_file $$fq_aux_qml_files
+        qml2build.path = $$DESTDIR
+        COPIES += qml2build
     }
 }

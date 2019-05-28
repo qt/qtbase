@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -130,6 +131,13 @@ public:
     Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
+    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
+    Q_REQUIRED_RESULT int indexOf(QLatin1String s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
+    Q_REQUIRED_RESULT inline int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, QStringView(&c, 1), cs)); } // ### Qt6: qsize
+
     using value_type = const char;
     using reference = value_type&;
     using const_reference = reference;
@@ -214,6 +222,8 @@ bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const noex
 { return QtPrivate::startsWith(*this, s, cs); }
 bool QStringView::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::endsWith(*this, s, cs); }
+qsizetype QStringView::indexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::findString(*this, from, s, cs); }
 
 class Q_CORE_EXPORT QString
 {
@@ -230,11 +240,9 @@ public:
     QString &operator=(QChar c);
     QString &operator=(const QString &) noexcept;
     QString &operator=(QLatin1String latin1);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QString(QString && other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
     inline QString &operator=(QString &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QString &other) noexcept { qSwap(d, other.d); }
     inline int size() const { return d->size; }
     inline int count() const { return d->size; }
@@ -263,9 +271,9 @@ public:
 
     inline const QChar at(int i) const;
     const QChar operator[](int i) const;
-    QCharRef operator[](int i);
+    Q_REQUIRED_RESULT QCharRef operator[](int i);
     const QChar operator[](uint i) const;
-    QCharRef operator[](uint i);
+    Q_REQUIRED_RESULT QCharRef operator[](uint i);
 
     Q_REQUIRED_RESULT inline QChar front() const { return at(0); }
     Q_REQUIRED_RESULT inline QCharRef front();
@@ -330,9 +338,13 @@ public:
     static QString asprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
     int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(QLatin1String s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#if QT_STRINGVIEW_LEVEL < 2
+    int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(const QStringRef &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#endif
+    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
     int lastIndexOf(QChar c, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QString &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QLatin1String s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -363,7 +375,7 @@ public:
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
     int lastIndexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
     bool contains(const QRegularExpression &re) const;
-    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const; // ### Qt 6: merge overloads
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
     int count(const QRegularExpression &re) const;
 #endif
 
@@ -533,6 +545,30 @@ public:
     Q_REQUIRED_RESULT QStringList split(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
     Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
 #endif
+
+private:
+    static Q_DECL_CONSTEXPR SplitBehavior _sb(Qt::SplitBehavior sb) Q_DECL_NOTHROW
+    { return sb & Qt::SkipEmptyParts ? SkipEmptyParts : KeepEmptyParts; }
+public:
+
+    Q_REQUIRED_RESULT inline QStringList split(const QString &sep, Qt::SplitBehavior behavior,
+                                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(const QString &sep, Qt::SplitBehavior behavior,
+                                                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT inline QStringList split(QChar sep, Qt::SplitBehavior behavior,
+                                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior,
+                                                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#ifndef QT_NO_REGEXP
+    Q_REQUIRED_RESULT inline QStringList split(const QRegExp &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(const QRegExp &sep, Qt::SplitBehavior behavior) const;
+#endif
+#ifndef QT_NO_REGULAREXPRESSION
+    Q_REQUIRED_RESULT inline QStringList split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
+#endif
+
+
     enum NormalizationForm {
         NormalizationForm_D,
         NormalizationForm_C,
@@ -1032,8 +1068,11 @@ inline QString QString::fromWCharArray(const wchar_t *string, int size)
                                             : fromUcs4(reinterpret_cast<const uint *>(string), size);
 }
 
-
-class Q_CORE_EXPORT QCharRef {
+class
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_CORE_EXPORT
+#endif
+QCharRef {
     QString &s;
     int i;
     inline QCharRef(QString &str, int idx)
@@ -1045,10 +1084,33 @@ public:
 
     // all this is not documented: We just say "like QChar" and let it be.
     inline operator QChar() const
-    { return i < s.d->size ? s.d->data()[i] : 0; }
+    {
+        using namespace QtPrivate::DeprecatedRefClassBehavior;
+        if (Q_LIKELY(i < s.d->size))
+            return s.d->data()[i];
+#ifdef QT_DEBUG
+        warn(WarningType::OutOfRange, EmittingClass::QCharRef);
+#endif
+        return 0;
+    }
     inline QCharRef &operator=(QChar c)
-    { if (i >= s.d->size) s.resize(i + 1, QLatin1Char(' ')); else s.detach();
-      s.d->data()[i] = c.unicode(); return *this; }
+    {
+        using namespace QtPrivate::DeprecatedRefClassBehavior;
+        if (Q_UNLIKELY(i >= s.d->size)) {
+#ifdef QT_DEBUG
+            warn(WarningType::OutOfRange, EmittingClass::QCharRef);
+#endif
+            s.resize(i + 1, QLatin1Char(' '));
+        } else {
+#ifdef QT_DEBUG
+            if (Q_UNLIKELY(!s.isDetached()))
+                warn(WarningType::DelayedDetach, EmittingClass::QCharRef);
+#endif
+            s.detach();
+        }
+        s.d->data()[i] = c.unicode();
+        return *this;
+    }
 
     // An operator= for each QChar cast constructors
 #ifndef QT_NO_CAST_FROM_ASCII
@@ -1157,9 +1219,9 @@ inline void QString::squeeze()
 inline QString &QString::setUtf16(const ushort *autf16, int asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 inline QCharRef QString::operator[](int i)
-{ Q_ASSERT(i >= 0); return QCharRef(*this, i); }
+{ Q_ASSERT(i >= 0); detach(); return QCharRef(*this, i); }
 inline QCharRef QString::operator[](uint i)
-{ return QCharRef(*this, i); }
+{  detach(); return QCharRef(*this, i); }
 inline QCharRef QString::front() { return operator[](0); }
 inline QCharRef QString::back() { return operator[](size() - 1); }
 inline QString::iterator QString::begin()
@@ -1437,10 +1499,8 @@ public:
     QStringRef(const QStringRef &other) noexcept
         :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
         {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QStringRef(QStringRef &&other) noexcept : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
     QStringRef &operator=(QStringRef &&other) noexcept { return *this = other; }
-#endif
     QStringRef &operator=(const QStringRef &other) noexcept
     {
         m_string = other.m_string; m_position = other.m_position;
@@ -1455,10 +1515,14 @@ public:
     inline int count() const { return m_size; }
     inline int length() const { return m_size; }
 
+#if QT_STRINGVIEW_LEVEL < 2
     int indexOf(const QString &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int indexOf(const QStringRef &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#endif
+    Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsize
     int indexOf(QChar ch, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(QLatin1String str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int indexOf(const QStringRef &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QString &str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QChar ch, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QLatin1String str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -1477,6 +1541,11 @@ public:
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     Q_REQUIRED_RESULT QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
+    Q_REQUIRED_RESULT inline QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior,
+                                                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT inline QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior,
+                                                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     Q_REQUIRED_RESULT QStringRef left(int n) const;
     Q_REQUIRED_RESULT QStringRef right(int n) const;

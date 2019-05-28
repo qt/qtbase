@@ -523,17 +523,21 @@ QImage ICOReader::iconAt(int index)
                     if (!image.isNull()) {
                         readBMP(image);
                         if (!image.isNull()) {
-                            QImage mask(image.width(), image.height(), QImage::Format_Mono);
-                            if (!mask.isNull()) {
-                                mask.setColorCount(2);
-                                mask.setColor(0, qRgba(255,255,255,0xff));
-                                mask.setColor(1, qRgba(0  ,0  ,0  ,0xff));
-                                read1BitBMP(mask);
+                            if (icoAttrib.depth == 32) {
+                                img = std::move(image).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+                            } else {
+                                QImage mask(image.width(), image.height(), QImage::Format_Mono);
                                 if (!mask.isNull()) {
-                                    img = image;
-                                    img.setAlphaChannel(mask);
-                                    // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values
-                                    // of partially transparent pixels in those icons that have that)
+                                    mask.setColorCount(2);
+                                    mask.setColor(0, qRgba(255,255,255,0xff));
+                                    mask.setColor(1, qRgba(0  ,0  ,0  ,0xff));
+                                    read1BitBMP(mask);
+                                    if (!mask.isNull()) {
+                                        img = image;
+                                        img.setAlphaChannel(mask);
+                                        // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values
+                                        // of partially transparent pixels in those icons that have that)
+                                    }
                                 }
                             }
                         }

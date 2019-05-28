@@ -611,7 +611,8 @@ bool PathStrokeRenderer::event(QEvent *e)
             case Qt::TouchPointPressed:
             {
                 // find the point, move it
-                QSet<int> activePoints = QSet<int>::fromList(m_fingerPointMapping.values());
+                const auto mappedPoints = m_fingerPointMapping.values();
+                QSet<int> activePoints = QSet<int>(mappedPoints.begin(), mappedPoints.end());
                 int activePoint = -1;
                 qreal distance = -1;
                 const int pointsCount = m_points.size();

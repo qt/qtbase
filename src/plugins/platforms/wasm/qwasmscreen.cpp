@@ -31,6 +31,7 @@
 #include "qwasmwindow.h"
 #include "qwasmeventtranslator.h"
 #include "qwasmcompositor.h"
+#include "qwasmintegration.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
@@ -98,6 +99,17 @@ int QWasmScreen::depth() const
 QImage::Format QWasmScreen::format() const
 {
     return m_format;
+}
+
+QDpi QWasmScreen::logicalDpi() const
+{
+    emscripten::val dpi = emscripten::val::module_property("qtFontDpi");
+    if (!dpi.isUndefined()) {
+        qreal dpiValue = dpi.as<qreal>();
+        return QDpi(dpiValue, dpiValue);
+    }
+    const qreal defaultDpi = 96;
+    return QDpi(defaultDpi, defaultDpi);
 }
 
 qreal QWasmScreen::devicePixelRatio() const

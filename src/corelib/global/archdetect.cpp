@@ -67,6 +67,10 @@
 #  define ARCH_PROCESSOR "power"
 #elif defined(Q_PROCESSOR_POWER_64)
 #  define ARCH_PROCESSOR "power64"
+#elif defined(Q_PROCESSOR_RISCV_32)
+#  define ARCH_PROCESSOR "riscv32"
+#elif defined(Q_PROCESSOR_RISCV_64)
+#  define ARCH_PROCESSOR "riscv64"
 #elif defined(Q_PROCESSOR_S390_X)
 #  define ARCH_PROCESSOR "s390x"
 #elif defined(Q_PROCESSOR_S390)

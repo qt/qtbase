@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     with a QT:Spec of OffsetFromUTC
 
     These tables are automatically adapted from the CLDR supplemental/windowsZones.xml data file
-    using a script in qtbase/util/local_database.  Please do not edit this data directly.  In the
+    using a script in qtbase/util/locale_database.  Please do not edit this data directly.  In the
     future if ICU is made a hard dependency then the ICU resource can be used directly and this
     table removed
 */
@@ -120,7 +120,7 @@ struct QUtcData {
     http://www.unicode.org/cldr/
 
     Do not edit this code: run cldr2qtimezone.py on updated (or
-    edited) CLDR data; see qtbase/util/local_database/.
+    edited) CLDR data; see qtbase/util/locale_database/.
 */
 
 // Windows ID Key, Country Enum, IANA ID Index

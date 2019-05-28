@@ -54,7 +54,6 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qatomic.h"
 #include <QtCore/qvarlengtharray.h>
-#include <QtCore/QLinkedList>
 #include <QtCore/qhashfunctions.h>
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
@@ -370,7 +369,7 @@ private:
         QExplicitlySharedDataPointer<QFontEngineGlyphCache> cache;
         bool operator==(const GlyphCacheEntry &other) const { return cache == other.cache; }
     };
-    typedef QLinkedList<GlyphCacheEntry> GlyphCaches;
+    typedef std::list<GlyphCacheEntry> GlyphCaches;
     mutable QHash<const void *, GlyphCaches> m_glyphCaches;
 
 private:

@@ -364,12 +364,14 @@ private slots:
     void takeLastOptimal() const;
     void takeLastMovable() const;
     void takeLastComplex() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void toSetOptimal() const;
     void toSetMovable() const;
     void toSetComplex() const;
     void toStdListOptimal() const;
     void toStdListMovable() const;
     void toStdListComplex() const;
+#endif
     void toVectorOptimal() const;
     void toVectorMovable() const;
     void toVectorComplex() const;
@@ -426,8 +428,10 @@ private:
     template<typename T> void takeAt() const;
     template<typename T> void takeFirst() const;
     template<typename T> void takeLast() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     template<typename T> void toSet() const;
     template<typename T> void toStdList() const;
+#endif
     template<typename T> void toVector() const;
     template<typename T> void value() const;
 
@@ -1457,11 +1461,11 @@ void tst_QList::swap() const
     list << T_FOO << T_BAR << T_BAZ;
 
     // swap
-    list.swap(0, 2);
+    list.swapItemsAt(0, 2);
     QCOMPARE(list, QList<T>() << T_BAZ << T_BAR << T_FOO);
 
     // swap again
-    list.swap(1, 2);
+    list.swapItemsAt(1, 2);
     QCOMPARE(list, QList<T>() << T_BAZ << T_FOO << T_BAR);
 
     QList<T> list2;
@@ -1595,6 +1599,7 @@ void tst_QList::takeLastComplex() const
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template<typename T>
 void tst_QList::toSet() const
 {
@@ -1669,6 +1674,7 @@ void tst_QList::toStdListComplex() const
     toStdList<Complex>();
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
+#endif
 
 template<typename T>
 void tst_QList::toVector() const
@@ -1871,7 +1877,6 @@ void tst_QList::testSTLIteratorsComplex() const
 
 void tst_QList::initializeList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QList<int> v1{2,3,4};
     QCOMPARE(v1, QList<int>() << 2 << 3 << 4);
     QCOMPARE(v1, (QList<int>{2,3,4}));
@@ -1880,7 +1885,6 @@ void tst_QList::initializeList() const
     QList<QList<int>> v3;
     v3 << v1 << (QList<int>() << 1) << QList<int>() << v1;
     QCOMPARE(v3, v2);
-#endif
 }
 
 template<typename T>

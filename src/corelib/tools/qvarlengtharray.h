@@ -43,15 +43,14 @@
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
+#include <QtCore/qcontainertools_impl.h>
 
+#include <algorithm>
+#include <initializer_list>
+#include <iterator>
 #include <new>
 #include <string.h>
 #include <stdlib.h>
-#include <algorithm>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
-#include <iterator>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,14 +68,18 @@ public:
         append(other.constData(), other.size());
     }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QVarLengthArray(std::initializer_list<T> args)
-        : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
+        : QVarLengthArray(args.begin(), args.end())
     {
-        if (args.size())
-            append(args.begin(), int(args.size()));
     }
-#endif
+
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QVarLengthArray(InputIterator first, InputIterator last)
+        : QVarLengthArray()
+    {
+        QtPrivate::reserveIfForwardIterator(this, first, last);
+        std::copy(first, last, std::back_inserter(*this));
+    }
 
     inline ~QVarLengthArray() {
         if (QTypeInfo<T>::isComplex) {
@@ -96,7 +99,6 @@ public:
         return *this;
     }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QVarLengthArray<T, Prealloc> &operator=(std::initializer_list<T> list)
     {
         resize(list.size());
@@ -104,7 +106,6 @@ public:
                   QT_MAKE_CHECKED_ARRAY_ITERATOR(this->begin(), this->size()));
         return *this;
     }
-#endif
 
     inline void removeLast() {
         Q_ASSERT(s > 0);

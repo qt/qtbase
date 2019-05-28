@@ -1951,7 +1951,7 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
     which return a QDomNode, e.g. firstChild(). You can make an
     independent (deep) copy of the node with cloneNode().
 
-    A QDomNode can be null, much like a null pointer. Creating a copy
+    A QDomNode can be null, much like \nullptr. Creating a copy
     of a null node results in another null node. It is not
     possible to modify a null node, but it is possible to assign another,
     possibly non-null node to it. In this case, the copy of the null node
@@ -3598,7 +3598,7 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
     }
 
     if (entities->length()>0 || notations->length()>0) {
-        s << " [" << endl;
+        s << " [" << Qt::endl;
 
         QHash<QString, QDomNodePrivate *>::const_iterator it2 = notations->map.constBegin();
         for (; it2 != notations->map.constEnd(); ++it2)
@@ -3611,7 +3611,7 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
         s << ']';
     }
 
-    s << '>' << endl;
+    s << '>' << Qt::endl;
 }
 
 /**************************************************************
@@ -4627,7 +4627,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
             /* -1 disables new lines. */
             if (indent != -1)
-                s << endl;
+                s << Qt::endl;
         }
         QDomNodePrivate::save(s, depth + 1, indent); if (!last->isText())
             s << QString(indent < 1 ? 0 : depth * indent, QLatin1Char(' '));
@@ -4639,7 +4639,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     if (!(next && next->isText())) {
         /* -1 disables new lines. */
         if (indent != -1)
-            s << endl;
+            s << Qt::endl;
     }
 }
 
@@ -5329,7 +5329,7 @@ void QDomCommentPrivate::save(QTextStream& s, int depth, int indent) const
     s << "-->";
 
     if (!(next && next->isText()))
-        s << endl;
+        s << Qt::endl;
 }
 
 /**************************************************************
@@ -5552,7 +5552,7 @@ void QDomNotationPrivate::save(QTextStream& s, int, int) const
     }  else {
         s << "SYSTEM " << quotedValue(m_sys);
     }
-    s << '>' << endl;
+    s << '>' << Qt::endl;
 }
 
 /**************************************************************
@@ -5733,7 +5733,7 @@ void QDomEntityPrivate::save(QTextStream& s, int, int) const
         _name = QLatin1String("% ") + _name.mid(1);
 
     if (m_sys.isNull() && m_pub.isNull()) {
-        s << "<!ENTITY " << _name << " \"" << encodeEntity(value.toUtf8()) << "\">" << endl;
+        s << "<!ENTITY " << _name << " \"" << encodeEntity(value.toUtf8()) << "\">" << Qt::endl;
     } else {
         s << "<!ENTITY " << _name << ' ';
         if (m_pub.isNull()) {
@@ -5744,7 +5744,7 @@ void QDomEntityPrivate::save(QTextStream& s, int, int) const
         if (! m_notationName.isNull()) {
             s << " NDATA " << m_notationName;
         }
-        s << '>' << endl;
+        s << '>' << Qt::endl;
     }
 }
 
@@ -6014,7 +6014,7 @@ QDomNodePrivate* QDomProcessingInstructionPrivate::cloneNode(bool deep)
 
 void QDomProcessingInstructionPrivate::save(QTextStream& s, int, int) const
 {
-    s << "<?" << name << ' ' << value << "?>" << endl;
+    s << "<?" << name << ' ' << value << "?>" << Qt::endl;
 }
 
 /**************************************************************

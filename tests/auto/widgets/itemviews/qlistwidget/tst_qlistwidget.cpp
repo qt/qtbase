@@ -267,6 +267,7 @@ tst_QListWidget::tst_QListWidget(): testWidget(0), rcParent(8), rcFirst(8,0), rc
 
 void tst_QListWidget::initTestCase()
 {
+    qRegisterMetaType<QListWidgetItem*>("QListWidgetItem*");
     testWidget = new QListWidget();
     testWidget->show();
 
@@ -663,6 +664,9 @@ void tst_QListWidget::insertItems()
     QFETCH(int, rowCount);
     QFETCH(int, insertType);
 
+    QSignalSpy itemChangedSpy(testWidget, &QListWidget::itemChanged);
+    QSignalSpy dataChangedSpy(testWidget->model(), &QAbstractItemModel::dataChanged);
+
     if (insertType == 3) {
         QStringList strings;
         for (int i=0; i<rowCount; ++i)
@@ -700,6 +704,9 @@ void tst_QListWidget::insertItems()
     // make sure all items have view set correctly
     for (int i=0; i<testWidget->count(); ++i)
         QCOMPARE(testWidget->item(i)->listWidget(), testWidget);
+
+    QCOMPARE(itemChangedSpy.count(), 0);
+    QCOMPARE(dataChangedSpy.count(), 0);
 }
 
 void tst_QListWidget::itemAssignment()
@@ -1257,7 +1264,6 @@ void tst_QListWidget::setData()
     QFETCH(IntList, roles);
     QFETCH(QVariantList, values);
     QFETCH(int, expectedSignalCount);
-    qRegisterMetaType<QListWidgetItem *>("QListWidgetItem*");
 
     QCOMPARE(roles.count(), values.count());
 
@@ -1519,11 +1525,11 @@ void tst_QListWidget::itemData()
     item.setData(Qt::DisplayRole,  QString("0"));
     QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
     item.setData(Qt::CheckStateRole, Qt::PartiallyChecked);
-    QCOMPARE(widget.currentRoles, {Qt::CheckStateRole});
+    QCOMPARE(widget.currentRoles, QVector<int>{Qt::CheckStateRole});
     for (int i = 0; i < 4; ++i)
     {
         item.setData(Qt::UserRole + i, QString::number(i + 1));
-        QCOMPARE(widget.currentRoles, {Qt::UserRole + i});
+        QCOMPARE(widget.currentRoles, QVector<int>{Qt::UserRole + i});
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
@@ -1715,7 +1721,6 @@ void tst_QListWidget::task258949_keypressHangup()
 
 void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
 {
-    qRegisterMetaType<QListWidgetItem*>("QListWidgetItem*");
     QWidget win;
     QHBoxLayout layout(&win);
     QListWidget list;
@@ -1837,7 +1842,6 @@ void tst_QListWidget::mimeData()
 
 void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
 {
-    qRegisterMetaType<QListWidgetItem*>("QListWidgetItem*");
     QListWidget list;
     for (int i = 0 ; i < 4; ++i)
         new QListWidgetItem(QString::number(i), &list);

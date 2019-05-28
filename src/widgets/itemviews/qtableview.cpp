@@ -58,6 +58,8 @@
 #include <qaccessible.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /** \internal
@@ -65,7 +67,7 @@ QT_BEGIN_NAMESPACE
   */
 void QSpanCollection::addSpan(QSpanCollection::Span *span)
 {
-    spans.append(span);
+    spans.push_back(span);
     Index::iterator it_y = index.lowerBound(-span->top());
     if (it_y == index.end() || it_y.key() != -span->top()) {
         //there is no spans that starts with the row in the index, so create a sublist for it.
@@ -132,7 +134,7 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
     }
 
     if (span->width() == 0 && span->height() == 0) {
-        spans.removeOne(span);
+        spans.remove(span);
         delete span;
     }
 }
@@ -169,7 +171,7 @@ void QSpanCollection::clear()
 /** \internal
  * return a list to all the spans that spans over cells in the given rectangle
  */
-QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w, int h) const
+QSet<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w, int h) const
 {
     QSet<Span *> list;
     Index::const_iterator it_y = index.lowerBound(-y);
@@ -191,7 +193,7 @@ QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w,
             break;
         --it_y;
     }
-    return list.toList();
+    return list;
 }
 
 #undef DEBUG_SPAN_UPDATE
@@ -210,17 +212,16 @@ QDebug operator<<(QDebug str, const QSpanCollection::Span &span)
 void QSpanCollection::updateInsertedRows(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << start << end << endl << index;
+    qDebug() << start << end << Qt::endl << index;
 #endif
-    if (spans.isEmpty())
+    if (spans.empty())
         return;
 
     int delta = end - start + 1;
 #ifdef DEBUG_SPAN_UPDATE
     qDebug("Before");
 #endif
-    for (SpanList::iterator it = spans.begin(); it != spans.end(); ++it) {
-        Span *span = *it;
+    for (Span *span : spans) {
 #ifdef DEBUG_SPAN_UPDATE
         qDebug() << span << *span;
 #endif
@@ -258,17 +259,16 @@ void QSpanCollection::updateInsertedRows(int start, int end)
 void QSpanCollection::updateInsertedColumns(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << start << end << endl << index;
+    qDebug() << start << end << Qt::endl << index;
 #endif
-    if (spans.isEmpty())
+    if (spans.empty())
         return;
 
     int delta = end - start + 1;
 #ifdef DEBUG_SPAN_UPDATE
     qDebug("Before");
 #endif
-    for (SpanList::iterator it = spans.begin(); it != spans.end(); ++it) {
-        Span *span = *it;
+    for (Span *span : spans) {
 #ifdef DEBUG_SPAN_UPDATE
         qDebug() << span << *span;
 #endif
@@ -339,9 +339,9 @@ bool QSpanCollection::cleanSpanSubIndex(QSpanCollection::SubIndex &subindex, int
 void QSpanCollection::updateRemovedRows(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << start << end << endl << index;
+    qDebug() << start << end << Qt::endl << index;
 #endif
-    if (spans.isEmpty())
+    if (spans.empty())
         return;
 
     SpanList spansToBeDeleted;
@@ -377,7 +377,7 @@ void QSpanCollection::updateRemovedRows(int start, int end)
         if (span->m_top == span->m_bottom && span->m_left == span->m_right)
             span->will_be_deleted = true;
         if (span->will_be_deleted) {
-            spansToBeDeleted.append(span);
+            spansToBeDeleted.push_back(span);
             it = spans.erase(it);
         } else {
             ++it;
@@ -389,7 +389,7 @@ void QSpanCollection::updateRemovedRows(int start, int end)
     foreach (QSpanCollection::Span *span, spans)
         qDebug() << span << *span;
 #endif
-    if (spans.isEmpty()) {
+    if (spans.empty()) {
         qDeleteAll(spansToBeDeleted);
         index.clear();
         return;
@@ -466,9 +466,9 @@ void QSpanCollection::updateRemovedRows(int start, int end)
 void QSpanCollection::updateRemovedColumns(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << start << end << endl << index;
+    qDebug() << start << end << Qt::endl << index;
 #endif
-    if (spans.isEmpty())
+    if (spans.empty())
         return;
 
     SpanList toBeDeleted;
@@ -504,7 +504,7 @@ void QSpanCollection::updateRemovedColumns(int start, int end)
         if (span->m_top == span->m_bottom && span->m_left == span->m_right)
             span->will_be_deleted = true;
         if (span->will_be_deleted) {
-            toBeDeleted.append(span);
+            toBeDeleted.push_back(span);
             it = spans.erase(it);
         } else {
             ++it;
@@ -516,7 +516,7 @@ void QSpanCollection::updateRemovedColumns(int start, int end)
     foreach (QSpanCollection::Span *span, spans)
         qDebug() << span << *span;
 #endif
-    if (spans.isEmpty()) {
+    if (spans.empty()) {
         qDeleteAll(toBeDeleted);
         index.clear();
         return;
@@ -552,13 +552,13 @@ bool QSpanCollection::checkConsistency() const
         for (SubIndex::const_iterator it = subIndex.begin(); it != subIndex.end(); ++it) {
             int x = -it.key();
             Span *span = it.value();
-            if (!spans.contains(span) || span->left() != x
-                || y < span->top() || y > span->bottom())
+            const bool contains = std::find(spans.begin(), spans.end(), span) != spans.end();
+            if (!contains || span->left() != x || y < span->top() || y > span->bottom())
                 return false;
         }
     }
 
-    foreach (const Span *span, spans) {
+    for (const Span *span : spans) {
         if (span->width() < 1 || span->height() < 1
             || (span->width() == 1 && span->height() == 1))
             return false;
@@ -863,19 +863,17 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
     bool alternateBase = false;
     QRegion region = viewport->rect();
 
-    QList<QSpanCollection::Span *> visibleSpans;
+    QSet<QSpanCollection::Span *> visibleSpans;
     bool sectionMoved = verticalHeader->sectionsMoved() || horizontalHeader->sectionsMoved();
 
     if (!sectionMoved) {
         visibleSpans = spans.spansInRect(logicalColumn(firstVisualColumn), logicalRow(firstVisualRow),
                                          lastVisualColumn - firstVisualColumn + 1, lastVisualRow - firstVisualRow + 1);
     } else {
-        QSet<QSpanCollection::Span *> set;
         for(int x = firstVisualColumn; x <= lastVisualColumn; x++)
             for(int y = firstVisualRow; y <= lastVisualRow; y++)
-                set.insert(spans.spanAt(x,y));
-        set.remove(0);
-        visibleSpans = set.toList();
+                visibleSpans.insert(spans.spanAt(x,y));
+        visibleSpans.remove(nullptr);
     }
 
     for (QSpanCollection::Span *span : qAsConst(visibleSpans)) {
@@ -1925,7 +1923,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
         int right = qMax(d->visualColumn(tl.column()), d->visualColumn(br.column()));
         do {
             expanded = false;
-            foreach (QSpanCollection::Span *it, d->spans.spans) {
+            for (QSpanCollection::Span *it : d->spans.spans) {
                 const QSpanCollection::Span &span = *it;
                 int t = d->visualRow(span.top());
                 int l = d->visualColumn(span.left());

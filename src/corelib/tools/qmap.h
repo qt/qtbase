@@ -49,13 +49,10 @@
 #include <QtCore/qdebug.h>
 #endif
 
+#include <functional>
+#include <initializer_list>
 #include <map>
 #include <new>
-#include <functional>
-
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -142,7 +139,7 @@ private:
             rightNode()->destroySubTree();
     }
 
-    QMapNode() Q_DECL_EQ_DELETE;
+    QMapNode() = delete;
     Q_DISABLE_COPY(QMapNode)
 };
 
@@ -326,20 +323,17 @@ class QMap
 
 public:
     inline QMap() noexcept : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null))) { }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMap(std::initializer_list<std::pair<Key,T> > list)
         : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null)))
     {
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
-#endif
     QMap(const QMap<Key, T> &other);
 
     inline ~QMap() { if (!d->ref.deref()) d->destroy(); }
 
     QMap<Key, T> &operator=(const QMap<Key, T> &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QMap(QMap<Key, T> &&other) noexcept
         : d(other.d)
     {
@@ -349,7 +343,6 @@ public:
 
     inline QMap<Key, T> &operator=(QMap<Key, T> &&other) noexcept
     { QMap moved(std::move(other)); swap(moved); return *this; }
-#endif
     inline void swap(QMap<Key, T> &other) noexcept { qSwap(d, other.d); }
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
@@ -1188,17 +1181,13 @@ class QMultiMap : public QMap<Key, T>
 {
 public:
     QMultiMap() noexcept {}
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMultiMap(std::initializer_list<std::pair<Key,T> > list)
     {
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
-#endif
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
-#ifdef Q_COMPILER_RVALUE_REFS
     QMultiMap(QMap<Key, T> &&other) noexcept : QMap<Key, T>(std::move(other)) {}
-#endif
     void swap(QMultiMap<Key, T> &other) noexcept { QMap<Key, T>::swap(other); }
 
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)

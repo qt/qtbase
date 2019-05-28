@@ -40,6 +40,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QGuiApplication>
 
 #include <locale.h>
 
@@ -121,7 +122,14 @@ bool QComposeInputContext::filterEvent(const QEvent *event)
 
         QInputMethodEvent event;
         event.setCommitString(composedText);
-        QCoreApplication::sendEvent(m_focusObject, &event);
+
+        if (!m_focusObject && qApp)
+            m_focusObject = qApp->focusObject();
+
+        if (m_focusObject)
+            QCoreApplication::sendEvent(m_focusObject, &event);
+        else
+            qCWarning(lcXkbCompose, "no focus object");
 
         reset();
         return true;

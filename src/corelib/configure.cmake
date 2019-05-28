@@ -667,7 +667,7 @@ qt_feature("systemsemaphore" PUBLIC
     SECTION "Kernel"
     LABEL "QSystemSemaphore"
     PURPOSE "Provides a general counting system semaphore."
-    CONDITION ( NOT INTEGRITY AND NOT VXWORKS ) AND ( ANDROID OR WIN32 OR TEST_ipc_sysv OR TEST_ipc_posix )
+    CONDITION ( NOT INTEGRITY AND NOT VXWORKS AND NOT rtems ) AND ( ANDROID OR WIN32 OR TEST_ipc_sysv OR TEST_ipc_posix )
 )
 qt_feature_definition("systemsemaphore" "QT_NO_SYSTEMSEMAPHORE" NEGATE VALUE "1")
 qt_feature("xmlstream" PUBLIC
@@ -707,14 +707,14 @@ qt_feature("process" PUBLIC
     SECTION "File I/O"
     LABEL "QProcess"
     PURPOSE "Supports external process invocation."
-    CONDITION QT_FEATURE_processenvironment AND NOT WINRT AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT VXWORKS
+    CONDITION QT_FEATURE_processenvironment AND NOT WINRT AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT VXWORKS AND NOT rtems
 )
 qt_feature_definition("process" "QT_NO_PROCESS" NEGATE VALUE "1")
 qt_feature("processenvironment" PUBLIC
     SECTION "File I/O"
     LABEL "QProcessEnvironment"
     PURPOSE "Provides a higher-level abstraction of environment variables."
-    CONDITION NOT WINRT AND NOT INTEGRITY
+    CONDITION NOT WINRT AND NOT INTEGRITY AND NOT rtems
 )
 qt_feature("temporaryfile" PUBLIC
     SECTION "File I/O"
@@ -884,4 +884,8 @@ qt_feature("topleveldomain" PUBLIC
     SECTION "Utilities"
     LABEL "QUrl::topLevelDomain()"
     PURPOSE "Provides support for extracting the top level domain from URLs.  If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie."
+)
+qt_feature("win32_system_libs"
+    LABEL "Windows System Libraries"
+    CONDITION WIN32 AND libs.advapi32 AND libs.gdi32 AND libs.kernel32 AND libs.netapi32 AND libs.ole32 AND libs.shell32 AND libs.uuid AND libs.user32 AND libs.winmm AND libs.ws2_32 OR FIXME
 )

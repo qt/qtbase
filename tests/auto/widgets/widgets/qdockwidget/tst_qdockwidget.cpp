@@ -670,7 +670,11 @@ void tst_QDockWidget::dockLocationChanged()
     spy.clear();
 
     dw.setFloating(true);
-    QTest::qWait(100);
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
+             Qt::NoDockWidgetArea);
+    spy.clear();
+
     dw.setFloating(false);
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),

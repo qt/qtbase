@@ -59,9 +59,7 @@ public:
     Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator(const QSslPreSharedKeyAuthenticator &authenticator);
     Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator &operator=(const QSslPreSharedKeyAuthenticator &authenticator);
 
-#ifdef Q_COMPILER_RVALUE_REFS
     QSslPreSharedKeyAuthenticator &operator=(QSslPreSharedKeyAuthenticator &&other) noexcept { swap(other); return *this; }
-#endif
 
     void swap(QSslPreSharedKeyAuthenticator &other) noexcept { qSwap(d, other.d); }
 

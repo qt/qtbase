@@ -489,19 +489,16 @@ QMacPasteboard::retrieveData(const QString &format, QVariant::Type) const
         QMacInternalPasteboardMime *c = mimes.at(mime);
         QString c_flavor = c->flavorFor(format);
         if (!c_flavor.isEmpty()) {
-            // Handle text/plain a little differently. Try handling Unicode first.
-            bool checkForUtf16 = (c_flavor == QLatin1String("com.apple.traditional-mac-plain-text")
-                                  || c_flavor == QLatin1String("public.utf8-plain-text"));
-            if (checkForUtf16 || c_flavor == QLatin1String("public.utf16-plain-text")) {
-                // Try to get the NSStringPboardType from NSPasteboard, newlines are mapped
-                // correctly (as '\n') in this data. The 'public.utf16-plain-text' type
-                // usually maps newlines to '\r' instead.
+            // Converting via PasteboardCopyItemFlavorData below will for some UITs result
+            // in newlines mapping to '\r' instead of '\n'. To work around this we shortcut
+            // the conversion via NSPasteboard's NSStringPboardType if possible.
+            if (c_flavor == QLatin1String("com.apple.traditional-mac-plain-text")
+             || c_flavor == QLatin1String("public.utf8-plain-text")
+             || c_flavor == QLatin1String("public.utf16-plain-text")) {
                 QString str = qt_mac_get_pasteboardString(paste);
                 if (!str.isEmpty())
                     return str;
             }
-            if (checkForUtf16 && hasFlavor(QLatin1String("public.utf16-plain-text")))
-                c_flavor = QLatin1String("public.utf16-plain-text");
 
             QVariant ret;
             QList<QByteArray> retList;

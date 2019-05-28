@@ -47,7 +47,6 @@ private Q_SLOTS:
     void state();
 };
 
-#ifdef Q_COMPILER_RVALUE_REFS
 static bool dpointer_is_null(QCollator &c)
 {
     char mem[sizeof c];
@@ -58,11 +57,9 @@ static bool dpointer_is_null(QCollator &c)
             return false;
     return true;
 }
-#endif
 
 void tst_QCollator::moveSemantics()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     const QLocale de_AT(QLocale::German, QLocale::Austria);
 
     QCollator c1(de_AT);
@@ -78,9 +75,6 @@ void tst_QCollator::moveSemantics()
     c1 = std::move(c2);
     QCOMPARE(c1.locale(), de_AT);
     QVERIFY(dpointer_is_null(c2));
-#else
-    QSKIP("The compiler is not in C++11 mode or does not support move semantics.");
-#endif
 }
 
 

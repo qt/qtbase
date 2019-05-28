@@ -104,7 +104,7 @@ public:
         for (int a = 0; a < _configitemEntryOrder.count(); a++) {
             out << _configitemEntryOrder[a]
                    << " = "
-                   << _values.value(_configitemEntryOrder[a]) << endl;
+                   << _values.value(_configitemEntryOrder[a]) << Qt::endl;
         }
         out.flush();
         return ret.toLatin1();

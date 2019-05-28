@@ -33,6 +33,7 @@ add_qt_module(Network
         kernel/qauthenticator.cpp kernel/qauthenticator.h kernel/qauthenticator_p.h
         kernel/qhostaddress.cpp kernel/qhostaddress.h kernel/qhostaddress_p.h
         kernel/qhostinfo.cpp kernel/qhostinfo.h kernel/qhostinfo_p.h
+        kernel/qnetconmonitor_p.h
         kernel/qnetworkdatagram.cpp kernel/qnetworkdatagram.h kernel/qnetworkdatagram_p.h
         kernel/qnetworkinterface.cpp kernel/qnetworkinterface.h kernel/qnetworkinterface_p.h
         kernel/qnetworkinterface_unix_p.h
@@ -220,6 +221,18 @@ extend_target(Network CONDITION APPLE_OSX AND NOT APPLE_UIKIT
     LIBRARIES
         ${FWCoreServices}
         ${FWSystemConfiguration}
+)
+
+extend_target(Network CONDITION APPLE_IOS OR APPLE_OSX
+    SOURCES
+        kernel/qnetconmonitor_darwin.mm
+    LIBRARIES
+        ${FWSystemConfiguration}
+)
+
+extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_OSX
+    SOURCES
+        kernel/qnetconmonitor_stub.cpp
 )
 
 extend_target(Network CONDITION QT_FEATURE_gssapi

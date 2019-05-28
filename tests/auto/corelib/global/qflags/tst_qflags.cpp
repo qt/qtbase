@@ -258,7 +258,6 @@ void tst_QFlags::classEnum()
 
 void tst_QFlags::initializerLists()
 {
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
     Qt::MouseButtons bts = { Qt::LeftButton, Qt::RightButton };
     QVERIFY(bts.testFlag(Qt::LeftButton));
     QVERIFY(bts.testFlag(Qt::RightButton));
@@ -268,10 +267,6 @@ void tst_QFlags::initializerLists()
     QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictOne));
     QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictFour));
     QVERIFY(!flags.testFlag(MyStrictNoOpEnum::StrictTwo));
-
-#else
-    QSKIP("This test requires C++11 initializer_list support.");
-#endif // Q_COMPILER_INITIALIZER_LISTS
 }
 
 void tst_QFlags::testSetFlags()

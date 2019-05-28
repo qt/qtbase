@@ -42,9 +42,7 @@
 #ifndef QFLAGS_H
 #define QFLAGS_H
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -121,10 +119,8 @@ public:
     Q_DECL_CONSTEXPR inline QFlags(Zero = nullptr) noexcept : i(0) {}
     Q_DECL_CONSTEXPR inline QFlags(QFlag flag) noexcept : i(flag) {}
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     Q_DECL_CONSTEXPR inline QFlags(std::initializer_list<Enum> flags) noexcept
         : i(initializer_list_helper(flags.begin(), flags.end())) {}
-#endif
 
     Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(int mask) noexcept { i &= mask; return *this; }
     Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(uint mask) noexcept { i &= mask; return *this; }
@@ -154,14 +150,12 @@ public:
     }
 
 private:
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     Q_DECL_CONSTEXPR static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,
                                                                typename std::initializer_list<Enum>::const_iterator end)
     noexcept
     {
         return (it == end ? Int(0) : (Int(*it) | initializer_list_helper(it + 1, end)));
     }
-#endif
 
     Int i;
 };

@@ -46,6 +46,7 @@
 #include "qcoreevent.h"
 #include "qeventloop.h"
 #endif
+#include "qmetaobject.h"
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
@@ -690,7 +691,7 @@ void QCoreApplicationPrivate::initLocale()
     Returns a pointer to the application's QCoreApplication (or
     QGuiApplication/QApplication) instance.
 
-    If no instance has been allocated, \c null is returned.
+    If no instance has been allocated, \nullptr is returned.
 */
 
 /*!
@@ -952,6 +953,10 @@ bool QCoreApplication::isSetuidAllowed()
     Sets the attribute \a attribute if \a on is true;
     otherwise clears the attribute.
 
+    \note Some application attributes must be set \b before creating a
+    QCoreApplication instance. Refer to the Qt::ApplicationAttribute
+    documentation for more information.
+
     \sa testAttribute()
 */
 void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
@@ -960,6 +965,27 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
+    if (Q_UNLIKELY(qApp)) {
+        switch (attribute) {
+            case Qt::AA_EnableHighDpiScaling:
+            case Qt::AA_DisableHighDpiScaling:
+            case Qt::AA_PluginApplication:
+            case Qt::AA_UseDesktopOpenGL:
+            case Qt::AA_UseOpenGLES:
+            case Qt::AA_UseSoftwareOpenGL:
+            case Qt::AA_ShareOpenGLContexts:
+#ifdef QT_BOOTSTRAPPED
+                qWarning("Attribute %d must be set before QCoreApplication is created.",
+                         attribute);
+#else
+                qWarning("Attribute Qt::%s must be set before QCoreApplication is created.",
+                         QMetaEnum::fromType<Qt::ApplicationAttribute>().valueToKey(attribute));
+#endif
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 /*!
@@ -999,6 +1025,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
     quitLockRefEnabled = enabled;
 }
 
+#if QT_DEPRECATED_SINCE(5, 6)
 /*!
   \internal
   \deprecated
@@ -1010,6 +1037,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
     return notifyInternal2(receiver, event);
 }
+#endif
 
 /*!
   \internal
@@ -1183,28 +1211,26 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
     // Note: when adjusting the tracepoints in here
     // consider adjusting QApplicationPrivate::notify_helper too.
-    Q_TRACE_SCOPE(QCoreApplication_notify, receiver, event, event->type());
+    Q_TRACE(QCoreApplication_notify_entry, receiver, event, event->type());
+    bool consumed = false;
+    bool filtered = false;
+    Q_TRACE_EXIT(QCoreApplication_notify_exit, consumed, filtered);
 
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
             && receiver->d_func()->threadData->thread == mainThread()
             && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event)) {
-        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
-        return true;
+        filtered = true;
+        return filtered;
     }
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, event)) {
-        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
-        return true;
+        filtered = true;
+        return filtered;
     }
 
-    Q_TRACE(QCoreApplication_notify_before_delivery, receiver, event, event->type());
-
     // deliver the event
-    const bool consumed = receiver->event(event);
-
-    Q_TRACE(QCoreApplication_notify_after_delivery, receiver, event, event->type(), consumed);
-
+    consumed = receiver->event(event);
     return consumed;
 }
 

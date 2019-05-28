@@ -42,6 +42,8 @@
 
 #include <QtCore/qabstractitemmodel.h>
 
+QT_REQUIRE_CONFIG(concatenatetablesproxymodel);
+
 QT_BEGIN_NAMESPACE
 
 class QConcatenateTablesProxyModelPrivate;

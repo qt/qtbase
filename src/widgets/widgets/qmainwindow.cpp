@@ -596,7 +596,7 @@ QStatusBar *QMainWindow::statusBar() const
 /*!
     Sets the status bar for the main window to \a statusbar.
 
-    Setting the status bar to 0 will remove it from the main window.
+    Setting the status bar to \nullptr will remove it from the main window.
     Note that QMainWindow takes ownership of the \a statusbar pointer
     and deletes it at the appropriate time.
 
@@ -1464,8 +1464,8 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
 #if QT_CONFIG(menu)
 /*!
     Returns a popup menu containing checkable entries for the toolbars and
-    dock widgets present in the main window. If  there are no toolbars and
-    dock widgets present, this function returns a null pointer.
+    dock widgets present in the main window. If there are no toolbars and
+    dock widgets present, this function returns \nullptr.
 
     By default, this function is called by the main window when the user
     activates a context menu, typically by right-clicking on a toolbar or a dock

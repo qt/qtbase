@@ -89,9 +89,7 @@ public:
                        QueryType queryType = TcpServer);
 #endif
     QNetworkProxyQuery(const QNetworkProxyQuery &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkProxyQuery &operator=(QNetworkProxyQuery &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkProxyQuery &operator=(const QNetworkProxyQuery &other);
     ~QNetworkProxyQuery();
 
@@ -161,9 +159,7 @@ public:
     QNetworkProxy(ProxyType type, const QString &hostName = QString(), quint16 port = 0,
                   const QString &user = QString(), const QString &password = QString());
     QNetworkProxy(const QNetworkProxy &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkProxy &operator=(QNetworkProxy &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkProxy &operator=(const QNetworkProxy &other);
     ~QNetworkProxy();
 

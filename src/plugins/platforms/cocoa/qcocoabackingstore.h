@@ -76,9 +76,12 @@ public:
     void endPaint() override;
 
     void flush(QWindow *, const QRegion &, const QPoint &) override;
+#ifndef QT_NO_OPENGL
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
         QPlatformTextureList *textures, bool translucentBackground) override;
+#endif
 
+    QImage toImage() const override;
     QPlatformGraphicsBuffer *graphicsBuffer() const override;
 
 private:
@@ -93,6 +96,7 @@ private:
 
         QRegion dirtyRegion; // In unscaled coordinates
         QImage *asImage();
+        qreal devicePixelRatio() const { return m_devicePixelRatio; }
 
     private:
         qreal m_devicePixelRatio;

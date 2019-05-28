@@ -82,11 +82,9 @@ public:
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     inline QColor(const QColor &color) noexcept; // ### Qt 6: remove all of these, the trivial ones are fine.
-# ifdef Q_COMPILER_RVALUE_REFS
     QColor(QColor &&other) noexcept : cspec(other.cspec), ct(other.ct) {}
     QColor &operator=(QColor &&other) noexcept
     { cspec = other.cspec; ct = other.ct; return *this; }
-# endif
     QColor &operator=(const QColor &) noexcept;
 #endif // Qt < 6
 

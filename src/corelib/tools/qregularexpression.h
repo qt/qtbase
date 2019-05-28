@@ -86,11 +86,8 @@ public:
     QRegularExpression(const QRegularExpression &re);
     ~QRegularExpression();
     QRegularExpression &operator=(const QRegularExpression &re);
-
-#ifdef Q_COMPILER_RVALUE_REFS
     QRegularExpression &operator=(QRegularExpression &&re) noexcept
     { d.swap(re.d); return *this; }
-#endif
 
     void swap(QRegularExpression &other) noexcept { d.swap(other.d); }
 
@@ -186,11 +183,8 @@ public:
     ~QRegularExpressionMatch();
     QRegularExpressionMatch(const QRegularExpressionMatch &match);
     QRegularExpressionMatch &operator=(const QRegularExpressionMatch &match);
-
-#ifdef Q_COMPILER_RVALUE_REFS
     QRegularExpressionMatch &operator=(QRegularExpressionMatch &&match) noexcept
     { d.swap(match.d); return *this; }
-#endif
     void swap(QRegularExpressionMatch &other) noexcept { d.swap(other.d); }
 
     QRegularExpression regularExpression() const;
@@ -257,10 +251,8 @@ public:
     ~QRegularExpressionMatchIterator();
     QRegularExpressionMatchIterator(const QRegularExpressionMatchIterator &iterator);
     QRegularExpressionMatchIterator &operator=(const QRegularExpressionMatchIterator &iterator);
-#ifdef Q_COMPILER_RVALUE_REFS
     QRegularExpressionMatchIterator &operator=(QRegularExpressionMatchIterator &&iterator) noexcept
     { d.swap(iterator.d); return *this; }
-#endif
     void swap(QRegularExpressionMatchIterator &other) noexcept { d.swap(other.d); }
 
     bool isValid() const;

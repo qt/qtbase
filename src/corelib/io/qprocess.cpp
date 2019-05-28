@@ -776,6 +776,7 @@ void QProcessPrivate::Channel::clear()
 
 /*!
     \class QProcess::CreateProcessArguments
+    \inmodule QtCore
     \note This struct is only available on the Windows platform.
 
     This struct is a representation of all parameters of the Windows API
@@ -998,7 +999,12 @@ void QProcessPrivate::setErrorAndEmit(QProcess::ProcessError error, const QStrin
     Q_ASSERT(error != QProcess::UnknownError);
     setError(error, description);
     emit q->errorOccurred(processError);
+#if QT_DEPRECATED_SINCE(5, 6)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     emit q->error(processError);
+QT_WARNING_POP
+#endif
 }
 
 /*!

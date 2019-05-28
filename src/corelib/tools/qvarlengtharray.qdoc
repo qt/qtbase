@@ -110,6 +110,14 @@
     lists.
 */
 
+/*! \fn template<class T, int Prealloc> template<typename InputIterator> QVarLengthArray<T, Prealloc>::QVarLengthArray(InputIterator first, InputIterator last)
+    \since 5.14
+
+    Constructs an array with the contents in the iterator range [\a first, \a last).
+
+    The value type of \c InputIterator must be convertible to \c T.
+*/
+
 
 /*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::~QVarLengthArray()
 

@@ -210,6 +210,7 @@ void QWindowsUser32DLL::init()
 
     if (QOperatingSystemVersion::current()
         >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 14393)) {
+        adjustWindowRectExForDpi = (AdjustWindowRectExForDpi)library.resolve("AdjustWindowRectExForDpi");
         enableNonClientDpiScaling = (EnableNonClientDpiScaling)library.resolve("EnableNonClientDpiScaling");
         getWindowDpiAwarenessContext = (GetWindowDpiAwarenessContext)library.resolve("GetWindowDpiAwarenessContext");
         getAwarenessFromDpiAwarenessContext = (GetAwarenessFromDpiAwarenessContext)library.resolve("GetAwarenessFromDpiAwarenessContext");
@@ -590,7 +591,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
 
     d->m_registeredWindowClassNames.insert(cname);
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << cname
-        << " style=0x" << hex << style << dec
+        << " style=0x" << Qt::hex << style << Qt::dec
         << " brush=" << brush << " icon=" << icon << " atom=" << atom;
     return cname;
 }
@@ -712,7 +713,7 @@ static inline bool findPlatformWindowHelper(const POINT &screenPoint, unsigned c
                                             HWND *hwnd, QWindowsWindow **result)
 {
     POINT point = screenPoint;
-    ScreenToClient(*hwnd, &point);
+    screenToClient(*hwnd, &point);
     // Returns parent if inside & none matched.
     const HWND child = ChildWindowFromPointEx(*hwnd, point, cwexFlags);
     if (!child || child == *hwnd)
@@ -977,7 +978,7 @@ static inline bool resizeOnDpiChanged(const QWindow *w)
     return result;
 }
 
-static bool shouldHaveNonClientDpiScaling(const QWindow *window)
+bool QWindowsContext::shouldHaveNonClientDpiScaling(const QWindow *window)
 {
     return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
         && window->isTopLevel()
@@ -1042,7 +1043,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // For non-client-area messages, these are screen coordinates (as expected
         // in the MSG structure), otherwise they are client coordinates.
         if (!(et & QtWindows::NonClientEventFlag)) {
-            ClientToScreen(msg.hwnd, &msg.pt);
+            clientToScreen(msg.hwnd, &msg.pt);
         }
     } else {
         GetCursorPos(&msg.pt);
@@ -1133,13 +1134,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         case QtWindows::QuerySizeHints:
             d->m_creationContext->applyToMinMaxInfo(reinterpret_cast<MINMAXINFO *>(lParam));
             return true;
-        case QtWindows::ResizeEvent: {
-            const QSize size(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - d->m_creationContext->menuHeight);
-            d->m_creationContext->obtainedGeometry.setSize(size);
-        }
+        case QtWindows::ResizeEvent:
+            d->m_creationContext->obtainedSize = QSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::MoveEvent:
-            d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            d->m_creationContext->obtainedPos = QPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::NonClientCreate:
             if (shouldHaveNonClientDpiScaling(d->m_creationContext->window))
@@ -1321,15 +1320,24 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     }   break;
     case QtWindows::DpiChangedEvent: {
-        if (!resizeOnDpiChanged(platformWindow->window()))
-            return false;
-        platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
-        const RECT *prcNewWindow = reinterpret_cast<RECT *>(lParam);
-        SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
-                     prcNewWindow->right - prcNewWindow->left,
-                     prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
-        platformWindow->clearFlag(QWindowsWindow::WithinDpiChanged);
-        return true;
+        // Try to apply the suggested size first and then notify ScreenChanged
+        // so that the resize event sent from QGuiApplication incorporates it
+        // WM_DPICHANGED is sent with a size that avoids resize loops (by
+        // snapping back to the previous screen, see QTBUG-65580).
+        const bool doResize = resizeOnDpiChanged(platformWindow->window());
+        if (doResize) {
+            platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
+            platformWindow->updateFullFrameMargins();
+            const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
+            qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_DPICHANGED"
+                << platformWindow->window() << *prcNewWindow;
+            SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
+                         prcNewWindow->right - prcNewWindow->left,
+                         prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+            platformWindow->clearFlag(QWindowsWindow::WithinDpiChanged);
+        }
+        platformWindow->checkForScreenChanged(QWindowsWindow::FromDpiChange);
+        return doResize;
     }
 #if QT_CONFIG(sessionmanager)
     case QtWindows::QueryEndSessionApplicationEvent: {
@@ -1478,6 +1486,10 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
                                                      keyboardModifiers);
         }
     }
+    if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
+        d->m_pointerHandler.clearEvents();
+    else
+        d->m_mouseHandler.clearEvents();
 }
 
 bool QWindowsContext::asyncExpose() const
@@ -1570,7 +1582,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {
             qCDebug(lcQpaEvents).nospace() << "EVENT: hwd=" << hwnd << ' ' << eventName
-                << " msg=0x" << hex << message << " et=0x" << et << dec << " wp="
+                << " msg=0x" << Qt::hex << message << " et=0x" << et << Qt::dec << " wp="
                 << int(wParam) << " at " << GET_X_LPARAM(lParam) << ','
                 << GET_Y_LPARAM(lParam) << " handled=" << handled;
         }
@@ -1587,6 +1599,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
             marginsFromRects(ncCalcSizeFrame, rectFromNcCalcSize(message, wParam, lParam, 0));
         if (margins.left() >= 0) {
             if (platformWindow) {
+                qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_NCCALCSIZE for" << hwnd << margins;
                 platformWindow->setFullFrameMargins(margins);
             } else {
                 const QSharedPointer<QWindowCreationContext> ctx = QWindowsContext::instance()->windowCreationContext();

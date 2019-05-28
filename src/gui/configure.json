@@ -28,6 +28,7 @@
             "lgmon": "boolean",
             "libinput": "boolean",
             "libjpeg": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "libmd4c": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "libpng": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "linuxfb": "boolean",
             "mtdev": "boolean",
@@ -376,6 +377,17 @@
                 "-ljpeg"
             ]
         },
+        "libmd4c": {
+            "label": "libmd4c",
+            "test": {
+                "main": "md_parse(\"hello\", 5, nullptr, nullptr);"
+            },
+            "headers": "md4c.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "md4c" },
+                { "libs": "-lmd4c" }
+            ]
+        },
         "libpng": {
             "label": "libpng",
             "test": {
@@ -433,7 +445,7 @@
             ],
             "sources": [
                 { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
-                { "type": "openglMakeSpec" }
+                { "type": "makeSpec", "spec": "OPENGL" }
             ]
         },
         "opengl_es2": {
@@ -1191,14 +1203,14 @@
             "label": "  Using system FreeType",
             "enable": "input.freetype == 'system'",
             "disable": "input.freetype == 'qt'",
-            "autoDetect": "!config.win32",
+            "autoDetect": "!config.msvc",
             "condition": "features.freetype && libs.freetype",
             "output": [ "privateFeature" ]
         },
         "fontconfig": {
             "label": "Fontconfig",
             "autoDetect": "!config.darwin",
-            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
+            "condition": "!config.msvc && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "gbm": {
@@ -1582,6 +1594,28 @@
             "section": "Kernel",
             "output": [ "publicFeature", "feature" ]
         },
+        "textmarkdownreader": {
+            "label": "MarkdownReader",
+            "disable": "input.libmd4c == 'no'",
+            "enable": "input.libmd4c == 'system' || input.libmd4c == 'qt' || input.libmd4c == 'yes'",
+            "purpose": "Provides a Markdown (CommonMark and GitHub) reader",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
+        "system-textmarkdownreader": {
+            "label": "  Using system libmd4c",
+            "disable": "input.libmd4c == 'qt'",
+            "enable": "input.libmd4c == 'system'",
+            "section": "Kernel",
+            "condition": "libs.libmd4c",
+            "output": [ "publicFeature" ]
+        },
+        "textmarkdownwriter": {
+            "label": "MarkdownWriter",
+            "purpose": "Provides a Markdown (CommonMark) writer",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
         "textodfwriter": {
             "label": "OdfWriter",
             "purpose": "Provides an ODF writer.",
@@ -1624,7 +1658,7 @@
             "label": "QClipboard",
             "purpose": "Provides cut and paste operations.",
             "section": "Kernel",
-            "condition": "!config.integrity && !config.qnx",
+            "condition": "!config.integrity && !config.qnx && !config.rtems",
             "output": [ "publicFeature", "feature" ]
         },
         "wheelevent": {
@@ -1768,7 +1802,7 @@
             "label": "Multi process",
             "purpose": "Provides support for detecting the desktop environment, launching external processes and opening URLs.",
             "section": "Utilities",
-            "condition": "!config.integrity",
+            "condition": "!config.integrity && !config.rtems",
             "output": [ "privateFeature" ]
         },
         "whatsthis": {
@@ -1850,6 +1884,12 @@
                     "section": "Image formats",
                     "entries": [
                         "gif", "ico", "jpeg", "system-jpeg", "png", "system-png"
+                    ]
+                },
+                {
+                    "section": "Text formats",
+                    "entries": [
+                        "texthtmlparser", "cssparser", "textodfwriter", "textmarkdownreader", "system-textmarkdownreader", "textmarkdownwriter"
                     ]
                 },
                 "egl",

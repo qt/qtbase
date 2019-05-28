@@ -23,7 +23,7 @@ winrt {
 } else {
     CONFIG -= qt
     SOURCES = qtmain_win.cpp
-    LIBS += -lshell32
+    QMAKE_USE_PRIVATE += shell32
 }
 
 load(qt_installs)

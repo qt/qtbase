@@ -80,7 +80,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
     if (extensionStr) {
         QByteArray ba(extensionStr);
         QList<QByteArray> extensions = ba.split(' ');
-        m_extensions = extensions.toSet();
+        m_extensions = QSet<QByteArray>(extensions.constBegin(), extensions.constEnd());
     } else {
 #ifdef QT_OPENGL_3
         // clear error state
@@ -136,7 +136,7 @@ QDebug operator<<(QDebug d, const QOpenGLConfig::Gpu &g)
     d.nospace();
     d << "Gpu(";
     if (g.isValid()) {
-        d << "vendor=" << hex << showbase <<g.vendorId << ", device=" << g.deviceId
+        d << "vendor=" << Qt::hex << Qt::showbase <<g.vendorId << ", device=" << g.deviceId
           << "version=" << g.driverVersion;
     } else {
         d << 0;

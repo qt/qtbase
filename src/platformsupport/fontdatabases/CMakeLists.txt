@@ -77,12 +77,12 @@ extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
         windows/qwindowsnativeimage.cpp windows/qwindowsnativeimage_p.h
     LIBRARIES
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
         advapi32
         gdi32
         ole32
         user32
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )
 
 extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
@@ -115,7 +115,7 @@ extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT AND (NOT QT_FEAT
 )
 
 extend_target(FontDatabaseSupport CONDITION WIN32 AND mingw AND NOT WINRT
-    PUBLIC_LIBRARIES
+    LIBRARIES
         uuid
 )
 
@@ -127,7 +127,7 @@ extend_target(FontDatabaseSupport CONDITION WINRT
     LIBRARIES
         Qt::GuiPrivate
         dwrite_1
+        ws2_32
     PUBLIC_LIBRARIES
         Qt::Gui
-        ws2_32
 )

@@ -46,12 +46,13 @@
 #include <QtCore/qarraydata.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qcontainertools_impl.h>
 
-#include <iterator>
-#include <list>
 #include <algorithm>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
+#include <iterator>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#include <list>
 #endif
 
 #include <stdlib.h>
@@ -73,7 +74,7 @@ template <typename T> class QSet;
 template <typename T> struct QListSpecialMethods
 {
 protected:
-    ~QListSpecialMethods() {}
+    ~QListSpecialMethods() = default;
 };
 template <> struct QListSpecialMethods<QByteArray>;
 template <> struct QListSpecialMethods<QString>;
@@ -160,18 +161,15 @@ public:
     QList(const QList<T> &l);
     ~QList();
     QList<T> &operator=(const QList<T> &l);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QList(QList<T> &&other) noexcept
         : d(other.d) { other.d = const_cast<QListData::Data *>(&QListData::shared_null); }
     inline QList &operator=(QList<T> &&other) noexcept
     { QList moved(std::move(other)); swap(moved); return *this; }
-#endif
     inline void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args)
-        : d(const_cast<QListData::Data *>(&QListData::shared_null))
-    { reserve(int(args.size())); std::copy(args.begin(), args.end(), std::back_inserter(*this)); }
-#endif
+        : QList(args.begin(), args.end()) {}
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    QList(InputIterator first, InputIterator last);
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 
@@ -249,6 +247,8 @@ public:
         // can't remove it in Qt 5, since doing so would make the type trivial,
         // which changes the way it's passed to functions by value.
         inline iterator(const iterator &o) noexcept : i(o.i){}
+        inline iterator &operator=(const iterator &o) noexcept
+        { i = o.i; return *this; }
 #endif
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
@@ -302,6 +302,8 @@ public:
         // can't remove it in Qt 5, since doing so would make the type trivial,
         // which changes the way it's passed to functions by value.
         inline const_iterator(const const_iterator &o) noexcept : i(o.i) {}
+        inline const_iterator &operator=(const const_iterator &o) noexcept
+        { i = o.i; return *this; }
 #endif
 #ifdef QT_STRICT_ITERATORS
         inline explicit const_iterator(const iterator &o) noexcept : i(o.i) {}
@@ -401,16 +403,22 @@ public:
     inline QList<T> &operator<<(const QList<T> &l)
     { *this += l; return *this; }
 
+    static QList<T> fromVector(const QVector<T> &vector);
     QVector<T> toVector() const;
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use QList<T>(set.begin(), set.end()) instead.")
+    static QList<T> fromSet(const QSet<T> &set);
+    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
     QSet<T> toSet() const;
 
-    static QList<T> fromVector(const QVector<T> &vector);
-    static QList<T> fromSet(const QSet<T> &set);
-
+    Q_DECL_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
     static inline QList<T> fromStdList(const std::list<T> &list)
     { QList<T> tmp; std::copy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
+    Q_DECL_DEPRECATED_X("Use std::list<T>(list.begin(), list.end()) instead.")
     inline std::list<T> toStdList() const
     { std::list<T> tmp; std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+#endif
 
 private:
     Node *detach_helper_grow(int i, int n);
@@ -706,7 +714,7 @@ inline void QList<T>::swapItemsAt(int i, int j)
     Q_ASSERT_X(i >= 0 && i < p.size() && j >= 0 && j < p.size(),
                 "QList<T>::swap", "index out of range");
     detach();
-    std::swap(d->array[d->begin + i], d->array[d->begin + j]);
+    qSwap(d->array[d->begin + i], d->array[d->begin + j]);
 }
 
 template <typename T>
@@ -840,6 +848,15 @@ Q_OUTOFLINE_TEMPLATE QList<T>::~QList()
 {
     if (!d->ref.deref())
         dealloc(d);
+}
+
+template <typename T>
+template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator>>
+QList<T>::QList(InputIterator first, InputIterator last)
+    : QList()
+{
+    QtPrivate::reserveIfForwardIterator(this, first, last);
+    std::copy(first, last, std::back_inserter(*this));
 }
 
 template <typename T>

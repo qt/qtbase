@@ -1,13 +1,21 @@
 QT_FOR_CONFIG += gui
 
+defineTest(prependOpenGlLib) {
+    path = $$QT.core.libs/$$QMAKE_PREFIX_STATICLIB$$1
+    ext = .$$QMAKE_EXTENSION_STATICLIB
+    QMAKE_LIBS_OPENGL_ES2 = $${path}$${ext} $$QMAKE_LIBS_OPENGL_ES2
+    QMAKE_LIBS_OPENGL_ES2_DEBUG = $${path}d$${ext} $$QMAKE_LIBS_OPENGL_ES2_DEBUG
+    export(QMAKE_LIBS_OPENGL_ES2)
+    export(QMAKE_LIBS_OPENGL_ES2_DEBUG)
+}
+
 qtConfig(opengles2) {
     # Depending on the configuration we use libQtANGLE or libEGL and libGLESv2
     qtConfig(combined-angle-lib) {
-        QMAKE_LIBS_OPENGL_ES2 = -l$${LIBQTANGLE_NAME} $$QMAKE_LIBS_OPENGL_ES2
-        QMAKE_LIBS_OPENGL_ES2_DEBUG = -l$${LIBQTANGLE_NAME}d $$QMAKE_LIBS_OPENGL_ES2_DEBUG
+        prependOpenGlLib($$LIBQTANGLE_NAME)
     } else {
-        QMAKE_LIBS_OPENGL_ES2 = -l$${LIBEGL_NAME} -l$${LIBGLESV2_NAME} $$QMAKE_LIBS_OPENGL_ES2
-        QMAKE_LIBS_OPENGL_ES2_DEBUG = -l$${LIBEGL_NAME}d -l$${LIBGLESV2_NAME}d $$QMAKE_LIBS_OPENGL_ES2_DEBUG
+        prependOpenGlLib($$LIBGLESV2_NAME)
+        prependOpenGlLib($$LIBEGL_NAME)
     }
 #   For Desktop, use the ANGLE library location passed on from configure.
     INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES2

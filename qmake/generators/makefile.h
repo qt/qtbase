@@ -54,7 +54,7 @@ struct ReplaceExtraCompilerCacheKey;
 class MakefileGenerator : protected QMakeSourceFileInfo
 {
     QString spec;
-    bool no_io;
+    bool no_io = false;
     bool resolveDependenciesInFrameworks = false;
     QHash<QString, bool> init_compiler_already;
     QString makedir, chkexists;
@@ -131,7 +131,7 @@ protected:
     QMakeLocalFileName fixPathForFile(const QMakeLocalFileName &, bool) override;
     QMakeLocalFileName findFileForDep(const QMakeLocalFileName &, const QMakeLocalFileName &) override;
     QFileInfo findFileInfo(const QMakeLocalFileName &) override;
-    QMakeProject *project;
+    QMakeProject *project = nullptr;
 
     //escape
     virtual QString escapeFilePath(const QString &path) const = 0;
@@ -256,8 +256,6 @@ protected:
                             const QString &fixedFile);
 
 public:
-    MakefileGenerator();
-    ~MakefileGenerator();
     QMakeProject *projectFile() const;
     void setProjectFile(QMakeProject *p);
 
@@ -294,9 +292,6 @@ inline QString MakefileGenerator::installRoot() const
 
 inline bool MakefileGenerator::findLibraries(bool, bool)
 { return true; }
-
-inline MakefileGenerator::~MakefileGenerator()
-{ }
 
 struct ReplaceExtraCompilerCacheKey
 {

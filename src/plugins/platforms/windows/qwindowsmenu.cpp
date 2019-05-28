@@ -896,8 +896,8 @@ void QWindowsMenuItem::formatDebug(QDebug &d) const
         d << ", parentMenu=" << static_cast<const void *>(m_parentMenu);
     if (m_subMenu)
         d << ", subMenu=" << static_cast<const void *>(m_subMenu);
-    d << ", tag=" << showbase << hex
-      << tag() << noshowbase << dec << ", id=" << m_id;
+    d << ", tag=" << Qt::showbase << Qt::hex
+      << tag() << Qt::noshowbase << Qt::dec << ", id=" << m_id;
 #if QT_CONFIG(shortcut)
     if (!m_shortcut.isEmpty())
         d << ", shortcut=" << m_shortcut;
@@ -933,7 +933,7 @@ void QWindowsMenu::formatDebug(QDebug &d) const
     if (m_parentMenu != nullptr)
         d << " [on menu]";
     if (tag())
-        d << ", tag=" << showbase << hex << tag() << noshowbase << dec;
+        d << ", tag=" << Qt::showbase << Qt::hex << tag() << Qt::noshowbase << Qt::dec;
     if (m_visible)
         d << " [visible]";
     if (m_enabled)

@@ -163,7 +163,8 @@ private Q_SLOTS:
     void streamSerializationQJsonValue();
     void streamSerializationQJsonValueEmpty();
     void streamVariantSerialization();
-
+    void escapeSurrogateCodePoints_data();
+    void escapeSurrogateCodePoints();
 private:
     QString testDataDir;
 };
@@ -2754,9 +2755,6 @@ void tst_QtJson::testJsonValueRefDefault()
 
 void tst_QtJson::arrayInitializerList()
 {
-#ifndef Q_COMPILER_INITIALIZER_LISTS
-    QSKIP("initializer_list is enabled only with c++11 support");
-#else
     QVERIFY(QJsonArray{}.isEmpty());
     QCOMPARE(QJsonArray{"one"}.count(), 1);
     QCOMPARE(QJsonArray{1}.count(), 1);
@@ -2802,14 +2800,10 @@ void tst_QtJson::arrayInitializerList()
             QCOMPARE(QJsonValue(a43["one"]), QJsonValue(1));
         }
     }
-#endif
 }
 
 void tst_QtJson::objectInitializerList()
 {
-#ifndef Q_COMPILER_INITIALIZER_LISTS
-    QSKIP("initializer_list is enabled only with c++11 support");
-#else
     QVERIFY(QJsonObject{}.isEmpty());
 
     {   // one property
@@ -2849,7 +2843,6 @@ void tst_QtJson::objectInitializerList()
         QCOMPARE(QJsonValue(nested[0]), QJsonValue("innerValue"));
         QCOMPARE(QJsonValue(nested[1]), QJsonValue(2.1));
     }
-#endif
 }
 
 void tst_QtJson::unicodeKeys()
@@ -3093,6 +3086,9 @@ void tst_QtJson::streamSerializationQJsonValue_data()
     QTest::newRow("string") << QJsonValue{QStringLiteral("bum")};
     QTest::newRow("array") << QJsonValue{QJsonArray{12,1,5,6,7}};
     QTest::newRow("object") << QJsonValue{QJsonObject{{"foo", 665}, {"bar", 666}}};
+    // test json escape sequence
+    QTest::newRow("array with 0xD800") << QJsonValue(QJsonArray{QString(0xD800)});
+    QTest::newRow("array with 0xDF06,0xD834") << QJsonValue(QJsonArray{QString(0xDF06).append(0xD834)});
 }
 
 void tst_QtJson::streamSerializationQJsonValue()
@@ -3179,6 +3175,27 @@ void tst_QtJson::streamVariantSerialization()
         QCOMPARE(output.userType(), QMetaType::QJsonValue);
         QCOMPARE(output.toJsonValue(), value);
     }
+}
+
+void tst_QtJson::escapeSurrogateCodePoints_data()
+{
+    QTest::addColumn<QString>("str");
+    QTest::addColumn<QByteArray>("escStr");
+    QTest::newRow("0xD800") << QString(0xD800) << QByteArray("\\ud800");
+    QTest::newRow("0xDF06,0xD834") << QString(0xDF06).append(0xD834) << QByteArray("\\udf06\\ud834");
+}
+
+void tst_QtJson::escapeSurrogateCodePoints()
+{
+    QFETCH(QString, str);
+    QFETCH(QByteArray, escStr);
+    QJsonArray array;
+    array.append(str);
+    QByteArray buffer;
+    QDataStream save(&buffer, QIODevice::WriteOnly);
+    save << array;
+    // verify the buffer has escaped values
+    QVERIFY(buffer.contains(escStr));
 }
 
 QTEST_MAIN(tst_QtJson)

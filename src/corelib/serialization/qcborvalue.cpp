@@ -766,8 +766,8 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
     if (qt_is_nan(d)) {
         if (opt & QCborValue::UseFloat16) {
             if ((opt & QCborValue::UseFloat16) == QCborValue::UseFloat16)
-                return writer.append(qfloat16(qt_qnan()));
-            return writer.append(float(qt_qnan()));
+                return writer.append(std::numeric_limits<qfloat16>::quiet_NaN());
+            return writer.append(std::numeric_limits<float>::quiet_NaN());
         }
         return writer.append(qt_qnan());
     }
@@ -2941,7 +2941,7 @@ static QDebug debugContents(QDebug &dbg, const QCborValue &v)
     }
     if (v.isSimpleType())
         return dbg << v.toSimpleType();
-    return dbg << "<unknown type " << hex << int(v.type()) << dec << '>';
+    return dbg << "<unknown type " << Qt::hex << int(v.type()) << Qt::dec << '>';
 }
 QDebug operator<<(QDebug dbg, const QCborValue &v)
 {

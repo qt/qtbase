@@ -37,6 +37,8 @@ add_qt_plugin(qwindows
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
+    INCLUDE_DIRECTORIES
+        .
     LIBRARIES
         Qt::CorePrivate
         Qt::EventDispatcherSupportPrivate
@@ -44,15 +46,22 @@ add_qt_plugin(qwindows
         Qt::GuiPrivate
         Qt::ThemeSupportPrivate
         advapi32
-        dwmapi
+        d3d9
         gdi32
-        imm32
         ole32
-        oleaut32
         shell32
-        shlwapi
         user32
         winmm
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EventDispatcherSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
+        Qt::ThemeSupport
+        dwmapi
+        imm32
+        oleaut32
+        shlwapi
         winspool
         wtsapi32
 )
@@ -64,10 +73,9 @@ add_qt_resource(qwindows "openglblacklists" PREFIX "/qt-project.org/windows/open
     openglblacklists/default.json)
 
 
-#### Keys ignored in scope 1:.:windows.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:windows.pro:<TRUE>:
 # OTHER_FILES = "windows.json"
 # PLUGIN_CLASS_NAME = "QWindowsIntegrationPlugin"
-# QT_FOR_CONFIG = "gui"
 # _LOADED = "qt_plugin"
 
 ## Scopes:
@@ -92,8 +100,11 @@ extend_target(qwindows CONDITION QT_FEATURE_accessibility
         uiautomation/qwindowsuiatoggleprovider.cpp uiautomation/qwindowsuiatoggleprovider.h
         uiautomation/qwindowsuiautils.cpp uiautomation/qwindowsuiautils.h
         uiautomation/qwindowsuiavalueprovider.cpp uiautomation/qwindowsuiavalueprovider.h
+        uiautomation/qwindowsuiawindowprovider.cpp uiautomation/qwindowsuiawindowprovider.h
     LIBRARIES
         Qt::AccessibilitySupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::AccessibilitySupport
 )
 
 extend_target(qwindows CONDITION QT_FEATURE_vulkan
@@ -101,18 +112,20 @@ extend_target(qwindows CONDITION QT_FEATURE_vulkan
         qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
     LIBRARIES
         Qt::VulkanSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::VulkanSupport
 )
 
-#### Keys ignored in scope 4:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 4:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 extend_target(qwindows CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2
-    LIBRARIES
+    PUBLIC_LIBRARIES
         opengl32
 )
 
 extend_target(qwindows CONDITION mingw
-    LIBRARIES
+    PUBLIC_LIBRARIES
         uuid
 )
 
@@ -188,13 +201,15 @@ add_qt_resource(qwindows "cursors" PREFIX "/qt-project.org/windows/cursors" FILE
     images/splitvcursor_64.png)
 
 
-extend_target(qwindows CONDITION (QT_FEATURE_accessibility) AND (TARGET WindowsUIAutomationSupportPrivate)
+extend_target(qwindows CONDITION (QT_FEATURE_accessibility) AND (TARGET Qt::WindowsUIAutomationSupportPrivate)
     LIBRARIES
         Qt::WindowsUIAutomationSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::WindowsUIAutomationSupport
 )
 
 extend_target(qwindows CONDITION QT_FEATURE_accessibility AND mingw
-    LIBRARIES
+    PUBLIC_LIBRARIES
         uuid
 )
 

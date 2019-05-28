@@ -79,8 +79,6 @@ IconPreviewArea::IconPreviewArea(QWidget *parent)
 }
 //! [0]
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-
 //! [42]
 QVector<QIcon::Mode> IconPreviewArea::iconModes()
 {
@@ -106,44 +104,6 @@ QStringList IconPreviewArea::iconStateNames()
     return result;
 }
 //! [42]
-
-#else // Q_COMPILER_INITIALIZER_LISTS
-
-//! [43]
-QVector<QIcon::Mode> IconPreviewArea::iconModes()
-{
-    static QVector<QIcon::Mode> result;
-    if (result.isEmpty())
-        result << QIcon::Normal << QIcon::Active << QIcon::Disabled << QIcon::Selected;
-    return result;
-}
-//! [43]
-
-QVector<QIcon::State> IconPreviewArea::iconStates()
-{
-    static QVector<QIcon::State> result;
-    if (result.isEmpty())
-        result << QIcon::Off << QIcon::On;
-    return result;
-}
-
-QStringList IconPreviewArea::iconModeNames()
-{
-    static QStringList result;
-    if (result.isEmpty())
-        result << tr("Normal") << tr("Active") << tr("Disabled") << tr("Selected");
-    return result;
-}
-
-QStringList IconPreviewArea::iconStateNames()
-{
-    static QStringList result;
-    if (result.isEmpty())
-        result << tr("Off") << tr("On");
-    return result;
-}
-
-#endif // !Q_COMPILER_INITIALIZER_LISTS
 
 //! [1]
 void IconPreviewArea::setIcon(const QIcon &icon)

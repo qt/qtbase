@@ -104,8 +104,8 @@ class Q_CORE_EXPORT QXmlStreamAttribute {
 public:
     QXmlStreamAttribute();
     QXmlStreamAttribute(const QString &qualifiedName, const QString &value);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamAttribute(const QXmlStreamAttribute &);
     QXmlStreamAttribute(QXmlStreamAttribute &&other) noexcept // = default;
         : m_name(std::move(other.m_name)),
@@ -191,6 +191,7 @@ class Q_CORE_EXPORT QXmlStreamNamespaceDeclaration {
     friend class QXmlStreamReaderPrivate;
 public:
     QXmlStreamNamespaceDeclaration();
+    QXmlStreamNamespaceDeclaration(const QString &prefix, const QString &namespaceUri);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamNamespaceDeclaration(const QXmlStreamNamespaceDeclaration &);
     QXmlStreamNamespaceDeclaration(QXmlStreamNamespaceDeclaration &&other) noexcept // = default
@@ -207,7 +208,6 @@ public:
         qSwap(reserved, other.reserved);
         return *this;
     }
-    QXmlStreamNamespaceDeclaration(const QString &prefix, const QString &namespaceUri);
     ~QXmlStreamNamespaceDeclaration();
     QXmlStreamNamespaceDeclaration& operator=(const QXmlStreamNamespaceDeclaration &);
 #endif // < Qt 6

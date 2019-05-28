@@ -52,17 +52,21 @@ QT_BEGIN_NAMESPACE
 
 template <class T> class QSharedDataPointer;
 
-class Q_CORE_EXPORT QSharedData
+class
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_CORE_EXPORT
+#endif
+QSharedData
 {
 public:
     mutable QAtomicInt ref;
 
-    inline QSharedData() : ref(0) { }
-    inline QSharedData(const QSharedData &) : ref(0) { }
+    inline QSharedData() noexcept : ref(0) { }
+    inline QSharedData(const QSharedData &) noexcept : ref(0) { }
 
-private:
     // using the assignment operator would lead to corruption in the ref-counting
-    QSharedData &operator=(const QSharedData &);
+    QSharedData &operator=(const QSharedData &) = delete;
+    ~QSharedData() = default;
 };
 
 template <class T> class QSharedDataPointer
@@ -112,7 +116,6 @@ public:
         }
         return *this;
     }
-#ifdef Q_COMPILER_RVALUE_REFS
     QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(o.d) { o.d = nullptr; }
     inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other) noexcept
     {
@@ -120,7 +123,6 @@ public:
         swap(moved);
         return *this;
     }
-#endif
 
     inline bool operator!() const { return !d; }
 
@@ -218,7 +220,6 @@ public:
         }
         return *this;
     }
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(o.d) { o.d = nullptr; }
     inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other) noexcept
     {
@@ -226,7 +227,6 @@ public:
         swap(moved);
         return *this;
     }
-#endif
 
     inline bool operator!() const { return !d; }
 

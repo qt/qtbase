@@ -28,7 +28,6 @@
 
 #include "unixmake.h"
 #include "option.h"
-#include <qregexp.h>
 #include <qfile.h>
 #include <qhash.h>
 #include <qdir.h>

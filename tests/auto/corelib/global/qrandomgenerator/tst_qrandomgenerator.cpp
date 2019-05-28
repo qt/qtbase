@@ -511,7 +511,7 @@ void tst_QRandomGenerator::generateNonContiguous()
     QFETCH(uint, control);
     RandomGenerator rng(control);
 
-    QLinkedList<quint64> list = { 0, 0, 0, 0,  0, 0, 0, 0 };
+    std::list<quint64> list(8);
     auto longerArrayCheck = [&] {
         QRandomGenerator().generate(list.begin(), list.end());
         return find_if(list.begin(), list.end(), [&](quint64 cur) {

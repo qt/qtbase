@@ -55,10 +55,8 @@ public:
     public:
         Key();
         Key(const Key &other);
-#ifdef Q_COMPILER_RVALUE_REFS
         Key(Key &&other) noexcept : d(other.d) { other.d = nullptr; }
         Key &operator =(Key &&other) noexcept { swap(other); return *this; }
-#endif
         ~Key();
         bool operator ==(const Key &key) const;
         inline bool operator !=(const Key &key) const

@@ -248,8 +248,8 @@ private:
 
     struct Buddy
     {
-        QString objName;
-        QString buddy;
+        QString labelVarName;
+        QString buddyAttributeName;
     };
     friend class QTypeInfo<Buddy>;
 
@@ -259,8 +259,6 @@ private:
     QVector<Buddy> m_buddies;
 
     QSet<QString> m_buttonGroups;
-    QHash<QString, DomWidget*> m_registeredWidgets;
-    QHash<QString, DomAction*> m_registeredActions;
     typedef QHash<uint, QString> ColorBrushHash;
     ColorBrushHash m_colorBrushHash;
     // Map from font properties to  font variable name for reuse

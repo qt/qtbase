@@ -2919,7 +2919,7 @@ void QSettings::setIniCodec(const char *codecName)
     \since 4.5
 
     Returns the codec that is used for accessing INI files. By default,
-    no codec is used, so a null pointer is returned.
+    no codec is used, so \nullptr is returned.
 */
 
 QTextCodec *QSettings::iniCodec() const

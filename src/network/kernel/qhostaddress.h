@@ -102,11 +102,8 @@ public:
     QHostAddress(SpecialAddress address);
     ~QHostAddress();
 
-#ifdef Q_COMPILER_RVALUE_REFS
     QHostAddress &operator=(QHostAddress &&other) noexcept
     { swap(other); return *this; }
-#endif
-
     QHostAddress &operator=(const QHostAddress &other);
 #if QT_DEPRECATED_SINCE(5, 8)
     QT_DEPRECATED_X("use = QHostAddress(string) instead")

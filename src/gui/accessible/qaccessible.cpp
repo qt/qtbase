@@ -526,7 +526,7 @@ static void qAccessibleCleanup()
     to it.
 
     If the key and the QObject does not have a corresponding
-    QAccessibleInterface, a null-pointer will be returned.
+    QAccessibleInterface, \nullptr will be returned.
 
     Installed factories are called by queryAccessibilityInterface() until
     one provides an interface.
@@ -1858,7 +1858,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         return d;
     }
     d.nospace();
-    d << "QAccessibleInterface(" << hex << (const void *) iface << dec;
+    d << "QAccessibleInterface(" << Qt::hex << (const void *) iface << Qt::dec;
     if (iface->isValid()) {
         d << " name=" << iface->text(QAccessible::Name) << ' ';
         d << "role=" << qAccessibleRoleString(iface->role()) << ' ';
@@ -1897,7 +1897,7 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
     QDebugStateSaver saver(d);
     d.nospace() << "QAccessibleEvent(";
     if (ev.object()) {
-        d.nospace() << "object=" << hex << ev.object() << dec;
+        d.nospace() << "object=" << Qt::hex << ev.object() << Qt::dec;
         d.nospace() << "child=" << ev.child();
     } else {
         d.nospace() << "no object, uniqueId=" << ev.uniqueId();

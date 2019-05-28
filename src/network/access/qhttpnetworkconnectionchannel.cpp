@@ -59,6 +59,8 @@
 #include "private/qnetworksession_p.h"
 #endif
 
+#include "private/qnetconmonitor_p.h"
+
 QT_BEGIN_NAMESPACE
 
 namespace
@@ -895,6 +897,16 @@ void QHttpNetworkConnectionChannel::_q_connected()
     socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
     pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningSupportUnknown;
+
+    if (QNetworkStatusMonitor::isEnabled()) {
+        auto connectionPrivate = connection->d_func();
+        if (!connectionPrivate->connectionMonitor.isMonitoring()) {
+            // Now that we have a pair of addresses, we can start monitoring the
+            // connection status to handle its loss properly.
+            if (connectionPrivate->connectionMonitor.setTargets(socket->localAddress(), socket->peerAddress()))
+                connectionPrivate->connectionMonitor.startMonitoring();
+        }
+    }
 
     // ### FIXME: if the server closes the connection unexpectedly, we shouldn't send the same broken request again!
     //channels[i].reconnectAttempts = 2;

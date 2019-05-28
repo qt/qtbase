@@ -10,6 +10,7 @@ add_qt_module(VulkanSupport
     STATIC
     SOURCES
         qbasicvulkanplatforminstance.cpp qbasicvulkanplatforminstance_p.h
+        qvkconvenience.cpp qvkconvenience_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES

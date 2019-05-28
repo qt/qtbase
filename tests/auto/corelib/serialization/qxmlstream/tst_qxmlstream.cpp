@@ -115,7 +115,7 @@ static QByteArray makeCanonical(const QString &filename,
                     writeDtd << "<!DOCTYPE ";
                     writeDtd << docType;
                     writeDtd << " [";
-                    writeDtd << endl;
+                    writeDtd << Qt::endl;
                     for (const QXmlStreamNotationDeclaration &notation : sorted_by_name(notationDeclarations)) {
                         writeDtd << "<!NOTATION ";
                         writeDtd << notation.name().toString();
@@ -134,11 +134,11 @@ static QByteArray makeCanonical(const QString &filename,
                             }
                         }
                         writeDtd << '>';
-                        writeDtd << endl;
+                        writeDtd << Qt::endl;
                     }
 
                     writeDtd << "]>";
-                    writeDtd << endl;
+                    writeDtd << Qt::endl;
                     writer.writeDTD(dtd);
                 }
             } else if (reader.isStartElement()) {
@@ -740,7 +740,7 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
         const auto attributes = reader.attributes();
         if (attributes.size()) {
             for (const QXmlStreamAttribute &attribute : attributes) {
-                writer << endl << "    Attribute(";
+                writer << Qt::endl << "    Attribute(";
                 if (!attribute.name().isEmpty())
                     writer << " name=\"" << attribute.name().toString() << '"';
                 if (!attribute.namespaceUri().isEmpty())
@@ -751,37 +751,37 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
                     writer << " prefix=\"" << attribute.prefix().toString() << '"';
                 if (!attribute.value().isEmpty())
                     writer << " value=\"" << attribute.value().toString() << '"';
-                writer << " )" << endl;
+                writer << " )" << Qt::endl;
             }
         }
         const auto namespaceDeclarations = reader.namespaceDeclarations();
         if (namespaceDeclarations.size()) {
             for (const QXmlStreamNamespaceDeclaration &namespaceDeclaration : namespaceDeclarations) {
-                writer << endl << "    NamespaceDeclaration(";
+                writer << Qt::endl << "    NamespaceDeclaration(";
                 if (!namespaceDeclaration.prefix().isEmpty())
                     writer << " prefix=\"" << namespaceDeclaration.prefix().toString() << '"';
                 if (!namespaceDeclaration.namespaceUri().isEmpty())
                     writer << " namespaceUri=\"" << namespaceDeclaration.namespaceUri().toString() << '"';
-                writer << " )" << endl;
+                writer << " )" << Qt::endl;
             }
         }
         const auto notationDeclarations = reader.notationDeclarations();
         if (notationDeclarations.size()) {
             for (const QXmlStreamNotationDeclaration &notationDeclaration : notationDeclarations) {
-                writer << endl << "    NotationDeclaration(";
+                writer << Qt::endl << "    NotationDeclaration(";
                 if (!notationDeclaration.name().isEmpty())
                     writer << " name=\"" << notationDeclaration.name().toString() << '"';
                 if (!notationDeclaration.systemId().isEmpty())
                     writer << " systemId=\"" << notationDeclaration.systemId().toString() << '"';
                 if (!notationDeclaration.publicId().isEmpty())
                     writer << " publicId=\"" << notationDeclaration.publicId().toString() << '"';
-                writer << " )" << endl;
+                writer << " )" << Qt::endl;
             }
         }
         const auto entityDeclarations = reader.entityDeclarations();
         if (entityDeclarations.size()) {
             for (const QXmlStreamEntityDeclaration &entityDeclaration : entityDeclarations) {
-                writer << endl << "    EntityDeclaration(";
+                writer << Qt::endl << "    EntityDeclaration(";
                 if (!entityDeclaration.name().isEmpty())
                     writer << " name=\"" << entityDeclaration.name().toString() << '"';
                 if (!entityDeclaration.notationName().isEmpty())
@@ -792,13 +792,13 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
                     writer << " publicId=\"" << entityDeclaration.publicId().toString() << '"';
                 if (!entityDeclaration.value().isEmpty())
                     writer << " value=\"" << entityDeclaration.value().toString() << '"';
-                writer << " )" << endl;
+                writer << " )" << Qt::endl;
             }
         }
-        writer << " )" << endl;
+        writer << " )" << Qt::endl;
     }
     if (reader.hasError())
-        writer << "ERROR: " << reader.errorString() << endl;
+        writer << "ERROR: " << reader.errorString() << Qt::endl;
     return outarray;
 }
 
@@ -1169,7 +1169,7 @@ int main(int argc, char *argv[])
         bool error = false;
         QByteArray canonical = makeCanonical(argv[2], "doc", error);
         QTextStream myStdOut(stdout);
-        myStdOut << canonical << endl;
+        myStdOut << canonical << Qt::endl;
         exit(0);
     }
 

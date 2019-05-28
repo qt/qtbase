@@ -7,6 +7,7 @@ HEADERS +=  \
         global/qsystemdetection.h \
         global/qcompilerdetection.h \
         global/qprocessordetection.h \
+        global/qmemory_p.h \
 	global/qnamespace.h \
         global/qendian.h \
         global/qendian_p.h \

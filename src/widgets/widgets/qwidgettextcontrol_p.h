@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -128,6 +128,9 @@ public:
 #ifndef QT_NO_TEXTHTMLPARSER
     QString toHtml() const;
 #endif
+#if QT_CONFIG(textmarkdownwriter)
+    QString toMarkdown(QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub) const;
+#endif
 
     virtual void ensureCursorVisible();
 
@@ -194,6 +197,9 @@ public:
 
 public Q_SLOTS:
     void setPlainText(const QString &text);
+#if QT_CONFIG(textmarkdownreader)
+    void setMarkdown(const QString &text);
+#endif
     void setHtml(const QString &text);
 
 #ifndef QT_NO_CLIPBOARD

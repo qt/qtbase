@@ -552,7 +552,7 @@ void tst_QLocalSocket::sendData()
         QCOMPARE(serverSocket->state(), QLocalSocket::ConnectedState);
         QTextStream out(serverSocket);
         QTextStream in(&socket);
-        out << testLine << endl;
+        out << testLine << Qt::endl;
         bool wrote = serverSocket->waitForBytesWritten(3000);
 
         if (!socket.canReadLine()) {
@@ -877,7 +877,7 @@ public:
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);
             QTextStream out(serverSocket);
-            out << testLine << endl;
+            out << testLine << Qt::endl;
             QCOMPARE(serverSocket->state(), QLocalSocket::ConnectedState);
             QVERIFY2(serverSocket->waitForBytesWritten(), serverSocket->errorString().toLatin1().constData());
             QCOMPARE(serverSocket->errorString(), QString("Unknown error"));

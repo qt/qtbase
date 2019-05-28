@@ -64,6 +64,7 @@ public:
 
     void processButton(libinput_event_pointer *e);
     void processMotion(libinput_event_pointer *e);
+    void processAbsMotion(libinput_event_pointer *e);
     void processAxis(libinput_event_pointer *e);
 
     void setPos(const QPoint &pos);

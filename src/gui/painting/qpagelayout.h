@@ -82,9 +82,7 @@ public:
                 const QMarginsF &margins, Unit units = Point,
                 const QMarginsF &minMargins = QMarginsF(0, 0, 0, 0));
     QPageLayout(const QPageLayout &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QPageLayout &operator=(QPageLayout &&other) noexcept { swap(other); return *this; }
-#endif
     QPageLayout &operator=(const QPageLayout &other);
     ~QPageLayout();
 

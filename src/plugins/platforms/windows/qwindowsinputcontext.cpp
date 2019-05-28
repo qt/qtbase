@@ -657,9 +657,9 @@ void QWindowsInputContext::handleInputLanguageChanged(WPARAM wparam, LPARAM lpar
     m_locale = qt_localeFromLCID(m_languageId);
     emitLocaleChanged();
 
-    qCDebug(lcQpaInputMethods) << __FUNCTION__ << hex << showbase
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << Qt::hex << Qt::showbase
         << oldLanguageId  << "->" << newLanguageId << "Character set:"
-        << DWORD(wparam) << dec << noshowbase << m_locale;
+        << DWORD(wparam) << Qt::dec << Qt::noshowbase << m_locale;
 }
 
 /*!

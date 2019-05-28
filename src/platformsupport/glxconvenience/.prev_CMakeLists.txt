@@ -1,0 +1,25 @@
+# Generated from glxconvenience.pro.
+
+#####################################################################
+## GlxSupport Module:
+#####################################################################
+
+add_qt_module(GlxSupport
+    STATIC
+    SOURCES
+        qglxconvenience.cpp qglxconvenience_p.h
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
+        X11::XCB
+)
+
+#### Keys ignored in scope 1:.:.:glxconvenience.pro:<TRUE>:
+# CONFIG = "static" "internal_module"
+# MODULE = "glx_support"
+# _LOADED = "qt_module"

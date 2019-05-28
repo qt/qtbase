@@ -30,13 +30,17 @@
 #include <qregexp.h>
 #include <qregularexpression.h>
 #include <qstringlist.h>
+#include <qvector.h>
 
 #include <locale.h>
+
+#include <algorithm>
 
 class tst_QStringList : public QObject
 {
     Q_OBJECT
 private slots:
+    void constructors();
     void sort();
     void filter();
     void replaceInStrings();
@@ -59,12 +63,43 @@ private slots:
     void joinChar() const;
     void joinChar_data() const;
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     void initializeList() const;
-#endif
 };
 
 extern const char email[];
+
+void tst_QStringList::constructors()
+{
+    {
+        QStringList list;
+        QVERIFY(list.isEmpty());
+        QCOMPARE(list.size(), 0);
+        QVERIFY(list == QStringList());
+    }
+    {
+        QString str = "abc";
+        QStringList list(str);
+        QVERIFY(!list.isEmpty());
+        QCOMPARE(list.size(), 1);
+        QCOMPARE(list.at(0), str);
+    }
+    {
+        QStringList list{ "a", "b", "c" };
+        QVERIFY(!list.isEmpty());
+        QCOMPARE(list.size(), 3);
+        QCOMPARE(list.at(0), "a");
+        QCOMPARE(list.at(1), "b");
+        QCOMPARE(list.at(2), "c");
+    }
+    {
+        const QVector<QString> reference{ "a", "b", "c" };
+        QCOMPARE(reference.size(), 3);
+
+        QStringList list(reference.cbegin(), reference.cend());
+        QCOMPARE(list.size(), reference.size());
+        QVERIFY(std::equal(list.cbegin(), list.cend(), reference.cbegin()));
+    }
+}
 
 void tst_QStringList::indexOf_regExp()
 {
@@ -482,8 +517,6 @@ void tst_QStringList::joinEmptiness() const
     QVERIFY(string.isNull());
 }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-// C++0x support is required
 void tst_QStringList::initializeList() const
 {
 
@@ -491,7 +524,6 @@ void tst_QStringList::initializeList() const
     QCOMPARE(v1, (QStringList() << "hello" << "world" << "plop"));
     QCOMPARE(v1, (QStringList{"hello","world","plop"}));
 }
-#endif
 
 QTEST_APPLESS_MAIN(tst_QStringList)
 #include "tst_qstringlist.moc"

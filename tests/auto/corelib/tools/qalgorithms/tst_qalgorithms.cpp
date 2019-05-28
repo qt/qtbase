@@ -208,7 +208,7 @@ void printHeader(QStringList &headers)
     for (int h = 0; h < headers.count(); ++h) {
         cout << setw(20) << setiosflags(ios_base::left) << headers.at(h).toLatin1().constData();
     }
-    cout << endl;
+    cout << Qt::endl;
 }
 
 template <typename ContainerType>
@@ -220,7 +220,7 @@ void print(ContainerType testContainer)
         cout << value << " ";
     }
 
-    cout << endl;
+    cout << Qt::endl;
 }
 
 template <typename Algorithm, typename DataType>
@@ -252,7 +252,7 @@ void testAlgorithm(Algorithm algorithm, QStringList &dataSetTypes)
             lessThan << setiosflags(ios_base::left) << setw(10) << result.lessThanRefCount / result.numSorts;
             cout << numSorts.str() << lessThan.str();
         }
-        cout << endl;
+        cout << Qt::endl;
     }
 }
 #endif
@@ -765,21 +765,21 @@ public:
 #if Q_TEST_PERFORMANCE
 void tst_QAlgorithms::performance()
 {
-    cout << endl << "Quick sort" << endl;
+    cout << Qt::endl << "Quick sort" << Qt::endl;
     testAlgorithm<QuickSortHelper<TestInt>, TestInt>(QuickSortHelper<TestInt>(), dataSetTypes);
-    cout << endl << "stable sort" << endl;
+    cout << Qt::endl << "stable sort" << Qt::endl;
     testAlgorithm<StableSortHelper<TestInt>, TestInt>(StableSortHelper<TestInt>(), dataSetTypes);
-    cout << endl << "std::sort" << endl;
+    cout << Qt::endl << "std::sort" << Qt::endl;
     testAlgorithm<StlSortHelper<TestInt>, TestInt>(StlSortHelper<TestInt>(), dataSetTypes);
-    cout << endl << "std::stable_sort" << endl;
+    cout << Qt::endl << "std::stable_sort" << Qt::endl;
     testAlgorithm<StlStableSortHelper<TestInt>, TestInt>(StlStableSortHelper<TestInt>(), dataSetTypes);
 /*
-    cout << endl << "Sorting lists of ints" << endl;
-    cout << endl << "Quick sort" << endl;
+    cout << Qt::endl << "Sorting lists of ints" << Qt::endl;
+    cout << Qt::endl << "Quick sort" << Qt::endl;
     testAlgorithm<QuickSortHelper<int>, int>(QuickSortHelper<int>(), dataSetTypes);
-    cout << endl << "std::sort" << endl;
+    cout << Qt::endl << "std::sort" << Qt::endl;
     testAlgorithm<StlSortHelper<int>, int>(StlSortHelper<int>(), dataSetTypes);
-    cout << endl << "std::stable_sort" << endl;
+    cout << Qt::endl << "std::stable_sort" << Qt::endl;
     testAlgorithm<StlStableSortHelper<int>, int>(StlStableSortHelper<int>(), dataSetTypes);
 */
 }

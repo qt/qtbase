@@ -34,6 +34,7 @@
 
 #include <qscopedpointer.h>
 #include <qfileinfo.h>
+#include <qregexp.h>
 
 using namespace QMakeInternal;
 
@@ -1145,6 +1146,14 @@ bool VCCLCompilerTool::parseOption(const char* option)
         if(second == 'h' && third == 'o' && fourth == 'w') {
             ShowIncludes = _True;
             break;
+        }
+        if (strlen(option) > 8 && second == 't' && third == 'd') {
+            const QString version = option + 8;
+            static const QStringList knownVersions = { "14", "17", "latest" };
+            if (knownVersions.contains(version)) {
+                LanguageStandard = "stdcpp" + version;
+                break;
+            }
         }
         found = false; break;
     case 'u':

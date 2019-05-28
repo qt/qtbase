@@ -103,6 +103,24 @@ void QLibInputPointer::processMotion(libinput_event_pointer *e)
                                              Qt::NoButton, QEvent::MouseMove, mods);
 }
 
+void QLibInputPointer::processAbsMotion(libinput_event_pointer *e)
+{
+    QScreen * const primaryScreen = QGuiApplication::primaryScreen();
+    const QRect g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
+
+    const double x = libinput_event_pointer_get_absolute_x_transformed(e, g.width());
+    const double y = libinput_event_pointer_get_absolute_y_transformed(e, g.height());
+
+    m_pos.setX(qBound(g.left(), qRound(g.left() + x), g.right()));
+    m_pos.setY(qBound(g.top(), qRound(g.top() + y), g.bottom()));
+
+    Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
+
+    QWindowSystemInterface::handleMouseEvent(nullptr, m_pos, m_pos, m_buttons,
+                                             Qt::NoButton, QEvent::MouseMove, mods);
+
+}
+
 void QLibInputPointer::processAxis(libinput_event_pointer *e)
 {
     double value; // default axis value is 15 degrees per wheel click

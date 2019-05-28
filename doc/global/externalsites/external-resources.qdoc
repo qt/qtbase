@@ -62,28 +62,37 @@
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#command:find_package
+    \externalpage https://cmake.org/cmake/help/latest/command/find_package.html
     \title CMake find_package Documentation
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#prop_tgt:AUTOMOC
+    \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#automoc
     \title CMake AUTOMOC Documentation
 */
 
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#autorcc
+    \title CMake AUTORCC Documentation
+*/
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#prop_tgt:LOCATION
+    \externalpage https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html#autouic
+    \title CMake AUTOUIC Documentation
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/prop_tgt/LOCATION.html
     \title CMake LOCATION Documentation
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#prop_tgt:POSITION_INDEPENDENT_CODE
+    \externalpage https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
     \title CMake POSITION_INDEPENDENT_CODE Documentation
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#command:target_link_libraries
+    \externalpage https://cmake.org/cmake/help/latest/command/target_link_libraries.html
     \title CMake target_link_libraries Documentation
 */
 

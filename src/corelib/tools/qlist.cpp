@@ -545,6 +545,14 @@ void **QListData::erase(void **xi)
     \since 5.2
 */
 
+/*! \fn template <class T> template<typename InputIterator> QList<T>::QList(InputIterator first, InputIterator last)
+    \since 5.14
+
+    Constructs a QList with the contents in the iterator range [\a first, \a last).
+
+    The value type of \c InputIterator must be convertible to \c T.
+*/
+
 /*!
     \fn template <class T> QList<T> QList<T>::mid(int pos, int length) const
 

@@ -35,11 +35,9 @@ QT_BEGIN_NAMESPACE
 
 class Win32MakefileGenerator : public MakefileGenerator
 {
-public:
-    Win32MakefileGenerator();
-    ~Win32MakefileGenerator();
 protected:
     QString defaultInstall(const QString &) override;
+    void writeDefaultVariables(QTextStream &t) override;
     virtual void writeCleanParts(QTextStream &t);
     virtual void writeStandardParts(QTextStream &t);
     virtual void writeIncPart(QTextStream &t);
@@ -67,9 +65,6 @@ protected:
     static QString cQuoted(const QString &str);
     virtual QString getManifestFileForRcFile() const;
 };
-
-inline Win32MakefileGenerator::~Win32MakefileGenerator()
-{ }
 
 QT_END_NAMESPACE
 

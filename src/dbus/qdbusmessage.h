@@ -68,9 +68,7 @@ public:
 
     QDBusMessage();
     QDBusMessage(const QDBusMessage &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QDBusMessage &operator=(QDBusMessage &&other) noexcept { swap(other); return *this; }
-#endif
     QDBusMessage &operator=(const QDBusMessage &other);
     ~QDBusMessage();
 

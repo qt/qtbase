@@ -462,7 +462,7 @@ template <typename X> struct QAtomicOps
     }
 };
 
-#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+#if defined(Q_COMPILER_CONSTEXPR)
 #  define Q_BASIC_ATOMIC_INITIALIZER(a)     { a }
 #else
 #  define Q_BASIC_ATOMIC_INITIALIZER(a)     { ATOMIC_VAR_INIT(a) }

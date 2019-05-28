@@ -38,6 +38,7 @@
 #include <QDir>
 #include <QTime>
 #include <QPointer>
+#include <QRegExp>
 
 const QString PI_Project(QLS("Project"));
 const QString PI_TestCase(QLS("TestCase"));
@@ -291,7 +292,8 @@ void ImageItem::writeImageToStream(QDataStream &out) const
     out << quint8('Q') << quint8(image.format());
     out << quint8(QSysInfo::ByteOrder) << quint8(0);       // pad to multiple of 4 bytes
     out << quint32(image.width()) << quint32(image.height()) << quint32(image.bytesPerLine());
-    out << qCompress((const uchar *)image.constBits(), image.byteCount());
+    out << qCompress(reinterpret_cast<const uchar *>(image.constBits()),
+                     int(image.sizeInBytes()));
     //# can be followed by colormap for formats that use it
 }
 

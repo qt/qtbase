@@ -52,6 +52,7 @@
 #include "qwindowsuiatableitemprovider.h"
 #include "qwindowsuiagridprovider.h"
 #include "qwindowsuiagriditemprovider.h"
+#include "qwindowsuiawindowprovider.h"
 #include "qwindowscombase.h"
 #include "qwindowscontext.h"
 #include "qwindowsuiautils.h"
@@ -146,14 +147,47 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
 void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
-       if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
-           // Notifies changes in values of controls supporting the value interface.
+        if (accessible->role() == QAccessible::ComboBox && accessible->childCount() > 0) {
+            QAccessibleInterface *listacc = accessible->child(0);
+            if (listacc && listacc->role() == QAccessible::List) {
+                int count = listacc->childCount();
+                for (int i = 0; i < count; ++i) {
+                    QAccessibleInterface *item = listacc->child(i);
+                    if (item && item->text(QAccessible::Name) == event->value()) {
+                        if (!item->state().selected) {
+                            if (QAccessibleActionInterface *actionInterface = item->actionInterface())
+                                actionInterface->doAction(QAccessibleActionInterface::toggleAction());
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (event->value().type() == QVariant::String) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+                // Notifies changes in string values.
+                VARIANT oldVal, newVal;
+                clearVariant(&oldVal);
+                setVariantString(event->value().toString(), &newVal);
+                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+            }
+        } else if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
+            if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+                // Notifies changes in values of controls supporting the value interface.
                 VARIANT oldVal, newVal;
                 clearVariant(&oldVal);
                 setVariantDouble(valueInterface->currentValue().toDouble(), &newVal);
                 QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_RangeValueValuePropertyId, oldVal, newVal);
             }
+        }
+    }
+}
+
+void QWindowsUiaMainProvider::notifySelectionChange(QAccessibleEvent *event)
+{
+    if (QAccessibleInterface *accessible = event->accessibleInterface()) {
+        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+            QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_SelectionItem_ElementSelectedEventId);
         }
     }
 }
@@ -230,6 +264,11 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     switch (idPattern) {
+    case UIA_WindowPatternId:
+        if (accessible->parent() && (accessible->parent()->role() == QAccessible::Application)) {
+            *pRetVal = new QWindowsUiaWindowProvider(id());
+        }
+        break;
     case UIA_TextPatternId:
     case UIA_TextPattern2Id:
         // All text controls.
@@ -319,8 +358,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    bool clientTopLevel = (accessible->role() == QAccessible::Client)
-            && accessible->parent() && (accessible->parent()->role() == QAccessible::Application);
+    bool topLevelWindow = accessible->parent() && (accessible->parent()->role() == QAccessible::Application);
 
     switch (idProp) {
     case UIA_ProcessIdPropertyId:
@@ -346,7 +384,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         setVariantString(QStringLiteral("Qt"), pRetVal);
         break;
     case UIA_ControlTypePropertyId:
-        if (clientTopLevel) {
+        if (topLevelWindow) {
             // Reports a top-level widget as a window, instead of "custom".
             setVariantI4(UIA_WindowControlTypeId, pRetVal);
         } else {
@@ -358,10 +396,20 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         setVariantString(accessible->text(QAccessible::Help), pRetVal);
         break;
     case UIA_HasKeyboardFocusPropertyId:
-        setVariantBool(accessible->state().focused, pRetVal);
+        if (topLevelWindow) {
+            // Windows set the active state to true when they are focused
+            setVariantBool(accessible->state().active, pRetVal);
+        } else {
+            setVariantBool(accessible->state().focused, pRetVal);
+        }
         break;
     case UIA_IsKeyboardFocusablePropertyId:
-        setVariantBool(accessible->state().focusable, pRetVal);
+        if (topLevelWindow) {
+            // Windows should always be focusable
+            setVariantBool(true, pRetVal);
+        } else {
+            setVariantBool(accessible->state().focusable, pRetVal);
+        }
         break;
     case UIA_IsOffscreenPropertyId:
         setVariantBool(accessible->state().offscreen, pRetVal);
@@ -391,7 +439,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         break;
     case UIA_NamePropertyId: {
         QString name = accessible->text(QAccessible::Name);
-        if (name.isEmpty() && clientTopLevel)
+        if (name.isEmpty() && topLevelWindow)
            name = QCoreApplication::applicationName();
         setVariantString(name, pRetVal);
         break;

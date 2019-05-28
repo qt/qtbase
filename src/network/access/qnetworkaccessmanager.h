@@ -167,6 +167,9 @@ public:
     void setRedirectPolicy(QNetworkRequest::RedirectPolicy policy);
     QNetworkRequest::RedirectPolicy redirectPolicy() const;
 
+    bool autoDeleteReplies();
+    void setAutoDeleteReplies(bool autoDelete);
+
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
@@ -209,10 +212,10 @@ private:
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
-    Q_PRIVATE_SLOT(d_func(), void _q_onlineStateChanged(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_configurationChanged(const QNetworkConfiguration &))
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed(QNetworkSession::SessionError))
 #endif
+    Q_PRIVATE_SLOT(d_func(), void _q_onlineStateChanged(bool))
 };
 
 QT_END_NAMESPACE

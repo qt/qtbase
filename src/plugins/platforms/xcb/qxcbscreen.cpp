@@ -915,7 +915,7 @@ QByteArray QXcbScreen::getEdid() const
 static inline void formatRect(QDebug &debug, const QRect r)
 {
     debug << r.width() << 'x' << r.height()
-        << forcesign << r.x() << r.y() << noforcesign;
+        << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
 }
 
 static inline void formatSizeF(QDebug &debug, const QSizeF s)
@@ -929,7 +929,7 @@ QDebug operator<<(QDebug debug, const QXcbScreen *screen)
     debug.nospace();
     debug << "QXcbScreen(" << (const void *)screen;
     if (screen) {
-        debug << fixed << qSetRealNumberPrecision(1);
+        debug << Qt::fixed << qSetRealNumberPrecision(1);
         debug << ", name=" << screen->name();
         debug << ", geometry=";
         formatRect(debug, screen->geometry());
@@ -947,7 +947,7 @@ QDebug operator<<(QDebug debug, const QXcbScreen *screen)
         debug << "), orientation=" << screen->orientation();
         debug << ", depth=" << screen->depth();
         debug << ", refreshRate=" << screen->refreshRate();
-        debug << ", root=" << hex << screen->root();
+        debug << ", root=" << Qt::hex << screen->root();
         debug << ", windowManagerName=" << screen->windowManagerName();
     }
     debug << ')';

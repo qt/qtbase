@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_WIDGETS_EXPORT QToolTip
 {
-    QToolTip() Q_DECL_EQ_DELETE;
+    QToolTip() = delete;
 public:
     // ### Qt 6 - merge the three showText functions below
     static void showText(const QPoint &pos, const QString &text, QWidget *w = nullptr);

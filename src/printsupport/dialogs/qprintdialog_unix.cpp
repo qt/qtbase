@@ -1082,7 +1082,7 @@ void QPrintDialog::setVisible(bool visible)
 
 int QPrintDialog::exec()
 {
-    return QDialog::exec();
+    return QAbstractPrintDialog::exec();
 }
 
 void QPrintDialog::accept()

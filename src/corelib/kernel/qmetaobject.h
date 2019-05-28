@@ -183,7 +183,7 @@ private:
     // signature() has been renamed to methodSignature() in Qt 5.
     // Warning, that function returns a QByteArray; check the life time if
     // you convert to char*.
-    char *signature(struct renamedInQt5_warning_checkTheLifeTime * = nullptr) Q_DECL_EQ_DELETE;
+    char *signature(struct renamedInQt5_warning_checkTheLifeTime * = nullptr) = delete;
 #endif
     static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
 
@@ -230,7 +230,8 @@ public:
 
     template<typename T> static QMetaEnum fromType() {
         Q_STATIC_ASSERT_X(QtPrivate::IsQEnumHelper<T>::Value,
-                          "QMetaEnum::fromType only works with enums declared as Q_ENUM or Q_FLAG");
+                          "QMetaEnum::fromType only works with enums declared as "
+                          "Q_ENUM, Q_ENUM_NS, Q_FLAG or Q_FLAG_NS");
         const QMetaObject *metaObject = qt_getEnumMetaObject(T());
         const char *name = qt_getEnumName(T());
         return metaObject->enumerator(metaObject->indexOfEnumerator(name));

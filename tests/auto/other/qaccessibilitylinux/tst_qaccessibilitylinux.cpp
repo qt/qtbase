@@ -42,11 +42,10 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 
-#include "atspi/atspi-constants.h"
+#include <atspi/atspi-constants.h>
+#include <private/dbusconnection_p.h>
+#include <private/struct_marshallers_p.h>
 #include "bus_interface.h"
-
-#include "dbusconnection_p.h"
-#include "struct_marshallers_p.h"
 
 #define COMPARE3(v1, v2, v3) QCOMPARE(v1, v3); QCOMPARE(v2, v3);
 
@@ -251,6 +250,8 @@ void tst_QAccessibilityLinux::testLabel()
     QCOMPARE(labelInterface->call(QDBus::Block, "GetRoleName").arguments().first().toString(), QLatin1String("label"));
     QCOMPARE(labelInterface->call(QDBus::Block, "GetRole").arguments().first().toUInt(), 29u);
     QCOMPARE(getParent(labelInterface), mainWindow->path());
+    QVERIFY(!hasState(labelInterface, ATSPI_STATE_EDITABLE));
+    QVERIFY(hasState(labelInterface, ATSPI_STATE_READ_ONLY));
 
     l->setText("New text");
     QCOMPARE(labelInterface->property("Name").toString(), l->text());
@@ -302,6 +303,12 @@ void tst_QAccessibilityLinux::testLineEdit()
     textInterface->call(QDBus::Block, "RemoveSelection", 0);
     QCOMPARE(lineEdit->selectionStart(), -1);
     QCOMPARE(textInterface->call(QDBus::Block, "GetNSelections").arguments().first().toInt(), 0);
+
+    QVERIFY(hasState(accessibleInterface, ATSPI_STATE_EDITABLE));
+    QVERIFY(!hasState(accessibleInterface, ATSPI_STATE_READ_ONLY));
+    lineEdit->setReadOnly(true);
+    QVERIFY(hasState(accessibleInterface, ATSPI_STATE_EDITABLE));
+    QVERIFY(hasState(accessibleInterface, ATSPI_STATE_READ_ONLY));
 
     m_window->clearChildren();
     delete accessibleInterface;

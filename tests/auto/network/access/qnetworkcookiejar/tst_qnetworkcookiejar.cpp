@@ -61,10 +61,8 @@ class MyCookieJar: public QNetworkCookieJar
 {
 public:
     ~MyCookieJar() override;
-    inline QList<QNetworkCookie> allCookies() const
-        { return QNetworkCookieJar::allCookies(); }
-    inline void setAllCookies(const QList<QNetworkCookie> &cookieList)
-        { QNetworkCookieJar::setAllCookies(cookieList); }
+    using QNetworkCookieJar::allCookies;
+    using QNetworkCookieJar::setAllCookies;
 };
 
 MyCookieJar::~MyCookieJar() = default;

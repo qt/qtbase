@@ -66,7 +66,6 @@ void tst_QSignalBlocker::signalBlocking()
 
 void tst_QSignalBlocker::moveAssignment()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     QObject o1, o2;
 
     // move-assignment: both block other objects
@@ -157,10 +156,6 @@ void tst_QSignalBlocker::moveAssignment()
 
     QVERIFY(!o1.signalsBlocked());
     QVERIFY(!o2.signalsBlocked());
-
-#else
-    QSKIP("This compiler is not in C++11 mode or doesn't support move semantics");
-#endif // Q_COMPILER_RVALUE_REFS
 }
 
 QTEST_MAIN(tst_QSignalBlocker)

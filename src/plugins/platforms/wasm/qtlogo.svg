@@ -5,15 +5,10 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="462pt"
    height="339pt"
    viewBox="0 0 462 339"
-   version="1.1"
-   id="svg2"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="TheQtCompany_logo_2.svg">
+   version="1.1">
   <metadata
      id="metadata20">
     <rdf:RDF>
@@ -26,28 +21,6 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <defs
-     id="defs18" />
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1536"
-     inkscape:window-height="801"
-     id="namedview16"
-     showgrid="false"
-     inkscape:zoom="1.1138643"
-     inkscape:cx="270.58047"
-     inkscape:cy="174.65092"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
   <path
      fill="#41cd52"
      d=" M 63.50 0.00 L 462.00 0.00 L 462.00 274.79 C 440.60 296.26 419.13 317.66 397.61 339.00 L 0.00 339.00 L 0.00 63.39 C 21.08 42.18 42.34 21.13 63.50 0.00 Z"

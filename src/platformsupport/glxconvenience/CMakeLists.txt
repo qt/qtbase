@@ -1,3 +1,5 @@
+# Generated from glxconvenience.pro.
+
 qt_find_package(X11) # special case
 qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 
@@ -16,9 +18,12 @@ add_qt_module(GlxSupport
         Qt::CorePrivate
         Qt::GuiPrivate
         X11::X11 # special case
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:glxconvenience.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:glxconvenience.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "glx_support"
 # _LOADED = "qt_module"

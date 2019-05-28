@@ -60,9 +60,7 @@ public:
     QHttpPart();
     QHttpPart(const QHttpPart &other);
     ~QHttpPart();
-#ifdef Q_COMPILER_RVALUE_REFS
     QHttpPart &operator=(QHttpPart &&other) noexcept { swap(other); return *this; }
-#endif
     QHttpPart &operator=(const QHttpPart &other);
 
     void swap(QHttpPart &other) noexcept { qSwap(d, other.d); }

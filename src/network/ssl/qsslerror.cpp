@@ -86,6 +86,7 @@
     \value UnspecifiedError
     \value NoSslSupport
     \value CertificateBlacklisted
+    \value CertificateStatusUnknown
     \value OcspNoResponseFound
     \value OcspMalformedRequest
     \value OcspMalformedResponse

@@ -58,7 +58,6 @@ static inline uchar hexdig(uint u)
 
 static QByteArray escapedString(const QString &s)
 {
-    const uchar replacement = '?';
     QByteArray ba(s.length(), Qt::Uninitialized);
 
     uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
@@ -111,9 +110,14 @@ static QByteArray escapedString(const QString &s)
             } else {
                 *cursor++ = (uchar)u;
             }
-        } else {
-            if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, cursor, src, end) < 0)
-                *cursor++ = replacement;
+        } else if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, cursor, src, end) < 0) {
+            // failed to get valid utf8 use JSON escape sequence
+            *cursor++ = '\\';
+            *cursor++ = 'u';
+            *cursor++ = hexdig(u>>12 & 0x0f);
+            *cursor++ = hexdig(u>>8 & 0x0f);
+            *cursor++ = hexdig(u>>4 & 0x0f);
+            *cursor++ = hexdig(u & 0x0f);
         }
     }
 

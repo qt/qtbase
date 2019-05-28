@@ -140,6 +140,10 @@ QT_BEGIN_NAMESPACE
     no error state applies to the erroneous state, the machine will stop
     executing and an error message will be printed to the console.
 
+    \note Important: setting the \l{ChildMode} of a state machine to parallel (\l{ParallelStates})
+          results in an invalid state machine. It can only be set to (or kept as)
+          \l{ExclusiveStates}.
+
     \sa QAbstractState, QAbstractTransition, QState, {The State Machine Framework}
 */
 
@@ -370,10 +374,11 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
             QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(historyState)->configuration;
             if (!historyConfiguration.isEmpty()) {
                 // There is a saved history, so apply that.
-                targets.unite(historyConfiguration.toSet());
+                targets.unite(QSet<QAbstractState *>(historyConfiguration.constBegin(), historyConfiguration.constEnd()));
             } else if (QAbstractTransition *defaultTransition = historyState->defaultTransition()) {
                 // No saved history, take all default transition targets.
-                targets.unite(defaultTransition->targetStates().toSet());
+                const auto &targetStates = defaultTransition->targetStates();
+                targets.unite(QSet<QAbstractState *>(targetStates.constBegin(), targetStates.constEnd()));
             } else {
                 // Woops, we found a history state without a default state. That's not valid!
                 QStateMachinePrivate *m = QStateMachinePrivate::get(historyState->machine());
@@ -384,7 +389,7 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
         }
     }
 
-    targetsList = targets.toList();
+    targetsList = targets.values();
     cache->insert(transition, targetsList);
     return targetsList;
 }
@@ -518,7 +523,7 @@ bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState 
     }
 }
 
-QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states, bool onlyCompound) const
+QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states, bool onlyCompound)
 {
     if (states.isEmpty())
         return 0;
@@ -537,10 +542,16 @@ QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states, bool
         if (ok)
             return anc;
     }
-    return 0;
+
+    // Oops, this should never happen! The state machine itself is a common ancestor of all states,
+    // no matter what. But, for the onlyCompound case: we probably have a state machine whose
+    // childMode is set to parallel, which is illegal. However, we're stuck with it (and with
+    // exposing this invalid/dangerous API to users), so recover in the least horrible way.
+    setError(QStateMachine::StateMachineChildModeSetToParallelError, q_func());
+    return q_func(); // make the statemachine the LCA/LCCA (which it should have been anyway)
 }
 
-QState *QStateMachinePrivate::findLCCA(const QList<QAbstractState*> &states) const
+QState *QStateMachinePrivate::findLCCA(const QList<QAbstractState*> &states)
 {
     return findLCA(states, true);
 }
@@ -740,7 +751,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeExitSet(const QList<QAbstrac
 {
     Q_ASSERT(cache);
 
-    QList<QAbstractState*> statesToExit_sorted = computeExitSet_Unordered(enabledTransitions, cache).toList();
+    QList<QAbstractState*> statesToExit_sorted = computeExitSet_Unordered(enabledTransitions, cache).values();
     std::sort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
     return statesToExit_sorted;
 }
@@ -777,7 +788,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
         // makes the state machine invalid.
         if (error == QStateMachine::NoError)
             setError(QStateMachine::NoCommonAncestorForTransitionError, t->sourceState());
-        QList<QAbstractState *> lst = pendingErrorStates.toList();
+        QList<QAbstractState *> lst = pendingErrorStates.values();
         lst.prepend(t->sourceState());
 
         domain = findLCCA(lst);
@@ -879,7 +890,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstra
         pendingErrorStatesForDefaultEntry.clear();
     }
 
-    QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
+    QList<QAbstractState*> statesToEnter_sorted = statesToEnter.values();
     std::sort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
     return statesToEnter_sorted;
 }
@@ -902,7 +913,7 @@ function getTransitionDomain(t)
 */
 QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t,
                                                           const QList<QAbstractState *> &effectiveTargetStates,
-                                                          CalculationCache *cache) const
+                                                          CalculationCache *cache)
 {
     Q_ASSERT(cache);
 
@@ -1483,6 +1494,14 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
         errorString = QStateMachine::tr("No common ancestor for targets and source of transition from state '%1'")
                         .arg(currentContext->objectName());
         break;
+
+    case QStateMachine::StateMachineChildModeSetToParallelError:
+        Q_ASSERT(currentContext != nullptr);
+
+        errorString = QStateMachine::tr("Child mode of state machine '%1' is not 'ExclusiveStates'!")
+                        .arg(currentContext->objectName());
+        break;
+
     default:
         errorString = QStateMachine::tr("Unknown error");
     };
@@ -2444,9 +2463,13 @@ QStateMachine::QStateMachine(QObject *parent)
 
 /*!
   \since 5.0
+  \deprecated
 
   Constructs a new state machine with the given \a childMode
   and \a parent.
+
+  \warning Do not set the \a childMode to anything else than \l{ExclusiveStates}, otherwise the
+           state machine is invalid, and might work incorrectly!
 */
 QStateMachine::QStateMachine(QState::ChildMode childMode, QObject *parent)
     : QState(*new QStateMachinePrivate, /*parentState=*/0)
@@ -2454,6 +2477,18 @@ QStateMachine::QStateMachine(QState::ChildMode childMode, QObject *parent)
     Q_D(QStateMachine);
     d->childMode = childMode;
     setParent(parent); // See comment in constructor above
+
+    if (childMode != ExclusiveStates) {
+        //### FIXME for Qt6: remove this constructor completely, and hide the childMode property.
+        // Yes, the StateMachine itself is conceptually a state, but it should only expose a limited
+        // number of properties. The execution algorithm (in the URL below) treats a state machine
+        // as a state, but from an API point of view, it's questionable if the QStateMachine should
+        // inherit from QState.
+        //
+        // See function findLCCA in https://www.w3.org/TR/2014/WD-scxml-20140529/#AlgorithmforSCXMLInterpretation
+        // to see where setting childMode to parallel will break down.
+        qWarning() << "Invalid childMode for QStateMachine" << this;
+    }
 }
 
 /*!

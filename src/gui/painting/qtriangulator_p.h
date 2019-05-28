@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QVertexIndexVector
+class QVertexIndexVector
 {
 public:
     enum Type {
@@ -93,17 +93,6 @@ public:
         return indices16.size();
     }
 
-    inline QVertexIndexVector &operator = (const QVertexIndexVector &other)
-    {
-        if (t == UnsignedInt)
-            indices32 = other.indices32;
-        else
-            indices16 = other.indices16;
-
-        t = other.t;
-        return *this;
-    }
-
 private:
 
     Type t;
@@ -111,23 +100,15 @@ private:
     QVector<quint16> indices16;
 };
 
-struct Q_GUI_EXPORT QTriangleSet
+struct QTriangleSet
 {
-    inline QTriangleSet() { }
-    inline QTriangleSet(const QTriangleSet &other) : vertices(other.vertices), indices(other.indices) { }
-    QTriangleSet &operator = (const QTriangleSet &other) {vertices = other.vertices; indices = other.indices; return *this;}
-
     // The vertices of a triangle are given by: (x[i[n]], y[i[n]]), (x[j[n]], y[j[n]]), (x[k[n]], y[k[n]]), n = 0, 1, ...
     QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
     QVertexIndexVector indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
 };
 
-struct Q_GUI_EXPORT QPolylineSet
+struct QPolylineSet
 {
-    inline QPolylineSet() { }
-    inline QPolylineSet(const QPolylineSet &other) : vertices(other.vertices), indices(other.indices) { }
-    QPolylineSet &operator = (const QPolylineSet &other) {vertices = other.vertices; indices = other.indices; return *this;}
-
     QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
     QVertexIndexVector indices; // End of polyline is marked with -1.
 };

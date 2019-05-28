@@ -5,6 +5,5 @@ requires(qtConfig(private_tests))
 
 QT = core-private network-private testlib
 
+CONFIG += unsupported/testserver
 QT_TEST_SERVER_LIST = apache2
-include($$dirname(_QMAKE_CONF_)/tests/auto/testserver.pri)
-

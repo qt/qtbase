@@ -229,13 +229,12 @@ QSctpSocket *QSctpServer::nextPendingDatagramConnection()
 {
     Q_D(QSctpServer);
 
-    QMutableListIterator<QTcpSocket *> i(d->pendingConnections);
-    while (i.hasNext()) {
-        QSctpSocket *socket = qobject_cast<QSctpSocket *>(i.next());
+    for (auto it = d->pendingConnections.begin(), end = d->pendingConnections.end(); it != end; ++it) {
+        QSctpSocket *socket = qobject_cast<QSctpSocket *>(*it);
         Q_ASSERT(socket);
 
         if (socket->isInDatagramMode()) {
-            i.remove();
+            d->pendingConnections.erase(it);
             Q_ASSERT(d->socketEngine);
             d->socketEngine->setReadNotificationEnabled(true);
             return socket;

@@ -166,24 +166,22 @@ void tst_QActionGroup::separators()
     separator->setSeparator(true);
     actGroup.addAction(separator);
 
-    QListIterator<QAction*> it(actGroup.actions());
-    while (it.hasNext())
-        menu.addAction(it.next());
+    menu.addActions(actGroup.actions());
 
     QCOMPARE((int)menu.actions().size(), 2);
 
-    it = QListIterator<QAction*>(actGroup.actions());
-    while (it.hasNext())
-        menu.removeAction(it.next());
+    const auto removeActions = [&menu](const QList<QAction *> &actions) {
+        for (QAction *action : actions)
+            menu.removeAction(action);
+    };
+    removeActions(actGroup.actions());
 
     QCOMPARE((int)menu.actions().size(), 0);
 
     action = new QAction(&actGroup);
     action->setText("test two");
 
-    it = QListIterator<QAction*>(actGroup.actions());
-    while (it.hasNext())
-        menu.addAction(it.next());
+    menu.addActions(actGroup.actions());
 
     QCOMPARE((int)menu.actions().size(), 3);
 }

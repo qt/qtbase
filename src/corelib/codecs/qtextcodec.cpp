@@ -678,7 +678,7 @@ QList<int> QTextCodec::availableMibs()
     \nonreentrant
 
     Set the codec to \a c; this will be returned by
-    codecForLocale(). If \a c is a null pointer, the codec is reset to
+    codecForLocale(). If \a c is \nullptr, the codec is reset to
     the default.
 
     This might be needed for some applications that want to use their

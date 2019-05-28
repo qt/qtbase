@@ -2285,12 +2285,14 @@ QXmlStreamAttribute::QXmlStreamAttribute()
     m_isDefault = false;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   Destructs an attribute.
  */
 QXmlStreamAttribute::~QXmlStreamAttribute()
 {
 }
+#endif
 
 /*!  Constructs an attribute in the namespace described with \a
   namespaceUri with \a name and value \a value.
@@ -2366,6 +2368,7 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
  */
 
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   Creates a copy of \a other.
  */
@@ -2386,7 +2389,7 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
     m_isDefault = other.m_isDefault;
     return *this;
 }
-
+#endif
 
 /*!
     \class QXmlStreamAttributes
@@ -2442,6 +2445,8 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
 QXmlStreamNotationDeclaration::QXmlStreamNotationDeclaration()
 {
 }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   Creates a copy of \a other.
  */
@@ -2467,6 +2472,7 @@ Destructs this notation declaration.
 QXmlStreamNotationDeclaration::~QXmlStreamNotationDeclaration()
 {
 }
+#endif
 
 /*! \fn QStringRef QXmlStreamNotationDeclaration::name() const
 
@@ -2539,6 +2545,7 @@ QXmlStreamNamespaceDeclaration::QXmlStreamNamespaceDeclaration(const QString &pr
     m_namespaceUri = namespaceUri;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   Creates a copy of \a other.
  */
@@ -2562,6 +2569,7 @@ Destructs this namespace declaration.
 QXmlStreamNamespaceDeclaration::~QXmlStreamNamespaceDeclaration()
 {
 }
+#endif
 
 /*! \fn QStringRef QXmlStreamNamespaceDeclaration::prefix() const
 
@@ -2609,6 +2617,7 @@ QXmlStreamEntityDeclaration::QXmlStreamEntityDeclaration()
 {
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   Creates a copy of \a other.
  */
@@ -2636,6 +2645,7 @@ QXmlStreamEntityDeclaration& QXmlStreamEntityDeclaration::operator=(const QXmlSt
 QXmlStreamEntityDeclaration::~QXmlStreamEntityDeclaration()
 {
 }
+#endif
 
 /*! \fn QXmlStreamStringRef::swap(QXmlStreamStringRef &other)
     \since 5.6

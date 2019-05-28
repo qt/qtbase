@@ -41,6 +41,7 @@ package org.qtproject.qt5.android;
 
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +74,7 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
             m_buttonId = stringId;
             setText(stringId);
             setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+                    ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             setGravity(Gravity.CENTER);
             setTextColor(getResources().getColor(R.color.widget_edittext_dark));
             EditContextView.this.setBackground(getResources().getDrawable(R.drawable.editbox_background_normal));
@@ -81,6 +82,8 @@ public class EditContextView extends LinearLayout implements View.OnClickListene
             int hPadding = (int)(16 * scale + 0.5f);
             int vPadding = (int)(8 * scale + 0.5f);
             setPadding(hPadding, vPadding, hPadding, vPadding);
+            setSingleLine();
+            setEllipsize(TextUtils.TruncateAt.END);
             setOnClickListener(EditContextView.this);
         }
     }

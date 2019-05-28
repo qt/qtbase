@@ -145,6 +145,9 @@ struct QTextLayoutStruct {
     inline QFixed absoluteY() const
     { return frameY + y; }
 
+    inline QFixed contentHeight() const
+    { return pageHeight - pageBottomMargin - pageTopMargin; }
+
     inline int currentPage() const
     { return pageHeight == 0 ? 0 : (absoluteY() / pageHeight).truncate(); }
 
@@ -1433,6 +1436,21 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
 
     QBrush brush = context.palette.brush(QPalette::Text);
 
+    bool marker = bl.blockFormat().marker() != QTextBlockFormat::NoMarker;
+    if (marker) {
+        int adj = fontMetrics.lineSpacing() / 6;
+        r.adjust(-adj, 0, -adj, 0);
+        if (bl.blockFormat().marker() == QTextBlockFormat::Checked) {
+            // ### Qt6: render with QStyle / PE_IndicatorCheckBox. We don't currently
+            // have access to that here, because it would be a widget dependency.
+            painter->setPen(QPen(painter->pen().color(), 2));
+            painter->drawLine(r.topLeft(), r.bottomRight());
+            painter->drawLine(r.topRight(), r.bottomLeft());
+            painter->setPen(QPen(painter->pen().color(), 0));
+        }
+        painter->drawRect(r.adjusted(-adj, -adj, adj, adj));
+    }
+
     switch (style) {
     case QTextListFormat::ListDecimal:
     case QTextListFormat::ListLowerAlpha:
@@ -1453,16 +1471,21 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         break;
     }
     case QTextListFormat::ListSquare:
-        painter->fillRect(r, brush);
+        if (!marker)
+            painter->fillRect(r, brush);
         break;
     case QTextListFormat::ListCircle:
-        painter->setPen(QPen(brush, 0));
-        painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
+        if (!marker) {
+            painter->setPen(QPen(brush, 0));
+            painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
+        }
         break;
     case QTextListFormat::ListDisc:
-        painter->setBrush(brush);
-        painter->setPen(Qt::NoPen);
-        painter->drawEllipse(r);
+        if (!marker) {
+            painter->setBrush(brush);
+            painter->setPen(Qt::NoPen);
+            painter->drawEllipse(r);
+        }
         break;
     case QTextListFormat::ListStyleUndefined:
         break;
@@ -2701,7 +2724,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight, &lineBottom);
 
             while (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom &&
-                layoutStruct->pageHeight >= lineBreakHeight) {
+                layoutStruct->contentHeight() >= lineBreakHeight) {
                 layoutStruct->newPage();
 
                 floatMargins(layoutStruct->y, layoutStruct, &left, &right);

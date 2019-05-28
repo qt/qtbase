@@ -50,6 +50,7 @@
 #include "qsqltablemodel_p.h"
 
 #include <qdebug.h>
+#include <qstringlistmodel.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -611,7 +612,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 /*!
     \reimp
  */
-bool QStringListModel::clearItemData(const QModelIndex &index)
+bool QSqlTableModel::clearItemData(const QModelIndex &index)
 {
     return setData(index, QVariant(), Qt::EditRole);
 }

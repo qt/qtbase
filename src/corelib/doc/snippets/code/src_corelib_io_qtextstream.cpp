@@ -124,12 +124,12 @@ in >> ch1 >> ch2 >> ch3;
 
 //! [8]
 QTextStream out(stdout);
-out << "Qt rocks!" << endl;
+out << "Qt rocks!" << Qt::endl;
 //! [8]
 
 
 //! [9]
-stream << '\n' << flush;
+stream << '\n' << Qt::flush;
 //! [9]
 
 

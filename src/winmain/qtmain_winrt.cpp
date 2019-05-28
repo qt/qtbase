@@ -317,23 +317,26 @@ private:
                 if (quote)
                     break;
                 commandLine[i] = '\0';
-                if (args.last()[0] != '\0')
+                if (!args.isEmpty() && args.last() && args.last()[0] != '\0')
                     args.append(commandLine.data() + i + 1);
                 // fall through
             default:
-                if (args.last()[0] == '\0')
+                if (!args.isEmpty() && args.last() && args.last()[0] == '\0')
                     args.last() = commandLine.data() + i;
                 escape = false; // only quotes are escaped
                 break;
             }
         }
 
-        if (args.count() >= 2 && strncmp(args.at(1), "-ServerName:", 12) == 0)
+        if (args.count() >= 2 && args.at(1) && strncmp(args.at(1), "-ServerName:", 12) == 0)
             args.remove(1);
 
         bool develMode = false;
         bool debugWait = false;
         for (int i = args.count() - 1; i >= 0; --i) {
+            if (!args.at(i))
+                continue;
+
             const char *arg = args.at(i);
             if (strcmp(arg, "-qdevel") == 0) {
                 develMode = true;

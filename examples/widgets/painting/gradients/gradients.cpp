@@ -72,7 +72,7 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
         setPalette(pal);
 
     } else {
-        setAttribute(Qt::WA_NoBackground);
+        setAttribute(Qt::WA_OpaquePaintEvent);
     }
 
     QPolygonF points;

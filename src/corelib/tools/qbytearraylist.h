@@ -67,7 +67,7 @@ template <> struct QListSpecialMethods<QByteArray>
 {
 #ifndef Q_CLANG_QDOC
 protected:
-    ~QListSpecialMethods() {}
+    ~QListSpecialMethods() = default;
 #endif
 public:
     inline QByteArray join() const

@@ -1,6 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
   <file>images/logo32.png</file>
+  <file>images/mac/checkbox.png</file>
+  <file>images/mac/checkbox-checked.png</file>
   <file>images/mac/editcopy.png</file>
   <file>images/mac/editcut.png</file>
   <file>images/mac/editpaste.png</file>
@@ -11,6 +13,8 @@
   <file>images/mac/fileopen.png</file>
   <file>images/mac/fileprint.png</file>
   <file>images/mac/filesave.png</file>
+  <file>images/mac/format-indent-less.png</file>
+  <file>images/mac/format-indent-more.png</file>
   <file>images/mac/textbold.png</file>
   <file>images/mac/textcenter.png</file>
   <file>images/mac/textitalic.png</file>
@@ -20,6 +24,8 @@
   <file>images/mac/textunder.png</file>
   <file>images/mac/zoomin.png</file>
   <file>images/mac/zoomout.png</file>
+  <file>images/win/checkbox.png</file>
+  <file>images/win/checkbox-checked.png</file>
   <file>images/win/editcopy.png</file>
   <file>images/win/editcut.png</file>
   <file>images/win/editpaste.png</file>
@@ -30,6 +36,8 @@
   <file>images/win/fileopen.png</file>
   <file>images/win/fileprint.png</file>
   <file>images/win/filesave.png</file>
+  <file>images/win/format-indent-less.png</file>
+  <file>images/win/format-indent-more.png</file>
   <file>images/win/textbold.png</file>
   <file>images/win/textcenter.png</file>
   <file>images/win/textitalic.png</file>

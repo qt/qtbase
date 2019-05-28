@@ -199,6 +199,10 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
     QEglFSWindow *w = qt_egl_device_integration()->createWindow(window);
     w->create();
 
+    const auto showWithoutActivating = window->property("_q_showWithoutActivating");
+    if (showWithoutActivating.isValid() && showWithoutActivating.toBool())
+        return w;
+
     // Activate only the window for the primary screen to make input work
     if (window->type() != Qt::ToolTip && window->screen() == QGuiApplication::primaryScreen())
         w->requestActivateWindow();

@@ -248,6 +248,7 @@ private slots:
     void sizeHintCrash();
     void testResetCachedSizeHint();
     void statusTips();
+    void testRemovingColumnsViaLayoutChanged();
 
 protected:
     void setupTestData(bool use_reset_model = false);
@@ -353,6 +354,7 @@ public:
 
     void cleanup()
     {
+        emit layoutAboutToBeChanged();
         cols = 3;
         rows = 3;
         emit layoutChanged();
@@ -3487,6 +3489,21 @@ void tst_QHeaderView::statusTips()
     QTest::mouseMove(headerView.windowHandle(), centerPoint);
     QTRY_VERIFY(headerView.gotStatusTipEvent);
     QCOMPARE(headerView.statusTipText, QLatin1String("[0,1,0] -- Header"));
+}
+
+void tst_QHeaderView::testRemovingColumnsViaLayoutChanged()
+{
+    const int persistentSectionSize = 101;
+
+    QtTestModel model;
+    model.rows = model.cols = 5;
+    view->setModel(&model);
+    for (int i = 0; i < model.cols; ++i)
+        view->resizeSection(i, persistentSectionSize + i);
+    model.cleanup(); // down to 3 via layoutChanged (not columnsRemoved)
+    for (int j = 0; j < model.cols; ++j)
+        QCOMPARE(view->sectionSize(j), persistentSectionSize + j);
+    // The main point of this test is that the section-size restoring code didn't go out of bounds.
 }
 
 QTEST_MAIN(tst_QHeaderView)

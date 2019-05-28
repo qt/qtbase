@@ -110,6 +110,7 @@ Q_CORE_EXPORT double qInf() { return qt_inf(); }
     \list
     \li FP_NAN not a number
     \li FP_INFINITE infinities (positive or negative)
+    \li FP_ZERO zero (positive or negative)
     \li FP_NORMAL finite with a full mantissa
     \li FP_SUBNORMAL finite with a reduced mantissa
     \endlist

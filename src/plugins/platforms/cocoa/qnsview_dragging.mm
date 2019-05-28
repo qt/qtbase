@@ -293,7 +293,26 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
 
+    // Qt starts drag-and-drop on a mouse button press event. Cococa in
+    // this case won't send the matching release event, so we have to
+    // synthesize it here.
     m_buttons = currentlyPressedMouseButtons();
+    const auto modifiers = [QNSView convertKeyModifiers:NSApp.currentEvent.modifierFlags];
+
+    NSPoint windowPoint = [self.window convertRectFromScreen:NSMakeRect(screenPoint.x, screenPoint.y, 1, 1)].origin;
+    NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
+
+    QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);
+    QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
+
+    QWindowSystemInterface::handleMouseEvent(
+        target,
+        mapWindowCoordinates(m_platformWindow->window(), target, qtWindowPoint),
+        qtScreenPoint,
+        m_buttons,
+        Qt::NoButton,
+        QEvent::MouseButtonRelease,
+        modifiers);
 
     qCDebug(lcQpaMouse) << "Drag session" << session << "ended, with" << m_buttons;
 }

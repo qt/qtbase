@@ -485,7 +485,7 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     }
 
     if (Q_UNLIKELY(!m_main)) {
-        qCritical() << "dlsym failed:" << dlerror() << endl
+        qCritical() << "dlsym failed:" << dlerror() << Qt::endl
                     << "Could not find main method";
         return false;
     }

@@ -139,6 +139,8 @@ public:
 
     static void registerFontFamily(const QString &familyName);
     static void registerAliasToFontFamily(const QString &familyName, const QString &alias);
+
+    static bool isFamilyPopulated(const QString &familyName);
 };
 
 QT_END_NAMESPACE

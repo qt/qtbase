@@ -38,11 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-NmakeMakefileGenerator::NmakeMakefileGenerator() : usePCH(false), usePCHC(false)
-{
-
-}
-
 bool
 NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 {
@@ -143,7 +138,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
         t << escapeDependencyPath(precompObj) << ": " << escapeDependencyPath(precompH) << ' '
           << finalizeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP "
-          << escapeFilePath(precompH) << endl << endl;
+          << escapeFilePath(precompH) << Qt::endl << Qt::endl;
     }
     if (usePCHC) {
         QString precompRuleC = QString("-c -Yc -Fp%1 -Fo%2")
@@ -151,7 +146,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
         t << escapeDependencyPath(precompObjC) << ": " << escapeDependencyPath(precompH) << ' '
           << finalizeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t$(CC) " + precompRuleC +" $(CFLAGS) $(INCPATH) -TC "
-          << escapeFilePath(precompH) << endl << endl;
+          << escapeFilePath(precompH) << Qt::endl << Qt::endl;
     }
 }
 
@@ -314,7 +309,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         t << " " << (*cit);
     for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
         t << " " << (*cppit);
-    t << endl << endl;
+    t << Qt::endl << Qt::endl;
 
     bool useInferenceRules = !project->isActiveConfig("no_batch");
     QSet<QString> source_directories;
@@ -346,7 +341,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         QHash<QString, QString> fileNames;
         bool duplicatesFound = false;
         const QStringList sourceFilesFilter = sourceFilesForImplicitRulesFilter();
-        QStringList fixifiedSourceDirs = fileFixify(source_directories.toList(), FileFixifyAbsolute);
+        QStringList fixifiedSourceDirs = fileFixify(QList<QString>(source_directories.constBegin(), source_directories.constEnd()), FileFixifyAbsolute);
         fixifiedSourceDirs.removeDuplicates();
         for (const QString &sourceDir : qAsConst(fixifiedSourceDirs)) {
             QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
@@ -393,9 +388,9 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         }
     } else {
         for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-            t << (*cppit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CXX_IMP") << endl << endl;
+            t << (*cppit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CXX_IMP") << Qt::endl << Qt::endl;
         for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-            t << (*cit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CC_IMP") << endl << endl;
+            t << (*cit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CC_IMP") << Qt::endl << Qt::endl;
     }
 
 }
@@ -498,7 +493,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     if(!project->isEmpty("QMAKE_POST_LINK")) {
         t << "\n\t" << var("QMAKE_POST_LINK");
     }
-    t << endl;
+    t << Qt::endl;
 }
 
 void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &extraFlags, const QString &extraInlineFileContent)

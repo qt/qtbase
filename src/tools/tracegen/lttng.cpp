@@ -46,7 +46,6 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qtextstream.h>
-#include <qregexp.h>
 #include <qdebug.h>
 
 static void writeCtfMacro(QTextStream &stream, const Tracepoint::Field &field)

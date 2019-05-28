@@ -257,7 +257,6 @@ private slots:
     void fromListInt() const;
     void fromListMovable() const;
     void fromListCustom() const;
-    void fromStdVector() const;
     void indexOf() const;
     void insertInt() const;
     void insertMovable() const;
@@ -296,7 +295,10 @@ private slots:
     void swapMovable() const;
     void swapCustom() const;
     void toList() const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    void fromStdVector() const;
     void toStdVector() const;
+#endif
     void value() const;
 
     void testOperators() const;
@@ -328,6 +330,8 @@ private slots:
     void detachThreadSafetyCustom() const;
 
     void insertMove() const;
+
+    void swapItemsAt() const;
 
 private:
     template<typename T> void copyConstructor() const;
@@ -549,7 +553,6 @@ void tst_QVector::assignmentCustom() const
 template<typename T>
 void tst_QVector::assignFromInitializerList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     T val1(SimpleValue<T>::at(1));
     T val2(SimpleValue<T>::at(2));
     T val3(SimpleValue<T>::at(3));
@@ -560,9 +563,6 @@ void tst_QVector::assignFromInitializerList() const
 
     v1 = {};
     QCOMPARE(v1.size(), 0);
-#else
-    QSKIP("This test requires support for C++11 initializer lists.");
-#endif
 }
 
 void tst_QVector::assignFromInitializerListInt() const
@@ -709,7 +709,6 @@ void tst_QVector::appendCustom() const
 
 void tst_QVector::appendRvalue() const
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     QVector<QString> v;
     v.append("hello");
     QString world = "world";
@@ -717,9 +716,6 @@ void tst_QVector::appendRvalue() const
     QVERIFY(world.isEmpty());
     QCOMPARE(v.front(), QString("hello"));
     QCOMPARE(v.back(),  QString("world"));
-#else
-    QSKIP("This test requires that C++11 move semantics support is enabled in the compiler");
-#endif
 }
 
 void tst_QVector::at() const
@@ -1434,6 +1430,7 @@ void tst_QVector::fromListCustom() const
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 void tst_QVector::fromStdVector() const
 {
     // stl = :(
@@ -1447,6 +1444,7 @@ void tst_QVector::fromStdVector() const
     // test it converts ok
     QCOMPARE(myvec, QVector<QString>() << "aaa" << "bbb" << "ninjas" << "pirates");
 }
+#endif
 
 void tst_QVector::indexOf() const
 {
@@ -2339,6 +2337,7 @@ void tst_QVector::toList() const
     QCOMPARE(myvec, QVector<QString>() << "A" << "B" << "C");
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 void tst_QVector::toStdVector() const
 {
     QVector<QString> myvec;
@@ -2351,6 +2350,7 @@ void tst_QVector::toStdVector() const
 
     QCOMPARE(myvec, QVector<QString>() << "A" << "B" << "C");
 }
+#endif
 
 void tst_QVector::value() const
 {
@@ -2557,7 +2557,6 @@ void tst_QVector::reallocAfterCopy()
 template<typename T>
 void tst_QVector::initializeList()
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     T val1(SimpleValue<T>::at(1));
     T val2(SimpleValue<T>::at(2));
     T val3(SimpleValue<T>::at(3));
@@ -2574,7 +2573,6 @@ void tst_QVector::initializeList()
 
     QVector<T> v4({});
     QCOMPARE(v4.size(), 0);
-#endif
 }
 
 void tst_QVector::initializeListInt()
@@ -2992,6 +2990,23 @@ void tst_QVector::insertMove() const
         QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 14);
     }
     QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
+}
+
+void tst_QVector::swapItemsAt() const
+{
+    QVector<int> v;
+    v << 0 << 1 << 2 << 3;
+
+    v.swapItemsAt(0, 2);
+    QCOMPARE(v.at(0), 2);
+    QCOMPARE(v.at(2), 0);
+
+    auto copy = v;
+    copy.swapItemsAt(0, 2);
+    QCOMPARE(v.at(0), 2);
+    QCOMPARE(v.at(2), 0);
+    QCOMPARE(copy.at(0), 0);
+    QCOMPARE(copy.at(2), 2);
 }
 
 QTEST_MAIN(tst_QVector)

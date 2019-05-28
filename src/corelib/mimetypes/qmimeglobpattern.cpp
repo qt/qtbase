@@ -39,7 +39,9 @@
 
 #include "qmimeglobpattern_p.h"
 
+#if QT_CONFIG(regularexpression)
 #include <QRegularExpression>
+#endif
 #include <QStringList>
 #include <QDebug>
 
@@ -142,8 +144,12 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
         return (m_pattern == filename);
 
     // Other (quite rare) patterns, like "*.anim[1-9j]": use slow but correct method
+#if QT_CONFIG(regularexpression)
     QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(m_pattern));
     return rx.match(filename).hasMatch();
+#else
+    return false;
+#endif
 }
 
 static bool isFastPattern(const QString &pattern)

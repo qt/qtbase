@@ -245,7 +245,7 @@ private:
 void runOnExit()
 {
     QByteArray buffer;
-    QTextStream(&buffer) << "This will try to use QTextCodec::codecForLocale" << endl;
+    QTextStream(&buffer) << "This will try to use QTextCodec::codecForLocale" << Qt::endl;
 }
 Q_DESTRUCTOR_FUNCTION(runOnExit)
 
@@ -1506,9 +1506,9 @@ void tst_QTextStream::readStdin()
     stdinProcess.setReadChannel(QProcess::StandardError);
 
     QTextStream stream(&stdinProcess);
-    stream << "1" << endl;
-    stream << "2" << endl;
-    stream << "3" << endl;
+    stream << "1" << Qt::endl;
+    stream << "2" << Qt::endl;
+    stream << "3" << Qt::endl;
 
     stdinProcess.closeWriteChannel();
 
@@ -1534,7 +1534,7 @@ void tst_QTextStream::readAllFromStdin()
 
     QTextStream stream(&stdinProcess);
     stream.setCodec("ISO-8859-1");
-    stream << "hello world" << flush;
+    stream << "hello world" << Qt::flush;
 
     stdinProcess.closeWriteChannel();
 
@@ -1824,7 +1824,7 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary()
         out.setFieldWidth(3);
 
         for (int i = 0; i < 1000; ++i) {
-            out << i << lineContents << endl;
+            out << i << lineContents << Qt::endl;
         }
     }
     data.close();
@@ -2726,7 +2726,7 @@ void tst_QTextStream::generateBOM()
 
         QTextStream stream(&file);
         stream.setCodec(QTextCodec::codecForName("UTF-16LE"));
-        stream << "Hello" << endl;
+        stream << "Hello" << Qt::endl;
 
         file.close();
         QVERIFY(file.open(QFile::ReadOnly));
@@ -2740,7 +2740,7 @@ void tst_QTextStream::generateBOM()
 
         QTextStream stream(&file);
         stream.setCodec(QTextCodec::codecForName("UTF-16LE"));
-        stream << bom << "Hello" << endl;
+        stream << Qt::bom << "Hello" << Qt::endl;
 
         file.close();
         QVERIFY(file.open(QFile::ReadOnly));

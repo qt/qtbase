@@ -20,6 +20,6 @@ requires(qtConfig(private_tests))
 
 # DOCKERTODO: linux, docker is disabled on macOS/Windows.
 linux {
+    CONFIG += unsupported/testserver
     QT_TEST_SERVER_LIST = squid danted
-    include($$dirname(_QMAKE_CONF_)/tests/auto/testserver.pri)
 }

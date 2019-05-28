@@ -11,5 +11,6 @@ win32 {
     !winrt {
         QT += windowsuiautomation_support-private
     }
-    LIBS += -luuid -loleacc -loleaut32 -lole32
+    LIBS += -loleacc -loleaut32
+    QMAKE_USE += ole32 uuid
 }

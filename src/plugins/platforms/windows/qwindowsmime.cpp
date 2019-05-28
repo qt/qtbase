@@ -1087,7 +1087,10 @@ bool QWindowsMimeImage::canConvertFromMime(const FORMATETC &formatetc, const QMi
     const QImage image = qvariant_cast<QImage>(mimeData->imageData());
     if (image.isNull())
         return false;
-    return cf == CF_DIBV5 || (cf == CF_DIB) || cf == int(CF_PNG);
+    // QTBUG-64322: Use PNG only for transparent images as otherwise MS PowerPoint
+    // cannot handle it.
+    return cf == CF_DIBV5 || cf == CF_DIB
+        || (cf == int(CF_PNG) && image.hasAlphaChannel());
 }
 
 bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const

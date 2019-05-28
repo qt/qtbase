@@ -2124,6 +2124,17 @@ void QFtp::abort()
 
 /*!
     \internal
+    Clears the last error.
+
+    \sa currentCommand()
+*/
+void QFtp::clearError()
+{
+    d_func()->error = NoError;
+}
+
+/*!
+    \internal
     Returns the identifier of the FTP command that is being executed
     or 0 if there is no command being executed.
 

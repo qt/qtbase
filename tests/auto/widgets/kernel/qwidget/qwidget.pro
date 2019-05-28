@@ -16,4 +16,4 @@ mac {
     OBJECTIVE_SOURCES += tst_qwidget_mac_helpers.mm
 }
 
-win32:!winrt: LIBS += -luser32 -lgdi32
+win32:!winrt: QMAKE_USE += user32 gdi32

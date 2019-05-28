@@ -79,10 +79,8 @@ public:
 
     ~QBrush();
     QBrush &operator=(const QBrush &brush);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QBrush &operator=(QBrush &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
     inline void swap(QBrush &other) noexcept
     { qSwap(d, other.d); }
 
@@ -378,6 +376,7 @@ public:
 
     QGradient();
     QGradient(Preset);
+    ~QGradient();
 
     Type type() const { return m_type; }
 
@@ -431,6 +430,7 @@ public:
     QLinearGradient();
     QLinearGradient(const QPointF &start, const QPointF &finalStop);
     QLinearGradient(qreal xStart, qreal yStart, qreal xFinalStop, qreal yFinalStop);
+    ~QLinearGradient();
 
     QPointF start() const;
     void setStart(const QPointF &start);
@@ -454,6 +454,8 @@ public:
 
     QRadialGradient(const QPointF &center, qreal centerRadius, const QPointF &focalPoint, qreal focalRadius);
     QRadialGradient(qreal cx, qreal cy, qreal centerRadius, qreal fx, qreal fy, qreal focalRadius);
+
+    ~QRadialGradient();
 
     QPointF center() const;
     void setCenter(const QPointF &center);
@@ -480,6 +482,7 @@ public:
     QConicalGradient();
     QConicalGradient(const QPointF &center, qreal startAngle);
     QConicalGradient(qreal cx, qreal cy, qreal startAngle);
+    ~QConicalGradient();
 
     QPointF center() const;
     void setCenter(const QPointF &center);

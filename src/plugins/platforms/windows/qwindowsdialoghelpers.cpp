@@ -736,7 +736,7 @@ QString QWindowsShellItem::libraryItemDefaultSaveFolder(IShellItem *item)
 #ifndef QT_NO_DEBUG_STREAM
 void QWindowsShellItem::format(QDebug &d) const
 {
-    d << "attributes=0x" << hex << attributes() << dec;
+    d << "attributes=0x" << Qt::hex << attributes() << Qt::dec;
     if (isFileSystem())
         d << " [filesys]";
     if (isDir())
@@ -972,7 +972,7 @@ void QWindowsNativeFileDialogBase::doExec(HWND owner)
     // gets a WM_CLOSE or the parent window is destroyed.
     const HRESULT hr = m_fileDialog->Show(owner);
     QWindowsDialogs::eatMouseMove();
-    qCDebug(lcQpaDialogs) << '<' << __FUNCTION__ << " returns " << hex << hr;
+    qCDebug(lcQpaDialogs) << '<' << __FUNCTION__ << " returns " << Qt::hex << hr;
     // Emit accepted() only if there is a result as otherwise UI hangs occur.
     // For example, typing in invalid URLs results in empty result lists.
     if (hr == S_OK && !m_data.selectedFiles().isEmpty()) {
@@ -1013,7 +1013,7 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode,
     }
     qCDebug(lcQpaDialogs) << __FUNCTION__ << "mode=" << mode
         << "acceptMode=" << acceptMode << "options=" << options
-        << "results in" << showbase << hex << flags;
+        << "results in" << Qt::showbase << Qt::hex << flags;
 
     if (FAILED(m_fileDialog->SetOptions(flags)))
         qErrnoWarning("%s: SetOptions() failed", __FUNCTION__);

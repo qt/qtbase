@@ -155,6 +155,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
       m_parentWindow(0),
       m_visible(false),
       m_exposed(true),
+      m_foreign(false),
       m_windowState(Qt::WindowNoState),
       m_mmRendererWindow(0),
       m_firstActivateHandled(false)
@@ -254,6 +255,39 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     }
 }
 
+QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, screen_window_t screenWindow)
+    : QPlatformWindow(window)
+    , m_screenContext(context)
+    , m_window(screenWindow)
+    , m_screen(0)
+    , m_parentWindow(0)
+    , m_visible(false)
+    , m_exposed(true)
+    , m_foreign(true)
+    , m_windowState(Qt::WindowNoState)
+    , m_mmRendererWindow(0)
+    , m_parentGroupName(256, 0)
+    , m_isTopLevel(false)
+{
+    qWindowDebug() << "window =" << window << ", size =" << window->size();
+
+    collectWindowGroup();
+
+    screen_get_window_property_cv(m_window,
+                                  SCREEN_PROPERTY_PARENT,
+                                  m_parentGroupName.size(),
+                                  m_parentGroupName.data());
+    m_parentGroupName.resize(strlen(m_parentGroupName.constData()));
+
+    // If a window group has been provided join it now. If it's an empty string that's OK too,
+    // it'll cause us not to join a group (the app will presumably join at some future time).
+    QVariant parentGroup = window->property("qnxInitialWindowGroup");
+    if (!parentGroup.isValid())
+        parentGroup = window->property("_q_platform_qnxParentGroup");
+    if (parentGroup.isValid() && parentGroup.canConvert<QByteArray>())
+        joinWindowGroup(parentGroup.toByteArray());
+}
+
 QQnxWindow::~QQnxWindow()
 {
     qWindowDebug() << "window =" << window();
@@ -270,7 +304,11 @@ QQnxWindow::~QQnxWindow()
         m_screen->updateHierarchy();
 
     // Cleanup QNX window and its buffers
-    screen_destroy_window(m_window);
+    // Foreign windows are cleaned up externally after the CLOSE event has been handled.
+    if (m_foreign)
+        removeContextPermission();
+    else
+        screen_destroy_window(m_window);
 }
 
 void QQnxWindow::setGeometry(const QRect &rect)
@@ -793,14 +831,24 @@ void QQnxWindow::initWindow()
     setGeometryHelper(shouldMakeFullScreen() ? screen()->geometry() : window()->geometry());
 }
 
+void QQnxWindow::collectWindowGroup()
+{
+    QByteArray groupName(256, 0);
+    Q_SCREEN_CHECKERROR(screen_get_window_property_cv(m_window,
+                                                      SCREEN_PROPERTY_GROUP,
+                                                      groupName.size(),
+                                                      groupName.data()),
+                        "Failed to retrieve window group");
+    groupName.resize(strlen(groupName.constData()));
+    m_windowGroupName = groupName;
+}
+
 void QQnxWindow::createWindowGroup()
 {
-    // Generate a random window group name
-    m_windowGroupName = QUuid::createUuid().toByteArray();
-
-    // Create window group so child windows can be parented by container window
-    Q_SCREEN_CHECKERROR(screen_create_window_group(m_window, m_windowGroupName.constData()),
+    Q_SCREEN_CHECKERROR(screen_create_window_group(m_window, nullptr),
                         "Failed to create window group");
+
+    collectWindowGroup();
 }
 
 void QQnxWindow::joinWindowGroup(const QByteArray &groupName)
@@ -808,6 +856,17 @@ void QQnxWindow::joinWindowGroup(const QByteArray &groupName)
     bool changed = false;
 
     qWindowDebug() << "group:" << groupName;
+
+    // screen has this annoying habit of generating a CLOSE/CREATE when the owner context of
+    // the parent group moves a foreign window to another group that it also owns.  The
+    // CLOSE/CREATE changes the identity of the foreign window.  Usually, this is undesirable.
+    // To prevent this CLOSE/CREATE when changing the parent group, we temporarily add a
+    // context permission for the Qt context.  screen won't send a CLOSE/CREATE when the
+    // context has some permission other than the PARENT permission.  If there isn't a new
+    // group (the window has no parent), this context permission is left in place.
+
+    if (m_foreign && !m_parentGroupName.isEmpty())\
+        addContextPermission();
 
     if (!groupName.isEmpty()) {
         if (groupName != m_parentGroupName) {
@@ -826,6 +885,9 @@ void QQnxWindow::joinWindowGroup(const QByteArray &groupName)
         // part of any group.
         m_parentGroupName = "";
     }
+
+    if (m_foreign && !groupName.isEmpty())
+        removeContextPermission();
 
     if (changed)
         screen_flush_context(m_screenContext, 0);
@@ -897,6 +959,28 @@ bool QQnxWindow::showWithoutActivating() const
 bool QQnxWindow::focusable() const
 {
     return (window()->flags() & Qt::WindowDoesNotAcceptFocus) != Qt::WindowDoesNotAcceptFocus;
+}
+
+void QQnxWindow::addContextPermission()
+{
+    QByteArray grantString("context:");
+    grantString.append(QQnxIntegration::instance()->screenContextId());
+    grantString.append(":rw-");
+    screen_set_window_property_cv(m_window,
+            SCREEN_PROPERTY_PERMISSIONS,
+            grantString.length(),
+            grantString.data());
+}
+
+void QQnxWindow::removeContextPermission()
+{
+    QByteArray revokeString("context:");
+    revokeString.append(QQnxIntegration::instance()->screenContextId());
+    revokeString.append(":---");
+    screen_set_window_property_cv(m_window,
+            SCREEN_PROPERTY_PERMISSIONS,
+            revokeString.length(),
+            revokeString.data());
 }
 
 QT_END_NAMESPACE

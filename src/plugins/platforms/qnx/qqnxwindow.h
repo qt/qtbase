@@ -64,7 +64,8 @@ class QQnxWindow : public QPlatformWindow
 {
 friend class QQnxScreen;
 public:
-    QQnxWindow(QWindow *window, screen_context_t context, bool needRootWindow);
+    explicit QQnxWindow(QWindow *window, screen_context_t context, bool needRootWindow);
+    explicit QQnxWindow(QWindow *window, screen_context_t context, screen_window_t screenWindow);
     virtual ~QQnxWindow();
 
     void setGeometry(const QRect &rect) override;
@@ -124,6 +125,7 @@ protected:
     screen_context_t m_screenContext;
 
 private:
+    void collectWindowGroup();
     void createWindowGroup();
     void setGeometryHelper(const QRect &rect);
     void removeFromParent();
@@ -135,6 +137,9 @@ private:
     bool showWithoutActivating() const;
     bool focusable() const;
 
+    void addContextPermission();
+    void removeContextPermission();
+
     screen_window_t m_window;
     QSize m_bufferSize;
 
@@ -144,6 +149,7 @@ private:
     QScopedPointer<QQnxAbstractCover> m_cover;
     bool m_visible;
     bool m_exposed;
+    bool m_foreign;
     QRect m_unmaximizedGeometry;
     Qt::WindowStates m_windowState;
     QString m_mmRendererWindowName;

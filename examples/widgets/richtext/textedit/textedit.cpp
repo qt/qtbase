@@ -71,6 +71,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMimeDatabase>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printer)
@@ -316,6 +317,14 @@ void TextEdit::setupTextActions()
     actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
     actionAlignJustify->setCheckable(true);
     actionAlignJustify->setPriority(QAction::LowPriority);
+    const QIcon indentMoreIcon = QIcon::fromTheme("format-indent-more", QIcon(rsrcPath + "/format-indent-more.png"));
+    actionIndentMore = menu->addAction(indentMoreIcon, tr("&Indent"), this, &TextEdit::indent);
+    actionIndentMore->setShortcut(Qt::CTRL + Qt::Key_BracketRight);
+    actionIndentMore->setPriority(QAction::LowPriority);
+    const QIcon indentLessIcon = QIcon::fromTheme("format-indent-less", QIcon(rsrcPath + "/format-indent-less.png"));
+    actionIndentLess = menu->addAction(indentLessIcon, tr("&Unindent"), this, &TextEdit::unindent);
+    actionIndentLess->setShortcut(Qt::CTRL + Qt::Key_BracketLeft);
+    actionIndentLess->setPriority(QAction::LowPriority);
 
     // Make sure the alignLeft  is always left of the alignRight
     QActionGroup *alignGroup = new QActionGroup(this);
@@ -334,6 +343,10 @@ void TextEdit::setupTextActions()
 
     tb->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
+    tb->addAction(actionIndentMore);
+    tb->addAction(actionIndentLess);
+    menu->addAction(actionIndentMore);
+    menu->addAction(actionIndentLess);
 
     menu->addSeparator();
 
@@ -341,6 +354,15 @@ void TextEdit::setupTextActions()
     pix.fill(Qt::black);
     actionTextColor = menu->addAction(pix, tr("&Color..."), this, &TextEdit::textColor);
     tb->addAction(actionTextColor);
+
+    menu->addSeparator();
+
+    const QIcon checkboxIcon = QIcon::fromTheme("status-checkbox-checked", QIcon(rsrcPath + "/checkbox-checked.png"));
+    actionToggleCheckState = menu->addAction(checkboxIcon, tr("Chec&ked"), this, &TextEdit::setChecked);
+    actionToggleCheckState->setShortcut(Qt::CTRL + Qt::Key_K);
+    actionToggleCheckState->setCheckable(true);
+    actionToggleCheckState->setPriority(QAction::LowPriority);
+    tb->addAction(actionToggleCheckState);
 
     tb = addToolBar(tr("Format Actions"));
     tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -353,6 +375,8 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Bullet List (Disc)");
     comboStyle->addItem("Bullet List (Circle)");
     comboStyle->addItem("Bullet List (Square)");
+    comboStyle->addItem("Task List (Unchecked)");
+    comboStyle->addItem("Task List (Checked)");
     comboStyle->addItem("Ordered List (Decimal)");
     comboStyle->addItem("Ordered List (Alpha lower)");
     comboStyle->addItem("Ordered List (Alpha upper)");
@@ -395,11 +419,18 @@ bool TextEdit::load(const QString &f)
     QByteArray data = file.readAll();
     QTextCodec *codec = Qt::codecForHtml(data);
     QString str = codec->toUnicode(data);
+    QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
+    textEdit->document()->setBaseUrl(baseUrl);
     if (Qt::mightBeRichText(str)) {
         textEdit->setHtml(str);
     } else {
-        str = QString::fromLocal8Bit(data);
-        textEdit->setPlainText(str);
+#if QT_CONFIG(textmarkdownreader)
+        QMimeDatabase db;
+        if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/markdown"))
+            textEdit->setMarkdown(str);
+        else
+#endif
+            textEdit->setPlainText(QString::fromLocal8Bit(data));
     }
 
     setCurrentFileName(f);
@@ -451,7 +482,15 @@ void TextEdit::fileOpen()
     QFileDialog fileDialog(this, tr("Open File..."));
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
-    fileDialog.setMimeTypeFilters(QStringList() << "text/html" << "text/plain");
+    fileDialog.setMimeTypeFilters(QStringList()
+#if QT_CONFIG(texthtmlparser)
+                                  << "text/html"
+#endif
+#if QT_CONFIG(textmarkdownreader)
+
+                                  << "text/markdown"
+#endif
+                                  << "text/plain");
     if (fileDialog.exec() != QDialog::Accepted)
         return;
     const QString fn = fileDialog.selectedFiles().first();
@@ -485,9 +524,18 @@ bool TextEdit::fileSaveAs()
     QFileDialog fileDialog(this, tr("Save as..."));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     QStringList mimeTypes;
-    mimeTypes << "application/vnd.oasis.opendocument.text" << "text/html" << "text/plain";
+    mimeTypes << "text/plain"
+#if QT_CONFIG(textodfwriter)
+              << "application/vnd.oasis.opendocument.text"
+#endif
+#if QT_CONFIG(textmarkdownwriter)
+              << "text/markdown"
+#endif
+              << "text/html";
     fileDialog.setMimeTypeFilters(mimeTypes);
+#if QT_CONFIG(textodfwriter)
     fileDialog.setDefaultSuffix("odt");
+#endif
     if (fileDialog.exec() != QDialog::Accepted)
         return false;
     const QString fn = fileDialog.selectedFiles().first();
@@ -592,6 +640,7 @@ void TextEdit::textStyle(int styleIndex)
 {
     QTextCursor cursor = textEdit->textCursor();
     QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
+    QTextBlockFormat::MarkerType marker = QTextBlockFormat::NoMarker;
 
     switch (styleIndex) {
     case 1:
@@ -604,18 +653,32 @@ void TextEdit::textStyle(int styleIndex)
         style = QTextListFormat::ListSquare;
         break;
     case 4:
-        style = QTextListFormat::ListDecimal;
+        if (cursor.currentList())
+            style = cursor.currentList()->format().style();
+        else
+            style = QTextListFormat::ListDisc;
+        marker = QTextBlockFormat::Unchecked;
         break;
     case 5:
-        style = QTextListFormat::ListLowerAlpha;
+        if (cursor.currentList())
+            style = cursor.currentList()->format().style();
+        else
+            style = QTextListFormat::ListDisc;
+        marker = QTextBlockFormat::Checked;
         break;
     case 6:
-        style = QTextListFormat::ListUpperAlpha;
+        style = QTextListFormat::ListDecimal;
         break;
     case 7:
-        style = QTextListFormat::ListLowerRoman;
+        style = QTextListFormat::ListLowerAlpha;
         break;
     case 8:
+        style = QTextListFormat::ListUpperAlpha;
+        break;
+    case 9:
+        style = QTextListFormat::ListLowerRoman;
+        break;
+    case 10:
         style = QTextListFormat::ListUpperRoman;
         break;
     default:
@@ -628,7 +691,7 @@ void TextEdit::textStyle(int styleIndex)
 
     if (style == QTextListFormat::ListStyleUndefined) {
         blockFmt.setObjectIndex(-1);
-        int headingLevel = styleIndex >= 9 ? styleIndex - 9 + 1 : 0; // H1 to H6, or Standard
+        int headingLevel = styleIndex >= 11 ? styleIndex - 11 + 1 : 0; // H1 to H6, or Standard
         blockFmt.setHeadingLevel(headingLevel);
         cursor.setBlockFormat(blockFmt);
 
@@ -640,6 +703,8 @@ void TextEdit::textStyle(int styleIndex)
         cursor.mergeCharFormat(fmt);
         textEdit->mergeCurrentCharFormat(fmt);
     } else {
+        blockFmt.setMarker(marker);
+        cursor.setBlockFormat(blockFmt);
         QTextListFormat listFmt;
         if (cursor.currentList()) {
             listFmt = cursor.currentList()->format();
@@ -678,6 +743,45 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignJustify);
 }
 
+void TextEdit::setChecked(bool checked)
+{
+    textStyle(checked ? 5 : 4);
+}
+
+void TextEdit::indent()
+{
+    modifyIndentation(1);
+}
+
+void TextEdit::unindent()
+{
+    modifyIndentation(-1);
+}
+
+void TextEdit::modifyIndentation(int amount)
+{
+    QTextCursor cursor = textEdit->textCursor();
+    cursor.beginEditBlock();
+    if (cursor.currentList()) {
+        QTextListFormat listFmt = cursor.currentList()->format();
+        // See whether the line above is the list we want to move this item into,
+        // or whether we need a new list.
+        QTextCursor above(cursor);
+        above.movePosition(QTextCursor::Up);
+        if (above.currentList() && listFmt.indent() + amount == above.currentList()->format().indent()) {
+            above.currentList()->add(cursor.block());
+        } else {
+            listFmt.setIndent(listFmt.indent() + amount);
+            cursor.createList(listFmt);
+        }
+    } else {
+        QTextBlockFormat blockFmt = cursor.blockFormat();
+        blockFmt.setIndent(blockFmt.indent() + amount);
+        cursor.setBlockFormat(blockFmt);
+    }
+    cursor.endEditBlock();
+}
+
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 {
     fontChanged(format.font());
@@ -700,27 +804,40 @@ void TextEdit::cursorPositionChanged()
             comboStyle->setCurrentIndex(3);
             break;
         case QTextListFormat::ListDecimal:
-            comboStyle->setCurrentIndex(4);
-            break;
-        case QTextListFormat::ListLowerAlpha:
-            comboStyle->setCurrentIndex(5);
-            break;
-        case QTextListFormat::ListUpperAlpha:
             comboStyle->setCurrentIndex(6);
             break;
-        case QTextListFormat::ListLowerRoman:
+        case QTextListFormat::ListLowerAlpha:
             comboStyle->setCurrentIndex(7);
             break;
-        case QTextListFormat::ListUpperRoman:
+        case QTextListFormat::ListUpperAlpha:
             comboStyle->setCurrentIndex(8);
+            break;
+        case QTextListFormat::ListLowerRoman:
+            comboStyle->setCurrentIndex(9);
+            break;
+        case QTextListFormat::ListUpperRoman:
+            comboStyle->setCurrentIndex(10);
             break;
         default:
             comboStyle->setCurrentIndex(-1);
             break;
         }
+        switch (textEdit->textCursor().block().blockFormat().marker()) {
+        case QTextBlockFormat::NoMarker:
+            actionToggleCheckState->setChecked(false);
+            break;
+        case QTextBlockFormat::Unchecked:
+            comboStyle->setCurrentIndex(4);
+            actionToggleCheckState->setChecked(false);
+            break;
+        case QTextBlockFormat::Checked:
+            comboStyle->setCurrentIndex(5);
+            actionToggleCheckState->setChecked(true);
+            break;
+        }
     } else {
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
-        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
+        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
 }
 

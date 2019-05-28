@@ -1059,15 +1059,15 @@ void QFontEngine::setGlyphCache(const void *context, QFontEngineGlyphCache *cach
     Q_ASSERT(cache);
 
     GlyphCaches &caches = m_glyphCaches[context];
-    for (GlyphCaches::const_iterator it = caches.constBegin(), end = caches.constEnd(); it != end; ++it) {
-        if (cache == it->cache.data())
+    for (auto & e : caches) {
+        if (cache == e.cache.data())
             return;
     }
 
     // Limit the glyph caches to 4 per context. This covers all 90 degree rotations,
     // and limits memory use when there is continuous or random rotation
     if (caches.size() == 4)
-        caches.removeLast();
+        caches.pop_back();
 
     GlyphCacheEntry entry;
     entry.cache = cache;
@@ -1081,8 +1081,8 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context, GlyphFormat 
     if (caches == m_glyphCaches.cend())
         return nullptr;
 
-    for (GlyphCaches::const_iterator it = caches->begin(), end = caches->end(); it != end; ++it) {
-        QFontEngineGlyphCache *cache = it->cache.data();
+    for (auto &e : *caches) {
+        QFontEngineGlyphCache *cache = e.cache.data();
         if (format == cache->glyphFormat() && qtransform_equals_no_translate(cache->m_transform, transform))
             return cache;
     }
@@ -1213,7 +1213,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
 end:
     std::sort(kerning_pairs.begin(), kerning_pairs.end());
 //    for (int i = 0; i < kerning_pairs.count(); ++i)
-//        qDebug() << 'i' << i << "left_right" << hex << kerning_pairs.at(i).left_right;
+//        qDebug() << 'i' << i << "left_right" << Qt::hex << kerning_pairs.at(i).left_right;
 }
 
 

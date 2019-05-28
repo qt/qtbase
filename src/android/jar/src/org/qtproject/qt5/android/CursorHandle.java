@@ -166,11 +166,11 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         int y2 = y + location[1] + m_yShift;
 
         if (m_id == QtNative.IdCursorHandle) {
-            x2 -= m_cursorView.getWidth() / 2 ;
+            x2 -= m_popup.getWidth() / 2 ;
         } else if ((m_id == QtNative.IdLeftHandle && !m_rtl) || (m_id == QtNative.IdRightHandle && m_rtl)) {
-            x2 -= m_cursorView.getWidth() * 3 / 4;
+            x2 -= m_popup.getWidth() * 3 / 4;
         } else {
-            x2 -= m_cursorView.getWidth() / 4;
+            x2 -= m_popup.getWidth() / 4;
         }
 
         if (m_popup.isShowing()) {

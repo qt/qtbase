@@ -42,15 +42,14 @@
 
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
-
-#include <iterator>
-#include <list>
+#include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qdatastream.h>
+#include <QtCore/qtypeinfo.h>
 
 #include <algorithm>
-
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
-# include <initializer_list>
-#endif
+#include <initializer_list>
+#include <iterator>
+#include <list>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,21 +81,20 @@ class QLinkedList
 public:
     inline QLinkedList() noexcept : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
-#if defined(Q_COMPILER_INITIALIZER_LISTS)
     inline QLinkedList(std::initializer_list<T> list)
-        : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null))
+        : QLinkedList(list.begin(), list.end()) {}
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QLinkedList(InputIterator first, InputIterator last)
+        : QLinkedList()
     {
-        std::copy(list.begin(), list.end(), std::back_inserter(*this));
+        std::copy(first, last, std::back_inserter(*this));
     }
-#endif
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
-#ifdef Q_COMPILER_RVALUE_REFS
     QLinkedList(QLinkedList<T> &&other) noexcept
         : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
     QLinkedList<T> &operator=(QLinkedList<T> &&other) noexcept
     { QLinkedList moved(std::move(other)); swap(moved); return *this; }
-#endif
     inline void swap(QLinkedList<T> &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QLinkedList<T> &l) const;
     inline bool operator!=(const QLinkedList<T> &l) const { return !(*this == l); }
@@ -270,6 +268,8 @@ private:
     iterator detach_helper2(iterator);
     void freeData(QLinkedListData*);
 };
+template <typename T>
+Q_DECLARE_TYPEINFO_BODY(QLinkedList<T>, Q_MOVABLE_TYPE|Q_RELOCATABLE_TYPE);
 
 template <typename T>
 inline QLinkedList<T>::~QLinkedList()
@@ -564,6 +564,20 @@ QLinkedList<T> QLinkedList<T>::operator+(const QLinkedList<T> &l) const
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(LinkedList)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(LinkedList)
+
+#ifndef QT_NO_DATASTREAM
+template <typename T>
+inline QDataStream &operator>>(QDataStream &s, QLinkedList<T> &l)
+{
+    return QtPrivate::readListBasedContainer(s, l);
+}
+
+template <typename T>
+inline QDataStream &operator<<(QDataStream &s, const QLinkedList<T> &l)
+{
+    return QtPrivate::writeSequentialContainer(s, l);
+}
+#endif
 
 QT_END_NAMESPACE
 

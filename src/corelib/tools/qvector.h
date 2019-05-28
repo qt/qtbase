@@ -45,14 +45,15 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qcontainertools_impl.h>
 
 #include <iterator>
+#include <initializer_list>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <vector>
+#endif
 #include <stdlib.h>
 #include <string.h>
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-#include <initializer_list>
-#endif
 
 #include <algorithm>
 
@@ -71,16 +72,15 @@ public:
     inline QVector(const QVector<T> &v);
     inline ~QVector() { if (!d->ref.deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
-#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     QVector(QVector<T> &&other) noexcept : d(other.d) { other.d = Data::sharedNull(); }
     QVector<T> &operator=(QVector<T> &&other) noexcept
     { QVector moved(std::move(other)); swap(moved); return *this; }
-#endif
     void swap(QVector<T> &other) noexcept { qSwap(d, other.d); }
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
     QVector<T> &operator=(std::initializer_list<T> args);
-#endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QVector(InputIterator first, InputIterator last);
+
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
 
@@ -139,9 +139,7 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
     void append(const T &t);
-#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     void append(T &&t);
-#endif
     inline void append(const QVector<T> &l) { *this += l; }
     void prepend(T &&t);
     void prepend(const T &t);
@@ -253,6 +251,13 @@ public:
     T value(int i) const;
     T value(int i, const T &defaultValue) const;
 
+    void swapItemsAt(int i, int j) {
+        Q_ASSERT_X(i >= 0 && i < size() && j >= 0 && j < size(),
+                    "QVector<T>::swap", "index out of range");
+        detach();
+        qSwap(d->begin()[i], d->begin()[j]);
+    }
+
     // STL compatibility
     typedef T value_type;
     typedef value_type* pointer;
@@ -264,10 +269,8 @@ public:
     typedef const_iterator ConstIterator;
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
-#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     void push_back(T &&t) { append(std::move(t)); }
     void push_front(T &&t) { prepend(std::move(t)); }
-#endif
     inline void push_front(const T &t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
@@ -294,14 +297,17 @@ public:
     inline QVector<T> &operator<<(T &&t)
     { append(std::move(t)); return *this; }
 
+    static QVector<T> fromList(const QList<T> &list);
     QList<T> toList() const;
 
-    static QVector<T> fromList(const QList<T> &list);
-
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
     { QVector<T> tmp; tmp.reserve(int(vector.size())); std::copy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    Q_DECL_DEPRECATED_X("Use std::vector<T>(vector.begin(), vector.end()) instead.")
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
+#endif
 private:
     // ### Qt6: remove methods, they are unused
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
@@ -523,11 +529,10 @@ QVector<T>::QVector(int asize, const T &t)
     }
 }
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-# if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4127) // conditional expression is constant
-# endif // Q_CC_MSVC
+#endif // Q_CC_MSVC
 
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
@@ -552,10 +557,18 @@ QVector<T> &QVector<T>::operator=(std::initializer_list<T> args)
     return *this;
 }
 
-# if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC)
 QT_WARNING_POP
-# endif // Q_CC_MSVC
-#endif // Q_COMPILER_INITIALIZER_LISTS
+#endif // Q_CC_MSVC
+
+template <typename T>
+template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator>>
+QVector<T>::QVector(InputIterator first, InputIterator last)
+    : QVector()
+{
+    QtPrivate::reserveIfForwardIterator(this, first, last);
+    std::copy(first, last, std::back_inserter(*this));
+}
 
 template <typename T>
 void QVector<T>::freeData(Data *x)
@@ -786,7 +799,6 @@ void QVector<T>::append(const T &t)
     ++d->size;
 }
 
-#ifdef Q_COMPILER_RVALUE_REFS
 template <typename T>
 void QVector<T>::append(T &&t)
 {
@@ -800,7 +812,6 @@ void QVector<T>::append(T &&t)
 
     ++d->size;
 }
-#endif
 
 template <typename T>
 void QVector<T>::removeLast()
@@ -1113,6 +1124,24 @@ extern template class Q_CORE_EXPORT QVector<QPoint>;
 #endif
 
 QVector<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }
+
+QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{ return splitRef(sep, _sb(behavior), cs); }
+QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{ return splitRef(sep, _sb(behavior), cs); }
+#ifndef QT_NO_REGEXP
+QVector<QStringRef> QString::splitRef(const QRegExp &sep, Qt::SplitBehavior behavior) const
+{ return splitRef(sep, _sb(behavior)); }
+#endif
+#if QT_CONFIG(regularexpression)
+QVector<QStringRef> QString::splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior) const
+{ return splitRef(sep, _sb(behavior)); }
+#endif
+QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{ return split(sep, QString::_sb(behavior), cs); }
+QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{ return split(sep, QString::_sb(behavior), cs); }
+
 
 QT_END_NAMESPACE
 

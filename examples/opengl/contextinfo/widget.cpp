@@ -384,7 +384,7 @@ void Widget::renderWindowReady()
     m_output->append(tr("Qt OpenGL library handle: %1")
                      .arg(QString::number(qintptr(QOpenGLContext::openGLModuleHandle()), 16)));
 
-    QList<QByteArray> extensionList = context->extensions().toList();
+    QList<QByteArray> extensionList = context->extensions().values();
     std::sort(extensionList.begin(), extensionList.end());
     m_extensions->append(tr("Found %1 extensions:").arg(extensionList.count()));
     for (const QByteArray &ext : qAsConst(extensionList))

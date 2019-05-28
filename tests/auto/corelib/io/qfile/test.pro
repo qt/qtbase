@@ -23,4 +23,4 @@ TESTDATA += \
     Makefile forCopying.txt forRenaming.txt \
     resources/file1.ext1
 
-win32:!winrt: LIBS += -lole32 -luuid
+win32:!winrt: QMAKE_USE += ole32 uuid

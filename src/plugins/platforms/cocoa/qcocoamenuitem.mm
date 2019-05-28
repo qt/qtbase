@@ -53,6 +53,7 @@
 #include <QtGui/private/qcoregraphics_p.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QRegExp>
 
 QT_BEGIN_NAMESPACE
 

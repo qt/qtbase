@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="68" tests="6" name="tst_float">
+<testsuite errors="0" failures="96" tests="6" name="tst_float">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -206,6 +206,90 @@
     <failure tag="should FAIL 3" message="Compared qfloat16s are not the same (fuzzy compare)
    Actual   (operandLeft) : 98
    Expected (operandRight): 99" result="fail"/>
+    <failure tag="should FAIL 4" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 5.93e&#x002D;05
+   Expected (operandRight): 5.87e&#x002D;05" result="fail"/>
+    <failure tag="should FAIL 5" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 5.94e+04
+   Expected (operandRight): 5.88e+04" result="fail"/>
+    <failure tag="should FAIL: NaN != 0" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 0" result="fail"/>
+    <failure tag="should FAIL: 0 != NaN" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): nan" result="fail"/>
+    <failure tag="should FAIL: NaN != 1" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): 1" result="fail"/>
+    <failure tag="should FAIL: 1 != NaN" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): nan" result="fail"/>
+    <failure tag="should FAIL: inf != &#x002D;inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): &#x002D;inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;inf != inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;inf
+   Expected (operandRight): inf" result="fail"/>
+    <failure tag="should FAIL: inf != nan" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): nan" result="fail"/>
+    <failure tag="should FAIL: nan != inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;inf != nan" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;inf
+   Expected (operandRight): nan" result="fail"/>
+    <failure tag="should FAIL: nan != &#x002D;inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : nan
+   Expected (operandRight): &#x002D;inf" result="fail"/>
+    <failure tag="should FAIL: inf != 0" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 0" result="fail"/>
+    <failure tag="should FAIL: 0 != inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;inf != 0" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;inf
+   Expected (operandRight): 0" result="fail"/>
+    <failure tag="should FAIL: 0 != &#x002D;inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0
+   Expected (operandRight): &#x002D;inf" result="fail"/>
+    <failure tag="should FAIL: inf != 1" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 1" result="fail"/>
+    <failure tag="should FAIL: 1 != inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;inf != 1" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;inf
+   Expected (operandRight): 1" result="fail"/>
+    <failure tag="should FAIL: 1 != &#x002D;inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): &#x002D;inf" result="fail"/>
+    <failure tag="should FAIL: inf != max" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): 6.55e+04" result="fail"/>
+    <failure tag="should FAIL: inf != &#x002D;max" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : inf
+   Expected (operandRight): &#x002D;6.55e+04" result="fail"/>
+    <failure tag="should FAIL: max != inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 6.55e+04
+   Expected (operandRight): inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;max != inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;6.55e+04
+   Expected (operandRight): inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;inf != max" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;inf
+   Expected (operandRight): 6.55e+04" result="fail"/>
+    <failure tag="should FAIL: &#x002D;inf != &#x002D;max" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;inf
+   Expected (operandRight): &#x002D;6.55e+04" result="fail"/>
+    <failure tag="should FAIL: max != &#x002D;inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 6.55e+04
+   Expected (operandRight): &#x002D;inf" result="fail"/>
+    <failure tag="should FAIL: &#x002D;max != &#x002D;inf" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : &#x002D;6.55e+04
+   Expected (operandRight): &#x002D;inf" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareFloatTests">
     <failure tag="1e0" message="Compared floats are not the same (fuzzy compare)

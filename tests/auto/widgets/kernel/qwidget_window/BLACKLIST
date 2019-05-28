@@ -2,6 +2,6 @@
 # QTBUG-66345
 opensuse-42.3
 ubuntu-16.04
-ubuntu-18.04
 [setWindowState]
 ubuntu-18.04
+rhel

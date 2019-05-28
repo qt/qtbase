@@ -79,9 +79,7 @@ private slots:
     void fromRawData();
     void literals();
     void variadicLiterals();
-#ifdef Q_COMPILER_RVALUE_REFS
     void rValueReferences();
-#endif
     void grow();
 };
 
@@ -1678,7 +1676,6 @@ void tst_QArrayData::variadicLiterals()
     }
 }
 
-#ifdef Q_COMPILER_RVALUE_REFS
 // std::remove_reference is in C++11, but requires library support
 template <class T> struct RemoveReference { typedef T Type; };
 template <class T> struct RemoveReference<T &> { typedef T Type; };
@@ -1761,7 +1758,6 @@ void tst_QArrayData::rValueReferences()
     QCOMPARE(v3.size(), size_t(1));
     QCOMPARE(v3.front(), 42);
 }
-#endif
 
 void tst_QArrayData::grow()
 {

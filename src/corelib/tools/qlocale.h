@@ -441,6 +441,8 @@ public:
         Sicilian = 362,
         SouthernKurdish = 363,
         WesternBalochi = 364,
+        Cebuano = 365,
+        Erzya = 366,
 
         Afan = Oromo,
         Bhutani = Dzongkha,
@@ -457,7 +459,7 @@ public:
         Twi = Akan,
         Uigur = Uighur,
 
-        LastLanguage = WesternBalochi
+        LastLanguage = Erzya
     };
 
     enum Script {
@@ -939,9 +941,7 @@ public:
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QLocale &operator=(QLocale &&other) noexcept { swap(other); return *this; }
-#endif
     QLocale &operator=(const QLocale &other);
     ~QLocale();
 

@@ -768,7 +768,7 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
 static inline void formatRect(QDebug &debug, const QRect r)
 {
     debug << r.width() << 'x' << r.height()
-        << forcesign << r.x() << r.y() << noforcesign;
+        << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
 }
 
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)

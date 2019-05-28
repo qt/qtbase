@@ -60,11 +60,6 @@ static QString qtSha1(const QByteArray &src)
     return QString::fromLatin1(digest.toHex());
 }
 
-ProjectBuilderMakefileGenerator::ProjectBuilderMakefileGenerator() : UnixMakefileGenerator()
-{
-
-}
-
 bool
 ProjectBuilderMakefileGenerator::writeMakefile(QTextStream &t)
 {
@@ -541,7 +536,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
             QTextStream mkt(&mkf);
             writeHeader(mkt);
-            mkt << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
+            mkt << "QMAKE    = " << var("QMAKE_QMAKE") << Qt::endl;
             project->values("QMAKE_MAKE_QMAKE_EXTRA_COMMANDS")
                 << "@echo 'warning: Xcode project has been regenerated, custom settings have been lost. " \
                    "Use CONFIG+=no_autoqmake to prevent this behavior in the future, " \
@@ -740,15 +735,15 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
             QTextStream mkt(&mkf);
             writeHeader(mkt);
-            mkt << "MOC       = " << var("QMAKE_MOC") << endl;
-            mkt << "UIC       = " << var("QMAKE_UIC") << endl;
-            mkt << "LEX       = " << var("QMAKE_LEX") << endl;
-            mkt << "LEXFLAGS  = " << var("QMAKE_LEXFLAGS") << endl;
-            mkt << "YACC      = " << var("QMAKE_YACC") << endl;
-            mkt << "YACCFLAGS = " << var("QMAKE_YACCFLAGS") << endl;
+            mkt << "MOC       = " << var("QMAKE_MOC") << Qt::endl;
+            mkt << "UIC       = " << var("QMAKE_UIC") << Qt::endl;
+            mkt << "LEX       = " << var("QMAKE_LEX") << Qt::endl;
+            mkt << "LEXFLAGS  = " << var("QMAKE_LEXFLAGS") << Qt::endl;
+            mkt << "YACC      = " << var("QMAKE_YACC") << Qt::endl;
+            mkt << "YACCFLAGS = " << var("QMAKE_YACCFLAGS") << Qt::endl;
             mkt << "DEFINES       = "
                 << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-                << varGlue("DEFINES","-D"," -D","") << endl;
+                << varGlue("DEFINES","-D"," -D","") << Qt::endl;
             mkt << "INCPATH       =";
             {
                 const ProStringList &incs = project->values("INCLUDEPATH");
@@ -757,9 +752,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             }
             if(!project->isEmpty("QMAKE_FRAMEWORKPATH_FLAGS"))
                mkt << " " << var("QMAKE_FRAMEWORKPATH_FLAGS");
-            mkt << endl;
-            mkt << "DEL_FILE  = " << var("QMAKE_DEL_FILE") << endl;
-            mkt << "MOVE      = " << var("QMAKE_MOVE") << endl << endl;
+            mkt << Qt::endl;
+            mkt << "DEL_FILE  = " << var("QMAKE_DEL_FILE") << Qt::endl;
+            mkt << "MOVE      = " << var("QMAKE_MOVE") << Qt::endl << Qt::endl;
             mkt << "preprocess: compilers\n";
             mkt << "clean preprocess_clean: compiler_clean\n\n";
             writeExtraTargets(mkt);
@@ -789,7 +784,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         }
                     }
                 }
-                mkt << endl;
+                mkt << Qt::endl;
                 writeExtraCompilerTargets(mkt);
                 writingUnixMakefileGenerator = false;
             }
@@ -994,12 +989,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             tmp = project->values("SUBLIBS");
             for(int i = 0; i < tmp.count(); i++)
                 t << escapeFilePath("tmp/lib" + tmp[i] + ".a") << ' ';
-            t << endl << endl;
+            t << Qt::endl << Qt::endl;
             mkt << "sublibs: $(SUBLIBS)\n\n";
             tmp = project->values("SUBLIBS");
             for(int i = 0; i < tmp.count(); i++)
                 t << escapeFilePath("tmp/lib" + tmp[i] + ".a") + ":\n\t"
-                  << var(ProKey("MAKELIB" + tmp[i])) << endl << endl;
+                  << var(ProKey("MAKELIB" + tmp[i])) << Qt::endl << Qt::endl;
             mkt.flush();
             mkf.close();
             writingUnixMakefileGenerator = false;
@@ -1236,9 +1231,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
           << "\t\t};\n";
 
-        QMapIterator<ProString, ProStringList> it(embedded_plugins);
-        while (it.hasNext()) {
-            it.next();
+        for (auto it = embedded_plugins.cbegin(), end = embedded_plugins.cend(); it != end; ++it) {
             QString suffix = !it.key().isEmpty() ? (" (" + it.key() + ")") : QString();
             QString grp3("Embed PlugIns" + suffix), key3 = keyFor(grp3);
             project->values("QMAKE_PBX_BUILDPHASES").append(key3);

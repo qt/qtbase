@@ -580,73 +580,73 @@ void tst_Collections::list()
         list1 << 0 << 1 << 2 << 3;
         list1.removeFirst();
 
-        list1.swap(0, 0);
+        list1.swapItemsAt(0, 0);
         QVERIFY(list1 == QList<int>() << 1 << 2 << 3);
 
-        list1.swap(1, 1);
+        list1.swapItemsAt(1, 1);
         QVERIFY(list1 == QList<int>() << 1 << 2 << 3);
 
-        list1.swap(2, 2);
+        list1.swapItemsAt(2, 2);
         QVERIFY(list1 == QList<int>() << 1 << 2 << 3);
 
-        list1.swap(0, 1);
+        list1.swapItemsAt(0, 1);
         QVERIFY(list1 == QList<int>() << 2 << 1 << 3);
 
-        list1.swap(0, 2);
+        list1.swapItemsAt(0, 2);
         QVERIFY(list1 == QList<int>() << 3 << 1 << 2);
 
-        list1.swap(1, 2);
+        list1.swapItemsAt(1, 2);
         QVERIFY(list1 == QList<int>() << 3 << 2 << 1);
 
-        list1.swap(1, 2);
+        list1.swapItemsAt(1, 2);
         QVERIFY(list1 == QList<int>() << 3 << 1 << 2);
 
         QList<QString> list2;
         list2 << "1" << "2" << "3";
 
-        list2.swap(0, 0);
+        list2.swapItemsAt(0, 0);
         QVERIFY(list2 == QList<QString>() << "1" << "2" << "3");
 
-        list2.swap(1, 1);
+        list2.swapItemsAt(1, 1);
         QVERIFY(list2 == QList<QString>() << "1" << "2" << "3");
 
-        list2.swap(2, 2);
+        list2.swapItemsAt(2, 2);
         QVERIFY(list2 == QList<QString>() << "1" << "2" << "3");
 
-        list2.swap(0, 1);
+        list2.swapItemsAt(0, 1);
         QVERIFY(list2 == QList<QString>() << "2" << "1" << "3");
 
-        list2.swap(0, 2);
+        list2.swapItemsAt(0, 2);
         QVERIFY(list2 == QList<QString>() << "3" << "1" << "2");
 
-        list2.swap(1, 2);
+        list2.swapItemsAt(1, 2);
         QVERIFY(list2 == QList<QString>() << "3" << "2" << "1");
 
-        list2.swap(1, 2);
+        list2.swapItemsAt(1, 2);
         QVERIFY(list2 == QList<QString>() << "3" << "1" << "2");
 
         QList<double> list3;
         list3 << 1.0 << 2.0 << 3.0;
 
-        list3.swap(0, 0);
+        list3.swapItemsAt(0, 0);
         QVERIFY(list3 == QList<double>() << 1.0 << 2.0 << 3.0);
 
-        list3.swap(1, 1);
+        list3.swapItemsAt(1, 1);
         QVERIFY(list3 == QList<double>() << 1.0 << 2.0 << 3.0);
 
-        list3.swap(2, 2);
+        list3.swapItemsAt(2, 2);
         QVERIFY(list3 == QList<double>() << 1.0 << 2.0 << 3.0);
 
-        list3.swap(0, 1);
+        list3.swapItemsAt(0, 1);
         QVERIFY(list3 == QList<double>() << 2.0 << 1.0 << 3.0);
 
-        list3.swap(0, 2);
+        list3.swapItemsAt(0, 2);
         QVERIFY(list3 == QList<double>() << 3.0 << 1.0 << 2.0);
 
-        list3.swap(1, 2);
+        list3.swapItemsAt(1, 2);
         QVERIFY(list3 == QList<double>() << 3.0 << 2.0 << 1.0);
 
-        list3.swap(1, 2);
+        list3.swapItemsAt(1, 2);
         QVERIFY(list3 == QList<double>() << 3.0 << 1.0 << 2.0);
     }
 
@@ -2531,14 +2531,18 @@ void tst_Collections::conversions()
         QCOMPARE(list2.size(), 4);
         QVERIFY(list2 == (QList<QString>() << STUFF));
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QSet<QString> set1 = list1.toSet();
+#else
+        QSet<QString> set1(list1.begin(), list1.end());
+#endif
         QCOMPARE(set1.size(), 3);
         QVERIFY(set1.contains("A"));
         QVERIFY(set1.contains("B"));
         QVERIFY(set1.contains("C"));
         QVERIFY(!set1.contains("D"));
 
-        QList<QString> list3 = set1.toList();
+        QList<QString> list3 = set1.values();
         QCOMPARE(list3.size(), 3);
         QVERIFY(list3.contains("A"));
         QVERIFY(list3.contains("B"));
@@ -2546,9 +2550,11 @@ void tst_Collections::conversions()
         QVERIFY(!list3.contains("D"));
 
         QVERIFY(QList<int>().toVector().isEmpty());
-        QVERIFY(QList<int>().toSet().isEmpty());
         QVERIFY(QVector<int>().toList().isEmpty());
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QVERIFY(QList<int>().toSet().isEmpty());
         QVERIFY(QSet<int>().toList().isEmpty());
+#endif
     }
 
     {
@@ -2563,14 +2569,22 @@ void tst_Collections::conversions()
         QCOMPARE(list2.size(), 4);
         QVERIFY(list2 == (QList<QString>() << STUFF));
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QSet<QString> set1 = QSet<QString>::fromList(list1);
+#else
+        QSet<QString> set1(list1.begin(), list1.end());
+#endif
         QCOMPARE(set1.size(), 3);
         QVERIFY(set1.contains("A"));
         QVERIFY(set1.contains("B"));
         QVERIFY(set1.contains("C"));
         QVERIFY(!set1.contains("D"));
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QList<QString> list3 = QList<QString>::fromSet(set1);
+#else
+        QList<QString> list3 = set1.values();
+#endif
         QCOMPARE(list3.size(), 3);
         QVERIFY(list3.contains("A"));
         QVERIFY(list3.contains("B"));
@@ -2578,9 +2592,11 @@ void tst_Collections::conversions()
         QVERIFY(!list3.contains("D"));
 
         QVERIFY(QVector<int>::fromList(QList<int>()).isEmpty());
-        QVERIFY(QSet<int>::fromList(QList<int>()).isEmpty());
         QVERIFY(QList<int>::fromVector(QVector<int>()).isEmpty());
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QVERIFY(QSet<int>::fromList(QList<int>()).isEmpty());
         QVERIFY(QList<int>::fromSet(QSet<int>()).isEmpty());
+#endif
     }
 #undef STUFF
 }
@@ -2776,15 +2792,21 @@ void tst_Collections::vector_stl()
     for (int i = 0; i < elements.count(); ++i)
         vector << elements.at(i);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     std::vector<QString> stdVector = vector.toStdVector();
-
+#else
+    std::vector<QString> stdVector(vector.begin(), vector.end());
+#endif
     QCOMPARE(int(stdVector.size()), elements.size());
 
     std::vector<QString>::const_iterator it = stdVector.begin();
     for (uint j = 0; j < stdVector.size() && it != stdVector.end(); ++j, ++it)
         QCOMPARE(*it, vector[j]);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QCOMPARE(QVector<QString>::fromStdVector(stdVector), vector);
+#endif
+    QCOMPARE(QVector<QString>(stdVector.begin(), stdVector.end()), vector);
 }
 
 void tst_Collections::linkedlist_stl_data()
@@ -2830,7 +2852,11 @@ void tst_Collections::list_stl()
     for (int i = 0; i < elements.count(); ++i)
         list << elements.at(i);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     std::list<QString> stdList = list.toStdList();
+#else
+    std::list<QString> stdList(list.begin(), list.end());
+#endif
 
     QCOMPARE(int(stdList.size()), elements.size());
 
@@ -2838,7 +2864,10 @@ void tst_Collections::list_stl()
     for (uint j = 0; j < stdList.size() && it != stdList.end(); ++j, ++it)
         QCOMPARE(*it, list[j]);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QCOMPARE(QList<QString>::fromStdList(stdList), list);
+#endif
+    QCOMPARE(QList<QString>(stdList.begin(), stdList.end()), list);
 }
 
 template <typename T>

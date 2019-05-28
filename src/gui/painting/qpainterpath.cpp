@@ -75,7 +75,7 @@ struct QPainterPathPrivateDeleter
 {
     static inline void cleanup(QPainterPathPrivate *d)
     {
-        // note - we must up-cast to QPainterPathData since QPainterPathPrivate
+        // note - we must downcast to QPainterPathData since QPainterPathPrivate
         // has a non-virtual destructor!
         if (d && !d->ref.deref())
             delete static_cast<QPainterPathData *>(d);
@@ -3499,8 +3499,7 @@ void QPainterPath::setDirty(bool dirty)
 {
     d_func()->dirtyBounds        = dirty;
     d_func()->dirtyControlBounds = dirty;
-    delete d_func()->pathConverter;
-    d_func()->pathConverter = 0;
+    d_func()->pathConverter.reset();
     d_func()->convex = false;
 }
 
@@ -3576,10 +3575,10 @@ void QPainterPath::computeControlPointRect() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug s, const QPainterPath &p)
 {
-    s.nospace() << "QPainterPath: Element count=" << p.elementCount() << endl;
+    s.nospace() << "QPainterPath: Element count=" << p.elementCount() << Qt::endl;
     const char *types[] = {"MoveTo", "LineTo", "CurveTo", "CurveToData"};
     for (int i=0; i<p.elementCount(); ++i) {
-        s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ')' << endl;
+        s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ')' << Qt::endl;
 
     }
     return s;

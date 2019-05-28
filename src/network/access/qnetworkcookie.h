@@ -66,9 +66,7 @@ public:
     explicit QNetworkCookie(const QByteArray &name = QByteArray(), const QByteArray &value = QByteArray());
     QNetworkCookie(const QNetworkCookie &other);
     ~QNetworkCookie();
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkCookie &operator=(QNetworkCookie &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkCookie &operator=(const QNetworkCookie &other);
 
     void swap(QNetworkCookie &other) noexcept { qSwap(d, other.d); }

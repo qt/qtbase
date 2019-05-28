@@ -217,6 +217,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::NoNativeMenus;
         } else if (param == QLatin1String("nowmpointer")) {
             options |= QWindowsIntegration::DontUseWMPointer;
+        } else if (param == QLatin1String("reverse")) {
+            options |= QWindowsIntegration::RtlEnabled;
         } else {
             qWarning() << "Unknown option" << param;
         }
@@ -324,7 +326,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (window->type() == Qt::Desktop) {
         QWindowsDesktopWindow *result = new QWindowsDesktopWindow(window);
         qCDebug(lcQpaWindows) << "Desktop window:" << window
-            << showbase << hex << result->winId() << noshowbase << dec << result->geometry();
+            << Qt::showbase << Qt::hex << result->winId() << Qt::noshowbase << Qt::dec << result->geometry();
         return result;
     }
 
@@ -353,6 +355,9 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
     Q_ASSERT(result);
 
+    if (window->isTopLevel() && !QWindowsContext::shouldHaveNonClientDpiScaling(window))
+        result->setFlag(QWindowsWindow::DisableNonClientScaling);
+
     if (QWindowsMenuBar *menuBarToBeInstalled = QWindowsMenuBar::menuBarOf(window))
         menuBarToBeInstalled->install(result);
 
@@ -373,8 +378,8 @@ QPlatformWindow *QWindowsIntegration::createForeignWindow(QWindow *window, WId n
         screen = pScreen->screen();
     if (screen && screen != window->screen())
         window->setScreen(screen);
-    qCDebug(lcQpaWindows) << "Foreign window:" << window << showbase << hex
-        << result->winId() << noshowbase << dec << obtainedGeometry << screen;
+    qCDebug(lcQpaWindows) << "Foreign window:" << window << Qt::showbase << Qt::hex
+        << result->winId() << Qt::noshowbase << Qt::dec << obtainedGeometry << screen;
     return result;
 }
 

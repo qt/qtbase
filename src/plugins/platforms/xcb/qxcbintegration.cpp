@@ -550,6 +550,7 @@ void QXcbIntegration::beep() const
         return;
     xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
     xcb_bell(connection, 0);
+    xcb_flush(connection);
 }
 
 bool QXcbIntegration::nativePaintingEnabled() const

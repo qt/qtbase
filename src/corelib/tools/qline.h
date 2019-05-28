@@ -215,6 +215,7 @@ class Q_CORE_EXPORT QLineF {
 public:
 
     enum IntersectType { NoIntersection, BoundedIntersection, UnboundedIntersection };
+    using IntersectionType = IntersectType;
 
     Q_DECL_CONSTEXPR inline QLineF();
     Q_DECL_CONSTEXPR inline QLineF(const QPointF &pt1, const QPointF &pt2);
@@ -248,10 +249,11 @@ public:
     Q_REQUIRED_RESULT QLineF unitVector() const;
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QLineF normalVector() const;
 
-    // ### Qt 6: rename intersects() or intersection() and rename IntersectType IntersectionType
-    IntersectType intersect(const QLineF &l, QPointF *intersectionPoint) const;
+    IntersectionType intersects(const QLineF &l, QPointF *intersectionPoint) const;
 
 #if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_VERSION_X(5, 14, "Use intersects() instead")
+    IntersectType intersect(const QLineF &l, QPointF *intersectionPoint) const;
     QT_DEPRECATED_X("Use angleTo() instead, take care that the return value is between 0 and 360 degree.")
     qreal angle(const QLineF &l) const;
 #endif

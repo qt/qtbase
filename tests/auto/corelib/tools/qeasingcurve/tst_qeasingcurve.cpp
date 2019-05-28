@@ -30,9 +30,7 @@
 
 #include <qeasingcurve.h>
 
-#ifdef Q_COMPILER_RVALUE_REFS // cpp11() slot
-# include <utility> // for std::move()
-#endif
+#include <utility> // for std::move()
 
 class tst_QEasingCurve : public QObject
 {
@@ -794,7 +792,6 @@ void tst_QEasingCurve::testCbrtFloat()
 
 void tst_QEasingCurve::cpp11()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     {
     QEasingCurve ec( QEasingCurve::InOutBack );
     QEasingCurve copy = std::move(ec); // move ctor
@@ -809,7 +806,6 @@ void tst_QEasingCurve::cpp11()
     QCOMPARE( copy.type(), QEasingCurve::InOutBack );
     QCOMPARE( ec.type(), type );
     }
-#endif
 }
 
 void tst_QEasingCurve::quadraticEquation() {

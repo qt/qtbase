@@ -122,6 +122,7 @@ Build options:
 
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
   -qtlibinfix <infix> .. Rename all libQt5*.so to libQt5*<infix>.so.
+  -qtlibinfix-plugins .. Rename Qt plugins according to -qtlibinfix [no]
 
   -testcocoon .......... Instrument with the TestCocoon code coverage tool [no]
   -gcov ................ Instrument with the GCov code coverage tool [no]
@@ -139,8 +140,8 @@ Build options:
   -coverage {trace-pc-guard}
                          Add code coverage instrumentation (Clang only)
 
-  -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
-                         (Not supported with MSVC)
+  -c++std <edition> .... Select C++ standard <edition> [c++2a/c++17/c++14/c++11]
+                         (Not supported with MSVC 2015)
 
   -sse2 ................ Use SSE2 instructions [auto]
   -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512
@@ -203,7 +204,7 @@ Build environment:
   -android-ndk-host .... Set Android NDK host (linux-x86, linux-x86_64, etc.)
                          [$ANDROID_NDK_HOST]
   -android-arch ........ Set Android architecture (armeabi, armeabi-v7a,
-                         arm64-v8a, x86, x86_64, mips, mips64)
+                         arm64-v8a, x86, x86_64)
   -android-toolchain-version ... Set Android toolchain version
   -android-style-assets  Automatically extract style assets from the device at
                          run time. This option makes the Android style behave

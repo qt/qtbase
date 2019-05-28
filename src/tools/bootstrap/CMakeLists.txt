@@ -31,6 +31,7 @@ extend_target(Bootstrap
         ../../corelib/io/qfsfileengine.cpp
         ../../corelib/io/qfsfileengine_iterator.cpp
         ../../corelib/io/qiodevice.cpp
+        ../../corelib/io/qipaddress.cpp
         ../../corelib/io/qloggingcategory.cpp
         ../../corelib/io/qloggingregistry.cpp
         ../../corelib/io/qresource.cpp
@@ -38,6 +39,10 @@ extend_target(Bootstrap
         ../../corelib/io/qstandardpaths.cpp
         ../../corelib/io/qtemporarydir.cpp
         ../../corelib/io/qtemporaryfile.cpp
+        ../../corelib/io/qurl.cpp
+        ../../corelib/io/qurlidna.cpp
+        ../../corelib/io/qurlquery.cpp
+        ../../corelib/io/qurlrecode.cpp
         ../../corelib/kernel/qcoreapplication.cpp
         ../../corelib/kernel/qcoreglobaldata.cpp
         ../../corelib/kernel/qmetatype.cpp
@@ -89,10 +94,11 @@ extend_target(Bootstrap
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
         QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
         QT_VERSION_STR="${PROJECT_VERSION}" # special case
+        QT_USE_QSTRINGBUILDER # special case
         QT_BOOTSTRAPPED
+        QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
-        QT_NO_CAST_FROM_ASCII
     PUBLIC_INCLUDE_DIRECTORIES  # special case
         $<TARGET_PROPERTY:CorePrivate,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:XmlPrivate,INTERFACE_INCLUDE_DIRECTORIES>

@@ -59,6 +59,7 @@
 #include <QtCore/private/qthread_p.h>
 
 #include "qnetworkcookiejar.h"
+#include "qnetconmonitor_p.h"
 
 #include <string.h>             // for strchr
 
@@ -166,6 +167,11 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
 #if QT_CONFIG(bearermanagement)
 static bool isSessionNeeded(const QUrl &url)
 {
+    if (QNetworkStatusMonitor::isEnabled()) {
+        // In case QNetworkStatus/QNetConManager are in business,
+        // no session, no bearer manager are involved.
+        return false;
+    }
     // Connections to the local machine does not require a session
     QString host = url.host().toLower();
     return !QHostAddress(host).isLoopback() && host != QLatin1String("localhost")
@@ -796,7 +802,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (blob.isValid() && blob.canConvert<Http2::ProtocolParameters>())
         delegate->http2Parameters = blob.value<Http2::ProtocolParameters>();
 #ifndef QT_NO_BEARERMANAGEMENT
-    delegate->networkSession = managerPrivate->getNetworkSession();
+    if (!QNetworkStatusMonitor::isEnabled())
+        delegate->networkSession = managerPrivate->getNetworkSession();
 #endif
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
@@ -1807,7 +1814,7 @@ bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
 {
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession(managerPrivate->getNetworkSession());
-    if (!networkSession) {
+    if (!networkSession || QNetworkStatusMonitor::isEnabled()) {
 #endif
         postRequest(newHttpRequest);
         return true;
@@ -1895,7 +1902,7 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         // state changes.
         if (!startWaitForSession(session))
             return;
-    } else if (session) {
+    } else if (session && !QNetworkStatusMonitor::isEnabled()) {
         QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
                          q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)),
                          Qt::QueuedConnection);
@@ -2184,7 +2191,7 @@ void QNetworkReplyHttpImplPrivate::finished()
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_ASSERT(managerPrivate);
     QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
-    if (session && session->state() == QNetworkSession::Roaming &&
+    if (!QNetworkStatusMonitor::isEnabled() && session && session->state() == QNetworkSession::Roaming &&
         state == Working && errorCode != QNetworkReply::OperationCanceledError) {
         // only content with a known size will fail with a temporary network failure error
         if (!totalSize.isNull()) {

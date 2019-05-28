@@ -11,7 +11,7 @@ add_qt_executable(textedit
     SOURCES
         main.cpp
         textedit.cpp textedit.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Widgets
 )
 
@@ -19,6 +19,8 @@ add_qt_executable(textedit
 add_qt_resource(textedit "textedit" PREFIX "/" FILES
     example.html
     images/logo32.png
+    images/mac/checkbox-checked.png
+    images/mac/checkbox.png
     images/mac/editcopy.png
     images/mac/editcut.png
     images/mac/editpaste.png
@@ -29,6 +31,8 @@ add_qt_resource(textedit "textedit" PREFIX "/" FILES
     images/mac/fileopen.png
     images/mac/fileprint.png
     images/mac/filesave.png
+    images/mac/format-indent-less.png
+    images/mac/format-indent-more.png
     images/mac/textbold.png
     images/mac/textcenter.png
     images/mac/textitalic.png
@@ -38,6 +42,8 @@ add_qt_resource(textedit "textedit" PREFIX "/" FILES
     images/mac/textunder.png
     images/mac/zoomin.png
     images/mac/zoomout.png
+    images/win/checkbox-checked.png
+    images/win/checkbox.png
     images/win/editcopy.png
     images/win/editcut.png
     images/win/editpaste.png
@@ -48,6 +54,8 @@ add_qt_resource(textedit "textedit" PREFIX "/" FILES
     images/win/fileopen.png
     images/win/fileprint.png
     images/win/filesave.png
+    images/win/format-indent-less.png
+    images/win/format-indent-more.png
     images/win/textbold.png
     images/win/textcenter.png
     images/win/textitalic.png
@@ -59,7 +67,7 @@ add_qt_resource(textedit "textedit" PREFIX "/" FILES
     images/win/zoomout.png)
 
 
-#### Keys ignored in scope 1:.:textedit.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:textedit.pro:<TRUE>:
 # EXAMPLE_FILES = "textedit.qdoc"
 # TEMPLATE = "app"
 
@@ -67,9 +75,9 @@ add_qt_resource(textedit "textedit" PREFIX "/" FILES
 #####################################################################
 
 extend_target(textedit CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::PrintSupport
 )
 
-#### Keys ignored in scope 3:.:textedit.pro:build_all AND NOT build_pass:
+#### Keys ignored in scope 3:.:.:textedit.pro:build_all AND NOT build_pass:
 # CONFIG = "-build_all" "release"

@@ -60,7 +60,7 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
 
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
-    qCDebug(lcQpaTouch) << "touchesBeganWithEvent" << points << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaTouch) << "touchesBeganWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QTouchDevice::TouchPad, [event deviceID]), points);
 }
 
@@ -71,7 +71,7 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
 
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
-    qCDebug(lcQpaTouch) << "touchesMovedWithEvent" << points << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaTouch) << "touchesMovedWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QTouchDevice::TouchPad, [event deviceID]), points);
 }
 
@@ -82,7 +82,7 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
 
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
-    qCDebug(lcQpaTouch) << "touchesEndedWithEvent" << points << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaTouch) << "touchesEndedWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QTouchDevice::TouchPad, [event deviceID]), points);
 }
 
@@ -93,7 +93,7 @@ Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
 
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, [self shouldSendSingleTouch]);
-    qCDebug(lcQpaTouch) << "touchesCancelledWithEvent" << points << "from device" << hex << [event deviceID];
+    qCDebug(lcQpaTouch) << "touchesCancelledWithEvent" << points << "from device" << Qt::hex << [event deviceID];
     QWindowSystemInterface::handleTouchEvent(m_platformWindow->window(), timestamp * 1000, QCocoaTouch::getTouchDevice(QTouchDevice::TouchPad, [event deviceID]), points);
 }
 

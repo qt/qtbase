@@ -158,7 +158,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     } else {
         if (state != Finished) {
             if (operation == QNetworkAccessManager::GetOperation)
-                pendingNotifications.append(NotifyDownstreamReadyWrite);
+                pendingNotifications.push_back(NotifyDownstreamReadyWrite);
 
             handleNotifications();
         }
@@ -368,6 +368,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
 
     outgoingData = data;
     request = req;
+    originalRequest = req;
     url = request.url();
     operation = op;
 
@@ -432,8 +433,9 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
 void QNetworkReplyImplPrivate::backendNotify(InternalNotifications notification)
 {
     Q_Q(QNetworkReplyImpl);
-    if (!pendingNotifications.contains(notification))
-        pendingNotifications.enqueue(notification);
+    const auto it = std::find(pendingNotifications.cbegin(), pendingNotifications.cend(), notification);
+    if (it == pendingNotifications.cend())
+        pendingNotifications.push_back(notification);
 
     if (pendingNotifications.size() == 1)
         QCoreApplication::postEvent(q, new QEvent(QEvent::NetworkReplyUpdated));
@@ -444,14 +446,9 @@ void QNetworkReplyImplPrivate::handleNotifications()
     if (notificationHandlingPaused)
         return;
 
-    NotificationQueue current = pendingNotifications;
-    pendingNotifications.clear();
-
-    if (state != Working)
-        return;
-
-    while (state == Working && !current.isEmpty()) {
-        InternalNotifications notification = current.dequeue();
+     for (InternalNotifications notification : qExchange(pendingNotifications, {})) {
+        if (state != Working)
+            return;
         switch (notification) {
         case NotifyDownstreamReadyWrite:
             if (copyDevice)
@@ -465,8 +462,7 @@ void QNetworkReplyImplPrivate::handleNotifications()
             break;
 
         case NotifyCopyFinished: {
-            QIODevice *dev = copyDevice;
-            copyDevice = 0;
+            QIODevice *dev = qExchange(copyDevice, nullptr);
             backend->copyFinished(dev);
             break;
         }
@@ -1116,7 +1112,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     return true;
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
 QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
                                              const QNetworkRequest &req,
                                              QNetworkAccessManager::Operation op)
@@ -1141,7 +1136,6 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
 QDisabledNetworkReply::~QDisabledNetworkReply()
 {
 }
-#endif
 
 QT_END_NAMESPACE
 

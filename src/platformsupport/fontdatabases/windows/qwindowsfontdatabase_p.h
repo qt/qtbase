@@ -96,6 +96,8 @@ public:
     QWindowsFontDatabase();
     ~QWindowsFontDatabase() override;
 
+    void ensureFamilyPopulated(const QString &familyName);
+
     void populateFontDatabase() override;
     void populateFamily(const QString &familyName) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;

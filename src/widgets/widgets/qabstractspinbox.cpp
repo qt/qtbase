@@ -212,6 +212,7 @@ void QAbstractSpinBox::setButtonSymbols(ButtonSymbols buttonSymbols)
     if (d->buttonSymbols != buttonSymbols) {
         d->buttonSymbols = buttonSymbols;
         d->updateEditFieldGeometry();
+        updateGeometry();
         update();
     }
 }
@@ -1319,6 +1320,7 @@ void QAbstractSpinBox::contextMenuEvent(QContextMenuEvent *event)
     d->reset();
 
     QAction *selAll = new QAction(tr("&Select All"), menu);
+    selAll->setShortcut(QKeySequence::SelectAll);
     menu->insertAction(d->edit->d_func()->selectAllAction,
                       selAll);
     menu->removeAction(d->edit->d_func()->selectAllAction);
@@ -2097,7 +2099,7 @@ QVariant operator*(const QVariant &arg1, double multiplier)
         days -= daysInt;
         qint64 msecs = qint64(arg1.toDateTime().time().msecsSinceStartOfDay() * multiplier
                               + days * (24 * 3600 * 1000));
-        ret = QDateTime(QDATETIMEEDIT_DATE_MIN.addDays(daysInt), QTime::fromMSecsSinceStartOfDay(msecs));
+        ret = QDATETIMEEDIT_DATE_MIN.addDays(daysInt).startOfDay().addMSecs(msecs);
         break;
     }
 #endif // datetimeparser

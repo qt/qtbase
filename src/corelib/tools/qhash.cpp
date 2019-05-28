@@ -1251,6 +1251,17 @@ uint qHash(long double key, uint seed) noexcept
     compiled in C++11 mode.
 */
 
+/*! \fn template <class Key, class T> template <class InputIterator> QHash<Key, T>::QHash(InputIterator begin, InputIterator end)
+    \since 5.14
+
+    Constructs a hash with a copy of each of the elements in the iterator range
+    [\a begin, \a end). Either the elements iterated by the range must be
+    objects with \c{first} and \c{second} data members (like \c{QPair},
+    \c{std::pair}, etc.) convertible to \c Key and to \c T respectively; or the
+    iterators must have \c{key()} and \c{value()} member functions, returning a
+    key convertible to \c Key and a value convertible to \c T respectively.
+*/
+
 /*! \fn template <class Key, class T> QHash<Key, T>::QHash(const QHash &other)
 
     Constructs a copy of \a other.
@@ -2584,6 +2595,17 @@ uint qHash(long double key, uint seed) noexcept
     QMultiHash).
 
     \sa operator=()
+*/
+
+/*! \fn template <class Key, class T> template <class InputIterator> QMultiHash::QMultiHash(InputIterator begin, InputIterator end)
+    \since 5.14
+
+    Constructs a multi-hash with a copy of each of the elements in the iterator range
+    [\a begin, \a end). Either the elements iterated by the range must be
+    objects with \c{first} and \c{second} data members (like \c{QPair},
+    \c{std::pair}, etc.) convertible to \c Key and to \c T respectively; or the
+    iterators must have \c{key()} and \c{value()} member functions, returning a
+    key convertible to \c Key and a value convertible to \c T respectively.
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::replace(const Key &key, const T &value)

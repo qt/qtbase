@@ -55,9 +55,7 @@ class Q_NETWORK_EXPORT QNetworkConfiguration
 public:
     QNetworkConfiguration();
     QNetworkConfiguration(const QNetworkConfiguration& other);
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkConfiguration &operator=(QNetworkConfiguration &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkConfiguration &operator=(const QNetworkConfiguration &other);
     ~QNetworkConfiguration();
 

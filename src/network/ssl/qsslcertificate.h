@@ -88,9 +88,7 @@ public:
     explicit QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
-#ifdef Q_COMPILER_RVALUE_REFS
     QSslCertificate &operator=(QSslCertificate &&other) noexcept { swap(other); return *this; }
-#endif
     QSslCertificate &operator=(const QSslCertificate &other);
 
     void swap(QSslCertificate &other) noexcept

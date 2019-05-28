@@ -370,10 +370,10 @@ void tst_QPainter::getSetCheck()
 
     // bool QPainter::matrixEnabled()
     // void QPainter::setMatrixEnabled(bool)
-    obj1.setMatrixEnabled(false);
-    QCOMPARE(false, obj1.matrixEnabled());
-    obj1.setMatrixEnabled(true);
-    QCOMPARE(true, obj1.matrixEnabled());
+    obj1.setWorldMatrixEnabled(false);
+    QCOMPARE(false, obj1.worldMatrixEnabled());
+    obj1.setWorldMatrixEnabled(true);
+    QCOMPARE(true, obj1.worldMatrixEnabled());
 
     // bool QPainter::viewTransformEnabled()
     // void QPainter::setViewTransformEnabled(bool)
@@ -699,7 +699,7 @@ void tst_QPainter::initFrom()
 
     QCOMPARE(p.font(), font);
     QCOMPARE(p.pen().color(), pal.color(QPalette::Foreground));
-    QCOMPARE(p.background(), pal.background());
+    QCOMPARE(p.background(), pal.window());
 
     delete widget;
 }
@@ -3197,7 +3197,7 @@ void tst_QPainter::largeImagePainting()
         p.translate(4, 0);
     }
 
-    p.resetMatrix();
+    p.resetTransform();
 
     for (int i = 4; i < img.height(); i += 4) {
         p.translate(0, 4);

@@ -235,7 +235,7 @@ void QNetworkReplyWasmImpl::close()
 void QNetworkReplyWasmImpl::abort()
 {
     Q_D(const QNetworkReplyWasmImpl);
-    setError( QNetworkReply::OperationCanceledError, "Operation canceled" );
+    setError( QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
     d->doAbort();
 
     close();
@@ -328,8 +328,6 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     m_xhr = val::global("XMLHttpRequest").new_();
     std::string verb = q->methodName().toStdString();
 
-    QString extraDataString;
-
     m_xhr.call<void>("open", verb, request.url().toString().toStdString());
 
     m_xhr.set("onerror", val::module_property("qt_QNetworkReplyWasmImplPrivate_requestErrorCallback"));
@@ -348,30 +346,12 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     if (outgoingData) // data from post request
         extraData = outgoingData->readAll();
 
-    if (contentType.contains("text") ||
-            contentType.contains("json") ||
-            contentType.contains("form")) {
-        if (extraData.size() > 0)
-            extraDataString.fromUtf8(extraData);
+    if (!extraData.isEmpty()) {
+        dataToSend = val(typed_memory_view(extraData.size(),
+                                           reinterpret_cast<const unsigned char *>
+                                           (extraData.constData())));
     }
-    if (contentType.contains("json")) {
-        if (!extraDataString.isEmpty()) {
-            m_xhr.set("responseType", val("json"));
-            dataToSend = val(extraDataString.toStdString());
-        }
-    } else if (contentType.contains("form")) { //construct form data
-        if (!extraDataString.isEmpty()) {
-            val formData = val::global("FormData").new_();
-            QStringList formList = extraDataString.split('&');
-
-            for (auto formEntry : formList) {
-                formData.call<void>("append", formEntry.split('=')[0].toStdString(), formEntry.split('=')[1].toStdString());
-            }
-            dataToSend = formData;
-        }
-    } else {
-        m_xhr.set("responseType", val("blob"));
-    }
+    m_xhr.set("responseType", val("blob"));
     // set request headers
     for (auto header : request.rawHeaderList()) {
         m_xhr.call<void>("setRequestHeader", header.toStdString(), request.rawHeader(header).toStdString());

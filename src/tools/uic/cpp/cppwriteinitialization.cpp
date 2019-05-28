@@ -490,7 +490,6 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     const QString varName = m_driver->findOrInsertWidget(node->elementWidget());
     m_mainFormVarName = varName;
-    m_registeredWidgets.insert(varName, node->elementWidget()); // register the main widget
 
     const QString widgetClassName = node->elementWidget()->attributeClass();
 
@@ -515,21 +514,16 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (!m_buddies.empty())
         m_output << language::openQtConfig(shortcutConfigKey());
     for (const Buddy &b : qAsConst(m_buddies)) {
-        if (!m_registeredWidgets.contains(b.objName)) {
+        const QString buddyVarName = m_driver->widgetVariableName(b.buddyAttributeName);
+        if (buddyVarName.isEmpty()) {
             fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
-                    b.objName.toLatin1().data());
-            continue;
-        }
-        if (!m_registeredWidgets.contains(b.buddy)) {
-            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
-                    qPrintable(m_option.messagePrefix()),
-                    b.buddy.toLatin1().data());
+                    qPrintable(b.buddyAttributeName));
             continue;
         }
 
-        m_output << m_indent << b.objName << language::derefPointer
-            << "setBuddy(" << b.buddy << ')' << language::eol;
+        m_output << m_indent << b.labelVarName << language::derefPointer
+            << "setBuddy(" << buddyVarName << ')' << language::eol;
     }
     if (!m_buddies.empty())
         m_output << language::closeQtConfig(shortcutConfigKey());
@@ -602,7 +596,6 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     m_layoutMarginType = m_widgetChain.count() == 1 ? TopLevelMargin : ChildMargin;
     const QString className = node->attributeClass();
     const QString varName = m_driver->findOrInsertWidget(node);
-    m_registeredWidgets.insert(varName, node); // register the current widget
 
     QString parentWidget, parentClass;
     if (m_widgetChain.top()) {
@@ -828,15 +821,13 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const QStringList zOrder = node->elementZOrder();
     for (const QString &name : zOrder) {
-        if (!m_registeredWidgets.contains(name)) {
+        const QString varName = m_driver->widgetVariableName(name);
+        if (varName.isEmpty()) {
             fprintf(stderr, "%s: Warning: Z-order assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
                     name.toLatin1().data());
-            continue;
-        }
-
-        if (!name.isEmpty()) {
-            m_output << m_indent << name << language::derefPointer << "raise()"
+        } else {
+            m_output << m_indent << varName << language::derefPointer << "raise()"
                 << language::eol;
         }
     }
@@ -1080,7 +1071,6 @@ void WriteInitialization::acceptAction(DomAction *node)
         return;
 
     const QString actionName = m_driver->findOrInsertAction(node);
-    m_registeredActions.insert(actionName, node);
     QString varName = m_driver->findOrInsertWidget(m_widgetChain.top());
 
     if (m_actionGroupChain.top())
@@ -1626,7 +1616,7 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     }
     if (f->hasElementWeight() && f->elementWeight() > 0) {
         m_output << m_indent << fontName << ".setWeight("
-            << f->elementWeight() << ");" << endl;
+            << f->elementWeight() << ");" << Qt::endl;
     }
     if (f->hasElementStrikeOut()) {
          m_output << m_indent << fontName << ".setStrikeOut("
@@ -2007,12 +1997,11 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
 
     const QStringList l = tabStops->elementTabStop();
     for (int i=0; i<l.size(); ++i) {
-        const QString &name = l.at(i);
+        const QString name = m_driver->widgetVariableName(l.at(i));
 
-        if (!m_registeredWidgets.contains(name)) {
+        if (name.isEmpty()) {
             fprintf(stderr, "%s: Warning: Tab-stop assignment: '%s' is not a valid widget.\n",
-                    qPrintable(m_option.messagePrefix()),
-                    name.toLatin1().data());
+                    qPrintable(m_option.messagePrefix()), qPrintable(l.at(i)));
             continue;
         }
 
@@ -2023,7 +2012,8 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
         if (name.isEmpty() || lastName.isEmpty())
             continue;
 
-        m_output << m_indent << "QWidget::setTabOrder(" << lastName << ", " << name << ");\n";
+        m_output << m_indent << "QWidget" << language::qualifier << "setTabOrder("
+            << lastName << ", " << name << ')' << language::eol;
 
         lastName = name;
     }
@@ -2465,8 +2455,10 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
 
 QString WriteInitialization::trCall(const QString &str, const QString &commentHint, const QString &id) const
 {
-    if (str.isEmpty())
-        return QLatin1String("QString()");
+    if (str.isEmpty()) {
+        return language::language() == Language::Cpp
+            ? QLatin1String("QString()") : QLatin1String("\"\"");
+    }
 
     QString result;
     QTextStream ts(&result);
@@ -2607,14 +2599,14 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
         return;
     }
 
-    auto list = directives.toList();
+    auto list = directives.values();
     // sort (always generate in the same order):
     std::sort(list.begin(), list.end());
 
     outputStream << "#if " << language::qtConfig(list.constFirst());
     for (int i = 1, size = list.size(); i < size; ++i)
         outputStream << " || " << language::qtConfig(list.at(i));
-    outputStream << endl;
+    outputStream << Qt::endl;
 }
 
 static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QString> &directives)
@@ -2622,7 +2614,7 @@ static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QStr
     if (directives.isEmpty())
         return;
 
-    outputStream << "#endif" << endl;
+    outputStream << "#endif" << Qt::endl;
 }
 
 WriteInitialization::Item::Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver)
@@ -2680,7 +2672,7 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
     while (it != m_setupUiData.setters.constEnd()) {
         if (!it.key().isEmpty())
             m_setupUiStream << language::openQtConfig(it.key());
-        m_setupUiStream << m_indent << uniqueName << it.value() << endl;
+        m_setupUiStream << m_indent << uniqueName << it.value() << Qt::endl;
         if (!it.key().isEmpty())
             m_setupUiStream << language::closeQtConfig(it.key());
         ++it;
@@ -2718,7 +2710,7 @@ void WriteInitialization::Item::writeRetranslateUi(const QString &parentPath)
                 m_retranslateUiStream << language::openQtConfig(newDirective);
             oldDirective = newDirective;
         }
-        m_retranslateUiStream << m_indent << uniqueName << it.value() << endl;
+        m_retranslateUiStream << m_indent << uniqueName << it.value() << Qt::endl;
         ++it;
     }
     if (!oldDirective.isEmpty())

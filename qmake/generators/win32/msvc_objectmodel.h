@@ -526,6 +526,7 @@ public:
     triState                ImproveFloatingPointConsistency;
     inlineExpansionOption   InlineFunctionExpansion;
     triState                KeepComments;
+    QString                 LanguageStandard;
     triState                MinimalRebuild;
     QString                 ObjectFile;
     triState                OmitDefaultLibName;
@@ -922,7 +923,7 @@ struct VCFilterFile
 inline QDebug operator<<(QDebug dbg, const VCFilterFile &p)
 {
     dbg.nospace() << "VCFilterFile(file(" << p.file
-                  << ") excludeFromBuild(" << p.excludeFromBuild << "))" << endl;
+                  << ") excludeFromBuild(" << p.excludeFromBuild << "))" << Qt::endl;
     return dbg.space();
 }
 #endif

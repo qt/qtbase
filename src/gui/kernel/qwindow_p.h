@@ -113,7 +113,7 @@ public:
     void connectToScreen(QScreen *topLevelScreen);
     void disconnectFromScreen();
     void emitScreenChangedRecursion(QScreen *newScreen);
-    QScreen *screenForGeometry(const QRect &rect);
+    QScreen *screenForGeometry(const QRect &rect) const;
     void setTransientParent(QWindow *parent);
 
     virtual void clearFocusObject();
@@ -129,6 +129,7 @@ public:
 
     static Qt::WindowState effectiveState(Qt::WindowStates);
 
+    // ### Qt6: unused
     virtual bool allowClickThrough(const QPoint &) const { return true; }
 
     QWindow::SurfaceType surfaceType = QWindow::RasterSurface;

@@ -59,7 +59,7 @@ int main(int argv, char **args)
 
 //! [0]
     for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next())
-        cout << it.text().toStdString() << endl;
+        cout << it.text().toStdString() << Qt::endl;
 //! [0]
 
     return 0;

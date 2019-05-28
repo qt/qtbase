@@ -41,7 +41,9 @@
 #include "qguiapplication.h"
 #include "qscreen.h"
 #include "qplatformintegration.h"
+#include "qplatformwindow.h"
 #include "private/qscreen_p.h"
+#include <private/qguiapplication_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -376,6 +378,46 @@ QPoint QHighDpiScaling::mapPositionFromNative(const QPoint &pos, const QPlatform
     return (pos - topLeft) / scaleFactor + topLeft;
 }
 
+QPoint QHighDpiScaling::mapPositionToGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window)
+{
+    QPoint globalPosCandidate = pos + windowGlobalPosition;
+    if (QGuiApplicationPrivate::screen_list.size() <= 1)
+        return globalPosCandidate;
+
+    // The global position may be outside device independent screen geometry
+    // in cases where a window spans screens. Detect this case and map via
+    // native coordinates to the correct screen.
+    auto currentScreen = window->screen();
+    if (currentScreen && !currentScreen->geometry().contains(globalPosCandidate)) {
+        auto nativeGlobalPos = QHighDpi::toNativePixels(globalPosCandidate, currentScreen);
+        if (auto actualPlatformScreen = currentScreen->handle()->screenForPosition(nativeGlobalPos))
+            return QHighDpi::fromNativePixels(nativeGlobalPos, actualPlatformScreen->screen());
+    }
+
+    return globalPosCandidate;
+}
+
+QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window)
+{
+    QPoint windowPosCandidate = pos - windowGlobalPosition;
+    if (QGuiApplicationPrivate::screen_list.size() <= 1)
+        return windowPosCandidate;
+
+    // Device independent global (screen) space may discontiguous when high-dpi scaling
+    // is active. This means that the normal subtracting of the window global position from the
+    // position-to-be-mapped may not work in cases where a window spans multiple screens.
+    // Map both positions to native global space (using the correct screens), subtract there,
+    // and then map the difference back using the scale factor for the window.
+    QScreen *posScreen = QGuiApplication::screenAt(pos);
+    if (posScreen && posScreen != window->screen()) {
+        QPoint nativePos = QHighDpi::toNativePixels(pos, posScreen);
+        QPoint windowNativePos = window->handle()->geometry().topLeft();
+        return QHighDpi::fromNativeLocalPosition(nativePos - windowNativePos, window);
+    }
+
+    return windowPosCandidate;
+}
+
 qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
     qreal factor = qreal(1.0);
@@ -448,6 +490,14 @@ QPoint QHighDpiScaling::origin(const QScreen *screen)
 QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
 {
     return platformScreen->geometry().topLeft();
+}
+
+QPoint QHighDpiScaling::origin(const QWindow *window)
+{
+    if (window && window->isTopLevel() && window->screen())
+        return window->screen()->geometry().topLeft();
+
+    return QPoint(0, 0);
 }
 
 #endif //QT_NO_HIGHDPISCALING

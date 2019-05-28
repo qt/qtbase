@@ -1038,8 +1038,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \snippet code/src_corelib_tools_qbytearray.cpp 5
 
     All functions except isNull() treat null byte arrays the same as
-    empty byte arrays. For example, data() returns a pointer to a
-    '\\0' character for a null byte array (\e not a null pointer),
+    empty byte arrays. For example, data() returns a valid pointer
+    (\e not nullptr) to a '\\0' character for a byte array
     and QByteArray() compares equal to QByteArray(""). We recommend
     that you always use isEmpty() and avoid isNull().
 
@@ -1536,6 +1536,15 @@ QByteArray &QByteArray::operator=(const char *str)
     it as if it were a char &. If you assign to it, the assignment
     will apply to the character in the QByteArray from which you got
     the reference.
+
+    \note Before Qt 5.14 it was possible to use this operator to access
+    a character at an out-of-bounds position in the byte array, and
+    then assign to such position, causing the byte array to be
+    automatically resized. Furthermore, assigning a value to the
+    returned QByteRef would cause a detach of the byte array, even if the
+    byte array has been copied in the meanwhile (and the QByteRef kept
+    alive while the copy was taken). These behaviors are deprecated,
+    and will be changed in a future version of Qt.
 
     \sa at()
 */
@@ -5053,5 +5062,42 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     \sa QStringLiteral
 */
+
+namespace QtPrivate {
+namespace DeprecatedRefClassBehavior {
+void warn(WarningType w, EmittingClass c)
+{
+    static const char deprecatedBehaviorString[] =
+            "The corresponding behavior is deprecated, and will be changed"
+             " in a future version of Qt.";
+
+    const char *emittingClassName = nullptr;
+    const char *containerClassName = nullptr;
+
+    switch (c) {
+    case EmittingClass::QByteRef:
+        emittingClassName = "QByteRef";
+        containerClassName = "QByteArray";
+        break;
+    case EmittingClass::QCharRef:
+        emittingClassName = "QCharRef";
+        containerClassName = "QString";
+        break;
+    }
+
+    switch (w) {
+    case WarningType::OutOfRange:
+        qWarning("Using %s with an index pointing outside the valid range of a %s. %s",
+                 emittingClassName, containerClassName, deprecatedBehaviorString);
+        break;
+    case WarningType::DelayedDetach:
+        qWarning("Using %s with on a %s that is not already detached. %s",
+                 emittingClassName, containerClassName, deprecatedBehaviorString);
+        break;
+    }
+}
+} // namespace DeprecatedRefClassBehavior
+} // namespace QtPrivate
+
 
 QT_END_NAMESPACE

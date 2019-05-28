@@ -262,12 +262,7 @@
     provides arrays allowing to map from enumeration value to row/column
     (by using QVector::indexOf()) and back by using the array index and lists
     of the matching strings. Qt's containers can be easily populated by
-    using C++ 11 initializer lists. If the compiler does not provide that feature,
-    a pattern like
-
-    \snippet widgets/icons/iconpreviewarea.cpp 43
-
-    can be used.
+    using C++ 11 initializer lists.
 
     We need two public functions to set the current icon and the
     icon's size. In addition the class has three private functions: We

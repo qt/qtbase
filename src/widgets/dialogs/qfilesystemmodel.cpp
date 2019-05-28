@@ -1197,8 +1197,8 @@ QStringList QFileSystemModel::mimeTypes() const
     \a indexes. The format used to describe the items corresponding to the
     indexes is obtained from the mimeTypes() function.
 
-    If the list of indexes is empty, 0 is returned rather than a serialized
-    empty list.
+    If the list of indexes is empty, \nullptr is returned rather than a
+    serialized empty list.
 */
 QMimeData *QFileSystemModel::mimeData(const QModelIndexList &indexes) const
 {

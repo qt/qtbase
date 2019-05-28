@@ -265,7 +265,9 @@ QTransform::QTransform()
     , m_13(0), m_23(0), m_33(1)
     , m_type(TxNone)
     , m_dirty(TxNone)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     , d(nullptr)
+#endif
 {
 }
 
@@ -284,7 +286,9 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h13,
     , m_13(h13), m_23(h23), m_33(h33)
     , m_type(TxNone)
     , m_dirty(TxProject)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     , d(nullptr)
+#endif
 {
 }
 
@@ -301,7 +305,9 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h21,
     , m_13(0), m_23(0), m_33(1)
     , m_type(TxNone)
     , m_dirty(TxShear)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     , d(nullptr)
+#endif
 {
 }
 
@@ -317,7 +323,9 @@ QTransform::QTransform(const QMatrix &mtx)
       m_13(0), m_23(0), m_33(1)
     , m_type(TxNone)
     , m_dirty(TxShear)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     , d(nullptr)
+#endif
 {
 }
 

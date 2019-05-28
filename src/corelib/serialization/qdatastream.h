@@ -55,7 +55,6 @@ class QByteArray;
 class QIODevice;
 
 template <typename T> class QList;
-template <typename T> class QLinkedList;
 template <typename T> class QVector;
 template <typename T> class QSet;
 template <class Key, class T> class QHash;
@@ -102,9 +101,17 @@ public:
         Qt_5_13 = 19,
         Qt_5_14 = Qt_5_13,
 #if QT_VERSION >= 0x050f00
+        Qt_5_15 = Qt_5_14,
+        Qt_DefaultCompiledVersion = Qt_5_15
+#elif QT_VERSION >= 0x060000
+        Qt_6_0 = Qt_5_15,
+        Qt_DefaultCompiledVersion = Qt_6_0
+#else
+        Qt_DefaultCompiledVersion = Qt_5_14
+#endif
+#if QT_VERSION >= 0x060100
 #error Add the datastream version for this Qt version and update Qt_DefaultCompiledVersion
 #endif
-        Qt_DefaultCompiledVersion = Qt_5_14
     };
 
     enum ByteOrder {
@@ -395,18 +402,6 @@ inline QDataStream &operator>>(QDataStream &s, QList<T> &l)
 
 template <typename T>
 inline QDataStream &operator<<(QDataStream &s, const QList<T> &l)
-{
-    return QtPrivate::writeSequentialContainer(s, l);
-}
-
-template <typename T>
-inline QDataStream &operator>>(QDataStream &s, QLinkedList<T> &l)
-{
-    return QtPrivate::readListBasedContainer(s, l);
-}
-
-template <typename T>
-inline QDataStream &operator<<(QDataStream &s, const QLinkedList<T> &l)
 {
     return QtPrivate::writeSequentialContainer(s, l);
 }

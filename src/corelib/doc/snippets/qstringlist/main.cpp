@@ -71,20 +71,20 @@ Widget::Widget(QWidget *parent)
 
 //! [1]
     for (int i = 0; i < fonts.size(); ++i)
-         cout << fonts.at(i).toLocal8Bit().constData() << endl;
+         cout << fonts.at(i).toLocal8Bit().constData() << Qt::endl;
 //! [1]
 
 //! [2]
     QStringListIterator javaStyleIterator(fonts);
     while (javaStyleIterator.hasNext())
-         cout << javaStyleIterator.next().toLocal8Bit().constData() << endl;
+         cout << javaStyleIterator.next().toLocal8Bit().constData() << Qt::endl;
 //! [2]
 
 //! [3]
     QStringList::const_iterator constIterator;
     for (constIterator = fonts.constBegin(); constIterator != fonts.constEnd();
            ++constIterator)
-        cout << (*constIterator).toLocal8Bit().constData() << endl;
+        cout << (*constIterator).toLocal8Bit().constData() << Qt::endl;
 //! [3]
 
 //! [4]

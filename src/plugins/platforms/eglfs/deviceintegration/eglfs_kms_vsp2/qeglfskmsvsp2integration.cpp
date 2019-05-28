@@ -205,6 +205,9 @@ public:
         : QEglFSWindow(w)
         , m_integration(integration)
     {}
+
+    ~QEglFSKmsVsp2Window() { destroy(); }
+
     void resetSurface() override;
     void invalidateSurface() override;
     const QEglFSKmsVsp2Integration *m_integration;

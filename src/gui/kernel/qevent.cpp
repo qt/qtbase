@@ -3764,13 +3764,13 @@ static inline void formatTouchEvent(QDebug d, const QTouchEvent &t)
 
 static void formatUnicodeString(QDebug d, const QString &s)
 {
-    d << '"' << hex;
+    d << '"' << Qt::hex;
     for (int i = 0; i < s.size(); ++i) {
         if (i)
             d << ',';
         d << "U+" << s.at(i).unicode();
     }
-    d << dec << '"';
+    d << Qt::dec << '"';
 }
 
 static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
@@ -3807,8 +3807,8 @@ static inline void formatInputMethodQueryEvent(QDebug d, const QInputMethodQuery
     QDebugStateSaver saver(d);
     d.noquote();
     const Qt::InputMethodQueries queries = e->queries();
-    d << "QInputMethodQueryEvent(queries=" << showbase << hex << int(queries)
-      << noshowbase << dec << ", {";
+    d << "QInputMethodQueryEvent(queries=" << Qt::showbase << Qt::hex << int(queries)
+      << Qt::noshowbase << Qt::dec << ", {";
     for (unsigned mask = 1; mask <= Qt::ImInputItemClipRectangle; mask<<=1) {
         if (queries & mask) {
             const Qt::InputMethodQuery query = static_cast<Qt::InputMethodQuery>(mask);
@@ -4001,7 +4001,7 @@ QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "TouchPoint(" << hex << tp.id() << dec << " (";
+    dbg << "TouchPoint(" << Qt::hex << tp.id() << Qt::dec << " (";
     QtDebugUtils::formatQPoint(dbg, tp.pos());
     dbg << ") ";
     QtDebugUtils::formatQEnum(dbg, tp.state());
@@ -5320,7 +5320,7 @@ QScrollEvent::ScrollState QScrollEvent::scrollState() const
 
 /*!
     Creates a new QScreenOrientationChangeEvent
-    \a orientation is the new orientation of the screen.
+    \a screenOrientation is the new orientation of the \a screen.
 */
 QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation screenOrientation)
     : QEvent(QEvent::OrientationChange), m_screen(screen), m_orientation(screenOrientation)

@@ -316,7 +316,7 @@ QJsonDocument Parser::parse(QJsonParseError *error)
     eatBOM();
     char token = nextToken();
 
-    DEBUG << hex << (uint)token;
+    DEBUG << Qt::hex << (uint)token;
     if (token == BeginArray) {
         if (!parseArray())
             goto error;

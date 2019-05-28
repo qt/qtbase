@@ -110,7 +110,7 @@ QWindowsOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
     }
 
     if (QWindowsContext::verbose > 1 && lcQpaMime().isDebugEnabled())
-        qCDebug(lcQpaMime) <<__FUNCTION__ << *pformatetc << "returns" << hex << showbase << quint64(hr);
+        qCDebug(lcQpaMime) <<__FUNCTION__ << *pformatetc << "returns" << Qt::hex << Qt::showbase << quint64(hr);
 
     return hr;
 }
@@ -135,7 +135,7 @@ QWindowsOleDataObject::QueryGetData(LPFORMATETC pformatetc)
              ResultFromScode(S_OK) : ResultFromScode(S_FALSE);
     }
     if (QWindowsContext::verbose > 1)
-        qCDebug(lcQpaMime) <<  __FUNCTION__ << " returns 0x" << hex << int(hr);
+        qCDebug(lcQpaMime) <<  __FUNCTION__ << " returns 0x" << Qt::hex << int(hr);
     return hr;
 }
 
@@ -163,7 +163,7 @@ QWindowsOleDataObject::SetData(LPFORMATETC pFormatetc, STGMEDIUM *pMedium, BOOL 
         hr = ResultFromScode(S_OK);
     }
     if (QWindowsContext::verbose > 1)
-        qCDebug(lcQpaMime) <<  __FUNCTION__ << " returns 0x" << hex << int(hr);
+        qCDebug(lcQpaMime) <<  __FUNCTION__ << " returns 0x" << Qt::hex << int(hr);
     return hr;
 }
 

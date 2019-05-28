@@ -76,10 +76,8 @@ public:
     ~QFontMetrics();
 
     QFontMetrics &operator=(const QFontMetrics &);
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QFontMetrics &operator=(QFontMetrics &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
 
     void swap(QFontMetrics &other) noexcept
     { qSwap(d, other.d); }
@@ -172,12 +170,10 @@ public:
 
     QFontMetricsF &operator=(const QFontMetricsF &);
     QFontMetricsF &operator=(const QFontMetrics &);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QFontMetricsF &operator=(QFontMetricsF &&other)
+    inline QFontMetricsF &operator=(QFontMetricsF &&other) noexcept
     { qSwap(d, other.d); return *this; }
-#endif
 
-    void swap(QFontMetricsF &other) { qSwap(d, other.d); }
+    void swap(QFontMetricsF &other) noexcept { qSwap(d, other.d); }
 
     qreal ascent() const;
     qreal capHeight() const;

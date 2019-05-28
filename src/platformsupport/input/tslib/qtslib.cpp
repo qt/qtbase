@@ -96,8 +96,8 @@ void QTsLibMouseHandler::readMouseData()
         int x = sample.x;
         int y = sample.y;
 
-        // work around missing coordinates on mouse release
-        if (sample.pressure == 0 && sample.x == 0 && sample.y == 0) {
+        // coordinates on release events can contain arbitrary values, just ignore them
+        if (sample.pressure == 0) {
             x = m_x;
             y = m_y;
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -27,6 +27,7 @@
 **
 ****************************************************************************/
 
+#include <private/qglobal_p.h> // for the icu feature test
 #include <QtTest/QtTest>
 #include <qdatetime.h>
 #include <qlocale.h>
@@ -54,6 +55,13 @@ private slots:
     void weekNumber_invalid();
     void weekNumber_data();
     void weekNumber();
+#if QT_CONFIG(timezone)
+    void startOfDay_endOfDay_data();
+    void startOfDay_endOfDay();
+#endif
+    void startOfDay_endOfDay_fixed_data();
+    void startOfDay_endOfDay_fixed();
+    void startOfDay_endOfDay_bounds();
     void julianDaysLimits();
     void addDays_data();
     void addDays();
@@ -456,6 +464,164 @@ void tst_QDate::weekNumber_invalid()
     QDate dt;
     int yearNumber;
     QCOMPARE( dt.weekNumber( &yearNumber ), 0 );
+}
+
+#if QT_CONFIG(timezone)
+void tst_QDate::startOfDay_endOfDay_data()
+{
+    QTest::addColumn<QDate>("date"); // Typically a spring-forward.
+    // A zone in which that date's start and end are worth checking:
+    QTest::addColumn<QByteArray>("zoneName");
+    // The start and end times in that zone:
+    QTest::addColumn<QTime>("start");
+    QTest::addColumn<QTime>("end");
+
+    const QTime initial(0, 0), final(23, 59, 59, 999), invalid(QDateTime().time());
+
+    QTest::newRow("epoch")
+        << QDate(1970, 1, 1) << QByteArray("UTC")
+        << initial << final;
+    QTest::newRow("Brazil")
+        << QDate(2008, 10, 19) << QByteArray("America/Sao_Paulo")
+        << QTime(1, 0) << final;
+#if QT_CONFIG(icu) || !defined(Q_OS_WIN) // MS's TZ APIs lack data
+    QTest::newRow("Sofia")
+        << QDate(1994, 3, 27) << QByteArray("Europe/Sofia")
+        << QTime(1, 0) << final;
+#endif
+    QTest::newRow("Kiritimati")
+        << QDate(1994, 12, 31) << QByteArray("Pacific/Kiritimati")
+        << invalid << invalid;
+    QTest::newRow("Samoa")
+        << QDate(2011, 12, 30) << QByteArray("Pacific/Apia")
+        << invalid << invalid;
+    // TODO: find other zones with transitions at/crossing midnight.
+}
+
+void tst_QDate::startOfDay_endOfDay()
+{
+    QFETCH(QDate, date);
+    QFETCH(QByteArray, zoneName);
+    QFETCH(QTime, start);
+    QFETCH(QTime, end);
+    const QTimeZone zone(zoneName);
+    const bool isSystem = QTimeZone::systemTimeZone() == zone;
+    QDateTime front(date.startOfDay(zone)), back(date.endOfDay(zone));
+    if (end.isValid())
+        QCOMPARE(date.addDays(1).startOfDay(zone).addMSecs(-1), back);
+    if (start.isValid())
+        QCOMPARE(date.addDays(-1).endOfDay(zone).addMSecs(1), front);
+    do { // Avoids duplicating these tests for local-time when it *is* zone:
+        if (start.isValid()) {
+            QCOMPARE(front.date(), date);
+            QCOMPARE(front.time(), start);
+        }
+        if (end.isValid()) {
+            QCOMPARE(back.date(), date);
+            QCOMPARE(back.time(), end);
+        }
+        if (front.timeSpec() == Qt::LocalTime)
+            break;
+        front = date.startOfDay(Qt::LocalTime);
+        back = date.endOfDay(Qt::LocalTime);
+    } while (isSystem);
+    if (end.isValid())
+        QCOMPARE(date.addDays(1).startOfDay(Qt::LocalTime).addMSecs(-1), back);
+    if (start.isValid())
+        QCOMPARE(date.addDays(-1).endOfDay(Qt::LocalTime).addMSecs(1), front);
+    if (!isSystem) {
+        // These might fail if system zone coincides with zone; but only if it
+        // did something similarly unusual on the date picked for this test.
+        if (start.isValid()) {
+            QCOMPARE(front.date(), date);
+            QCOMPARE(front.time(), QTime(0, 0));
+        }
+        if (end.isValid()) {
+            QCOMPARE(back.date(), date);
+            QCOMPARE(back.time(), QTime(23, 59, 59, 999));
+        }
+    }
+}
+#endif // timezone
+
+void tst_QDate::startOfDay_endOfDay_fixed_data()
+{
+    const qint64 kilo(1000);
+    using Bounds = std::numeric_limits<qint64>;
+    const QDateTime
+        first(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, Qt::UTC)),
+        start32sign(QDateTime::fromMSecsSinceEpoch(-0x80000000L * kilo, Qt::UTC)),
+        end32sign(QDateTime::fromMSecsSinceEpoch(0x80000000L * kilo, Qt::UTC)),
+        end32unsign(QDateTime::fromMSecsSinceEpoch(0x100000000L * kilo, Qt::UTC)),
+        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), Qt::UTC));
+
+    const struct {
+        const char *name;
+        QDate date;
+    } data[] = {
+        { "epoch", QDate(1970, 1, 1) },
+        { "y2k-leap-day", QDate(2000, 2, 29) },
+        // Just outside the start and end of 32-bit time_t:
+        { "pre-sign32", QDate(start32sign.date().year(), 1, 1) },
+        { "post-sign32", QDate(end32sign.date().year(), 12, 31) },
+        { "post-uint32", QDate(end32unsign.date().year(), 12, 31) },
+        // Just inside the start and end of QDateTime's range:
+        { "first-full", first.date().addDays(1) },
+        { "last-full", last.date().addDays(-1) }
+    };
+
+    QTest::addColumn<QDate>("date");
+    for (const auto &r : data)
+        QTest::newRow(r.name) << r.date;
+}
+
+void tst_QDate::startOfDay_endOfDay_fixed()
+{
+    const QTime early(0, 0), late(23, 59, 59, 999);
+    QFETCH(QDate, date);
+
+    QDateTime start(date.startOfDay(Qt::UTC));
+    QDateTime end(date.endOfDay(Qt::UTC));
+    QCOMPARE(start.date(), date);
+    QCOMPARE(end.date(), date);
+    QCOMPARE(start.time(), early);
+    QCOMPARE(end.time(), late);
+    QCOMPARE(date.addDays(1).startOfDay(Qt::UTC).addMSecs(-1), end);
+    QCOMPARE(date.addDays(-1).endOfDay(Qt::UTC).addMSecs(1), start);
+    for (int offset = -60 * 16; offset <= 60 * 16; offset += 65) {
+        start = date.startOfDay(Qt::OffsetFromUTC, offset);
+        end = date.endOfDay(Qt::OffsetFromUTC, offset);
+        QCOMPARE(start.date(), date);
+        QCOMPARE(end.date(), date);
+        QCOMPARE(start.time(), early);
+        QCOMPARE(end.time(), late);
+        QCOMPARE(date.addDays(1).startOfDay(Qt::OffsetFromUTC, offset).addMSecs(-1), end);
+        QCOMPARE(date.addDays(-1).endOfDay(Qt::OffsetFromUTC, offset).addMSecs(1), start);
+    }
+}
+
+void tst_QDate::startOfDay_endOfDay_bounds()
+{
+    // Check the days in which QDateTime's range starts and ends:
+    using Bounds = std::numeric_limits<qint64>;
+    const QDateTime
+        first(QDateTime::fromMSecsSinceEpoch(Bounds::min(), Qt::UTC)),
+        last(QDateTime::fromMSecsSinceEpoch(Bounds::max(), Qt::UTC)),
+        epoch(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC));
+    // First, check these *are* the start and end of QDateTime's range:
+    QVERIFY(first.isValid());
+    QVERIFY(last.isValid());
+    QVERIFY(first < epoch);
+    QVERIFY(last > epoch);
+    // QDateTime's addMSecs doesn't check against {und,ov}erflow ...
+    QVERIFY(!first.addMSecs(-1).isValid() || first.addMSecs(-1) > first);
+    QVERIFY(!last.addMSecs(1).isValid() || last.addMSecs(1) < last);
+
+    // Now test start/end methods with them:
+    QCOMPARE(first.date().endOfDay(Qt::UTC).time(), QTime(23, 59, 59, 999));
+    QCOMPARE(last.date().startOfDay(Qt::UTC).time(), QTime(0, 0));
+    QVERIFY(!first.date().startOfDay(Qt::UTC).isValid());
+    QVERIFY(!last.date().endOfDay(Qt::UTC).isValid());
 }
 
 void tst_QDate::julianDaysLimits()

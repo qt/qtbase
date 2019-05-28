@@ -127,7 +127,7 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
             error = FT_New_Face(library, file.constData(), index, &face);
         }
         if (error != FT_Err_Ok) {
-            qDebug() << "FT_New_Face failed with index" << index << ':' << hex << error;
+            qDebug() << "FT_New_Face failed with index" << index << ':' << Qt::hex << error;
             break;
         }
         numFaces = face->num_faces;
@@ -142,7 +142,6 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
             weight = QFont::Bold;
 
         bool fixedPitch = (face->face_flags & FT_FACE_FLAG_FIXED_WIDTH);
-
         QSupportedWritingSystems writingSystems;
         // detect symbol fonts
         for (int i = 0; i < face->num_charmaps; ++i) {

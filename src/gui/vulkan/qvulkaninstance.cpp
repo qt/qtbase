@@ -614,7 +614,7 @@ VkResult QVulkanInstance::errorCode() const
 }
 
 /*!
-    \return the VkInstance handle this QVulkanInstance wraps, or \c null if
+    \return the VkInstance handle this QVulkanInstance wraps, or \nullptr if
     create() has not yet been successfully called and no existing instance has
     been provided via setVkInstance().
  */

@@ -81,15 +81,43 @@ QT_END_NAMESPACE
 // if not defined in linux/futex.h
 #  define FUTEX_PRIVATE_FLAG        128         // added in v2.6.22
 
+#  if QT_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#    include <sanitizer/tsan_interface.h>
+inline void _q_tsan_acquire(void *addr, void *addr2)
+{
+    __tsan_acquire(addr);
+    if (addr2)
+        __tsan_acquire(addr2);
+}
+inline void _q_tsan_release(void *addr, void *addr2)
+{
+    if (addr2)
+        __tsan_release(addr2);
+    __tsan_release(addr);
+}
+#  else
+inline void _q_tsan_acquire(void *, void *) {}
+inline void _q_tsan_release(void *, void *) {}
+#  endif // QT_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+
 QT_BEGIN_NAMESPACE
 namespace QtLinuxFutex {
     constexpr inline bool futexAvailable() { return true; }
     inline int _q_futex(int *addr, int op, int val, quintptr val2 = 0,
                         int *addr2 = nullptr, int val3 = 0) noexcept
     {
+        // A futex call ensures total ordering on the futex words
+        // (in either success or failure of the call). Instruct TSAN accordingly,
+        // as TSAN does not understand the futex(2) syscall.
+        _q_tsan_release(addr, addr2);
+
         // we use __NR_futex because some libcs (like Android's bionic) don't
         // provide SYS_futex etc.
-        return syscall(__NR_futex, addr, op | FUTEX_PRIVATE_FLAG, val, val2, addr2, val3);
+        int result = syscall(__NR_futex, addr, op | FUTEX_PRIVATE_FLAG, val, val2, addr2, val3);
+
+        _q_tsan_acquire(addr, addr2);
+
+        return result;
     }
     template <typename T> int *addr(T *ptr)
     {

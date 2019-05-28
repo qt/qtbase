@@ -67,7 +67,6 @@ add_qt_tool(qmake # special case
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
         ../src/corelib/tools/qdatetime.cpp ../src/corelib/tools/qdatetime.h ../src/corelib/tools/qdatetime_p.h
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
-        ../src/corelib/tools/qlinkedlist.cpp ../src/corelib/tools/qlinkedlist.h
         ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
         ../src/corelib/tools/qlocale.cpp ../src/corelib/tools/qlocale.h
         ../src/corelib/tools/qlocale_tools.cpp ../src/corelib/tools/qlocale_tools_p.h
@@ -123,9 +122,10 @@ add_qt_tool(qmake # special case
         # . # special case
         library
         generators
+        generators/mac
         generators/unix
         generators/win32
-        generators/mac
+        library
         $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES> # special case
         ${CMAKE_BINARY_DIR}/src/corelib/global # special case: for qconfig.cpp
 )
@@ -152,8 +152,8 @@ extend_target(qmake CONDITION WIN32
         library/registry.cpp # special case
     DEFINES
         UNICODE
-        _ENABLE_EXTENDED_ALIGNED_STORAGE
         _CRT_SECURE_NO_WARNINGS
+        _ENABLE_EXTENDED_ALIGNED_STORAGE
         _SCL_SECURE_NO_WARNINGS
     PUBLIC_LIBRARIES
         advapi32

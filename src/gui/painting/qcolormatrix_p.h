@@ -52,6 +52,7 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qpoint.h>
 #include <cmath>
 
 QT_BEGIN_NAMESPACE
@@ -61,7 +62,13 @@ class QColorVector
 {
 public:
     QColorVector() = default;
-    constexpr QColorVector(float x, float y, float z) : x(x), y(y), z(z), _unused(0.0f) { }
+    Q_DECL_CONSTEXPR QColorVector(float x, float y, float z) : x(x), y(y), z(z), _unused(0.0f) { }
+    explicit Q_DECL_CONSTEXPR QColorVector(const QPointF &chr) // from XY chromaticity
+            : x(chr.x() / chr.y())
+            , y(1.0f)
+            , z((1.0 - chr.x() - chr.y()) / chr.y())
+            , _unused(0.0f)
+    { }
     float x; // X, x or red
     float y; // Y, y or green
     float z; // Z, Y or blue
@@ -69,11 +76,28 @@ public:
 
     friend inline bool operator==(const QColorVector &v1, const QColorVector &v2);
     friend inline bool operator!=(const QColorVector &v1, const QColorVector &v2);
+    bool isNull() const
+    {
+        return !x && !y && !z;
+    }
 
-    static constexpr QColorVector null() { return QColorVector(0.0f, 0.0f, 0.0f); }
-    // Common whitepoints on normalized XYZ form:
-    static constexpr QColorVector D50() { return QColorVector(0.96421f, 1.0f, 0.82519f); }
-    static constexpr QColorVector D65() { return QColorVector(0.95043f, 1.0f, 1.08890f); }
+    static Q_DECL_CONSTEXPR QColorVector null() { return QColorVector(0.0f, 0.0f, 0.0f); }
+    static bool isValidChromaticity(const QPointF &chr)
+    {
+        if (chr.x() < qreal(0.0) || chr.x() > qreal(1.0))
+            return false;
+        if (chr.y() <= qreal(0.0) || chr.y() > qreal(1.0))
+            return false;
+        if (chr.x() + chr.y() > qreal(1.0))
+            return false;
+        return true;
+    }
+
+    // Common whitepoints:
+    static Q_DECL_CONSTEXPR QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
+    static Q_DECL_CONSTEXPR QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
+    static Q_DECL_CONSTEXPR QColorVector D50() { return QColorVector(D50Chromaticity()); }
+    static Q_DECL_CONSTEXPR QColorVector D65() { return QColorVector(D65Chromaticity()); }
 };
 
 inline bool operator==(const QColorVector &v1, const QColorVector &v2)
@@ -102,6 +126,10 @@ public:
     friend inline bool operator==(const QColorMatrix &m1, const QColorMatrix &m2);
     friend inline bool operator!=(const QColorMatrix &m1, const QColorMatrix &m2);
 
+    bool isNull() const
+    {
+        return r.isNull() && g.isNull() && b.isNull();
+    }
     bool isValid() const
     {
         // A color matrix must be invertible
@@ -167,6 +195,13 @@ public:
     {
         return { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
     }
+    static QColorMatrix fromScale(QColorVector v)
+    {
+        return QColorMatrix { { v.x,  0.0f, 0.0f },
+                              { 0.0f, v.y,  0.0f },
+                              { 0.0f, 0.0f, v.z  } };
+    }
+    // These are used to recognize matrices from ICC profiles:
     static QColorMatrix toXyzFromSRgb()
     {
         return QColorMatrix { { 0.4360217452f, 0.2224751115f, 0.0139281144f },

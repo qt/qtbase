@@ -44,10 +44,8 @@
 #include "qdatetime.h"
 
 #ifdef Q_OS_DARWIN
-#include "qtimezone.h"
 #include "private/qcore_mac_p.h"
 #include <CoreFoundation/CoreFoundation.h>
-QT_REQUIRE_CONFIG(timezone);
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -147,7 +145,7 @@ static QString macTimeToString(const QTime &time, bool short_format)
 
 // Mac uses the Unicode CLDR format codes
 // http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-// See also qtbase/util/local_database/dateconverter.py
+// See also qtbase/util/locale_database/dateconverter.py
 // Makes the assumption that input formats are always well formed and consecutive letters
 // never exceed the maximum for the format code.
 static QString macToQtFormat(QStringView sys_fmt)
@@ -332,6 +330,17 @@ static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
     return QString();
 }
 
+static QString macZeroDigit()
+{
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    QCFType<CFNumberFormatterRef> numberFormatter =
+            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
+    static const int zeroDigit = 0;
+    QCFType<CFStringRef> value = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
+                                                                        kCFNumberIntType, &zeroDigit);
+    return QString::fromCFString(value);
+}
+
 #ifndef QT_NO_SYSTEMLOCALE
 static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
@@ -437,8 +446,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
     case NegativeSign:
     case PositiveSign:
-    case ZeroDigit:
         break;
+    case ZeroDigit:
+        return QVariant(macZeroDigit());
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));

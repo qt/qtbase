@@ -153,7 +153,7 @@ QDateTimeEdit::QDateTimeEdit(QWidget *parent)
     : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
 {
     Q_D(QDateTimeEdit);
-    d->init(QDateTime(QDATETIMEEDIT_DATE_INITIAL, QDATETIMEEDIT_TIME_MIN));
+    d->init(QDATETIMEEDIT_DATE_INITIAL.startOfDay());
 }
 
 /*!
@@ -165,8 +165,7 @@ QDateTimeEdit::QDateTimeEdit(const QDateTime &datetime, QWidget *parent)
     : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
 {
     Q_D(QDateTimeEdit);
-    d->init(datetime.isValid() ? datetime : QDateTime(QDATETIMEEDIT_DATE_INITIAL,
-                                                      QDATETIMEEDIT_TIME_MIN));
+    d->init(datetime.isValid() ? datetime : QDATETIMEEDIT_DATE_INITIAL.startOfDay());
 }
 
 /*!
@@ -342,7 +341,7 @@ QDateTime QDateTimeEdit::minimumDateTime() const
 
 void QDateTimeEdit::clearMinimumDateTime()
 {
-    setMinimumDateTime(QDateTime(QDATETIMEEDIT_COMPAT_DATE_MIN, QDATETIMEEDIT_TIME_MIN));
+    setMinimumDateTime(QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay());
 }
 
 void QDateTimeEdit::setMinimumDateTime(const QDateTime &dt)
@@ -385,7 +384,7 @@ QDateTime QDateTimeEdit::maximumDateTime() const
 
 void QDateTimeEdit::clearMaximumDateTime()
 {
-    setMaximumDateTime(QDATETIMEEDIT_DATETIME_MAX);
+    setMaximumDateTime(QDATETIMEEDIT_DATE_MAX.endOfDay());
 }
 
 void QDateTimeEdit::setMaximumDateTime(const QDateTime &dt)
@@ -1658,8 +1657,8 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
     first.pos = 0;
     sections = 0;
     calendarPopup = false;
-    minimum = QDATETIMEEDIT_COMPAT_DATETIME_MIN;
-    maximum = QDATETIMEEDIT_DATETIME_MAX;
+    minimum = QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay();
+    maximum = QDATETIMEEDIT_DATE_MAX.endOfDay();
     arrowState = QStyle::State_None;
     monthCalendar = 0;
     readLocaleSettings();
@@ -1683,8 +1682,8 @@ void QDateTimeEditPrivate::updateTimeSpec()
     const bool dateShown = (sections & QDateTimeEdit::DateSections_Mask);
     if (!dateShown) {
         if (minimum.toTime() >= maximum.toTime()){
-            minimum = QDateTime(value.toDate(), QDATETIMEEDIT_TIME_MIN, spec);
-            maximum = QDateTime(value.toDate(), QDATETIMEEDIT_TIME_MAX, spec);
+            minimum = value.toDate().startOfDay(spec);
+            maximum = value.toDate().endOfDay(spec);
         }
     }
 }
@@ -2382,7 +2381,7 @@ void QDateTimeEditPrivate::init(const QVariant &var)
     Q_Q(QDateTimeEdit);
     switch (var.type()) {
     case QVariant::Date:
-        value = QDateTime(var.toDate(), QDATETIMEEDIT_TIME_MIN);
+        value = var.toDate().startOfDay();
         updateTimeSpec();
         q->setDisplayFormat(defaultDateFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale

@@ -27,7 +27,6 @@
 ****************************************************************************/
 
 #include "metamakefile.h"
-#include "qregexp.h"
 #include "qdir.h"
 #include "qdebug.h"
 #include "makefile.h"

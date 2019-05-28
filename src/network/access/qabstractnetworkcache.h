@@ -67,9 +67,7 @@ public:
     QNetworkCacheMetaData(const QNetworkCacheMetaData &other);
     ~QNetworkCacheMetaData();
 
-#ifdef Q_COMPILER_RVALUE_REFS
     QNetworkCacheMetaData &operator=(QNetworkCacheMetaData &&other) noexcept { swap(other); return *this; }
-#endif
     QNetworkCacheMetaData &operator=(const QNetworkCacheMetaData &other);
 
     void swap(QNetworkCacheMetaData &other) noexcept

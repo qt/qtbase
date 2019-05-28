@@ -89,7 +89,7 @@ QMap<int, QWidget *> map;
 ...
 for (int i = 0; i < 1000; ++i) {
     if (map[i] == okButton)
-        cout << "Found button at index " << i << endl;
+        cout << "Found button at index " << i << Qt::endl;
 }
 //! [6]
 
@@ -98,7 +98,7 @@ for (int i = 0; i < 1000; ++i) {
 QMapIterator<QString, int> i(map);
 while (i.hasNext()) {
     i.next();
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
 }
 //! [7]
 
@@ -106,7 +106,7 @@ while (i.hasNext()) {
 //! [8]
 QMap<QString, int>::const_iterator i = map.constBegin();
 while (i != map.constEnd()) {
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
     ++i;
 }
 //! [8]
@@ -122,14 +122,14 @@ map.insert("plenty", 2000);
 //! [10]
 QList<int> values = map.values("plenty");
 for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << endl;
+    cout << values.at(i) << Qt::endl;
 //! [10]
 
 
 //! [11]
 QMap<QString, int>::iterator i = map.find("plenty");
 while (i != map.end() && i.key() == "plenty") {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [11]
@@ -139,7 +139,7 @@ while (i != map.end() && i.key() == "plenty") {
 QMap<QString, int> map;
 ...
 foreach (int value, map)
-    cout << value << endl;
+    cout << value << Qt::endl;
 //! [12]
 
 
@@ -175,7 +175,7 @@ QMap<QString, int> map;
 ...
 QMap<QString, int>::const_iterator i = map.find("HDR");
 while (i != map.end() && i.key() == "HDR") {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [14]
@@ -201,7 +201,7 @@ QMap<QString, int> map;
 QMap<QString, int>::const_iterator i = map.lowerBound("HDR");
 QMap<QString, int>::const_iterator upperBound = map.upperBound("HDR");
 while (i != upperBound) {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [16]
@@ -230,7 +230,7 @@ map.insert("December", 12);
 
 QMap<QString, int>::iterator i;
 for (i = map.begin(); i != map.end(); ++i)
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
 //! [18]
 
 
@@ -288,7 +288,7 @@ map.insert("December", 12);
 
 QMap<QString, int>::const_iterator i;
 for (i = map.constBegin(); i != map.constEnd(); ++i)
-    cout << i.key() << ": " << i.value() << endl;
+    cout << i.key() << ": " << i.value() << Qt::endl;
 //! [24]
 
 
@@ -310,23 +310,23 @@ map3 = map1 + map2;
 //! [26]
 QList<int> values = map.values("plenty");
 for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << endl;
+    cout << values.at(i) << Qt::endl;
 //! [26]
 
 
 //! [27]
 QMultiMap<QString, int>::iterator i = map.find("plenty");
 while (i != map.end() && i.key() == "plenty") {
-    cout << i.value() << endl;
+    cout << i.value() << Qt::endl;
     ++i;
 }
 //! [27]
 
 //! [keyiterator1]
 for (QMap<int, QString>::const_iterator it = map.cbegin(), end = map.cend(); it != end; ++it) {
-    cout << "The key: " << it.key() << endl
-    cout << "The value: " << it.value() << endl;
-    cout << "Also the value: " << (*it) << endl;
+    cout << "The key: " << it.key() << Qt::endl
+    cout << "The value: " << it.value() << Qt::endl;
+    cout << "Also the value: " << (*it) << Qt::endl;
 }
 //! [keyiterator1]
 

@@ -1319,7 +1319,6 @@ void tst_QMap::checkMostLeftNode()
 
 void tst_QMap::initializerList()
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QMap<int, QString> map = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
     QCOMPARE(map.count(), 2);
     QCOMPARE(map[1], QString("hello"));
@@ -1346,9 +1345,6 @@ void tst_QMap::initializerList()
 
     QMultiMap<float, float> emptyPairs2{{}, {}};
     QVERIFY(!emptyPairs2.isEmpty());
-#else
-    QSKIP("Compiler doesn't support initializer lists");
-#endif
 }
 
 void tst_QMap::testInsertWithHint()

@@ -58,7 +58,7 @@ unix {
 msvc: QMAKE_MOC_OPTIONS += -D_WINSOCK_DEPRECATED_NO_WARNINGS
 
 win32:!winrt:SOURCES += socket/qnativesocketengine_win.cpp
-win32:!winrt:LIBS_PRIVATE += -ladvapi32
+win32:!winrt: QMAKE_USE_PRIVATE += advapi32
 
 winrt {
     SOURCES += socket/qnativesocketengine_winrt.cpp

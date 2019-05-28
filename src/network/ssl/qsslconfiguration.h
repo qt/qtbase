@@ -85,9 +85,7 @@ public:
     QSslConfiguration();
     QSslConfiguration(const QSslConfiguration &other);
     ~QSslConfiguration();
-#ifdef Q_COMPILER_RVALUE_REFS
     QSslConfiguration &operator=(QSslConfiguration &&other) noexcept { swap(other); return *this; }
-#endif
     QSslConfiguration &operator=(const QSslConfiguration &other);
 
     void swap(QSslConfiguration &other) noexcept

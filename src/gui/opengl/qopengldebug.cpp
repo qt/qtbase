@@ -1366,7 +1366,7 @@ bool QOpenGLDebugLogger::initialize()
 
 #define GET_DEBUG_PROC_ADDRESS(procName) \
     d->procName = reinterpret_cast< qt_ ## procName ## _t >( \
-        d->context->getProcAddress(#procName) \
+        d->context->getProcAddress(d->context->isOpenGLES() ? (#procName "KHR") : (#procName)) \
     );
 
     GET_DEBUG_PROC_ADDRESS(glDebugMessageControl);

@@ -31,8 +31,6 @@
 
 #include "proitems.h"
 
-#include <qregexp.h>
-
 #define debugMsg if (!m_debugLevel) {} else debugMsgInternal
 #define traceMsg if (!m_debugLevel) {} else traceMsgInternal
 #ifdef PROEVALUATOR_DEBUG

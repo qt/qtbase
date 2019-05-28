@@ -1480,7 +1480,6 @@ void tst_QHash::twoArguments_qHash()
 
 void tst_QHash::initializerList()
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QHash<int, QString> hash = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
     QCOMPARE(hash.count(), 2);
     QCOMPARE(hash[1], QString("hello"));
@@ -1507,9 +1506,6 @@ void tst_QHash::initializerList()
 
     QMultiHash<int, float> emptyPairs2{{}, {}};
     QVERIFY(!emptyPairs2.isEmpty());
-#else
-    QSKIP("Compiler doesn't support initializer lists");
-#endif
 }
 
 void tst_QHash::eraseValidIteratorOnSharedHash()

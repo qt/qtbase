@@ -44,6 +44,7 @@
 #define QSTRINGLIST_H
 
 #include <QtCore/qalgorithms.h>
+#include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringmatcher.h>
@@ -66,7 +67,7 @@ template <> struct QListSpecialMethods<QString>
 {
 #ifndef Q_QDOC
 protected:
-    ~QListSpecialMethods() {}
+    ~QListSpecialMethods() = default;
 #endif
 public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);
@@ -103,19 +104,16 @@ public:
     inline QStringList() noexcept { }
     inline explicit QStringList(const QString &i) { append(i); }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
-#ifdef Q_COMPILER_RVALUE_REFS
     inline QStringList(QList<QString> &&l) noexcept : QList<QString>(std::move(l)) { }
-#endif
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
-#endif
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    inline QStringList(InputIterator first, InputIterator last)
+        : QList<QString>(first, last) { }
 
     QStringList &operator=(const QList<QString> &other)
     { QList<QString>::operator=(other); return *this; }
-#ifdef Q_COMPILER_RVALUE_REFS
     QStringList &operator=(QList<QString> &&other) noexcept
     { QList<QString>::operator=(std::move(other)); return *this; }
-#endif
 
 #if QT_STRINGVIEW_LEVEL < 2
     inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -331,6 +329,23 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 }
 #endif // QT_CONFIG(regularexpression)
 #endif // Q_QDOC
+
+//
+// QString inline functions:
+//
+
+QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{ return split(sep, _sb(behavior), cs); }
+QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{ return split(sep, _sb(behavior), cs); }
+#ifndef QT_NO_REGEXP
+QStringList QString::split(const QRegExp &sep, Qt::SplitBehavior behavior) const
+{ return split(sep, _sb(behavior)); }
+#endif
+#if QT_CONFIG(regularexpression)
+QStringList QString::split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const
+{ return split(sep, _sb(behavior)); }
+#endif
 
 QT_END_NAMESPACE
 

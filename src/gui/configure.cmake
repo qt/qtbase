@@ -10,6 +10,10 @@ set_property(CACHE INPUT_freetype PROPERTY STRINGS undefined no qt system)
 set(INPUT_libjpeg "undefined" CACHE STRING "")
 set_property(CACHE INPUT_libjpeg PROPERTY STRINGS undefined no qt system)
 
+# input libmd4c
+set(INPUT_libmd4c "undefined" CACHE STRING "")
+set_property(CACHE INPUT_libmd4c PROPERTY STRINGS undefined no qt system)
+
 # input libpng
 set(INPUT_libpng "undefined" CACHE STRING "")
 set_property(CACHE INPUT_libpng PROPERTY STRINGS undefined no qt system)
@@ -557,7 +561,7 @@ qt_feature_definition("freetype" "QT_NO_FREETYPE" NEGATE VALUE "1")
 qt_feature("fontconfig" PUBLIC PRIVATE
     LABEL "Fontconfig"
     AUTODETECT NOT APPLE
-    CONDITION NOT WIN32 AND ON AND FONTCONFIG_FOUND
+    CONDITION NOT MSVC AND ON AND FONTCONFIG_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("harfbuzz" PUBLIC PRIVATE
@@ -825,6 +829,25 @@ qt_feature("texthtmlparser" PUBLIC
     PURPOSE "Provides a parser for HTML."
 )
 qt_feature_definition("texthtmlparser" "QT_NO_TEXTHTMLPARSER" NEGATE VALUE "1")
+qt_feature("textmarkdownreader" PUBLIC
+    SECTION "Kernel"
+    LABEL "MarkdownReader"
+    PURPOSE "Provides a Markdown (CommonMark and GitHub) reader"
+    ENABLE INPUT_libmd4c STREQUAL 'system' OR INPUT_libmd4c STREQUAL 'qt' OR INPUT_libmd4c STREQUAL 'yes'
+    DISABLE INPUT_libmd4c STREQUAL 'no'
+)
+qt_feature("system_textmarkdownreader" PUBLIC
+    SECTION "Kernel"
+    LABEL "  Using system libmd4c"
+    CONDITION libs.libmd4c OR FIXME
+    ENABLE INPUT_libmd4c STREQUAL 'system'
+    DISABLE INPUT_libmd4c STREQUAL 'qt'
+)
+qt_feature("textmarkdownwriter" PUBLIC
+    SECTION "Kernel"
+    LABEL "MarkdownWriter"
+    PURPOSE "Provides a Markdown (CommonMark) writer"
+)
 qt_feature("textodfwriter" PUBLIC
     SECTION "Kernel"
     LABEL "OdfWriter"
@@ -867,7 +890,7 @@ qt_feature("clipboard" PUBLIC
     SECTION "Kernel"
     LABEL "QClipboard"
     PURPOSE "Provides cut and paste operations."
-    CONDITION NOT INTEGRITY AND NOT QNX
+    CONDITION NOT INTEGRITY AND NOT QNX AND NOT rtems
 )
 qt_feature_definition("clipboard" "QT_NO_CLIPBOARD" NEGATE VALUE "1")
 qt_feature("wheelevent" PUBLIC
@@ -1011,7 +1034,7 @@ qt_feature("multiprocess" PRIVATE
     SECTION "Utilities"
     LABEL "Multi process"
     PURPOSE "Provides support for detecting the desktop environment, launching external processes and opening URLs."
-    CONDITION NOT INTEGRITY
+    CONDITION NOT INTEGRITY AND NOT rtems
 )
 qt_feature("whatsthis" PUBLIC
     SECTION "Widget Support"

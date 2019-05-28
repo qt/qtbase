@@ -44,6 +44,7 @@
 #include <qfileinfo.h>
 #include <qstringlist.h>
 #include <qset.h>
+#include <qscopeguard.h>
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qtextstream.h>
@@ -79,7 +80,7 @@ static Qt::HANDLE createChangeNotification(const QString &path, uint flags)
         nativePath.append(QLatin1Char('\\'));
     const HANDLE result = FindFirstChangeNotification(reinterpret_cast<const wchar_t *>(nativePath.utf16()),
                                                       FALSE, flags);
-    DEBUG() << __FUNCTION__ << nativePath << hex <<showbase << flags << "returns" << result;
+    DEBUG() << __FUNCTION__ << nativePath << Qt::hex <<showbase << flags << "returns" << result;
     return result;
 }
 
@@ -377,10 +378,9 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                        QStringList *directories)
 {
     DEBUG() << "Adding" << paths.count() << "to existing" << (files->count() + directories->count()) << "watchers";
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&] { unhandled.push_back(path); });
         QString normalPath = path;
         if ((normalPath.endsWith(QLatin1Char('/')) && !normalPath.endsWith(QLatin1String(":/")))
             || (normalPath.endsWith(QLatin1Char('\\')) && !normalPath.endsWith(QLatin1String(":\\")))) {
@@ -432,7 +432,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 // Requesting to add a file whose directory has been added previously.
                 // Recreate the notification handle to add the missing notification attributes
                 // for files (FILE_NOTIFY_CHANGE_ATTRIBUTES...)
-                DEBUG() << "recreating" << absolutePath << hex << showbase << hit.value().flags
+                DEBUG() << "recreating" << absolutePath << Qt::hex << Qt::showbase << hit.value().flags
                     << "->" << flags;
                 const Qt::HANDLE fileHandle = createChangeNotification(absolutePath, flags);
                 if (fileHandle != INVALID_HANDLE_VALUE) {
@@ -463,7 +463,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                     else
                         files->append(path);
                 }
-                it.remove();
+                sg.dismiss();
                 thread->wakeup();
                 break;
             }
@@ -493,7 +493,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                     else
                         files->append(path);
 
-                    it.remove();
+                    sg.dismiss();
                     found = true;
                     thread->wakeup();
                     break;
@@ -519,7 +519,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 thread->msg = '@';
                 thread->start();
                 threads.append(thread);
-                it.remove();
+                sg.dismiss();
             }
         }
     }
@@ -527,12 +527,12 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 #ifndef Q_OS_WINRT
     if (Q_LIKELY(m_driveListener)) {
         for (const QString &path : paths) {
-            if (!p.contains(path))
+            if (!unhandled.contains(path))
                 m_driveListener->addPath(path);
         }
     }
 #endif // !Q_OS_WINRT
-    return p;
+    return unhandled;
 }
 
 QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &paths,
@@ -540,10 +540,9 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
                                                           QStringList *directories)
 {
     DEBUG() << "removePaths" << paths;
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&] { unhandled.push_back(path); });
         QString normalPath = path;
         if (normalPath.endsWith(QLatin1Char('/')) || normalPath.endsWith(QLatin1Char('\\')))
             normalPath.chop(1);
@@ -572,7 +571,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
                     // ###
                     files->removeAll(path);
                     directories->removeAll(path);
-                    it.remove();
+                    sg.dismiss();
 
                     if (h.isEmpty()) {
                         DEBUG() << "Closing handle" << handle.handle;
@@ -613,7 +612,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
     }
 
     threads.removeAll(0);
-    return p;
+    return unhandled;
 }
 
 ///////////

@@ -75,38 +75,38 @@ QWindowsSockInit2::~QWindowsSockInit2()
 #ifdef BEARER_MANAGEMENT_DEBUG
 static void printBlob(NLA_BLOB *blob)
 {
-    qDebug() << "==== BEGIN NLA_BLOB ====" << endl
+    qDebug() << "==== BEGIN NLA_BLOB ====" << Qt::endl
 
-             << "type:" << blob->header.type << endl
-             << "size:" << blob->header.dwSize << endl
+             << "type:" << blob->header.type << Qt::endl
+             << "size:" << blob->header.dwSize << Qt::endl
              << "next offset:" << blob->header.nextOffset;
 
     switch (blob->header.type) {
     case NLA_RAW_DATA:
-        qDebug() << "Raw Data" << endl
+        qDebug() << "Raw Data" << Qt::endl
                  << '\t' << blob->data.rawData;
         break;
     case NLA_INTERFACE:
-        qDebug() << "Interface" << endl
-                 << "\ttype:" << blob->data.interfaceData.dwType << endl
-                 << "\tspeed:" << blob->data.interfaceData.dwSpeed  << endl
+        qDebug() << "Interface" << Qt::endl
+                 << "\ttype:" << blob->data.interfaceData.dwType << Qt::endl
+                 << "\tspeed:" << blob->data.interfaceData.dwSpeed  << Qt::endl
                  << "\tadapter:" << blob->data.interfaceData.adapterName;
         break;
     case NLA_802_1X_LOCATION:
-        qDebug() << "802.1x Location" << endl
+        qDebug() << "802.1x Location" << Qt::endl
                  << '\t' << blob->data.locationData.information;
         break;
     case NLA_CONNECTIVITY:
-        qDebug() << "Connectivity" << endl
-                 << "\ttype:" << blob->data.connectivity.type << endl
+        qDebug() << "Connectivity" << Qt::endl
+                 << "\ttype:" << blob->data.connectivity.type << Qt::endl
                  << "\tinternet:" << blob->data.connectivity.internet;
         break;
     case NLA_ICS:
-        qDebug() << "ICS" << endl
-                 << "\tspeed:" << blob->data.ICS.remote.speed << endl
-                 << "\ttype:" << blob->data.ICS.remote.type << endl
-                 << "\tstate:" << blob->data.ICS.remote.state << endl
-                 << "\tmachine name:" << blob->data.ICS.remote.machineName << endl
+        qDebug() << "ICS" << Qt::endl
+                 << "\tspeed:" << blob->data.ICS.remote.speed << Qt::endl
+                 << "\ttype:" << blob->data.ICS.remote.type << Qt::endl
+                 << "\tstate:" << blob->data.ICS.remote.state << Qt::endl
+                 << "\tmachine name:" << blob->data.ICS.remote.machineName << Qt::endl
                  << "\tshared adapter name:" << blob->data.ICS.remote.sharedAdapterName;
         break;
     default:
@@ -119,9 +119,6 @@ static void printBlob(NLA_BLOB *blob)
 
 static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
-#ifdef Q_OS_WINCE
-    Q_UNUSED(interface)
-#else
     unsigned long oid;
     DWORD bytesWritten;
 
@@ -175,8 +172,6 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
 #ifdef BEARER_MANAGEMENT_DEBUG
     qDebug() << medium << physicalMedium;
-#endif
-
 #endif
 
     return QNetworkConfiguration::BearerUnknown;
@@ -307,16 +302,12 @@ void QNlaThread::run()
                 break;
         }
 
-#ifndef Q_OS_WINCE
         // Not interested in unrelated IO completion events
         // although we also don't want to block them
         while (WaitForSingleObjectEx(changeEvent, WSA_INFINITE, true) != WAIT_IO_COMPLETION &&
                handle)
         {
         }
-#else
-        WaitForSingleObject(changeEvent, WSA_INFINITE);
-#endif
 
         mutex.lock();
         if (handle) {

@@ -99,9 +99,7 @@ public:
     ~QTimeZone();
 
     QTimeZone &operator=(const QTimeZone &other);
- #ifdef Q_COMPILER_RVALUE_REFS
     QTimeZone &operator=(QTimeZone &&other) noexcept { swap(other); return *this; }
-#endif
 
     void swap(QTimeZone &other) noexcept
     { d.swap(other.d); }

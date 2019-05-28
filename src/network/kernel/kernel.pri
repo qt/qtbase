@@ -16,7 +16,8 @@ HEADERS += kernel/qtnetworkglobal.h \
            kernel/qnetworkinterface.h \
            kernel/qnetworkinterface_p.h \
            kernel/qnetworkinterface_unix_p.h \
-           kernel/qnetworkproxy.h
+           kernel/qnetworkproxy.h \
+           kernel/qnetconmonitor_p.h
 
 SOURCES += kernel/qauthenticator.cpp \
            kernel/qhostaddress.cpp \
@@ -69,6 +70,15 @@ win32: {
 mac {
     LIBS_PRIVATE += -framework CoreFoundation
     !uikit: LIBS_PRIVATE += -framework CoreServices -framework SystemConfiguration
+}
+
+macos | ios {
+    OBJECTIVE_SOURCES += \
+        kernel/qnetconmonitor_darwin.mm
+
+    LIBS_PRIVATE += -framework SystemConfiguration
+} else {
+    SOURCES += kernel/qnetconmonitor_stub.cpp
 }
 
 qtConfig(gssapi): LIBS_PRIVATE += -lgssapi_krb5

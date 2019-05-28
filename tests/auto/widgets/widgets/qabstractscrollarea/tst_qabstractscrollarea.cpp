@@ -124,13 +124,19 @@ void tst_QAbstractScrollArea::scrollBarWidgets()
     QCOMPARE(area.scrollBarWidgets(Qt::AlignTop), QWidgetList());
     QCOMPARE(area.scrollBarWidgets(Qt::AlignBottom), w2List);
 
+    auto sort = [](const QWidgetList l) {
+        QWidgetList list = l;
+        std::sort(list.begin(), list.end());
+        return list;
+    };
+
     // two widgets at Bottom.
     area.addScrollBarWidget(w3, Qt::AlignBottom);
-    QCOMPARE(area.scrollBarWidgets(all).toSet(), allList.toSet());
+    QCOMPARE(sort(area.scrollBarWidgets(all)), sort(allList));
     QCOMPARE(area.scrollBarWidgets(Qt::AlignLeft), w1List);
     QCOMPARE(area.scrollBarWidgets(Qt::AlignRight), QWidgetList());
     QCOMPARE(area.scrollBarWidgets(Qt::AlignTop), QWidgetList());
-    QCOMPARE(area.scrollBarWidgets(Qt::AlignBottom).toSet(), (w2List + w3List).toSet());
+    QCOMPARE(sort(area.scrollBarWidgets(Qt::AlignBottom)), sort(w2List + w3List));
 
     //delete
     delete w1;

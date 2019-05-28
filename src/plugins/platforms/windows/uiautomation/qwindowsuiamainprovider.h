@@ -68,6 +68,7 @@ public:
     static void notifyFocusChange(QAccessibleEvent *event);
     static void notifyStateChange(QAccessibleStateChangeEvent *event);
     static void notifyValueChange(QAccessibleValueChangeEvent *event);
+    static void notifySelectionChange(QAccessibleEvent *event);
     static void notifyTextChange(QAccessibleEvent *event);
 
     // IUnknown

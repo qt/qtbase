@@ -104,6 +104,8 @@ public:
 
     inline void handleChanges(const QWindowsScreenData &newData);
 
+    HMONITOR handle() const;
+
 #ifndef QT_NO_CURSOR
     QPlatformCursor *cursor() const override { return m_cursor.data(); }
     const CursorPtr &cursorPtr() const { return m_cursor; }
@@ -137,6 +139,8 @@ public:
 
     const QWindowsScreen *screenAtDp(const QPoint &p) const;
     const QWindowsScreen *screenForHwnd(HWND hwnd) const;
+
+    static bool isSingleScreen();
 
 private:
     void removeScreen(int index);

@@ -393,10 +393,13 @@ class Q_CORE_EXPORT QVariant
             : type(variantType), is_shared(false), is_null(false)
         {}
 
-        inline Private(const Private &other) noexcept
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        Private(const Private &other) noexcept
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}
+        Private &operator=(const Private &other) noexcept = default;
+#endif
         union Data
         {
             char c;
@@ -483,27 +486,27 @@ public:
 
 private:
     // force compile error, prevent QVariant(bool) to be called
-    inline QVariant(void *) Q_DECL_EQ_DELETE;
+    inline QVariant(void *) = delete;
     // QVariant::Type is marked as \obsolete, but we don't want to
     // provide a constructor from its intended replacement,
     // QMetaType::Type, instead, because the idea behind these
     // constructors is flawed in the first place. But we also don't
     // want QVariant(QMetaType::String) to compile and falsely be an
     // int variant, so delete this constructor:
-    QVariant(QMetaType::Type) Q_DECL_EQ_DELETE;
+    QVariant(QMetaType::Type) = delete;
 
     // These constructors don't create QVariants of the type associcated
     // with the enum, as expected, but they would create a QVariant of
     // type int with the value of the enum value.
     // Use QVariant v = QColor(Qt::red) instead of QVariant v = Qt::red for
     // example.
-    QVariant(Qt::GlobalColor) Q_DECL_EQ_DELETE;
-    QVariant(Qt::BrushStyle) Q_DECL_EQ_DELETE;
-    QVariant(Qt::PenStyle) Q_DECL_EQ_DELETE;
-    QVariant(Qt::CursorShape) Q_DECL_EQ_DELETE;
+    QVariant(Qt::GlobalColor) = delete;
+    QVariant(Qt::BrushStyle) = delete;
+    QVariant(Qt::PenStyle) = delete;
+    QVariant(Qt::CursorShape) = delete;
 #ifdef QT_NO_CAST_FROM_ASCII
     // force compile error when implicit conversion is not wanted
-    inline QVariant(const char *) Q_DECL_EQ_DELETE;
+    inline QVariant(const char *) = delete;
 #endif
 public:
     typedef Private DataPtr;

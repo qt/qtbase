@@ -900,7 +900,7 @@ bool readInputFile(Options *options)
             options->extraPlugins = extraPlugins.toString().split(QLatin1Char(','));
     }
 
-    if (!options->auxMode) {
+    {
         const QJsonValue stdcppPath = jsonObject.value(QStringLiteral("stdcpp-path"));
         if (stdcppPath.isUndefined()) {
             fprintf(stderr, "No stdcpp-path defined in json file.\n");
@@ -1729,6 +1729,11 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     qmlImportScanner += QString::fromLatin1(" -rootPath %1 -importPath %2")
             .arg(shellQuote(rootPath))
             .arg(importPaths.join(QLatin1Char(' ')));
+
+    if (options->verbose) {
+        fprintf(stdout, "Running qmlimportscanner with the following command: %s\n",
+            qmlImportScanner.toLocal8Bit().constData());
+    }
 
     FILE *qmlImportScannerCommand = popen(qmlImportScanner.toLocal8Bit().constData(), QT_POPEN_READ);
     if (qmlImportScannerCommand == 0) {
@@ -2898,6 +2903,8 @@ int main(int argc, char *argv[])
             return CannotCopyQtFiles;
         if (!copyAndroidExtraResources(options))
             return CannotCopyAndroidExtraResources;
+        if (!copyAndroidExtraLibs(options))
+            return CannotCopyAndroidExtraLibs;
         if (!stripLibraries(options))
             return CannotStripLibraries;
         if (!updateAndroidFiles(options))

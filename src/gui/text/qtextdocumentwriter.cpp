@@ -51,6 +51,9 @@
 
 #include "qtextdocumentfragment_p.h"
 #include "qtextodfwriter_p.h"
+#if QT_CONFIG(textmarkdownwriter)
+#include "qtextmarkdownwriter_p.h"
+#endif
 
 #include <algorithm>
 
@@ -267,6 +270,18 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
     }
 #endif // QT_NO_TEXTODFWRITER
 
+#if QT_CONFIG(textmarkdownwriter)
+    if (format == "md" || format == "mkd" || format == "markdown") {
+        if (!d->device->isWritable() && !d->device->open(QIODevice::WriteOnly)) {
+            qWarning("QTextDocumentWriter::write: the device can not be opened for writing");
+            return false;
+        }
+        QTextStream s(d->device);
+        QTextMarkdownWriter writer(s, QTextDocument::MarkdownDialectGitHub);
+        return writer.writeAll(document);
+    }
+#endif // textmarkdownwriter
+
 #ifndef QT_NO_TEXTHTMLPARSER
     if (format == "html" || format == "htm") {
         if (!d->device->isWritable() && ! d->device->open(QIODevice::WriteOnly)) {
@@ -348,6 +363,7 @@ QTextCodec *QTextDocumentWriter::codec() const
     \header \li Format    \li Description
     \row    \li plaintext \li Plain text
     \row    \li HTML      \li HyperText Markup Language
+    \row    \li markdown  \li Markdown (CommonMark or GitHub dialects)
     \row    \li ODF       \li OpenDocument Format
     \endtable
 
@@ -364,6 +380,9 @@ QList<QByteArray> QTextDocumentWriter::supportedDocumentFormats()
 #ifndef QT_NO_TEXTODFWRITER
     answer << "ODF";
 #endif // QT_NO_TEXTODFWRITER
+#if QT_CONFIG(textmarkdownwriter)
+    answer << "markdown";
+#endif
 
     std::sort(answer.begin(), answer.end());
     return answer;

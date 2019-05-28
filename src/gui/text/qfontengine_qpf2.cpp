@@ -140,9 +140,9 @@ static inline const uchar *verifyTag(const uchar *tagPtr, const uchar *endPtr)
         }
 #if defined(DEBUG_HEADER)
         if (length == 1)
-            qDebug() << "tag data" << hex << *tagPtr;
+            qDebug() << "tag data" << Qt::hex << *tagPtr;
         else if (length == 4)
-            qDebug() << "tag data" << hex << tagPtr[0] << tagPtr[1] << tagPtr[2] << tagPtr[3];
+            qDebug() << "tag data" << Qt::hex << tagPtr[0] << tagPtr[1] << tagPtr[2] << tagPtr[3];
 #endif
     }
     return tagPtr + length;
@@ -367,7 +367,7 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
             if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.contains(c))
-                qDebug() << "glyph for character" << c << '/' << hex << uc << "is" << dec << glyphs[glyph_pos].glyph;
+                qDebug() << "glyph for character" << c << '/' << Qt::hex << uc << "is" << Qt::dec << glyphs[glyph_pos].glyph;
 
             seenGlyphs.insert(c);
 #endif

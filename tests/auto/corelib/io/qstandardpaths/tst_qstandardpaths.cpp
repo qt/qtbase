@@ -33,7 +33,7 @@
 #include <qfileinfo.h>
 #include <qsysinfo.h>
 #include <qregexp.h>
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <qt_windows.h>
 #endif
 
@@ -131,7 +131,7 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
 
 void tst_qstandardpaths::initTestCase()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // Disable WOW64 redirection, see testFindExecutable()
     if (QSysInfo::buildCpuArchitecture() != QSysInfo::currentCpuArchitecture()) {
         void *oldMode;
@@ -140,7 +140,7 @@ void tst_qstandardpaths::initTestCase()
             qErrnoWarning("Wow64DisableWow64FsRedirection() failed");
         QVERIFY(disabledDisableWow64FsRedirection);
     }
-#endif // Q_OS_WIN && !Q_OS_WINRT && !Q_OS_WINCE
+#endif // Q_OS_WIN && !Q_OS_WINRT
     QVERIFY2(m_localConfigTempDir.isValid(), qPrintable(m_localConfigTempDir.errorString()));
     QVERIFY2(m_globalConfigTempDir.isValid(), qPrintable(m_globalConfigTempDir.errorString()));
     QVERIFY2(m_localAppTempDir.isValid(), qPrintable(m_localAppTempDir.errorString()));

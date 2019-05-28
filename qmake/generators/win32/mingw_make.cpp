@@ -38,10 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-MingwMakefileGenerator::MingwMakefileGenerator() : Win32MakefileGenerator()
-{
-}
-
 QString MingwMakefileGenerator::escapeDependencyPath(const QString &path) const
 {
     QString ret = path;
@@ -99,7 +95,7 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
             writePkgConfigFile();
 
         if(Option::mkfile::do_stub_makefile) {
-            t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
+            t << "QMAKE    = " << var("QMAKE_QMAKE") << Qt::endl;
             const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
             for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
                 t << escapeDependencyPath(*it) << ' ';
@@ -148,7 +144,7 @@ void createLdResponseFile(const QString &fileName, const ProStringList &objList)
                 .replace(QLatin1Char('\t'), QLatin1String("\\\t"))
                 .replace(QLatin1Char('"'), QLatin1String("\\\""))
                 .replace(QLatin1Char('\''), QLatin1String("\\'"));
-            t << path << endl;
+            t << path << Qt::endl;
         }
         t.flush();
         file.close();
@@ -162,9 +158,9 @@ void createArObjectScriptFile(const QString &fileName, const QString &target, co
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream t(&file);
         // ### quoting?
-        t << "CREATE " << target << endl;
+        t << "CREATE " << target << Qt::endl;
         for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
-            t << "ADDMOD " << *it << endl;
+            t << "ADDMOD " << *it << Qt::endl;
         }
         t << "SAVE\n";
         t.flush();
@@ -183,13 +179,13 @@ void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
           << finalizeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
           << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
           << "\n\t$(CC) -x c-header -c $(CFLAGS) $(INCPATH) -o " << escapeFilePath(cHeader)
-          << ' ' << escapeFilePath(header) << endl << endl;
+          << ' ' << escapeFilePath(header) << Qt::endl << Qt::endl;
         QString cppHeader = preCompHeaderOut + Option::dir_sep + "c++";
         t << escapeDependencyPath(cppHeader) << ": " << escapeDependencyPath(header) << " "
           << finalizeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
           << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
           << "\n\t$(CXX) -x c++-header -c $(CXXFLAGS) $(INCPATH) -o " << escapeFilePath(cppHeader)
-          << ' ' << escapeFilePath(header) << endl << endl;
+          << ' ' << escapeFilePath(header) << Qt::endl << Qt::endl;
     }
 }
 
@@ -274,21 +270,21 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
             t << "-I";
         t << escapeFilePath(inc) << ' ';
     }
-    t << endl;
+    t << Qt::endl;
 }
 
 void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
 {
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-        t << "LIB        =        " << var("QMAKE_LIB") << endl;
+        t << "LIB        =        " << var("QMAKE_LIB") << Qt::endl;
     } else {
-        t << "LINKER      =        " << var("QMAKE_LINK") << endl;
-        t << "LFLAGS        =        " << var("QMAKE_LFLAGS") << endl;
+        t << "LINKER      =        " << var("QMAKE_LINK") << Qt::endl;
+        t << "LFLAGS        =        " << var("QMAKE_LFLAGS") << Qt::endl;
         t << "LIBS        =        "
           << fixLibFlags("LIBS").join(' ') << ' '
           << fixLibFlags("LIBS_PRIVATE").join(' ') << ' '
           << fixLibFlags("QMAKE_LIBS").join(' ') << ' '
-          << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << endl;
+          << fixLibFlags("QMAKE_LIBS_PRIVATE").join(' ') << Qt::endl;
     }
 }
 
@@ -350,7 +346,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
-    t << endl;
+    t << Qt::endl;
 }
 
 void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)

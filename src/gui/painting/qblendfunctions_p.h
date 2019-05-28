@@ -71,10 +71,10 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     const int ix = 0x00010000 * sx;
     const int iy = 0x00010000 * sy;
 
-//     qDebug() << "scale:" << endl
-//              << " - target" << targetRect << endl
-//              << " - source" << srcRect << endl
-//              << " - clip" << clip << endl
+//     qDebug() << "scale:" << Qt::endl
+//              << " - target" << targetRect << Qt::endl
+//              << " - source" << srcRect << Qt::endl
+//              << " - clip" << clip << Qt::endl
 //              << " - sx=" << sx << " sy=" << sy << " ix=" << ix << " iy=" << iy;
 
     QRect tr = targetRect.normalized().toRect();
@@ -162,10 +162,10 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     const int ix = 0x00010000 * sx;
     const int iy = 0x00010000 * sy;
 
-//     qDebug() << "scale:" << endl
-//              << " - target" << targetRect << endl
-//              << " - source" << srcRect << endl
-//              << " - clip" << clip << endl
+//     qDebug() << "scale:" << Qt::endl
+//              << " - target" << targetRect << Qt::endl
+//              << " - source" << srcRect << Qt::endl
+//              << " - clip" << clip << Qt::endl
 //              << " - sx=" << sx << " sy=" << sy << " ix=" << ix << " iy=" << iy;
 
     QRect tr = targetRect.normalized().toRect();

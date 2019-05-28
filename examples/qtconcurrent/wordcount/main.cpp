@@ -126,11 +126,8 @@ WordCount countWords(const QString &file)
 // at a time.
 void reduce(WordCount &result, const WordCount &w)
 {
-    QMapIterator<QString, int> i(w);
-    while (i.hasNext()) {
-        i.next();
+    for (auto i = w.begin(), end = w.end(); i != end; ++i)
         result[i.key()] += i.value();
-    }
 }
 
 int main(int argc, char** argv)

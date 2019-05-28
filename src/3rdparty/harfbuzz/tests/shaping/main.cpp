@@ -370,7 +370,7 @@ void tst_QScriptEngine::greek()
             QString str;
             str.append(uc);
             if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
-                //qDebug() << "skipping" << hex << uc;
+                //qDebug() << "skipping" << Qt::hex << uc;
                 continue;
             }
             if (uc == 0x1fc1 || uc == 0x1fed)
@@ -389,7 +389,7 @@ void tst_QScriptEngine::greek()
             QString str;
             str.append(uc);
             if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
-                //qDebug() << "skipping" << hex << uc;
+                //qDebug() << "skipping" << Qt::hex << uc;
                 continue;
             }
             if (uc == 0x1fc1 || uc == 0x1fed)

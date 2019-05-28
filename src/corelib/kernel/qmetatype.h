@@ -849,7 +849,7 @@ struct VariantData
     const uint flags;
 private:
     // copy constructor allowed to be implicit to silence level 4 warning from MSVC
-    VariantData &operator=(const VariantData &) Q_DECL_EQ_DELETE;
+    VariantData &operator=(const VariantData &) = delete;
 };
 
 template<typename const_iterator>
@@ -1720,7 +1720,7 @@ namespace QtPrivate {
     {
         QObject* operator()(const QWeakPointer<T> &p) const
         {
-            return p.data();
+            return p.internalData();
         }
     };
 }

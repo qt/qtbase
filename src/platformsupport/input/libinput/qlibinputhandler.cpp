@@ -205,6 +205,9 @@ void QLibInputHandler::processEvent(libinput_event *ev)
     case LIBINPUT_EVENT_POINTER_MOTION:
         m_pointer->processMotion(libinput_event_get_pointer_event(ev));
         break;
+    case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
+        m_pointer->processAbsMotion(libinput_event_get_pointer_event(ev));
+        break;
     case LIBINPUT_EVENT_POINTER_AXIS:
         m_pointer->processAxis(libinput_event_get_pointer_event(ev));
         break;

@@ -243,6 +243,13 @@
     lists.
 */
 
+/*! \fn template <typename T> template<typename InputIterator> QVector<T>::QVector(InputIterator first, InputIterator last)
+    \since 5.14
+
+    Constructs a vector with the contents in the iterator range [\a first, \a last).
+
+    The value type of \c InputIterator must be convertible to \c T.
+*/
 
 /*! \fn template <typename T> QVector<T>::~QVector()
 
@@ -280,6 +287,16 @@
     Swaps vector \a other with this vector. This operation is very fast and
     never fails.
 */
+
+/*! \fn template <typename T> void QVector<T>::swapItemsAt(int i, int j)
+    \since 5.14
+
+    Exchange the item at index position \a i with the item at index
+    position \a j. This function assumes that both \a i and \a j are
+    at least 0 but less than size(). To avoid failure, test that both
+    \a i and \a j are at least 0 and less than size().
+*/
+
 
 /*! \fn template <typename T> bool QVector<T>::operator==(const QVector<T> &other) const
 

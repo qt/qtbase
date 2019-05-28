@@ -18,7 +18,8 @@ HEADERS += \
 
 OTHER_FILES += windows.json
 
-LIBS += -lwinspool -lcomdlg32 -lgdi32 -luser32
+LIBS += -lwinspool -lcomdlg32
+QMAKE_USE_PRIVATE += user32 gdi32
 
 PLUGIN_TYPE = printsupport
 PLUGIN_CLASS_NAME = QWindowsPrinterSupportPlugin

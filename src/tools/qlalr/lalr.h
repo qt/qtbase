@@ -39,6 +39,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <set>
 
 class Rule;
 class State;
@@ -48,91 +49,6 @@ class State;
 class Arrow;
 class Automaton;
 
-template <typename _Tp >
-class OrderedSet : protected QMap<_Tp, bool>
-{
-  typedef QMap<_Tp, bool> _Base;
-
-public:
-  class const_iterator
-  {
-    typename _Base::const_iterator _M_iterator;
-
-  public:
-    const_iterator () {}
-
-    const_iterator (const typename _Base::iterator &it):
-      _M_iterator (typename _Base::const_iterator(it)) {}
-    const_iterator (const typename _Base::const_iterator &it):
-      _M_iterator (it) {}
-
-    const _Tp &operator * () const
-    { return _M_iterator.key (); }
-
-    const _Tp *operator -> () const
-    { return &_M_iterator.key (); }
-
-    const_iterator &operator ++ ()
-    { ++_M_iterator; return *this; }
-
-    const_iterator operator ++ (int) const
-    {
-      const_iterator me (*this);
-      ++_M_iterator;
-      return me;
-    }
-
-    bool operator == (const const_iterator &other) const
-    { return _M_iterator == other._M_iterator; }
-
-    bool operator != (const const_iterator &other) const
-    { return _M_iterator != other._M_iterator; }
-  };
-
-  typedef const_iterator iterator;
-
-public:
-  OrderedSet () {}
-
-  const_iterator begin () const
-  { return const_iterator (_Base::begin ()); }
-
-  const_iterator end () const
-  { return const_iterator (_Base::end ()); }
-
-  bool isEmpty () const
-  { return _Base::isEmpty (); }
-
-  int size () const
-  { return _Base::size (); }
-
-  const_iterator find (const _Tp &elt) const
-  { return const_iterator (_Base::find (elt)); }
-
-  QPair<const_iterator, bool> insert (const _Tp &elt)
-  {
-    int elts = _Base::size ();
-    const_iterator it (_Base::insert (typename _Base::key_type (elt), true));
-    return qMakePair (it, elts != _Base::size ());
-  }
-
-  QPair<const_iterator, bool> insert (const_iterator, const _Tp &elt)
-  {
-    int elts = _Base::size ();
-    const_iterator it (_Base::insert (typename _Base::key_type (elt), true));
-    return qMakePair (it, elts != _Base::size ());
-  }
-
-  const _Tp &operator [] (const _Tp &elt)
-  { return *insert (elt)->first; }
-
-  template <typename _InputIterator>
-  void insert (_InputIterator first, _InputIterator last)
-  {
-    for (; first != last; ++first)
-      insert (*first);
-  }
-};
 
 // names
 typedef QLinkedList<QString>::iterator Name;
@@ -140,7 +56,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(QLinkedList<QString>::iterator, Q_PRIMITIVE_TYPE);
 QT_END_NAMESPACE
 typedef QLinkedList<Name> NameList;
-typedef OrderedSet<Name> NameSet;
+typedef std::set<Name> NameSet;
 
 // items
 typedef QLinkedList<Item> ItemList;
@@ -257,7 +173,7 @@ template <typename _Tp>
 class Node
 {
 public:
-  typedef OrderedSet<Node<_Tp> > Repository;
+  typedef std::set<Node<_Tp> > Repository;
   typedef typename Repository::iterator iterator;
   typedef typename QLinkedList<iterator>::iterator edge_iterator;
 
@@ -406,9 +322,6 @@ public:
   StatePointer state;
   Name nt;
 };
-QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(OrderedSet<Node<Read> >::const_iterator, Q_PRIMITIVE_TYPE);
-QT_END_NAMESPACE
 
 class Include
 {
@@ -430,9 +343,6 @@ public:
   StatePointer state;
   Name nt;
 };
-QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(OrderedSet<Node<Include> >::const_iterator, Q_PRIMITIVE_TYPE);
-QT_END_NAMESPACE
 
 class Automaton
 {

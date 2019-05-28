@@ -40,6 +40,7 @@
 #include "qwindowsnativeinterface.h"
 #include "qwindowsclipboard.h"
 #include "qwindowswindow.h"
+#include "qwindowsscreen.h"
 #include "qwindowscontext.h"
 #include "qwindowscursor.h"
 #include "qwindowsopenglcontext.h"
@@ -120,6 +121,21 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
     default:
         break;
     }
+    qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
+    return nullptr;
+}
+
+void *QWindowsNativeInterface::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    if (!screen || !screen->handle()) {
+        qWarning("%s: '%s' requested for null screen or screen without handle.", __FUNCTION__, resource.constData());
+        return nullptr;
+    }
+    QWindowsScreen *bs = static_cast<QWindowsScreen *>(screen->handle());
+    int type = resourceType(resource);
+    if (type == HandleType)
+        return bs->handle();
+
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return nullptr;
 }

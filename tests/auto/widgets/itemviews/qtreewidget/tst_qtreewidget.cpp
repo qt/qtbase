@@ -1999,10 +1999,10 @@ void tst_QTreeWidget::itemData()
     item.setData(0, Qt::DisplayRole,  QString("0"));
     QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
     item.setData(0, Qt::CheckStateRole, Qt::PartiallyChecked);
-    QCOMPARE(widget.currentRoles, {Qt::CheckStateRole});
+    QCOMPARE(widget.currentRoles, QVector<int>{Qt::CheckStateRole});
     for (int i = 0; i < 4; ++i) {
         item.setData(0, Qt::UserRole + i, QString::number(i + 1));
-        QCOMPARE(widget.currentRoles, {Qt::UserRole + i});
+        QCOMPARE(widget.currentRoles, QVector<int>{Qt::UserRole + i});
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
