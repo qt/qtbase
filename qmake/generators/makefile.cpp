@@ -2400,8 +2400,15 @@ MakefileGenerator::findSubDirsSubTargets() const
                     st->profile = file;
                 }
             } else {
-                if(!file.isEmpty() && !project->isActiveConfig("subdir_first_pro"))
-                    st->profile = file.section(Option::dir_sep, -1) + Option::pro_ext;
+                if (!file.isEmpty() && !project->isActiveConfig("subdir_first_pro")) {
+                    const QString baseName = file.section(Option::dir_sep, -1);
+                    if (baseName.isEmpty()) {
+                        warn_msg(WarnLogic, "Ignoring invalid SUBDIRS entry %s",
+                                 subdirs[subdir].toLatin1().constData());
+                        continue;
+                    }
+                    st->profile = baseName + Option::pro_ext;
+                }
                 st->in_directory = file;
             }
             while(st->in_directory.endsWith(Option::dir_sep))
