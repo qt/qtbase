@@ -33,6 +33,9 @@ macro(qt_build_repo_begin)
     # Qt specific setup common for all modules:
     include(QtSetup)
     include(FeatureSummary)
+
+    # Optionally include a repo specific Setup module.
+    include(${PROJECT_NAME}Setup OPTIONAL)
 endmacro()
 
 macro(qt_build_repo_end)
