@@ -615,13 +615,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         'alloc_malloc_h': None,
         'alloc_stdlib_h': None,
         'build_all': None,
-        'c++11': None,   # C and C++ versions
         'c11': None,
-        'c++14': None,
-        'c++1y': None,
-        'c++1z': None,
-        # FIXME: used in qtdeclarative, drop when we require C++14
-        'cxx14_make_unique': None,
         'c89': None,
         'c99': None,
         'ccache': None,

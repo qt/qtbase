@@ -15,6 +15,27 @@ qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
 
 #### Tests
 
+# c++2a
+qt_config_compile_test(cxx2a
+    LABEL "C++2a support"
+"#if __cplusplus > 201703L
+// Compiler claims to support experimental C++2a, trust it
+#else
+#  error __cplusplus must be > 201703L (the value for C++17)
+#endif
+
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: CONFIG += c++11 c++14 c++1z c++2a
+)
+
 # precompile_header
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
@@ -245,9 +266,25 @@ qt_feature("framework" PUBLIC
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
 qt_feature("largefile"
     LABEL "Large file support"
-    CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT WINRT
+    CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT WINRT AND NOT rtems
 )
 qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
+qt_feature("cxx11" PUBLIC
+    LABEL "C++11"
+)
+qt_feature("cxx14" PUBLIC
+    LABEL "C++14"
+    CONDITION QT_FEATURE_cxx11 AND $<COMPILE_FEATURES:cxx_std_14>
+)
+qt_feature("cxx1z" PUBLIC
+    LABEL "C++17"
+    CONDITION QT_FEATURE_cxx14 AND $<COMPILE_FEATURES:cxx_std_17>
+)
+qt_feature("cxx2a" PUBLIC
+    LABEL "C++2a"
+    AUTODETECT OFF
+    CONDITION QT_FEATURE_cxx1z AND TEST_cxx2a
+)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
