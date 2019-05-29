@@ -193,7 +193,7 @@ bool QSaveFile::open(OpenMode mode)
 {
     Q_D(QSaveFile);
     if (isOpen()) {
-        qWarning("QSaveFile::open: File (%s) already open", qPrintable(fileName()));
+        qWarning("QSaveFile::open: File (%ls) already open", qUtf16Printable(fileName()));
         return false;
     }
     unsetError();
@@ -326,7 +326,7 @@ bool QSaveFile::commit()
         return false;
 
     if (!isOpen()) {
-        qWarning("QSaveFile::commit: File (%s) is not open", qPrintable(fileName()));
+        qWarning("QSaveFile::commit: File (%ls) is not open", qUtf16Printable(fileName()));
         return false;
     }
     QFileDevice::close(); // calls flush()

@@ -166,8 +166,8 @@ static HKEY createOrOpenKey(HKEY parentHandle, REGSAM perms, const QString &rSub
     if (res == ERROR_SUCCESS)
         return resultHandle;
 
-    //qWarning("QSettings: Failed to create subkey \"%s\": %s",
-    //         qPrintable(rSubKey), qPrintable(qt_error_string(int(res))));
+    //qErrnoWarning(int(res), "QSettings: Failed to create subkey \"%ls\"",
+    //              qUtf16Printable(rSubKey));
 
     return 0;
 }
@@ -207,7 +207,7 @@ static QStringList childKeysOrGroups(HKEY parentHandle, QSettingsPrivate::ChildS
                                &numKeys, &maxKeySize, 0, 0, 0);
 
     if (res != ERROR_SUCCESS) {
-        qWarning("QSettings: RegQueryInfoKey() failed: %s", qPrintable(qt_error_string(int(res))));
+        qErrnoWarning(int(res), "QSettings: RegQueryInfoKey() failed");
         return result;
     }
 
@@ -241,7 +241,7 @@ static QStringList childKeysOrGroups(HKEY parentHandle, QSettingsPrivate::ChildS
             item = QString::fromWCharArray((const wchar_t *)buff.constData(), l);
 
         if (res != ERROR_SUCCESS) {
-            qWarning("QSettings: RegEnumValue failed: %s", qPrintable(qt_error_string(int(res))));
+            qErrnoWarning(int(res), "QSettings: RegEnumValue failed");
             continue;
         }
         if (item.isEmpty())
@@ -295,8 +295,8 @@ static void deleteChildGroups(HKEY parentHandle, REGSAM access = 0)
         // delete group itself
         LONG res = RegDeleteKey(parentHandle, reinterpret_cast<const wchar_t *>(group.utf16()));
         if (res != ERROR_SUCCESS) {
-            qWarning("QSettings: RegDeleteKey failed on subkey \"%s\": %s",
-                     qPrintable(group), qPrintable(qt_error_string(int(res))));
+            qErrnoWarning(int(res), "QSettings: RegDeleteKey failed on subkey \"%ls\"",
+                          qUtf16Printable(group));
             return;
         }
     }
@@ -596,8 +596,8 @@ QWinSettingsPrivate::~QWinSettingsPrivate()
         QString emptyKey;
         DWORD res = RegDeleteKey(writeHandle(), reinterpret_cast<const wchar_t *>(emptyKey.utf16()));
         if (res != ERROR_SUCCESS) {
-            qWarning("QSettings: Failed to delete key \"%s\": %s",
-                     qPrintable(regList.at(0).key()), qPrintable(qt_error_string(int(res))));
+            qErrnoWarning(int(res), "QSettings: Failed to delete key \"%ls\"",
+                          qUtf16Printable(regList.constFirst().key()));
         }
     }
 
@@ -633,16 +633,16 @@ void QWinSettingsPrivate::remove(const QString &uKey)
             for (const QString &group : childKeys) {
                 LONG res = RegDeleteValue(handle, reinterpret_cast<const wchar_t *>(group.utf16()));
                 if (res != ERROR_SUCCESS) {
-                    qWarning("QSettings: RegDeleteValue failed on subkey \"%s\": %s",
-                             qPrintable(group), qPrintable(qt_error_string(int(res))));
+                    qErrnoWarning(int(res), "QSettings: RegDeleteValue failed on subkey \"%ls\"",
+                                  qUtf16Printable(group));
                 }
             }
         } else {
             res = RegDeleteKey(writeHandle(), reinterpret_cast<const wchar_t *>(rKey.utf16()));
 
             if (res != ERROR_SUCCESS) {
-                qWarning("QSettings: RegDeleteKey failed on key \"%s\": %s",
-                         qPrintable(rKey), qPrintable(qt_error_string(int(res))));
+                qErrnoWarning(int(res), "QSettings: RegDeleteKey failed on key \"%ls\"",
+                              qUtf16Printable(rKey));
             }
         }
         RegCloseKey(handle);
@@ -739,8 +739,8 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
     if (res == ERROR_SUCCESS) {
         deleteWriteHandleOnExit = false;
     } else {
-        qWarning("QSettings: failed to set subkey \"%s\": %s",
-                 qPrintable(rKey), qPrintable(qt_error_string(int(res))));
+        qErrnoWarning(int(res), "QSettings: failed to set subkey \"%ls\"",
+                      qUtf16Printable(rKey));
         setStatus(QSettings::AccessError);
     }
 

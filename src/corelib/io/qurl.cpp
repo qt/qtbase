@@ -3266,10 +3266,10 @@ QUrl QUrl::resolved(const QUrl &relative) const
     removeDotsFromPath(&t.d->path);
 
 #if defined(QURL_DEBUG)
-    qDebug("QUrl(\"%s\").resolved(\"%s\") = \"%s\"",
-           qPrintable(url()),
-           qPrintable(relative.url()),
-           qPrintable(t.url()));
+    qDebug("QUrl(\"%ls\").resolved(\"%ls\") = \"%ls\"",
+           qUtf16Printable(url()),
+           qUtf16Printable(relative.url()),
+           qUtf16Printable(t.url()));
 #endif
     return t;
 }
