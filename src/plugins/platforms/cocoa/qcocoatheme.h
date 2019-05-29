@@ -87,7 +87,7 @@ private:
     QMacNotificationObserver m_systemColorObserver;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
-    QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) *m_appearanceObserver;
+    QMacKeyValueObserver m_appearanceObserver;
 };
 
 QT_END_NAMESPACE
