@@ -161,18 +161,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
     return self;
 }
 
-- (void)scrollBarStyleDidChange:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-
-    // purge destroyed scroll bars:
-    QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
-
-    QEvent event(QEvent::StyleChange);
-    for (const auto &o : QMacStylePrivate::scrollBars)
-        QCoreApplication::sendEvent(o, &event);
-}
-
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
         change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
 {
@@ -2095,11 +2083,18 @@ QMacStyle::QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
+    static QMacNotificationObserver scrollbarStyleObserver(nil,
+        NSPreferredScrollerStyleDidChangeNotification, []() {
+            // Purge destroyed scroll bars
+            QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
+
+            QEvent event(QEvent::StyleChange);
+            for (const auto &o : QMacStylePrivate::scrollBars)
+                QCoreApplication::sendEvent(o, &event);
+    });
+
     d->receiver = [[NotificationReceiver alloc] initWithPrivateStyle:d];
-    [[NSNotificationCenter defaultCenter] addObserver:d->receiver
-                                             selector:@selector(scrollBarStyleDidChange:)
-                                                 name:NSPreferredScrollerStyleDidChangeNotification
-                                               object:nil];
+
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
         [NSApplication.sharedApplication addObserver:d->receiver forKeyPath:@"effectiveAppearance"
@@ -2113,7 +2108,6 @@ QMacStyle::~QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
         [NSApplication.sharedApplication removeObserver:d->receiver forKeyPath:@"effectiveAppearance"];
