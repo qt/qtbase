@@ -70,6 +70,8 @@ qt_feature_module_begin(NO_MODULE
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
 qt_feature_module_end(GlobalConfig OUT_VAR_PREFIX "__GlobalConfig_")
 
+qt_generate_global_config_pri_file()
+
 add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 
 add_library(GlobalConfigPrivate INTERFACE)

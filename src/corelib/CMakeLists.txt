@@ -17,6 +17,7 @@ endif()
 #####################################################################
 
 add_qt_module(Core
+    QMAKE_MODULE_CONFIG moc resources
     SOURCES
         # special case: remove ../3rdparty/harfbuzz
         codecs/qtextcodec_p.h

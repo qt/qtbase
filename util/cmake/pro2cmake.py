@@ -1575,6 +1575,10 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
     if 'no_module_headers' in scope.get('CONFIG'):
         extra.append('NO_MODULE_HEADERS')
 
+    module_config = scope.get("MODULE_CONFIG")
+    if len(module_config):
+        extra.append('QMAKE_MODULE_CONFIG {}'.format(" ".join(module_config)))
+
     write_main_part(cm_fh, module_name[2:], 'Module', 'add_qt_module', scope,
                     extra_lines=extra, indent=indent,
                     known_libraries={}, extra_keys=[])

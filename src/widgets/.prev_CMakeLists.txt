@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(Widgets
+    QMAKE_MODULE_CONFIG uic
     SOURCES
         itemviews/qfileiconprovider.cpp itemviews/qfileiconprovider.h itemviews/qfileiconprovider_p.h
         kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h

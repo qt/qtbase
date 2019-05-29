@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(DBus
+    QMAKE_MODULE_CONFIG dbusadaptors dbusinterfaces
     SOURCES
         dbus_minimal_p.h
         qdbus_symbols.cpp qdbus_symbols_p.h

@@ -281,6 +281,91 @@ function(qt_set_up_developer_build)
     endif()
 endfunction()
 
+# Generates module .pri files for consumption by qmake
+function(qt_generate_module_pri_file target target_path pri_file_name_var)
+    set(flags)
+    set(options)
+    set(multiopts QMAKE_MODULE_CONFIG)
+    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+
+    qt_internal_module_info(module "${target}")
+    qt_path_join(pri_file_name "${target_path}" "qt_lib_${module_lower}.pri")
+    set("${pri_file_name_var}" "${pri_file_name}" PARENT_SCOPE)
+
+    get_target_property(enabled_features "${target}" QT_ENABLED_PUBLIC_FEATURES)
+    get_target_property(disabled_features "${target}" QT_DISABLED_PUBLIC_FEATURES)
+    string (REPLACE ";" " " enabled_features "${enabled_features}")
+    string (REPLACE ";" " " disabled_features "${disabled_features}")
+
+    if(arg_QMAKE_MODULE_CONFIG)
+        string(REPLACE ";" " " module_config "${arg_QMAKE_MODULE_CONFIG}")
+        set(module_config "\nQT.${module_lower}.CONFIG = ${module_config}")
+    else()
+        set(module_config "")
+    endif()
+
+    file(GENERATE
+        OUTPUT "${pri_file_name}"
+        CONTENT
+        "QT.${module_lower}.VERSION = ${PROJECT_VERSION}
+QT.${module_lower}.name = ${module}
+QT.${module_lower}.module = ${module_versioned}
+QT.${module_lower}.libs = $$QT_MODULE_LIB_BASE
+QT.${module_lower}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}
+QT.${module_lower}.frameworks =
+QT.${module_lower}.bins = $$QT_MODULE_BIN_BASE
+QT.${module_lower}.depends =
+QT.${module_lower}.uses =
+QT.${module_lower}.module_config = v2
+QT.${module_lower}.DEFINES = QT_${module_upper}_LIB
+QT.${module_lower}.enabled_features = ${enabled_features}
+QT.${module_lower}.disabled_features = ${disabled_features}${module_config}
+QT_MODULES += ${module_lower}
+"
+    )
+endfunction()
+
+function(qt_generate_global_config_pri_file)
+    qt_path_join(qconfig_pri_target_path ${PROJECT_BINARY_DIR} mkspecs)
+    qt_path_join(qconfig_pri_target_path "${qconfig_pri_target_path}" "qconfig.pri")
+
+    get_target_property(enabled_features GlobalConfig INTERFACE_QT_ENABLED_PUBLIC_FEATURES)
+    get_target_property(disabled_features GlobalConfig INTERFACE_QT_DISABLED_PUBLIC_FEATURES)
+
+    # configure2cmake skips the "static" feature, so emulate it here for qmake support:
+    if(${QT_BUILD_SHARED_LIBS})
+        list(APPEND enabled_features shared)
+        list(APPEND disabled_features static)
+    else()
+        list(APPEND enabled_features static)
+        list(APPEND disabled_features shared)
+    endif()
+
+    # configure2cmake skips the "rpath" feature, so emulate it here for qmake support:
+    if(CMAKE_SKIP_RPATH)
+        list(APPEND disabled_features rpath)
+    elseif(LINUX OR APPLE)
+        list(APPEND enabled_features rpath)
+    endif()
+
+    string (REPLACE ";" " " enabled_features "${enabled_features}")
+    string (REPLACE ";" " " disabled_features "${disabled_features}")
+
+    file(GENERATE
+        OUTPUT "${qconfig_pri_target_path}"
+        CONTENT
+        "QT.global.enabled_features = ${enabled_features}
+QT.global.disabled_features = ${disabled_features}
+QT_VERSION = ${PROJECT_VERSION}
+QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
+QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
+QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
+CONFIG -= link_prl # we do not create prl files right now
+"
+    )
+    qt_install(FILES "${qconfig_pri_target_path}" DESTINATION mkspecs)
+endfunction()
+
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
 # and saves the path in out_var.
 function(qt_path_join out_var)
@@ -845,7 +930,7 @@ function(add_qt_module target)
     qt_parse_all_arguments(arg "add_qt_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT"
         "CONFIG_MODULE_NAME"
-        "${__default_private_args};${__default_public_args}" ${ARGN})
+        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -1054,6 +1139,13 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         TARGETS ${exported_targets}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
         CONFIG_INSTALL_DIR "${config_install_dir}")
+
+    qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} mkspecs/modules)
+    qt_generate_module_pri_file("${target}" "${pri_target_path}" module_pri_file_name
+        QMAKE_MODULE_CONFIG
+            ${arg_QMAKE_MODULE_CONFIG}
+        )
+    qt_install(FILES "${module_pri_file_name}" DESTINATION mkspecs/modules)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
