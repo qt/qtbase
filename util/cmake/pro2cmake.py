@@ -523,7 +523,7 @@ class Scope(object):
     def children(self) -> typing.List['Scope']:
         result = list(self._children)
         for include_scope in self._included_children:
-            result += include_scope._children
+            result += include_scope.children
         return result
 
     def dump(self, *, indent: int = 0) -> None:
@@ -891,6 +891,13 @@ def parseProFile(file: str, *, debug=False):
 
 
 def map_condition(condition: str) -> str:
+    # Some hardcoded cases that are too bothersome to generalize.
+    condition = re.sub(r'^qtConfig\(opengl\(es1\|es2\)\?\)$',
+                       r'QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR QT_FEATURE_opengles3',
+                       condition)
+    condition = re.sub(r'^qtConfig\(opengl\.\*\)$', r'QT_FEATURE_opengl', condition)
+    condition = re.sub(r'^win\*$', r'win', condition)
+
     condition = re.sub(r'\bif\s*\((.*?)\)', r'\1', condition)
     condition = re.sub(r'\bisEmpty\s*\((.*?)\)', r'\1_ISEMPTY', condition)
     condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)',

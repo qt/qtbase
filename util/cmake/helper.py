@@ -132,6 +132,7 @@ _qt_library_map = [
     LibraryMapping('qmldebug', 'Qt5', 'Qt::QmlDebug', extra = ['COMPONENTS', 'QmlDebug']),
     LibraryMapping('qmldevtools', 'Qt5', 'Qt::QmlDevTools', extra = ['COMPONENTS', 'QmlDevTools']),
     LibraryMapping('qml', 'Qt5', 'Qt::Qml', extra = ['COMPONENTS', 'Qml']),
+    LibraryMapping('qmlmodels', 'Qt5', 'Qt::QmlModels', extra = ['COMPONENTS', 'QmlModels']),
     LibraryMapping('qmltest', 'Qt5', 'Qt::QuickTest', extra = ['COMPONENTS', 'QuickTest']),
     LibraryMapping('qtmultimediaquicktools', 'Qt5', 'Qt::MultimediaQuick', extra = ['COMPONENTS', 'MultimediaQuick']),
     LibraryMapping('quick3danimation', 'Qt5', 'Qt::3DQuickAnimation', extra = ['COMPONENTS', '3DQuickAnimation']),
@@ -325,6 +326,7 @@ def map_qt_library(lib: str) -> str:
 
 platform_mapping = {
     'win32': 'WIN32',
+    'win': 'WIN32',
     'unix': 'UNIX',
     'darwin': 'APPLE',
     'linux': 'LINUX',
