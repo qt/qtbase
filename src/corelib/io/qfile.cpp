@@ -61,6 +61,12 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECL_COLD_FUNCTION
+static bool file_already_open(QFile &file, const char *where = nullptr) {
+    qWarning("QFile::%s: File (%ls) already open", where ? where : "open", qUtf16Printable(file.fileName()));
+    return false;
+}
+
 //************* QFilePrivate
 QFilePrivate::QFilePrivate()
 {
@@ -324,8 +330,7 @@ QFile::setFileName(const QString &name)
 {
     Q_D(QFile);
     if (isOpen()) {
-        qWarning("QFile::setFileName: File (%s) is already opened",
-                 qPrintable(fileName()));
+        file_already_open(*this, "setFileName");
         close();
     }
     if(d->fileEngine) { //get a new file engine later
@@ -910,10 +915,8 @@ QFile::copy(const QString &fileName, const QString &newName)
 bool QFile::open(OpenMode mode)
 {
     Q_D(QFile);
-    if (isOpen()) {
-        qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
-        return false;
-    }
+    if (isOpen())
+        return file_already_open(*this);
     // Either Append or NewOnly implies WriteOnly
     if (mode & (Append | NewOnly))
         mode |= WriteOnly;
@@ -982,10 +985,8 @@ bool QFile::open(OpenMode mode)
 bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
 {
     Q_D(QFile);
-    if (isOpen()) {
-        qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
-        return false;
-    }
+    if (isOpen())
+        return file_already_open(*this);
     // Either Append or NewOnly implies WriteOnly
     if (mode & (Append | NewOnly))
         mode |= WriteOnly;
@@ -1041,10 +1042,8 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
 bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
 {
     Q_D(QFile);
-    if (isOpen()) {
-        qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
-        return false;
-    }
+    if (isOpen())
+        return file_already_open(*this);
     // Either Append or NewOnly implies WriteOnly
     if (mode & (Append | NewOnly))
         mode |= WriteOnly;
