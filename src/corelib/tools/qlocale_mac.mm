@@ -489,8 +489,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         } else if (typeId == CFStringGetTypeID()) {
             result = QStringList(QString::fromCFString(languages.as<CFStringRef>()));
         } else {
-            qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%s\"; please report to http://bugreports.qt.io",
-                     qPrintable(QString::fromCFString(CFCopyTypeIDDescription(typeId))));
+            qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%ls\"; please report to http://bugreports.qt.io",
+                     qUtf16Printable(QString::fromCFString(CFCopyTypeIDDescription(typeId))));
         }
         return QVariant(result);
     }

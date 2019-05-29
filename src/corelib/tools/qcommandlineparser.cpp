@@ -132,7 +132,7 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
 {
     const NameHash_t::const_iterator it = nameHash.constFind(optionName);
     if (it == nameHash.cend()) {
-        qWarning("QCommandLineParser: option not defined: \"%s\"", qPrintable(optionName));
+        qWarning("QCommandLineParser: option not defined: \"%ls\"", qUtf16Printable(optionName));
         return QStringList();
     }
     return commandLineOptionList.at(*it).names();
@@ -560,9 +560,9 @@ static void showParserMessage(const QString &message, MessageType type)
 {
 #if defined(Q_OS_WINRT)
     if (type == UsageMessage)
-        qInfo(qPrintable(message));
+        qInfo("%ls", qUtf16Printable(message));
     else
-        qCritical(qPrintable(message));
+        qCritical("%ls", qUtf16Printable(message));
     return;
 #elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (displayMessageBox()) {
@@ -898,7 +898,7 @@ QStringList QCommandLineParser::values(const QString &optionName) const
         return values;
     }
 
-    qWarning("QCommandLineParser: option not defined: \"%s\"", qPrintable(optionName));
+    qWarning("QCommandLineParser: option not defined: \"%ls\"", qUtf16Printable(optionName));
     return QStringList();
 }
 
