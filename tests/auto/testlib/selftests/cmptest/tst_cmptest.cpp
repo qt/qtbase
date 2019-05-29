@@ -466,6 +466,8 @@ void tst_Cmptest::compareQPixmaps_data()
     const QPixmap pixmap1(xpmPixmapData1);
     const QPixmap pixmap2(xpmPixmapData2);
     const QPixmap pixmap3(xpmPixmapData3);
+    QPixmap pixmapWrongDpr = pixmap1.scaled(2, 2);
+    pixmapWrongDpr.setDevicePixelRatio(2);
 
     QTest::newRow("both null") << QPixmap() << QPixmap();
     QTest::newRow("one null") << QPixmap() << pixmap1;
@@ -473,6 +475,7 @@ void tst_Cmptest::compareQPixmaps_data()
     QTest::newRow("equal") << pixmap1 << pixmap1;
     QTest::newRow("different size") << pixmap1 << pixmap3;
     QTest::newRow("different pixels") << pixmap1 << pixmap2;
+    QTest::newRow("different dpr") << pixmap1 << pixmapWrongDpr;
 }
 
 void tst_Cmptest::compareQPixmaps()
@@ -492,6 +495,8 @@ void tst_Cmptest::compareQImages_data()
     const QImage image2(QPixmap(xpmPixmapData2).toImage());
     const QImage image1Indexed = image1.convertToFormat(QImage::Format_Indexed8);
     const QImage image3(QPixmap(xpmPixmapData3).toImage());
+    QImage imageWrongDpr = image1.scaled(2, 2);
+    imageWrongDpr.setDevicePixelRatio(2);
 
     QTest::newRow("both null") << QImage() << QImage();
     QTest::newRow("one null") << QImage() << image1;
@@ -500,6 +505,7 @@ void tst_Cmptest::compareQImages_data()
     QTest::newRow("different size") << image1 << image3;
     QTest::newRow("different format") << image1 << image1Indexed;
     QTest::newRow("different pixels") << image1 << image2;
+    QTest::newRow("different dpr") << image1 << imageWrongDpr;
 }
 
 void tst_Cmptest::compareQImages()
