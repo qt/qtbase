@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH
 list(APPEND CMAKE_PREFIX_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
-find_package(QtBuildInternals)
+find_package(QtBuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
 
 qt_build_repo_begin(SKIP_CMAKE_MODULE_PATH_ADDITION)
 
