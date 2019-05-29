@@ -673,7 +673,7 @@ void QMimeXMLProvider::load(const QString &fileName)
 {
     QString errorMessage;
     if (!load(fileName, &errorMessage))
-        qWarning("QMimeDatabase: Error loading %s\n%s", qPrintable(fileName), qPrintable(errorMessage));
+        qWarning("QMimeDatabase: Error loading %ls\n%ls", qUtf16Printable(fileName), qUtf16Printable(errorMessage));
 }
 
 bool QMimeXMLProvider::load(const QString &fileName, QString *errorMessage)

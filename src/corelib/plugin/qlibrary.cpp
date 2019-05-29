@@ -241,8 +241,8 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         if (lib)
             lib->errorString = file.errorString();
         if (qt_debug_component()) {
-            qWarning("%s: %s", QFile::encodeName(library).constData(),
-                qPrintable(QSystemError::stdString()));
+            qWarning("%s: %ls", QFile::encodeName(library).constData(),
+                     qUtf16Printable(QSystemError::stdString()));
         }
         return false;
     }
@@ -275,7 +275,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
     if (r == QElfParser::Corrupt || r == QElfParser::NotElf) {
             if (lib && qt_debug_component()) {
-                qWarning("QElfParser: %s",qPrintable(lib->errorString));
+                qWarning("QElfParser: %ls", qUtf16Printable(lib->errorString));
             }
             return false;
     } else if (r == QElfParser::QtMetaDataSection) {
@@ -292,7 +292,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         int r = QMachOParser::parse(filedata, fdlen, library, &errorString, &pos, &fdlen);
         if (r == QMachOParser::NotSuitable) {
             if (qt_debug_component())
-                qWarning("QMachOParser: %s", qPrintable(errorString));
+                qWarning("QMachOParser: %ls", qUtf16Printable(errorString));
             if (lib)
                 lib->errorString = errorString;
             return false;
@@ -319,8 +319,8 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         QString errMsg;
         QJsonDocument doc = qJsonFromRawLibraryMetaData(data, fdlen, &errMsg);
         if (doc.isNull()) {
-            qWarning("Found invalid metadata in lib %s: %s",
-                     qPrintable(library), qPrintable(errMsg));
+            qWarning("Found invalid metadata in lib %ls: %ls",
+                     qUtf16Printable(library), qUtf16Printable(errMsg));
         } else {
             lib->metaData = doc.object();
             if (qt_debug_component())
@@ -356,11 +356,11 @@ static void installCoverageTool(QLibraryPrivate *libPrivate)
 
     if (qt_debug_component()) {
         if (ret >= 0) {
-            qDebug("coverage data for %s registered",
-                     qPrintable(libPrivate->fileName));
+            qDebug("coverage data for %ls registered",
+                   qUtf16Printable(libPrivate->fileName));
         } else {
-            qWarning("could not register %s: error %d; coverage data may be incomplete",
-                     qPrintable(libPrivate->fileName),
+            qWarning("could not register %ls: error %d; coverage data may be incomplete",
+                     qUtf16Printable(libPrivate->fileName),
                      ret);
         }
     }

@@ -342,7 +342,7 @@ QWindowsMessageWindowClassContext::QWindowsMessageWindowClassContext()
     wc.lpszClassName = className;
     atom = RegisterClass(&wc);
     if (!atom) {
-        qErrnoWarning("%s RegisterClass() failed", qPrintable(qClassName));
+        qErrnoWarning("%ls RegisterClass() failed", qUtf16Printable(qClassName));
         delete [] className;
         className = 0;
     }
@@ -504,8 +504,8 @@ void QEventDispatcherWin32::installMessageHook()
     d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
     if (Q_UNLIKELY(!d->getMessageHook)) {
         int errorCode = GetLastError();
-        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %s",
-               errorCode, qPrintable(qt_error_string(errorCode)));
+        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %ls",
+               errorCode, qUtf16Printable(qt_error_string(errorCode)));
     }
 }
 

@@ -1526,8 +1526,8 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
         addAncestorStatesToEnter(currentErrorState, rootState(), pendingErrorStates, pendingErrorStatesForDefaultEntry);
         pendingErrorStates -= configuration;
     } else {
-        qWarning("Unrecoverable error detected in running state machine: %s",
-                 qPrintable(errorString));
+        qWarning("Unrecoverable error detected in running state machine: %ls",
+                 qUtf16Printable(errorString));
         q->stop();
     }
 }
