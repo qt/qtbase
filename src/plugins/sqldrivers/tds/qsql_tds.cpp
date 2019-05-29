@@ -813,7 +813,7 @@ QString QTDSDriver::formatValue(const QSqlField &field,
         r = QLatin1String("NULL");
     else if (field.type() == QVariant::DateTime) {
         if (field.value().toDateTime().isValid()){
-            r = field.value().toDateTime().toString(QLatin1String("yyyyMMdd hh:mm:ss"));
+            r = field.value().toDateTime().toString(QStringViewLiteral("yyyyMMdd hh:mm:ss"));
             r.prepend(QLatin1String("'"));
             r.append(QLatin1String("'"));
         } else
