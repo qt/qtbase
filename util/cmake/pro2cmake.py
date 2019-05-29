@@ -591,10 +591,19 @@ class Scope(object):
         return result
 
     def get(self, key: str, *, ignore_includes: bool = False, inherrit: bool = False) -> typing.List[str]:
+
+        is_same_path = self.currentdir == self.basedir
+
         if key == 'PWD':
-            return ['${CMAKE_CURRENT_SOURCE_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
+            if is_same_path:
+                return ['${CMAKE_CURRENT_SOURCE_DIR}']
+            else:
+                return ['${CMAKE_CURRENT_SOURCE_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
         if key == 'OUT_PWD':
-            return ['${CMAKE_CURRENT_BUILD_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
+            if is_same_path:
+                return ['${CMAKE_CURRENT_BUILD_DIR}']
+            else:
+                return ['${CMAKE_CURRENT_BUILD_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
 
         return self._evalOps(key, None, [], inherrit=inherrit)
 
