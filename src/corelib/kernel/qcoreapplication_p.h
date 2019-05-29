@@ -84,6 +84,11 @@ public:
     };
 
     QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
+
+    // If not inheriting from QObjectPrivate: force this class to be polymorphic
+#ifdef QT_NO_QOBJECT
+    virtual
+#endif
     ~QCoreApplicationPrivate();
 
     void init();
