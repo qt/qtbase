@@ -552,9 +552,12 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
     QWindow *window2 = screen()->compositor()->windowAt(globalPoint, 5);
-    if (window2 == nullptr)
-        return;
-    lastWindow = window2;
+
+    if (window2 == nullptr) {
+        window2 = lastWindow;
+    } else {
+        lastWindow = window2;
+    }
 
     QPoint localPoint = window2->mapFromGlobal(globalPoint);
     bool interior = window2->geometry().contains(globalPoint);
@@ -616,7 +619,7 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
             }
 
             if (resizeMode != QWasmWindow::ResizeNone && !(htmlWindow->m_windowState & Qt::WindowFullScreen)) {
-                QPoint delta = QPoint(mouseEvent->canvasX, mouseEvent->canvasY) - resizePoint;
+                QPoint delta = QPoint(mouseEvent->targetX, mouseEvent->targetY) - resizePoint;
                 resizeWindow(draggedWindow, resizeMode, resizeStartRect, delta);
             }
         }
