@@ -2413,7 +2413,7 @@ static bool unplugGroup(QMainWindowLayout *layout, QLayoutItem **item,
  */
 QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 {
-#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
     auto *groupWindow = qobject_cast<const QDockWidgetGroupWindow *>(widget->parentWidget());
     if (!widget->isWindow() && groupWindow) {
         if (group && groupWindow->tabLayoutInfo()) {
@@ -2525,10 +2525,10 @@ void QMainWindowLayout::updateGapIndicator()
 #endif // QT_CONFIG(rubberband)
 }
 
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
 {
     QTabBar::Shape result = QTabBar::RoundedSouth;
-#if QT_CONFIG(tabwidget)
     if (qobject_cast<QDockWidget *>(w)) {
         switch (static_cast<QDockWidgetPrivate *>(qt_widget_private(w))->tabPosition) {
         case QTabWidget::North:
@@ -2545,9 +2545,9 @@ static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
             break;
         }
     }
-#endif // tabwidget
     return result;
 }
+#endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 
 void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
 {
@@ -2591,6 +2591,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
             if (!w->geometry().contains(mousePos))
                 continue;
 
+#if QT_CONFIG(tabwidget)
             if (auto dropTo = qobject_cast<QDockWidget *>(w)) {
                 // dropping to a normal widget, we mutate it in a QDockWidgetGroupWindow with two
                 // tabs
@@ -2612,6 +2613,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 w = floatingTabs;
                 widget->raise(); // raise, as our newly created drop target is now on top
             }
+#endif
             Q_ASSERT(qobject_cast<QDockWidgetGroupWindow *>(w));
             auto group = static_cast<QDockWidgetGroupWindow *>(w);
             if (group->hover(widgetItem, group->mapFromGlobal(mousePos))) {

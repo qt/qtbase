@@ -233,6 +233,7 @@ static QLinearGradient titlebarGradientInactive()
     return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
 }
 
+#if QT_CONFIG(tabwidget)
 static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, CGContextRef ctx)
 {
     Q_ASSERT(option);
@@ -252,6 +253,7 @@ static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, 
             CGContextClipToRects(ctx, &cgRects[0], size_t(cgRects.size()));
     }
 }
+#endif
 
 static const QColor titlebarSeparatorLineActive(111, 111, 111);
 static const QColor titlebarSeparatorLineInactive(131, 131, 131);
@@ -2949,7 +2951,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 p->restore();
                 return;
             }
-
+#if QT_CONFIG(tabwidget)
             QRegion region(tbb->rect);
             region -= tbb->tabBarRect;
             p->save();
@@ -2973,6 +2975,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             }
             proxy()->drawPrimitive(PE_FrameTabWidget, &twf, p, w);
             p->restore();
+#endif
         }
         break;
 #endif
@@ -3019,8 +3022,10 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             needTranslation = true;
         }
         d->drawNSViewInRect(box, adjustedRect, p, ^(CGContextRef ctx, const CGRect &rect) {
+#if QT_CONFIG(tabwidget)
             if (QTabWidget *tabWidget = qobject_cast<QTabWidget *>(opt->styleObject))
                 clipTabBarFrame(opt, this, ctx);
+#endif
             CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
             CGContextScaleCTM(ctx, 1, -1);
             if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave
