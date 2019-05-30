@@ -267,9 +267,11 @@ QDockWidgetLayout::~QDockWidgetLayout()
 bool QDockWidgetLayout::nativeWindowDeco() const
 {
     bool floating = parentWidget()->isWindow();
+#if QT_CONFIG(tabbar)
     if (auto groupWindow =
             qobject_cast<const QDockWidgetGroupWindow *>(parentWidget()->parentWidget()))
         floating = floating || groupWindow->tabLayoutInfo();
+#endif
     return nativeWindowDeco(floating);
 }
 
@@ -1556,8 +1558,10 @@ bool QDockWidget::event(QEvent *event)
             const QObjectList &siblings = win->children();
             onTop = siblings.count() > 0 && siblings.last() == (QObject*)this;
         }
+#if QT_CONFIG(tabbar)
         if (!isFloating() && layout != 0 && onTop)
             layout->raise(this);
+#endif
         break;
     }
     case QEvent::WindowActivate:
