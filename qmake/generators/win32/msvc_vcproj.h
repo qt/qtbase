@@ -73,6 +73,8 @@ protected:
     bool doDepends() const override { return false; } // Never necessary
     using Win32MakefileGenerator::replaceExtraCompilerVariables;
     QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &, ReplaceFor) override;
+    QString extraCompilerName(const ProString &extraCompiler, const QStringList &inputs,
+                              const QStringList &outputs);
     bool supportsMetaBuild() override { return true; }
     bool supportsMergedBuilds() override { return true; }
     bool mergeBuildProject(MakefileGenerator *other) override;
