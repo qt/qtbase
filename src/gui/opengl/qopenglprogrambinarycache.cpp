@@ -398,10 +398,16 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
 
     writeUInt(&blobFormatPtr, blobFormat);
 
+#if QT_CONFIG(temporaryfile)
     QSaveFile f(cacheFileName(cacheKey));
     if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         f.write(blob);
         if (!f.commit())
+#else
+    QFile f(cacheFileName(cacheKey));
+    if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        if (f.write(blob) < blob.length())
+#endif
             qCDebug(DBG_SHADER_CACHE, "Failed to write %s to shader cache", qPrintable(f.fileName()));
     } else {
         qCDebug(DBG_SHADER_CACHE, "Failed to create %s in shader cache", qPrintable(f.fileName()));
