@@ -30,7 +30,6 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
-#include <QtCore/QMimeDatabase>
 
 class tst_QResourceEngine: public QObject
 {
@@ -119,24 +118,20 @@ void tst_QResourceEngine::checkStructure_data()
 
     QStringList rootContents;
     rootContents << QLatin1String("aliasdir")
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+                 << QLatin1String("android_testdata")
+#endif
                  << QLatin1String("otherdir")
-                 << QLatin1String("qt-project.org")
                  << QLatin1String("runtime_resource")
                  << QLatin1String("searchpath1")
                  << QLatin1String("searchpath2")
                  << QLatin1String("secondary_root")
                  << QLatin1String("staticplugin")
                  << QLatin1String("test")
-                 << QLatin1String("withoutslashes");
-
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    rootContents.insert(1, QLatin1String("android_testdata"));
-#endif
-
 #if defined(BUILTIN_TESTDATA)
-    rootContents.insert(9, QLatin1String("testqrc"));
+                 << QLatin1String("testqrc")
 #endif
-
+                 << QLatin1String("withoutslashes");
 
     QTest::newRow("root dir")          << QString(":/")
                                        << QByteArray()
@@ -351,11 +346,6 @@ void tst_QResourceEngine::checkStructure()
     QFETCH(QStringList, containedDirs);
     QFETCH(QLocale, locale);
     QFETCH(qlonglong, contentsSize);
-
-    // We rely on the existence of the root "qt-project.org" in resources. For
-    // static builds on MSVC these resources are only added if they are used.
-    QMimeDatabase db;
-    Q_UNUSED(db);
 
     bool directory = (containedDirs.size() + containedFiles.size() > 0);
     QLocale::setDefault(locale);
