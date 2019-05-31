@@ -21,10 +21,6 @@ src_tools_rcc.subdir = tools/rcc
 src_tools_rcc.target = sub-rcc
 src_tools_rcc.depends = src_tools_bootstrap
 
-src_tools_qfloat16_tables.subdir = tools/qfloat16-tables
-src_tools_qfloat16_tables.target = sub-qfloat16-tables
-src_tools_qfloat16_tables.depends = src_tools_bootstrap
-
 src_tools_qlalr.subdir = tools/qlalr
 src_tools_qlalr.target = sub-qlalr
 force_bootstrap: src_tools_qlalr.depends = src_tools_bootstrap
@@ -72,7 +68,7 @@ src_winmain.depends = sub-corelib  # just for the module .pri file
 
 src_corelib.subdir = $$PWD/corelib
 src_corelib.target = sub-corelib
-src_corelib.depends = src_tools_moc src_tools_rcc src_tools_qfloat16_tables
+src_corelib.depends = src_tools_moc src_tools_rcc
 
 src_xml.subdir = $$PWD/xml
 src_xml.target = sub-xml
@@ -159,12 +155,12 @@ src_android.subdir = $$PWD/android
         src_3rdparty_freetype.depends += src_corelib
     }
 }
-SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_qfloat16_tables
+SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
 qtConfig(regularexpression):pcre2 {
     SUBDIRS += src_3rdparty_pcre2
     src_corelib.depends += src_3rdparty_pcre2
 }
-TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr src_tools_qfloat16_tables
+TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 !force_bootstrap:if(qtConfig(lttng)|qtConfig(etw)) {
     SUBDIRS += src_tools_tracegen
     src_corelib.depends += src_tools_tracegen
