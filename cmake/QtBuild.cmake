@@ -341,12 +341,14 @@ function(qt_generate_global_config_pri_file)
     get_target_property(disabled_features GlobalConfig INTERFACE_QT_DISABLED_PUBLIC_FEATURES)
 
     # configure2cmake skips the "static" feature, so emulate it here for qmake support:
-    if(${QT_BUILD_SHARED_LIBS})
+    if(QT_BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         list(APPEND enabled_features shared)
         list(APPEND disabled_features static)
+        set(qt_build_config_type "shared")
     else()
         list(APPEND enabled_features static)
         list(APPEND disabled_features shared)
+        set(qt_build_config_type "static")
     endif()
 
     # configure2cmake skips the "rpath" feature, so emulate it here for qmake support:
@@ -358,6 +360,16 @@ function(qt_generate_global_config_pri_file)
 
     string (REPLACE ";" " " enabled_features "${enabled_features}")
     string (REPLACE ";" " " disabled_features "${disabled_features}")
+
+    # Add some required CONFIG entries.
+    set(config_entries "")
+    if(CMAKE_BUILD_TYPE STREQUAL Debug)
+        list(APPEND config_entries "debug")
+    elseif(CMAKE_BUILD_TYPE STREQUAL Release)
+        list(APPEND config_entries "release")
+    endif()
+    list(APPEND config_entries "${qt_build_config_type}")
+    string (REPLACE ";" " " config_entries "${config_entries}")
 
     file(GENERATE
         OUTPUT "${qconfig_pri_target_path}"
@@ -371,6 +383,7 @@ QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
 QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
 QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
 CONFIG -= link_prl # we do not create prl files right now
+CONFIG += ${config_entries}
 "
     )
     qt_install(FILES "${qconfig_pri_target_path}" DESTINATION mkspecs)
