@@ -1200,13 +1200,18 @@ jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
     const uint qtInputMethodHints = query->value(Qt::ImHints).toUInt();
     const int localPos = query->value(Qt::ImCursorPosition).toInt();
 
-    bool atWordBoundary = (localPos == 0);
+    bool atWordBoundary =
+            localPos == 0
+            && (!focusObjectIsComposing() || m_composingCursor == m_composingTextStart);
+
     if (!atWordBoundary) {
         QString surroundingText = query->value(Qt::ImSurroundingText).toString();
         surroundingText.truncate(localPos);
+        if (focusObjectIsComposing())
+            surroundingText += m_composingText.leftRef(m_composingCursor - m_composingTextStart);
         // Add a character to see if it is at the end of the sentence or not
         QTextBoundaryFinder finder(QTextBoundaryFinder::Sentence, surroundingText + QLatin1Char('A'));
-        finder.setPosition(localPos);
+        finder.setPosition(surroundingText.length());
         if (finder.isAtBoundary())
             atWordBoundary = finder.isAtBoundary();
     }
