@@ -31,7 +31,7 @@
 #include <QtTest/qtesttouch.h>
 
 #include <qevent.h>
-#include <qtouchdevice.h>
+#include <qpointingdevice.h>
 #include <qwidget.h>
 #include <qlayout.h>
 #include <qgesture.h>
@@ -1821,7 +1821,7 @@ void tst_Gestures::deleteMacPanGestureRecognizerTargetWidget()
     window.show();
 
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    QTouchDevice *device = QTest::createTouchDevice();
+    QPointingDevice *device = QTest::createTouchDevice();
     // QMacOSPenGestureRecognizer will start a timer on a touch press event
     QTest::touchEvent(&window, device).press(1, QPoint(100, 100), &window);
     delete view;
@@ -2327,7 +2327,7 @@ void tst_Gestures::bug_13501_gesture_not_accepted()
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     //QTest::mousePress(&ignoreEvent, Qt::LeftButton);
-    QTouchDevice *device = QTest::createTouchDevice();
+    QPointingDevice *device = QTest::createTouchDevice();
     QTest::touchEvent(&w, device).press(0, QPoint(10, 10), &w);
 }
 

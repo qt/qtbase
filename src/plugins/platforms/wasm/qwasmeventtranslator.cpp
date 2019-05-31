@@ -329,10 +329,10 @@ QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
     , pressedButtons(Qt::NoButton)
     , resizeMode(QWasmWindow::ResizeNone)
 {
-    touchDevice = new QTouchDevice;
-    touchDevice->setType(QTouchDevice::TouchScreen);
-    touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
-    QWindowSystemInterface::registerTouchDevice(touchDevice);
+    touchDevice = new QPointingDevice;
+    touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
+    touchDevice->setCapabilities(QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::NormalizedPosition);
+    QWindowSystemInterface::registerInputDevice(touchDevice);
 
     initEventHandlers();
 }

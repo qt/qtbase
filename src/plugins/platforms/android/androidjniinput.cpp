@@ -45,7 +45,6 @@
 #include "qandroidplatformintegration.h"
 
 #include <qpa/qwindowsysteminterface.h>
-#include <QTouchDevice>
 #include <QTouchEvent>
 #include <QPointer>
 
@@ -276,15 +275,15 @@ namespace QtAndroidInput
         if (!platformIntegration)
             return;
 
-        QTouchDevice *touchDevice = platformIntegration->touchDevice();
+        QPointingDevice *touchDevice = platformIntegration->touchDevice();
         if (touchDevice == 0) {
-            touchDevice = new QTouchDevice;
-            touchDevice->setType(QTouchDevice::TouchScreen);
-            touchDevice->setCapabilities(QTouchDevice::Position
-                                         | QTouchDevice::Area
-                                         | QTouchDevice::Pressure
-                                         | QTouchDevice::NormalizedPosition);
-            QWindowSystemInterface::registerTouchDevice(touchDevice);
+            touchDevice = new QPointingDevice; // TODO fill out the constructor args
+            touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
+            touchDevice->setCapabilities(QPointingDevice::Capability::Position
+                                         | QPointingDevice::Capability::Area
+                                         | QPointingDevice::Capability::Pressure
+                                         | QPointingDevice::Capability::NormalizedPosition);
+            QWindowSystemInterface::registerInputDevice(touchDevice);
             platformIntegration->setTouchDevice(touchDevice);
         }
 
@@ -344,7 +343,7 @@ namespace QtAndroidInput
 #endif
 
         QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
-            localPos, globalPosF, QTabletEvent::Stylus, pointerType,
+            localPos, globalPosF, int(QInputDevice::DeviceType::Stylus), pointerType,
             buttons, pressure, 0, 0, 0., 0., 0, deviceId, Qt::NoModifier);
 #endif // QT_CONFIG(tabletevent)
     }

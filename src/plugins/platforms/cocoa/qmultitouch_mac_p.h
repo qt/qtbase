@@ -55,7 +55,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qhash.h>
 #include <QtCore>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -69,10 +69,10 @@ class QCocoaTouch
     public:
         static QList<QWindowSystemInterface::TouchPoint> getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch);
         static void setMouseInDraggingState(bool inDraggingState);
-        static QTouchDevice *getTouchDevice(QTouchDevice::DeviceType type, quint64 id);
+        static QPointingDevice *getTouchDevice(QInputDevice::DeviceType type, quint64 id);
 
     private:
-        static QHash<quint64, QTouchDevice*> _touchDevices;
+        static QHash<quint64, QPointingDevice*> _touchDevices;
         static QHash<qint64, QCocoaTouch*> _currentTouches;
         static QPointF _screenReferencePos;
         static QPointF _trackpadReferencePos;

@@ -44,6 +44,7 @@
 #include <xcb/randr.h>
 
 #include <QtCore/QTimer>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qxcbexport.h"
 #include <QHash>
@@ -263,10 +264,11 @@ private:
     inline bool timeGreaterThan(xcb_timestamp_t a, xcb_timestamp_t b) const
     { return static_cast<int32_t>(a - b) > 0 || b == XCB_CURRENT_TIME; }
 
-    void xi2SetupDevice(void *info, bool removeExisting = true);
+    void xi2SetupSlavePointerDevice(void *info, bool removeExisting = true, QPointingDevice *master = nullptr);
     void xi2SetupDevices();
+    // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
     struct TouchDeviceData {
-        QTouchDevice *qtTouchDevice = nullptr;
+        QPointingDevice *qtTouchDevice = nullptr;
         QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
         QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
         struct ValuatorClassInfo {
@@ -290,10 +292,12 @@ private:
     void xi2HandleDeviceChangedEvent(void *event);
     void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
 #if QT_CONFIG(tabletevent)
+    // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
     struct TabletData {
         int deviceId = 0;
-        QTabletEvent::PointerType pointerType = QTabletEvent::UnknownPointer;
-        QTabletEvent::TabletDevice tool = QTabletEvent::Stylus;
+        QString name;
+        QPointingDevice::PointerType pointerType = QPointingDevice::PointerType::Unknown;
+        QInputDevice::DeviceType tool = QInputDevice::DeviceType::Stylus;
         Qt::MouseButtons buttons;
         qint64 serialId = 0;
         bool inProximity = false;
@@ -312,6 +316,7 @@ private:
     QVector<TabletData> m_tabletData;
     TabletData *tabletDataForDevice(int id);
 #endif // QT_CONFIG(tabletevent)
+    // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
     struct ScrollingDevice {
         int deviceId = 0;
         int verticalIndex = 0;

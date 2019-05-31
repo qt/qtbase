@@ -87,7 +87,7 @@ public:
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QPlatformNativeInterface *nativeInterface() const override;
 
-    QTouchDevice *touchDevice();
+    QPointingDevice *touchDevice();
 #ifndef QT_NO_ACCESSIBILITY
     QPlatformAccessibility *accessibility() const override;
 #endif
@@ -110,7 +110,7 @@ private:
     QPlatformClipboard *m_clipboard;
 #endif
     QPlatformInputContext *m_inputContext;
-    QTouchDevice *m_touchDevice;
+    QPointingDevice *m_touchDevice;
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
     QFactoryLoader *m_optionalPlugins;

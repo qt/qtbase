@@ -49,7 +49,7 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qwindow_p.h>
 #include <private/qcoregraphics_p.h>
 #include <qpa/qwindowsysteminterface.h>

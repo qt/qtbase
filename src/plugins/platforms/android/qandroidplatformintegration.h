@@ -128,8 +128,8 @@ public:
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
 
-    QTouchDevice *touchDevice() const { return m_touchDevice; }
-    void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
+    QPointingDevice *touchDevice() const { return m_touchDevice; }
+    void setTouchDevice(QPointingDevice *touchDevice) { m_touchDevice = touchDevice; }
 
     void flushPendingUpdates();
 
@@ -139,7 +139,7 @@ public:
 
 private:
     EGLDisplay m_eglDisplay;
-    QTouchDevice *m_touchDevice;
+    QPointingDevice *m_touchDevice;
 
     QAndroidPlatformScreen *m_primaryScreen;
 

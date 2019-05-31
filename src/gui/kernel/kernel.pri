@@ -45,6 +45,8 @@ HEADERS += \
         kernel/qcursor_p.h \
         kernel/qevent.h \
         kernel/qevent_p.h \
+        kernel/qinputdevice.h \
+        kernel/qinputdevice_p.h \
         kernel/qinputmethod.h \
         kernel/qinputmethod_p.h \
         kernel/qinternalmimedata_p.h \
@@ -56,8 +58,8 @@ HEADERS += \
         kernel/qscreen.h \
         kernel/qscreen_p.h \
         kernel/qstylehints.h \
-        kernel/qtouchdevice.h \
-        kernel/qtouchdevice_p.h \
+        kernel/qpointingdevice.h \
+        kernel/qpointingdevice_p.h \
         kernel/qplatformsharedgraphicscache.h \
         kernel/qplatformdialoghelper.h \
         kernel/qplatformservices.h \
@@ -103,6 +105,7 @@ SOURCES += \
         kernel/qclipboard.cpp \
         kernel/qcursor.cpp \
         kernel/qevent.cpp \
+        kernel/qinputdevice.cpp \
         kernel/qinputmethod.cpp \
         kernel/qinternalmimedata.cpp \
         kernel/qkeymapper.cpp \
@@ -110,7 +113,7 @@ SOURCES += \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \
         kernel/qstylehints.cpp \
-        kernel/qtouchdevice.cpp \
+        kernel/qpointingdevice.cpp \
         kernel/qplatformsharedgraphicscache.cpp \
         kernel/qplatformdialoghelper.cpp \
         kernel/qplatformservices.cpp \

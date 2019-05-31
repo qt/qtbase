@@ -51,17 +51,18 @@
 QT_BEGIN_NAMESPACE
 
 class QWindow;
-class QTouchDevice;
+class QPointingDevice;
 
 class QWindowsPointerHandler
 {
     Q_DISABLE_COPY_MOVE(QWindowsPointerHandler)
 public:
     QWindowsPointerHandler() = default;
+    ~QWindowsPointerHandler();
     bool translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
     bool translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
-    QTouchDevice *touchDevice() const { return m_touchDevice; }
-    QTouchDevice *ensureTouchDevice();
+    QPointingDevice *touchDevice() const { return m_touchDevice; }
+    QPointingDevice *ensureTouchDevice();
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
     void clearEvents();
@@ -73,7 +74,7 @@ private:
     void handleCaptureRelease(QWindow *window, QWindow *currentWindowUnderPointer, HWND hwnd, QEvent::Type eventType, Qt::MouseButtons mouseButtons);
     void handleEnterLeave(QWindow *window, QWindow *currentWindowUnderPointer, QPoint globalPos);
 
-    QTouchDevice *m_touchDevice = nullptr;
+    QPointingDevice *m_touchDevice = nullptr;
     QHash<int, QPointF> m_lastTouchPositions;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QPointer<QWindow> m_windowUnderPointer;
@@ -83,6 +84,7 @@ private:
     QEvent::Type m_lastEventType = QEvent::None;
     Qt::MouseButton m_lastEventButton = Qt::NoButton;
     DWORD m_pointerType = 0;
+    static qint64 m_nextInputDeviceId; // workaround until we know how to get system device IDs
 };
 
 QT_END_NAMESPACE

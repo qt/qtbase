@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTOUCHDEVICE_P_H
-#define QTOUCHDEVICE_P_H
+#ifndef QINPUTDEVICE_P_H
+#define QINPUTDEVICE_P_H
 
 //
 //  W A R N I N G
@@ -52,36 +52,52 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qinputdevice.h>
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-
-class QTouchDevicePrivate
+class Q_GUI_EXPORT QInputDevicePrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QInputDevice)
 public:
-    QTouchDevicePrivate()
-        : type(QTouchDevice::TouchScreen),
-          caps(QTouchDevice::Position),
-          maxTouchPoints(1)
+    QInputDevicePrivate(const QString &name, qint64 id, QInputDevice::DeviceType type,
+                        QInputDevice::Capabilities caps = QInputDevice::Capability::None,
+                        const QString &seatName = QString())
+      : name(name), seatName(seatName), id(id), capabilities(caps), deviceType(type)
     {
-        static quint8 nextId = 2;   // device 0 is not used, device 1 is for mouse device
-        id = nextId++;
+        // if the platform doesn't provide device IDs, make one up,
+        // but try to avoid clashing with OS-provided 32-bit IDs
+        static qint64 nextId = qint64(1) << 33;
+        if (!id)
+            id = nextId++;
     }
 
-    QTouchDevice::DeviceType type;
-    QTouchDevice::Capabilities caps;
     QString name;
-    int maxTouchPoints;
-    quint8 id;
+    QString seatName;
+    QString busId;
+    void *extra = nullptr;      // The QPA plugin can store arbitrary device-specific data here
+    void *qqExtra = nullptr;    // Qt Quick can store arbitrary device-specific data here
+    qint64 id = 0;
+    qint32 capabilities = static_cast<qint32>(QInputDevice::Capability::None);
+    QInputDevice::DeviceType deviceType = QInputDevice::DeviceType::Unknown;
 
-    static void registerDevice(const QTouchDevice *dev);
-    static void unregisterDevice(const QTouchDevice *dev);
-    static bool isRegistered(const QTouchDevice *dev);
-    static const QTouchDevice *deviceById(quint8 id);
-    static QTouchDevicePrivate *get(QTouchDevice *q) { return q->d; }
+    static void registerDevice(const QInputDevice *dev);
+    static void unregisterDevice(const QInputDevice *dev);
+    static bool isRegistered(const QInputDevice *dev);
+    static const QInputDevice *fromId(qint64 id);  // window system ID (e.g. xinput id), not QPointingDeviceUniqueId
+
+    inline static QInputDevicePrivate *get(QInputDevice *q)
+    {
+        return static_cast<QInputDevicePrivate *>(QObjectPrivate::get(q));
+    }
+
+    inline static const QInputDevicePrivate *get(const QInputDevice *q)
+    {
+        return static_cast<const QInputDevicePrivate *>(QObjectPrivate::get(q));
+    }
 };
 
 QT_END_NAMESPACE
 
-#endif // QTOUCHDEVICE_P_H
+#endif // QINPUTDEVICE_P_H

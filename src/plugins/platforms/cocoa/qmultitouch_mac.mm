@@ -42,14 +42,14 @@
 #include "qmultitouch_mac_p.h"
 #include "qcocoahelpers.h"
 #include "qcocoascreen.h"
-#include <private/qtouchdevice_p.h>
+#include <private/qpointingdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcInputDevices, "qt.qpa.input.devices")
 
 QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
-QHash<quint64, QTouchDevice*> QCocoaTouch::_touchDevices;
+QHash<quint64, QPointingDevice*> QCocoaTouch::_touchDevices;
 QPointF QCocoaTouch::_screenReferencePos;
 QPointF QCocoaTouch::_trackpadReferencePos;
 int QCocoaTouch::_idAssignmentCount = 0;
@@ -219,17 +219,18 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
     return touchPoints.values();
 }
 
-QTouchDevice *QCocoaTouch::getTouchDevice(QTouchDevice::DeviceType type, quint64 id)
+QPointingDevice *QCocoaTouch::getTouchDevice(QInputDevice::DeviceType type, quint64 id)
 {
-    QTouchDevice *ret = _touchDevices.value(id);
+    QPointingDevice *ret = _touchDevices.value(id);
     if (!ret) {
-        ret = new QTouchDevice;
-        ret->setType(type);
-        ret->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition | QTouchDevice::MouseEmulation);
-        QWindowSystemInterface::registerTouchDevice(ret);
+        ret = new QPointingDevice(type == QInputDevice::DeviceType::TouchScreen ? QLatin1String("touchscreen") : QLatin1String("trackpad"),
+                                  id, type, QPointingDevice::PointerType::Finger,
+                                  QInputDevice::Capability::Position |
+                                  QInputDevice::Capability::NormalizedPosition |
+                                  QInputDevice::Capability::MouseEmulation,
+                                  10, 0);
+        QWindowSystemInterface::registerInputDevice(ret);
         _touchDevices.insert(id, ret);
-        qCDebug(lcInputDevices) << "touch device" << id << "of type" << type
-                                << "registered as Qt device" << QTouchDevicePrivate::get(ret)->id;
     }
     return ret;
 }

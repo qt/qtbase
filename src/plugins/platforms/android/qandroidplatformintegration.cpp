@@ -48,7 +48,6 @@
 #endif
 #include <QOffscreenSurface>
 #include <QThread>
-#include <QTouchDevice>
 
 #include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -208,12 +207,12 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         if (touchScreen == QJNIObjectPrivate::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_FINGER")
                 || touchScreen == QJNIObjectPrivate::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_STYLUS"))
         {
-            m_touchDevice = new QTouchDevice;
-            m_touchDevice->setType(QTouchDevice::TouchScreen);
-            m_touchDevice->setCapabilities(QTouchDevice::Position
-                                         | QTouchDevice::Area
-                                         | QTouchDevice::Pressure
-                                         | QTouchDevice::NormalizedPosition);
+            m_touchDevice = new QPointingDevice;
+            m_touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
+            m_touchDevice->setCapabilities(QPointingDevice::Capability::Position
+                                         | QPointingDevice::Capability::Area
+                                         | QPointingDevice::Capability::Pressure
+                                         | QPointingDevice::Capability::NormalizedPosition);
 
             QJNIObjectPrivate pm = javaActivity.callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
             Q_ASSERT(pm.isValid());
@@ -227,7 +226,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
                                             QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH", "Ljava/lang/String;").object())) {
                 m_touchDevice->setMaximumTouchPoints(2);
             }
-            QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+            QWindowSystemInterface::registerInputDevice(m_touchDevice);
         }
 
         auto contentResolver = javaActivity.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");

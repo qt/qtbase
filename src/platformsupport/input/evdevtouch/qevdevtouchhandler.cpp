@@ -44,9 +44,9 @@
 #include <QHash>
 #include <QSocketNotifier>
 #include <QGuiApplication>
-#include <QTouchDevice>
 #include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
@@ -358,7 +358,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
                     qUtf16Printable(d->deviceNode), qUtf16Printable(d->m_screenName));
     }
 
-    registerTouchDevice();
+    registerPointingDevice();
 }
 
 QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
@@ -375,7 +375,7 @@ QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
 
     delete d;
 
-    unregisterTouchDevice();
+    unregisterPointingDevice();
 }
 
 bool QEvdevTouchScreenHandler::isFiltered() const
@@ -383,7 +383,7 @@ bool QEvdevTouchScreenHandler::isFiltered() const
     return d && d->m_filtered;
 }
 
-QTouchDevice *QEvdevTouchScreenHandler::touchDevice() const
+QPointingDevice *QEvdevTouchScreenHandler::touchDevice() const
 {
     return m_device;
 }
@@ -444,40 +444,33 @@ err:
                 QT_CLOSE(m_fd);
                 m_fd = -1;
 
-                unregisterTouchDevice();
+                unregisterPointingDevice();
             }
             return;
         }
     }
 }
 
-void QEvdevTouchScreenHandler::registerTouchDevice()
+void QEvdevTouchScreenHandler::registerPointingDevice()
 {
     if (m_device)
         return;
 
-    m_device = new QTouchDevice;
-    m_device->setName(d->hw_name);
-    m_device->setType(QTouchDevice::TouchScreen);
-    m_device->setCapabilities(QTouchDevice::Position | QTouchDevice::Area);
+    static int id = 1;
+    QPointingDevice::Capabilities caps = QPointingDevice::Capability::Position | QPointingDevice::Capability::Area;
     if (d->hw_pressure_max > d->hw_pressure_min)
-        m_device->setCapabilities(m_device->capabilities() | QTouchDevice::Pressure);
+        caps.setFlag(QPointingDevice::Capability::Pressure);
 
-    QWindowSystemInterface::registerTouchDevice(m_device);
+    // TODO get evdev ID instead of an incremeting number; set USB ID too
+    m_device = new QPointingDevice(d->hw_name, id++,
+                                   QInputDevice::DeviceType::TouchScreen, QPointingDevice::PointerType::Finger,
+                                   caps, 16, 0);
+    QWindowSystemInterface::registerInputDevice(m_device);
 }
 
-void QEvdevTouchScreenHandler::unregisterTouchDevice()
+void QEvdevTouchScreenHandler::unregisterPointingDevice()
 {
-    if (!m_device)
-        return;
-
-    // At app exit the cleanup may have already been done, avoid
-    // double delete by checking the list first.
-    if (QWindowSystemInterface::isTouchDeviceRegistered(m_device)) {
-        QWindowSystemInterface::unregisterTouchDevice(m_device);
-        delete m_device;
-    }
-
+    delete m_device;
     m_device = nullptr;
 }
 
@@ -833,7 +826,7 @@ void QEvdevTouchScreenHandlerThread::run()
     m_handler = nullptr;
 }
 
-bool QEvdevTouchScreenHandlerThread::isTouchDeviceRegistered() const
+bool QEvdevTouchScreenHandlerThread::isPointingDeviceRegistered() const
 {
     return m_touchDeviceRegistered;
 }

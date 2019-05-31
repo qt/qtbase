@@ -49,7 +49,7 @@
 #include "qiosmenu.h"
 #endif
 
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
@@ -351,13 +351,11 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 {
     [super traitCollectionDidChange: previousTraitCollection];
 
-    QTouchDevice *touchDevice = QIOSIntegration::instance()->touchDevice();
-    QTouchDevice::Capabilities touchCapabilities = touchDevice->capabilities();
+    QPointingDevice *touchDevice = QIOSIntegration::instance()->touchDevice();
+    QPointingDevice::Capabilities touchCapabilities = touchDevice->capabilities();
 
-    if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
-        touchCapabilities |= QTouchDevice::Pressure;
-    else
-        touchCapabilities &= ~QTouchDevice::Pressure;
+    touchCapabilities.setFlag(QPointingDevice::Capability::Pressure,
+                              (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable));
 
     touchDevice->setCapabilities(touchCapabilities);
 }
@@ -372,7 +370,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 - (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event withState:(Qt::TouchPointState)state withTimestamp:(ulong)timeStamp
 {
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    bool supportsPressure = QIOSIntegration::instance()->touchDevice()->capabilities() & QTouchDevice::Pressure;
+    bool supportsPressure = QIOSIntegration::instance()->touchDevice()->capabilities() & QPointingDevice::Capability::Pressure;
 
 #if QT_CONFIG(tabletevent)
     if (m_activePencilTouch && [touches containsObject:m_activePencilTouch]) {
@@ -396,7 +394,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
                      << "xTilt" << qBound(-60.0, altitudeAngle * azimuth.dx, 60.0) << "yTilt" << qBound(-60.0, altitudeAngle * azimuth.dy, 60.0);
             QWindowSystemInterface::handleTabletEvent(self.platformWindow->window(), timeStamp, localViewPosition, globalScreenPosition,
                     // device, pointerType, buttons
-                    QTabletEvent::RotationStylus, QTabletEvent::Pen, state == Qt::TouchPointReleased ? Qt::NoButton : Qt::LeftButton,
+                    int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Pen), state == Qt::TouchPointReleased ? Qt::NoButton : Qt::LeftButton,
                     // pressure, xTilt, yTilt
                     pressure, qBound(-60.0, altitudeAngle * azimuth.dx, 60.0), qBound(-60.0, altitudeAngle * azimuth.dy, 60.0),
                     // tangentialPressure, rotation, z, uid, modifiers
@@ -422,7 +420,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
             touchPoint.area = QRectF(globalScreenPosition, QSize(0, 0));
 
-            // FIXME: Do we really need to support QTouchDevice::NormalizedPosition?
+            // FIXME: Do we really need to support QPointingDevice::Capability::NormalizedPosition?
             QSize screenSize = self.platformWindow->screen()->geometry().size();
             touchPoint.normalPosition = QPointF(globalScreenPosition.x() / screenSize.width(),
                                                 globalScreenPosition.y() / screenSize.height());
@@ -434,7 +432,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
                 // sending a touch press event to Qt, just to have a valid pressure.
                 touchPoint.pressure = uiTouch.force / uiTouch.maximumPossibleForce;
             } else {
-                // We don't claim that our touch device supports QTouchDevice::Pressure,
+                // We don't claim that our touch device supports QPointingDevice::Capability::Pressure,
                 // but fill in a meaningful value in case clients use it anyway.
                 touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
             }

@@ -64,7 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QMimeData;
-class QTouchDevice;
+class QPointingDevice;
 class QPlatformDragQtResponse;
 class QPlatformDropQtResponse;
 
@@ -148,20 +148,18 @@ public:
         QVector<QPointF> rawPositions; // in screen coordinates
     };
 
-    static void registerTouchDevice(const QTouchDevice *device);
-    static void unregisterTouchDevice(const QTouchDevice *device);
-    static bool isTouchDeviceRegistered(const QTouchDevice *device);
+    static void registerInputDevice(const QInputDevice *device);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static bool handleTouchEvent(QWindow *window, QTouchDevice *device,
+    static bool handleTouchEvent(QWindow *window, const QPointingDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static bool handleTouchEvent(QWindow *window, ulong timestamp, QTouchDevice *device,
+    static bool handleTouchEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static bool handleTouchCancelEvent(QWindow *window, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static bool handleTouchCancelEvent(QWindow *window, const QPointingDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static bool handleTouchCancelEvent(QWindow *window, ulong timestamp, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static bool handleTouchCancelEvent(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     // rect is relative to parent
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
@@ -241,11 +239,11 @@ public:
     static void handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid);
 
 #ifndef QT_NO_GESTURES
-    static bool handleGestureEvent(QWindow *window, QTouchDevice *device,  ulong timestamp, Qt::NativeGestureType type,
+    static bool handleGestureEvent(QWindow *window, const QPointingDevice *device,  ulong timestamp, Qt::NativeGestureType type,
                                    QPointF &local, QPointF &global);
-    static bool handleGestureEventWithRealValue(QWindow *window, QTouchDevice *device,  ulong timestamp, Qt::NativeGestureType type,
+    static bool handleGestureEventWithRealValue(QWindow *window, const QPointingDevice *device,  ulong timestamp, Qt::NativeGestureType type,
                                                 qreal value, QPointF &local, QPointF &global);
-    static bool handleGestureEventWithSequenceIdAndValue(QWindow *window, QTouchDevice *device, ulong timestamp,Qt::NativeGestureType type,
+    static bool handleGestureEventWithSequenceIdAndValue(QWindow *window, const QPointingDevice *device, ulong timestamp,Qt::NativeGestureType type,
                                                          ulong sequenceId, quint64 value, QPointF &local, QPointF &global);
 #endif // QT_NO_GESTURES
 

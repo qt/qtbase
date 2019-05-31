@@ -110,7 +110,10 @@ private slots:
 private:
     QPoint m_availableTopLeft;
     QSize m_testWindowSize;
-    QTouchDevice *touchDevice = QTest::createTouchDevice();
+    QPointingDevice *touchDevice = QTest::createTouchDevice();
+    QPointingDevice *touchDeviceWithMouseEmulation =
+            QTest::createTouchDevice(QInputDevice::DeviceType::TouchScreen,
+                                     QInputDevice::Capability::Position | QInputDevice::Capability::MouseEmulation);
 };
 
 void tst_QWindow::initTestCase()
@@ -1180,11 +1183,9 @@ void tst_QWindow::touchToMouseTranslationForDevices()
 
     window.resetCounters();
 
-    touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
-    QTest::touchEvent(&window, touchDevice).press(0, touchPoint, &window);
-    QTest::touchEvent(&window, touchDevice).release(0, touchPoint, &window);
+    QTest::touchEvent(&window, touchDeviceWithMouseEmulation).press(0, touchPoint, &window);
+    QTest::touchEvent(&window, touchDeviceWithMouseEmulation).release(0, touchPoint, &window);
     QCoreApplication::processEvents();
-    touchDevice->setCapabilities(touchDevice->capabilities() & ~QTouchDevice::MouseEmulation);
 
     QCOMPARE(window.mousePressedCount, 0);
     QCOMPARE(window.mouseReleasedCount, 0);
@@ -1704,7 +1705,8 @@ public:
 
     QEvent::Type eventType = QEvent::None;
     QPointF eventGlobal, eventLocal;
-    int eventDevice = -1;
+    QInputDevice::DeviceType eventDevice = QInputDevice::DeviceType::Unknown;
+    QPointingDevice::PointerType eventPointerType = QPointingDevice::PointerType::Unknown;
 
     bool eventFilter(QObject *obj, QEvent *ev) override
     {
@@ -1713,6 +1715,7 @@ public:
             eventType = ev->type();
             QTabletEvent *te = static_cast<QTabletEvent *>(ev);
             eventDevice = te->deviceType();
+            eventPointerType = te->pointerType();
         }
         return QWindow::eventFilter(obj, ev);
     }
@@ -1741,16 +1744,17 @@ void tst_QWindow::tabletEvents()
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.eventType, QEvent::TabletRelease);
 
-    QWindowSystemInterface::handleTabletEnterProximityEvent(1, 2, 3);
+    QWindowSystemInterface::handleTabletEnterProximityEvent(int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Eraser), 3);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.eventType, QEvent::TabletEnterProximity);
-    QTRY_COMPARE(window.eventDevice, 1);
+    QCOMPARE(window.eventDevice, QInputDevice::DeviceType::Stylus);
+    QCOMPARE(window.eventPointerType, QPointingDevice::PointerType::Eraser);
 
-    QWindowSystemInterface::handleTabletLeaveProximityEvent(1, 2, 3);
+    QWindowSystemInterface::handleTabletLeaveProximityEvent(int(QInputDevice::DeviceType::Stylus), int(QPointingDevice::PointerType::Eraser), 3);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.eventType, QEvent::TabletLeaveProximity);
-    QTRY_COMPARE(window.eventDevice, 1);
-
+    QCOMPARE(window.eventDevice, QInputDevice::DeviceType::Stylus);
+    QCOMPARE(window.eventPointerType, QPointingDevice::PointerType::Eraser);
 #endif
 }
 

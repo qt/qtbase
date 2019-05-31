@@ -40,7 +40,8 @@
 #include "qevent.h"
 #include "qcursor.h"
 #include "private/qguiapplication_p.h"
-#include "qtouchdevice.h"
+#include "private/qinputdevice_p.h"
+#include "private/qpointingdevice_p.h"
 #include "qpa/qplatformintegration.h"
 #include "private/qevent_p.h"
 #include "qfile.h"
@@ -152,8 +153,8 @@ QEnterEvent::~QEnterEvent()
 /*!
   \internal
 */
-QInputEvent::QInputEvent(Type type, Qt::KeyboardModifiers modifiers)
-    : QEvent(type), modState(modifiers), ts(0)
+QInputEvent::QInputEvent(Type type, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
+    : QEvent(type), m_dev(dev), modState(modifiers), ts(0)
 {}
 
 /*!
@@ -162,6 +163,38 @@ QInputEvent::QInputEvent(Type type, Qt::KeyboardModifiers modifiers)
 QInputEvent::~QInputEvent()
 {
 }
+
+QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers)
+    : QInputEvent(type, dev, modifiers)
+{
+
+}
+
+const QPointingDevice *QPointerEvent::pointingDevice() const
+{
+    return static_cast<const QPointingDevice *>(m_dev);
+}
+
+
+/*!
+    \fn QInputDevice *QInputEvent::device() const
+    \since 6.0
+
+    Returns the source device that generated the original event.
+
+    In case of a synthesized event, for example a mouse event that was
+    generated from a touch event, \c device() continues to return the touchscreen
+    device, so that you can tell that it did not come from an actual mouse.
+    Thus \c {mouseEvent.source()->type() != QInputDevice::DeviceType::Mouse}
+    is one possible replacement for the Qt 5 expression
+    \c {mouseEvent.source() == Qt::MouseEventSynthesizedByQt}.
+*/
+
+/*!
+    \fn QInputDevice::DeviceType QInputEvent::deviceType() const
+
+    Returns the type of device that generated the event.
+*/
 
 /*!
     \fn Qt::KeyboardModifiers QInputEvent::modifiers() const
@@ -192,6 +225,12 @@ QInputEvent::~QInputEvent()
     \internal
 
     Sets the timestamp for this event.
+*/
+
+/*!
+    \fn QPointingDevice::PointerType QPointerEvent::pointerType() const
+
+    Returns the type of point that generated the event.
 */
 
 /*!
@@ -265,7 +304,8 @@ QInputEvent::~QInputEvent()
 */
 QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons), caps(0)
+    : QPointerEvent(type, QPointingDevice::primaryPointingDevice(), modifiers),
+      l(localPos), w(localPos), b(button), mouseState(buttons), caps(0)
 {
 #ifndef QT_NO_CURSOR
     g = QCursor::pos();
@@ -319,7 +359,8 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &glob
 QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(scenePos), g(globalPos), b(button), mouseState(buttons), caps(0)
+    : QPointerEvent(type, QPointingDevice::primaryPointingDevice(), modifiers),
+      l(localPos), w(scenePos), g(globalPos), b(button), mouseState(buttons), caps(0)
 {}
 
 /*!
@@ -644,7 +685,7 @@ Qt::MouseEventFlags QMouseEvent::flags() const
     of the event.
 */
 QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), p(pos), op(oldPos)
+    : QInputEvent(type, QPointingDevice::primaryPointingDevice(), modifiers), p(pos), op(oldPos)
 {
 }
 
@@ -776,7 +817,8 @@ QHoverEvent::~QHoverEvent()
 QWheelEvent::QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoint angleDelta,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
             bool inverted, Qt::MouseEventSource source)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta), angleD(angleDelta),
+    : QPointerEvent(Wheel, QPointingDevice::primaryPointingDevice(), modifiers),
+      p(pos), g(globalPos), pixelD(pixelDelta), angleD(angleDelta),
       mouseState(buttons), src(source), ph(phase), invertedScrolling(inverted)
 {
 }
@@ -928,7 +970,7 @@ QWheelEvent::~QWheelEvent()
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
                      bool autorep, ushort count)
-    : QInputEvent(type, modifiers), txt(text), k(key),
+    : QInputEvent(type, QInputDevice::primaryKeyboard(), modifiers), txt(text), k(key),
       nScanCode(0), nVirtualKey(0), nModifiers(0),
       c(count), autor(autorep)
 {
@@ -957,7 +999,7 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const 
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
                      quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                      const QString &text, bool autorep, ushort count)
-    : QInputEvent(type, modifiers), txt(text), k(key),
+    : QInputEvent(type, QInputDevice::primaryKeyboard(), modifiers), txt(text), k(key),
       nScanCode(nativeScanCode), nVirtualKey(nativeVirtualKey), nModifiers(nativeModifiers),
       c(count), autor(autorep)
 {
@@ -1566,7 +1608,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPo
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
                                      Qt::KeyboardModifiers modifiers)
-    : QInputEvent(ContextMenu, modifiers), p(pos), gp(globalPos), reas(reason)
+    : QInputEvent(ContextMenu, QPointingDevice::primaryPointingDevice(), modifiers), p(pos), gp(globalPos), reas(reason)
 {}
 
 
@@ -1589,7 +1631,7 @@ QContextMenuEvent::~QContextMenuEvent()
     position explicitly.
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
-    : QInputEvent(ContextMenu), p(pos), reas(reason)
+    : QInputEvent(ContextMenu, QInputDevice::primaryKeyboard()), p(pos), reas(reason)
 {
 #ifndef QT_NO_CURSOR
     gp = QCursor::pos();
@@ -2112,91 +2154,84 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 */
 
 /*!
-    \enum QTabletEvent::TabletDevice
+    Construct a tablet event of the given \a type.
 
-    This enum defines what type of device is generating the event.
+    The \a pos parameter indicates where the event occurred in the widget;
+    \a globalPos is the corresponding position in absolute coordinates.
 
-    \value NoDevice    No device, or an unknown device.
-    \value Puck    A Puck (a device that is similar to a flat mouse with
-    a transparent circle with cross-hairs).
-    \value Stylus  A Stylus.
-    \value Airbrush An airbrush
-    \value FourDMouse A 4D Mouse.
-    \value RotationStylus A special stylus that also knows about rotation
-           (a 6D stylus). \since 4.1
-*/
+    \a pressure gives the pressure exerted on the \a device.
 
-/*!
-    \enum QTabletEvent::PointerType
+    \a deviceType, of type \l QInputDevice::DeviceType,
+    indicates the type of stylus or other tool the event comes from.
 
-    This enum defines what type of point is generating the event.
+    \a pointerType should be one of QPointingDevice::PointerType::Pen or
+    QPointingDevice::PointerType::Eraser, depending on which end of the
+    stylus the event comes from; or QPointingDevice::PointerType::Cursor
+    if \a deviceType is QInputDevice::DeviceType::Puck.
 
-    \value UnknownPointer    An unknown device.
-    \value Pen    Tip end of a stylus-like device (the narrow end of the pen).
-    \value Cursor  Any puck-like device.
-    \value Eraser  Eraser end of a stylus-like device (the broad end of the pen).
+    \a xTilt and \a yTilt give the device's degree of tilt from the
+    x and y axes respectively.
 
-    \sa pointerType()
-*/
+    \a keyState specifies which keyboard modifiers are pressed (e.g.,
+    \uicontrol{Ctrl}).
 
-/*!
-  Construct a tablet event of the given \a type.
+    The \a uniqueID parameter gives the serial number of the current tool.
 
-  The \a pos parameter indicates where the event occurred in the
-  widget; \a globalPos is the corresponding position in absolute
-  coordinates.
+    The \a z parameter gives the Z coordinate of the device on the tablet;
+    this is usually given by a wheel on a 4D mouse. If the device does not
+    support a Z-axis (i.e. \l QPointingDevice::capabilities() does not include
+    \c ZPosition), pass \c 0 here.
 
-  \a pressure contains the pressure exerted on the \a device.
+    The \a tangentialPressure parameter gives the tangential pressure
+    thumbwheel value from an airbrush. If the device does not support
+    tangential pressure (i.e. \l QPointingDevice::capabilities() does not
+    include \c TangentialPressure), pass \c 0 here.
 
-  \a pointerType describes the type of pen that is being used.
+    \a rotation gives the device's rotation in degrees.
+    4D mice, the Wacom Art Pen, and the Apple Pencil support rotation.
+    If the device does not support rotation (i.e. \l QPointingDevice::capabilities()
+    does not include \c Rotation), pass \c 0 here.
 
-  \a xTilt and \a yTilt contain the device's degree of tilt from the
-  x and y axes respectively.
+    The \a button that caused the event is given as a value from the
+    \l Qt::MouseButton enum. If the event \a type is not \l TabletPress or
+    \l TabletRelease, the appropriate button for this event is \l Qt::NoButton.
 
-  \a keyState specifies which keyboard modifiers are pressed (e.g.,
-  \uicontrol{Ctrl}).
+    \a buttons is the state of all buttons at the time of the event.
 
-  The \a uniqueID parameter contains the unique ID for the current device.
-
-  The \a z parameter contains the coordinate of the device on the tablet, this
-  is usually given by a wheel on 4D mouse. If the device does not support a
-  Z-axis, pass zero here.
-
-  The \a tangentialPressure parameter contins the tangential pressure of an air
-  brush. If the device does not support tangential pressure, pass 0 here.
-
-  \a rotation contains the device's rotation in degrees.
-  4D mice, the Wacom Art Pen, and the Apple Pencil support rotation.
-  If the device does not support rotation, pass 0 here.
-
-  The \a button that caused the event is given as a value from the
-  \l Qt::MouseButton enum. If the event \a type is not \l TabletPress or
-  \l TabletRelease, the appropriate button for this event is \l Qt::NoButton.
-
-  \a buttons is the state of all buttons at the time of the event.
-
-  \sa pos(), globalPos(), device(), pressure(), xTilt(), yTilt(), uniqueId(), rotation(),
+    \sa pos(), globalPos(), device(), pressure(), xTilt(), yTilt(), uniqueId(), rotation(),
       tangentialPressure(), z()
 */
-
 QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
-                           int device, int pointerType,
+                           int deviceType, int pointerType, // TODO use the enums rather than int
                            qreal pressure, int xTilt, int yTilt, qreal tangentialPressure,
                            qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID,
                            Qt::MouseButton button, Qt::MouseButtons buttons)
-    : QInputEvent(type, keyState),
+    : QTabletEvent(type,
+                    QPointingDevice::tabletDevice(QInputDevice::DeviceType(deviceType),
+                                                  QPointingDevice::PointerType(pointerType),
+                                                  QPointingDeviceUniqueId::fromNumericId(uniqueID)),
+                   pos, globalPos, pressure, xTilt, yTilt, tangentialPressure,
+                   rotation, z, keyState, button, buttons)
+{
+    Q_ASSERT(m_dev);
+}
+
+QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF &pos, const QPointF &globalPos,
+                 qreal pressure, int xTilt, int yTilt,
+                 qreal tangentialPressure, qreal rotation, int z,
+                 Qt::KeyboardModifiers keyState,
+                 Qt::MouseButton button, Qt::MouseButtons buttons)
+    : QPointerEvent(type, dev, keyState),
       mPos(pos),
       mGPos(globalPos),
-      mDev(device),
-      mPointerType(pointerType),
       mXT(xTilt),
       mYT(yTilt),
       mZ(z),
       mPress(pressure),
       mTangential(tangentialPressure),
       mRot(rotation),
-      mUnique(uniqueID),
-      mExtra(new QTabletEventPrivate(button, buttons))
+      mButton(button),
+      mButtons(buttons)
 {
 }
 
@@ -2205,10 +2240,11 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
 */
 QTabletEvent::~QTabletEvent()
 {
-    delete static_cast<QTabletEventPrivate *>(mExtra);
 }
 
 /*!
+    \fn Qt::MouseButton QTabletEvent::button() const
+
     Returns the button that caused the event.
 
     Note that the returned value is always Qt::NoButton for \l TabletMove,
@@ -2216,12 +2252,10 @@ QTabletEvent::~QTabletEvent()
 
     \sa buttons(), Qt::MouseButton
 */
-Qt::MouseButton QTabletEvent::button() const
-{
-    return static_cast<QTabletEventPrivate *>(mExtra)->b;
-}
 
 /*!
+    \fn Qt::MouseButtons QTabletEvent::buttons() const
+
     Returns the button state when the event was generated. The button state is
     a combination of buttons from the \l Qt::MouseButton enum using the OR
     operator. For \l TabletMove events, this is all buttons that are pressed
@@ -2230,24 +2264,6 @@ Qt::MouseButton QTabletEvent::button() const
     event.
 
     \sa button(), Qt::MouseButton
-*/
-Qt::MouseButtons QTabletEvent::buttons() const
-{
-    return static_cast<QTabletEventPrivate *>(mExtra)->buttonState;
-}
-
-/*!
-    \fn TabletDevices QTabletEvent::deviceType() const
-
-    Returns the type of device that generated the event.
-
-    \sa TabletDevice
-*/
-
-/*!
-    \fn PointerType QTabletEvent::pointerType() const
-
-    Returns the type of point that generated the event.
 */
 
 /*!
@@ -2479,11 +2495,12 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &scenePos,
-                                         const QPointF &globalPos, qreal realValue, ulong sequenceId, quint64 intValue)
-    : QInputEvent(QEvent::NativeGesture), mGestureType(type),
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device,
+                                         const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
+                                         qreal realValue, ulong sequenceId, quint64 intValue)
+    : QPointerEvent(QEvent::NativeGesture, device), mGestureType(type),
       mLocalPos(localPos), mScenePos(scenePos), mGlobalPos(globalPos), mRealValue(realValue),
-      mSequenceId(sequenceId), mIntValue(intValue), mDevice(device)
+      mSequenceId(sequenceId), mIntValue(intValue)
 {
 }
 
@@ -2491,7 +2508,7 @@ QNativeGestureEvent::~QNativeGestureEvent()
     = default;
 
 /*!
-    \fn const QTouchDevice *QNativeGestureEvent::device() const
+    \fn const QPointingDevice *QNativeGestureEvent::device() const
     \since 5.10
 
     Returns the device.
@@ -3617,9 +3634,9 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
     QtDebugUtils::formatQFlags(d, e->buttons());
     if (type == QEvent::TabletPress || type == QEvent::TabletMove)
         d << ", pressure=" << e->pressure();
-    if (e->deviceType() == QTabletEvent::RotationStylus || e->deviceType() == QTabletEvent::FourDMouse)
+    if (e->device()->hasCapability(QInputDevice::Capability::Rotation))
         d << ", rotation=" << e->rotation();
-    if (e->deviceType() == QTabletEvent::Airbrush)
+    if (e->deviceType() == QInputDevice::DeviceType::Airbrush)
         d << ", tangentialPressure=" << e->tangentialPressure();
 }
 
@@ -4065,14 +4082,13 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     the event.
 */
 QTouchEvent::QTouchEvent(QEvent::Type eventType,
-                         QTouchDevice *device,
+                         const QPointingDevice *device,
                          Qt::KeyboardModifiers modifiers,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
-    : QInputEvent(eventType, modifiers),
+    : QPointerEvent(eventType, device, modifiers),
       _window(nullptr),
       _target(nullptr),
-      _device(device),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
 { }
@@ -4113,7 +4129,7 @@ QTouchEvent::~QTouchEvent()
     Returns the list of touch points contained in the touch event.
 */
 
-/*! \fn QTouchDevice* QTouchEvent::device() const
+/*! \fn QPointingDevice* QTouchEvent::device() const
 
     Returns the touch device from which this touch event originates.
 */
@@ -4132,25 +4148,11 @@ QTouchEvent::~QTouchEvent()
     Sets the target within the window (typically a widget) for this event.
 */
 
-/*! \fn void QTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPointStates)
-
-    \internal
-
-    Sets a bitwise OR of all the touch point states for this event.
-*/
-
 /*! \fn void QTouchEvent::setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints)
 
     \internal
 
     Sets the list of touch points for this event.
-*/
-
-/*! \fn void QTouchEvent::setDevice(QTouchDevice *adevice)
-
-    \internal
-
-    Sets the device to \a adevice.
 */
 
 /*! \class QTouchEvent::TouchPoint
@@ -4461,9 +4463,9 @@ QSizeF QTouchEvent::TouchPoint::ellipseDiameters() const
     Returns a velocity vector for this touch point.
     The vector is in the screen's coordinate system, using pixels per seconds for the magnitude.
 
-    \note The returned vector is only valid if the touch device's capabilities include QTouchDevice::Velocity.
+    \note The returned vector is only valid if the touch device's capabilities include QPointingDevice::Velocity.
 
-    \sa QTouchDevice::capabilities(), device()
+    \sa QPointingDevice::capabilities(), device()
 */
 QVector2D QTouchEvent::TouchPoint::velocity() const
 {
@@ -4485,14 +4487,14 @@ QTouchEvent::TouchPoint::InfoFlags QTouchEvent::TouchPoint::flags() const
   Returns the raw, unfiltered positions for the touch point. The positions are in native screen coordinates.
   To get local coordinates you can use mapFromGlobal() of the QWindow returned by QTouchEvent::window().
 
-  \note Returns an empty vector if the touch device's capabilities do not include QTouchDevice::RawPositions.
+  \note Returns an empty vector if the touch device's capabilities do not include QPointingDevice::RawPositions.
 
   \note Native screen coordinates refer to the native orientation of the screen which, in case of
   mobile devices, is typically portrait. This means that on systems capable of screen orientation
   changes the positions in this list will not reflect the current orientation (unlike pos(),
   screenPos(), etc.) and will always be reported in the native orientation.
 
-  \sa QTouchDevice::capabilities(), device(), window()
+  \sa QPointingDevice::capabilities(), device(), window()
   */
 QVector<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
 {

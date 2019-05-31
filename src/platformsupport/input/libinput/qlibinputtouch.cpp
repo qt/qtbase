@@ -41,9 +41,11 @@
 #include "qtouchoutputmapping_p.h"
 #include <libinput.h>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QPointingDevice>
 #include <QtGui/QScreen>
-#include <QtGui/QTouchDevice>
+#include <QtGui/QPointingDevice>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qpointingdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -107,18 +109,18 @@ void QLibInputTouch::registerDevice(libinput_device *dev)
                     qPrintable(devNode), qPrintable(m_devState[dev].m_screenName));
     }
 
-    QTouchDevice *&td = m_devState[dev].m_touchDevice;
-    td = new QTouchDevice;
-    td->setName(devName);
-    td->setType(QTouchDevice::TouchScreen);
-    td->setCapabilities(QTouchDevice::Position | QTouchDevice::Area);
-    QWindowSystemInterface::registerTouchDevice(td);
+    QPointingDevice *&td = m_devState[dev].m_touchDevice;
+    td = new QPointingDevice(devName, udev_device_get_devnum(udev_device),
+                             QInputDevice::DeviceType::TouchScreen, QPointingDevice::PointerType::Finger,
+                             QPointingDevice::Capability::Position | QPointingDevice::Capability::Area, 16, 0);
+    QPointingDevicePrivate::get(td)->busId = QString::fromLocal8Bit(udev_device_get_syspath(udev_device)); // TODO is that the best to choose?
+    QWindowSystemInterface::registerInputDevice(td);
 }
 
 void QLibInputTouch::unregisterDevice(libinput_device *dev)
 {
     Q_UNUSED(dev);
-    // There is no way to remove a QTouchDevice.
+    // There is no way to remove a QPointingDevice.
 }
 
 void QLibInputTouch::processTouchDown(libinput_event_touch *e)

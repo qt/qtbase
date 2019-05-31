@@ -47,7 +47,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qscreen.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qcursor.h>
 
@@ -117,7 +117,7 @@ static inline void compressMouseMove(MSG *msg)
     }
 }
 
-static inline QTouchDevice *createTouchDevice()
+static inline QPointingDevice *createTouchDevice()
 {
     const int digitizers = GetSystemMetrics(SM_DIGITIZER);
     if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
@@ -127,12 +127,12 @@ static inline QTouchDevice *createTouchDevice()
     qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
         << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
         << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
-    auto *result = new QTouchDevice;
+    auto *result = new QPointingDevice;
     result->setType(digitizers & NID_INTEGRATED_TOUCH
-                    ? QTouchDevice::TouchScreen : QTouchDevice::TouchPad);
-    QTouchDevice::Capabilities capabilities = QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition;
-    if (result->type() == QTouchDevice::TouchPad)
-        capabilities |= QTouchDevice::MouseEmulation;
+                    ? QInputDevice::DeviceType::TouchScreen : QInputDevice::DeviceType::TouchPad);
+    QPointingDevice::Capabilities capabilities = QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::NormalizedPosition;
+    if (result->type() == QInputDevice::DeviceType::TouchPad)
+        capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
     result->setCapabilities(capabilities);
     result->setMaximumTouchPoints(maxTouchPoints);
     return result;
@@ -149,7 +149,7 @@ static inline QTouchDevice *createTouchDevice()
 
 QWindowsMouseHandler::QWindowsMouseHandler() = default;
 
-QTouchDevice *QWindowsMouseHandler::ensureTouchDevice()
+QPointingDevice *QWindowsMouseHandler::ensureTouchDevice()
 {
     if (!m_touchDevice)
         m_touchDevice = createTouchDevice();

@@ -53,7 +53,7 @@
 
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qscreen.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtCore/qvarlengtharray.h>
@@ -74,6 +74,13 @@ enum {
     QT_PT_MOUSE    = 4,
     QT_PT_TOUCHPAD = 5, // MinGW is missing PT_TOUCHPAD
 };
+
+qint64 QWindowsPointerHandler::m_nextInputDeviceId = 1;
+
+QWindowsPointerHandler::~QWindowsPointerHandler()
+{
+    delete m_touchDevice;
+}
 
 bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
 {
@@ -310,31 +317,30 @@ static bool isValidWheelReceiver(QWindow *candidate)
     return false;
 }
 
-static QTouchDevice *createTouchDevice()
+QPointingDevice *QWindowsPointerHandler::ensureTouchDevice()
 {
-    const int digitizers = GetSystemMetrics(SM_DIGITIZER);
-    if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
-        return nullptr;
-    const int tabletPc = GetSystemMetrics(SM_TABLETPC);
-    const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
-    qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
-        << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
-        << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
-    auto *result = new QTouchDevice;
-    result->setType(digitizers & NID_INTEGRATED_TOUCH
-                    ? QTouchDevice::TouchScreen : QTouchDevice::TouchPad);
-    QTouchDevice::Capabilities capabilities = QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition;
-    if (result->type() == QTouchDevice::TouchPad)
-        capabilities |= QTouchDevice::MouseEmulation;
-    result->setCapabilities(capabilities);
-    result->setMaximumTouchPoints(maxTouchPoints);
-    return result;
-}
-
-QTouchDevice *QWindowsPointerHandler::ensureTouchDevice()
-{
-    if (!m_touchDevice)
-        m_touchDevice = createTouchDevice();
+    if (!m_touchDevice) {
+        const int digitizers = GetSystemMetrics(SM_DIGITIZER);
+        if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
+            return nullptr;
+        const int tabletPc = GetSystemMetrics(SM_TABLETPC);
+        const int maxTouchPoints = GetSystemMetrics(SM_MAXIMUMTOUCHES);
+        const bool touchScreen = digitizers & NID_INTEGRATED_TOUCH;
+        QPointingDevice::Capabilities capabilities = QPointingDevice::Capability::Position;
+        if (!touchScreen) {
+            capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
+            capabilities.setFlag(QInputDevice::Capability::Scroll);
+        }
+        qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
+            << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
+            << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints << "Capabilities:" << capabilities;
+        // TODO: use system-provided name and device ID rather than empty-string and m_nextInputDeviceId
+        m_touchDevice = new QPointingDevice(QString(), m_nextInputDeviceId++,
+                                           (touchScreen ? QInputDevice::DeviceType::TouchScreen : QInputDevice::DeviceType::TouchPad),
+                                           QPointingDevice::PointerType::Finger, capabilities, maxTouchPoints,
+                                            // TODO: precise button count (detect whether the touchpad can emulate 3 or more buttons)
+                                           (touchScreen ? 1 : 3));
+    }
     return m_touchDevice;
 }
 
@@ -577,8 +583,8 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
             << " message=" << Qt::hex << msg.message
             << " flags=" << Qt::hex << penInfo->pointerInfo.pointerFlags;
 
-    const QTabletEvent::TabletDevice device = QTabletEvent::Stylus;
-    QTabletEvent::PointerType type;
+    const QInputDevice::DeviceType device = QInputDevice::DeviceType::Stylus;
+    QPointingDevice::PointerType type;
     // Since it may be the middle button, so if the checks fail then it should
     // be set to Middle if it was used.
     Qt::MouseButtons mouseButtons = queryMouseButtons();
@@ -588,16 +594,16 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         mouseButtons = Qt::LeftButton;
 
     if (penInfo->penFlags & (PEN_FLAG_ERASER | PEN_FLAG_INVERTED)) {
-        type = QTabletEvent::Eraser;
+        type = QPointingDevice::PointerType::Eraser;
     } else {
-        type = QTabletEvent::Pen;
+        type = QPointingDevice::PointerType::Pen;
         if (pointerInContact && penInfo->penFlags & PEN_FLAG_BARREL)
             mouseButtons = Qt::RightButton; // Either left or right, not both
     }
 
     switch (msg.message) {
     case WM_POINTERENTER: {
-        QWindowSystemInterface::handleTabletEnterProximityEvent(device, type, sourceDevice);
+        QWindowSystemInterface::handleTabletEnterProximityEvent(int(device), int(type), sourceDevice);
         m_windowUnderPointer = window;
         // The local coordinates may fall outside the window.
         // Wait until the next update to send the enter event.
@@ -610,7 +616,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
             m_windowUnderPointer = nullptr;
             m_currentWindow = nullptr;
         }
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(device, type, sourceDevice);
+        QWindowSystemInterface::handleTabletLeaveProximityEvent(int(device), int(type), sourceDevice);
         break;
     case WM_POINTERDOWN:
     case WM_POINTERUP:
@@ -635,7 +641,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         }
         const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
 
-        QWindowSystemInterface::handleTabletEvent(target, localPos, hiResGlobalPos, device, type, mouseButtons,
+        QWindowSystemInterface::handleTabletEvent(target, localPos, hiResGlobalPos, int(device), int(type), mouseButtons,
                                                   pressure, xTilt, yTilt, tangentialPressure, rotation, z,
                                                   sourceDevice, keyModifiers);
         return false;  // Allow mouse messages to be generated.

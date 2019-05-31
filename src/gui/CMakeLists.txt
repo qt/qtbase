@@ -132,7 +132,8 @@ qt_add_module(Gui
         kernel/qsurfaceformat.cpp kernel/qsurfaceformat.h
         kernel/qtestsupport_gui.cpp kernel/qtestsupport_gui.h
         kernel/qtguiglobal.h kernel/qtguiglobal_p.h
-        kernel/qtouchdevice.cpp kernel/qtouchdevice.h kernel/qtouchdevice_p.h
+        kernel/qinputdevice.cpp kernel/qinputdevice.h kernel/qinputdevice_p.h
+        kernel/qpointingdevice.cpp kernel/qpointingdevice.h kernel/qpointingdevice_p.h
         kernel/qwindow.cpp kernel/qwindow.h kernel/qwindow_p.h
         kernel/qwindowdefs.h
         kernel/qwindowsysteminterface.cpp kernel/qwindowsysteminterface.h kernel/qwindowsysteminterface_p.h

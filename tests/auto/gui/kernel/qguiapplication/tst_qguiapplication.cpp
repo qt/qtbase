@@ -493,12 +493,12 @@ void tst_QGuiApplication::keyboardModifiers()
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // touch events
-    QList<const QTouchDevice *> touchDevices = QTouchDevice::devices();
-    if (!touchDevices.isEmpty()) {
-        QTouchDevice *touchDevice = const_cast<QTouchDevice *>(touchDevices.first());
-        QTest::touchEvent(window.data(), touchDevice).press(1, center).release(1, center);
-        QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    }
+    QPointingDevice touchDevice(QLatin1String("test touchscreen"), 0,
+                                QInputDevice::DeviceType::TouchScreen, QPointingDevice::PointerType::Finger,
+                                QPointingDevice::Capability::Position, 10, 0);
+    QWindowSystemInterface::registerInputDevice(&touchDevice);
+    QTest::touchEvent(window.data(), &touchDevice).press(1, center).release(1, center);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
 
     window->close();
 }

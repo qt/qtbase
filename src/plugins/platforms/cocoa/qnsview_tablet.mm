@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -41,12 +41,14 @@
 
 #ifndef QT_NO_TABLETEVENT
 
+#include "qpointingdevice.h"
+
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 struct QCocoaTabletDeviceData
 {
-    QTabletEvent::TabletDevice device;
-    QTabletEvent::PointerType pointerType;
+    QInputDevice::DeviceType device;
+    QPointingDevice::PointerType pointerType;
     uint capabilityMask;
     qint64 uid;
 };
@@ -116,7 +118,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
         static_cast<uint>(buttons), pressure, xTilt, yTilt, rotation);
 
     QWindowSystemInterface::handleTabletEvent(m_platformWindow->window(), timestamp, windowPoint, screenPoint,
-                                              deviceData.device, deviceData.pointerType, buttons, pressure, xTilt, yTilt,
+                                              int(deviceData.device), int(deviceData.pointerType), buttons, pressure, xTilt, yTilt,
                                               tangentialPressure, rotation, z, deviceData.uid,
                                               keyboardModifiers);
     return true;
@@ -130,7 +132,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     [self handleTabletEvent: theEvent];
 }
 
-static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
+static QInputDevice::DeviceType wacomTabletDevice(NSEvent *theEvent)
 {
     qint64 uid = [theEvent uniqueID];
     uint bits = [theEvent vendorPointingDeviceType];
@@ -141,30 +143,30 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         bits = uid >> 32;
     }
 
-    QTabletEvent::TabletDevice device;
+    QInputDevice::DeviceType device;
     // Defined in the "EN0056-NxtGenImpGuideX"
     // on Wacom's Developer Website (www.wacomeng.com)
     if (((bits & 0x0006) == 0x0002) && ((bits & 0x0F06) != 0x0902)) {
-        device = QTabletEvent::Stylus;
+        device = QInputDevice::DeviceType::Stylus;
     } else {
         switch (bits & 0x0F06) {
             case 0x0802:
-                device = QTabletEvent::Stylus;
+                device = QInputDevice::DeviceType::Stylus;
                 break;
             case 0x0902:
-                device = QTabletEvent::Airbrush;
+                device = QInputDevice::DeviceType::Airbrush;
                 break;
             case 0x0004:
-                device = QTabletEvent::FourDMouse;
+                device = QInputDevice::DeviceType::Mouse; // TODO set capabilities
                 break;
             case 0x0006:
-                device = QTabletEvent::Puck;
+                device = QInputDevice::DeviceType::Puck;
                 break;
             case 0x0804:
-                device = QTabletEvent::RotationStylus;
+                device = QInputDevice::DeviceType::Stylus; // TODO set capability rotation
                 break;
             default:
-                device = QTabletEvent::NoDevice;
+                device = QInputDevice::DeviceType::Unknown;
         }
     }
     return device;
@@ -184,16 +186,16 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     switch ([theEvent pointingDeviceType]) {
         case NSPointingDeviceTypeUnknown:
         default:
-            deviceData.pointerType = QTabletEvent::UnknownPointer;
+            deviceData.pointerType = QPointingDevice::PointerType::Unknown;
             break;
         case NSPointingDeviceTypePen:
-            deviceData.pointerType = QTabletEvent::Pen;
+            deviceData.pointerType = QPointingDevice::PointerType::Pen;
             break;
         case NSPointingDeviceTypeCursor:
-            deviceData.pointerType = QTabletEvent::Cursor;
+            deviceData.pointerType = QPointingDevice::PointerType::Cursor;
             break;
         case NSPointingDeviceTypeEraser:
-            deviceData.pointerType = QTabletEvent::Eraser;
+            deviceData.pointerType = QPointingDevice::PointerType::Eraser;
             break;
     }
 
@@ -213,9 +215,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         deviceId, deviceData.device, deviceData.pointerType, deviceData.uid);
 
     if (entering) {
-        QWindowSystemInterface::handleTabletEnterProximityEvent(timestamp, deviceData.device, deviceData.pointerType, deviceData.uid);
+        QWindowSystemInterface::handleTabletEnterProximityEvent(timestamp, int(deviceData.device), int(deviceData.pointerType), deviceData.uid);
     } else {
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(timestamp, deviceData.device, deviceData.pointerType, deviceData.uid);
+        QWindowSystemInterface::handleTabletLeaveProximityEvent(timestamp, int(deviceData.device), int(deviceData.pointerType), deviceData.uid);
     }
 }
 @end

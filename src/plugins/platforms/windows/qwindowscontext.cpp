@@ -70,7 +70,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qopenglcontext.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 
 #include <QtCore/qset.h>
 #include <QtCore/qhash.h>
@@ -348,15 +348,15 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     if (d->m_systemInfo & QWindowsContext::SI_SupportsTouch)
         return true;
 
-    QTouchDevice *touchDevice = (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) ?
+    QPointingDevice *touchDevice = (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) ?
                 d->m_pointerHandler.ensureTouchDevice() : d->m_mouseHandler.ensureTouchDevice();
     if (!touchDevice)
         return false;
 
     if (!(integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch))
-        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+        touchDevice->setCapabilities(touchDevice->capabilities() | QInputDevice::Capability::MouseEmulation);
 
-    QWindowSystemInterface::registerTouchDevice(touchDevice);
+    QWindowSystemInterface::registerInputDevice(touchDevice);
 
     d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
 
@@ -1631,7 +1631,7 @@ void QWindowsContext::setAsyncExpose(bool value)
     d->m_asyncExpose = value;
 }
 
-QTouchDevice *QWindowsContext::touchDevice() const
+QPointingDevice *QWindowsContext::touchDevice() const
 {
     return (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) ?
         d->m_pointerHandler.touchDevice() : d->m_mouseHandler.touchDevice();

@@ -43,7 +43,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
-
+#include <QtGui/private/qpointingdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -95,20 +95,6 @@ public:
     bool stationaryWithModifiedProperty : 1;
     QVector<QPointF> rawScreenPositions;
 };
-
-#if QT_CONFIG(tabletevent)
-class QTabletEventPrivate
-{
-public:
-    inline QTabletEventPrivate(Qt::MouseButton button, Qt::MouseButtons buttons)
-        : b(button),
-          buttonState(buttons)
-    { }
-
-    Qt::MouseButton b;
-    Qt::MouseButtons buttonState;
-};
-#endif // QT_CONFIG(tabletevent)
 
 QT_END_NAMESPACE
 

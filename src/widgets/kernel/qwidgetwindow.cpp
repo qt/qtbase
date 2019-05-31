@@ -692,14 +692,14 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
 {
     if (event->type() == QEvent::TouchCancel) {
-        QApplicationPrivate::translateTouchCancel(event->device(), event->timestamp());
+        QApplicationPrivate::translateTouchCancel(event->pointingDevice(), event->timestamp());
         event->accept();
     } else if (QApplicationPrivate::inPopupMode()) {
         // Ignore touch events for popups. This will cause QGuiApplication to synthesise mouse
         // events instead, which QWidgetWindow::handleMouseEvent will forward correctly:
         event->ignore();
     } else {
-        event->setAccepted(QApplicationPrivate::translateRawTouchEvent(m_widget, event->device(), event->touchPoints(), event->timestamp()));
+        event->setAccepted(QApplicationPrivate::translateRawTouchEvent(m_widget, event->pointingDevice(), event->touchPoints(), event->timestamp()));
     }
 }
 
@@ -1071,9 +1071,9 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
     if (widget) {
         QPointF delta = event->globalPosition() - event->globalPosition().toPoint();
         QPointF mapped = widget->mapFromGlobal(event->globalPosition().toPoint()) + delta;
-        QTabletEvent ev(event->type(), mapped, event->globalPosition(), event->deviceType(), event->pointerType(),
+        QTabletEvent ev(event->type(), event->pointingDevice(), mapped, event->globalPosition(),
                         event->pressure(), event->xTilt(), event->yTilt(), event->tangentialPressure(),
-                        event->rotation(), event->z(), event->modifiers(), event->uniqueId(), event->button(), event->buttons());
+                        event->rotation(), event->z(), event->modifiers(), event->button(), event->buttons());
         ev.setTimestamp(event->timestamp());
         ev.setAccepted(false);
         QGuiApplication::forwardEvent(widget, &ev, event);

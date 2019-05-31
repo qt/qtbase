@@ -42,6 +42,7 @@
 
 #include "qtwindowsglobal.h"
 #include <QtGui/qtguiglobal.h>
+#include <QtGui/qpointingdevice.h>
 
 #include <QtCore/qvector.h>
 #include <QtCore/qpoint.h>
@@ -99,8 +100,9 @@ struct QWindowsTabletDeviceData
     int minZ = 0;
     int maxZ = 0;
     qint64 uniqueId = 0;
-    int currentDevice = 0;
-    int currentPointerType = 0;
+    QInputDevice::DeviceType currentDevice = QInputDevice::DeviceType::Unknown;
+    QPointingDevice::PointerType currentPointerType = QPointingDevice::PointerType::Unknown;
+    bool zCapability = false;
     QHash<quint8, quint8> buttonsMap;
 };
 

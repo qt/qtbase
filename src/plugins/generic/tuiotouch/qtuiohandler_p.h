@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTouchDevice;
+class QPointingDevice;
 class QOscMessage;
 class QTuioCursor;
 class QTuioToken;
@@ -80,7 +80,7 @@ private:
     QWindowSystemInterface::TouchPoint cursorToTouchPoint(const QTuioCursor &tc, QWindow *win);
     QWindowSystemInterface::TouchPoint tokenToTouchPoint(const QTuioToken &tc, QWindow *win);
 
-    QTouchDevice *m_device;
+    QPointingDevice *m_device = nullptr;
     QUdpSocket m_socket;
     QMap<int, QTuioCursor> m_activeCursors;
     QVector<QTuioCursor> m_deadCursors;

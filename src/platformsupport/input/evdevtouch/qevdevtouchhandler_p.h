@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+//#include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QObject>
 #include <QString>
@@ -69,6 +70,7 @@ QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
 class QEvdevTouchScreenData;
+class QPointingDevice;
 
 class QEvdevTouchScreenHandler : public QObject
 {
@@ -78,7 +80,7 @@ public:
     explicit QEvdevTouchScreenHandler(const QString &device, const QString &spec = QString(), QObject *parent = nullptr);
     ~QEvdevTouchScreenHandler();
 
-    QTouchDevice *touchDevice() const;
+    QPointingDevice *touchDevice() const;
 
     bool isFiltered() const;
 
@@ -91,13 +93,13 @@ private:
     friend class QEvdevTouchScreenData;
     friend class QEvdevTouchScreenHandlerThread;
 
-    void registerTouchDevice();
-    void unregisterTouchDevice();
+    void registerPointingDevice();
+    void unregisterPointingDevice();
 
     QSocketNotifier *m_notify;
     int m_fd;
     QEvdevTouchScreenData *d;
-    QTouchDevice *m_device;
+    QPointingDevice *m_device;
 #if QT_CONFIG(mtdev)
     mtdev *m_mtdev;
 #endif
@@ -111,7 +113,7 @@ public:
     ~QEvdevTouchScreenHandlerThread();
     void run() override;
 
-    bool isTouchDeviceRegistered() const;
+    bool isPointingDeviceRegistered() const;
 
     bool eventFilter(QObject *object, QEvent *event) override;
 

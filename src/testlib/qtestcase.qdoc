@@ -1248,14 +1248,14 @@
 */
 
 /*!
-    \fn QTouchDevice *QTest::createTouchDevice(QTouchDevice::DeviceType devType = QTouchDevice::TouchScreen)
+    \fn QPointingDevice *QTest::createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen)
     \since 5.8
 
     Creates a dummy touch device of type \a devType for simulation of touch events.
 
     The touch device will be registered with the QPA window system interface,
     and deleted automatically when the QCoreApplication is deleted. So you
-    should typically use createTouchDevice() to initialize a QTouchDevice
+    should typically use createTouchDevice() to initialize a QPointingDevice
     member variable in your test case class, and use the same instance for all tests.
 
     \sa QTest::QTouchEventSequence
@@ -1380,7 +1380,7 @@
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit)
+    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit)
     \since 5.0
 
     Creates and returns a QTouchEventSequence for the \a device to
@@ -1397,7 +1397,7 @@
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit)
+    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit)
 
     Creates and returns a QTouchEventSequence for the \a device to
     simulate events for \a widget.

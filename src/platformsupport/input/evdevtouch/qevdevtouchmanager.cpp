@@ -117,7 +117,7 @@ void QEvdevTouchManager::updateInputDeviceCount()
 {
     int registeredTouchDevices = 0;
     for (const auto &device : m_activeDevices) {
-        if (device.handler->isTouchDeviceRegistered())
+        if (device.handler->isPointingDeviceRegistered())
             ++registeredTouchDevices;
     }
 

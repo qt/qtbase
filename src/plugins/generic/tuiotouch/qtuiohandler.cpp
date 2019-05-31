@@ -47,7 +47,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QTouchDevice>
+#include <QPointingDevice>
 #include <QWindow>
 #include <QGuiApplication>
 
@@ -68,7 +68,6 @@ Q_LOGGING_CATEGORY(lcTuioSet, "qt.qpa.tuio.set")
 static bool forceDelivery = qEnvironmentVariableIsSet("QT_TUIOTOUCH_DELIVER_WITHOUT_FOCUS");
 
 QTuioHandler::QTuioHandler(const QString &specification)
-    : m_device(new QTouchDevice) // not leaked, QTouchDevice cleans up registered devices itself
 {
     QStringList args = specification.split(':');
     int portNumber = 3333;
@@ -111,13 +110,17 @@ QTuioHandler::QTuioHandler(const QString &specification)
     if (inverty)
         m_transform *= QTransform::fromTranslate(0.5, 0.5).scale(1.0, -1.0).translate(-0.5, -0.5);
 
-    m_device->setName("TUIO"); // TODO: multiple based on SOURCE?
-    m_device->setType(QTouchDevice::TouchScreen);
-    m_device->setCapabilities(QTouchDevice::Position |
-                              QTouchDevice::Area |
-                              QTouchDevice::Velocity |
-                              QTouchDevice::NormalizedPosition);
-    QWindowSystemInterface::registerTouchDevice(m_device);
+    // not leaked, QPointingDevice cleans up registered devices itself
+    // TODO register each device based on SOURCE, not just an all-purpose generic touchscreen
+    // TODO define seats when multiple connections occur
+    m_device = new QPointingDevice(QLatin1String("TUIO"), 1, QInputDevice::DeviceType::TouchScreen,
+                                   QPointingDevice::PointerType::Finger,
+                                   QInputDevice::Capability::Position |
+                                   QInputDevice::Capability::Area |
+                                   QInputDevice::Capability::Velocity |
+                                   QInputDevice::Capability::NormalizedPosition,
+                                   16, 0);
+    QWindowSystemInterface::registerInputDevice(m_device);
 
     if (!m_socket.bind(QHostAddress::Any, portNumber)) {
         qCWarning(lcTuioHandler) << "Failed to bind TUIO socket: " << m_socket.errorString();

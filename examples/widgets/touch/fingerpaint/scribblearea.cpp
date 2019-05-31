@@ -208,7 +208,7 @@ bool ScribbleArea::event(QEvent *event)
                     QSizeF diams = touchPoint.ellipseDiameters();
                     if (diams.isEmpty()) {
                         qreal diameter = MaximumDiameter;
-                        if (touch->device()->capabilities() & QTouchDevice::Pressure)
+                        if (touch->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Pressure))
                             diameter = MinimumDiameter + (MaximumDiameter - MinimumDiameter) * touchPoint.pressure();
                         diams = QSizeF(diameter, diameter);
                     }

@@ -106,26 +106,26 @@ int main(int argc, char **argv)
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(new QLabel("The blue ellipses should indicate touch point contact patches"));
     qDebug() << "Touch devices:";
-    for (const QTouchDevice *device : QTouchDevice::devices()) {
+    for (const QPointingDevice *device : QPointingDevice::devices()) {
         QString result;
         QTextStream str(&result);
-        str << (device->type() == QTouchDevice::TouchScreen ? "TouchScreen" : "TouchPad")
+        str << (device->type() == QInputDevice::DeviceType::TouchScreen ? "TouchScreen" : "TouchPad")
             << " \"" << device->name() << "\", max " << device->maximumTouchPoints()
             << " touch points, capabilities:";
-        const QTouchDevice::Capabilities capabilities = device->capabilities();
-        if (capabilities & QTouchDevice::Position)
+        const QPointingDevice::Capabilities capabilities = device->capabilities();
+        if (capabilities & QPointingDevice::Capability::Position)
             str << " Position";
-        if (capabilities & QTouchDevice::Area)
+        if (capabilities & QPointingDevice::Capability::Area)
             str << " Area";
-        if (capabilities & QTouchDevice::Pressure)
+        if (capabilities & QPointingDevice::Capability::Pressure)
             str << " Pressure";
-        if (capabilities & QTouchDevice::Velocity)
+        if (capabilities & QPointingDevice::Velocity)
             str << " Velocity";
-        if (capabilities & QTouchDevice::RawPositions)
+        if (capabilities & QPointingDevice::RawPositions)
             str << " RawPositions";
-        if (capabilities & QTouchDevice::NormalizedPosition)
+        if (capabilities & QPointingDevice::Capability::NormalizedPosition)
             str << " NormalizedPosition";
-        if (capabilities & QTouchDevice::MouseEmulation)
+        if (capabilities & QInputDevice::DeviceType::MouseEmulation)
             str << " MouseEmulation";
         vbox->addWidget(new QLabel(result));
         qDebug() << "   " << result;

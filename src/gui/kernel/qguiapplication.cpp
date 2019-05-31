@@ -44,7 +44,7 @@
 #include <qpa/qplatformintegrationfactory_p.h>
 #include "private/qevent_p.h"
 #include "qfont.h"
-#include "qtouchdevice.h"
+#include "qpointingdevice.h"
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -86,7 +86,7 @@
 #include "private/qopenglcontext_p.h"
 #include "private/qinputdevicemanager_p.h"
 #include "private/qinputmethod_p.h"
-#include "private/qtouchdevice_p.h"
+#include "private/qpointingdevice_p.h"
 
 #include <qpa/qplatformthemefactory_p.h>
 
@@ -200,7 +200,7 @@ static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
-QTouchDevice *QGuiApplicationPrivate::m_fakeTouchDevice = nullptr;
+QPointingDevice *QGuiApplicationPrivate::m_fakeTouchDevice = nullptr;
 int QGuiApplicationPrivate::m_fakeMouseSourcePointId = 0;
 
 #ifndef QT_NO_CLIPBOARD
@@ -2234,8 +2234,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         && !e->nonClientArea
         && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
         if (!m_fakeTouchDevice) {
-            m_fakeTouchDevice = new QTouchDevice;
-            QWindowSystemInterface::registerTouchDevice(m_fakeTouchDevice);
+            m_fakeTouchDevice = new QPointingDevice;
+            QWindowSystemInterface::registerInputDevice(m_fakeTouchDevice);
         }
         QList<QWindowSystemInterface::TouchPoint> points;
         QWindowSystemInterface::TouchPoint point;
@@ -2259,7 +2259,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
         QEvent::Type type;
         QList<QTouchEvent::TouchPoint> touchPoints =
-                QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, QTouchDevicePrivate::get(m_fakeTouchDevice)->id, &type);
+                QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
@@ -2832,7 +2832,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
-            if (e->device->type() == QTouchDevice::TouchPad) {
+            if (e->device->type() == QInputDevice::DeviceType::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 w = d->activeTouchPoints.isEmpty()
                     ? QPointer<QWindow>()
@@ -2997,7 +2997,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
         if (!e->synthetic() && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
             // exclude devices which generate their own mouse events
-            if (!(touchEvent.device()->capabilities() & QTouchDevice::MouseEmulation)) {
+            if (!(touchEvent.device()->capabilities().testFlag(QInputDevice::Capability::MouseEmulation))) {
 
                 if (eventType == QEvent::TouchEnd)
                     self->synthesizedMousePoints.clear();
@@ -4271,7 +4271,7 @@ Qt::MouseEventSource QGuiApplicationPrivate::mouseEventSource(const QMouseEvent 
 void QGuiApplicationPrivate::setMouseEventSource(QMouseEvent *event, Qt::MouseEventSource source)
 {
     // Mouse event synthesization status is encoded in the caps field because
-    // QTouchDevice::CapabilityFlag uses only 6 bits from it.
+    // QPointingDevice::Capability uses only 6 bits from it.
     int value = source;
     Q_ASSERT(value <= MouseSourceMaskSrc);
     event->caps &= ~MouseSourceMaskDst;

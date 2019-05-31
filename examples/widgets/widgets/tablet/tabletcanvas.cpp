@@ -106,7 +106,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
             break;
         case QEvent::TabletMove:
 #ifndef Q_OS_IOS
-            if (event->deviceType() == QTabletEvent::RotationStylus)
+            if (event->pointingDevice() && event->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Rotation))
                 updateCursor(event);
 #endif
             if (m_deviceDown) {
@@ -163,7 +163,7 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
 
     switch (event->deviceType()) {
 //! [6]
-        case QTabletEvent::Airbrush:
+        case QInputDevice::DeviceType::Airbrush:
             {
                 painter.setPen(Qt::NoPen);
                 QRadialGradient grad(lastPoint.pos, m_pen.widthF() * 10.0);
@@ -177,29 +177,9 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 update(QRect(event->position().toPoint() - QPoint(radius, radius), QSize(radius * 2, radius * 2)));
             }
             break;
-        case QTabletEvent::RotationStylus:
-            {
-                m_brush.setStyle(Qt::SolidPattern);
-                painter.setPen(Qt::NoPen);
-                painter.setBrush(m_brush);
-                QPolygonF poly;
-                qreal halfWidth = pressureToWidth(lastPoint.pressure);
-                QPointF brushAdjust(qSin(qDegreesToRadians(-lastPoint.rotation)) * halfWidth,
-                                    qCos(qDegreesToRadians(-lastPoint.rotation)) * halfWidth);
-                poly << lastPoint.pos + brushAdjust;
-                poly << lastPoint.pos - brushAdjust;
-                halfWidth = m_pen.widthF();
-                brushAdjust = QPointF(qSin(qDegreesToRadians(-event->rotation())) * halfWidth,
-                                      qCos(qDegreesToRadians(-event->rotation())) * halfWidth);
-                poly << event->position() - brushAdjust;
-                poly << event->position() + brushAdjust;
-                painter.drawConvexPolygon(poly);
-                update(poly.boundingRect().toRect());
-            }
-            break;
 //! [6]
-        case QTabletEvent::Puck:
-        case QTabletEvent::FourDMouse:
+        case QInputDevice::DeviceType::Puck:
+        case QInputDevice::DeviceType::Mouse:
             {
                 const QString error(tr("This input device is not supported by the example."));
 #if QT_CONFIG(statustip)
@@ -221,11 +201,30 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
 #endif
             }
             Q_FALLTHROUGH();
-        case QTabletEvent::Stylus:
-            painter.setPen(m_pen);
-            painter.drawLine(lastPoint.pos, event->position());
-            update(QRect(lastPoint.pos.toPoint(), event->position().toPoint()).normalized()
-                   .adjusted(-maxPenRadius, -maxPenRadius, maxPenRadius, maxPenRadius));
+        case QInputDevice::DeviceType::Stylus:
+            if (event->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Rotation)) {
+                m_brush.setStyle(Qt::SolidPattern);
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(m_brush);
+                QPolygonF poly;
+                qreal halfWidth = pressureToWidth(lastPoint.pressure);
+                QPointF brushAdjust(qSin(qDegreesToRadians(-lastPoint.rotation)) * halfWidth,
+                                    qCos(qDegreesToRadians(-lastPoint.rotation)) * halfWidth);
+                poly << lastPoint.pos + brushAdjust;
+                poly << lastPoint.pos - brushAdjust;
+                halfWidth = m_pen.widthF();
+                brushAdjust = QPointF(qSin(qDegreesToRadians(-event->rotation())) * halfWidth,
+                                      qCos(qDegreesToRadians(-event->rotation())) * halfWidth);
+                poly << event->position() - brushAdjust;
+                poly << event->position() + brushAdjust;
+                painter.drawConvexPolygon(poly);
+                update(poly.boundingRect().toRect());
+            } else {
+                painter.setPen(m_pen);
+                painter.drawLine(lastPoint.pos, event->position());
+                update(QRect(lastPoint.pos.toPoint(), event->position().toPoint()).normalized()
+                       .adjusted(-maxPenRadius, -maxPenRadius, maxPenRadius, maxPenRadius));
+            }
             break;
     }
 }
@@ -251,7 +250,7 @@ void TabletCanvas::updateBrush(const QTabletEvent *event)
             m_color.setAlphaF(event->pressure());
             break;
         case TangentialPressureValuator:
-            if (event->deviceType() == QTabletEvent::Airbrush)
+            if (event->deviceType() == QInputDevice::DeviceType::Airbrush)
                 m_color.setAlphaF(qMax(0.01, (event->tangentialPressure() + 1.0) / 2.0));
             else
                 m_color.setAlpha(255);
@@ -293,7 +292,7 @@ void TabletCanvas::updateBrush(const QTabletEvent *event)
     }
 
 //! [10] //! [11]
-    if (event->pointerType() == QTabletEvent::Eraser) {
+    if (event->pointerType() == QPointingDevice::PointerType::Eraser) {
         m_brush.setColor(Qt::white);
         m_pen.setColor(Qt::white);
         m_pen.setWidthF(event->pressure() * 10 + 1);
@@ -309,34 +308,35 @@ void TabletCanvas::updateCursor(const QTabletEvent *event)
 {
     QCursor cursor;
     if (event->type() != QEvent::TabletLeaveProximity) {
-        if (event->pointerType() == QTabletEvent::Eraser) {
+        if (event->pointerType() == QPointingDevice::PointerType::Eraser) {
             cursor = QCursor(QPixmap(":/images/cursor-eraser.png"), 3, 28);
         } else {
             switch (event->deviceType()) {
-            case QTabletEvent::Stylus:
-                cursor = QCursor(QPixmap(":/images/cursor-pencil.png"), 0, 0);
+            case QInputDevice::DeviceType::Stylus:
+                if (event->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Rotation)) {
+                    QImage origImg(QLatin1String(":/images/cursor-felt-marker.png"));
+                    QImage img(32, 32, QImage::Format_ARGB32);
+                    QColor solid = m_color;
+                    solid.setAlpha(255);
+                    img.fill(solid);
+                    QPainter painter(&img);
+                    QTransform transform = painter.transform();
+                    transform.translate(16, 16);
+                    transform.rotate(event->rotation());
+                    painter.setTransform(transform);
+                    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                    painter.drawImage(-24, -24, origImg);
+                    painter.setCompositionMode(QPainter::CompositionMode_HardLight);
+                    painter.drawImage(-24, -24, origImg);
+                    painter.end();
+                    cursor = QCursor(QPixmap::fromImage(img), 16, 16);
+                } else {
+                    cursor = QCursor(QPixmap(":/images/cursor-pencil.png"), 0, 0);
+                }
                 break;
-            case QTabletEvent::Airbrush:
+            case QInputDevice::DeviceType::Airbrush:
                 cursor = QCursor(QPixmap(":/images/cursor-airbrush.png"), 3, 4);
                 break;
-            case QTabletEvent::RotationStylus: {
-                QImage origImg(QLatin1String(":/images/cursor-felt-marker.png"));
-                QImage img(32, 32, QImage::Format_ARGB32);
-                QColor solid = m_color;
-                solid.setAlpha(255);
-                img.fill(solid);
-                QPainter painter(&img);
-                QTransform transform = painter.transform();
-                transform.translate(16, 16);
-                transform.rotate(event->rotation());
-                painter.setTransform(transform);
-                painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-                painter.drawImage(-24, -24, origImg);
-                painter.setCompositionMode(QPainter::CompositionMode_HardLight);
-                painter.drawImage(-24, -24, origImg);
-                painter.end();
-                cursor = QCursor(QPixmap::fromImage(img), 16, 16);
-            } break;
             default:
                 break;
             }

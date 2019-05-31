@@ -49,7 +49,6 @@
 
 #include <QDebug>
 #include <QGuiApplication>
-#include <QTouchDevice>
 
 #include <errno.h>
 #include <sys/keycodes.h>
@@ -146,10 +145,10 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     , m_focusLostTimer(-1)
 {
     // Create a touch device
-    m_touchDevice = new QTouchDevice;
-    m_touchDevice->setType(QTouchDevice::TouchScreen);
-    m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::Pressure | QTouchDevice::NormalizedPosition);
-    QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+    m_touchDevice = new QPointingDevice;
+    m_touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
+    m_touchDevice->setCapabilities(QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::Pressure | QPointingDevice::Capability::NormalizedPosition);
+    QWindowSystemInterface::registerInputDevice(m_touchDevice);
 
     // initialize array of touch points
     for (int i = 0; i < MaximumTouchPoints; i++) {

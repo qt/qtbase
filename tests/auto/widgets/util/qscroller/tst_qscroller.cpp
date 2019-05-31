@@ -128,7 +128,7 @@ private slots:
     void multipleWindows();
 
 private:
-    QTouchDevice *m_touchScreen = QTest::createTouchDevice();
+    QPointingDevice *m_touchScreen = QTest::createTouchDevice();
 };
 
 /*! \internal

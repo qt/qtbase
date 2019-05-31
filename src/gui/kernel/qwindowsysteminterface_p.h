@@ -297,10 +297,10 @@ public:
 
     class TouchEvent : public InputEvent {
     public:
-        TouchEvent(QWindow *w, ulong time, QEvent::Type t, QTouchDevice *dev,
+        TouchEvent(QWindow *w, ulong time, QEvent::Type t, const QPointingDevice *dev,
                    const QList<QTouchEvent::TouchPoint> &p, Qt::KeyboardModifiers mods)
             :InputEvent(w, time, Touch, mods), device(dev), points(p), touchType(t) { }
-        QTouchDevice *device;
+        const QPointingDevice *device;
         QList<QTouchEvent::TouchPoint> points;
         QEvent::Type touchType;
     };
@@ -440,7 +440,7 @@ public:
 #ifndef QT_NO_GESTURES
     class GestureEvent : public InputEvent {
     public:
-        GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, QTouchDevice *dev, QPointF pos, QPointF globalPos)
+        GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, const QPointingDevice *dev, QPointF pos, QPointF globalPos)
             : InputEvent(window, time, Gesture, Qt::NoModifier), type(type), pos(pos), globalPos(globalPos),
               realValue(0), sequenceId(0), intValue(0), device(dev) { }
         Qt::NativeGestureType type;
@@ -451,7 +451,7 @@ public:
         // Windows
         ulong sequenceId;
         quint64 intValue;
-        QTouchDevice *device;
+        const QPointingDevice *device;
     };
 #endif
 
@@ -533,11 +533,10 @@ public:
 
     static QList<QTouchEvent::TouchPoint>
         fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
-                              const QWindow *window, quint8 deviceId, QEvent::Type *type = nullptr);
+                              const QWindow *window, QEvent::Type *type = nullptr);
     static QList<QWindowSystemInterface::TouchPoint>
         toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
                             const QWindow *window);
-    static void clearPointIdMap();
 
     static void installWindowSystemEventHandler(QWindowSystemEventHandler *handler);
     static void removeWindowSystemEventhandler(QWindowSystemEventHandler *handler);

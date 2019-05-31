@@ -536,7 +536,7 @@ void MainWindow::dumpTouchDevices()
 {
     QString message;
     QDebug debug(&message);
-    const QList<const QTouchDevice *> devices = QTouchDevice::devices();
+    const QList<const QPointingDevice *> devices = QPointingDevice::devices();
     debug << devices.size() << "Device(s):\n";
     for (int i = 0; i < devices.size(); ++i)
         debug << "Device #" << i << devices.at(i) << '\n';

@@ -490,7 +490,7 @@ private slots:
 
 private:
     GraphicsItems paintedItems;
-    QTouchDevice *m_touchDevice = nullptr;
+    QPointingDevice *m_touchDevice = nullptr;
 };
 
 void tst_QGraphicsItem::initMain()

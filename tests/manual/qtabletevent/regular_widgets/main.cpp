@@ -48,14 +48,14 @@ enum TabletPointType {
 
 struct TabletPoint
 {
-    TabletPoint(const QPointF &p = QPointF(), TabletPointType t = TabletMove,
-                Qt::MouseButton b = Qt::LeftButton, QTabletEvent::PointerType pt = QTabletEvent::UnknownPointer, qreal prs = 0, qreal rotation = 0) :
+    TabletPoint(const QPointF &p = QPointF(), TabletPointType t = TabletMove, Qt::MouseButton b = Qt::LeftButton,
+                QPointingDevice::PointerType pt = QPointingDevice::PointerType::Unknown, qreal prs = 0, qreal rotation = 0) :
         pos(p), type(t), button(b), ptype(pt), pressure(prs), angle(rotation) {}
 
     QPointF pos;
     TabletPointType type;
     Qt::MouseButton button;
-    QTabletEvent::PointerType ptype;
+    QPointingDevice::PointerType ptype;
     qreal pressure;
     qreal angle;
 };
@@ -167,7 +167,7 @@ void EventReportWidget::paintEvent(QPaintEvent *)
                   break;
               case TabletMove:
                   if (t.pressure > 0.0) {
-                      p.setPen(t.ptype == QTabletEvent::Eraser ? Qt::red : Qt::black);
+                      p.setPen(t.ptype == QPointingDevice::PointerType::Eraser ? Qt::red : Qt::black);
                       if (t.angle != 0.0) {
                           p.save();
                           p.translate(t.pos);
@@ -205,7 +205,7 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
 {
     QWidget::tabletEvent(event);
     bool isMove = false;
-    m_tabletPos = event->posF();
+    m_tabletPos = event->position();
     switch (event->type()) {
     case QEvent::TabletMove:
         m_points.push_back(TabletPoint(m_tabletPos, TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
@@ -229,7 +229,7 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
 
     if (!(isMove && m_lastIsTabletMove)) {
         QDebug d = qDebug();
-        d << event << " global position = " << event->globalPos()
+        d << event << " global position = " << event->globalPosition()
                    << " cursor at " << QCursor::pos();
         if (event->button() != Qt::NoButton)
             d << " changed button " << event->button();
@@ -245,7 +245,7 @@ bool EventReportWidget::event(QEvent *event)
         event->accept();
         m_touchPoints.clear();
         for (const QTouchEvent::TouchPoint &p : static_cast<const QTouchEvent *>(event)->touchPoints())
-            m_touchPoints.append(p.pos());
+            m_touchPoints.append(p.position());
         update();
         break;
     case QEvent::TouchEnd:

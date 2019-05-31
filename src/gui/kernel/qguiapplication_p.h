@@ -285,8 +285,8 @@ public:
 #endif
 
     struct ActiveTouchPointsKey {
-        ActiveTouchPointsKey(QTouchDevice *dev, int id) : device(dev), touchPointId(id) { }
-        QTouchDevice *device;
+        ActiveTouchPointsKey(const QPointingDevice *dev, int id) : device(dev), touchPointId(id) { }
+        const QPointingDevice *device;
         int touchPointId;
     };
     struct ActiveTouchPointsValue {
@@ -357,7 +357,7 @@ private:
     friend class QDragManager;
 
     static QGuiApplicationPrivate *self;
-    static QTouchDevice *m_fakeTouchDevice;
+    static QPointingDevice *m_fakeTouchDevice;
     static int m_fakeMouseSourcePointId;
     QSharedPointer<QColorTrcLut> m_a8ColorProfile;
     QSharedPointer<QColorTrcLut> m_a32ColorProfile;

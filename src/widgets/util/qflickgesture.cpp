@@ -48,7 +48,7 @@
 #include "qgraphicsview.h"
 #endif
 #include "qscroller.h"
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include "private/qapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qflickgesture_p.h"
@@ -547,7 +547,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         if (!inputType)
             inputType = QScroller::InputMove;
 
-        if (te->device()->type() == QTouchDevice::TouchPad) {
+        if (te->pointingDevice()->type() == QInputDevice::DeviceType::TouchPad) {
             if (te->touchPoints().count() != 2)  // 2 fingers on pad
                 return Ignore;
 

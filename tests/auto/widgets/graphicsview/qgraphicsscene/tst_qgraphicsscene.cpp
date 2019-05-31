@@ -4849,8 +4849,8 @@ void tst_QGraphicsScene::focusOnTouch()
 
     scene.setFocusOnTouch(false);
 
-    QTouchDevice device;
-    device.setType(QTouchDevice::TouchPad);
+    QPointingDevice device;
+    device.setType(QInputDevice::DeviceType::TouchPad);
     QList<QTouchEvent::TouchPoint> touchPoints;
     QTouchEvent::TouchPoint point;
     point.setScenePos(QPointF(10, 10));

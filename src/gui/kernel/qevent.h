@@ -49,6 +49,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qurl.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qwindowdefs.h>
@@ -61,8 +62,9 @@ QT_BEGIN_NAMESPACE
 
 class QFile;
 class QAction;
+class QInputDevice;
+class QPointingDevice;
 class QScreen;
-class QTouchDevice;
 #if QT_CONFIG(gestures)
 class QGesture;
 #endif
@@ -70,15 +72,28 @@ class QGesture;
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
 public:
-    explicit QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    explicit QInputEvent(Type type, const QInputDevice *m_dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QInputEvent();
+    const QInputDevice *device() const { return m_dev; }
+    QInputDevice::DeviceType deviceType() const { return m_dev ? m_dev->type() : QInputDevice::DeviceType::Unknown; }
     inline Qt::KeyboardModifiers modifiers() const { return modState; }
     inline void setModifiers(Qt::KeyboardModifiers amodifiers) { modState = amodifiers; }
     inline ulong timestamp() const { return ts; }
     inline void setTimestamp(ulong atimestamp) { ts = atimestamp; }
 protected:
+    const QInputDevice *m_dev = nullptr;
     Qt::KeyboardModifiers modState;
     ulong ts;
+};
+
+class Q_GUI_EXPORT QPointerEvent : public QInputEvent
+{
+public:
+    explicit QPointerEvent(Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    const QPointingDevice *pointingDevice() const;
+    QPointingDevice::PointerType pointerType() const {
+        return pointingDevice() ? pointingDevice()->pointerType() : QPointingDevice::PointerType::Unknown;
+    }
 };
 
 class Q_GUI_EXPORT QEnterEvent : public QEvent
@@ -118,7 +133,7 @@ protected:
     QPointF l, s, g;
 };
 
-class Q_GUI_EXPORT QMouseEvent : public QInputEvent
+class Q_GUI_EXPORT QMouseEvent : public QPointerEvent
 {
 public:
     QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
@@ -207,7 +222,7 @@ protected:
 };
 
 #if QT_CONFIG(wheelevent)
-class Q_GUI_EXPORT QWheelEvent : public QInputEvent
+class Q_GUI_EXPORT QWheelEvent : public QPointerEvent
 {
 public:
     enum { DefaultDeltasPerStep = 120 };
@@ -247,19 +262,19 @@ protected:
 #endif
 
 #if QT_CONFIG(tabletevent)
-class Q_GUI_EXPORT QTabletEvent : public QInputEvent
+class Q_GUI_EXPORT QTabletEvent : public QPointerEvent
 {
     Q_GADGET
 public:
-    enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse, RotationStylus };
-    Q_ENUM(TabletDevice)
-    enum PointerType { UnknownPointer, Pen, Cursor, Eraser };
-    Q_ENUM(PointerType)
-
     QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
-                 int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                 int deviceType, int pointerType, qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,
                  Qt::KeyboardModifiers keyState, qint64 uniqueID,
+                 Qt::MouseButton button, Qt::MouseButtons buttons);
+    QTabletEvent(Type t, const QPointingDevice *dev, const QPointF &pos, const QPointF &globalPos,
+                 qreal pressure, int xTilt, int yTilt,
+                 qreal tangentialPressure, qreal rotation, int z,
+                 Qt::KeyboardModifiers keyState,
                  Qt::MouseButton button, Qt::MouseButtons buttons);
     ~QTabletEvent();
 
@@ -288,35 +303,31 @@ public:
 #endif
     inline QPointF position() const { return mPos; }
     inline QPointF globalPosition() const { return mGPos; }
-    inline TabletDevice deviceType() const { return TabletDevice(mDev); }
-    inline PointerType pointerType() const { return PointerType(mPointerType); }
-    inline qint64 uniqueId() const { return mUnique; }
+    inline qint64 uniqueId() const { return pointingDevice() ? pointingDevice()->uniqueId().numericId() : -1; }
     inline qreal pressure() const { return mPress; }
     inline int z() const { return mZ; }
     inline qreal tangentialPressure() const { return mTangential; }
     inline qreal rotation() const { return mRot; }
     inline int xTilt() const { return mXT; }
     inline int yTilt() const { return mYT; }
-    Qt::MouseButton button() const;
-    Qt::MouseButtons buttons() const;
+    inline Qt::MouseButton button() const { return mButton; }
+    inline Qt::MouseButtons buttons() const { return mButtons; }
 
 protected:
     QPointF mPos, mGPos;
-    int mDev, mPointerType, mXT, mYT, mZ;
+    int mXT, mYT, mZ;
     qreal mPress, mTangential, mRot;
-    qint64 mUnique;
-
-    // QTabletEventPrivate for extra storage.
-    // ### Qt 6: QPointingEvent will have Buttons, QTabletEvent will inherit
-    void *mExtra;
+    // TODO refactor to parent class along with QMouseEvent's button storage
+    Qt::MouseButton mButton;
+    Qt::MouseButtons mButtons;
 };
 #endif // QT_CONFIG(tabletevent)
 
 #if QT_CONFIG(gestures)
-class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
+class Q_GUI_EXPORT QNativeGestureEvent : public QPointerEvent
 {
 public:
-    QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &scenePos,
+    QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                         const QPointF &globalPos, qreal value, ulong sequenceId, quint64 intArgument);
     ~QNativeGestureEvent();
     Qt::NativeGestureType gestureType() const { return mGestureType; }
@@ -341,8 +352,6 @@ public:
     QPointF scenePosition() const { return mScenePos; }
     QPointF globalPosition() const { return mGlobalPos; }
 
-    const QTouchDevice *device() const { return mDevice; }
-
 protected:
     Qt::NativeGestureType mGestureType;
     QPointF mLocalPos;
@@ -351,7 +360,6 @@ protected:
     qreal mRealValue;
     ulong mSequenceId;
     quint64 mIntValue;
-    const QTouchDevice *mDevice;
 };
 #endif // QT_CONFIG(gestures)
 
@@ -817,38 +825,8 @@ inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? 
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
 #endif // QT_CONFIG(shortcut)
 
-class Q_GUI_EXPORT QPointingDeviceUniqueId
-{
-    Q_GADGET
-    Q_PROPERTY(qint64 numericId READ numericId CONSTANT)
-public:
-    Q_ALWAYS_INLINE
-    Q_DECL_CONSTEXPR QPointingDeviceUniqueId() noexcept : m_numericId(-1) {}
-    // compiler-generated copy/move ctor/assignment operators are ok!
-    // compiler-generated dtor is ok!
-
-    static QPointingDeviceUniqueId fromNumericId(qint64 id);
-
-    Q_ALWAYS_INLINE Q_DECL_CONSTEXPR bool isValid() const noexcept { return m_numericId != -1; }
-    qint64 numericId() const noexcept;
-
-private:
-    // TODO: for TUIO 2, or any other type of complex token ID, an internal
-    // array (or hash) can be added to hold additional properties.
-    // In this case, m_numericId will then turn into an index into that array (or hash).
-    qint64 m_numericId;
-};
-Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
-
-Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept;
-inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
-{ return !operator==(lhs, rhs); }
-Q_GUI_EXPORT size_t qHash(QPointingDeviceUniqueId key, size_t seed = 0) noexcept;
-
-
-
 class QTouchEventTouchPointPrivate;
-class Q_GUI_EXPORT QTouchEvent : public QInputEvent
+class Q_GUI_EXPORT QTouchEvent : public QPointerEvent
 {
 public:
     class Q_GUI_EXPORT TouchPoint
@@ -963,7 +941,7 @@ public:
     };
 
     explicit QTouchEvent(QEvent::Type eventType,
-                         QTouchDevice *device = nullptr,
+                         const QPointingDevice *source = nullptr,
                          Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                          Qt::TouchPointStates touchPointStates = Qt::TouchPointStates(),
                          const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
@@ -973,21 +951,17 @@ public:
     inline QObject *target() const { return _target; }
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
-    inline QTouchDevice *device() const { return _device; }
 
     // ### Qt 6: move private, rename appropriately, only friends can call them; or just let friends modify variables directly
 #if QT_DEPRECATED_SINCE(6, 0)
     inline void setWindow(QWindow *awindow) { _window = awindow; }
     inline void setTarget(QObject *atarget) { _target = atarget; }
-    inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
-    inline void setDevice(QTouchDevice *adevice) { _device = adevice; }
 #endif // QT_DEPRECATED_SINCE(6, 0)
 
 protected:
     QWindow *_window;
     QObject *_target;
-    QTouchDevice *_device;
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
 

@@ -32,7 +32,7 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QGestureEvent>
 #include <QtGui/QScreen>
-#include <QtGui/QTouchDevice>
+#include <QtGui/QPointingDevice>
 #include <QtCore/QVector>
 #include <QtCore/QString>
 #include <QtCore/QHash>
@@ -57,7 +57,7 @@ private Q_SLOTS:
 
 private:
     const int m_fingerDistance;
-    QTouchDevice *m_touchDevice;
+    QPointingDevice *m_touchDevice;
 };
 
 tst_QGestureRecognizer::tst_QGestureRecognizer()

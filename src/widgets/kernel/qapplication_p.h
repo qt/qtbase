@@ -81,7 +81,7 @@ class QGraphicsScene;
 class QObject;
 class QWidget;
 class QSocketNotifier;
-class QTouchDevice;
+class QPointingDevice;
 #ifndef QT_NO_GESTURES
 class QGestureManager;
 #endif
@@ -247,15 +247,15 @@ public:
     void initializeMultitouch_sys();
     void cleanupMultitouch();
     void cleanupMultitouch_sys();
-    QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint);
+    QWidget *findClosestTouchPointTarget(const QPointingDevice *device, const QTouchEvent::TouchPoint &touchPoint);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     void activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchBeginEvent);
     static bool translateRawTouchEvent(QWidget *widget,
-                                       QTouchDevice *device,
+                                       const QPointingDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
                                        ulong timestamp);
-    static void translateTouchCancel(QTouchDevice *device, ulong timestamp);
+    static void translateTouchCancel(const QPointingDevice *device, ulong timestamp);
 
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const override;
 private:

@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWindow;
-class QTouchDevice;
+class QPointingDevice;
 
 class QWindowsMouseHandler
 {
@@ -58,8 +58,8 @@ class QWindowsMouseHandler
 public:
     QWindowsMouseHandler();
 
-    QTouchDevice *touchDevice() const { return m_touchDevice; }
-    QTouchDevice *ensureTouchDevice();
+    QPointingDevice *touchDevice() const { return m_touchDevice; }
+    QPointingDevice *ensureTouchDevice();
 
     bool translateMouseEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
@@ -90,7 +90,7 @@ private:
     QPointer<QWindow> m_trackedWindow;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QHash<int, QPointF> m_lastTouchPositions;
-    QTouchDevice *m_touchDevice = nullptr;
+    QPointingDevice *m_touchDevice = nullptr;
     bool m_leftButtonDown = false;
     QWindow *m_previousCaptureWindow = nullptr;
     QEvent::Type m_lastEventType = QEvent::None;

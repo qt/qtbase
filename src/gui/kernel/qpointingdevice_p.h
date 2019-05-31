@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,65 +37,60 @@
 **
 ****************************************************************************/
 
-#ifndef QTOUCHDEVICE_H
-#define QTOUCHDEVICE_H
+#ifndef QPOINTINGDEVICE_P_H
+#define QPOINTINGDEVICE_P_H
 
-#include <QtGui/qtguiglobal.h>
-#include <QtCore/qobject.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/private/qinputdevice_p.h>
+#include <QtGui/qpointingdevice.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDebug;
-class QTouchDevicePrivate;
-
-class Q_GUI_EXPORT QTouchDevice
+class Q_GUI_EXPORT QPointingDevicePrivate : public QInputDevicePrivate
 {
-    Q_GADGET
 public:
-    enum DeviceType {
-        TouchScreen,
-        TouchPad
-    };
-    Q_ENUM(DeviceType)
+    QPointingDevicePrivate(const QString &name, qint64 id, QInputDevice::DeviceType type,
+                           QPointingDevice::PointerType pType, QPointingDevice::Capabilities caps,
+                           int maxPoints, int buttonCount,
+                           const QString &seatName = QString(),
+                           QPointingDeviceUniqueId uniqueId = QPointingDeviceUniqueId())
+      : QInputDevicePrivate(name, id, type, caps, seatName),
+        uniqueId(uniqueId),
+        maximumTouchPoints(qint8(maxPoints)), buttonCount(qint8(buttonCount)),
+        pointerType(pType)
+    {
+    }
 
-    enum CapabilityFlag {
-        Position = 0x0001,
-        Area = 0x0002,
-        Pressure = 0x0004,
-        Velocity = 0x0008,
-        RawPositions = 0x0010,
-        NormalizedPosition = 0x0020,
-        MouseEmulation = 0x0040
-    };
-    Q_FLAG(CapabilityFlag)
-    Q_DECLARE_FLAGS(Capabilities, CapabilityFlag)
+    void * extra = nullptr; // QPA plugins can store platform-specific stuff here
+    QPointingDeviceUniqueId uniqueId;
+    quint32 toolId = 0;         // only for Wacom tablets
+    qint8 maximumTouchPoints = 0;
+    qint8 buttonCount = 0;
+    QPointingDevice::PointerType pointerType = QPointingDevice::PointerType::Unknown;
+    bool toolProximity = false;  // only for Wacom tablets
 
-    QTouchDevice();
-    ~QTouchDevice();
+    inline static QPointingDevicePrivate *get(QPointingDevice *q)
+    {
+        return static_cast<QPointingDevicePrivate *>(QObjectPrivate::get(q));
+    }
 
-    static QList<const QTouchDevice *> devices();
-
-    QString name() const;
-    DeviceType type() const;
-    Capabilities capabilities() const;
-    int maximumTouchPoints() const;
-
-    void setName(const QString &name);
-    void setType(DeviceType devType);
-    void setCapabilities(Capabilities caps);
-    void setMaximumTouchPoints(int max);
-
-private:
-    QTouchDevicePrivate *d;
-    friend class QTouchDevicePrivate;
+    inline static const QPointingDevicePrivate *get(const QPointingDevice *q)
+    {
+        return static_cast<const QPointingDevicePrivate *>(QObjectPrivate::get(q));
+    }
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchDevice::Capabilities)
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QTouchDevice *);
-#endif
 
 QT_END_NAMESPACE
 
-#endif // QTOUCHDEVICE_H
+#endif // QPOINTINGDEVICE_P_H

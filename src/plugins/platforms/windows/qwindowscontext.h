@@ -80,7 +80,7 @@ struct QWindowCreationContext;
 struct QWindowsContextPrivate;
 class QPoint;
 class QKeyEvent;
-class QTouchDevice;
+class QPointingDevice;
 
 struct QWindowsUser32DLL
 {
@@ -265,7 +265,7 @@ public:
 
     static DWORD readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue);
 
-    QTouchDevice *touchDevice() const;
+    QPointingDevice *touchDevice() const;
 
     static bool filterNativeEvent(MSG *msg, LRESULT *result);
     static bool filterNativeEvent(QWindow *window, MSG *msg, LRESULT *result);

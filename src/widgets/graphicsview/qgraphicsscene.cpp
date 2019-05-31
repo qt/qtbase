@@ -235,7 +235,7 @@
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qpolygon.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtWidgets/qstyleoption.h>
 #if QT_CONFIG(tooltip)
 #include <QtWidgets/qtooltip.h>
@@ -5859,7 +5859,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         // update state
         QGraphicsItem *item = nullptr;
         if (touchPoint.state() == Qt::TouchPointPressed) {
-            if (sceneTouchEvent->device()->type() == QTouchDevice::TouchPad) {
+            if (sceneTouchEvent->pointingDevice()->type() == QInputDevice::DeviceType::TouchPad) {
                 // on touch-pad devices, send all touch points to the same item
                 item = itemForTouchPointId.isEmpty()
                        ? 0
@@ -5874,7 +5874,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
                 item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.constFirst();
             }
 
-            if (sceneTouchEvent->device()->type() == QTouchDevice::TouchScreen) {
+            if (sceneTouchEvent->pointingDevice()->type() == QInputDevice::DeviceType::TouchScreen) {
                 // on touch-screens, combine this touch point with the closest one we find
                 int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePosition());
                 QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
@@ -5938,13 +5938,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             break;
         }
 
-        QTouchEvent touchEvent(eventType);
+        QTouchEvent touchEvent(eventType, sceneTouchEvent->pointingDevice(), sceneTouchEvent->modifiers(), it.value().first, it.value().second);
+        // TODO more constructor args and fewer setters?
         touchEvent.setWindow(sceneTouchEvent->window());
         touchEvent.setTarget(sceneTouchEvent->target());
-        touchEvent.setDevice(sceneTouchEvent->device());
         touchEvent.setModifiers(sceneTouchEvent->modifiers());
-        touchEvent.setTouchPointStates(it.value().first);
-        touchEvent.setTouchPoints(it.value().second);
         touchEvent.setTimestamp(sceneTouchEvent->timestamp());
 
         switch (touchEvent.type()) {

@@ -41,7 +41,7 @@
 #include "qwindowsysteminterface_p.h"
 #include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
-#include "private/qtouchdevice_p.h"
+#include "private/qpointingdevice_p.h"
 #include <QAbstractEventDispatcher>
 #include <qpa/qplatformintegration.h>
 #include <qdebug.h>
@@ -56,6 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaInputDevices, "qt.qpa.input.devices")
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
@@ -575,60 +576,31 @@ bool QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, 
     return acceptVert || acceptHorz;
 }
 
-void QWindowSystemInterface::registerTouchDevice(const QTouchDevice *device)
-{
-    QTouchDevicePrivate::registerDevice(device);
-}
-
-void QWindowSystemInterface::unregisterTouchDevice(const QTouchDevice *device)
-{
-    QTouchDevicePrivate::unregisterDevice(device);
-}
-
-bool QWindowSystemInterface::isTouchDeviceRegistered(const QTouchDevice *device)
-{
-    return QTouchDevicePrivate::isRegistered(device);
-}
-
-static int g_nextPointId = 1;
-
-// map from device-independent point id (arbitrary) to "Qt point" ids
-static QBasicMutex pointIdMapMutex;
-typedef QMap<quint64, int> PointIdMap;
-Q_GLOBAL_STATIC(PointIdMap, g_pointIdMap)
-
 /*!
     \internal
-    This function maps potentially arbitrary point ids \a pointId in the 32 bit
-    value space to start from 1 and increase incrementally for each touch point
-    held down. If all touch points are released it will reset the id back to 1
-    for the following touch point.
+    Register a new input \a device.
 
-    We can then assume that the touch points ids will never become too large,
-    and it will then put the device identifier \a deviceId in the upper 8 bits.
-    This leaves us with max 255 devices, and 16.7M taps without full release
-    before we run out of value space.
+    It is expected that every platform plugin will discover available input
+    devices at startup, and whenever a new device is plugged in, if possible.
+    If that's not possible, then it at least must call this function before
+    sending an event whose QInputEvent::source() is this device.
+
+    When a device is unplugged, the platform plugin should destroy the
+    corresponding QInputDevice instance. There is no unregisterInputDevice()
+    function, because it's enough for the destructor to call
+    QInputDevicePrivate::unregisterDevice(); while other parts of Qt can
+    connect to the QObject::destroyed() signal to be notified when a device is
+    unplugged or otherwise destroyed.
 */
-static int acquireCombinedPointId(quint8 deviceId, int pointId)
+void QWindowSystemInterface::registerInputDevice(const QInputDevice *device)
 {
-    const auto locker = qt_scoped_lock(pointIdMapMutex);
-
-    quint64 combinedId64 = (quint64(deviceId) << 32) + pointId;
-    auto it = g_pointIdMap->constFind(combinedId64);
-    int uid;
-    if (it == g_pointIdMap->constEnd()) {
-        uid = g_nextPointId++;
-        g_pointIdMap->insert(combinedId64, uid);
-    } else {
-        uid = *it;
-    }
-    return (deviceId << 24) + uid;
+    qCDebug(lcQpaInputDevices) << "register" << device;
+    QInputDevicePrivate::registerDevice(device);
 }
 
 QList<QTouchEvent::TouchPoint>
     QWindowSystemInterfacePrivate::fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
-                                                         const QWindow *window, quint8 deviceId,
-                                                         QEvent::Type *type)
+                                                         const QWindow *window, QEvent::Type *type)
 {
     QList<QTouchEvent::TouchPoint> touchPoints;
     Qt::TouchPointStates states;
@@ -638,7 +610,7 @@ QList<QTouchEvent::TouchPoint>
     QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
-        p.setId(acquireCombinedPointId(deviceId, point->id));
+        p.setId(point->id);
         if (point->uniqueId >= 0)
             p.setUniqueId(point->uniqueId);
         p.setPressure(point->pressure);
@@ -649,7 +621,7 @@ QList<QTouchEvent::TouchPoint>
         p.setScreenPos(QHighDpi::fromNativePixels(point->area.center(), window));
         p.setEllipseDiameters(QHighDpi::fromNativePixels(point->area.size(), window));
 
-        // The local pos and rect are not set, they will be calculated
+        // The local pos is not set: it will be calculated
         // when the event gets processed by QGuiApplication.
 
         p.setNormalizedPos(QHighDpi::fromNativePixels(point->normalPosition, window));
@@ -670,31 +642,7 @@ QList<QTouchEvent::TouchPoint>
             *type = QEvent::TouchEnd;
     }
 
-    if (states == Qt::TouchPointReleased) {
-        const auto locker = qt_scoped_lock(pointIdMapMutex);
-
-        // All points on deviceId have been released.
-        // Remove all points associated with that device from g_pointIdMap.
-        // (On other devices, some touchpoints might still be pressed.
-        // But this function is only called with points from one device at a time.)
-        for (auto it = g_pointIdMap->begin(); it != g_pointIdMap->end();) {
-            if (it.key() >> 32 == quint64(deviceId))
-                it = g_pointIdMap->erase(it);
-            else
-                ++it;
-        }
-        if (g_pointIdMap->isEmpty())
-            g_nextPointId = 1;
-    }
-
     return touchPoints;
-}
-
-void QWindowSystemInterfacePrivate::clearPointIdMap()
-{
-    const auto locker = qt_scoped_lock(pointIdMapMutex);
-    g_pointIdMap->clear();
-    g_nextPointId = 1;
 }
 
 QList<QWindowSystemInterface::TouchPoint>
@@ -721,39 +669,38 @@ QList<QWindowSystemInterface::TouchPoint>
     return newList;
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchEvent, QWindow *window, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchEvent, QWindow *window, const QPointingDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     return handleTouchEvent<Delivery>(window, time, device, points, mods);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchEvent, QWindow *window, ulong timestamp, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchEvent, QWindow *window, ulong timestamp, const QPointingDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     if (!points.size()) // Touch events must have at least one point
         return false;
 
-    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
+    if (!QPointingDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
         return false;
 
     QEvent::Type type;
     QList<QTouchEvent::TouchPoint> touchPoints =
-            QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, QTouchDevicePrivate::get(device)->id, &type);
-
+            QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(window, timestamp, type, device, touchPoints, mods);
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchCancelEvent, QWindow *window, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchCancelEvent, QWindow *window, const QPointingDevice *device,
                                                     Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     return handleTouchCancelEvent<Delivery>(window, time, device, mods);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchCancelEvent, QWindow *window, ulong timestamp, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchCancelEvent, QWindow *window, ulong timestamp, const QPointingDevice *device,
                                                     Qt::KeyboardModifiers mods)
 {
     QWindowSystemInterfacePrivate::TouchEvent *e =
@@ -967,7 +914,7 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int poi
 }
 
 #ifndef QT_NO_GESTURES
-bool QWindowSystemInterface::handleGestureEvent(QWindow *window, QTouchDevice *device, ulong timestamp, Qt::NativeGestureType type,
+bool QWindowSystemInterface::handleGestureEvent(QWindow *window, const QPointingDevice *device, ulong timestamp, Qt::NativeGestureType type,
                                                 QPointF &local, QPointF &global)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
@@ -975,7 +922,7 @@ bool QWindowSystemInterface::handleGestureEvent(QWindow *window, QTouchDevice *d
        return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, QTouchDevice *device, ulong timestamp, Qt::NativeGestureType type,
+bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, const QPointingDevice *device, ulong timestamp, Qt::NativeGestureType type,
                                                                 qreal value, QPointF &local, QPointF &global)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
@@ -984,7 +931,7 @@ bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, QT
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-bool QWindowSystemInterface::handleGestureEventWithSequenceIdAndValue(QWindow *window, QTouchDevice *device, ulong timestamp, Qt::NativeGestureType type,
+bool QWindowSystemInterface::handleGestureEventWithSequenceIdAndValue(QWindow *window, const QPointingDevice *device, ulong timestamp, Qt::NativeGestureType type,
                                                                          ulong sequenceId, quint64 value, QPointF &local, QPointF &global)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
@@ -1217,16 +1164,19 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 
 namespace QTest
 {
-    Q_GUI_EXPORT QTouchDevice * createTouchDevice(QTouchDevice::DeviceType devType = QTouchDevice::TouchScreen)
+    Q_GUI_EXPORT QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen,
+                                                     QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     {
-        QTouchDevice *ret = new QTouchDevice();
-        ret->setType(devType);
-        QWindowSystemInterface::registerTouchDevice(ret);
+        static qint64 nextId = 0x100000000;
+        QPointingDevice *ret = new QPointingDevice(QLatin1String("test touch device"), nextId++,
+                                                   devType, QPointingDevice::PointerType::Finger,
+                                                   caps, 8, 0);
+        QWindowSystemInterface::registerInputDevice(ret);
         return ret;
     }
 }
 
-Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, QTouchDevice *device,
+Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {

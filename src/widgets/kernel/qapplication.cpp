@@ -79,7 +79,7 @@
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
 #include <QtGui/private/qwindow_p.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #include <qpa/qplatformtheme.h>
 #if QT_CONFIG(whatsthis)
 #include <QtWidgets/QWhatsThis>
@@ -3120,11 +3120,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPointF relpos = tablet->position();
             bool eventAccepted = tablet->isAccepted();
             while (w) {
-                QTabletEvent te(tablet->type(), relpos, tablet->globalPosition(),
-                                tablet->deviceType(), tablet->pointerType(),
+                QTabletEvent te(tablet->type(), tablet->pointingDevice(), relpos, tablet->globalPosition(),
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
-                                tablet->modifiers(), tablet->uniqueId(), tablet->button(), tablet->buttons());
+                                tablet->modifiers(), tablet->button(), tablet->buttons());
                 te.spont = e->spontaneous();
                 te.setAccepted(false);
                 res = d->notify_helper(w, w == receiver ? tablet : &te);
@@ -3975,7 +3974,7 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 {
 }
 
-QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint)
+QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice *device, const QTouchEvent::TouchPoint &touchPoint)
 {
     const QPointF screenPos = touchPoint.globalPosition();
     int closestTouchPointId = -1;
@@ -4007,12 +4006,13 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
 
     for (int i = 0, tc = touchEvent->touchPoints().count(); i < tc; ++i) {
         const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
-        activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(touchEvent->device(), touchPoint.id())].target = widget;
+        activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(
+                    touchEvent->pointingDevice(), touchPoint.id())].target = widget;
     }
 }
 
 bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
-                                                 QTouchDevice *device,
+                                                 const QPointingDevice *device,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints,
                                                  ulong timestamp)
 {
@@ -4032,7 +4032,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         ActiveTouchPointsKey touchInfoKey(device, touchPoint.id());
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         if (touchPoint.state() == Qt::TouchPointPressed) {
-            if (device->type() == QTouchDevice::TouchPad) {
+            if (device->type() == QInputDevice::DeviceType::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 target = d->activeTouchPoints.isEmpty()
                         ? QPointer<QObject>()
@@ -4050,7 +4050,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                     target = window;
             }
 
-            if (device->type() == QTouchDevice::TouchScreen) {
+            if (device->type() == QInputDevice::DeviceType::TouchScreen) {
                 QWidget *closestWidget = d->findClosestTouchPointTarget(device, touchPoint);
                 QWidget *widget = static_cast<QWidget *>(target.data());
                 if (closestWidget
@@ -4073,7 +4073,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         // Single-touch events are normally not sent unless WA_TouchPadAcceptSingleTouchEvents is set.
         // In Qt 4 this check was in OS X-only code. That behavior is preserved here by the #ifdef.
         if (touchPoints.count() == 1
-            && device->type() == QTouchDevice::TouchPad
+            && device->type() == QInputDevice::DeviceType::TouchPad
             && !targetWidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents))
             continue;
 #endif
@@ -4153,7 +4153,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     return accepted;
 }
 
-void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong timestamp)
+void QApplicationPrivate::translateTouchCancel(const QPointingDevice *device, ulong timestamp)
 {
     QTouchEvent touchEvent(QEvent::TouchCancel, device, QGuiApplication::keyboardModifiers());
     touchEvent.setTimestamp(timestamp);

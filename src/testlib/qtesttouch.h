@@ -51,22 +51,25 @@
 #include <QtTest/qtestspontaneevent.h>
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
+#include <QtGui/qpointingdevice.h>
 #include <QtGui/qwindow.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qpointingdevice.h>
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
+Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, const QPointingDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier);
 
 
 namespace QTest
 {
-    Q_GUI_EXPORT QTouchDevice * createTouchDevice(QTouchDevice::DeviceType devType = QTouchDevice::TouchScreen);
+    Q_GUI_EXPORT QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen,
+                                                     QInputDevice::Capabilities caps = QInputDevice::Capability::Position);
+
 
     class QTouchEventSequence
     {
@@ -151,12 +154,12 @@ namespace QTest
 
 private:
 #ifdef QT_WIDGETS_LIB
-        QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice, bool autoCommit)
+        QTouchEventSequence(QWidget *widget, QPointingDevice *aDevice, bool autoCommit)
             : targetWidget(widget), targetWindow(nullptr), device(aDevice), commitWhenDestroyed(autoCommit)
         {
         }
 #endif
-        QTouchEventSequence(QWindow *window, QTouchDevice *aDevice, bool autoCommit)
+        QTouchEventSequence(QWindow *window, QPointingDevice *aDevice, bool autoCommit)
             :
 #ifdef QT_WIDGETS_LIB
               targetWidget(nullptr),
@@ -204,18 +207,18 @@ private:
         QWidget *targetWidget;
 #endif
         QWindow *targetWindow;
-        QTouchDevice *device;
+        QPointingDevice *device;
         bool commitWhenDestroyed;
 #if defined(QT_WIDGETS_LIB) || defined(Q_CLANG_QDOC)
-        friend QTouchEventSequence touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit);
+        friend QTouchEventSequence touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit);
 #endif
-        friend QTouchEventSequence touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit);
+        friend QTouchEventSequence touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit);
     };
 
 #if defined(QT_WIDGETS_LIB) || defined(Q_CLANG_QDOC)
     inline
     QTouchEventSequence touchEvent(QWidget *widget,
-                                   QTouchDevice *device,
+                                   QPointingDevice *device,
                                    bool autoCommit = true)
     {
         return QTouchEventSequence(widget, device, autoCommit);
@@ -223,7 +226,7 @@ private:
 #endif
     inline
     QTouchEventSequence touchEvent(QWindow *window,
-                                   QTouchDevice *device,
+                                   QPointingDevice *device,
                                    bool autoCommit = true)
     {
         return QTouchEventSequence(window, device, autoCommit);
