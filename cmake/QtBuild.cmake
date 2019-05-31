@@ -354,7 +354,9 @@ function(qt_generate_global_config_pri_file)
     file(GENERATE
         OUTPUT "${qconfig_pri_target_path}"
         CONTENT
-        "QT.global.enabled_features = ${enabled_features}
+        "QT_ARCH = ${TEST_architecture_arch}
+QT_BUILDABI = ${TEST_buildAbi}
+QT.global.enabled_features = ${enabled_features}
 QT.global.disabled_features = ${disabled_features}
 QT_VERSION = ${PROJECT_VERSION}
 QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
