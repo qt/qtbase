@@ -792,7 +792,25 @@ void QAndroidInputContext::touchDown(int x, int y)
         m_handleMode = ShowCursor;
         // The VK will appear in a moment, stop the timer
         m_hideCursorHandleTimer.stop();
-        focusObjectStopComposing();
+
+        if (focusObjectIsComposing()) {
+            const double pixelDensity =
+                    QGuiApplication::focusWindow()
+                    ? QHighDpiScaling::factor(QGuiApplication::focusWindow())
+                    : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
+
+            const QPointF touchPointLocal =
+                    QGuiApplication::inputMethod()->inputItemTransform().inverted().map(
+                            QPointF(x / pixelDensity, y / pixelDensity));
+
+            const int curBlockPos = getBlockPosition(
+                    focusObjectInputMethodQuery(Qt::ImCursorPosition | Qt::ImAbsolutePosition));
+            const int touchPosition = curBlockPos
+                    + QInputMethod::queryFocusObject(Qt::ImCursorPosition, touchPointLocal).toInt();
+            if (touchPosition != m_composingCursor)
+                focusObjectStopComposing();
+        }
+
         updateSelectionHandles();
     }
 }
