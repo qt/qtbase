@@ -7,51 +7,15 @@ static const char qt_configure_ext_prefix_path_str   [12+256] = "qt_epfxpath=@CM
 static const char qt_configure_host_prefix_path_str  [12+256] = "qt_hpfxpath=@CMAKE_INSTALL_PREFIX@";
 #endif
 static const short qt_configure_str_offsets[] = {
-    0,
-    4,
-    12,
-    16,
-    24,
-    28,
-    36,
-    44,
-    48,
-    50,
-    52,
-    65,
-    74,
+@QT_CONFIG_STR_OFFSETS_FIRST@
 #ifdef QT_BUILD_QMAKE
-    80,
-    81,
-    87,
-    91,
-    95,
-    97,
-    107,
+@QT_CONFIG_STR_OFFSETS_SECOND@
 #endif
 };
 static const char qt_configure_strs[] =
-    "doc\0"
-    "include\0"
-    "lib\0"
-    "libexec\0"
-    "bin\0"
-    "plugins\0"
-    "imports\0"
-    "qml\0"
-    ".\0"
-    ".\0"
-    "translations\0"
-    "examples\0"
-    "tests\0"
+@QT_CONFIG_STRS_FIRST@
 #ifdef QT_BUILD_QMAKE
-    "\0"
-    "false\0"
-    "bin\0"
-    "lib\0"
-    ".\0"
-    "linux-g++\0"
-    "linux-g++\0"
+@QT_CONFIG_STRS_SECOND@
 #endif
 ;
 #define QT_CONFIGURE_SETTINGS_PATH "etc/xdg"

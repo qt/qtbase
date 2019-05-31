@@ -250,7 +250,7 @@ else()
     target_compile_definitions(Core PUBLIC "QT_NAMESPACE=${QT_NAMESPACE}")
 endif()
 
-configure_file(global/qconfig.cpp.in global/qconfig.cpp)
+qt_generate_qconfig_cpp()
 
 # Handle QObject: Automoc does not work for this as it would
 # require to spill internals into users:
