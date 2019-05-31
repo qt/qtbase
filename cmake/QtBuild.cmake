@@ -1959,10 +1959,6 @@ macro(qt_find_package)
                     set_property(TARGET ${qt_find_package_target_name} PROPERTY
                                                                        IMPORTED_GLOBAL TRUE)
                 endif()
-            else()
-                message(AUTHOR_WARNING
-                        "Error while trying to mark target '${qt_find_package_target_name}' as part"
-                        " of the ${ARGV0} package. Provided target name does not exist.")
             endif()
 
         endforeach()
