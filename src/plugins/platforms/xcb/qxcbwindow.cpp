@@ -933,6 +933,8 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
             result |= NetWmStateStaysOnTop;
         if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION)))
             result |= NetWmStateDemandsAttention;
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_HIDDEN)))
+            result |= NetWmStateHidden;
     } else {
         qCDebug(lcQpaXcb, "getting net wm state (%x), empty\n", m_window);
     }
@@ -1104,6 +1106,9 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
         states |= NetWmStateBelow;
     }
 
+    if (window()->windowStates() & Qt::WindowMinimized)
+        states |= NetWmStateHidden;
+
     if (window()->windowStates() & Qt::WindowFullScreen)
         states |= NetWmStateFullScreen;
 
@@ -1137,6 +1142,8 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_ABOVE));
     if (states & NetWmStateBelow && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_BELOW)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_BELOW));
+    if (states & NetWmStateHidden && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_HIDDEN)))
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_HIDDEN));
     if (states & NetWmStateFullScreen && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
     if (states & NetWmStateMaximizedHorz && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ)))
@@ -2236,10 +2243,16 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
                                    || (data[0] == XCB_ICCCM_WM_STATE_WITHDRAWN && m_minimized));
             }
         }
-        if (m_minimized)
-            newState = Qt::WindowMinimized;
 
         const NetWmStates states = netWmStates();
+        // _NET_WM_STATE_HIDDEN should be set by the Window Manager to indicate that a window would
+        // not be visible on the screen if its desktop/viewport were active and its coordinates were
+        // within the screen bounds. The canonical example is that minimized windows should be in
+        // the _NET_WM_STATE_HIDDEN state.
+        if (m_minimized && (!connection()->wmSupport()->isSupportedByWM(NetWmStateHidden)
+                            || states.testFlag(NetWmStateHidden)))
+            newState = Qt::WindowMinimized;
+
         if (states & NetWmStateFullScreen)
             newState |= Qt::WindowFullScreen;
         if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
