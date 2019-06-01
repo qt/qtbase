@@ -62,7 +62,8 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECL_COLD_FUNCTION
-static bool file_already_open(QFile &file, const char *where = nullptr) {
+static bool file_already_open(QFile &file, const char *where = nullptr)
+{
     qWarning("QFile::%s: File (%ls) already open", where ? where : "open", qUtf16Printable(file.fileName()));
     return false;
 }
