@@ -121,6 +121,21 @@ In order to make sure that Qt picks up the code generator tools from the host bu
 
 The specified path needs to point to a directory that contains an installed host build of Qt.
 
+### Cross Compiling for Android
+
+In order to cross-compile Qt to Android, the above instructions apply. In addition, it is necessary to install the Android NDK as well as vcpkg. Vcpkg is needed to supply third-party libraries that Qt requires but that are not part of the Android NDK.
+
+Vcpkg for Android can be set up using the following steps:
+
+  * ```git clone -b qt https://github.com/tronical/vcpkg```
+  * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
+  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``arm-android``
+  * Set the ``ANDROID_NDK_HOME`` environment variable to the path where you have installed the Android NDK.
+  * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl zstd``
+
+When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DVCPKG_TARGET_TRIPLET=$VCPKG_DEFAULT_TRIPLET -DQT_HOST_PATH=/path/to/your/host/build``
+
+
 # Debugging CMake files
 
 CMake allows specifying the ``--trace`` and ``--trace-expand`` options, which work like ``qmake -d -d``: As the cmake code is evaluated, the values of parameters and variables is shown. This can be a lot of output, so you may want to redirect it to a file.
