@@ -8923,6 +8923,7 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
 
 } // unnamed namespace
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QString QString::multiArg(int numArgs, const QString **args) const
 {
     QVarLengthArray<QtPrivate::QStringViewArg, 9> sva;
@@ -8935,6 +8936,7 @@ QString QString::multiArg(int numArgs, const QString **args) const
     }
     return QtPrivate::argToQString(qToStringViewIgnoringNull(*this), static_cast<size_t>(numArgs), pointers.data());
 }
+#endif
 
 Q_ALWAYS_INLINE QString to_string(QLatin1String s) noexcept { return s; }
 Q_ALWAYS_INLINE QString to_string(QStringView s) noexcept { return s.toString(); }

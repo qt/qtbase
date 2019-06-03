@@ -924,8 +924,8 @@ private:
     void reallocData(uint alloc, bool grow = false);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void expand(int i);
-#endif
     QString multiArg(int numArgs, const QString **args) const;
+#endif
     static int compare_helper(const QChar *data1, int length1,
                               const QChar *data2, int length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -1054,30 +1054,30 @@ inline QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) c
 inline QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
 inline QString QString::arg(const QString &a1, const QString &a2) const
-{ const QString *args[2] = { &a1, &a2 }; return multiArg(2, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3) const
-{ const QString *args[3] = { &a1, &a2, &a3 }; return multiArg(3, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
                             const QString &a4) const
-{ const QString *args[4] = { &a1, &a2, &a3, &a4 }; return multiArg(4, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
                             const QString &a4, const QString &a5) const
-{ const QString *args[5] = { &a1, &a2, &a3, &a4, &a5 }; return multiArg(5, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
                             const QString &a4, const QString &a5, const QString &a6) const
-{ const QString *args[6] = { &a1, &a2, &a3, &a4, &a5, &a6 }; return multiArg(6, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
                             const QString &a4, const QString &a5, const QString &a6,
                             const QString &a7) const
-{ const QString *args[7] = { &a1, &a2, &a3, &a4, &a5, &a6,  &a7 }; return multiArg(7, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
                             const QString &a4, const QString &a5, const QString &a6,
                             const QString &a7, const QString &a8) const
-{ const QString *args[8] = { &a1, &a2, &a3, &a4, &a5, &a6,  &a7, &a8 }; return multiArg(8, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7, a8); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3,
                             const QString &a4, const QString &a5, const QString &a6,
                             const QString &a7, const QString &a8, const QString &a9) const
-{ const QString *args[9] = { &a1, &a2, &a3, &a4, &a5, &a6,  &a7, &a8, &a9 }; return multiArg(9, args); }
+{ return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7, a8, a9); }
 
 inline QString QString::section(QChar asep, int astart, int aend, SectionFlags aflags) const
 { return section(QString(asep), astart, aend, aflags); }
