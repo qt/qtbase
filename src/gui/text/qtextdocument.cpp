@@ -1358,6 +1358,8 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
             blockOffset = 0;
         }
     } else {
+        if (blockOffset == block.length() - 1)
+            --blockOffset;  // make sure to skip end-of-paragraph character
         while (block.isValid()) {
             if (findInBlock(block, subString, blockOffset, options, &cursor))
                 return cursor;
