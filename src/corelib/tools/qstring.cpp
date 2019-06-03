@@ -8915,9 +8915,9 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
 {
     ArgIndexToPlaceholderMap result;
 
-    for (ParseResult::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it) {
-        if (it->number >= 0)
-            result.push_back(it->number);
+    for (Part part : parts) {
+        if (part.number >= 0)
+            result.push_back(part.number);
     }
 
     std::sort(result.begin(), result.end());
@@ -8930,14 +8930,13 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
 static int resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QString *args[])
 {
     int totalSize = 0;
-    for (ParseResult::iterator pit = parts.begin(), end = parts.end(); pit != end; ++pit) {
-        if (pit->number != -1) {
-            const ArgIndexToPlaceholderMap::const_iterator ait
-                    = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), pit->number);
-            if (ait != argIndexToPlaceholderMap.end())
-                pit->stringRef = QStringRef(args[ait - argIndexToPlaceholderMap.begin()]);
+    for (Part &part : parts) {
+        if (part.number != -1) {
+            const auto it = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), part.number);
+            if (it != argIndexToPlaceholderMap.end())
+                part.stringRef = QStringRef(args[it - argIndexToPlaceholderMap.begin()]);
         }
-        totalSize += pit->stringRef.size();
+        totalSize += part.stringRef.size();
     }
     return totalSize;
 }
@@ -8963,11 +8962,11 @@ QString QString::multiArg(int numArgs, const QString **args) const
 
     // 6:
     QString result(totalSize, Qt::Uninitialized);
-    QChar *out = result.data();
+    auto out = const_cast<QChar*>(result.constData());
 
-    for (ParseResult::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it) {
-        if (const int sz = it->stringRef.size()) {
-            memcpy(out, it->stringRef.constData(), sz * sizeof(QChar));
+    for (Part part : parts) {
+        if (const int sz = part.stringRef.size()) {
+            memcpy(out, part.stringRef.data(), sz * sizeof(QChar));
             out += sz;
         }
     }
