@@ -3,6 +3,137 @@ accept_configuration:
   condition: property
   property: host.os
   equals_property: target.os
+
+windows_specific_instrucitons:
+  - &export_target_architecture_and_sdk
+    # Export TARGET_ARCHITECTURE and WINDOWS_SDK_VERSION for MSVC cross compilation
+    type: Group
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+    instructions:
+      - type: EnvironmentVariable
+        variableName: TARGET_ARCHITECTURE
+        variableValue: amd64 # TODO add something like "{{toLower .Config host.arch}}"
+        disable_if:
+          condition: property
+          property: host.arch
+          not_equals_property: target.arch
+      - type: EnvironmentVariable
+        variableName: TARGET_ARCHITECTURE
+        variableValue: amd64_x86
+        disable_if:
+          condition: and
+          conditions:
+            - condition: property
+              property: target.arch
+              not_equals_property: X86
+            - condition: property
+              property: host.arch
+              not_equals_property: X86_64
+      - type: EnvironmentVariable
+        # HACK. Overwrite TARGET_ARCHITECTURE as we do not use standard MSVC cross
+        # compilation targets here. The target architecture will be detected by Qt.
+        variableName: TARGET_ARCHITECTURE
+        variableValue: x86
+        disable_if:
+          condition: property
+          property: target.os
+          not_in_values: ["WINRT", "WINPHONE", "WINCE"]
+      - type: EnvironmentVariable
+        variableName: WINDOWS_SDK_VERSION
+        variableValue: "10.0.14393.0"
+        disable_if:
+          condition: property
+          property: target.os
+          not_equals_value: WINRT
+      - type: EnvironmentVariable
+        variableName: WINDOWS_SDK_VERSION
+        variableValue: ""
+        disable_if:
+          condition: property
+          property: host.os
+          equals_value: WINRT  # TODO set windows sdk version for desktop windows as well
+
+  - &find_path_to_compiler
+    # MSVC is installed in somehow arbitrary places. To reduce amount of combinations we need to make a variable.
+    # This seems inverted, but on 64 bit hosts VS is installed into the x86 path, otherwise the regular one
+    # TODO cleanup, that step could be removed if we have same installation paths or we read the path from registry
+    # or we use %ProgramFiles(x86)%.
+    type: Group
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+    instructions:
+      - type: EnvironmentVariable
+        variableName: PROGRAM_FILES_PATH
+        variableValue: "C:\\Program Files"
+        disable_if:
+          condition: property
+          property: host.arch
+          not_equals_value: X86
+      - type: EnvironmentVariable
+        variableName: PROGRAM_FILES_PATH
+        variableValue: "C:\\Program Files (x86)"
+        disable_if:
+          condition: property
+          property: host.arch
+          equals_value: X86
+      # Try to pick one of many coexistent MSVC installation to use
+      # TODO cleanup, that could be much simpler if all tools are installed to similar paths, so it would
+      # be enough to substitute compiler name.
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%VS90COMNTOOLS%\\vsvars32.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2008
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%VS100COMNTOOLS%\\vsvars32.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2010
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2012
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2013
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2015
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2017
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        disable_if:
+          condition: property
+          property: host.compiler
+          not_equals_value: MSVC2019
+
 build_instructions:
   - type: MakeDirectory
     directory: .git
@@ -10,8 +141,35 @@ build_instructions:
     directory: "{{.SourceDir}}"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
+  - *export_target_architecture_and_sdk
+  - *find_path_to_compiler
+  # With MSVC we need setup the environment before every subprocess call.
+  - type: WriteFile
+    fileContents: "call \"{{.Env.VC_SCRIPT}}\" {{.Env.TARGET_ARCHITECTURE}} {{.Env.WINDOWS_SDK_VERSION}}\r\ncmd /c %*"
+    filename: c:\\users\\qt\\prefix.bat
+    fileMode: 420
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: ENV_PREFIX
+    variableValue: "c:\\users\\qt\\prefix.bat"
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: ENV_PREFIX
+    variableValue: ""
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
   - type: ExecuteCommand
-    command: cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -GNinja {{.SourceDir}}
+    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -GNinja {{.SourceDir}}"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
@@ -19,8 +177,16 @@ build_instructions:
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: "{{.InstallRoot}}"
+  - type: ExecuteCommand  # TODO: remove me, just debuging
+    command: cmd.exe /c type {{.BuildDir}}\\CMakeCache.txt
+    disable_if:
+      condition: property
+      property: host.os
+      not_equals_value: Windows
+    maxTimeInSeconds: 60
+    userMessageOnFailure: Could not print the file cmake config file. This should not be possible.
   - type: ExecuteCommand
-    command: ninja install
+    command: "{{.Env.ENV_PREFIX}} ninja install"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
