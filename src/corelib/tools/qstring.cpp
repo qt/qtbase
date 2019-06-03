@@ -8754,19 +8754,23 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
 }
 
-static int getEscape(const QChar *uc, qsizetype *pos, qsizetype len, int maxNumber = 999)
+static inline ushort to_unicode(const QChar c) { return c.unicode(); }
+static inline ushort to_unicode(const char c) { return QLatin1Char{c}.unicode(); }
+
+template <typename Char>
+static int getEscape(const Char *uc, qsizetype *pos, qsizetype len, int maxNumber = 999)
 {
     int i = *pos;
     ++i;
     if (i < len && uc[i] == QLatin1Char('L'))
         ++i;
     if (i < len) {
-        int escape = uc[i].unicode() - '0';
+        int escape = to_unicode(uc[i]) - '0';
         if (uint(escape) >= 10U)
             return -1;
         ++i;
         while (i < len) {
-            int digit = uc[i].unicode() - '0';
+            int digit = to_unicode(uc[i]) - '0';
             if (uint(digit) >= 10U)
                 break;
             escape = (escape * 10) + digit;
@@ -8817,18 +8821,23 @@ static int getEscape(const QChar *uc, qsizetype *pos, qsizetype len, int maxNumb
 namespace {
 struct Part
 {
-    Q_DECL_CONSTEXPR Part() : string{}, number{0} {}
+    Part() = default; // for QVarLengthArray; do not use
     Q_DECL_CONSTEXPR Part(QStringView s, int num = -1)
-        : string{s}, number{num} {}
+        : tag{QtPrivate::ArgBase::U16}, number{num}, data{s.utf16()}, size{s.size()} {}
+    Q_DECL_CONSTEXPR Part(QLatin1String s, int num = -1)
+        : tag{QtPrivate::ArgBase::L1}, number{num}, data{s.data()}, size{s.size()} {}
 
-    QStringView string;
+    void reset(QStringView s) noexcept { *this = {s, number}; }
+    void reset(QLatin1String s) noexcept { *this = {s, number}; }
+
+    QtPrivate::ArgBase::Tag tag;
     int number;
+    const void *data;
+    qsizetype size;
 };
 } // unnamed namespace
 
-template <>
-class QTypeInfo<Part> : public QTypeInfoMerger<Part, QStringView, int> {}; // Q_DECLARE_METATYPE
-
+Q_DECLARE_TYPEINFO(Part, Q_PRIMITIVE_TYPE);
 
 namespace {
 
@@ -8837,7 +8846,8 @@ enum { ExpectedParts = 32 };
 typedef QVarLengthArray<Part, ExpectedParts> ParseResult;
 typedef QVarLengthArray<int, ExpectedParts/2> ArgIndexToPlaceholderMap;
 
-static ParseResult parseMultiArgFormatString(QStringView s)
+template <typename StringView>
+static ParseResult parseMultiArgFormatString(StringView s)
 {
     ParseResult result;
 
@@ -8884,16 +8894,29 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
     return result;
 }
 
-static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QString *args[])
+static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QtPrivate::ArgBase *args[])
 {
+    using namespace QtPrivate;
     qsizetype totalSize = 0;
     for (Part &part : parts) {
         if (part.number != -1) {
             const auto it = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), part.number);
-            if (it != argIndexToPlaceholderMap.end())
-                part.string = *args[it - argIndexToPlaceholderMap.begin()];
+            if (it != argIndexToPlaceholderMap.end()) {
+                const auto &arg = *args[it - argIndexToPlaceholderMap.begin()];
+                switch (arg.tag) {
+                case ArgBase::L1:
+                    part.reset(static_cast<const QLatin1StringArg&>(arg).string);
+                    break;
+                case ArgBase::U8:
+                    Q_UNREACHABLE(); // waiting for QUtf8String...
+                    break;
+                case ArgBase::U16:
+                    part.reset(static_cast<const QStringViewArg&>(arg).string);
+                    break;
+                }
+            }
         }
-        totalSize += part.string.size();
+        totalSize += part.size;
     }
     return totalSize;
 }
@@ -8902,17 +8925,34 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
 
 QString QString::multiArg(int numArgs, const QString **args) const
 {
+    QVarLengthArray<QtPrivate::QStringViewArg, 9> sva;
+    sva.reserve(numArgs);
+    QVarLengthArray<const QtPrivate::ArgBase *, 9> pointers;
+    pointers.reserve(numArgs);
+    for (int i = 0; i < numArgs; ++i) {
+        sva.push_back(QtPrivate::qStringLikeToArg(*args[i]));
+        pointers.push_back(&sva.back());
+    }
+    return QtPrivate::argToQString(qToStringViewIgnoringNull(*this), static_cast<size_t>(numArgs), pointers.data());
+}
+
+Q_ALWAYS_INLINE QString to_string(QLatin1String s) noexcept { return s; }
+Q_ALWAYS_INLINE QString to_string(QStringView s) noexcept { return s.toString(); }
+
+template <typename StringView>
+static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPrivate::ArgBase **args)
+{
     // Step 1-2 above
-    ParseResult parts = parseMultiArgFormatString(qToStringViewIgnoringNull(*this));
+    ParseResult parts = parseMultiArgFormatString(pattern);
 
     // 3-4
     ArgIndexToPlaceholderMap argIndexToPlaceholderMap = makeArgIndexToPlaceholderMap(parts);
 
-    if (argIndexToPlaceholderMap.size() > numArgs) // 3a
-        argIndexToPlaceholderMap.resize(numArgs);
-    else if (argIndexToPlaceholderMap.size() < numArgs) // 3b
-        qWarning("QString::arg: %d argument(s) missing in %s",
-                 numArgs - argIndexToPlaceholderMap.size(), toLocal8Bit().data());
+    if (static_cast<size_t>(argIndexToPlaceholderMap.size()) > numArgs) // 3a
+        argIndexToPlaceholderMap.resize(int(numArgs));
+    else if (Q_UNLIKELY(static_cast<size_t>(argIndexToPlaceholderMap.size()) < numArgs)) // 3b
+        qWarning("QString::arg: %d argument(s) missing in %ls",
+                 int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(to_string(pattern)));
 
     // 5
     const qsizetype totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
@@ -8922,13 +8962,35 @@ QString QString::multiArg(int numArgs, const QString **args) const
     auto out = const_cast<QChar*>(result.constData());
 
     for (Part part : parts) {
-        if (const qsizetype sz = part.string.size()) {
-            memcpy(out, part.string.data(), sz * sizeof(QChar));
-            out += sz;
+        switch (part.tag) {
+        case QtPrivate::ArgBase::L1:
+            if (part.size) {
+                qt_from_latin1(reinterpret_cast<ushort*>(out),
+                               reinterpret_cast<const char*>(part.data), part.size);
+            }
+            break;
+        case QtPrivate::ArgBase::U8:
+            Q_UNREACHABLE(); // waiting for QUtf8String
+            break;
+        case QtPrivate::ArgBase::U16:
+            if (part.size)
+                memcpy(out, part.data, part.size * sizeof(QChar));
+            break;
         }
+        out += part.size;
     }
 
     return result;
+}
+
+QString QtPrivate::argToQString(QStringView pattern, size_t n, const ArgBase **args)
+{
+    return argToQStringImpl(pattern, n, args);
+}
+
+QString QtPrivate::argToQString(QLatin1String pattern, size_t n, const ArgBase **args)
+{
+    return argToQStringImpl(pattern, n, args);
 }
 
 /*! \fn bool QString::isSimpleText() const

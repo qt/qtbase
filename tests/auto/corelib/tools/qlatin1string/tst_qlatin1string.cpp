@@ -45,6 +45,7 @@ class tst_QLatin1String : public QObject
 
 private Q_SLOTS:
     void at();
+    void arg() const;
     void midLeftRight();
     void nullString();
     void emptyString();
@@ -61,6 +62,47 @@ void tst_QLatin1String::at()
     QCOMPARE(l1.at(l1.size() - 1), QLatin1Char('d'));
     QCOMPARE(l1[0], QLatin1Char('H'));
     QCOMPARE(l1[l1.size() - 1], QLatin1Char('d'));
+}
+
+void tst_QLatin1String::arg() const
+{
+#define CHECK1(pattern, arg1, expected) \
+    do { \
+        auto p = QLatin1String(pattern); \
+        QCOMPARE(p.arg(QLatin1String(arg1)), expected); \
+        QCOMPARE(p.arg(QStringViewLiteral(arg1)), expected); \
+        QCOMPARE(p.arg(QStringLiteral(arg1)), expected); \
+        QCOMPARE(p.arg(QString(QLatin1String(arg1))), expected); \
+    } while (false) \
+    /*end*/
+#define CHECK2(pattern, arg1, arg2, expected) \
+    do { \
+        auto p = QLatin1String(pattern); \
+        QCOMPARE(p.arg(QLatin1String(arg1), QLatin1String(arg2)), expected); \
+        QCOMPARE(p.arg(QStringViewLiteral(arg1), QLatin1String(arg2)), expected); \
+        QCOMPARE(p.arg(QLatin1String(arg1), QStringViewLiteral(arg2)), expected); \
+        QCOMPARE(p.arg(QStringViewLiteral(arg1), QStringViewLiteral(arg2)), expected); \
+    } while (false) \
+    /*end*/
+
+    CHECK1("", "World", "");
+    CHECK1("%1", "World", "World");
+    CHECK1("!%1?", "World", "!World?");
+    CHECK1("%1%1", "World", "WorldWorld");
+    CHECK1("%1%2", "World", "World%2");
+    CHECK1("%2%1", "World", "%2World");
+
+    CHECK2("", "Hello", "World", "");
+    CHECK2("%1", "Hello", "World", "Hello");
+    CHECK2("!%1, %2?", "Hello", "World", "!Hello, World?");
+    CHECK2("%1%1", "Hello", "World", "HelloHello");
+    CHECK2("%1%2", "Hello", "World", "HelloWorld");
+    CHECK2("%2%1", "Hello", "World", "WorldHello");
+
+#undef CHECK2
+#undef CHECK1
+
+    QCOMPARE(QLatin1String(" %2 %2 %1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'), " \r \r c C ");
 }
 
 void tst_QLatin1String::midLeftRight()

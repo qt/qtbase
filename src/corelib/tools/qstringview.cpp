@@ -530,6 +530,24 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QString QStringView::arg(Args &&...args) const
+    \fn QString QLatin1String::arg(Args &&...args) const
+    \since 5.14
+
+    Replaces occurrences of \c{%N} in this string with the corresponding
+    argument from \a args. The arguments are not positional: the first of
+    the \a args replaces the \c{%N} with the lowest \c{N} (all of them), the
+    second of the \a args the \c{%N} with the next-lowest \c{N} etc.
+
+    \c Args can consist of anything that implicitly converts to QStringView
+    or QLatin1String.
+
+    In addition, the following types are also supported: QChar, QLatin1Char.
+
+    \sa QString::arg()
+*/
+
+/*!
     \fn QChar QStringView::front() const
 
     Returns the first character in the string. Same as first().

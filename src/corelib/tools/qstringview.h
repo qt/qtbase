@@ -226,6 +226,9 @@ public:
     // QString API
     //
 
+    template <typename...Args>
+    Q_REQUIRED_RESULT inline QString arg(Args &&...args) const; // defined in qstring.h
+
     Q_REQUIRED_RESULT QByteArray toLatin1() const { return QtPrivate::convertToLatin1(*this); }
     Q_REQUIRED_RESULT QByteArray toUtf8() const { return QtPrivate::convertToUtf8(*this); }
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const { return QtPrivate::convertToLocal8Bit(*this); }

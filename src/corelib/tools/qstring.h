@@ -106,6 +106,9 @@ public:
     Q_DECL_CONSTEXPR bool isNull() const noexcept { return !data(); }
     Q_DECL_CONSTEXPR bool isEmpty() const noexcept { return !size(); }
 
+    template <typename...Args>
+    Q_REQUIRED_RESULT inline QString arg(Args &&...args) const;
+
     Q_DECL_CONSTEXPR QLatin1Char at(int i) const
     { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
     Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
@@ -1977,6 +1980,58 @@ namespace QtPrivate {
 // used by qPrintable() and qUtf8Printable() macros
 inline const QString &asString(const QString &s)    { return s; }
 inline QString &&asString(QString &&s)              { return std::move(s); }
+}
+
+//
+// QStringView::arg() implementation
+//
+
+namespace QtPrivate {
+
+struct ArgBase {
+    enum Tag : uchar { L1, U8, U16 } tag;
+};
+
+struct QStringViewArg : ArgBase {
+    QStringView string;
+    QStringViewArg() = default;
+    Q_DECL_CONSTEXPR explicit QStringViewArg(QStringView v) noexcept : ArgBase{U16}, string{v} {}
+};
+
+struct QLatin1StringArg : ArgBase {
+    QLatin1String string;
+    QLatin1StringArg() = default;
+    Q_DECL_CONSTEXPR explicit QLatin1StringArg(QLatin1String v) noexcept : ArgBase{L1}, string{v} {}
+};
+
+Q_REQUIRED_RESULT Q_CORE_EXPORT QString argToQString(QStringView pattern, size_t n, const ArgBase **args);
+Q_REQUIRED_RESULT Q_CORE_EXPORT QString argToQString(QLatin1String pattern, size_t n, const ArgBase **args);
+
+template <typename StringView, typename...Args>
+Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString argToQStringDispatch(StringView pattern, const Args &...args)
+{
+    const ArgBase *argBases[] = {&args..., /* avoid zero-sized array */ nullptr};
+    return QtPrivate::argToQString(pattern, sizeof...(Args), argBases);
+}
+
+Q_DECL_CONSTEXPR inline QStringViewArg   qStringLikeToArg(QStringView s) noexcept { return QStringViewArg{s}; }
+                 inline QStringViewArg   qStringLikeToArg(const QChar &c) noexcept { return QStringViewArg{QStringView{&c, 1}}; }
+Q_DECL_CONSTEXPR inline QLatin1StringArg qStringLikeToArg(QLatin1String s) noexcept { return QLatin1StringArg{s}; }
+
+} // namespace QtPrivate
+
+template <typename...Args>
+Q_ALWAYS_INLINE
+QString QStringView::arg(Args &&...args) const
+{
+    return QtPrivate::argToQStringDispatch(*this, QtPrivate::qStringLikeToArg(args)...);
+}
+
+template <typename...Args>
+Q_ALWAYS_INLINE
+QString QLatin1String::arg(Args &&...args) const
+{
+    return QtPrivate::argToQStringDispatch(*this, QtPrivate::qStringLikeToArg(args)...);
 }
 
 QT_END_NAMESPACE
