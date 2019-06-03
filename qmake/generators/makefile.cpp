@@ -3437,19 +3437,23 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
         || project->isActiveConfig("no_sed_meta_install")) {
         ret += "-$(INSTALL_FILE) " + escapeFilePath(src) + ' ' + escapeFilePath(dst);
     } else {
-        ret += "-$(SED)";
+        QString sedargs;
         const ProStringList &replace_rules = project->values(replace_rule);
         for (int r = 0; r < replace_rules.size(); ++r) {
             const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
                         replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
             if (!match.isEmpty() /*&& match != replace*/) {
-                ret += " -e " + shellQuote("s," + match + "," + replace + ",g");
+                sedargs += " -e " + shellQuote("s," + match + "," + replace + ",g");
                 if (isWindowsShell() && project->first(ProKey(replace_rules.at(r) + ".CONFIG")).contains("path"))
-                    ret += " -e " + shellQuote("s," + windowsifyPath(match.toQString())
+                    sedargs += " -e " + shellQuote("s," + windowsifyPath(match.toQString())
                                                + "," + windowsifyPath(replace.toQString()) + ",gi");
             }
         }
-        ret += ' ' + escapeFilePath(src) + " > " + escapeFilePath(dst);
+        if (sedargs.isEmpty()) {
+            ret += "-$(INSTALL_FILE) " + escapeFilePath(src) + ' ' + escapeFilePath(dst);
+        } else {
+            ret += "-$(SED) " + sedargs + ' ' + escapeFilePath(src) + " > " + escapeFilePath(dst);
+        }
     }
     return ret;
 }
