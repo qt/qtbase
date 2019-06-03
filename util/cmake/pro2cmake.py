@@ -898,11 +898,36 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r'^qtConfig\(opengl\.\*\)$', r'QT_FEATURE_opengl', condition)
     condition = re.sub(r'^win\*$', r'win', condition)
 
+    def gcc_version_handler(match_obj: re.Match):
+        operator = match_obj.group(1)
+        version_type = match_obj.group(2)
+        if operator == 'equals':
+            operator = 'STREQUAL'
+        elif operator == 'greaterThan':
+            operator = 'STRGREATER'
+        elif operator == 'lessThan':
+            operator = 'STRLESS'
+
+        version = match_obj.group(3)
+        return '(QT_COMPILER_VERSION_{} {} {})'.format(version_type, operator, version)
+
+    # TODO: Possibly fix for other compilers.
+    pattern = r'(equals|greaterThan|lessThan)\(QT_GCC_([A-Z]+)_VERSION,[ ]*([0-9]+)\)'
+    condition = re.sub(pattern, gcc_version_handler, condition)
+
+    # TODO: the current if(...) replacement makes the parentheses
+    # unbalanced when there are nested expressions.
+    # Need to fix this either with pypi regex recursive regexps,
+    # using pyparsing, or some other proper means of handling
+    # balanced parentheses.
     condition = re.sub(r'\bif\s*\((.*?)\)', r'\1', condition)
+
     condition = re.sub(r'\bisEmpty\s*\((.*?)\)', r'\1_ISEMPTY', condition)
     condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)',
                        r'\1___contains___\2', condition)
     condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)',
+                       r'\1___equals___\2', condition)
+    condition = re.sub(r'\bisEqual\s*\((.*?),\s*"?(.*?)"?\)',
                        r'\1___equals___\2', condition)
     condition = re.sub(r'\s*==\s*', '___STREQUAL___', condition)
     condition = re.sub(r'\bexists\s*\((.*?)\)', r'EXISTS \1', condition)
