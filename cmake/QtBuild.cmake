@@ -1057,6 +1057,12 @@ function(add_qt_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
+    if(WIN32)
+        # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.
+        # It's set for every module being built, but it's not propagated to user apps.
+        target_compile_definitions("${target}" PRIVATE _USE_MATH_DEFINES)
+    endif()
+
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
     if(EXISTS "${configureFile}")
         qt_feature_module_begin(
