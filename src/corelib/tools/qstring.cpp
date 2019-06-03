@@ -8797,7 +8797,7 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
 }
 
-static int getEscape(const QChar *uc, int *pos, int len, int maxNumber = 999)
+static int getEscape(const QChar *uc, qsizetype *pos, qsizetype len, int maxNumber = 999)
 {
     int i = *pos;
     ++i;
@@ -8860,17 +8860,17 @@ static int getEscape(const QChar *uc, int *pos, int len, int maxNumber = 999)
 namespace {
 struct Part
 {
-    Part() : stringRef(), number(0) {}
-    Part(const QString &s, int pos, int len, int num = -1) noexcept
-        : stringRef(&s, pos, len), number(num) {}
+    Q_DECL_CONSTEXPR Part() : string{}, number{0} {}
+    Q_DECL_CONSTEXPR Part(QStringView s, int num = -1)
+        : string{s}, number{num} {}
 
-    QStringRef stringRef;
+    QStringView string;
     int number;
 };
 } // unnamed namespace
 
 template <>
-class QTypeInfo<Part> : public QTypeInfoMerger<Part, QStringRef, int> {}; // Q_DECLARE_METATYPE
+class QTypeInfo<Part> : public QTypeInfoMerger<Part, QStringView, int> {}; // Q_DECLARE_METATYPE
 
 
 namespace {
@@ -8880,24 +8880,24 @@ enum { ExpectedParts = 32 };
 typedef QVarLengthArray<Part, ExpectedParts> ParseResult;
 typedef QVarLengthArray<int, ExpectedParts/2> ArgIndexToPlaceholderMap;
 
-static ParseResult parseMultiArgFormatString(const QString &s)
+static ParseResult parseMultiArgFormatString(QStringView s)
 {
     ParseResult result;
 
-    const QChar *uc = s.constData();
-    const int len = s.size();
-    const int end = len - 1;
-    int i = 0;
-    int last = 0;
+    const auto uc = s.data();
+    const auto len = s.size();
+    const auto end = len - 1;
+    qsizetype i = 0;
+    qsizetype last = 0;
 
     while (i < end) {
         if (uc[i] == QLatin1Char('%')) {
-            int percent = i;
+            qsizetype percent = i;
             int number = getEscape(uc, &i, len);
             if (number != -1) {
                 if (last != percent)
-                    result.push_back(Part(s, last, percent - last)); // literal text (incl. failed placeholders)
-                result.push_back(Part(s, percent, i - percent, number));  // parsed placeholder
+                    result.push_back(Part{s.mid(last, percent - last)}); // literal text (incl. failed placeholders)
+                result.push_back(Part{s.mid(percent, i - percent), number});  // parsed placeholder
                 last = i;
                 continue;
             }
@@ -8906,7 +8906,7 @@ static ParseResult parseMultiArgFormatString(const QString &s)
     }
 
     if (last < len)
-        result.push_back(Part(s, last, len - last)); // trailing literal text
+        result.push_back(Part{s.mid(last, len - last)}); // trailing literal text
 
     return result;
 }
@@ -8927,16 +8927,16 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
     return result;
 }
 
-static int resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QString *args[])
+static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QString *args[])
 {
-    int totalSize = 0;
+    qsizetype totalSize = 0;
     for (Part &part : parts) {
         if (part.number != -1) {
             const auto it = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), part.number);
             if (it != argIndexToPlaceholderMap.end())
-                part.stringRef = QStringRef(args[it - argIndexToPlaceholderMap.begin()]);
+                part.string = *args[it - argIndexToPlaceholderMap.begin()];
         }
-        totalSize += part.stringRef.size();
+        totalSize += part.string.size();
     }
     return totalSize;
 }
@@ -8946,7 +8946,7 @@ static int resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgInde
 QString QString::multiArg(int numArgs, const QString **args) const
 {
     // Step 1-2 above
-    ParseResult parts = parseMultiArgFormatString(*this);
+    ParseResult parts = parseMultiArgFormatString(qToStringViewIgnoringNull(*this));
 
     // 3-4
     ArgIndexToPlaceholderMap argIndexToPlaceholderMap = makeArgIndexToPlaceholderMap(parts);
@@ -8958,15 +8958,15 @@ QString QString::multiArg(int numArgs, const QString **args) const
                  numArgs - argIndexToPlaceholderMap.size(), toLocal8Bit().data());
 
     // 5
-    const int totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
+    const qsizetype totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
 
     // 6:
     QString result(totalSize, Qt::Uninitialized);
     auto out = const_cast<QChar*>(result.constData());
 
     for (Part part : parts) {
-        if (const int sz = part.stringRef.size()) {
-            memcpy(out, part.stringRef.data(), sz * sizeof(QChar));
+        if (const qsizetype sz = part.string.size()) {
+            memcpy(out, part.string.data(), sz * sizeof(QChar));
             out += sz;
         }
     }
