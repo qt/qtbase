@@ -28,7 +28,7 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
 
         if (@INSTALL_CMAKE_NAMESPACE@_FIND_REQUIRED_${module})
             set(_Qt_NOTFOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}Failed to find Qt component \"${module}\" config file at                                       \"${_expected_module_location}\"\n")
-        elseif(NOT Qt_FIND_QUIETLY)
+        elseif(NOT @INSTALL_CMAKE_NAMESPACE@_FIND_QUIETLY)
             message(WARNING "Failed to find Qt component \"${module}\" config file at \"${_expected_module_location}\"")
         endif()
 
