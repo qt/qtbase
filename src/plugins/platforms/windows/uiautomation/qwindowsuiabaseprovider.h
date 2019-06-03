@@ -57,7 +57,7 @@ class QAccessibleInterface;
 class QWindowsUiaBaseProvider : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QWindowsUiaBaseProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaBaseProvider)
 public:
     explicit QWindowsUiaBaseProvider(QAccessible::Id id);
     virtual ~QWindowsUiaBaseProvider();

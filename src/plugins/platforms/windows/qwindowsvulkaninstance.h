@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsVulkanInstance : public QBasicPlatformVulkanInstance
 {
-    Q_DISABLE_COPY(QWindowsVulkanInstance)
+    Q_DISABLE_COPY_MOVE(QWindowsVulkanInstance)
 public:
     QWindowsVulkanInstance(QVulkanInstance *instance);
 

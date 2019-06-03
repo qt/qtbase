@@ -931,7 +931,10 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
     Q_ASSERT(!fd->sizeDirty);
     Q_ASSERT(!fd->layoutDirty);
 
-    const QPointF off = offset + fd->position.toPointF();
+    // floor the offset to avoid painting artefacts when drawing adjacent borders
+    // we later also round table cell heights and widths
+    const QPointF off = QPointF(QPointF(offset + fd->position.toPointF()).toPoint());
+
     if (context.clip.isValid()
         && (off.y() > context.clip.bottom() || off.y() + fd->size.height.toReal() < context.clip.top()
             || off.x() > context.clip.right() || off.x() + fd->size.width.toReal() < context.clip.left()))
@@ -1681,7 +1684,8 @@ recalc_minmax_widths:
             for (int n = 0; n < cspan; ++n) {
                 const int col = i + n;
                 QFixed w = widthToDistribute / (cspan - n);
-                td->minWidths[col] = qMax(td->minWidths.at(col), w);
+                // ceil to avoid going below minWidth when rounding all column widths later
+                td->minWidths[col] = qMax(td->minWidths.at(col), w).ceil();
                 widthToDistribute -= td->minWidths.at(col);
                 if (widthToDistribute <= 0)
                     break;
@@ -1787,6 +1791,18 @@ recalc_minmax_widths:
         }
     }
 
+    // in order to get a correct border rendering we must ensure that the distance between
+    // two cells is exactly 2 * td->border pixel. we do this by rounding the calculated width
+    // values here.
+    // to minimize the total rounding error we propagate the rounding error for each width
+    // to its successor.
+    QFixed error = 0;
+    for (int i = 0; i < columns; ++i) {
+        QFixed orig = td->widths[i];
+        td->widths[i] = (td->widths[i] - error).round();
+        error = td->widths[i] - orig;
+    }
+
     td->columnPositions.resize(columns);
     td->columnPositions[0] = leftMargin /*includes table border*/ + cellSpacing + td->border;
 
@@ -1887,7 +1903,7 @@ relayout:
                 if (cellRow != r) {
                     // the last row gets all the remaining space
                     if (cellRow + rspan - 1 == r)
-                        td->heights[r] = qMax(td->heights.at(r), heightToDistribute.at(c) - dropDistance);
+                        td->heights[r] = qMax(td->heights.at(r), heightToDistribute.at(c) - dropDistance).round();
                     continue;
                 }
             }
@@ -1908,7 +1924,7 @@ relayout:
                                                        td, absoluteTableY,
                                                        /*withPageBreaks =*/true);
 
-            const QFixed height = layoutStruct.y + bottomPadding + topPadding;
+            const QFixed height = (layoutStruct.y + bottomPadding + topPadding).round();
 
             if (rspan > 1)
                 heightToDistribute[c] = height + dropDistance;

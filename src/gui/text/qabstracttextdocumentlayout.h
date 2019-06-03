@@ -87,6 +87,7 @@ public:
     QString anchorAt(const QPointF& pos) const;
     QString imageAt(const QPointF &pos) const;
     QTextFormat formatAt(const QPointF &pos) const;
+    QTextBlock blockWithMarkerAt(const QPointF &pos) const;
 
     virtual int pageCount() const = 0;
     virtual QSizeF documentSize() const = 0;

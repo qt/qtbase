@@ -1303,7 +1303,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     m_cursor(new CursorHandle),
     m_format(aWindow->requestedFormat())
 #if QT_CONFIG(vulkan)
-  , m_vkSurface(0)
+  , m_vkSurface(VK_NULL_HANDLE)
 #endif
 {
     QWindowsContext::instance()->addWindow(m_data.hwnd, this);
@@ -1404,14 +1404,14 @@ void QWindowsWindow::destroyWindow()
             QVulkanInstance *inst = window()->vulkanInstance();
             if (inst)
                 static_cast<QWindowsVulkanInstance *>(inst->handle())->destroySurface(m_vkSurface);
-            m_vkSurface = 0;
+            m_vkSurface = VK_NULL_HANDLE;
         }
 #endif
 #ifndef QT_NO_OPENGL
         if (m_surface) {
             if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
                 staticOpenGLContext->destroyWindowSurface(m_surface);
-            m_surface = 0;
+            m_surface = nullptr;
         }
 #endif
         DestroyWindow(m_data.hwnd);
@@ -2943,14 +2943,14 @@ void QWindowsWindow::invalidateSurface()
         QVulkanInstance *inst = window()->vulkanInstance();
         if (inst)
             static_cast<QWindowsVulkanInstance *>(inst->handle())->destroySurface(m_vkSurface);
-        m_vkSurface = 0;
+        m_vkSurface = VK_NULL_HANDLE;
     }
 #endif
 #ifndef QT_NO_OPENGL
     if (m_surface) {
         if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
             staticOpenGLContext->destroyWindowSurface(m_surface);
-        m_surface = 0;
+        m_surface = nullptr;
     }
 #endif // QT_NO_OPENGL
 }

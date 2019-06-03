@@ -1294,9 +1294,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     dst_file += fi.fileName();
                     QString cmd;
                     if (is_target || (!fi.isDir() && fi.isExecutable()))
-                       cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
+                       cmd = QLatin1String("$(QINSTALL_PROGRAM)");
                     else
-                       cmd = QLatin1String("-$(QINSTALL)");
+                       cmd = QLatin1String("$(QINSTALL)");
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!noStrip && !project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
@@ -1316,9 +1316,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     dst_file += filestr;
                     QString cmd;
                     if (installConfigValues.contains("executable"))
-                        cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
+                        cmd = QLatin1String("$(QINSTALL_PROGRAM)");
                     else
-                        cmd = QLatin1String("-$(QINSTALL)");
+                        cmd = QLatin1String("$(QINSTALL)");
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + filestr, FileFixifyAbsolute, false))));
@@ -1331,7 +1331,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     if (!dst_file.endsWith(Option::dir_sep))
                         dst_file += Option::dir_sep;
                     dst_file += fi.fileName();
-                    QString cmd = QLatin1String("-$(QINSTALL) ") +
+                    QString cmd = QLatin1String("$(QINSTALL) ") +
                                   escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!noStrip && !project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
@@ -1862,6 +1862,55 @@ QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &
     return {};
 }
 
+void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCompiler,
+                                                       const QString &dep_cd_cmd,
+                                                       const QString &tmp_dep_cmd,
+                                                       const QString &inpf,
+                                                       const QString &tmp_out,
+                                                       bool dep_lines,
+                                                       QStringList *deps)
+{
+    char buff[256];
+    QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
+    dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
+    if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
+        QByteArray depData;
+        while (int read_in = feof(proc) ? 0 : (int)fread(buff, 1, 255, proc))
+            depData.append(buff, read_in);
+        QT_PCLOSE(proc);
+        const QString indeps = QString::fromLocal8Bit(depData);
+        if (indeps.isEmpty())
+            return;
+        QDir outDir(Option::output_dir);
+        QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
+        for (int i = 0; i < dep_cmd_deps.count(); ++i) {
+            QString &file = dep_cmd_deps[i];
+            const QString absFile = outDir.absoluteFilePath(file);
+            if (absFile == file) {
+                // already absolute; don't do any checks.
+            } else if (exists(absFile)) {
+                file = absFile;
+            } else {
+                const QString localFile = resolveDependency(outDir, file);
+                if (localFile.isEmpty()) {
+                    if (exists(file)) {
+                        warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
+                                 " prints paths relative to source directory",
+                                 extraCompiler.toLatin1().constData());
+                    } else {
+                        file = absFile;  // fallback for generated resources
+                    }
+                } else {
+                    file = localFile;
+                }
+            }
+            if (!file.isEmpty())
+                file = fileFixify(file);
+        }
+        deps->append(dep_cmd_deps);
+    }
+}
+
 void
 MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
 {
@@ -1991,44 +2040,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 deps += findDependencies(inpf);
                 inputs += Option::fixPathToTargetOS(inpf, false);
                 if(!tmp_dep_cmd.isEmpty() && doDepends()) {
-                    char buff[256];
-                    QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
-                    dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
-                    if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
-                        QByteArray depData;
-                        while (int read_in = feof(proc) ? 0 : (int)fread(buff, 1, 255, proc))
-                            depData.append(buff, read_in);
-                        QT_PCLOSE(proc);
-                        const QString indeps = QString::fromLocal8Bit(depData);
-                        if(!indeps.isEmpty()) {
-                            QDir outDir(Option::output_dir);
-                            QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
-                            for(int i = 0; i < dep_cmd_deps.count(); ++i) {
-                                QString &file = dep_cmd_deps[i];
-                                QString absFile = outDir.absoluteFilePath(file);
-                                if (absFile == file) {
-                                    // already absolute; don't do any checks.
-                                } else if (exists(absFile)) {
-                                    file = absFile;
-                                } else {
-                                    QString localFile = resolveDependency(outDir, file);
-                                    if (localFile.isEmpty()) {
-                                        if (exists(file))
-                                            warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
-                                                                     " prints paths relative to source directory",
-                                                                     (*it).toLatin1().constData());
-                                        else
-                                            file = absFile;  // fallback for generated resources
-                                    } else {
-                                        file = localFile;
-                                    }
-                                }
-                                if(!file.isEmpty())
-                                    file = fileFixify(file);
-                            }
-                            deps += dep_cmd_deps;
-                        }
-                    }
+                    callExtraCompilerDependCommand(*it, dep_cd_cmd, tmp_dep_cmd, inpf,
+                                                   tmp_out, dep_lines, &deps);
                 }
             }
             for(int i = 0; i < inputs.size(); ) {
@@ -2076,44 +2089,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             for (ProStringList::ConstIterator it3 = vars.constBegin(); it3 != vars.constEnd(); ++it3)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {
-                char buff[256];
-                QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, out, LocalShell);
-                dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
-                if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
-                    QByteArray depData;
-                    while (int read_in = feof(proc) ? 0 : (int)fread(buff, 1, 255, proc))
-                        depData.append(buff, read_in);
-                    QT_PCLOSE(proc);
-                    const QString indeps = QString::fromLocal8Bit(depData);
-                    if(!indeps.isEmpty()) {
-                        QDir outDir(Option::output_dir);
-                        QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
-                        for(int i = 0; i < dep_cmd_deps.count(); ++i) {
-                            QString &file = dep_cmd_deps[i];
-                            QString absFile = outDir.absoluteFilePath(file);
-                            if (absFile == file) {
-                                // already absolute; don't do any checks.
-                            } else if (exists(absFile)) {
-                                file = absFile;
-                            } else {
-                                QString localFile = resolveDependency(outDir, file);
-                                if (localFile.isEmpty()) {
-                                    if (exists(file))
-                                        warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
-                                                                 " prints paths relative to source directory",
-                                                                 (*it).toLatin1().constData());
-                                    else
-                                        file = absFile;  // fallback for generated resources
-                                } else {
-                                    file = localFile;
-                                }
-                            }
-                            if(!file.isEmpty())
-                                file = fileFixify(file);
-                        }
-                        deps += dep_cmd_deps;
-                    }
-                }
+                callExtraCompilerDependCommand(*it, dep_cd_cmd, tmp_dep_cmd, inpf,
+                                               tmp_out, dep_lines, &deps);
                 //use the depend system to find includes of these included files
                 QStringList inc_deps;
                 for(int i = 0; i < deps.size(); ++i) {

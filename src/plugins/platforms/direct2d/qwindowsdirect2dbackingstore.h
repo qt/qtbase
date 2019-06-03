@@ -48,7 +48,7 @@ class QWindowsDirect2DWindow;
 
 class QWindowsDirect2DBackingStore : public QPlatformBackingStore
 {
-    Q_DISABLE_COPY(QWindowsDirect2DBackingStore)
+    Q_DISABLE_COPY_MOVE(QWindowsDirect2DBackingStore)
 
 public:
     QWindowsDirect2DBackingStore(QWindow *window);

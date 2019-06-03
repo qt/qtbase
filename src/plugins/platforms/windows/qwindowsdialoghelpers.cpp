@@ -507,7 +507,7 @@ class QWindowsNativeFileDialogBase;
 
 class QWindowsNativeFileDialogEventHandler : public QWindowsComBase<IFileDialogEvents>
 {
-    Q_DISABLE_COPY(QWindowsNativeFileDialogEventHandler)
+    Q_DISABLE_COPY_MOVE(QWindowsNativeFileDialogEventHandler)
 public:
     static IFileDialogEvents *create(QWindowsNativeFileDialogBase *nativeFileDialog);
 

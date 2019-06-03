@@ -228,6 +228,7 @@ public:
         HtmlResource  = 1,
         ImageResource = 2,
         StyleSheetResource = 3,
+        MarkdownResource = 4,
 
         UserResource  = 100
     };

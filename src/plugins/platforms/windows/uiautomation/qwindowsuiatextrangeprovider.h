@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaTextRangeProvider : public QWindowsUiaBaseProvider,
                                      public QWindowsComBase<ITextRangeProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaTextRangeProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaTextRangeProvider)
 public:
     explicit QWindowsUiaTextRangeProvider(QAccessible::Id id, int startOffset, int endOffset);
     virtual ~QWindowsUiaTextRangeProvider();

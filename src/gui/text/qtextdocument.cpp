@@ -2076,6 +2076,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
                          The icon needs to be converted to one of the supported types first,
                          for example using QIcon::pixmap.
     \value StyleSheetResource The resource contains CSS.
+    \value MarkdownResource The resource contains Markdown.
     \value UserResource  The first available value for user defined
                          resource types.
 

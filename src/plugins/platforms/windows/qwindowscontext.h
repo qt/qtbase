@@ -155,7 +155,7 @@ struct QWindowsShcoreDLL {
 
 class QWindowsContext
 {
-    Q_DISABLE_COPY(QWindowsContext)
+    Q_DISABLE_COPY_MOVE(QWindowsContext)
 public:
 
     enum SystemInfoFlags
@@ -180,11 +180,11 @@ public:
 
     QString registerWindowClass(const QWindow *w);
     QString registerWindowClass(QString cname, WNDPROC proc,
-                                unsigned style = 0, HBRUSH brush = 0,
+                                unsigned style = 0, HBRUSH brush = nullptr,
                                 bool icon = false);
     HWND createDummyWindow(const QString &classNameIn,
                            const wchar_t *windowName,
-                           WNDPROC wndProc = 0, DWORD style = WS_OVERLAPPED);
+                           WNDPROC wndProc = nullptr, DWORD style = WS_OVERLAPPED);
 
     HDC displayContext() const;
     int screenDepth() const;

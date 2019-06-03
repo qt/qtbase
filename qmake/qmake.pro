@@ -147,7 +147,6 @@ SOURCES += \
     qregexp.cpp \
     qsettings.cpp \
     qstring.cpp \
-    qstring_compat.cpp \
     qstringlist.cpp \
     qsystemerror.cpp \
     qtemporaryfile.cpp \

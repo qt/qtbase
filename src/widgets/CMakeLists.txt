@@ -25,7 +25,6 @@ add_qt_module(Widgets
         kernel/qstackedlayout.cpp kernel/qstackedlayout.h
         kernel/qstandardgestures.cpp kernel/qstandardgestures_p.h
         kernel/qtestsupport_widgets.cpp kernel/qtestsupport_widgets.h
-        kernel/qtooltip.cpp kernel/qtooltip.h
         kernel/qtwidgetsglobal.h kernel/qtwidgetsglobal_p.h
         kernel/qwidget.cpp kernel/qwidget.h kernel/qwidget_p.h
         kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
@@ -312,6 +311,11 @@ extend_target(Widgets CONDITION QT_FEATURE_opengl
 extend_target(Widgets CONDITION QT_FEATURE_formlayout
     SOURCES
         kernel/qformlayout.cpp kernel/qformlayout.h
+)
+
+extend_target(Widgets CONDITION QT_FEATURE_tooltip
+    SOURCES
+        kernel/qtooltip.cpp kernel/qtooltip.h
 )
 
 extend_target(Widgets CONDITION QT_FEATURE_whatsthis

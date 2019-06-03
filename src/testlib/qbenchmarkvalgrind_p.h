@@ -58,6 +58,8 @@
 
 class QStringList;
 
+QT_REQUIRE_CONFIG(valgrind);
+
 QT_BEGIN_NAMESPACE
 
 class QBenchmarkValgrindUtils

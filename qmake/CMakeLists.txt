@@ -74,7 +74,6 @@ add_qt_tool(qmake # special case
         ../src/corelib/tools/qregexp.cpp ../src/corelib/tools/qregexp.h
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/tools/qstring.cpp ../src/corelib/tools/qstring.h
-        ../src/corelib/tools/qstring_compat.cpp
         ../src/corelib/tools/qstringlist.cpp ../src/corelib/tools/qstringlist.h
         ../src/corelib/tools/qstringmatcher.h
         ../src/corelib/tools/qvector.h

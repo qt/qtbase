@@ -678,9 +678,11 @@ public:
 #else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QPointer;
+#  ifndef QT_NO_QOBJECT
     template<typename X>
     friend QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<X*>::Value, X>::type>
     qWeakPointerFromVariant(const QVariant &variant);
+#  endif
     template<typename X>
     friend QPointer<X>
     qPointerFromVariant(const QVariant &variant);

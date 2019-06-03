@@ -286,6 +286,13 @@
            This value was added in Qt 5.10. In Qt 6, WindowContextHelpButtonHint
            will not be set by default.
 
+    \value AA_DisableSessionManager Disables the QSessionManager.
+           By default Qt will connect to a running session manager for a GUI
+           application on supported platforms, use of a session manager may be
+           redundant for system services.
+           This attribute must be set before QGuiApplication is constructed.
+           This value was added in 5.13
+
     The following values are deprecated or obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

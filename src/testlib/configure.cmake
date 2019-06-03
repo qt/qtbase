@@ -24,3 +24,8 @@ qt_feature("itemmodeltester" PUBLIC
     PURPOSE "Provides a utility to test item models."
     CONDITION QT_FEATURE_itemmodel
 )
+qt_feature("valgrind" PUBLIC
+    LABEL "Valgrind"
+    PURPOSE "Profiling support with callgrind."
+    CONDITION ( LINUX OR APPLE ) AND QT_FEATURE_process AND QT_FEATURE_regularexpression
+)

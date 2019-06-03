@@ -55,7 +55,7 @@ class QTouchDevice;
 
 class QWindowsPointerHandler
 {
-    Q_DISABLE_COPY(QWindowsPointerHandler)
+    Q_DISABLE_COPY_MOVE(QWindowsPointerHandler)
 public:
     QWindowsPointerHandler() = default;
     bool translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);

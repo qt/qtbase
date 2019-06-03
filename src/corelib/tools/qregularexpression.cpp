@@ -1048,8 +1048,8 @@ void QRegularExpressionPrivate::getPatternInfo()
     unsigned int hasJOptionChanged;
     pcre2_pattern_info_16(compiledPattern, PCRE2_INFO_JCHANGED, &hasJOptionChanged);
     if (Q_UNLIKELY(hasJOptionChanged)) {
-        qWarning("QRegularExpressionPrivate::getPatternInfo(): the pattern '%s'\n    is using the (?J) option; duplicate capturing group names are not supported by Qt",
-                 qPrintable(pattern));
+        qWarning("QRegularExpressionPrivate::getPatternInfo(): the pattern '%ls'\n    is using the (?J) option; duplicate capturing group names are not supported by Qt",
+                 qUtf16Printable(pattern));
     }
 }
 

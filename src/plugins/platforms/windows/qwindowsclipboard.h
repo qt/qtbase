@@ -58,7 +58,7 @@ protected:
 
 class QWindowsClipboard : public QPlatformClipboard
 {
-    Q_DISABLE_COPY(QWindowsClipboard)
+    Q_DISABLE_COPY_MOVE(QWindowsClipboard)
 public:
     QWindowsClipboard();
     ~QWindowsClipboard() override;
@@ -87,8 +87,8 @@ private:
 
     QWindowsClipboardRetrievalMimeData m_retrievalData;
     QWindowsOleDataObject *m_data = nullptr;
-    HWND m_clipboardViewer = 0;
-    HWND m_nextClipboardViewer = 0;
+    HWND m_clipboardViewer = nullptr;
+    HWND m_nextClipboardViewer = nullptr;
     bool m_formatListenerRegistered = false;
 };
 

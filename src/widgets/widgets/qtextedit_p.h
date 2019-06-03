@@ -104,6 +104,7 @@ public:
 
     void _q_currentCharFormatChanged(const QTextCharFormat &format);
     void _q_cursorPositionChanged();
+    void _q_hoveredBlockWithMarkerChanged(const QTextBlock &block);
 
     void updateDefaultTextOption();
 
@@ -135,6 +136,8 @@ public:
     QString anchorToScrollToWhenVisible;
 
     QString placeholderText;
+
+    Qt::CursorShape cursorToRestoreAfterHover = Qt::IBeamCursor;
 
 #ifdef QT_KEYPAD_NAVIGATION
     QBasicTimer deleteAllTimer;

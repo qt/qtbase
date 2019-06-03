@@ -81,7 +81,7 @@ bool QWindowsVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
 
 VkSurfaceKHR QWindowsVulkanInstance::createSurface(HWND win)
 {
-    VkSurfaceKHR surface = 0;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
 
     if (!m_createSurface) {
         m_createSurface = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(

@@ -874,8 +874,7 @@ void TorrentClient::removeClient()
     // Remove the client from RateController and all structures.
     RateController::instance()->removeSocket(client);
     d->connections.removeAll(client);
-    QMultiMap<PeerWireClient *, TorrentPiece *>::Iterator it = d->payloads.find(client);
-    while (it != d->payloads.end() && it.key() == client) {
+    for (auto it = d->payloads.find(client); it != d->payloads.end() && it.key() == client; /*erasing*/) {
         TorrentPiece *piece = it.value();
         piece->inProgress = false;
         piece->requestedBlocks.fill(false);
@@ -883,9 +882,12 @@ void TorrentClient::removeClient()
     }
 
     // Remove pending read requests.
-    QMapIterator<int, PeerWireClient *> it2(d->readIds);
-    while (it2.findNext(client))
-        d->readIds.remove(it2.key());
+    for (auto it = d->readIds.begin(), end = d->readIds.end(); it != end; /*erasing*/) {
+        if (it.value() == client)
+            it = d->readIds.erase(it);
+        else
+            ++it;
+    }
 
     // Delete the client later.
     disconnect(client, SIGNAL(disconnected()), this, SLOT(removeClient()));

@@ -55,6 +55,8 @@
 #include "imagedelegate.h"
 #include "mainwindow.h"
 
+#include <memory>
+
 //! [40]
 enum { OtherSize = QStyle::PM_CustomBase };
 //! [40]
@@ -514,8 +516,8 @@ void MainWindow::checkCurrentStyle()
     const QList<QAction *> actions = styleActionGroup->actions();
     for (QAction *action : actions) {
         const QString styleName = action->data().toString();
-        QScopedPointer<QStyle> candidate(QStyleFactory::create(styleName));
-        Q_ASSERT(!candidate.isNull());
+        const std::unique_ptr<QStyle> candidate{QStyleFactory::create(styleName)};
+        Q_ASSERT(candidate);
         if (candidate->metaObject()->className()
                 == QApplication::style()->metaObject()->className()) {
             action->trigger();

@@ -54,7 +54,7 @@ class QWindowsStaticOpenGLContext;
 
 class QWindowsIntegration : public QPlatformIntegration
 {
-    Q_DISABLE_COPY(QWindowsIntegration)
+    Q_DISABLE_COPY_MOVE(QWindowsIntegration)
 public:
     enum Options { // Options to be passed on command line.
         FontDatabaseFreeType = 0x1,

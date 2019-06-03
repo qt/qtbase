@@ -54,7 +54,7 @@ class QTouchDevice;
 
 class QWindowsMouseHandler
 {
-    Q_DISABLE_COPY(QWindowsMouseHandler)
+    Q_DISABLE_COPY_MOVE(QWindowsMouseHandler)
 public:
     QWindowsMouseHandler();
 
@@ -79,7 +79,7 @@ public:
 
     static Qt::MouseButtons queryMouseButtons();
     QWindow *windowUnderMouse() const { return m_windowUnderMouse.data(); }
-    void clearWindowUnderMouse() { m_windowUnderMouse = 0; }
+    void clearWindowUnderMouse() { m_windowUnderMouse = nullptr; }
     void clearEvents();
 
 private:

@@ -101,9 +101,9 @@ QString qt_accHotKey(const QString &text);
 
 QList<QWidget*> childWidgets(const QWidget *widget)
 {
-    if (widget == 0)
-        return QList<QWidget*>();
     QList<QWidget*> widgets;
+    if (!widget)
+        return widgets;
     for (QObject *o : widget->children()) {
         QWidget *w = qobject_cast<QWidget *>(o);
         if (!w)

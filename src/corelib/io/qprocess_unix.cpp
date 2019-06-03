@@ -202,8 +202,7 @@ static int qt_create_pipe(int *pipe)
         qt_safe_close(pipe[1]);
     int pipe_ret = qt_safe_pipe(pipe);
     if (pipe_ret != 0) {
-        qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
-                 pipe, qPrintable(qt_error_string(errno)));
+        qErrnoWarning("QProcessPrivate::createPipe: Cannot create pipe %p", pipe);
     }
     return pipe_ret;
 }
@@ -473,7 +472,7 @@ void QProcessPrivate::startProcess()
     if (forkfd == -1) {
         // Cleanup, report error and return
 #if defined (QPROCESS_DEBUG)
-        qDebug("fork failed: %s", qPrintable(qt_error_string(lastForkErrno)));
+        qDebug("fork failed: %ls", qUtf16Printable(qt_error_string(lastForkErrno)));
 #endif
         q->setProcessState(QProcess::NotRunning);
         setErrorAndEmit(QProcess::FailedToStart,
@@ -652,7 +651,7 @@ bool QProcessPrivate::writeToStdin()
     qDebug("QProcessPrivate::writeToStdin(), write(%p \"%s\", %lld) == %lld",
            data, qt_prettyDebug(data, bytesToWrite, 16).constData(), bytesToWrite, written);
     if (written == -1)
-        qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qPrintable(qt_error_string(errno)));
+        qDebug("QProcessPrivate::writeToStdin(), failed to write (%ls)", qUtf16Printable(qt_error_string(errno)));
 #endif
     if (written == -1) {
         // If the O_NONBLOCK flag is set and If some data can be written without blocking

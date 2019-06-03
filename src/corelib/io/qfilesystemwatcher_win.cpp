@@ -306,8 +306,7 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, //  Volume requires BACKUP_SEMANTICS
                    0);
     if (volumeHandle == INVALID_HANDLE_VALUE) {
-        qErrnoWarning("CreateFile %s failed.",
-                      qPrintable(QString::fromWCharArray(devicePath)));
+        qErrnoWarning("CreateFile %ls failed.", devicePath);
         return;
     }
 
@@ -324,8 +323,7 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
     // closed. Do it here to avoid having to close/reopen in lock message handling.
     CloseHandle(volumeHandle);
     if (!re.devNotify) {
-        qErrnoWarning("RegisterDeviceNotification %s failed.",
-                      qPrintable(QString::fromWCharArray(devicePath)));
+        qErrnoWarning("RegisterDeviceNotification %ls failed.", devicePath);
         return;
     }
 
@@ -641,15 +639,15 @@ QWindowsFileSystemWatcherEngineThread::~QWindowsFileSystemWatcherEngineThread()
     }
 }
 
-static inline QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThread::PathInfoHash &pathInfos)
+Q_DECL_COLD_FUNCTION
+static QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThread::PathInfoHash &pathInfos)
 {
-    QString result;
-    QTextStream str(&result);
-    str << "QFileSystemWatcher: FindNextChangeNotification failed for";
+    QString str;
+    str += QLatin1String("QFileSystemWatcher: FindNextChangeNotification failed for");
     for (const QWindowsFileSystemWatcherEngine::PathInfo &pathInfo : pathInfos)
-        str << " \"" << QDir::toNativeSeparators(pathInfo.absolutePath) << '"';
-    str << ' ';
-    return result;
+        str += QLatin1String(" \"") + QDir::toNativeSeparators(pathInfo.absolutePath) + QLatin1Char('"');
+    str += QLatin1Char(' ');
+    return str;
 }
 
 void QWindowsFileSystemWatcherEngineThread::run()
@@ -695,7 +693,7 @@ void QWindowsFileSystemWatcherEngineThread::run()
                             fakeRemove = true;
                         }
 
-                        qErrnoWarning(error, "%s", qPrintable(msgFindNextFailed(h)));
+                        qErrnoWarning(error, "%ls", qUtf16Printable(msgFindNextFailed(h)));
                     }
                     QMutableHashIterator<QFileSystemWatcherPathKey, QWindowsFileSystemWatcherEngine::PathInfo> it(h);
                     while (it.hasNext()) {

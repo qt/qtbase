@@ -1,3 +1,24 @@
-add_qt_test("tst_qtextbrowser" RUN_SERIAL SOURCES tst_qtextbrowser.cpp LIBRARIES Qt::Widgets)
+# Generated from qtextbrowser.pro.
 
-extend_target("tst_qtextbrowser" CONDITION builtin_testdata DEFINES BUILTIN_TESTDATA)
+#####################################################################
+## tst_qtextbrowser Test:
+#####################################################################
+
+add_qt_test(tst_qtextbrowser
+    SOURCES
+        tst_qtextbrowser.cpp
+    PUBLIC_LIBRARIES
+        Qt::Widgets
+)
+
+#### Keys ignored in scope 1:.:.:qtextbrowser.pro:<TRUE>:
+# CONFIG = "testcase"
+# TESTDATA = "*.html" "*.md" "subdir/*"
+
+## Scopes:
+#####################################################################
+
+extend_target(tst_qtextbrowser CONDITION builtin_testdata
+    DEFINES
+        BUILTIN_TESTDATA
+)

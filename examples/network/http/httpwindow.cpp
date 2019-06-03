@@ -48,12 +48,13 @@
 **
 ****************************************************************************/
 
+#include "httpwindow.h"
+
+#include "ui_authenticationdialog.h"
+
 #include <QtWidgets>
 #include <QtNetwork>
 #include <QUrl>
-
-#include "httpwindow.h"
-#include "ui_authenticationdialog.h"
 
 #if QT_CONFIG(ssl)
 const char defaultUrl[] = "https://www.qt.io/";
@@ -72,6 +73,10 @@ ProgressDialog::ProgressDialog(const QUrl &url, QWidget *parent)
     setValue(0);
     setMinimumDuration(0);
     setMinimumSize(QSize(400, 75));
+}
+
+ProgressDialog::~ProgressDialog()
+{
 }
 
 void ProgressDialog::networkReplyProgress(qint64 bytesRead, qint64 totalBytes)
@@ -135,6 +140,10 @@ HttpWindow::HttpWindow(QWidget *parent)
     mainLayout->addWidget(buttonBox);
 
     urlLineEdit->setFocus();
+}
+
+HttpWindow::~HttpWindow()
+{
 }
 
 void HttpWindow::startRequest(const QUrl &requestedUrl)
@@ -204,9 +213,9 @@ void HttpWindow::downloadFile()
     startRequest(newUrl);
 }
 
-QFile *HttpWindow::openFileForWrite(const QString &fileName)
+std::unique_ptr<QFile> HttpWindow::openFileForWrite(const QString &fileName)
 {
-    QScopedPointer<QFile> file(new QFile(fileName));
+    std::unique_ptr<QFile> file(new QFile(fileName));
     if (!file->open(QIODevice::WriteOnly)) {
         QMessageBox::information(this, tr("Error"),
                                  tr("Unable to save the file %1: %2.")
@@ -214,7 +223,7 @@ QFile *HttpWindow::openFileForWrite(const QString &fileName)
                                       file->errorString()));
         return nullptr;
     }
-    return file.take();
+    return file;
 }
 
 void HttpWindow::cancelDownload()
@@ -231,8 +240,7 @@ void HttpWindow::httpFinished()
     if (file) {
         fi.setFile(file->fileName());
         file->close();
-        delete file;
-        file = nullptr;
+        file.reset();
     }
 
     if (httpRequestAborted) {

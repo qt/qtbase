@@ -79,7 +79,7 @@ private:
     bool m_blockUserInput = false;
     bool m_canceled = false;
 
-    Q_DISABLE_COPY(QWindowsSessionManager)
+    Q_DISABLE_COPY_MOVE(QWindowsSessionManager)
 };
 
 QT_END_NAMESPACE

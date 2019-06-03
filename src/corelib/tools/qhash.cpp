@@ -709,7 +709,7 @@ void QHashData::dump()
                 }
                 n = n->next;
             }
-            qDebug("%s", qPrintable(line));
+            qDebug("%ls", qUtf16Printable(line));
         }
     }
 }

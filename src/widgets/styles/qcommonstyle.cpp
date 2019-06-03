@@ -116,10 +116,7 @@
 
 #include <limits.h>
 
-#if QT_CONFIG(itemviews)
-#   include "private/qtextengine_p.h"
-#endif
-
+#include <private/qtextengine_p.h>
 #include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE

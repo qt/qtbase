@@ -364,9 +364,9 @@ QSslCertificate QSslError::certificate() const
 */
 uint qHash(const QSslError &key, uint seed) noexcept
 {
-    // 2x boost::hash_combine inlined:
-    seed ^= qHash(key.error())       + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= qHash(key.certificate()) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.error());
+    seed = hash(seed, key.certificate());
     return seed;
 }
 

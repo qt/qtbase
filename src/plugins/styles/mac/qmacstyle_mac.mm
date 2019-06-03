@@ -50,92 +50,30 @@
 #define QMAC_QAQUASTYLE_SIZE_CONSTRAIN
 //#define DEBUG_SIZE_CONSTRAINT
 
-#include <private/qcore_mac_p.h>
-#if QT_CONFIG(tabbar)
-#include <private/qtabbar_p.h>
-#endif
-#include <private/qpainter_p.h>
-#include <qapplication.h>
-#include <qbitmap.h>
-#if QT_CONFIG(combobox)
-#include <private/qcombobox_p.h>
-#include <qcombobox.h>
-#endif
-#if QT_CONFIG(dialogbuttonbox)
-#include <qdialogbuttonbox.h>
-#endif
-#if QT_CONFIG(dockwidget)
-#include <qdockwidget.h>
-#endif
-#include <qevent.h>
-#include <qfocusframe.h>
-#include <qformlayout.h>
-#include <qgroupbox.h>
-#include <qhash.h>
-#include <qheaderview.h>
-#if QT_CONFIG(lineedit)
-#include <qlineedit.h>
-#endif
-#if QT_CONFIG(mainwindow)
-#include <qmainwindow.h>
-#endif
-#if QT_CONFIG(mdiarea)
-#include <qmdisubwindow.h>
-#endif
-#if QT_CONFIG(menubar)
-#include <qmenubar.h>
-#endif
-#include <qpaintdevice.h>
-#include <qpainter.h>
-#include <qpixmapcache.h>
-#include <qpointer.h>
-#if QT_CONFIG(progressbar)
-#include <qprogressbar.h>
-#endif
-#if QT_CONFIG(pushbutton)
-#include <qpushbutton.h>
-#endif
-#include <qradiobutton.h>
-#if QT_CONFIG(rubberband)
-#include <qrubberband.h>
-#endif
-#if QT_CONFIG(scrollbar)
-#include <qscrollbar.h>
-#endif
-#if QT_CONFIG(sizegrip)
-#include <qsizegrip.h>
-#endif
-#include <qstyleoption.h>
-#include <qtoolbar.h>
-#if QT_CONFIG(toolbutton)
-#include <qtoolbutton.h>
-#endif
-#if QT_CONFIG(treeview)
-#include <qtreeview.h>
-#endif
-#if QT_CONFIG(tableview)
-#include <qtableview.h>
-#endif
-#include <qoperatingsystemversion.h>
-#if QT_CONFIG(wizard)
-#include <qwizard.h>
-#endif
-#include <qdebug.h>
-#if QT_CONFIG(datetimeedit)
-#include <qdatetimeedit.h>
-#endif
-#include <qmath.h>
-#include <QtWidgets/qgraphicsproxywidget.h>
-#if QT_CONFIG(graphicsview)
-#include <QtWidgets/qgraphicsview.h>
-#endif
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
-#include <private/qstylehelper_p.h>
-#include <private/qstyleanimation_p.h>
-#include <qpa/qplatformfontdatabase.h>
-#include <qpa/qplatformtheme.h>
+
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/qpa/qplatformfontdatabase.h>
+#include <QtGui/qpa/qplatformtheme.h>
+
+#include <QtWidgets/private/qstyleanimation_p.h>
+
+#if QT_CONFIG(mdiarea)
+#include <QtWidgets/qmdisubwindow.h>
+#endif
+#if QT_CONFIG(scrollbar)
+#include <QtWidgets/qscrollbar.h>
+#endif
+#if QT_CONFIG(tabbar)
+#include <QtWidgets/private/qtabbar_p.h>
+#endif
+#if QT_CONFIG(wizard)
+#include <QtWidgets/qwizard.h>
+#endif
 
 QT_USE_NAMESPACE
 
@@ -933,8 +871,10 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QLineEdit *>(widg))
             ct = QStyle::CT_LineEdit;
 #endif
+#if QT_CONFIG(itemviews)
         else if (qobject_cast<const QHeaderView *>(widg))
             ct = QStyle::CT_HeaderSection;
+#endif
 #if QT_CONFIG(menubar)
         else if (qobject_cast<const QMenuBar *>(widg))
             ct = QStyle::CT_MenuBar;
@@ -2908,9 +2848,11 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             ret = [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay;
         }
         break;
+#if QT_CONFIG(itemviews)
     case SH_ItemView_ScrollMode:
         ret = QAbstractItemView::ScrollPerPixel;
         break;
+#endif
     case SH_TitleBar_ShowToolTipsOnButtons:
         // min/max/close buttons on windows don't show tool tips
         ret = false;
@@ -4608,6 +4550,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     const int controlSize = getControlSize(opt, widget);
 
     switch (sr) {
+#if QT_CONFIG(itemviews)
     case SE_ItemViewItemText:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int fw = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, widget);
@@ -4617,6 +4560,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.adjust(-fw, 0, 0, 0);
         }
         break;
+#endif
     case SE_ToolBoxTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
@@ -6444,12 +6388,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = sz.expandedTo(QSize(sz.width(), minimumSize));
         }
         break;
+#if QT_CONFIG(itemviews)
     case CT_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             sz = QCommonStyle::sizeFromContents(ct, vopt, csz, widget);
             sz.setHeight(sz.height() + 2);
         }
         break;
+#endif
 
     default:
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
