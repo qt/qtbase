@@ -1120,7 +1120,8 @@ MakefileGenerator::writePrlFile()
        && project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()
        && project->isActiveConfig("create_prl")
        && (project->first("TEMPLATE") == "lib"
-       || project->first("TEMPLATE") == "vclib")
+       || project->first("TEMPLATE") == "vclib"
+       || project->first("TEMPLATE") == "aux")
        && (!project->isActiveConfig("plugin") || project->isActiveConfig("static"))) { //write prl file
         QString local_prl = prlFileName();
         QString prl = fileFixify(local_prl);

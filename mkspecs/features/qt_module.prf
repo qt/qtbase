@@ -82,6 +82,11 @@ header_module {
     CONFIG      += force_qt  # Needed for the headers_clean tests.
     !lib_bundle: \
         CONFIG  += qt_no_install_library
+
+    # Allow creation of .prl, .la and .pc files.
+    target.path = $$[QT_INSTALL_LIBS]
+    target.CONFIG += dummy_install
+    INSTALLS    += target
 } else {
     TEMPLATE     = lib
 }
