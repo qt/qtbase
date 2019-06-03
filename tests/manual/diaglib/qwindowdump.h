@@ -49,10 +49,10 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(FormatWindowOptions)
 void indentStream(QTextStream &s, int indent);
 void formatObject(QTextStream &str, const QObject *o);
 void formatRect(QTextStream &str, const QRect &geom);
-void formatWindowFlags(QTextStream &str, const Qt::WindowFlags flags);
+void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags);
 
-void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions options = 0);
-void dumpAllWindows(FormatWindowOptions options = 0);
+void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions options = {});
+void dumpAllWindows(FormatWindowOptions options = {});
 
 } // namespace QtDiag
 
