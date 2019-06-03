@@ -203,7 +203,7 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
 static inline QDBusMessage interfaceNotFoundError(const QDBusMessage &msg, const QString &interface_name)
 {
     return msg.createErrorReply(QDBusError::UnknownInterface,
-                                QString::fromLatin1("Interface %1 was not found in object %2")
+                                QLatin1String("Interface %1 was not found in object %2")
                                 .arg(interface_name, msg.path()));
 }
 
@@ -211,10 +211,10 @@ static inline QDBusMessage
 propertyNotFoundError(const QDBusMessage &msg, const QString &interface_name, const QByteArray &property_name)
 {
     return msg.createErrorReply(QDBusError::UnknownProperty,
-                                QString::fromLatin1("Property %1%2%3 was not found in object %4")
+                                QLatin1String("Property %1%2%3 was not found in object %4")
                                 .arg(interface_name,
-                                     QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
-                                     QString::fromLatin1(property_name),
+                                     QLatin1String(interface_name.isEmpty() ? "" : "."),
+                                     QLatin1String(property_name),
                                      msg.path()));
 }
 
@@ -302,16 +302,16 @@ static QDBusMessage propertyWriteReply(const QDBusMessage &msg, const QString &i
         return propertyNotFoundError(msg, interface_name, property_name);
     case PropertyTypeMismatch:
         return msg.createErrorReply(QDBusError::InvalidArgs,
-                                    QString::fromLatin1("Invalid arguments for writing to property %1%2%3")
+                                    QLatin1String("Invalid arguments for writing to property %1%2%3")
                                     .arg(interface_name,
-                                         QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
-                                         QString::fromLatin1(property_name)));
+                                         QLatin1String(interface_name.isEmpty() ? "" : "."),
+                                         QLatin1String(property_name)));
     case PropertyReadOnly:
         return msg.createErrorReply(QDBusError::PropertyReadOnly,
-                                    QString::fromLatin1("Property %1%2%3 is read-only")
+                                    QLatin1String("Property %1%2%3 is read-only")
                                     .arg(interface_name,
-                                         QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
-                                         QString::fromLatin1(property_name)));
+                                         QLatin1String(interface_name.isEmpty() ? "" : "."),
+                                         QLatin1String(property_name)));
     case PropertyWriteFailed:
         return msg.createErrorReply(QDBusError::InternalError,
                                     QString::fromLatin1("Internal error"));

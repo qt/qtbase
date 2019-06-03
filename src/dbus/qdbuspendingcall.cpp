@@ -221,8 +221,8 @@ void QDBusPendingCallPrivate::checkReceivedSignature()
 
     // can't use startsWith here because a null string doesn't start or end with an empty string
     if (replyMessage.signature().indexOf(expectedReplySignature) != 0) {
-        QString errorMsg = QLatin1String("Unexpected reply signature: got \"%1\", "
-                                         "expected \"%2\"");
+        const auto errorMsg = QLatin1String("Unexpected reply signature: got \"%1\", "
+                                            "expected \"%2\"");
         replyMessage = QDBusMessage::createError(
             QDBusError::InvalidSignature,
             errorMsg.arg(replyMessage.signature(), expectedReplySignature));

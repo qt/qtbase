@@ -340,8 +340,9 @@ static QByteArray buildMatchRule(const QString &service,
                                  const QString &objectPath, const QString &interface,
                                  const QString &member, const QDBusConnectionPrivate::ArgMatchRules &argMatch, const QString & /*signature*/)
 {
-    QString result = QLatin1String("type='signal',");
-    QString keyValue = QLatin1String("%1='%2',");
+    QString result;
+    result += QLatin1String("type='signal',");
+    const auto keyValue = QLatin1String("%1='%2',");
 
     if (!service.isEmpty())
         result += keyValue.arg(QLatin1String("sender"), service);
@@ -354,13 +355,13 @@ static QByteArray buildMatchRule(const QString &service,
 
     // add the argument string-matching now
     if (!argMatch.args.isEmpty()) {
-        keyValue = QLatin1String("arg%1='%2',");
+        const QString keyValue = QLatin1String("arg%1='%2',");
         for (int i = 0; i < argMatch.args.count(); ++i)
             if (!argMatch.args.at(i).isNull())
                 result += keyValue.arg(i).arg(argMatch.args.at(i));
     }
     if (!argMatch.arg0namespace.isEmpty()) {
-        result += QStringLiteral("arg0namespace='%1',").arg(argMatch.arg0namespace);
+        result += QLatin1String("arg0namespace='%1',").arg(argMatch.arg0namespace);
     }
 
     result.chop(1);             // remove ending comma
@@ -1369,19 +1370,19 @@ void QDBusConnectionPrivate::sendError(const QDBusMessage &msg, QDBusError::Erro
         if (msg.interface().isEmpty())
             interfaceMsg = QLatin1String("any interface");
         else
-            interfaceMsg = QString::fromLatin1("interface '%1'").arg(msg.interface());
+            interfaceMsg = QLatin1String("interface '%1'").arg(msg.interface());
 
         send(msg.createErrorReply(code,
-                                  QString::fromLatin1("No such method '%1' in %2 at object path '%3' "
-                                                      "(signature '%4')")
+                                  QLatin1String("No such method '%1' in %2 at object path '%3' "
+                                                "(signature '%4')")
                                   .arg(msg.member(), interfaceMsg, msg.path(), msg.signature())));
     } else if (code == QDBusError::UnknownInterface) {
         send(msg.createErrorReply(QDBusError::UnknownInterface,
-                                  QString::fromLatin1("No such interface '%1' at object path '%2'")
+                                  QLatin1String("No such interface '%1' at object path '%2'")
                                   .arg(msg.interface(), msg.path())));
     } else if (code == QDBusError::UnknownObject) {
         send(msg.createErrorReply(QDBusError::UnknownObject,
-                                  QString::fromLatin1("No such object path '%1'").arg(msg.path())));
+                                  QLatin1String("No such object path '%1'").arg(msg.path())));
     }
 }
 
@@ -1551,8 +1552,8 @@ void QDBusConnectionPrivate::handleObjectCall(const QDBusMessage &msg)
         objThread = result.obj->thread();
         if (!objThread) {
             send(msg.createErrorReply(QDBusError::InternalError,
-                                      QString::fromLatin1("Object '%1' (at path '%2')"
-                                                          " has no thread. Cannot deliver message.")
+                                      QLatin1String("Object '%1' (at path '%2')"
+                                                    " has no thread. Cannot deliver message.")
                                       .arg(result.obj->objectName(), msg.path())));
             return;
         }
@@ -2082,7 +2083,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReplyLocal(const QDBusMessage &mess
         if (interface.isEmpty())
             interface = QLatin1String("<no-interface>");
         return QDBusMessage::createError(QDBusError::InternalError,
-                                         QString::fromLatin1("Internal error trying to call %1.%2 at %3 (signature '%4'")
+                                         QLatin1String("Internal error trying to call %1.%2 at %3 (signature '%4'")
                                          .arg(interface, message.member(),
                                               message.path(), message.signature()));
     }

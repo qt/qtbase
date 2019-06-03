@@ -164,7 +164,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
             lastError = QDBusError(QDBusError::Failed,
-                                   QString::fromLatin1("Unregistered type %1 cannot be handled")
+                                   QLatin1String("Unregistered type %1 cannot be handled")
                                    .arg(QLatin1String(mp.typeName())));
             return false;
         }
@@ -220,15 +220,15 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     // there was an error...
-    QString errmsg = QLatin1String("Unexpected `%1' (%2) when retrieving property `%3.%4' "
-                                   "(expected type `%5' (%6))");
+    const auto errmsg = QLatin1String("Unexpected `%1' (%2) when retrieving property `%3.%4' "
+                                      "(expected type `%5' (%6))");
     lastError = QDBusError(QDBusError::InvalidSignature,
-                           errmsg.arg(QString::fromLatin1(foundType),
-                                      QString::fromLatin1(foundSignature),
+                           errmsg.arg(QLatin1String(foundType),
+                                      QLatin1String(foundSignature),
                                       interface,
-                                      QString::fromUtf8(mp.name()),
-                                      QString::fromLatin1(mp.typeName()),
-                                      QString::fromLatin1(expectedSignature)));
+                                      QLatin1String(mp.name()),
+                                      QLatin1String(mp.typeName()),
+                                      QLatin1String(expectedSignature)));
     return false;
 }
 
