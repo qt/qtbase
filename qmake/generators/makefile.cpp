@@ -3359,42 +3359,44 @@ MakefileGenerator::writePkgConfigFile()
     if (!version.isEmpty())
         t << "Version: " << version << endl;
 
-    // libs
-    t << "Libs: ";
-    QString pkgConfiglibName;
-    if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")) {
-        if (libDir != QLatin1String("/Library/Frameworks"))
-            t << "-F${libdir} ";
-        ProString bundle;
-        if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
-            bundle = project->first("QMAKE_FRAMEWORK_BUNDLE_NAME");
-        else
-            bundle = project->first("TARGET");
-        int suffix = bundle.lastIndexOf(".framework");
-        if (suffix != -1)
-            bundle = bundle.left(suffix);
-        t << "-framework ";
-        pkgConfiglibName = bundle.toQString();
-    } else {
-        if (!project->values("QMAKE_DEFAULT_LIBDIRS").contains(libDir))
-            t << "-L${libdir} ";
-        pkgConfiglibName = "-l" + project->first("QMAKE_ORIG_TARGET");
-        if (project->isActiveConfig("shared"))
-            pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
-    }
-    t << shellQuote(pkgConfiglibName) << " \n";
+    if (project->first("TEMPLATE") == "lib") {
+        // libs
+        t << "Libs: ";
+        QString pkgConfiglibName;
+        if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")) {
+            if (libDir != QLatin1String("/Library/Frameworks"))
+                t << "-F${libdir} ";
+            ProString bundle;
+            if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
+                bundle = project->first("QMAKE_FRAMEWORK_BUNDLE_NAME");
+            else
+                bundle = project->first("TARGET");
+            int suffix = bundle.lastIndexOf(".framework");
+            if (suffix != -1)
+                bundle = bundle.left(suffix);
+            t << "-framework ";
+            pkgConfiglibName = bundle.toQString();
+        } else {
+            if (!project->values("QMAKE_DEFAULT_LIBDIRS").contains(libDir))
+                t << "-L${libdir} ";
+            pkgConfiglibName = "-l" + project->first("QMAKE_ORIG_TARGET");
+            if (project->isActiveConfig("shared"))
+                pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
+        }
+        t << shellQuote(pkgConfiglibName) << " \n";
 
-    if (project->isActiveConfig("staticlib")) {
-        ProStringList libs;
-        libs << "LIBS";  // FIXME: this should not be conditional on staticlib
-        libs << "LIBS_PRIVATE";
-        libs << "QMAKE_LIBS";  // FIXME: this should not be conditional on staticlib
-        libs << "QMAKE_LIBS_PRIVATE";
-        libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
-        t << "Libs.private:";
-        for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
-            t << ' ' << fixLibFlags((*it).toKey()).join(' ');
-        t << endl;
+        if (project->isActiveConfig("staticlib")) {
+            ProStringList libs;
+            libs << "LIBS";  // FIXME: this should not be conditional on staticlib
+            libs << "LIBS_PRIVATE";
+            libs << "QMAKE_LIBS";  // FIXME: this should not be conditional on staticlib
+            libs << "QMAKE_LIBS_PRIVATE";
+            libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
+            t << "Libs.private:";
+            for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+                t << ' ' << fixLibFlags((*it).toKey()).join(' ');
+            t << endl;
+        }
     }
 
     // flags
