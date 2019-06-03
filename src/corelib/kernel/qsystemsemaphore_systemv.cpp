@@ -76,7 +76,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 #if QT_CONFIG(translation)
             QCoreApplication::tr("%1: key is empty", "QSystemSemaphore")
 #else
-            QString::fromLatin1("%1: key is empty")
+            QLatin1String("%1: key is empty")
 #endif
                 .arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;
@@ -94,7 +94,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 #if QT_CONFIG(translation)
             QCoreApplication::tr("%1: unable to make key", "QSystemSemaphore")
 #else
-            QString::fromLatin1("%1: unable to make key")
+            QLatin1String("%1: unable to make key")
 #endif
                 .arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;
@@ -111,7 +111,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 #if QT_CONFIG(translation)
             QCoreApplication::tr("%1: ftok failed", "QSystemSemaphore")
 #else
-            QString::fromLatin1("%1: ftok failed")
+            QLatin1String("%1: ftok failed")
 #endif
                 .arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;

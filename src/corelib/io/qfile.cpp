@@ -810,7 +810,7 @@ QFile::copy(const QString &newName)
                 error = true;
                 d->setError(QFile::CopyError, tr("Cannot open %1 for input").arg(d->fileName));
             } else {
-                QString fileTemplate = QLatin1String("%1/qt_temp.XXXXXX");
+                const auto fileTemplate = QLatin1String("%1/qt_temp.XXXXXX");
 #ifdef QT_NO_TEMPORARYFILE
                 QFile out(fileTemplate.arg(QFileInfo(newName).path()));
                 if (!out.open(QIODevice::ReadWrite))
