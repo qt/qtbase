@@ -1357,9 +1357,14 @@
             "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
             "output": [ "publicFeature", "feature" ]
         },
+        "vkgen": {
+            "label": "vkgen",
+            "condition": "features.xmlstreamreader",
+            "output": [ "privateFeature" ]
+        },
         "vulkan": {
             "label": "Vulkan",
-            "condition": "libs.vulkan",
+            "condition": "features.vkgen && libs.vulkan",
             "output": [ "publicFeature" ]
         },
         "openvg": {
