@@ -1901,6 +1901,24 @@ macro(qt_find_package)
         set(config_package_arg ${arg_UNPARSED_ARGUMENTS})
         list(APPEND config_package_arg "CONFIG;QUIET")
         find_package(${config_package_arg})
+
+        # Double check that in config mode the targets become visible. Sometimes
+        # only the module mode creates the targets. For example with vcpkg, the sqlite
+        # package provides sqlite3-config.cmake, which offers multi-config targets but
+        # in their own way. CMake has FindSQLite3.cmake and with the original
+        # qt_find_package(SQLite3) call it is our intention to use the cmake package
+        # in module mode.
+        if (${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
+            foreach(expected_target ${arg_PROVIDED_TARGETS})
+                if (TARGET ${expected_target})
+                    set(any_target_found TRUE)
+                    break()
+                endif()
+            endforeach()
+            if(NOT any_target_found)
+                set(${ARGV0}_FOUND)
+            endif()
+        endif()
     endif()
 
     # Ensure the options are back in the original unparsed arguments
