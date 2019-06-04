@@ -379,7 +379,7 @@ typedef double qreal;
 #define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
 #define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major(minor, text)
 
-#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor()
+#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
 #define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
 
 /*
