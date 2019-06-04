@@ -1140,9 +1140,12 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
 
 
 def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
-                                indent: int = 0, footer: str = '', extraKeys: typing.List[str]):
+                                indent: int = 0, footer: str = '',
+                                extra_keys: typing.Union[typing.List[str], None] = None):
+    if extra_keys is None:
+        extra_keys = []
     write_source_file_list(cm_fh, scope, header,
-                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'] + extraKeys,
+                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'] + extra_keys,
                            indent, footer=footer)
 
 
@@ -1700,7 +1703,7 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
     if gui:
         add_executable += ' WIN32 MACOSX_BUNDLE'
 
-    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0, extraKeys = ['RESOURCES'])
+    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0, extra_keys=['RESOURCES'])
 
     cm_fh.write(')\n')
 
