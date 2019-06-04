@@ -895,6 +895,7 @@ bool
 MakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
                                       const QStringRef &fixedBase, int slashOff)
 {
+    Q_UNUSED(slashOff)
     return processPrlFileCore(origFile, origName, fixedBase + Option::prl_ext);
 }
 

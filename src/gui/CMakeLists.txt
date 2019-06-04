@@ -36,6 +36,13 @@ if (QT_FEATURE_gui)
 
     set(QT_QPA_DEFAULT_PLATFORM "${_default_platform}" CACHE STRING "QPA default platform")
 endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-error=unused-parameter -Wno-error=sign-compare -Wno-error=missing-field-initializers")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-error=unused-parameter -Wno-error=sign-compare -Wno-error=missing-field-initializers -Wno-error=missing-braces")
+endif()
+
 # special case end
 
 add_qt_module(Gui

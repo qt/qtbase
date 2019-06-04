@@ -35,6 +35,9 @@ include(QtBaseGlobalTargets)
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
 set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
+## Should this Qt be built with Werror?
+option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
+
 ## Decide whether tools will be built.
 qt_check_if_tools_will_be_built()
 
