@@ -380,6 +380,16 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         WrapOpenGL # special case
 )
 
+# special case begin
+# qopenglfunctions.h on Android does not use the function
+# table indirection for calls but calls ::glFoo in inline functions
+# directly. That means the GL library is a public dependency.
+extend_target(Gui CONDITION QT_FEATURE_opengl AND ANDROID
+    PUBLIC_LIBRARIES
+        WrapOpenGL
+)
+# special case end
+
 #### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:
 # MODULE_CONFIG = "opengl"
 
