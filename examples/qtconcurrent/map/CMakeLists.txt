@@ -1,20 +1,27 @@
 # Generated from map.pro.
 
-#####################################################################
-## mapdemo Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mapdemo LANGUAGES CXX)
 
-add_qt_executable(mapdemo
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/map"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/map"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Concurrent
-        Qt::Gui # special case
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Concurrent)
+find_package(Qt5 COMPONENTS Gui) # special case
+
+add_executable(mapdemo
+    main.cpp
 )
-
-#### Keys ignored in scope 1:.:map.pro:<NONE>:
-# CONFIG = "-app_bundle"
-# TEMPLATE = "app"
+target_link_libraries(mapdemo PUBLIC
+    Qt::Concurrent
+    Qt::Gui # special case
+)
+install(TARGETS mapdemo
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

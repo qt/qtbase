@@ -1,19 +1,27 @@
 # Generated from 2_formatting.pro.
 
-#####################################################################
-## mv_formatting Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mv_formatting LANGUAGES CXX)
 
-add_qt_executable(mv_formatting
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/2_formatting"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/2_formatting"
-    SOURCES
-        main.cpp
-        mymodel.cpp mymodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mv_formatting WIN32 MACOSX_BUNDLE
+    main.cpp
+    mymodel.cpp mymodel.h
+)
+target_link_libraries(mv_formatting PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:2_formatting.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS mv_formatting
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

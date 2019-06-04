@@ -1,24 +1,32 @@
 # Generated from icons.pro.
 
-#####################################################################
-## icons Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(icons LANGUAGES CXX)
 
-add_qt_executable(icons
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/icons"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/icons"
-    SOURCES
-        iconpreviewarea.cpp iconpreviewarea.h
-        iconsizespinbox.cpp iconsizespinbox.h
-        imagedelegate.cpp imagedelegate.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    DEFINES
-        SRCDIR=\\\"/\\\"
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(icons WIN32 MACOSX_BUNDLE
+    iconpreviewarea.cpp iconpreviewarea.h
+    iconsizespinbox.cpp iconsizespinbox.h
+    imagedelegate.cpp imagedelegate.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
 )
-
-#### Keys ignored in scope 1:.:icons.pro:<NONE>:
-# EXAMPLE_FILES = "images/*"
+target_compile_definitions(icons PUBLIC
+    SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
+target_link_libraries(icons PUBLIC
+    Qt::Widgets
+)
+install(TARGETS icons
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,17 +1,28 @@
 # Generated from borderlayout.pro.
 
-#####################################################################
-## borderlayout Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(borderlayout LANGUAGES CXX)
 
-add_qt_executable(borderlayout
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/layouts/borderlayout"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/layouts/borderlayout"
-    SOURCES
-        borderlayout.cpp borderlayout.h
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(borderlayout WIN32 MACOSX_BUNDLE
+    borderlayout.cpp borderlayout.h
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(borderlayout PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS borderlayout
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -1,16 +1,27 @@
 # Generated from spinboxdelegate.pro.
 
-#####################################################################
-## spinboxdelegate Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(spinboxdelegate LANGUAGES CXX)
 
-add_qt_executable(spinboxdelegate
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/spinboxdelegate"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/spinboxdelegate"
-    SOURCES
-        delegate.cpp delegate.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(spinboxdelegate WIN32 MACOSX_BUNDLE
+    delegate.cpp delegate.h
+    main.cpp
+)
+target_link_libraries(spinboxdelegate PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS spinboxdelegate
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

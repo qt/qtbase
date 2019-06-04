@@ -1,23 +1,26 @@
 # Generated from raycasting.pro.
 
-#####################################################################
-## raycasting Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(raycasting LANGUAGES CXX)
 
-add_qt_executable(raycasting
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/embedded/raycasting"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/embedded/raycasting"
-    SOURCES
-        raycasting.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(raycasting WIN32 MACOSX_BUNDLE
+    raycasting.cpp raycasting.qrc
+)
+target_link_libraries(raycasting PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(raycasting "raycasting" PREFIX "/" FILES
-    textures.png)
-
-
-#### Keys ignored in scope 1:.:raycasting.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS raycasting
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

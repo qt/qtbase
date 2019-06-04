@@ -1,18 +1,28 @@
 # Generated from progressdialog.pro.
 
-#####################################################################
-## progressdialog Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(progressdialog LANGUAGES CXX)
 
-add_qt_executable(progressdialog
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/progressdialog"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/progressdialog"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Concurrent
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Concurrent)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(progressdialog
+    main.cpp
+)
+target_link_libraries(progressdialog PUBLIC
+    Qt::Concurrent
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:progressdialog.pro:<NONE>:
-# CONFIG = "console"
+install(TARGETS progressdialog
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

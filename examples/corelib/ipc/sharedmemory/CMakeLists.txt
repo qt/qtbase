@@ -1,21 +1,26 @@
 # Generated from sharedmemory.pro.
 
-#####################################################################
-## sharedmemory Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(sharedmemory LANGUAGES CXX)
 
-add_qt_executable(sharedmemory
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/ipc/sharedmemory"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/ipc/sharedmemory"
-    SOURCES
-        dialog.cpp dialog.h dialog.ui
-        main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(sharedmemory WIN32 MACOSX_BUNDLE
+    dialog.cpp dialog.h dialog.ui
+    main.cpp
 )
-
-#### Keys ignored in scope 1:.:.:sharedmemory.pro:<TRUE>:
-# EXAMPLE_FILES = "*.png"
+target_link_libraries(sharedmemory PUBLIC
+    Qt::Widgets
+)
+install(TARGETS sharedmemory
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

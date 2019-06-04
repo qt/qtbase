@@ -1,22 +1,30 @@
 # Generated from settingseditor.pro.
 
-#####################################################################
-## settingseditor Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(settingseditor LANGUAGES CXX)
 
-add_qt_executable(settingseditor
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/settingseditor"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/settingseditor"
-    SOURCES
-        locationdialog.cpp locationdialog.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        settingstree.cpp settingstree.h
-        variantdelegate.cpp variantdelegate.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(settingseditor WIN32 MACOSX_BUNDLE
+    locationdialog.cpp locationdialog.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    settingstree.cpp settingstree.h
+    variantdelegate.cpp variantdelegate.h
+)
+target_link_libraries(settingseditor PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:settingseditor.pro:<NONE>:
-# EXAMPLE_FILES = "inifiles"
+install(TARGETS settingseditor
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

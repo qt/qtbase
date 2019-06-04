@@ -1,25 +1,27 @@
 # Generated from weatheranchorlayout.pro.
 
-#####################################################################
-## weatheranchorlayout Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(weatheranchorlayout LANGUAGES CXX)
 
-add_qt_executable(weatheranchorlayout
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/weatheranchorlayout"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/weatheranchorlayout"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(weatheranchorlayout WIN32 MACOSX_BUNDLE
+    main.cpp
+    weatheranchorlayout.qrc
+)
+target_link_libraries(weatheranchorlayout PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(weatheranchorlayout "weatheranchorlayout" FILES
-    images/5days.jpg
-    images/details.jpg
-    images/place.jpg
-    images/tabbar.jpg
-    images/title.jpg
-    images/weather-few-clouds.png)
-
+install(TARGETS weatheranchorlayout
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

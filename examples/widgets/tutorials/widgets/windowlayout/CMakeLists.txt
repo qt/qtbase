@@ -1,15 +1,26 @@
 # Generated from windowlayout.pro.
 
-#####################################################################
-## windowlayout Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(windowlayout LANGUAGES CXX)
 
-add_qt_executable(windowlayout
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/widgets/windowlayout"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/widgets/windowlayout"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(windowlayout WIN32 MACOSX_BUNDLE
+    main.cpp
+)
+target_link_libraries(windowlayout PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS windowlayout
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

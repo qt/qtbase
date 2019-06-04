@@ -1,18 +1,28 @@
 # Generated from download.pro.
 
-#####################################################################
-## download Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(download LANGUAGES CXX)
 
-add_qt_executable(download
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/download"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/download"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Network
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+find_package(Qt5 COMPONENTS Network)
+
+add_executable(download
+    main.cpp
+)
+target_link_libraries(download PUBLIC
+    Qt::Core
+    Qt::Network
 )
 
-#### Keys ignored in scope 1:.:download.pro:<NONE>:
-# CONFIG = "-app_bundle"
+install(TARGETS download
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

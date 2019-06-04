@@ -1,26 +1,28 @@
 # Generated from application.pro.
 
-#####################################################################
-## application Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(application LANGUAGES CXX)
 
-add_qt_executable(application
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/application"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/application"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(application WIN32 MACOSX_BUNDLE
+    application.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
+)
+target_link_libraries(application PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(application "application" FILES
-    images/copy.png
-    images/cut.png
-    images/new.png
-    images/open.png
-    images/paste.png
-    images/save.png)
-
+install(TARGETS application
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

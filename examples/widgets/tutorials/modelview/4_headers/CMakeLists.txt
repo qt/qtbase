@@ -1,19 +1,27 @@
 # Generated from 4_headers.pro.
 
-#####################################################################
-## mv_headers Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mv_headers LANGUAGES CXX)
 
-add_qt_executable(mv_headers
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/4_headers"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/4_headers"
-    SOURCES
-        main.cpp
-        mymodel.cpp mymodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mv_headers WIN32 MACOSX_BUNDLE
+    main.cpp
+    mymodel.cpp mymodel.h
+)
+target_link_libraries(mv_headers PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:4_headers.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS mv_headers
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

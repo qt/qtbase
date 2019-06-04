@@ -1,44 +1,38 @@
 # Generated from chip.pro.
 
-#####################################################################
-## chip Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(chip LANGUAGES CXX)
 
-add_qt_executable(chip
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/chip"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/chip"
-    SOURCES
-        chip.cpp chip.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        view.cpp view.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS OpenGL) # special case
+find_package(Qt5 COMPONENTS PrintSupport) # special case
+
+add_executable(chip WIN32 MACOSX_BUNDLE
+    chip.cpp chip.h
+    images.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    view.cpp view.h
 )
-
-# Resources:
-add_qt_resource(chip "images" FILES
-    fileprint.png
-    qt4logo.png
-    rotateleft.png
-    rotateright.png
-    zoomin.png
-    zoomout.png)
-
-
-## Scopes:
-#####################################################################
-
-extend_target(chip CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
-        Qt::PrintSupport
+target_link_libraries(chip PUBLIC
+    Qt::Widgets
 )
+if (TARGET Qt::OpenGL)
+    target_link_libraries(chip PUBLIC Qt::OpenGL)
+endif()
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(chip PUBLIC Qt::PrintSupport)
+endif()
 
-extend_target(chip CONDITION TARGET Qt::OpenGL
-    LIBRARIES
-        Qt::OpenGL
+install(TARGETS chip
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
-
-#### Keys ignored in scope 4:.:chip.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"

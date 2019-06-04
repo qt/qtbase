@@ -1,20 +1,31 @@
 # Generated from addressbook.pro.
 
-#####################################################################
-## addressbook Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(addressbook LANGUAGES CXX)
 
-add_qt_executable(addressbook
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/addressbook"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/addressbook"
-    SOURCES
-        adddialog.cpp adddialog.h
-        addresswidget.cpp addresswidget.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        newaddresstab.cpp newaddresstab.h
-        tablemodel.cpp tablemodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(addressbook WIN32 MACOSX_BUNDLE
+    adddialog.cpp adddialog.h
+    addresswidget.cpp addresswidget.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    newaddresstab.cpp newaddresstab.h
+    tablemodel.cpp tablemodel.h
+)
+target_link_libraries(addressbook PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS addressbook
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

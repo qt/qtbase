@@ -1,19 +1,33 @@
 # Generated from windows.pro.
 
-#####################################################################
-## windows Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(windows LANGUAGES CXX)
 
-add_qt_executable(windows
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/qpa/windows"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/qpa/windows"
-    SOURCES
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::CorePrivate
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Gui)
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(windows
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(windows PRIVATE
+    Qt::CorePrivate
+    Qt::GuiPrivate
+)
+target_link_libraries(windows PUBLIC
+    Qt::Core
+    Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:windows.pro:<NONE>:
-# CONFIG = "console"
+install(TARGETS windows
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

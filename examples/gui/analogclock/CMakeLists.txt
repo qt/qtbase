@@ -1,21 +1,32 @@
 # Generated from analogclock.pro.
 
-#####################################################################
-## analogclock Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(analogclock LANGUAGES CXX)
 
-add_qt_executable(analogclock
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/analogclock"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/analogclock"
-    SOURCES
-        ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h
-        main.cpp
-    INCLUDE_DIRECTORIES
-        ../rasterwindow
-    LIBRARIES # special case
-        Qt::Gui
+find_package(Qt5 COMPONENTS Widgets) # special case: add
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+add_executable(gui_analogclock WIN32 MACOSX_BUNDLE # special case: renamed target
+    ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h
+    main.cpp
 )
+target_include_directories(gui_analogclock PUBLIC
+    ../rasterwindow
+)
+# special case begin
+target_link_libraries(gui_analogclock PUBLIC
+    Qt::Gui
+)
+# special case end
 
-#### Keys ignored in scope 1:.:analogclock.pro:<NONE>:
-# CONFIG = "no_batch"
+install(TARGETS gui_analogclock
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,27 +1,29 @@
 # Generated from flightinfo.pro.
 
-#####################################################################
-## flightinfo Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(flightinfo LANGUAGES CXX)
 
-add_qt_executable(flightinfo
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/embedded/flightinfo"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/embedded/flightinfo"
-    SOURCES
-        flightinfo.cpp
-        form.ui
-    PUBLIC_LIBRARIES
-        Qt::Network
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Network)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(flightinfo WIN32 MACOSX_BUNDLE
+    flightinfo.cpp
+    form.ui
+    flightinfo.qrc # special case: add
 )
-
-# Resources:
-add_qt_resource(flightinfo "flightinfo" PREFIX "/" FILES
-    aircraft.png)
-
-
-#### Keys ignored in scope 1:.:.:flightinfo.pro:<TRUE>:
-# TEMPLATE = "app"
+target_link_libraries(flightinfo PUBLIC
+    Qt::Network
+    Qt::Widgets
+)
+install(TARGETS flightinfo
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,26 +1,30 @@
 # Generated from puzzle.pro.
 
-#####################################################################
-## puzzle Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(puzzle LANGUAGES CXX)
 
-add_qt_executable(puzzle
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/draganddrop/puzzle"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/draganddrop/puzzle"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        pieceslist.cpp pieceslist.h
-        puzzlewidget.cpp puzzlewidget.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(draganddrop_puzzle WIN32 MACOSX_BUNDLE # special case: renamed puzzle
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    pieceslist.cpp pieceslist.h
+    puzzle.qrc
+    puzzlewidget.cpp puzzlewidget.h
+)
+target_link_libraries(draganddrop_puzzle PUBLIC # special case: renamed puzzle
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(puzzle "puzzle" PREFIX "/images" FILES
-    example.jpg)
-
-
-#### Keys ignored in scope 1:.:puzzle.pro:<NONE>:
-# QMAKE_PROJECT_NAME = "dndpuzzle"
+install(TARGETS draganddrop_puzzle # special case: renamed puzzle
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,20 +1,28 @@
 # Generated from 5_edit.pro.
 
-#####################################################################
-## mv_edit Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mv_edit LANGUAGES CXX)
 
-add_qt_executable(mv_edit
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/5_edit"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/5_edit"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        mymodel.cpp mymodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mv_edit WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    mymodel.cpp mymodel.h
+)
+target_link_libraries(mv_edit PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:5_edit.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS mv_edit
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

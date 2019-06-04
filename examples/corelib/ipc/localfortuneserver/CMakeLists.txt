@@ -1,17 +1,28 @@
 # Generated from localfortuneserver.pro.
 
-#####################################################################
-## localfortuneserver Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(localfortuneserver LANGUAGES CXX)
 
-add_qt_executable(localfortuneserver
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/ipc/localfortuneserver"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/ipc/localfortuneserver"
-    SOURCES
-        main.cpp
-        server.cpp server.h
-    LIBRARIES
-        Qt::Network
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Network)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(localfortuneserver WIN32 MACOSX_BUNDLE
+    main.cpp
+    server.cpp server.h
+)
+target_link_libraries(localfortuneserver PUBLIC
+    Qt::Network
+    Qt::Widgets
+)
+install(TARGETS localfortuneserver
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

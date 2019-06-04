@@ -1,16 +1,26 @@
 # Generated from complexpong.pro.
 
-#####################################################################
-## complexpong Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(complexpong LANGUAGES CXX)
 
-add_qt_executable(complexpong
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/complexpingpong"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/complexpingpong"
-    SOURCES
-        complexpong.cpp complexpong.h
-    LIBRARIES
-        # Remove: gui
-        Qt::DBus
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS DBus)
+
+add_executable(complexpong WIN32 MACOSX_BUNDLE
+    complexpong.cpp complexpong.h
+)
+target_link_libraries(complexpong PUBLIC
+    # Remove: gui
+    Qt::DBus
+)
+install(TARGETS complexpong
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

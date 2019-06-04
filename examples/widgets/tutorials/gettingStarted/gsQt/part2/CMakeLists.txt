@@ -1,15 +1,26 @@
 # Generated from part2.pro.
 
-#####################################################################
-## part2 Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(part2 LANGUAGES CXX)
 
-add_qt_executable(part2
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/gettingStarted/gsQt/part2"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/gettingStarted/gsQt/part2"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(part2 WIN32 MACOSX_BUNDLE
+    main.cpp
+)
+target_link_libraries(part2 PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS part2
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

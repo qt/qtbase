@@ -1,19 +1,26 @@
 # Generated from cbordump.pro.
 
-#####################################################################
-## cbordump Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(cbordump LANGUAGES CXX)
 
-add_qt_executable(cbordump
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/serialization/cbordump"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/serialization/cbordump"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        # Remove: gui
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(cbordump
+    main.cpp
 )
-
-#### Keys ignored in scope 1:.:cbordump.pro:<NONE>:
-# CONFIG = "-app_bundle"
-# TEMPLATE = "app"
+target_link_libraries(cbordump PUBLIC
+    # Remove: gui
+    Qt::Core
+)
+install(TARGETS cbordump
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

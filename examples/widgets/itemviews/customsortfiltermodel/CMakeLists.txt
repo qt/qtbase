@@ -1,23 +1,30 @@
 # Generated from customsortfiltermodel.pro.
 
-#####################################################################
-## customsortfiltermodel Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(customsortfiltermodel LANGUAGES CXX)
 
-add_qt_executable(customsortfiltermodel
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/customsortfiltermodel"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/customsortfiltermodel"
-    SOURCES
-        filterwidget.cpp filterwidget.h
-        main.cpp
-        mysortfilterproxymodel.cpp mysortfilterproxymodel.h
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(customsortfiltermodel WIN32 MACOSX_BUNDLE
+    customsortfiltermodel.qrc
+    filterwidget.cpp filterwidget.h
+    main.cpp
+    mysortfilterproxymodel.cpp mysortfilterproxymodel.h
+    window.cpp window.h
+)
+target_link_libraries(customsortfiltermodel PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(customsortfiltermodel "customsortfiltermodel" PREFIX "/" FILES
-    images/find.png)
-
+install(TARGETS customsortfiltermodel
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,21 +1,28 @@
 # Generated from frozencolumn.pro.
 
-#####################################################################
-## frozencolumn Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(frozencolumn LANGUAGES CXX)
 
-add_qt_executable(frozencolumn
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/frozencolumn"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/frozencolumn"
-    SOURCES
-        freezetablewidget.cpp freezetablewidget.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(frozencolumn WIN32 MACOSX_BUNDLE
+    freezetablewidget.cpp freezetablewidget.h
+    grades.qrc
+    main.cpp
+)
+target_link_libraries(frozencolumn PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(frozencolumn "grades" PREFIX "/" FILES
-    grades.txt)
-
+install(TARGETS frozencolumn
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

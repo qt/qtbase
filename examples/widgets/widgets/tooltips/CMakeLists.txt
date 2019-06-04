@@ -1,24 +1,29 @@
 # Generated from tooltips.pro.
 
-#####################################################################
-## tooltips Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(tooltips LANGUAGES CXX)
 
-add_qt_executable(tooltips
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/tooltips"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/tooltips"
-    SOURCES
-        main.cpp
-        shapeitem.cpp shapeitem.h
-        sortingbox.cpp sortingbox.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(tooltips WIN32 MACOSX_BUNDLE
+    main.cpp
+    shapeitem.cpp shapeitem.h
+    sortingbox.cpp sortingbox.h
+    tooltips.qrc
+)
+target_link_libraries(tooltips PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(tooltips "tooltips" FILES
-    images/circle.png
-    images/square.png
-    images/triangle.png)
-
+install(TARGETS tooltips
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

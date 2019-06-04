@@ -1,19 +1,28 @@
 # Generated from runfunction.pro.
 
-#####################################################################
-## runfunction Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(runfunction LANGUAGES CXX)
 
-add_qt_executable(runfunction
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/runfunction"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/runfunction"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Concurrent
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Concurrent)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(runfunction
+    main.cpp
+)
+target_link_libraries(runfunction PUBLIC
+    Qt::Concurrent
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:runfunction.pro:<NONE>:
-# CONFIG = "-app_bundle"
+install(TARGETS runfunction
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

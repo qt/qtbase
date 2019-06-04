@@ -1,35 +1,29 @@
 # Generated from mainwindow.pro.
 
-#####################################################################
-## mainwindow Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mainwindow LANGUAGES CXX)
 
-add_qt_executable(mainwindow
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/mainwindow"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/mainwindow"
-    SOURCES
-        colorswatch.cpp colorswatch.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        toolbar.cpp toolbar.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mainwindow WIN32 MACOSX_BUNDLE
+    colorswatch.cpp colorswatch.h
+    main.cpp
+    mainwindow.cpp mainwindow.h mainwindow.qrc
+    toolbar.cpp toolbar.h
+)
+target_link_libraries(mainwindow PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(mainwindow "mainwindow" PREFIX "/res" FILES
-    qt.png
-    titlebarCenter.png
-    titlebarLeft.png
-    titlebarRight.png)
-
-
-#### Keys ignored in scope 1:.:mainwindow.pro:<NONE>:
-# TEMPLATE = "app"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:mainwindow.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"
+install(TARGETS mainwindow
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

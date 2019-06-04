@@ -1,22 +1,29 @@
 # Generated from basicgraphicslayouts.pro.
 
-#####################################################################
-## basicgraphicslayouts Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(basicgraphicslayouts LANGUAGES CXX)
 
-add_qt_executable(basicgraphicslayouts
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/basicgraphicslayouts"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/basicgraphicslayouts"
-    SOURCES
-        layoutitem.cpp layoutitem.h
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(basicgraphicslayouts WIN32 MACOSX_BUNDLE
+    basicgraphicslayouts.qrc
+    layoutitem.cpp layoutitem.h
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(basicgraphicslayouts PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(basicgraphicslayouts "basicgraphicslayouts" FILES
-    images/block.png)
-
+install(TARGETS basicgraphicslayouts
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

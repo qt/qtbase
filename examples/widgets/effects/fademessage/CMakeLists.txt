@@ -1,21 +1,27 @@
 # Generated from fademessage.pro.
 
-#####################################################################
-## fademessage Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(fademessage LANGUAGES CXX)
 
-add_qt_executable(fademessage
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/effects/fademessage"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/effects/fademessage"
-    SOURCES
-        fademessage.cpp fademessage.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(fademessage WIN32 MACOSX_BUNDLE
+    fademessage.cpp fademessage.h fademessage.qrc
+    main.cpp
+)
+target_link_libraries(fademessage PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(fademessage "fademessage" PREFIX "/" FILES
-    background.jpg)
-
+install(TARGETS fademessage
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

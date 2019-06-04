@@ -1,28 +1,33 @@
 # Generated from drilldown.pro.
 
-#####################################################################
-## drilldown Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(drilldown LANGUAGES CXX)
 
-add_qt_executable(drilldown
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/drilldown"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/drilldown"
-    SOURCES
-        ../connection.h
-        imageitem.cpp imageitem.h
-        informationwindow.cpp informationwindow.h
-        main.cpp
-        view.cpp view.h
-    LIBRARIES
-        Qt::Sql
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Sql)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(drilldown WIN32 MACOSX_BUNDLE
+    ../connection.h
+    drilldown.qrc
+    imageitem.cpp imageitem.h
+    informationwindow.cpp informationwindow.h
+    main.cpp
+    view.cpp view.h
+)
+target_link_libraries(drilldown PUBLIC
+    Qt::Sql
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(drilldown "drilldown" PREFIX "/" FILES
-    images/qt-creator.png
-    images/qt-logo.png
-    images/qt-project.png
-    images/qt-quick.png)
-
+install(TARGETS drilldown
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,19 +1,27 @@
 # Generated from qmaccocoaviewcontainer.pro.
 
-#####################################################################
-## qmaccocoaviewcontainer Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(qmaccocoaviewcontainer LANGUAGES CXX)
 
-add_qt_executable(qmaccocoaviewcontainer
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mac/qmaccocoaviewcontainer"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mac/qmaccocoaviewcontainer"
-    SOURCES
-        main.mm
-    LIBRARIES
-        Qt::Widgets
-        ${FWAppKit}
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(qmaccocoaviewcontainer WIN32 MACOSX_BUNDLE
+    main.mm
+)
+target_link_libraries(qmaccocoaviewcontainer PUBLIC
+    ${FWAppKit}
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:qmaccocoaviewcontainer.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS qmaccocoaviewcontainer
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

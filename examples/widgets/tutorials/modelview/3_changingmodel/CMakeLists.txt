@@ -1,19 +1,27 @@
 # Generated from 3_changingmodel.pro.
 
-#####################################################################
-## mv_changingmodel Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mv_changingmodel LANGUAGES CXX)
 
-add_qt_executable(mv_changingmodel
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/3_changingmodel"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/3_changingmodel"
-    SOURCES
-        main.cpp
-        mymodel.cpp mymodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mv_changingmodel WIN32 MACOSX_BUNDLE
+    main.cpp
+    mymodel.cpp mymodel.h
+)
+target_link_libraries(mv_changingmodel PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:3_changingmodel.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS mv_changingmodel
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

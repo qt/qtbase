@@ -1,30 +1,13 @@
-# Generated from basictools.pro.
+# special case begin
 
-#####################################################################
-## qtLibraryTargetpnp_basictools Module:
-#####################################################################
-
-add_qt_plugin(pnp_basictools # special case
-    STATIC # special case
-    OUTPUT_DIRECTORY ../../plugins # special case
-    INSTALL_DIRECTORY ../../plugins # special case
-    ARCHIVE_INSTALL_DIRECTORY ../../plugins # special case
-    SOURCES
-        basictoolsplugin.cpp basictoolsplugin.h
-    INCLUDE_DIRECTORIES
-        ../../app
-    LIBRARIES
-        Qt::Widgets
+add_library(pnp_basictools MODULE STATIC
+    basictoolsplugin.cpp basictoolsplugin.h
 )
+set_target_properties(pnp_basictools PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "../../plugins"
+        RUNTIME_OUTPUT_DIRECTORY "../../plugins"
+)
+target_include_directories(pnp_basictools PUBLIC ../../app)
+target_link_libraries(pnp_basictools PUBLIC Qt::Widgets)
 
-# CONFIG = "plugin" "static" "install_ok"
-# DESTDIR = "../../plugins"
-# INSTALLS = "target"
-# TEMPLATE = "lib"
-# target.path = "$$[QT_INSTALL_EXAMPLES]/widgets/tools/plugandpaint/plugins"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:basictools.pro:APPLE_UIKIT:
-# CONFIG = "debug_and_release"
+# special case end

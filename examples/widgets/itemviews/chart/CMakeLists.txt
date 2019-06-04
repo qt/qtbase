@@ -1,30 +1,29 @@
 # Generated from chart.pro.
 
-#####################################################################
-## chart Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(chart LANGUAGES CXX)
 
-add_qt_executable(chart
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/chart"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/chart"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        pieview.cpp pieview.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(chart WIN32 MACOSX_BUNDLE
+    chart.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    pieview.cpp pieview.h
+)
+target_link_libraries(chart PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(chart "chart" PREFIX "/Charts" FILES
-    qtdata.cht)
-
-
-## Scopes:
-#####################################################################
-
-extend_target(chart CONDITION UNIX AND NOT APPLE_OSX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS
-    LIBRARIES
-        m
+install(TARGETS chart
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

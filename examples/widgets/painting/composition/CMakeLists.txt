@@ -1,23 +1,32 @@
 # Generated from composition.pro.
 
-#####################################################################
-## composition Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(composition LANGUAGES CXX)
 
-add_qt_executable(composition
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/composition"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/composition"
-    SOURCES
-        composition.cpp composition.h
-        main.cpp
-    LIBRARIES # special case
-        painting_shared
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(composition WIN32 MACOSX_BUNDLE
+    # special case: remove files from ../shared
+    composition.cpp composition.h composition.qrc
+    main.cpp
+)
+target_include_directories(composition PUBLIC
+    ../shared
+)
+target_link_libraries(composition PUBLIC
+    Qt::Widgets
+    painting_shared # special case
 )
 
-# Resources:
-add_qt_resource(composition "composition" PREFIX "/res/composition" FILES
-    composition.cpp
-    composition.html
-    flower.jpg
-    flower_alpha.jpg)
+install(TARGETS composition
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

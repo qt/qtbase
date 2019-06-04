@@ -1,16 +1,27 @@
 # Generated from menus.pro.
 
-#####################################################################
-## menus Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(menus LANGUAGES CXX)
 
-add_qt_executable(menus
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/menus"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/menus"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(menus WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+)
+target_link_libraries(menus PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS menus
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

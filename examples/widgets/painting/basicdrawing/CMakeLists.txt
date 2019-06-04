@@ -1,23 +1,29 @@
 # Generated from basicdrawing.pro.
 
-#####################################################################
-## basicdrawing Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(basicdrawing LANGUAGES CXX)
 
-add_qt_executable(basicdrawing
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/basicdrawing"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/basicdrawing"
-    SOURCES
-        main.cpp
-        renderarea.cpp renderarea.h
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(basicdrawing WIN32 MACOSX_BUNDLE
+    basicdrawing.qrc
+    main.cpp
+    renderarea.cpp renderarea.h
+    window.cpp window.h
+)
+target_link_libraries(basicdrawing PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(basicdrawing "basicdrawing" FILES
-    images/brick.png
-    images/qt-logo.png)
-
+install(TARGETS basicdrawing
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

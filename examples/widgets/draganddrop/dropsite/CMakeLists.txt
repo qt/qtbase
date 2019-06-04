@@ -1,17 +1,28 @@
 # Generated from dropsite.pro.
 
-#####################################################################
-## dropsite Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(dropsite LANGUAGES CXX)
 
-add_qt_executable(dropsite
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/draganddrop/dropsite"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/draganddrop/dropsite"
-    SOURCES
-        droparea.cpp droparea.h
-        dropsitewindow.cpp dropsitewindow.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(dropsite WIN32 MACOSX_BUNDLE
+    droparea.cpp droparea.h
+    dropsitewindow.cpp dropsitewindow.h
+    main.cpp
+)
+target_link_libraries(dropsite PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS dropsite
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

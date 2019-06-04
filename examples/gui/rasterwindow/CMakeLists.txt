@@ -1,18 +1,31 @@
 # Generated from rasterwindow.pro.
 
-#####################################################################
-## rasterwindow Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(rasterwindow LANGUAGES CXX)
 
-add_qt_executable(rasterwindow
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/rasterwindow"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/rasterwindow"
-    SOURCES
-        main.cpp
-        rasterwindow.cpp rasterwindow.h
-    INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    LIBRARIES # special case
-        Qt::Gui
+find_package(Qt5 COMPONENTS Widgets) # special case: add
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+add_executable(rasterwindow WIN32 MACOSX_BUNDLE
+    main.cpp
+    rasterwindow.cpp rasterwindow.h
+)
+target_include_directories(rasterwindow PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+# special case begin
+target_link_libraries(rasterwindow PUBLIC
+    Qt::Gui
+)
+# special case end
+install(TARGETS rasterwindow
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

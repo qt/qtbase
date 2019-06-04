@@ -121,6 +121,12 @@ qt_copy_or_install(FILES
                    cmake/QtPluginDependencies.cmake.in
     DESTINATION "${__GlobalConfig_install_dir}"
 )
+if(QT_WILL_INSTALL)
+    # NOTE: QtFeature.cmake is included by the Qt module config files unconditionally
+    # In a prefix build, QtFeature.cmake is not copied to the build dir by default
+    # Thus do it explicitly in that case so we can use the module config files in the examples
+    file(COPY cmake/QtFeature.cmake DESTINATION "${__GlobalConfig_install_dir}")
+endif()
 
 
 # TODO: Check whether this is the right place to install these

@@ -1,16 +1,27 @@
 # Generated from simplewidgetmapper.pro.
 
-#####################################################################
-## simplewidgetmapper Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(simplewidgetmapper LANGUAGES CXX)
 
-add_qt_executable(simplewidgetmapper
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/simplewidgetmapper"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/simplewidgetmapper"
-    SOURCES
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(simplewidgetmapper WIN32 MACOSX_BUNDLE
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(simplewidgetmapper PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS simplewidgetmapper
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

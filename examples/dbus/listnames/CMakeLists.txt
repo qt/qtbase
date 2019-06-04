@@ -1,22 +1,26 @@
 # Generated from listnames.pro.
 
-#####################################################################
-## listnames Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(listnames LANGUAGES CXX)
 
-add_qt_executable(listnames
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/listnames"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/listnames"
-    SOURCES
-        listnames.cpp
-    LIBRARIES
-        # Remove: gui
-        Qt::DBus
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS DBus)
+
+add_executable(listnames WIN32 MACOSX_BUNDLE
+    listnames.cpp
 )
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:listnames.pro:WIN32:
-# CONFIG = "console"
+target_link_libraries(listnames PUBLIC
+    # Remove: gui
+    Qt::DBus
+)
+install(TARGETS listnames
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

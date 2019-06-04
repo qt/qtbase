@@ -1,42 +1,41 @@
 # Generated from torrent.pro.
 
-#####################################################################
-## torrent Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(torrent LANGUAGES CXX)
 
-add_qt_executable(torrent
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/torrent"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/torrent"
-    SOURCES
-        addtorrentdialog.cpp addtorrentdialog.h
-        bencodeparser.cpp bencodeparser.h
-        connectionmanager.cpp connectionmanager.h
-        filemanager.cpp filemanager.h
-        forms/addtorrentform.ui
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        metainfo.cpp metainfo.h
-        peerwireclient.cpp peerwireclient.h
-        ratecontroller.cpp ratecontroller.h
-        torrentclient.cpp torrentclient.h
-        torrentserver.cpp torrentserver.h
-        trackerclient.cpp trackerclient.h
-    PUBLIC_LIBRARIES
-        Qt::Network
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Network)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(torrent WIN32 MACOSX_BUNDLE
+    addtorrentdialog.cpp addtorrentdialog.h
+    bencodeparser.cpp bencodeparser.h
+    connectionmanager.cpp connectionmanager.h
+    filemanager.cpp filemanager.h
+    forms/addtorrentform.ui
+    icons.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    metainfo.cpp metainfo.h
+    peerwireclient.cpp peerwireclient.h
+    ratecontroller.cpp ratecontroller.h
+    torrentclient.cpp torrentclient.h
+    torrentserver.cpp torrentserver.h
+    trackerclient.cpp trackerclient.h
+)
+target_link_libraries(torrent PUBLIC
+    Qt::Network
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(torrent "icons" PREFIX "/" FILES
-    icons/1downarrow.png
-    icons/1uparrow.png
-    icons/bottom.png
-    icons/exit.png
-    icons/peertopeer.png
-    icons/player_pause.png
-    icons/player_play.png
-    icons/player_stop.png)
-
+install(TARGETS torrent
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

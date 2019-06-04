@@ -1,18 +1,29 @@
 # Generated from tetrix.pro.
 
-#####################################################################
-## tetrix Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(tetrix LANGUAGES CXX)
 
-add_qt_executable(tetrix
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/tetrix"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/tetrix"
-    SOURCES
-        main.cpp
-        tetrixboard.cpp tetrixboard.h
-        tetrixpiece.cpp tetrixpiece.h
-        tetrixwindow.cpp tetrixwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(tetrix WIN32 MACOSX_BUNDLE
+    main.cpp
+    tetrixboard.cpp tetrixboard.h
+    tetrixpiece.cpp tetrixpiece.h
+    tetrixwindow.cpp tetrixwindow.h
+)
+target_link_libraries(tetrix PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS tetrix
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

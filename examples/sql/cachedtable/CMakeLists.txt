@@ -1,18 +1,30 @@
 # Generated from cachedtable.pro.
 
-#####################################################################
-## cachedtable Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(cachedtable LANGUAGES CXX)
 
-add_qt_executable(cachedtable
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/cachedtable"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/cachedtable"
-    SOURCES
-        ../connection.h
-        main.cpp
-        tableeditor.cpp tableeditor.h
-    LIBRARIES
-        Qt::Sql
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Sql)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(cachedtable WIN32 MACOSX_BUNDLE
+    ../connection.h
+    main.cpp
+    tableeditor.cpp tableeditor.h
+)
+target_link_libraries(cachedtable PUBLIC
+    Qt::Sql
+    Qt::Widgets
+)
+
+install(TARGETS cachedtable
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

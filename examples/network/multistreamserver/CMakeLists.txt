@@ -1,24 +1,33 @@
 # Generated from multistreamserver.pro.
 
-#####################################################################
-## multistreamserver Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(multistreamserver LANGUAGES CXX)
 
-add_qt_executable(multistreamserver
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/multistreamserver"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/multistreamserver"
-    SOURCES
-        chatprovider.cpp chatprovider.h
-        main.cpp
-        movieprovider.cpp movieprovider.h
-        provider.h
-        server.cpp server.h
-        timeprovider.cpp timeprovider.h
-    LIBRARIES
-        Qt::Network
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Network)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(multistreamserver WIN32 MACOSX_BUNDLE
+    chatprovider.cpp chatprovider.h
+    main.cpp
+    movieprovider.cpp movieprovider.h
+    provider.h
+    server.cpp server.h
+    timeprovider.cpp timeprovider.h
+)
+target_link_libraries(multistreamserver PUBLIC
+    Qt::Network
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:multistreamserver.pro:<NONE>:
-# EXAMPLE_FILES = "animation.gif"
+install(TARGETS multistreamserver
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

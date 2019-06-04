@@ -1,24 +1,43 @@
 # Generated from chat.pro.
 
-#####################################################################
-## chat Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(chat LANGUAGES CXX)
 
-add_qt_executable(chat
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/chat"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/chat"
-    SOURCES
-        chat.cpp chat.h
-        chatmainwindow.ui
-        chatsetnickname.ui
-    DBUS_ADAPTOR_SOURCES
-        org.example.chat.xml
-    DBUS_INTERFACE_SOURCES
-        org.example.chat.xml
-    PUBLIC_LIBRARIES
-        Qt::DBus
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS DBus)
+find_package(Qt5 COMPONENTS Widgets)
+
+# special case begin
+set(chat_SRCS)
+qt5_add_dbus_interface(chat_SRCS
+    org.example.chat.xml
+    chat_interface
+)
+qt5_add_dbus_adaptor(chat_SRCS
+    org.example.chat.xml
+    qobject.h
+    QObject
+    chat_adaptor
+)
+# special case end
+add_executable(chat WIN32 MACOSX_BUNDLE
+    chat.cpp chat.h
+    chatmainwindow.ui
+    chatsetnickname.ui
+    ${chat_SRCS} # special case
+)
+target_link_libraries(chat PUBLIC
+    Qt::DBus
+    Qt::Widgets
+)
+install(TARGETS chat
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

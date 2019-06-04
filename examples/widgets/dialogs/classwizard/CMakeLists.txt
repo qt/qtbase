@@ -1,27 +1,27 @@
 # Generated from classwizard.pro.
 
-#####################################################################
-## classwizard Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(classwizard LANGUAGES CXX)
 
-add_qt_executable(classwizard
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/dialogs/classwizard"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/dialogs/classwizard"
-    SOURCES
-        classwizard.cpp classwizard.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(classwizard WIN32 MACOSX_BUNDLE
+    classwizard.cpp classwizard.h classwizard.qrc
+    main.cpp
+)
+target_link_libraries(classwizard PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(classwizard "classwizard" FILES
-    images/background.png
-    images/banner.png
-    images/logo1.png
-    images/logo2.png
-    images/logo3.png
-    images/watermark1.png
-    images/watermark2.png)
-
+install(TARGETS classwizard
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

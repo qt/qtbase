@@ -1,22 +1,10 @@
-# Generated from plugin.pro.
+# special case begin
 
-#####################################################################
-## qtLibraryTargetechoplugin Module:
-#####################################################################
-
-add_qt_plugin(echoplugin_plugin TYPE plugin # special case
-    SOURCES
-        echoplugin.cpp echoplugin.h
-    INCLUDE_DIRECTORIES
-        ../echowindow
-    LIBRARIES
-        Qt::Widgets
+add_library(echoplugin MODULE
+    echoplugin.cpp echoplugin.h
 )
 
-#### Keys ignored in scope 1:.:plugin.pro:<NONE>:
-# CONFIG = "plugin" "install_ok"
-# DESTDIR = "../plugins"
-# EXAMPLE_FILES = "echoplugin.json"
-# INSTALLS = "target"
-# TEMPLATE = "lib"
-# target.path = "$$[QT_INSTALL_EXAMPLES]/widgets/tools/echoplugin/plugins"
+target_include_directories(echoplugin PUBLIC ../echowindow)
+target_link_libraries(echoplugin PUBLIC Qt::Widgets)
+
+# special case end

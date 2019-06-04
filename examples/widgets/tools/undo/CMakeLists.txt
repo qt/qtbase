@@ -1,46 +1,30 @@
 # Generated from undo.pro.
 
-#####################################################################
-## undo Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(undo LANGUAGES CXX)
 
-add_qt_executable(undo
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/undo"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/undo"
-    SOURCES
-        commands.cpp commands.h
-        document.cpp document.h
-        main.cpp
-        mainwindow.cpp mainwindow.h mainwindow.ui
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(undo WIN32 MACOSX_BUNDLE
+    commands.cpp commands.h
+    document.cpp document.h
+    main.cpp
+    mainwindow.cpp mainwindow.h mainwindow.ui
+    undo.qrc
+)
+target_link_libraries(undo PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(undo "undo" PREFIX "/" FILES
-    icons/background.png
-    icons/blue.png
-    icons/circle.png
-    icons/exit.png
-    icons/fileclose.png
-    icons/filenew.png
-    icons/fileopen.png
-    icons/filesave.png
-    icons/green.png
-    icons/ok.png
-    icons/rectangle.png
-    icons/red.png
-    icons/redo.png
-    icons/remove.png
-    icons/triangle.png
-    icons/undo.png)
-
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:.:undo.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"
+install(TARGETS undo
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

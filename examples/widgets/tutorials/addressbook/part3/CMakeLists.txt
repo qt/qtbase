@@ -1,19 +1,27 @@
 # Generated from part3.pro.
 
-#####################################################################
-## part3 Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(part3 LANGUAGES CXX)
 
-add_qt_executable(part3
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/addressbook/part3"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/addressbook/part3"
-    SOURCES
-        addressbook.cpp addressbook.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(part3 WIN32 MACOSX_BUNDLE
+    addressbook.cpp addressbook.h
+    main.cpp
+)
+target_link_libraries(part3 PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:part3.pro:<NONE>:
-# QMAKE_PROJECT_NAME = "ab_part3"
+install(TARGETS part3
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

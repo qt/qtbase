@@ -1,32 +1,28 @@
 # Generated from interview.pro.
 
-#####################################################################
-## interview Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(interview LANGUAGES CXX)
 
-add_qt_executable(interview
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/interview"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/interview"
-    SOURCES
-        main.cpp
-        model.cpp model.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(interview WIN32 MACOSX_BUNDLE
+    interview.qrc
+    main.cpp
+    model.cpp model.h
+)
+target_link_libraries(interview PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(interview "interview" PREFIX "/" FILES
-    images/folder.png
-    images/interview.png
-    images/services.png)
-
-
-#### Keys ignored in scope 1:.:interview.pro:<NONE>:
-# TEMPLATE = "app"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:interview.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"
+install(TARGETS interview
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

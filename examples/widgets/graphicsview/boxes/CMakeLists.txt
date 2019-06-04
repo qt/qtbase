@@ -1,52 +1,38 @@
 # Generated from boxes.pro.
 
-#####################################################################
-## boxes Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(boxes LANGUAGES CXX)
 
-add_qt_executable(boxes
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/boxes"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/boxes"
-    SOURCES
-        3rdparty/fbm.c 3rdparty/fbm.h
-        glbuffers.cpp glbuffers.h
-        glextensions.cpp glextensions.h
-        gltrianglemesh.h
-        main.cpp
-        qtbox.cpp qtbox.h
-        roundedbox.cpp roundedbox.h
-        scene.cpp scene.h
-        trackball.cpp trackball.h
-    LIBRARIES
-        Qt::OpenGL
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS OpenGL)
+find_package(Qt5 COMPONENTS Widgets)
+
+
+add_executable(boxes WIN32 MACOSX_BUNDLE
+    3rdparty/fbm.c 3rdparty/fbm.h
+    boxes.qrc
+    glbuffers.cpp glbuffers.h
+    glextensions.cpp glextensions.h
+    gltrianglemesh.h
+    main.cpp
+    qtbox.cpp qtbox.h
+    roundedbox.cpp roundedbox.h
+    scene.cpp scene.h
+    trackball.cpp trackball.h
+)
+target_link_libraries(boxes PUBLIC
+    Qt::OpenGL
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(boxes "boxes" PREFIX "/res/boxes" FILES
-    basic.fsh
-    basic.vsh
-    cubemap_negx.jpg
-    cubemap_negy.jpg
-    cubemap_negz.jpg
-    cubemap_posx.jpg
-    cubemap_posy.jpg
-    cubemap_posz.jpg
-    dotted.fsh
-    fresnel.fsh
-    glass.fsh
-    granite.fsh
-    marble.fsh
-    parameters.par
-    qt-logo.jpg
-    qt-logo.png
-    reflection.fsh
-    refraction.fsh
-    smiley.png
-    square.jpg
-    wood.fsh)
-
-
-## Scopes:
-#####################################################################
+install(TARGETS boxes
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,25 +1,27 @@
 # Generated from mandelbrot.pro.
 
-#####################################################################
-## mandelbrot Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mandelbrot LANGUAGES CXX)
 
-add_qt_executable(mandelbrot
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/mandelbrot"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/mandelbrot"
-    SOURCES
-        main.cpp
-        mandelbrotwidget.cpp mandelbrotwidget.h
-        renderthread.cpp renderthread.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mandelbrot WIN32 MACOSX_BUNDLE
+    main.cpp
+    mandelbrotwidget.cpp mandelbrotwidget.h
+    renderthread.cpp renderthread.h
 )
-
-## Scopes:
-#####################################################################
-
-extend_target(mandelbrot CONDITION UNIX AND NOT APPLE_OSX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS
-    LIBRARIES
-        m
+target_link_libraries(mandelbrot PUBLIC
+    Qt::Widgets
+)
+install(TARGETS mandelbrot
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

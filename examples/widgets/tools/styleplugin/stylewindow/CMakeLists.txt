@@ -1,31 +1,27 @@
 # Generated from stylewindow.pro.
 
-#####################################################################
-## styleplugin Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(styleplugin LANGUAGES CXX)
 
-add_qt_executable(styleplugin
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/styleplugin"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/styleplugin"
-    SOURCES
-        main.cpp
-        stylewindow.cpp stylewindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(styleplugin WIN32 MACOSX_BUNDLE
+    main.cpp
+    stylewindow.cpp stylewindow.h
+)
+target_link_libraries(styleplugin PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:stylewindow.pro:<NONE>:
-# CONFIG = "install_ok"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 3:.:stylewindow.pro:debug:
-# DESTDIR = "../debug/"
-
-#### Keys ignored in scope 4:.:stylewindow.pro:release:
-# DESTDIR = "../release/"
-
-#### Keys ignored in scope 5:.:stylewindow.pro:else:
-# DESTDIR = "../"
+install(TARGETS styleplugin
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

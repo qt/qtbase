@@ -1,31 +1,32 @@
 # Generated from sqlbrowser.pro.
 
-#####################################################################
-## sqlbrowser Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(sqlbrowser LANGUAGES CXX)
 
-add_qt_executable(sqlbrowser
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/sqlbrowser"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/sqlbrowser"
-    SOURCES
-        browser.cpp browser.h
-        browserwidget.ui
-        connectionwidget.cpp connectionwidget.h
-        main.cpp
-        qsqlconnectiondialog.cpp qsqlconnectiondialog.h qsqlconnectiondialog.ui
-    PUBLIC_LIBRARIES
-        Qt::Sql
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Sql)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(sqlbrowser WIN32 MACOSX_BUNDLE
+    browser.cpp browser.h
+    browserwidget.ui
+    connectionwidget.cpp connectionwidget.h
+    main.cpp
+    qsqlconnectiondialog.cpp qsqlconnectiondialog.h qsqlconnectiondialog.ui
+)
+target_link_libraries(sqlbrowser PUBLIC
+    Qt::Sql
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:sqlbrowser.pro:<TRUE>:
-# TEMPLATE = "app"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:.:sqlbrowser.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"
+install(TARGETS sqlbrowser
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

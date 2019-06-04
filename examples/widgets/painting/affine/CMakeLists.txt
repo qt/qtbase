@@ -1,23 +1,33 @@
 # Generated from affine.pro.
 
-#####################################################################
-## affine Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(affine LANGUAGES CXX)
 
-add_qt_executable(affine
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/affine"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/affine"
-    SOURCES
-        main.cpp
-        xform.cpp xform.h
-    # INCLUDE_DIRECTORIES ../shared # special case
-    LIBRARIES # special case
-        painting_shared
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(affine WIN32 MACOSX_BUNDLE
+    # special case: remove files from ../shared
+    affine.qrc
+    main.cpp
+    xform.cpp xform.h
+)
+target_include_directories(affine PUBLIC
+    ../shared
+)
+target_link_libraries(affine PUBLIC
+    Qt::Widgets
+    painting_shared # special case
 )
 
-# Resources:
-add_qt_resource(affine "affine" PREFIX "/res/affine" FILES
-    bg1.jpg
-    xform.cpp
-    xform.html)
+install(TARGETS affine
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

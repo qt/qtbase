@@ -1,23 +1,30 @@
 # Generated from puzzle.pro.
 
-#####################################################################
-## puzzle Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(puzzle LANGUAGES CXX)
 
-add_qt_executable(puzzle_itemview # special case
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/puzzle"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/puzzle"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        piecesmodel.cpp piecesmodel.h
-        puzzlewidget.cpp puzzlewidget.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(itemviews_puzzle WIN32 MACOSX_BUNDLE # special case: renamed puzzle
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    piecesmodel.cpp piecesmodel.h
+    puzzle.qrc
+    puzzlewidget.cpp puzzlewidget.h
+)
+target_link_libraries(itemviews_puzzle PUBLIC # special case: renamed puzzle
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(puzzle_itemview "puzzle" PREFIX "/images" FILES # special case
-    example.jpg)
-
+install(TARGETS itemviews_puzzle # special case: renamed puzzle
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

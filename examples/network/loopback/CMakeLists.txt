@@ -1,17 +1,29 @@
 # Generated from loopback.pro.
 
-#####################################################################
-## loopback Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(loopback LANGUAGES CXX)
 
-add_qt_executable(loopback
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/loopback"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/loopback"
-    SOURCES
-        dialog.cpp dialog.h
-        main.cpp
-    LIBRARIES
-        Qt::Network
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Network)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(loopback WIN32 MACOSX_BUNDLE
+    dialog.cpp dialog.h
+    main.cpp
+)
+target_link_libraries(loopback PUBLIC
+    Qt::Network
+    Qt::Widgets
+)
+
+install(TARGETS loopback
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

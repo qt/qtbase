@@ -1,30 +1,29 @@
 # Generated from embeddeddialogs.pro.
 
-#####################################################################
-## embeddeddialogs Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(embeddeddialogs LANGUAGES CXX)
 
-add_qt_executable(embeddeddialogs
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/embeddeddialogs"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/embeddeddialogs"
-    SOURCES
-        customproxy.cpp customproxy.h
-        embeddeddialog.cpp embeddeddialog.h embeddeddialog.ui
-        main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(embeddeddialogs WIN32 MACOSX_BUNDLE
+    customproxy.cpp customproxy.h
+    embeddeddialog.cpp embeddeddialog.h embeddeddialog.ui
+    embeddeddialogs.qrc
+    main.cpp
+)
+target_link_libraries(embeddeddialogs PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(embeddeddialogs "embeddeddialogs" FILES
-    No-Ones-Laughing-3.jpg)
-
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:.:embeddeddialogs.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"
+install(TARGETS embeddeddialogs
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

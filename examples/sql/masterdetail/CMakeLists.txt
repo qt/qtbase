@@ -1,30 +1,34 @@
 # Generated from masterdetail.pro.
 
-#####################################################################
-## masterdetail Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(masterdetail LANGUAGES CXX)
 
-add_qt_executable(masterdetail
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/masterdetail"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/masterdetail"
-    SOURCES
-        database.h
-        dialog.cpp dialog.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Sql
-        Qt::Widgets
-        Qt::Xml
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Sql)
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS Xml)
+
+add_executable(masterdetail WIN32 MACOSX_BUNDLE
+    database.h
+    dialog.cpp dialog.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    masterdetail.qrc
+)
+target_link_libraries(masterdetail PUBLIC
+    Qt::Sql
+    Qt::Widgets
+    Qt::Xml
 )
 
-# Resources:
-add_qt_resource(masterdetail "masterdetail" FILES
-    images/icon.png
-    images/image.png)
-
-
-#### Keys ignored in scope 1:.:masterdetail.pro:<NONE>:
-# EXAMPLE_FILES = "albumdetails.xml"
+install(TARGETS masterdetail
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

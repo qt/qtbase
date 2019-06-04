@@ -1,16 +1,26 @@
 # Generated from contiguouscache.pro.
 
-#####################################################################
-## contiguouscache Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(contiguouscache LANGUAGES CXX)
 
-add_qt_executable(contiguouscache
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/tools/contiguouscache"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/tools/contiguouscache"
-    SOURCES
-        main.cpp
-        randomlistmodel.cpp randomlistmodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(contiguouscache WIN32 MACOSX_BUNDLE
+    main.cpp
+    randomlistmodel.cpp randomlistmodel.h
+)
+target_link_libraries(contiguouscache PUBLIC
+    Qt::Widgets
+)
+install(TARGETS contiguouscache
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

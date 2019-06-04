@@ -1,26 +1,28 @@
 # Generated from sdi.pro.
 
-#####################################################################
-## sdi Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(sdi LANGUAGES CXX)
 
-add_qt_executable(sdi
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/sdi"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/sdi"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(sdi WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    sdi.qrc
+)
+target_link_libraries(sdi PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(sdi "sdi" FILES
-    images/copy.png
-    images/cut.png
-    images/new.png
-    images/open.png
-    images/paste.png
-    images/save.png)
-
+install(TARGETS sdi
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

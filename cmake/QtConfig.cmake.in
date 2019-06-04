@@ -7,9 +7,16 @@ endif()
 
 get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 
-include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
-
-include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+if (NOT QT_NO_CREATE_TARGETS)
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+else()
+    # For examples using `find_package(...)` inside their CMakeLists.txt files:
+    # Make CMake's AUTOGEN detect this Qt version properly
+    set_directory_properties(PROPERTIES
+                             QT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+                             QT_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+endif()
 
 # if (NOT @INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS)
 #     set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "The Qt package requires at least one component")

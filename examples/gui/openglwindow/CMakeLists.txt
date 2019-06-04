@@ -1,18 +1,31 @@
 # Generated from openglwindow.pro.
 
-#####################################################################
-## openglwindow Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(openglwindow LANGUAGES CXX)
 
-add_qt_executable(openglwindow
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/openglwindow"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/gui/openglwindow"
-    SOURCES
-        main.cpp
-        openglwindow.cpp openglwindow.h
-    INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    LIBRARIES # special case
-        Qt::Gui
+find_package(Qt5 COMPONENTS Widgets) # special case: add
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+add_executable(openglwindow WIN32 MACOSX_BUNDLE
+    main.cpp
+    openglwindow.cpp openglwindow.h
+)
+target_include_directories(openglwindow PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+# special case begin
+target_link_libraries(openglwindow PUBLIC
+    Qt::Gui
+)
+# special case end
+install(TARGETS openglwindow
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

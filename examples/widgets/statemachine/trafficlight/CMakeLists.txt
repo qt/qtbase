@@ -1,15 +1,26 @@
 # Generated from trafficlight.pro.
 
-#####################################################################
-## trafficlight Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(trafficlight LANGUAGES CXX)
 
-add_qt_executable(trafficlight
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/statemachine/trafficlight"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/statemachine/trafficlight"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(trafficlight WIN32 MACOSX_BUNDLE
+    main.cpp
+)
+target_link_libraries(trafficlight PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS trafficlight
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

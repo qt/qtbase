@@ -1,17 +1,28 @@
 # Generated from coloreditorfactory.pro.
 
-#####################################################################
-## coloreditorfactory Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(coloreditorfactory LANGUAGES CXX)
 
-add_qt_executable(coloreditorfactory
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/coloreditorfactory"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/coloreditorfactory"
-    SOURCES
-        colorlisteditor.cpp colorlisteditor.h
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(coloreditorfactory WIN32 MACOSX_BUNDLE
+    colorlisteditor.cpp colorlisteditor.h
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(coloreditorfactory PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS coloreditorfactory
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

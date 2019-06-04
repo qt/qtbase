@@ -1,16 +1,27 @@
 # Generated from tabdialog.pro.
 
-#####################################################################
-## tabdialog Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(tabdialog LANGUAGES CXX)
 
-add_qt_executable(tabdialog
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/dialogs/tabdialog"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/dialogs/tabdialog"
-    SOURCES
-        main.cpp
-        tabdialog.cpp tabdialog.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(tabdialog WIN32 MACOSX_BUNDLE
+    main.cpp
+    tabdialog.cpp tabdialog.h
+)
+target_link_libraries(tabdialog PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS tabdialog
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

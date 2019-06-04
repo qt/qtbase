@@ -1,21 +1,27 @@
 # Generated from mimetypebrowser.pro.
 
-#####################################################################
-## mimetypebrowser Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mimetypebrowser LANGUAGES CXX)
 
-add_qt_executable(mimetypebrowser
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/mimetypes/mimetypebrowser"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/mimetypes/mimetypebrowser"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        mimetypemodel.cpp mimetypemodel.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mimetypebrowser WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    mimetypemodel.cpp mimetypemodel.h
 )
-
-#### Keys ignored in scope 1:.:mimetypebrowser.pro:<NONE>:
-# CONFIG = "-app_bundle" "c++11"
-# TEMPLATE = "app"
+target_link_libraries(mimetypebrowser PUBLIC
+    Qt::Widgets
+)
+install(TARGETS mimetypebrowser
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

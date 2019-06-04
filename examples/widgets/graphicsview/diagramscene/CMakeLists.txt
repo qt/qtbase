@@ -1,39 +1,31 @@
 # Generated from diagramscene.pro.
 
-#####################################################################
-## diagramscene Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(diagramscene LANGUAGES CXX)
 
-add_qt_executable(diagramscene
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/diagramscene"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/diagramscene"
-    SOURCES
-        arrow.cpp arrow.h
-        diagramitem.cpp diagramitem.h
-        diagramscene.cpp diagramscene.h
-        diagramtextitem.cpp diagramtextitem.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(diagramscene WIN32 MACOSX_BUNDLE
+    arrow.cpp arrow.h
+    diagramitem.cpp diagramitem.h
+    diagramscene.cpp diagramscene.h diagramscene.qrc
+    diagramtextitem.cpp diagramtextitem.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
+)
+target_link_libraries(diagramscene PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(diagramscene "diagramscene" FILES
-    images/background1.png
-    images/background2.png
-    images/background3.png
-    images/background4.png
-    images/bold.png
-    images/bringtofront.png
-    images/delete.png
-    images/floodfill.png
-    images/italic.png
-    images/linecolor.png
-    images/linepointer.png
-    images/pointer.png
-    images/sendtoback.png
-    images/textpointer.png
-    images/underline.png)
-
+install(TARGETS diagramscene
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,26 +1,30 @@
 # Generated from codecs.pro.
 
-#####################################################################
-## codecs Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(codecs LANGUAGES CXX)
 
-add_qt_executable(codecs
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/codecs"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/codecs"
-    SOURCES
-        encodingdialog.cpp encodingdialog.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        previewform.cpp previewform.h
-    PUBLIC_LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(codecs WIN32 MACOSX_BUNDLE
+    codecs.qrc
+    encodingdialog.cpp encodingdialog.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    previewform.cpp previewform.h
+)
+target_link_libraries(codecs PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(codecs "codecs" PREFIX "/" FILES
-    images/editcopy.png)
-
-
-#### Keys ignored in scope 1:.:.:codecs.pro:<TRUE>:
-# EXAMPLE_FILES = "encodedfiles"
+install(TARGETS codecs
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

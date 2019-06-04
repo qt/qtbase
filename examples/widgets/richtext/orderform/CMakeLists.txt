@@ -1,25 +1,32 @@
 # Generated from orderform.pro.
 
-#####################################################################
-## orderform Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(orderform LANGUAGES CXX)
 
-add_qt_executable(orderform
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/richtext/orderform"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/richtext/orderform"
-    SOURCES
-        detailsdialog.cpp detailsdialog.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS PrintSupport)
+
+add_executable(orderform WIN32 MACOSX_BUNDLE
+    detailsdialog.cpp detailsdialog.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
 )
+target_link_libraries(orderform PUBLIC
+    Qt::Widgets
+)
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(orderform PUBLIC Qt::PrintSupport)
+endif()
 
-## Scopes:
-#####################################################################
-
-extend_target(orderform CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
-        Qt::PrintSupport
+install(TARGETS orderform
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

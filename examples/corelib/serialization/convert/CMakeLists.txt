@@ -1,26 +1,33 @@
 # Generated from convert.pro.
 
-#####################################################################
-## convert Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(convert LANGUAGES CXX)
 
-add_qt_executable(convert
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/serialization/convert"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/serialization/convert"
-    SOURCES
-        cborconverter.cpp cborconverter.h
-        converter.h
-        datastreamconverter.cpp datastreamconverter.h
-        jsonconverter.cpp jsonconverter.h
-        main.cpp
-        nullconverter.cpp nullconverter.h
-        textconverter.cpp textconverter.h
-        xmlconverter.cpp xmlconverter.h
-    LIBRARIES
-        # Remove: gui
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(convert
+    cborconverter.cpp cborconverter.h
+    converter.h
+    datastreamconverter.cpp datastreamconverter.h
+    jsonconverter.cpp jsonconverter.h
+    main.cpp
+    nullconverter.cpp nullconverter.h
+    textconverter.cpp textconverter.h
+    xmlconverter.cpp xmlconverter.h
 )
-
-#### Keys ignored in scope 1:.:convert.pro:<NONE>:
-# CONFIG = "-app_bundle"
-# TEMPLATE = "app"
+target_link_libraries(convert PUBLIC
+    # Remove: gui
+    Qt::Core
+)
+install(TARGETS convert
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,25 +1,30 @@
 # Generated from easing.pro.
 
-#####################################################################
-## easing Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(easing LANGUAGES CXX)
 
-add_qt_executable(easing
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/animation/easing"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/animation/easing"
-    SOURCES
-        animation.h
-        form.ui
-        main.cpp
-        window.cpp window.h
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(easing WIN32 MACOSX_BUNDLE
+    animation.h
+    easing.qrc
+    form.ui
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(easing PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(easing "easing" FILES
-    images/qt-logo.png)
-
+install(TARGETS easing
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

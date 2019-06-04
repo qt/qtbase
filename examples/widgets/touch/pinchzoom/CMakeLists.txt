@@ -1,22 +1,29 @@
 # Generated from pinchzoom.pro.
 
-#####################################################################
-## pinchzoom Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(pinchzoom LANGUAGES CXX)
 
-add_qt_executable(pinchzoom
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/touch/pinchzoom"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/touch/pinchzoom"
-    SOURCES
-        graphicsview.cpp graphicsview.h
-        main.cpp
-        mouse.cpp mouse.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(pinchzoom WIN32 MACOSX_BUNDLE
+    graphicsview.cpp graphicsview.h
+    main.cpp
+    mice.qrc
+    mouse.cpp mouse.h
+)
+target_link_libraries(pinchzoom PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(pinchzoom "mice" PREFIX "/" FILES
-    images/cheese.jpg)
-
+install(TARGETS pinchzoom
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

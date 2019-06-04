@@ -1,17 +1,27 @@
 # Generated from customtypesending.pro.
 
-#####################################################################
-## customtypesending Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(customtypesending LANGUAGES CXX)
 
-add_qt_executable(customtypesending
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/tools/customtypesending"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/tools/customtypesending"
-    SOURCES
-        main.cpp
-        message.cpp message.h
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(customtypesending WIN32 MACOSX_BUNDLE
+    main.cpp
+    message.cpp message.h
+    window.cpp window.h
+)
+target_link_libraries(customtypesending PUBLIC
+    Qt::Widgets
+)
+install(TARGETS customtypesending
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

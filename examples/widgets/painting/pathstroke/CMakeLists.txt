@@ -1,21 +1,34 @@
 # Generated from pathstroke.pro.
 
-#####################################################################
-## pathstroke Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(pathstroke LANGUAGES CXX)
 
-add_qt_executable(pathstroke
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/pathstroke"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/pathstroke"
-    SOURCES
-        main.cpp
-        pathstroke.cpp pathstroke.h
-    LIBRARIES # special case
-        painting_shared
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(pathstroke WIN32 MACOSX_BUNDLE
+    ../shared/arthurstyle.cpp ../shared/arthurstyle.h
+    ../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
+    ../shared/hoverpoints.cpp ../shared/hoverpoints.h
+    ../shared/shared.qrc
+    main.cpp
+    pathstroke.cpp pathstroke.h pathstroke.qrc
+)
+target_include_directories(pathstroke PUBLIC
+    ../shared
+)
+target_link_libraries(pathstroke PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(pathstroke "pathstroke" PREFIX "/res/pathstroke" FILES
-    pathstroke.cpp
-    pathstroke.html)
+install(TARGETS pathstroke
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

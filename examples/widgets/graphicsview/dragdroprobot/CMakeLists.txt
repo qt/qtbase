@@ -1,22 +1,28 @@
 # Generated from dragdroprobot.pro.
 
-#####################################################################
-## dragdroprobot Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(dragdroprobot LANGUAGES CXX)
 
-add_qt_executable(dragdroprobot
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/dragdroprobot"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/dragdroprobot"
-    SOURCES
-        coloritem.cpp coloritem.h
-        main.cpp
-        robot.cpp robot.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(dragdroprobot WIN32 MACOSX_BUNDLE
+    coloritem.cpp coloritem.h
+    main.cpp
+    robot.cpp robot.h robot.qrc
+)
+target_link_libraries(dragdroprobot PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(dragdroprobot "robot" PREFIX "/" FILES
-    images/head.png)
-
+install(TARGETS dragdroprobot
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

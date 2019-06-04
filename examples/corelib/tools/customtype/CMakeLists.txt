@@ -1,16 +1,26 @@
 # Generated from customtype.pro.
 
-#####################################################################
-## customtype Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(customtype LANGUAGES CXX)
 
-add_qt_executable(customtype
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/tools/customtype"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/tools/customtype"
-    SOURCES
-        main.cpp
-        message.cpp message.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(customtype WIN32 MACOSX_BUNDLE
+    main.cpp
+    message.cpp message.h
+)
+target_link_libraries(customtype PUBLIC
+    Qt::Widgets
+)
+install(TARGETS customtype
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

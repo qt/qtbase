@@ -1,27 +1,30 @@
 # Generated from validators.pro.
 
-#####################################################################
-## validators Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(validators LANGUAGES CXX)
 
-add_qt_executable(validators
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/validators"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/validators"
-    SOURCES
-        ledwidget.cpp ledwidget.h
-        localeselector.cpp localeselector.h
-        main.cpp
-        validators.ui
-        validatorwidget.cpp validatorwidget.h
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(validators WIN32 MACOSX_BUNDLE
+    ledwidget.cpp ledwidget.h
+    localeselector.cpp localeselector.h
+    main.cpp
+    validators.qrc validators.ui
+    validatorwidget.cpp validatorwidget.h
+)
+target_link_libraries(validators PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(validators "validators" PREFIX "/" FILES
-    ledoff.png
-    ledon.png)
-
+install(TARGETS validators
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

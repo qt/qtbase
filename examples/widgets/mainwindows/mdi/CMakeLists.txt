@@ -1,27 +1,29 @@
 # Generated from mdi.pro.
 
-#####################################################################
-## mdi Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mdi LANGUAGES CXX)
 
-add_qt_executable(mdi
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/mdi"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/mdi"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        mdichild.cpp mdichild.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mdi WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    mdi.qrc
+    mdichild.cpp mdichild.h
+)
+target_link_libraries(mdi PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(mdi "mdi" FILES
-    images/copy.png
-    images/cut.png
-    images/new.png
-    images/open.png
-    images/paste.png
-    images/save.png)
-
+install(TARGETS mdi
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

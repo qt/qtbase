@@ -1,24 +1,31 @@
 # Generated from secureudpserver.pro.
 
-#####################################################################
-## secureudpserver Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(secureudpserver LANGUAGES CXX)
 
-add_qt_executable(secureudpserver
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/secureudpserver"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/secureudpserver"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h mainwindow.ui
-        nicselector.cpp nicselector.h nicselector.ui
-        server.cpp server.h
-    PUBLIC_LIBRARIES
-        Qt::Network
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS Network)
+
+add_executable(secureudpserver WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h mainwindow.ui
+    nicselector.cpp nicselector.h nicselector.ui
+    server.cpp server.h
+)
+target_link_libraries(secureudpserver PUBLIC
+    Qt::Network
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:secureudpserver.pro:<TRUE>:
-# TEMPLATE = "app"
+install(TARGETS secureudpserver
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

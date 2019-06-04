@@ -1,24 +1,31 @@
 # Generated from secureudpclient.pro.
 
-#####################################################################
-## secureudpclient Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(secureudpclient LANGUAGES CXX)
 
-add_qt_executable(secureudpclient
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/secureudpclient"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/secureudpclient"
-    SOURCES
-        addressdialog.cpp addressdialog.h addressdialog.ui
-        association.cpp association.h
-        main.cpp
-        mainwindow.cpp mainwindow.h mainwindow.ui
-    PUBLIC_LIBRARIES
-        Qt::Network
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS Network)
+
+add_executable(secureudpclient WIN32 MACOSX_BUNDLE
+    addressdialog.cpp addressdialog.h addressdialog.ui
+    association.cpp association.h
+    main.cpp
+    mainwindow.cpp mainwindow.h mainwindow.ui
+)
+target_link_libraries(secureudpclient PUBLIC
+    Qt::Network
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:secureudpclient.pro:<TRUE>:
-# TEMPLATE = "app"
+install(TARGETS secureudpclient
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

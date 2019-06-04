@@ -1,25 +1,34 @@
 # Generated from scribble.pro.
 
-#####################################################################
-## scribble Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(scribble LANGUAGES CXX)
 
-add_qt_executable(scribble
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/scribble"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/scribble"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        scribblearea.cpp scribblearea.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS PrintSupport) # special case
+
+add_executable(scribble WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    scribblearea.cpp scribblearea.h
 )
+target_link_libraries(scribble PUBLIC
+    Qt::Widgets
+)
+# special case begin
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(scribble PUBLIC Qt::PrintSupport)
+endif()
+# special case end
 
-## Scopes:
-#####################################################################
-
-extend_target(scribble CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
-        Qt::PrintSupport
+install(TARGETS scribble
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -1,35 +1,27 @@
-# Generated from pingpong.pro.
+# Generated from pong.pro.
 
-#####################################################################
-## ping Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(pong LANGUAGES CXX)
 
-add_qt_executable(ping
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/pingpong"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/pingpong"
-    SOURCES
-        ping.cpp
-        ping-common.h
-    LIBRARIES
-        # Remove: gui
-        Qt::DBus
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS DBus)
+
+add_executable(pong WIN32 MACOSX_BUNDLE
+    ping-common.h
+    pong.cpp pong.h
 )
-#####################################################################
-## pong Binary:
-#####################################################################
-
-add_qt_executable(pong
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/pingpong"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/dbus/pingpong"
-    SOURCES
-        ping-common.h
-        pong.cpp pong.h
-    LIBRARIES
-        # Remove: gui
-        Qt::DBus
+target_link_libraries(pong PUBLIC
+    # Remove: gui
+    Qt::DBus
 )
-
-if(WIN32)
-endif()
+install(TARGETS pong
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

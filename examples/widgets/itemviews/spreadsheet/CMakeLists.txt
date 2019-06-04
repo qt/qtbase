@@ -1,35 +1,36 @@
 # Generated from spreadsheet.pro.
 
-#####################################################################
-## spreadsheet Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(spreadsheet LANGUAGES CXX)
 
-add_qt_executable(spreadsheet
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/spreadsheet"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/spreadsheet"
-    SOURCES
-        main.cpp
-        printview.cpp printview.h
-        spreadsheet.cpp spreadsheet.h
-        spreadsheetdelegate.cpp spreadsheetdelegate.h
-        spreadsheetitem.cpp spreadsheetitem.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS PrintSupport) # special case
+
+add_executable(spreadsheet WIN32 MACOSX_BUNDLE
+    main.cpp
+    printview.cpp printview.h
+    spreadsheet.cpp spreadsheet.h spreadsheet.qrc
+    spreadsheetdelegate.cpp spreadsheetdelegate.h
+    spreadsheetitem.cpp spreadsheetitem.h
 )
-
-# Resources:
-add_qt_resource(spreadsheet "spreadsheet" PREFIX "/" FILES
-    images/interview.png)
-
-
-## Scopes:
-#####################################################################
-
-extend_target(spreadsheet CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
-        Qt::PrintSupport
+target_link_libraries(spreadsheet PUBLIC
+    Qt::Widgets
 )
+# special case begin
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(spreadsheet PUBLIC Qt::PrintSupport)
+endif()
+# special case end
 
-#### Keys ignored in scope 3:.:spreadsheet.pro:build_all AND NOT build_pass:
-# CONFIG = "-build_all" "release"
+install(TARGETS spreadsheet
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

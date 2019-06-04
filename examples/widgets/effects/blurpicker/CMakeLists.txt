@@ -1,30 +1,28 @@
 # Generated from blurpicker.pro.
 
-#####################################################################
-## blurpicker Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(blurpicker LANGUAGES CXX)
 
-add_qt_executable(blurpicker
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/effects/blurpicker"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/effects/blurpicker"
-    SOURCES
-        blureffect.cpp blureffect.h
-        blurpicker.cpp blurpicker.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(blurpicker WIN32 MACOSX_BUNDLE
+    blureffect.cpp blureffect.h
+    blurpicker.cpp blurpicker.h blurpicker.qrc
+    main.cpp
+)
+target_link_libraries(blurpicker PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(blurpicker "blurpicker" PREFIX "/" FILES
-    images/accessories-calculator.png
-    images/accessories-text-editor.png
-    images/background.jpg
-    images/help-browser.png
-    images/internet-group-chat.png
-    images/internet-mail.png
-    images/internet-web-browser.png
-    images/office-calendar.png
-    images/system-users.png)
-
+install(TARGETS blurpicker
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

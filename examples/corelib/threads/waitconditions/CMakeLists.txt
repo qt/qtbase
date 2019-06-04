@@ -1,15 +1,25 @@
 # Generated from waitconditions.pro.
 
-#####################################################################
-## waitconditions Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(waitconditions LANGUAGES CXX)
 
-add_qt_executable(waitconditions
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/waitconditions"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/waitconditions"
-    SOURCES
-        waitconditions.cpp
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(waitconditions
+    waitconditions.cpp
 )
-
-#### Keys ignored in scope 1:.:waitconditions.pro:<NONE>:
-# CONFIG = "-moc" "-app_bundle" "console"
+target_link_libraries(waitconditions PUBLIC
+    Qt::Core
+)
+install(TARGETS waitconditions
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

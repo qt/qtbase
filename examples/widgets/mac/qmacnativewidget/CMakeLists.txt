@@ -1,19 +1,27 @@
 # Generated from qmacnativewidget.pro.
 
-#####################################################################
-## qmacnativewidget Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(qmacnativewidget LANGUAGES CXX)
 
-add_qt_executable(qmacnativewidget
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mac/qmacnativewidget"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mac/qmacnativewidget"
-    SOURCES
-        main.mm
-    LIBRARIES
-        Qt::Widgets
-        ${FWAppKit}
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(qmacnativewidget WIN32 MACOSX_BUNDLE
+    main.mm
+)
+target_link_libraries(qmacnativewidget PUBLIC
+    ${FWAppKit}
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:qmacnativewidget.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS qmacnativewidget
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

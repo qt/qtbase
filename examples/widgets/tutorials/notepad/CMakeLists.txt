@@ -1,51 +1,35 @@
 # Generated from notepad.pro.
 
-#####################################################################
-## notepad Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(notepad LANGUAGES CXX)
 
-add_qt_executable(notepad
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/notepad"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/notepad"
-    SOURCES
-        main.cpp
-        notepad.cpp notepad.h notepad.ui
-    ENABLE_AUTOGEN_TOOLS
-        uic
-    LIBRARIES # special case
-        Qt::Widgets # special case
+find_package(Qt5 COMPONENTS Widgets) # special case: add
+find_package(Qt5 COMPONENTS PrintSupport) # special case: add
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+add_executable(notepad WIN32 MACOSX_BUNDLE
+    main.cpp
+    notepad.cpp notepad.h notepad.qrc notepad.ui
 )
-
-# Resources:
-add_qt_resource(notepad "notepad" PREFIX "/" FILES
-    images/bold.png
-    images/copy.png
-    images/create.png
-    images/cut.png
-    images/edit_redo.png
-    images/edit_undo.png
-    images/exit.png
-    images/font.png
-    images/info.png
-    images/italic.png
-    images/new.png
-    images/open.png
-    images/paste.png
-    images/pencil.png
-    images/print.png
-    images/save.png
-    images/save_as.png
-    images/underline.png)
-
-
-#### Keys ignored in scope 1:.:.:notepad.pro:<TRUE>:
-# TEMPLATE = "app"
-
-## Scopes:
-#####################################################################
-
-extend_target(notepad CONDITION TARGET Qt::PrintSupport
-    PUBLIC_LIBRARIES
+# special case begin
+target_link_libraries(notepad PUBLIC
+    Qt::Widgets
+)
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(notepad PUBLIC
         Qt::PrintSupport
+    )
+endif()
+# special case end
+
+install(TARGETS notepad
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

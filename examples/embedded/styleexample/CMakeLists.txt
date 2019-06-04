@@ -1,30 +1,27 @@
 # Generated from styleexample.pro.
 
-#####################################################################
-## styleexample Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(styleexample LANGUAGES CXX)
 
-add_qt_executable(styleexample
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/embedded/styleexample"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/embedded/styleexample"
-    SOURCES
-        main.cpp
-        stylewidget.cpp stylewidget.h stylewidget.ui
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(styleexample WIN32 MACOSX_BUNDLE
+    main.cpp
+    stylewidget.cpp stylewidget.h stylewidget.ui
+    styleexample.qrc # special case: add
 )
-
-# Resources:
-add_qt_resource(styleexample "styleexample" PREFIX "/" FILES
-    files/add.png
-    files/application.qss
-    files/blue.qss
-    files/khaki.qss
-    files/nature_1.jpg
-    files/nostyle.qss
-    files/remove.png
-    files/transparent.qss)
-
+target_link_libraries(styleexample PUBLIC
+    Qt::Widgets
+)
+install(TARGETS styleexample
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

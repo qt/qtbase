@@ -1,20 +1,28 @@
 # Generated from flowlayout.pro.
 
-#####################################################################
-## flowlayout Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(flowlayout LANGUAGES CXX)
 
-add_qt_executable(flowlayout
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/flowlayout"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/flowlayout"
-    SOURCES
-        flowlayout.cpp flowlayout.h
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(graphicsview_flowlayout WIN32 MACOSX_BUNDLE # special case: renamed flowlayout
+    flowlayout.cpp flowlayout.h
+    main.cpp
+    window.cpp window.h
+)
+target_link_libraries(graphicsview_flowlayout PUBLIC # special case: renamed flowlayout
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:flowlayout.pro:<NONE>:
-# QMAKE_PROJECT_NAME = "flowlayout_graphicsview"
+install(TARGETS graphicsview_flowlayout # special case: renamed flowlayout
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

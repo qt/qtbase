@@ -1,17 +1,28 @@
 # Generated from wiggly.pro.
 
-#####################################################################
-## wiggly Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(wiggly LANGUAGES CXX)
 
-add_qt_executable(wiggly
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/wiggly"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/wiggly"
-    SOURCES
-        dialog.cpp dialog.h
-        main.cpp
-        wigglywidget.cpp wigglywidget.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(wiggly WIN32 MACOSX_BUNDLE
+    dialog.cpp dialog.h
+    main.cpp
+    wigglywidget.cpp wigglywidget.h
+)
+target_link_libraries(wiggly PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS wiggly
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

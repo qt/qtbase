@@ -1,29 +1,32 @@
 # Generated from stickman.pro.
 
-#####################################################################
-## stickman Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(stickman LANGUAGES CXX)
 
-add_qt_executable(stickman
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/animation/stickman"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/animation/stickman"
-    SOURCES
-        animation.cpp animation.h
-        graphicsview.cpp graphicsview.h
-        lifecycle.cpp lifecycle.h
-        main.cpp
-        node.cpp node.h
-        rectbutton.cpp rectbutton.h
-        stickman.cpp stickman.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(stickman WIN32 MACOSX_BUNDLE
+    animation.cpp animation.h
+    graphicsview.cpp graphicsview.h
+    lifecycle.cpp lifecycle.h
+    main.cpp
+    node.cpp node.h
+    rectbutton.cpp rectbutton.h
+    stickman.cpp stickman.h stickman.qrc
+)
+target_link_libraries(stickman PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(stickman "stickman" FILES
-    animations/chilling.bin
-    animations/dancing.bin
-    animations/dead.bin
-    animations/jumping.bin)
-
+install(TARGETS stickman
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

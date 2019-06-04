@@ -1,21 +1,28 @@
 # Generated from regularexpression.pro.
 
-#####################################################################
-## regularexpression Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(regularexpression LANGUAGES CXX)
 
-add_qt_executable(regularexpression
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/regularexpression"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/regularexpression"
-    SOURCES
-        main.cpp
-        regularexpressiondialog.cpp regularexpressiondialog.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(regularexpression WIN32 MACOSX_BUNDLE
+    main.cpp
+    regularexpression.qrc
+    regularexpressiondialog.cpp regularexpressiondialog.h
+)
+target_link_libraries(regularexpression PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(regularexpression "regularexpression" FILES
-    images/copy.png)
-
+install(TARGETS regularexpression
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

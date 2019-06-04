@@ -1,19 +1,27 @@
 # Generated from analogclock.pro.
 
-#####################################################################
-## analogclock Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(analogclock LANGUAGES CXX)
 
-add_qt_executable(analogclock_widgets # special case
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/analogclock"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/analogclock"
-    SOURCES
-        analogclock.cpp analogclock.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(analogclock WIN32 MACOSX_BUNDLE
+    analogclock.cpp analogclock.h
+    main.cpp
+)
+target_link_libraries(analogclock PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:analogclock.pro:<NONE>:
-# QMAKE_PROJECT_NAME = "widgets_analogclock"
+install(TARGETS analogclock
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

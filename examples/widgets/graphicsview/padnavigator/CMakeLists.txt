@@ -1,45 +1,37 @@
 # Generated from padnavigator.pro.
 
-#####################################################################
-## padnavigator Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(padnavigator LANGUAGES CXX)
 
-add_qt_executable(padnavigator
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/padnavigator"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/padnavigator"
-    SOURCES
-        flippablepad.cpp flippablepad.h
-        form.ui
-        main.cpp
-        padnavigator.cpp padnavigator.h
-        roundrectitem.cpp roundrectitem.h
-        splashitem.cpp splashitem.h
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS OpenGL) # special case
+
+add_executable(padnavigator
+    flippablepad.cpp flippablepad.h
+    form.ui
+    main.cpp
+    padnavigator.cpp padnavigator.h padnavigator.qrc
+    roundrectitem.cpp roundrectitem.h
+    splashitem.cpp splashitem.h
 )
+target_link_libraries(padnavigator PUBLIC
+    Qt::Widgets
+)
+# special case begin
+if (TARGET Qt::OpenGL)
+    target_link_libraries(padnavigator PUBLIC Qt::OpenGL)
+endif()
+# special case end
 
-# Resources:
-add_qt_resource(padnavigator "padnavigator" FILES
-    images/artsfftscope.png
-    images/blue_angle_swirl.jpg
-    images/kontact_contacts.png
-    images/kontact_journal.png
-    images/kontact_mail.png
-    images/kontact_notes.png
-    images/kopeteavailable.png
-    images/metacontact_online.png
-    images/minitools.png)
-
-
-#### Keys ignored in scope 1:.:.:padnavigator.pro:<TRUE>:
-# CONFIG = "console"
-
-## Scopes:
-#####################################################################
-
-extend_target(padnavigator CONDITION TARGET Qt::OpenGL
-    PUBLIC_LIBRARIES
-        Qt::OpenGL
+install(TARGETS padnavigator
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -1,27 +1,9 @@
-# Generated from extrafilters.pro.
+# special case begin
 
-#####################################################################
-## qtLibraryTargetpnp_extrafilters Module:
-#####################################################################
-
-add_qt_plugin(pnp_extrafilters_plugin TYPE plugin # special case
-    SOURCES
-        extrafiltersplugin.cpp extrafiltersplugin.h
-    INCLUDE_DIRECTORIES
-        ../../app
-    LIBRARIES
-        Qt::Widgets
+add_library(pnp_extrafilters_plugin MODULE
+    extrafiltersplugin.cpp extrafiltersplugin.h
 )
+target_include_directories(pnp_extrafilters_plugin PRIVATE ../../app)
+target_link_libraries(pnp_extrafilters_plugin PRIVATE Qt::Widgets)
 
-#### Keys ignored in scope 1:.:extrafilters.pro:<NONE>:
-# CONFIG = "plugin" "install_ok"
-# DESTDIR = "../../plugins"
-# INSTALLS = "target"
-# TEMPLATE = "lib"
-# target.path = "$$[QT_INSTALL_EXAMPLES]/widgets/tools/plugandpaint/plugins"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:extrafilters.pro:APPLE_UIKIT:
-# CONFIG = "debug_and_release"
+# special case end

@@ -1,23 +1,29 @@
 # Generated from licensewizard.pro.
 
-#####################################################################
-## licensewizard Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(licensewizard LANGUAGES CXX)
 
-add_qt_executable(licensewizard
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/dialogs/licensewizard"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/dialogs/licensewizard"
-    SOURCES
-        licensewizard.cpp licensewizard.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
-        Qt::PrintSupport
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS PrintSupport)
+
+add_executable(licensewizard WIN32 MACOSX_BUNDLE
+    licensewizard.cpp licensewizard.h licensewizard.qrc
+    main.cpp
+)
+target_link_libraries(licensewizard PUBLIC
+    Qt::PrintSupport
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(licensewizard "licensewizard" FILES
-    images/logo.png
-    images/watermark.png)
-
+install(TARGETS licensewizard
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

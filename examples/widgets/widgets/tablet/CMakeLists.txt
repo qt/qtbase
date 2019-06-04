@@ -1,26 +1,30 @@
 # Generated from tablet.pro.
 
-#####################################################################
-## qttablet Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(qttablet LANGUAGES CXX)
 
-add_qt_executable(qttablet
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/tablet"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/tablet"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        tabletapplication.cpp tabletapplication.h
-        tabletcanvas.cpp tabletcanvas.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(qttablet WIN32 MACOSX_BUNDLE
+    images.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    tabletapplication.cpp tabletapplication.h
+    tabletcanvas.cpp tabletcanvas.h
+)
+target_link_libraries(qttablet PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(qttablet "images" FILES
-    images/cursor-airbrush.png
-    images/cursor-eraser.png
-    images/cursor-felt-marker.png
-    images/cursor-pencil.png)
-
+install(TARGETS qttablet
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

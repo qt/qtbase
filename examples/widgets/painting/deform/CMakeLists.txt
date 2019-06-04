@@ -1,21 +1,33 @@
 # Generated from deform.pro.
 
-#####################################################################
-## deform Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(deform LANGUAGES CXX)
 
-add_qt_executable(deform
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/deform"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/deform"
-    SOURCES
-        main.cpp
-        pathdeform.cpp pathdeform.h
-    LIBRARIES # special case
-        painting_shared
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(deform WIN32 MACOSX_BUNDLE
+    # special case: remove files from ../shared
+    deform.qrc
+    main.cpp
+    pathdeform.cpp pathdeform.h
+)
+target_include_directories(deform PUBLIC
+    ../shared
+)
+target_link_libraries(deform PUBLIC
+    Qt::Widgets
+    painting_shared # special case
 )
 
-# Resources:
-add_qt_resource(deform "deform" PREFIX "/res/deform" FILES
-    pathdeform.cpp
-    pathdeform.html)
+install(TARGETS deform
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,31 +1,36 @@
 # Generated from pixelator.pro.
 
-#####################################################################
-## pixelator Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(pixelator LANGUAGES CXX)
 
-add_qt_executable(pixelator
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/pixelator"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/pixelator"
-    SOURCES
-        imagemodel.cpp imagemodel.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        pixeldelegate.cpp pixeldelegate.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS PrintSupport) # special case
+
+add_executable(pixelator WIN32 MACOSX_BUNDLE
+    imagemodel.cpp imagemodel.h
+    images.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    pixeldelegate.cpp pixeldelegate.h
 )
-
-# Resources:
-add_qt_resource(pixelator "images" FILES
-    images/qt.png)
-
-
-## Scopes:
-#####################################################################
-
-extend_target(pixelator CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
+target_link_libraries(pixelator PUBLIC
+    Qt::Widgets
+)
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(pixelator PUBLIC
         Qt::PrintSupport
+    )
+endif()
+
+install(TARGETS pixelator
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

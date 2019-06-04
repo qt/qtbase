@@ -1,19 +1,28 @@
 # Generated from wordcount.pro.
 
-#####################################################################
-## wordcount Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(wordcount LANGUAGES CXX)
 
-add_qt_executable(wordcount
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/wordcount"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/qtconcurrent/wordcount"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Concurrent
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Concurrent)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(wordcount
+    main.cpp
+)
+target_link_libraries(wordcount PUBLIC
+    Qt::Concurrent
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:wordcount.pro:<NONE>:
-# CONFIG = "-app_bundle"
+install(TARGETS wordcount
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

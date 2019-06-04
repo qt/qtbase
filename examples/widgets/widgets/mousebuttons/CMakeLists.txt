@@ -1,19 +1,29 @@
 # Generated from mousebuttons.pro.
 
-#####################################################################
-## mousebuttons Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mousebuttons LANGUAGES CXX)
 
-add_qt_executable(mousebuttons
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/mousebuttons"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/mousebuttons"
-    SOURCES
-        buttontester.cpp buttontester.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mousebuttons WIN32 MACOSX_BUNDLE
+    buttontester.cpp buttontester.h
+    main.cpp
+)
+target_link_libraries(mousebuttons PUBLIC
+    Qt::Core
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:mousebuttons.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS mousebuttons
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

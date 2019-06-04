@@ -1,25 +1,27 @@
 # Generated from states.pro.
 
-#####################################################################
-## states Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(states LANGUAGES CXX)
 
-add_qt_executable(states
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/animation/states"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/animation/states"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(states WIN32 MACOSX_BUNDLE
+    main.cpp
+    states.qrc
+)
+target_link_libraries(states PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(states "states" FILES
-    accessories-dictionary.png
-    akregator.png
-    digikam.png
-    help-browser.png
-    k3b.png
-    kchart.png)
-
+install(TARGETS states
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

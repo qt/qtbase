@@ -1,27 +1,28 @@
 # Generated from dnslookup.pro.
 
-#####################################################################
-## dnslookup Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(dnslookup LANGUAGES CXX)
 
-add_qt_executable(dnslookup
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/dnslookup"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/dnslookup"
-    SOURCES
-        dnslookup.cpp dnslookup.h
-    LIBRARIES
-        Qt::Network
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+find_package(Qt5 COMPONENTS Network)
+
+add_executable(dnslookup
+    dnslookup.cpp dnslookup.h
+)
+target_link_libraries(dnslookup PUBLIC
+    Qt::Core
+    Qt::Network
 )
 
-#### Keys ignored in scope 1:.:dnslookup.pro:<NONE>:
-# TEMPLATE = "app"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:dnslookup.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"
-
-#### Keys ignored in scope 3:.:dnslookup.pro:WIN32:
-# CONFIG = "console"
+install(TARGETS dnslookup
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

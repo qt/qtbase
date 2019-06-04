@@ -1,15 +1,25 @@
 # Generated from semaphores.pro.
 
-#####################################################################
-## semaphores Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(semaphores LANGUAGES CXX)
 
-add_qt_executable(semaphores
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/semaphores"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/semaphores"
-    SOURCES
-        semaphores.cpp
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(semaphores
+    semaphores.cpp
 )
-
-#### Keys ignored in scope 1:.:semaphores.pro:<NONE>:
-# CONFIG = "-app_bundle" "console"
+target_link_libraries(semaphores PUBLIC
+    Qt::Core
+)
+install(TARGETS semaphores
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

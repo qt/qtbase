@@ -1,26 +1,32 @@
 # Generated from securesocketclient.pro.
 
-#####################################################################
-## securesocketclient Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(securesocketclient LANGUAGES CXX)
 
-add_qt_executable(securesocketclient
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/securesocketclient"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/network/securesocketclient"
-    SOURCES
-        certificateinfo.cpp certificateinfo.h certificateinfo.ui
-        main.cpp
-        sslclient.cpp sslclient.h sslclient.ui
-        sslerrors.ui
-    PUBLIC_LIBRARIES
-        Qt::Network
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Network)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(securesocketclient WIN32 MACOSX_BUNDLE
+    certificateinfo.cpp certificateinfo.h certificateinfo.ui
+    main.cpp
+    securesocketclient.qrc
+    sslclient.cpp sslclient.h sslclient.ui
+    sslerrors.ui
+)
+target_link_libraries(securesocketclient PUBLIC
+    Qt::Network
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(securesocketclient "securesocketclient" FILES
-    encrypted.png)
-
+install(TARGETS securesocketclient
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

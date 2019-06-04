@@ -1,15 +1,24 @@
 # Generated from qrasterwindow.pro.
 
-#####################################################################
-## qrasterwindow Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(qrasterwindow LANGUAGES CXX)
 
-add_qt_executable(qrasterwindow
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/qpa/qrasterwindow"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/qpa/qrasterwindow"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Gui # special case
+find_package(Qt5 COMPONENTS Gui) # special case
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+add_executable(qrasterwindow WIN32 MACOSX_BUNDLE
+    main.cpp
+)
+target_link_libraries(qrasterwindow PUBLIC Qt::Gui) # special case: add
+
+install(TARGETS qrasterwindow
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -1,20 +1,28 @@
 # Generated from part7.pro.
 
-#####################################################################
-## part7 Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(part7 LANGUAGES CXX)
 
-add_qt_executable(part7
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/addressbook/part7"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/addressbook/part7"
-    SOURCES
-        addressbook.cpp addressbook.h
-        finddialog.cpp finddialog.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(part7 WIN32 MACOSX_BUNDLE
+    addressbook.cpp addressbook.h
+    finddialog.cpp finddialog.h
+    main.cpp
+)
+target_link_libraries(part7 PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:part7.pro:<NONE>:
-# QMAKE_PROJECT_NAME = "ab_part7"
+install(TARGETS part7
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

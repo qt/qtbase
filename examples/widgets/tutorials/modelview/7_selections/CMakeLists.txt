@@ -1,19 +1,27 @@
 # Generated from 7_selections.pro.
 
-#####################################################################
-## mv_selections Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(mv_selections LANGUAGES CXX)
 
-add_qt_executable(mv_selections
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/7_selections"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/7_selections"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(mv_selections WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+)
+target_link_libraries(mv_selections PUBLIC
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:7_selections.pro:<NONE>:
-# TEMPLATE = "app"
+install(TARGETS mv_selections
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

@@ -1,32 +1,34 @@
 # Generated from dockwidgets.pro.
 
-#####################################################################
-## dockwidgets Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(dockwidgets LANGUAGES CXX)
 
-add_qt_executable(dockwidgets
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/dockwidgets"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/dockwidgets"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt5 COMPONENTS PrintSupport) # special case
+
+add_executable(dockwidgets WIN32 MACOSX_BUNDLE
+    dockwidgets.qrc
+    main.cpp
+    mainwindow.cpp mainwindow.h
 )
+target_link_libraries(dockwidgets PUBLIC
+    Qt::Widgets
+)
+# special case begin
+if (TARGET Qt::PrintSupport)
+    target_link_libraries(dockwidgets PUBLIC Qt::PrintSupport)
+endif()
+# special case end
 
-# Resources:
-add_qt_resource(dockwidgets "dockwidgets" FILES
-    images/new.png
-    images/print.png
-    images/save.png
-    images/undo.png)
-
-
-## Scopes:
-#####################################################################
-
-extend_target(dockwidgets CONDITION TARGET Qt::PrintSupport
-    LIBRARIES
-        Qt::PrintSupport
+install(TARGETS dockwidgets
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

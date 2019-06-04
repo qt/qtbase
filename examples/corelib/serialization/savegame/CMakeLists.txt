@@ -1,22 +1,29 @@
 # Generated from savegame.pro.
 
-#####################################################################
-## savegame Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(savegame LANGUAGES CXX)
 
-add_qt_executable(savegame
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/serialization/savegame"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/serialization/savegame"
-    SOURCES
-        character.cpp character.h
-        game.cpp game.h
-        level.cpp level.h
-        main.cpp
-    LIBRARIES
-        # Remove: gui
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(savegame
+    character.cpp character.h
+    game.cpp game.h
+    level.cpp level.h
+    main.cpp
 )
-
-#### Keys ignored in scope 1:.:savegame.pro:<NONE>:
-# CONFIG = "-app_bundle"
-# TEMPLATE = "app"
+target_link_libraries(savegame PUBLIC
+    # Remove: gui
+    Qt::Core
+)
+install(TARGETS savegame
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

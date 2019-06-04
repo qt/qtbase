@@ -1,18 +1,28 @@
 # Generated from queuedcustomtype.pro.
 
-#####################################################################
-## queuedcustomtype Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(queuedcustomtype LANGUAGES CXX)
 
-add_qt_executable(queuedcustomtype
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/queuedcustomtype"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/corelib/threads/queuedcustomtype"
-    SOURCES
-        block.cpp block.h
-        main.cpp
-        renderthread.cpp renderthread.h
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(queuedcustomtype WIN32 MACOSX_BUNDLE
+    block.cpp block.h
+    main.cpp
+    renderthread.cpp renderthread.h
+    window.cpp window.h
+)
+target_link_libraries(queuedcustomtype PUBLIC
+    Qt::Widgets
+)
+install(TARGETS queuedcustomtype
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

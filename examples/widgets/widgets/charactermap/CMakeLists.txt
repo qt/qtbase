@@ -1,17 +1,28 @@
 # Generated from charactermap.pro.
 
-#####################################################################
-## charactermap Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(charactermap LANGUAGES CXX)
 
-add_qt_executable(charactermap
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/charactermap"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/widgets/charactermap"
-    SOURCES
-        characterwidget.cpp characterwidget.h
-        main.cpp
-        mainwindow.cpp mainwindow.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(charactermap WIN32 MACOSX_BUNDLE
+    characterwidget.cpp characterwidget.h
+    main.cpp
+    mainwindow.cpp mainwindow.h
+)
+target_link_libraries(charactermap PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS charactermap
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

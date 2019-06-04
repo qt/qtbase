@@ -1,33 +1,28 @@
 # Generated from echowindow.pro.
 
-#####################################################################
-## echoplugin Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(echoplugin LANGUAGES CXX)
 
-add_qt_executable(echoplugin
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/echoplugin"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tools/echoplugin"
-    SOURCES
-        echointerface.h
-        echowindow.cpp echowindow.h
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(echopluginwindow WIN32 MACOSX_BUNDLE # special case: renamed target
+    echointerface.h
+    echowindow.cpp echowindow.h
+    main.cpp
+)
+target_link_libraries(echopluginwindow PUBLIC # special case: renamed target
+    Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:echowindow.pro:<NONE>:
-# CONFIG = "install_ok"
-# QMAKE_PROJECT_NAME = "echopluginwindow"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 3:.:echowindow.pro:CONFIG(debug,release OR debug):
-# DESTDIR = "../debug/"
-
-#### Keys ignored in scope 4:.:echowindow.pro:CONFIG(release,release OR debug):
-# DESTDIR = "../release/"
-
-#### Keys ignored in scope 5:.:echowindow.pro:else:
-# DESTDIR = "../"
+install(TARGETS echopluginwindow # special case: renamed target
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

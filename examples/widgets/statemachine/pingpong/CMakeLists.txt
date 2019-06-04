@@ -1,22 +1,26 @@
 # Generated from pingpong.pro.
 
-#####################################################################
-## pingpong Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(pingpong LANGUAGES CXX)
 
-add_qt_executable(pingpong
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/statemachine/pingpong"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/statemachine/pingpong"
-    SOURCES
-        main.cpp
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Core)
+
+add_executable(pingpong
+    main.cpp
+)
+target_link_libraries(pingpong PUBLIC
+    Qt::Core
 )
 
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:pingpong.pro:WIN32:
-# CONFIG = "console"
-
-#### Keys ignored in scope 3:.:pingpong.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"
+install(TARGETS pingpong
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

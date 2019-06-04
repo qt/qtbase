@@ -1,23 +1,28 @@
 # Generated from systray.pro.
 
-#####################################################################
-## systray Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(systray LANGUAGES CXX)
 
-add_qt_executable(systray
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/desktop/systray"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/desktop/systray"
-    SOURCES
-        main.cpp
-        window.cpp window.h
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(systray WIN32 MACOSX_BUNDLE
+    main.cpp
+    systray.qrc
+    window.cpp window.h
+)
+target_link_libraries(systray PUBLIC
+    Qt::Widgets
 )
 
-# Resources:
-add_qt_resource(systray "systray" PREFIX "/" FILES
-    images/bad.png
-    images/heart.png
-    images/trash.png)
-
+install(TARGETS systray
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

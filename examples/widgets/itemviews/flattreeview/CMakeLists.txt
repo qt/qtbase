@@ -1,15 +1,26 @@
 # Generated from flattreeview.pro.
 
-#####################################################################
-## flattreeview Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(flattreeview LANGUAGES CXX)
 
-add_qt_executable(flattreeview
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/flattreeview"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/itemviews/flattreeview"
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(flattreeview WIN32 MACOSX_BUNDLE
+    main.cpp
+)
+target_link_libraries(flattreeview PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS flattreeview
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

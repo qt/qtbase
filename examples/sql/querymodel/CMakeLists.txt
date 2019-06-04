@@ -1,19 +1,31 @@
 # Generated from querymodel.pro.
 
-#####################################################################
-## querymodel Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(querymodel LANGUAGES CXX)
 
-add_qt_executable(querymodel
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/querymodel"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/sql/querymodel"
-    SOURCES
-        ../connection.h
-        customsqlmodel.cpp customsqlmodel.h
-        editablesqlmodel.cpp editablesqlmodel.h
-        main.cpp
-    LIBRARIES
-        Qt::Sql
-        Qt::Widgets
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Sql)
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(querymodel WIN32 MACOSX_BUNDLE
+    ../connection.h
+    customsqlmodel.cpp customsqlmodel.h
+    editablesqlmodel.cpp editablesqlmodel.h
+    main.cpp
+)
+target_link_libraries(querymodel PUBLIC
+    Qt::Sql
+    Qt::Widgets
+)
+
+install(TARGETS querymodel
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

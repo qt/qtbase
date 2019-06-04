@@ -1,27 +1,28 @@
 # Generated from fontsampler.pro.
 
-#####################################################################
-## fontsampler Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(fontsampler LANGUAGES CXX)
 
-add_qt_executable(fontsampler
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/fontsampler"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/painting/fontsampler"
-    SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h
-        mainwindowbase.ui
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt5 COMPONENTS Widgets)
+
+add_executable(fontsampler WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    mainwindowbase.ui
+)
+target_link_libraries(fontsampler PUBLIC
+    Qt::Widgets
 )
 
-## Scopes:
-#####################################################################
-
-extend_target(fontsampler CONDITION TARGET Qt::PrintSupport
-    PUBLIC_LIBRARIES
-        Qt::PrintSupport
+install(TARGETS fontsampler
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
