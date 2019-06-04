@@ -1704,7 +1704,7 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
 
     cm_fh.write(')\n')
 
-    write_include_paths(cm_fh, scope, 'target_include_directories({}'.format(binary_name),
+    write_include_paths(cm_fh, scope, 'target_include_directories({} PUBLIC'.format(binary_name),
                         indent=0, footer=')')
     write_defines(cm_fh, scope, 'target_compile_definitions({} PUBLIC'.format(binary_name),
                   indent=0, footer=')')
