@@ -2036,6 +2036,12 @@ macro(qt_find_package)
         # all scopes.
         foreach(qt_find_package_target_name ${arg_PROVIDED_TARGETS})
             if(TARGET ${qt_find_package_target_name})
+                # Allow usage of aliased targets by setting properties on the actual target
+                get_target_property(aliased_target ${qt_find_package_target_name} ALIASED_TARGET)
+                if(aliased_target)
+                    set(qt_find_package_target_name ${aliased_target})
+                endif()
+
                 set_target_properties(${qt_find_package_target_name}
                                       PROPERTIES INTERFACE_QT_PACKAGE_NAME ${ARGV0})
                 if(package_version)
