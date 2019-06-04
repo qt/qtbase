@@ -1477,6 +1477,7 @@ function(add_qt_plugin target)
     set(export_name "${target}Targets")
     qt_install(TARGETS "${target}"
                EXPORT ${export_name}
+               RUNTIME DESTINATION "${install_directory}"
                LIBRARY DESTINATION "${install_directory}"
                ARCHIVE DESTINATION "${archive_install_directory}"
     )
