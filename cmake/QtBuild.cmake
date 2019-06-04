@@ -1240,6 +1240,12 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
     endif()
+
+    # We can't use the gold linker on android with the NDK, which is the default
+    # linker. To build our own target we will use the lld linker.
+    if (ANDROID)
+        target_link_options("${target}" PRIVATE -fuse-ld=lld)
+    endif()
 endfunction()
 
 function(qt_export_tools module_name)
