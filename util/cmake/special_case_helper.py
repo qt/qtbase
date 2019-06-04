@@ -146,7 +146,13 @@ def run_process_quiet(args_string: str, debug=False) -> None:
     if debug:
         print('Running command: "{}\"'.format(args_string))
     args_list = args_string.split()
-    subprocess.run(args_list, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        subprocess.run(args_list, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        # git merge with conflicts returns with exit code 1, but that's not
+        # an error for us.
+        if 'git merge' not in args_string:
+            print('Error while running: "{}"\n{}'.format(args_string, e.stdout))
 
 
 def does_file_have_conflict_markers(file_path: str, debug=False) -> bool:
@@ -228,19 +234,23 @@ class SpecialCaseHandler(object):
         try:
             # Create new repo with the "clean" CMakeLists.txt file.
             run_process_quiet('git init .', debug=self.debug)
+            run_process_quiet('git config user.name fake', debug=self.debug)
+            run_process_quiet('git config user.email fake@fake', debug=self.debug)
             copyfile_log(no_special_cases_file_path, txt, debug=self.debug)
             run_process_quiet('git add {}'.format(txt), debug=self.debug)
             run_process_quiet('git commit -m no_special', debug=self.debug)
+            run_process_quiet('git checkout -b no_special', debug=self.debug)
 
             # Copy the original "modified" file (with the special cases)
             # and make a new commit.
+            run_process_quiet('git checkout -b original', debug=self.debug)
             copyfile_log(original_file_path, txt, debug=self.debug)
             run_process_quiet('git add {}'.format(txt), debug=self.debug)
             run_process_quiet('git commit -m original', debug=self.debug)
 
             # Checkout the commit with "clean" file again, and create a
             # new branch.
-            run_process_quiet('git checkout HEAD~', debug=self.debug)
+            run_process_quiet('git checkout no_special', debug=self.debug)
             run_process_quiet('git checkout -b newly_generated', debug=self.debug)
 
             # Copy the new "modified" file and make a commit.
@@ -250,7 +260,7 @@ class SpecialCaseHandler(object):
 
             # Merge the "old" branch with modifications into the "new"
             # branch with the newly generated file.
-            run_process_quiet('git merge master', debug=self.debug)
+            run_process_quiet('git merge original', debug=self.debug)
 
             # Resolve some simple conflicts (just remove the markers)
             # for cases that don't need intervention.
