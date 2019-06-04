@@ -47,6 +47,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#define MAX_NUM_OF_WFD_BUFFERS 3
+#define MAX_NUM_OF_WFD_DEVICES 4
+#define MAX_NUM_OF_WFD_PIPELINES 16
+#define MAX_NUM_OF_WFD_PORT_MODES 64
+#define MAX_NUM_OF_WFD_PORTS 4
+
 class QEglFSOpenWFDIntegration : public QEglFSDeviceIntegration
 {
 public:
@@ -62,6 +68,10 @@ private:
     EGLNativeDisplayType mNativeDisplay;
     WFDDevice mDevice;
     WFDPort mPort;
+    WFDPipeline mPipeline;
+    WFDSource mSources[MAX_NUM_OF_WFD_BUFFERS] = {WFD_INVALID_HANDLE, WFD_INVALID_HANDLE, WFD_INVALID_HANDLE};
+    WFD_EGLImageType* mWFDEglImages[MAX_NUM_OF_WFD_BUFFERS];
+    WFDEGLImage mEGLImageHandles[MAX_NUM_OF_WFD_BUFFERS];
 };
 
 QT_END_NAMESPACE

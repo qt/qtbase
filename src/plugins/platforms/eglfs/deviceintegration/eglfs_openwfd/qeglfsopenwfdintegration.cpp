@@ -44,12 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define MAX_NUM_OF_WFD_BUFFERS 3
-#define MAX_NUM_OF_WFD_DEVICES 4
-#define MAX_NUM_OF_WFD_PIPELINES 16
-#define MAX_NUM_OF_WFD_PORT_MODES 64
-#define MAX_NUM_OF_WFD_PORTS 4
-
 typedef struct wfd_buffer {
     WFD_EGLImageType*   image;
     WFDSource           source;
@@ -78,8 +72,8 @@ void QEglFSOpenWFDIntegration::platformInit()
 
     // Create device
     WFDint dev_attribs[3] = {WFD_DEVICE_CLIENT_TYPE,
-                              WFD_CLIENT_ID_CLUSTER,
-                              WFD_NONE};
+                             WFD_CLIENT_ID_CLUSTER,
+                             WFD_NONE};
 
     bool ok;
     WFDint clientType = qgetenv("QT_OPENWFD_CLIENT_ID").toInt(&ok, 16);
@@ -123,6 +117,52 @@ void QEglFSOpenWFDIntegration::platformInit()
     eError = wfdGetError(mDevice);
     if (WFD_ERROR_NONE != eError)
         qFatal("Failed to power on wfd port");
+
+    // Get list of pipelines
+    WFDint numPipelines = wfdEnumeratePipelines(mDevice, nullptr, 0, nullptr);
+    WFDint pipelineIds[MAX_NUM_OF_WFD_PIPELINES];
+    wfdEnumeratePipelines(mDevice, pipelineIds, numPipelines, nullptr);
+
+    WFDint pipelineId = qgetenv("QT_OPENWFD_PIPELINE_ID").toInt(&ok);
+
+    if (!ok)
+        pipelineId = pipelineIds[0];
+
+    mPipeline = wfdCreatePipeline(mDevice, pipelineId, nullptr);
+    if (WFD_INVALID_HANDLE == mPipeline)
+        qFatal("Failed to create wfd pipeline");
+
+    wfdSetPipelineAttribi(mDevice, mPipeline, WFD_PIPELINE_TRANSPARENCY_ENABLE,
+                          (WFD_TRANSPARENCY_SOURCE_ALPHA|WFD_TRANSPARENCY_GLOBAL_ALPHA));
+
+    eError = wfdGetError(mDevice);
+    if (WFD_ERROR_NONE != eError)
+        qFatal("Failed to set WFD_PIPELINE_TRANSPARENCY_ENABLE");
+
+    wfdSetPipelineAttribi(mDevice, mPipeline, WFD_PIPELINE_GLOBAL_ALPHA, 255);
+    eError = wfdGetError(mDevice);
+    if (WFD_ERROR_NONE != eError)
+        qFatal("Failed to set WFD_PIPELINE_GLOBAL_ALPHA");
+
+    wfdBindPipelineToPort(mDevice, mPort, mPipeline);
+    eError = wfdGetError(mDevice);
+    if (WFD_ERROR_NONE != eError)
+        qFatal("Failed to bind port to pipeline");
+
+
+    for (int i = 0; i < MAX_NUM_OF_WFD_BUFFERS; i++) {
+        wfdCreateWFDEGLImages(mDevice, mScreenSize.width(), mScreenSize.height(),
+                              WFD_FORMAT_RGBA8888, WFD_USAGE_OPENGL_ES2 | WFD_USAGE_DISPLAY,
+                              1, &(mEGLImageHandles[i]), 0);
+
+        mWFDEglImages[i] = (WFD_EGLImageType *)(mEGLImageHandles[i]);
+        if (WFD_INVALID_HANDLE == mWFDEglImages[i])
+            qFatal("Failed to create WDFEGLImages");
+
+        mSources[i] = wfdCreateSourceFromImage(mDevice, mPipeline, mEGLImageHandles[i], nullptr);
+        if (WFD_INVALID_HANDLE == mSources[i])
+            qFatal("Failed to create source from EGLImage");
+    }
 }
 
 QSize QEglFSOpenWFDIntegration::screenSize() const
@@ -142,79 +182,34 @@ EGLNativeWindowType QEglFSOpenWFDIntegration::createNativeWindow(QPlatformWindow
     Q_UNUSED(window);
     Q_UNUSED(format);
 
-    // Get list of pipelines
-    WFDint numPipelines = wfdEnumeratePipelines(mDevice, nullptr, 0, nullptr);
+    // Create native window
+    wfd_window_t* nativeWindow = (wfd_window_t*)malloc(sizeof(wfd_window_t));
+    if (nullptr == nativeWindow)
+        qFatal("Failed to allocate memory for native window");
 
-    WFDint pipelineIds[MAX_NUM_OF_WFD_PIPELINES];
-    wfdEnumeratePipelines(mDevice, pipelineIds, numPipelines, nullptr);
+    nativeWindow->dev = mDevice;
+    nativeWindow->port = mPort;
+    nativeWindow->pipeline = mPipeline;
+    nativeWindow->numBuffers = MAX_NUM_OF_WFD_BUFFERS;
 
-    bool ok;
-    WFDint pipelineId = qgetenv("QT_OPENWFD_PIPELINE_ID").toInt(&ok);
-
-    if (!ok)
-        pipelineId = pipelineIds[0];
-
-    WFDPipeline pipeline = wfdCreatePipeline(mDevice, pipelineId, nullptr);
-    if (WFD_INVALID_HANDLE == pipeline)
-        qFatal("Failed to create wfd pipeline");
-
-    wfdSetPipelineAttribi(mDevice, pipeline, WFD_PIPELINE_TRANSPARENCY_ENABLE,
-                          (WFD_TRANSPARENCY_SOURCE_ALPHA|WFD_TRANSPARENCY_GLOBAL_ALPHA));
-
-    WFDErrorCode eError = wfdGetError(mDevice);
-    if (WFD_ERROR_NONE != eError)
-        qFatal("Failed to set WFD_PIPELINE_TRANSPARENCY_ENABLE");
-
-    wfdSetPipelineAttribi(mDevice, pipeline, WFD_PIPELINE_GLOBAL_ALPHA, 255);
-    eError = wfdGetError(mDevice);
-    if (WFD_ERROR_NONE != eError)
-        qFatal("Failed to set WFD_PIPELINE_GLOBAL_ALPHA");
-
-    wfdBindPipelineToPort(mDevice, mPort, pipeline);
-    eError = wfdGetError(mDevice);
-    if (WFD_ERROR_NONE != eError)
-        qFatal("Failed to bind port to pipeline");
-
-    // Create buffers
-    WFDSource source[MAX_NUM_OF_WFD_BUFFERS] = {WFD_INVALID_HANDLE, WFD_INVALID_HANDLE,
-                                                WFD_INVALID_HANDLE};
-    WFDEGLImage eglImageHandles[MAX_NUM_OF_WFD_BUFFERS];
-    WFD_EGLImageType* wfdEglImages[MAX_NUM_OF_WFD_BUFFERS];
+    WFDErrorCode eError;
 
     for (int i = 0; i < MAX_NUM_OF_WFD_BUFFERS; i++) {
-        wfdCreateWFDEGLImages(mDevice, mScreenSize.width(), mScreenSize.height(),
-                              WFD_FORMAT_RGBA8888, WFD_USAGE_OPENGL_ES2 | WFD_USAGE_DISPLAY,
-                              1, &(eglImageHandles[i]), 0);
-
-        wfdEglImages[i] = (WFD_EGLImageType *)(eglImageHandles[i]);
-        if (WFD_INVALID_HANDLE == wfdEglImages[i])
-            qFatal("Failed to create WDFEGLImages");
-
-        source[i] = wfdCreateSourceFromImage(mDevice, pipeline, eglImageHandles[i], nullptr);
-        if (WFD_INVALID_HANDLE == source[i])
-            qFatal("Failed to create source from EGLImage");
+        nativeWindow->buffers[i].image  = mWFDEglImages[i];
+        nativeWindow->buffers[i].source = mSources[i];
+        wfdBindSourceToPipeline(nativeWindow->dev, nativeWindow->pipeline, nativeWindow->buffers[i].source , WFD_TRANSITION_AT_VSYNC, nullptr);
+        eError = wfdGetError(nativeWindow->dev);
+        if (WFD_ERROR_NONE != eError)
+        {
+            qFatal("wfdBindSourceToPipeline eError=0x%08x", eError);
+        }
     }
 
     // Commit port
     wfdDeviceCommit(mDevice, WFD_COMMIT_ENTIRE_PORT, mPort);
     eError = wfdGetError(mDevice);
     if (WFD_ERROR_NONE != eError)
-            qFatal("Failed to commit port");
-
-    // Create native window
-    wfd_window_t* nativeWindow = (wfd_window_t*)malloc(sizeof(wfd_window_t));
-    if (nullptr == nativeWindow)
-            qFatal("Failed to allocate memory for native window");
-
-    nativeWindow->dev = mDevice;
-    nativeWindow->port = mPort;
-    nativeWindow->pipeline = pipeline;
-    nativeWindow->numBuffers = MAX_NUM_OF_WFD_BUFFERS;
-
-    for (int i = 0; i < MAX_NUM_OF_WFD_BUFFERS; i++) {
-        nativeWindow->buffers[i].image  = wfdEglImages[i];
-        nativeWindow->buffers[i].source = source[i];
-    }
+        qFatal("Failed to commit port");
 
     return (EGLNativeWindowType)nativeWindow;
 }
@@ -231,6 +226,13 @@ QSurfaceFormat QEglFSOpenWFDIntegration::surfaceFormatFor(const QSurfaceFormat &
 
 void QEglFSOpenWFDIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
+    wfdBindSourceToPipeline(mDevice, ((wfd_window_t*)window)->pipeline, nullptr, WFD_TRANSITION_IMMEDIATE, nullptr);
+
+    for (int i = 0; i < MAX_NUM_OF_WFD_BUFFERS; i++) {
+        wfdDestroySource(mDevice, mSources[i]);
+        wfdDestroyWFDEGLImages(mDevice, 1, &mEGLImageHandles[i]);
+    }
+
     free((void*)window);
 }
 
