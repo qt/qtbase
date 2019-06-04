@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(Network
+    PLUGIN_TYPES bearer
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
         access/qhsts.cpp access/qhsts_p.h
@@ -56,7 +57,7 @@ add_qt_module(Network
         kernel
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB # special case
+        ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
 )
@@ -432,3 +433,4 @@ extend_target(Network CONDITION WIN32 LIBRARIES ws2_32) # special case: mkspecs/
 add_qt_docs(
     doc/qtnetwork.qdocconf
 )
+

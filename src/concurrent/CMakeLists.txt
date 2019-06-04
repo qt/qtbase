@@ -45,3 +45,4 @@ extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
 add_qt_docs(
     doc/qtconcurrent.qdocconf
 )
+

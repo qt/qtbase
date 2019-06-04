@@ -6,6 +6,7 @@
 
 add_qt_module(Widgets
     QMAKE_MODULE_CONFIG uic
+    PLUGIN_TYPES styles
     SOURCES
         itemviews/qfileiconprovider.cpp itemviews/qfileiconprovider.h itemviews/qfileiconprovider_p.h
         kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
@@ -800,3 +801,4 @@ qt_create_tracepoints(Widgets qtwidgets.tracepoints)
 add_qt_docs(
     doc/qtwidgets.qdocconf
 )
+

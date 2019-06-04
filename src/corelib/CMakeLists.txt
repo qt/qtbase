@@ -311,6 +311,7 @@ add_qt_simd_part(Core SIMD mips_dsp
 )
 
 
+
 #### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
 # ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroid.jar"
 # ANDROID_LIB_DEPENDENCIES = "plugins/platforms/android/libqtforandroid.so"
@@ -1074,3 +1075,4 @@ qt_create_tracepoints(Core qtcore.tracepoints)
 add_qt_docs(
     doc/qtcore.qdocconf
 )
+

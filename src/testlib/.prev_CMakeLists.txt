@@ -139,3 +139,4 @@ extend_target(Test CONDITION ((APPLE_OSX) AND (OFF AND NOT lessThan(QMAKE_XCODE_
 add_qt_docs(
     doc/qttestlib.qdocconf
 )
+

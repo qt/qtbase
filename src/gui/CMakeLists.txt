@@ -39,16 +39,7 @@ endif()
 # special case end
 
 add_qt_module(Gui
-    PLUGIN_TYPES
-        platforms
-        platforms/darwin
-        xcbglintegrations
-        platformthemes
-        platforminputcontexts
-        generic
-        iconengines
-        imageformats
-        egldeviceintegrations
+    PLUGIN_TYPES platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network # special case:
     SOURCES
@@ -252,7 +243,7 @@ add_qt_module(Gui
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}" # special case
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB # special case
+        ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
 )
@@ -277,17 +268,20 @@ add_qt_simd_part(Gui SIMD sse2
         painting/qdrawhelper_sse2.cpp
 )
 
+
 add_qt_simd_part(Gui SIMD ssse3
     SOURCES
         image/qimage_ssse3.cpp
         painting/qdrawhelper_ssse3.cpp
 )
 
+
 add_qt_simd_part(Gui SIMD sse4_1
     SOURCES
         painting/qdrawhelper_sse4.cpp
         painting/qimagescale_sse4.cpp
 )
+
 
 add_qt_simd_part(Gui SIMD neon
     SOURCES
@@ -296,12 +290,14 @@ add_qt_simd_part(Gui SIMD neon
         painting/qimagescale_neon.cpp
 )
 
+
 add_qt_simd_part(Gui SIMD mips_dsp
     SOURCES
         painting/qdrawhelper_mips_dsp.cpp painting/qdrawhelper_mips_dsp_p.h
         painting/qdrawhelper_mips_dsp_asm.S
         painting/qt_mips_asm_dsp_p.h
 )
+
 
 add_qt_simd_part(Gui SIMD mips_dspr2
     SOURCES
@@ -327,6 +323,7 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 # special case end
 
 
+
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
 # CONFIG = "simd" "optimize_full" "qt_tracepoints"
 # MODULE_PLUGIN_TYPES = "platforms" "platforms/darwin" "xcbglintegrations" "platformthemes" "platforminputcontexts" "generic" "iconengines" "imageformats" "egldeviceintegrations"
@@ -337,7 +334,53 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:gui.pro:qtConfig(opengl._x_):
+# special case begin
+# With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
+# acted like WrapOpenGL: direct linkage against either libGLESv2 or
+# libGL, depending on the opengl _feature_. This is done by hand now
+# here (where the feature is available).
+# DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
+# available until the add_qt_module call.
+qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
+# special case end
+
+extend_target(Gui CONDITION QT_FEATURE_opengl
+    SOURCES
+        kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
+        kernel/qopenglwindow.cpp kernel/qopenglwindow.h
+        kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
+        opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
+        opengl/qopengl2pexvertexarray.cpp opengl/qopengl2pexvertexarray_p.h
+        opengl/qopenglbuffer.cpp opengl/qopenglbuffer.h
+        opengl/qopenglcustomshaderstage.cpp opengl/qopenglcustomshaderstage_p.h
+        opengl/qopengldebug.cpp opengl/qopengldebug.h
+        opengl/qopenglengineshadermanager.cpp opengl/qopenglengineshadermanager_p.h
+        opengl/qopenglengineshadersource_p.h
+        opengl/qopenglextensions_p.h
+        opengl/qopenglextrafunctions.h
+        opengl/qopenglframebufferobject.cpp opengl/qopenglframebufferobject.h opengl/qopenglframebufferobject_p.h
+        opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
+        opengl/qopenglgradientcache.cpp opengl/qopenglgradientcache_p.h
+        opengl/qopenglpaintdevice.cpp opengl/qopenglpaintdevice.h opengl/qopenglpaintdevice_p.h
+        opengl/qopenglpaintengine.cpp opengl/qopenglpaintengine_p.h
+        opengl/qopenglpixeltransferoptions.cpp opengl/qopenglpixeltransferoptions.h
+        opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
+        opengl/qopenglshadercache_p.h
+        opengl/qopenglshaderprogram.cpp opengl/qopenglshaderprogram.h
+        opengl/qopengltexture.cpp opengl/qopengltexture.h opengl/qopengltexture_p.h
+        opengl/qopengltextureblitter.cpp opengl/qopengltextureblitter.h
+        opengl/qopengltexturecache.cpp opengl/qopengltexturecache_p.h
+        opengl/qopengltextureglyphcache.cpp opengl/qopengltextureglyphcache_p.h
+        opengl/qopengltexturehelper.cpp opengl/qopengltexturehelper_p.h
+        opengl/qopengltextureuploader.cpp opengl/qopengltextureuploader_p.h
+        opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
+        opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
+        opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
+    LIBRARIES # special case
+        WrapOpenGL # special case
+)
+
+#### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:
 # MODULE_CONFIG = "opengl"
 
 #### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
@@ -436,52 +479,6 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
 
-# special case begin
-# With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
-# acted like WrapOpenGL: direct linkage against either libGLESv2 or
-# libGL, depending on the opengl _feature_. This is done by hand now
-# here (where the feature is available).
-# DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
-# available until the add_qt_module call.
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
-# special case end
-
-extend_target(Gui CONDITION QT_FEATURE_opengl
-    SOURCES
-        kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
-        kernel/qopenglwindow.cpp kernel/qopenglwindow.h
-        kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
-        opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
-        opengl/qopengl2pexvertexarray.cpp opengl/qopengl2pexvertexarray_p.h
-        opengl/qopenglbuffer.cpp opengl/qopenglbuffer.h
-        opengl/qopenglcustomshaderstage.cpp opengl/qopenglcustomshaderstage_p.h
-        opengl/qopengldebug.cpp opengl/qopengldebug.h
-        opengl/qopenglengineshadermanager.cpp opengl/qopenglengineshadermanager_p.h
-        opengl/qopenglengineshadersource_p.h
-        opengl/qopenglextensions_p.h
-        opengl/qopenglextrafunctions.h
-        opengl/qopenglframebufferobject.cpp opengl/qopenglframebufferobject.h opengl/qopenglframebufferobject_p.h
-        opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
-        opengl/qopenglgradientcache.cpp opengl/qopenglgradientcache_p.h
-        opengl/qopenglpaintdevice.cpp opengl/qopenglpaintdevice.h opengl/qopenglpaintdevice_p.h
-        opengl/qopenglpaintengine.cpp opengl/qopenglpaintengine_p.h
-        opengl/qopenglpixeltransferoptions.cpp opengl/qopenglpixeltransferoptions.h
-        opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
-        opengl/qopenglshadercache_p.h
-        opengl/qopenglshaderprogram.cpp opengl/qopenglshaderprogram.h
-        opengl/qopengltexture.cpp opengl/qopengltexture.h opengl/qopengltexture_p.h
-        opengl/qopengltextureblitter.cpp opengl/qopengltextureblitter.h
-        opengl/qopengltexturecache.cpp opengl/qopengltexturecache_p.h
-        opengl/qopengltextureglyphcache.cpp opengl/qopengltextureglyphcache_p.h
-        opengl/qopengltexturehelper.cpp opengl/qopengltexturehelper_p.h
-        opengl/qopengltextureuploader.cpp opengl/qopengltextureuploader_p.h
-        opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
-        opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
-        opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
-    LIBRARIES # special case
-        WrapOpenGL # special case
-)
-
 extend_target(Gui CONDITION QT_FEATURE_movie
     SOURCES
         image/qmovie.cpp image/qmovie.h
@@ -542,7 +539,7 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-# extend_target(Gui CONDITION GCC AND QT_GCC_MAJOR_VERSION___equals___5 ... # special case:
+# extend_target(Gui CONDITION GCC AND (QT_COMPILER_VERSION_MAJOR STREQUAL 5) ... # special case: remove
 
 #### Keys ignored in scope 50:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
@@ -686,3 +683,4 @@ qt_create_tracepoints(Gui qtgui.tracepoints)
 add_qt_docs(
     doc/qtgui.qdocconf
 )
+

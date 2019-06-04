@@ -64,3 +64,4 @@ extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
 add_qt_docs(
     doc/qtopengl.qdocconf
 )
+

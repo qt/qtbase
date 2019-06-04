@@ -122,3 +122,4 @@ extend_target(Test CONDITION APPLE_OSX
 add_qt_docs(
     doc/qttestlib.qdocconf
 )
+

@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(PrintSupport
+    PLUGIN_TYPES printsupport
     SOURCES
         kernel/qpaintengine_alpha.cpp kernel/qpaintengine_alpha_p.h
         kernel/qplatformprintdevice.cpp kernel/qplatformprintdevice.h
@@ -153,3 +154,4 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog
 add_qt_docs(
     doc/qtprintsupport.qdocconf
 )
+
