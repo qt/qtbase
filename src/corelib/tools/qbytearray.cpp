@@ -1439,7 +1439,7 @@ QByteArray &QByteArray::operator=(const char *str)
 
     \note Before Qt 5.14 it was possible to use this operator to access
     a character at an out-of-bounds position in the byte array, and
-    then assign to such position, causing the byte array to be
+    then assign to such a position, causing the byte array to be
     automatically resized. Furthermore, assigning a value to the
     returned QByteRef would cause a detach of the byte array, even if the
     byte array has been copied in the meanwhile (and the QByteRef kept
