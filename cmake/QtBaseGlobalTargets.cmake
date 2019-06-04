@@ -117,6 +117,8 @@ qt_copy_or_install(FILES
                    cmake/QtModuleDependencies.cmake.in
                    cmake/QtModuleToolsDependencies.cmake.in
                    cmake/QtModuleToolsConfig.cmake.in
+                   cmake/QtPluginConfig.cmake.in
+                   cmake/QtPluginDependencies.cmake.in
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
