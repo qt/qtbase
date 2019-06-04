@@ -1125,7 +1125,7 @@ def write_list(cm_fh: typing.IO[str], entries: typing.List[str],
     for s in sort_sources(entries):
         cm_fh.write('{}{}{}\n'.format(ind, extra_indent, s))
     if footer:
-        cm_fh.write('{}{}'.format(ind, footer))
+        cm_fh.write('{}{}\n'.format(ind, footer))
 
 
 def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
