@@ -151,7 +151,7 @@ extend_target(Network CONDITION UNIX
         socket/qnet_unix_p.h
 )
 
-extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY
+extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY AND NOT ANDROID
     SOURCES
         kernel/qdnslookup_unix.cpp
 )
@@ -161,12 +161,6 @@ extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX
         ${CMAKE_DL_LIBS}
 )
 
-# special case begin
-# Do not add this to android!
-extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY AND NOT ANDROID
-    SOURCES
-        kernel/qdnslookup_unix.cpp
-)
 # special case end
 
 extend_target(Network CONDITION QT_FEATURE_linux_netlink AND UNIX
@@ -181,7 +175,6 @@ extend_target(Network CONDITION UNIX AND NOT QT_FEATURE_linux_netlink
 
 extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
     SOURCES
-        # kernel/qdnslookup_unix.cpp # special case: No more need to remove this
         kernel/qdnslookup_android.cpp
 )
 
