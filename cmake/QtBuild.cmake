@@ -1051,10 +1051,6 @@ function(add_qt_module target)
 
     qt_autogen_tools_initial_setup(${target})
 
-    if(FEATURE_largefile)
-        set(largefile_defines "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
-    endif()
-
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         PUBLIC_INCLUDE_DIRECTORIES
@@ -1079,7 +1075,6 @@ function(add_qt_module target)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
-            "${largefile_defines}"
             QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
@@ -1102,6 +1097,9 @@ function(add_qt_module target)
         # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.
         # It's set for every module being built, but it's not propagated to user apps.
         target_compile_definitions("${target}" PRIVATE _USE_MATH_DEFINES)
+    endif()
+    if(FEATURE_largefile)
+        target_compile_definitions("${target}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
     endif()
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
@@ -1439,6 +1437,10 @@ function(add_qt_plugin target)
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
+    if(FEATURE_largefile)
+        target_compile_definitions("${target}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+    endif()
+
 
     set(qt_libs_private "")
     foreach(it ${QT_KNOWN_MODULES})
@@ -1549,6 +1551,10 @@ function(add_qt_executable name)
         WIN32_EXECUTABLE "${arg_GUI}"
         MACOSX_BUNDLE "${arg_GUI}"
     )
+    if(FEATURE_largefile)
+        target_compile_definitions("${name}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+    endif()
+
 
     if(WIN32)
         # Workaround for not having ported the winmain / qtmain static library
