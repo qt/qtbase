@@ -1140,10 +1140,10 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
 
 
 def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
-                                indent: int = 0, footer: str = ''):
+                                indent: int = 0, footer: str = '', extraKeys: typing.List[str]):
     write_source_file_list(cm_fh, scope, header,
-                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'],
-                           indent)
+                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'] + extraKeys,
+                           indent, footer=footer)
 
 
 def write_defines(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
@@ -1153,21 +1153,21 @@ def write_defines(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
     defines = [d.replace('=\\\\\\"$$PWD/\\\\\\"',
                          '="${CMAKE_CURRENT_SOURCE_DIR}/"') for d in defines]
 
-    write_list(cm_fh, defines, cmake_parameter, indent)
+    write_list(cm_fh, defines, cmake_parameter, indent, footer=footer)
 
 
 def write_include_paths(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
                         indent: int = 0, footer: str = ''):
     includes = [i.rstrip('/') or ('/') for i in scope.get_files('INCLUDEPATH')]
 
-    write_list(cm_fh, includes, cmake_parameter, indent)
+    write_list(cm_fh, includes, cmake_parameter, indent, footer=footer)
 
 
 def write_compile_options(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
                           indent: int = 0, footer: str = ''):
     compile_options = [d for d in scope.expand('QMAKE_CXXFLAGS') if not d.startswith('-D')]
 
-    write_list(cm_fh, compile_options, cmake_parameter, indent)
+    write_list(cm_fh, compile_options, cmake_parameter, indent, footer=footer)
 
 
 def write_library_section(cm_fh: typing.IO[str], scope: Scope, *,
@@ -1700,13 +1700,13 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
     if gui:
         add_executable += ' WIN32 MACOSX_BUNDLE'
 
-    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0)
+    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0, extraKeys = ['RESOURCES'])
 
     cm_fh.write(')\n')
 
     write_include_paths(cm_fh, scope, 'target_include_directories({}'.format(binary_name),
                         indent=0, footer=')')
-    write_defines(cm_fh, scope, 'target_compile_definitions({}'.format(binary_name),
+    write_defines(cm_fh, scope, 'target_compile_definitions({} PUBLIC'.format(binary_name),
                   indent=0, footer=')')
     write_list(cm_fh, private_libs, '', indent=indent,
                header='target_link_libraries({} PRIVATE\n'.format(binary_name), footer=')')
