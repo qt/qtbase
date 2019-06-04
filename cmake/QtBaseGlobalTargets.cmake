@@ -11,11 +11,11 @@ target_include_directories(Platform
 target_compile_definitions(Platform INTERFACE ${QT_PLATFORM_DEFINITIONS})
 
 
-# When building on android we need to link against their logging and C library
+# When building on android we need to link against the logging library
 # in order to satisfy linker dependencies. Both of these libraries are part of
 # the NDK.
 if (ANDROID)
-    target_link_libraries(Platform INTERFACE log c)
+    target_link_libraries(Platform INTERFACE log)
 endif()
 
 set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
