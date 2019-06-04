@@ -142,6 +142,8 @@ function(qt_evaluate_config_expression resultVar)
             list(APPEND result ${member})
         endif()
     endforeach()
+    # The 'TARGET Gui' case is handled by qt_evaluate_to_boolean, by passing those tokens verbatim
+    # to if().
 
     if("${result}" STREQUAL "")
         set(result ON)
