@@ -1,24 +1,24 @@
-# Generated from singleskip.pro.
+# Generated from faildatatype.pro.
 
 #####################################################################
-## singleskip Binary:
+## faildatatype Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+add_qt_executable(faildatatype
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI
     SOURCES
-        tst_singleskip.cpp
+        tst_faildatatype.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:singleskip.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:faildatatype.pro:<TRUE>:
 # CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:singleskip.pro:APPLE_OSX:
+#### Keys ignored in scope 2:.:.:faildatatype.pro:APPLE:
 # CONFIG = "-app_bundle"

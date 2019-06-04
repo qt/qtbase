@@ -1,1 +1,18 @@
-add_qt_test(tst_deleteLater_noApp SOURCES tst_deleteLater_noApp.cpp)
+# Generated from deleteLater_noApp.pro.
+
+#####################################################################
+## tst_deleteLater_noApp Binary:
+#####################################################################
+
+add_qt_executable(tst_deleteLater_noApp
+    NO_INSTALL # special case
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    GUI
+    SOURCES
+        tst_deleteLater_noApp.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:deleteLater_noApp.pro:<TRUE>:
+# CONFIG = "-app_bundle" "-debug_and_release_target"

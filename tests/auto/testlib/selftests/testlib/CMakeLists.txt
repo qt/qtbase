@@ -1,24 +1,24 @@
-# Generated from singleskip.pro.
+# Generated from testlib.pro.
 
 #####################################################################
-## singleskip Binary:
+## testlib Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+add_qt_executable(testlib
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI
     SOURCES
-        tst_singleskip.cpp
+        tst_testlib.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:singleskip.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:
 # CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:singleskip.pro:APPLE_OSX:
+#### Keys ignored in scope 2:.:.:testlib.pro:APPLE:
 # CONFIG = "-app_bundle"

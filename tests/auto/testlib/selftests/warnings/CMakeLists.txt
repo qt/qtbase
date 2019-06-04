@@ -1,1 +1,24 @@
-add_qt_test(warnings SOURCES tst_warnings.cpp)
+# Generated from warnings.pro.
+
+#####################################################################
+## warnings Binary:
+#####################################################################
+
+add_qt_executable(warnings
+    NO_INSTALL # special case
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    GUI
+    SOURCES
+        tst_warnings.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:warnings.pro:<TRUE>:
+# CONFIG = "-debug_and_release_target"
+
+## Scopes:
+#####################################################################
+
+#### Keys ignored in scope 2:.:.:warnings.pro:APPLE_OSX:
+# CONFIG = "-app_bundle"

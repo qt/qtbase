@@ -1,24 +1,24 @@
-# Generated from singleskip.pro.
+# Generated from verbose1.pro.
 
 #####################################################################
-## singleskip Binary:
+## verbose1 Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+add_qt_executable(verbose1
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI
     SOURCES
-        tst_singleskip.cpp
+        ../counting/tst_counting.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:singleskip.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:verbose1.pro:<TRUE>:
 # CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:singleskip.pro:APPLE_OSX:
+#### Keys ignored in scope 2:.:.:verbose1.pro:APPLE_OSX:
 # CONFIG = "-app_bundle"

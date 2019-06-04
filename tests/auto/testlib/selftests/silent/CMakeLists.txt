@@ -1,24 +1,26 @@
-# Generated from singleskip.pro.
+# Generated from silent.pro.
 
 #####################################################################
-## singleskip Binary:
+## silent Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+add_qt_executable(silent
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI
     SOURCES
-        tst_singleskip.cpp
+        tst_silent.cpp
+    LIBRARIES
+        Qt::TestPrivate
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:singleskip.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:silent.pro:<TRUE>:
 # CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:singleskip.pro:APPLE_OSX:
+#### Keys ignored in scope 2:.:.:silent.pro:APPLE_OSX:
 # CONFIG = "-app_bundle"

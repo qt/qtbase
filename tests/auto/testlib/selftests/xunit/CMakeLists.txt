@@ -1,1 +1,24 @@
-add_qt_test(xunit SOURCES tst_xunit.cpp)
+# Generated from xunit.pro.
+
+#####################################################################
+## xunit Binary:
+#####################################################################
+
+add_qt_executable(xunit
+    NO_INSTALL # special case
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    GUI
+    SOURCES
+        tst_xunit.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:xunit.pro:<TRUE>:
+# CONFIG = "-debug_and_release_target"
+
+## Scopes:
+#####################################################################
+
+#### Keys ignored in scope 2:.:.:xunit.pro:APPLE_OSX:
+# CONFIG = "-app_bundle"

@@ -1,24 +1,29 @@
-# Generated from singleskip.pro.
+# Generated from findtestdata.pro.
 
 #####################################################################
-## singleskip Binary:
+## findtestdata Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+add_qt_executable(findtestdata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI
     SOURCES
-        tst_singleskip.cpp
+        findtestdata.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:singleskip.pro:<TRUE>:
+# Resources:
+add_qt_resource(findtestdata "findtestdata" PREFIX "/qt/etc/" FILES
+    qt.conf)
+
+
+#### Keys ignored in scope 1:.:.:findtestdata.pro:<TRUE>:
 # CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:singleskip.pro:APPLE_OSX:
+#### Keys ignored in scope 2:.:.:findtestdata.pro:APPLE_OSX:
 # CONFIG = "-app_bundle"

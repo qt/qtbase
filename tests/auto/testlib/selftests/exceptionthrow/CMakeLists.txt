@@ -1,24 +1,24 @@
-# Generated from singleskip.pro.
+# Generated from exceptionthrow.pro.
 
 #####################################################################
-## singleskip Binary:
+## exceptionthrow Binary:
 #####################################################################
 
-add_qt_executable(singleskip
+add_qt_executable(exceptionthrow
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI
     SOURCES
-        tst_singleskip.cpp
+        tst_exceptionthrow.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:singleskip.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
+#### Keys ignored in scope 1:.:.:exceptionthrow.pro:<TRUE>:
+# CONFIG = "-debug_and_release_target" "exceptions"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:singleskip.pro:APPLE_OSX:
+#### Keys ignored in scope 2:.:.:exceptionthrow.pro:APPLE_OSX:
 # CONFIG = "-app_bundle"

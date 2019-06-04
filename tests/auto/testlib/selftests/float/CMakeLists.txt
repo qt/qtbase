@@ -1,1 +1,24 @@
-add_qt_test(float SOURCES tst_float.cpp)
+# Generated from float.pro.
+
+#####################################################################
+## float Binary:
+#####################################################################
+
+add_qt_executable(float
+    NO_INSTALL # special case
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    GUI
+    SOURCES
+        tst_float.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:float.pro:<TRUE>:
+# CONFIG = "-debug_and_release_target"
+
+## Scopes:
+#####################################################################
+
+#### Keys ignored in scope 2:.:.:float.pro:APPLE_OSX:
+# CONFIG = "-app_bundle"
