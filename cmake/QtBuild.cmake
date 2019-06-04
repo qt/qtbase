@@ -1051,6 +1051,10 @@ function(add_qt_module target)
 
     qt_autogen_tools_initial_setup(${target})
 
+    if(FEATURE_largefile)
+        set(largefile_defines "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+    endif()
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         PUBLIC_INCLUDE_DIRECTORIES
@@ -1075,6 +1079,7 @@ function(add_qt_module target)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
+            "${largefile_defines}"
             QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
