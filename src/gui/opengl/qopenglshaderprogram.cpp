@@ -3753,8 +3753,14 @@ QOpenGLProgramBinarySupportCheck::QOpenGLProgramBinarySupportCheck(QOpenGLContex
     if (ctx) {
         if (ctx->isOpenGLES()) {
             qCDebug(DBG_SHADER_CACHE, "OpenGL ES v%d context", ctx->format().majorVersion());
-            if (ctx->format().majorVersion() >= 3)
+            if (ctx->format().majorVersion() >= 3) {
                 m_supported = true;
+            } else {
+                const bool hasExt = ctx->hasExtension("GL_OES_get_program_binary");
+                qCDebug(DBG_SHADER_CACHE, "GL_OES_get_program_binary support = %d", hasExt);
+                if (hasExt)
+                    m_supported = true;
+            }
         } else {
             const bool hasExt = ctx->hasExtension("GL_ARB_get_program_binary");
             qCDebug(DBG_SHADER_CACHE, "GL_ARB_get_program_binary support = %d", hasExt);

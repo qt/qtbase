@@ -93,6 +93,12 @@ private:
         uint format;
     };
     QCache<QByteArray, MemCacheEntry> m_memCache;
+#if defined(QT_OPENGL_ES_2)
+    void (QOPENGLF_APIENTRYP programBinaryOES)(GLuint program, GLenum binaryFormat, const GLvoid *binary, GLsizei length);
+    void (QOPENGLF_APIENTRYP getProgramBinaryOES)(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, GLvoid *binary);
+    void initializeProgramBinaryOES(QOpenGLContext *context);
+    bool m_programBinaryOESInitialized = false;
+#endif
 };
 
 QT_END_NAMESPACE
