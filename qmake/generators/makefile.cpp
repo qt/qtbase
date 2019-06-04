@@ -199,7 +199,6 @@ MakefileGenerator::initOutPaths()
             ProStringList &inputs = project->values((*it2).toKey());
             for (ProStringList::Iterator input = inputs.begin(); input != inputs.end(); ++input) {
                 QString finp = fileFixify((*input).toQString(), FileFixifyFromOutdir);
-                *input = ProString(finp);
                 QString path = replaceExtraCompilerVariables(tmp_out, finp, QString(), NoShell);
                 path = Option::normalizePath(path);
                 int slash = path.lastIndexOf('/');
