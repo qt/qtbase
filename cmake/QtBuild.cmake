@@ -1368,7 +1368,7 @@ function(add_qt_plugin target)
     if(arg_STATIC)
         add_library("${target}" STATIC)
     else()
-        add_library("${target}")
+        add_library("${target}" MODULE)
     endif()
     qt_internal_add_target_aliases("${target}")
 
