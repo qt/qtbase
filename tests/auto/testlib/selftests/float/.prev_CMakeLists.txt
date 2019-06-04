@@ -1,0 +1,22 @@
+# Generated from float.pro.
+
+#####################################################################
+## float Binary:
+#####################################################################
+
+add_qt_executable(float
+    GUI
+    SOURCES
+        tst_float.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:float.pro:<TRUE>:
+# CONFIG = "-debug_and_release_target"
+
+## Scopes:
+#####################################################################
+
+#### Keys ignored in scope 2:.:.:float.pro:APPLE_OSX:
+# CONFIG = "-app_bundle"

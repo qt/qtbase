@@ -1,4 +1,7 @@
-# special case begin - The whole file is manually generated
+# Generated from selftests.pro.
+
+# special case begin
+# The whole file is written manually.
 
 if(NOT WINRT)
     add_subdirectory(assert)

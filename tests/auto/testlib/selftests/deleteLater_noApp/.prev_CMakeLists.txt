@@ -1,0 +1,16 @@
+# Generated from deleteLater_noApp.pro.
+
+#####################################################################
+## tst_deleteLater_noApp Binary:
+#####################################################################
+
+add_qt_executable(tst_deleteLater_noApp
+    GUI
+    SOURCES
+        tst_deleteLater_noApp.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:deleteLater_noApp.pro:<TRUE>:
+# CONFIG = "-app_bundle" "-debug_and_release_target"
