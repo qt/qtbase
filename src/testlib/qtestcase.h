@@ -213,8 +213,13 @@ do {\
     QTest::qWarn(static_cast<const char *>(msg), __FILE__, __LINE__)
 
 #ifdef QT_TESTCASE_BUILDDIR
+
+#ifndef QT_TESTCASE_SOURCEDIR
+#define QT_TESTCASE_SOURCEDIR nullptr
+#endif
+
 # define QFINDTESTDATA(basepath)\
-    QTest::qFindTestData(basepath, __FILE__, __LINE__, QT_TESTCASE_BUILDDIR)
+    QTest::qFindTestData(basepath, __FILE__, __LINE__, QT_TESTCASE_BUILDDIR, QT_TESTCASE_SOURCEDIR)
 #else
 # define QFINDTESTDATA(basepath)\
     QTest::qFindTestData(basepath, __FILE__, __LINE__)
@@ -309,8 +314,8 @@ namespace QTest
 #if QT_CONFIG(temporaryfile)
     Q_TESTLIB_EXPORT QSharedPointer<QTemporaryDir> qExtractTestData(const QString &dirName);
 #endif
-    Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = nullptr, int line = 0, const char* builddir = nullptr);
-    Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = nullptr, int line = 0, const char* builddir = nullptr);
+    Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = nullptr, int line = 0, const char* builddir = nullptr, const char* sourcedir = nullptr);
+    Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = nullptr, int line = 0, const char* builddir = nullptr, const char *sourcedir = nullptr);
 
     Q_TESTLIB_EXPORT void *qData(const char *tagName, int typeId);
     Q_TESTLIB_EXPORT void *qGlobalData(const char *tagName, int typeId);
