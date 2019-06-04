@@ -87,6 +87,7 @@ import re
 import os
 import subprocess
 import filecmp
+import time
 
 from shutil import copyfile
 from shutil import rmtree
@@ -142,7 +143,7 @@ def check_if_git_in_path() -> bool:
     return False
 
 
-def run_process_quiet(args_string: str, debug=False) -> None:
+def run_process_quiet(args_string: str, debug=False) -> bool:
     if debug:
         print('Running command: "{}\"'.format(args_string))
     args_list = args_string.split()
@@ -153,6 +154,8 @@ def run_process_quiet(args_string: str, debug=False) -> None:
         # an error for us.
         if 'git merge' not in args_string:
             print('Error while running: "{}"\n{}'.format(args_string, e.stdout))
+            return False
+    return True
 
 
 def does_file_have_conflict_markers(file_path: str, debug=False) -> bool:
@@ -289,7 +292,28 @@ class SpecialCaseHandler(object):
             # merge result, save the new "clean" file for future
             # regenerations.
             copyfile_log(self.generated_file_path, self.prev_file_path, debug=self.debug)
-            run_process_quiet("git add {}".format(self.prev_file_path), debug=self.debug)
+
+            # Attempt to git add until we succeed. It can fail when
+            # run_pro2cmake executes pro2cmake in multiple threads, and git
+            # has acquired the index lock.
+            success = False
+            failed_once = False
+            i = 0
+            while not success and i < 20:
+                success = run_process_quiet("git add {}".format(self.prev_file_path),
+                                            debug=self.debug)
+                if not success:
+                    failed_once = True
+                    i += 1
+                    time.sleep(0.1)
+
+                if failed_once and not success:
+                    print('Retrying git add, the index.lock was probably acquired.')
+            if failed_once and success:
+                print('git add succeeded.')
+            elif failed_once and not success:
+                print('git add failed. Make sure to git add {} yourself.'.format(
+                    self.prev_file_path))
 
     def handle_special_cases_helper(self) -> bool:
         """
