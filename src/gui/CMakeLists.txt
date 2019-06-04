@@ -7,6 +7,8 @@ set(OpenGL_GL_PREFERENCE GLVND) # special case:
 #####################################################################
 
 # special case begin
+qt_find_package(X11_XCB)
+
 if (QT_FEATURE_gui)
     if (WINRT)
         set(_default_platform "winrt")

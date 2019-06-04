@@ -8,6 +8,7 @@ qt_find_package(XKB)
 qt_find_package(PkgConfig)
 qt_find_package(WrapFreetype)
 qt_find_package(GLIB2)
+qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
 
 pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET) # special case
 # end special case:
@@ -118,6 +119,7 @@ extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
     PUBLIC_LIBRARIES
         X11::XCB
+        X11::X11 # special case
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xinput
@@ -160,7 +162,7 @@ extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
 
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xrender
     PUBLIC_LIBRARIES
-        PkgConfig::xrender
+        PkgConfig::XRender
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting

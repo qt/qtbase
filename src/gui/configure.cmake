@@ -100,7 +100,7 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XKB 0.4.1 PROVIDED_TARGETS XKB::XKB)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(XRender PROVIDED_TARGETS PkgConfig::xrender)
+    qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
 endif()
 
 
