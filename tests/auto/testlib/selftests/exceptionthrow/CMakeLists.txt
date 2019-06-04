@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_executable(exceptionthrow
+    EXCEPTIONS
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     GUI

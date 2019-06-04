@@ -1545,6 +1545,9 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     # Evaluate total condition of all scopes:
     recursive_evaluate_scope(scope)
 
+    if 'exceptions' in scope.get('CONFIG'):
+        extra_lines.append('EXCEPTIONS')
+
     # Get a flat list of all scopes but the main one:
     scopes = flatten_scopes(scope)
     total_scopes = len(scopes)

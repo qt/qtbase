@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(Concurrent
+    EXCEPTIONS
     SOURCES
         qtconcurrent_global.h
         qtconcurrentcompilertest.h

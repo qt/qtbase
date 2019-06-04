@@ -6,6 +6,7 @@
 
 add_qt_module(Test
     CONFIG_MODULE_NAME testlib # special case
+    EXCEPTIONS
     SOURCES
         qabstracttestlogger.cpp qabstracttestlogger_p.h
         qasciikey.cpp

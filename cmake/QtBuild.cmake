@@ -982,6 +982,21 @@ function(qt_internal_add_target_aliases target)
     endif()
 endfunction()
 
+# Sets the exceptions flags for the given target
+function(qt_internal_set_no_exceptions_flags target)
+    target_compile_definitions("${target}" PRIVATE "QT_NO_EXCEPTIONS")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        target_compile_options("${target}" PRIVATE "/wd4530 /wd4577")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        target_compile_options("${target}" PRIVATE "-fno-exceptions")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+        target_compile_options("${target}" PRIVATE "-fno-exceptions")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        target_compile_options("${target}" PRIVATE "-fno-exceptions")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+        target_compile_options("${target}" PRIVATE "-fno-exceptions")
+    endif()
+endfunction()
 
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
@@ -998,7 +1013,7 @@ function(add_qt_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS"
         "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG" ${ARGN})
 
@@ -1117,6 +1132,9 @@ function(add_qt_module target)
     endif()
     if(FEATURE_largefile)
         target_compile_definitions("${target}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+    endif()
+    if(NOT ${arg_EXCEPTIONS})
+        qt_internal_set_no_exceptions_flags("${target}")
     endif()
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
@@ -1355,7 +1373,7 @@ function(add_qt_plugin target)
 
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
-    qt_parse_all_arguments(arg "add_qt_plugin" "STATIC"
+    qt_parse_all_arguments(arg "add_qt_plugin" "STATIC;EXCEPTIONS"
         "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
         "${__default_private_args};${__default_public_args}" ${ARGN})
 
@@ -1447,6 +1465,9 @@ function(add_qt_plugin target)
     if(FEATURE_largefile)
         target_compile_definitions("${target}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
     endif()
+    if(NOT ${arg_EXCEPTIONS})
+        qt_internal_set_no_exceptions_flags("${target}")
+    endif()
 
 
     set(qt_libs_private "")
@@ -1512,7 +1533,7 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_QT;NO_INSTALL" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -1561,6 +1582,9 @@ function(add_qt_executable name)
     if(FEATURE_largefile)
         target_compile_definitions("${name}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
     endif()
+    if(NOT ${arg_EXCEPTIONS})
+        qt_internal_set_no_exceptions_flags("${name}")
+    endif()
 
 
     if(WIN32)
@@ -1579,10 +1603,15 @@ endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
 function(add_qt_test name)
-    qt_parse_all_arguments(arg "add_qt_test" "RUN_SERIAL" "" "${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_test" "RUN_SERIAL;EXCEPTIONS" "" "${__default_private_args}" ${ARGN})
     set(path "${CMAKE_CURRENT_BINARY_DIR}")
 
+    if (${arg_EXCEPTIONS})
+        set(EXCEPTIONS_TEXT "EXCEPTIONS")
+    endif()
+
     add_qt_executable("${name}"
+        ${EXCEPTIONS_TEXT}
         NO_INSTALL
         OUTPUT_DIRECTORY "${path}"
         SOURCES "${arg_SOURCES}"
