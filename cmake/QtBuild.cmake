@@ -1452,12 +1452,7 @@ function(add_qt_plugin target)
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         DEFINES
             ${arg_DEFINES}
-            QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
-            QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
-            QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
-            QT_BUILDING_QT
-            QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
             "${static_plugin_define}"
             QT_PLUGIN
