@@ -1,3 +1,10 @@
+# We can't create the same interface imported target multiple times, CMake will complain if we do
+# that. This can happen if the find_package call is done in multiple different subdirectories.
+if(TARGET WrapDoubleConversion::WrapDoubleConversion)
+    set(WrapDoubleConversion_FOUND ON)
+    return()
+endif()
+
 add_library(WrapDoubleConversion::WrapDoubleConversion INTERFACE IMPORTED)
 
 find_package(double-conversion)

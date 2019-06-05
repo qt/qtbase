@@ -1,3 +1,10 @@
+# We can't create the same interface imported target multiple times, CMake will complain if we do
+# that. This can happen if the find_package call is done in multiple different subdirectories.
+if(TARGET Atomic)
+    set(Atomic_FOUND ON)
+    return()
+endif()
+
 include(CheckCXXSourceCompiles)
 
 set (atomic_test_sources "#include <atomic>
