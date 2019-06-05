@@ -70,6 +70,12 @@ macro(qt_build_repo)
         add_subdirectory(src)
     endif()
 
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/CMakeLists.txt")
+        ## Decide whether tools will be built.
+        qt_check_if_tools_will_be_built()
+        add_subdirectory(tools)
+    endif()
+
     if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         find_package(Qt5 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test Xml)
         add_subdirectory(tests)
