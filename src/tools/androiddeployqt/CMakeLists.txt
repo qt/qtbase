@@ -1,0 +1,27 @@
+# Generated from androiddeployqt.pro.
+
+#####################################################################
+## androiddeployqt Binary:
+#####################################################################
+
+add_qt_executable(androiddeployqt
+    SOURCES
+        main.cpp
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
+        QT_NO_FOREACH
+)
+
+#### Keys ignored in scope 1:.:.:androiddeployqt.pro:<TRUE>:
+# CONFIG = "console"
+# _LOADED = "qt_app"
+# _OPTION = "host_build"
+
+## Scopes:
+#####################################################################
+
+extend_target(androiddeployqt CONDITION windows
+    COMPILE_OPTIONS
+        -U__STRICT_ANSI__
+)

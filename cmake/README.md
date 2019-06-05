@@ -131,9 +131,10 @@ Vcpkg for Android can be set up using the following steps:
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
   * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``arm-android``
   * Set the ``ANDROID_NDK_HOME`` environment variable to the path where you have installed the Android NDK.
+  * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
   * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl zstd``
 
-When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DVCPKG_TARGET_TRIPLET=$VCPKG_DEFAULT_TRIPLET -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21``
+When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DVCPKG_TARGET_TRIPLET=$VCPKG_DEFAULT_TRIPLET -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME``
 
 
 # Debugging CMake files

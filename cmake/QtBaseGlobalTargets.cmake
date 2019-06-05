@@ -111,6 +111,7 @@ qt_copy_or_install(FILES
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtFeature.cmake
                    cmake/QtPlatformSupport.cmake
+                   cmake/QtPlatformAndroid.cmake
                    cmake/QtPostProcess.cmake
                    cmake/QtSetup.cmake
                    cmake/QtModuleConfig.cmake.in

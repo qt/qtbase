@@ -56,3 +56,5 @@ endif()
 add_subdirectory(plugins)
 
 add_subdirectory(winmain)
+
+add_subdirectory(android)

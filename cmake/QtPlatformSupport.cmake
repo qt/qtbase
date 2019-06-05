@@ -79,3 +79,7 @@ endfunction()
 if(CMAKE_CXX_COMPILER_VERSION)
     qt_parse_version_string("${CMAKE_CXX_COMPILER_VERSION}" "QT_COMPILER_VERSION")
 endif()
+
+if(ANDROID)
+    include(QtPlatformAndroid)
+endif()
