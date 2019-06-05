@@ -1141,7 +1141,7 @@ def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
 
 def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
                                 indent: int = 0, footer: str = '',
-                                extra_keys: typing.Union[typing.List[str], None] = None):
+                                extra_keys: typing.Optional[typing.List[str]] = None):
     if extra_keys is None:
         extra_keys = []
     write_source_file_list(cm_fh, scope, header,
