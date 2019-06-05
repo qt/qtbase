@@ -75,13 +75,13 @@ int QInputDeviceManager::deviceCount(DeviceType type) const
 
 int QInputDeviceManagerPrivate::deviceCount(QInputDeviceManager::DeviceType type) const
 {
-    return m_deviceCount.value(type);
+    return m_deviceCount[type];
 }
 
 void QInputDeviceManagerPrivate::setDeviceCount(QInputDeviceManager::DeviceType type, int count)
 {
     Q_Q(QInputDeviceManager);
-    if (m_deviceCount.value(type) != count) {
+    if (m_deviceCount[type] != count) {
         m_deviceCount[type] = count;
         emit q->deviceListChanged(type);
     }
