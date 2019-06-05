@@ -176,6 +176,8 @@ _qt_library_map = [
     LibraryMapping('xkbcommon_support', 'Qt6', 'Qt::XkbCommonSupport', extra = ['COMPONENTS', 'XkbCommonSupport']),
     LibraryMapping('xmlpatterns', 'Qt6', 'Qt::XmlPatterns', extra = ['COMPONENTS', 'XmlPatterns']),
     LibraryMapping('xml', 'Qt6', 'Qt::Xml', extra = ['COMPONENTS', 'Xml']),
+    LibraryMapping('qmlworkerscript', 'Qt6', 'Qt::QmlWorkerScript', extra = ['COMPONENTS', 'QmlWorkerScript']),
+    LibraryMapping('quickparticles', 'Qt6', 'Qt::QuickParticles', extra = ['COMPONENTS', 'QuickParticles'])
     # qtzlib: No longer supported.
 ]
 

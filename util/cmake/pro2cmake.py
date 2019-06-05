@@ -1441,6 +1441,7 @@ def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
 
 
 def map_to_cmake_condition(condition: typing.Optional[str]) -> str:
+    condition = condition.replace("QTDIR_build", "QT_BUILDING_QT")
     condition = re.sub(r'\bQT_ARCH___equals___([a-zA-Z_0-9]*)',
                        r'(TEST_architecture_arch STREQUAL "\1")', condition or '')
     condition = re.sub(r'\bQT_ARCH___contains___([a-zA-Z_0-9]*)',
@@ -1489,7 +1490,6 @@ def write_extend_target(cm_fh: typing.IO[str], target: str,
     cm_fh.write(extend_scope)
 
     write_resources(cm_fh, target, scope, indent)
-
 
 def flatten_scopes(scope: Scope) -> typing.List[Scope]:
     result = [scope]  # type: typing.List[Scope]
@@ -1770,8 +1770,14 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
     extra = []
 
     plugin_type = scope.get_string('PLUGIN_TYPE')
+    is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
+    target_path = scope.get_string('TARGETPATH')
+
     if plugin_type:
         extra.append('TYPE {}'.format(plugin_type))
+    elif is_qml_plugin:
+        extra.append('TYPE {}'.format('qml_plugin'))
+        extra.append('QML_TARGET_PATH "{}"'.format(target_path))
 
     plugin_class_name = scope.get_string('PLUGIN_CLASS_NAME')
     if plugin_class_name:
@@ -1780,13 +1786,56 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
     write_main_part(cm_fh, plugin_name, 'Plugin', 'add_qt_plugin', scope,
                     indent=indent, extra_lines=extra, known_libraries={}, extra_keys=[])
 
+    if is_qml_plugin:
+        extra = []
+        extra.append('TARGET_PATH "{}"'.format(target_path))
+
+        write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
+
+
+def write_qml_plugin(cm_fh: typing.IO[str],
+                     target: str,
+                     scope: Scope, *,
+                     extra_lines: typing.List[str] = [],
+                     indent: int = 0,
+                     **kwargs: typing.Any):
+    # Collect other args if available
+    cxx_module = scope.get_string('CXX_MODULE')
+    if cxx_module:
+        extra_lines.append('CXX_MODULE "{}"'.format(cxx_module))
+    import_version = scope.get_string('IMPORT_VERSION')
+    if import_version:
+        import_version = import_version.replace("$$QT_MINOR_VERSION","${CMAKE_PROJECT_VERSION_MINOR}")
+        extra_lines.append('IMPORT_VERSION "{}"'.format(import_version))
+    import_name = scope.get_string('IMPORT_NAME')
+    if import_name:
+        extra_lines.append('IMPORT_NAME "{}"'.format(import_name))
+    plugindump_dep = scope.get_string('QML_PLUGINDUMP_DEPENDENCIES')
+    if plugindump_dep:
+        extra_lines.append('QML_PLUGINDUMP_DEPENDENCIES "{}"'.format(plugindump_dep))
+
+    cm_fh.write('\n{}{}({}\n'.format(spaces(indent), 'add_qml_module', target))
+    indent += 1
+    for extra_line in extra_lines:
+        cm_fh.write('{}{}\n'.format(spaces(indent), extra_line))
+
+    qml_files = scope.expand('QML_FILES')
+    if qml_files:
+        cm_fh.write('{}{}\n'.format(spaces(indent), 'QML_FILES'))
+        write_list(cm_fh, qml_files, '', indent=indent + 1)
+
+    # Footer:
+    indent -= 1
+    cm_fh.write('{})\n'.format(spaces(indent)))
+
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
                       indent: int = 0, is_example: bool=False) -> None:
     assert scope.TEMPLATE in ('app', 'lib')
 
     is_lib = scope.TEMPLATE == 'lib'
-    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED'))
+    is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
+    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED')) or is_qml_plugin
 
     if is_lib or 'qt_module' in scope.get('_LOADED'):
         assert not is_example

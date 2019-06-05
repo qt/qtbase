@@ -1455,10 +1455,19 @@ function(add_qt_plugin target)
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
     qt_parse_all_arguments(arg "add_qt_plugin" "STATIC;EXCEPTIONS"
-        "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
+        "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH"
         "${__default_private_args};${__default_public_args};DEFAULT_IF" ${ARGN})
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
+    set(install_directory_default "${INSTALL_PLUGINSDIR}/${arg_TYPE}")
+    set(archive_install_directory_default "${INSTALL_LIBDIR}/${arg_TYPE}")
+
+    if (arg_QML_TARGET_PATH)
+        set(target_path "${arg_QML_TARGET_PATH}")
+        set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${target_path}")
+        set(install_directory_default "${INSTALL_QMLDIR}/${target_path}")
+        set(archive_install_directory_default "${INSTALL_QMLDIR}/${target_path}")
+    endif()
 
     if ("x${arg_CLASS_NAME}" STREQUAL x)
         message(AUTHOR_WARNING "add_qt_plugin called without setting CLASS_NAME.")
@@ -1467,10 +1476,10 @@ function(add_qt_plugin target)
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
         "${output_directory_default}" output_directory)
     qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
-        "${INSTALL_PLUGINSDIR}/${arg_TYPE}" install_directory)
+        "${install_directory_default}" install_directory)
     qt_internal_check_directory_or_type(ARCHIVE_INSTALL_DIRECTORY
         "${arg_ARCHIVE_INSTALL_DIRECTORY}" "${arg_TYPE}"
-        "${INSTALL_LIBDIR}/${arg_TYPE}" archive_install_directory)
+        "${archive_install_directory_default}" archive_install_directory)
 
     if(arg_STATIC OR NOT BUILD_SHARED_LIBS)
         add_library("${target}" STATIC)
@@ -1614,6 +1623,135 @@ function(add_qt_plugin target)
     qt_internal_add_linker_version_script(${target})
 endfunction()
 
+# Generate custom ${target}_qmltypes target for Qml Plugins
+function(qt_add_qmltypes_target target)
+
+    # Do nothing when cross compiling
+    if (CMAKE_CROSSCOMPILING)
+        return()
+    endif()
+
+    qt_parse_all_arguments(arg "qt_generate_qmltypes"
+        ""
+        "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;CXX_MODULE;QML_PLUGINDUMP_DENDENCIES"
+        ""
+        ${ARGN})
+
+    # scan repos for qml repositories
+    foreach(repo IN LISTS QT_REPOS)
+        if (IS_DIRECTORY "${repo}/qml")
+            list(APPEND import_paths "${repo}/qml")
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES import_paths)
+    if (UNIX)
+        list(JOIN import_paths ":" import_paths_env)
+    else()
+        list(JOIN import_paths "\;" import_paths_env)
+    endif()
+
+    if(NOT arg_IMPORT_NAME)
+        string(REGEX REPLACE "\\.\\d+$" "" import_name ${arg_TARGET_PATH})
+    else()
+        set(import_name ${arg_IMPORT_NAME})
+    endif()
+
+    if(NOT arg_IMPORT_VERSION)
+        if(NOT arg_CXX_MODULE)
+            if (NOT ${CMAKE_PROJECT_VERSION_MAJOR} OR NOT ${CMAKE_PROJECT_VERSION_MINOR})
+                message(FATAL_ERROR "Please specify import version using IMPORT_VERSION")
+            endif()
+            set(import_version "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}")
+        else()
+            if(NOT TARGET arg_CXX_MODULE)
+                message(FATAL_ERROR "CXX_MODULE parameter must be a cmake target")
+            endif()
+
+            get_target_property(qt_major_version ${arg_CXX_MODULE} INTERFACE_QT_MAJOR_VERSION)
+            if (NOT qt_major_version)
+                message(FATAL_ERROR "CXX_MODULE(${arg_CXX_MODULE} is not a valid Qt module")
+            endif()
+
+            get_target_property(cxx_module_alias ${arg_CXX_MODULE} ALIASED_TARGET)
+            if (cxx_module_alias)
+                set(cxx_module_target ${cxx_module_alias})
+            else()
+                set(cxx_module_target ${arg_CXX_MODULE})
+            endif()
+
+            set(import_version "${${cxx_module_target}_VERSION_MAJOR}.${${cxx_module_target}_VERSION_MINOR}")
+        endif()
+    else()
+        set(import_version ${arg_IMPORT_VERSION})
+    endif()
+
+    get_target_property(source_dir ${target} SOURCE_DIR)
+
+    # qml1_target check is no longer required
+    set(qmltypes_command_args "-nonrelocatable")
+    if (NOT arg_QML_PLUGINDUMP_DENDENCIES AND EXISTS "${source_dir}/dependencies.json")
+        list(APPEND qmltypes_command_args "-dependencies" "${source_dir}/dependencies.json")
+    elseif(arg_QML_PLUGINDUMP_DENDENCIES)
+        list(APPEND qmltypes_command_args "-dependencies" "${arg_QML_PLUGINDUMP_DENDENCIES}")
+    endif()
+
+    string(REPLACE "/" "." import_name_arg ${import_name})
+
+    list(APPEND qmltypes_command_args "${import_name_arg}" "${import_version}")
+
+    add_custom_target(
+        "${target}_qmltypes"
+        DEPENDS qmlplugindump
+        COMMAND ${CMAKE_COMMAND} -E env "QML2_IMPORTPATH=${import_paths_env}"
+        $<TARGET_FILE:qmlplugindump> ${qmltypes_command_args} > "${source_dir}/plugins.qmltypes"
+        )
+endfunction()
+
+function(add_qml_module target)
+    qt_parse_all_arguments(arg "add_qml_module"
+        ""
+        "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;CXX_MODULE;QML_PLUGINDUMP_DENDENCIES"
+        "QML_FILES" ${ARGN})
+
+    if (NOT arg_TARGET_PATH)
+        message(FATAL_ERROR "add_qml_module called without a TARGET_PATH.")
+    endif()
+
+    qt_add_qmltypes_target(${target}
+        TARGET_PATH "${arg_TARGET_PATH}"
+        IMPORT_VERSION "${arg_IMPORT_VERSION}"
+        IMPORT_NAME "${arg_IMPORT_NAME}"
+        CXX_MODULE "${arg_CXX_MODULE}"
+        QML_PLUGINDUMP_DENDENCIES "${arg_QML_PLUGINDUMP_DENDENCIES}")
+
+    set(plugin_types "${CMAKE_CURRENT_SOURCE_DIR}/plugins.qmltypes")
+    if (EXISTS ${plugin_types})
+        qt_copy_or_install(FILES ${plugin_types}
+            DESTINATION "${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
+        )
+    endif()
+
+    qt_copy_or_install(
+        FILES
+            "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
+        DESTINATION
+            "${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
+    )
+
+    if(NOT QT_BUILD_SHARED_LIBS)
+        string(REPLACE "." "_" uri_target ${arg_TARGET_PATH})
+        add_qt_resource(${target} ${uri_target}
+            FILES ${arg_QML_FILES} "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
+            PREFIX "/qt-project.org/import/${arg_TARGET_PATH}")
+    else()
+        if(arg_QML_FILES)
+            qt_copy_or_install(FILES ${arg_QML_FILES}
+                DESTINATION "${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
+            )
+        endif()
+    endif()
+
+endfunction()
 
 # This function creates a CMake target for a generic console or GUI binary.
 # Please consider to use a more specific version target like the one created
@@ -1910,6 +2048,7 @@ function(add_qt_resource target resourceName)
         # <file ...>...</file>
         string(APPEND qrcContents "    <file alias=\"${alias}\">")
         string(APPEND qrcContents "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}</file>\n")
+        list(APPEND files "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}")
     endforeach()
 
     # </qresource></RCC>
