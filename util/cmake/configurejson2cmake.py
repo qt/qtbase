@@ -716,9 +716,15 @@ def parseFeature(ctx, feature, data, cm_fh):
         'system-sqlite': None,
         'system-xcb': None,
         'system-zlib': None,
+        'tiff': {
+            'condition': 'QT_FEATURE_imageformatplugin AND TIFF_FOUND'
+        },
         'use_gold_linker': None,
         'verifyspec': None,   # qmake specific...
         'warnings_are_errors': None,  # FIXME: Do we need these?
+        'webp': {
+            'condition': 'QT_FEATURE_imageformatplugin AND WrapWebP_FOUND'
+        },
         'xkbcommon-system': None, # another system library, just named a bit different from the rest
     }
 
