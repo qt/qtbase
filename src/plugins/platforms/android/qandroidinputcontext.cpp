@@ -558,6 +558,7 @@ static inline int getBlockPosition(const QSharedPointer<QInputMethodQueryEvent> 
 
 void QAndroidInputContext::reset()
 {
+    focusObjectStopComposing();
     clear();
     m_batchEditNestingLevel = 0;
     m_handleMode = Hidden;
