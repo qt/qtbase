@@ -10,6 +10,16 @@ if (NOT WrapDoubleConversion_FOUND)
                          sscanf_l/snprintf_l _snprintf_l/_sscanf_l. \
                          You need to use libdouble-conversion for double/string conversion.")
 endif()
+
+# compute the reverse relative path from QtCoreConfigExtras to the install prefix
+# this is used in QtCoreConfigExtras to make its install paths relocatable
+if(QT_WILL_INSTALL)
+    get_filename_component(_clean_prefix "${CMAKE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
+else()
+    get_filename_component(_clean_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
+endif()
+file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR ${_clean_prefix} ${CMAKE_INSTALL_PREFIX})
+
 # special case end
 
 #####################################################################
