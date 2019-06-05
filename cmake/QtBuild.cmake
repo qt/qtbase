@@ -561,12 +561,13 @@ function(qt_ensure_sync_qt)
     endif()
 
     # When building qtbase, use the source syncqt, otherwise use the installed one.
-    if(EXISTS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl")
-        set(QT_SYNCQT "${PROJECT_SOURCE_DIR}/bin/syncqt.pl" CACHE FILEPATH "syncqt script")
+    set(SYNCQT_FROM_SOURCE "${QtBase_SOURCE_DIR}/bin/syncqt.pl")
+    if(EXISTS "${SYNCQT_FROM_SOURCE}")
+        set(QT_SYNCQT "${SYNCQT_FROM_SOURCE}" CACHE FILEPATH "syncqt script")
         message(STATUS "Using source syncqt found at: ${QT_SYNCQT}")
 
         qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
-        qt_copy_or_install(PROGRAMS "${PROJECT_SOURCE_DIR}/bin/syncqt.pl"
+        qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
                            DESTINATION "${syncqt_install_dir}")
     else()
         get_filename_component(syncqt_absolute_path
