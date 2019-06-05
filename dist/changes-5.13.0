@@ -48,7 +48,7 @@ information about a particular change.
 *                             Third-Party Code                             *
 ****************************************************************************
 
- - Updated bundled SQLite to version 3.27.1.
+ - Updated bundled SQLite to version 3.28.0.
  - [QTBUG-72623] Updated DNS public suffix list
  - [QTBUG-73883] libjpeg-turbo was updated to version 2.0.2
  - Bundled libpng was updated to version 1.6.37
