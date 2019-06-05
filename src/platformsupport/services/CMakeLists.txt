@@ -6,6 +6,7 @@
 
 add_qt_module(ServiceSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         genericunix/qgenericunixservices.cpp genericunix/qgenericunixservices_p.h
     DEFINES

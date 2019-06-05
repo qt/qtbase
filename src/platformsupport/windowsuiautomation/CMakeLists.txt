@@ -6,6 +6,7 @@
 
 add_qt_module(WindowsUIAutomationSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qwindowsuiawrapper.cpp qwindowsuiawrapper_p.h
         uiaattributeids_p.h

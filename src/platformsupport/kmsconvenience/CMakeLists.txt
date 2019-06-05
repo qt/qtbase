@@ -8,6 +8,7 @@ qt_find_package(Libdrm) # special case
 
 add_qt_module(KmsSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qkmsdevice.cpp qkmsdevice_p.h
     DEFINES

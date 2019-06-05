@@ -6,6 +6,7 @@
 
 add_qt_module(KmsSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qkmsdevice.cpp qkmsdevice_p.h
     DEFINES

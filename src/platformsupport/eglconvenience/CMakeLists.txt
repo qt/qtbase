@@ -6,6 +6,7 @@ qt_find_package(EGL) # special case
 
 add_qt_module(EglSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qeglconvenience.cpp qeglconvenience_p.h
         qeglstreamconvenience.cpp qeglstreamconvenience_p.h

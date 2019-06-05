@@ -8,6 +8,7 @@ qt_find_package(Vulkan) # special case
 
 add_qt_module(VulkanSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qbasicvulkanplatforminstance.cpp qbasicvulkanplatforminstance_p.h
         qvkconvenience.cpp qvkconvenience_p.h

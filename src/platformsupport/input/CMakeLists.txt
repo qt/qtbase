@@ -11,6 +11,7 @@ qt_find_package(Mtdev) # special case
 
 add_qt_module(InputSupport
     STATIC
+    INTERNAL_MODULE
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES

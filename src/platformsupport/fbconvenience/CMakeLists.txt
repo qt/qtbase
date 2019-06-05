@@ -6,6 +6,7 @@
 
 add_qt_module(FbSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qfbbackingstore.cpp qfbbackingstore_p.h
         qfbcursor.cpp qfbcursor_p.h

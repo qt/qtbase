@@ -6,6 +6,7 @@
 
 add_qt_module(XkbCommonSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qxkbcommon.cpp qxkbcommon_p.h
         qxkbcommon_3rdparty.cpp

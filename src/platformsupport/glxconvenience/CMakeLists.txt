@@ -8,6 +8,7 @@ qt_find_package(X11) # special case
 
 add_qt_module(GlxSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qglxconvenience.cpp qglxconvenience_p.h
     DEFINES

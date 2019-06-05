@@ -6,6 +6,7 @@
 
 add_qt_module(PlatformCompositorSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qopenglcompositor.cpp qopenglcompositor_p.h
         qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h

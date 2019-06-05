@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_module(EglFsKmsSupport
+    INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES
         qeglfskmsdevice.cpp qeglfskmsdevice.h

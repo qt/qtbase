@@ -6,6 +6,7 @@
 
 add_qt_module(AccessibilitySupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qaccessiblebridgeutils.cpp qaccessiblebridgeutils_p.h
     DEFINES

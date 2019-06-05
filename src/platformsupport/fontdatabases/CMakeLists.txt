@@ -9,6 +9,7 @@ qt_find_package(Fontconfig) # special case
 
 add_qt_module(FontDatabaseSupport
     STATIC
+    INTERNAL_MODULE
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES

@@ -1605,6 +1605,8 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
     extra = []
     if 'static' in scope.get('CONFIG'):
         extra.append('STATIC')
+    if 'internal_module' in scope.get('CONFIG'):
+        extra.append('INTERNAL_MODULE')
     if 'no_module_headers' in scope.get('CONFIG'):
         extra.append('NO_MODULE_HEADERS')
 

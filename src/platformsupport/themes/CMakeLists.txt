@@ -6,6 +6,7 @@
 
 add_qt_module(ThemeSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qabstractfileiconengine.cpp qabstractfileiconengine_p.h
     DEFINES

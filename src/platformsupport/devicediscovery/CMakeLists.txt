@@ -6,6 +6,7 @@
 
 add_qt_module(DeviceDiscoverySupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qdevicediscovery_p.h
     DEFINES

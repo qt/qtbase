@@ -27,6 +27,7 @@ qt_find_package(XKB_COMMON_X11 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11)
 #####################################################################
 
 add_qt_module(XcbQpa
+    INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES
         gl_integrations/qxcbglintegration.cpp gl_integrations/qxcbglintegration.h

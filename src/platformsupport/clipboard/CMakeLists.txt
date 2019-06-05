@@ -6,6 +6,7 @@
 
 add_qt_module(ClipboardSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qmacmime.mm qmacmime_p.h
     DEFINES

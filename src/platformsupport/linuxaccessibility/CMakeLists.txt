@@ -8,6 +8,7 @@ qt_find_package(ATSPI2) # special case
 
 add_qt_module(LinuxAccessibilitySupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         application.cpp application_p.h
         atspiadaptor.cpp atspiadaptor_p.h

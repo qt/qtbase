@@ -8,6 +8,7 @@ qt_find_package(GLIB2) # special case
 
 add_qt_module(EventDispatcherSupport
     STATIC
+    INTERNAL_MODULE
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES

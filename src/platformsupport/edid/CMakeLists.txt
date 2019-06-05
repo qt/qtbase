@@ -6,6 +6,7 @@
 
 add_qt_module(EdidSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qedidparser.cpp qedidparser_p.h
     DEFINES

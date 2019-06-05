@@ -294,20 +294,28 @@ function(qt_set_up_developer_build)
 endfunction()
 
 # Generates module .pri files for consumption by qmake
-function(qt_generate_module_pri_file target target_path pri_file_name_var)
-    set(flags)
+function(qt_generate_module_pri_file target target_path pri_files_var)
+    set(flags INTERNAL_MODULE)
     set(options)
     set(multiopts QMAKE_MODULE_CONFIG)
     cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
 
     qt_internal_module_info(module "${target}")
     qt_path_join(pri_file_name "${target_path}" "qt_lib_${module_lower}.pri")
-    set("${pri_file_name_var}" "${pri_file_name}" PARENT_SCOPE)
+    set(pri_files "${pri_file_name}")
 
     get_target_property(enabled_features "${target}" QT_ENABLED_PUBLIC_FEATURES)
     get_target_property(disabled_features "${target}" QT_DISABLED_PUBLIC_FEATURES)
-    string (REPLACE ";" " " enabled_features "${enabled_features}")
-    string (REPLACE ";" " " disabled_features "${disabled_features}")
+    get_target_property(enabled_private_features "${target}" QT_ENABLED_PRIVATE_FEATURES)
+    get_target_property(disabled_private_features "${target}" QT_DISABLED_PRIVATE_FEATURES)
+
+    foreach(var enabled_features disabled_features enabled_private_features disabled_private_features)
+        if(${var} STREQUAL "${var}-NOTFOUND")
+            set(${var} "")
+        else()
+            string (REPLACE ";" " " ${var} "${${var}}")
+        endif()
+    endforeach()
 
     if(arg_QMAKE_MODULE_CONFIG)
         string(REPLACE ";" " " module_config "${arg_QMAKE_MODULE_CONFIG}")
@@ -316,9 +324,10 @@ function(qt_generate_module_pri_file target target_path pri_file_name_var)
         set(module_config "")
     endif()
 
-    file(GENERATE
-        OUTPUT "${pri_file_name}"
-        CONTENT
+    if (NOT ${arg_INTERNAL_MODULE})
+        file(GENERATE
+            OUTPUT "${pri_file_name}"
+            CONTENT
         "QT.${module_lower}.VERSION = ${PROJECT_VERSION}
 QT.${module_lower}.name = ${module}
 QT.${module_lower}.module = ${module_versioned}
@@ -334,7 +343,30 @@ QT.${module_lower}.enabled_features = ${enabled_features}
 QT.${module_lower}.disabled_features = ${disabled_features}${module_config}
 QT_MODULES += ${module_lower}
 "
+        )
+    endif()
+
+    qt_path_join(private_pri_file "${target_path}" "qt_lib_${module_lower}_private.pri")
+    list(APPEND pri_files "${private_pri_file}")
+
+    file(GENERATE
+        OUTPUT "${private_pri_file}"
+        CONTENT
+        "QT.${module_lower}_private.VERSION = ${PROJECT_VERSION}
+QT.${module_lower}_private.name = ${module}
+QT.${module_lower}_private.module =
+QT.${module_lower}_private.libs = $$QT_MODULE_LIB_BASE
+QT.${module_lower}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}
+QT.${module_lower}_private.frameworks =
+QT.${module_lower}_private.depends = ${module_lower}
+QT.${module_lower}_private.uses =
+QT.${module_lower}_private.module_config = v2
+QT.${module_lower}_private.enabled_features = ${enabled_private_features}
+QT.${module_lower}_private.disabled_features = ${disabled_private_features}
+"
     )
+
+    set("${pri_files_var}" "${pri_files}" PARENT_SCOPE)
 endfunction()
 
 function(qt_generate_global_config_pri_file)
@@ -1071,7 +1103,7 @@ function(add_qt_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE"
         "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG" ${ARGN})
 
@@ -1311,12 +1343,19 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
         CONFIG_INSTALL_DIR "${config_install_dir}")
 
+    if (${arg_INTERNAL_MODULE})
+        set(arg_INTERNAL_MODULE "INTERNAL_MODULE")
+    else()
+        unset(arg_INTERNAL_MODULE)
+    endif()
+
     qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} mkspecs/modules)
-    qt_generate_module_pri_file("${target}" "${pri_target_path}" module_pri_file_name
+    qt_generate_module_pri_file("${target}" "${pri_target_path}" module_pri_files
+        ${arg_INTERNAL_MODULE}
         QMAKE_MODULE_CONFIG
             ${arg_QMAKE_MODULE_CONFIG}
         )
-    qt_install(FILES "${module_pri_file_name}" DESTINATION mkspecs/modules)
+    qt_install(FILES "${module_pri_files}" DESTINATION mkspecs/modules)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.

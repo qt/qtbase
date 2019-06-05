@@ -6,6 +6,7 @@ qt_find_package(EGL) # special case
 #####################################################################
 
 add_qt_module(EglFSDeviceIntegration
+    INTERNAL_MODULE
     SOURCES
         api/qeglfsdeviceintegration.cpp api/qeglfsdeviceintegration_p.h
         api/qeglfsglobal_p.h

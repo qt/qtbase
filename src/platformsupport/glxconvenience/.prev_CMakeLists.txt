@@ -6,6 +6,7 @@
 
 add_qt_module(GlxSupport
     STATIC
+    INTERNAL_MODULE
     SOURCES
         qglxconvenience.cpp qglxconvenience_p.h
     DEFINES
