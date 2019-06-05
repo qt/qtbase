@@ -329,7 +329,7 @@ QT.${module_lower}.bins = $$QT_MODULE_BIN_BASE
 QT.${module_lower}.depends =
 QT.${module_lower}.uses =
 QT.${module_lower}.module_config = v2
-QT.${module_lower}.DEFINES = QT_${module_upper}_LIB
+QT.${module_lower}.DEFINES = QT_${module_define}_LIB
 QT.${module_lower}.enabled_features = ${enabled_features}
 QT.${module_lower}.disabled_features = ${disabled_features}${module_config}
 QT_MODULES += ${module_lower}
@@ -644,15 +644,18 @@ endfunction()
 #  * foo_upper with the value "CORE"
 #  * foo_lower with the value "core"
 #  * foo_include_dir with the module's include directory in the binary tree
+#  * foo_define same as foo_uper but with - replaced as _
 function(qt_internal_module_info result target)
     set(module "Qt${target}")
     set("${result}" "${module}" PARENT_SCOPE)
     set("${result}_versioned" "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
     string(TOUPPER "${target}" upper)
-    string(TOLOWER "${target}" lower)
+    string(TOLOWER "${target}" lower)#  * foo_upper with the value "CORE"
+    string(REPLACE "-" "_" define "${upper}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
     set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
+    set("${result}_define" "${define}" PARENT_SCOPE)
 endfunction()
 
 
@@ -1105,7 +1108,7 @@ function(add_qt_module target)
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_DEFINES
             ${arg_PUBLIC_DEFINES}
-            QT_${module_upper}_LIB
+            QT_${module_define}_LIB
         DEFINES
             ${arg_DEFINES}
             QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
@@ -1113,7 +1116,7 @@ function(add_qt_module target)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
-            QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
+            QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES}
@@ -1453,12 +1456,12 @@ function(add_qt_plugin target)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
-            QT_BUILD_${module_upper}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
+            QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
             "${static_plugin_define}"
             QT_PLUGIN
         PUBLIC_DEFINES
-            QT_${module_upper}_LIB
+            QT_${module_define}_LIB
             ${arg_PUBLIC_DEFINES}
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
