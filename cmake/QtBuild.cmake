@@ -849,9 +849,18 @@ function(extend_target target)
             _qt_target_deps "${target_deps}"
         )
 
-        # When a public module depends on private, also make its private depend on the other's private
+        # When computing the private library dependencies, we need to check not only the known
+        # modules added by this repo's qt_build_repo() (which are stored in QT_KNOWN_MODULES), but
+        # also all module dependencies that were found via find_package() (which are stored in
+        # QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE).
+        set(known_modules ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE} ${QT_KNOWN_MODULES})
+        list(REMOVE_DUPLICATES known_modules)
+
+        # When a public module depends on a private module (Gui on CorePrivate)
+        # make its private module depend on the other private module (GuiPrivate will depend on
+        # CorePrivate).
         set(qt_libs_private "")
-        foreach(it ${QT_KNOWN_MODULES})
+        foreach(it ${known_modules})
             list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
             if(pos GREATER -1)
                 list(APPEND qt_libs_private "Qt::${it}Private")
