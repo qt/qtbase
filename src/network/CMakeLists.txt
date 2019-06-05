@@ -428,7 +428,7 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
         crypt32
 )
 
-extend_target(Network CONDITION WIN32 LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
+extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
 
 add_qt_docs(
     doc/qtnetwork.qdocconf
