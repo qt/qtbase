@@ -611,7 +611,7 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
     TestApplication app(argc, argv);
 
     ProcessEventsAlwaysSendsPostedEventsObject object;
-    QTime t;
+    QElapsedTimer t;
     t.start();
     int i = 1;
     do {
