@@ -509,6 +509,15 @@ extend_target(Gui CONDITION QT_FEATURE_png
         PNG::PNG
 )
 
+# special case begin
+if (MINGW AND CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.1.0)
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86048
+  set_source_files_properties(image/qpnghandler.cpp
+    PROPERTIES COMPILE_OPTIONS -fno-reorder-blocks-and-partition
+  )
+endif()
+# special case end
+
 extend_target(Gui CONDITION QT_FEATURE_harfbuzz
     SOURCES
         text/qharfbuzzng.cpp text/qharfbuzzng_p.h
