@@ -1,5 +1,5 @@
 if(ANDROID) # AND NOT android-embedded
-#    TODO   add_subdirectory(android)
+    add_subdirectory(android)
 endif()
 
 if(NOT ANDROID)
