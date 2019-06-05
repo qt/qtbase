@@ -900,7 +900,7 @@ MakefileGenerator::processPrlFile(QString &file, bool baseOnly)
 
 bool
 MakefileGenerator::processPrlFileBase(QString &origFile, const QStringRef &origName,
-                                      const QStringRef &fixedBase, int slashOff)
+                                      const QStringRef &fixedBase, int /*slashOff*/)
 {
     return processPrlFileCore(origFile, origName, fixedBase + Option::prl_ext);
 }

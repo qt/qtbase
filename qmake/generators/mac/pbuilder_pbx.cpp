@@ -518,7 +518,6 @@ bool
 ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 {
     ProStringList tmp;
-    bool did_preprocess = false;
 
     //HEADER
     const int pbVersion = pbuilderVersion();
@@ -736,7 +735,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         QFile mkf(mkfile);
         if(mkf.open(QIODevice::WriteOnly | QIODevice::Text)) {
             writingUnixMakefileGenerator = true;
-            did_preprocess = true;
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
             QTextStream mkt(&mkf);
             writeHeader(mkt);
