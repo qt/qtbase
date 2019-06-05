@@ -4,7 +4,7 @@ Initial port is on-going. Some modules of QtBase are ported, incl. some of the p
 
 Basic functionality is there (moc, uic, etc.), but documentation, translations, etc. are missing.
 
-NOTE: YOU NEED CMAKE 3.14 or later.
+NOTE: YOU NEED CMAKE 3.15 or later.
 
 # Intro
 
