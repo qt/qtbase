@@ -1035,60 +1035,6 @@ function(qt_internal_set_no_exceptions_flags target)
     endif()
 endfunction()
 
-function(qt_internal_set_warnings_are_errors_flags target)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        # Regular clang 3.0+
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.0.0")
-            target_compile_options("${target}" PRIVATE -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        # using AppleClang
-        # Apple clang 4.0+
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "4.0.0")
-            target_compile_options("${target}" PRIVATE -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        # using GCC
-        target_compile_options("${target}" PRIVATE -Werror -Wno-error=cpp -Wno-error=deprecated-declarations)
-
-        # GCC prints this bogus warning, after it has inlined a lot of code
-        # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
-        target_compile_options("${target}" PRIVATE -Wno-error=strict-overflow)
-
-        # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of implicit fallthroughs.
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "7.0.0")
-            target_compile_options("${target}" PRIVATE -Wno-error=implicit-fallthrough)
-        endif()
-
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.0.0")
-            # GCC 9 introduced these but we are not clean for it.
-            target_compile_options("${target}" PRIVATE -Wno-error=deprecated-copy -Wno-error=redundant-move -Wno-error=init-list-lifetime)
-        endif()
-
-        # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
-        if (ANDROID)
-            target_compile_options("${target}" PRIVATE -Wno-error=literal-suffix)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-        # Intel CC 13.0 +, on Linux only
-        if (LINUX)
-            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
-                # 177: function "entity" was declared but never referenced
-                #      (too aggressive; ICC reports even for functions created due to template instantiation)
-                # 1224: #warning directive
-                # 1478: function "entity" (declared at line N) was declared deprecated
-                # 1786: function "entity" (declared at line N of "file") was declared deprecated ("message")
-                # 1881: argument must be a constant null pointer value
-                #      (NULL in C++ is usually a literal 0)
-                target_compile_options("${target}" PRIVATE -Werror -ww177,1224,1478,1786,1881)
-            endif()
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        # using Visual Studio C++
-        target_compile_options("${target}" PRIVATE /WX)
-    endif()
-endfunction()
-
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -1207,7 +1153,7 @@ function(add_qt_module target)
             QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             "${deprecation_define}"
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
-        LIBRARIES ${arg_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
         DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
@@ -1232,9 +1178,6 @@ function(add_qt_module target)
     endif()
     if(NOT ${arg_EXCEPTIONS})
         qt_internal_set_no_exceptions_flags("${target}")
-    endif()
-    if(WARNINGS_ARE_ERRORS)
-        qt_internal_set_warnings_are_errors_flags("${target}")
     endif()
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
@@ -1545,7 +1488,7 @@ function(add_qt_plugin target)
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES ${arg_PUBLIC_INCLUDE_DIRECTORIES}
-        LIBRARIES ${arg_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformPluginInternal
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         DEFINES
             ${arg_DEFINES}
@@ -1574,9 +1517,6 @@ function(add_qt_plugin target)
     endif()
     if(NOT ${arg_EXCEPTIONS})
         qt_internal_set_no_exceptions_flags("${target}")
-    endif()
-    if(WARNINGS_ARE_ERRORS)
-        qt_internal_set_warnings_are_errors_flags("${target}")
     endif()
 
 
@@ -1864,16 +1804,13 @@ function(add_qt_tool name)
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
         PUBLIC_LIBRARIES ${corelib}
-        LIBRARIES ${arg_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformToolInternal
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         DISABLE_AUTOGEN_TOOLS ${disable_autogen_tools}
     )
     qt_internal_add_target_aliases("${name}")
-    if(WARNINGS_ARE_ERRORS)
-        qt_internal_set_warnings_are_errors_flags("${name}")
-    endif()
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
         # Assign a tool to an export set, and mark the module to which the tool belongs.

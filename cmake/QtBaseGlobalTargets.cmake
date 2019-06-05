@@ -92,7 +92,10 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
-set(__export_targets Platform GlobalConfig GlobalConfigPrivate)
+# defines PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
+include(QtInternalTargets)
+
+set(__export_targets Platform GlobalConfig GlobalConfigPrivate PlatformModuleInternal PlatformPluginInternal PlatformToolInternal)
 set(__export_name "${INSTALL_CMAKE_NAMESPACE}Targets")
 qt_install(TARGETS ${__export_targets} EXPORT "${__export_name}")
 qt_install(EXPORT ${__export_name}
