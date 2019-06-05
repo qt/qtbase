@@ -710,7 +710,7 @@ extend_target(Core CONDITION QT_FEATURE_regularexpression
     SOURCES
         tools/qregularexpression.cpp tools/qregularexpression.h
     LIBRARIES
-        PCRE2
+        WrapPCRE2::WrapPCRE2
 )
 
 extend_target(Core CONDITION QT_FEATURE_commandlineparser

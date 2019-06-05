@@ -215,7 +215,7 @@ _library_map = [
     LibraryMapping('opengl', 'OpenGL', 'OpenGL::GL', resultVariable='OpenGL_OpenGL'),
     LibraryMapping('openssl_headers', 'OpenSSL', 'OpenSSL::SSL_nolink', resultVariable='OPENSSL_INCLUDE_DIR', appendFoundSuffix=False),
     LibraryMapping('openssl', 'OpenSSL', 'OpenSSL::SSL'),
-    LibraryMapping('pcre2', 'PCRE2', 'PCRE2', extra = ['REQUIRED']),
+    LibraryMapping('pcre2', 'WrapPCRE2', 'WrapPCRE2::WrapPCRE2', extra = ['REQUIRED']),
     LibraryMapping('posix_iconv', None, None),
     LibraryMapping('pps', 'PPS', 'PPS::PPS'),
     LibraryMapping('psql', 'PostgreSQL', 'PostgreSQL::PostgreSQL'),
