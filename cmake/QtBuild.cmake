@@ -1083,13 +1083,19 @@ function(add_qt_module target)
 
     qt_autogen_tools_initial_setup(${target})
 
+    set(_public_includes
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+        $<BUILD_INTERFACE:${module_include_dir}>
+    )
+    if(NOT arg_NO_MODULE_HEADERS)
+        list(APPEND _public_includes $<INSTALL_INTERFACE:include/${module}>)
+    endif()
+    list(APPEND _public_includes ${arg_PUBLIC_INCLUDE_DIRECTORIES})
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         PUBLIC_INCLUDE_DIRECTORIES
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-            $<BUILD_INTERFACE:${module_include_dir}>
-            $<INSTALL_INTERFACE:include/${module}>
-            ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+            ${_public_includes}
         INCLUDE_DIRECTORIES
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
@@ -1259,9 +1265,14 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>
         $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>
-        $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
-        $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
+
+    if(NOT arg_NO_MODULE_HEADERS)
+        target_include_directories("${target_private}" INTERFACE
+            $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
+            $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
+        )
+    endif()
 
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
