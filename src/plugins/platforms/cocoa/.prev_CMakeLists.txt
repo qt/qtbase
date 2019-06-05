@@ -1,8 +1,5 @@
 # Generated from cocoa.pro.
 
-# special case:
-qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
-
 #####################################################################
 ## qcocoa Plugin:
 #####################################################################
