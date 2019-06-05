@@ -41,6 +41,7 @@ if(FEATURE_developer_build)
         set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     endif()
     set(QT_WILL_INSTALL OFF)
+    set(QT_BUILD_TESTING ON)
     # Handle non-prefix builds by setting the cmake install prefix to the project binary dir.
     if(PROJECT_NAME STREQUAL "QtBase")
         set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH
@@ -51,9 +52,11 @@ if(FEATURE_developer_build)
     endif()
 else()
     set(QT_WILL_INSTALL ON)
+    set(QT_BUILD_TESTING OFF)
 endif()
 
-## Enable testing:
+## Set up testing
+option(BUILD_TESTING "Build the testing tree." ${QT_BUILD_TESTING})
 include(CTest)
 enable_testing()
 
