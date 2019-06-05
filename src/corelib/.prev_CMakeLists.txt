@@ -6,6 +6,7 @@
 
 add_qt_module(Core
     QMAKE_MODULE_CONFIG moc resources
+    EXCEPTIONS
     SOURCES
         ../3rdparty/harfbuzz/src/harfbuzz.h
         ../3rdparty/harfbuzz/src/harfbuzz-buffer.c

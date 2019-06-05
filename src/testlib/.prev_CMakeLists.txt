@@ -6,6 +6,7 @@
 
 add_qt_module(Test
     QMAKE_MODULE_CONFIG console testlib_defines
+    EXCEPTIONS
     SOURCES
         qabstracttestlogger.cpp qabstracttestlogger_p.h
         qasciikey.cpp
