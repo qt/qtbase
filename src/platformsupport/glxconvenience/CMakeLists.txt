@@ -1,7 +1,6 @@
 # Generated from glxconvenience.pro.
 
 qt_find_package(X11) # special case
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 
 #####################################################################
 ## GlxSupport Module:
@@ -14,7 +13,6 @@ add_qt_module(GlxSupport
     DEFINES
         QT_NO_CAST_FROM_ASCII
     LIBRARIES
-        WrapOpenGL # special case
         Qt::CorePrivate
         Qt::GuiPrivate
         X11::X11 # special case

@@ -9,7 +9,6 @@ if(NOT TARGET Qt::Test)
     # Find a few packages that are usually found in configure.cmake,
     # because a few tests link directly against those libraries.
     qt_find_package(WrapDBus1 PROVIDED_TARGETS dbus-1)
-    qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
 endif()
 # special case end
 

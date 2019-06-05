@@ -2,7 +2,6 @@
 
 # special case:
 qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
 
 #####################################################################
 ## qcocoa Plugin:
@@ -92,8 +91,6 @@ add_qt_resource(qcocoa "qcocoaresources" PREFIX "/qt-project.org/mac/cursors" FI
 extend_target(qcocoa CONDITION QT_FEATURE_opengl # special case
     SOURCES
         qcocoaglcontext.h qcocoaglcontext.mm
-    LIBRARIES
-        WrapOpenGL # special case
 )
 
 extend_target(qcocoa CONDITION QT_FEATURE_vulkan

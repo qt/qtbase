@@ -336,12 +336,20 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 
 # special case begin
 # With qmake, gui's opengl.pri used CONFIG += opengl, where opengl.prf
-# acted like WrapOpenGL: direct linkage against either libGLESv2 or
-# libGL, depending on the opengl _feature_. This is done by hand now
-# here (where the feature is available).
+# used direct public linkage against either libGLESv2 or libGL, depending
+# on the opengl _feature_. This is done by hand now here (where the
+# feature is available).
 # DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
 # available until the add_qt_module call.
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL)
+if(QT_FEATURE_opengl)
+    if(QT_FEATURE_opengles2)
+        find_package(GLESv2)
+        target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
+    else()
+        find_package(OpenGL)
+        target_link_libraries(Gui PUBLIC OpenGL::GL)
+    endif()
+endif()
 # special case end
 
 extend_target(Gui CONDITION QT_FEATURE_opengl
@@ -376,19 +384,7 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
-    LIBRARIES # special case
-        WrapOpenGL # special case
 )
-
-# special case begin
-# qopenglfunctions.h on Android does not use the function
-# table indirection for calls but calls ::glFoo in inline functions
-# directly. That means the GL library is a public dependency.
-extend_target(Gui CONDITION QT_FEATURE_opengl AND ANDROID
-    PUBLIC_LIBRARIES
-        WrapOpenGL
-)
-# special case end
 
 #### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:
 # MODULE_CONFIG = "opengl"

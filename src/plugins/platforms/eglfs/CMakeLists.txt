@@ -1,5 +1,4 @@
 qt_find_package(EGL) # special case
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 
 #####################################################################
 ## EglFSDeviceIntegration Module:
@@ -30,7 +29,6 @@ add_qt_module(EglFSDeviceIntegration
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate
         EGL::EGL # special case
-        WrapOpenGL # special case
 )
 
 #### Keys ignored in scope 2:.:./eglfsdeviceintegration.pro:<NONE>:

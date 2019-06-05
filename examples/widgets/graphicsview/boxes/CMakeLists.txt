@@ -1,6 +1,5 @@
 # Generated from boxes.pro.
 
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
 #####################################################################
 ## boxes Binary:
 #####################################################################
@@ -22,7 +21,6 @@ add_qt_executable(boxes
     LIBRARIES
         Qt::OpenGL
         Qt::Widgets
-        WrapOpenGL
 )
 
 # Resources:

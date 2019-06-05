@@ -1,7 +1,5 @@
 # Generated from minimalegl.pro.
 
-qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL) # special case
-
 #####################################################################
 ## qminimalegl Plugin:
 #####################################################################
@@ -21,7 +19,6 @@ add_qt_plugin(qminimalegl
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::EglSupportPrivate
-        WrapOpenGL
     # CONFIG = "egl"
     # OTHER_FILES = "minimalegl.json"
     # PLUGIN_CLASS_NAME = "QMinimalEglIntegrationPlugin"
