@@ -54,3 +54,5 @@ if(QT_FEATURE_gui AND QT_FEATURE_widgets)
    add_subdirectory(printsupport)
 endif()
 add_subdirectory(plugins)
+
+add_subdirectory(winmain)
