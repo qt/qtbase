@@ -281,8 +281,6 @@ def map_condition(condition):
 
         elif match.group(1) == 'config':
             substitution = map_platform(match.group(2))
-        elif match.group(1) == 'module':
-            substitution = 'TARGET {}'.format(map_qt_library(match.group(2)))
 
         elif match.group(1) == 'arch':
             if match.group(2) == 'i386':
