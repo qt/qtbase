@@ -851,6 +851,7 @@ function(qt_internal_library_deprecation_level result)
         # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
         set("${result}" "QT_DISABLE_DEPRECATED_BEFORE=0x050000" PARENT_SCOPE)
     endif()
+    set("${result}" "QT_DEPRECATED_WARNINGS_SINCE=0x060000" PARENT_SCOPE)
 endfunction()
 
 
