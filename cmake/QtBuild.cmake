@@ -795,7 +795,6 @@ function(extend_target target)
                 endif()
             endif()
         endforeach()
-
         # Set-up the target
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
         if (arg_COMPILE_FLAGS)
@@ -811,6 +810,23 @@ function(extend_target target)
             AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
             _qt_target_deps "${target_deps}"
         )
+
+        # When a public module depends on private, also make its private depend on the other's private
+        set(qt_libs_private "")
+        foreach(it ${QT_KNOWN_MODULES})
+            list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
+            if(pos GREATER -1)
+                list(APPEND qt_libs_private "Qt::${it}Private")
+            endif()
+        endforeach()
+
+        set(target_private "${target}Private")
+        if(TARGET "${target_private}")
+          target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
+        endif()
+        qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
+
+
         qt_autogen_tools(${target}
                          ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
                          DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS})
@@ -1045,7 +1061,8 @@ function(add_qt_module target)
         ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
-        OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}")
+        OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
+    )
 
     qt_internal_library_deprecation_level(deprecation_define)
 
@@ -1220,16 +1237,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     # that belong to Qt.
     qt_internal_add_link_flags_no_undefined("${target}")
 
-    # When a public module depends on private, also make its private depend on the other's private
-    set(qt_libs_private "")
-    foreach(it ${QT_KNOWN_MODULES})
-        list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
-        if(pos GREATER -1)
-            list(APPEND qt_libs_private "Qt::${it}Private")
-        endif()
-    endforeach()
-
-    target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
     target_include_directories("${target_private}" INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>
@@ -1237,8 +1244,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
         $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
     )
-
-    qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
 
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
@@ -1398,6 +1403,8 @@ function(add_qt_plugin target)
     if(TARGET "${qt_module}")
         set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
     endif()
+
+    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_MODULE")
 
     extend_target("${target}"
         SOURCES ${arg_SOURCES}

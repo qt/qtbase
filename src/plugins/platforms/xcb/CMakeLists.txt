@@ -1,16 +1,25 @@
 # Generated from xcb.pro.
 
 # begin special case:
-qt_find_package(X11_XCB)
-qt_find_package(X11)
+qt_find_package(X11_XCB
+    PROVIDED_TARGETS
+        X11::XCB
+)
+qt_find_package(X11
+    PROVIDED_TARGETS
+        X11::X11
+)
 qt_find_package(XCB)
 qt_find_package(XKB)
 qt_find_package(PkgConfig)
 qt_find_package(WrapFreetype)
-qt_find_package(GLIB2)
+qt_find_package(GLIB2
+    PROVIDED_TARGETS
+        GLIB2::GLIB2
+)
 qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
+qt_find_package(XKB_COMMON_X11 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11)
 
-pkg_check_modules(XKB_COMMON_X11 xkbcommon-x11>=0.4.1 IMPORTED_TARGET) # special case
 # end special case:
 
 #####################################################################

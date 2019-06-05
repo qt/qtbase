@@ -103,7 +103,6 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
 endif()
 
-
 #### Tests
 
 # angle_d3d11_qdtd
