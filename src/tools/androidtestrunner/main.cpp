@@ -437,7 +437,7 @@ int main(int argc, char *argv[])
     }
     // Run androiddeployqt
     static auto verbose = g_options.verbose ? QStringLiteral("--verbose") : QStringLiteral();
-    if (!execCommand(QStringLiteral("%1 %3 --gradle --reinstall --output %2").arg(g_options.androidDeployQtCommand,
+    if (!execCommand(QStringLiteral("%1 %3 --reinstall --output %2").arg(g_options.androidDeployQtCommand,
                                                                        g_options.buildPath,
                                                                        verbose), nullptr, g_options.verbose)) {
         return 1;
