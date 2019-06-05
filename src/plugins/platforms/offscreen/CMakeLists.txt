@@ -6,6 +6,7 @@
 
 add_qt_plugin(qoffscreen
     TYPE platforms
+    CLASS_NAME QOffscreenIntegrationPlugin
     SOURCES
         main.cpp
         qoffscreencommon.cpp qoffscreencommon.h
@@ -25,9 +26,10 @@ add_qt_plugin(qoffscreen
         Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:./offscreen.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:offscreen.pro:<TRUE>:
 # OTHER_FILES = "offscreen.json"
 # PLUGIN_CLASS_NAME = "QOffscreenIntegrationPlugin"
+# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:

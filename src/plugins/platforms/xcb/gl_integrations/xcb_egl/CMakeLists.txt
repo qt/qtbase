@@ -6,6 +6,7 @@
 
 add_qt_plugin(qxcb-egl-integration
     TYPE xcbglintegrations
+    CLASS_NAME QXcbEglIntegrationPlugin
     SOURCES
         qxcbeglcontext.h
         qxcbeglintegration.cpp qxcbeglintegration.h
@@ -29,7 +30,8 @@ add_qt_plugin(qxcb-egl-integration
         Qt::XcbQpa
 )
 
-#### Keys ignored in scope 1:.:.:./xcb_egl.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:xcb_egl.pro:<TRUE>:
 # CONFIG = "egl"
 # PLUGIN_CLASS_NAME = "QXcbEglIntegrationPlugin"
+# PLUGIN_TYPE = "xcbglintegrations"
 # _LOADED = "qt_plugin" "qt_build_paths"

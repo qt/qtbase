@@ -6,6 +6,7 @@
 
 add_qt_plugin(qlinuxfb
     TYPE platforms
+    CLASS_NAME QLinuxFbIntegrationPlugin
     SOURCES
         main.cpp
         qlinuxfbintegration.cpp qlinuxfbintegration.h
@@ -14,15 +15,25 @@ add_qt_plugin(qlinuxfb
         QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
+        Qt::EventDispatcherSupportPrivate
+        Qt::FbSupportPrivate
+        Qt::FontDatabaseSupportPrivate
         Qt::GuiPrivate
         Qt::ServiceSupportPrivate
-        Qt::EventDispatcherSupportPrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::FbSupportPrivate
-    # OTHER_FILES = "linuxfb.json"
-    # PLUGIN_CLASS_NAME = "QLinuxFbIntegrationPlugin"
-    # _LOADED = "qt_plugin"
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EventDispatcherSupport
+        Qt::FbSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
+        Qt::ServiceSupport
 )
+
+#### Keys ignored in scope 1:.:.:linuxfb.pro:<TRUE>:
+# OTHER_FILES = "linuxfb.json"
+# PLUGIN_CLASS_NAME = "QLinuxFbIntegrationPlugin"
+# PLUGIN_TYPE = "platforms"
+# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
@@ -30,6 +41,8 @@ add_qt_plugin(qlinuxfb
 extend_target(qlinuxfb CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::InputSupport
 )
 
 extend_target(qlinuxfb CONDITION TARGET Qt::KmsSupportPrivate
@@ -37,8 +50,9 @@ extend_target(qlinuxfb CONDITION TARGET Qt::KmsSupportPrivate
         qlinuxfbdrmscreen.cpp qlinuxfbdrmscreen.h
     LIBRARIES
         Qt::KmsSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::KmsSupport
 )
-#
-#extend_target(qlinuxfb CONDITION NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN
-#    # PLUGIN_EXTENDS = "-"
-#)
+
+#### Keys ignored in scope 4:.:.:linuxfb.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"

@@ -6,6 +6,7 @@
 
 add_qt_plugin(qwindows
     TYPE platforms
+    CLASS_NAME QWindowsIntegrationPlugin
     SOURCES
         main.cpp
         qtwindowsglobal.h
@@ -38,7 +39,7 @@ add_qt_plugin(qwindows
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
     INCLUDE_DIRECTORIES
-        .
+        ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES
         Qt::CorePrivate
         Qt::EventDispatcherSupportPrivate
@@ -76,6 +77,7 @@ add_qt_resource(qwindows "openglblacklists" PREFIX "/qt-project.org/windows/open
 #### Keys ignored in scope 1:.:.:windows.pro:<TRUE>:
 # OTHER_FILES = "windows.json"
 # PLUGIN_CLASS_NAME = "QWindowsIntegrationPlugin"
+# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:

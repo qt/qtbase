@@ -1,13 +1,12 @@
 # Generated from eglfs_kms_egldevice.pro.
 
-qt_find_package(Libdrm)
-
 #####################################################################
 ## qeglfs-kms-egldevice-integration Plugin:
 #####################################################################
 
 add_qt_plugin(qeglfs-kms-egldevice-integration
     TYPE egldeviceintegrations
+    CLASS_NAME QEglFSKmsEglDeviceIntegrationPlugin
     SOURCES
         qeglfskmsegldevice.cpp qeglfskmsegldevice.h
         qeglfskmsegldeviceintegration.cpp qeglfskmsegldeviceintegration.h
@@ -20,15 +19,24 @@ add_qt_plugin(qeglfs-kms-egldevice-integration
         ../eglfs_kms_support
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
+        Qt::EdidSupportPrivate
         Qt::EglFSDeviceIntegrationPrivate
         Qt::EglFsKmsSupportPrivate
+        Qt::GuiPrivate
         Qt::KmsSupportPrivate
-        Qt::EdidSupportPrivate
-        Qt::PlatformCompositorSupportPrivate
+    PUBLIC_LIBRARIES
         Libdrm::Libdrm
-    # CONFIG = "egl"
-    # OTHER_FILES = "$$PWD/eglfs_kms_egldevice.json"
-    # PLUGIN_CLASS_NAME = "QEglFSKmsEglDeviceIntegrationPlugin"
-    # _LOADED = "qt_plugin"
+        Qt::Core
+        Qt::EdidSupport
+        Qt::EglFSDeviceIntegration
+        Qt::EglFsKmsSupport
+        Qt::Gui
+        Qt::KmsSupport
 )
+
+#### Keys ignored in scope 1:.:.:eglfs_kms_egldevice.pro:<TRUE>:
+# CONFIG = "egl"
+# OTHER_FILES = "$$PWD/eglfs_kms_egldevice.json"
+# PLUGIN_CLASS_NAME = "QEglFSKmsEglDeviceIntegrationPlugin"
+# PLUGIN_TYPE = "egldeviceintegrations"
+# _LOADED = "qt_plugin"

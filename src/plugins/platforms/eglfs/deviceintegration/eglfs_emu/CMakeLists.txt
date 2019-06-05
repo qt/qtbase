@@ -6,6 +6,7 @@
 
 add_qt_plugin(qeglfs-emu-integration
     TYPE egldeviceintegrations
+    CLASS_NAME QEglFSEmulatorIntegrationPlugin
     SOURCES
         qeglfsemulatorintegration.cpp qeglfsemulatorintegration.h
         qeglfsemulatorscreen.cpp qeglfsemulatorscreen.h
@@ -16,11 +17,18 @@ add_qt_plugin(qeglfs-emu-integration
         ../../api
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
         Qt::EglFSDeviceIntegrationPrivate
-    # CONFIG = "egl"
-    # DISTFILES = "eglfs_emu.json"
-    # OTHER_FILES = "$$PWD/eglfs_emu.json"
-    # PLUGIN_CLASS_NAME = "QEglFSEmulatorIntegrationPlugin"
-    # _LOADED = "qt_plugin"
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EglFSDeviceIntegration
+        Qt::Gui
 )
+
+#### Keys ignored in scope 1:.:.:eglfs_emu.pro:<TRUE>:
+# CONFIG = "egl"
+# DISTFILES = "eglfs_emu.json"
+# OTHER_FILES = "$$PWD/eglfs_emu.json"
+# PLUGIN_CLASS_NAME = "QEglFSEmulatorIntegrationPlugin"
+# PLUGIN_TYPE = "egldeviceintegrations"
+# _LOADED = "qt_plugin"

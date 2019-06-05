@@ -6,6 +6,7 @@
 
 add_qt_plugin(qxcb-glx-integration
     TYPE xcbglintegrations
+    CLASS_NAME QXcbGlxIntegrationPlugin
     SOURCES
         qglxintegration.cpp qglxintegration.h
         qxcbglxintegration.cpp qxcbglxintegration.h
@@ -29,8 +30,9 @@ add_qt_plugin(qxcb-glx-integration
         Qt::XcbQpa
 )
 
-#### Keys ignored in scope 1:.:.:./xcb_glx.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:xcb_glx.pro:<TRUE>:
 # PLUGIN_CLASS_NAME = "QXcbGlxIntegrationPlugin"
+# PLUGIN_TYPE = "xcbglintegrations"
 # _LOADED = "qt_plugin" "qt_build_paths"
 
 ## Scopes:
@@ -41,7 +43,7 @@ extend_target(qxcb-glx-integration CONDITION QT_FEATURE_xcb_glx
         XCB::GLX
 )
 
-extend_target(qxcb-glx-integration CONDITION NOT static
+extend_target(qxcb-glx-integration CONDITION QT_FEATURE_dlopen AND NOT static
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
 )

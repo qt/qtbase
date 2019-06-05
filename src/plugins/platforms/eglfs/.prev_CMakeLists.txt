@@ -1,5 +1,4 @@
 # Generated from eglfs.pro.
-qt_find_package(EGL) # special case
 
 #####################################################################
 ## EglFSDeviceIntegration Module:
@@ -29,7 +28,16 @@ add_qt_module(EglFSDeviceIntegration
         Qt::GuiPrivate
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate
-        EGL::EGL # special case
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::DeviceDiscoverySupport
+        Qt::EglSupport
+        Qt::EventDispatcherSupport
+        Qt::FbSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
+        Qt::ServiceSupport
+        Qt::ThemeSupport
 )
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:
@@ -54,9 +62,15 @@ extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupp
         Qt::PlatformCompositorSupport
 )
 
-# special case:
-# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY ...
-# extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY ...
+extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
+    DEFINES
+        EGLFS_PLATFORM_HOOKS
+)
+
+extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
+    DEFINES
+        EGLFS_PREFERRED_PLUGIN=
+)
 
 #### Keys ignored in scope 7:.:.:eglfsdeviceintegration.pro:use_gold_linker:
 # CONFIG = "no_linker_version_script"
@@ -86,9 +100,9 @@ add_qt_plugin(qeglfs
     INCLUDE_DIRECTORIES
         api
     LIBRARIES
-        Qt::CorePrivate # special case
         Qt::EglFSDeviceIntegrationPrivate
-        EGL::EGL # special case
+    PUBLIC_LIBRARIES
+        Qt::EglFSDeviceIntegration
 )
 
 #### Keys ignored in scope 11:.:.:eglfs-plugin.pro:<TRUE>:
@@ -105,3 +119,26 @@ add_qt_plugin(qeglfs
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)
 
+    if(TARGET Qt::InputSupportPrivate)
+    endif()
+
+    if(TARGET Qt::PlatformCompositorSupportPrivate)
+    endif()
+
+    if(NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY)
+    endif()
+
+    if(NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY)
+    endif()
+
+    if(use_gold_linker)
+    endif()
+
+    if(NOT DEFINES___contains___QT_NO_CURSOR)
+    endif()
+
+    if(QT_FEATURE_opengl)
+    endif()
+
+    if(NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN)
+    endif()

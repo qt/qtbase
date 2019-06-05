@@ -6,6 +6,7 @@
 
 add_qt_plugin(qminimalegl
     TYPE platforms
+    CLASS_NAME QMinimalEglIntegrationPlugin
     SOURCES
         main.cpp
         qminimaleglintegration.cpp qminimaleglintegration.h
@@ -15,15 +16,24 @@ add_qt_plugin(qminimalegl
         QT_EGL_NO_X11
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
+        Qt::EglSupportPrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::EglSupportPrivate
-    # CONFIG = "egl"
-    # OTHER_FILES = "minimalegl.json"
-    # PLUGIN_CLASS_NAME = "QMinimalEglIntegrationPlugin"
-    # _LOADED = "qt_plugin"
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EglSupport
+        Qt::EventDispatcherSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
 )
+
+#### Keys ignored in scope 1:.:.:minimalegl.pro:<TRUE>:
+# CONFIG = "egl"
+# OTHER_FILES = "minimalegl.json"
+# PLUGIN_CLASS_NAME = "QMinimalEglIntegrationPlugin"
+# PLUGIN_TYPE = "platforms"
+# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
@@ -32,7 +42,6 @@ extend_target(qminimalegl CONDITION QT_FEATURE_opengl
     SOURCES
         qminimaleglbackingstore.cpp qminimaleglbackingstore.h
 )
-#
-#extend_target(qminimalegl CONDITION NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN
-#    # PLUGIN_EXTENDS = "-"
-#)
+
+#### Keys ignored in scope 3:.:.:minimalegl.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"

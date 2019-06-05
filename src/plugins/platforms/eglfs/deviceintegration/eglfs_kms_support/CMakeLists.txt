@@ -1,7 +1,5 @@
 # Generated from eglfs_kms_support.pro.
 
-qt_find_package(Libdrm)
-
 #####################################################################
 ## EglFsKmsSupport Module:
 #####################################################################
@@ -19,11 +17,19 @@ add_qt_module(EglFsKmsSupport
         ../../api
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::EglFSDeviceIntegrationPrivate
-        Qt::KmsSupportPrivate
         Qt::EdidSupportPrivate
+        Qt::EglFSDeviceIntegrationPrivate
+        Qt::GuiPrivate
+        Qt::KmsSupportPrivate
+    PUBLIC_LIBRARIES
         Libdrm::Libdrm
-    # CONFIG = "no_module_headers" "internal_module" "egl"
-    # _LOADED = "qt_module"
+        Qt::Core
+        Qt::EdidSupport
+        Qt::EglFSDeviceIntegration
+        Qt::Gui
+        Qt::KmsSupport
 )
+
+#### Keys ignored in scope 1:.:.:eglfs_kms_support.pro:<TRUE>:
+# CONFIG = "no_module_headers" "internal_module" "egl"
+# _LOADED = "qt_module"

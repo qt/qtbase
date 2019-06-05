@@ -1,4 +1,4 @@
-qt_find_package(WrapFreetype) # special case
+# Generated from minimal.pro.
 
 #####################################################################
 ## qminimal Plugin:
@@ -6,6 +6,7 @@ qt_find_package(WrapFreetype) # special case
 
 add_qt_plugin(qminimal
     TYPE platforms
+    CLASS_NAME QMinimalIntegrationPlugin
     SOURCES
         main.cpp
         qminimalbackingstore.cpp qminimalbackingstore.h
@@ -17,11 +18,17 @@ add_qt_plugin(qminimal
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
         Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EventDispatcherSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:minimal.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:minimal.pro:<TRUE>:
 # OTHER_FILES = "minimal.json"
 # PLUGIN_CLASS_NAME = "QMinimalIntegrationPlugin"
+# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:
@@ -32,5 +39,5 @@ extend_target(qminimal CONDITION QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
-#### Keys ignored in scope 3:.:minimal.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 3:.:.:minimal.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

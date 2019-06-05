@@ -1,15 +1,12 @@
 # Generated from eglfs_x11.pro.
 
-qt_find_package(XCB)
-qt_find_package(X11)
-qt_find_package(X11_XCB)
-
 #####################################################################
 ## qeglfs-x11-integration Plugin:
 #####################################################################
 
 add_qt_plugin(qeglfs-x11-integration
     TYPE egldeviceintegrations
+    CLASS_NAME QEglFSX11IntegrationPlugin
     SOURCES
         qeglfsx11integration.cpp qeglfsx11integration.h
         qeglfsx11main.cpp
@@ -19,13 +16,19 @@ add_qt_plugin(qeglfs-x11-integration
         ../../api
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
         Qt::EglFSDeviceIntegrationPrivate
-        XCB::XCB
-        X11::X11
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::EglFSDeviceIntegration
+        Qt::Gui
         X11::XCB
-    # CONFIG = "egl"
-    # OTHER_FILES = "$$PWD/eglfs_x11.json"
-    # PLUGIN_CLASS_NAME = "QEglFSX11IntegrationPlugin"
-    # _LOADED = "qt_plugin"
+        XCB::XCB
 )
+
+#### Keys ignored in scope 1:.:.:eglfs_x11.pro:<TRUE>:
+# CONFIG = "egl"
+# OTHER_FILES = "$$PWD/eglfs_x11.json"
+# PLUGIN_CLASS_NAME = "QEglFSX11IntegrationPlugin"
+# PLUGIN_TYPE = "egldeviceintegrations"
+# _LOADED = "qt_plugin"

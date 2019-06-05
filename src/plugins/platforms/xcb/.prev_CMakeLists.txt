@@ -1,27 +1,5 @@
 # Generated from xcb.pro.
 
-# begin special case:
-qt_find_package(X11_XCB
-    PROVIDED_TARGETS
-        X11::XCB
-)
-qt_find_package(X11
-    PROVIDED_TARGETS
-        X11::X11
-)
-qt_find_package(XCB)
-qt_find_package(XKB)
-qt_find_package(PkgConfig)
-qt_find_package(WrapFreetype)
-qt_find_package(GLIB2
-    PROVIDED_TARGETS
-        GLIB2::GLIB2
-)
-qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
-qt_find_package(XKB_COMMON_X11 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11)
-
-# end special case:
-
 #####################################################################
 ## XcbQpa Module:
 #####################################################################
@@ -66,7 +44,6 @@ add_qt_module(XcbQpa
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate
         Qt::XkbCommonSupportPrivate
-        PkgConfig::XKB_COMMON_X11 # special case
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::EdidSupport
@@ -127,7 +104,6 @@ extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
     PUBLIC_LIBRARIES
         X11::XCB
-        X11::X11 # special case
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xinput
@@ -219,4 +195,69 @@ add_qt_plugin(qxcb
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(gl_integrations)
 
-#### TODO: xcb-static sub folder # special case
+if(NOT ON)
+    add_subdirectory(xcb-static)
+endif()
+
+    if(TARGET Qt::LinuxAccessibilitySupportPrivate)
+    endif()
+
+    if(QT_FEATURE_vulkan)
+    endif()
+
+    if(QT_FEATURE_glib)
+    endif()
+
+    if(QT_FEATURE_draganddrop)
+    endif()
+
+    if(QT_FEATURE_xcb_xlib)
+    endif()
+
+    if(QT_FEATURE_xcb_xinput)
+    endif()
+
+    if(QT_FEATURE_xcb_sm)
+    endif()
+
+    if(QT_FEATURE_vulkan)
+    endif()
+
+    if(NOT ON)
+    endif()
+
+    else()
+
+        if(QT_FEATURE_xcb_xinput)
+        endif()
+    endif()
+
+    if(QT_FEATURE_xkb)
+
+        if(ON)
+        endif()
+    endif()
+
+    if(QT_FEATURE_dlopen)
+    endif()
+
+    if(CLANG AND NOT ICC)
+    endif()
+
+    if(QT_FEATURE_xcb_native_painting)
+
+        if(QT_FEATURE_xrender)
+        endif()
+
+        if(QT_FEATURE_fontconfig)
+        endif()
+    endif()
+
+    if(QT_FEATURE_xcb_xinput)
+    endif()
+
+    if(APPLE_OSX)
+    endif()
+
+    if(NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN)
+    endif()

@@ -31,5 +31,5 @@ add_qt_module(XkbCommonSupport
 
 extend_target(XkbCommonSupport CONDITION CLANG AND NOT ICC
     COMPILE_OPTIONS
-        "-ftemplate-depth=1024"
+        -ftemplate-depth=1024
 )
