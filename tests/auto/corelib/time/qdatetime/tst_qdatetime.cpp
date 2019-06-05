@@ -147,6 +147,7 @@ private slots:
     void systemTimeZoneChange() const;
 
     void invalid() const;
+    void range() const;
 
     void macTypes();
 
@@ -3473,6 +3474,15 @@ void tst_QDateTime::invalid() const
     QDateTime tzDate = invalidDate.toTimeZone(QTimeZone("Europe/Oslo"));
     QCOMPARE(tzDate.isValid(), false);
     QCOMPARE(tzDate.timeSpec(), Qt::TimeZone);
+}
+
+void tst_QDateTime::range() const
+{
+    using Bounds = std::numeric_limits<qint64>;
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(Bounds::min() + 1, Qt::UTC).date().year(),
+             int(QDateTime::YearRange::First));
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(Bounds::max() - 1, Qt::UTC).date().year(),
+             int(QDateTime::YearRange::Last));
 }
 
 void tst_QDateTime::macTypes()

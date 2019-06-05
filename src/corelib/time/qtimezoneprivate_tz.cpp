@@ -39,7 +39,6 @@
 
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
-#include "qdatetime_p.h" // ### Qt 5.14: remove once YearRange is on QDateTime
 #include "private/qlocale_tools_p.h"
 
 #include <QtCore/QFile>
@@ -589,8 +588,8 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
         stdTime = QTime(2, 0, 0);
 
     // Limit year to the range QDateTime can represent:
-    const int minYear = int(QDateTimePrivate::YearRange::First);
-    const int maxYear = int(QDateTimePrivate::YearRange::Last);
+    const int minYear = int(QDateTime::YearRange::First);
+    const int maxYear = int(QDateTime::YearRange::Last);
     startYear = qBound(minYear, startYear, maxYear);
     endYear = qBound(minYear, endYear, maxYear);
     Q_ASSERT(startYear <= endYear);

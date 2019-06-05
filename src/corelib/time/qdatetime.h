@@ -384,6 +384,10 @@ public:
     NSDate *toNSDate() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
+    // (1<<63) ms is 292277024.6 (average Gregorian) years, counted from the start of 1970, so
+    // Last is floor(1970 + 292277024.6); no year 0, so First is floor(1970 - 1 - 292277024.6)
+    enum class YearRange : qint32 { First = -292275056,  Last = +292278994 };
+
 private:
     friend class QDateTimePrivate;
 

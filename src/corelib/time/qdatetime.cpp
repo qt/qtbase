@@ -386,7 +386,7 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
     for technical reasons limited to between -784350574879 and 784354017364,
     which means from before 2 billion BCE to after 2 billion CE.
 
-    \sa QTime, QDateTime, QDateEdit, QDateTimeEdit, QCalendarWidget
+    \sa QTime, QDateTime, QDateTime::YearRange, QDateEdit, QDateTimeEdit, QCalendarWidget
 */
 
 /*!
@@ -3388,6 +3388,25 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 */
 
 /*!
+    \enum QDateTime::YearRange
+
+    This enumerated type describes the range of years (in the Gregorian
+    calendar) representable by QDateTime:
+
+    \value First The later parts of this year are representable
+    \value Last The earlier parts of this year are representable
+
+    All dates strictly between these two years are also representable.
+    Note, however, that the Gregorian Calendar has no year zero.
+
+    \note QDate can describe dates in a wider range of years.  For most
+    purposes, this makes little difference, as the range of years that QDateTime
+    can support reaches 292 million years either side of 1970.
+
+    \sa isValid(), QDate
+*/
+
+/*!
     Constructs a null datetime (i.e. null date and null time). A null
     datetime is invalid, since the date is invalid.
 
@@ -3535,7 +3554,7 @@ bool QDateTime::isNull() const
     hour, i.e. if the transition is at 2am and the clock goes forward to 3am
     then the time from 02:00:00 to 02:59:59.999 is considered to be invalid.
 
-    \sa QDate::isValid(), QTime::isValid()
+    \sa QDateTime::YearRange, QDate::isValid(), QTime::isValid()
 */
 
 bool QDateTime::isValid() const
