@@ -101,7 +101,7 @@ struct TreeWalker
     virtual void acceptTime(DomTime *time);
     virtual void acceptDateTime(DomDateTime *dateTime);
     virtual void acceptProperty(DomProperty *property);
-    typedef QVector<DomWidget *> DomWidgets;
+    using DomWidgets = QVector<DomWidget *>;
     virtual void acceptIncludes(DomIncludes *includes);
     virtual void acceptInclude(DomInclude *incl);
     virtual void acceptAction(DomAction *action);
