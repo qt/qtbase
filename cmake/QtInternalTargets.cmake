@@ -67,3 +67,17 @@ if(WARNINGS_ARE_ERRORS)
     qt_internal_set_warnings_are_errors_flags(PlatformPluginInternal)
     qt_internal_set_warnings_are_errors_flags(PlatformToolInternal)
 endif()
+if(WIN32)
+    # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.
+    # It's set for every module being built, but it's not propagated to user apps.
+    target_compile_definitions(PlatformModuleInternal INTERFACE _USE_MATH_DEFINES)
+endif()
+if(FEATURE_largefile)
+    target_compile_definitions(PlatformModuleInternal INTERFACE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+endif()
+
+# We can't use the gold linker on android with the NDK, which is the default
+# linker. To build our own target we will use the lld linker.
+if (ANDROID)
+    target_link_options(PlatformModuleInternal INTERFACE -fuse-ld=lld)
+endif()

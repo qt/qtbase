@@ -1179,14 +1179,6 @@ function(add_qt_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
-    if(WIN32)
-        # Needed for M_PI define. Same as mkspecs/features/qt_module.prf.
-        # It's set for every module being built, but it's not propagated to user apps.
-        target_compile_definitions("${target}" PRIVATE _USE_MATH_DEFINES)
-    endif()
-    if(FEATURE_largefile)
-        target_compile_definitions("${target}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
-    endif()
     if(NOT ${arg_EXCEPTIONS})
         qt_internal_set_no_exceptions_flags("${target}")
     endif()
@@ -1331,12 +1323,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
-    endif()
-
-    # We can't use the gold linker on android with the NDK, which is the default
-    # linker. To build our own target we will use the lld linker.
-    if (ANDROID)
-        target_link_options("${target}" PRIVATE -fuse-ld=lld)
     endif()
 endfunction()
 
