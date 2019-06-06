@@ -96,3 +96,34 @@ macro(qt_build_tests)
         add_subdirectory(benchmarks)
     endif()
 endmacro()
+
+macro(qt_examples_build_begin)
+    # It is part of a Qt build => Use the CMake config files from the binary dir
+    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+    # Also make sure the CMake config files do not recreate the already-existing targets
+    set(QT_NO_CREATE_TARGETS TRUE)
+    set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
+endmacro()
+
+macro(qt_examples_build_end)
+    # We use AUTOMOC/UIC/RCC in the examples. Make sure to not fail on a fresh Qt build, that e.g. the moc binary does not exist yet.
+
+    # This function gets all targets below this directory
+    function(get_all_targets _result _dir)
+        get_property(_subdirs DIRECTORY "${_dir}" PROPERTY SUBDIRECTORIES)
+        foreach(_subdir IN LISTS _subdirs)
+            get_all_targets(${_result} "${_subdir}")
+        endforeach()
+        get_property(_sub_targets DIRECTORY "${_dir}" PROPERTY BUILDSYSTEM_TARGETS)
+        set(${_result} ${${_result}} ${_sub_targets} PARENT_SCOPE)
+    endfunction()
+
+    get_all_targets(targets "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    foreach(target ${targets})
+        qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "moc" "uic" "rcc")
+    endforeach()
+
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
+endmacro()
