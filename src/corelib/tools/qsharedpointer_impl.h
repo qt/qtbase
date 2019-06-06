@@ -107,6 +107,10 @@ template <class X, class T>
 QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &ptr);
 #endif
 
+namespace QtPrivate {
+struct EnableInternalData;
+}
+
 namespace QtSharedPointer {
     template <class T> class ExternalRefCount;
 
@@ -672,21 +676,12 @@ public:
 #endif
 
 private:
-
+    friend struct QtPrivate::EnableInternalData;
 #if defined(Q_NO_TEMPLATE_FRIENDS)
 public:
 #else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QPointer;
-#  ifndef QT_NO_QOBJECT
-    template<typename X>
-    friend QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<X*>::Value, X>::type>
-    qWeakPointerFromVariant(const QVariant &variant);
-#  endif
-    template<typename X>
-    friend QPointer<X>
-    qPointerFromVariant(const QVariant &variant);
-    friend QtPrivate::QSmartPointerConvertFunctor<QWeakPointer>;
 #endif
 
     template <class X>
@@ -720,6 +715,17 @@ public:
     Data *d;
     T *value;
 };
+
+namespace QtPrivate {
+struct EnableInternalData {
+    template <typename T>
+    static T *internalData(const QWeakPointer<T> &p) noexcept { return p.internalData(); }
+};
+// hack to delay name lookup to instantiation time by making
+// EnableInternalData a dependent name:
+template <typename T>
+struct EnableInternalDataWrap : EnableInternalData {};
+}
 
 template <class T>
 class QEnableSharedFromThis
@@ -996,7 +1002,7 @@ template<typename T>
 QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
 qWeakPointerFromVariant(const QVariant &variant)
 {
-    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
+    return QWeakPointer<T>(qobject_cast<T*>(QtPrivate::EnableInternalData::internalData(QtSharedPointer::weakPointerFromVariant_internal(variant))));
 }
 template<typename T>
 QSharedPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
