@@ -851,7 +851,7 @@
             "purpose": "Provides a general counting system semaphore.",
             "section": "Kernel",
             "condition": [
-                "!config.integrity && !config.vxworks",
+                "!config.integrity && !config.vxworks && !config.rtems",
                 "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix"
             ],
             "output": [ "publicFeature", "feature" ]
@@ -893,14 +893,14 @@
             "label": "QProcess",
             "purpose": "Supports external process invocation.",
             "section": "File I/O",
-            "condition": "features.processenvironment && !config.winrt && !config.uikit && !config.integrity && !config.vxworks",
+            "condition": "features.processenvironment && !config.winrt && !config.uikit && !config.integrity && !config.vxworks && !config.rtems",
             "output": [ "publicFeature", "feature" ]
         },
         "processenvironment": {
             "label": "QProcessEnvironment",
             "purpose": "Provides a higher-level abstraction of environment variables.",
             "section": "File I/O",
-            "condition": "!config.winrt && !config.integrity",
+            "condition": "!config.winrt && !config.integrity && !config.rtems",
             "output": [ "publicFeature" ]
         },
         "temporaryfile": {

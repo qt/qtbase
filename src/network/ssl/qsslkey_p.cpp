@@ -508,8 +508,8 @@ QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 }
 
 /*!
-    Returns a pointer to the native key handle, if it is available;
-    otherwise a null pointer is returned.
+    Returns a pointer to the native key handle, if there is
+    one, else \nullptr.
 
     You can use this handle together with the native API to access
     extended information about the key.

@@ -600,6 +600,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
         }
     }
 
+#if QT_CONFIG(networkproxy)
     // Send "Proxy-Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (channels[i].proxyAuthMethod != QAuthenticatorPrivate::None) {
         if (!(channels[i].proxyAuthMethod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 407)) {
@@ -611,6 +612,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             }
         }
     }
+#endif // QT_CONFIG(networkproxy)
 }
 
 QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetworkRequest &request)

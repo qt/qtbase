@@ -1486,8 +1486,8 @@ static QPictureHandler *get_picture_handler(const char *format)
     \a format is used to select a handler to write a QPicture; \a header
     is used to select a handler to read an picture file.
 
-    If \a readPicture is a null pointer, the QPictureIO will not be able
-    to read pictures in \a format. If \a writePicture is a null pointer,
+    If \a readPicture is \nullptr, the QPictureIO will not be able
+    to read pictures in \a format. If \a writePicture is \nullptr,
     the QPictureIO will not be able to write pictures in \a format. If
     both are null, the QPictureIO object is valid but useless.
 

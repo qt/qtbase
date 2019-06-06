@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaToggleProvider : public QWindowsUiaBaseProvider,
                                   public QWindowsComBase<IToggleProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaToggleProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaToggleProvider)
 public:
     explicit QWindowsUiaToggleProvider(QAccessible::Id id);
     virtual ~QWindowsUiaToggleProvider();

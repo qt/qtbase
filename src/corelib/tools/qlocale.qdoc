@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v34.
+    QLocale's data is based on Common Locale Data Repository v35.1.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble(),
     QInputMethod::locale()
@@ -164,6 +164,7 @@
     \value Cantonese Since Qt 5.7
     \value Carian Since Qt 5.1
     \value Catalan
+    \value Cebuano Since Qt 5.14
     \value CentralKurdish Since Qt 5.5
     \value CentralMoroccoTamazight
     \value Chakma Since Qt 5.1
@@ -194,6 +195,7 @@
     \value EasternKayah Since Qt 5.1
     \value Embu
     \value English
+    \value Erzya Since Qt 5.14
     \value Esperanto
     \value Estonian
     \value Etruscan Since Qt 5.1

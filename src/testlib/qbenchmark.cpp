@@ -82,7 +82,7 @@ QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
 {
     QBenchmarkMeasurerBase *measurer = 0;
     if (0) {
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
     } else if (mode_ == CallgrindChildProcess || mode_ == CallgrindParentProcess) {
         measurer = new QBenchmarkCallgrindMeasurer;
 #endif

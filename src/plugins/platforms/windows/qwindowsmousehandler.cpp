@@ -106,7 +106,7 @@ static inline void compressMouseMove(MSG *msg)
                 // Extract the x,y coordinates from the lParam as we do in the WndProc
                 msg->pt.x = GET_X_LPARAM(mouseMsg.lParam);
                 msg->pt.y = GET_Y_LPARAM(mouseMsg.lParam);
-                ClientToScreen(msg->hwnd, &(msg->pt));
+                clientToScreen(msg->hwnd, &(msg->pt));
                 // Remove the mouse move message
                 PeekMessage(&mouseMsg, msg->hwnd, WM_MOUSEMOVE,
                             WM_MOUSEMOVE, PM_REMOVE);
@@ -155,6 +155,12 @@ QTouchDevice *QWindowsMouseHandler::ensureTouchDevice()
     if (!m_touchDevice)
         m_touchDevice = createTouchDevice();
     return m_touchDevice;
+}
+
+void QWindowsMouseHandler::clearEvents()
+{
+    m_lastEventType = QEvent::None;
+    m_lastEventButton = Qt::NoButton;
 }
 
 Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
@@ -262,7 +268,13 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
 
-    const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    if ((et & QtWindows::NonClientEventFlag) == 0 && QWindowsBaseWindow::isRtlLayout(hwnd))  {
+        RECT clientArea;
+        GetClientRect(hwnd, &clientArea);
+        winEventPosition.setX(clientArea.right - winEventPosition.x());
+    }
+
     QPoint clientPosition;
     QPoint globalPosition;
     if (et & QtWindows::NonClientEventFlag) {
@@ -287,8 +299,6 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
 
-    const MouseEvent mouseEvent = eventFromMsg(msg);
-
     // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
     static const bool passSynthesizedMouseEvents =
             !(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch);
@@ -305,13 +315,40 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         }
     }
 
+    const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
+    const MouseEvent mouseEvent = eventFromMsg(msg);
+    Qt::MouseButtons buttons;
+
+    if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick)
+        buttons = queryMouseButtons();
+    else
+        buttons = keyStateToMouseButtons(msg.wParam);
+
+    // When the left/right mouse buttons are pressed over the window title bar
+    // WM_NCLBUTTONDOWN/WM_NCRBUTTONDOWN messages are received. But no UP
+    // messages are received on release, only WM_NCMOUSEMOVE/WM_MOUSEMOVE.
+    // We detect it and generate the missing release events here. (QTBUG-75678)
+    // The last event vars are cleared on QWindowsContext::handleExitSizeMove()
+    // to avoid generating duplicated release events.
+    if (m_lastEventType == QEvent::NonClientAreaMouseButtonPress
+            && (mouseEvent.type == QEvent::NonClientAreaMouseMove || mouseEvent.type == QEvent::MouseMove)
+            && (m_lastEventButton & buttons) == 0) {
+            if (mouseEvent.type == QEvent::NonClientAreaMouseMove) {
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition, globalPosition, buttons, m_lastEventButton,
+                                                                   QEvent::NonClientAreaMouseButtonRelease, keyModifiers, source);
+            } else {
+                QWindowSystemInterface::handleMouseEvent(window, clientPosition, globalPosition, buttons, m_lastEventButton,
+                                                         QEvent::MouseButtonRelease, keyModifiers, source);
+            }
+    }
+    m_lastEventType = mouseEvent.type;
+    m_lastEventButton = mouseEvent.button;
+
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
         QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
                                                            globalPosition, buttons,
                                                            mouseEvent.button, mouseEvent.type,
-                                                           QWindowsKeyMapper::queryKeyboardModifiers(),
-                                                           source);
+                                                           keyModifiers, source);
         return false; // Allow further event processing (dragging of windows).
     }
 
@@ -334,7 +371,6 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
-    const Qt::MouseButtons buttons = keyStateToMouseButtons(int(msg.wParam));
 
     // If the window was recently resized via mouse doubleclick on the frame or title bar,
     // we don't get WM_LBUTTONDOWN or WM_LBUTTONDBLCLK for the second click,
@@ -461,8 +497,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if (!discardEvent && mouseEvent.type != QEvent::None) {
         QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
                                                  mouseEvent.button, mouseEvent.type,
-                                                 QWindowsKeyMapper::queryKeyboardModifiers(),
-                                                 source);
+                                                 keyModifiers, source);
     }
     m_previousCaptureWindow = hasCapture ? window : nullptr;
     // QTBUG-48117, force synchronous handling for the extra buttons so that WM_APPCOMMAND

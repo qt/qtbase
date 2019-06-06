@@ -221,7 +221,7 @@ EGLNativeWindowType QEglFSOpenWFDIntegration::createNativeWindow(QPlatformWindow
 
 QSurfaceFormat QEglFSOpenWFDIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
-    QSurfaceFormat format;
+    QSurfaceFormat format = inputFormat;
     format.setRedBufferSize(8);
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);

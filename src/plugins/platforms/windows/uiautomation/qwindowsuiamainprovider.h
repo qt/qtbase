@@ -60,7 +60,7 @@ class QWindowsUiaMainProvider :
     public IRawElementProviderFragmentRoot
 {
     Q_OBJECT
-    Q_DISABLE_COPY(QWindowsUiaMainProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaMainProvider)
 public:
     static QWindowsUiaMainProvider *providerForAccessible(QAccessibleInterface *accessible);
     explicit QWindowsUiaMainProvider(QAccessibleInterface *a, int initialRefCount = 1);

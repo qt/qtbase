@@ -80,7 +80,7 @@ bool qWindowsComQueryUnknownInterfaceMulti(Derived *d, REFIID id, LPVOID *iface)
 // Helper base class to provide IUnknown methods for COM classes (single inheritance)
 template <class ComInterface> class QWindowsComBase : public ComInterface
 {
-    Q_DISABLE_COPY(QWindowsComBase)
+    Q_DISABLE_COPY_MOVE(QWindowsComBase)
 public:
     explicit QWindowsComBase(ULONG initialRefCount = 1) : m_ref(initialRefCount) {}
     virtual ~QWindowsComBase() = default;

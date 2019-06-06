@@ -55,6 +55,7 @@ Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 static const QChar Space = QLatin1Char(' ');
 static const QChar Newline = QLatin1Char('\n');
 static const QChar LineBreak = QChar(0x2028);
+static const QChar DoubleQuote = QLatin1Char('"');
 static const QChar Backtick = QLatin1Char('`');
 static const QChar Period = QLatin1Char('.');
 
@@ -212,10 +213,19 @@ QTextMarkdownWriter::ListInfo QTextMarkdownWriter::listInfo(QTextList *list)
 static int nearestWordWrapIndex(const QString &s, int before)
 {
     before = qMin(before, s.length());
-    for (int i = before - 1; i >= 0; --i) {
-        if (s.at(i).isSpace())
-            return i;
+    int fragBegin = qMax(before - 15, 0);
+    if (lcMDW().isDebugEnabled()) {
+        QString frag = s.mid(fragBegin, 30);
+        qCDebug(lcMDW) << frag << before;
+        qCDebug(lcMDW) << QString(before - fragBegin, Period) + QLatin1Char('<');
     }
+    for (int i = before - 1; i >= 0; --i) {
+        if (s.at(i).isSpace()) {
+            qCDebug(lcMDW) << QString(i - fragBegin, Period) + QLatin1Char('^') << i;
+            return i;
+        }
+    }
+    qCDebug(lcMDW, "not possible");
     return -1;
 }
 
@@ -251,7 +261,7 @@ static void maybeEscapeFirstChar(QString &s)
 
 int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ignoreFormat)
 {
-    int ColumnLimit = 80;
+    const int ColumnLimit = 80;
     QTextBlockFormat blockFmt = block.blockFormat();
     bool indentedCodeBlock = false;
     if (block.textList()) { // it's a list-item
@@ -363,7 +373,14 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         QTextCharFormat fmt = frag.fragment().charFormat();
         if (fmt.isImageFormat()) {
             QTextImageFormat ifmt = fmt.toImageFormat();
-            QString s = QLatin1String("![image](") + ifmt.name() + QLatin1Char(')');
+            QString desc = ifmt.stringProperty(QTextFormat::ImageAltText);
+            if (desc.isEmpty())
+                desc = QLatin1String("image");
+            QString s = QLatin1String("![") + desc + QLatin1String("](") + ifmt.name();
+            QString title = ifmt.stringProperty(QTextFormat::ImageTitle);
+            if (!title.isEmpty())
+                s += Space + DoubleQuote + title + DoubleQuote;
+            s += QLatin1Char(')');
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
@@ -419,12 +436,18 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                 int fragLen = fragmentText.length();
                 bool breakingLine = false;
                 while (i < fragLen) {
+                    if (col >= ColumnLimit) {
+                        m_stream << Newline << wrapIndentString;
+                        col = m_wrappedLineIndent;
+                        while (fragmentText[i].isSpace())
+                            ++i;
+                    }
                     int j = i + ColumnLimit - col;
                     if (j < fragLen) {
                         int wi = nearestWordWrapIndex(fragmentText, j);
                         if (wi < 0) {
                             j = fragLen;
-                        } else {
+                        } else if (wi >= i) {
                             j = wi;
                             breakingLine = true;
                         }

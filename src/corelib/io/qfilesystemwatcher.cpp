@@ -311,6 +311,17 @@ bool QFileSystemWatcher::addPath(const QString &path)
     return paths.isEmpty();
 }
 
+static QStringList empty_paths_pruned(const QStringList &paths)
+{
+    QStringList p;
+    p.reserve(paths.size());
+    const auto isEmpty = [](const QString &s) { return s.isEmpty(); };
+    std::remove_copy_if(paths.begin(), paths.end(),
+                        std::back_inserter(p),
+                        isEmpty);
+    return p;
+}
+
 /*!
     Adds each path in \a paths to the file system watcher. Paths are
     not added if they not exist, or if they are already being
@@ -338,47 +349,41 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
 {
     Q_D(QFileSystemWatcher);
 
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-
-    while (it.hasNext()) {
-        const QString &path = it.next();
-        if (path.isEmpty())
-            it.remove();
-    }
+    QStringList p = empty_paths_pruned(paths);
 
     if (p.isEmpty()) {
         qWarning("QFileSystemWatcher::addPaths: list is empty");
-        return QStringList();
+        return p;
     }
 
-    QFileSystemWatcherEngine *engine = 0;
+    const auto selectEngine = [this, d]() -> QFileSystemWatcherEngine* {
+#ifdef QT_BUILD_INTERNAL
+        const QString on = objectName();
 
-    const QString on = objectName();
-
-    if (!on.startsWith(QLatin1String("_qt_autotest_force_engine_"))) {
+        if (Q_UNLIKELY(on.startsWith(QLatin1String("_qt_autotest_force_engine_")))) {
+            // Autotest override case - use the explicitly selected engine only
+            const QStringRef forceName = on.midRef(26);
+            if (forceName == QLatin1String("poller")) {
+                qDebug("QFileSystemWatcher: skipping native engine, using only polling engine");
+                d_func()->initPollerEngine();
+                return d->poller;
+            } else if (forceName == QLatin1String("native")) {
+                qDebug("QFileSystemWatcher: skipping polling engine, using only native engine");
+                return d->native;
+            }
+            return nullptr;
+        }
+#endif
         // Normal runtime case - search intelligently for best engine
         if(d->native) {
-            engine = d->native;
+            return d->native;
         } else {
             d_func()->initPollerEngine();
-            engine = d->poller;
+            return d->poller;
         }
+    };
 
-    } else {
-        // Autotest override case - use the explicitly selected engine only
-        const QStringRef forceName = on.midRef(26);
-        if(forceName == QLatin1String("poller")) {
-            qDebug("QFileSystemWatcher: skipping native engine, using only polling engine");
-            d_func()->initPollerEngine();
-            engine = d->poller;
-        } else if(forceName == QLatin1String("native")) {
-            qDebug("QFileSystemWatcher: skipping polling engine, using only native engine");
-            engine = d->native;
-        }
-    }
-
-    if(engine)
+    if (auto engine = selectEngine())
         p = engine->addPaths(p, &d->files, &d->directories);
 
     return p;
@@ -420,18 +425,11 @@ QStringList QFileSystemWatcher::removePaths(const QStringList &paths)
 {
     Q_D(QFileSystemWatcher);
 
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-
-    while (it.hasNext()) {
-        const QString &path = it.next();
-        if (path.isEmpty())
-            it.remove();
-    }
+    QStringList p = empty_paths_pruned(paths);
 
     if (p.isEmpty()) {
         qWarning("QFileSystemWatcher::removePaths: list is empty");
-        return QStringList();
+        return p;
     }
 
     if (d->native)

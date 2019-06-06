@@ -29,15 +29,22 @@
 
 #include "qwasmtheme.h"
 #include <QtCore/qvariant.h>
+#include <QFontDatabase>
 
 QT_BEGIN_NAMESPACE
 
 QWasmTheme::QWasmTheme()
 {
+    QFontDatabase fdb;
+    for (auto family : fdb.families())
+        if (fdb.isFixedPitch(family))
+            fixedFont = new QFont(family);
 }
 
 QWasmTheme::~QWasmTheme()
 {
+    if (fixedFont)
+        delete fixedFont;
 }
 
 QVariant QWasmTheme::themeHint(ThemeHint hint) const
@@ -45,6 +52,14 @@ QVariant QWasmTheme::themeHint(ThemeHint hint) const
     if (hint == QPlatformTheme::StyleNames)
         return QVariant(QStringList() << QLatin1String("fusion"));
     return QPlatformTheme::themeHint(hint);
+}
+
+const QFont *QWasmTheme::font(Font type) const
+{
+    if (type == QPlatformTheme::FixedFont) {
+        return fixedFont;
+    }
+    return nullptr;
 }
 
 QT_END_NAMESPACE

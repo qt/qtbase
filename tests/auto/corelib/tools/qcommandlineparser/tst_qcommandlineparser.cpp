@@ -76,6 +76,8 @@ private slots:
     void testHelpOption();
     void testQuoteEscaping();
     void testUnknownOption();
+    void testHelpAll_data();
+    void testHelpAll();
 };
 
 static char *empty_argv[] = { 0 };
@@ -542,7 +544,8 @@ void tst_QCommandLineParser::testVersionOption()
 
 static const char expectedOptionsHelp[] =
         "Options:\n"
-        "  -h, --help                  Displays this help.\n"
+        "  -h, --help                  Displays help on commandline options.\n"
+        "  --help-all                  Displays help including Qt specific options.\n"
         "  -v, --version               Displays version information.\n"
         "  --load <url>                Load file from URL.\n"
         "  -o, --output <file>         Set output file.\n"
@@ -576,8 +579,8 @@ void tst_QCommandLineParser::testHelpOption_data()
         "  parsingMode                 The parsing mode to test.\n"
         "  command                     The command to execute.\n");
 #ifdef Q_OS_WIN
-    expectedOutput.replace("  -h, --help                  Displays this help.\n",
-                           "  -?, -h, --help              Displays this help.\n");
+    expectedOutput.replace("  -h, --help                  Displays help on commandline options.\n",
+                           "  -?, -h, --help              Displays help on commandline options.\n");
     expectedOutput.replace("testhelper/", "testhelper\\");
 #endif
 
@@ -625,8 +628,8 @@ void tst_QCommandLineParser::testHelpOption()
         "Arguments:\n"
         "  resize                      Resize the object to a new size.\n";
 #ifdef Q_OS_WIN
-    expectedResizeHelp.replace("  -h, --help                  Displays this help.\n",
-                               "  -?, -h, --help              Displays this help.\n");
+    expectedResizeHelp.replace("  -h, --help                  Displays help on commandline options.\n",
+                               "  -?, -h, --help              Displays help on commandline options.\n");
     expectedResizeHelp.replace("testhelper/", "testhelper\\");
 #endif
     QCOMPARE(output, QString(expectedResizeHelp));
@@ -677,6 +680,60 @@ void tst_QCommandLineParser::testUnknownOption()
     QString output = process.readAll();
     QVERIFY2(output.contains("qcommandlineparser_test_helper"), qPrintable(output)); // separate in case of .exe extension
     QVERIFY2(output.contains(": Unknown option 'unknown-option'"), qPrintable(output));
+#endif // QT_CONFIG(process)
+}
+
+void tst_QCommandLineParser::testHelpAll_data()
+{
+    QTest::addColumn<QCommandLineParser::SingleDashWordOptionMode>("parsingMode");
+    QTest::addColumn<QString>("expectedHelpOutput");
+
+    QString expectedOutput = QString::fromLatin1(
+        "Usage: testhelper/qcommandlineparser_test_helper [options] parsingMode command\n"
+        "Test helper\n"
+        "\n")
+        + QString::fromLatin1(expectedOptionsHelp) +
+        QString::fromLatin1(
+        "  --qmljsdebugger <value>     Activates the QML/JS debugger with a specified\n"
+        "                              port. The value must be of format\n"
+        "                              port:1234[,block]. \"block\" makes the application\n"
+        "                              wait for a connection.\n"
+        "\n"
+        "Arguments:\n"
+        "  parsingMode                 The parsing mode to test.\n"
+        "  command                     The command to execute.\n");
+#ifdef Q_OS_WIN
+    expectedOutput.replace("  -h, --help                  Displays help on commandline options.\n",
+                           "  -?, -h, --help              Displays help on commandline options.\n");
+    expectedOutput.replace("testhelper/", "testhelper\\");
+#endif
+
+    QTest::newRow("collapsed") << QCommandLineParser::ParseAsCompactedShortOptions << expectedOutput;
+    QTest::newRow("long")      << QCommandLineParser::ParseAsLongOptions << expectedOutput;
+}
+
+void tst_QCommandLineParser::testHelpAll()
+{
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#else
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    QSKIP("Deploying executable applications to file system on Android not supported.");
+#endif
+
+    QFETCH(QCommandLineParser::SingleDashWordOptionMode, parsingMode);
+    QFETCH(QString, expectedHelpOutput);
+    QCoreApplication app(empty_argc, empty_argv);
+    QProcess process;
+    process.start("testhelper/qcommandlineparser_test_helper", QStringList() << QString::number(parsingMode) << "--help-all");
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QString output = process.readAll();
+#ifdef Q_OS_WIN
+    output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+#endif
+    QCOMPARE(output.split('\n'), expectedHelpOutput.split('\n')); // easier to debug than the next line, on failure
+    QCOMPARE(output, expectedHelpOutput);
 #endif // QT_CONFIG(process)
 }
 

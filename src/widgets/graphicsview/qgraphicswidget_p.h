@@ -60,6 +60,8 @@
 #include <QtWidgets/qsizepolicy.h>
 #include <QtWidgets/qstyle.h>
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
@@ -78,8 +80,7 @@ public:
     qreal titleBarHeight(const QStyleOptionTitleBar &options) const;
 
     // Margins
-    enum {Left, Top, Right, Bottom};
-    mutable qreal *margins;
+    mutable std::unique_ptr<QMarginsF> margins;
     void ensureMargins() const;
 
     void fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *oldScene, QGraphicsScene *newScene = nullptr);
@@ -193,7 +194,7 @@ public:
     void ensureWindowData();
 
     bool setWindowFrameMargins;
-    mutable qreal *windowFrameMargins;
+    mutable std::unique_ptr<QMarginsF> windowFrameMargins;
     void ensureWindowFrameMargins() const;
 
 #ifndef QT_NO_ACTION

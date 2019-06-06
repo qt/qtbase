@@ -62,8 +62,11 @@
 #include <private/qvectorpath_p.h>
 #include <private/qstroker_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
+// ### Qt 6: merge with QPainterPathData
 class QPainterPathPrivate
 {
 public:
@@ -80,7 +83,19 @@ public:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
 #endif
 
-    QPainterPathPrivate() : ref(1) {}
+    QPainterPathPrivate() noexcept
+        : ref(1)
+    {
+    }
+
+    QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
+        : ref(1),
+          elements(other.elements)
+    {
+    }
+
+    QPainterPathPrivate &operator=(const QPainterPathPrivate &) = delete;
+    ~QPainterPathPrivate() = default;
 
 private:
     QAtomicInt ref;
@@ -166,30 +181,30 @@ public:
     QPainterPathData() :
         cStart(0),
         fillRule(Qt::OddEvenFill),
+        require_moveTo(false),
         dirtyBounds(false),
         dirtyControlBounds(false),
+        convex(false),
         pathConverter(nullptr)
     {
-        require_moveTo = false;
-        convex = false;
     }
 
     QPainterPathData(const QPainterPathData &other) :
-        QPainterPathPrivate(), cStart(other.cStart), fillRule(other.fillRule),
+        QPainterPathPrivate(other),
+        cStart(other.cStart),
+        fillRule(other.fillRule),
         bounds(other.bounds),
         controlBounds(other.controlBounds),
+        require_moveTo(false),
         dirtyBounds(other.dirtyBounds),
         dirtyControlBounds(other.dirtyControlBounds),
         convex(other.convex),
         pathConverter(nullptr)
     {
-        require_moveTo = false;
-        elements = other.elements;
     }
 
-    ~QPainterPathData() {
-        delete pathConverter;
-    }
+    QPainterPathData &operator=(const QPainterPathData &) = delete;
+    ~QPainterPathData() = default;
 
     inline bool isClosed() const;
     inline void close();
@@ -198,7 +213,7 @@ public:
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
-            pathConverter = new QVectorPathConverter(elements, fillRule, convex);
+            pathConverter.reset(new QVectorPathConverter(elements, fillRule, convex));
         return pathConverter->path;
     }
 
@@ -213,7 +228,7 @@ public:
     uint dirtyControlBounds : 1;
     uint convex : 1;
 
-    QVectorPathConverter *pathConverter;
+    std::unique_ptr<QVectorPathConverter> pathConverter;
 };
 
 
@@ -307,8 +322,7 @@ inline void QPainterPathData::clear()
     dirtyControlBounds = false;
     convex = false;
 
-    delete pathConverter;
-    pathConverter = nullptr;
+    pathConverter.reset();
 }
 #define KAPPA qreal(0.5522847498)
 

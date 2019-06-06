@@ -524,7 +524,7 @@ QT_DEPRECATED_X("Use std::binary_search") Q_OUTOFLINE_TEMPLATE RandomAccessItera
 #  if (defined __apple_build_version__ &&  __clang_major__ >= 7) || (Q_CC_CLANG >= 307)
 #    define QT_HAS_CONSTEXPR_BUILTINS
 #  endif
-#elif defined(Q_CC_MSVC) && !defined(Q_CC_INTEL) && !defined(Q_OS_WINCE) && !defined(Q_PROCESSOR_ARM)
+#elif defined(Q_CC_MSVC) && !defined(Q_CC_INTEL) && !defined(Q_PROCESSOR_ARM)
 #  define QT_HAS_CONSTEXPR_BUILTINS
 #elif defined(Q_CC_GNU)
 #  define QT_HAS_CONSTEXPR_BUILTINS
@@ -588,7 +588,7 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
 {
     return __builtin_popcountll(v);
 }
-#elif defined(Q_CC_MSVC) && !defined(Q_OS_WINCE) && !defined(Q_PROCESSOR_ARM)
+#elif defined(Q_CC_MSVC) && !defined(Q_PROCESSOR_ARM)
 #define QT_POPCOUNT_CONSTEXPR
 #define QT_POPCOUNT_RELAXED_CONSTEXPR
 #define QT_HAS_BUILTIN_CTZ

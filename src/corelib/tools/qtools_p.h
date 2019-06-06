@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -96,7 +96,7 @@ struct CalculateGrowingBlockSizeResult {
     size_t elementCount;
 };
 
-// implemented in qbytearray.cpp
+// Implemented in qarraydata.cpp:
 size_t Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
 qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) noexcept;
 CalculateGrowingBlockSizeResult Q_CORE_EXPORT Q_DECL_CONST_FUNCTION

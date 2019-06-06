@@ -1316,8 +1316,8 @@ QTextList *QTextBlock::textList() const
 /*!
     \since 4.1
 
-    Returns a pointer to a QTextBlockUserData object if previously set with
-    setUserData() or a null pointer.
+    Returns a pointer to a QTextBlockUserData object,
+    if one has been set with setUserData(), or \nullptr.
 */
 QTextBlockUserData *QTextBlock::userData() const
 {

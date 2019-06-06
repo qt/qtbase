@@ -434,7 +434,7 @@ public:
 
     QImage::Format prepare(QImage *image);
 
-    uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * bytes_per_line; }
+    uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * qsizetype(bytes_per_line); }
 
     int width() const { return m_width; }
     int height() const { return m_height; }

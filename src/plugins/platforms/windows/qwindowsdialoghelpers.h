@@ -64,7 +64,7 @@ namespace QWindowsDialogs
 template <class BaseClass>
 class QWindowsDialogHelperBase : public BaseClass
 {
-    Q_DISABLE_COPY(QWindowsDialogHelperBase)
+    Q_DISABLE_COPY_MOVE(QWindowsDialogHelperBase)
 public:
     typedef QSharedPointer<QWindowsNativeDialogBase> QWindowsNativeDialogBasePtr;
     ~QWindowsDialogHelperBase() { cleanupThread(); }
@@ -75,7 +75,7 @@ public:
               QWindow *parent) override;
     void hide() override;
 
-    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return true; }
+    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = nullptr) const { return true; }
 
 protected:
     QWindowsDialogHelperBase() = default;
@@ -91,7 +91,7 @@ private:
     void cleanupThread();
 
     QWindowsNativeDialogBasePtr m_nativeDialog;
-    HWND m_ownerWindow = 0;
+    HWND m_ownerWindow = nullptr;
     int m_timerId = 0;
     QThread *m_thread = nullptr;
 };

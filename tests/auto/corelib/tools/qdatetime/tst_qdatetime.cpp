@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1004,7 +1004,6 @@ void tst_QDateTime::toString_rfcDate()
 void tst_QDateTime::toString_enumformat()
 {
     QDateTime dt1(QDate(1995, 5, 20), QTime(12, 34, 56));
-
 
     QString str1 = dt1.toString(Qt::TextDate);
     QVERIFY(!str1.isEmpty()); // It's locale dependent everywhere
@@ -2776,9 +2775,9 @@ void tst_QDateTime::getDate()
     int y = -33, m = -44, d = -55;
     QDate date;
     date.getDate(&y, &m, &d);
-    QVERIFY(date.year() == y);
-    QVERIFY(date.month() == m);
-    QVERIFY(date.day() == d);
+    QCOMPARE(date.year(), y);
+    QCOMPARE(date.month(), m);
+    QCOMPARE(date.day(), d);
 
     date.getDate(0, 0, 0);
     }
@@ -2790,9 +2789,9 @@ void tst_QDateTime::getDate()
     date.getDate(&y, 0, 0);
     date.getDate(0, 0, &d);
 
-    QVERIFY(date.year() == y);
-    QVERIFY(date.month() == m);
-    QVERIFY(date.day() == d);
+    QCOMPARE(date.year(), y);
+    QCOMPARE(date.month(), m);
+    QCOMPARE(date.day(), d);
     }
 }
 

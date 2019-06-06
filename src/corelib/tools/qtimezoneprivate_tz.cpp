@@ -516,6 +516,10 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     QString name = QString::fromUtf8(nameBegin, nameEnd - nameBegin);
     const int offset = zoneEnd > zoneBegin ? parsePosixOffset(zoneBegin, zoneEnd) : InvalidOffset;
     pos = zoneEnd;
+    // UTC+hh:mm:ss or GMT+hh:mm:ss should be read as offsets from UTC, not as a
+    // POSIX rule naming a zone as UTC or GMT and specifying a non-zero offset.
+    if (offset != 0 && (name == QLatin1String("UTC") || name == QLatin1String("GMT")))
+        return invalid();
     return {std::move(name), offset};
 }
 
@@ -654,8 +658,17 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
         tzif.setFileName(QLatin1String("/usr/share/zoneinfo/") + QString::fromLocal8Bit(ianaId));
         if (!tzif.open(QIODevice::ReadOnly)) {
             tzif.setFileName(QLatin1String("/usr/lib/zoneinfo/") + QString::fromLocal8Bit(ianaId));
-            if (!tzif.open(QIODevice::ReadOnly))
+            if (!tzif.open(QIODevice::ReadOnly)) {
+                // ianaId may be a POSIX rule, taken from $TZ or /etc/TZ
+                const QByteArray zoneInfo = ianaId.split(',').at(0);
+                const char *begin = zoneInfo.constBegin();
+                if (PosixZone::parse(begin, zoneInfo.constEnd()).hasValidOffset()
+                    && (begin == zoneInfo.constEnd()
+                        || PosixZone::parse(begin, zoneInfo.constEnd()).hasValidOffset())) {
+                    m_id = m_posixRule = ianaId;
+                }
                 return;
+            }
         }
     }
 
@@ -1099,6 +1112,13 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
                 }
             }
         }
+    }
+
+    // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
+    if (ianaId.isEmpty()) {
+        QFile zone(QStringLiteral("/etc/TZ"));
+        if (zone.open(QIODevice::ReadOnly))
+            ianaId = zone.readAll().trimmed();
     }
 
     // Give up for now and return UTC

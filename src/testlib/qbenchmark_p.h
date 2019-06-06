@@ -55,12 +55,6 @@
 
 #include <QtCore/qglobal.h>
 
-#if (defined(Q_OS_LINUX) || defined Q_OS_MACOS) && QT_CONFIG(process)
-#define QTESTLIB_USE_VALGRIND
-#else
-#undef QTESTLIB_USE_VALGRIND
-#endif
-
 #if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(Q_OS_ANDROID)
 #define QTESTLIB_USE_PERF_EVENTS
 #else
@@ -70,7 +64,7 @@
 #include <QtTest/private/qbenchmarkmeasurement_p.h>
 #include <QtCore/QMap>
 #include <QtTest/qttestglobal.h>
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
 #include <QtTest/private/qbenchmarkvalgrind_p.h>
 #endif
 #ifdef QTESTLIB_USE_PERF_EVENTS

@@ -1039,13 +1039,10 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
 void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config)
 {
     Q_D(QNetworkAccessManager);
-    if (!d->statusMonitor.isEnabled()) {
-        d->networkConfiguration = config;
-        d->customNetworkConfiguration = true;
-        d->createSession(config);
-    } else {
-        qWarning(lcNetMon, "No network configuration can be set with network status monitor enabled");
-    }
+
+    d->networkConfiguration = config;
+    d->customNetworkConfiguration = true;
+    d->createSession(config);
 }
 
 /*!
@@ -1106,11 +1103,6 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkAccessibility accessible)
 {
     Q_D(QNetworkAccessManager);
-
-    if (d->statusMonitor.isEnabled()) {
-        qWarning(lcNetMon, "Can not manually set network accessibility with the network status monitor enabled");
-        return;
-    }
 
     d->defaultAccessControl = accessible == NotAccessible ? false : true;
 
@@ -1410,6 +1402,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
+    if (autoDeleteReplies()
+        && req.attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute).isNull()) {
+        req.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, true);
+    }
+
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
 
@@ -1680,13 +1677,50 @@ void QNetworkAccessManager::clearConnectionCache()
     QNetworkAccessManagerPrivate::clearConnectionCache(this);
 }
 
+
+/*!
+    \since 5.14
+
+    Returns the true if QNetworkAccessManager is currently configured
+    to automatically delete QNetworkReplies, false otherwise.
+
+    \sa setAutoDeleteReplies,
+    QNetworkRequest::AutoDeleteReplyOnFinishAttribute
+*/
+bool QNetworkAccessManager::autoDeleteReplies()
+{
+    return d_func()->autoDeleteReplies;
+}
+
+/*!
+    \since 5.14
+
+    Enables or disables automatic deletion of \l {QNetworkReply} {QNetworkReplies}.
+
+    Setting \a shouldAutoDelete to true is the same as setting the
+    QNetworkRequest::AutoDeleteReplyOnFinishAttribute attribute to
+    true on all \e{future} \l {QNetworkRequest} {QNetworkRequests}
+    passed to this instance of QNetworkAccessManager unless the
+    attribute was already explicitly set on the QNetworkRequest.
+
+    \sa autoDeleteReplies,
+    QNetworkRequest::AutoDeleteReplyOnFinishAttribute
+*/
+void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
+{
+    d_func()->autoDeleteReplies = shouldAutoDelete;
+}
+
 void QNetworkAccessManagerPrivate::_q_replyFinished()
 {
     Q_Q(QNetworkAccessManager);
 
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
-    if (reply)
+    if (reply) {
         emit q->finished(reply);
+        if (reply->request().attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false).toBool())
+            QMetaObject::invokeMethod(reply, [reply] { reply->deleteLater(); }, Qt::QueuedConnection);
+    }
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // If there are no active requests, release our reference to the network session.

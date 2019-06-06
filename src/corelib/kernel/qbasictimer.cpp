@@ -65,6 +65,10 @@ QT_BEGIN_NAMESPACE
     has not been stopped. The timer's ID can be retrieved using
     timerId().
 
+    Objects of this class cannot be copied, but can be moved, so you
+    can maintain a list of basic timers by holding them in container
+    that supports move-only types, e.g. std::vector.
+
     The \l{widgets/wiggly}{Wiggly} example uses QBasicTimer to repaint
     a widget at regular intervals.
 
@@ -79,6 +83,49 @@ QT_BEGIN_NAMESPACE
 
     \sa start()
 */
+
+/*!
+    \fn QBasicTimer::QBasicTimer(QBasicTimer &&other)
+    \since 5.14
+
+    Move-constructs a basic timer from \a other, which is left
+    \l{isActive()}{inactive}.
+
+    \sa isActive(), swap()
+*/
+
+/*!
+    \fn QBasicTimer &QBasicTimer::operator=(QBasicTimer &&other)
+    \since 5.14
+
+    Move-assigns \a other to this basic timer. The timer
+    previously represented by this basic timer is stopped.
+    \a other is left as \l{isActive()}{inactive}.
+
+    \sa stop(), isActive(), swap()
+*/
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \internal
+*/
+QBasicTimer::QBasicTimer(const QBasicTimer &other)
+    : id{other.id}
+{
+    qWarning("QBasicTimer can't be copied");
+}
+
+/*!
+    \internal
+*/
+QBasicTimer &QBasicTimer::operator=(const QBasicTimer &other)
+{
+    id = other.id;
+    qWarning("QBasicTimer can't be assigned to");
+    return *this;
+}
+#endif
+
 /*!
     \fn QBasicTimer::~QBasicTimer()
 
@@ -92,6 +139,15 @@ QT_BEGIN_NAMESPACE
     returns \c false.
 
     \sa start(), stop()
+*/
+
+/*!
+    \fn QBasicTimer::swap(QBasicTimer &other)
+    \fn swap(QBasicTimer &lhs, QBasicTimer &rhs)
+    \since 5.14
+
+    Swaps string \a other with this string, or \a lhs with \a rhs.
+    This operation is very fast and never fails.
 */
 
 /*!
@@ -115,24 +171,7 @@ QT_BEGIN_NAMESPACE
  */
 void QBasicTimer::start(int msec, QObject *obj)
 {
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-    if (Q_UNLIKELY(!eventDispatcher)) {
-        qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
-        return;
-    }
-    if (Q_UNLIKELY(obj && obj->thread() != eventDispatcher->thread())) {
-        qWarning("QBasicTimer::start: Timers cannot be started from another thread");
-        return;
-    }
-    if (id) {
-        if (Q_LIKELY(eventDispatcher->unregisterTimer(id)))
-            QAbstractEventDispatcherPrivate::releaseTimerId(id);
-        else
-            qWarning("QBasicTimer::start: Stopping previous timer failed. Possibly trying to stop from a different thread");
-    }
-    id = 0;
-    if (obj)
-        id = eventDispatcher->registerTimer(msec, Qt::CoarseTimer, obj);
+    start(msec, Qt::CoarseTimer, obj);
 }
 
 /*!
@@ -161,13 +200,7 @@ void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
         qWarning("QBasicTimer::start: Timers cannot be started from another thread");
         return;
     }
-    if (id) {
-        if (Q_LIKELY(eventDispatcher->unregisterTimer(id)))
-            QAbstractEventDispatcherPrivate::releaseTimerId(id);
-        else
-            qWarning("QBasicTimer::start: Stopping previous timer failed. Possibly trying to stop from a different thread");
-    }
-    id = 0;
+    stop();
     if (obj)
         id = eventDispatcher->registerTimer(msec, timerType, obj);
 }

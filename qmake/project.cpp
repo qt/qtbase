@@ -143,15 +143,15 @@ ProString QMakeProject::expand(const QString &expr, const QString &where, int li
 
 bool QMakeProject::isEmpty(const ProKey &v) const
 {
-    ProValueMap::ConstIterator it = m_valuemapStack.first().constFind(v);
-    return it == m_valuemapStack.first().constEnd() || it->isEmpty();
+    ProValueMap::ConstIterator it = m_valuemapStack.front().constFind(v);
+    return it == m_valuemapStack.front().constEnd() || it->isEmpty();
 }
 
 void QMakeProject::dump() const
 {
     QStringList out;
-    for (ProValueMap::ConstIterator it = m_valuemapStack.first().begin();
-         it != m_valuemapStack.first().end(); ++it) {
+    for (ProValueMap::ConstIterator it = m_valuemapStack.front().begin();
+         it != m_valuemapStack.front().end(); ++it) {
         if (!it.key().startsWith('.')) {
             QString str = it.key() + " =";
             for (const ProString &v : it.value())

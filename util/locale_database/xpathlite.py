@@ -78,14 +78,38 @@ def findChild(parent, tag_name, arg_name=None, arg_value=None, draft=None):
         return node
     return False
 
+def codeMapsFromFile(file):
+    """Extract mappings of language, script and country codes to names.
+
+    The file shall typically be common/main/en.xml, which contains a
+    localeDisplayNames element with children languages, scripts and
+    territories; each element in each of these has a code as its type
+    attribute and its name as element content.  This returns a mapping
+    withe keys 'language', 'script' and 'country', each of which
+    has, as value, a mapping of the relevant codes to names.
+    """
+    parent = findChild(findChild(parseDoc(file), 'ldml'), 'localeDisplayNames')
+    keys, result = {'languages': 'language', 'scripts': 'script', 'territories': 'country'}, {}
+    for src, dst in keys.items():
+        child = findChild(parent, src)
+        data = result[dst] = {}
+        for elt in child.childNodes:
+            if elt.attributes and elt.attributes.has_key('type'):
+                key, value = elt.attributes['type'].value, elt.childNodes[0].wholeText
+                # Don't over-write previously-read data for an alt form:
+                if elt.attributes.has_key('alt') and data.has_key(key):
+                    continue
+                data[key] = value
+
+    return result
+
 def findTagsInFile(file, path):
     doc = parseDoc(file)
 
     elt = doc.documentElement
     tag_spec_list = path.split("/")
     last_entry = None
-    for i in range(len(tag_spec_list)):
-        tag_spec = tag_spec_list[i]
+    for tag_spec in tag_spec_list:
         tag_name = tag_spec
         arg_name = 'type'
         arg_value = ''

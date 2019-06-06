@@ -91,7 +91,7 @@ private:
 };
 
 class QWindowsDirect2DDeviceContextSuspender {
-    Q_DISABLE_COPY(QWindowsDirect2DDeviceContextSuspender)
+    Q_DISABLE_COPY_MOVE(QWindowsDirect2DDeviceContextSuspender)
 
     QWindowsDirect2DDeviceContext *m_dc;
 public:

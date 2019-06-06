@@ -60,11 +60,6 @@ static QString qtSha1(const QByteArray &src)
     return QString::fromLatin1(digest.toHex());
 }
 
-ProjectBuilderMakefileGenerator::ProjectBuilderMakefileGenerator() : UnixMakefileGenerator()
-{
-
-}
-
 bool
 ProjectBuilderMakefileGenerator::writeMakefile(QTextStream &t)
 {
@@ -1236,9 +1231,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
           << "\t\t};\n";
 
-        QMapIterator<ProString, ProStringList> it(embedded_plugins);
-        while (it.hasNext()) {
-            it.next();
+        for (auto it = embedded_plugins.cbegin(), end = embedded_plugins.cend(); it != end; ++it) {
             QString suffix = !it.key().isEmpty() ? (" (" + it.key() + ")") : QString();
             QString grp3("Embed PlugIns" + suffix), key3 = keyFor(grp3);
             project->values("QMAKE_PBX_BUILDPHASES").append(key3);

@@ -955,11 +955,9 @@ void QFtpPI::readyRead()
                 }
             }
         }
-        QString endOfMultiLine;
-        endOfMultiLine[0] = '0' + replyCode[0];
-        endOfMultiLine[1] = '0' + replyCode[1];
-        endOfMultiLine[2] = '0' + replyCode[2];
-        endOfMultiLine[3] = QLatin1Char(' ');
+        const char count[4] = { char('0' + replyCode[0]), char('0' + replyCode[1]),
+                                char('0' + replyCode[2]), char(' ') };
+        QString endOfMultiLine(QLatin1String(count, 4));
         QString lineCont(endOfMultiLine);
         lineCont[3] = QLatin1Char('-');
         QStringRef lineLeft4 = line.leftRef(4);

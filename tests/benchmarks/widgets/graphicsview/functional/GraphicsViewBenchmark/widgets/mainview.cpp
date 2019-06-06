@@ -270,7 +270,6 @@ void MainView::construct()
 
     // Turn off automatic background
     setAttribute(Qt::WA_OpaquePaintEvent);
-    setAttribute(Qt::WA_NoBackground);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(false);
 

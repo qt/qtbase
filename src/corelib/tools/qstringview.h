@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+** Copyright (C) 2019 Mail.ru Group.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -268,6 +269,18 @@ public:
     { return !empty() && back() == c; }
     Q_REQUIRED_RESULT bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
+
+    Q_REQUIRED_RESULT qsizetype indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::findString(*this, from, QStringView(&c, 1), cs); }
+    Q_REQUIRED_RESULT qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::findString(*this, from, s, cs); }
+    Q_REQUIRED_RESULT inline qsizetype indexOf(QLatin1String s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+
+    Q_REQUIRED_RESULT bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return indexOf(QStringView(&c, 1), 0, cs) != qsizetype(-1); }
+    Q_REQUIRED_RESULT bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return indexOf(s, 0, cs) != qsizetype(-1); }
+    Q_REQUIRED_RESULT inline bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
     Q_REQUIRED_RESULT bool isRightToLeft() const noexcept
     { return QtPrivate::isRightToLeft(*this); }

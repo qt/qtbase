@@ -109,7 +109,7 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
 
 /*!
     Constructs a new top-level QLayout, with parent \a parent.
-    \a parent may not be a \nullptr.
+    \a parent may not be \nullptr.
 
     The layout is set directly as the top-level layout for
     \a parent. There can be only one top-level layout for a
@@ -419,9 +419,9 @@ void QLayout::setContentsMargins(const QMargins &margins)
 /*!
     \since 4.3
 
-    Extracts the left, top, right, and bottom margins used around the
-    layout, and assigns them to *\a left, *\a top, *\a right, and *\a
-    bottom (unless they are null pointers).
+    For each of \a left, \a top, \a right and \a bottom that is not
+    \nullptr, stores the size of the margin named in the location the
+    pointer refers to.
 
     By default, QLayout uses the values provided by the style. On
     most platforms, the margin is 11 pixels in all directions.
@@ -1156,6 +1156,8 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
     Q_D(QLayout);
     if (!from || !to)
         return 0;
+    if (from == to)     // Do not return a QLayoutItem for \a from, since ownership still
+        return nullptr; // belongs to the layout (since nothing was changed)
 
     int index = -1;
     QLayoutItem *item = 0;

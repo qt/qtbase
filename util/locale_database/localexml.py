@@ -53,7 +53,21 @@ def ordStr(c):
 def fixOrdStr(c, d):
     return str(ord(c if len(c) == 1 else d))
 
+def startCount(c, text): # strspn
+    """First index in text where it doesn't have a character in c"""
+    assert text and text[0] in c
+    try:
+        return (j for j, d in enumerate(text) if d not in c).next()
+    except StopIteration:
+        return len(text)
+
 def convertFormat(format):
+    """Convert date/time format-specier from CLDR to Qt
+
+    Match up (as best we can) the differences between:
+    * https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
+    * QDateTimeParser::parseFormat() and QLocalePrivate::dateTimeToString()
+    """
     result = ""
     i = 0
     while i < len(format):
@@ -68,20 +82,30 @@ def convertFormat(format):
                 i += 1
         else:
             s = format[i:]
-            if s.startswith("EEEE"):
-                result += "dddd"
-                i += 4
-            elif s.startswith("EEE"):
-                result += "ddd"
-                i += 3
-            elif s.startswith("a"):
+            if s.startswith('E'): # week-day
+                n = startCount('E', s)
+                if n < 3:
+                    result += 'ddd'
+                elif n == 4:
+                    result += 'dddd'
+                else: # 5: narrow, 6 short; but should be name, not number :-(
+                    result += 'd' if n < 6 else 'dd'
+                i += n
+            elif s[0] in 'ab': # am/pm
+                # 'b' should distinguish noon/midnight, too :-(
                 result += "AP"
-                i += 1
-            elif s.startswith("z"):
+                i += startCount('ab', s)
+            elif s.startswith('S'): # fractions of seconds: count('S') == number of decimals to show
+                result += 'z'
+                i += startCount('S', s)
+            elif s.startswith('V'): # long time zone specifiers (and a deprecated short ID)
+                result += 't'
+                i += startCount('V', s)
+            elif s[0] in 'zv': # zone
+                # Should use full name, e.g. "Central European Time", if 'zzzz' :-(
+                # 'v' should get generic non-location format, e.g. PT for "Pacific Time", no DST indicator
                 result += "t"
-                i += 1
-            elif s.startswith("v"):
-                i += 1
+                i += startCount('zv', s)
             else:
                 result += format[i]
                 i += 1

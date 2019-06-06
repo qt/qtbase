@@ -100,8 +100,8 @@ public:
     QMetaObject::Connection callOnTimeout(Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
     template <typename Functor>
     QMetaObject::Connection callOnTimeout(const QObject *context, Functor slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
-    template <typename PointerToMemberFunction>
-    QMetaObject::Connection callOnTimeout(const QObject *receiver, PointerToMemberFunction slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
+    template <typename MemberFunction>
+    QMetaObject::Connection callOnTimeout(const QObject *receiver, MemberFunction *slot, Qt::ConnectionType connectionType = Qt::AutoConnection);
 #else
     // singleShot to a QObject slot
     template <typename Duration, typename Func1>

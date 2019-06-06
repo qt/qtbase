@@ -58,12 +58,12 @@ public:
         { m_current.clear(); return evaluateConditional(QStringRef(&v), file, line) == ReturnTrue; }
     bool test(const ProKey &func, const QList<ProStringList> &args);
 
-    bool isSet(const ProKey &v) const { return m_valuemapStack.first().contains(v); }
+    bool isSet(const ProKey &v) const { return m_valuemapStack.front().contains(v); }
     bool isEmpty(const ProKey &v) const;
     ProStringList &values(const ProKey &v) { return valuesRef(v); }
     int intValue(const ProKey &v, int defaultValue = 0) const;
-    const ProValueMap &variables() const { return m_valuemapStack.first(); }
-    ProValueMap &variables() { return m_valuemapStack.first(); }
+    const ProValueMap &variables() const { return m_valuemapStack.front(); }
+    ProValueMap &variables() { return m_valuemapStack.front(); }
     bool isActiveConfig(const QString &config, bool regex = false)
         { return QMakeEvaluator::isActiveConfig(QStringRef(&config), regex); }
 

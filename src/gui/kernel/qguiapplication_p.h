@@ -92,6 +92,7 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
 
+    void addQtOptions(QList<QCommandLineOption> *options) override;
     virtual bool shouldQuit() override;
 
     bool shouldQuitInternal(const QWindowList &processedWindows);

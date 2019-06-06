@@ -75,9 +75,9 @@ struct QOpenGLContextData
     QOpenGLContextData(HGLRC r, HWND h, HDC d) : renderingContext(r), hwnd(h), hdc(d) {}
     QOpenGLContextData() {}
 
-    HGLRC renderingContext = 0;
-    HWND hwnd = 0;
-    HDC hdc = 0;
+    HGLRC renderingContext = nullptr;
+    HWND hwnd = nullptr;
+    HDC hdc = nullptr;
 };
 
 class QOpenGLStaticContext;
@@ -89,7 +89,7 @@ struct QWindowsOpenGLContextFormat
 
     QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
     int version = 0; //! majorVersion<<8 + minorVersion
-    QSurfaceFormat::FormatOptions options = 0;
+    QSurfaceFormat::FormatOptions options = nullptr;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -134,7 +134,7 @@ private:
 
 class QOpenGLStaticContext : public QWindowsStaticOpenGLContext
 {
-    Q_DISABLE_COPY(QOpenGLStaticContext)
+    Q_DISABLE_COPY_MOVE(QOpenGLStaticContext)
     QOpenGLStaticContext();
 public:
     enum Extensions
@@ -222,7 +222,7 @@ private:
     typedef GLenum (APIENTRY *GlGetGraphicsResetStatusArbType)();
 
     inline void releaseDCs();
-    bool updateObtainedParams(HDC hdc, int *obtainedSwapInterval = 0);
+    bool updateObtainedParams(HDC hdc, int *obtainedSwapInterval = nullptr);
 
     QOpenGLStaticContext *m_staticContext;
     QOpenGLContext *m_context;

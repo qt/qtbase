@@ -315,7 +315,7 @@ void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
     glXGetFBConfigAttrib(display, config, GLX_ALPHA_SIZE,   &alphaSize);
     glXGetFBConfigAttrib(display, config, GLX_DEPTH_SIZE,   &depthSize);
     glXGetFBConfigAttrib(display, config, GLX_STENCIL_SIZE, &stencilSize);
-    glXGetFBConfigAttrib(display, config, GLX_SAMPLES_ARB,  &sampleBuffers);
+    glXGetFBConfigAttrib(display, config, GLX_SAMPLE_BUFFERS_ARB, &sampleBuffers);
     glXGetFBConfigAttrib(display, config, GLX_STEREO,       &stereo);
     if (flags & QGLX_SUPPORTS_SRGB)
         glXGetFBConfigAttrib(display, config, GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &srgbCapable);
@@ -354,7 +354,7 @@ void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, 
     glXGetConfig(display, visualInfo, GLX_ALPHA_SIZE,   &alphaSize);
     glXGetConfig(display, visualInfo, GLX_DEPTH_SIZE,   &depthSize);
     glXGetConfig(display, visualInfo, GLX_STENCIL_SIZE, &stencilSize);
-    glXGetConfig(display, visualInfo, GLX_SAMPLES_ARB,  &sampleBuffers);
+    glXGetConfig(display, visualInfo, GLX_SAMPLE_BUFFERS_ARB, &sampleBuffers);
     glXGetConfig(display, visualInfo, GLX_STEREO,       &stereo);
     if (flags & QGLX_SUPPORTS_SRGB)
         glXGetConfig(display, visualInfo, GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &srgbCapable);

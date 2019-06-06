@@ -3675,12 +3675,13 @@ void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
             if (oldFiles.removeAll(idx) == 0)
                 newFiles.append(idx);
         }
-        for (int i = 0; i < newFiles.count(); ++i)
-            select(newFiles.at(i));
-        if (lineEdit()->hasFocus())
-            for (int i = 0; i < oldFiles.count(); ++i)
-                qFileDialogUi->listView->selectionModel()->select(oldFiles.at(i),
-                    QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
+        for (const auto &newFile : qAsConst(newFiles))
+            select(newFile);
+        if (lineEdit()->hasFocus()) {
+            auto *sm = qFileDialogUi->listView->selectionModel();
+            for (const auto &oldFile : qAsConst(oldFiles))
+                sm->select(oldFile, QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
+        }
     }
 }
 

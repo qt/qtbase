@@ -163,11 +163,8 @@ QStringList LanguageChooser::findQmFiles()
     QDir dir(":/translations");
     QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files,
                                           QDir::Name);
-    QMutableStringListIterator i(fileNames);
-    while (i.hasNext()) {
-        i.next();
-        i.setValue(dir.filePath(i.value()));
-    }
+    for (QString &fileName : fileNames)
+        fileName = dir.filePath(fileName);
     return fileNames;
 }
 

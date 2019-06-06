@@ -402,6 +402,8 @@ language_list = {
     362: ["Sicilian",                    "scn"],
     363: ["Southern Kurdish",            "sdh"],
     364: ["Western Balochi",             "bgn"],
+    365: ["Cebuano",                     "ceb"],
+    366: ["Erzya",                       "myv"],
 }
 
 language_aliases = {

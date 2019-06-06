@@ -88,7 +88,6 @@ QTOBJS= \
 	qringbuffer.obj \
 	qdebug.obj \
 	qlist.obj \
-	qlinkedlist.obj \
 	qlocale.obj \
 	qlocale_tools.obj \
 	qlocale_win.obj \
@@ -100,7 +99,6 @@ QTOBJS= \
 	qregexp.obj \
 	qutfcodec.obj \
 	qstring.obj \
-	qstring_compat.obj \
 	qstringlist.obj \
 	qstringbuilder.obj \
 	qsystemerror.obj \
@@ -201,10 +199,7 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\src\corelib\tools}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
-# Make sure qstring_compat.obj and qlibraryinfo.obj aren't compiled with PCH enabled
-qstring_compat.obj: $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
-	$(CXX) -c $(CXXFLAGS_BARE) $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
-
+# Make sure qlibraryinfo.obj isn't compiled with PCH enabled
 qlibraryinfo.obj: $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
         $(CXX) $(CXXFLAGS_BARE) -DQT_BUILD_QMAKE_BOOTSTRAP $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
 

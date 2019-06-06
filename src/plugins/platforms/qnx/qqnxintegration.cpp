@@ -607,12 +607,11 @@ QList<screen_display_t *> QQnxIntegration::sortDisplays(screen_display_t *availa
 
         // Move all displays with matching ID from the intermediate list
         // to the beginning of the ordered list
-        QMutableListIterator<screen_display_t *> iter(allDisplays);
-        while (iter.hasNext()) {
-            screen_display_t *display = iter.next();
+        for (auto it = allDisplays.begin(), end = allDisplays.end(); it != end; ++it) {
+            screen_display_t *display = *it;
             if (getIdOfDisplay(*display) == requestedValue) {
                 orderedDisplays.append(display);
-                iter.remove();
+                allDisplays.erase(it);
                 break;
             }
         }

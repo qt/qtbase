@@ -441,6 +441,8 @@ public:
         Sicilian = 362,
         SouthernKurdish = 363,
         WesternBalochi = 364,
+        Cebuano = 365,
+        Erzya = 366,
 
         Afan = Oromo,
         Bhutani = Dzongkha,
@@ -457,7 +459,7 @@ public:
         Twi = Akan,
         Uigur = Uighur,
 
-        LastLanguage = WesternBalochi
+        LastLanguage = Erzya
     };
 
     enum Script {

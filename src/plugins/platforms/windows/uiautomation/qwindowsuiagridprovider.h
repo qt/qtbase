@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaGridProvider : public QWindowsUiaBaseProvider,
                                 public QWindowsComBase<IGridProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaGridProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaGridProvider)
 public:
     explicit QWindowsUiaGridProvider(QAccessible::Id id);
     virtual ~QWindowsUiaGridProvider();

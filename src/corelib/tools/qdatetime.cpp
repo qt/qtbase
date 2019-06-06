@@ -172,12 +172,11 @@ static ParsedDate getDateFromJulianDay(qint64 julianDay)
   Date/Time formatting helper functions
  *****************************************************************************/
 
-static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
 #if QT_CONFIG(textdate)
 static const char qt_shortMonthNames[][4] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 static int qt_monthNumberFromShortName(QStringRef shortName)
 {
@@ -304,6 +303,12 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcep
 }
 #endif // datestring
 
+static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
+{
+    // Long if odd up to July = 7, or if even from 8 = August onwards:
+    return Q_ASSERT(month != 2 && month > 0 && month <= 12), 30 | ((month & 1) ^ (month >> 3));
+}
+
 /*****************************************************************************
   QDate member functions
  *****************************************************************************/
@@ -422,7 +427,6 @@ QDate::QDate(int y, int m, int d)
     \sa isValid()
 */
 
-
 /*!
     \fn bool QDate::isValid() const
 
@@ -430,7 +434,6 @@ QDate::QDate(int y, int m, int d)
 
     \sa isNull()
 */
-
 
 /*!
     Returns the year of this date. Negative numbers indicate years
@@ -547,10 +550,10 @@ int QDate::daysInMonth() const
         return 0;
 
     const ParsedDate pd = getDateFromJulianDay(jd);
-    if (pd.month == 2 && isLeapYear(pd.year))
-        return 29;
-    else
-        return monthDays[pd.month];
+    if (pd.month == 2)
+        return isLeapYear(pd.year) ? 29 : 28;
+
+    return daysInUsualMonth(pd.month);
 }
 
 /*!
@@ -880,6 +883,7 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
 #endif // timezone
 
 #if QT_DEPRECATED_SINCE(5, 11) && QT_CONFIG(textdate)
+
 /*!
     \since 4.5
     \deprecated
@@ -1475,8 +1479,6 @@ qint64 QDate::daysTo(const QDate &d) const
 
 #if QT_CONFIG(datestring)
 /*!
-    \fn QDate QDate::fromString(const QString &string, Qt::DateFormat format)
-
     Returns the QDate represented by the \a string, using the
     \a format given, or an invalid date if the string cannot be
     parsed.
@@ -1487,7 +1489,8 @@ qint64 QDate::daysTo(const QDate &d) const
 
     \sa toString(), QLocale::toDate()
 */
-QDate QDate::fromString(const QString& string, Qt::DateFormat format)
+
+QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QDate();
@@ -1544,8 +1547,6 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDate QDate::fromString(const QString &string, const QString &format)
-
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
 
@@ -1638,12 +1639,9 @@ QDate QDate::fromString(const QString &string, const QString &format)
 
 bool QDate::isValid(int year, int month, int day)
 {
-    // there is no year 0 in the Gregorian calendar
-    if (year == 0)
-        return false;
-
-    return (day > 0 && month > 0 && month <= 12) &&
-           (day <= monthDays[month] || (day == 29 && month == 2 && isLeapYear(year)));
+    // There is no year 0 in the Gregorian calendar.
+    return year && day > 0 && month > 0 && month <= 12 &&
+        day <= (month == 2 ? isLeapYear(year) ? 29 : 28 : daysInUsualMonth(month));
 }
 
 /*!
@@ -1688,12 +1686,10 @@ bool QDate::isLeapYear(int y)
     \brief The QTime class provides clock time functions.
 
 
-    A QTime object contains a clock time, which it can express as the
-    numbers of hours, minutes, seconds, and milliseconds since
-    midnight. It can read the current time from the system clock and
-    measure a span of elapsed time. It provides functions for
-    comparing times and for manipulating a time by adding a number of
-    milliseconds.
+    A QTime object contains a clock time, which it can express as the numbers of
+    hours, minutes, seconds, and milliseconds since midnight. It provides
+    functions for comparing times and for manipulating a time by adding a number
+    of milliseconds.
 
     QTime uses the 24-hour clock format; it has no concept of AM/PM.
     Unlike QDateTime, QTime knows nothing about time zones or
@@ -1719,9 +1715,6 @@ bool QDate::isLeapYear(int y)
     QTime provides a full set of operators to compare two QTime
     objects; an earlier time is considered smaller than a later one;
     if A.msecsTo(B) is positive, then A < B.
-
-    QTime can be used to measure a span of elapsed time using the
-    start(), restart(), and elapsed() functions.
 
     \sa QDate, QDateTime
 */
@@ -2239,8 +2232,6 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
 }
 
 /*!
-    \fn QTime QTime::fromString(const QString &string, Qt::DateFormat format)
-
     Returns the time represented in the \a string as a QTime using the
     \a format given, or an invalid time if this is not possible.
 
@@ -2252,7 +2243,7 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
 
     \sa toString(), QLocale::toTime()
 */
-QTime QTime::fromString(const QString& string, Qt::DateFormat format)
+QTime QTime::fromString(const QString &string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QTime();
@@ -2279,8 +2270,6 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QTime QTime::fromString(const QString &string, const QString &format)
-
     Returns the QTime represented by the \a string, using the \a
     format given, or an invalid time if the string cannot be parsed.
 
@@ -2370,7 +2359,7 @@ bool QTime::isValid(int h, int m, int s, int ms)
     return (uint)h < 24 && (uint)m < 60 && (uint)s < 60 && (uint)ms < 1000;
 }
 
-
+#if QT_DEPRECATED_SINCE(5, 14) // ### Qt 6: remove
 /*!
     Sets this time to the current time. This is practical for timing:
 
@@ -2439,6 +2428,7 @@ int QTime::elapsed() const
         n += 86400 * 1000;
     return n;
 }
+#endif // Use QElapsedTimer instead !
 
 /*****************************************************************************
   QDateTime static helper functions
@@ -5000,8 +4990,6 @@ int QDateTime::utcOffset() const
 #if QT_CONFIG(datestring)
 
 /*!
-    \fn QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
-
     Returns the QDateTime represented by the \a string, using the
     \a format given, or an invalid datetime if this is not possible.
 
@@ -5011,7 +4999,7 @@ int QDateTime::utcOffset() const
 
     \sa toString(), QLocale::toDateTime()
 */
-QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
+QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 {
     if (string.isEmpty())
         return QDateTime();
@@ -5218,8 +5206,6 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format)
-
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
 

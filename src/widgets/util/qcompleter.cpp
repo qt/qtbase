@@ -976,18 +976,48 @@ void QCompleterPrivate::showPopup(const QRect& rect)
         popup->show();
 }
 
+#if QT_CONFIG(filesystemmodel)
+static bool isRoot(const QFileSystemModel *model, const QString &path)
+{
+    const auto index = model->index(path);
+    return index.isValid() && model->fileInfo(index).isRoot();
+}
+
+static bool completeOnLoaded(const QFileSystemModel *model,
+                             const QString &nativePrefix,
+                             const QString &path,
+                             Qt::CaseSensitivity caseSensitivity)
+{
+    const auto pathSize = path.size();
+    const auto prefixSize = nativePrefix.size();
+    if (prefixSize < pathSize)
+        return false;
+    const QString prefix = QDir::fromNativeSeparators(nativePrefix);
+    if (prefixSize == pathSize)
+        return path.compare(prefix, caseSensitivity) == 0 && isRoot(model, path);
+    // The user is typing something within that directory and is not in a subdirectory yet.
+    const auto separator = QLatin1Char('/');
+    return prefix.startsWith(path, caseSensitivity) && prefix.at(pathSize) == separator
+        && !prefix.rightRef(prefixSize - pathSize - 1).contains(separator);
+}
+
 void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 {
     Q_Q(QCompleter);
     // Slot called when QFileSystemModel has finished loading.
     // If we hide the popup because there was no match because the model was not loaded yet,
-    // we re-start the completion when we get the results
-    if (hiddenBecauseNoMatch
-        && prefix.startsWith(path) && prefix != (path + QLatin1Char('/'))
-        && widget) {
-        q->complete();
+    // we re-start the completion when we get the results (unless triggered by
+    // something else, see QTBUG-14292).
+    if (hiddenBecauseNoMatch && widget) {
+        if (auto model = qobject_cast<const QFileSystemModel *>(proxy->sourceModel())) {
+            if (completeOnLoaded(model, prefix, path, cs))
+                q->complete();
+        }
     }
 }
+#else // QT_CONFIG(filesystemmodel)
+void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &) {}
+#endif
 
 /*!
     Constructs a completer object with the given \a parent.

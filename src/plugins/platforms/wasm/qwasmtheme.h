@@ -31,6 +31,7 @@
 #define QWASMTHEME_H
 
 #include <qpa/qplatformtheme.h>
+#include <QtGui/QFont>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,6 +50,8 @@ public:
     ~QWasmTheme();
 
     QVariant themeHint(ThemeHint hint) const override;
+    const QFont *font(Font type) const override;
+    QFont *fixedFont = nullptr;
 };
 
 QT_END_NAMESPACE

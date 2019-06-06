@@ -35,14 +35,10 @@ QT_BEGIN_NAMESPACE
 
 class UnixMakefileGenerator : public MakefileGenerator
 {
-    bool include_deps;
+    bool include_deps = false;
     QString libtoolFileName(bool fixify=true);
     void writeLibtoolFile();     // for libtool
     void writePrlFile(QTextStream &) override;
-
-public:
-    UnixMakefileGenerator();
-    ~UnixMakefileGenerator();
 
 protected:
     virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
@@ -68,9 +64,6 @@ private:
     void init2();
     ProStringList libdirToFlags(const ProKey &key);
 };
-
-inline UnixMakefileGenerator::~UnixMakefileGenerator()
-{ }
 
 QT_END_NAMESPACE
 

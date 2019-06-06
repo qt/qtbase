@@ -1337,7 +1337,7 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 
  If the conversion fails the function returns 0.
 
- If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ If \a ok is not \nullptr, failure is reported by setting *\a{ok}
  to \c false, and success by setting *\a{ok} to \c true.
 
  This function ignores leading and trailing whitespace.
@@ -1359,7 +1359,7 @@ long QLocale::toLong(const QString &s, bool *ok) const
 
  If the conversion fails the function returns 0.
 
- If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ If \a ok is not \nullptr, failure is reported by setting *\a{ok}
  to \c false, and success by setting *\a{ok} to \c true.
 
  This function ignores leading and trailing whitespace.
@@ -1546,7 +1546,7 @@ uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 
  If the conversion fails the function returns 0.
 
- If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ If \a ok is not \nullptr, failure is reported by setting *\a{ok}
  to \c false, and success by setting *\a{ok} to \c true.
 
  This function ignores leading and trailing whitespace.
@@ -1568,7 +1568,7 @@ long QLocale::toLong(const QStringRef &s, bool *ok) const
 
  If the conversion fails the function returns 0.
 
- If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ If \a ok is not \nullptr, failure is reported by setting *\a{ok}
  to \c false, and success by setting *\a{ok} to \c true.
 
  This function ignores leading and trailing whitespace.
@@ -1764,7 +1764,7 @@ uint QLocale::toUInt(QStringView s, bool *ok) const
 
  If the conversion fails the function returns 0.
 
- If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ If \a ok is not \nullptr, failure is reported by setting *\a{ok}
  to \c false, and success by setting *\a{ok} to \c true.
 
  This function ignores leading and trailing whitespace.
@@ -1786,7 +1786,7 @@ long QLocale::toLong(QStringView s, bool *ok) const
 
  If the conversion fails the function returns 0.
 
- If \a ok is not \c nullptr, failure is reported by setting *\a{ok}
+ If \a ok is not \nullptr, failure is reported by setting *\a{ok}
  to \c false, and success by setting *\a{ok} to \c true.
 
  This function ignores leading and trailing whitespace.

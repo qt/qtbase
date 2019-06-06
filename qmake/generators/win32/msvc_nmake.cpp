@@ -38,11 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-NmakeMakefileGenerator::NmakeMakefileGenerator() : usePCH(false), usePCHC(false)
-{
-
-}
-
 bool
 NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 {

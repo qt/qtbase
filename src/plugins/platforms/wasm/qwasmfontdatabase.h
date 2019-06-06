@@ -44,6 +44,7 @@ public:
                                    QChar::Script script) const override;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) override;
     void releaseHandle(void *handle) override;
+    QFont defaultFont() const override;
 };
 QT_END_NAMESPACE
 #endif

@@ -1581,6 +1581,11 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
             e->ignore();
             return;
     }
+    bool wasValid = blockWithMarkerUnderMouse.isValid();
+    blockWithMarkerUnderMouse = q->blockWithMarkerAt(pos);
+    if (wasValid != blockWithMarkerUnderMouse.isValid())
+        emit q->blockMarkerHovered(blockWithMarkerUnderMouse);
+
 
     cursorIsFocusIndicator = false;
     const QTextCursor oldSelection = cursor;
@@ -1599,6 +1604,8 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
         selectedBlockOnTrippleClick = cursor;
 
         anchorOnMousePress = QString();
+        blockWithMarkerUnderMouse = QTextBlock();
+        emit q->blockMarkerHovered(blockWithMarkerUnderMouse);
 
         trippleClickTimer.stop();
     } else {
@@ -1738,6 +1745,11 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
         }
         selectionChanged(true);
         repaintOldAndNewSelection(oldSelection);
+    } else {
+        bool wasValid = blockWithMarkerUnderMouse.isValid();
+        blockWithMarkerUnderMouse = q->blockWithMarkerAt(mousePos);
+        if (wasValid != blockWithMarkerUnderMouse.isValid())
+            emit q->blockMarkerHovered(blockWithMarkerUnderMouse);
     }
 
     sendMouseEventToInputContext(e, QEvent::MouseMove, button, mousePos, modifiers, buttons, globalPos);
@@ -1785,6 +1797,26 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
     if (cursor.position() != oldCursorPos) {
         emit q->cursorPositionChanged();
         emit q->microFocusChanged();
+    }
+
+    // toggle any checkbox that the user clicks
+    if ((interactionFlags & Qt::TextEditable) && (button & Qt::LeftButton) &&
+            (blockWithMarkerUnderMouse.isValid()) && !cursor.hasSelection()) {
+        QTextBlock markerBlock = q->blockWithMarkerAt(pos);
+        if (markerBlock == blockWithMarkerUnderMouse) {
+            auto fmt = blockWithMarkerUnderMouse.blockFormat();
+            switch (fmt.marker()) {
+            case QTextBlockFormat::Unchecked :
+                fmt.setMarker(QTextBlockFormat::Checked);
+                break;
+            case QTextBlockFormat::Checked:
+                fmt.setMarker(QTextBlockFormat::Unchecked);
+                break;
+            default:
+                break;
+            }
+            cursor.setBlockFormat(fmt);
+        }
     }
 
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
@@ -1985,6 +2017,8 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
 
+    int oldCursorPos = cursor.position();
+
     cursor.beginEditBlock();
     if (isGettingInput) {
         cursor.removeSelectedText();
@@ -2089,6 +2123,8 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 
     if (cursor.d)
         cursor.d->setX();
+    if (oldCursorPos != cursor.position())
+        emit q->cursorPositionChanged();
     if (oldPreeditCursor != preeditCursor)
         emit q->microFocusChanged();
 }
@@ -2379,6 +2415,12 @@ QString QWidgetTextControl::anchorAtCursor() const
     Q_D(const QWidgetTextControl);
 
     return d->anchorForCursor(d->cursor);
+}
+
+QTextBlock QWidgetTextControl::blockWithMarkerAt(const QPointF &pos) const
+{
+    Q_D(const QWidgetTextControl);
+    return d->doc->documentLayout()->blockWithMarkerAt(pos);
 }
 
 bool QWidgetTextControl::overwriteMode() const

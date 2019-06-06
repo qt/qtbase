@@ -130,29 +130,31 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             fileInfo.setFile(xdgRuntimeDir);
             if (!fileInfo.isDir()) {
                 if (!QDir().mkdir(xdgRuntimeDir)) {
-                    qWarning("QStandardPaths: error creating runtime directory %s: %s", qPrintable(xdgRuntimeDir), qPrintable(qt_error_string(errno)));
+                    qErrnoWarning("QStandardPaths: error creating runtime directory %ls",
+                                  qUtf16Printable(xdgRuntimeDir));
                     return QString();
                 }
             }
 #ifndef Q_OS_WASM
-            qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%s'", qPrintable(xdgRuntimeDir));
+            qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%ls'", qUtf16Printable(xdgRuntimeDir));
 #endif
         } else {
             fileInfo.setFile(xdgRuntimeDir);
             if (!fileInfo.exists()) {
-                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to non-existing path '%s', "
-                         "please create it with 0700 permissions.", qPrintable(xdgRuntimeDir));
+                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to non-existing path '%ls', "
+                         "please create it with 0700 permissions.", qUtf16Printable(xdgRuntimeDir));
                 return QString();
             }
             if (!fileInfo.isDir()) {
-                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to '%s' which is not a directory",
-                         qPrintable(xdgRuntimeDir));
+                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to '%ls' which is not a directory",
+                         qUtf16Printable(xdgRuntimeDir));
                 return QString();
             }
         }
         // "The directory MUST be owned by the user"
         if (fileInfo.ownerId() != myUid) {
-            qWarning("QStandardPaths: wrong ownership on runtime directory %s, %d instead of %d", qPrintable(xdgRuntimeDir),
+            qWarning("QStandardPaths: wrong ownership on runtime directory %ls, %d instead of %d",
+                     qUtf16Printable(xdgRuntimeDir),
                      fileInfo.ownerId(), myUid);
             return QString();
         }
@@ -163,8 +165,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         if (fileInfo.permissions() != wantedPerms) {
             QFile file(xdgRuntimeDir);
             if (!file.setPermissions(wantedPerms)) {
-                qWarning("QStandardPaths: could not set correct permissions on runtime directory %s: %s",
-                         qPrintable(xdgRuntimeDir), qPrintable(file.errorString()));
+                qWarning("QStandardPaths: could not set correct permissions on runtime directory %ls: %ls",
+                         qUtf16Printable(xdgRuntimeDir), qUtf16Printable(file.errorString()));
                 return QString();
             }
         }
@@ -284,16 +286,12 @@ static QStringList xdgDataDirs()
         dirs.append(QString::fromLatin1("/usr/local/share"));
         dirs.append(QString::fromLatin1("/usr/share"));
     } else {
-        dirs = xdgDataDirsEnv.split(QLatin1Char(':'), QString::SkipEmptyParts);
+        const auto parts = xdgDataDirsEnv.splitRef(QLatin1Char(':'), QString::SkipEmptyParts);
 
         // Normalize paths, skip relative paths
-        QMutableListIterator<QString> it(dirs);
-        while (it.hasNext()) {
-            const QString dir = it.next();
-            if (!dir.startsWith(QLatin1Char('/')))
-                it.remove();
-            else
-                it.setValue(QDir::cleanPath(dir));
+        for (const QStringRef &dir : parts) {
+            if (dir.startsWith(QLatin1Char('/')))
+                dirs.push_back(QDir::cleanPath(dir.toString()));
         }
 
         // Remove duplicates from the list, there's no use for duplicated

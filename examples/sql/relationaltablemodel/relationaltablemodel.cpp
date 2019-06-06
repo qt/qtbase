@@ -53,6 +53,8 @@
 
 #include "../connection.h"
 
+#include <memory>
+
 void initializeModel(QSqlRelationalTableModel *model)
 {
 //! [0]
@@ -76,12 +78,12 @@ void initializeModel(QSqlRelationalTableModel *model)
     model->select();
 }
 
-QTableView *createView(const QString &title, QSqlTableModel *model)
+std::unique_ptr<QTableView> createView(const QString &title, QSqlTableModel *model)
 {
 //! [4]
-    QTableView *view = new QTableView;
+    std::unique_ptr<QTableView> view{new QTableView};
     view->setModel(model);
-    view->setItemDelegate(new QSqlRelationalDelegate(view));
+    view->setItemDelegate(new QSqlRelationalDelegate(view.get()));
 //! [4]
     view->setWindowTitle(title);
     return view;
@@ -118,7 +120,7 @@ int main(int argc, char *argv[])
 
     initializeModel(&model);
 
-    QScopedPointer<QTableView> view(createView(QObject::tr("Relational Table Model"), &model));
+    std::unique_ptr<QTableView> view = createView(QObject::tr("Relational Table Model"), &model);
     view->show();
 
     return app.exec();

@@ -167,6 +167,9 @@ public:
     void setRedirectPolicy(QNetworkRequest::RedirectPolicy policy);
     QNetworkRequest::RedirectPolicy redirectPolicy() const;
 
+    bool autoDeleteReplies();
+    void setAutoDeleteReplies(bool autoDelete);
+
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);

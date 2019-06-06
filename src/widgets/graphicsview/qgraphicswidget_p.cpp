@@ -51,6 +51,8 @@
 #include <QtWidgets/QStyleOptionTitleBar>
 #include <QtWidgets/QGraphicsSceneMouseEvent>
 
+#include <private/qmemory_p.h>
+
 QT_BEGIN_NAMESPACE
 
 void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFlags)
@@ -109,8 +111,6 @@ QGraphicsWidgetPrivate::QGraphicsWidgetPrivate()
 QGraphicsWidgetPrivate::~QGraphicsWidgetPrivate()
 {
     // Remove any lazily allocated data
-    delete[] margins;
-    delete[] windowFrameMargins;
     delete windowData;
 }
 
@@ -122,11 +122,8 @@ QGraphicsWidgetPrivate::~QGraphicsWidgetPrivate()
 */
 void QGraphicsWidgetPrivate::ensureMargins() const
 {
-    if (!margins) {
-        margins = new qreal[4];
-        for (int i = 0; i < 4; ++i)
-            margins[i] = 0;
-    }
+    if (!margins)
+        margins = qt_make_unique<QMarginsF>();
 }
 
 /*!
@@ -137,11 +134,8 @@ void QGraphicsWidgetPrivate::ensureMargins() const
 */
 void QGraphicsWidgetPrivate::ensureWindowFrameMargins() const
 {
-    if (!windowFrameMargins) {
-        windowFrameMargins = new qreal[4];
-        for (int i = 0; i < 4; ++i)
-            windowFrameMargins[i] = 0;
-    }
+    if (!windowFrameMargins)
+        windowFrameMargins = qt_make_unique<QMarginsF>();
 }
 
 /*!
@@ -372,8 +366,8 @@ void QGraphicsWidgetPrivate::windowFrameMouseReleaseEvent(QGraphicsSceneMouseEve
             bar.rect.setHeight(q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &bar));
             QPointF pos = event->pos();
             if (windowFrameMargins) {
-                pos.rx() += windowFrameMargins[Left];
-                pos.ry() += windowFrameMargins[Top];
+                pos.rx() += windowFrameMargins->left();
+                pos.ry() += windowFrameMargins->top();
             }
             bar.subControls = QStyle::SC_TitleBarCloseButton;
             if (q->style()->subControlRect(QStyle::CC_TitleBar, &bar,
@@ -669,8 +663,8 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
     QStyleOptionTitleBar bar;
     // make sure that the coordinates (rect and pos) we send to the style are positive.
     if (windowFrameMargins) {
-        pos.rx() += windowFrameMargins[Left];
-        pos.ry() += windowFrameMargins[Top];
+        pos.rx() += windowFrameMargins->left();
+        pos.ry() += windowFrameMargins->top();
     }
     initStyleOptionTitleBar(&bar);
     bar.rect = q->windowFrameRect().toRect();

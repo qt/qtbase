@@ -45,6 +45,7 @@
 
 #include <QtCore/qpointer.h>
 #include <QtCore/qhash.h>
+#include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,7 +54,7 @@ class QTouchDevice;
 
 class QWindowsMouseHandler
 {
-    Q_DISABLE_COPY(QWindowsMouseHandler)
+    Q_DISABLE_COPY_MOVE(QWindowsMouseHandler)
 public:
     QWindowsMouseHandler();
 
@@ -72,13 +73,14 @@ public:
     bool translateScrollEvent(QWindow *window, HWND hwnd,
                               MSG msg, LRESULT *result);
 
-    static inline Qt::MouseButtons keyStateToMouseButtons(int);
+    static inline Qt::MouseButtons keyStateToMouseButtons(WPARAM);
     static inline Qt::KeyboardModifiers keyStateToModifiers(int);
     static inline int mouseButtonsToKeyState(Qt::MouseButtons);
 
     static Qt::MouseButtons queryMouseButtons();
     QWindow *windowUnderMouse() const { return m_windowUnderMouse.data(); }
-    void clearWindowUnderMouse() { m_windowUnderMouse = 0; }
+    void clearWindowUnderMouse() { m_windowUnderMouse = nullptr; }
+    void clearEvents();
 
 private:
     inline bool translateMouseWheelEvent(QWindow *window, HWND hwnd,
@@ -91,9 +93,11 @@ private:
     QTouchDevice *m_touchDevice = nullptr;
     bool m_leftButtonDown = false;
     QWindow *m_previousCaptureWindow = nullptr;
+    QEvent::Type m_lastEventType = QEvent::None;
+    Qt::MouseButton m_lastEventButton = Qt::NoButton;
 };
 
-Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(int wParam)
+Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(WPARAM wParam)
 {
     Qt::MouseButtons mb(Qt::NoButton);
     if (wParam & MK_LBUTTON)

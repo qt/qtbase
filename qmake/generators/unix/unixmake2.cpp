@@ -39,11 +39,6 @@
 
 QT_BEGIN_NAMESPACE
 
-UnixMakefileGenerator::UnixMakefileGenerator() : MakefileGenerator(), include_deps(false)
-{
-
-}
-
 void
 UnixMakefileGenerator::writePrlFile(QTextStream &t)
 {

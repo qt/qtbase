@@ -45,7 +45,7 @@
     \ingroup objectmodel
 
     A guarded pointer, QPointer<T>, behaves like a normal C++
-    pointer \c{T *}, except that it is automatically set to 0 when the
+    pointer \c{T *}, except that it is automatically cleared when the
     referenced object is destroyed (unlike normal C++ pointers, which
     become "dangling pointers" in such cases). \c T must be a
     subclass of QObject.
@@ -79,7 +79,7 @@
     \snippet pointer/pointer.cpp 2
 
     If the QLabel is deleted in the meantime, the \c label variable
-    will hold 0 instead of an invalid address, and the last line will
+    will hold \nullptr instead of an invalid address, and the last line will
     never be executed.
 
     The functions and operators available with a QPointer are the
@@ -93,7 +93,7 @@
     For creating guarded pointers, you can construct or assign to them
     from a T* or from another guarded pointer of the same type. You
     can compare them with each other using operator==() and
-    operator!=(), or test for 0 with isNull(). You can dereference
+    operator!=(), or test for \nullptr with isNull(). You can dereference
     them using either the \c *x or the \c x->member notation.
 
     A guarded pointer will automatically cast to a \c T *, so you can
@@ -113,7 +113,7 @@
 /*!
     \fn template <class T> QPointer<T>::QPointer()
 
-    Constructs a 0 guarded pointer.
+    Constructs a guarded pointer with value \nullptr.
 
     \sa isNull()
 */

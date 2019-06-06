@@ -1900,8 +1900,8 @@ void QApplication::aboutQt()
 
     This signal is emitted when the widget that has keyboard focus changed from
     \a old to \a now, i.e., because the user pressed the tab-key, clicked into
-    a widget or changed the active window. Both \a old and \a now can be the
-    null-pointer.
+    a widget or changed the active window. Both \a old and \a now can be \nullptr.
+
 
     The signal is emitted after both widget have been notified about the change
     through QFocusEvent.

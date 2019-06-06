@@ -173,6 +173,12 @@ int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QO
 bool (*QAbstractDeclarativeData::isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 void (*QAbstractDeclarativeData::setWidgetParent)(QObject *, QObject *) = 0;
 
+/*!
+    \fn QObjectData::QObjectData()
+    \internal
+ */
+
+
 QObjectData::~QObjectData() {}
 
 QMetaObject *QObjectData::dynamicMetaObject() const
@@ -836,7 +842,7 @@ static bool check_parent_thread(QObject *parent,
 
     The destructor of a parent object destroys all child objects.
 
-    Setting \a parent to 0 constructs an object with no parent. If the
+    Setting \a parent to \nullptr constructs an object with no parent. If the
     object is a widget, it will become a top-level window.
 
     \sa parent(), findChild(), findChildren()
@@ -1753,11 +1759,11 @@ void QObject::killTimer(int id)
         int at = d->extraData ? d->extraData->runningTimers.indexOf(id) : -1;
         if (at == -1) {
             // timer isn't owned by this object
-            qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s, %s), timer has not been killed",
+            qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s, %ls), timer has not been killed",
                      id,
                      this,
                      metaObject()->className(),
-                     qPrintable(objectName()));
+                     qUtf16Printable(objectName()));
             return;
         }
 
@@ -3405,7 +3411,7 @@ bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
 
 /*!
     \internal
-    Helper function to remove the connection from the senders list and setting the receivers to 0
+    Helper function to remove the connection from the senders list and set the receivers to \nullptr
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::ConnectionData *connections, int signalIndex,
                                           const QObject *receiver, int method_index, void **slot,
@@ -4167,6 +4173,11 @@ uint QObject::registerUserData()
     static int user_data_registration = 0;
     return user_data_registration++;
 }
+
+/*!
+    \fn QObjectUserData::QObjectUserData()
+    \internal
+ */
 
 /*!
     \internal

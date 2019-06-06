@@ -343,7 +343,7 @@ newTempFile.write("""
     http://www.unicode.org/cldr/
 
     Do not edit this code: run cldr2qtimezone.py on updated (or
-    edited) CLDR data; see qtbase/util/local_database/.
+    edited) CLDR data; see qtbase/util/locale_database/.
 */
 
 """ % (str(datetime.date.today()), cldr_version, versionNumber) )

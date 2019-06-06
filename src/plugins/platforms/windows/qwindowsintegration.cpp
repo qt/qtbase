@@ -133,7 +133,7 @@ QT_BEGIN_NAMESPACE
 
 struct QWindowsIntegrationPrivate
 {
-    Q_DISABLE_COPY(QWindowsIntegrationPrivate)
+    Q_DISABLE_COPY_MOVE(QWindowsIntegrationPrivate)
     explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
 
@@ -217,6 +217,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::NoNativeMenus;
         } else if (param == QLatin1String("nowmpointer")) {
             options |= QWindowsIntegration::DontUseWMPointer;
+        } else if (param == QLatin1String("reverse")) {
+            options |= QWindowsIntegration::RtlEnabled;
         } else {
             qWarning() << "Unknown option" << param;
         }
@@ -352,6 +354,9 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 
     QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
     Q_ASSERT(result);
+
+    if (window->isTopLevel() && !QWindowsContext::shouldHaveNonClientDpiScaling(window))
+        result->setFlag(QWindowsWindow::DisableNonClientScaling);
 
     if (QWindowsMenuBar *menuBarToBeInstalled = QWindowsMenuBar::menuBarOf(window))
         menuBarToBeInstalled->install(result);

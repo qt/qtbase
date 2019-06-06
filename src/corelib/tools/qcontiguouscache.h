@@ -107,9 +107,9 @@ public:
 #endif
 
     QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
-    inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other)
+    inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other) noexcept
     { qSwap(d, other.d); return *this; }
-    inline void swap(QContiguousCache<T> &other) { qSwap(d, other.d); }
+    inline void swap(QContiguousCache<T> &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QContiguousCache<T> &other) const;
     inline bool operator!=(const QContiguousCache<T> &other) const { return !(*this == other); }
 

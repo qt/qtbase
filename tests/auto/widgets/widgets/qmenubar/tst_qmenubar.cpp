@@ -113,10 +113,7 @@ private slots:
 
     void check_escKey();
 #endif
-#ifndef Q_OS_WINCE
     void allowActiveAndDisabled();
-#endif
-
     void taskQTBUG56860_focus();
     void check_endKey();
     void check_homeKey();

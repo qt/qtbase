@@ -72,7 +72,7 @@ __attribute__((weakref("__pthread_cond_timedwait_relative")));
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
-        qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
+        qErrnoWarning(code, "%s: %s failure", where, what);
 }
 
 void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)

@@ -48,7 +48,6 @@
 #include <netinet/in.h>
 
 #include <cstring>
-#include <mutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -309,19 +308,7 @@ public:
     bool isOnlineIpv4 = false;
     QNetworkConnectionMonitor ipv6Probe;
     bool isOnlineIpv6 = false;
-
-    static bool enabled;
-    static void readEnv();
 };
-
-bool QNetworkStatusMonitorPrivate::enabled = false;
-
-void QNetworkStatusMonitorPrivate::readEnv()
-{
-    bool envOk = false;
-    const int env = qEnvironmentVariableIntValue("QT_USE_NETWORK_MONITOR", &envOk);
-    enabled = envOk && env > 0;
-}
 
 QNetworkStatusMonitor::QNetworkStatusMonitor()
     : QObject(*new QNetworkStatusMonitorPrivate)
@@ -400,9 +387,7 @@ bool QNetworkStatusMonitor::isNetworkAccesible()
 
 bool QNetworkStatusMonitor::isEnabled()
 {
-    static std::once_flag envRead = {};
-    std::call_once(envRead, QNetworkStatusMonitorPrivate::readEnv);
-    return QNetworkStatusMonitorPrivate::enabled;
+    return true;
 }
 
 void QNetworkStatusMonitor::reachabilityChanged(bool online)

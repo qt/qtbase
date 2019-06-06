@@ -321,7 +321,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn template <class T> QSharedDataPointer<T>::QSharedDataPointer()
-    Constructs a QSharedDataPointer initialized with a null \e{d pointer}.
+    Constructs a QSharedDataPointer initialized with \nullptr as \e{d pointer}.
 */
 
 /*!
@@ -494,8 +494,8 @@ QT_BEGIN_NAMESPACE
  */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::QExplicitlySharedDataPointer()
-    Constructs a QExplicitlySharedDataPointer initialized with a null
-    \e{d pointer}.
+    Constructs a QExplicitlySharedDataPointer initialized with \nullptr
+    as \e{d pointer}.
 */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::~QExplicitlySharedDataPointer()
@@ -573,8 +573,8 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn template <class T> void QExplicitlySharedDataPointer<T>::reset()
-    Resets \e this to be null. i.e., this function sets the
-    \e{d pointer} of \e this to 0, but first it decrements
+    Resets \e this to be null - i.e., this function sets the
+    \e{d pointer} of \e this to \nullptr, but first it decrements
     the reference count of the shared data object and deletes
     the shared data object if the reference count became 0.
  */
@@ -582,7 +582,7 @@ QT_BEGIN_NAMESPACE
 /*! \fn template <class T> T *QExplicitlySharedDataPointer<T>::take()
     \since 5.12
 
-    Returns a pointer to the shared object, and resets \e this to be null.
+    Returns a pointer to the shared object, and resets \e this to be \nullptr.
     That is, this function sets the \e{d pointer} of \e this to \nullptr.
  */
 

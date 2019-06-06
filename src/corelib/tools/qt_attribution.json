@@ -22,14 +22,14 @@
     "Name": "Unicode Common Locale Data Repository (CLDR)",
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
-    "Files": "For update, see qtbase/util/local_database/cldr2qlocalexml.py",
+    "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py",
     "Files": "qlocale_data_p.h qtimezoneprivate_data_p.h",
 
     "Description": "The Unicode CLDR provides key building blocks for software to support the
  world's languages, with the largest and most extensive standard repository of locale data
  available.",
     "Homepage": "http://cldr.unicode.org/",
-    "Version": "v34",
+    "Version": "v35.1",
     "License": "// as specified in https://spdx.org/licenses/Unicode-DFS-2016.html",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",

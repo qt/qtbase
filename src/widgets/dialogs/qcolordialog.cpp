@@ -1621,7 +1621,7 @@ void QColorDialogPrivate::_q_pickScreenColor()
     q->grabMouse();
 #endif
 
-#ifdef Q_OS_WIN32 // excludes WinCE and WinRT
+#ifdef Q_OS_WIN32 // excludes WinRT
     // On Windows mouse tracking doesn't work over other processes's windows
     updateTimer->start(30);
 
@@ -1864,6 +1864,9 @@ void QColorDialogPrivate::_q_addCustom()
 
 void QColorDialogPrivate::retranslateStrings()
 {
+    if (nativeDialogInUse)
+        return;
+
     if (!smallDisplay) {
         lblBasicColors->setText(QColorDialog::tr("&Basic colors"));
         lblCustomColors->setText(QColorDialog::tr("&Custom colors"));

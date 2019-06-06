@@ -154,12 +154,7 @@ void tst_QPdfWriter::testPageMetrics()
 
     if (setMargins) {
         // Setup the given margins
-        QPdfWriter::Margins margins;
-        margins.left = leftMMf;
-        margins.right = rightMMf;
-        margins.top = topMMf;
-        margins.bottom = bottomMMf;
-        writer.setMargins(margins);
+        writer.setPageMargins({leftMMf, topMMf, rightMMf, bottomMMf}, QPageLayout::Millimeter);
         QCOMPARE(writer.margins().left, leftMMf);
         QCOMPARE(writer.margins().right, rightMMf);
         QCOMPARE(writer.margins().top, topMMf);
@@ -169,7 +164,7 @@ void tst_QPdfWriter::testPageMetrics()
 
     // Set the given size, in Portrait mode
     if (pageSize < 0) {
-        writer.setPageSizeMM(sizeMMf);
+        writer.setPageSize(QPageSize(sizeMMf, QPageSize::Millimeter));
         QCOMPARE(writer.pageSize(), QPdfWriter::Custom);
         QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::Custom);
     } else {
@@ -221,7 +216,7 @@ void tst_QPdfWriter::testPageMetrics()
 
     // Now while in Landscape mode, set the size again, results should be the same
     if (pageSize < 0) {
-        writer.setPageSizeMM(sizeMMf);
+        writer.setPageSize(QPageSize(sizeMMf, QPageSize::Millimeter));
         QCOMPARE(writer.pageSize(), QPdfWriter::Custom);
         QCOMPARE(writer.pageLayout().pageSize().id(), QPageSize::Custom);
     } else {
@@ -255,7 +250,7 @@ void tst_QPdfWriter::qtbug59443()
     QTemporaryFile file;
     QVERIFY2(file.open(), qPrintable(file.errorString()));
     QPdfWriter writer(file.fileName());
-    writer.setPageSize(QPdfWriter::A4);
+    writer.setPageSize(QPageSize(QPageSize::A4));
     QTextDocument doc;
     doc.documentLayout()->setPaintDevice(&writer);
 

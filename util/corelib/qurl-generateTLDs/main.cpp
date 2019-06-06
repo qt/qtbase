@@ -146,7 +146,7 @@ int main(int argc, char **argv)
         entry.append("\\0");
     }
     outFile.write("static const quint32 tldIndices[] = {\n");
-    outDataBuffer.write("\nstatic const char *tldData[] = {\n");
+    outDataBuffer.write("\nstatic const char *tldData[] = {");
 
     int totalUtf8Size = 0;
     int chunkSize = 0; // strlen of the current chunk (sizeof is bigger by 1)
@@ -165,22 +165,22 @@ int main(int argc, char **argv)
             if (chunkSize >= 0xffff) {
                 static int chunkCount = 0;
                 qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
-                outDataBuffer.write(",\n\n");
+                outDataBuffer.write(",\n");
                 chunks.append(QString::number(totalUtf8Size));
                 chunkSize = 0;
             }
             totalUtf8Size += stringUtf8Size;
 
-            outDataBuffer.write("\"");
+            outDataBuffer.write("\n\"");
             outDataBuffer.write(entry.toUtf8());
-            outDataBuffer.write("\"\n");
+            outDataBuffer.write("\"");
         }
     }
     chunks.append(QString::number(totalUtf8Size));
     outFile.write(QByteArray::number(totalUtf8Size));
-    outFile.write("};\n");
+    outFile.write("\n};\n");
 
-    outDataBuffer.write("};\n");
+    outDataBuffer.write("\n};\n");
     outDataBuffer.close();
     outFile.write(outDataBufferBA);
 

@@ -791,7 +791,7 @@ void QAndroidInputContext::longPress(int x, int y)
             return;
         }
         QList<QInputMethodEvent::Attribute> imAttributes;
-        imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursor, 0, QVariant()));
+        imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, 0, 0, QVariant()));
         imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, anchor, cursor - anchor, QVariant()));
         QInputMethodEvent event(QString(), imAttributes);
         QGuiApplication::sendEvent(m_focusObject, &event);
@@ -1129,46 +1129,63 @@ QString QAndroidInputContext::getSelectedText(jint /*flags*/)
 
 QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
 {
-    //### the preedit text could theoretically be after the cursor
-    QVariant textAfter = QInputMethod::queryFocusObject(Qt::ImTextAfterCursor, QVariant(length));
-    if (textAfter.isValid()) {
-        return textAfter.toString().left(length);
-    }
-
-    //compatibility code for old controls that do not implement the new API
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (query.isNull())
+    if (length <= 0)
         return QString();
 
-    QString text = query->value(Qt::ImSurroundingText).toString();
-    if (!text.length())
-        return text;
+    QString text;
 
-    int cursorPos = query->value(Qt::ImCursorPosition).toInt();
-    return text.mid(cursorPos, length);
+    QVariant reportedTextAfter = QInputMethod::queryFocusObject(Qt::ImTextAfterCursor, length);
+    if (reportedTextAfter.isValid()) {
+        text = reportedTextAfter.toString();
+    } else {
+        // Compatibility code for old controls that do not implement the new API
+        QSharedPointer<QInputMethodQueryEvent> query =
+                focusObjectInputMethodQuery(Qt::ImCursorPosition | Qt::ImSurroundingText);
+        if (query) {
+            const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
+            text = query->value(Qt::ImSurroundingText).toString().mid(cursorPos);
+        }
+    }
+
+    // Controls do not report preedit text, so we have to add it
+    if (!m_composingText.isEmpty()) {
+        const int cursorPosInsidePreedit = m_composingCursor - m_composingTextStart;
+        text = m_composingText.midRef(cursorPosInsidePreedit) + text;
+    }
+
+    text.truncate(length);
+    return text;
 }
 
 QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 {
-    QVariant textBefore = QInputMethod::queryFocusObject(Qt::ImTextBeforeCursor, QVariant(length));
-    if (textBefore.isValid())
-        return textBefore.toString().rightRef(length) + m_composingText;
-
-    //compatibility code for old controls that do not implement the new API
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (query.isNull())
+    if (length <= 0)
         return QString();
 
-    int cursorPos = query->value(Qt::ImCursorPosition).toInt();
-    QString text = query->value(Qt::ImSurroundingText).toString();
-    if (!text.length())
-        return text;
+    QString text;
 
-    //### the preedit text does not need to be immediately before the cursor
-    if (cursorPos <= length)
-        return text.leftRef(cursorPos) + m_composingText;
-    else
-        return text.midRef(cursorPos - length, length) + m_composingText;
+    QVariant reportedTextBefore = QInputMethod::queryFocusObject(Qt::ImTextBeforeCursor, length);
+    if (reportedTextBefore.isValid()) {
+        text = reportedTextBefore.toString();
+    } else {
+        // Compatibility code for old controls that do not implement the new API
+        QSharedPointer<QInputMethodQueryEvent> query =
+                focusObjectInputMethodQuery(Qt::ImCursorPosition | Qt::ImSurroundingText);
+        if (query) {
+            const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
+            text = query->value(Qt::ImSurroundingText).toString().left(cursorPos);
+        }
+    }
+
+    // Controls do not report preedit text, so we have to add it
+    if (!m_composingText.isEmpty()) {
+        const int cursorPosInsidePreedit = m_composingCursor - m_composingTextStart;
+        text += m_composingText.leftRef(cursorPosInsidePreedit);
+    }
+
+    if (text.length() > length)
+        text = text.right(length);
+    return text;
 }
 
 /*
@@ -1231,6 +1248,8 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
     if (query.isNull())
         return JNI_FALSE;
 
+    if (start == end)
+        return JNI_TRUE;
     if (start > end)
         qSwap(start, end);
 

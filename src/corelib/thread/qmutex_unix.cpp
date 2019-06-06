@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
-        qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
+        qErrnoWarning(code, "%s: %s failure", where, what);
 }
 
 #ifdef QT_UNIX_SEMAPHORE

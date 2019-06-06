@@ -71,7 +71,7 @@ struct KeyboardLayoutItem {
 
 class QWindowsKeyMapper
 {
-    Q_DISABLE_COPY(QWindowsKeyMapper)
+    Q_DISABLE_COPY_MOVE(QWindowsKeyMapper)
 public:
     explicit QWindowsKeyMapper();
     ~QWindowsKeyMapper();

@@ -30,10 +30,12 @@
     extern "C" {
 #endif
 
-/* Magic to support UTF-16. */
 #if defined MD4C_USE_UTF16
+    /* Magic to support UTF-16. Not that in order to use it, you have to define
+     * the macro MD4C_USE_UTF16 both when building MD4C as well as when
+     * including this header in your code. */
     #ifdef _WIN32
-        #include <wchar.h>
+        #include <windows.h>
         typedef WCHAR       MD_CHAR;
     #else
         #error MD4C_USE_UTF16 is only supported on Windows.
@@ -236,6 +238,7 @@ typedef struct MD_BLOCK_H_DETAIL {
 typedef struct MD_BLOCK_CODE_DETAIL {
     MD_ATTRIBUTE info;
     MD_ATTRIBUTE lang;
+    MD_CHAR fence_char;     /* The character used for fenced code block; or zero for indented code block. */
 } MD_BLOCK_CODE_DETAIL;
 
 /* Detailed info for MD_BLOCK_TH and MD_BLOCK_TD. */

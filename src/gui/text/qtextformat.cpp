@@ -565,6 +565,15 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value HeadingLevel     The level of a heading, for example 1 corresponds to an HTML H1 tag; otherwise 0.
                             This enum value has been added in Qt 5.12.
 
+    \value BlockQuoteLevel  The depth of nested quoting on this block: 1 means the block is a top-level block quote.
+                            Blocks that are not block quotes should not have this property.
+                            This enum value has been added in Qt 5.14.
+    \value BlockCodeLanguage The programming language in a preformatted or code block.
+                            Blocks that do not contain code should not have this property.
+                            This enum value has been added in Qt 5.14.
+    \value BlockMarker      The \l{QTextBlockFormat::MarkerType}{type of adornment} to be shown alongside the block.
+                            This enum value has been added in Qt 5.14.
+
     Character properties
 
     \value FontFamily
@@ -650,7 +659,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     Image properties
 
-    \value ImageName
+    \value ImageName        The filename or source of the image.
+    \value ImageTitle       The title attribute of an HTML image tag, or
+                            the quoted string that comes after the URL in a Markdown image link.
+                            This enum value has been added in Qt 5.14.
+    \value ImageAltText     The alt attribute of an HTML image tag, or
+                            the image description in a Markdown image link.
+                            This enum value has been added in Qt 5.14.
     \value ImageWidth
     \value ImageHeight
     \value ImageQuality
@@ -2325,6 +2340,50 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     Returns the paragraph's heading level if it is a heading, or 0 if not.
 
     \sa setHeadingLevel()
+*/
+
+
+/*!
+    \fn void QTextBlockFormat::setMarker(MarkerType marker)
+    \since 5.14
+
+    Sets the type of adornment that should be rendered alongside the paragraph to \a marker.
+    For example, a list item can be adorned with a checkbox, either checked
+    or unchecked, as a replacement for its bullet. The default is \c NoMarker.
+
+    \sa marker()
+*/
+
+
+/*!
+    \fn MarkerType QTextBlockFormat::marker() const
+    \since 5.14
+
+    Returns the paragraph's marker if one has been set, or \c NoMarker if not.
+
+    \sa setMarker()
+*/
+
+
+/*!
+    \since 5.14
+    \enum QTextBlockFormat::MarkerType
+
+    This enum describes the types of markers a list item can have.
+    If a list item (a paragraph for which \l QTextBlock::textList() returns the list)
+    has a marker, it is rendered instead of the normal bullet.
+    In this way, checkable list items can be mixed with plain list items in the
+    same list, overriding the type of bullet specified by the
+    \l QTextListFormat::style() for the entire list.
+
+    \value NoMarker This is the default: the list item's bullet will be shown.
+    \value Unchecked Instead of the list item's bullet, an unchecked checkbox will be shown.
+    \value Checked Instead of the list item's bullet, a checked checkbox will be shown.
+
+    In the future, this may be extended to specify other types of paragraph
+    decorations.
+
+    \sa QTextListFormat::style()
 */
 
 

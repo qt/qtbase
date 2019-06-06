@@ -336,7 +336,9 @@ void tst_QStateMachine::transitionToRootState()
     TEST_ACTIVE_CHANGED(initialState, 1);
 
     machine.postEvent(new QEvent(QEvent::User));
-    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 'initial'");
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Unrecoverable error detected in running state machine: "
+                         "Child mode of state machine 'machine' is not 'ExclusiveStates'!");
     QCoreApplication::processEvents();
     QVERIFY(machine.configuration().isEmpty());
     QVERIFY(!machine.isRunning());
@@ -1061,7 +1063,8 @@ void tst_QStateMachine::transitionToStateNotInGraph()
     initialState->addTransition(&independentState);
 
     machine.start();
-    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 'initialState'");
+    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
+                                       "Child mode of state machine '' is not 'ExclusiveStates'!");
     QCoreApplication::processEvents();
 
     QCOMPARE(machine.isRunning(), false);
@@ -2099,6 +2102,8 @@ void tst_QStateMachine::parallelRootState()
     QSignalSpy finishedSpy(&machine, &QStateMachine::finished);
     QVERIFY(finishedSpy.isValid());
     machine.start();
+    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
+                                       "Child mode of state machine '' is not 'ExclusiveStates'!");
     QTRY_COMPARE(startedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 4);
     QVERIFY(machine.configuration().contains(s1));
@@ -3310,14 +3315,15 @@ void tst_QStateMachine::targetStateWithNoParent()
     QVERIFY(runningSpy.isValid());
 
     machine.start();
-    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 's1'");
+    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
+                                       "Child mode of state machine '' is not 'ExclusiveStates'!");
     TEST_ACTIVE_CHANGED(s1, 2);
     QTRY_COMPARE(startedSpy.count(), 1);
     QCOMPARE(machine.isRunning(), false);
     QCOMPARE(stoppedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 0);
     TEST_RUNNING_CHANGED_STARTED_STOPPED;
-    QCOMPARE(machine.error(), QStateMachine::NoCommonAncestorForTransitionError);
+    QCOMPARE(machine.error(), QStateMachine::StateMachineChildModeSetToParallelError);
 }
 
 void tst_QStateMachine::targetStateDeleted()

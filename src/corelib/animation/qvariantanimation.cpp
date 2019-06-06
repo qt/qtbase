@@ -399,7 +399,7 @@ static QBasicMutex registeredInterpolatorsMutex;
 
     Registers a custom interpolator \a func for the template type \c{T}.
     The interpolator has to be registered before the animation is constructed.
-    To unregister (and use the default interpolator) set \a func to 0.
+    To unregister (and use the default interpolator) set \a func to \nullptr.
  */
 
 /*!
@@ -416,7 +416,7 @@ static QBasicMutex registeredInterpolatorsMutex;
  * \internal
  * Registers a custom interpolator \a func for the specific \a interpolationType.
  * The interpolator has to be registered before the animation is constructed.
- * To unregister (and use the default interpolator) set \a func to 0.
+ * To unregister (and use the default interpolator) set \a func to \nullptr.
  */
 void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator func, int interpolationType)
 {

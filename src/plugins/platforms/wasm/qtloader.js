@@ -124,6 +124,8 @@
 //      Remove canvas at run-time. Removes the corresponding QScreen.
 // resizeCanvasElement
 //      Signals to the application that a canvas has been resized.
+// setFontDpi
+//      Sets the logical font dpi for the application.
 
 
 var Module = {}
@@ -237,6 +239,8 @@ function QtLoader(config)
     publicAPI.addCanvasElement = addCanvasElement;
     publicAPI.removeCanvasElement = removeCanvasElement;
     publicAPI.resizeCanvasElement = resizeCanvasElement;
+    publicAPI.setFontDpi = setFontDpi;
+    publicAPI.fontDpi = fontDpi;
 
     restartCount = 0;
 
@@ -555,6 +559,16 @@ function QtLoader(config)
     function resizeCanvasElement(element) {
         if (publicAPI.status == "Running")
             Module.qtResizeCanvasElement(element);
+    }
+
+    function setFontDpi(dpi) {
+        Module.qtFontDpi = dpi;
+        if (publicAPI.status == "Running")
+            Module.qtSetFontDpi(dpi);
+    }
+
+    function fontDpi() {
+        return Module.qtFontDpi;
     }
 
     setStatus("Created");
