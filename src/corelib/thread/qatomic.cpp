@@ -258,12 +258,26 @@
 
 /*!
     \fn template <typename T> T QAtomicInteger<T>::load() const
+    \obsolete
+
+    Use loadRelaxed() instead.
 
     Atomically loads the value of this QAtomicInteger using relaxed memory
     ordering. The value is not modified in any way, but note that there's no
     guarantee that it remains so.
 
-    \sa store(), loadAcquire()
+    \sa storeRelaxed(), loadAcquire()
+*/
+
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::loadRelaxed() const
+    \since 5.14
+
+    Atomically loads the value of this QAtomicInteger using relaxed memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa storeRelaxed(), loadAcquire()
 */
 
 /*!
@@ -273,16 +287,29 @@
     ordering. The value is not modified in any way, but note that there's no
     guarantee that it remains so.
 
-    \sa store(), load()
+    \sa storeRelaxed(), loadRelaxed()
 */
 
 /*!
     \fn template <typename T> void QAtomicInteger<T>::store(T newValue)
+    \obsolete
+
+    Use storeRelaxed() instead.
 
     Atomically stores the \a newValue value into this atomic type, using
     relaxed memory ordering.
 
-    \sa storeRelease(), load()
+    \sa storeRelease(), loadRelaxed()
+*/
+
+/*!
+    \fn template <typename T> void QAtomicInteger<T>::storeRelaxed(T newValue)
+    \since 5.14
+
+    Atomically stores the \a newValue value into this atomic type, using
+    relaxed memory ordering.
+
+    \sa storeRelease(), loadRelaxed()
 */
 
 /*!
@@ -291,7 +318,7 @@
     Atomically stores the \a newValue value into this atomic type, using
     the "Release" memory ordering.
 
-    \sa store(), load()
+    \sa store(), loadAcquire()
 */
 
 /*!
@@ -303,7 +330,7 @@
     value is not modified in any way, but note that there's no guarantee that
     it remains so.
 
-    \sa load(), loadAcquire()
+    \sa loadRelaxed(), loadAcquire()
 */
 
 /*!
@@ -314,7 +341,7 @@
     sequentially consistent memory ordering if possible; or "Release" ordering
     if not. This function returns a reference to this object.
 
-    \sa store(), storeRelease()
+    \sa storeRelaxed(), storeRelease()
 */
 
 /*! \fn template <typename T> bool QAtomicInteger<T>::isReferenceCountingNative()
@@ -1278,13 +1305,28 @@
 
 /*!
     \fn template <typename T> T *QAtomicPointer<T>::load() const
+    \obsolete
+
+    Use loadRelaxed() instead.
 
     Atomically loads the value of this QAtomicPointer using relaxed memory
     ordering. The value is not modified in any way, but note that there's no
     guarantee that it remains so.
 
-    \sa store(), loadAcquire()
+    \sa storeRelaxed(), loadAcquire()
 */
+
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::loadRelaxed() const
+    \since 5.14
+
+    Atomically loads the value of this QAtomicPointer using relaxed memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa storeRelaxed(), loadAcquire()
+*/
+
 
 /*!
     \fn template <typename T> T *QAtomicPointer<T>::loadAcquire() const
@@ -1293,16 +1335,29 @@
     ordering. The value is not modified in any way, but note that there's no
     guarantee that it remains so.
 
-    \sa store(), load()
+    \sa storeRelease(), loadRelaxed()
 */
 
 /*!
     \fn template <typename T> void QAtomicPointer<T>::store(T *newValue)
+    \obsolete
+
+    Use storeRelaxed() instead.
 
     Atomically stores the \a newValue value into this atomic type, using
     relaxed memory ordering.
 
-    \sa storeRelease(), load()
+    \sa storeRelease(), loadRelaxed()
+*/
+
+/*!
+    \fn template <typename T> void QAtomicPointer<T>::storeRelaxed(T *newValue)
+    \since 5.14
+
+    Atomically stores the \a newValue value into this atomic type, using
+    relaxed memory ordering.
+
+    \sa storeRelease(), loadRelaxed()
 */
 
 /*!
@@ -1311,7 +1366,7 @@
     Atomically stores the \a newValue value into this atomic type, using
     the "Release" memory ordering.
 
-    \sa store(), load()
+    \sa storeRelaxed(), loadRelaxed()
 */
 
 /*! \fn template <typename T> bool QAtomicPointer<T>::isTestAndSetNative()

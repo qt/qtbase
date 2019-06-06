@@ -81,8 +81,10 @@ public:
 
 #ifdef Q_CLANG_QDOC
     T load() const;
+    T loadRelaxed() const;
     T loadAcquire() const;
     void store(T newValue);
+    void storeRelaxed(T newValue);
     void storeRelease(T newValue);
 
     operator T() const;
@@ -172,7 +174,7 @@ public:
 #else
     inline QAtomicPointer(T *value = nullptr) noexcept
     {
-        this->store(value);
+        this->storeRelaxed(value);
     }
 #endif
     inline QAtomicPointer(const QAtomicPointer<T> &other) noexcept
