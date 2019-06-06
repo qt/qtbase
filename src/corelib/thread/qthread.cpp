@@ -171,6 +171,11 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 // to 128K.
 #ifdef Q_OS_INTEGRITY
     stackSize = 128 * 1024;
+#elif defined(Q_OS_RTEMS)
+    static bool envStackSizeOk = false;
+    static const int envStackSize = qEnvironmentVariableIntValue("QT_DEFAULT_THREAD_STACK_SIZE", &envStackSizeOk);
+    if (envStackSizeOk)
+        stackSize = envStackSize;
 #endif
 
 #if defined (Q_OS_WIN)
