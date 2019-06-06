@@ -98,6 +98,7 @@ public:
         RedirectPolicyAttribute,
         Http2DirectAttribute,
         ResourceTypeAttribute, // internal
+        AutoDeleteReplyOnFinishAttribute,
 
         User = 1000,
         UserMax = 32767

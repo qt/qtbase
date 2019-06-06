@@ -50,92 +50,30 @@
 #define QMAC_QAQUASTYLE_SIZE_CONSTRAIN
 //#define DEBUG_SIZE_CONSTRAINT
 
-#include <private/qcore_mac_p.h>
-#if QT_CONFIG(tabbar)
-#include <private/qtabbar_p.h>
-#endif
-#include <private/qpainter_p.h>
-#include <qapplication.h>
-#include <qbitmap.h>
-#if QT_CONFIG(combobox)
-#include <private/qcombobox_p.h>
-#include <qcombobox.h>
-#endif
-#if QT_CONFIG(dialogbuttonbox)
-#include <qdialogbuttonbox.h>
-#endif
-#if QT_CONFIG(dockwidget)
-#include <qdockwidget.h>
-#endif
-#include <qevent.h>
-#include <qfocusframe.h>
-#include <qformlayout.h>
-#include <qgroupbox.h>
-#include <qhash.h>
-#include <qheaderview.h>
-#if QT_CONFIG(lineedit)
-#include <qlineedit.h>
-#endif
-#if QT_CONFIG(mainwindow)
-#include <qmainwindow.h>
-#endif
-#if QT_CONFIG(mdiarea)
-#include <qmdisubwindow.h>
-#endif
-#if QT_CONFIG(menubar)
-#include <qmenubar.h>
-#endif
-#include <qpaintdevice.h>
-#include <qpainter.h>
-#include <qpixmapcache.h>
-#include <qpointer.h>
-#if QT_CONFIG(progressbar)
-#include <qprogressbar.h>
-#endif
-#if QT_CONFIG(pushbutton)
-#include <qpushbutton.h>
-#endif
-#include <qradiobutton.h>
-#if QT_CONFIG(rubberband)
-#include <qrubberband.h>
-#endif
-#if QT_CONFIG(scrollbar)
-#include <qscrollbar.h>
-#endif
-#if QT_CONFIG(sizegrip)
-#include <qsizegrip.h>
-#endif
-#include <qstyleoption.h>
-#include <qtoolbar.h>
-#if QT_CONFIG(toolbutton)
-#include <qtoolbutton.h>
-#endif
-#if QT_CONFIG(treeview)
-#include <qtreeview.h>
-#endif
-#if QT_CONFIG(tableview)
-#include <qtableview.h>
-#endif
-#include <qoperatingsystemversion.h>
-#if QT_CONFIG(wizard)
-#include <qwizard.h>
-#endif
-#include <qdebug.h>
-#if QT_CONFIG(datetimeedit)
-#include <qdatetimeedit.h>
-#endif
-#include <qmath.h>
-#include <QtWidgets/qgraphicsproxywidget.h>
-#if QT_CONFIG(graphicsview)
-#include <QtWidgets/qgraphicsview.h>
-#endif
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
-#include <private/qstylehelper_p.h>
-#include <private/qstyleanimation_p.h>
-#include <qpa/qplatformfontdatabase.h>
-#include <qpa/qplatformtheme.h>
+
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/qpa/qplatformfontdatabase.h>
+#include <QtGui/qpa/qplatformtheme.h>
+
+#include <QtWidgets/private/qstyleanimation_p.h>
+
+#if QT_CONFIG(mdiarea)
+#include <QtWidgets/qmdisubwindow.h>
+#endif
+#if QT_CONFIG(scrollbar)
+#include <QtWidgets/qscrollbar.h>
+#endif
+#if QT_CONFIG(tabbar)
+#include <QtWidgets/private/qtabbar_p.h>
+#endif
+#if QT_CONFIG(wizard)
+#include <QtWidgets/qwizard.h>
+#endif
 
 QT_USE_NAMESPACE
 
@@ -150,6 +88,16 @@ static QWindow *qt_getWindow(const QWidget *widget)
 QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 
 @implementation NotificationReceiver
+{
+    QMacStylePrivate *privateStyle;
+}
+
+- (instancetype)initWithPrivateStyle:(QMacStylePrivate *)style
+{
+    if (self = [super init])
+        privateStyle = style;
+    return self;
+}
 
 - (void)scrollBarStyleDidChange:(NSNotification *)notification
 {
@@ -162,6 +110,23 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
     for (const auto &o : QMacStylePrivate::scrollBars)
         QCoreApplication::sendEvent(o, &event);
 }
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
+{
+    Q_UNUSED(keyPath);
+    Q_UNUSED(object);
+    Q_UNUSED(change);
+    Q_UNUSED(context);
+
+    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
+    Q_ASSERT(object == NSApp);
+
+    for (NSView *b : privateStyle->cocoaControls)
+        [b release];
+    privateStyle->cocoaControls.clear();
+}
+
 @end
 
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
@@ -906,8 +871,10 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QLineEdit *>(widg))
             ct = QStyle::CT_LineEdit;
 #endif
+#if QT_CONFIG(itemviews)
         else if (qobject_cast<const QHeaderView *>(widg))
             ct = QStyle::CT_HeaderSection;
+#endif
 #if QT_CONFIG(menubar)
         else if (qobject_cast<const QMenuBar *>(widg))
             ct = QStyle::CT_MenuBar;
@@ -2068,11 +2035,17 @@ QMacStyle::QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    d->receiver = [[NotificationReceiver alloc] init];
+    d->receiver = [[NotificationReceiver alloc] initWithPrivateStyle:d];
     [[NSNotificationCenter defaultCenter] addObserver:d->receiver
                                              selector:@selector(scrollBarStyleDidChange:)
                                                  name:NSPreferredScrollerStyleDidChangeNotification
                                                object:nil];
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
+        [NSApplication.sharedApplication addObserver:d->receiver forKeyPath:@"effectiveAppearance"
+         options:NSKeyValueObservingOptionNew context:nullptr];
+    }
+#endif
 }
 
 QMacStyle::~QMacStyle()
@@ -2081,6 +2054,10 @@ QMacStyle::~QMacStyle()
     QMacAutoReleasePool pool;
 
     [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
+        [NSApplication.sharedApplication removeObserver:d->receiver forKeyPath:@"effectiveAppearance"];
+#endif
     [d->receiver release];
 }
 
@@ -2871,9 +2848,11 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             ret = [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay;
         }
         break;
+#if QT_CONFIG(itemviews)
     case SH_ItemView_ScrollMode:
         ret = QAbstractItemView::ScrollPerPixel;
         break;
+#endif
     case SH_TitleBar_ShowToolTipsOnButtons:
         // min/max/close buttons on windows don't show tool tips
         ret = false;
@@ -4290,12 +4269,15 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                                      alpha:pc.alphaF()];
 
                     s = qt_mac_removeMnemonics(s);
-                    const auto textRect = CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height());
 
                     QMacCGContext cgCtx(p);
                     d->setupNSGraphicsContext(cgCtx, YES);
 
-                    [s.toNSString() drawInRect:textRect
+                    // Draw at point instead of in rect, as the rect we've computed for the menu item
+                    // is based on the font metrics we got from HarfBuzz, so we may risk having CoreText
+                    // line-break the string if it doesn't fit the given rect. It's better to draw outside
+                    // the rect and possibly overlap something than to have part of the text disappear.
+                    [s.toNSString() drawAtPoint:CGPointMake(xpos, yPos)
                                 withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
                                                   NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
 
@@ -4568,6 +4550,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     const int controlSize = getControlSize(opt, widget);
 
     switch (sr) {
+#if QT_CONFIG(itemviews)
     case SE_ItemViewItemText:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int fw = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, widget);
@@ -4577,6 +4560,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.adjust(-fw, 0, 0, 0);
         }
         break;
+#endif
     case SE_ToolBoxTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
@@ -6126,8 +6110,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     switch (ct) {
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
-        if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            const int buttonWidth = 20; // FIXME Use subControlRect()
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            const bool hasButtons = (vopt->buttonSymbols != QAbstractSpinBox::NoButtons);
+            const int buttonWidth = hasButtons ? proxy()->subControlRect(CC_SpinBox, vopt, SC_SpinBoxUp, widget).width() : 0;
             sz += QSize(buttonWidth, 0);
         }
         break;
@@ -6403,12 +6388,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = sz.expandedTo(QSize(sz.width(), minimumSize));
         }
         break;
+#if QT_CONFIG(itemviews)
     case CT_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             sz = QCommonStyle::sizeFromContents(ct, vopt, csz, widget);
             sz.setHeight(sz.height() + 2);
         }
         break;
+#endif
 
     default:
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);

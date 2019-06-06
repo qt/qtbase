@@ -1426,6 +1426,13 @@ bool qSharedBuild() noexcept
 */
 
 /*!
+    \macro Q_OS_WINDOWS
+    \relates <QtGlobal>
+
+    This is a synonym for Q_OS_WIN.
+*/
+
+/*!
     \macro Q_OS_WIN32
     \relates <QtGlobal>
 
@@ -3796,6 +3803,56 @@ bool qunsetenv(const char *varName)
 
     This overload is deleted to prevent a dangling reference in code like
     \snippet code/src_corelib_global_qglobal.cpp as-const-4
+*/
+
+/*!
+    \fn template <typename T, typename U = T> T qExchange(T &obj, U &&newValue)
+    \relates <QtGlobal>
+    \since 5.14
+
+    Replaces the value of \a obj with \a newValue and returns the old value of \a obj.
+
+    This is Qt's implementation of std::exchange(). It differs from std::exchange()
+    only in that it is \c constexpr already in C++14, and available on all supported
+    compilers.
+
+    Here is how to use qExchange() to implement move constructors:
+    \code
+    MyClass(MyClass &&other)
+      : m_pointer{qExchange(other.m_pointer, nullptr)},
+        m_int{qExchange(other.m_int, 0)},
+        m_vector{std::move(other.m_vector)},
+        ...
+    \endcode
+
+    For members of class type, we can use std::move(), as their move-constructor will
+    do the right thing. But for scalar types such as raw pointers or integer type, move
+    is the same as copy, which, particularly for pointers, is not what we expect. So, we
+    cannot use std::move() for such types, but we can use std::exchange()/qExchange() to
+    make sure the source object's member is already reset by the time we get to the
+    initialization of our next data member, which might come in handy if the constructor
+    exits with an exception.
+
+    Here is how to use qExchange() to write a loop that consumes the collection it
+    iterates over:
+    \code
+    for (auto &e : qExchange(collection, {})
+        doSomethingWith(e);
+    \endcode
+
+    Which is equivalent to the following, much more verbose code:
+    \code
+    {
+        auto tmp = std::move(collection);
+        collection = {};                    // or collection.clear()
+        for (auto &e : tmp)
+            doSomethingWith(e);
+    }                                       // destroys 'tmp'
+    \endcode
+
+    This is perfectly safe, as the for-loop keeps the result of qExchange() alive for as
+    long as the loop runs, saving the declaration of a temporary variable. Be aware, though,
+    that qExchange() returns a non-const object, so Qt containers may detach.
 */
 
 /*!

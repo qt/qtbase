@@ -117,8 +117,6 @@ public:
         NotifyCopyFinished
     };
 
-    typedef QQueue<InternalNotifications> NotificationQueue;
-
     QNetworkReplyImplPrivate();
 
     void _q_startOperation();
@@ -178,7 +176,7 @@ public:
     bool cacheEnabled;
     QIODevice *cacheSaveDevice;
 
-    NotificationQueue pendingNotifications;
+    std::vector<InternalNotifications> pendingNotifications;
     bool notificationHandlingPaused;
 
     QUrl urlForLastAuthentication;

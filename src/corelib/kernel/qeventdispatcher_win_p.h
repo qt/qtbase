@@ -172,8 +172,6 @@ public:
     HHOOK getMessageHook;
 
     // for controlling when to send posted events
-    QAtomicInt serialNumber;
-    int lastSerialNumber, sendPostedEventsWindowsTimerId;
     QAtomicInt wakeUps;
 
     // timers

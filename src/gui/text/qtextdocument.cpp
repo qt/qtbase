@@ -2076,6 +2076,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
                          The icon needs to be converted to one of the supported types first,
                          for example using QIcon::pixmap.
     \value StyleSheetResource The resource contains CSS.
+    \value MarkdownResource The resource contains Markdown.
     \value UserResource  The first available value for user defined
                          resource types.
 
@@ -2708,6 +2709,12 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
             if (imgFmt.hasProperty(QTextFormat::ImageName))
                 emitAttribute("src", imgFmt.name());
 
+            if (imgFmt.hasProperty(QTextFormat::ImageAltText))
+                emitAttribute("alt", imgFmt.stringProperty(QTextFormat::ImageAltText));
+
+            if (imgFmt.hasProperty(QTextFormat::ImageTitle))
+                emitAttribute("title", imgFmt.stringProperty(QTextFormat::ImageTitle));
+
             if (imgFmt.hasProperty(QTextFormat::ImageWidth))
                 emitAttribute("width", QString::number(imgFmt.width()));
 
@@ -3292,8 +3299,11 @@ QString QTextDocument::toHtml(const QByteArray &encoding) const
 #endif // QT_NO_TEXTHTMLPARSER
 
 /*!
-    Returns a string containing a Markdown representation of the document,
-    or an empty string if writing fails for any reason.
+    \since 5.14
+    Returns a string containing a Markdown representation of the document with
+    the given \a features, or an empty string if writing fails for any reason.
+
+    \sa setMarkdown
 */
 #if QT_CONFIG(textmarkdownwriter)
 QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) const
@@ -3308,6 +3318,7 @@ QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) cons
 #endif
 
 /*!
+    \since 5.14
     Replaces the entire contents of the document with the given
     Markdown-formatted text in the \a markdown string, with the given
     \a features supported.  By default, all supported GitHub-style

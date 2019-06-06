@@ -41,6 +41,7 @@
 #include <qtextformat.h>
 #include "qtextdocument_p.h"
 #include "qtextengine_p.h"
+#include "qtextlist.h"
 
 #include "qabstracttextdocumentlayout_p.h"
 
@@ -647,6 +648,36 @@ QTextFormat QAbstractTextDocumentLayout::formatAt(const QPointF &pos) const
     QTextDocumentPrivate *pieceTable = qobject_cast<const QTextDocument *>(parent())->docHandle();
     QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
     return pieceTable->formatCollection()->format(it->format);
+}
+
+/*!
+    \since 5.14
+
+    Returns the block (probably a list item) whose \l{QTextBlockFormat::marker()}{marker}
+    is found at the given position \a pos.
+*/
+QTextBlock QAbstractTextDocumentLayout::blockWithMarkerAt(const QPointF &pos) const
+{
+    QTextBlock block = document()->firstBlock();
+    while (block.isValid()) {
+        if (block.blockFormat().marker() != QTextBlockFormat::NoMarker) {
+            QRectF blockBr = blockBoundingRect(block);
+            QTextBlockFormat blockFmt = block.blockFormat();
+            QFontMetrics fm(block.charFormat().font());
+            qreal totalIndent = blockFmt.indent() + blockFmt.leftMargin() + blockFmt.textIndent();
+            if (block.textList())
+                totalIndent += block.textList()->format().indent() * 40;
+            QRectF adjustedBr = blockBr.adjusted(totalIndent - fm.height(), 0, totalIndent - blockBr.width(), fm.height() - blockBr.height());
+            if (adjustedBr.contains(pos)) {
+                //qDebug() << "hit block" << block.text() << blockBr << adjustedBr << "marker" << block.blockFormat().marker()
+                //         << "font" << block.charFormat().font() << "adj" << lineHeight << totalIndent;
+                if (block.blockFormat().hasProperty(QTextFormat::BlockMarker))
+                    return block;
+            }
+        }
+        block = block.next();
+    }
+    return QTextBlock();
 }
 
 /*!

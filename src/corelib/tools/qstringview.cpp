@@ -721,6 +721,40 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn qsizetype QStringView::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.14
+
+    Returns the index position of the first occurrence of the string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively, in this string-view,
+    searching forward from index position \a from. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    If \a from is -1, the search starts at the last character; if it is
+    -2, at the next to last character and so on.
+
+    \sa QString::indexOf()
+*/
+
+/*!
+    \fn bool QStringView::contains(QStringView str, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::contains(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::contains(QChar c, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns \c true if this string-view contains an occurrence of the string-view
+    \a str, Latin-1 string \a l1, or character \a ch; otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is
+    case-sensitive; otherwise the search is case-insensitive.
+
+    \sa indexOf()
+*/
+
+/*!
     \fn QByteArray QStringView::toLatin1() const
 
     Returns a Latin-1 representation of the string as a QByteArray.
@@ -800,16 +834,16 @@ QT_BEGIN_NAMESPACE
 
     Transcribes this string into the given \a array.
 
-    Caller is responsible for ensuring \a array is large enough to hold the \t
-    wchar_t encoding of this string (allocating the array with the same length
+    Caller is responsible for ensuring \a array is large enough to hold the
+    \c wchar_t encoding of this string (allocating the array with the same length
     as the string is always sufficient). The array is encoded in UTF-16 on
-    platforms where \t wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
-    systems), \t wchar_t is assumed to be 4 bytes wide and the data is written
+    platforms where \c wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
+    systems), \c wchar_t is assumed to be 4 bytes wide and the data is written
     in UCS-4.
 
     \note This function writes no null terminator to the end of \a array.
 
-    Returns the number of \t wchar_t entries written to \a array.
+    Returns the number of \c wchar_t entries written to \a array.
 
     \sa QString::toWCharArray()
 */

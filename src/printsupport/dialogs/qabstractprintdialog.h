@@ -73,7 +73,9 @@ public:
         PrintPageRange          = 0x0004,
         PrintShowPageSize       = 0x0008,
         PrintCollateCopies      = 0x0010,
-        DontUseSheet            = 0x0020,
+#if QT_DEPRECATED_SINCE(5, 14)
+        DontUseSheet Q_DECL_ENUMERATOR_DEPRECATED = 0x0020,
+#endif
         PrintCurrentPage        = 0x0040
     };
     Q_ENUM(PrintDialogOption)
@@ -83,8 +85,6 @@ public:
 
     explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = nullptr);
     ~QAbstractPrintDialog();
-
-    int exec() override = 0;
 
     // obsolete
     void addEnabledOption(PrintDialogOption option);

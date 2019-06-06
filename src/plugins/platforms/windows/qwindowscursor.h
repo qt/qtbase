@@ -68,7 +68,7 @@ inline uint qHash(const QWindowsPixmapCursorCacheKey &k, uint seed) noexcept
 
 class CursorHandle
 {
-    Q_DISABLE_COPY(CursorHandle)
+    Q_DISABLE_COPY_MOVE(CursorHandle)
 public:
     explicit CursorHandle(HCURSOR hcursor = nullptr) : m_hcursor(hcursor) {}
     ~CursorHandle()

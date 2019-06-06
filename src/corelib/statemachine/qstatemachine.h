@@ -106,7 +106,8 @@ public:
         NoError,
         NoInitialStateError,
         NoDefaultStateInHistoryStateError,
-        NoCommonAncestorForTransitionError
+        NoCommonAncestorForTransitionError,
+        StateMachineChildModeSetToParallelError
     };
 
     explicit QStateMachine(QObject *parent = nullptr);

@@ -39,8 +39,6 @@
 
 #include <QtTest/private/qbenchmark_p.h>
 
-#ifdef QTESTLIB_USE_VALGRIND
-
 #include <QtTest/private/qbenchmarkvalgrind_p.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qcoreapplication.h>
@@ -243,5 +241,3 @@ QTest::QBenchmarkMetric QBenchmarkCallgrindMeasurer::metricType()
 }
 
 QT_END_NAMESPACE
-
-#endif // QTESTLIB_USE_VALGRIND

@@ -174,6 +174,17 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 // accessibility protocol
 //
 
+- (BOOL)isAccessibilityFocused
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid()) {
+        return false;
+    }
+    // Just check if the app thinks we're focused.
+    id focusedElement = NSApp.accessibilityApplicationFocusedUIElement;
+    return [focusedElement isEqual:self];
+}
+
 // attributes
 
 + (id) lineNumberForIndex: (int)index forText:(const QString &)text
@@ -187,54 +198,58 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return YES;
 }
 
-- (NSArray<NSString *> *)accessibilityAttributeNames {
-    static NSArray<NSString *> *defaultAttributes = [@[
-        NSAccessibilityRoleAttribute,
-        NSAccessibilityRoleDescriptionAttribute,
-        NSAccessibilitySubroleAttribute,
-        NSAccessibilityChildrenAttribute,
-        NSAccessibilityFocusedAttribute,
-        NSAccessibilityParentAttribute,
-        NSAccessibilityWindowAttribute,
-        NSAccessibilityTopLevelUIElementAttribute,
-        NSAccessibilityPositionAttribute,
-        NSAccessibilitySizeAttribute,
-        NSAccessibilityTitleAttribute,
-        NSAccessibilityDescriptionAttribute,
-        NSAccessibilityEnabledAttribute
-    ] retain];
-
+- (NSString *) accessibilityRole {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
-        return defaultAttributes;
+        return NSAccessibilityUnknownRole;
+    return QCocoaAccessible::macRole(iface);
+}
 
-    NSMutableArray<NSString *> *attributes = [[NSMutableArray<NSString *> alloc] initWithCapacity:defaultAttributes.count];
-    [attributes addObjectsFromArray:defaultAttributes];
+- (NSString *) accessibilitySubRole {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return NSAccessibilityUnknownRole;
+    return QCocoaAccessible::macSubrole(iface);
+}
 
-    if (QCocoaAccessible::hasValueAttribute(iface)) {
-        [attributes addObject:NSAccessibilityValueAttribute];
-    }
+- (NSString *) accessibilityRoleDescription {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return NSAccessibilityUnknownRole;
+    return NSAccessibilityRoleDescription(self.accessibilityRole, self.accessibilitySubRole);
+}
 
-    if (iface->textInterface()) {
-        [attributes addObjectsFromArray:@[
-            NSAccessibilityNumberOfCharactersAttribute,
-            NSAccessibilitySelectedTextAttribute,
-            NSAccessibilitySelectedTextRangeAttribute,
-            NSAccessibilityVisibleCharacterRangeAttribute,
-            NSAccessibilityInsertionPointLineNumberAttribute
-        ]];
+- (NSArray *) accessibilityChildren {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return nil;
+    return QCocoaAccessible::unignoredChildren(iface);
+}
 
-// TODO: multi-selection: NSAccessibilitySelectedTextRangesAttribute,
-    }
+- (id) accessibilityWindow {
+    // We're in the same window as our parent.
+    return [self.accessibilityParent accessibilityWindow];
+}
 
-    if (iface->valueInterface()) {
-        [attributes addObjectsFromArray:@[
-            NSAccessibilityMinValueAttribute,
-            NSAccessibilityMaxValueAttribute
-        ]];
-    }
+- (id) accessibilityTopLevelUIElementAttribute {
+    // We're in the same top level element as our parent.
+    return [self.accessibilityParent accessibilityTopLevelUIElementAttribute];
+}
 
-    return [attributes autorelease];
+- (NSString *) accessibilityTitle {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return nil;
+    if (iface->role() == QAccessible::StaticText)
+        return nil;
+    return iface->text(QAccessible::Name).toNSString();
+}
+
+- (BOOL) accessibilityEnabledAttribute {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return false;
+    return !iface->state().disabled;
 }
 
 - (id)accessibilityParent {
@@ -271,112 +286,117 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return QCocoaScreen::mapToNative(iface->rect());
 }
 
-- (id) minValueAttribute:(QAccessibleInterface*)iface {
+- (NSString*)accessibilityLabel {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid()) {
+        qWarning() << "Called accessibilityLabel on invalid object: " << axid;
+        return nil;
+    }
+    return iface->text(QAccessible::Description).toNSString();
+}
+
+- (void)setAccessibilityLabel:(NSString*)label{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return;
+    iface->setText(QAccessible::Description, QString::fromNSString(label));
+}
+
+- (id) accessibilityMinValue:(QAccessibleInterface*)iface {
     if (QAccessibleValueInterface *val = iface->valueInterface())
         return @(val->minimumValue().toDouble());
     return nil;
 }
 
-- (id) maxValueAttribute:(QAccessibleInterface*)iface {
+- (id) accessibilityMaxValue:(QAccessibleInterface*)iface {
     if (QAccessibleValueInterface *val = iface->valueInterface())
         return @(val->maximumValue().toDouble());
     return nil;
 }
 
-- (id)accessibilityAttributeValue:(NSString *)attribute {
+- (id) accessibilityValue {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (!iface || !iface->isValid()) {
-        qWarning() << "Called attribute on invalid object: " << axid;
+    if (!iface || !iface->isValid())
         return nil;
+
+    // VoiceOver asks for the value attribute for all elements. Return nil
+    // if we don't want the element to have a value attribute.
+    if (!QCocoaAccessible::hasValueAttribute(iface))
+        return nil;
+
+    return QCocoaAccessible::getValueAttribute(iface);
+}
+
+- (NSInteger) accessibilityNumberOfCharacters {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return 0;
+    if (QAccessibleTextInterface *text = iface->textInterface())
+        return text->characterCount();
+    return 0;
+}
+
+- (NSString *) accessibilitySelectedText {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return nil;
+    if (QAccessibleTextInterface *text = iface->textInterface()) {
+        int start = 0;
+        int end = 0;
+        text->selection(0, &start, &end);
+        return text->text(start, end).toNSString();
     }
-
-    if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
-        return QCocoaAccessible::macRole(iface);
-    } else if ([attribute isEqualToString:NSAccessibilitySubroleAttribute]) {
-        return QCocoaAccessible::macSubrole(iface);
-    } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
-        return NSAccessibilityRoleDescription(QCocoaAccessible::macRole(iface),
-            [self accessibilityAttributeValue:NSAccessibilitySubroleAttribute]);
-    } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-        return QCocoaAccessible::unignoredChildren(iface);
-    } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-        // Just check if the app thinks we're focused.
-        id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
-        return @([focusedElement isEqual:self]);
-    } else if ([attribute isEqualToString:NSAccessibilityParentAttribute]) {
-        return self.accessibilityParent;
-    } else if ([attribute isEqualToString:NSAccessibilityWindowAttribute]) {
-        // We're in the same window as our parent.
-        return [[self accessibilityParent] accessibilityAttributeValue:NSAccessibilityWindowAttribute];
-    } else if ([attribute isEqualToString:NSAccessibilityTopLevelUIElementAttribute]) {
-        // We're in the same top level element as our parent.
-        return [[self accessibilityParent] accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
-    } else if ([attribute isEqualToString:NSAccessibilityPositionAttribute]) {
-        // The position in points of the element's lower-left corner in screen-relative coordinates
-        QPointF qtPosition = QRectF(iface->rect()).bottomLeft();
-        return [NSValue valueWithPoint:QCocoaScreen::mapToNative(qtPosition)];
-    } else if ([attribute isEqualToString:NSAccessibilitySizeAttribute]) {
-        QSize qtSize = iface->rect().size();
-        return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
-    } else if ([attribute isEqualToString:NSAccessibilityTitleAttribute]) {
-        if (iface->role() == QAccessible::StaticText)
-            return nil;
-        return iface->text(QAccessible::Name).toNSString();
-    } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
-        return iface->text(QAccessible::Description).toNSString();
-    } else if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
-        return @(!iface->state().disabled);
-    } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
-        // VoiceOver asks for the value attribute for all elements. Return nil
-        // if we don't want the element to have a value attribute.
-        if (!QCocoaAccessible::hasValueAttribute(iface))
-            return nil;
-
-        return QCocoaAccessible::getValueAttribute(iface);
-
-    } else if ([attribute isEqualToString:NSAccessibilityNumberOfCharactersAttribute]) {
-        if (QAccessibleTextInterface *text = iface->textInterface())
-            return @(text->characterCount());
-        return nil;
-    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-        if (QAccessibleTextInterface *text = iface->textInterface()) {
-            int start = 0;
-            int end = 0;
-            text->selection(0, &start, &end);
-            return text->text(start, end).toNSString();
-        }
-        return nil;
-    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
-        if (QAccessibleTextInterface *text = iface->textInterface()) {
-            int start = 0;
-            int end = 0;
-            if (text->selectionCount() > 0) {
-                text->selection(0, &start, &end);
-            } else {
-                start = text->cursorPosition();
-                end = start;
-            }
-            return [NSValue valueWithRange:NSMakeRange(quint32(start), quint32(end - start))];
-        }
-        return [NSValue valueWithRange: NSMakeRange(0, 0)];
-    } else if ([attribute isEqualToString:NSAccessibilityVisibleCharacterRangeAttribute]) {
-        // FIXME This is not correct and may impact performance for big texts
-        if (QAccessibleTextInterface *text = iface->textInterface())
-            return [NSValue valueWithRange: NSMakeRange(0, text->characterCount())];
-        return [NSValue valueWithRange: NSMakeRange(0, iface->text(QAccessible::Name).length())];
-    } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
-        if (QAccessibleTextInterface *text = iface->textInterface()) {
-            int position = text->cursorPosition();
-            return [self accessibilityAttributeValue:NSAccessibilityLineForIndexParameterizedAttribute forParameter:@(position)];
-        }
-        return nil;
-    } else if ([attribute isEqualToString:NSAccessibilityMinValueAttribute]) {
-        return [self minValueAttribute:iface];
-    } else if ([attribute isEqualToString:NSAccessibilityMaxValueAttribute]) {
-        return [self maxValueAttribute:iface];
-    }
-
     return nil;
+}
+
+- (NSRange) accessibilitySelectedTextRange {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return NSRange();
+    if (QAccessibleTextInterface *text = iface->textInterface()) {
+        int start = 0;
+        int end = 0;
+        if (text->selectionCount() > 0) {
+            text->selection(0, &start, &end);
+        } else {
+            start = text->cursorPosition();
+            end = start;
+        }
+        return NSMakeRange(quint32(start), quint32(end - start));
+    }
+    return NSMakeRange(0, 0);
+}
+
+- (NSInteger)accessibilityLineForIndex:(NSInteger)index {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return 0;
+    if (QAccessibleTextInterface *text = iface->textInterface()) {
+        QString textToPos = text->text(0, index);
+        return textToPos.count('\n');
+    }
+    return 0;
+}
+
+- (NSRange)accessibilityVisibleCharacterRange {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return NSRange();
+    // FIXME This is not correct and may impact performance for big texts
+    if (QAccessibleTextInterface *text = iface->textInterface())
+        return NSMakeRange(0, static_cast<uint>(text->characterCount()));
+    return NSMakeRange(0, static_cast<uint>(iface->text(QAccessible::Name).length()));
+}
+
+- (NSInteger) accessibilityInsertionPointLineNumber {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return 0;
+    if (QAccessibleTextInterface *text = iface->textInterface()) {
+        int position = text->cursorPosition();
+        return [self accessibilityLineForIndex:position];
+    }
+    return 0;
 }
 
 - (NSArray *)accessibilityParameterizedAttributeNames {

@@ -141,6 +141,20 @@ enum PropertyConditionFlags {
     PropertyConditionFlags_IgnoreCase  = 1
 };
 
+enum WindowVisualState {
+    WindowVisualState_Normal    = 0,
+    WindowVisualState_Maximized = 1,
+    WindowVisualState_Minimized = 2
+};
+
+enum WindowInteractionState {
+    WindowInteractionState_Running                 = 0,
+    WindowInteractionState_Closing                 = 1,
+    WindowInteractionState_ReadyForUserInteraction = 2,
+    WindowInteractionState_BlockedByModalWindow    = 3,
+    WindowInteractionState_NotResponding           = 4
+};
+
 struct UiaRect {
     double left;
     double top;

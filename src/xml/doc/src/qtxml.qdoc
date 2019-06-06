@@ -33,8 +33,10 @@
 
     \brief The Qt XML module provides C++ implementations of the SAX and DOM standards for XML.
 
-    The module is not actively maintained anymore. Please use
-    the \l{QXmlStreamReader} and \l{QXmlStreamWriter} classes in \l{Qt Core} instead.
+    Note that the module will not receive additional features anymore. For reading or writing XML
+    documents iteratively (SAX), we recommend using Qt Core's QXmlStreamReader and
+    QXmlStreamWriter classes. The classes are both easier to use and more compliant with the
+    XML standard.
 
     To include the definitions of the module's classes, use the
     following directive:

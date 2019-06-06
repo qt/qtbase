@@ -361,7 +361,7 @@ QUndoStack *QUndoView::stack() const
     Sets the stack displayed by this view to \a stack. If \a stack is 0, the view
     will be empty.
 
-    If the view was previously looking at a QUndoGroup, the group is set to 0.
+    If the view was previously looking at a QUndoGroup, the group is set to \nullptr.
 
     \sa stack(), setGroup()
 */

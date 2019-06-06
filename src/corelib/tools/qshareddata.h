@@ -52,16 +52,21 @@ QT_BEGIN_NAMESPACE
 
 template <class T> class QSharedDataPointer;
 
-class Q_CORE_EXPORT QSharedData
+class
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_CORE_EXPORT
+#endif
+QSharedData
 {
 public:
     mutable QAtomicInt ref;
 
-    inline QSharedData() : ref(0) { }
-    inline QSharedData(const QSharedData &) : ref(0) { }
+    inline QSharedData() noexcept : ref(0) { }
+    inline QSharedData(const QSharedData &) noexcept : ref(0) { }
 
     // using the assignment operator would lead to corruption in the ref-counting
     QSharedData &operator=(const QSharedData &) = delete;
+    ~QSharedData() = default;
 };
 
 template <class T> class QSharedDataPointer

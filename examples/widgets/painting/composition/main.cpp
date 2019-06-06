@@ -56,13 +56,13 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QScopedPointer<QStyle> arthurStyle(new ArthurStyle());
     CompositionWidget compWidget(nullptr);
-    QStyle *arthurStyle = new ArthurStyle();
-    compWidget.setStyle(arthurStyle);
+    compWidget.setStyle(arthurStyle.data());
 
     const QList<QWidget *> widgets = compWidget.findChildren<QWidget *>();
     for (QWidget *w : widgets)
-        w->setStyle(arthurStyle);
+        w->setStyle(arthurStyle.data());
     compWidget.show();
 
     return app.exec();

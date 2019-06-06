@@ -176,6 +176,18 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
     return fallback;
 }
 
+// https://stackoverflow.com/a/52722575/2761869
+template<class R>
+struct backwards_t {
+  R r;
+  constexpr auto begin() const { using std::rbegin; return rbegin(r); }
+  constexpr auto begin() { using std::rbegin; return rbegin(r); }
+  constexpr auto end() const { using std::rend; return rend(r); }
+  constexpr auto end() { using std::rend; return rend(r); }
+};
+template<class R>
+constexpr backwards_t<R> backwards(R&& r) { return {std::forward<R>(r)}; }
+
 // -------------------------------------------------------------------------
 
 #if !defined(Q_PROCESSOR_X86_64)

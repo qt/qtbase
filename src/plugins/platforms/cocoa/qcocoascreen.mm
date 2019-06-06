@@ -41,6 +41,7 @@
 
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include "qcocoaintegration.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/private/qcoregraphics_p.h>
@@ -53,34 +54,104 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCoreTextFontEngine;
-class QFontEngineFT;
+void QCocoaScreen::initializeScreens()
+{
+    uint32_t displayCount = 0;
+    if (CGGetActiveDisplayList(0, nullptr, &displayCount) != kCGErrorSuccess)
+        qFatal("Failed to get number of active displays");
 
-QCocoaScreen::QCocoaScreen(int screenIndex)
-    : QPlatformScreen(), m_screenIndex(screenIndex), m_refreshRate(60.0)
+    CGDirectDisplayID activeDisplays[displayCount];
+    if (CGGetActiveDisplayList(displayCount, &activeDisplays[0], &displayCount) != kCGErrorSuccess)
+        qFatal("Failed to get active displays");
+
+    for (CGDirectDisplayID displayId : activeDisplays)
+        QCocoaScreen::add(displayId);
+
+    CGDisplayRegisterReconfigurationCallback([](CGDirectDisplayID displayId, CGDisplayChangeSummaryFlags flags, void *userInfo) {
+        if (flags & kCGDisplayBeginConfigurationFlag)
+            return; // Wait for changes to apply
+
+        Q_UNUSED(userInfo);
+
+        QCocoaScreen *cocoaScreen = QCocoaScreen::get(displayId);
+
+        if ((flags & kCGDisplayAddFlag) || !cocoaScreen) {
+            if (!CGDisplayIsActive(displayId)) {
+                qCDebug(lcQpaScreen) << "Not adding inactive display" << displayId;
+                return; // Will be added when activated
+            }
+            QCocoaScreen::add(displayId);
+        } else if ((flags & kCGDisplayRemoveFlag) || !CGDisplayIsActive(displayId)) {
+            cocoaScreen->remove();
+        } else {
+            // Detect changes to the primary screen immediately, instead of
+            // waiting for a display reconfigure with kCGDisplaySetMainFlag.
+            // This ensures that any property updates to the other screens
+            // will be in reference to the correct primary screen.
+            QCocoaScreen *mainDisplay = QCocoaScreen::get(CGMainDisplayID());
+            if (QGuiApplication::primaryScreen()->handle() != mainDisplay) {
+                mainDisplay->updateProperties();
+                qCInfo(lcQpaScreen) << "Primary screen changed to" << mainDisplay;
+                QWindowSystemInterface::handlePrimaryScreenChanged(mainDisplay);
+            }
+
+            if (cocoaScreen == mainDisplay)
+                return; // Already reconfigured
+
+            cocoaScreen->updateProperties();
+            qCInfo(lcQpaScreen) << "Reconfigured" << cocoaScreen;
+        }
+    }, nullptr);
+}
+
+void QCocoaScreen::add(CGDirectDisplayID displayId)
+{
+    QCocoaScreen *cocoaScreen = new QCocoaScreen(displayId);
+    qCInfo(lcQpaScreen) << "Adding" << cocoaScreen;
+    QWindowSystemInterface::handleScreenAdded(cocoaScreen, CGDisplayIsMain(displayId));
+}
+
+QCocoaScreen::QCocoaScreen(CGDirectDisplayID displayId)
+    : QPlatformScreen(), m_displayId(displayId)
 {
     updateProperties();
     m_cursor = new QCocoaCursor;
 }
 
+void QCocoaScreen::cleanupScreens()
+{
+    // Remove screens in reverse order to avoid crash in case of multiple screens
+    for (QScreen *screen : backwards(QGuiApplication::screens()))
+        static_cast<QCocoaScreen*>(screen->handle())->remove();
+}
+
+void QCocoaScreen::remove()
+{
+    m_displayId = 0; // Prevent stale references during removal
+
+    // This may result in the application responding to QGuiApplication::screenRemoved
+    // by moving the window to another screen, either by setGeometry, or by setScreen.
+    // If the window isn't moved by the application, Qt will as a fallback move it to
+    // the primary screen via setScreen. Due to the way setScreen works, this won't
+    // actually recreate the window on the new screen, it will just assign the new
+    // QScreen to the window. The associated NSWindow will have an NSScreen determined
+    // by AppKit. AppKit will then move the window to another screen by changing the
+    // geometry, and we will get a callback in QCocoaWindow::windowDidMove and then
+    // QCocoaWindow::windowDidChangeScreen. At that point the window will appear to have
+    // already changed its screen, but that's only true if comparing the Qt screens,
+    // not when comparing the NSScreens.
+    QWindowSystemInterface::handleScreenRemoved(this);
+}
+
 QCocoaScreen::~QCocoaScreen()
 {
+    Q_ASSERT_X(!screen(), "QCocoaScreen", "QScreen should be deleted first");
+
     delete m_cursor;
 
     CVDisplayLinkRelease(m_displayLink);
     if (m_displayLinkSource)
          dispatch_release(m_displayLinkSource);
-}
-
-NSScreen *QCocoaScreen::nativeScreen() const
-{
-    NSArray<NSScreen *> *screens = [NSScreen screens];
-
-    // Stale reference, screen configuration has changed
-    if (m_screenIndex < 0 || (NSUInteger)m_screenIndex >= [screens count])
-        return nil;
-
-    return [screens objectAtIndex:m_screenIndex];
 }
 
 static QString displayName(CGDirectDisplayID displayID)
@@ -117,35 +188,37 @@ static QString displayName(CGDirectDisplayID displayID)
 
 void QCocoaScreen::updateProperties()
 {
-    NSScreen *nsScreen = nativeScreen();
-    if (!nsScreen)
-        return;
+    Q_ASSERT(m_displayId);
 
     const QRect previousGeometry = m_geometry;
     const QRect previousAvailableGeometry = m_availableGeometry;
     const QDpi previousLogicalDpi = m_logicalDpi;
     const qreal previousRefreshRate = m_refreshRate;
 
+    // Some properties are only available via NSScreen
+    NSScreen *nsScreen = nativeScreen();
+    Q_ASSERT(nsScreen);
+
     // The reference screen for the geometry is always the primary screen
-    QRectF primaryScreenGeometry = QRectF::fromCGRect([[NSScreen screens] firstObject].frame);
+    QRectF primaryScreenGeometry = QRectF::fromCGRect(CGDisplayBounds(CGMainDisplayID()));
     m_geometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.frame), primaryScreenGeometry).toRect();
     m_availableGeometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.visibleFrame), primaryScreenGeometry).toRect();
 
-    m_format = QImage::Format_RGB32;
-    m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
+    m_devicePixelRatio = nsScreen.backingScaleFactor;
 
-    CGDirectDisplayID dpy = nsScreen.qt_displayId;
-    CGSize size = CGDisplayScreenSize(dpy);
+    m_format = QImage::Format_RGB32;
+    m_depth = NSBitsPerPixelFromDepth(nsScreen.depth);
+
+    CGSize size = CGDisplayScreenSize(m_displayId);
     m_physicalSize = QSizeF(size.width, size.height);
     m_logicalDpi.first = 72;
     m_logicalDpi.second = 72;
-    CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode(dpy);
-    float refresh = CGDisplayModeGetRefreshRate(displayMode);
-    CGDisplayModeRelease(displayMode);
-    if (refresh > 0)
-        m_refreshRate = refresh;
 
-    m_name = displayName(dpy);
+    QCFType<CGDisplayModeRef> displayMode = CGDisplayCopyDisplayMode(m_displayId);
+    float refresh = CGDisplayModeGetRefreshRate(displayMode);
+    m_refreshRate = refresh > 0 ? refresh : 60.0;
+
+    m_name = displayName(m_displayId);
 
     const bool didChangeGeometry = m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry;
 
@@ -155,24 +228,6 @@ void QCocoaScreen::updateProperties()
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
     if (m_refreshRate != previousRefreshRate)
         QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
-
-    qCDebug(lcQpaScreen) << "Updated properties for" << this;
-
-    if (didChangeGeometry) {
-        // When a screen changes its geometry, AppKit will send us a NSWindowDidMoveNotification
-        // for each window, resulting in calls to handleGeometryChange(), but this happens before
-        // the NSApplicationDidChangeScreenParametersNotification, so when we map the new geometry
-        // (which is correct at that point) to the screen using QCocoaScreen::mapFromNative(), we
-        // end up using the stale screen geometry, and the new window geometry we report is wrong.
-        // To make sure we finally report the correct window geometry, we need to do another pass
-        // of geometry reporting, now that the screen properties have been updates. FIXME: Ideally
-        // this would be solved by not caching the screen properties in QCocoaScreen, but that
-        // requires more research.
-        for (QWindow *window : windows()) {
-            if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow*>(window->handle()))
-                cocoaWindow->handleGeometryChange();
-        }
-    }
 }
 
 // ----------------------- Display link -----------------------
@@ -181,8 +236,10 @@ Q_LOGGING_CATEGORY(lcQpaScreenUpdates, "qt.qpa.screen.updates", QtCriticalMsg);
 
 void QCocoaScreen::requestUpdate()
 {
+    Q_ASSERT(m_displayId);
+
     if (!m_displayLink) {
-        CVDisplayLinkCreateWithCGDisplay(nativeScreen().qt_displayId, &m_displayLink);
+        CVDisplayLinkCreateWithCGDisplay(m_displayId, &m_displayLink);
         CVDisplayLinkSetOutputCallback(m_displayLink, [](CVDisplayLinkRef, const CVTimeStamp*,
             const CVTimeStamp*, CVOptionFlags, CVOptionFlags*, void* displayLinkContext) -> int {
                 // FIXME: It would be nice if update requests would include timing info
@@ -269,6 +326,9 @@ struct DeferredDebugHelper
 
 void QCocoaScreen::deliverUpdateRequests()
 {
+    if (!m_displayId)
+        return; // Screen removed
+
     QMacAutoReleasePool pool;
 
     // The CVDisplayLink callback is a notification that it's a good time to produce a new frame.
@@ -283,7 +343,7 @@ void QCocoaScreen::deliverUpdateRequests()
         const int pendingUpdates = ++m_pendingUpdates;
 
         DeferredDebugHelper screenUpdates(lcQpaScreenUpdates());
-        qDeferredDebug(screenUpdates) << "display link callback for screen " << m_screenIndex;
+        qDeferredDebug(screenUpdates) << "display link callback for screen " << m_displayId;
 
         if (const int framesAheadOfDelivery = pendingUpdates - 1) {
             // If we have more than one update pending it means that a previous display link callback
@@ -370,13 +430,6 @@ bool QCocoaScreen::isRunningDisplayLink() const
 
 // -----------------------------------------------------------
 
-qreal QCocoaScreen::devicePixelRatio() const
-{
-    QMacAutoReleasePool pool;
-    NSScreen *nsScreen = nativeScreen();
-    return qreal(nsScreen ? [nsScreen backingScaleFactor] : 1.0);
-}
-
 QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingTypeHint() const
 {
     QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();
@@ -430,7 +483,7 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
 {
     // Determine the grab rect. FIXME: The rect should be bounded by the view's
     // geometry, but note that for the pixeltool use case that window will be the
-    // desktop widgets's view, which currently gets resized to fit one screen
+    // desktop widget's view, which currently gets resized to fit one screen
     // only, since its NSWindow has the NSWindowStyleMaskTitled flag set.
     Q_UNUSED(view);
     QRect grabRect = QRect(x, y, width, height);
@@ -482,7 +535,7 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
     for (uint i = 0; i < displayCount; ++i)
         dpr = qMax(dpr, images.at(i).devicePixelRatio());
 
-    // Alocate target pixmap and draw each screen's content
+    // Allocate target pixmap and draw each screen's content
     qCDebug(lcQpaScreen) << "Create grap pixmap" << grabRect.size() << "at devicePixelRatio" << dpr;
     QPixmap windowPixmap(grabRect.size() * dpr);
     windowPixmap.setDevicePixelRatio(dpr);
@@ -499,7 +552,57 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
 */
 QCocoaScreen *QCocoaScreen::primaryScreen()
 {
-    return static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
+    auto screen = static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
+    Q_ASSERT_X(screen == get(CGMainDisplayID()), "QCocoaScreen",
+        "The application's primary screen should always be in sync with the main display");
+    return screen;
+}
+
+QList<QPlatformScreen*> QCocoaScreen::virtualSiblings() const
+{
+    QList<QPlatformScreen*> siblings;
+
+    // Screens on macOS are always part of the same virtual desktop
+    for (QScreen *screen : QGuiApplication::screens())
+        siblings << screen->handle();
+
+    return siblings;
+}
+
+QCocoaScreen *QCocoaScreen::get(NSScreen *nsScreen)
+{
+    return get(nsScreen.qt_displayId);
+}
+
+QCocoaScreen *QCocoaScreen::get(CGDirectDisplayID displayId)
+{
+    for (QScreen *screen : QGuiApplication::screens()) {
+        QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen*>(screen->handle());
+        if (cocoaScreen->m_displayId == displayId)
+            return cocoaScreen;
+    }
+
+    return nullptr;
+}
+
+NSScreen *QCocoaScreen::nativeScreen() const
+{
+    if (!m_displayId)
+        return nil; // The display has been disconnected
+
+    // A single display may have different displayIds depending on
+    // which GPU is in use or which physical port the display is
+    // connected to. By comparing UUIDs instead of display IDs we
+    // ensure that we always pick up the appropriate NSScreen.
+    QCFType<CFUUIDRef> uuid = CGDisplayCreateUUIDFromDisplayID(m_displayId);
+
+    for (NSScreen *screen in [NSScreen screens]) {
+        if (CGDisplayCreateUUIDFromDisplayID(screen.qt_displayId) == uuid)
+            return screen;
+    }
+
+    qCWarning(lcQpaScreen) << "Could not find NSScreen for display ID" << m_displayId;
+    return nil;
 }
 
 CGPoint QCocoaScreen::mapToNative(const QPointF &pos, QCocoaScreen *screen)
@@ -533,11 +636,10 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
     debug.nospace();
     debug << "QCocoaScreen(" << (const void *)screen;
     if (screen) {
-        debug << ", index=" << screen->m_screenIndex;
-        debug << ", native=" << screen->nativeScreen();
         debug << ", geometry=" << screen->geometry();
         debug << ", dpr=" << screen->devicePixelRatio();
         debug << ", name=" << screen->name();
+        debug << ", native=" << screen->nativeScreen();
     }
     debug << ')';
     return debug;

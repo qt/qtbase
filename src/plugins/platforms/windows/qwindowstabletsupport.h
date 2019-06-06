@@ -45,6 +45,7 @@
 
 #include <QtCore/qvector.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qhash.h>
 
 #include <wintab.h>
 
@@ -100,6 +101,7 @@ struct QWindowsTabletDeviceData
     qint64 uniqueId = 0;
     int currentDevice = 0;
     int currentPointerType = 0;
+    QHash<quint8, quint8> buttonsMap;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -108,7 +110,7 @@ QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t);
 
 class QWindowsTabletSupport
 {
-    Q_DISABLE_COPY(QWindowsTabletSupport)
+    Q_DISABLE_COPY_MOVE(QWindowsTabletSupport)
 
     explicit QWindowsTabletSupport(HWND window, HCTX context);
 

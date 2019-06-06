@@ -110,8 +110,8 @@ public:
     static QStateMachinePrivate *get(QStateMachine *q)
     { return q ? q->d_func() : nullptr; }
 
-    QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
-    QState *findLCCA(const QList<QAbstractState*> &states) const;
+    QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false);
+    QState *findLCCA(const QList<QAbstractState*> &states);
 
     static bool transitionStateEntryLessThan(QAbstractTransition *t1, QAbstractTransition *t2);
     static bool stateEntryLessThan(QAbstractState *s1, QAbstractState *s2);
@@ -160,7 +160,7 @@ public:
                                            QSet<QAbstractState*> &statesForDefaultEntry, CalculationCache *cache);
     QAbstractState *getTransitionDomain(QAbstractTransition *t,
                                         const QList<QAbstractState *> &effectiveTargetStates,
-                                        CalculationCache *cache) const;
+                                        CalculationCache *cache);
     void addDescendantStatesToEnter(QAbstractState *state,
                                     QSet<QAbstractState*> &statesToEnter,
                                     QSet<QAbstractState*> &statesForDefaultEntry);

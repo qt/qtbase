@@ -1197,8 +1197,8 @@ QStringList QFileSystemModel::mimeTypes() const
     \a indexes. The format used to describe the items corresponding to the
     indexes is obtained from the mimeTypes() function.
 
-    If the list of indexes is empty, 0 is returned rather than a serialized
-    empty list.
+    If the list of indexes is empty, \nullptr is returned rather than a
+    serialized empty list.
 */
 QMimeData *QFileSystemModel::mimeData(const QModelIndexList &indexes) const
 {
@@ -1847,8 +1847,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QV
     std::sort(rowsToUpdate.begin(), rowsToUpdate.end());
     QString min;
     QString max;
-    for (int i = 0; i < rowsToUpdate.count(); ++i) {
-        QString value = rowsToUpdate.at(i);
+    for (const QString &value : qAsConst(rowsToUpdate)) {
         //##TODO is there a way to bundle signals with QString as the content of the list?
         /*if (min.isEmpty()) {
             min = value;

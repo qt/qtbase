@@ -1,0 +1,28 @@
+From ac10063196685fe6124055feb1275e13a78f562e Mon Sep 17 00:00:00 2001
+From: Mikhail Svetkin <mikhail.svetkin@qt.io>
+Date: Tue, 20 Mar 2018 14:03:54 +0100
+Subject: [PATCH] rtems: Fix pcre2 build (madvise undefined)
+
+RTEMS does not have madvise. We can use only posix_madvise
+
+Change-Id: Ia18b7cd2d7f9db84331f7e2350d060b9e85b30c8
+---
+ src/3rdparty/pcre2/src/sljit/sljitUtils.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/pcre2/src/sljit/sljitUtils.c b/src/3rdparty/pcre2/src/sljit/sljitUtils.c
+index 5c2a838932..2ead044b1b 100644
+--- a/src/3rdparty/pcre2/src/sljit/sljitUtils.c
++++ b/src/3rdparty/pcre2/src/sljit/sljitUtils.c
+@@ -315,7 +315,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_u8 *SLJIT_FUNC sljit_stack_resize(struct sljit_st
+ 		aligned_new_start = (sljit_uw)new_start & ~sljit_page_align;
+ 		aligned_old_start = ((sljit_uw)stack->start) & ~sljit_page_align;
+ 		/* If madvise is available, we release the unnecessary space. */
+-#if defined(MADV_DONTNEED)
++#if defined(MADV_DONTNEED) && !defined(__rtems__)
+ 		if (aligned_new_start > aligned_old_start)
+ 			madvise((void*)aligned_old_start, aligned_new_start - aligned_old_start, MADV_DONTNEED);
+ #elif defined(POSIX_MADV_DONTNEED)
+-- 
+2.21.0
+

@@ -123,7 +123,11 @@ QSessionManagerPrivate::QSessionManagerPrivate(const QString &id,
                                                const QString &key)
     : QObjectPrivate()
 {
-    platformSessionManager = QGuiApplicationPrivate::platformIntegration()->createPlatformSessionManager(id, key);
+    if (qApp->testAttribute(Qt::AA_DisableSessionManager)) {
+        platformSessionManager = new QPlatformSessionManager(id, key);
+    } else {
+        platformSessionManager = QGuiApplicationPrivate::platformIntegration()->createPlatformSessionManager(id, key);
+    }
     Q_ASSERT_X(platformSessionManager, "Platform session management",
                "No platform session management, should use the default implementation");
 }

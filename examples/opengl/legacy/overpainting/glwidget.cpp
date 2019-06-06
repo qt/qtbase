@@ -247,12 +247,8 @@ void GLWidget::createBubbles(int number)
 //! [13]
 void GLWidget::animate()
 {
-    QMutableListIterator<Bubble*> iter(bubbles);
-
-    while (iter.hasNext()) {
-        Bubble *bubble = iter.next();
+    for (Bubble *bubble : qAsConst(bubbles))
         bubble->move(rect());
-    }
     update();
 }
 //! [13]

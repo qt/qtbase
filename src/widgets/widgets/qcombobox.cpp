@@ -691,7 +691,7 @@ void QComboBoxPrivateContainer::changeEvent(QEvent *e)
         setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
     }
 
-    QWidget::changeEvent(e);
+    QFrame::changeEvent(e);
 }
 
 

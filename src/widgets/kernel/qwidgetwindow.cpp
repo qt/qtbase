@@ -222,10 +222,9 @@ static inline bool shouldBePropagatedToWidget(QEvent *event)
     }
 }
 
-bool QWidgetWindowPrivate::allowClickThrough(const QPoint &globalPos) const
+bool QWidgetWindowPrivate::allowClickThrough(const QPoint &) const
 {
-    QWidget *w = QApplication::widgetAt(globalPos);
-    return w && !w->testAttribute(Qt::WA_MacNoClickThrough);
+    return true;
 }
 
 bool QWidgetWindow::event(QEvent *event)
@@ -1107,7 +1106,7 @@ void QWidgetWindow::handleContextMenuEvent(QContextMenuEvent *e)
         }
     }
     if (fw && fw->isEnabled()) {
-        QPoint pos = fw->inputMethodQuery(Qt::ImMicroFocus).toRect().center();
+        QPoint pos = fw->inputMethodQuery(Qt::ImCursorRectangle).toRect().center();
         QContextMenuEvent widgetEvent(QContextMenuEvent::Keyboard, pos, fw->mapToGlobal(pos),
                                       e->modifiers());
         QGuiApplication::forwardEvent(fw, &widgetEvent, e);

@@ -380,7 +380,7 @@ typedef double qreal;
 #define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
 #define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major(minor, text)
 
-#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor()
+#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
 #define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
 
 /*
@@ -1008,6 +1008,15 @@ Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) noexcept { ret
 // prevent rvalue arguments:
 template <typename T>
 void qAsConst(const T &&) = delete;
+
+// like std::exchange
+template <typename T, typename U = T>
+Q_DECL_RELAXED_CONSTEXPR T qExchange(T &t, U &&newValue)
+{
+    T old = std::move(t);
+    t = std::forward<U>(newValue);
+    return old;
+}
 
 #ifndef QT_NO_FOREACH
 

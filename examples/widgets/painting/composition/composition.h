@@ -61,6 +61,8 @@
 #include <QPainter>
 #include <QEvent>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 class QPushButton;
 class QRadioButton;
@@ -71,7 +73,8 @@ class CompositionWidget : public QWidget
     Q_OBJECT
 
 public:
-    CompositionWidget(QWidget *parent);
+    explicit CompositionWidget(QWidget *parent = nullptr);
+    ~CompositionWidget();
 
 public slots:
 void nextMode();
@@ -117,7 +120,8 @@ class CompositionRenderer : public ArthurFrame
     Q_PROPERTY(bool animation READ animationEnabled WRITE setAnimationEnabled)
 
 public:
-    CompositionRenderer(QWidget *parent);
+    explicit CompositionRenderer(QWidget *parent = nullptr);
+    ~CompositionRenderer();
 
     void paint(QPainter *) override;
 
@@ -188,7 +192,7 @@ private:
     int m_animationTimer;
 
 #if QT_CONFIG(opengl)
-    QScopedPointer<QFboPaintDevice> m_fbo;
+    std::unique_ptr<QFboPaintDevice> m_fbo;
     int m_pbuffer_size; // width==height==size of pbuffer
     uint m_base_tex;
     uint m_compositing_tex;

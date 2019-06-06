@@ -75,7 +75,7 @@ struct QPainterPathPrivateDeleter
 {
     static inline void cleanup(QPainterPathPrivate *d)
     {
-        // note - we must up-cast to QPainterPathData since QPainterPathPrivate
+        // note - we must downcast to QPainterPathData since QPainterPathPrivate
         // has a non-virtual destructor!
         if (d && !d->ref.deref())
             delete static_cast<QPainterPathData *>(d);
@@ -3499,8 +3499,7 @@ void QPainterPath::setDirty(bool dirty)
 {
     d_func()->dirtyBounds        = dirty;
     d_func()->dirtyControlBounds = dirty;
-    delete d_func()->pathConverter;
-    d_func()->pathConverter = 0;
+    d_func()->pathConverter.reset();
     d_func()->convex = false;
 }
 

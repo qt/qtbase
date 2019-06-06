@@ -17,6 +17,8 @@ android
 [modalWindowEnterEventOnHide_QTBUG35109]
 ubuntu-16.04
 osx ci
+[spuriousMouseMove]
+windows ci
 # QTBUG-69162
 android
 [modalDialogClosingOneOfTwoModal]

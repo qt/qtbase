@@ -52,7 +52,7 @@ class QWindowsNativeImage;
 
 class QWindowsBackingStore : public QPlatformBackingStore
 {
-    Q_DISABLE_COPY(QWindowsBackingStore)
+    Q_DISABLE_COPY_MOVE(QWindowsBackingStore)
 public:
     QWindowsBackingStore(QWindow *window);
     ~QWindowsBackingStore() override;

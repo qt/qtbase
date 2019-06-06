@@ -357,6 +357,8 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
 
     QTest::newRow("block quotes") << "blockquotes.md";
     QTest::newRow("example") << "example.md";
+    QTest::newRow("list items after headings") << "headingsAndLists.md";
+    QTest::newRow("word wrap") << "wordWrap.md";
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument()
@@ -414,6 +416,9 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("block quote") <<
         "<p>In 1958, Mahatma Gandhi was quoted as follows:</p><blockquote>The Earth provides enough to satisfy every man's need but not for every man's greed.</blockquote>" <<
         "In 1958, Mahatma Gandhi was quoted as follows:\n\n> The Earth provides enough to satisfy every man's need but not for every man's\n> greed.\n\n";
+    QTest::newRow("image") <<
+        "<img src=\"/url\" alt=\"foo\" title=\"title\"/>" <<
+        "![foo](/url \"title\")\n\n";
     // TODO
 //    QTest::newRow("escaped number and paren after double newline") <<
 //        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<

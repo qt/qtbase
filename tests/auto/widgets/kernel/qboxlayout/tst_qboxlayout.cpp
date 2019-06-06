@@ -571,6 +571,10 @@ void tst_QBoxLayout::replaceWidget()
 
     QCOMPARE(boxLayout->indexOf(replaceFrom), 1);
     QCOMPARE(boxLayout->indexOf(replaceTo), -1);
+    QCOMPARE(boxLayout->count(), 3);
+    boxLayout->replaceWidget(replaceFrom, replaceFrom);
+    QCOMPARE(boxLayout->count(), 3);
+
     delete boxLayout->replaceWidget(replaceFrom, replaceTo);
 
     QCOMPARE(boxLayout->indexOf(replaceFrom), -1);

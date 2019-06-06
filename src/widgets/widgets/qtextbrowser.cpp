@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -57,8 +57,11 @@
 #endif
 #include <qtextobject.h>
 #include <qdesktopservices.h>
+#include <qmimedatabase.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcBrowser, "qt.text.browser")
 
 class QTextBrowserPrivate : public QTextEditPrivate
 {
@@ -288,10 +291,18 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
     currentUrlWithoutFragment.setFragment(QString());
     QUrl newUrlWithoutFragment = currentURL.resolved(url);
     newUrlWithoutFragment.setFragment(QString());
+    QTextDocument::ResourceType type = QTextDocument::HtmlResource;
+    QString fileName = url.fileName();
+#if QT_CONFIG(textmarkdownreader)
+    if (fileName.endsWith(QLatin1String(".md")) ||
+            fileName.endsWith(QLatin1String(".mkd")) ||
+            fileName.endsWith(QLatin1String(".markdown")))
+        type = QTextDocument::MarkdownResource;
+#endif
 
     if (url.isValid()
         && (newUrlWithoutFragment != currentUrlWithoutFragment || forceLoadOnSourceChange)) {
-        QVariant data = q->loadResource(QTextDocument::HtmlResource, resolveUrl(url));
+        QVariant data = q->loadResource(type, resolveUrl(url));
         if (data.type() == QVariant::String) {
             txt = data.toString();
         } else if (data.type() == QVariant::ByteArray) {
@@ -327,9 +338,21 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
         home = url;
 
     if (doSetText) {
+        // Setting the base URL helps QTextDocument::resource() to find resources with relative paths.
+        // But don't set it unless it contains the document's path, because QTextBrowserPrivate::resolveUrl()
+        // can already deal with local files on the filesystem in case the base URL was not set.
+        QUrl baseUrl = currentURL.adjusted(QUrl::RemoveFilename);
+        if (!baseUrl.path().isEmpty())
+            q->document()->setBaseUrl(baseUrl);
+        q->document()->setMetaInformation(QTextDocument::DocumentUrl, currentURL.toString());
+        qCDebug(lcBrowser) << "loading" << currentURL << "base" << q->document()->baseUrl() << "type" << type << txt.size() << "chars";
+#if QT_CONFIG(textmarkdownreader)
+        if (type == QTextDocument::MarkdownResource)
+            q->QTextEdit::setMarkdown(txt);
+        else
+#endif
 #ifndef QT_NO_TEXTHTMLPARSER
         q->QTextEdit::setHtml(txt);
-        q->document()->setMetaInformation(QTextDocument::DocumentUrl, currentURL.toString());
 #else
         q->QTextEdit::setPlainText(txt);
 #endif
@@ -1086,6 +1109,7 @@ void QTextBrowser::paintEvent(QPaintEvent *e)
     \row    \li QTextDocument::HtmlResource  \li QString or QByteArray
     \row    \li QTextDocument::ImageResource \li QImage, QPixmap or QByteArray
     \row    \li QTextDocument::StyleSheetResource \li QString or QByteArray
+    \row    \li QTextDocument::MarkdownResource \li QString or QByteArray
     \endtable
 */
 QVariant QTextBrowser::loadResource(int /*type*/, const QUrl &name)

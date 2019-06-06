@@ -1720,7 +1720,7 @@ namespace QtPrivate {
     {
         QObject* operator()(const QWeakPointer<T> &p) const
         {
-            return p.data();
+            return p.internalData();
         }
     };
 }

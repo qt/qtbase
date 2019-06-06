@@ -224,6 +224,10 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     setWindowTitle(tr("Composition Modes"));
 }
 
+CompositionWidget::~CompositionWidget()
+{
+}
+
 
 void CompositionWidget::nextMode()
 {
@@ -263,6 +267,10 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
 #if QT_CONFIG(opengl)
     m_pbuffer_size = 1024;
 #endif
+}
+
+CompositionRenderer::~CompositionRenderer()
+{
 }
 
 QRectF rectangle_around(const QPointF &p, const QSizeF &size = QSize(250, 200))
@@ -371,7 +379,7 @@ void CompositionRenderer::paint(QPainter *painter)
 
         if (size() != m_previous_size) {
             m_previous_size = size();
-            QPainter p(m_fbo.data());
+            QPainter p(m_fbo.get());
             p.setCompositionMode(QPainter::CompositionMode_Source);
             p.fillRect(QRect(QPoint(0, 0), size()), Qt::transparent);
             p.setCompositionMode(QPainter::CompositionMode_SourceOver);
@@ -382,7 +390,7 @@ void CompositionRenderer::paint(QPainter *painter)
 
         painter->beginNativePainting();
         {
-            QPainter p(m_fbo.data());
+            QPainter p(m_fbo.get());
             p.beginNativePainting();
             m_blitter.bind();
             const QRect targetRect(QPoint(0, 0), m_fbo->size());

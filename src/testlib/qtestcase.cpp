@@ -574,7 +574,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          " -nocrashhandler     : Disables the crash handler. Useful for debugging crashes.\n"
          "\n"
          " Benchmarking options:\n"
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
          " -callgrind          : Use callgrind to time benchmarks\n"
 #endif
 #ifdef QTESTLIB_USE_PERF_EVENTS
@@ -717,7 +717,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             }
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (QBenchmarkValgrindUtils::haveValgrind())
                 if (QFileInfo(QDir::currentPath()).isWritable()) {
@@ -1459,7 +1459,7 @@ void TestMethods::invokeTests(QObject *testObject) const
 
     QScopedPointer<WatchDog> watchDog;
     if (!debuggerPresent()
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
         && QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindChildProcess
 #endif
        ) {
@@ -1866,7 +1866,7 @@ int QTest::qRun()
 {
     QTEST_ASSERT(currentTestObject);
 
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
     int callgrindChildExitCode = 0;
 #endif
 
@@ -1886,7 +1886,7 @@ int QTest::qRun()
     } // !noCrashHandler
 #endif // Q_OS_WIN
 
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
         if (Q_UNLIKELY(!qApp))
             qFatal("QtTest: -callgrind option is not available with QTEST_APPLESS_MAIN");
@@ -1944,7 +1944,7 @@ int QTest::qRun()
      }
 #endif
 
-#ifdef QTESTLIB_USE_VALGRIND
+#if QT_CONFIG(valgrind)
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess)
         return callgrindChildExitCode;
 #endif

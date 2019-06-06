@@ -51,7 +51,7 @@ class QWindowsOpenGLContext;
 
 class QWindowsStaticOpenGLContext
 {
-    Q_DISABLE_COPY(QWindowsStaticOpenGLContext)
+    Q_DISABLE_COPY_MOVE(QWindowsStaticOpenGLContext)
 public:
     static QWindowsStaticOpenGLContext *create();
     virtual ~QWindowsStaticOpenGLContext() = default;
@@ -63,7 +63,7 @@ public:
 
     // If the windowing system interface needs explicitly created window surfaces (like EGL),
     // reimplement these.
-    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/, int * /*err*/) { return 0; }
+    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/, int * /*err*/) { return nullptr; }
     virtual void destroyWindowSurface(void * /*nativeSurface*/) { }
 
 protected:
@@ -75,14 +75,14 @@ private:
 
 class QWindowsOpenGLContext : public QPlatformOpenGLContext
 {
-    Q_DISABLE_COPY(QWindowsOpenGLContext)
+    Q_DISABLE_COPY_MOVE(QWindowsOpenGLContext)
 public:
     // Returns the native context handle (e.g. HGLRC for WGL, EGLContext for EGL).
     virtual void *nativeContext() const = 0;
 
     // These should be implemented only for some winsys interfaces, for example EGL.
     // For others, like WGL, they are not relevant.
-    virtual void *nativeDisplay() const { return 0; }
+    virtual void *nativeDisplay() const { return nullptr; }
     virtual void *nativeConfig() const { return 0; }
 
 protected:

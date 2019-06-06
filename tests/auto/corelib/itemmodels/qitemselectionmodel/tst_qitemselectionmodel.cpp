@@ -2211,8 +2211,8 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
     }
 
     QModelIndex root = model.index(0,0);
-    QModelIndex par = root.child(0,0);
-    QModelIndex sel = par.child(0,0);
+    QModelIndex par = model.index(0, 0, root);
+    QModelIndex sel = model.index(0, 0, par);
 
     QItemSelectionModel selectionModel(&model);
     selectionModel.select(sel, QItemSelectionModel::SelectCurrent);
@@ -2240,9 +2240,9 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
         }
     }
 
-    sel = model.index(0, 0).child(0, 0);
+    sel = model.index(0, 0, model.index(0, 0));
     selectionModel.select(sel, QItemSelectionModel::Select);
-    QModelIndex sel2 = model.index(1, 0).child(0, 0);
+    QModelIndex sel2 = model.index(0, 0, model.index(1, 0));
     selectionModel.select(sel2, QItemSelectionModel::Select);
 
     QVERIFY(selectionModel.selection().contains(sel));

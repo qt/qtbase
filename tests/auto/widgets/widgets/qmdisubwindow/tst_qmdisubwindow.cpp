@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -49,6 +49,8 @@
 #include <QScreen>
 #include <QSizeGrip>
 
+#include <QVector>
+
 QT_BEGIN_NAMESPACE
 #if 1 // Used to be excluded in Qt4 for Q_WS_WIN
 extern bool qt_tab_all_widgets();
@@ -58,7 +60,7 @@ QT_END_NAMESPACE
 static inline bool tabAllWidgets()
 {
 #if !defined(Q_OS_WIN)
-    if (qApp->style()->inherits("QMacStyle"))
+    if (QApplication::style()->inherits("QMacStyle"))
         return qt_tab_all_widgets();
 #endif
     return true;
@@ -69,17 +71,17 @@ static inline void triggerSignal(QMdiSubWindow *window, QMdiArea *workspace,
 {
     if (signal == SIGNAL(windowMaximized())) {
         window->showMaximized();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         if (window->parent())
             QVERIFY(window->isMaximized());
     } else if (signal == SIGNAL(windowMinimized())) {
         window->showMinimized();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         if (window->parent())
             QVERIFY(window->isMinimized());
     } else if (signal == SIGNAL(windowRestored())) {
         window->showMaximized();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         window->showNormal();
         QTRY_VERIFY(!window->isMinimized());
         QTRY_VERIFY(!window->isMaximized());
@@ -87,39 +89,39 @@ static inline void triggerSignal(QMdiSubWindow *window, QMdiArea *workspace,
     } else if (signal == SIGNAL(aboutToActivate())) {
         if (window->parent()) {
             workspace->setActiveSubWindow(window);
-            qApp->processEvents();
+            QCoreApplication::processEvents();
         }
     } else if (signal == SIGNAL(windowActivated())) {
         if (window->parent()) {
             workspace->setActiveSubWindow(window);
-            qApp->processEvents();
+            QCoreApplication::processEvents();
         }
     } else if (signal == SIGNAL(windowDeactivated())) {
         if (!window->parent())
             return;
         workspace->setActiveSubWindow(window);
-        qApp->processEvents();
-        workspace->setActiveSubWindow(0);
-        qApp->processEvents();
+        QCoreApplication::processEvents();
+        workspace->setActiveSubWindow(nullptr);
+        QCoreApplication::processEvents();
     }
 }
 
 // --- from tst_qgraphicsview.cpp ---
 static void sendMousePress(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::LeftButton)
 {
-    QMouseEvent event(QEvent::MouseButtonPress, point, widget->mapToGlobal(point), button, 0, 0);
+    QMouseEvent event(QEvent::MouseButtonPress, point, widget->mapToGlobal(point), button, {}, {});
     QApplication::sendEvent(widget, &event);
 }
 
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::LeftButton)
 {
-    QMouseEvent event(QEvent::MouseMove, point, widget->mapToGlobal(point), button, button, 0);
+    QMouseEvent event(QEvent::MouseMove, point, widget->mapToGlobal(point), button, button, {});
     QApplication::sendEvent(widget, &event);
 }
 
 static void sendMouseRelease(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::LeftButton)
 {
-    QMouseEvent event(QEvent::MouseButtonRelease, point, widget->mapToGlobal(point), button, 0, 0);
+    QMouseEvent event(QEvent::MouseButtonRelease, point, widget->mapToGlobal(point), button, {}, {});
     QApplication::sendEvent(widget, &event);
 }
 // ---
@@ -128,7 +130,7 @@ static void sendMouseDoubleClick(QWidget *widget, const QPoint &point, Qt::Mouse
 {
     sendMousePress(widget, point, button);
     sendMouseRelease(widget, point, button);
-    QMouseEvent event(QEvent::MouseButtonDblClick, point, widget->mapToGlobal(point), button, 0, 0);
+    QMouseEvent event(QEvent::MouseButtonDblClick, point, widget->mapToGlobal(point), button, {}, {});
     QApplication::sendEvent(widget, &event);
 }
 
@@ -136,6 +138,15 @@ static const Qt::WindowFlags StandardWindowFlags
     = Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
 static const Qt::WindowFlags DialogWindowFlags
     = Qt::WindowTitleHint | Qt::WindowSystemMenuHint;
+
+class LayoutDirectionGuard
+{
+public:
+    Q_DISABLE_COPY(LayoutDirectionGuard);
+
+    LayoutDirectionGuard() = default;
+    ~LayoutDirectionGuard() { QApplication::setLayoutDirection(Qt::LeftToRight); }
+};
 
 Q_DECLARE_METATYPE(Qt::WindowState);
 Q_DECLARE_METATYPE(Qt::WindowStates);
@@ -148,6 +159,7 @@ class tst_QMdiSubWindow : public QObject
     Q_OBJECT
 private slots:
     void initTestCase();
+    void cleanup();
     void sizeHint();
     void minimumSizeHint();
     void minimumSize();
@@ -202,6 +214,14 @@ private slots:
 void tst_QMdiSubWindow::initTestCase()
 {
     qRegisterMetaType<Qt::WindowStates>("Qt::WindowStates");
+    // Avoid unnecessary waits for empty top level widget lists when
+    // testing menus.
+    QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
+}
+
+void tst_QMdiSubWindow::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QMdiSubWindow::sizeHint()
@@ -211,34 +231,38 @@ void tst_QMdiSubWindow::sizeHint()
     window->show();
     QCOMPARE(window->sizeHint(), window->minimumSizeHint());
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     workspace.addSubWindow(window);
     QCOMPARE(window->sizeHint(), window->minimumSizeHint());
 }
 
 void tst_QMdiSubWindow::minimumSizeHint()
 {
+    const auto globalStrut = QApplication::globalStrut();
     QMdiSubWindow window;
+    window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.show();
 
-    QCOMPARE(window.minimumSizeHint(), qApp->globalStrut());
+    QCOMPARE(window.minimumSizeHint(), globalStrut);
 
     window.setWidget(new QWidget);
     QCOMPARE(window.minimumSizeHint(), window.layout()->minimumSize()
-                                       .expandedTo(qApp->globalStrut()));
+                                       .expandedTo(globalStrut));
 
     delete window.widget();
     delete window.layout();
     window.setWidget(new QWidget);
-    QCOMPARE(window.minimumSizeHint(), qApp->globalStrut());
+    QCOMPARE(window.minimumSizeHint(), globalStrut);
 
     window.widget()->show();
     QCOMPARE(window.minimumSizeHint(), window.widget()->minimumSizeHint()
-                                       .expandedTo(qApp->globalStrut()));
+                                       .expandedTo(globalStrut));
 }
 
 void tst_QMdiSubWindow::minimumSize()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.resize(200, 200);
 
     // Check that we respect the minimum size set on the sub-window itself.
@@ -278,7 +302,7 @@ void tst_QMdiSubWindow::setWidget()
     QCOMPARE(window.widget(), static_cast<QWidget *>(widget));
     QCOMPARE(widget->parentWidget(), static_cast<QWidget *>(&window));
 
-    window.setWidget(0);
+    window.setWidget(nullptr);
     QVERIFY(widget);
     QVERIFY(!widget->parent());
     QVERIFY(!window.widget());
@@ -308,12 +332,13 @@ void tst_QMdiSubWindow::setWindowState()
 {
     QFETCH(Qt::WindowState, windowState);
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QLineEdit));
     window->show();
     workspace.show();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
-    QWidget *testWidget = 0;
+    QWidget *testWidget = nullptr;
     for (int iteration = 0; iteration < 2; ++iteration) {
         if (iteration == 0)
             testWidget = window;
@@ -351,13 +376,13 @@ void tst_QMdiSubWindow::setWindowState()
 
 void tst_QMdiSubWindow::mainWindowSupport()
 {
-    QList<QMdiSubWindow *> windows;
+    QVector<QMdiSubWindow *> windows;
     QMdiArea *workspace = new QMdiArea;
     QMainWindow mainWindow;
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
-    qApp->setActiveWindow(&mainWindow);
+    QApplication::setActiveWindow(&mainWindow);
     bool nativeMenuBar = mainWindow.menuBar()->isNativeMenuBar();
 
     // QMainWindow's window title is empty, so on a platform which does NOT have a native menubar,
@@ -400,7 +425,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
 
         // mainWindow.menuBar() is not visible
         window->showMaximized();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         QVERIFY(window->isMaximized());
         QVERIFY(!window->maximizedButtonsWidget());
         QVERIFY(!window->maximizedSystemMenuIconWidget());
@@ -410,7 +435,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
         mainWindow.menuBar()->setVisible(true);
 
         window->showMaximized();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         QVERIFY(window->isMaximized());
         if (!nativeMenuBar) {
             QVERIFY(window->maximizedButtonsWidget());
@@ -430,7 +455,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
         nestedWorkspace->addSubWindow(nestedWindow);
         nestedWindow->widget()->setWindowTitle(QLatin1String("NestedWindow ") + QString::number(i));
         nestedWindow->showMaximized();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         QVERIFY(nestedWindow->isMaximized());
         QVERIFY(!nestedWindow->maximizedButtonsWidget());
         QVERIFY(!nestedWindow->maximizedSystemMenuIconWidget());
@@ -445,8 +470,8 @@ void tst_QMdiSubWindow::mainWindowSupport()
         return;
 
     workspace->activateNextSubWindow();
-    qApp->processEvents();
-    foreach (QMdiSubWindow *window, windows) {
+    QCoreApplication::processEvents();
+    for (QMdiSubWindow *window : qAsConst(windows)) {
         QCOMPARE(workspace->activeSubWindow(), window);
         QVERIFY(window->isMaximized());
         QVERIFY(window->maximizedButtonsWidget());
@@ -457,7 +482,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
         QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
                                            .arg(originalWindowTitle, window->widget()->windowTitle()));
         workspace->activateNextSubWindow();
-        qApp->processEvents();
+        QCoreApplication::processEvents();
     }
 }
 
@@ -480,15 +505,16 @@ void tst_QMdiSubWindow::emittingOfSignals()
     QFETCH(QByteArray, signal);
     QFETCH(Qt::WindowState, watchedState);
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     workspace.show();
-    qApp->processEvents();
-    qApp->setActiveWindow(&workspace);
+    QCoreApplication::processEvents();
+    QApplication::setActiveWindow(&workspace);
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget));
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     window->show();
     if (signal != SIGNAL(windowRestored()))
-        workspace.setActiveSubWindow(0);
-    qApp->processEvents();
+        workspace.setActiveSubWindow(nullptr);
+    QCoreApplication::processEvents();
 
     QSignalSpy spy(window, signal == SIGNAL(aboutToActivate())
                            ? signal.data()
@@ -523,25 +549,26 @@ void tst_QMdiSubWindow::emittingOfSignals()
 #endif
     QCOMPARE(count, 1);
 
-    window->setParent(0);
+    window->setParent(nullptr);
     window->showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(window));
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 
     spy.clear();
     triggerSignal(window, &workspace, signal);
     QCOMPARE(spy.count(), 0);
 
     delete window;
-    window = 0;
+    window = nullptr;
 }
 
 void tst_QMdiSubWindow::showShaded()
 {
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *window = workspace.addSubWindow(new QLineEdit);
     window->resize(300, 300);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     workspace.show();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
@@ -588,7 +615,7 @@ void tst_QMdiSubWindow::showShaded()
     // vertical resize with the mouse.
     int offset = window->style()->pixelMetric(QStyle::PM_MDIFrameWidth) / 2;
     QPoint mousePosition(window->width() - qMax(offset, 2), window->height() - qMax(offset, 2));
-    QWidget *mouseReceiver = 0;
+    QWidget *mouseReceiver = nullptr;
 #ifdef Q_OS_MAC
     if (window->style()->inherits("QMacStyle"))
         mouseReceiver = window->findChild<QSizeGrip *>();
@@ -609,7 +636,7 @@ void tst_QMdiSubWindow::showShaded()
     QCOMPARE(window->height(), minimumSizeHint.height());
 
     window->showShaded();
-    window->setParent(0);
+    window->setParent(nullptr);
     window->show();
     QVERIFY(!window->isShaded());
 
@@ -630,17 +657,18 @@ void tst_QMdiSubWindow::showNormal()
     QFETCH(QByteArray, slot);
 
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QWidget *window = workspace.addSubWindow(new QWidget);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     workspace.show();
     window->show();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     QRect originalGeometry = window->geometry();
     QVERIFY(QMetaObject::invokeMethod(window, slot.data()));
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     window->showNormal();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("showMinimized", "Windows are maximized per default on WinRt ", Abort);
     QEXPECT_FAIL("showMaximized", "Windows are maximized per default on WinRt ", Abort);
@@ -651,8 +679,8 @@ void tst_QMdiSubWindow::showNormal()
 class EventSpy : public QObject
 {
 public:
-    EventSpy(QObject *object, QEvent::Type event)
-        : eventToSpy(event), _count(0)
+    explicit EventSpy(QObject *object, QEvent::Type event)
+        : eventToSpy(event)
     {
         if (object)
             object->installEventFilter(this);
@@ -662,7 +690,7 @@ public:
     void clear() { _count = 0; }
 
 protected:
-    bool eventFilter(QObject *object, QEvent *event)
+    bool eventFilter(QObject *object, QEvent *event) override
     {
         if (event->type() == eventToSpy)
             ++_count;
@@ -670,8 +698,8 @@ protected:
     }
 
 private:
-    QEvent::Type eventToSpy;
-    int _count;
+    const QEvent::Type eventToSpy;
+    int _count = 0;
 };
 
 #ifndef QT_NO_CURSOR
@@ -696,13 +724,15 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     QFETCH(QSize, windowSize);
 
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction())
+                             + QLatin1String("::") + QLatin1String(QTest::currentDataTag()));
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget));
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     workspace.resize(workspaceSize);
     workspace.show();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
-    QWidget *mouseReceiver = 0;
+    QWidget *mouseReceiver = nullptr;
     if (window->style()->inherits("QMacStyle"))
         mouseReceiver = window->findChild<QSizeGrip *>();
     else
@@ -811,81 +841,81 @@ void tst_QMdiSubWindow::setWindowFlags_data()
 
     // Standard window types with no custom flags set.
     QTest::newRow("Qt::Widget") << Qt::Widget << Qt::SubWindow
-                                << Qt::WindowFlags(0) << StandardWindowFlags;
+                                << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::Window") << Qt::Window << Qt::SubWindow
-                                << Qt::WindowFlags(0) << StandardWindowFlags;
+                                << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::Dialog") << Qt::Dialog << Qt::SubWindow
-                                << Qt::WindowFlags(0) << DialogWindowFlags;
+                                << Qt::WindowFlags{} << DialogWindowFlags;
     QTest::newRow("Qt::Sheet") << Qt::Sheet << Qt::SubWindow
-                               << Qt::WindowFlags(0) << StandardWindowFlags;
+                               << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::Drawer") << Qt::Drawer << Qt::SubWindow
-                                << Qt::WindowFlags(0) << StandardWindowFlags;
+                                << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::Popup") << Qt::Popup << Qt::SubWindow
-                               << Qt::WindowFlags(0) << StandardWindowFlags;
+                               << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::Tool") << Qt::Tool << Qt::SubWindow
-                              << Qt::WindowFlags(0) << StandardWindowFlags;
+                              << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::ToolTip") << Qt::ToolTip << Qt::SubWindow
-                                 << Qt::WindowFlags(0) << StandardWindowFlags;
+                                 << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::SplashScreen") << Qt::SplashScreen << Qt::SubWindow
-                                      << Qt::WindowFlags(0) << StandardWindowFlags;
+                                      << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::Desktop") << Qt::Desktop << Qt::SubWindow
-                                 << Qt::WindowFlags(0) << StandardWindowFlags;
+                                 << Qt::WindowFlags{} << StandardWindowFlags;
     QTest::newRow("Qt::SubWindow") << Qt::SubWindow << Qt::SubWindow
-                                   << Qt::WindowFlags(0) << StandardWindowFlags;
+                                   << Qt::WindowFlags{} << StandardWindowFlags;
 
     // Custom flags
     QTest::newRow("Title") << Qt::SubWindow << Qt::SubWindow
-                           << (Qt::WindowTitleHint | Qt::WindowFlags(0))
-                           << Qt::WindowFlags(0);
+                           << (Qt::WindowTitleHint | Qt::WindowFlags{})
+                           << Qt::WindowFlags{};
     QTest::newRow("TitleAndMin") << Qt::SubWindow << Qt::SubWindow
                                  << (Qt::WindowTitleHint | Qt::WindowMinimizeButtonHint)
-                                 << Qt::WindowFlags(0);
+                                 << Qt::WindowFlags{};
     QTest::newRow("TitleAndMax") << Qt::SubWindow << Qt::SubWindow
                                  << (Qt::WindowTitleHint | Qt::WindowMaximizeButtonHint)
-                                 << Qt::WindowFlags(0);
+                                 << Qt::WindowFlags{};
     QTest::newRow("TitleAndMinMax") << Qt::SubWindow << Qt::SubWindow
                                     << (Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint)
-                                    << Qt::WindowFlags(0);
+                                    << Qt::WindowFlags{};
     QTest::newRow("Standard") << Qt::SubWindow << Qt::SubWindow
                               << StandardWindowFlags
-                              << Qt::WindowFlags(0);
+                              << Qt::WindowFlags{};
     QTest::newRow("StandardAndShade") << Qt::SubWindow << Qt::SubWindow
                                       << (StandardWindowFlags | Qt::WindowShadeButtonHint)
-                                      << Qt::WindowFlags(0);
+                                      << Qt::WindowFlags{};
     QTest::newRow("StandardAndContext") << Qt::SubWindow << Qt::SubWindow
                                         << (StandardWindowFlags | Qt::WindowContextHelpButtonHint)
-                                        << Qt::WindowFlags(0);
+                                        << Qt::WindowFlags{};
     QTest::newRow("StandardAndStaysOnTop") << Qt::SubWindow << Qt::SubWindow
                                            << (StandardWindowFlags | Qt::WindowStaysOnTopHint)
-                                           << Qt::WindowFlags(0);
+                                           << Qt::WindowFlags{};
     QTest::newRow("StandardAndFrameless") << Qt::SubWindow << Qt::SubWindow
                                           << (StandardWindowFlags | Qt::FramelessWindowHint)
-                                          << (Qt::FramelessWindowHint | Qt::WindowFlags(0));
+                                          << Qt::WindowFlags(Qt::FramelessWindowHint);
     QTest::newRow("StandardAndFramelessAndStaysOnTop") << Qt::SubWindow << Qt::SubWindow
                                                        << (StandardWindowFlags | Qt::FramelessWindowHint
                                                            | Qt::WindowStaysOnTopHint)
                                                        << (Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     QTest::newRow("Shade") << Qt::SubWindow << Qt::SubWindow
-                           << (Qt::WindowShadeButtonHint | Qt::WindowFlags(0))
+                           << (Qt::WindowShadeButtonHint | Qt::WindowFlags{})
                            << (StandardWindowFlags | Qt::WindowShadeButtonHint);
     QTest::newRow("ShadeAndCustomize") << Qt::SubWindow << Qt::SubWindow
                            << (Qt::WindowShadeButtonHint | Qt::CustomizeWindowHint)
-                           << Qt::WindowFlags(0);
+                           << Qt::WindowFlags{};
     QTest::newRow("Context") << Qt::SubWindow << Qt::SubWindow
-                             << (Qt::WindowContextHelpButtonHint | Qt::WindowFlags(0))
+                             << (Qt::WindowContextHelpButtonHint | Qt::WindowFlags{})
                              << (StandardWindowFlags | Qt::WindowContextHelpButtonHint);
     QTest::newRow("ContextAndCustomize") << Qt::SubWindow << Qt::SubWindow
                              << (Qt::WindowContextHelpButtonHint | Qt::CustomizeWindowHint)
-                             << Qt::WindowFlags(0);
+                             << Qt::WindowFlags{};
     QTest::newRow("ShadeAndContext") << Qt::SubWindow << Qt::SubWindow
                              << (Qt::WindowShadeButtonHint | Qt::WindowContextHelpButtonHint)
                              << (StandardWindowFlags | Qt::WindowShadeButtonHint | Qt::WindowContextHelpButtonHint);
     QTest::newRow("ShadeAndContextAndCustomize") << Qt::SubWindow << Qt::SubWindow
                              << (Qt::WindowShadeButtonHint | Qt::WindowContextHelpButtonHint | Qt::CustomizeWindowHint)
-                             << Qt::WindowFlags(0);
+                             << Qt::WindowFlags{};
     QTest::newRow("OnlyCustomize") << Qt::SubWindow << Qt::SubWindow
-                                   << (Qt::CustomizeWindowHint | Qt::WindowFlags(0))
-                                   << Qt::WindowFlags(0);
+                                   << (Qt::CustomizeWindowHint | Qt::WindowFlags{})
+                                   << Qt::WindowFlags{};
 }
 
 void tst_QMdiSubWindow::setWindowFlags()
@@ -896,8 +926,10 @@ void tst_QMdiSubWindow::setWindowFlags()
     QFETCH(Qt::WindowFlags, expectedCustomFlags);
 
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction())
+                             + QLatin1String("::") + QLatin1String(QTest::currentDataTag()));
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget));
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     workspace.show();
     window->show();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
@@ -914,8 +946,9 @@ void tst_QMdiSubWindow::setWindowFlags()
 void tst_QMdiSubWindow::mouseDoubleClick()
 {
     QMdiArea workspace;
+    workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget));
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     workspace.show();
     window->show();
 
@@ -939,11 +972,11 @@ void tst_QMdiSubWindow::mouseDoubleClick()
 
     // Without Qt::WindowShadeButtonHint flag set
     sendMouseDoubleClick(window, mousePosition);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(window->isMaximized());
 
     sendMouseDoubleClick(window, mousePosition);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!window->isMaximized());
     QCOMPARE(window->geometry(), originalGeometry);
 
@@ -952,11 +985,11 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     QVERIFY(window->windowFlags() & Qt::WindowShadeButtonHint);
     originalGeometry = window->geometry();
     sendMouseDoubleClick(window, mousePosition);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(window->isShaded());
 
     sendMouseDoubleClick(window, mousePosition);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!window->isShaded());
     QCOMPARE(window->geometry(), originalGeometry);
 
@@ -976,20 +1009,25 @@ void tst_QMdiSubWindow::setSystemMenu()
     QCOMPARE(subWindow->actions(), systemMenu->actions());
 
     QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiArea *mdiArea = new QMdiArea;
     mdiArea->addSubWindow(subWindow);
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.menuBar()->setNativeMenuBar(false);
-    mainWindow.show();
+    // Prevent the window from spanning screens
+    if (QGuiApplication::screens().size() > 1)
+        mainWindow.showMaximized();
+    else
+        mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QTRY_VERIFY(subWindow->isVisible());
     QPoint globalPopupPos;
 
     // Show system menu
-    QVERIFY(!qApp->activePopupWidget());
+    QVERIFY(!QApplication::activePopupWidget());
     subWindow->showSystemMenu();
-    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(QApplication::activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
 #endif
@@ -997,12 +1035,12 @@ void tst_QMdiSubWindow::setSystemMenu()
                  (globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topLeft())) );
 
     systemMenu->hide();
-    QVERIFY(!qApp->activePopupWidget());
+    QVERIFY(!QApplication::activePopupWidget());
 
     QTest::ignoreMessage(QtWarningMsg, "QMdiSubWindow::setSystemMenu: system menu is already set");
     subWindow->setSystemMenu(systemMenu);
 
-    subWindow->setSystemMenu(0);
+    subWindow->setSystemMenu(nullptr);
     QVERIFY(!systemMenu); // systemMenu is QPointer
 
     systemMenu = new QMenu(subWindow);
@@ -1014,13 +1052,13 @@ void tst_QMdiSubWindow::setSystemMenu()
     QCOMPARE(subWindow->systemMenu()->actions().count(), 1);
 
     // Show the new system menu
-    QVERIFY(!qApp->activePopupWidget());
+    QVERIFY(!QApplication::activePopupWidget());
     subWindow->showSystemMenu();
-    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(QApplication::activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 
     systemMenu->hide();
-    QVERIFY(!qApp->activePopupWidget());
+    QVERIFY(!QApplication::activePopupWidget());
 
 #if !defined (Q_OS_DARWIN)
     // System menu in menu bar.
@@ -1029,29 +1067,30 @@ void tst_QMdiSubWindow::setSystemMenu()
     QWidget *menuLabel = subWindow->maximizedSystemMenuIconWidget();
     QVERIFY(menuLabel);
     subWindow->showSystemMenu();
-    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(QApplication::activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
      QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)),
               (globalPopupPos = menuLabel->mapToGlobal(QPoint(0, menuLabel->y() + menuLabel->height()))));
     systemMenu->hide();
-    QTRY_VERIFY(!qApp->activePopupWidget());
+    QTRY_VERIFY(!QApplication::activePopupWidget());
     subWindow->showNormal();
 #endif
 
     // Reverse
-    qApp->setLayoutDirection(Qt::RightToLeft);
-    qApp->processEvents();
+    LayoutDirectionGuard guard;
+    QApplication::setLayoutDirection(Qt::RightToLeft);
+    QCoreApplication::processEvents();
     mainWindow.updateGeometry();
     QTest::qWait(150);
 
     subWindow->showSystemMenu();
-    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(QApplication::activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     // + QPoint(1, 0) because topRight() == QPoint(left() + width() -1, top())
     globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topRight()) + QPoint(1, 0);
     globalPopupPos -= QPoint(systemMenu->sizeHint().width(), 0);
     QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 
     systemMenu->hide();
-    QVERIFY(!qApp->activePopupWidget());
+    QVERIFY(!QApplication::activePopupWidget());
 
 #if !defined (Q_OS_DARWIN)
     // System menu in menu bar in reverse mode.
@@ -1060,18 +1099,15 @@ void tst_QMdiSubWindow::setSystemMenu()
     menuLabel = subWindow->maximizedSystemMenuIconWidget();
     QVERIFY(menuLabel);
     subWindow->showSystemMenu();
-    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(QApplication::activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     globalPopupPos = menuLabel->mapToGlobal(QPoint(menuLabel->width(), menuLabel->y() + menuLabel->height()));
     globalPopupPos -= QPoint(systemMenu->sizeHint().width(), 0);
     QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 #endif
 
     delete systemMenu;
-    QVERIFY(!qApp->activePopupWidget());
+    QVERIFY(!QApplication::activePopupWidget());
     QVERIFY(!subWindow->systemMenu());
-
-    // Restore layout direction.
-    qApp->setLayoutDirection(Qt::LeftToRight);
 }
 
 void tst_QMdiSubWindow::restoreFocus()
@@ -1097,7 +1133,7 @@ void tst_QMdiSubWindow::restoreFocus()
     QMdiArea *nestedWorkspace = new QMdiArea;
     for (int i = 0; i < 4; ++i)
         nestedWorkspace->addSubWindow(new QTextEdit)->show();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     nestedWorkspace->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     nestedWorkspace->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     box4->layout()->addWidget(nestedWorkspace);
@@ -1112,76 +1148,76 @@ void tst_QMdiSubWindow::restoreFocus()
 
     // Add complex widget to workspace.
     QMdiArea topArea;
+    topArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *complexWindow = topArea.addSubWindow(box);
     topArea.show();
     box->show();
 
-    qApp->setActiveWindow(&topArea);
+    QApplication::setActiveWindow(&topArea);
     QMdiSubWindow *expectedFocusWindow = nestedWorkspace->subWindowList().last();
     QVERIFY(expectedFocusWindow);
     QVERIFY(expectedFocusWindow->widget());
-    QCOMPARE(qApp->focusWidget(), expectedFocusWindow->widget());
+    QCOMPARE(QApplication::focusWidget(), expectedFocusWindow->widget());
 
     // Normal -> minimized
     expectedFocusWindow->showMinimized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(expectedFocusWindow->isMinimized());
-    qDebug() << expectedFocusWindow<< qApp->focusWidget();
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
 
     // Minimized -> normal
     expectedFocusWindow->showNormal();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!expectedFocusWindow->isMinimized());
-    QCOMPARE(qApp->focusWidget(), expectedFocusWindow->widget());
+    QCOMPARE(QApplication::focusWidget(), expectedFocusWindow->widget());
 
     // Normal -> maximized
     expectedFocusWindow->showMaximized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(expectedFocusWindow->isMaximized());
-    QCOMPARE(qApp->focusWidget(), expectedFocusWindow->widget());
+    QCOMPARE(QApplication::focusWidget(), expectedFocusWindow->widget());
 
     // Maximized -> normal
     expectedFocusWindow->showNormal();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!expectedFocusWindow->isMaximized());
-    QCOMPARE(qApp->focusWidget(), expectedFocusWindow->widget());
+    QCOMPARE(QApplication::focusWidget(), expectedFocusWindow->widget());
 
     // Minimized -> maximized
     expectedFocusWindow->showMinimized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(expectedFocusWindow->isMinimized());
     expectedFocusWindow->showMaximized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(expectedFocusWindow->isMaximized());
-    QCOMPARE(qApp->focusWidget(), expectedFocusWindow->widget());
+    QCOMPARE(QApplication::focusWidget(), expectedFocusWindow->widget());
 
     // Maximized -> minimized
     expectedFocusWindow->showNormal();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!expectedFocusWindow->isMaximized());
     expectedFocusWindow->showMaximized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(expectedFocusWindow->isMaximized());
     expectedFocusWindow->showMinimized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(expectedFocusWindow->isMinimized());
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
 
     complexWindow->showMinimized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(complexWindow->isMinimized());
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(complexWindow));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(complexWindow));
 
     complexWindow->showNormal();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!complexWindow->isMinimized());
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
 }
 
 class MultiWidget : public QWidget {
 public:
-    explicit MultiWidget(QWidget *parent = 0) : QWidget(parent)
+    explicit MultiWidget(QWidget *parent = nullptr) : QWidget(parent)
         , m_lineEdit1(new QLineEdit(this)), m_lineEdit2(new QLineEdit(this))
     {
         QVBoxLayout *lt = new QVBoxLayout(this);
@@ -1237,28 +1273,29 @@ void tst_QMdiSubWindow::changeFocusWithTab()
     widget->layout()->addWidget(thirdLineEdit);
 
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.addSubWindow(widget);
     mdiArea.show();
     QCOMPARE(mdiArea.subWindowList().count(), 1);
 
-    qApp->setActiveWindow(&mdiArea);
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(firstLineEdit));
+    QApplication::setActiveWindow(&mdiArea);
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(firstLineEdit));
 
     // Next
     QTest::keyPress(widget, Qt::Key_Tab);
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(secondLineEdit));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(secondLineEdit));
 
     // Next
     QTest::keyPress(widget, Qt::Key_Tab);
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(thirdLineEdit));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(thirdLineEdit));
 
     // Previous
     QTest::keyPress(widget, Qt::Key_Backtab);
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(secondLineEdit));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(secondLineEdit));
 
     // Previous
     QTest::keyPress(widget, Qt::Key_Backtab);
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(firstLineEdit));
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(firstLineEdit));
 
     QMdiSubWindow *window = mdiArea.addSubWindow(new QPushButton);
     window->show();
@@ -1269,31 +1306,32 @@ void tst_QMdiSubWindow::changeFocusWithTab()
     // focus (which is the case for a QPushButton).
     QTest::keyPress(window, Qt::Key_Tab);
     QCOMPARE(mdiArea.activeSubWindow(), window);
-    QCOMPARE(qApp->focusWidget(), tabAllWidgets() ? window->widget() : window);
+    QCOMPARE(QApplication::focusWidget(), tabAllWidgets() ? window->widget() : window);
     QTest::keyPress(window, Qt::Key_Tab);
     QCOMPARE(mdiArea.activeSubWindow(), window);
-    QCOMPARE(qApp->focusWidget(), tabAllWidgets() ? window->widget() : window);
+    QCOMPARE(QApplication::focusWidget(), tabAllWidgets() ? window->widget() : window);
 }
 
 class MyTextEdit : public QTextEdit
 {
 public:
-    MyTextEdit(QWidget *parent = 0) : QTextEdit(parent), acceptClose(false) {}
+    using QTextEdit::QTextEdit;
     void setAcceptClose(bool enable = true) { acceptClose = enable; }
 protected:
-    void closeEvent(QCloseEvent *closeEvent)
+    void closeEvent(QCloseEvent *closeEvent) override
     {
         if (!acceptClose)
             closeEvent->ignore();
     }
 
 private:
-    bool acceptClose;
+    bool acceptClose = false;
 };
 
 void tst_QMdiSubWindow::closeEvent()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.show();
 
     MyTextEdit *textEdit = new MyTextEdit;
@@ -1379,7 +1417,7 @@ void tst_QMdiSubWindow::setWindowTitle()
     textEdit->setWindowModified(true);
     QVERIFY(window->isWindowModified());
 
-    window->setWidget(0);
+    window->setWidget(nullptr);
     QCOMPARE(window->windowTitle(), QString());
     QVERIFY(!window->isWindowModified());
     delete textEdit;
@@ -1405,6 +1443,8 @@ void tst_QMdiSubWindow::resizeEvents()
     QFETCH(bool, isShadeMode);
 
     QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction())
+                              + QLatin1String("::") + QLatin1String(QTest::currentDataTag()));
     QMdiArea *mdiArea = new QMdiArea;
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.show();
@@ -1483,6 +1523,7 @@ void tst_QMdiSubWindow::hideAndShow()
 
     // Set the tab widget as the central widget in QMainWindow.
     QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mainWindow.setGeometry(0, 0, 640, 480);
     QMenuBar *menuBar = mainWindow.menuBar();
     menuBar->setNativeMenuBar(false);
@@ -1524,7 +1565,7 @@ void tst_QMdiSubWindow::hideAndShow()
 
     // Show QMdiArea.
     tabWidget->setCurrentIndex(0);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 
     subWindow = mdiArea->subWindowList().back();
     QVERIFY(subWindow);
@@ -1544,7 +1585,8 @@ void tst_QMdiSubWindow::hideAndShow()
     QVERIFY(!menuBar->cornerWidget(Qt::TopRightCorner));
 
     // Check that newly added windows got right sizes.
-    foreach (QMdiSubWindow *window, mdiArea->subWindowList())
+    const auto subWindowList = mdiArea->subWindowList();
+    for (QMdiSubWindow *window : subWindowList)
         QCOMPARE(window->size(), window->sizeHint());
 
     subWindow->showMaximized();
@@ -1582,6 +1624,7 @@ void tst_QMdiSubWindow::hideAndShow()
 void tst_QMdiSubWindow::keepWindowMaximizedState()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QTextEdit);
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
@@ -1619,6 +1662,7 @@ void tst_QMdiSubWindow::keepWindowMaximizedState()
 void tst_QMdiSubWindow::explicitlyHiddenWidget()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QTextEdit *textEdit = new QTextEdit;
     textEdit->hide();
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(textEdit);
@@ -1657,7 +1701,7 @@ void tst_QMdiSubWindow::explicitlyHiddenWidget()
     textEdit->show();
 
     subWindow->showMinimized();
-    subWindow->setWidget(0);
+    subWindow->setWidget(nullptr);
     delete textEdit;
     textEdit = new QTextEdit;
     textEdit->hide();
@@ -1670,6 +1714,7 @@ void tst_QMdiSubWindow::explicitlyHiddenWidget()
 void tst_QMdiSubWindow::resizeTimer()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
@@ -1679,7 +1724,7 @@ void tst_QMdiSubWindow::resizeTimer()
 
     for (int i = 0; i < 20; ++i) {
         subWindow->resize(subWindow->size() + QSize(2, 2));
-        qApp->processEvents();
+        QCoreApplication::processEvents();
     }
 
     QTest::qWait(500); // Wait for timer events to occur.
@@ -1690,6 +1735,7 @@ void tst_QMdiSubWindow::resizeTimer()
 void tst_QMdiSubWindow::fixedMinMaxSize()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.setGeometry(0, 0, 640, 480);
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
@@ -1748,49 +1794,51 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
 {
 
     QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
 
     QMdiArea *mdiArea = new QMdiArea;
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(new QTextEdit);
     subWindow->showMaximized();
 
     mainWindow.setCentralWidget(mdiArea);
-    QMenuBar *menuBar = mainWindow.menuBar();
-    menuBar->setNativeMenuBar(false);
+    QMenuBar *menuBar1 = mainWindow.menuBar();
+    menuBar1->setNativeMenuBar(false);
     mainWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 
 #if defined Q_OS_QNX
     QEXPECT_FAIL("", "QTBUG-38231", Abort);
 #endif
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
-    QCOMPARE(menuBar->cornerWidget(Qt::TopLeftCorner), subWindow->maximizedSystemMenuIconWidget());
-    QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
+    QCOMPARE(menuBar1->cornerWidget(Qt::TopLeftCorner), subWindow->maximizedSystemMenuIconWidget());
+    QCOMPARE(menuBar1->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
 
     // Replace.
-    mainWindow.setMenuBar(new QMenuBar);
-    menuBar = mainWindow.menuBar();
-    menuBar->setNativeMenuBar(false);
-    qApp->processEvents();
+    auto menuBar2 = new QMenuBar;
+    mainWindow.setMenuBar(menuBar2);
+    menuBar2->setNativeMenuBar(false);
+    QCoreApplication::processEvents();
 
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
-    QCOMPARE(menuBar->cornerWidget(Qt::TopLeftCorner), subWindow->maximizedSystemMenuIconWidget());
-    QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
+    QCOMPARE(menuBar2->cornerWidget(Qt::TopLeftCorner), subWindow->maximizedSystemMenuIconWidget());
+    QCOMPARE(menuBar2->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
 
     subWindow->showNormal();
     QVERIFY(!subWindow->maximizedButtonsWidget());
     QVERIFY(!subWindow->maximizedSystemMenuIconWidget());
-    QVERIFY(!menuBar->cornerWidget(Qt::TopLeftCorner));
-    QVERIFY(!menuBar->cornerWidget(Qt::TopRightCorner));
+    QVERIFY(!menuBar2->cornerWidget(Qt::TopLeftCorner));
+    QVERIFY(!menuBar2->cornerWidget(Qt::TopRightCorner));
 
     // Delete and replace.
     subWindow->showMaximized();
-    delete menuBar;
-    mainWindow.setMenuBar(new QMenuBar);
-    qApp->processEvents();
+    delete menuBar2;
+    auto menuBar3 = new QMenuBar;
+    mainWindow.setMenuBar(menuBar3);
+    QCoreApplication::processEvents();
 
     QVERIFY(!subWindow->maximizedButtonsWidget());
     QVERIFY(!subWindow->maximizedSystemMenuIconWidget());
@@ -1801,8 +1849,8 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
 
     // Delete.
     subWindow->showMaximized();
-    mainWindow.setMenuBar(0);
-    qApp->processEvents();
+    mainWindow.setMenuBar(nullptr);
+    QCoreApplication::processEvents();
     QVERIFY(!mainWindow.menuWidget());
 
     QVERIFY(!subWindow->maximizedButtonsWidget());
@@ -1811,6 +1859,8 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
     subWindow->showNormal();
     QVERIFY(!subWindow->maximizedButtonsWidget());
     QVERIFY(!subWindow->maximizedSystemMenuIconWidget());
+    delete menuBar1;
+    delete menuBar3;
 }
 
 void tst_QMdiSubWindow::closeOnDoubleClick_data()
@@ -1842,9 +1892,9 @@ void tst_QMdiSubWindow::closeOnDoubleClick()
 
     const QRect actionGeometry = systemMenu->actionGeometry(systemMenu->actions().at(actionIndex));
     sendMouseDoubleClick(systemMenu, actionGeometry.center());
-    if (qApp->activePopupWidget() == static_cast<QWidget *>(systemMenu))
+    if (QApplication::activePopupWidget() == static_cast<QWidget *>(systemMenu))
         systemMenu->hide();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!systemMenu || !systemMenu->isVisible());
     QCOMPARE(subWindow.isNull() || !subWindow->isVisible(), expectClosed);
 }
@@ -1854,6 +1904,7 @@ void tst_QMdiSubWindow::setFont()
 {
     QSKIP("This test function is unstable in CI, please see QTBUG-22544");
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QPushButton(QLatin1String("test")));
     subWindow->resize(300, 100);
     subWindow->setWindowTitle(QLatin1String("Window title"));
@@ -1871,7 +1922,7 @@ void tst_QMdiSubWindow::setFont()
     QFont newFont(QLatin1String("Helvetica"), 16);
     newFont.setBold(true);
     subWindow->setFont(newFont);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     const QFont &swFont = subWindow->font();
     QCOMPARE(swFont.family(), newFont.family());
     QCOMPARE(swFont.pointSize(), newFont.pointSize());
@@ -1880,7 +1931,7 @@ void tst_QMdiSubWindow::setFont()
     QVERIFY(newTitleBar != originalTitleBar);
 
     subWindow->setFont(originalFont);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QCOMPARE(subWindow->font(), originalFont);
     newTitleBar = subWindow->grab(titleBarRect).toImage();
     QCOMPARE(newTitleBar, originalTitleBar);
@@ -1889,6 +1940,7 @@ void tst_QMdiSubWindow::setFont()
 void tst_QMdiSubWindow::task_188849()
 {
     QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     // Sets a regular QWidget (and NOT a QMenuBar) as the menu bar.
     mainWindow.setMenuWidget(new QWidget);
 
@@ -1907,10 +1959,11 @@ void tst_QMdiSubWindow::task_188849()
 void tst_QMdiSubWindow::mdiArea()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     QCOMPARE(subWindow->mdiArea(), &mdiArea);
 
-    subWindow->setParent(0);
+    subWindow->setParent(nullptr);
     QVERIFY(!subWindow->mdiArea());
 
     // Child of the area's corner widget.
@@ -1931,10 +1984,11 @@ void tst_QMdiSubWindow::task_182852()
 {
     QMdiArea *workspace = new QMdiArea;
     QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
-    qApp->setActiveWindow(&mainWindow);
+    QApplication::setActiveWindow(&mainWindow);
     if (mainWindow.menuBar()->isNativeMenuBar())
         return; // The main window's title is not overwritten if we have a native menubar (macOS, Unity etc.)
 
@@ -1950,7 +2004,7 @@ void tst_QMdiSubWindow::task_182852()
     workspace->addSubWindow(window);
 
     window->showMaximized();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(window->isMaximized());
 
     QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
@@ -1977,6 +2031,7 @@ void tst_QMdiSubWindow::task_182852()
 void tst_QMdiSubWindow::task_233197()
 {
     QMainWindow *mainWindow = new QMainWindow;
+    mainWindow->setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mainWindow->setAttribute(Qt::WA_DeleteOnClose);
     mainWindow->resize(500, 200);
     mainWindow->show();
@@ -2001,17 +2056,19 @@ void tst_QMdiSubWindow::task_233197()
     Q_UNUSED(menuBar);
 
     QPushButton *focus1 = new QPushButton(QLatin1String("Focus 1"), mainWindow);
-    QObject::connect(focus1, SIGNAL(clicked()), subWindow1, SLOT(setFocus()));
+    QObject::connect(focus1, &QAbstractButton::clicked, subWindow1,
+                     QOverload<>::of(&QWidget::setFocus));
     focus1->move(5, 30);
     focus1->show();
 
     QPushButton *focus2 = new QPushButton(QLatin1String("Focus 2"), mainWindow);
-    QObject::connect(focus2, SIGNAL(clicked()), subWindow2, SLOT(setFocus()));
+    QObject::connect(focus2, &QAbstractButton::clicked, subWindow2,
+                     QOverload<>::of(&QWidget::setFocus));
     focus2->move(5, 60);
     focus2->show();
 
     QPushButton *close = new QPushButton(QLatin1String("Close"), mainWindow);
-    QObject::connect(close, SIGNAL(clicked()), mainWindow, SLOT(close()));
+    QObject::connect(close, &QAbstractButton::clicked, mainWindow, &QWidget::close);
     close->move(5, 90);
     close->show();
 
@@ -2035,6 +2092,7 @@ void tst_QMdiSubWindow::task_233197()
 void tst_QMdiSubWindow::task_226929()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
@@ -2056,6 +2114,7 @@ void tst_QMdiSubWindow::task_226929()
 void tst_QMdiSubWindow::styleChange()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
@@ -2070,7 +2129,7 @@ void tst_QMdiSubWindow::styleChange()
     QTest::qWait(100);
 
     qRegisterMetaType<QMdiSubWindow *>();
-    QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    QSignalSpy spy(&mdiArea, &QMdiArea::subWindowActivated);
     QVERIFY(spy.isValid());
 
     QEvent event(QEvent::StyleChange);
@@ -2085,6 +2144,7 @@ void tst_QMdiSubWindow::styleChange()
 void tst_QMdiSubWindow::testFullScreenState()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.showMaximized();
 
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
@@ -2101,6 +2161,7 @@ void tst_QMdiSubWindow::testFullScreenState()
 void tst_QMdiSubWindow::testRemoveBaseWidget()
 {
     QMdiArea mdiArea;
+    mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.show();
 
     QWidget *widget1 = new QWidget;

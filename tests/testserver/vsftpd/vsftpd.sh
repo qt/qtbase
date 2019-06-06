@@ -54,6 +54,10 @@ ln -s /home/$USER/ftp /var/ftp
 su $USER -c "mkdir -p ~/ftp/qtest/"
 su $USER -c "cp rfc3252.txt ~/ftp/qtest/"; rm rfc3252.txt
 
+# tst_QNetworkReply::proxy_data()
+su $USER -c "ln ~/ftp/qtest/rfc3252.txt ~/ftp/qtest/rfc3252"
+su $USER -c "mkdir -p ~/ftp/qtest/nonASCII/"
+
 # Duplicate rfc3252.txt 20 times for bigfile tests:
 su $USER -c "seq 20 | xargs -i cat ~/ftp/qtest/rfc3252.txt >> ~/ftp/qtest/bigfile"
 

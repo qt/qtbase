@@ -1,0 +1,5 @@
+locale_database is used to generate qlocale data from CLDR.
+
+CLDR is the Common Locale Data Repository, a database for localized
+data (like date formats, country names etc).  It is provided by the
+Unicode consortium.

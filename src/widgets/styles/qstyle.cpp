@@ -2101,6 +2101,20 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SP_MediaVolume Icon indicating a volume control.
     \value SP_MediaVolumeMuted Icon indicating a muted volume control.
     \value SP_LineEditClearButton Icon for a standard clear button in a QLineEdit. This enum value was added in Qt 5.2.
+    \value SP_DialogYesToAllButton Icon for a standard YesToAll button in a QDialogButtonBox.
+        This enum value was added in Qt 5.14.
+    \value SP_DialogNoToAllButton Icon for a standard NoToAll button in a QDialogButtonBox.
+        This enum value was added in Qt 5.14.
+    \value SP_DialogSaveAllButton Icon for a standard SaveAll button in a QDialogButtonBox.
+       This enum value was added in Qt 5.14.
+    \value SP_DialogAbortButton Icon for a standard Abort button in a QDialogButtonBox.
+       This enum value was added in Qt 5.14.
+    \value SP_DialogRetryButton Icon for a standard Retry button in a QDialogButtonBox.
+       This enum value was added in Qt 5.14.
+    \value SP_DialogIgnoreButton Icon for a standard Ignore button in a QDialogButtonBox.
+       This enum value was added in Qt 5.14.
+    \value SP_RestoreDefaultsButton Icon for a standard RestoreDefaults button in a QDialogButtonBox.
+       This enum value was added in Qt 5.14.
     \value SP_CustomBase  Base value for custom standard pixmaps;
     custom values must be greater than this value.
 

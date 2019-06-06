@@ -53,12 +53,12 @@ class QWindowsWindow;
 
 class QWindowsInputContext : public QPlatformInputContext
 {
-    Q_DISABLE_COPY(QWindowsInputContext)
+    Q_DISABLE_COPY_MOVE(QWindowsInputContext)
     Q_OBJECT
 
     struct CompositionContext
     {
-        HWND hwnd = 0;
+        HWND hwnd = nullptr;
         QString composition;
         int position = 0;
         bool isComposing = false;

@@ -94,8 +94,8 @@ private slots:
 
     void convertTo();
 
-    void light();
-    void dark();
+    void lighter();
+    void darker();
 
     void specConstructor_data();
     void specConstructor();
@@ -1419,17 +1419,17 @@ void tst_QColor::convertTo()
     QCOMPARE(invalid.spec(), QColor::Invalid);
 }
 
-void tst_QColor::light()
+void tst_QColor::lighter()
 {
     QColor gray(Qt::gray);
-    QColor lighter = gray.light();
+    QColor lighter = gray.lighter();
     QVERIFY(lighter.value() > gray.value());
 }
 
-void tst_QColor::dark()
+void tst_QColor::darker()
 {
     QColor gray(Qt::gray);
-    QColor darker = gray.dark();
+    QColor darker = gray.darker();
     QVERIFY(darker.value() < gray.value());
 }
 

@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 */
 class QWindowsThreadPoolRunner
 {
-    Q_DISABLE_COPY(QWindowsThreadPoolRunner)
+    Q_DISABLE_COPY_MOVE(QWindowsThreadPoolRunner)
 
 #if QT_CONFIG(thread)
     template <class RunnableFunction> // nested class implementing QRunnable to execute a function.

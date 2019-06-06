@@ -199,7 +199,7 @@ public:
     }
 
     // the number of QByteArrays
-    inline qint64 bufferCount() const
+    inline int bufferCount() const
     {
         return buffers.length();
     }

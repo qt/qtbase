@@ -3446,7 +3446,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *btn = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             if (rule.hasBox() || btn->features & QStyleOptionToolButton::Arrow) {
-                QCommonStyle::drawControl(ce, opt, p, w);
+                QWindowsStyle::drawControl(ce, opt, p, w);
             } else {
                 QStyleOptionToolButton butOpt(*btn);
                 rule.configurePalette(&butOpt.palette, QPalette::ButtonText, QPalette::Button);
@@ -3827,7 +3827,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
             if (subRule.hasDrawable()) {
                 subRule.drawRule(p, opt->rect);
-                QCommonStyle::drawControl(ce, &mi, p, w);
+                QCommonStyle::drawControl(ce, &mi, p, w); // deliberate bypass of the base
             } else {
                 if (rule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
                     // So that the menu bar background is not hidden by the items
@@ -4170,12 +4170,12 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
             QRect r = positionRect(w, subRule, PseudoElement_TabBarTab, opt->rect, opt->direction);
-            if (ce == CE_TabBarTabShape && subRule.hasDrawable()) {
+            if (ce == CE_TabBarTabShape && subRule.hasDrawable() && tab->shape < QTabBar::TriangularNorth) {
                 subRule.drawRule(p, r);
                 return;
             }
             QStyleOptionTab tabCopy(*tab);
-            subRule.configurePalette(&tabCopy.palette, QPalette::WindowText, QPalette::Window);
+            subRule.configurePalette(&tabCopy.palette, QPalette::WindowText, QPalette::Base);
             QFont oldFont = p->font();
             if (subRule.hasFont)
                 p->setFont(subRule.font);
@@ -4992,17 +4992,19 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 
     switch (ct) {
 #if QT_CONFIG(spinbox)
-    case CT_SpinBox: // ### hopelessly broken QAbstractSpinBox (part 1)
+    case CT_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            // Add some space for the up/down buttons
-            QRenderRule subRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
-            if (subRule.hasDrawable()) {
-                QRect r = positionRect(w, rule, subRule, PseudoElement_SpinBoxUpButton,
-                                       opt->rect, opt->direction);
-                sz += QSize(r.width(), 0);
-            } else {
-                QSize defaultUpSize = defaultSize(w, subRule.size(), spinbox->rect, PseudoElement_SpinBoxUpButton);
-                sz += QSize(defaultUpSize.width(), 0);
+            if (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                // Add some space for the up/down buttons
+                QRenderRule subRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
+                if (subRule.hasDrawable()) {
+                    QRect r = positionRect(w, rule, subRule, PseudoElement_SpinBoxUpButton,
+                                           opt->rect, opt->direction);
+                    sz.rwidth() += r.width();
+                } else {
+                    QSize defaultUpSize = defaultSize(w, subRule.size(), spinbox->rect, PseudoElement_SpinBoxUpButton);
+                    sz.rwidth() += defaultUpSize.width();
+                }
             }
             if (rule.hasBox() || rule.hasBorder() || !rule.hasNativeBorder())
                 sz = rule.boxSize(sz);
@@ -5503,8 +5505,12 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                                 : Qt::Alignment(Qt::AlignRight);
                         downAlign = resolveAlignment(opt->direction, downAlign);
 
-                        int upSize = subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w).width();
-                        int downSize = subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w).width();
+                        const bool hasButtons = (spin->buttonSymbols != QAbstractSpinBox::NoButtons);
+                        const int upSize = hasButtons
+                                ? subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w).width() : 0;
+                        const int downSize = hasButtons
+                                ? subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w).width() : 0;
+
                         int widestL = qMax((upAlign & Qt::AlignLeft) ? upSize : 0,
                                 (downAlign & Qt::AlignLeft) ? downSize : 0);
                         int widestR = qMax((upAlign & Qt::AlignRight) ? upSize : 0,

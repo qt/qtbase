@@ -79,7 +79,7 @@ quint64 spiStatesFromQState(QAccessible::State state)
     if (state.checkStateMixed)
         setSpiStateBit(&spiState, ATSPI_STATE_INDETERMINATE);
     if (state.readOnly)
-        unsetSpiStateBit(&spiState, ATSPI_STATE_EDITABLE);
+        setSpiStateBit(&spiState, ATSPI_STATE_READ_ONLY);
     //        if (state.HotTracked)
     if (state.defaultButton)
         setSpiStateBit(&spiState, ATSPI_STATE_IS_DEFAULT);

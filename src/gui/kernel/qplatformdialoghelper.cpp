@@ -41,7 +41,9 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QVariant>
+#if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
+#endif
 #include <QtCore/QSharedData>
 #if QT_CONFIG(settings)
 #include <QtCore/QSettings>
@@ -786,6 +788,7 @@ const char QPlatformFileDialogHelper::filterRegExp[] =
 // Makes a list of filters from a normal filter string "Image Files (*.png *.jpg)"
 QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
 {
+#if QT_CONFIG(regularexpression)
     QRegularExpression regexp(QString::fromLatin1(filterRegExp));
     Q_ASSERT(regexp.isValid());
     QString f = filter;
@@ -794,6 +797,9 @@ QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
     if (match.hasMatch())
         f = match.captured(2);
     return f.split(QLatin1Char(' '), QString::SkipEmptyParts);
+#else
+    return QStringList();
+#endif
 }
 
 // Message dialog

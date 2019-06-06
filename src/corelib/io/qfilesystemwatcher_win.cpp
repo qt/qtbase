@@ -44,6 +44,7 @@
 #include <qfileinfo.h>
 #include <qstringlist.h>
 #include <qset.h>
+#include <qscopeguard.h>
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qtextstream.h>
@@ -305,8 +306,7 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, //  Volume requires BACKUP_SEMANTICS
                    0);
     if (volumeHandle == INVALID_HANDLE_VALUE) {
-        qErrnoWarning("CreateFile %s failed.",
-                      qPrintable(QString::fromWCharArray(devicePath)));
+        qErrnoWarning("CreateFile %ls failed.", devicePath);
         return;
     }
 
@@ -323,8 +323,7 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
     // closed. Do it here to avoid having to close/reopen in lock message handling.
     CloseHandle(volumeHandle);
     if (!re.devNotify) {
-        qErrnoWarning("RegisterDeviceNotification %s failed.",
-                      qPrintable(QString::fromWCharArray(devicePath)));
+        qErrnoWarning("RegisterDeviceNotification %ls failed.", devicePath);
         return;
     }
 
@@ -377,10 +376,9 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                        QStringList *directories)
 {
     DEBUG() << "Adding" << paths.count() << "to existing" << (files->count() + directories->count()) << "watchers";
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&] { unhandled.push_back(path); });
         QString normalPath = path;
         if ((normalPath.endsWith(QLatin1Char('/')) && !normalPath.endsWith(QLatin1String(":/")))
             || (normalPath.endsWith(QLatin1Char('\\')) && !normalPath.endsWith(QLatin1String(":\\")))) {
@@ -463,7 +461,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                     else
                         files->append(path);
                 }
-                it.remove();
+                sg.dismiss();
                 thread->wakeup();
                 break;
             }
@@ -493,7 +491,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                     else
                         files->append(path);
 
-                    it.remove();
+                    sg.dismiss();
                     found = true;
                     thread->wakeup();
                     break;
@@ -519,7 +517,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 thread->msg = '@';
                 thread->start();
                 threads.append(thread);
-                it.remove();
+                sg.dismiss();
             }
         }
     }
@@ -527,12 +525,12 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 #ifndef Q_OS_WINRT
     if (Q_LIKELY(m_driveListener)) {
         for (const QString &path : paths) {
-            if (!p.contains(path))
+            if (!unhandled.contains(path))
                 m_driveListener->addPath(path);
         }
     }
 #endif // !Q_OS_WINRT
-    return p;
+    return unhandled;
 }
 
 QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &paths,
@@ -540,10 +538,9 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
                                                           QStringList *directories)
 {
     DEBUG() << "removePaths" << paths;
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&] { unhandled.push_back(path); });
         QString normalPath = path;
         if (normalPath.endsWith(QLatin1Char('/')) || normalPath.endsWith(QLatin1Char('\\')))
             normalPath.chop(1);
@@ -572,7 +569,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
                     // ###
                     files->removeAll(path);
                     directories->removeAll(path);
-                    it.remove();
+                    sg.dismiss();
 
                     if (h.isEmpty()) {
                         DEBUG() << "Closing handle" << handle.handle;
@@ -613,7 +610,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
     }
 
     threads.removeAll(0);
-    return p;
+    return unhandled;
 }
 
 ///////////
@@ -642,15 +639,15 @@ QWindowsFileSystemWatcherEngineThread::~QWindowsFileSystemWatcherEngineThread()
     }
 }
 
-static inline QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThread::PathInfoHash &pathInfos)
+Q_DECL_COLD_FUNCTION
+static QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThread::PathInfoHash &pathInfos)
 {
-    QString result;
-    QTextStream str(&result);
-    str << "QFileSystemWatcher: FindNextChangeNotification failed for";
+    QString str;
+    str += QLatin1String("QFileSystemWatcher: FindNextChangeNotification failed for");
     for (const QWindowsFileSystemWatcherEngine::PathInfo &pathInfo : pathInfos)
-        str << " \"" << QDir::toNativeSeparators(pathInfo.absolutePath) << '"';
-    str << ' ';
-    return result;
+        str += QLatin1String(" \"") + QDir::toNativeSeparators(pathInfo.absolutePath) + QLatin1Char('"');
+    str += QLatin1Char(' ');
+    return str;
 }
 
 void QWindowsFileSystemWatcherEngineThread::run()
@@ -696,7 +693,7 @@ void QWindowsFileSystemWatcherEngineThread::run()
                             fakeRemove = true;
                         }
 
-                        qErrnoWarning(error, "%s", qPrintable(msgFindNextFailed(h)));
+                        qErrnoWarning(error, "%ls", qUtf16Printable(msgFindNextFailed(h)));
                     }
                     QMutableHashIterator<QFileSystemWatcherPathKey, QWindowsFileSystemWatcherEngine::PathInfo> it(h);
                     while (it.hasNext()) {

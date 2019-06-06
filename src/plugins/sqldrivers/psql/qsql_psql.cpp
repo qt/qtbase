@@ -1506,7 +1506,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
                 // while parsing), so we have correct behavior in both case of with timezone and without tz
                 r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + QLatin1Char('\'') +
-                        QLocale::c().toString(field.value().toDateTime().toUTC(), QStringLiteral("yyyy-MM-ddThh:mm:ss.zzz")) +
+                        QLocale::c().toString(field.value().toDateTime().toUTC(), QStringViewLiteral("yyyy-MM-ddThh:mm:ss.zzz")) +
                         QLatin1Char('Z') + QLatin1Char('\'');
             } else {
                 r = nullStr();
@@ -1518,7 +1518,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::Time:
 #if QT_CONFIG(datestring)
             if (field.value().toTime().isValid()) {
-                r = QLatin1Char('\'') + field.value().toTime().toString(QLatin1String("hh:mm:ss.zzz")) + QLatin1Char('\'');
+                r = QLatin1Char('\'') + field.value().toTime().toString(QStringViewLiteral("hh:mm:ss.zzz")) + QLatin1Char('\'');
             } else
 #endif
             {

@@ -241,7 +241,8 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     if (!*data || *data != '.') {
                         token = INTEGER_LITERAL;
                         if (data - lexem == 1 &&
-                            (*data == 'x' || *data == 'X')
+                            (*data == 'x' || *data == 'X'
+                             || *data == 'b' || *data == 'B')
                             && *lexem == '0') {
                             ++data;
                             while (is_hex_char(*data) || *data == '\'')

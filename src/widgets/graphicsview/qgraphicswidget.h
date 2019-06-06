@@ -111,9 +111,11 @@ public:
     inline QRectF rect() const { return QRectF(QPointF(), size()); }
 
     void setContentsMargins(qreal left, qreal top, qreal right, qreal bottom);
+    void setContentsMargins(QMarginsF margins);
     void getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const override;
 
     void setWindowFrameMargins(qreal left, qreal top, qreal right, qreal bottom);
+    void setWindowFrameMargins(QMarginsF margins);
     void getWindowFrameMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const;
     void unsetWindowFrameMargins();
     QRectF windowFrameGeometry() const;

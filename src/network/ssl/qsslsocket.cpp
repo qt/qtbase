@@ -761,8 +761,8 @@ qint64 QSslSocket::bytesAvailable() const
 {
     Q_D(const QSslSocket);
     if (d->mode == UnencryptedMode)
-        return QIODevice::bytesAvailable() + (d->plainSocket ? d->plainSocket->bytesAvailable() : 0);
-    return QIODevice::bytesAvailable();
+        return QAbstractSocket::bytesAvailable() + (d->plainSocket ? d->plainSocket->bytesAvailable() : 0);
+    return QAbstractSocket::bytesAvailable();
 }
 
 /*!
@@ -818,8 +818,8 @@ bool QSslSocket::canReadLine() const
 {
     Q_D(const QSslSocket);
     if (d->mode == UnencryptedMode)
-        return QIODevice::canReadLine() || (d->plainSocket && d->plainSocket->canReadLine());
-    return QIODevice::canReadLine();
+        return QAbstractSocket::canReadLine() || (d->plainSocket && d->plainSocket->canReadLine());
+    return QAbstractSocket::canReadLine();
 }
 
 /*!
@@ -849,8 +849,8 @@ bool QSslSocket::atEnd() const
 {
     Q_D(const QSslSocket);
     if (d->mode == UnencryptedMode)
-        return QIODevice::atEnd() && (!d->plainSocket || d->plainSocket->atEnd());
-    return QIODevice::atEnd();
+        return QAbstractSocket::atEnd() && (!d->plainSocket || d->plainSocket->atEnd());
+    return QAbstractSocket::atEnd();
 }
 
 /*!

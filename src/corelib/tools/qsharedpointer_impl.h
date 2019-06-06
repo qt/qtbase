@@ -386,7 +386,7 @@ public:
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
     { internalSet(other.d, other.value); return *this; }
 
-    inline void swap(QSharedPointer &other)
+    inline void swap(QSharedPointer &other) noexcept
     { this->internalSwap(other); }
 
     inline void reset() { clear(); }
@@ -565,7 +565,11 @@ public:
     bool isNull() const noexcept { return d == nullptr || d->strongref.load() == 0 || value == nullptr; }
     operator RestrictedBool() const noexcept { return isNull() ? nullptr : &QWeakPointer::value; }
     bool operator !() const noexcept { return isNull(); }
-    T *data() const noexcept { return d == nullptr || d->strongref.load() == 0 ? nullptr : value; }
+
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("Use toStrongRef() instead, and data() on the returned QSharedPointer")
+    T *data() const noexcept { return internalData(); }
+#endif
 
     inline QWeakPointer() noexcept : d(nullptr), value(nullptr) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
@@ -674,6 +678,15 @@ public:
 #else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QPointer;
+#  ifndef QT_NO_QOBJECT
+    template<typename X>
+    friend QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<X*>::Value, X>::type>
+    qWeakPointerFromVariant(const QVariant &variant);
+#  endif
+    template<typename X>
+    friend QPointer<X>
+    qPointerFromVariant(const QVariant &variant);
+    friend QtPrivate::QSmartPointerConvertFunctor<QWeakPointer>;
 #endif
 
     template <class X>
@@ -695,6 +708,13 @@ public:
             delete d;
         d = o;
         value = actual;
+    }
+
+    // ### Qt 6: remove users of this API; no one should ever access
+    // a weak pointer's data but the weak pointer itself
+    inline T *internalData() const noexcept
+    {
+        return d == nullptr || d->strongref.load() == 0 ? nullptr : value;
     }
 
     Data *d;
@@ -880,18 +900,12 @@ Q_INLINE_TEMPLATE QWeakPointer<T> QSharedPointer<T>::toWeakRef() const
 }
 
 template <class T>
-inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
-{
-    p1.swap(p2);
-}
+inline void swap(QSharedPointer<T> &p1, QSharedPointer<T> &p2) noexcept
+{ p1.swap(p2); }
 
-QT_END_NAMESPACE
-namespace std {
-    template <class T>
-    inline void swap(QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p2)
-    { p1.swap(p2); }
-}
-QT_BEGIN_NAMESPACE
+template <class T>
+inline void swap(QWeakPointer<T> &p1, QWeakPointer<T> &p2) noexcept
+{ p1.swap(p2); }
 
 namespace QtSharedPointer {
 // helper functions:
@@ -976,11 +990,13 @@ qobject_cast(const QWeakPointer<T> &src)
     return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
 }
 
+/// ### Qt 6: make this use toStrongRef() (once support for storing
+/// non-managed QObjects in QWeakPointer is removed)
 template<typename T>
 QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
 qWeakPointerFromVariant(const QVariant &variant)
 {
-    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
+    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
 }
 template<typename T>
 QSharedPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>

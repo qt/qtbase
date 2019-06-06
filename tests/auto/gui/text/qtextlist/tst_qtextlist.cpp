@@ -314,7 +314,7 @@ void tst_QTextList::partialRemoval()
     selection.deleteChar(); // deletes the second list
 
     QVERIFY(!secondList);
-    QVERIFY(!firstList->isEmpty());
+    QVERIFY(firstList->count() > 0);
 
     doc->undo();
 }

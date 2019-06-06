@@ -58,6 +58,8 @@
 #include "mainwindow.h"
 #include "glwidget.h"
 
+#include <memory>
+
 static QString getGlString(QOpenGLFunctions *functions, GLenum name)
 {
     if (const GLubyte *p = functions->glGetString(name))
@@ -104,8 +106,8 @@ int main( int argc, char ** argv )
     const QString toolTip = supportsThreading ? glInfo : glInfo + QStringLiteral("\ndoes not support threaded OpenGL.");
     topLevelGlWidget.setToolTip(toolTip);
 
-    QScopedPointer<MainWindow> mw1;
-    QScopedPointer<MainWindow> mw2;
+    std::unique_ptr<MainWindow> mw1;
+    std::unique_ptr<MainWindow> mw2;
     if (!parser.isSet(singleOption)) {
         if (supportsThreading) {
             pos += QPoint(100, 100);

@@ -77,13 +77,13 @@ public:
     ~QPointer();
 #endif
 
-    inline void swap(QPointer &other) { wp.swap(other.wp); }
+    inline void swap(QPointer &other) noexcept { wp.swap(other.wp); }
 
     inline QPointer<T> &operator=(T* p)
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
     inline T* data() const
-    { return static_cast<T*>( wp.data()); }
+    { return static_cast<T*>(wp.internalData()); }
     inline T* operator->() const
     { return data(); }
     inline T& operator*() const
@@ -143,8 +143,12 @@ template<typename T>
 QPointer<T>
 qPointerFromVariant(const QVariant &variant)
 {
-    return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).data()));
+    return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
 }
+
+template <class T>
+inline void swap(QPointer<T> &p1, QPointer<T> &p2) noexcept
+{ p1.swap(p2); }
 
 QT_END_NAMESPACE
 

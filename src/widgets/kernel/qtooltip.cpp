@@ -41,7 +41,6 @@
 #endif
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <QtWidgets/private/qlabel_p.h>
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -61,6 +60,7 @@
 
 #ifndef QT_NO_TOOLTIP
 #include <qlabel.h>
+#include <QtWidgets/private/qlabel_p.h>
 #include <qtooltip.h>
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC

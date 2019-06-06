@@ -68,8 +68,12 @@ QColorTrcLut *lutFromTrc(const QColorTrc &trc)
 
 void QColorTransformPrivate::updateLutsIn() const
 {
-    if (colorSpaceIn->lutsGenerated.loadAcquire())
+    if (colorSpaceIn->lut.generated.loadAcquire())
         return;
+    QMutexLocker lock(&QColorSpacePrivate::s_lutWriteLock);
+    if (colorSpaceIn->lut.generated.load())
+        return;
+
     for (int i = 0; i < 3; ++i) {
         if (!colorSpaceIn->trc[i].isValid())
             return;
@@ -84,12 +88,15 @@ void QColorTransformPrivate::updateLutsIn() const
             colorSpaceIn->lut[i].reset(lutFromTrc(colorSpaceIn->trc[i]));
     }
 
-    colorSpaceIn->lutsGenerated.storeRelease(1);
+    colorSpaceIn->lut.generated.storeRelease(1);
 }
 
 void QColorTransformPrivate::updateLutsOut() const
 {
-    if (colorSpaceOut->lutsGenerated.loadAcquire())
+    if (colorSpaceOut->lut.generated.loadAcquire())
+        return;
+    QMutexLocker lock(&QColorSpacePrivate::s_lutWriteLock);
+    if (colorSpaceOut->lut.generated.load())
         return;
     for (int i = 0; i < 3; ++i) {
         if (!colorSpaceOut->trc[i].isValid())
@@ -105,7 +112,7 @@ void QColorTransformPrivate::updateLutsOut() const
             colorSpaceOut->lut[i].reset(lutFromTrc(colorSpaceOut->trc[i]));
     }
 
-    colorSpaceOut->lutsGenerated.storeRelease(1);
+    colorSpaceOut->lut.generated.storeRelease(1);
 }
 
 /*!
@@ -150,7 +157,7 @@ QRgb QColorTransform::map(const QRgb &argb) const
     c.x = std::max(0.0f, std::min(1.0f, c.x));
     c.y = std::max(0.0f, std::min(1.0f, c.y));
     c.z = std::max(0.0f, std::min(1.0f, c.z));
-    if (d->colorSpaceOut->lutsGenerated.loadAcquire()) {
+    if (d->colorSpaceOut->lut.generated.loadAcquire()) {
         c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
         c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
         c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);
@@ -182,7 +189,7 @@ QRgba64 QColorTransform::map(const QRgba64 &rgba64) const
     c.x = std::max(0.0f, std::min(1.0f, c.x));
     c.y = std::max(0.0f, std::min(1.0f, c.y));
     c.z = std::max(0.0f, std::min(1.0f, c.z));
-    if (d->colorSpaceOut->lutsGenerated.loadAcquire()) {
+    if (d->colorSpaceOut->lut.generated.loadAcquire()) {
         c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
         c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
         c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);
@@ -221,7 +228,7 @@ QColor QColorTransform::map(const QColor &color) const
     c = d->colorMatrix.map(c);
     bool inGamut = c.x >= 0.0f && c.x <= 1.0f && c.y >= 0.0f && c.y <= 1.0f && c.z >= 0.0f && c.z <= 1.0f;
     if (inGamut) {
-        if (d_ptr->colorSpaceOut->lutsGenerated.loadAcquire()) {
+        if (d_ptr->colorSpaceOut->lut.generated.loadAcquire()) {
             c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
             c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
             c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);

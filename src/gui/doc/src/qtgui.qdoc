@@ -40,18 +40,6 @@
     These classes are used internally by Qt's user interface technologies
     and can also be used directly, for instance to write applications using
     low-level OpenGL ES graphics APIs.
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtgui.pro 0
-
-    \if !defined(qtforpython)
-    If you use \l qmake to build your projects, \l{Qt GUI} is included by
-    default. To disable Qt GUI, add the following line to your \c .pro file:
-
-    \snippet code/doc_src_qtgui.pro 1
-    \endif
 */
 
 /*!
@@ -69,14 +57,15 @@
     higher level API's, like Qt Quick, that are much more suitable
     than the enablers found in the Qt GUI module.
 
-    \section1 Getting Started
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtgui.pro 0
-
     \if !defined(qtforpython)
+
+    \include module-use.qdocinc using qt module
+    \quotefile overview/using-qt-gui.cmake
+
+    See also the \l[QtDoc]{Building with CMake} overview.
+
+    \section2 Building with qmake
+
     If you use \l qmake to build your projects, Qt GUI is included by
     default. To disable Qt GUI, add the following line to your \c .pro file:
 

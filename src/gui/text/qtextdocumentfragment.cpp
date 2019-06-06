@@ -715,6 +715,10 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
         case Html_img: {
             QTextImageFormat fmt;
             fmt.setName(currentNode->imageName);
+            if (!currentNode->text.isEmpty())
+                fmt.setProperty(QTextFormat::ImageTitle, currentNode->text);
+            if (!currentNode->imageAlt.isEmpty())
+                fmt.setProperty(QTextFormat::ImageAltText, currentNode->imageAlt);
 
             fmt.merge(currentNode->charFormat);
 

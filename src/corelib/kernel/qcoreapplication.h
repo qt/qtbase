@@ -227,6 +227,7 @@ private:
 #endif
     friend Q_CORE_EXPORT QString qAppName();
     friend class QClassFactory;
+    friend class QCommandLineParserPrivate;
 };
 
 #ifdef QT_NO_DEPRECATED

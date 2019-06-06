@@ -285,7 +285,7 @@ QAbstractState *QState::errorState() const
 
 /*!
   Sets this state's error state to be the given \a state. If the error state
-  is not set, or if it is set to 0, the state will inherit its parent's error
+  is not set, or if it is set to \nullptr, the state will inherit its parent's error
   state recursively. If no error state is set for the state itself or any of
   its ancestors, an error will cause the machine to stop executing and an error
   will be printed to the console.

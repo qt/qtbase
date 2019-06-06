@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsUiaSelectionProvider : public QWindowsUiaBaseProvider,
                                      public QWindowsComBase<ISelectionProvider>
 {
-    Q_DISABLE_COPY(QWindowsUiaSelectionProvider)
+    Q_DISABLE_COPY_MOVE(QWindowsUiaSelectionProvider)
 public:
     explicit QWindowsUiaSelectionProvider(QAccessible::Id id);
     virtual ~QWindowsUiaSelectionProvider();

@@ -3977,7 +3977,7 @@ void tst_QSortFilterProxyModel::hierarchyFilterInvalidation()
     QTreeView view;
     view.setModel(&proxy);
 
-    view.setCurrentIndex(proxy.index(2, 0).child(0, 0));
+    view.setCurrentIndex(proxy.index(0, 0, proxy.index(2, 0)));
 
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));

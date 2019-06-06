@@ -273,18 +273,6 @@ void QNSWindowBackingStore::redrawRoundedBottomCorners(CGRect windowRect) const
 
 // ----------------------------------------------------------------------------
 
-// https://stackoverflow.com/a/52722575/2761869
-template<class R>
-struct backwards_t {
-  R r;
-  constexpr auto begin() const { using std::rbegin; return rbegin(r); }
-  constexpr auto begin() { using std::rbegin; return rbegin(r); }
-  constexpr auto end() const { using std::rend; return rend(r); }
-  constexpr auto end() { using std::rend; return rend(r); }
-};
-template<class R>
-constexpr backwards_t<R> backwards(R&& r) { return {std::forward<R>(r)}; }
-
 QCALayerBackingStore::QCALayerBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
@@ -523,6 +511,7 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     // the window server.
 }
 
+#ifndef QT_NO_OPENGL
 void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                                     QPlatformTextureList *textures, bool translucentBackground)
 {
@@ -530,6 +519,22 @@ void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &regio
         return;
 
     QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
+}
+#endif
+
+QImage QCALayerBackingStore::toImage() const
+{
+    if (!const_cast<QCALayerBackingStore*>(this)->prepareForFlush())
+        return QImage();
+
+    // We need to make a copy here, as the returned image could be used just
+    // for reading, in which case it won't detach, and then the underlying
+    // image data might change under the feet of the client when we re-use
+    // the buffer at a later point.
+    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWReadAccess);
+    QImage imageCopy = m_buffers.back()->asImage()->copy();
+    m_buffers.back()->unlock();
+    return imageCopy;
 }
 
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const

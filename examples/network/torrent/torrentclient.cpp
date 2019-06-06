@@ -720,9 +720,9 @@ QList<TorrentPeer *> TorrentClient::weighedFreePeers() const
     qint64 now = QDateTime::currentSecsSinceEpoch();
     QList<TorrentPeer *> freePeers;
     QMap<QString, int> connectionsPerPeer;
-    for (TorrentPeer *peer : d->peers) {
+    for (TorrentPeer *peer : qAsConst(d->peers)) {
         bool busy = false;
-        for (PeerWireClient *client : d->connections) {
+        for (PeerWireClient *client : qAsConst(d->connections)) {
             if (client->state() == PeerWireClient::ConnectedState
                 && client->peerAddress() == peer->address
                 && client->peerPort() == peer->port) {
@@ -874,8 +874,7 @@ void TorrentClient::removeClient()
     // Remove the client from RateController and all structures.
     RateController::instance()->removeSocket(client);
     d->connections.removeAll(client);
-    QMultiMap<PeerWireClient *, TorrentPiece *>::Iterator it = d->payloads.find(client);
-    while (it != d->payloads.end() && it.key() == client) {
+    for (auto it = d->payloads.find(client); it != d->payloads.end() && it.key() == client; /*erasing*/) {
         TorrentPiece *piece = it.value();
         piece->inProgress = false;
         piece->requestedBlocks.fill(false);
@@ -883,9 +882,12 @@ void TorrentClient::removeClient()
     }
 
     // Remove pending read requests.
-    QMapIterator<int, PeerWireClient *> it2(d->readIds);
-    while (it2.findNext(client))
-        d->readIds.remove(it2.key());
+    for (auto it = d->readIds.begin(), end = d->readIds.end(); it != end; /*erasing*/) {
+        if (it.value() == client)
+            it = d->readIds.erase(it);
+        else
+            ++it;
+    }
 
     // Delete the client later.
     disconnect(client, SIGNAL(disconnected()), this, SLOT(removeClient()));
@@ -1084,25 +1086,25 @@ void TorrentClient::scheduleUploads()
     // seeding, we sort by upload speed. Seeds are left out; there's
     // no use in unchoking them.
     QList<PeerWireClient *> allClients = d->connections;
-    QMultiMap<int, PeerWireClient *> transferSpeeds;
+    QVector<QPair<qint64, PeerWireClient *>> transferSpeeds;
     for (PeerWireClient *client : qAsConst(allClients)) {
         if (client->state() == QAbstractSocket::ConnectedState
             && client->availablePieces().count(true) != d->pieceCount) {
             if (d->state == Seeding) {
-                transferSpeeds.insert(client->uploadSpeed(), client);
+                transferSpeeds.push_back({client->uploadSpeed(), client});
             } else {
-                transferSpeeds.insert(client->downloadSpeed(), client);
+                transferSpeeds.push_back({client->downloadSpeed(), client});
             }
         }
     }
 
+    std::sort(transferSpeeds.begin(), transferSpeeds.end());
+
     // Unchoke the top 'MaxUploads' downloaders (peers that we are
     // uploading to) and choke all others.
     int maxUploaders = MaxUploads;
-    QMapIterator<int, PeerWireClient *> it(transferSpeeds);
-    it.toBack();
-    while (it.hasPrevious()) {
-        PeerWireClient *client = it.previous().value();
+    for (auto rit = transferSpeeds.crbegin(), rend = transferSpeeds.crend(); rit != rend; ++rit) {
+        PeerWireClient *client = rit->second;
         bool interested = (client->peerWireState() & PeerWireClient::PeerIsInterested);
 
         if (maxUploaders) {
@@ -1484,30 +1486,26 @@ void TorrentClient::addToPeerList(const QList<TorrentPeer> &peerList)
     // of the peers that have no (or low) activity.
     int maxPeers = ConnectionManager::instance()->maxConnections() * 3;
     if (d->peers.size() > maxPeers) {
+        auto tooMany = d->peers.size() - maxPeers;
+
         // Find what peers are currently connected & active
-        QSet<TorrentPeer *> activePeers;
-        for (TorrentPeer *peer : qAsConst(d->peers)) {
+        const auto firstNInactivePeers = [&tooMany, this] (TorrentPeer *peer) {
+            if (!tooMany)
+                return false;
             for (const PeerWireClient *client : qAsConst(d->connections)) {
                 if (client->peer() == peer && (client->downloadSpeed() + client->uploadSpeed()) > 1024)
-                    activePeers << peer;
+                    return false;
             }
-        }
-
+            --tooMany;
+            return true;
+        };
         // Remove inactive peers from the peer list until we're below
         // the max connections count.
-        QList<int> toRemove;
-        for (int i = 0; i < d->peers.size() && (d->peers.size() - toRemove.size()) > maxPeers; ++i) {
-            if (!activePeers.contains(d->peers.at(i)))
-                toRemove << i;
-        }
-        QListIterator<int> toRemoveIterator(toRemove);
-        toRemoveIterator.toBack();
-        while (toRemoveIterator.hasPrevious())
-            d->peers.removeAt(toRemoveIterator.previous());
-
+        d->peers.erase(std::remove_if(d->peers.begin(), d->peers.end(),
+                                      firstNInactivePeers),
+                       d->peers.end());
         // If we still have too many peers, remove the oldest ones.
-        while (d->peers.size() > maxPeers)
-            d->peers.takeFirst();
+        d->peers.erase(d->peers.begin(), d->peers.begin() + tooMany);
     }
 
     if (d->state != Paused && d->state != Stopping && d->state != Idle) {

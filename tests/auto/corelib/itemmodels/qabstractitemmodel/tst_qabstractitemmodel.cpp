@@ -309,7 +309,8 @@ bool QtTestModel::moveColumns(const QModelIndex &sourceParent, int src, int cnt,
 
 void QtTestModel::reset()
 {
-    QAbstractItemModel::reset();
+    QAbstractItemModel::beginResetModel();
+    QAbstractItemModel::endResetModel();
 }
 
 bool QtTestModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
@@ -1785,13 +1786,12 @@ class ModelWithCustomRole : public QStringListModel
 {
   Q_OBJECT
 public:
-  ModelWithCustomRole(QObject *parent = 0)
-    : QStringListModel(parent)
-  {
-    QHash<int, QByteArray> roleNames_ = roleNames();
-    roleNames_.insert(Qt::UserRole + 1, "custom");
-    setRoleNames(roleNames_);
-  }
+    using QStringListModel::QStringListModel;
+
+    QHash<int, QByteArray> roleNames() const override
+    {
+        return {{Qt::UserRole + 1, QByteArrayLiteral("custom")}};
+    }
 };
 
 ListenerObject::ListenerObject(QAbstractProxyModel *parent)

@@ -1401,6 +1401,13 @@ QGradient::QGradient(Preset preset)
     }
 }
 
+/*!
+    \internal
+*/
+QGradient::~QGradient()
+{
+}
+
 QT_END_NAMESPACE
 static void initGradientPresets() { Q_INIT_RESOURCE(qmake_webgradients); }
 Q_CONSTRUCTOR_FUNCTION(initGradientPresets);
@@ -1785,6 +1792,12 @@ QLinearGradient::QLinearGradient(qreal xStart, qreal yStart, qreal xFinalStop, q
 {
 }
 
+/*!
+    \internal
+*/
+QLinearGradient::~QLinearGradient()
+{
+}
 
 /*!
     Returns the start point of this linear gradient in logical coordinates.
@@ -2056,6 +2069,13 @@ QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal centerRadius, qreal f
 }
 
 /*!
+  \internal
+*/
+QRadialGradient::~QRadialGradient()
+{
+}
+
+/*!
     Returns the center of this radial gradient in logical coordinates.
 
     \sa QGradient::stops()
@@ -2298,6 +2318,13 @@ QConicalGradient::QConicalGradient(const QPointF &center, qreal angle)
 
 QConicalGradient::QConicalGradient(qreal cx, qreal cy, qreal angle)
     : QConicalGradient(QPointF(cx, cy), angle)
+{
+}
+
+/*!
+    \internal
+*/
+QConicalGradient::~QConicalGradient()
 {
 }
 

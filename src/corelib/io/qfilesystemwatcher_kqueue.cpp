@@ -45,6 +45,7 @@
 
 #include <qdebug.h>
 #include <qfile.h>
+#include <qscopeguard.h>
 #include <qsocketnotifier.h>
 #include <qvarlengtharray.h>
 
@@ -94,10 +95,9 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                      QStringList *files,
                                                      QStringList *directories)
 {
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&]{unhandled.push_back(path);});
         int fd;
 #if defined(O_EVTONLY)
         fd = qt_safe_open(QFile::encodeName(path), O_EVTONLY);
@@ -149,7 +149,8 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
             continue;
         }
 
-        it.remove();
+        sg.dismiss();
+
         if (id < 0) {
             DEBUG() << "QKqueueFileSystemWatcherEngine: added directory path" << path;
             directories->append(path);
@@ -162,20 +163,19 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
         idToPath.insert(id, path);
     }
 
-    return p;
+    return unhandled;
 }
 
 QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths,
                                                         QStringList *files,
                                                         QStringList *directories)
 {
-    QStringList p = paths;
     if (pathToID.isEmpty())
-        return p;
+        return paths;
 
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&]{unhandled.push_back(path);});
         int id = pathToID.take(path);
         QString x = idToPath.take(id);
         if (x.isEmpty() || x != path)
@@ -183,14 +183,15 @@ QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths
 
         ::close(id < 0 ? -id : id);
 
-        it.remove();
+        sg.dismiss();
+
         if (id < 0)
             directories->removeAll(path);
         else
             files->removeAll(path);
     }
 
-    return p;
+    return unhandled;
 }
 
 void QKqueueFileSystemWatcherEngine::readFromKqueue()

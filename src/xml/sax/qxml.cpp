@@ -2371,7 +2371,7 @@ bool QXmlDefaultHandler::unparsedEntityDecl(const QString&, const QString&,
 /*!
     \reimp
 
-    Sets \a ret to 0, so that the reader uses the system identifier
+    Sets \a ret to \nullptr, so that the reader uses the system identifier
     provided in the XML document.
 */
 bool QXmlDefaultHandler::resolveEntity(const QString&, const QString&,

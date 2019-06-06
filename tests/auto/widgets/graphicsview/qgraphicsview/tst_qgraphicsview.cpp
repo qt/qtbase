@@ -4857,7 +4857,7 @@ void tst_QGraphicsView::QTBUG_16063_microFocusRect()
 
     scene.setFocusItem(item);
     view.setFocus();
-    QRectF mfv = view.inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QRectF mfv = view.inputMethodQuery(Qt::ImCursorRectangle).toRectF();
     QCOMPARE(mfv, IMItem::mf.translated(-view.mapToScene(view.sceneRect().toRect()).boundingRect().topLeft()));
 }
 

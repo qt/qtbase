@@ -237,7 +237,7 @@ public:
         {
             return reinterpret_cast<const ConnectionList *>(this + 1)[i + 1];
         }
-        int count() { return static_cast<int>(allocated); }
+        int count() const { return static_cast<int>(allocated); }
     };
 
 

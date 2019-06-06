@@ -1,1 +1,8 @@
+[tcpLoopbackPerformance]
+windows
+[receiveUrgentData]
+windows
+[serverTest]
+windows
+[tcpLoopbackPerformance]
 windows

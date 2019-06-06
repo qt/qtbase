@@ -1306,6 +1306,58 @@ static void init_plugins(const QList<QByteArray> &pluginList)
     }
 }
 
+void QGuiApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
+{
+    QCoreApplicationPrivate::addQtOptions(options);
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    const QByteArray sessionType = qgetenv("XDG_SESSION_TYPE");
+    const bool x11 = sessionType == "x11";
+    // Technically the x11 aliases are only available if platformName is "xcb", but we can't know that here.
+#else
+    const bool x11 = false;
+#endif
+
+    options->append(QCommandLineOption(QStringLiteral("platform"),
+                    QGuiApplication::tr("QPA plugin. See QGuiApplication documentation for available options for each plugin."), QStringLiteral("platformName[:options]")));
+    options->append(QCommandLineOption(QStringLiteral("platformpluginpath"),
+                    QGuiApplication::tr("Path to the platform plugins."), QStringLiteral("path")));
+    options->append(QCommandLineOption(QStringLiteral("platformtheme"),
+                    QGuiApplication::tr("Platform theme."), QStringLiteral("theme")));
+    options->append(QCommandLineOption(QStringLiteral("plugin"),
+                    QGuiApplication::tr("Additional plugins to load, can be specified multiple times."), QStringLiteral("plugin")));
+    options->append(QCommandLineOption(QStringLiteral("qwindowgeometry"),
+                    QGuiApplication::tr("Window geometry for the main window, using the X11-syntax, like 100x100+50+50."), QStringLiteral("geometry")));
+    options->append(QCommandLineOption(QStringLiteral("qwindowicon"),
+                    QGuiApplication::tr("Default window icon."), QStringLiteral("icon")));
+    options->append(QCommandLineOption(QStringLiteral("qwindowtitle"),
+                    QGuiApplication::tr("Title of the first window."), QStringLiteral("title")));
+    options->append(QCommandLineOption(QStringLiteral("reverse"),
+                    QGuiApplication::tr("Sets the application's layout direction to Qt::RightToLeft (debugging helper).")));
+    options->append(QCommandLineOption(QStringLiteral("session"),
+                    QGuiApplication::tr("Restores the application from an earlier session."), QStringLiteral("session")));
+
+    if (x11) {
+         options->append(QCommandLineOption(QStringLiteral("display"),
+                         QGuiApplication::tr("Display name, overrides $DISPLAY."), QStringLiteral("display")));
+         options->append(QCommandLineOption(QStringLiteral("name"),
+                         QGuiApplication::tr("Instance name according to ICCCM 4.1.2.5."), QStringLiteral("name")));
+         options->append(QCommandLineOption(QStringLiteral("nograb"),
+                         QGuiApplication::tr("Disable mouse grabbing (useful in debuggers).")));
+         options->append(QCommandLineOption(QStringLiteral("dograb"),
+                         QGuiApplication::tr("Force mouse grabbing (even when running in a debugger).")));
+         options->append(QCommandLineOption(QStringLiteral("visual"),
+                         QGuiApplication::tr("ID of the X11 Visual to use."), QStringLiteral("id")));
+         // Not using the "QStringList names" solution for those aliases, because it makes the first column too wide
+         options->append(QCommandLineOption(QStringLiteral("geometry"),
+                         QGuiApplication::tr("Alias for --windowgeometry."), QStringLiteral("geometry")));
+         options->append(QCommandLineOption(QStringLiteral("icon"),
+                         QGuiApplication::tr("Alias for --windowicon."), QStringLiteral("icon")));
+         options->append(QCommandLineOption(QStringLiteral("title"),
+                         QGuiApplication::tr("Alias for --windowtitle."), QStringLiteral("title")));
+    }
+}
+
 void QGuiApplicationPrivate::createPlatformIntegration()
 {
     QHighDpiScaling::initHighDpiScaling();

@@ -83,7 +83,7 @@ static GpuDescription adapterIdentifierToGpuDescription(const D3DADAPTER_IDENTIF
 class QDirect3D9Handle
 {
 public:
-    Q_DISABLE_COPY(QDirect3D9Handle)
+    Q_DISABLE_COPY_MOVE(QDirect3D9Handle)
 
     QDirect3D9Handle();
     ~QDirect3D9Handle();

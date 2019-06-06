@@ -56,8 +56,9 @@
 #include "qcolortrc_p.h"
 #include "qcolortrclut_p.h"
 
-#include <QtCore/qshareddata.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -112,8 +113,24 @@ public:
     QString description;
     QByteArray iccProfile;
 
-    mutable QSharedPointer<QColorTrcLut> lut[3];
-    mutable QAtomicInt lutsGenerated;
+    static QBasicMutex s_lutWriteLock;
+    struct LUT {
+        LUT() = default;
+        ~LUT() = default;
+        LUT(const LUT &other)
+        {
+            if (other.generated.loadAcquire()) {
+                table[0] = other.table[0];
+                table[1] = other.table[1];
+                table[2] = other.table[2];
+                generated.store(1);
+            }
+        }
+        QSharedPointer<QColorTrcLut> &operator[](int i) { return table[i]; }
+        const QSharedPointer<QColorTrcLut> &operator[](int i) const  { return table[i]; }
+        QSharedPointer<QColorTrcLut> table[3];
+        QAtomicInt generated;
+    } mutable lut;
 };
 
 QT_END_NAMESPACE

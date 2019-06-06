@@ -44,10 +44,8 @@
 #include "qdatetime.h"
 
 #ifdef Q_OS_DARWIN
-#include "qtimezone.h"
 #include "private/qcore_mac_p.h"
 #include <CoreFoundation/CoreFoundation.h>
-QT_REQUIRE_CONFIG(timezone);
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -147,7 +145,7 @@ static QString macTimeToString(const QTime &time, bool short_format)
 
 // Mac uses the Unicode CLDR format codes
 // http://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-// See also qtbase/util/local_database/dateconverter.py
+// See also qtbase/util/locale_database/dateconverter.py
 // Makes the assumption that input formats are always well formed and consecutive letters
 // never exceed the maximum for the format code.
 static QString macToQtFormat(QStringView sys_fmt)
@@ -491,8 +489,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         } else if (typeId == CFStringGetTypeID()) {
             result = QStringList(QString::fromCFString(languages.as<CFStringRef>()));
         } else {
-            qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%s\"; please report to http://bugreports.qt.io",
-                     qPrintable(QString::fromCFString(CFCopyTypeIDDescription(typeId))));
+            qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%ls\"; please report to http://bugreports.qt.io",
+                     qUtf16Printable(QString::fromCFString(CFCopyTypeIDDescription(typeId))));
         }
         return QVariant(result);
     }

@@ -49,6 +49,9 @@
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+
+#include <mutex>
+
 #ifdef Q_OS_FREEBSD
 #include <dev/evdev/input.h>
 #else
@@ -560,8 +563,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         if (!m_contacts.isEmpty() && m_contacts.constBegin().value().trackingId == -1)
             assignIds();
 
+        std::unique_lock<QMutex> locker;
         if (m_filtered)
-            m_mutex.lock();
+            locker = std::unique_lock<QMutex>{m_mutex};
 
         // update timestamps
         m_lastTimeStamp = m_timeStamp;
@@ -571,9 +575,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
 
-        QMutableHashIterator<int, Contact> it(m_contacts);
-        while (it.hasNext()) {
-            it.next();
+        for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
+            auto it = i++;
+
             Contact &contact(it.value());
 
             if (!contact.state)
@@ -596,7 +600,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             // Avoid reporting a contact in released state more than once.
             if (!m_typeB && contact.state == Qt::TouchPointReleased
                     && !m_lastContacts.contains(key)) {
-                it.remove();
+                m_contacts.erase(it);
                 continue;
             }
 
@@ -604,9 +608,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         }
 
         // Now look for contacts that have disappeared since the last sync.
-        it = m_lastContacts;
-        while (it.hasNext()) {
-            it.next();
+        for (auto it = m_lastContacts.begin(), end = m_lastContacts.end(); it != end; ++it) {
             Contact &contact(it.value());
             int key = m_typeB ? it.key() : contact.trackingId;
             if (m_typeB) {
@@ -623,9 +625,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         }
 
         // Remove contacts that have just been reported as released.
-        it = m_contacts;
-        while (it.hasNext()) {
-            it.next();
+        for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
+            auto it = i++;
+
             Contact &contact(it.value());
 
             if (!contact.state)
@@ -635,7 +637,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 if (m_typeB)
                     contact.state = static_cast<Qt::TouchPointState>(0);
                 else
-                    it.remove();
+                    m_contacts.erase(it);
             } else {
                 contact.state = Qt::TouchPointStationary;
             }
@@ -648,9 +650,6 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
             reportPoints();
-
-        if (m_filtered)
-            m_mutex.unlock();
     }
 
     m_lastEventType = data->type;

@@ -473,8 +473,9 @@ relayoutChildrenAndReturn:
 */
 
 /*!
-    Sets the widget's contents margins to \a left, \a top, \a right and \a
-    bottom.
+    \since 5.14
+
+    Sets the widget's contents margins to \a margins.
 
     Contents margins are used by the assigned layout to define the placement
     of subwidgets and layouts. Margins are particularly useful for widgets
@@ -488,23 +489,17 @@ relayoutChildrenAndReturn:
 
     \sa getContentsMargins(), setGeometry()
 */
-void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qreal bottom)
+void QGraphicsWidget::setContentsMargins(QMarginsF margins)
 {
     Q_D(QGraphicsWidget);
 
-    if (!d->margins && left == 0 && top == 0 && right == 0 && bottom == 0)
+    if (!d->margins && margins.isNull())
         return;
     d->ensureMargins();
-    if (left == d->margins[d->Left]
-        && top == d->margins[d->Top]
-        && right == d->margins[d->Right]
-        && bottom == d->margins[d->Bottom])
+    if (*d->margins == margins)
         return;
 
-    d->margins[d->Left] = left;
-    d->margins[d->Top] = top;
-    d->margins[d->Right] = right;
-    d->margins[d->Bottom] = bottom;
+    *d->margins = margins;
 
     if (QGraphicsLayout *l = d->layout)
         l->invalidate();
@@ -513,6 +508,17 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
 
     QEvent e(QEvent::ContentsRectChange);
     QApplication::sendEvent(this, &e);
+}
+
+/*!
+    \overload
+
+    Sets the widget's contents margins to \a left, \a top, \a right and \a
+    bottom.
+*/
+void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qreal bottom)
+{
+    setContentsMargins({left, top, right, bottom});
 }
 
 /*!
@@ -528,18 +534,19 @@ void QGraphicsWidget::getContentsMargins(qreal *left, qreal *top, qreal *right, 
     if (left || top || right || bottom)
         d->ensureMargins();
     if (left)
-        *left = d->margins[d->Left];
+        *left = d->margins->left();
     if (top)
-        *top = d->margins[d->Top];
+        *top = d->margins->top();
     if (right)
-        *right = d->margins[d->Right];
+        *right = d->margins->right();
     if (bottom)
-        *bottom = d->margins[d->Bottom];
+        *bottom = d->margins->bottom();
 }
 
 /*!
-    Sets the widget's window frame margins to \a left, \a top, \a right and
-    \a bottom. The default frame margins are provided by the style, and they
+    \since 5.14
+    Sets the widget's window frame margins to \a margins.
+    The default frame margins are provided by the style, and they
     depend on the current window flags.
 
     If you would like to draw your own window decoration, you can set your
@@ -547,27 +554,30 @@ void QGraphicsWidget::getContentsMargins(qreal *left, qreal *top, qreal *right, 
 
     \sa unsetWindowFrameMargins(), getWindowFrameMargins(), windowFrameRect()
 */
-void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, qreal bottom)
+void QGraphicsWidget::setWindowFrameMargins(QMarginsF margins)
 {
     Q_D(QGraphicsWidget);
 
-    if (!d->windowFrameMargins && left == 0 && top == 0 && right == 0 && bottom == 0)
+    if (!d->windowFrameMargins && margins.isNull())
         return;
     d->ensureWindowFrameMargins();
-    bool unchanged =
-        d->windowFrameMargins[d->Left] == left
-        && d->windowFrameMargins[d->Top] == top
-        && d->windowFrameMargins[d->Right] == right
-        && d->windowFrameMargins[d->Bottom] == bottom;
+    const bool unchanged = *d->windowFrameMargins == margins;
     if (d->setWindowFrameMargins && unchanged)
         return;
     if (!unchanged)
         prepareGeometryChange();
-    d->windowFrameMargins[d->Left] = left;
-    d->windowFrameMargins[d->Top] = top;
-    d->windowFrameMargins[d->Right] = right;
-    d->windowFrameMargins[d->Bottom] = bottom;
+    *d->windowFrameMargins = margins;
     d->setWindowFrameMargins = true;
+}
+
+/*!
+    \overload
+    Sets the widget's window frame margins to \a left, \a top, \a right and
+    \a bottom.
+*/
+void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, qreal bottom)
+{
+    setWindowFrameMargins({left, top, right, bottom});
 }
 
 /*!
@@ -583,13 +593,13 @@ void QGraphicsWidget::getWindowFrameMargins(qreal *left, qreal *top, qreal *righ
     if (left || top || right || bottom)
         d->ensureWindowFrameMargins();
     if (left)
-        *left = d->windowFrameMargins[d->Left];
+        *left = d->windowFrameMargins->left();
     if (top)
-        *top = d->windowFrameMargins[d->Top];
+        *top = d->windowFrameMargins->top();
     if (right)
-        *right = d->windowFrameMargins[d->Right];
+        *right = d->windowFrameMargins->right();
     if (bottom)
-        *bottom = d->windowFrameMargins[d->Bottom];
+        *bottom = d->windowFrameMargins->bottom();
 }
 
 /*!
@@ -624,8 +634,8 @@ QRectF QGraphicsWidget::windowFrameGeometry() const
 {
     Q_D(const QGraphicsWidget);
     return d->windowFrameMargins
-        ? geometry().adjusted(-d->windowFrameMargins[d->Left], -d->windowFrameMargins[d->Top],
-                              d->windowFrameMargins[d->Right], d->windowFrameMargins[d->Bottom])
+        ? geometry().adjusted(-d->windowFrameMargins->left(), -d->windowFrameMargins->top(),
+                              d->windowFrameMargins->right(), d->windowFrameMargins->bottom())
         : geometry();
 }
 
@@ -638,8 +648,8 @@ QRectF QGraphicsWidget::windowFrameRect() const
 {
     Q_D(const QGraphicsWidget);
     return d->windowFrameMargins
-        ? rect().adjusted(-d->windowFrameMargins[d->Left], -d->windowFrameMargins[d->Top],
-                          d->windowFrameMargins[d->Right], d->windowFrameMargins[d->Bottom])
+        ? rect().adjusted(-d->windowFrameMargins->left(), -d->windowFrameMargins->top(),
+                          d->windowFrameMargins->right(), d->windowFrameMargins->bottom())
         : rect();
 }
 
@@ -751,8 +761,8 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     if (d->layout) {
         QSizeF marginSize(0,0);
         if (d->margins) {
-            marginSize = QSizeF(d->margins[d->Left] + d->margins[d->Right],
-                         d->margins[d->Top] + d->margins[d->Bottom]);
+            marginSize = QSizeF(d->margins->left() + d->margins->right(),
+                         d->margins->top() + d->margins->bottom());
         }
         sh = d->layout->effectiveSizeHint(which, constraint - marginSize);
         sh += marginSize;
@@ -1320,7 +1330,7 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     const qreal cornerMargin = 20;
     //### Not sure of this one, it should be the same value for all edges.
     const qreal windowFrameWidth = d->windowFrameMargins
-        ? d->windowFrameMargins[d->Left] : 0;
+        ? d->windowFrameMargins->left() : 0;
 
     Qt::WindowFrameSection s = Qt::NoSection;
     if (x <= left + cornerMargin) {
@@ -1347,7 +1357,7 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     if (s == Qt::NoSection) {
         QRectF r1 = r;
         r1.setHeight(d->windowFrameMargins
-                     ? d->windowFrameMargins[d->Top] : 0);
+                     ? d->windowFrameMargins->top() : 0);
         if (r1.contains(pos))
             s = Qt::TitleBarArea;
     }

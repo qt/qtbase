@@ -43,6 +43,8 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qdatastream.h>
+#include <QtCore/qtypeinfo.h>
 
 #include <algorithm>
 #include <initializer_list>
@@ -266,6 +268,8 @@ private:
     iterator detach_helper2(iterator);
     void freeData(QLinkedListData*);
 };
+template <typename T>
+Q_DECLARE_TYPEINFO_BODY(QLinkedList<T>, Q_MOVABLE_TYPE|Q_RELOCATABLE_TYPE);
 
 template <typename T>
 inline QLinkedList<T>::~QLinkedList()
@@ -560,6 +564,20 @@ QLinkedList<T> QLinkedList<T>::operator+(const QLinkedList<T> &l) const
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(LinkedList)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(LinkedList)
+
+#ifndef QT_NO_DATASTREAM
+template <typename T>
+inline QDataStream &operator>>(QDataStream &s, QLinkedList<T> &l)
+{
+    return QtPrivate::readListBasedContainer(s, l);
+}
+
+template <typename T>
+inline QDataStream &operator<<(QDataStream &s, const QLinkedList<T> &l)
+{
+    return QtPrivate::writeSequentialContainer(s, l);
+}
+#endif
 
 QT_END_NAMESPACE
 

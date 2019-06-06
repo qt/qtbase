@@ -53,14 +53,24 @@ static inline QString actionClass()      { return QStringLiteral("QAction"); }
 static inline QString buttonGroupClass() { return QStringLiteral("QButtonGroup"); }
 
 template <class DomClass>
+Driver::DomObjectHashConstIt<DomClass>
+    Driver::findByAttributeNameIt(const DomObjectHash<DomClass> &domHash,
+                                  const QString &name) const
+{
+    const auto end = domHash.cend();
+    for (auto it = domHash.cbegin(); it != end; ++it) {
+        if (it.key()->attributeName() == name)
+            return it;
+    }
+    return end;
+}
+
+template <class DomClass>
 const DomClass *Driver::findByAttributeName(const DomObjectHash<DomClass> &domHash,
                                             const QString &name) const
 {
-    for (auto it = domHash.cbegin(), end = domHash.cend(); it != end; ++it) {
-        if (it.key()->attributeName() == name)
-            return it.key();
-   }
-    return nullptr;
+    auto it = findByAttributeNameIt(domHash, name);
+    return it != domHash.cend() ? it.key() : nullptr;
 }
 
 template <class DomClass>
@@ -299,19 +309,25 @@ bool Driver::uic(const QString &fileName, QTextStream *out)
     return rtn;
 }
 
-const DomWidget *Driver::widgetByName(const QString &name) const
+const DomWidget *Driver::widgetByName(const QString &attributeName) const
 {
-    return findByAttributeName(m_widgets, name);
+    return findByAttributeName(m_widgets, attributeName);
 }
 
-const DomActionGroup *Driver::actionGroupByName(const QString &name) const
+QString Driver::widgetVariableName(const QString &attributeName) const
 {
-    return findByAttributeName(m_actionGroups, name);
+    auto it = findByAttributeNameIt(m_widgets, attributeName);
+    return it != m_widgets.cend() ? it.value() : QString();
 }
 
-const DomAction *Driver::actionByName(const QString &name) const
+const DomActionGroup *Driver::actionGroupByName(const QString &attributeName) const
 {
-    return findByAttributeName(m_actions, name);
+    return findByAttributeName(m_actionGroups, attributeName);
+}
+
+const DomAction *Driver::actionByName(const QString &attributeName) const
+{
+    return findByAttributeName(m_actions, attributeName);
 }
 
 QT_END_NAMESPACE

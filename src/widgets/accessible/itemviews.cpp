@@ -897,11 +897,15 @@ QHeaderView *QAccessibleTableCell::verticalHeader() const
 
 int QAccessibleTableCell::columnIndex() const
 {
+    if (!isValid())
+        return -1;
     return m_index.column();
 }
 
 int QAccessibleTableCell::rowIndex() const
 {
+    if (!isValid())
+        return -1;
 #if QT_CONFIG(treeview)
     if (role() == QAccessible::TreeItem) {
        const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
@@ -915,6 +919,8 @@ int QAccessibleTableCell::rowIndex() const
 
 bool QAccessibleTableCell::isSelected() const
 {
+    if (!isValid())
+        return false;
     return view->selectionModel()->isSelected(m_index);
 }
 
@@ -943,8 +949,10 @@ QStringList QAccessibleTableCell::keyBindingsForAction(const QString &) const
 
 void QAccessibleTableCell::selectCell()
 {
+    if (!isValid())
+        return;
     QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
-    if (!m_index.isValid() || (selectionMode == QAbstractItemView::NoSelection))
+    if (selectionMode == QAbstractItemView::NoSelection)
         return;
     Q_ASSERT(table());
     QAccessibleTableInterface *cellTable = table()->tableInterface();
@@ -971,9 +979,10 @@ void QAccessibleTableCell::selectCell()
 
 void QAccessibleTableCell::unselectCell()
 {
-
+    if (!isValid())
+        return;
     QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
-    if (!m_index.isValid() || (selectionMode == QAbstractItemView::NoSelection))
+    if (selectionMode == QAbstractItemView::NoSelection)
         return;
 
     QAccessibleTableInterface *cellTable = table()->tableInterface();
@@ -1014,7 +1023,7 @@ QAccessible::Role QAccessibleTableCell::role() const
 QAccessible::State QAccessibleTableCell::state() const
 {
     QAccessible::State st;
-    if (!view)
+    if (!isValid())
         return st;
 
     QRect globalRect = view->rect();
@@ -1054,6 +1063,8 @@ QAccessible::State QAccessibleTableCell::state() const
 QRect QAccessibleTableCell::rect() const
 {
     QRect r;
+    if (!isValid())
+        return r;
     r = view->visualRect(m_index);
 
     if (!r.isNull()) {
@@ -1065,8 +1076,10 @@ QRect QAccessibleTableCell::rect() const
 
 QString QAccessibleTableCell::text(QAccessible::Text t) const
 {
-    QAbstractItemModel *model = view->model();
     QString value;
+    if (!isValid())
+        return value;
+    QAbstractItemModel *model = view->model();
     switch (t) {
     case QAccessible::Name:
         value = model->data(m_index, Qt::AccessibleTextRole).toString();
@@ -1084,7 +1097,7 @@ QString QAccessibleTableCell::text(QAccessible::Text t) const
 
 void QAccessibleTableCell::setText(QAccessible::Text /*t*/, const QString &text)
 {
-    if (!(m_index.flags() & Qt::ItemIsEditable))
+    if (!isValid() || !(m_index.flags() & Qt::ItemIsEditable))
         return;
     view->model()->setData(m_index, text);
 }

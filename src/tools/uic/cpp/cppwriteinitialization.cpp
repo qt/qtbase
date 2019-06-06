@@ -490,7 +490,6 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     const QString varName = m_driver->findOrInsertWidget(node->elementWidget());
     m_mainFormVarName = varName;
-    m_registeredWidgets.insert(varName, node->elementWidget()); // register the main widget
 
     const QString widgetClassName = node->elementWidget()->attributeClass();
 
@@ -515,21 +514,16 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (!m_buddies.empty())
         m_output << language::openQtConfig(shortcutConfigKey());
     for (const Buddy &b : qAsConst(m_buddies)) {
-        if (!m_registeredWidgets.contains(b.objName)) {
+        const QString buddyVarName = m_driver->widgetVariableName(b.buddyAttributeName);
+        if (buddyVarName.isEmpty()) {
             fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
-                    b.objName.toLatin1().data());
-            continue;
-        }
-        if (!m_registeredWidgets.contains(b.buddy)) {
-            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
-                    qPrintable(m_option.messagePrefix()),
-                    b.buddy.toLatin1().data());
+                    qPrintable(b.buddyAttributeName));
             continue;
         }
 
-        m_output << m_indent << b.objName << language::derefPointer
-            << "setBuddy(" << b.buddy << ')' << language::eol;
+        m_output << m_indent << b.labelVarName << language::derefPointer
+            << "setBuddy(" << buddyVarName << ')' << language::eol;
     }
     if (!m_buddies.empty())
         m_output << language::closeQtConfig(shortcutConfigKey());
@@ -602,7 +596,6 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     m_layoutMarginType = m_widgetChain.count() == 1 ? TopLevelMargin : ChildMargin;
     const QString className = node->attributeClass();
     const QString varName = m_driver->findOrInsertWidget(node);
-    m_registeredWidgets.insert(varName, node); // register the current widget
 
     QString parentWidget, parentClass;
     if (m_widgetChain.top()) {
@@ -828,15 +821,13 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const QStringList zOrder = node->elementZOrder();
     for (const QString &name : zOrder) {
-        if (!m_registeredWidgets.contains(name)) {
+        const QString varName = m_driver->widgetVariableName(name);
+        if (varName.isEmpty()) {
             fprintf(stderr, "%s: Warning: Z-order assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
                     name.toLatin1().data());
-            continue;
-        }
-
-        if (!name.isEmpty()) {
-            m_output << m_indent << name << language::derefPointer << "raise()"
+        } else {
+            m_output << m_indent << varName << language::derefPointer << "raise()"
                 << language::eol;
         }
     }
@@ -1080,7 +1071,6 @@ void WriteInitialization::acceptAction(DomAction *node)
         return;
 
     const QString actionName = m_driver->findOrInsertAction(node);
-    m_registeredActions.insert(actionName, node);
     QString varName = m_driver->findOrInsertWidget(m_widgetChain.top());
 
     if (m_actionGroupChain.top())
@@ -2007,12 +1997,11 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
 
     const QStringList l = tabStops->elementTabStop();
     for (int i=0; i<l.size(); ++i) {
-        const QString &name = l.at(i);
+        const QString name = m_driver->widgetVariableName(l.at(i));
 
-        if (!m_registeredWidgets.contains(name)) {
+        if (name.isEmpty()) {
             fprintf(stderr, "%s: Warning: Tab-stop assignment: '%s' is not a valid widget.\n",
-                    qPrintable(m_option.messagePrefix()),
-                    name.toLatin1().data());
+                    qPrintable(m_option.messagePrefix()), qPrintable(l.at(i)));
             continue;
         }
 
@@ -2023,7 +2012,8 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
         if (name.isEmpty() || lastName.isEmpty())
             continue;
 
-        m_output << m_indent << "QWidget::setTabOrder(" << lastName << ", " << name << ");\n";
+        m_output << m_indent << "QWidget" << language::qualifier << "setTabOrder("
+            << lastName << ", " << name << ')' << language::eol;
 
         lastName = name;
     }
