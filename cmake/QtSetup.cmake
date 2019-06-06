@@ -63,6 +63,11 @@ enable_testing()
 ## Define some constants to check for certain platforms, etc:
 include(QtPlatformSupport)
 
+## Android platform settings
+if(ANDROID)
+    include(QtPlatformAndroid)
+endif()
+
 ## add_qt_module and co.:
 include(QtBuild)
 
