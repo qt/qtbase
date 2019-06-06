@@ -301,8 +301,7 @@ function(qt_generate_module_pri_file target target_path pri_files_var)
     cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
 
     qt_internal_module_info(module "${target}")
-    qt_path_join(pri_file_name "${target_path}" "qt_lib_${module_lower}.pri")
-    set(pri_files "${pri_file_name}")
+    set(pri_files)
 
     get_target_property(enabled_features "${target}" QT_ENABLED_PUBLIC_FEATURES)
     get_target_property(disabled_features "${target}" QT_DISABLED_PUBLIC_FEATURES)
@@ -325,6 +324,9 @@ function(qt_generate_module_pri_file target target_path pri_files_var)
     endif()
 
     if (NOT ${arg_INTERNAL_MODULE})
+        qt_path_join(pri_file_name "${target_path}" "qt_lib_${module_lower}.pri")
+        list(APPEND pri_files "${pri_file_name}")
+
         file(GENERATE
             OUTPUT "${pri_file_name}"
             CONTENT
