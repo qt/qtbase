@@ -8,14 +8,14 @@ project(QtBase
 )
 
 ## Add some paths to check for cmake modules:
-list(APPEND CMAKE_MODULE_PATH
+list(PREPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/extra-cmake-modules/find-modules"
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin"
 )
 
 ## Find the build internals package.
-list(APPEND CMAKE_PREFIX_PATH
+list(PREPEND CMAKE_PREFIX_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
 find_package(QtBuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
