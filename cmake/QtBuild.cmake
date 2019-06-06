@@ -1269,8 +1269,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
-    file(COPY ${extra_cmake_files} DESTINATION "${config_build_dir}")
 
+    file(COPY ${extra_cmake_files} DESTINATION "${config_build_dir}")
     set(exported_targets ${target} ${target_private})
     set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
     qt_install(TARGETS ${exported_targets}

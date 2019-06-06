@@ -123,7 +123,7 @@ The specified path needs to point to a directory that contains an installed host
 
 ### Cross Compiling for Android
 
-In order to cross-compile Qt to Android, the above instructions apply. In addition, it is necessary to install the Android NDK as well as vcpkg. Vcpkg is needed to supply third-party libraries that Qt requires but that are not part of the Android NDK.
+In order to cross-compile Qt to Android, you need a host build (see instructions above) and an Android build. In addition, it is necessary to install the Android NDK as well as vcpkg. Vcpkg is needed to supply third-party libraries that Qt requires but that are not part of the Android NDK.
 
 Vcpkg for Android can be set up using the following steps:
 
@@ -134,8 +134,7 @@ Vcpkg for Android can be set up using the following steps:
   * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
   * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl zstd``
 
-When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DVCPKG_TARGET_TRIPLET=$VCPKG_DEFAULT_TRIPLET -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME``
-
+When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DVCPKG_TARGET_TRIPLET=$VCPKG_DEFAULT_TRIPLET -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DANDROID_STL=c++_shared -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
 
 # Debugging CMake files
 

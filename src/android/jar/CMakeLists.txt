@@ -22,7 +22,7 @@ set(java_sources
     ${path_prefix}/QtThread.java)
 
 add_jar(QtAndroid
-    INCLUDE_JARS ${android_jar}
+    INCLUDE_JARS ${QT_ANDROID_JAR}
     SOURCES ${java_sources}
     )
 
