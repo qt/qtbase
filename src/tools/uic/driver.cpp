@@ -256,7 +256,7 @@ bool Driver::uic(const QString &fileName, DomUI *ui, QTextStream *out)
 
     QTextStream *oldOutput = m_output;
 
-    m_output = out != 0 ? out : &m_stdout;
+    m_output = out != nullptr ? out : &m_stdout;
 
     Uic tool(this);
     const bool result = tool.write(ui);

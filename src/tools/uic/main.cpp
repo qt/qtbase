@@ -137,7 +137,7 @@ int runUic(int argc, char *argv[])
         return !driver.printDependencies(inputFile);
     }
 
-    QTextStream *out = 0;
+    QTextStream *out = nullptr;
     QFile f;
     if (!driver.option().outputFile.isEmpty()) {
         f.setFileName(driver.option().outputFile);

@@ -188,7 +188,7 @@ private:
         ItemData m_setupUiData;
         ItemData m_retranslateUiData;
         QList<Item *> m_children;
-        Item *m_parent;
+        Item *m_parent = nullptr;
 
         const QString m_itemClassName;
         const QString m_indent;
