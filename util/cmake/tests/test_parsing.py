@@ -308,6 +308,25 @@ def test_realworld_lc():
 
 def test_realworld_lc_with_comment_in_between():
     result = parse_file(_tests_path + '/data/lc_with_comment.pro')
+
+    my_var = result[1]['value'][0]
+    assert my_var == 'foo'
+
+    my_var = result[2]['value'][0]
+    assert my_var == 'foo2'
+
+    my_var = result[3]['value'][0]
+    assert my_var == 'foo3'
+
+    my_var = result[4]['value'][0]
+    assert my_var == 'foo4'
+
+    my_var = result[5]['value'][0]
+    assert my_var == 'foo5'
+
+    sub_dirs = result[0]['value']
+    assert sub_dirs[0] == 'tga'
+    assert sub_dirs[1] == 'wbmp'
     assert len(result) == 6
 
 
