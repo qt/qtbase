@@ -119,6 +119,9 @@ enum { ThreadPriorityResetFlag = 0x80000000 };
 #if defined(Q_CC_XLC) || defined (Q_CC_SUN)
 #define HAVE_TLS
 #endif
+#if defined(Q_OS_RTEMS)
+#define HAVE_TLS
+#endif
 
 #ifdef HAVE_TLS
 static __thread QThreadData *currentThreadData = 0;
