@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QHash>
 #include <QRegExp>
+#include <QSystemSemaphore>
 #include <QXmlStreamReader>
 
 #include <algorithm>
@@ -60,6 +61,7 @@ struct Options
     QStringList testArgsList;
     QHash<QString, QString> outFiles;
     QString testArgs;
+    QString apkPath;
     QHash<QString, std::function<bool(const QByteArray &)>> checkFiles = {
     {QStringLiteral("txt"), [](const QByteArray &data) -> bool {
         return data.indexOf("\nFAIL!  : ") < 0;
@@ -227,6 +229,11 @@ static bool parseOptions()
                 g_options.helpRequested = true;
             else
                 g_options.makeCommand = arguments.at(++i);
+        } else if (argument.compare(QStringLiteral("--apk"), Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                g_options.helpRequested = true;
+            else
+                g_options.apkPath = arguments.at(++i);
         } else if (argument.compare(QStringLiteral("--activity"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
@@ -280,6 +287,8 @@ static void printHelp()
                     "       Default is 5 minutes.\n"
                     "    --make <make cmd>: make command, needed to install the qt library.\n"
                     "       If make is missing make sure the --path is set.\n"
+                    "    --apk <apk path>: If the apk is specified and if exists, we'll skip\n"
+                    "       the package building.\n"
                     "    -- arguments that will be passed to the test application.\n"
                     "    --verbose: Prints out information during processing.\n"
                     "    --help: Displays this information.\n\n",
@@ -420,6 +429,19 @@ static bool pullFiles()
     return ret;
 }
 
+struct RunnerLocker
+{
+    RunnerLocker()
+    {
+        runner.acquire();
+    }
+    ~RunnerLocker()
+    {
+        runner.release();
+    }
+    QSystemSemaphore runner{QStringLiteral("androidtestrunner"), 1, QSystemSemaphore::Open};
+};
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -428,19 +450,29 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!g_options.makeCommand.isEmpty()) {
-        // we need to run make INSTALL_ROOT=path install to install the application file(s) first
-        if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
-                         .arg(g_options.makeCommand, g_options.buildPath), nullptr, g_options.verbose)) {
+    RunnerLocker lock; // do not install or run packages while another test is running
+    if (!g_options.apkPath.isEmpty() && QFile::exists(g_options.apkPath)) {
+        if (!execCommand(QStringLiteral("%1 install -r %2")
+                         .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
             return 1;
         }
-    }
-    // Run androiddeployqt
-    static auto verbose = g_options.verbose ? QStringLiteral("--verbose") : QStringLiteral();
-    if (!execCommand(QStringLiteral("%1 %3 --reinstall --output %2").arg(g_options.androidDeployQtCommand,
-                                                                       g_options.buildPath,
-                                                                       verbose), nullptr, g_options.verbose)) {
-        return 1;
+    } else {
+        if (!g_options.makeCommand.isEmpty()) {
+            // we need to run make INSTALL_ROOT=path install to install the application file(s) first
+            if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
+                             .arg(g_options.makeCommand, g_options.buildPath), nullptr, g_options.verbose)) {
+                return 1;
+            }
+        }
+
+        // Run androiddeployqt
+        static auto verbose = g_options.verbose ? QStringLiteral("--verbose") : QStringLiteral();
+        if (!execCommand(QStringLiteral("%1 %3 --reinstall --output %2 --apk %4").arg(g_options.androidDeployQtCommand,
+                                                                                      g_options.buildPath,
+                                                                                      verbose,
+                                                                                      g_options.apkPath), nullptr, true)) {
+            return 1;
+        }
     }
 
     QString manifest = g_options.buildPath + QStringLiteral("/AndroidManifest.xml");

@@ -209,6 +209,7 @@ struct Options
     bool sectionsOnly;
     bool protectedAuthenticationPath;
     bool jarSigner;
+    QString apkPath;
 
     // Gdbserver
     TriState gdbServer;
@@ -396,6 +397,11 @@ Options parseOptions()
                 options.helpRequested = true;
             else
                 options.jdkPath = arguments.at(++i);
+        } else if (argument.compare(QLatin1String("--apk"), Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                options.helpRequested = true;
+            else
+                options.apkPath = arguments.at(++i);
         } else if (argument.compare(QLatin1String("--sign"), Qt::CaseInsensitive) == 0) {
             if (i + 2 >= arguments.size()) {
                 options.helpRequested = true;
@@ -544,6 +550,7 @@ void printHelp()
                     "       dependencies into the build directory and update the XML templates.\n"
                     "       The project will not be built or installed.\n"
                     "    --no-strip: Do not strip debug symbols from libraries.\n"
+                    "    --apk <path/where/to/copy/the/apk>: Path where to copy the built apk.\n"
                     "    --help: Displays this information.\n\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
@@ -2389,6 +2396,14 @@ bool installApk(const Options &options)
     return true;
 }
 
+bool copyPackage(const Options &options)
+{
+    fflush(stdout);
+    auto from = apkPath(options, options.keyStore.isEmpty() ? UnsignedAPK : SignedAPK);
+    QFile::remove(options.apkPath);
+    return QFile::copy(from, options.apkPath);
+}
+
 bool copyStdCpp(Options *options)
 {
     if (options->verbose)
@@ -2759,7 +2774,8 @@ enum ErrorCode
     CannotSignPackage = 15,
     CannotInstallApk = 16,
     CannotGenerateAssetsFileList = 18,
-    CannotCopyAndroidExtraResources = 19
+    CannotCopyAndroidExtraResources = 19,
+    CannotCopyApk = 20
 };
 
 int main(int argc, char *argv[])
@@ -2901,6 +2917,9 @@ int main(int argc, char *argv[])
 
         if (!options.keyStore.isEmpty() && !signPackage(options))
             return CannotSignPackage;
+
+        if (!options.apkPath.isEmpty() && !copyPackage(options))
+            return CannotCopyApk;
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Signed package\n", options.timer.elapsed());

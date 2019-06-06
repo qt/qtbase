@@ -67,7 +67,10 @@ namespace QSharedMemoryPrivate
 #else
 
 #include "qsystemsemaphore.h"
-#include "private/qobject_p.h"
+
+#ifndef QT_NO_QOBJECT
+# include "private/qobject_p.h"
+#endif
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_RTEMS)
 #  include <sys/sem.h>
@@ -107,9 +110,14 @@ private:
 };
 #endif // QT_NO_SYSTEMSEMAPHORE
 
-class Q_AUTOTEST_EXPORT QSharedMemoryPrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QSharedMemoryPrivate
+#ifndef QT_NO_QOBJECT
+        : public QObjectPrivate
+#endif
 {
+#ifndef QT_NO_QOBJECT
     Q_DECLARE_PUBLIC(QSharedMemory)
+#endif
 
 public:
     QSharedMemoryPrivate();
