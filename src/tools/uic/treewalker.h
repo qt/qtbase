@@ -77,6 +77,9 @@ class DomButtonGroup;
 
 struct TreeWalker
 {
+    Q_DISABLE_COPY_MOVE(TreeWalker)
+
+    TreeWalker() = default;
     inline virtual ~TreeWalker() = default;
 
     virtual void acceptUI(DomUI *ui);

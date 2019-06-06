@@ -498,9 +498,7 @@ void WriteInitialization::acceptUI(DomUI *node)
              << language::startFunctionDefinition1("setupUi", parameterType, varName, m_option.indent);
 
     const QStringList connections = m_uic->databaseInfo()->connections();
-    for (int i=0; i<connections.size(); ++i) {
-        QString connection = connections.at(i);
-
+    for (const auto &connection : connections) {
         if (connection == QLatin1String("(default)"))
             continue;
 
@@ -900,8 +898,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     if (m_layoutWidget) {
         bool left, top, right, bottom;
         left = top = right = bottom = false;
-        for (int i = 0; i < propList.size(); ++i) {
-            const DomProperty *p = propList.at(i);
+        for (const DomProperty *p : propList) {
             const QString propertyName = p->attributeName();
             if (propertyName == QLatin1String("leftMargin") && p->kind() == DomProperty::Number)
                 left = true;

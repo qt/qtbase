@@ -161,7 +161,7 @@ private:
 // special initialization
 //
     class Item {
-        Q_DISABLE_COPY(Item)
+        Q_DISABLE_COPY_MOVE(Item)
     public:
         Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver);
         ~Item();
