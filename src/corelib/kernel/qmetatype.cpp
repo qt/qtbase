@@ -587,13 +587,7 @@ QMetaTypeComparatorRegistry;
 typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractDebugStreamFunction,int>
 QMetaTypeDebugStreamRegistry;
 
-namespace
-{
-union CheckThatItIsPod
-{   // This should break if QMetaTypeInterface is not a POD type
-    QMetaTypeInterface iface;
-};
-}
+Q_STATIC_ASSERT(std::is_pod<QMetaTypeInterface>::value);
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
 Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)
