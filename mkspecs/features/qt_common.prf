@@ -146,8 +146,8 @@ warnings_are_errors:warning_clean {
             android: QMAKE_CXXFLAGS_WARN_ON += -Wno-error=literal-suffix
         }
     } else:msvc:!intel_icl {
-        # enable for MSVC 2012, MSVC 2013, MSVC 2015
-        contains(MSVC_VER, "1[124].0"): QMAKE_CXXFLAGS_WARN_ON += -WX
+        # enable for MSVC 2015, MSVC 2017
+        contains(MSVC_VER, "1[45].0"): QMAKE_CXXFLAGS_WARN_ON += -WX
     }
     unset(ver)
 }
