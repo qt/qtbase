@@ -105,6 +105,7 @@ QT_BEGIN_NAMESPACE
     \sa stop(), isActive(), swap()
 */
 
+#if QT_DEPRECATED_SINCE(5, 14)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
     \internal
@@ -124,6 +125,7 @@ QBasicTimer &QBasicTimer::operator=(const QBasicTimer &other)
     qWarning("QBasicTimer can't be assigned to");
     return *this;
 }
+#endif
 #endif
 
 /*!

@@ -1881,12 +1881,11 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     d->updateFocusPolicy();
     d->lineEdit->setFocusProxy(this);
     d->lineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
+#if QT_DEPRECATED_SINCE(5, 13)
 #if QT_CONFIG(completer)
     setAutoCompletion(d->autoCompletion);
-#endif
 
 #ifdef QT_KEYPAD_NAVIGATION
-#if QT_CONFIG(completer)
     if (QApplication::keypadNavigationEnabled()) {
         // Editable combo boxes will have a completer that is set to UnfilteredPopupCompletion.
         // This means that when the user enters edit mode they are immediately presented with a
@@ -1897,6 +1896,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
             connect(d->completer, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated()));
         }
     }
+#endif
 #endif
 #endif
 
