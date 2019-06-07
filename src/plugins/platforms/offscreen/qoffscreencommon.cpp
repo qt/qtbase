@@ -77,7 +77,8 @@ public:
         if (containing != previous)
             QWindowSystemInterface::handleEnterLeaveEvent(containing, previous, local, pos);
 
-        QWindowSystemInterface::handleMouseEvent(containing, local, pos, QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
+        QWindowSystemInterface::handleMouseEvent(containing, local, pos, QGuiApplication::mouseButtons(), Qt::NoButton,
+                                                 QEvent::MouseMove, QGuiApplication::keyboardModifiers(), Qt::MouseEventSynthesizedByQt);
 
         QOffscreenScreen::windowContainingCursor = containing ? containing->handle() : 0;
     }
