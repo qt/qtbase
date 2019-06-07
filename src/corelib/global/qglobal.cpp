@@ -1546,6 +1546,13 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \macro Q_OS_WASM
+    \relates <QtGlobal>
+
+    Defined on Web Assembly.
+*/
+
+/*!
     \macro Q_CC_SYM
     \relates <QtGlobal>
 
