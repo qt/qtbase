@@ -1001,7 +1001,7 @@ void Generator::generateMetacall()
             needUser |= p.user.endsWith(')');
         }
 
-        fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n   ");
+        fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n    ");
         if (needElse)
             fprintf(out, "else ");
         fprintf(out,
