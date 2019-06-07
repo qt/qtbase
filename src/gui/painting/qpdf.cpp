@@ -1570,12 +1570,14 @@ void QPdfEnginePrivate::writeHeader()
 {
     addXrefEntry(0,false);
 
-    static const QHash<QPdfEngine::PdfVersion, const char *> mapping {
-        {QPdfEngine::Version_1_4, "1.4"},
-        {QPdfEngine::Version_A1b, "1.4"},
-        {QPdfEngine::Version_1_6, "1.6"}
+    // Keep in sync with QPdfEngine::PdfVersion!
+    static const char mapping[][4] = {
+        "1.4", // Version_1_4
+        "1.4", // Version_A1b
+        "1.6", // Version_1_6
     };
-    const char *verStr = mapping.value(pdfVersion, "1.4");
+    static const size_t numMappings = sizeof mapping / sizeof *mapping;
+    const char *verStr = mapping[size_t(pdfVersion) < numMappings ? pdfVersion : 0];
 
     xprintf("%%PDF-%s\n", verStr);
     xprintf("%%\303\242\303\243\n");
