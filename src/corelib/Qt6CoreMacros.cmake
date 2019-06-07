@@ -408,3 +408,39 @@ function(add_qt_gui_executable target)
     endif()
 endfunction()
 
+macro(_qt_import_plugin target plugin)
+    get_target_property(plugin_class_name "${plugin}" QT_PLUGIN_CLASS_NAME)
+    if(plugin_class_name)
+        set_property(TARGET "${target}" APPEND PROPERTY QT_PLUGINS "${plugin}")
+        # TODO mark it for installation
+        # TODO also in shared builds
+    endif()
+endmacro()
+
+# This function is used to indicate which plug-ins are going to be
+# used by a given target.
+# This allows both automatic static linking, and automatic installation of relevant
+# plug-ins.
+# Options :
+#    NO_DEFAULT: won't link against any plug-in by default for that target, e.g. no platform plug-in.
+#    INCLUDE: list of additional plug-ins to be linked against.
+#    EXCLUDE: list of plug-ins to be removed from the default set.
+# TODO : support qml plug-ins.
+function(qt_import_plugins target)
+    cmake_parse_arguments(arg "NO_DEFAULT" "" "INCLUDE;EXCLUDE" ${ARGN})
+
+    if(${arg_NO_DEFAULT})
+        set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
+    else()
+        set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 1)
+    endif()
+
+    foreach(plugin ${arg_INCLUDE})
+        _qt_import_plugin("${target}" "${plugin}")
+    endforeach()
+
+    foreach(plugin ${arg_EXCLUDE})
+        set_property(TARGET "${target}" APPEND PROPERTY QT_NO_PLUGINS "${plugin}")
+    endforeach()
+endfunction()
+

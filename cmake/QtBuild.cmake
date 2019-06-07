@@ -1465,7 +1465,7 @@ function(add_qt_plugin target)
         "${arg_ARCHIVE_INSTALL_DIRECTORY}" "${arg_TYPE}"
         "${INSTALL_LIBDIR}/${arg_TYPE}" archive_install_directory)
 
-    if(arg_STATIC)
+    if(arg_STATIC OR NOT BUILD_SHARED_LIBS)
         add_library("${target}" STATIC)
     else()
         add_library("${target}" MODULE)

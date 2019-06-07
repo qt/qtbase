@@ -1,0 +1,40 @@
+@QT_MODULE_PLUGIN_INCLUDES@
+
+if(NOT @BUILD_SHARED_LIBS@)
+    set(_module_target "@INSTALL_CMAKE_NAMESPACE@::@QT_MODULE@")
+
+    set(_default_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>")
+    set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
+    set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
+
+    foreach(target @qt_plugins@)
+        set(_plugin_target "@INSTALL_CMAKE_NAMESPACE@::${target}")
+        get_target_property(_classname "${_plugin_target}" QT_PLUGIN_CLASS_NAME)
+        if(NOT _classname)
+          message("Warning: plugin ${_plugin_target} has no class name, skipping.")
+          continue()
+        endif()
+
+        set(_user_specified_genex "$<IN_LIST:${_plugin_target},${_manual_plugins_genex}>")
+
+        string(CONCAT _plugin_condition
+                    "$<BOOL:$<OR:"
+                        # Add this plugin if it\'s in the list of manual plugins or plugins for the type
+                        "${_user_specified_genex},"
+                        # Add this plugin if the default plugins haven't been disabled, the module of the plug-in
+                        # is either empty or equal to the module name, and the user hasn't blacklisted it
+                        "$<AND:"
+                            "${_default_plugins_genex},"
+                            "$<NOT:$<IN_LIST:${_plugin_target},${_no_plugins_genex}>>"
+                        ">"
+                    ">>"
+        )
+        set(_plugin_genex "$<${_plugin_condition}:${_plugin_target}>")
+        target_link_libraries(${_module_target} INTERFACE "${_plugin_genex}")
+        file(GENERATE
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qt_@QT_MODULE@_${target}.cpp"
+            CONTENT "#include <QtPlugin>\nQ_IMPORT_PLUGIN(${_classname})"
+        )
+        target_sources(${_module_target} INTERFACE "$<${_plugin_condition}:${CMAKE_CURRENT_BINARY_DIR}/qt_@QT_MODULE@_${target}.cpp>")
+    endforeach()
+endif()

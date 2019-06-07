@@ -239,26 +239,26 @@ endfunction()
 # the plug-in target files.
 function(qt_internal_create_plugins_files)
     message("Generating Plugins files for ${QT_KNOWN_MODULES}...")
-    foreach (target ${QT_KNOWN_MODULES})
-        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${INSTALL_CMAKE_NAMESPACE}${target})
-        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE}${target})
+    foreach (QT_MODULE ${QT_KNOWN_MODULES})
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${INSTALL_CMAKE_NAMESPACE}${QT_MODULE})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE}${QT_MODULE})
+        set(QT_MODULE_PLUGIN_INCLUDES "")
 
-        set(_plugins_file "")
-        get_target_property(qt_plugins "${target}" QT_PLUGINS)
+        get_target_property(qt_plugins "${QT_MODULE}" QT_PLUGINS)
         if(qt_plugins)
-            foreach (plugin ${qt_plugins})
-                set(_plugins_file "${_plugins_file}include(\"\${CMAKE_CURRENT_LIST_DIR}/${plugin}Config.cmake\")\n")
+            foreach (pluginTarget ${qt_plugins})
+                set(QT_MODULE_PLUGIN_INCLUDES "${QT_MODULE_PLUGIN_INCLUDES}include(\"\${CMAKE_CURRENT_LIST_DIR}/${pluginTarget}Config.cmake\")\n")
             endforeach()
-
-            if(NOT ("x${_plugins_file}" STREQUAL "x"))
-                file(WRITE "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Plugins.cmake" "${_plugins_file}")
-
-                qt_install(FILES
-                    "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Plugins.cmake"
-                    DESTINATION "${config_install_dir}"
-                    COMPONENT Devel
-                )
-            endif()
+            configure_file(
+                "${QT_CMAKE_DIR}/QtPlugins.cmake.in"
+                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${QT_MODULE}Plugins.cmake"
+                @ONLY
+            )
+            qt_install(FILES
+                "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${QT_MODULE}Plugins.cmake"
+                DESTINATION "${config_install_dir}"
+                COMPONENT Devel
+            )
         endif()
     endforeach()
 endfunction()
