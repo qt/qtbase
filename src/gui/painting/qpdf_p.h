@@ -168,6 +168,7 @@ class Q_GUI_EXPORT QPdfEngine : public QPaintEngine
     Q_DECLARE_PRIVATE(QPdfEngine)
     friend class QPdfWriter;
 public:
+    // keep in sync with QPagedPaintDevice::PdfVersion!
     enum PdfVersion
     {
         Version_1_4,
