@@ -601,9 +601,9 @@ class Scope(object):
                 return ['${CMAKE_CURRENT_SOURCE_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
         if key == 'OUT_PWD':
             if is_same_path:
-                return ['${CMAKE_CURRENT_BUILD_DIR}']
+                return ['${CMAKE_CURRENT_BINARY_DIR}']
             else:
-                return ['${CMAKE_CURRENT_BUILD_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
+                return ['${CMAKE_CURRENT_BINARY_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
 
         return self._evalOps(key, None, [], inherrit=inherrit)
 
@@ -1603,7 +1603,12 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
         print('XXXXXX Module name {} does not start with Qt!'.format(module_name))
 
     extra = []
-    if 'static' in scope.get('CONFIG'):
+
+    # A module should be static when 'static' is in CONFIG
+    # or when option(host_build) is used, as described in qt_module.prf.
+    is_static = 'static' in scope.get('CONFIG') or 'host_build' in scope.get('_OPTION')
+
+    if is_static:
         extra.append('STATIC')
     if 'internal_module' in scope.get('CONFIG'):
         extra.append('INTERNAL_MODULE')
