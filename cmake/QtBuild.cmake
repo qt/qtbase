@@ -1061,7 +1061,7 @@ function(add_qt_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT"
         "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG" ${ARGN})
 
@@ -1087,7 +1087,7 @@ function(add_qt_module target)
     qt_internal_add_target_aliases("${target_private}")
 
     # Module headers:
-    if(${arg_NO_MODULE_HEADERS})
+    if(${arg_NO_MODULE_HEADERS} OR ${arg_NO_SYNC_QT})
         set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
     else()
         # Use QT_BUILD_DIR for the syncqt call.
