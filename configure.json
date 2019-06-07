@@ -704,6 +704,7 @@
         },
         "optimize_debug": {
             "label": "Optimize debug build",
+            "autoDetect": "!features.developer-build",
             "condition": "!config.msvc && !config.clang && (features.debug || features.debug_and_release) && tests.optimize_debug",
             "output": [ "privateConfig" ]
         },

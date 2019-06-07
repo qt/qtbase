@@ -48,12 +48,15 @@ void
 UnixMakefileGenerator::writePrlFile(QTextStream &t)
 {
     MakefileGenerator::writePrlFile(t);
+    const ProString tmplt = project->first("TEMPLATE");
+    if (tmplt != "lib" && tmplt != "aux")
+        return;
     // libtool support
-    if(project->isActiveConfig("create_libtool") && project->first("TEMPLATE") == "lib") { //write .la
+    if (project->isActiveConfig("create_libtool")) {
         writeLibtoolFile();
     }
     // pkg-config support
-    if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
+    if (project->isActiveConfig("create_pc"))
         writePkgConfigFile();
 }
 
@@ -1199,7 +1202,8 @@ void UnixMakefileGenerator::init2()
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
     if (project->first("TEMPLATE") == "aux") {
-        // nothing
+        project->values("PRL_TARGET") =
+            project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
     } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");

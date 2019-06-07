@@ -726,7 +726,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             }
         }
     }
-    if(project->first("TEMPLATE") == "lib") {
+    if (isAux || project->first("TEMPLATE") == "lib") {
         QStringList types;
         types << "prl" << "libtool" << "pkgconfig";
         for(int i = 0; i < types.size(); ++i) {

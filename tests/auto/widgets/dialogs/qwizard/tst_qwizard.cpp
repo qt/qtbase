@@ -2551,7 +2551,7 @@ void tst_QWizard::task183550_stretchFactor()
     page2->enableVerticalExpansion();
     wizard.next();
     QCOMPARE(wizard.currentPage(), static_cast<QWizardPage*>(page2));
-    QVERIFY(page2->treeWidgetHeight() > page2->treeWidgetSizeHintHeight());
+    QVERIFY(page2->treeWidgetHeight() >= page2->treeWidgetSizeHintHeight());
 
     wizard.back();
     QCOMPARE(wizard.currentPage(), static_cast<QWizardPage*>(page1));

@@ -296,6 +296,9 @@ endfunction()
 # qt5_add_big_resources(outfiles inputfile ... )
 
 function(QT5_ADD_BIG_RESOURCES outfiles )
+    if (CMAKE_VERSION VERSION_LESS 3.9)
+        message(FATAL_ERROR, "qt5_add_big_resources requires CMake 3.9 or newer")
+    endif()
 
     set(options)
     set(oneValueArgs)
@@ -326,6 +329,8 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
+        # The modification of TARGET_OBJECTS needs the following change in cmake
+        # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE}
                            ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}

@@ -133,10 +133,10 @@ QCocoaTheme::QCocoaTheme()
         m_appearanceObserver = [[QCocoaThemeAppAppearanceObserver alloc] initWithTheme:this];
 #endif
 
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSSystemColorsDidChangeNotification
-        object:nil queue:nil usingBlock:^(NSNotification *) {
+    m_systemColorObserver = QMacNotificationObserver(nil,
+        NSSystemColorsDidChangeNotification, [this] {
             handleSystemThemeChange();
-        }];
+    });
 }
 
 QCocoaTheme::~QCocoaTheme()

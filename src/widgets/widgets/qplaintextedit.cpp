@@ -1957,6 +1957,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
     }
 
     QAbstractTextDocumentLayout::PaintContext context = getPaintContext();
+    painter.setPen(context.palette.text().color());
 
     while (block.isValid()) {
 

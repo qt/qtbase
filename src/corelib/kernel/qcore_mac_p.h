@@ -295,13 +295,13 @@ QT_MAC_WEAK_IMPORT(_os_activity_current);
 // -------------------------------------------------------------------------
 
 #if defined( __OBJC__)
-class QMacScopedObserver
+class QMacNotificationObserver
 {
 public:
-    QMacScopedObserver() {}
+    QMacNotificationObserver() {}
 
     template<typename Functor>
-    QMacScopedObserver(id object, NSNotificationName name, Functor callback) {
+    QMacNotificationObserver(id object, NSNotificationName name, Functor callback) {
         observer = [[NSNotificationCenter defaultCenter] addObserverForName:name
             object:object queue:nil usingBlock:^(NSNotification *) {
                 callback();
@@ -309,13 +309,13 @@ public:
         ];
     }
 
-    QMacScopedObserver(const QMacScopedObserver& other) = delete;
-    QMacScopedObserver(QMacScopedObserver&& other) : observer(other.observer) {
+    QMacNotificationObserver(const QMacNotificationObserver& other) = delete;
+    QMacNotificationObserver(QMacNotificationObserver&& other) : observer(other.observer) {
         other.observer = nil;
     }
 
-    QMacScopedObserver &operator=(const QMacScopedObserver& other) = delete;
-    QMacScopedObserver &operator=(QMacScopedObserver&& other) {
+    QMacNotificationObserver &operator=(const QMacNotificationObserver& other) = delete;
+    QMacNotificationObserver &operator=(QMacNotificationObserver&& other) {
         if (this != &other) {
             remove();
             observer = other.observer;
@@ -329,7 +329,7 @@ public:
             [[NSNotificationCenter defaultCenter] removeObserver:observer];
         observer = nil;
     }
-    ~QMacScopedObserver() { remove(); }
+    ~QMacNotificationObserver() { remove(); }
 
 private:
     id observer = nil;

@@ -61,6 +61,9 @@
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
 #include "private/qwidgettextcontrol_p.h"
+#if QT_CONFIG(style_stylesheet)
+#  include "private/qstylesheetstyle_p.h"
+#endif
 #if QT_CONFIG(graphicsview)
 #include "qgraphicssceneevent.h"
 #endif
@@ -3198,6 +3201,15 @@ QAbstractTextDocumentLayout::PaintContext QWidgetTextControl::getPaintContext(QW
 
     ctx.selections = d->extraSelections;
     ctx.palette = d->palette;
+#if QT_CONFIG(style_stylesheet)
+    if (widget) {
+        if (auto cssStyle = qt_styleSheet(widget->style())) {
+            QStyleOption option;
+            option.initFrom(widget);
+            cssStyle->styleSheetPalette(widget, &option, &ctx.palette);
+        }
+    }
+#endif // style_stylesheet
     if (d->cursorOn && d->isEnabled) {
         if (d->hideCursor)
             ctx.cursorPosition = -1;

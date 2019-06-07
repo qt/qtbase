@@ -37,8 +37,10 @@ intel_icl {
 
 QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
 
+load(qt_prefix_build_check)
+
 # force_independent can be set externally. prefix_build not.
-!exists($$[QT_HOST_DATA]/.qmake.cache): \
+qtIsPrefixBuild($$[QT_HOST_DATA]): \
     CONFIG += prefix_build force_independent
 
 !build_pass:!isEmpty(_QMAKE_SUPER_CACHE_):force_independent {

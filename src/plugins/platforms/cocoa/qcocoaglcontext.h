@@ -80,7 +80,7 @@ private:
     NSOpenGLContext *m_shareContext = nil;
     QSurfaceFormat m_format;
     bool m_didCheckForSoftwareContext = false;
-    QVarLengthArray<QMacScopedObserver, 3> m_updateObservers;
+    QVarLengthArray<QMacNotificationObserver, 3> m_updateObservers;
     QAtomicInt m_needsUpdate = false;
 };
 
