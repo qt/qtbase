@@ -815,7 +815,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         break;
                     }
                     cpp_state = InCode;
-                    // ... and fall through to handle buffer[x] as such.
+                    Q_FALLTHROUGH(); // to handle buffer[x] as such.
                 case InCode:
                     // matching quotes (string literals and character literals)
                     if (buffer[x] == '\'' || buffer[x] == '"') {
