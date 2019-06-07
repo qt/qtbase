@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
     \ingroup qpa
  */
 
+#if QT_CONFIG(opengl)
 VkFormat QVkConvenience::vkFormatFromGlFormat(uint glFormat)
 {
     using GlFormat = QOpenGLTexture::TextureFormat;
@@ -211,5 +212,6 @@ VkFormat QVkConvenience::vkFormatFromGlFormat(uint glFormat)
     default: return VK_FORMAT_UNDEFINED;
     }
 }
+#endif
 
 QT_END_NAMESPACE
