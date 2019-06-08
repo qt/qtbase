@@ -102,7 +102,8 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
                                                      const QString &specification,
                                                      const QString &defaultKeymapFile)
 {
-    qCDebug(qLcEvdevKey) << "Try to create keyboard handler for" << device << specification;
+    qCDebug(qLcEvdevKey, "Try to create keyboard handler for \"%ls\" \"%ls\"",
+            qUtf16Printable(device), qUtf16Printable(specification));
 
     QString keymapFile = defaultKeymapFile;
     int repeatDelay = 400;
@@ -127,7 +128,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
             grab = arg.mid(5).toInt();
     }
 
-    qCDebug(qLcEvdevKey) << "Opening keyboard at" << device;
+    qCDebug(qLcEvdevKey, "Opening keyboard at %ls", qUtf16Printable(device));
 
     QFdContainer fd(qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0));
     if (fd.get() >= 0) {
@@ -139,14 +140,14 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
 
         return new QEvdevKeyboardHandler(device, fd, disableZap, enableCompose, keymapFile);
     } else {
-        qWarning("Cannot open keyboard input device '%s': %s", qPrintable(device), strerror(errno));
+        qErrnoWarning("Cannot open keyboard input device '%ls'", qUtf16Printable(device));
         return 0;
     }
 }
 
 void QEvdevKeyboardHandler::switchLed(int led, bool state)
 {
-    qCDebug(qLcEvdevKey) << "switchLed" << led << state;
+    qCDebug(qLcEvdevKey, "switchLed %d %d", led, int(state));
 
     struct ::input_event led_ie;
     ::gettimeofday(&led_ie.time, 0);
@@ -170,7 +171,7 @@ void QEvdevKeyboardHandler::readKeycode()
             return;
         } else if (result < 0) {
             if (errno != EINTR && errno != EAGAIN) {
-                qErrnoWarning(errno, "evdevkeyboard: Could not read from input device");
+                qErrnoWarning("evdevkeyboard: Could not read from input device");
                 // If the device got disconnected, stop reading, otherwise we get flooded
                 // by the above error over and over again.
                 if (errno == ENODEV) {
@@ -473,7 +474,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
 
 void QEvdevKeyboardHandler::unloadKeymap()
 {
-    qCDebug(qLcEvdevKey) << "Unload current keymap and restore built-in";
+    qCDebug(qLcEvdevKey, "Unload current keymap and restore built-in");
 
     if (m_keymap && m_keymap != s_keymap_default)
         delete [] m_keymap;
@@ -517,12 +518,12 @@ void QEvdevKeyboardHandler::unloadKeymap()
 
 bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
 {
-    qCDebug(qLcEvdevKey) << "Loading keymap" << file;
+    qCDebug(qLcEvdevKey, "Loading keymap %ls", qUtf16Printable(file));
 
     QFile f(file);
 
     if (!f.open(QIODevice::ReadOnly)) {
-        qWarning("Could not open keymap file '%s'", qPrintable(file));
+        qWarning("Could not open keymap file '%ls'", qUtf16Printable(file));
         return false;
     }
 
@@ -541,7 +542,7 @@ bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
     ds >> qmap_magic >> qmap_version >> qmap_keymap_size >> qmap_keycompose_size;
 
     if (ds.status() != QDataStream::Ok || qmap_magic != QEvdevKeyboardMap::FileMagic || qmap_version != 1 || qmap_keymap_size == 0) {
-        qWarning("'%s' is not a valid .qmap keymap file", qPrintable(file));
+        qWarning("'%ls' is not a valid .qmap keymap file", qUtf16Printable(file));
         return false;
     }
 
@@ -557,7 +558,7 @@ bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
         delete [] qmap_keymap;
         delete [] qmap_keycompose;
 
-        qWarning("Keymap file '%s' cannot be loaded.", qPrintable(file));
+        qWarning("Keymap file '%ls' cannot be loaded.", qUtf16Printable(file));
         return false;
     }
 

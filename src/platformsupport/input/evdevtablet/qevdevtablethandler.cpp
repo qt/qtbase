@@ -172,11 +172,11 @@ QEvdevTabletHandler::QEvdevTabletHandler(const QString &device, const QString &s
 
     setObjectName(QLatin1String("Evdev Tablet Handler"));
 
-    qCDebug(qLcEvdevTablet, "evdevtablet: using %s", qPrintable(device));
+    qCDebug(qLcEvdevTablet, "evdevtablet: using %ls", qUtf16Printable(device));
 
     m_fd = QT_OPEN(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (m_fd < 0) {
-        qErrnoWarning(errno, "evdevtablet: Cannot open input device %s", qPrintable(device));
+        qErrnoWarning("evdevtablet: Cannot open input device %ls", qUtf16Printable(device));
         return;
     }
 
@@ -184,11 +184,11 @@ QEvdevTabletHandler::QEvdevTabletHandler(const QString &device, const QString &s
     if (grabSuccess)
         ioctl(m_fd, EVIOCGRAB, (void *) 0);
     else
-        qWarning("evdevtablet: %s: The device is grabbed by another process. No events will be read.", qPrintable(device));
+        qWarning("evdevtablet: %ls: The device is grabbed by another process. No events will be read.", qUtf16Printable(device));
 
     d = new QEvdevTabletData(this);
     if (!queryLimits())
-        qWarning("evdevtablet: %s: Unset or invalid ABS limits. Behavior will be unspecified.", qPrintable(device));
+        qWarning("evdevtablet: %ls: Unset or invalid ABS limits. Behavior will be unspecified.", qUtf16Printable(device));
 
     m_notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
     connect(m_notifier, &QSocketNotifier::activated, this, &QEvdevTabletHandler::readData);
@@ -216,32 +216,32 @@ bool QEvdevTabletHandler::queryLimits()
     if (ok) {
         d->minValues.x = absInfo.minimum;
         d->maxValues.x = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min X: %d max X: %d", qPrintable(m_device),
+        qCDebug(qLcEvdevTablet, "evdevtablet: %ls: min X: %d max X: %d", qUtf16Printable(m_device),
                 d->minValues.x, d->maxValues.x);
     }
     ok &= ioctl(m_fd, EVIOCGABS(ABS_Y), &absInfo) >= 0;
     if (ok) {
         d->minValues.y = absInfo.minimum;
         d->maxValues.y = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min Y: %d max Y: %d", qPrintable(m_device),
+        qCDebug(qLcEvdevTablet, "evdevtablet: %ls: min Y: %d max Y: %d", qUtf16Printable(m_device),
                 d->minValues.y, d->maxValues.y);
     }
     if (ioctl(m_fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
         d->minValues.p = absInfo.minimum;
         d->maxValues.p = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min pressure: %d max pressure: %d", qPrintable(m_device),
+        qCDebug(qLcEvdevTablet, "evdevtablet: %ls: min pressure: %d max pressure: %d", qUtf16Printable(m_device),
                 d->minValues.p, d->maxValues.p);
     }
     if (ioctl(m_fd, EVIOCGABS(ABS_DISTANCE), &absInfo) >= 0) {
         d->minValues.d = absInfo.minimum;
         d->maxValues.d = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min distance: %d max distance: %d", qPrintable(m_device),
+        qCDebug(qLcEvdevTablet, "evdevtablet: %ls: min distance: %d max distance: %d", qUtf16Printable(m_device),
                 d->minValues.d, d->maxValues.d);
     }
     char name[128];
     if (ioctl(m_fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
         d->devName = QString::fromLocal8Bit(name);
-        qCDebug(qLcEvdevTablet, "evdevtablet: %s: device name: %s", qPrintable(m_device), name);
+        qCDebug(qLcEvdevTablet, "evdevtablet: %ls: device name: %s", qUtf16Printable(m_device), name);
     }
     return ok;
 }
@@ -253,11 +253,11 @@ void QEvdevTabletHandler::readData()
     for (; ;) {
         int result = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
         if (!result) {
-            qWarning("evdevtablet: %s: Got EOF from input device", qPrintable(m_device));
+            qWarning("evdevtablet: %ls: Got EOF from input device", qUtf16Printable(m_device));
             return;
         } else if (result < 0) {
             if (errno != EINTR && errno != EAGAIN) {
-                qErrnoWarning(errno, "evdevtablet: %s: Could not read from input device", qPrintable(m_device));
+                qErrnoWarning("evdevtablet: %ls: Could not read from input device", qUtf16Printable(m_device));
                 if (errno == ENODEV) { // device got disconnected -> stop reading
                     delete m_notifier;
                     m_notifier = 0;

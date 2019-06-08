@@ -82,7 +82,7 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
 
     // when no devices specified, use device discovery to scan and monitor
     if (devices.isEmpty()) {
-        qCDebug(qLcEvdevTablet) << "evdevtablet: Using device discovery";
+        qCDebug(qLcEvdevTablet, "evdevtablet: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this);
         if (m_deviceDiscovery) {
             const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
@@ -104,7 +104,7 @@ QEvdevTabletManager::~QEvdevTabletManager()
 
 void QEvdevTabletManager::addDevice(const QString &deviceNode)
 {
-    qCDebug(qLcEvdevTablet) << "Adding device at" << deviceNode;
+    qCDebug(qLcEvdevTablet, "Adding device at %ls", qUtf16Printable(deviceNode));
     QEvdevTabletHandlerThread *handler;
     handler = new QEvdevTabletHandlerThread(deviceNode, m_spec);
     if (handler) {
@@ -112,14 +112,14 @@ void QEvdevTabletManager::addDevice(const QString &deviceNode)
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
             QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
     } else {
-        qWarning("evdevtablet: Failed to open tablet device %s", qPrintable(deviceNode));
+        qWarning("evdevtablet: Failed to open tablet device %ls", qUtf16Printable(deviceNode));
     }
 }
 
 void QEvdevTabletManager::removeDevice(const QString &deviceNode)
 {
     if (m_activeDevices.contains(deviceNode)) {
-        qCDebug(qLcEvdevTablet) << "Removing device at" << deviceNode;
+        qCDebug(qLcEvdevTablet, "Removing device at %ls", qUtf16Printable(deviceNode));
         QEvdevTabletHandlerThread *handler = m_activeDevices.value(deviceNode);
         m_activeDevices.remove(deviceNode);
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(

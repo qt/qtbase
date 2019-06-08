@@ -80,7 +80,7 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
         addKeyboard(device);
 
     if (devices.isEmpty()) {
-        qCDebug(qLcEvdevKey) << "evdevkeyboard: Using device discovery";
+        qCDebug(qLcEvdevKey, "evdevkeyboard: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
@@ -104,7 +104,7 @@ QEvdevKeyboardManager::~QEvdevKeyboardManager()
 
 void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
 {
-    qCDebug(qLcEvdevKey) << "Adding keyboard at" << deviceNode;
+    qCDebug(qLcEvdevKey, "Adding keyboard at %ls", qUtf16Printable(deviceNode));
     QEvdevKeyboardHandler *keyboard;
     keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
     if (keyboard) {
@@ -112,14 +112,14 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
             QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
     } else {
-        qWarning("Failed to open keyboard device %s", qPrintable(deviceNode));
+        qWarning("Failed to open keyboard device %ls", qUtf16Printable(deviceNode));
     }
 }
 
 void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
 {
     if (m_keyboards.contains(deviceNode)) {
-        qCDebug(qLcEvdevKey) << "Removing keyboard at" << deviceNode;
+        qCDebug(qLcEvdevKey, "Removing keyboard at %ls", qUtf16Printable(deviceNode));
         QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
         m_keyboards.remove(deviceNode);
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(

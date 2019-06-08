@@ -86,7 +86,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
         addMouse(device);
 
     if (devices.isEmpty()) {
-        qCDebug(qLcEvdevMouse) << "evdevmouse: Using device discovery";
+        qCDebug(qLcEvdevMouse, "evdevmouse: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
@@ -159,7 +159,7 @@ void QEvdevMouseManager::handleWheelEvent(QPoint delta)
 
 void QEvdevMouseManager::addMouse(const QString &deviceNode)
 {
-    qCDebug(qLcEvdevMouse) << "Adding mouse at" << deviceNode;
+    qCDebug(qLcEvdevMouse, "Adding mouse at %ls", qUtf16Printable(deviceNode));
     QEvdevMouseHandler *handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
         connect(handler, &QEvdevMouseHandler::handleMouseEvent,
@@ -170,14 +170,14 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
             QInputDeviceManager::DeviceTypePointer, m_mice.count());
     } else {
-        qWarning("evdevmouse: Failed to open mouse device %s", qPrintable(deviceNode));
+        qWarning("evdevmouse: Failed to open mouse device %ls", qUtf16Printable(deviceNode));
     }
 }
 
 void QEvdevMouseManager::removeMouse(const QString &deviceNode)
 {
     if (m_mice.contains(deviceNode)) {
-        qCDebug(qLcEvdevMouse) << "Removing mouse at" << deviceNode;
+        qCDebug(qLcEvdevMouse, "Removing mouse at %ls", qUtf16Printable(deviceNode));
         QEvdevMouseHandler *handler = m_mice.value(deviceNode);
         m_mice.remove(deviceNode);
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
