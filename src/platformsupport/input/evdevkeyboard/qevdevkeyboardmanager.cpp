@@ -109,8 +109,7 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
     keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
     if (keyboard) {
         m_keyboards.insert(deviceNode, keyboard);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
+        updateDeviceCount();
     } else {
         qWarning("Failed to open keyboard device %ls", qUtf16Printable(deviceNode));
     }
@@ -122,10 +121,15 @@ void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
         qCDebug(qLcEvdevKey, "Removing keyboard at %ls", qUtf16Printable(deviceNode));
         QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
         m_keyboards.remove(deviceNode);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
+        updateDeviceCount();
         delete keyboard;
     }
+}
+
+void QEvdevKeyboardManager::updateDeviceCount()
+{
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
 }
 
 void QEvdevKeyboardManager::loadKeymap(const QString &file)

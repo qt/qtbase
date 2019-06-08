@@ -77,6 +77,7 @@ public:
 
 private:
     void clampPosition();
+    void updateDeviceCount();
 
     QString m_spec;
     QHash<QString,QEvdevMouseHandler*> m_mice;

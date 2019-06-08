@@ -74,6 +74,8 @@ public:
     void removeKeyboard(const QString &deviceNode);
 
 private:
+    void updateDeviceCount();
+
     QString m_spec;
     QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
     QDeviceDiscovery *m_deviceDiscovery;

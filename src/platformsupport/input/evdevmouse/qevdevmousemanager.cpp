@@ -167,8 +167,7 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
         connect(handler, &QEvdevMouseHandler::handleWheelEvent,
                 this, &QEvdevMouseManager::handleWheelEvent);
         m_mice.insert(deviceNode, handler);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypePointer, m_mice.count());
+        updateDeviceCount();
     } else {
         qWarning("evdevmouse: Failed to open mouse device %ls", qUtf16Printable(deviceNode));
     }
@@ -180,10 +179,15 @@ void QEvdevMouseManager::removeMouse(const QString &deviceNode)
         qCDebug(qLcEvdevMouse, "Removing mouse at %ls", qUtf16Printable(deviceNode));
         QEvdevMouseHandler *handler = m_mice.value(deviceNode);
         m_mice.remove(deviceNode);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypePointer, m_mice.count());
+        updateDeviceCount();
         delete handler;
     }
+}
+
+void QEvdevMouseManager::updateDeviceCount()
+{
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypePointer, m_mice.count());
 }
 
 QT_END_NAMESPACE

@@ -70,6 +70,8 @@ public:
     void removeDevice(const QString &deviceNode);
 
 private:
+    void updateDeviceCount();
+
     QString m_spec;
     QDeviceDiscovery *m_deviceDiscovery;
     QHash<QString, QEvdevTabletHandlerThread *> m_activeDevices;

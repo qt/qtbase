@@ -109,8 +109,7 @@ void QEvdevTabletManager::addDevice(const QString &deviceNode)
     handler = new QEvdevTabletHandlerThread(deviceNode, m_spec);
     if (handler) {
         m_activeDevices.insert(deviceNode, handler);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
+        updateDeviceCount();
     } else {
         qWarning("evdevtablet: Failed to open tablet device %ls", qUtf16Printable(deviceNode));
     }
@@ -122,10 +121,15 @@ void QEvdevTabletManager::removeDevice(const QString &deviceNode)
         qCDebug(qLcEvdevTablet, "Removing device at %ls", qUtf16Printable(deviceNode));
         QEvdevTabletHandlerThread *handler = m_activeDevices.value(deviceNode);
         m_activeDevices.remove(deviceNode);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
+        updateDeviceCount();
         delete handler;
     }
+}
+
+void QEvdevTabletManager::updateDeviceCount()
+{
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
 }
 
 QT_END_NAMESPACE
