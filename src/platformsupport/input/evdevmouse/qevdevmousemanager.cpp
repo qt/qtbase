@@ -111,8 +111,6 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 
 QEvdevMouseManager::~QEvdevMouseManager()
 {
-    qDeleteAll(m_mice);
-    m_mice.clear();
 }
 
 void QEvdevMouseManager::clampPosition()
@@ -160,13 +158,13 @@ void QEvdevMouseManager::handleWheelEvent(QPoint delta)
 void QEvdevMouseManager::addMouse(const QString &deviceNode)
 {
     qCDebug(qLcEvdevMouse, "Adding mouse at %ls", qUtf16Printable(deviceNode));
-    QEvdevMouseHandler *handler = QEvdevMouseHandler::create(deviceNode, m_spec);
+    auto handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
-        connect(handler, &QEvdevMouseHandler::handleMouseEvent,
+        connect(handler.get(), &QEvdevMouseHandler::handleMouseEvent,
                 this, &QEvdevMouseManager::handleMouseEvent);
-        connect(handler, &QEvdevMouseHandler::handleWheelEvent,
+        connect(handler.get(), &QEvdevMouseHandler::handleWheelEvent,
                 this, &QEvdevMouseManager::handleWheelEvent);
-        m_mice.insert(deviceNode, handler);
+        m_mice.add(deviceNode, std::move(handler));
         updateDeviceCount();
     } else {
         qWarning("evdevmouse: Failed to open mouse device %ls", qUtf16Printable(deviceNode));
@@ -175,12 +173,9 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
 
 void QEvdevMouseManager::removeMouse(const QString &deviceNode)
 {
-    if (m_mice.contains(deviceNode)) {
+    if (m_mice.remove(deviceNode)) {
         qCDebug(qLcEvdevMouse, "Removing mouse at %ls", qUtf16Printable(deviceNode));
-        QEvdevMouseHandler *handler = m_mice.value(deviceNode);
-        m_mice.remove(deviceNode);
         updateDeviceCount();
-        delete handler;
     }
 }
 

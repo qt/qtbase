@@ -98,17 +98,14 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
 
 QEvdevKeyboardManager::~QEvdevKeyboardManager()
 {
-    qDeleteAll(m_keyboards);
-    m_keyboards.clear();
 }
 
 void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
 {
     qCDebug(qLcEvdevKey, "Adding keyboard at %ls", qUtf16Printable(deviceNode));
-    QEvdevKeyboardHandler *keyboard;
-    keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
+    auto keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
     if (keyboard) {
-        m_keyboards.insert(deviceNode, keyboard);
+        m_keyboards.add(deviceNode, std::move(keyboard));
         updateDeviceCount();
     } else {
         qWarning("Failed to open keyboard device %ls", qUtf16Printable(deviceNode));
@@ -117,12 +114,9 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
 
 void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
 {
-    if (m_keyboards.contains(deviceNode)) {
+    if (m_keyboards.remove(deviceNode)) {
         qCDebug(qLcEvdevKey, "Removing keyboard at %ls", qUtf16Printable(deviceNode));
-        QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
-        m_keyboards.remove(deviceNode);
         updateDeviceCount();
-        delete keyboard;
     }
 }
 
@@ -145,22 +139,22 @@ void QEvdevKeyboardManager::loadKeymap(const QString &file)
             if (arg.startsWith(QLatin1String("keymap=")))
                 keymapFromSpec = arg.mid(7).toString();
         }
-        foreach (QEvdevKeyboardHandler *handler, m_keyboards) {
+        for (const auto &keyboard : m_keyboards) {
             if (keymapFromSpec.isEmpty())
-                handler->unloadKeymap();
+                keyboard.handler->unloadKeymap();
             else
-                handler->loadKeymap(keymapFromSpec);
+                keyboard.handler->loadKeymap(keymapFromSpec);
         }
     } else {
-        foreach (QEvdevKeyboardHandler *handler, m_keyboards)
-            handler->loadKeymap(file);
+        for (const auto &keyboard : m_keyboards)
+            keyboard.handler->loadKeymap(file);
     }
 }
 
 void QEvdevKeyboardManager::switchLang()
 {
-    foreach (QEvdevKeyboardHandler *handler, m_keyboards)
-        handler->switchLang();
+    for (const auto &keyboard : m_keyboards)
+        keyboard.handler->switchLang();
 }
 
 QT_END_NAMESPACE

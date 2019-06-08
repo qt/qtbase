@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVTABLETMANAGER_P_H
-#define QEVDEVTABLETMANAGER_P_H
+#ifndef QTINPUTSUPPORT_DEVICEHANDLERLIST_P_H
+#define QTINPUTSUPPORT_DEVICEHANDLERLIST_P_H
 
 //
 //  W A R N I N G
@@ -51,34 +51,45 @@
 // We mean it.
 //
 
-#include <QtInputSupport/private/devicehandlerlist_p.h>
+#include <QString>
 
-#include <QObject>
-#include <QHash>
-#include <QSocketNotifier>
+#include <vector>
+#include <memory>
 
-QT_BEGIN_NAMESPACE
+namespace QtInputSupport {
 
-class QDeviceDiscovery;
-class QEvdevTabletHandlerThread;
-
-class QEvdevTabletManager : public QObject
-{
+template <typename Handler>
+class DeviceHandlerList {
 public:
-    QEvdevTabletManager(const QString &key, const QString &spec, QObject *parent = nullptr);
-    ~QEvdevTabletManager();
+    struct Device {
+        QString deviceNode;
+        std::unique_ptr<Handler> handler;
+    };
 
-    void addDevice(const QString &deviceNode);
-    void removeDevice(const QString &deviceNode);
+    void add(const QString &deviceNode, std::unique_ptr<Handler> handler)
+    {
+        v.push_back({deviceNode, std::move(handler)});
+    }
+
+    bool remove(const QString &deviceNode)
+    {
+        const auto deviceNodeMatches = [&] (const Device &d) { return d.deviceNode == deviceNode; };
+        const auto it = std::find_if(v.cbegin(), v.cend(), deviceNodeMatches);
+        if (it == v.cend())
+            return false;
+        v.erase(it);
+        return true;
+    }
+
+    int count() const noexcept { return static_cast<int>(v.size()); }
+
+    typename std::vector<Device>::const_iterator begin() const noexcept { return v.begin(); }
+    typename std::vector<Device>::const_iterator end() const  noexcept { return v.end(); }
 
 private:
-    void updateDeviceCount();
-
-    QString m_spec;
-    QDeviceDiscovery *m_deviceDiscovery;
-    QtInputSupport::DeviceHandlerList<QEvdevTabletHandlerThread> m_activeDevices;
+    std::vector<Device> v;
 };
 
-QT_END_NAMESPACE
+} // QtInputSupport
 
-#endif // QEVDEVTABLETMANAGER_P_H
+#endif // QTINPUTSUPPORT_DEVICEHANDLERLIST_P_H

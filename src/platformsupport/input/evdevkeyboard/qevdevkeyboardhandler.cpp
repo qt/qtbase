@@ -98,7 +98,7 @@ QEvdevKeyboardHandler::~QEvdevKeyboardHandler()
     unloadKeymap();
 }
 
-QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
+std::unique_ptr<QEvdevKeyboardHandler> QEvdevKeyboardHandler::create(const QString &device,
                                                      const QString &specification,
                                                      const QString &defaultKeymapFile)
 {
@@ -138,10 +138,10 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
             ::ioctl(fd.get(), EVIOCSREP, kbdrep);
         }
 
-        return new QEvdevKeyboardHandler(device, fd, disableZap, enableCompose, keymapFile);
+        return std::unique_ptr<QEvdevKeyboardHandler>(new QEvdevKeyboardHandler(device, fd, disableZap, enableCompose, keymapFile));
     } else {
         qErrnoWarning("Cannot open keyboard input device '%ls'", qUtf16Printable(device));
-        return 0;
+        return nullptr;
     }
 }
 

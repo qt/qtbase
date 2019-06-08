@@ -46,6 +46,7 @@
 #include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qinputdevicemanager_p_p.h>
+#include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,16 +100,14 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
 
 QEvdevTabletManager::~QEvdevTabletManager()
 {
-    qDeleteAll(m_activeDevices);
 }
 
 void QEvdevTabletManager::addDevice(const QString &deviceNode)
 {
     qCDebug(qLcEvdevTablet, "Adding device at %ls", qUtf16Printable(deviceNode));
-    QEvdevTabletHandlerThread *handler;
-    handler = new QEvdevTabletHandlerThread(deviceNode, m_spec);
+    auto handler = qt_make_unique<QEvdevTabletHandlerThread>(deviceNode, m_spec);
     if (handler) {
-        m_activeDevices.insert(deviceNode, handler);
+        m_activeDevices.add(deviceNode, std::move(handler));
         updateDeviceCount();
     } else {
         qWarning("evdevtablet: Failed to open tablet device %ls", qUtf16Printable(deviceNode));
@@ -117,12 +116,9 @@ void QEvdevTabletManager::addDevice(const QString &deviceNode)
 
 void QEvdevTabletManager::removeDevice(const QString &deviceNode)
 {
-    if (m_activeDevices.contains(deviceNode)) {
+    if (m_activeDevices.remove(deviceNode)) {
         qCDebug(qLcEvdevTablet, "Removing device at %ls", qUtf16Printable(deviceNode));
-        QEvdevTabletHandlerThread *handler = m_activeDevices.value(deviceNode);
-        m_activeDevices.remove(deviceNode);
         updateDeviceCount();
-        delete handler;
     }
 }
 

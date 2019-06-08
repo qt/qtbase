@@ -53,6 +53,7 @@
 
 #include "qevdevkeyboardhandler_p.h"
 
+#include <QtInputSupport/private/devicehandlerlist_p.h>
 #include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 
 #include <QObject>
@@ -77,7 +78,7 @@ private:
     void updateDeviceCount();
 
     QString m_spec;
-    QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
+    QtInputSupport::DeviceHandlerList<QEvdevKeyboardHandler> m_keyboards;
     QDeviceDiscovery *m_deviceDiscovery;
     QString m_defaultKeymapFile;
 };

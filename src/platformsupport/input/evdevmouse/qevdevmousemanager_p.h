@@ -53,6 +53,8 @@
 
 #include "qevdevmousehandler_p.h"
 
+#include <QtInputSupport/private/devicehandlerlist_p.h>
+
 #include <QObject>
 #include <QHash>
 #include <QSocketNotifier>
@@ -80,7 +82,7 @@ private:
     void updateDeviceCount();
 
     QString m_spec;
-    QHash<QString,QEvdevMouseHandler*> m_mice;
+    QtInputSupport::DeviceHandlerList<QEvdevMouseHandler> m_mice;
     QDeviceDiscovery *m_deviceDiscovery;
     int m_x;
     int m_y;
