@@ -222,19 +222,19 @@ static QLatin1String modifierToName(Qt::KeyboardModifier modifier)
 {
     switch (modifier) {
     case Qt::NoModifier:
-        return QLatin1Literal("No");
+        return QLatin1String("No");
         break;
     case Qt::ControlModifier:
-        return QLatin1Literal("Ctrl");
+        return QLatin1String("Ctrl");
         break;
     case Qt::ShiftModifier:
-        return QLatin1Literal("Shift");
+        return QLatin1String("Shift");
         break;
     case Qt::AltModifier:
-        return QLatin1Literal("Alt");
+        return QLatin1String("Alt");
         break;
     case Qt::MetaModifier:
-        return QLatin1Literal("Meta");
+        return QLatin1String("Meta");
         break;
     default:
         qFatal("Unexpected keyboard modifier");
@@ -1402,16 +1402,16 @@ void tst_QSpinBox::wheelEvents_data()
                         QLatin1String sourceName;
                         switch (source) {
                         case Qt::MouseEventNotSynthesized:
-                            sourceName = QLatin1Literal("NotSynthesized");
+                            sourceName = QLatin1String("NotSynthesized");
                             break;
                         case Qt::MouseEventSynthesizedBySystem:
-                            sourceName = QLatin1Literal("SynthesizedBySystem");
+                            sourceName = QLatin1String("SynthesizedBySystem");
                             break;
                         case Qt::MouseEventSynthesizedByQt:
-                            sourceName = QLatin1Literal("SynthesizedByQt");
+                            sourceName = QLatin1String("SynthesizedByQt");
                             break;
                         case Qt::MouseEventSynthesizedByApplication:
-                            sourceName = QLatin1Literal("SynthesizedByApplication");
+                            sourceName = QLatin1String("SynthesizedByApplication");
                             break;
                         default:
                             qFatal("Unexpected wheel event source");

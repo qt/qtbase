@@ -455,7 +455,7 @@ static const uchar base_dither_matrix[DITHER_SIZE][DITHER_SIZE] = {
 static QPixmap qt_patternForAlpha(uchar alpha, int screen)
 {
     QPixmap pm;
-    QString key = QLatin1Literal("$qt-alpha-brush$")
+    QString key = QLatin1String("$qt-alpha-brush$")
                   % HexString<uchar>(alpha)
                   % HexString<int>(screen);
 

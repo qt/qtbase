@@ -1467,7 +1467,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Test") << ";\n"
           << "\t\t};\n";
 
-        QLatin1Literal testTargetID("TestTargetID");
+        QLatin1String testTargetID("TestTargetID");
         project->values(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + testTargetKey + "_" + testTargetID)).append(keyFor(pbx_dir + "QMAKE_PBX_TARGET"));
         project->values(ProKey("QMAKE_PBX_TARGET_ATTRIBUTES_" + testTargetKey)).append(ProKey(testTargetID));
     }

@@ -5979,7 +5979,7 @@ void ConnectToPrivateSlot::test(SenderObject* obj1) {
     obj1->signal1();
     QCOMPARE(d->receivedCount, 1);
     QCOMPARE(d->receivedValue, QVariant());
-    obj1->signal7(666, QLatin1Literal("_"));
+    obj1->signal7(666, QLatin1String("_"));
     QCOMPARE(d->receivedCount, 2);
     QCOMPARE(d->receivedValue, QVariant(666));
     QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot, Qt::UniqueConnection));
