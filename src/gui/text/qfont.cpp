@@ -2970,7 +2970,7 @@ void QFontCache::decreaseCache()
                      it.value().data->ref.load(), engineCacheCount.value(it.value().data),
                      it.value().data->cache_cost);
 
-            if (it.value().data->ref.load() != 0)
+            if (it.value().data->ref.load() > engineCacheCount.value(it.value().data))
                 in_use_cost += it.value().data->cache_cost / engineCacheCount.value(it.value().data);
         }
 
