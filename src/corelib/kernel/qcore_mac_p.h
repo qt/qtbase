@@ -67,6 +67,7 @@
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
+#include <functional>
 #endif
 
 #include "qstring.h"
@@ -333,6 +334,60 @@ public:
 
 private:
     id observer = nil;
+};
+
+QT_END_NAMESPACE
+@interface QT_MANGLE_NAMESPACE(KeyValueObserver) : NSObject
+@end
+QT_NAMESPACE_ALIAS_OBJC_CLASS(KeyValueObserver);
+QT_BEGIN_NAMESPACE
+
+class Q_CORE_EXPORT QMacKeyValueObserver
+{
+public:
+    using Callback = std::function<void()>;
+
+    QMacKeyValueObserver() {}
+
+    // Note: QMacKeyValueObserver must not outlive the object observed!
+    QMacKeyValueObserver(id object, NSString *keyPath, Callback callback)
+        : object(object), keyPath(keyPath), callback(new Callback(callback)) { addObserver(); }
+
+    QMacKeyValueObserver(const QMacKeyValueObserver &other)
+         : QMacKeyValueObserver(other.object, other.keyPath, *other.callback.get()) {}
+
+    QMacKeyValueObserver(QMacKeyValueObserver &&other) { swap(other, *this); }
+
+    ~QMacKeyValueObserver() { removeObserver(); }
+
+    QMacKeyValueObserver &operator=(const QMacKeyValueObserver &other) {
+        QMacKeyValueObserver tmp(other);
+        swap(tmp, *this);
+        return *this;
+    }
+
+    QMacKeyValueObserver &operator=(QMacKeyValueObserver &&other) {
+        QMacKeyValueObserver tmp(std::move(other));
+        swap(tmp, *this);
+        return *this;
+    }
+
+    void removeObserver();
+
+private:
+    void swap(QMacKeyValueObserver &first, QMacKeyValueObserver &second) {
+        std::swap(first.object, second.object);
+        std::swap(first.keyPath, second.keyPath);
+        std::swap(first.callback, second.callback);
+    }
+
+    void addObserver();
+
+    id object = nil;
+    NSString *keyPath = nullptr;
+    std::unique_ptr<Callback> callback;
+
+    static KeyValueObserver *observer;
 };
 #endif
 
