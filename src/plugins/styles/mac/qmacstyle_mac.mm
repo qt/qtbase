@@ -144,41 +144,6 @@ static QWindow *qt_getWindow(const QWidget *widget)
     return widget ? widget->window()->windowHandle() : 0;
 }
 
-@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
-
-@implementation NotificationReceiver
-{
-    QMacStylePrivate *privateStyle;
-}
-
-- (instancetype)initWithPrivateStyle:(QMacStylePrivate *)style
-{
-    if (self = [super init])
-        privateStyle = style;
-    return self;
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
-        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
-{
-    Q_UNUSED(keyPath);
-    Q_UNUSED(object);
-    Q_UNUSED(change);
-    Q_UNUSED(context);
-
-    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
-    Q_ASSERT(object == NSApp);
-
-    for (NSView *b : privateStyle->cocoaControls)
-        [b release];
-    privateStyle->cocoaControls.clear();
-}
-
-@end
-
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
 
 @property (readonly, nonatomic) NSInteger animators;
@@ -2080,7 +2045,6 @@ void QMacStylePrivate::resolveCurrentNSView(QWindow *window) const
 QMacStyle::QMacStyle()
     : QCommonStyle(*new QMacStylePrivate)
 {
-    Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
     static QMacNotificationObserver scrollbarStyleObserver(nil,
@@ -2093,26 +2057,21 @@ QMacStyle::QMacStyle()
                 QCoreApplication::sendEvent(o, &event);
     });
 
-    d->receiver = [[NotificationReceiver alloc] initWithPrivateStyle:d];
-
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    Q_D(QMacStyle);
+    // FIXME: Tie this logic into theme change, or even polish/unpolish
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        [NSApplication.sharedApplication addObserver:d->receiver forKeyPath:@"effectiveAppearance"
-         options:NSKeyValueObservingOptionNew context:nullptr];
+        d->appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [&d] {
+            for (NSView *b : d->cocoaControls)
+                [b release];
+            d->cocoaControls.clear();
+        });
     }
 #endif
 }
 
 QMacStyle::~QMacStyle()
 {
-    Q_D(QMacStyle);
-    QMacAutoReleasePool pool;
-
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
-        [NSApplication.sharedApplication removeObserver:d->receiver forKeyPath:@"effectiveAppearance"];
-#endif
-    [d->receiver release];
 }
 
 void QMacStyle::polish(QPalette &)
