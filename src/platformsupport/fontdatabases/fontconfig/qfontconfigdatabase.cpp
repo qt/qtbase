@@ -721,7 +721,7 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
 
     FcValue value;
     value.type = FcTypeString;
-    QByteArray cs = family.toUtf8();
+    const QByteArray cs = family.toUtf8();
     value.u.s = (const FcChar8 *)cs.data();
     FcPatternAdd(pattern,FC_FAMILY,value,true);
 
@@ -863,7 +863,7 @@ QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
         return family;
 
     if (!family.isEmpty()) {
-        QByteArray cs = family.toUtf8();
+        const QByteArray cs = family.toUtf8();
         FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) cs.constData());
     }
     FcConfigSubstitute(0, pattern, FcMatchPattern);
