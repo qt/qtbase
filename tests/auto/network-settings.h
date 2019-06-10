@@ -109,8 +109,8 @@ public:
     static bool compareReplyFtp(QByteArray const& actual)
     {
         // output would be e.g. "220 (vsFTPd 2.3.5)\r\n221 Goodbye.\r\n"
-        QRegExp ftpVersion(QStringLiteral("220 \\(vsFTPd \\d+\\.\\d+.\\d+\\)\\r\\n221 Goodbye.\\r\\n"));
-        return ftpVersion.exactMatch(actual);
+        QRegularExpression ftpVersion(QRegularExpression::anchoredPattern(QStringLiteral("220 \\(vsFTPd \\d+\\.\\d+.\\d+\\)\\r\\n221 Goodbye.\\r\\n")));
+        return ftpVersion.match(actual).hasMatch();
     }
 
     static bool hasIPv6()

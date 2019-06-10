@@ -34,6 +34,8 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
 #include <QtCore/QRandomGenerator>
+#include <QtCore/QRegularExpression>
+#include <QtCore/QRegularExpressionMatch>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
@@ -7917,9 +7919,10 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 "Content-Type: text/plain\r\n"
                 "\r\n"
                 "auth";
-            QRegExp rx("Authorization: Basic ([^\r\n]*)\r\n");
-            if (rx.indexIn(receivedData) > 0) {
-                if (QByteArray::fromBase64(rx.cap(1).toLatin1()) == "login:password") {
+            QRegularExpression rx("Authorization: Basic ([^\r\n]*)\r\n");
+            QRegularExpressionMatch match = rx.match(receivedData);
+            if (match.hasMatch()) {
+                if (QByteArray::fromBase64(match.captured(1).toLatin1()) == "login:password") {
                     dataToTransmit =
                           "HTTP/1.0 200 OK\r\n"
                           "Content-Type: text/plain\r\n"
