@@ -108,7 +108,7 @@ void tst_QFontComboBox::currentFont()
     QFont oldCurrentFont = box.currentFont();
 
     box.setCurrentFont(currentFont);
-    QRegExp foundry(" \\[.*\\]");
+    QRegularExpression foundry(" \\[.*\\]");
     if (!box.currentFont().family().contains(foundry)) {
         QCOMPARE(box.currentFont(), currentFont);
     }
