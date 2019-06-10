@@ -113,6 +113,11 @@ private slots:
     void stream_QRegExp_data();
     void stream_QRegExp();
 
+#if QT_CONFIG(regularexpression)
+    void stream_QRegularExpression_data();
+    void stream_QRegularExpression();
+#endif
+
     void stream_Map_data();
     void stream_Map();
 
@@ -221,6 +226,9 @@ private:
     void writeQSize(QDataStream *s);
     void writeQString(QDataStream* dev);
     void writeQRegExp(QDataStream* dev);
+#if QT_CONFIG(regularexpression)
+    void writeQRegularExpression(QDataStream *dev);
+#endif
     void writeMap(QDataStream* dev);
     void writeHash(QDataStream* dev);
     void writeqint64(QDataStream *s);
@@ -250,6 +258,9 @@ private:
     void readQSize(QDataStream *s);
     void readQString(QDataStream *s);
     void readQRegExp(QDataStream *s);
+#if QT_CONFIG(regularexpression)
+    void readQRegularExpression(QDataStream *s);
+#endif
     void readMap(QDataStream *s);
     void readHash(QDataStream *s);
     void readqint64(QDataStream *s);
@@ -558,6 +569,69 @@ void tst_QDataStream::readQRegExp(QDataStream *s)
     QCOMPARE(V.type(), QVariant::RegExp);
     QCOMPARE(V.toRegExp(), test);
 }
+
+// ************************************
+
+#if QT_CONFIG(regularexpression)
+static QRegularExpression QRegularExpressionData(int index)
+{
+    switch (index) {
+    case 0: return QRegularExpression();
+    case 1: return QRegularExpression("");
+    case 2: return QRegularExpression("A", QRegularExpression::CaseInsensitiveOption);
+    case 3: return QRegularExpression(QRegularExpression::wildcardToRegularExpression("ABCDE FGHI"));
+    case 4: return QRegularExpression(QRegularExpression::anchoredPattern("This is a long string"), QRegularExpression::CaseInsensitiveOption);
+    case 5: return QRegularExpression("And again a string with a \nCRLF", QRegularExpression::CaseInsensitiveOption);
+    case 6: return QRegularExpression("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/", QRegularExpression::InvertedGreedinessOption);
+    }
+    return QRegularExpression("foo");
+}
+#define MAX_QREGULAREXPRESSION_DATA 7
+
+void tst_QDataStream::stream_QRegularExpression_data()
+{
+    stream_data(MAX_QREGULAREXPRESSION_DATA);
+}
+
+void tst_QDataStream::stream_QRegularExpression()
+{
+    STREAM_IMPL(QRegularExpression);
+}
+
+void tst_QDataStream::writeQRegularExpression(QDataStream* s)
+{
+    QRegularExpression test(QRegularExpressionData(dataIndex(QTest::currentDataTag())));
+    *s << test;
+    *s << QString("Her er det noe tekst");
+    *s << test;
+    *s << QString("nonempty");
+    *s << test;
+    *s << QVariant(test);
+}
+
+void tst_QDataStream::readQRegularExpression(QDataStream *s)
+{
+    QRegularExpression R;
+    QString S;
+    QVariant V;
+    QRegularExpression test(QRegularExpressionData(dataIndex(QTest::currentDataTag())));
+
+    *s >> R;
+
+    QCOMPARE(R, test);
+    *s >> S;
+    QCOMPARE(S, QString("Her er det noe tekst"));
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> S;
+    QCOMPARE(S, QString("nonempty"));
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> V;
+    QCOMPARE(V.type(), QVariant::RegularExpression);
+    QCOMPARE(V.toRegularExpression(), test);
+}
+#endif //QT_CONFIG(regularexpression)
 
 // ************************************
 
