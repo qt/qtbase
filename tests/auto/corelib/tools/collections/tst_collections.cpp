@@ -76,7 +76,7 @@ void foo()
 #include "qlist.h"
 #include "qmap.h"
 #include "qpair.h"
-#include "qregexp.h"
+#include "qregularexpression.h"
 #include "qset.h"
 #include "qstack.h"
 #include "qstring.h"
@@ -105,7 +105,9 @@ private slots:
     void map();
     void bitArray();
     void cache();
+#if QT_CONFIG(regularexpression)
     void regexp();
+#endif
     void pair();
     void sharableQList();
     void sharableQLinkedList();
@@ -2285,13 +2287,15 @@ void tst_Collections::cache()
 
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_Collections::regexp()
 {
-    QRegExp rx("^\\d\\d?$");
-    QVERIFY(rx.indexIn("123") == -1);
-    QVERIFY(rx.indexIn("-6") == -1);
-    QVERIFY(rx.indexIn("6") == 0) ;
+    QRegularExpression rx("^\\d\\d?$");
+    QVERIFY(!rx.match("123").hasMatch());
+    QVERIFY(!rx.match("-6").hasMatch());
+    QVERIFY(rx.match("6").hasMatch()) ;
 }
+#endif
 
 void tst_Collections::pair()
 {
