@@ -180,6 +180,7 @@ private slots:
     void tabOrderWithProxy();
     void tabOrderWithCompoundWidgets();
     void tabOrderNoChange();
+    void tabOrderNoChange2();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -1940,6 +1941,24 @@ static QVector<QWidget*> getFocusChain(QWidget *start, bool bForward)
     return ret;
 }
 
+//#define DEBUG_FOCUS_CHAIN
+static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nullptr)
+{
+#ifdef DEBUG_FOCUS_CHAIN
+    qDebug() << "Dump focus chain, start:" << start << "isForward:" << bForward << desc;
+    QWidget *cur = start;
+    do {
+        qDebug() << cur;
+        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
+        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+    } while (cur != start);
+#else
+    Q_UNUSED(start)
+    Q_UNUSED(bForward)
+    Q_UNUSED(desc)
+#endif
+}
+
 void tst_QWidget::tabOrderNoChange()
 {
     QWidget w;
@@ -1951,7 +1970,61 @@ void tst_QWidget::tabOrderNoChange()
 
     const auto focusChainForward = getFocusChain(&w, true);
     const auto focusChainBackward = getFocusChain(&w, false);
+    dumpFocusChain(&w, true);
     QWidget::setTabOrder(tabWidget, tv);
+    dumpFocusChain(&w, true);
+    QCOMPARE(focusChainForward, getFocusChain(&w, true));
+    QCOMPARE(focusChainBackward, getFocusChain(&w, false));
+}
+
+void tst_QWidget::tabOrderNoChange2()
+{
+    QWidget w;
+    auto *verticalLayout = new QVBoxLayout(&w);
+    auto *tabWidget = new QTabWidget(&w);
+    tabWidget->setObjectName("tabWidget");
+    verticalLayout->addWidget(tabWidget);
+
+    auto *tab1 = new QWidget(tabWidget);
+    tab1->setObjectName("tab1");
+    auto *vLay1 = new QVBoxLayout(tab1);
+    auto *le1 = new QLineEdit(tab1);
+    le1->setObjectName("le1");
+    auto *le2 = new QLineEdit(tab1);
+    le2->setObjectName("le2");
+    vLay1->addWidget(le1);
+    vLay1->addWidget(le2);
+    tabWidget->addTab(tab1, QStringLiteral("Tab 1"));
+
+    auto *tab2 = new QWidget(tabWidget);
+    tab2->setObjectName("tab2");
+    auto *vLay2 = new QVBoxLayout(tab2);
+    auto *le3 = new QLineEdit(tab2);
+    le3->setObjectName("le3");
+    auto *le4 = new QLineEdit(tab2);
+    le4->setObjectName("le4");
+    vLay2->addWidget(le3);
+    vLay2->addWidget(le4);
+    tabWidget->addTab(tab2, QStringLiteral("Tab 2"));
+
+    const auto focusChainForward = getFocusChain(&w, true);
+    const auto focusChainBackward = getFocusChain(&w, false);
+    dumpFocusChain(&w, true);
+    dumpFocusChain(&w, false);
+    // this will screw up the focus chain order without visible changes,
+    // so don't call it here for the simplicity of the test
+    //QWidget::setTabOrder(tabWidget, le1);
+
+    QWidget::setTabOrder(le1, le2);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le1, le2)");
+    QWidget::setTabOrder(le2, le3);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le2, le3)");
+    QWidget::setTabOrder(le3, le4);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le3, le4)");
+    QWidget::setTabOrder(le4, tabWidget);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le4, tabWidget)");
+    dumpFocusChain(&w, false);
+
     QCOMPARE(focusChainForward, getFocusChain(&w, true));
     QCOMPARE(focusChainBackward, getFocusChain(&w, false));
 }
