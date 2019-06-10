@@ -33,7 +33,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QList>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QtTest/QtTest>
 #include <QtXml>
@@ -437,10 +437,10 @@ void tst_QDom::save_data()
     QTest::addColumn<int>("indent");
     QTest::addColumn<QString>("res");
 
-    QTest::newRow( "01" ) << doc01 << 0 << QString(doc01).replace( QRegExp(" "), "" );
+    QTest::newRow( "01" ) << doc01 << 0 << QString(doc01).replace( QRegularExpression(" "), "" );
     QTest::newRow( "02" ) << doc01 << 1 << doc01;
-    QTest::newRow( "03" ) << doc01 << 2 << QString(doc01).replace( QRegExp(" "), "  " );
-    QTest::newRow( "04" ) << doc01 << 10 << QString(doc01).replace( QRegExp(" "), "          " );
+    QTest::newRow( "03" ) << doc01 << 2 << QString(doc01).replace( QRegularExpression(" "), "  " );
+    QTest::newRow( "04" ) << doc01 << 10 << QString(doc01).replace( QRegularExpression(" "), "          " );
 }
 
 void tst_QDom::save()
