@@ -31,6 +31,7 @@
 #include <qcoreapplication.h>
 #include <qmetatype.h>
 #include <QtTest/QtTest>
+#include <QtCore/qregularexpression.h>
 #include <QtCore/qvariant.h>
 #include <QtDBus/QtDBus>
 #include <QtDBus/private/qdbus_symbols_p.h>
@@ -451,14 +452,16 @@ void tst_QDBusInterface::introspectVirtualObject()
     QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, "org.freedesktop.DBus.Introspectable", "Introspect");
     QDBusMessage reply = con.call(message, QDBus::Block, 5000);
     QVERIFY(reply.arguments().at(0).toString().contains(
-        QRegExp("<node>.*zitroneneis.*<interface name=") ));
+            QRegularExpression("<node>.*zitroneneis.*<interface name=",
+                               QRegularExpression::DotMatchesEverythingOption)));
 
     QDBusMessage message2 = QDBusMessage::createMethodCall(con.baseService(), path + "/foo", "org.freedesktop.DBus.Introspectable", "Introspect");
     QDBusMessage reply2 = con.call(message2, QDBus::Block, 5000);
     QVERIFY(reply2.arguments().at(0).toString().contains(
-        QRegExp("<node>.*<interface name=\"org.qtproject.QtDBus.VirtualObject\">"
-                ".*<method name=\"klingeling\" />\n"
-                ".*</interface>.*<interface name=") ));
+            QRegularExpression("<node>.*<interface name=\"org.qtproject.QtDBus.VirtualObject\">"
+                               ".*<method name=\"klingeling\" />\n"
+                               ".*</interface>.*<interface name=",
+                               QRegularExpression::DotMatchesEverythingOption)));
 }
 
 void tst_QDBusInterface::callMethod()
