@@ -39,6 +39,8 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QCheckBox>
+#include <QRegularExpressionValidator>
+#include <QRegularExpression>
 
 MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
 ,m_iconComboBox(new QComboBox)
@@ -80,7 +82,7 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
 
     // buttons mask
     optionsLayout->addWidget(new QLabel(QString::fromLatin1("Message box button mask (in hex)")));
-    m_validator = new QRegExpValidator(QRegExp("0[xX]?[0-9a-fA-F]+"), this);
+    m_validator = new QRegularExpressionValidator(QRegularExpression("0[xX]?[0-9a-fA-F]+"), this);
     m_buttonsMask->setMaxLength(10);
     m_buttonsMask->setValidator(m_validator);
     m_buttonsMask->setText(QString::fromLatin1("0x00300400"));
