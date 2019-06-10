@@ -374,7 +374,7 @@ bool QSqlQuery::exec(const QString& query)
     QElapsedTimer t;
     t.start();
 #endif
-    if (d->ref.load() != 1) {
+    if (d->ref.loadRelaxed() != 1) {
         bool fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
         d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
@@ -960,7 +960,7 @@ void QSqlQuery::clear()
 */
 bool QSqlQuery::prepare(const QString& query)
 {
-    if (d->ref.load() != 1) {
+    if (d->ref.loadRelaxed() != 1) {
         bool fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
         setForwardOnly(fo);

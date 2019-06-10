@@ -1115,7 +1115,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
     } else {
         sendWindowSystemEvents(flags);
     }
-    return QWindowSystemInterfacePrivate::eventAccepted.load() > 0;
+    return QWindowSystemInterfacePrivate::eventAccepted.loadRelaxed() > 0;
 }
 
 void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
@@ -1156,7 +1156,7 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
         // (excluding flush events). This state can then be
         // returned by flushWindowSystemEvents().
         if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
-            QWindowSystemInterfacePrivate::eventAccepted.store(event->eventAccepted);
+            QWindowSystemInterfacePrivate::eventAccepted.storeRelaxed(event->eventAccepted);
 
         delete event;
     }

@@ -405,10 +405,10 @@ inline void QLibraryStore::cleanup()
     LibraryMap::Iterator it = data->libraryMap.begin();
     for (; it != data->libraryMap.end(); ++it) {
         QLibraryPrivate *lib = it.value();
-        if (lib->libraryRefCount.load() == 1) {
-            if (lib->libraryUnloadCount.load() > 0) {
+        if (lib->libraryRefCount.loadRelaxed() == 1) {
+            if (lib->libraryUnloadCount.loadRelaxed() > 0) {
                 Q_ASSERT(lib->pHnd);
-                lib->libraryUnloadCount.store(1);
+                lib->libraryUnloadCount.storeRelaxed(1);
 #ifdef __GLIBC__
                 // glibc has a bug in unloading from global destructors
                 // see https://bugzilla.novell.com/show_bug.cgi?id=622977
@@ -428,7 +428,7 @@ inline void QLibraryStore::cleanup()
         for (QLibraryPrivate *lib : qAsConst(data->libraryMap)) {
             if (lib)
                 qDebug() << "On QtCore unload," << lib->fileName << "was leaked, with"
-                         << lib->libraryRefCount.load() << "users";
+                         << lib->libraryRefCount.loadRelaxed() << "users";
         }
     }
 
@@ -487,7 +487,7 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
     }
 
     // no one else is using
-    Q_ASSERT(lib->libraryUnloadCount.load() == 0);
+    Q_ASSERT(lib->libraryUnloadCount.loadRelaxed() == 0);
 
     if (Q_LIKELY(data) && !lib->fileName.isEmpty()) {
         QLibraryPrivate *that = data->libraryMap.take(lib->fileName);
@@ -501,7 +501,7 @@ QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString
     : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
       libraryRefCount(0), libraryUnloadCount(0), pluginState(MightBeAPlugin)
 {
-    loadHintsInt.store(loadHints);
+    loadHintsInt.storeRelaxed(loadHints);
     if (canonicalFileName.isEmpty())
         errorString = QLibrary::tr("The shared library was not found.");
 }
@@ -522,7 +522,7 @@ void QLibraryPrivate::mergeLoadHints(QLibrary::LoadHints lh)
     if (pHnd)
         return;
 
-    loadHintsInt.store(lh);
+    loadHintsInt.storeRelaxed(lh);
 }
 
 QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
@@ -575,7 +575,7 @@ bool QLibraryPrivate::unload(UnloadFlag flag)
 {
     if (!pHnd)
         return false;
-    if (libraryUnloadCount.load() > 0 && !libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
+    if (libraryUnloadCount.loadRelaxed() > 0 && !libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
         delete inst.data();
         if (flag == NoUnloadSys || unload_sys()) {
             if (qt_debug_component())

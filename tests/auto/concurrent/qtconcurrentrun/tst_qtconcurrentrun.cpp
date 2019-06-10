@@ -506,17 +506,17 @@ void tst_QtConcurrentRun::recursive()
     int levels = 15;
 
     for (int i = 0; i < QThread::idealThreadCount(); ++i) {
-        count.store(0);
+        count.storeRelaxed(0);
         QThreadPool::globalInstance()->setMaxThreadCount(i);
         recursiveRun(levels);
-        QCOMPARE(count.load(), (int)std::pow(2.0, levels) - 1);
+        QCOMPARE(count.loadRelaxed(), (int)std::pow(2.0, levels) - 1);
     }
 
     for (int i = 0; i < QThread::idealThreadCount(); ++i) {
-        count.store(0);
+        count.storeRelaxed(0);
         QThreadPool::globalInstance()->setMaxThreadCount(i);
         recursiveResult(levels);
-        QCOMPARE(count.load(), (int)std::pow(2.0, levels) - 1);
+        QCOMPARE(count.loadRelaxed(), (int)std::pow(2.0, levels) - 1);
     }
 }
 
@@ -570,7 +570,7 @@ public:
     static QAtomicInt cancel;
     void run() override {
         int iter = 60;
-        while (--iter && !cancel.load())
+        while (--iter && !cancel.loadRelaxed())
             QThread::currentThread()->msleep(25);
     }
 };
@@ -638,7 +638,7 @@ void tst_QtConcurrentRun::exceptions()
         caught = true;
     }
 
-    SlowTask::cancel.store(true);
+    SlowTask::cancel.storeRelaxed(true);
 
     QVERIFY2(caught, "did not get exception");
 }

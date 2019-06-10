@@ -186,7 +186,7 @@ struct QRandomGenerator::SystemGenerator
 #endif
     static void closeDevice()
     {
-        int fd = self().fdp1.load() - 1;
+        int fd = self().fdp1.loadRelaxed() - 1;
         if (fd >= 0)
             qt_safe_close(fd);
     }
@@ -310,7 +310,7 @@ static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
     *end++ = quint32(nsecs);    // 5
 #endif
 
-    if (quint32 v = seed.load())
+    if (quint32 v = seed.loadRelaxed())
         *end++ = v; // 6
 
 #if QT_CONFIG(getauxval)

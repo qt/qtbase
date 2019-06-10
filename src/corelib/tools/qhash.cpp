@@ -321,7 +321,7 @@ static QBasicAtomicInt qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(-1);
 */
 static void qt_initialize_qhash_seed()
 {
-    if (qt_qhash_seed.load() == -1) {
+    if (qt_qhash_seed.loadRelaxed() == -1) {
         int x(qt_create_qhash_seed() & INT_MAX);
         qt_qhash_seed.testAndSetRelaxed(-1, x);
     }
@@ -340,7 +340,7 @@ static void qt_initialize_qhash_seed()
 int qGlobalQHashSeed()
 {
     qt_initialize_qhash_seed();
-    return qt_qhash_seed.load();
+    return qt_qhash_seed.loadRelaxed();
 }
 
 /*! \relates QHash
@@ -372,14 +372,14 @@ void qSetGlobalQHashSeed(int newSeed)
         return;
     if (newSeed == -1) {
         int x(qt_create_qhash_seed() & INT_MAX);
-        qt_qhash_seed.store(x);
+        qt_qhash_seed.storeRelaxed(x);
     } else {
         if (newSeed) {
             // can't use qWarning here (reentrancy)
             fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0, cannot guarantee that the "
                             "hashing functions will produce a stable value.");
         }
-        qt_qhash_seed.store(newSeed & INT_MAX);
+        qt_qhash_seed.storeRelaxed(newSeed & INT_MAX);
     }
 }
 
@@ -509,7 +509,7 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
     d->userNumBits = userNumBits;
     d->numBits = numBits;
     d->numBuckets = numBuckets;
-    d->seed = (this == &shared_null) ? uint(qt_qhash_seed.load()) : seed;
+    d->seed = (this == &shared_null) ? uint(qt_qhash_seed.loadRelaxed()) : seed;
     d->sharable = true;
     d->strictAlignment = nodeAlign > 8;
     d->reserved = 0;

@@ -1518,7 +1518,7 @@ bool QKeySequence::operator< (const QKeySequence &other) const
 */
 bool QKeySequence::isDetached() const
 {
-    return d->ref.load() == 1;
+    return d->ref.loadRelaxed() == 1;
 }
 
 /*!

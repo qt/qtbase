@@ -171,7 +171,7 @@ class QFreeList
         // qDebug("QFreeList: allocating %d elements (%ld bytes) with offset %d", size, size * sizeof(ElementType), offset);
         ElementType *v = new ElementType[size];
         for (int i = 0; i < size; ++i)
-            v[i].next.store(offset + i + 1);
+            v[i].next.storeRelaxed(offset + i + 1);
         return v;
     }
 
@@ -218,21 +218,21 @@ template <typename T, typename ConstantsType>
 inline QFreeList<T, ConstantsType>::~QFreeList()
 {
     for (int i = 0; i < ConstantsType::BlockCount; ++i)
-        delete [] _v[i].load();
+        delete [] _v[i].loadRelaxed();
 }
 
 template <typename T, typename ConstantsType>
 inline typename QFreeList<T, ConstantsType>::ConstReferenceType QFreeList<T, ConstantsType>::at(int x) const
 {
     const int block = blockfor(x);
-    return (_v[block].load())[x].t();
+    return (_v[block].loadRelaxed())[x].t();
 }
 
 template <typename T, typename ConstantsType>
 inline typename QFreeList<T, ConstantsType>::ReferenceType QFreeList<T, ConstantsType>::operator[](int x)
 {
     const int block = blockfor(x);
-    return (_v[block].load())[x].t();
+    return (_v[block].loadRelaxed())[x].t();
 }
 
 template <typename T, typename ConstantsType>
@@ -257,7 +257,7 @@ inline int QFreeList<T, ConstantsType>::next()
             }
         }
 
-        newid = v[at].next.load() | (id & ~ConstantsType::IndexMask);
+        newid = v[at].next.loadRelaxed() | (id & ~ConstantsType::IndexMask);
     } while (!_next.testAndSetRelease(id, newid));
     // qDebug("QFreeList::next(): returning %d (_next now %d, serial %d)",
     //        id & ConstantsType::IndexMask,
@@ -271,12 +271,12 @@ inline void QFreeList<T, ConstantsType>::release(int id)
 {
     int at = id & ConstantsType::IndexMask;
     const int block = blockfor(at);
-    ElementType *v = _v[block].load();
+    ElementType *v = _v[block].loadRelaxed();
 
     int x, newid;
     do {
         x = _next.loadAcquire();
-        v[at].next.store(x & ConstantsType::IndexMask);
+        v[at].next.storeRelaxed(x & ConstantsType::IndexMask);
 
         newid = incrementserial(x, id);
     } while (!_next.testAndSetRelease(x, newid));

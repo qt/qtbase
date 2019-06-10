@@ -3802,7 +3802,7 @@ void QUrl::detach()
 */
 bool QUrl::isDetached() const
 {
-    return !d || d->ref.load() == 1;
+    return !d || d->ref.loadRelaxed() == 1;
 }
 
 

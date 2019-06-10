@@ -459,7 +459,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
 bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherUNIX);
-    d->interrupt.store(0);
+    d->interrupt.storeRelaxed(0);
 
     // we are awake, broadcast it
     emit awake();
@@ -470,13 +470,13 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     const bool wait_for_events = flags & QEventLoop::WaitForMoreEvents;
 
     const bool canWait = (d->threadData->canWaitLocked()
-                          && !d->interrupt.load()
+                          && !d->interrupt.loadRelaxed()
                           && wait_for_events);
 
     if (canWait)
         emit aboutToBlock();
 
-    if (d->interrupt.load())
+    if (d->interrupt.loadRelaxed())
         return false;
 
     timespec *tm = nullptr;
@@ -545,7 +545,7 @@ void QEventDispatcherUNIX::wakeUp()
 void QEventDispatcherUNIX::interrupt()
 {
     Q_D(QEventDispatcherUNIX);
-    d->interrupt.store(1);
+    d->interrupt.storeRelaxed(1);
     wakeUp();
 }
 

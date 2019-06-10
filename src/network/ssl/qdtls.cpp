@@ -342,7 +342,7 @@ QT_BEGIN_NAMESPACE
 QSslConfiguration QDtlsBasePrivate::configuration() const
 {
     auto copyPrivate = new QSslConfigurationPrivate(dtlsConfiguration);
-    copyPrivate->ref.store(0); // the QSslConfiguration constructor refs up
+    copyPrivate->ref.storeRelaxed(0); // the QSslConfiguration constructor refs up
     QSslConfiguration copy(copyPrivate);
     copyPrivate->sessionCipher = sessionCipher;
     copyPrivate->sessionProtocol = sessionProtocol;

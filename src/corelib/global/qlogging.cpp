@@ -197,7 +197,7 @@ static bool isFatal(QtMsgType msgType)
 
         // it's fatal if the current value is exactly 1,
         // otherwise decrement if it's non-zero
-        return fatalCriticals.load() && fatalCriticals.fetchAndAddRelaxed(-1) == 1;
+        return fatalCriticals.loadRelaxed() && fatalCriticals.fetchAndAddRelaxed(-1) == 1;
     }
 
     if (msgType == QtWarningMsg || msgType == QtCriticalMsg) {
@@ -205,7 +205,7 @@ static bool isFatal(QtMsgType msgType)
 
         // it's fatal if the current value is exactly 1,
         // otherwise decrement if it's non-zero
-        return fatalWarnings.load() && fatalWarnings.fetchAndAddRelaxed(-1) == 1;
+        return fatalWarnings.loadRelaxed() && fatalWarnings.fetchAndAddRelaxed(-1) == 1;
     }
 
     return false;
@@ -1814,11 +1814,11 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     // itself, e.g. by using Qt API
     if (grabMessageHandler()) {
         // prefer new message handler over the old one
-        if (msgHandler.load() == qDefaultMsgHandler
-                || messageHandler.load() != qDefaultMessageHandler) {
-            (*messageHandler.load())(msgType, context, message);
+        if (msgHandler.loadRelaxed() == qDefaultMsgHandler
+                || messageHandler.loadRelaxed() != qDefaultMessageHandler) {
+            (*messageHandler.loadRelaxed())(msgType, context, message);
         } else {
-            (*msgHandler.load())(msgType, message.toLocal8Bit().constData());
+            (*msgHandler.loadRelaxed())(msgType, message.toLocal8Bit().constData());
         }
         ungrabMessageHandler();
     } else {

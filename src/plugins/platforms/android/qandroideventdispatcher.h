@@ -68,7 +68,7 @@ class QAndroidEventDispatcherStopper
 {
 public:
     static QAndroidEventDispatcherStopper *instance();
-    static bool stopped() {return !instance()->m_started.load(); }
+    static bool stopped() {return !instance()->m_started.loadRelaxed(); }
     void startAll();
     void stopAll();
     void addEventDispatcher(QAndroidEventDispatcher *dispatcher);

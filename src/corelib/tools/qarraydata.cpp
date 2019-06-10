@@ -224,9 +224,9 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
                 & ~(alignment - 1);
 
 #if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        header->ref.atomic.store(bool(!(options & Unsharable)));
+        header->ref.atomic.storeRelaxed(bool(!(options & Unsharable)));
 #else
-        header->ref.atomic.store(1);
+        header->ref.atomic.storeRelaxed(1);
 #endif
         header->size = 0;
         header->alloc = capacity;

@@ -77,7 +77,7 @@ QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &
 void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 {
     Q_ASSERT(data);
-    Q_ASSERT(data->ref.load() == 0);
+    Q_ASSERT(data->ref.loadRelaxed() == 0);
     QAbstractItemModel *model = const_cast<QAbstractItemModel *>(data->index.model());
     // a valid persistent model index with a null model pointer can only happen if the model was destroyed
     if (model) {

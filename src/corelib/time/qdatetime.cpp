@@ -3181,13 +3181,13 @@ inline void QDateTime::Data::detach()
         x->m_status = QDateTimePrivate::StatusFlag(data.status & ~QDateTimePrivate::ShortData);
         x->m_msecs = data.msecs;
     } else {
-        if (d->ref.load() == 1)
+        if (d->ref.loadRelaxed() == 1)
             return;
 
         x = new QDateTimePrivate(*d);
     }
 
-    x->ref.store(1);
+    x->ref.storeRelaxed(1);
     if (!wasShort && !d->ref.deref())
         delete d;
     d = x;
@@ -3203,7 +3203,7 @@ inline QDateTimePrivate *QDateTime::Data::operator->()
 {
     // should we attempt to detach here?
     Q_ASSERT(!isShort());
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     return d;
 }
 

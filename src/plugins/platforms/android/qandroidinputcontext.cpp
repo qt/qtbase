@@ -666,7 +666,7 @@ void QAndroidInputContext::updateSelectionHandles()
  */
 void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
 {
-    if (m_batchEditNestingLevel.load() || m_blockUpdateSelection) {
+    if (m_batchEditNestingLevel.loadRelaxed() || m_blockUpdateSelection) {
         qWarning() << "QAndroidInputContext::handleLocationChanged returned";
         return;
     }

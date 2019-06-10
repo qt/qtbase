@@ -65,7 +65,7 @@ QThreadData::QThreadData(int initialRefCount)
 
 QThreadData::~QThreadData()
 {
-    Q_ASSERT(_ref.load() == 0);
+    Q_ASSERT(_ref.loadRelaxed() == 0);
 
     // In the odd case that Qt is running on a secondary thread, the main
     // thread instance will have been dereffed asunder because of the deref in
@@ -105,7 +105,7 @@ void QThreadData::ref()
 {
 #if QT_CONFIG(thread)
     (void) _ref.ref();
-    Q_ASSERT(_ref.load() != 0);
+    Q_ASSERT(_ref.loadRelaxed() != 0);
 #endif
 }
 
@@ -878,11 +878,11 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     if (!data && createIfNecessary) {
         data = new QThreadData;
         data->thread = new QAdoptedThread(data);
-        data->threadId.store(Qt::HANDLE(data->thread));
+        data->threadId.storeRelaxed(Qt::HANDLE(data->thread));
         data->deref();
         data->isAdopted = true;
         if (!QCoreApplicationPrivate::theMainThread)
-            QCoreApplicationPrivate::theMainThread = data->thread.load();
+            QCoreApplicationPrivate::theMainThread = data->thread.loadRelaxed();
     }
     return data;
 }
@@ -925,7 +925,7 @@ QThreadPrivate::~QThreadPrivate()
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {
     Q_D(const QThread);
-    return d->data->eventDispatcher.load();
+    return d->data->eventDispatcher.loadRelaxed();
 }
 
 /*!

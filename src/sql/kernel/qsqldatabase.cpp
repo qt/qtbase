@@ -184,7 +184,7 @@ QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
 
 void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &name, bool doWarn)
 {
-    if (db.d->ref.load() != 1 && doWarn) {
+    if (db.d->ref.loadRelaxed() != 1 && doWarn) {
         qWarning("QSqlDatabasePrivate::removeDatabase: connection '%s' is still in use, "
                  "all queries will cease to work.", name.toLocal8Bit().constData());
         db.d->disable();

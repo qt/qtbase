@@ -473,7 +473,7 @@ QDBusPendingCall QDBusPendingCall::fromCompletedCall(const QDBusMessage &msg)
         msg.type() == QDBusMessage::ReplyMessage) {
         d = new QDBusPendingCallPrivate(QDBusMessage(), 0);
         d->replyMessage = msg;
-        d->ref.store(1);
+        d->ref.storeRelaxed(1);
     }
 
     return QDBusPendingCall(d);

@@ -638,16 +638,16 @@ void tst_QEventLoop::testQuitLock()
 
     QEventLoopPrivate* privateClass = static_cast<QEventLoopPrivate*>(QObjectPrivate::get(&eventLoop));
 
-    QCOMPARE(privateClass->quitLockRef.load(), 0);
+    QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 0);
 
     JobObject *job1 = new JobObject(&eventLoop, this);
     job1->start(500);
 
-    QCOMPARE(privateClass->quitLockRef.load(), 1);
+    QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 1);
 
     eventLoop.exec();
 
-    QCOMPARE(privateClass->quitLockRef.load(), 0);
+    QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 0);
 
 
     job1 = new JobObject(&eventLoop, this);

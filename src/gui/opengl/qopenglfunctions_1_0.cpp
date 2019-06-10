@@ -76,11 +76,11 @@ QOpenGLFunctions_1_0::~QOpenGLFunctions_1_0()
 {
     if (d_1_0_Core) {
         d_1_0_Core->refs.deref();
-        Q_ASSERT(d_1_0_Core->refs.load());
+        Q_ASSERT(d_1_0_Core->refs.loadRelaxed());
     }
     if (d_1_0_Deprecated) {
         d_1_0_Deprecated->refs.deref();
-        Q_ASSERT(d_1_0_Deprecated->refs.load());
+        Q_ASSERT(d_1_0_Deprecated->refs.loadRelaxed());
     }
 }
 

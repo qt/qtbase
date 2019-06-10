@@ -78,19 +78,19 @@ QOpenGLFunctions_1_1::~QOpenGLFunctions_1_1()
 {
     if (d_1_0_Core) {
         d_1_0_Core->refs.deref();
-        Q_ASSERT(d_1_0_Core->refs.load());
+        Q_ASSERT(d_1_0_Core->refs.loadRelaxed());
     }
     if (d_1_1_Core) {
         d_1_1_Core->refs.deref();
-        Q_ASSERT(d_1_1_Core->refs.load());
+        Q_ASSERT(d_1_1_Core->refs.loadRelaxed());
     }
     if (d_1_0_Deprecated) {
         d_1_0_Deprecated->refs.deref();
-        Q_ASSERT(d_1_0_Deprecated->refs.load());
+        Q_ASSERT(d_1_0_Deprecated->refs.loadRelaxed());
     }
     if (d_1_1_Deprecated) {
         d_1_1_Deprecated->refs.deref();
-        Q_ASSERT(d_1_1_Deprecated->refs.load());
+        Q_ASSERT(d_1_1_Deprecated->refs.loadRelaxed());
     }
 }
 

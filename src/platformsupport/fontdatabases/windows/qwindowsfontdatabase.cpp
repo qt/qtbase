@@ -1364,11 +1364,11 @@ QT_WARNING_POP
                 if (request.family != fontEngine->fontDef.family) {
                     qWarning("%s: Failed to load font. Got fallback instead: %s",
                              __FUNCTION__, qPrintable(fontEngine->fontDef.family));
-                    if (fontEngine->ref.load() == 0)
+                    if (fontEngine->ref.loadRelaxed() == 0)
                         delete fontEngine;
                     fontEngine = 0;
                 } else {
-                    Q_ASSERT(fontEngine->ref.load() == 0);
+                    Q_ASSERT(fontEngine->ref.loadRelaxed() == 0);
 
                     // Override the generated font name
                     switch (fontEngine->type()) {

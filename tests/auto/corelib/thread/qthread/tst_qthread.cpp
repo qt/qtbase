@@ -121,7 +121,7 @@ public:
     { }
 
     bool wasActivated()
-    { return activationCount.load() > 0; }
+    { return activationCount.loadRelaxed() > 0; }
 
 public slots:
     void slot();
@@ -900,7 +900,7 @@ void tst_QThread::adoptMultipleThreads()
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(recorder.activationCount.load(), numThreads);
+    QCOMPARE(recorder.activationCount.loadRelaxed(), numThreads);
 }
 
 void tst_QThread::adoptMultipleThreadsOverlap()
@@ -937,7 +937,7 @@ void tst_QThread::adoptMultipleThreadsOverlap()
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(recorder.activationCount.load(), numThreads);
+    QCOMPARE(recorder.activationCount.loadRelaxed(), numThreads);
 }
 
 // Disconnects on WinCE
@@ -1208,7 +1208,7 @@ class DummyEventDispatcher : public QAbstractEventDispatcher {
 public:
     DummyEventDispatcher() : QAbstractEventDispatcher() {}
     bool processEvents(QEventLoop::ProcessEventsFlags) {
-        visited.store(true);
+        visited.storeRelaxed(true);
         emit awake();
         QCoreApplication::sendPostedEvents();
         return false;
@@ -1270,7 +1270,7 @@ void tst_QThread::customEventDispatcher()
     QMetaObject::invokeMethod(&obj, "visit", Qt::QueuedConnection);
     loop.exec();
     // test that the ED has really been used
-    QVERIFY(ed->visited.load());
+    QVERIFY(ed->visited.loadRelaxed());
 
     QPointer<DummyEventDispatcher> weak_ed(ed);
     QVERIFY(!weak_ed.isNull());

@@ -162,8 +162,8 @@ public:
         m_init = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
         QMutexLocker readyLocker(&m_readyMutex);
-        while (!m_cancelled.load()) {
-            if (!m_params && !m_cancelled.load()
+        while (!m_cancelled.loadRelaxed()) {
+            if (!m_params && !m_cancelled.loadRelaxed()
                 && !m_readyCondition.wait(&m_readyMutex, 1000))
                 continue;
 
@@ -174,7 +174,7 @@ public:
                                                   m_params->attributes, &info, sizeof(SHFILEINFO),
                                                   m_params->flags);
                 m_doneMutex.lock();
-                if (!m_cancelled.load()) {
+                if (!m_cancelled.loadRelaxed()) {
                     *m_params->result = result;
                     memcpy(m_params->info, &info, sizeof(SHFILEINFO));
                 }
@@ -204,7 +204,7 @@ public:
     void cancel()
     {
         QMutexLocker doneLocker(&m_doneMutex);
-        m_cancelled.store(1);
+        m_cancelled.storeRelaxed(1);
         m_readyCondition.wakeAll();
     }
 

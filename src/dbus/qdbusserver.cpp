@@ -117,7 +117,7 @@ QDBusServer::~QDBusServer()
         d->serverConnectionNames.clear();
     }
     d->serverObject = nullptr;
-    d->ref.store(0);
+    d->ref.storeRelaxed(0);
     d->deleteLater();
 }
 

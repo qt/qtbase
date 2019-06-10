@@ -578,7 +578,7 @@ QPainterPath::QPainterPath(const QPointF &startPoint)
 
 void QPainterPath::detach()
 {
-    if (d_ptr->ref.load() != 1)
+    if (d_ptr->ref.loadRelaxed() != 1)
         detach_helper();
     setDirty(true);
 }

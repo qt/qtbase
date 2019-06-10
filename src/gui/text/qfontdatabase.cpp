@@ -978,7 +978,7 @@ QFontEngine *loadSingleEngine(int script,
             if (!engine->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for \"%s\", script %d",
 +                        qPrintable(def.family), script);
-                if (engine->ref.load() == 0)
+                if (engine->ref.loadRelaxed() == 0)
                     delete engine;
                 return 0;
             }
@@ -2827,7 +2827,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         fe = QFontDatabase::findFont(req, script);
         if (fe) {
             if (fe->type() == QFontEngine::Box && !req.families.at(0).isEmpty()) {
-                if (fe->ref.load() == 0)
+                if (fe->ref.loadRelaxed() == 0)
                     delete fe;
                 fe = 0;
             } else {

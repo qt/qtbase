@@ -534,7 +534,7 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
 
 bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 {
-    if (!ref.load())
+    if (!ref.loadRelaxed())
         return false;
 
     // local message are always delivered, regardless of filtering
@@ -1077,7 +1077,7 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
     if (lastMode == ClientMode || lastMode == PeerMode) {
         // the bus service object holds a reference back to us;
         // we need to destroy it before we finish destroying ourselves
-        Q_ASSERT(ref.load() == 0);
+        Q_ASSERT(ref.loadRelaxed() == 0);
         QObject *obj = (QObject *)busService;
         if (obj) {
             disconnect(obj, nullptr, this, nullptr);
@@ -2126,11 +2126,11 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
 
     if ((receiver && returnMethod) || errorMethod) {
        // no one waiting, will delete pcall in processFinishedCall()
-       pcall->ref.store(1);
+       pcall->ref.storeRelaxed(1);
     } else {
        // set double ref to prevent race between processFinishedCall() and ref counting
        // by QDBusPendingCall::QExplicitlySharedDataPointer<QDBusPendingCallPrivate>
-       pcall->ref.store(2);
+       pcall->ref.storeRelaxed(2);
     }
 
     if (isLoopback) {

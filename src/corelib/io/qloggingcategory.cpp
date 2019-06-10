@@ -239,7 +239,7 @@ QLoggingCategory::QLoggingCategory(const char *category, QtMsgType enableForLeve
 
 void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
 {
-    enabled.store(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
+    enabled.storeRelaxed(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
 
     if (category)
         name = category;
@@ -342,10 +342,10 @@ void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
 {
     switch (type) {
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED
-    case QtDebugMsg: bools.enabledDebug.store(enable); break;
-    case QtInfoMsg: bools.enabledInfo.store(enable); break;
-    case QtWarningMsg: bools.enabledWarning.store(enable); break;
-    case QtCriticalMsg: bools.enabledCritical.store(enable); break;
+    case QtDebugMsg: bools.enabledDebug.storeRelaxed(enable); break;
+    case QtInfoMsg: bools.enabledInfo.storeRelaxed(enable); break;
+    case QtWarningMsg: bools.enabledWarning.storeRelaxed(enable); break;
+    case QtCriticalMsg: bools.enabledCritical.storeRelaxed(enable); break;
 #else
     case QtDebugMsg: setBoolLane(&enabled, enable, DebugShift); break;
     case QtInfoMsg: setBoolLane(&enabled, enable, InfoShift); break;

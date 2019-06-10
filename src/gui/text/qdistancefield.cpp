@@ -782,7 +782,7 @@ bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
     if (glyph != 0)
         im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
 
-    Q_ASSERT(fe->ref.load() == 0);
+    Q_ASSERT(fe->ref.loadRelaxed() == 0);
     delete fe;
 
     return imageHasNarrowOutlines(im);

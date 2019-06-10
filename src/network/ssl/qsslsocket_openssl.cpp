@@ -481,7 +481,7 @@ bool QSslSocketBackendPrivate::initSslContext()
     if (!sslContextPointer) {
         // create a deep copy of our configuration
         QSslConfigurationPrivate *configurationCopy = new QSslConfigurationPrivate(configuration);
-        configurationCopy->ref.store(0);              // the QSslConfiguration constructor refs up
+        configurationCopy->ref.storeRelaxed(0);              // the QSslConfiguration constructor refs up
         sslContextPointer = QSslContext::sharedFromConfiguration(mode, configurationCopy, allowRootCertOnDemandLoading);
     }
 

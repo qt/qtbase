@@ -337,7 +337,7 @@ public:
     {
         QLocalePrivate *retval = new QLocalePrivate;
         retval->m_data = data;
-        retval->ref.store(0);
+        retval->ref.storeRelaxed(0);
         retval->m_numberOptions = numberOptions;
         return retval;
     }

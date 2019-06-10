@@ -106,7 +106,7 @@ struct QPodArrayOps
     void destroyAll() // Call from destructors, ONLY!
     {
         Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->ref.atomic.load() == 0);
+        Q_ASSERT(this->ref.atomic.loadRelaxed() == 0);
 
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
@@ -204,7 +204,7 @@ struct QGenericArrayOps
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
 
-        Q_ASSERT(this->ref.atomic.load() == 0);
+        Q_ASSERT(this->ref.atomic.loadRelaxed() == 0);
 
         const T *const b = this->begin();
         const T *i = this->end();

@@ -189,7 +189,7 @@ public:
 
 template<> void QSharedDataPointer<QUrlQueryPrivate>::detach()
 {
-    if (d && d->ref.load() == 1)
+    if (d && d->ref.loadRelaxed() == 1)
         return;
     QUrlQueryPrivate *x = (d ? new QUrlQueryPrivate(*d)
                              : new QUrlQueryPrivate);
@@ -462,7 +462,7 @@ bool QUrlQuery::isEmpty() const
 */
 bool QUrlQuery::isDetached() const
 {
-    return d && d->ref.load() == 1;
+    return d && d->ref.loadRelaxed() == 1;
 }
 
 /*!

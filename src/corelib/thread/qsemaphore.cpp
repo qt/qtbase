@@ -264,7 +264,7 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
 
     if (futexHasWaiterCount) {
         // decrement the number of threads waiting
-        Q_ASSERT(futexHigh32(&u)->load() & 0x7fffffffU);
+        Q_ASSERT(futexHigh32(&u)->loadRelaxed() & 0x7fffffffU);
         u.fetchAndSubRelaxed(oneWaiter);
     }
     return false;
@@ -293,7 +293,7 @@ QSemaphore::QSemaphore(int n)
         quintptr nn = unsigned(n);
         if (futexHasWaiterCount)
             nn |= quint64(nn) << 32;    // token count replicated in high word
-        u.store(nn);
+        u.storeRelaxed(nn);
     } else {
         d = new QSemaphorePrivate(n);
     }
@@ -425,7 +425,7 @@ void QSemaphore::release(int n)
 int QSemaphore::available() const
 {
     if (futexAvailable())
-        return futexAvailCounter(u.load());
+        return futexAvailCounter(u.loadRelaxed());
 
     QMutexLocker locker(&d->mutex);
     return d->avail;

@@ -987,7 +987,7 @@ bool QIcon::isNull() const
  */
 bool QIcon::isDetached() const
 {
-    return !d || d->ref.load() == 1;
+    return !d || d->ref.loadRelaxed() == 1;
 }
 
 /*! \internal
@@ -1000,7 +1000,7 @@ void QIcon::detach()
                 delete d;
             d = 0;
             return;
-        } else if (d->ref.load() != 1) {
+        } else if (d->ref.loadRelaxed() != 1) {
             QIconPrivate *x = new QIconPrivate(d->engine->clone());
             if (!d->ref.deref())
                 delete d;

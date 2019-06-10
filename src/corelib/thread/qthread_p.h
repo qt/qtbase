@@ -257,11 +257,11 @@ public:
     void ref();
     void deref();
     inline bool hasEventDispatcher() const
-    { return eventDispatcher.load() != nullptr; }
+    { return eventDispatcher.loadRelaxed() != nullptr; }
     QAbstractEventDispatcher *createEventDispatcher();
     QAbstractEventDispatcher *ensureEventDispatcher()
     {
-        QAbstractEventDispatcher *ed = eventDispatcher.load();
+        QAbstractEventDispatcher *ed = eventDispatcher.loadRelaxed();
         if (Q_LIKELY(ed))
             return ed;
         return createEventDispatcher();

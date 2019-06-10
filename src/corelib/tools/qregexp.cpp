@@ -1707,7 +1707,7 @@ void QRegExpEngine::dump() const
 
 void QRegExpEngine::setup()
 {
-    ref.store(1);
+    ref.storeRelaxed(1);
 #ifndef QT_NO_REGEXP_CAPTURE
     f.resize(32);
     nf = 0;

@@ -563,9 +563,9 @@ quint64 qDetectCpuFeatures()
                features_string + features_indices[qCountTrailingZeroBits(missing)]);
     }
 
-    qt_cpu_features[0].store(f | quint32(QSimdInitialized));
+    qt_cpu_features[0].storeRelaxed(f | quint32(QSimdInitialized));
 #ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-    qt_cpu_features[1].store(f >> 32);
+    qt_cpu_features[1].storeRelaxed(f >> 32);
 #endif
     return f;
 }

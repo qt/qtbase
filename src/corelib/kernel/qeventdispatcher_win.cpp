@@ -247,7 +247,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         Q_ASSERT(d != 0);
 
         // Allow posting WM_QT_SENDPOSTEDEVENTS message.
-        d->wakeUps.store(0);
+        d->wakeUps.storeRelaxed(0);
 
         // We send posted events manually, if the window procedure was invoked
         // by the foreign event loop (e.g. from the native modal dialog).
@@ -526,7 +526,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
         wakeUp(); // trigger a call to sendPostedEvents()
     }
 
-    d->interrupt.store(false);
+    d->interrupt.storeRelaxed(false);
     emit awake();
 
     // To prevent livelocks, send posted events once per iteration.
@@ -545,7 +545,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             pHandles = &d->winEventNotifierActivatedEvent;
         }
         QVarLengthArray<MSG> processedTimers;
-        while (!d->interrupt.load()) {
+        while (!d->interrupt.loadRelaxed()) {
             MSG msg;
             bool haveMessage;
 
@@ -590,7 +590,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     // Set result to 'true', if the message was sent by wakeUp().
                     if (msg.wParam == WMWP_QT_FROMWAKEUP) {
-                        d->wakeUps.store(0);
+                        d->wakeUps.storeRelaxed(0);
                         retVal = true;
                     }
                     needWM_QT_SENDPOSTEDEVENTS = true;
@@ -639,7 +639,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
         // still nothing - wait for message or signalled objects
         canWait = (!retVal
-                   && !d->interrupt.load()
+                   && !d->interrupt.loadRelaxed()
                    && (flags & QEventLoop::WaitForMoreEvents));
         if (canWait) {
             emit aboutToBlock();
@@ -949,7 +949,7 @@ void QEventDispatcherWin32::activateEventNotifiers()
         for (int i = 0; i < d->winEventNotifierList.count(); ++i) {
             QWinEventNotifier *notifier = d->winEventNotifierList.at(i);
             QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
-            if (nd->signaledCount.load() != 0) {
+            if (nd->signaledCount.loadRelaxed() != 0) {
                 --nd->signaledCount;
                 nd->unregisterWaitObject();
                 d->activateEventNotifier(notifier);
@@ -1014,7 +1014,7 @@ void QEventDispatcherWin32::wakeUp()
 void QEventDispatcherWin32::interrupt()
 {
     Q_D(QEventDispatcherWin32);
-    d->interrupt.store(true);
+    d->interrupt.storeRelaxed(true);
     wakeUp();
 }
 

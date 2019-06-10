@@ -348,9 +348,9 @@ Q_CORE_EXPORT quint64 qDetectCpuFeatures();
 
 static inline quint64 qCpuFeatures()
 {
-    quint64 features = qt_cpu_features[0].load();
+    quint64 features = qt_cpu_features[0].loadRelaxed();
 #ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-    features |= quint64(qt_cpu_features[1].load()) << 32;
+    features |= quint64(qt_cpu_features[1].loadRelaxed()) << 32;
 #endif
     if (Q_UNLIKELY(features == 0)) {
         features = qDetectCpuFeatures();

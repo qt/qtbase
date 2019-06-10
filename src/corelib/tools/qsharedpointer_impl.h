@@ -154,11 +154,11 @@ namespace QtSharedPointer {
         inline ExternalRefCountData(DestroyerFn d)
             : destroyer(d)
         {
-            strongref.store(1);
-            weakref.store(1);
+            strongref.storeRelaxed(1);
+            weakref.storeRelaxed(1);
         }
         inline ExternalRefCountData(Qt::Initialization) { }
-        ~ExternalRefCountData() { Q_ASSERT(!weakref.load()); Q_ASSERT(strongref.load() <= 0); }
+        ~ExternalRefCountData() { Q_ASSERT(!weakref.loadRelaxed()); Q_ASSERT(strongref.loadRelaxed() <= 0); }
 
         void destroy() { destroyer(this); }
 
@@ -522,12 +522,12 @@ public:
         if (o) {
             // increase the strongref, but never up from zero
             // or less (-1 is used by QWeakPointer on untracked QObject)
-            int tmp = o->strongref.load();
+            int tmp = o->strongref.loadRelaxed();
             while (tmp > 0) {
                 // try to increment from "tmp" to "tmp + 1"
                 if (o->strongref.testAndSetRelaxed(tmp, tmp + 1))
                     break;   // succeeded
-                tmp = o->strongref.load();  // failed, try again
+                tmp = o->strongref.loadRelaxed();  // failed, try again
             }
 
             if (tmp > 0) {
@@ -540,7 +540,7 @@ public:
 
         qSwap(d, o);
         qSwap(this->value, actual);
-        if (!d || d->strongref.load() == 0)
+        if (!d || d->strongref.loadRelaxed() == 0)
             this->value = nullptr;
 
         // dereference saved data
@@ -566,7 +566,7 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    bool isNull() const noexcept { return d == nullptr || d->strongref.load() == 0 || value == nullptr; }
+    bool isNull() const noexcept { return d == nullptr || d->strongref.loadRelaxed() == 0 || value == nullptr; }
     operator RestrictedBool() const noexcept { return isNull() ? nullptr : &QWeakPointer::value; }
     bool operator !() const noexcept { return isNull(); }
 
@@ -709,7 +709,7 @@ public:
     // a weak pointer's data but the weak pointer itself
     inline T *internalData() const noexcept
     {
-        return d == nullptr || d->strongref.load() == 0 ? nullptr : value;
+        return d == nullptr || d->strongref.loadRelaxed() == 0 ? nullptr : value;
     }
 
     Data *d;

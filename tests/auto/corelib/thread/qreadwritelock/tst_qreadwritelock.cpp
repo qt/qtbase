@@ -458,7 +458,7 @@ public:
     void run()
     {
         testRwlock.lockForWrite();
-        while(release.load()==false) {
+        while (release.loadRelaxed() == false) {
             RWTESTSLEEP
         }
         testRwlock.unlock();
@@ -478,7 +478,7 @@ public:
     void run()
     {
         testRwlock.lockForRead();
-        while(release.load()==false) {
+        while (release.loadRelaxed() == false) {
             RWTESTSLEEP
         }
         testRwlock.unlock();
@@ -677,7 +677,7 @@ void tst_QReadWriteLock::multipleReadersBlockRelease()
 {
 
     QReadWriteLock testLock;
-    release.store(false);
+    release.storeRelaxed(false);
     threadDone=false;
     ReadLockReleasableThread rlt1(testLock);
     ReadLockReleasableThread rlt2(testLock);
@@ -687,7 +687,7 @@ void tst_QReadWriteLock::multipleReadersBlockRelease()
     WriteLockThread wlt(testLock);
     wlt.start();
     sleep(1);
-    release.store(true);
+    release.storeRelaxed(true);
     wlt.wait();
     rlt1.wait();
     rlt2.wait();

@@ -254,7 +254,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         }
         newFreetype->face = face;
 
-        newFreetype->ref.store(1);
+        newFreetype->ref.storeRelaxed(1);
         newFreetype->xsize = 0;
         newFreetype->ysize = 0;
         newFreetype->matrix.xx = 0x10000;

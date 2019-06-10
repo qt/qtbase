@@ -1226,7 +1226,7 @@ bool QJsonArray::detach2(uint reserve)
         d->ref.ref();
         return true;
     }
-    if (reserve == 0 && d->ref.load() == 1)
+    if (reserve == 0 && d->ref.loadRelaxed() == 1)
         return true;
 
     QJsonPrivate::Data *x = d->clone(a, reserve);

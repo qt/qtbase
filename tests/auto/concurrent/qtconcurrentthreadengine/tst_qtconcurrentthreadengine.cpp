@@ -187,7 +187,7 @@ class ThrottleAlwaysUser : public ThreadEngine<void>
 public:
     ThrottleAlwaysUser()
     {
-        count.store(initialCount = 100);
+        count.storeRelaxed(initialCount = 100);
         finishing = false;
     }
 
@@ -199,7 +199,7 @@ public:
     ThreadFunctionResult threadFunction()
     {
         forever {
-            const int local = count.load();
+            const int local = count.loadRelaxed();
             if (local == 0) {
                 finishing = true;
                 return ThreadFinished;
@@ -224,13 +224,13 @@ void tst_QtConcurrentThreadEngine::throttle()
     for (int i = 0; i < repeats; ++i) {
         QFuture<void> f = (new ThrottleAlwaysUser())->startAsynchronously();
         f.waitForFinished();
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
     }
 
     for (int i = 0; i < repeats; ++i) {
         ThrottleAlwaysUser t;
         t.startBlocking();
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
     }
 }
 

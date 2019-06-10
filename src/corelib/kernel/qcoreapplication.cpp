@@ -552,8 +552,8 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(0);
 QThread *QCoreApplicationPrivate::mainThread()
 {
-    Q_ASSERT(theMainThread.load() != 0);
-    return theMainThread.load();
+    Q_ASSERT(theMainThread.loadRelaxed() != 0);
+    return theMainThread.loadRelaxed();
 }
 
 bool QCoreApplicationPrivate::threadRequiresCoreApplication()
@@ -854,7 +854,7 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     Q_ASSERT(!eventDispatcher);
-    eventDispatcher = threadData->eventDispatcher.load();
+    eventDispatcher = threadData->eventDispatcher.loadRelaxed();
 
     // otherwise we create one
     if (!eventDispatcher)
@@ -1302,7 +1302,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     QThreadData *data = QThreadData::current();
     if (!data->hasEventDispatcher())
         return;
-    data->eventDispatcher.load()->processEvents(flags);
+    data->eventDispatcher.loadRelaxed()->processEvents(flags);
 }
 
 /*!
@@ -1334,7 +1334,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
         return;
     QElapsedTimer start;
     start.start();
-    while (data->eventDispatcher.load()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
+    while (data->eventDispatcher.loadRelaxed()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
         if (start.elapsed() > ms)
             break;
     }
@@ -1738,7 +1738,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
             --data->postEventList.recursion;
             if (!data->postEventList.recursion && !data->canWait && data->hasEventDispatcher())
-                data->eventDispatcher.load()->wakeUp();
+                data->eventDispatcher.loadRelaxed()->wakeUp();
 
             // clear the global list, i.e. remove everything that was
             // delivered.
@@ -1989,7 +1989,7 @@ void QCoreApplicationPrivate::deref()
 
 void QCoreApplicationPrivate::maybeQuit()
 {
-    if (quitLockRef.load() == 0 && in_exec && quitLockRefEnabled && shouldQuit())
+    if (quitLockRef.loadRelaxed() == 0 && in_exec && quitLockRefEnabled && shouldQuit())
         QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::Quit));
 }
 
@@ -2958,7 +2958,7 @@ bool QCoreApplication::hasPendingEvents()
 QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {
     if (QCoreApplicationPrivate::theMainThread)
-        return QCoreApplicationPrivate::theMainThread.load()->eventDispatcher();
+        return QCoreApplicationPrivate::theMainThread.loadRelaxed()->eventDispatcher();
     return 0;
 }
 
