@@ -1737,13 +1737,13 @@ protected:
         if (e->type() != QEvent::Type(QEvent::User+2))
             return false;
         StringEvent *se = static_cast<StringEvent*>(e);
-        return (m_value == se->value) && (!m_cond.isValid() || (m_cond.indexIn(m_value) != -1));
+        return (m_value == se->value) && (!m_cond.isValid() || m_cond.match(m_value).hasMatch());
     }
     virtual void onTransition(QEvent *) {}
 
 private:
     QString m_value;
-    QRegExp m_cond;
+    QRegularExpression m_cond;
 };
 
 class StringEventPoster : public QState
