@@ -110,7 +110,7 @@ void DragWidget::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasText()) {
         const QMimeData *mime = event->mimeData();
-        QStringList pieces = mime->text().split(QRegExp("\\s+"),
+        QStringList pieces = mime->text().split(QRegularExpression("\\s+"),
                              QString::SkipEmptyParts);
         QPoint position = event->pos();
         QPoint hotSpot;
