@@ -53,6 +53,7 @@
 #include <qmainwindow.h>
 #include <qdockwidget.h>
 #include <qrandom.h>
+#include <qstylehints.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <QtCore/qoperatingsystemversion.h>
@@ -198,6 +199,7 @@ private slots:
     void hideWhenFocusWidgetIsChild();
     void normalGeometry();
     void setGeometry();
+    void setGeometryHidden();
     void windowOpacity();
     void raise();
     void lower();
@@ -2920,6 +2922,38 @@ void tst_QWidget::setGeometry()
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
     QCOMPARE(tlw.geometry(), tr);
+}
+
+void tst_QWidget::setGeometryHidden()
+{
+    if (QGuiApplication::styleHints()->showIsMaximized())
+        QSKIP("Platform does not support QWidget::setGeometry() - skipping");
+
+    QWidget tlw;
+    tlw.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    QWidget child(&tlw);
+
+    const QRect tr(m_availableTopLeft + QPoint(100, 100), 2 * m_testWidgetSize);
+    const QRect cr(QPoint(50, 50), m_testWidgetSize);
+    tlw.setGeometry(tr);
+    child.setGeometry(cr);
+    tlw.showNormal();
+
+    tlw.hide();
+    QTRY_VERIFY(tlw.isHidden());
+    tlw.setGeometry(cr);
+    QVERIFY(tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(tlw.testAttribute(Qt::WA_PendingResizeEvent));
+    QImage img(tlw.size(), QImage::Format_ARGB32);  // just needed to call QWidget::render()
+    tlw.render(&img);
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
+    tlw.setGeometry(cr);
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
+    tlw.resize(cr.size());
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
 }
 
 void tst_QWidget::windowOpacity()
