@@ -120,6 +120,7 @@
 
 #ifdef Q_OS_WASM
 #include <emscripten.h>
+#include <emscripten/val.h>
 #endif
 
 #ifdef QT_BOOTSTRAPPED
@@ -801,6 +802,10 @@ void QCoreApplicationPrivate::init()
                 Module.print(err);
         });
     );
+
+#if QT_CONFIG(thread)
+    QThreadPrivate::idealThreadCount = emscripten::val::global("navigator")["hardwareConcurrency"].as<int>();
+#endif
 #endif
 
     // Store app name/version (so they're still available after QCoreApplication is destroyed)

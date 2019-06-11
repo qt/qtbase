@@ -96,10 +96,13 @@ public:
 
 #if QT_CONFIG(completer)
 #if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use completer() instead.")
     bool autoCompletion() const;
+    QT_DEPRECATED_X("Use setCompleter() instead.")
     void setAutoCompletion(bool enable);
-
+    QT_DEPRECATED_X("Use completer()->caseSensitivity() instead.")
     Qt::CaseSensitivity autoCompletionCaseSensitivity() const;
+    QT_DEPRECATED_X("Use completer()->setCaseSensitivity() instead.")
     void setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity);
 #endif
 #endif

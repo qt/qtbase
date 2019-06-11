@@ -64,6 +64,7 @@ class QWasmCompositor : public QObject
 public:
     QWasmCompositor(QWasmScreen *screen);
     ~QWasmCompositor();
+    void destroy();
 
     enum QWasmSubControl {
         SC_None =                  0x00000000,

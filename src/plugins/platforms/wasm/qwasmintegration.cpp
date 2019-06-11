@@ -35,6 +35,7 @@
 #include "qwasmtheme.h"
 #include "qwasmclipboard.h"
 #include "qwasmservices.h"
+#include "qwasmoffscreensurface.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -123,6 +124,21 @@ QWasmIntegration::QWasmIntegration()
     }
 
     emscripten::val::global("window").set("onbeforeunload", val::module_property("qtBrowserBeforeUnload"));
+
+    // install browser window resize handler
+    auto onWindowResize = [](int eventType, const EmscriptenUiEvent *e, void *userData) -> int {
+        Q_UNUSED(eventType);
+        Q_UNUSED(e);
+        Q_UNUSED(userData);
+
+        // This resize event is called when the HTML window is resized. Depending
+        // on the page layout the the canvas(es) might also have been resized, so we
+        // update the Qt screen sizes (and canvas render sizes).
+        if (QWasmIntegration *integration = QWasmIntegration::get())
+            integration->resizeAllScreens();
+        return 0;
+    };
+    emscripten_set_resize_callback(nullptr, nullptr, 1, onWindowResize);
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -193,6 +209,11 @@ QPlatformInputContext *QWasmIntegration::inputContext() const
     return m_inputContext.data();
 }
 
+QPlatformOffscreenSurface *QWasmIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    return new QWasmOffscrenSurface(surface);
+}
+
 QPlatformFontDatabase *QWasmIntegration::fontDatabase() const
 {
     if (m_fontDb == nullptr)
@@ -257,7 +278,9 @@ void QWasmIntegration::addScreen(const QString &canvasId)
 
 void QWasmIntegration::removeScreen(const QString &canvasId)
 {
-    QWindowSystemInterface::handleScreenRemoved(m_screens.take(canvasId));
+    QWasmScreen *exScreen = m_screens.take(canvasId);
+    exScreen->destroy(); // clean up before deleting the screen
+    QWindowSystemInterface::handleScreenRemoved(exScreen);
 }
 
 void QWasmIntegration::resizeScreen(const QString &canvasId)
@@ -273,6 +296,13 @@ void QWasmIntegration::updateDpi()
     qreal dpiValue = dpi.as<qreal>();
     for (QWasmScreen *screen : m_screens)
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen->screen(), dpiValue, dpiValue);
+}
+
+void QWasmIntegration::resizeAllScreens()
+{
+    qDebug() << "resizeAllScreens";
+    for (QWasmScreen *screen : m_screens)
+        screen->updateQScreenAndCanvasRenderSize();
 }
 
 QT_END_NAMESPACE

@@ -100,10 +100,6 @@
 #include <sys/neutrino.h>
 #endif
 
-#if defined(Q_OS_WASM)
-#include <emscripten/val.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
@@ -454,6 +450,10 @@ Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
 #  define _SC_NPROCESSORS_ONLN 84
 #endif
 
+#ifdef Q_OS_WASM
+int QThreadPrivate::idealThreadCount = 1;
+#endif
+
 int QThread::idealThreadCount() Q_DECL_NOTHROW
 {
     int cores = 1;
@@ -503,7 +503,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
     cores = 1;
 #  endif
 #elif defined(Q_OS_WASM)
-    cores = emscripten::val::global("navigator")["hardwareConcurrency"].as<int>();
+    cores = QThreadPrivate::idealThreadCount;
 #else
     // the rest: Linux, Solaris, AIX, Tru64
     cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
