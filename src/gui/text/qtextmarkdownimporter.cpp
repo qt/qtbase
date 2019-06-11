@@ -440,7 +440,7 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 #endif
     case MD_TEXT_HTML:
         // count how many tags are opened and how many are closed
-#if QT_CONFIG(regularexpression)
+#if QT_CONFIG(regularexpression) && QT_CONFIG(texthtmlparser)
         {
             int startIdx = 0;
             while ((startIdx = s.indexOf(openingBracket, startIdx)) >= 0) {
