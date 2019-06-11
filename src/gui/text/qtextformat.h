@@ -178,6 +178,7 @@ public:
         HeadingLevel = 0x1070,
         BlockQuoteLevel = 0x1080,
         BlockCodeLanguage = 0x1090,
+        BlockCodeFence = 0x1091,
         BlockMarker = 0x10A0,
 
         // character properties

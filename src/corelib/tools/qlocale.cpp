@@ -55,7 +55,7 @@
 #include "qlocale_p.h"
 #include "qlocale_tools_p.h"
 #if QT_CONFIG(datetimeparser)
-#include "qdatetimeparser_p.h"
+#include "private/qdatetimeparser_p.h"
 #endif
 #include "qnamespace.h"
 #include "qdatetime.h"

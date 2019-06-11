@@ -40,6 +40,7 @@
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
 #include "qdatetime_p.h" // ### Qt 5.14: remove once YearRange is on QDateTime
+#include "private/qlocale_tools_p.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QHash>
@@ -47,8 +48,6 @@
 #include <QtCore/QDateTime>
 
 #include <qdebug.h>
-
-#include "qlocale_tools_p.h"
 
 #include <algorithm>
 

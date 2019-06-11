@@ -120,7 +120,7 @@ class QWindowsMenu : public QPlatformMenu
 {
     Q_OBJECT
 public:
-    typedef QVector<QWindowsMenuItem *> MenuItems;
+    using MenuItems = QVector<QWindowsMenuItem *>;
 
     QWindowsMenu();
     ~QWindowsMenu();
@@ -196,7 +196,7 @@ class QWindowsMenuBar : public QPlatformMenuBar
 {
     Q_OBJECT
 public:
-    typedef QVector<QWindowsMenu *> Menus;
+    using Menus = QVector<QWindowsMenu *>;
 
     QWindowsMenuBar();
     ~QWindowsMenuBar() override;

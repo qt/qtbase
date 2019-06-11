@@ -20,8 +20,6 @@ HEADERS +=  \
         tools/qcontainerfwd.h \
         tools/qcontainertools_impl.h \
         tools/qcryptographichash.h \
-        tools/qdatetime.h \
-        tools/qdatetime_p.h \
         tools/qdoublescanprint_p.h \
         tools/qeasingcurve.h \
         tools/qfreelist_p.h \
@@ -86,7 +84,6 @@ SOURCES += \
         tools/qbytearraymatcher.cpp \
         tools/qcollator.cpp \
         tools/qcryptographichash.cpp \
-        tools/qdatetime.cpp \
         tools/qeasingcurve.cpp \
         tools/qfreelist.cpp \
         tools/qhash.cpp \
@@ -152,33 +149,6 @@ qtConfig(icu) {
     SOURCES += tools/qcollator_macx.cpp
 } else {
     SOURCES += tools/qcollator_posix.cpp
-}
-
-qtConfig(timezone) {
-    HEADERS += \
-        tools/qtimezone.h \
-        tools/qtimezoneprivate_p.h \
-        tools/qtimezoneprivate_data_p.h
-    SOURCES += \
-        tools/qtimezone.cpp \
-        tools/qtimezoneprivate.cpp
-    !nacl:darwin: {
-        SOURCES += tools/qtimezoneprivate_mac.mm
-    } else: android:!android-embedded: {
-        SOURCES += tools/qtimezoneprivate_android.cpp
-    } else: unix: {
-        SOURCES += tools/qtimezoneprivate_tz.cpp
-        qtConfig(icu): SOURCES += tools/qtimezoneprivate_icu.cpp
-    } else: qtConfig(icu): {
-        SOURCES += tools/qtimezoneprivate_icu.cpp
-    } else: win32: {
-        SOURCES += tools/qtimezoneprivate_win.cpp
-    }
-}
-
-qtConfig(datetimeparser) {
-    HEADERS += tools/qdatetimeparser_p.h
-    SOURCES += tools/qdatetimeparser.cpp
 }
 
 qtConfig(regularexpression) {

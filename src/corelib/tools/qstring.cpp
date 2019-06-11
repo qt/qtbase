@@ -5800,7 +5800,7 @@ QString QString::trimmed_helper(QString &str)
 
     \note Before Qt 5.14 it was possible to use this operator to access
     a character at an out-of-bounds position in the string, and
-    then assign to such position, causing the string to be
+    then assign to such a position, causing the string to be
     automatically resized. Furthermore, assigning a value to the
     returned QCharRef would cause a detach of the string, even if the
     string has been copied in the meanwhile (and the QCharRef kept

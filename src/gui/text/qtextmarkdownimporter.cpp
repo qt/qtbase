@@ -165,12 +165,13 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         MD_BLOCK_CODE_DETAIL *detail = static_cast<MD_BLOCK_CODE_DETAIL *>(det);
         m_codeBlock = true;
         m_blockCodeLanguage = QLatin1String(detail->lang.text, int(detail->lang.size));
+        m_blockCodeFence = detail->fence_char;
         QString info = QLatin1String(detail->info.text, int(detail->info.size));
         m_needsInsertBlock = true;
         if (m_blockQuoteDepth)
-            qCDebug(lcMD, "CODE lang '%s' info '%s' inside QUOTE %d", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockQuoteDepth);
+            qCDebug(lcMD, "CODE lang '%s' info '%s' fenced with '%c' inside QUOTE %d", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockCodeFence, m_blockQuoteDepth);
         else
-            qCDebug(lcMD, "CODE lang '%s' info '%s'", qPrintable(m_blockCodeLanguage), qPrintable(info));
+            qCDebug(lcMD, "CODE lang '%s' info '%s' fenced with '%c'", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockCodeFence);
     } break;
     case MD_BLOCK_H: {
         MD_BLOCK_H_DETAIL *detail = static_cast<MD_BLOCK_H_DETAIL *>(det);
@@ -326,6 +327,7 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
     case MD_BLOCK_CODE: {
         m_codeBlock = false;
         m_blockCodeLanguage.clear();
+        m_blockCodeFence = 0;
         if (m_blockQuoteDepth)
             qCDebug(lcMD, "CODE ended inside QUOTE %d", m_blockQuoteDepth);
         else
@@ -540,6 +542,8 @@ void QTextMarkdownImporter::insertBlock()
     }
     if (m_codeBlock) {
         blockFormat.setProperty(QTextFormat::BlockCodeLanguage, m_blockCodeLanguage);
+        if (m_blockCodeFence)
+            blockFormat.setProperty(QTextFormat::BlockCodeFence, QString(QLatin1Char(m_blockCodeFence)));
         charFormat.setFont(m_monoFont);
     } else {
         blockFormat.setTopMargin(m_paragraphMargin);

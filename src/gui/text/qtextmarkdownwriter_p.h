@@ -67,7 +67,7 @@ public:
     bool writeAll(const QTextDocument *document);
     void writeTable(const QAbstractItemModel *table);
 
-    int writeBlock(const QTextBlock &block, bool table, bool ignoreFormat);
+    int writeBlock(const QTextBlock &block, bool table, bool ignoreFormat, bool ignoreEmpty);
     void writeFrame(const QTextFrame *frame);
 
 private:
@@ -82,9 +82,12 @@ private:
     QTextDocument::MarkdownFeatures m_features;
     QMap<QTextList *, ListInfo> m_listInfo;
     QString m_linePrefix;
+    QString m_codeBlockFence;
     int m_wrappedLineIndent = 0;
     int m_lastListIndent = 1;
     bool m_doubleNewlineWritten = false;
+    bool m_indentedCodeBlock = false;
+    bool m_fencedCodeBlock = false;
 };
 
 QT_END_NAMESPACE

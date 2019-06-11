@@ -330,6 +330,11 @@ bool QBasicPlatformVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevi
     return supported;
 }
 
+void QBasicPlatformVulkanInstance::setDebugFilters(const QVector<QVulkanInstance::DebugFilter> &filters)
+{
+    m_debugFilters = filters;
+}
+
 void QBasicPlatformVulkanInstance::destroySurface(VkSurfaceKHR surface) const
 {
     if (m_destroySurface && surface)
@@ -345,11 +350,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallbackFunc(VkDebugReportFlag
                                                                const char *pMessage,
                                                                void *pUserData)
 {
-    Q_UNUSED(flags);
-    Q_UNUSED(objectType);
-    Q_UNUSED(object);
-    Q_UNUSED(location);
-    Q_UNUSED(pUserData);
+    QBasicPlatformVulkanInstance *self = static_cast<QBasicPlatformVulkanInstance *>(pUserData);
+    for (QVulkanInstance::DebugFilter filter : *self->debugFilters()) {
+        if (filter(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage))
+            return VK_FALSE;
+    }
 
     // not categorized, just route to plain old qDebug
     qDebug("vkDebug: %s: %d: %s", pLayerPrefix, messageCode, pMessage);
@@ -374,6 +379,7 @@ void QBasicPlatformVulkanInstance::setupDebugOutput()
             | VK_DEBUG_REPORT_WARNING_BIT_EXT
             | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
     dbgCallbackInfo.pfnCallback = defaultDebugCallbackFunc;
+    dbgCallbackInfo.pUserData = this;
 
     VkResult err = createDebugReportCallback(m_vkInst, &dbgCallbackInfo, nullptr, &m_debugCallback);
     if (err != VK_SUCCESS)
