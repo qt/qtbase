@@ -32,7 +32,6 @@
 #include <qcoreapplication.h>
 #include <qpointer.h>
 #include <qtimer.h>
-#include <qregexp.h>
 #include <qregularexpression.h>
 #include <qmetaobject.h>
 #include <qvariant.h>
@@ -537,91 +536,91 @@ void tst_QObject::findChildren()
 
     QObject *op = 0;
 
-    op = qFindChild<QObject*>(&o, "o1");
+    op = o.findChild<QObject*>("o1");
     QCOMPARE(op, &o1);
-    op = qFindChild<QObject*>(&o, "o2");
+    op = o.findChild<QObject*>("o2");
     QCOMPARE(op, &o2);
-    op = qFindChild<QObject*>(&o, "o11");
+    op = o.findChild<QObject*>("o11");
     QCOMPARE(op, &o11);
-    op = qFindChild<QObject*>(&o, "o12");
+    op = o.findChild<QObject*>("o12");
     QCOMPARE(op, &o12);
-    op = qFindChild<QObject*>(&o, "o111");
+    op = o.findChild<QObject*>("o111");
     QCOMPARE(op, &o111);
-    op = qFindChild<QObject*>(&o, "t1");
+    op = o.findChild<QObject*>("t1");
     QCOMPARE(op, static_cast<QObject *>(&t1));
-    op = qFindChild<QObject*>(&o, "t121");
+    op = o.findChild<QObject*>("t121");
     QCOMPARE(op, static_cast<QObject *>(&t121));
-    op = qFindChild<QTimer*>(&o, "t1");
+    op = o.findChild<QTimer*>("t1");
     QCOMPARE(op, static_cast<QObject *>(&t1));
-    op = qFindChild<QTimer*>(&o, "t121");
+    op = o.findChild<QTimer*>("t121");
     QCOMPARE(op, static_cast<QObject *>(&t121));
-    op = qFindChild<QTimer*>(&o, "o12");
+    op = o.findChild<QTimer*>("o12");
     QCOMPARE(op, static_cast<QObject *>(0));
-    op = qFindChild<QObject*>(&o, "o");
+    op = o.findChild<QObject*>("o");
     QCOMPARE(op, static_cast<QObject *>(0));
-    op = qFindChild<QObject*>(&o, "harry");
+    op = o.findChild<QObject*>("harry");
     QCOMPARE(op, static_cast<QObject *>(0));
-    op = qFindChild<QObject*>(&o, "o1");
+    op = o.findChild<QObject*>("o1");
     QCOMPARE(op, &o1);
 
     QList<QObject*> l;
     QList<QTimer*> tl;
 
-    l = qFindChildren<QObject*>(&o, "o1");
+    l = o.findChildren<QObject*>("o1");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o1);
-    l = qFindChildren<QObject*>(&o, "o2");
+    l = o.findChildren<QObject*>("o2");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o2);
-    l = qFindChildren<QObject*>(&o, "o11");
+    l = o.findChildren<QObject*>("o11");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o11);
-    l = qFindChildren<QObject*>(&o, "o12");
+    l = o.findChildren<QObject*>("o12");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o12);
-    l = qFindChildren<QObject*>(&o, "o111");
+    l = o.findChildren<QObject*>("o111");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o111);
-    l = qFindChildren<QObject*>(&o, "t1");
+    l = o.findChildren<QObject*>("t1");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), static_cast<QObject *>(&t1));
-    l = qFindChildren<QObject*>(&o, "t121");
+    l = o.findChildren<QObject*>("t121");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), static_cast<QObject *>(&t121));
-    tl = qFindChildren<QTimer*>(&o, "t1");
+    tl = o.findChildren<QTimer*>("t1");
     QCOMPARE(tl.size(), 1);
     QCOMPARE(tl.at(0), &t1);
-    tl = qFindChildren<QTimer*>(&o, "t121");
+    tl = o.findChildren<QTimer*>("t121");
     QCOMPARE(tl.size(), 1);
     QCOMPARE(tl.at(0), &t121);
-    l = qFindChildren<QObject*>(&o, "o");
+    l = o.findChildren<QObject*>("o");
     QCOMPARE(l.size(), 0);
-    l = qFindChildren<QObject*>(&o, "harry");
+    l = o.findChildren<QObject*>("harry");
     QCOMPARE(l.size(), 0);
-    tl = qFindChildren<QTimer*>(&o, "o12");
+    tl = o.findChildren<QTimer*>("o12");
     QCOMPARE(tl.size(), 0);
-    l = qFindChildren<QObject*>(&o, "o1");
+    l = o.findChildren<QObject*>("o1");
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o1);
 
-    l = qFindChildren<QObject*>(&o, QRegExp("o.*"));
+    l = o.findChildren<QObject*>(QRegularExpression("^o.*$"));
     QCOMPARE(l.size(), 5);
     QVERIFY(l.contains(&o1));
     QVERIFY(l.contains(&o2));
     QVERIFY(l.contains(&o11));
     QVERIFY(l.contains(&o12));
     QVERIFY(l.contains(&o111));
-    l = qFindChildren<QObject*>(&o, QRegExp("t.*"));
+    l = o.findChildren<QObject*>(QRegularExpression("t.*"));
     QCOMPARE(l.size(), 2);
     QVERIFY(l.contains(&t1));
     QVERIFY(l.contains(&t121));
-    tl = qFindChildren<QTimer*>(&o, QRegExp(".*"));
+    tl = o.findChildren<QTimer*>(QRegularExpression("^.*$"));
     QCOMPARE(tl.size(), 3);
     QVERIFY(tl.contains(&t1));
     QVERIFY(tl.contains(&t121));
-    tl = qFindChildren<QTimer*>(&o, QRegExp("o.*"));
+    tl = o.findChildren<QTimer*>(QRegularExpression("^o.*$"));
     QCOMPARE(tl.size(), 0);
-    l = qFindChildren<QObject*>(&o, QRegExp("harry"));
+    l = o.findChildren<QObject*>(QRegularExpression("^harry$"));
     QCOMPARE(l.size(), 0);
 
     l = o.findChildren<QObject*>(QRegularExpression("o.*"));
@@ -645,18 +644,18 @@ void tst_QObject::findChildren()
     QCOMPARE(l.size(), 0);
 
     // empty and null string check
-    op = qFindChild<QObject*>(&o);
+    op = o.findChild<QObject*>();
     QCOMPARE(op, &o1);
-    op = qFindChild<QObject*>(&o, "");
+    op = o.findChild<QObject*>("");
     QCOMPARE(op, &unnamed);
-    op = qFindChild<QObject*>(&o, "unnamed");
+    op = o.findChild<QObject*>("unnamed");
     QCOMPARE(op, static_cast<QObject *>(0));
 
-    l = qFindChildren<QObject*>(&o);
+    l = o.findChildren<QObject*>();
     QCOMPARE(l.size(), 9);
-    l = qFindChildren<QObject*>(&o, "");
+    l = o.findChildren<QObject*>("");
     QCOMPARE(l.size(), 2);
-    l = qFindChildren<QObject*>(&o, "unnamed");
+    l = o.findChildren<QObject*>("unnamed");
     QCOMPARE(l.size(), 0);
 
     tl = o.findChildren<QTimer *>("t1");
@@ -724,19 +723,19 @@ void tst_QObject::findChildren()
     QCOMPARE(l.size(), 1);
     QCOMPARE(l.at(0), &o1);
 
-    l = o.findChildren<QObject*>(QRegExp("o.*"), Qt::FindDirectChildrenOnly);
+    l = o.findChildren<QObject*>(QRegularExpression("^o.*$"), Qt::FindDirectChildrenOnly);
     QCOMPARE(l.size(), 2);
     QVERIFY(l.contains(&o1));
     QVERIFY(l.contains(&o2));
-    l = o.findChildren<QObject*>(QRegExp("t.*"), Qt::FindDirectChildrenOnly);
+    l = o.findChildren<QObject*>(QRegularExpression("^t.*$"), Qt::FindDirectChildrenOnly);
     QCOMPARE(l.size(), 1);
     QVERIFY(l.contains(&t1));
-    tl = o.findChildren<QTimer*>(QRegExp(".*"), Qt::FindDirectChildrenOnly);
+    tl = o.findChildren<QTimer*>(QRegularExpression("^.*$"), Qt::FindDirectChildrenOnly);
     QCOMPARE(tl.size(), 2);
     QVERIFY(tl.contains(&t1));
-    tl = o.findChildren<QTimer*>(QRegExp("o.*"), Qt::FindDirectChildrenOnly);
+    tl = o.findChildren<QTimer*>(QRegularExpression("^o.*$"), Qt::FindDirectChildrenOnly);
     QCOMPARE(tl.size(), 0);
-    l = o.findChildren<QObject*>(QRegExp("harry"), Qt::FindDirectChildrenOnly);
+    l = o.findChildren<QObject*>(QRegularExpression("^harry$"), Qt::FindDirectChildrenOnly);
     QCOMPARE(l.size(), 0);
 
     // empty and null string check
@@ -1035,18 +1034,16 @@ public Q_SLOTS:
 void tst_QObject::connectNotify_connectSlotsByName()
 {
     ConnectByNameNotifyReceiverObject testObject;
-    QList<ConnectByNameNotifySenderObject *> senders =
-            qFindChildren<ConnectByNameNotifySenderObject *>(&testObject);
-    for (int i = 0; i < senders.size(); ++i) {
-        ConnectByNameNotifySenderObject *o = senders.at(i);
+    const QList<ConnectByNameNotifySenderObject *> senders =
+            testObject.findChildren<ConnectByNameNotifySenderObject *>();
+    for (ConnectByNameNotifySenderObject *o : senders) {
         QVERIFY(o->connectedSignals.isEmpty());
         QVERIFY(o->disconnectedSignals.isEmpty());
     }
 
     QMetaObject::connectSlotsByName(&testObject);
 
-    for (int i = 0; i < senders.size(); ++i) {
-        ConnectByNameNotifySenderObject *o = senders.at(i);
+    for (ConnectByNameNotifySenderObject *o : senders) {
         QCOMPARE(o->connectedSignals.size(), 1);
         QCOMPARE(o->connectedSignals.at(0), QMetaMethod::fromSignal(&ConnectByNameNotifySenderObject::signal1));
         QVERIFY(o->disconnectedSignals.isEmpty());
@@ -1631,7 +1628,7 @@ void tst_QObject::thread()
         QObject object;
         // thread affinity for objects with no parent should be the
         // current thread
-        QVERIFY(object.thread() != 0);
+        QVERIFY(object.thread() != nullptr);
         QCOMPARE(object.thread(), currentThread);
         // children inherit their parent's thread
         QObject child(&object);
@@ -1643,7 +1640,7 @@ void tst_QObject::thread()
 
     {
         TestThread thr;
-        QVERIFY(thr.thread() != 0);
+        QVERIFY(thr.thread() != nullptr);
         QCOMPARE(thr.thread(), currentThread);
 
         thr.object = &object;
@@ -1802,8 +1799,8 @@ void tst_QObject::moveToThread()
         QMetaObject::invokeMethod(object, "deleteLater", Qt::QueuedConnection);
         thread.wait();
 
-        QVERIFY(opointer == 0);
-        QVERIFY(cpointer == 0);
+        QVERIFY(opointer == nullptr);
+        QVERIFY(cpointer == nullptr);
     }
 
     {
@@ -2379,7 +2376,7 @@ void tst_QObject::testUserData()
     for (int i=0; i<USER_DATA_COUNT; ++i) {
         int id = user_data_ids[i];
         CustomData *data = static_cast<CustomData *>(my_test_object.userData(id));
-        QVERIFY(data != 0);
+        QVERIFY(data != nullptr);
         QCOMPARE(data->id, id);
     }
 }
@@ -3627,7 +3624,7 @@ class OverloadObject : public QObject
         void sig(int i, int j = 12);
         void sig(QObject *o, QObject *p, QObject *q = 0, QObject *r = 0) const;
         void other(int a = 0);
-        void sig(QObject *o, OverloadObject *p = 0, QObject *q = 0, QObject *r = 0);
+        void sig(QObject *o, OverloadObject *p = 0, QObject *q = 0, QObject *r = nullptr);
         void sig(double r = 0.5);
     public slots:
         void slo(int i, int j = 43)
@@ -5982,7 +5979,7 @@ void ConnectToPrivateSlot::test(SenderObject* obj1) {
     obj1->signal1();
     QCOMPARE(d->receivedCount, 1);
     QCOMPARE(d->receivedValue, QVariant());
-    obj1->signal7(666, QLatin1Literal("_"));
+    obj1->signal7(666, QLatin1String("_"));
     QCOMPARE(d->receivedCount, 2);
     QCOMPARE(d->receivedValue, QVariant(666));
     QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot, Qt::UniqueConnection));

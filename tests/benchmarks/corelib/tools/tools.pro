@@ -5,7 +5,6 @@ SUBDIRS = \
         qbytearray \
         qcontiguouscache \
         qcryptographichash \
-        qdatetime \
         qlist \
         qlocale \
         qmap \
@@ -15,7 +14,6 @@ SUBDIRS = \
         qstring \
         qstringbuilder \
         qstringlist \
-        qtimezone \
         qvector \
         qalgorithms
 

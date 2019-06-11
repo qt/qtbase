@@ -124,6 +124,7 @@ private:
     int m_tableCol = -1; // because relative cell movements (e.g. m_cursor->movePosition(QTextCursor::NextCell)) don't work
     int m_paragraphMargin = 0;
     int m_blockType = 0;
+    char m_blockCodeFence = 0;
     Features m_features;
     QTextImageFormat m_imageFormat;
     QTextListFormat m_listFormat;

@@ -269,6 +269,7 @@ public:
     VkResult errorCode;
     QScopedPointer<QVulkanFunctions> funcs;
     QHash<VkDevice, QVulkanDeviceFunctions *> deviceFuncs;
+    QVector<QVulkanInstance::DebugFilter> debugFilters;
 };
 
 bool QVulkanInstancePrivate::ensureVulkan()
@@ -570,6 +571,7 @@ bool QVulkanInstance::create()
         d_ptr->extensions = d_ptr->platformInst->enabledExtensions();
         d_ptr->errorCode = VK_SUCCESS;
         d_ptr->funcs.reset(new QVulkanFunctions(this));
+        d_ptr->platformInst->setDebugFilters(d_ptr->debugFilters);
         return true;
     }
 
@@ -783,6 +785,50 @@ bool QVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice, uint32_t 
 void QVulkanInstance::presentQueued(QWindow *window)
 {
     d_ptr->platformInst->presentQueued(window);
+}
+
+/*!
+    \typedef QVulkanInstance::DebugFilter
+
+    Typedef for debug filtering callback functions.
+
+    \sa installDebugOutputFilter(), removeDebugOutputFilter()
+ */
+
+/*!
+    Installs a \a filter function that is called for every Vulkan debug
+    message. When the callback returns \c true, the message is stopped (filtered
+    out) and will not appear on the debug output.
+
+    \note Filtering is only effective when NoDebugOutputRedirect is not
+    \l{setFlags()}{set}. Installing filters has no effect otherwise.
+
+    \note This function can be called before create().
+
+    \sa removeDebugOutputFilter()
+ */
+void QVulkanInstance::installDebugOutputFilter(DebugFilter filter)
+{
+    if (!d_ptr->debugFilters.contains(filter)) {
+        d_ptr->debugFilters.append(filter);
+        if (d_ptr->platformInst)
+            d_ptr->platformInst->setDebugFilters(d_ptr->debugFilters);
+    }
+}
+
+/*!
+    Removes a \a filter function previously installed by
+    installDebugOutputFilter().
+
+    \note This function can be called before create().
+
+    \sa installDebugOutputFilter()
+ */
+void QVulkanInstance::removeDebugOutputFilter(DebugFilter filter)
+{
+    d_ptr->debugFilters.removeOne(filter);
+    if (d_ptr->platformInst)
+        d_ptr->platformInst->setDebugFilters(d_ptr->debugFilters);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

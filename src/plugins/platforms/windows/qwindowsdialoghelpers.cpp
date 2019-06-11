@@ -271,7 +271,7 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialo
 class QWindowsDialogThread : public QThread
 {
 public:
-    typedef QSharedPointer<QWindowsNativeDialogBase> QWindowsNativeDialogBasePtr;
+    using QWindowsNativeDialogBasePtr = QSharedPointer<QWindowsNativeDialogBase>;
 
     explicit QWindowsDialogThread(const QWindowsNativeDialogBasePtr &d, HWND owner)
         : m_dialog(d), m_owner(owner) {}
@@ -551,7 +551,7 @@ IFileDialogEvents *QWindowsNativeFileDialogEventHandler::create(QWindowsNativeFi
 class QWindowsShellItem
 {
 public:
-    typedef std::vector<IShellItem *> IShellItems;
+    using IShellItems = std::vector<IShellItem *>;
 
     explicit QWindowsShellItem(IShellItem *item);
 
@@ -1688,7 +1688,7 @@ class QWindowsXpNativeFileDialog : public QWindowsNativeDialogBase
 {
     Q_OBJECT
 public:
-    typedef QSharedPointer<QFileDialogOptions> OptionsPtr;
+    using OptionsPtr = QSharedPointer<QFileDialogOptions>;
 
     static QWindowsXpNativeFileDialog *create(const OptionsPtr &options, const QWindowsFileDialogSharedData &data);
 
@@ -1779,7 +1779,7 @@ static int QT_WIN_CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UIN
 #if defined(Q_CC_MINGW) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 3)
 typedef ITEMIDLIST *qt_LpItemIdList;
 #else
-typedef PIDLIST_ABSOLUTE qt_LpItemIdList;
+using qt_LpItemIdList = PIDLIST_ABSOLUTE;
 #endif
 
 int QWindowsXpNativeFileDialog::existingDirCallback(HWND hwnd, UINT uMsg, LPARAM lParam)
@@ -2007,7 +2007,7 @@ QString QWindowsXpFileDialogHelper::selectedNameFilter() const
     \ingroup qt-lighthouse-win
 */
 
-typedef QSharedPointer<QColor> SharedPointerColor;
+using SharedPointerColor = QSharedPointer<QColor>;
 
 #ifdef USE_NATIVE_COLOR_DIALOG
 class QWindowsNativeColorDialog : public QWindowsNativeDialogBase

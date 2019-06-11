@@ -184,7 +184,7 @@ void tst_QGuiApplication::windowIcon()
 class DummyWindow : public QWindow
 {
 public:
-    DummyWindow() : m_focusObject(0) {}
+    DummyWindow() : m_focusObject(nullptr) {}
 
     virtual QObject *focusObject() const
     {
@@ -204,7 +204,7 @@ public:
 void tst_QGuiApplication::focusObject()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
 
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
@@ -271,15 +271,15 @@ void tst_QGuiApplication::focusObject()
 void tst_QGuiApplication::allWindows()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     QWindow *window1 = new QWindow;
     QWindow *window2 = new QWindow(window1);
     QVERIFY(app.allWindows().contains(window1));
     QVERIFY(app.allWindows().contains(window2));
     QCOMPARE(app.allWindows().count(), 2);
     delete window1;
-    window1 = 0;
-    window2 = 0;
+    window1 = nullptr;
+    window2 = nullptr;
     QVERIFY(!app.allWindows().contains(window2));
     QVERIFY(!app.allWindows().contains(window1));
     QCOMPARE(app.allWindows().count(), 0);
@@ -288,15 +288,15 @@ void tst_QGuiApplication::allWindows()
 void tst_QGuiApplication::topLevelWindows()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     QWindow *window1 = new QWindow;
     QWindow *window2 = new QWindow(window1);
     QVERIFY(app.topLevelWindows().contains(window1));
     QVERIFY(!app.topLevelWindows().contains(window2));
     QCOMPARE(app.topLevelWindows().count(), 1);
     delete window1;
-    window1 = 0;
-    window2 = 0;
+    window1 = nullptr;
+    window2 = nullptr;
     QVERIFY(!app.topLevelWindows().contains(window2));
     QVERIFY(!app.topLevelWindows().contains(window1));
     QCOMPARE(app.topLevelWindows().count(), 0);
@@ -306,7 +306,7 @@ class ShowCloseShowWindow : public QWindow
 {
     Q_OBJECT
 public:
-    ShowCloseShowWindow(bool showAgain, QWindow *parent = 0)
+    ShowCloseShowWindow(bool showAgain, QWindow *parent = nullptr)
       : QWindow(parent), showAgain(showAgain)
     {
         QTimer::singleShot(0, this, SLOT(doClose()));
@@ -331,7 +331,7 @@ private:
 void tst_QGuiApplication::abortQuitOnShow()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     QScopedPointer<QWindow> window1(new ShowCloseShowWindow(false));
@@ -366,7 +366,7 @@ protected:
     }
 
 public:
-    FocusChangeWindow() : QWindow(), windowDuringFocusAboutToChange(0), windowDuringFocusOut(0) {}
+    FocusChangeWindow() : QWindow(), windowDuringFocusAboutToChange(nullptr), windowDuringFocusOut(nullptr) {}
 
     QWindow *windowDuringFocusAboutToChange;
     QWindow *windowDuringFocusOut;
@@ -378,7 +378,7 @@ void tst_QGuiApplication::changeFocusWindow()
     QSKIP("WinRt does not support multiple native windows.");
 #endif
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
 
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
@@ -430,7 +430,7 @@ void tst_QGuiApplication::changeFocusWindow()
 void tst_QGuiApplication::keyboardModifiers()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     QScopedPointer<QWindow> window(new QWindow);
@@ -564,7 +564,7 @@ public:
     int leaves;
     int enters;
 
-    inline explicit BlockableWindow(QWindow *parent = 0)
+    inline explicit BlockableWindow(QWindow *parent = nullptr)
         : QWindow(parent), blocked(false), leaves(0), enters(0) {}
 
     bool event(QEvent *e)
@@ -601,7 +601,7 @@ void tst_QGuiApplication::modalWindow()
     QSKIP("WinRt does not support multiple native windows.");
 #endif
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     int x = screenGeometry.left() + spacing;
@@ -654,7 +654,7 @@ void tst_QGuiApplication::modalWindow()
     window2->show();
     QVERIFY(QTest::qWaitForWindowExposed(window1.data()));
     QVERIFY(QTest::qWaitForWindowExposed(window2.data()));
-    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(nullptr));
     QCOMPARE(window1->blocked, 0);
     QCOMPARE(childWindow1->blocked, 0);
     QCOMPARE(window2->blocked, 0);
@@ -698,7 +698,7 @@ void tst_QGuiApplication::modalWindow()
 
     // everything is unblocked when applicationModalWindow1 is hidden
     applicationModalWindow1->hide();
-    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(nullptr));
     QCOMPARE(window1->blocked, 0);
     QCOMPARE(childWindow1->blocked, 0); // QTBUG-32242, blocked status needs to be set on children as well.
     QCOMPARE(window2->blocked, 0);
@@ -750,7 +750,7 @@ void tst_QGuiApplication::modalWindow()
 
     // hide windowModalWindow2, windowModalWindow1 and window1 are unblocked
     windowModalWindow2->hide();
-    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(nullptr));
     QCOMPARE(window1->blocked, 0);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
@@ -815,7 +815,7 @@ void tst_QGuiApplication::modalWindow()
 
     // hide windowModalWindow1, everything is unblocked
     windowModalWindow1->hide();
-    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(nullptr));
     QCOMPARE(window1->blocked, 0);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
@@ -829,7 +829,7 @@ void tst_QGuiApplication::modalWindow()
 void tst_QGuiApplication::quitOnLastWindowClosed()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     QTimer timer;
@@ -869,7 +869,7 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
 void tst_QGuiApplication::quitOnLastWindowClosedMulti()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     QTimer timer;
@@ -909,7 +909,7 @@ void tst_QGuiApplication::quitOnLastWindowClosedMulti()
 void tst_QGuiApplication::dontQuitOnLastWindowClosed()
 {
     int argc = 0;
-    QGuiApplication app(argc, 0);
+    QGuiApplication app(argc, nullptr);
     app.setQuitOnLastWindowClosed(false);
 
     QTimer timer;
@@ -959,7 +959,7 @@ public:
     {
         if (key == "testplugin")
             return new TestPlugin;
-        return 0;
+        return nullptr;
     }
 };
 
@@ -1069,7 +1069,7 @@ void tst_QGuiApplication::testSetPaletteAttribute()
 
     QVERIFY(!QCoreApplication::testAttribute(Qt::AA_SetPalette));
     QPalette palette;
-    palette.setColor(QPalette::Foreground, Qt::red);
+    palette.setColor(QPalette::WindowText, Qt::red);
     QGuiApplication::setPalette(palette);
 
     QVERIFY(QCoreApplication::testAttribute(Qt::AA_SetPalette));
@@ -1126,7 +1126,7 @@ void tst_QGuiApplication::settableStyleHints()
     int argc = 0;
     QScopedPointer<QGuiApplication> app;
     if (appInstance)
-        app.reset(new QGuiApplication(argc, 0));
+        app.reset(new QGuiApplication(argc, nullptr));
 
     const int keyboardInputInterval = 555;
     QGuiApplication::styleHints()->setKeyboardInputInterval(keyboardInputInterval);

@@ -414,10 +414,10 @@ public:
 
     Q_DECL_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
     static inline QList<T> fromStdList(const std::list<T> &list)
-    { QList<T> tmp; std::copy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
+    { return QList<T>(list.begin(), list.end()); }
     Q_DECL_DEPRECATED_X("Use std::list<T>(list.begin(), list.end()) instead.")
     inline std::list<T> toStdList() const
-    { std::list<T> tmp; std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { return std::list<T>(begin(), end()); }
 #endif
 
 private:
@@ -1105,10 +1105,7 @@ inline int QList<T>::count_impl(const T &t, QListData::ArrayCompatibleLayout) co
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QVector<T> QList<T>::toVector() const
 {
-    QVector<T> result(size());
-    for (int i = 0; i < size(); ++i)
-        result[i] = at(i);
-    return result;
+    return QVector<T>(begin(), end());
 }
 
 template <typename T>
@@ -1120,11 +1117,7 @@ QList<T> QList<T>::fromVector(const QVector<T> &vector)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QVector<T>::toList() const
 {
-    QList<T> result;
-    result.reserve(size());
-    for (int i = 0; i < size(); ++i)
-        result.append(at(i));
-    return result;
+    return QList<T>(begin(), end());
 }
 
 template <typename T>

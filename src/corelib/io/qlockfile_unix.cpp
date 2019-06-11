@@ -58,6 +58,11 @@
 #include <sys/file.h>  // flock
 #endif
 
+#if defined(Q_OS_RTEMS)
+#  undef LOCK_EX
+#  undef LOCK_NB
+#endif
+
 #include <sys/types.h> // kill
 #include <signal.h>    // kill
 #include <unistd.h>    // gethostname

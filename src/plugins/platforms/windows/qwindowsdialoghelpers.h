@@ -66,7 +66,7 @@ class QWindowsDialogHelperBase : public BaseClass
 {
     Q_DISABLE_COPY_MOVE(QWindowsDialogHelperBase)
 public:
-    typedef QSharedPointer<QWindowsNativeDialogBase> QWindowsNativeDialogBasePtr;
+    using QWindowsNativeDialogBasePtr = QSharedPointer<QWindowsNativeDialogBase>;
     ~QWindowsDialogHelperBase() { cleanupThread(); }
 
     void exec() override;
