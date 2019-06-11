@@ -88,6 +88,8 @@ import os
 import subprocess
 import filecmp
 import time
+import typing
+import stat
 
 from shutil import copyfile
 from shutil import rmtree
@@ -136,8 +138,11 @@ def copyfile_log(src: str, dst: str, debug=False):
 
 
 def check_if_git_in_path() -> bool:
+    is_win = os.name == 'nt'
     for path in os.environ['PATH'].split(os.pathsep):
         git_path = os.path.join(path, 'git')
+        if is_win:
+            git_path += '.exe'
         if os.path.isfile(git_path) and os.access(git_path, os.X_OK):
             return True
     return False
@@ -185,6 +190,17 @@ def create_file_with_no_special_cases(original_file_path: str, no_special_cases_
               'with removed special case blocks to {}'.format(original_file_path,
                                                           no_special_cases_file_path))
     write_content_to_file(no_special_cases_file_path, content_no_special_cases)
+
+
+def rm_tree_on_error_handler(func: typing.Callable[..., None],
+                             path: str, exception_info: tuple):
+    # If the path is read only, try to make it writable, and try
+    # to remove the path again.
+    if not os.access(path, os.W_OK):
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+    else:
+        print('Error while trying to remove path: {}. Exception: {}'.format(path, exception_info))
 
 
 class SpecialCaseHandler(object):
@@ -275,14 +291,14 @@ class SpecialCaseHandler(object):
             print('Git merge conflict resolution process failed. Exception: {}'.format(e))
             raise e
         finally:
+            os.chdir(current_dir)
+
             # Remove the temporary repo.
             try:
                 if not self.keep_temporary_files:
-                    rmtree(repo_absolute_path)
+                    rmtree(repo_absolute_path, onerror=rm_tree_on_error_handler)
             except Exception as e:
-                print(e)
-
-            os.chdir(current_dir)
+                print('Error removing temporary repo. Exception: {}'.format(e))
 
     def save_next_clean_file(self):
         files_are_equivalent = filecmp.cmp(self.generated_file_path, self.post_merge_file_path)
