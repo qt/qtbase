@@ -1349,7 +1349,7 @@ void QColor::setRgbF(qreal r, qreal g, qreal b, qreal a)
 */
 void QColor::setRgb(int r, int g, int b, int a)
 {
-    if ((uint)r > 255 || (uint)g > 255 || (uint)b > 255 || (uint)a > 255) {
+    if (!isRgbaValid(r, g, b, a)) {
         qWarning("QColor::setRgb: RGB parameters out of range");
         invalidate();
         return;
@@ -2398,10 +2398,7 @@ QColor QColor::fromRgba(QRgb rgba) noexcept
 */
 QColor QColor::fromRgb(int r, int g, int b, int a)
 {
-    if (r < 0 || r > 255
-        || g < 0 || g > 255
-        || b < 0 || b > 255
-        || a < 0 || a > 255) {
+    if (!isRgbaValid(r, g, b, a)) {
         qWarning("QColor::fromRgb: RGB parameters out of range");
         return QColor();
     }
