@@ -55,6 +55,12 @@ QWasmBackingStore::~QWasmBackingStore()
 {
 }
 
+void QWasmBackingStore::destroy()
+{
+    if (m_texture->isCreated())
+        m_texture->destroy();
+}
+
 QPaintDevice *QWasmBackingStore::paintDevice()
 {
     return &m_image;

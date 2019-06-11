@@ -172,6 +172,16 @@ static QString rfc1034Identifier(const QString &str)
     return s;
 }
 
+static QString escapeDir(const QString &dir)
+{
+    // When building on non-MSys MinGW, the path ends with a backslash, which
+    // GNU make will interpret that as a line continuation. Doubling the backslash
+    // avoids the problem, at the cost of the variable containing *both* backslashes.
+    if (dir.endsWith('\\'))
+        return dir + '\\';
+    return dir;
+}
+
 void
 UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 {
@@ -234,7 +244,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "####### Output directory\n\n";
     // This is used in commands by some .prf files.
     if (! project->values("OBJECTS_DIR").isEmpty())
-        t << "OBJECTS_DIR   = " << fileVar("OBJECTS_DIR") << endl;
+        t << "OBJECTS_DIR   = " << escapeDir(fileVar("OBJECTS_DIR")) << endl;
     else
         t << "OBJECTS_DIR   = ./\n";
     t << endl;
@@ -280,13 +290,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
                             << fileVarList("HEADERS") << ' ' << fileVarList("SOURCES") << endl;
     t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << endl;
-    QString destd = fileVar("DESTDIR");
-    // When building on non-MSys MinGW, the path ends with a backslash, which
-    // GNU make will interpret that as a line continuation. Doubling the backslash
-    // avoids the problem, at the cost of the variable containing *both* backslashes.
-    if (destd.endsWith('\\'))
-        destd += '\\';
-    t << "DESTDIR       = " << destd << endl;
+    t << "DESTDIR       = " << escapeDir(fileVar("DESTDIR")) << endl;
     t << "TARGET        = " << fileVar("TARGET") << endl;
     if(project->isActiveConfig("plugin")) {
         t << "TARGETD       = " << fileVar("TARGET") << endl;

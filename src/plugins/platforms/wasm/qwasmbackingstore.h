@@ -44,6 +44,7 @@ class QWasmBackingStore : public QPlatformBackingStore
 public:
     QWasmBackingStore(QWasmCompositor *compositor, QWindow *window);
     ~QWasmBackingStore();
+    void destroy();
 
     QPaintDevice *paintDevice() override;
 

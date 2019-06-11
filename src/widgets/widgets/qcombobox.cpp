@@ -1509,7 +1509,7 @@ int QComboBox::maxCount() const
 /*!
     \obsolete
 
-    Use setCompleter() instead.
+    Use completer() instead.
 */
 bool QComboBox::autoCompletion() const
 {
