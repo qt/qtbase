@@ -227,12 +227,14 @@ bool QCoreApplicationPrivate::checkInstance(const char *function)
     return b;
 }
 
+#if QT_CONFIG(commandlineparser)
 void QCoreApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
 {
     options->append(QCommandLineOption(QStringLiteral("qmljsdebugger"),
                 QStringLiteral("Activates the QML/JS debugger with a specified port. The value must be of format port:1234[,block]. \"block\" makes the application wait for a connection."),
                 QStringLiteral("value")));
 }
+#endif
 
 void QCoreApplicationPrivate::processCommandLineArguments()
 {

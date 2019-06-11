@@ -52,7 +52,9 @@
 //
 
 #include "QtCore/qcoreapplication.h"
+#if QT_CONFIG(commandlineparser)
 #include "QtCore/qcommandlineoption.h"
+#endif
 #include "QtCore/qtranslator.h"
 #if QT_CONFIG(settings)
 #include "QtCore/qsettings.h"
@@ -105,7 +107,9 @@ public:
 
     static bool checkInstance(const char *method);
 
+#if QT_CONFIG(commandlineparser)
     virtual void addQtOptions(QList<QCommandLineOption> *options);
+#endif
 
 #ifndef QT_NO_QOBJECT
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);

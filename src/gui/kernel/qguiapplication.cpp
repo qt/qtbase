@@ -1306,6 +1306,7 @@ static void init_plugins(const QList<QByteArray> &pluginList)
     }
 }
 
+#if QT_CONFIG(commandlineparser)
 void QGuiApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
 {
     QCoreApplicationPrivate::addQtOptions(options);
@@ -1357,6 +1358,7 @@ void QGuiApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
                          QGuiApplication::tr("Alias for --windowtitle."), QStringLiteral("title")));
     }
 }
+#endif // QT_CONFIG(commandlineparser)
 
 void QGuiApplicationPrivate::createPlatformIntegration()
 {
