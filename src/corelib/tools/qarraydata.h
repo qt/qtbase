@@ -324,10 +324,10 @@ struct QArrayDataPointerRef
     /**/
 
 #define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
-    union { Type type_must_be_POD; } dummy; Q_UNUSED(dummy)                     \
+    Q_STATIC_ASSERT(std::is_literal_type<Type>::value);                         \
                                                                                 \
     /* Portable compile-time array size computation */                          \
-    Type data[] = { __VA_ARGS__ }; Q_UNUSED(data)                               \
+    Q_CONSTEXPR Type data[] = { __VA_ARGS__ }; Q_UNUSED(data);                  \
     enum { Size = sizeof(data) / sizeof(data[0]) };                             \
                                                                                 \
     static const QStaticArrayData<Type, Size> literal = {                       \
