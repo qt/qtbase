@@ -72,8 +72,9 @@ if(WIN32)
     # It's set for every module being built, but it's not propagated to user apps.
     target_compile_definitions(PlatformModuleInternal INTERFACE _USE_MATH_DEFINES)
 endif()
-if(FEATURE_largefile)
-    target_compile_definitions(PlatformModuleInternal INTERFACE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+if(FEATURE_largefile AND UNIX)
+    target_compile_definitions(PlatformModuleInternal
+                               INTERFACE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
 endif()
 
 # We can't use the gold linker on android with the NDK, which is the default
