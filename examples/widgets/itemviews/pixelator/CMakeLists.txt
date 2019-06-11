@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_executable(pixelator WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(pixelator WIN32 MACOSX_BUNDLE
     imagemodel.cpp imagemodel.h
     images.qrc
     main.cpp

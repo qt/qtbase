@@ -388,3 +388,14 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
         endforeach()
     endmacro()
 endif()
+
+function(add_qt_gui_executable target)
+    add_executable(${ARGV})
+    target_link_libraries("${target}" PRIVATE Qt::Core Qt::Gui)
+
+    list(FIND ARGV WIN32 WIN32_OPTION_IDX)
+    if(WIN32 AND NOT WIN32_OPTION_IDX EQUAL -1)
+        target_link_libraries("${target}" PRIVATE Qt::WinMain)
+    endif()
+endfunction()
+

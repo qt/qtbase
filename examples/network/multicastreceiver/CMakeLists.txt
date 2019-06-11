@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(multicastreceiver WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(multicastreceiver WIN32 MACOSX_BUNDLE
     main.cpp
     receiver.cpp receiver.h
 )

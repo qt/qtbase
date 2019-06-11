@@ -23,7 +23,7 @@ qt5_add_dbus_adaptor(car_SRCS
     car_adaptor
 )
 # special case end
-add_executable(car WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(car WIN32 MACOSX_BUNDLE
     car.cpp car.h
     main.cpp
     ${car_SRCS} # special case

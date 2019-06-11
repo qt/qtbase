@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport)
 
-add_executable(orderform WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(orderform WIN32 MACOSX_BUNDLE
     detailsdialog.cpp detailsdialog.h
     main.cpp
     mainwindow.cpp mainwindow.h

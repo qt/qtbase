@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(imagecomposition WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(imagecomposition WIN32 MACOSX_BUNDLE
     imagecomposer.cpp imagecomposer.h
     imagecomposition.qrc
     main.cpp

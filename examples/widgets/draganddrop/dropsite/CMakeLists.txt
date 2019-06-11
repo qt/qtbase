@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(dropsite WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(dropsite WIN32 MACOSX_BUNDLE
     droparea.cpp droparea.h
     dropsitewindow.cpp dropsitewindow.h
     main.cpp

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS DBus)
 
-add_executable(complexpong WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(complexpong WIN32 MACOSX_BUNDLE
     complexpong.cpp complexpong.h
 )
 target_link_libraries(complexpong PUBLIC

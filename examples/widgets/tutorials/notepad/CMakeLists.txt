@@ -14,7 +14,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_executable(notepad WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(notepad WIN32 MACOSX_BUNDLE
     main.cpp
     notepad.cpp notepad.h notepad.qrc notepad.ui
 )

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(flowlayout WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(flowlayout WIN32 MACOSX_BUNDLE
     flowlayout.cpp flowlayout.h
     main.cpp
     window.cpp window.h

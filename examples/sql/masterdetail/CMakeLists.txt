@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS Xml)
 
-add_executable(masterdetail WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(masterdetail WIN32 MACOSX_BUNDLE
     database.h
     dialog.cpp dialog.h
     main.cpp

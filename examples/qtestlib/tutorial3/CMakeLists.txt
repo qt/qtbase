@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS Test)
 
-add_executable(tutorial3 WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(tutorial3 WIN32 MACOSX_BUNDLE
     testgui.cpp
 )
 target_link_libraries(tutorial3 PUBLIC

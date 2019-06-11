@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(echopluginwindow WIN32 MACOSX_BUNDLE # special case: renamed target
+add_qt_gui_executable(echopluginwindow WIN32 MACOSX_BUNDLE # special case: renamed target
     echointerface.h
     echowindow.cpp echowindow.h
     main.cpp

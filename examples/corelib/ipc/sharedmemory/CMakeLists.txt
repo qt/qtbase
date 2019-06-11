@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(sharedmemory WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(sharedmemory WIN32 MACOSX_BUNDLE
     dialog.cpp dialog.h dialog.ui
     main.cpp
 )

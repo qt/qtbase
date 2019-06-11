@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(tabdialog WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(tabdialog WIN32 MACOSX_BUNDLE
     main.cpp
     tabdialog.cpp tabdialog.h
 )

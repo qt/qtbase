@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(wiggly WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(wiggly WIN32 MACOSX_BUNDLE
     dialog.cpp dialog.h
     main.cpp
     wigglywidget.cpp wigglywidget.h

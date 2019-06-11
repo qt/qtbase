@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(tooltips WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(tooltips WIN32 MACOSX_BUNDLE
     main.cpp
     shapeitem.cpp shapeitem.h
     sortingbox.cpp sortingbox.h

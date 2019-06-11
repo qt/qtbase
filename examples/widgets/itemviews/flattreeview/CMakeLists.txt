@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(flattreeview WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(flattreeview WIN32 MACOSX_BUNDLE
     main.cpp
 )
 target_link_libraries(flattreeview PUBLIC

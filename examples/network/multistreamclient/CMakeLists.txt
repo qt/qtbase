@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(multistreamclient WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(multistreamclient WIN32 MACOSX_BUNDLE
     chatconsumer.cpp chatconsumer.h
     client.cpp client.h
     consumer.h

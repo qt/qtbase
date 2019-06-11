@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(painterpaths WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(painterpaths WIN32 MACOSX_BUNDLE
     main.cpp
     renderarea.cpp renderarea.h
     window.cpp window.h

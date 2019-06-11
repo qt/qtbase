@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(securesocketclient WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(securesocketclient WIN32 MACOSX_BUNDLE
     certificateinfo.cpp certificateinfo.h certificateinfo.ui
     main.cpp
     securesocketclient.qrc

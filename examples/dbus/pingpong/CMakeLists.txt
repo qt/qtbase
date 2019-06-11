@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS DBus)
 
-add_executable(pong WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(pong WIN32 MACOSX_BUNDLE
     ping-common.h
     pong.cpp pong.h
 )

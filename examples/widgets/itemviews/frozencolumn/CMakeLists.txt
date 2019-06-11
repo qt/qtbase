@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(frozencolumn WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(frozencolumn WIN32 MACOSX_BUNDLE
     freezetablewidget.cpp freezetablewidget.h
     grades.qrc
     main.cpp

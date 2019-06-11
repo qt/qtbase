@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS OpenGL) # special case
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_executable(chip WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(chip WIN32 MACOSX_BUNDLE
     chip.cpp chip.h
     images.qrc
     main.cpp

@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(books WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(books WIN32 MACOSX_BUNDLE
     bookdelegate.cpp bookdelegate.h
     books.qrc
     bookwindow.cpp bookwindow.h bookwindow.ui

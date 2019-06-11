@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(eventtransitions WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(eventtransitions WIN32 MACOSX_BUNDLE
     main.cpp
 )
 target_link_libraries(eventtransitions PUBLIC

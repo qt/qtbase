@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Xml)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(streambookmarks WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(streambookmarks WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp mainwindow.h
     xbelreader.cpp xbelreader.h

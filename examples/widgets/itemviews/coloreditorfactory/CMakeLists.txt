@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(coloreditorfactory WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(coloreditorfactory WIN32 MACOSX_BUNDLE
     colorlisteditor.cpp colorlisteditor.h
     main.cpp
     window.cpp window.h

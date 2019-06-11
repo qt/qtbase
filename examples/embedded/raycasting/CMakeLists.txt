@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(raycasting WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(raycasting WIN32 MACOSX_BUNDLE
     raycasting.cpp raycasting.qrc
 )
 target_link_libraries(raycasting PUBLIC

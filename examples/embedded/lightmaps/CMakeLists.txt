@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(lightmaps WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(lightmaps WIN32 MACOSX_BUNDLE
     lightmaps.cpp lightmaps.h
     main.cpp
     mapzoom.cpp mapzoom.h

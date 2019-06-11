@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(relationaltablemodel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(relationaltablemodel WIN32 MACOSX_BUNDLE
     ../connection.h
     relationaltablemodel.cpp
 )

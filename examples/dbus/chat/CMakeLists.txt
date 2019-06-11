@@ -27,7 +27,7 @@ qt5_add_dbus_adaptor(chat_SRCS
     chat_adaptor
 )
 # special case end
-add_executable(chat WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(chat WIN32 MACOSX_BUNDLE
     chat.cpp chat.h
     chatmainwindow.ui
     chatsetnickname.ui

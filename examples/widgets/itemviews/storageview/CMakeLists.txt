@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Core)
 find_package(Qt5 COMPONENTS Gui)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(storageview WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(storageview WIN32 MACOSX_BUNDLE
     main.cpp
     storagemodel.cpp storagemodel.h
 )

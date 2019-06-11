@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(regularexpression WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(regularexpression WIN32 MACOSX_BUNDLE
     main.cpp
     regularexpression.qrc
     regularexpressiondialog.cpp regularexpressiondialog.h

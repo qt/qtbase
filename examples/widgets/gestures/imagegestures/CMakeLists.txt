@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(imagegestures WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(imagegestures WIN32 MACOSX_BUNDLE
     imagewidget.cpp imagewidget.h
     main.cpp
     mainwidget.cpp mainwidget.h

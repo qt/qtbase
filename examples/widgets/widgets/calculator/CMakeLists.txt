@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(calculator WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(calculator WIN32 MACOSX_BUNDLE
     button.cpp button.h
     calculator.cpp calculator.h
     main.cpp

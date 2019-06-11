@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(rogue WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(rogue WIN32 MACOSX_BUNDLE
     main.cpp
     movementtransition.h
     window.cpp window.h

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(analogclock WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(analogclock WIN32 MACOSX_BUNDLE
     analogclock.cpp analogclock.h
     main.cpp
 )

@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Concurrent)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(imagescaling WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(imagescaling WIN32 MACOSX_BUNDLE
     imagescaling.cpp imagescaling.h
     main.cpp
 )

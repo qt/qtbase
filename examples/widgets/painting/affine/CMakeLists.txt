@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(affine WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(affine WIN32 MACOSX_BUNDLE
     # special case: remove files from ../shared
     affine.qrc
     main.cpp

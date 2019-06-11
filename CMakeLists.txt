@@ -52,9 +52,9 @@ if (QT_WILL_BUILD_TOOLS)
     add_subdirectory(qmake)
 endif()
 
+qt_build_repo_end()
+
 option(BUILD_EXAMPLES "Build Qt examples" ON)
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
-
-qt_build_repo_end()

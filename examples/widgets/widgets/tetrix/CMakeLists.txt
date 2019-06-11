@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(tetrix WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(tetrix WIN32 MACOSX_BUNDLE
     main.cpp
     tetrixboard.cpp tetrixboard.h
     tetrixpiece.cpp tetrixpiece.h

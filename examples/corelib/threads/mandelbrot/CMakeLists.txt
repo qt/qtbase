@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(mandelbrot WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(mandelbrot WIN32 MACOSX_BUNDLE
     main.cpp
     mandelbrotwidget.cpp mandelbrotwidget.h
     renderthread.cpp renderthread.h

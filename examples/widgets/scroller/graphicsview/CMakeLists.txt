@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(graphicsview WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(graphicsview WIN32 MACOSX_BUNDLE
     main.cpp
 )
 target_link_libraries(graphicsview PUBLIC

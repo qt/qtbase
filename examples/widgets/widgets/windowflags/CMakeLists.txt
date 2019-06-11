@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(windowflags WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(windowflags WIN32 MACOSX_BUNDLE
     controllerwindow.cpp controllerwindow.h
     main.cpp
     previewwindow.cpp previewwindow.h

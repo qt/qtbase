@@ -1711,7 +1711,7 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
     (public_libs, private_libs) = extract_cmake_libraries(scope)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
-    add_executable = 'add_executable({}'.format(binary_name);
+    add_executable = 'add_{}executable({}'.format("qt_gui_" if gui else "", binary_name);
     if gui:
         add_executable += ' WIN32 MACOSX_BUNDLE'
 

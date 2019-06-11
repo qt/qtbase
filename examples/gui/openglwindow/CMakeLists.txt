@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_executable(openglwindow WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(openglwindow WIN32 MACOSX_BUNDLE
     main.cpp
     openglwindow.cpp openglwindow.h
 )

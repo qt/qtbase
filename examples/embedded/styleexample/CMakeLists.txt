@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(styleexample WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(styleexample WIN32 MACOSX_BUNDLE
     main.cpp
     stylewidget.cpp stylewidget.h stylewidget.ui
     styleexample.qrc # special case: add

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(digiflip WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(digiflip WIN32 MACOSX_BUNDLE
     digiflip.cpp
 )
 target_link_libraries(digiflip PUBLIC

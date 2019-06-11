@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(concentriccircles WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(concentriccircles WIN32 MACOSX_BUNDLE
     circlewidget.cpp circlewidget.h
     main.cpp
     window.cpp window.h

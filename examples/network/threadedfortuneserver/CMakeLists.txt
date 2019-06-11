@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(threadedfortuneserver WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(threadedfortuneserver WIN32 MACOSX_BUNDLE
     dialog.cpp dialog.h
     fortuneserver.cpp fortuneserver.h
     fortunethread.cpp fortunethread.h

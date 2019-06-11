@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(movie WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(movie WIN32 MACOSX_BUNDLE
     main.cpp
     movieplayer.cpp movieplayer.h
 )

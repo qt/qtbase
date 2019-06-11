@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(qmacnativewidget WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(qmacnativewidget WIN32 MACOSX_BUNDLE
     main.mm
 )
 target_link_libraries(qmacnativewidget PUBLIC

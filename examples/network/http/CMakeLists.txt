@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(http WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(http WIN32 MACOSX_BUNDLE
     authenticationdialog.ui
     httpwindow.cpp httpwindow.h
     main.cpp

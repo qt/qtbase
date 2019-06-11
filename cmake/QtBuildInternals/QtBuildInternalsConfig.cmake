@@ -81,11 +81,11 @@ macro(qt_build_repo)
         add_subdirectory(tests)
     endif()
 
+    qt_build_repo_end()
+
     if (BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
         add_subdirectory(examples)
     endif()
-
-    qt_build_repo_end()
 endmacro()
 
 macro(qt_set_up_standalone_tests_build)

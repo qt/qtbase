@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Core)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(mousebuttons WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(mousebuttons WIN32 MACOSX_BUNDLE
     buttontester.cpp buttontester.h
     main.cpp
 )

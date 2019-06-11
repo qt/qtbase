@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(localfortuneclient WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(localfortuneclient WIN32 MACOSX_BUNDLE
     client.cpp client.h
     main.cpp
 )

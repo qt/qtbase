@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(editabletreemodel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(editabletreemodel WIN32 MACOSX_BUNDLE
     editabletreemodel.qrc
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui

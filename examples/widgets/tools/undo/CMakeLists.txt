@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(undo WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(undo WIN32 MACOSX_BUNDLE
     commands.cpp commands.h
     document.cpp document.h
     main.cpp

@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS OpenGL)
 find_package(Qt5 COMPONENTS Widgets)
 
 
-add_executable(boxes WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(boxes WIN32 MACOSX_BUNDLE
     3rdparty/fbm.c 3rdparty/fbm.h
     boxes.qrc
     glbuffers.cpp glbuffers.h

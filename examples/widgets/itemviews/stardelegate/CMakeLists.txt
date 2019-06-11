@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(stardelegate WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(stardelegate WIN32 MACOSX_BUNDLE
     main.cpp
     stardelegate.cpp stardelegate.h
     stareditor.cpp stareditor.h

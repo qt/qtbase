@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS Network)
 
-add_executable(secureudpclient WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(secureudpclient WIN32 MACOSX_BUNDLE
     addressdialog.cpp addressdialog.h addressdialog.ui
     association.cpp association.h
     main.cpp

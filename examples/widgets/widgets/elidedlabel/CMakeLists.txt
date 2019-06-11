@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Core)
 find_package(Qt5 COMPONENTS Gui)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(elidedlabel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(elidedlabel WIN32 MACOSX_BUNDLE
     elidedlabel.cpp elidedlabel.h
     main.cpp
     testwidget.cpp testwidget.h

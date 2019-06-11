@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(basicdrawing WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(basicdrawing WIN32 MACOSX_BUNDLE
     basicdrawing.qrc
     main.cpp
     renderarea.cpp renderarea.h

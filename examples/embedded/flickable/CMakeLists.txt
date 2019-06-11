@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(flickable WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(flickable WIN32 MACOSX_BUNDLE
     flickable.cpp flickable.h
     main.cpp
 )

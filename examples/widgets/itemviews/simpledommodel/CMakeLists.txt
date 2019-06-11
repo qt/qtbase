@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Xml)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(simpledommodel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(simpledommodel WIN32 MACOSX_BUNDLE
     domitem.cpp domitem.h
     dommodel.cpp dommodel.h
     main.cpp

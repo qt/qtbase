@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(shapedclock WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(shapedclock WIN32 MACOSX_BUNDLE
     main.cpp
     shapedclock.cpp shapedclock.h
 )

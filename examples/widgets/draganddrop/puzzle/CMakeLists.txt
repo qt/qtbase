@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(draganddrop_puzzle WIN32 MACOSX_BUNDLE # special case: renamed puzzle
+add_qt_gui_executable(draganddrop_puzzle WIN32 MACOSX_BUNDLE # special case: renamed puzzle
     main.cpp
     mainwindow.cpp mainwindow.h
     pieceslist.cpp pieceslist.h

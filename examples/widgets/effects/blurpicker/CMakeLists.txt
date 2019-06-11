@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(blurpicker WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(blurpicker WIN32 MACOSX_BUNDLE
     blureffect.cpp blureffect.h
     blurpicker.cpp blurpicker.h blurpicker.qrc
     main.cpp

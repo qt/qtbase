@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_executable(gui_analogclock WIN32 MACOSX_BUNDLE # special case: renamed target
+add_qt_gui_executable(gui_analogclock WIN32 MACOSX_BUNDLE # special case: renamed target
     ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h
     main.cpp
 )

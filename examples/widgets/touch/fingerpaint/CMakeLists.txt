@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_executable(fingerpaint WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(fingerpaint WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp mainwindow.h
     scribblearea.cpp scribblearea.h

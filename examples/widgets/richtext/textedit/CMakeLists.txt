@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_executable(textedit WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(textedit WIN32 MACOSX_BUNDLE
     main.cpp
     textedit.cpp textedit.h textedit.qrc
 )

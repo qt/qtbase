@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_executable(imageviewer WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(imageviewer WIN32 MACOSX_BUNDLE
     imageviewer.cpp imageviewer.h
     main.cpp
 )

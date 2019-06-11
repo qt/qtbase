@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Xml)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(rsslisting WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(rsslisting WIN32 MACOSX_BUNDLE
     main.cpp
     rsslisting.cpp rsslisting.h
 )

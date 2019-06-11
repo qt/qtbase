@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(part3 WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(part3 WIN32 MACOSX_BUNDLE
     addressbook.cpp addressbook.h
     main.cpp
 )

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_executable(sliders WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(sliders WIN32 MACOSX_BUNDLE
     main.cpp
     slidersgroup.cpp slidersgroup.h
     window.cpp window.h

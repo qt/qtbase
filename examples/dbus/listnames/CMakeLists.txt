@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS DBus)
 
-add_executable(listnames WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(listnames WIN32 MACOSX_BUNDLE
     listnames.cpp
 )
 target_link_libraries(listnames PUBLIC
