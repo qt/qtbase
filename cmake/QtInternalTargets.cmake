@@ -48,8 +48,12 @@ function(qt_internal_set_warnings_are_errors_flags target)
             endif()
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        # using Visual Studio C++
-        target_compile_options("${target}" INTERFACE /WX)
+        # In qmake land, currently warnings as errors are only enabled for
+        # MSVC 2012, 2013, 2015.
+        # Respectively MSVC_VERRSIONs are: 1700-1799, 1800-1899, 1900-1909.
+        if(MSVC_VERSION GREATER_EQUAL 1700 AND MSVC_VERSION LESS_EQUAL 1909)
+            target_compile_options("${target}" INTERFACE /WX)
+        endif()
     endif()
 endfunction()
 
