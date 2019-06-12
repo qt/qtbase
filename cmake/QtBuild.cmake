@@ -766,12 +766,13 @@ function(qt_register_target_dependencies target public_libs private_libs)
         set(target_deps "")
     endif()
 
-    # TODO: should this also be in extend_target ? From the looks of it I would say that
-    # it is not necessary but I'm not sure
     foreach(lib IN LISTS public_libs private_libs)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
-            if (lib STREQUAL Platform OR lib STREQUAL GlobalConfig)
+            if (lib STREQUAL Platform OR lib STREQUAL GlobalConfig
+                    OR lib STREQUAL PlatformModuleInternal
+                    OR lib STREQUAL PlatformPluginInternal
+                    OR lib STREQUAL PlatformToolInternal)
                 list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
             elseif ("${lib}" MATCHES "(.*)Private")
                 list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${CMAKE_MATCH_1}\;${PROJECT_VERSION}")
@@ -871,7 +872,9 @@ function(extend_target target)
         if(TARGET "${target_private}")
           target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
         endif()
-        qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
+        qt_register_target_dependencies("${target}"
+                                        "${arg_PUBLIC_LIBRARIES}"
+                                        "${qt_libs_private};${arg_LIBRARIES}")
 
 
         qt_autogen_tools(${target}

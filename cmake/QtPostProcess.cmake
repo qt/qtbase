@@ -171,6 +171,8 @@ endfunction()
 
 function(qt_internal_create_plugin_depends_file target)
     get_target_property(qt_module "${target}" QT_MODULE)
+    get_target_property(depends "${target}" LINK_LIBRARIES)
+    get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
     get_target_property(target_deps "${target}" _qt_target_deps)
     set(target_deps_seen "")
 
