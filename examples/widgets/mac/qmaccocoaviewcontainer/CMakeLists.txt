@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(qmaccocoaviewcontainer WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(qmaccocoaviewcontainer
     main.mm
 )
 target_link_libraries(qmaccocoaviewcontainer PUBLIC
@@ -24,4 +24,5 @@ target_link_libraries(qmaccocoaviewcontainer PUBLIC
 install(TARGETS qmaccocoaviewcontainer
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

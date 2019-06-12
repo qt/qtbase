@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Xml)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(saxbookmarks WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(saxbookmarks
     main.cpp
     mainwindow.cpp mainwindow.h
     xbelgenerator.cpp xbelgenerator.h
@@ -27,4 +27,5 @@ target_link_libraries(saxbookmarks PUBLIC
 install(TARGETS saxbookmarks
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

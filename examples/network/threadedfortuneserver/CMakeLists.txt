@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(threadedfortuneserver WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(threadedfortuneserver
     dialog.cpp dialog.h
     fortuneserver.cpp fortuneserver.h
     fortunethread.cpp fortunethread.h
@@ -28,4 +28,5 @@ target_link_libraries(threadedfortuneserver PUBLIC
 install(TARGETS threadedfortuneserver
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

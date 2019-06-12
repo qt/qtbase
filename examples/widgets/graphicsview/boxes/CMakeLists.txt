@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS OpenGL)
 find_package(Qt5 COMPONENTS Widgets)
 
 
-add_qt_gui_executable(boxes WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(boxes
     3rdparty/fbm.c 3rdparty/fbm.h
     boxes.qrc
     glbuffers.cpp glbuffers.h
@@ -35,4 +35,5 @@ target_link_libraries(boxes PUBLIC
 install(TARGETS boxes
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

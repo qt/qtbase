@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(settingseditor WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(settingseditor
     locationdialog.cpp locationdialog.h
     main.cpp
     mainwindow.cpp mainwindow.h
@@ -27,4 +27,5 @@ target_link_libraries(settingseditor PUBLIC
 install(TARGETS settingseditor
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

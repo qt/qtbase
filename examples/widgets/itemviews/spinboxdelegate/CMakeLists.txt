@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(spinboxdelegate WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(spinboxdelegate
     delegate.cpp delegate.h
     main.cpp
 )
@@ -24,4 +24,5 @@ target_link_libraries(spinboxdelegate PUBLIC
 install(TARGETS spinboxdelegate
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

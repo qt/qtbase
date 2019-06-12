@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(fortuneclient WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(fortuneclient
     client.cpp client.h
     main.cpp
 )
@@ -26,4 +26,5 @@ target_link_libraries(fortuneclient PUBLIC
 install(TARGETS fortuneclient
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

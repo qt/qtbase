@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport)
 
-add_qt_gui_executable(orderform WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(orderform
     detailsdialog.cpp detailsdialog.h
     main.cpp
     mainwindow.cpp mainwindow.h
@@ -29,4 +29,5 @@ endif()
 install(TARGETS orderform
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

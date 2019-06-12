@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(codeeditor WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(codeeditor
     codeeditor.cpp codeeditor.h
     main.cpp
 )
@@ -24,4 +24,5 @@ target_link_libraries(codeeditor PUBLIC
 install(TARGETS codeeditor
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

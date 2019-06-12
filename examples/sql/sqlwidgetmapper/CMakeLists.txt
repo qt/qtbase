@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(sqlwidgetmapper WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(sqlwidgetmapper
     main.cpp
     window.cpp window.h
 )
@@ -26,4 +26,5 @@ target_link_libraries(sqlwidgetmapper PUBLIC
 install(TARGETS sqlwidgetmapper
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

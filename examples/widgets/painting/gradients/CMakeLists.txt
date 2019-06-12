@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(gradients WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(gradients
     # special case: remove files from ../shared
     gradients.cpp gradients.h gradients.qrc
     main.cpp
@@ -29,4 +29,5 @@ target_link_libraries(gradients PUBLIC
 install(TARGETS gradients
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

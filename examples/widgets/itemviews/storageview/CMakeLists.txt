@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Core)
 find_package(Qt5 COMPONENTS Gui)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(storageview WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(storageview
     main.cpp
     storagemodel.cpp storagemodel.h
 )
@@ -28,4 +28,5 @@ target_link_libraries(storageview PUBLIC
 install(TARGETS storageview
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

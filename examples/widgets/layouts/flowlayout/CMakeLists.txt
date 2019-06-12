@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(flowlayout WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(flowlayout
     flowlayout.cpp flowlayout.h
     main.cpp
     window.cpp window.h
@@ -25,4 +25,5 @@ target_link_libraries(flowlayout PUBLIC
 install(TARGETS flowlayout
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

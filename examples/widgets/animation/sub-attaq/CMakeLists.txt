@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS OpenGL) # special case
 
-add_qt_gui_executable(sub-attaq WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(sub-attaq
     animationmanager.cpp animationmanager.h
     boat.cpp boat.h boat_p.h
     bomb.cpp bomb.h
@@ -40,4 +40,5 @@ endif()
 install(TARGETS sub-attaq
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

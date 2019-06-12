@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(draggableicons WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(draggableicons
     draggableicons.qrc
     dragwidget.cpp dragwidget.h
     main.cpp
@@ -25,4 +25,5 @@ target_link_libraries(draggableicons PUBLIC
 install(TARGETS draggableicons
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

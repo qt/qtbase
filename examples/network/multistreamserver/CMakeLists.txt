@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(multistreamserver WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(multistreamserver
     chatprovider.cpp chatprovider.h
     main.cpp
     movieprovider.cpp movieprovider.h
@@ -30,4 +30,5 @@ target_link_libraries(multistreamserver PUBLIC
 install(TARGETS multistreamserver
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

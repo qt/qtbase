@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_qt_gui_executable(qrasterwindow WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(qrasterwindow
     main.cpp
 )
 target_link_libraries(qrasterwindow PUBLIC Qt::Gui) # special case: add
@@ -21,4 +21,5 @@ target_link_libraries(qrasterwindow PUBLIC Qt::Gui) # special case: add
 install(TARGETS qrasterwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

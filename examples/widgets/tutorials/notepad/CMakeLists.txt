@@ -14,7 +14,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_qt_gui_executable(notepad WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(notepad
     main.cpp
     notepad.cpp notepad.h notepad.qrc notepad.ui
 )
@@ -32,4 +32,5 @@ endif()
 install(TARGETS notepad
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

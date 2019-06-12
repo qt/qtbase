@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_qt_gui_executable(openglwindow WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(openglwindow
     main.cpp
     openglwindow.cpp openglwindow.h
 )
@@ -28,4 +28,5 @@ target_link_libraries(openglwindow PUBLIC
 install(TARGETS openglwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

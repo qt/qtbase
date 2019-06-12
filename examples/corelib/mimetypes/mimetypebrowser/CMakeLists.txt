@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(mimetypebrowser WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(mimetypebrowser
     main.cpp
     mainwindow.cpp mainwindow.h
     mimetypemodel.cpp mimetypemodel.h
@@ -24,4 +24,5 @@ target_link_libraries(mimetypebrowser PUBLIC
 install(TARGETS mimetypebrowser
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

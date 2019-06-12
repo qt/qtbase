@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(fridgemagnets WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(fridgemagnets
     draglabel.cpp draglabel.h
     dragwidget.cpp dragwidget.h
     fridgemagnets.qrc
@@ -26,4 +26,5 @@ target_link_libraries(fridgemagnets PUBLIC
 install(TARGETS fridgemagnets
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

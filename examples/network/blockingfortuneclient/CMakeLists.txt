@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(blockingfortuneclient WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(blockingfortuneclient
     blockingclient.cpp blockingclient.h
     fortunethread.cpp fortunethread.h
     main.cpp
@@ -27,4 +27,5 @@ target_link_libraries(blockingfortuneclient PUBLIC
 install(TARGETS blockingfortuneclient
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

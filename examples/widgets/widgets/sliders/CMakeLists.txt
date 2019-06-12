@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(sliders WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(sliders
     main.cpp
     slidersgroup.cpp slidersgroup.h
     window.cpp window.h
@@ -25,4 +25,5 @@ target_link_libraries(sliders PUBLIC
 install(TARGETS sliders
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

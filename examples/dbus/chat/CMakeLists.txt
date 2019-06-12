@@ -27,7 +27,7 @@ qt5_add_dbus_adaptor(chat_SRCS
     chat_adaptor
 )
 # special case end
-add_qt_gui_executable(chat WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(chat
     chat.cpp chat.h
     chatmainwindow.ui
     chatsetnickname.ui
@@ -40,4 +40,5 @@ target_link_libraries(chat PUBLIC
 install(TARGETS chat
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

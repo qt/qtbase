@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(styles WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(styles
     main.cpp
     norwegianwoodstyle.cpp norwegianwoodstyle.h
     styles.qrc
@@ -26,4 +26,5 @@ target_link_libraries(styles PUBLIC
 install(TARGETS styles
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

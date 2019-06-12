@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS OpenGL) # special case
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_qt_gui_executable(chip WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(chip
     chip.cpp chip.h
     images.qrc
     main.cpp
@@ -35,4 +35,5 @@ endif()
 install(TARGETS chip
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(tetrix WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(tetrix
     main.cpp
     tetrixboard.cpp tetrixboard.h
     tetrixpiece.cpp tetrixpiece.h
@@ -26,4 +26,5 @@ target_link_libraries(tetrix PUBLIC
 install(TARGETS tetrix
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

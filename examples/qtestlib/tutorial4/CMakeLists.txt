@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS Test)
 
-add_qt_gui_executable(tutorial4 WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(tutorial4
     testgui.cpp
 )
 target_link_libraries(tutorial4 PUBLIC
@@ -24,4 +24,5 @@ target_link_libraries(tutorial4 PUBLIC
 install(TARGETS tutorial4
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

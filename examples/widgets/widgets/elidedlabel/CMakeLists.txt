@@ -15,7 +15,7 @@ find_package(Qt5 COMPONENTS Core)
 find_package(Qt5 COMPONENTS Gui)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(elidedlabel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(elidedlabel
     elidedlabel.cpp elidedlabel.h
     main.cpp
     testwidget.cpp testwidget.h
@@ -29,4 +29,5 @@ target_link_libraries(elidedlabel PUBLIC
 install(TARGETS elidedlabel
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

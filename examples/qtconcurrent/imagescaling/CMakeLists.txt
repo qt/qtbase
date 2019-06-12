@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Concurrent)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(imagescaling WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(imagescaling
     imagescaling.cpp imagescaling.h
     main.cpp
 )
@@ -26,4 +26,5 @@ target_link_libraries(imagescaling PUBLIC
 install(TARGETS imagescaling
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

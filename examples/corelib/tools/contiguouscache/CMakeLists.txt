@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(contiguouscache WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(contiguouscache
     main.cpp
     randomlistmodel.cpp randomlistmodel.h
 )
@@ -23,4 +23,5 @@ target_link_libraries(contiguouscache PUBLIC
 install(TARGETS contiguouscache
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

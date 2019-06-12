@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(deform WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(deform
     # special case: remove files from ../shared
     deform.qrc
     main.cpp
@@ -30,4 +30,5 @@ target_link_libraries(deform PUBLIC
 install(TARGETS deform
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

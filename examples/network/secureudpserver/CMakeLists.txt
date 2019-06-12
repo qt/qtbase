@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS Network)
 
-add_qt_gui_executable(secureudpserver WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(secureudpserver
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
     nicselector.cpp nicselector.h nicselector.ui
@@ -28,4 +28,5 @@ target_link_libraries(secureudpserver PUBLIC
 install(TARGETS secureudpserver
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

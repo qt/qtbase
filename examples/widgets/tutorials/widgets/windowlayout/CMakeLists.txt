@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(windowlayout WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(windowlayout
     main.cpp
 )
 target_link_libraries(windowlayout PUBLIC
@@ -23,4 +23,5 @@ target_link_libraries(windowlayout PUBLIC
 install(TARGETS windowlayout
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(calculator WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(calculator
     button.cpp button.h
     calculator.cpp calculator.h
     main.cpp
@@ -25,4 +25,5 @@ target_link_libraries(calculator PUBLIC
 install(TARGETS calculator
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

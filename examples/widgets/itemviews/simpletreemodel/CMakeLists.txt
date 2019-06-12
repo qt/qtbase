@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(simpletreemodel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(simpletreemodel
     main.cpp
     simpletreemodel.qrc
     treeitem.cpp treeitem.h
@@ -26,4 +26,5 @@ target_link_libraries(simpletreemodel PUBLIC
 install(TARGETS simpletreemodel
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

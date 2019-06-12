@@ -390,12 +390,19 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
 endif()
 
 function(add_qt_gui_executable target)
-    add_executable(${ARGV})
+    if(ANDROID)
+        add_library("${target}" MODULE ${ARGN})
+    else()
+        add_executable("${target}" WIN32 MACOSX_BUNDLE ${ARGN})
+    endif()
     target_link_libraries("${target}" PRIVATE Qt::Core Qt::Gui)
 
-    list(FIND ARGV WIN32 WIN32_OPTION_IDX)
-    if(WIN32 AND NOT WIN32_OPTION_IDX EQUAL -1)
+    if(WIN32)
         target_link_libraries("${target}" PRIVATE Qt::WinMain)
+    endif()
+
+    if(ANDROID)
+        qt_android_generate_deployment_settings("${target}")
     endif()
 endfunction()
 

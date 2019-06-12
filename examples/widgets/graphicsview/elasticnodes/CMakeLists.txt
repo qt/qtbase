@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(elasticnodes WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(elasticnodes
     edge.cpp edge.h
     graphwidget.cpp graphwidget.h
     main.cpp
@@ -26,4 +26,5 @@ target_link_libraries(elasticnodes PUBLIC
 install(TARGETS elasticnodes
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

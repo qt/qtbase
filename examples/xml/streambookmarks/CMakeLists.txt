@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Xml)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(streambookmarks WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(streambookmarks
     main.cpp
     mainwindow.cpp mainwindow.h
     xbelreader.cpp xbelreader.h
@@ -27,4 +27,5 @@ target_link_libraries(streambookmarks PUBLIC
 install(TARGETS streambookmarks
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

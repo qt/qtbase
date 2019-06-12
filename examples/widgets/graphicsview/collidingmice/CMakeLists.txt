@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(collidingmice WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(collidingmice
     main.cpp
     mice.qrc
     mouse.cpp mouse.h
@@ -25,4 +25,5 @@ target_link_libraries(collidingmice PUBLIC
 install(TARGETS collidingmice
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

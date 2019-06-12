@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(googlesuggest WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(googlesuggest
     googlesuggest.cpp googlesuggest.h
     main.cpp
     searchbox.cpp searchbox.h
@@ -27,4 +27,5 @@ target_link_libraries(googlesuggest PUBLIC
 install(TARGETS googlesuggest
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

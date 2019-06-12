@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_qt_gui_executable(spreadsheet WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(spreadsheet
     main.cpp
     printview.cpp printview.h
     spreadsheet.cpp spreadsheet.h spreadsheet.qrc
@@ -33,4 +33,5 @@ endif()
 install(TARGETS spreadsheet
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

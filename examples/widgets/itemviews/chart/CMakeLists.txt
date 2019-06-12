@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(chart WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(chart
     chart.qrc
     main.cpp
     mainwindow.cpp mainwindow.h
@@ -26,4 +26,5 @@ target_link_libraries(chart PUBLIC
 install(TARGETS chart
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

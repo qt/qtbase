@@ -23,7 +23,7 @@ qt5_add_dbus_adaptor(car_SRCS
     car_adaptor
 )
 # special case end
-add_qt_gui_executable(car WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(car
     car.cpp car.h
     main.cpp
     ${car_SRCS} # special case
@@ -35,4 +35,5 @@ target_link_libraries(car PUBLIC
 install(TARGETS car
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(mv_tree WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(mv_tree
     main.cpp
     mainwindow.cpp mainwindow.h
 )
@@ -24,4 +24,5 @@ target_link_libraries(mv_tree PUBLIC
 install(TARGETS mv_tree
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

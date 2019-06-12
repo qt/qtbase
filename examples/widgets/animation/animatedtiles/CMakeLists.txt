@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(animatedtiles WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(animatedtiles
     animatedtiles.qrc
     main.cpp
 )
@@ -24,4 +24,5 @@ target_link_libraries(animatedtiles PUBLIC
 install(TARGETS animatedtiles
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

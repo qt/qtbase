@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(dragdroprobot WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(dragdroprobot
     coloritem.cpp coloritem.h
     main.cpp
     robot.cpp robot.h robot.qrc
@@ -25,4 +25,5 @@ target_link_libraries(dragdroprobot PUBLIC
 install(TARGETS dragdroprobot
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

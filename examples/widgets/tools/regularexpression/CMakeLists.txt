@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(regularexpression WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(regularexpression
     main.cpp
     regularexpression.qrc
     regularexpressiondialog.cpp regularexpressiondialog.h
@@ -25,4 +25,5 @@ target_link_libraries(regularexpression PUBLIC
 install(TARGETS regularexpression
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

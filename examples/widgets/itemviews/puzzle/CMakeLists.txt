@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(itemviews_puzzle WIN32 MACOSX_BUNDLE # special case: renamed puzzle
+add_qt_gui_executable(itemviews_puzzle # special case: renamed puzzle
     main.cpp
     mainwindow.cpp mainwindow.h
     piecesmodel.cpp piecesmodel.h
@@ -27,4 +27,5 @@ target_link_libraries(itemviews_puzzle PUBLIC # special case: renamed puzzle
 install(TARGETS itemviews_puzzle # special case: renamed puzzle
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

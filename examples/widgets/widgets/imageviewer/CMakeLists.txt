@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport) # special case
 
-add_qt_gui_executable(imageviewer WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(imageviewer
     imageviewer.cpp imageviewer.h
     main.cpp
 )
@@ -30,4 +30,5 @@ endif()
 install(TARGETS imageviewer
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

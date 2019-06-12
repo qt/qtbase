@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(pathstroke WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(pathstroke
     ../shared/arthurstyle.cpp ../shared/arthurstyle.h
     ../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
     ../shared/hoverpoints.cpp ../shared/hoverpoints.h
@@ -31,4 +31,5 @@ target_link_libraries(pathstroke PUBLIC
 install(TARGETS pathstroke
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

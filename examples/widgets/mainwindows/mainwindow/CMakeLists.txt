@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(mainwindow WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(mainwindow
     colorswatch.cpp colorswatch.h
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.qrc
@@ -26,4 +26,5 @@ target_link_libraries(mainwindow PUBLIC
 install(TARGETS mainwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

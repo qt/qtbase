@@ -21,7 +21,7 @@ qt5_add_dbus_interface(controller_SRCS
     car_interface
 )
 # special case end
-add_qt_gui_executable(controller WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(controller
     controller.cpp controller.h controller.ui
     main.cpp
     ${controller_SRCS} # special case
@@ -33,4 +33,5 @@ target_link_libraries(controller PUBLIC
 install(TARGETS controller
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

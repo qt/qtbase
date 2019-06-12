@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(windowcontainer WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(windowcontainer
     ../../gui/openglwindow/openglwindow.cpp ../../gui/openglwindow/openglwindow.h
     windowcontainer.cpp
 )
@@ -27,4 +27,5 @@ target_link_libraries(windowcontainer PUBLIC
 install(TARGETS windowcontainer
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

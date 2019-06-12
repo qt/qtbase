@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(plugandpaint WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(plugandpaint
     interfaces.h
     main.cpp
     mainwindow.cpp mainwindow.h
@@ -30,4 +30,5 @@ target_link_libraries(plugandpaint PUBLIC pnp_basictools) # special case
 install(TARGETS plugandpaint
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

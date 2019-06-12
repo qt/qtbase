@@ -1712,8 +1712,6 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
     add_executable = 'add_{}executable({}'.format("qt_gui_" if gui else "", binary_name);
-    if gui:
-        add_executable += ' WIN32 MACOSX_BUNDLE'
 
     write_all_source_file_lists(cm_fh, scope, add_executable, indent=0, extra_keys=['RESOURCES'])
 
@@ -1733,6 +1731,7 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
     cm_fh.write('\ninstall(TARGETS {}\n'.format(binary_name) +
                 '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
                 '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
+                '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
                 ')\n')
 
 

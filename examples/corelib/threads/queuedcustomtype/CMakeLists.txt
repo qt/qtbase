@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(queuedcustomtype WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(queuedcustomtype
     block.cpp block.h
     main.cpp
     renderthread.cpp renderthread.h
@@ -25,4 +25,5 @@ target_link_libraries(queuedcustomtype PUBLIC
 install(TARGETS queuedcustomtype
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

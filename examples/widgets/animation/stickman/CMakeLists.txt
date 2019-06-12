@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(stickman WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(stickman
     animation.cpp animation.h
     graphicsview.cpp graphicsview.h
     lifecycle.cpp lifecycle.h
@@ -29,4 +29,5 @@ target_link_libraries(stickman PUBLIC
 install(TARGETS stickman
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

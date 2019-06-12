@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(broadcastreceiver WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(broadcastreceiver
     main.cpp
     receiver.cpp receiver.h
 )
@@ -26,4 +26,5 @@ target_link_libraries(broadcastreceiver PUBLIC
 install(TARGETS broadcastreceiver
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

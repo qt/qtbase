@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(i18n WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(i18n
     i18n.qrc
     languagechooser.cpp languagechooser.h
     main.cpp
@@ -26,4 +26,5 @@ target_link_libraries(i18n PUBLIC
 install(TARGETS i18n
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(wiggly WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(wiggly
     dialog.cpp dialog.h
     main.cpp
     wigglywidget.cpp wigglywidget.h
@@ -25,4 +25,5 @@ target_link_libraries(wiggly PUBLIC
 install(TARGETS wiggly
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

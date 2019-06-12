@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(graphicsview_flowlayout WIN32 MACOSX_BUNDLE # special case: renamed flowlayout
+add_qt_gui_executable(graphicsview_flowlayout # special case: renamed flowlayout
     flowlayout.cpp flowlayout.h
     main.cpp
     window.cpp window.h
@@ -25,4 +25,5 @@ target_link_libraries(graphicsview_flowlayout PUBLIC # special case: renamed flo
 install(TARGETS graphicsview_flowlayout # special case: renamed flowlayout
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

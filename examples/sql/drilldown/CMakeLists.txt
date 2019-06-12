@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(drilldown WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(drilldown
     ../connection.h
     drilldown.qrc
     imageitem.cpp imageitem.h
@@ -30,4 +30,5 @@ target_link_libraries(drilldown PUBLIC
 install(TARGETS drilldown
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

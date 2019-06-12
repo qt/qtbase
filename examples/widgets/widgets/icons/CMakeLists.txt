@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(icons WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(icons
     iconpreviewarea.cpp iconpreviewarea.h
     iconsizespinbox.cpp iconsizespinbox.h
     imagedelegate.cpp imagedelegate.h
@@ -29,4 +29,5 @@ target_link_libraries(icons PUBLIC
 install(TARGETS icons
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

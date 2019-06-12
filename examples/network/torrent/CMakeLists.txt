@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(torrent WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(torrent
     addtorrentdialog.cpp addtorrentdialog.h
     bencodeparser.cpp bencodeparser.h
     connectionmanager.cpp connectionmanager.h
@@ -39,4 +39,5 @@ target_link_libraries(torrent PUBLIC
 install(TARGETS torrent
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

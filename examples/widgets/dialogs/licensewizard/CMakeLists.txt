@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Widgets)
 find_package(Qt5 COMPONENTS PrintSupport)
 
-add_qt_gui_executable(licensewizard WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(licensewizard
     licensewizard.cpp licensewizard.h licensewizard.qrc
     main.cpp
 )
@@ -26,4 +26,5 @@ target_link_libraries(licensewizard PUBLIC
 install(TARGETS licensewizard
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

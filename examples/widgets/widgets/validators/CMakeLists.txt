@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(validators WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(validators
     ledwidget.cpp ledwidget.h
     localeselector.cpp localeselector.h
     main.cpp
@@ -27,4 +27,5 @@ target_link_libraries(validators PUBLIC
 install(TARGETS validators
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

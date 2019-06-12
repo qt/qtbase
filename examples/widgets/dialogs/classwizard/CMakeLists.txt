@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(classwizard WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(classwizard
     classwizard.cpp classwizard.h classwizard.qrc
     main.cpp
 )
@@ -24,4 +24,5 @@ target_link_libraries(classwizard PUBLIC
 install(TARGETS classwizard
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

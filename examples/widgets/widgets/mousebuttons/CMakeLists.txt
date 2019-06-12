@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Core)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(mousebuttons WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(mousebuttons
     buttontester.cpp buttontester.h
     main.cpp
 )
@@ -26,4 +26,5 @@ target_link_libraries(mousebuttons PUBLIC
 install(TARGETS mousebuttons
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

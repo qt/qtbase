@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(sqlbrowser WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(sqlbrowser
     browser.cpp browser.h
     browserwidget.ui
     connectionwidget.cpp connectionwidget.h
@@ -29,4 +29,5 @@ target_link_libraries(sqlbrowser PUBLIC
 install(TARGETS sqlbrowser
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

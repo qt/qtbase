@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(composition WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(composition
     # special case: remove files from ../shared
     composition.cpp composition.h composition.qrc
     main.cpp
@@ -29,4 +29,5 @@ target_link_libraries(composition PUBLIC
 install(TARGETS composition
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

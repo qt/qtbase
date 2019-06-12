@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-add_qt_gui_executable(rasterwindow WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(rasterwindow
     main.cpp
     rasterwindow.cpp rasterwindow.h
 )
@@ -28,4 +28,5 @@ target_link_libraries(rasterwindow PUBLIC
 install(TARGETS rasterwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

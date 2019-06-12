@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(easing WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(easing
     animation.h
     easing.qrc
     form.ui
@@ -27,4 +27,5 @@ target_link_libraries(easing PUBLIC
 install(TARGETS easing
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

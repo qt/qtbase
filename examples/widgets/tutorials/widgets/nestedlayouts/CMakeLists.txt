@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(nestedlayouts WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(nestedlayouts
     main.cpp
 )
 target_link_libraries(nestedlayouts PUBLIC
@@ -23,4 +23,5 @@ target_link_libraries(nestedlayouts PUBLIC
 install(TARGETS nestedlayouts
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

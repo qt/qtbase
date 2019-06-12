@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Network)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(flightinfo WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(flightinfo
     flightinfo.cpp
     form.ui
     flightinfo.qrc # special case: add
@@ -26,4 +26,5 @@ target_link_libraries(flightinfo PUBLIC
 install(TARGETS flightinfo
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

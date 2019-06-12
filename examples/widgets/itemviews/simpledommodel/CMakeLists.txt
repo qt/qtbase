@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Xml)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(simpledommodel WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(simpledommodel
     domitem.cpp domitem.h
     dommodel.cpp dommodel.h
     main.cpp
@@ -28,4 +28,5 @@ target_link_libraries(simpledommodel PUBLIC
 install(TARGETS simpledommodel
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

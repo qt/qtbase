@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(borderlayout WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(borderlayout
     borderlayout.cpp borderlayout.h
     main.cpp
     window.cpp window.h
@@ -25,4 +25,5 @@ target_link_libraries(borderlayout PUBLIC
 install(TARGETS borderlayout
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

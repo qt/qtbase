@@ -13,7 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(treemodelcompleter WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(treemodelcompleter
     main.cpp
     mainwindow.cpp mainwindow.h
     treemodelcompleter.cpp treemodelcompleter.h treemodelcompleter.qrc
@@ -25,4 +25,5 @@ target_link_libraries(treemodelcompleter PUBLIC
 install(TARGETS treemodelcompleter
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

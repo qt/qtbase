@@ -14,7 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples")
 find_package(Qt5 COMPONENTS Sql)
 find_package(Qt5 COMPONENTS Widgets)
 
-add_qt_gui_executable(cachedtable WIN32 MACOSX_BUNDLE
+add_qt_gui_executable(cachedtable
     ../connection.h
     main.cpp
     tableeditor.cpp tableeditor.h
@@ -27,4 +27,5 @@ target_link_libraries(cachedtable PUBLIC
 install(TARGETS cachedtable
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
