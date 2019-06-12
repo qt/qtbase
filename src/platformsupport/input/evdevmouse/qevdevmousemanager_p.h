@@ -83,7 +83,6 @@ private:
 
     QString m_spec;
     QtInputSupport::DeviceHandlerList<QEvdevMouseHandler> m_mice;
-    QDeviceDiscovery *m_deviceDiscovery;
     int m_x;
     int m_y;
     int m_xoffset;

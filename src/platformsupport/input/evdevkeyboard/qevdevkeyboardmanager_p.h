@@ -79,7 +79,6 @@ private:
 
     QString m_spec;
     QtInputSupport::DeviceHandlerList<QEvdevKeyboardHandler> m_keyboards;
-    QDeviceDiscovery *m_deviceDiscovery;
     QString m_defaultKeymapFile;
 };
 

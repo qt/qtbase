@@ -72,16 +72,15 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
 
     if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevKey, "evdevkeyboard: Using device discovery");
-        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
-        if (m_deviceDiscovery) {
+        if (auto deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this)) {
             // scan and add already connected keyboards
-            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            const QStringList devices = deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addKeyboard(device);
 
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected,
                     this, &QEvdevKeyboardManager::addKeyboard);
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
                     this, &QEvdevKeyboardManager::removeKeyboard);
         }
     }

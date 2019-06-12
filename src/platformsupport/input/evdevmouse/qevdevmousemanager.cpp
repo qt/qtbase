@@ -82,16 +82,15 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 
     if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevMouse, "evdevmouse: Using device discovery");
-        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
-        if (m_deviceDiscovery) {
+        if (auto deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this)) {
             // scan and add already connected keyboards
-            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            const QStringList devices = deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addMouse(device);
 
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected,
                     this, &QEvdevMouseManager::addMouse);
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
                     this, &QEvdevMouseManager::removeMouse);
         }
     }

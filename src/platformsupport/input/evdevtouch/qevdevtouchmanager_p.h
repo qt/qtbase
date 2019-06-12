@@ -75,7 +75,6 @@ public:
 
 private:
     QString m_spec;
-    QDeviceDiscovery *m_deviceDiscovery;
     QtInputSupport::DeviceHandlerList<QEvdevTouchScreenHandlerThread> m_activeDevices;
 };
 

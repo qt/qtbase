@@ -75,7 +75,6 @@ private:
     void updateDeviceCount();
 
     QString m_spec;
-    QDeviceDiscovery *m_deviceDiscovery;
     QtInputSupport::DeviceHandlerList<QEvdevTabletHandlerThread> m_activeDevices;
 };
 

@@ -76,15 +76,14 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
     // when no devices specified, use device discovery to scan and monitor
     if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevTablet, "evdevtablet: Using device discovery");
-        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this);
-        if (m_deviceDiscovery) {
-            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+        if (auto deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this)) {
+            const QStringList devices = deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addDevice(device);
 
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected,
                     this, &QEvdevTabletManager::addDevice);
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
                     this, &QEvdevTabletManager::removeDevice);
         }
     }

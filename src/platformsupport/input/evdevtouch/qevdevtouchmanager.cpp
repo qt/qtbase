@@ -76,15 +76,14 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
     // when no devices specified, use device discovery to scan and monitor
     if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevTouch, "evdevtouch: Using device discovery");
-        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this);
-        if (m_deviceDiscovery) {
-            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+        if (auto deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this)) {
+            const QStringList devices = deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addDevice(device);
 
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected,
                     this, &QEvdevTouchManager::addDevice);
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
                     this, &QEvdevTouchManager::removeDevice);
         }
     }
