@@ -59,28 +59,13 @@ windows_specific_instrucitons:
   - &find_path_to_compiler
     # MSVC is installed in somehow arbitrary places. To reduce amount of combinations we need to make a variable.
     # This seems inverted, but on 64 bit hosts VS is installed into the x86 path, otherwise the regular one
-    # TODO cleanup, that step could be removed if we have same installation paths or we read the path from registry
-    # or we use %ProgramFiles(x86)%.
+    # TODO cleanup, that step could be removed if we have same installation paths or we read the path from registry.
     type: Group
     enable_if:
       condition: property
       property: host.os
       equals_value: Windows
     instructions:
-      - type: EnvironmentVariable
-        variableName: PROGRAM_FILES_PATH
-        variableValue: "C:\\Program Files"
-        disable_if:
-          condition: property
-          property: host.arch
-          not_equals_value: X86
-      - type: EnvironmentVariable
-        variableName: PROGRAM_FILES_PATH
-        variableValue: "C:\\Program Files (x86)"
-        disable_if:
-          condition: property
-          property: host.arch
-          equals_value: X86
       # Try to pick one of many coexistent MSVC installation to use
       # TODO cleanup, that could be much simpler if all tools are installed to similar paths, so it would
       # be enough to substitute compiler name.
@@ -100,35 +85,35 @@ windows_specific_instrucitons:
           equals_value: MSVC2010
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
-        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat"
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat"
         enable_if:
           condition: property
           property: host.compiler
           equals_value: MSVC2012
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
-        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
         enable_if:
           condition: property
           property: host.compiler
           equals_value: MSVC2013
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
-        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat"
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat"
         enable_if:
           condition: property
           property: host.compiler
           equals_value: MSVC2015
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
-        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         enable_if:
           condition: property
           property: host.compiler
           equals_value: MSVC2017
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
-        variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         enable_if:
           condition: property
           property: host.compiler
