@@ -40,6 +40,8 @@
 #include "qevdevtabletmanager_p.h"
 #include "qevdevtablethandler_p.h"
 
+#include <QtInputSupport/private/qevdevutil_p.h>
+
 #include <QStringList>
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -65,24 +67,14 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
-    QStringList devices;
+    auto parsed = QEvdevUtil::parseSpecification(spec);
+    m_spec = std::move(parsed.spec);
 
-    foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
-            devices.append(arg);
-            args.removeAll(arg);
-        }
-    }
-
-    // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1Char(':'));
-
-    foreach (const QString &device, devices)
+    for (const QString &device : qAsConst(parsed.devices))
         addDevice(device);
 
     // when no devices specified, use device discovery to scan and monitor
-    if (devices.isEmpty()) {
+    if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevTablet, "evdevtablet: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this);
         if (m_deviceDiscovery) {

@@ -40,6 +40,8 @@
 #include "qevdevtouchmanager_p.h"
 #include "qevdevtouchhandler_p.h"
 
+#include <QtInputSupport/private/qevdevutil_p.h>
+
 #include <QStringList>
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -65,24 +67,14 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
-    QStringList devices;
+    auto parsed = QEvdevUtil::parseSpecification(spec);
+    m_spec = std::move(parsed.spec);
 
-    foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
-            devices.append(arg);
-            args.removeAll(arg);
-        }
-    }
-
-    // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1Char(':'));
-
-    foreach (const QString &device, devices)
+    for (const QString &device : qAsConst(parsed.devices))
         addDevice(device);
 
     // when no devices specified, use device discovery to scan and monitor
-    if (devices.isEmpty()) {
+    if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevTouch, "evdevtouch: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this);
         if (m_deviceDiscovery) {

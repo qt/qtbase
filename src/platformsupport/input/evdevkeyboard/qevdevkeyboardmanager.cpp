@@ -39,6 +39,8 @@
 
 #include "qevdevkeyboardmanager_p.h"
 
+#include <QtInputSupport/private/qevdevutil_p.h>
+
 #include <QStringList>
 #include <QCoreApplication>
 #include <QLoggingCategory>
@@ -61,25 +63,14 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
-    QStringList devices;
-
-    foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
-            // if device is specified try to use it
-            devices.append(arg);
-            args.removeAll(arg);
-        }
-    }
-
-    // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1Char(':'));
+    auto parsed = QEvdevUtil::parseSpecification(spec);
+    m_spec = std::move(parsed.spec);
 
     // add all keyboards for devices specified in the argument list
-    foreach (const QString &device, devices)
+    for (const QString &device : qAsConst(parsed.devices))
         addKeyboard(device);
 
-    if (devices.isEmpty()) {
+    if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevKey, "evdevkeyboard: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
         if (m_deviceDiscovery) {

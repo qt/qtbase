@@ -39,6 +39,8 @@
 
 #include "qevdevmousemanager_p.h"
 
+#include <QtInputSupport/private/qevdevutil_p.h>
+
 #include <QStringList>
 #include <QGuiApplication>
 #include <QScreen>
@@ -63,29 +65,22 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
-    QStringList devices;
+    auto parsed = QEvdevUtil::parseSpecification(spec);
+    m_spec = std::move(parsed.spec);
 
-    foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
-            // if device is specified try to use it
-            devices.append(arg);
-            args.removeAll(arg);
-        } else if (arg.startsWith(QLatin1String("xoffset="))) {
+    for (const QStringRef &arg : qAsConst(parsed.args)) {
+        if (arg.startsWith(QLatin1String("xoffset="))) {
             m_xoffset = arg.mid(8).toInt();
         } else if (arg.startsWith(QLatin1String("yoffset="))) {
             m_yoffset = arg.mid(8).toInt();
         }
     }
 
-    // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1Char(':'));
-
     // add all mice for devices specified in the argument list
-    foreach (const QString &device, devices)
+    for (const QString &device : qAsConst(parsed.devices))
         addMouse(device);
 
-    if (devices.isEmpty()) {
+    if (parsed.devices.isEmpty()) {
         qCDebug(qLcEvdevMouse, "evdevmouse: Using device discovery");
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
         if (m_deviceDiscovery) {
