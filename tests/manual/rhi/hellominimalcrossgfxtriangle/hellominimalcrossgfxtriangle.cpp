@@ -339,8 +339,8 @@ void Window::init()
         qFatal("Failed to load shader pack (fragment)");
 
     m_ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, vs },
-        { QRhiGraphicsShaderStage::Fragment, fs }
+        { QRhiShaderStage::Vertex, vs },
+        { QRhiShaderStage::Fragment, fs }
     });
 
     QRhiVertexInputLayout inputLayout;

@@ -259,17 +259,18 @@ Q_GUI_EXPORT uint qHash(const QRhiVertexInputLayout &v, uint seed = 0) Q_DECL_NO
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 #endif
 
-class Q_GUI_EXPORT QRhiGraphicsShaderStage
+class Q_GUI_EXPORT QRhiShaderStage
 {
 public:
     enum Type {
         Vertex,
-        Fragment
+        Fragment,
+        Compute
     };
 
-    QRhiGraphicsShaderStage() = default;
-    QRhiGraphicsShaderStage(Type type, const QShader &shader,
-                            QShader::Variant v = QShader::StandardShader);
+    QRhiShaderStage() = default;
+    QRhiShaderStage(Type type, const QShader &shader,
+                    QShader::Variant v = QShader::StandardShader);
 
     Type type() const { return m_type; }
     void setType(Type t) { m_type = t; }
@@ -286,26 +287,35 @@ private:
     QShader::Variant m_shaderVariant = QShader::StandardShader;
 };
 
-Q_DECLARE_TYPEINFO(QRhiGraphicsShaderStage, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiShaderStage, Q_MOVABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiGraphicsShaderStage &a, const QRhiGraphicsShaderStage &b) Q_DECL_NOTHROW;
-Q_GUI_EXPORT bool operator!=(const QRhiGraphicsShaderStage &a, const QRhiGraphicsShaderStage &b) Q_DECL_NOTHROW;
-Q_GUI_EXPORT uint qHash(const QRhiGraphicsShaderStage &s, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHROW;
+Q_GUI_EXPORT bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHROW;
+Q_GUI_EXPORT uint qHash(const QRhiShaderStage &s, uint seed = 0) Q_DECL_NOTHROW;
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiGraphicsShaderStage &);
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderStage &);
 #endif
+
+using QRhiGraphicsShaderStage = QRhiShaderStage;
 
 class Q_GUI_EXPORT QRhiShaderResourceBinding
 {
 public:
     enum Type {
         UniformBuffer,
-        SampledTexture
+        SampledTexture,
+        ImageLoad,
+        ImageStore,
+        ImageLoadStore,
+        BufferLoad,
+        BufferStore,
+        BufferLoadStore
     };
 
     enum StageFlag {
         VertexStage = 1 << 0,
-        FragmentStage = 1 << 1
+        FragmentStage = 1 << 1,
+        ComputeStage = 1 << 2
     };
     Q_DECLARE_FLAGS(StageFlags, StageFlag)
 
@@ -320,7 +330,19 @@ public:
     static QRhiShaderResourceBinding uniformBuffer(int binding, StageFlags stage, QRhiBuffer *buf);
     static QRhiShaderResourceBinding uniformBuffer(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
     static QRhiShaderResourceBinding uniformBufferWithDynamicOffset(int binding, StageFlags stage, QRhiBuffer *buf, int size);
+
     static QRhiShaderResourceBinding sampledTexture(int binding, StageFlags stage, QRhiTexture *tex, QRhiSampler *sampler);
+
+    static QRhiShaderResourceBinding imageLoad(int binding, StageFlags stage, QRhiTexture *tex, int level);
+    static QRhiShaderResourceBinding imageStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
+    static QRhiShaderResourceBinding imageLoadStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
+
+    static QRhiShaderResourceBinding bufferLoad(int binding, StageFlags stage, QRhiBuffer *buf);
+    static QRhiShaderResourceBinding bufferLoad(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
+    static QRhiShaderResourceBinding bufferStore(int binding, StageFlags stage, QRhiBuffer *buf);
+    static QRhiShaderResourceBinding bufferStore(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
+    static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf);
+    static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
 
 private:
     QRhiShaderResourceBindingPrivate *d;
@@ -558,6 +580,7 @@ public:
         ShaderResourceBindings,
         GraphicsPipeline,
         SwapChain,
+        ComputePipeline,
         CommandBuffer
     };
 
@@ -594,7 +617,8 @@ public:
     enum UsageFlag {
         VertexBuffer = 1 << 0,
         IndexBuffer = 1 << 1,
-        UniformBuffer = 1 << 2
+        UniformBuffer = 1 << 2,
+        StorageBuffer = 1 << 3
     };
     Q_DECLARE_FLAGS(UsageFlags, UsageFlag)
 
@@ -629,7 +653,8 @@ public:
         MipMapped = 1 << 3,
         sRGB = 1 << 4,
         UsedAsTransferSource = 1 << 5,
-        UsedWithGenerateMips = 1 << 6
+        UsedWithGenerateMips = 1 << 6,
+        UsedWithLoadStore = 1 << 7
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1043,8 +1068,8 @@ public:
     int sampleCount() const { return m_sampleCount; }
     void setSampleCount(int s) { m_sampleCount = s; }
 
-    QVector<QRhiGraphicsShaderStage> shaderStages() const { return m_shaderStages; }
-    void setShaderStages(const QVector<QRhiGraphicsShaderStage> &stages) { m_shaderStages = stages; }
+    QVector<QRhiShaderStage> shaderStages() const { return m_shaderStages; }
+    void setShaderStages(const QVector<QRhiShaderStage> &stages) { m_shaderStages = stages; }
 
     QRhiVertexInputLayout vertexInputLayout() const { return m_vertexInputLayout; }
     void setVertexInputLayout(const QRhiVertexInputLayout &layout) { m_vertexInputLayout = layout; }
@@ -1073,7 +1098,7 @@ protected:
     quint32 m_stencilReadMask = 0xFF;
     quint32 m_stencilWriteMask = 0xFF;
     int m_sampleCount = 1;
-    QVector<QRhiGraphicsShaderStage> m_shaderStages;
+    QVector<QRhiShaderStage> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
     QRhiRenderPassDescriptor *m_renderPassDesc = nullptr;
@@ -1133,6 +1158,24 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiSwapChain::Flags)
 
+class Q_GUI_EXPORT QRhiComputePipeline : public QRhiResource
+{
+public:
+    QRhiResource::Type resourceType() const override;
+    virtual bool build() = 0;
+
+    QRhiShaderStage shaderStage() const { return m_shaderStage; }
+    void setShaderStage(const QRhiShaderStage &stage) { m_shaderStage = stage; }
+
+    QRhiShaderResourceBindings *shaderResourceBindings() const { return m_shaderResourceBindings; }
+    void setShaderResourceBindings(QRhiShaderResourceBindings *srb) { m_shaderResourceBindings = srb; }
+
+protected:
+    QRhiComputePipeline(QRhiImplementation *rhi);
+    QRhiShaderStage m_shaderStage;
+    QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
+};
+
 class Q_GUI_EXPORT QRhiCommandBuffer : public QRhiResource
 {
 public:
@@ -1180,6 +1223,11 @@ public:
     void debugMarkBegin(const QByteArray &name);
     void debugMarkEnd();
     void debugMarkMsg(const QByteArray &msg);
+
+    void beginComputePass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
+    void endComputePass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
+    void setComputePipeline(QRhiComputePipeline *ps);
+    void dispatch(int x, int y, int z);
 
     const QRhiNativeHandles *nativeHandles();
     void beginExternal();
@@ -1263,7 +1311,8 @@ public:
         NonFourAlignedEffectiveIndexBufferOffset,
         NPOTTextureRepeat,
         RedOrAlpha8IsRed,
-        ElementIndexUint
+        ElementIndexUint,
+        Compute
     };
 
     enum BeginFrameFlag {
@@ -1297,6 +1346,7 @@ public:
     void runCleanup();
 
     QRhiGraphicsPipeline *newGraphicsPipeline();
+    QRhiComputePipeline *newComputePipeline();
     QRhiShaderResourceBindings *newShaderResourceBindings();
 
     QRhiBuffer *newBuffer(QRhiBuffer::Type type,

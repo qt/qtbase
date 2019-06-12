@@ -201,6 +201,11 @@ QRhiGraphicsPipeline *QRhiNull::createGraphicsPipeline()
     return new QNullGraphicsPipeline(this);
 }
 
+QRhiComputePipeline *QRhiNull::createComputePipeline()
+{
+    return new QNullComputePipeline(this);
+}
+
 QRhiShaderResourceBindings *QRhiNull::createShaderResourceBindings()
 {
     return new QNullShaderResourceBindings(this);
@@ -297,6 +302,20 @@ void QRhiNull::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
     Q_UNUSED(msg);
 }
 
+void QRhiNull::setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(ps);
+}
+
+void QRhiNull::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(z);
+}
+
 const QRhiNativeHandles *QRhiNull::nativeHandles(QRhiCommandBuffer *cb)
 {
     Q_UNUSED(cb);
@@ -390,6 +409,18 @@ void QRhiNull::beginPass(QRhiCommandBuffer *cb,
 }
 
 void QRhiNull::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+{
+    if (resourceUpdates)
+        resourceUpdate(cb, resourceUpdates);
+}
+
+void QRhiNull::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+{
+    if (resourceUpdates)
+        resourceUpdate(cb, resourceUpdates);
+}
+
+void QRhiNull::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
 {
     if (resourceUpdates)
         resourceUpdate(cb, resourceUpdates);
@@ -643,6 +674,25 @@ void QNullGraphicsPipeline::release()
 }
 
 bool QNullGraphicsPipeline::build()
+{
+    return true;
+}
+
+QNullComputePipeline::QNullComputePipeline(QRhiImplementation *rhi)
+    : QRhiComputePipeline(rhi)
+{
+}
+
+QNullComputePipeline::~QNullComputePipeline()
+{
+    release();
+}
+
+void QNullComputePipeline::release()
+{
+}
+
+bool QNullComputePipeline::build()
 {
     return true;
 }

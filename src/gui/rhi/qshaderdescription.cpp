@@ -522,6 +522,21 @@ QVector<QShaderDescription::InOutVariable> QShaderDescription::storageImages() c
     return d->storageImages;
 }
 
+/*!
+    Returns the local size of a compute shader.
+
+    For example, for a compute shader with the following declaration the
+    function returns { 256, 16, 1}.
+
+    \badcode
+        layout(local_size_x = 256, local_size_y = 16, local_size_z = 1) in;
+    \endcode
+ */
+std::array<uint, 3> QShaderDescription::computeShaderLocalSize() const
+{
+    return d->localSize;
+}
+
 static struct TypeTab {
     QString k;
     QShaderDescription::VariableType v;
@@ -799,6 +814,7 @@ static const QString pushConstantBlocksKey = QLatin1String("pushConstantBlocks")
 static const QString storageBlocksKey = QLatin1String("storageBlocks");
 static const QString combinedImageSamplersKey = QLatin1String("combinedImageSamplers");
 static const QString storageImagesKey = QLatin1String("storageImages");
+static const QString localSizeKey = QLatin1String("localSize");
 
 static void addDeco(QJsonObject *obj, const QShaderDescription::InOutVariable &v)
 {
@@ -941,6 +957,11 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     if (!jstorageImages.isEmpty())
         root[storageImagesKey] = jstorageImages;
 
+    QJsonArray jlocalSize;
+    for (int i = 0; i < 3; ++i)
+        jlocalSize.append(QJsonValue(int(localSize[i])));
+    root[localSizeKey] = jlocalSize;
+
     return QJsonDocument(root);
 }
 
@@ -1081,6 +1102,14 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
         QJsonArray images = root[storageImagesKey].toArray();
         for (int i = 0; i < images.count(); ++i)
             storageImages.append(inOutVar(images[i].toObject()));
+    }
+
+    if (root.contains(localSizeKey)) {
+        QJsonArray localSizeArr = root[localSizeKey].toArray();
+        if (localSizeArr.count() == 3) {
+            for (int i = 0; i < 3; ++i)
+                localSize[i] = localSizeArr[i].toInt();
+        }
     }
 }
 

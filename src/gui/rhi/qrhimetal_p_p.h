@@ -113,6 +113,7 @@ struct QMetalTexture : public QRhiTexture
     int lastActiveFrameSlot = -1;
     friend class QRhiMetal;
     friend struct QMetalShaderResourceBindings;
+    friend struct QMetalTextureData;
 };
 
 struct QMetalSamplerData;
@@ -200,10 +201,20 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
         quint64 samplerId;
         uint samplerGeneration;
     };
+    struct BoundStorageImageData {
+        quint64 id;
+        uint generation;
+    };
+    struct BoundStorageBufferData {
+        quint64 id;
+        uint generation;
+    };
     struct BoundResourceData {
         union {
             BoundUniformBufferData ubuf;
             BoundSampledTextureData stex;
+            BoundStorageImageData simage;
+            BoundStorageBufferData sbuf;
         };
     };
     QVector<BoundResourceData> boundResourceData;
@@ -227,6 +238,21 @@ struct QMetalGraphicsPipeline : public QRhiGraphicsPipeline
     friend class QRhiMetal;
 };
 
+struct QMetalComputePipelineData;
+
+struct QMetalComputePipeline : public QRhiComputePipeline
+{
+    QMetalComputePipeline(QRhiImplementation *rhi);
+    ~QMetalComputePipeline();
+    void release() override;
+    bool build() override;
+
+    QMetalComputePipelineData *d;
+    uint generation = 0;
+    int lastActiveFrameSlot = -1;
+    friend class QRhiMetal;
+};
+
 struct QMetalCommandBufferData;
 struct QMetalSwapChain;
 
@@ -239,10 +265,19 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QMetalCommandBufferData *d = nullptr;
     QRhiMetalCommandBufferNativeHandles nativeHandlesStruct;
 
+    enum PassType {
+        NoPass,
+        RenderPass,
+        ComputePass
+    };
+
+    PassType recordingPass;
     QRhiRenderTarget *currentTarget;
-    QRhiGraphicsPipeline *currentPipeline;
+    QRhiGraphicsPipeline *currentGraphicsPipeline;
+    QRhiComputePipeline *currentComputePipeline;
     uint currentPipelineGeneration;
-    QRhiShaderResourceBindings *currentSrb;
+    QRhiShaderResourceBindings *currentGraphicsSrb;
+    QRhiShaderResourceBindings *currentComputeSrb;
     uint currentSrbGeneration;
     int currentResSlot;
     QRhiBuffer *currentIndexBuffer;
@@ -296,6 +331,7 @@ public:
     void destroy() override;
 
     QRhiGraphicsPipeline *createGraphicsPipeline() override;
+    QRhiComputePipeline *createComputePipeline() override;
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
@@ -360,6 +396,11 @@ public:
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
 
+    void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
+    void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
+
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
@@ -393,8 +434,6 @@ public:
 
     bool importedDevice = false;
     bool importedCmdQueue = false;
-    bool inFrame = false;
-    bool inPass = false;
     QMetalSwapChain *currentSwapChain = nullptr;
     QSet<QMetalSwapChain *> swapchains;
     QRhiMetalNativeHandles nativeHandlesStruct;

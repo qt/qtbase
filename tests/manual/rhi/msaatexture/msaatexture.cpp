@@ -164,8 +164,8 @@ void Window::customInit()
     d.psLeft = m_r->newGraphicsPipeline();
     d.releasePool << d.psLeft;
     d.psLeft->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
     });
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({ { 4 * sizeof(float) } });
@@ -181,11 +181,11 @@ void Window::customInit()
     d.psRight = m_r->newGraphicsPipeline();
     d.releasePool << d.psRight;
     d.psRight->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
 #ifndef NO_MSAA
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/texture_ms4.frag.qsb")) }
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/texture_ms4.frag.qsb")) }
 #else
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
 #endif
     });
     d.psRight->setVertexInputLayout(d.psLeft->vertexInputLayout());
@@ -219,8 +219,8 @@ void Window::customInit()
     d.releasePool << d.triPs;
     d.triPs->setSampleCount(1);
     d.triPs->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/color.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/color.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/color.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/color.frag.qsb")) }
     });
     inputLayout.setBindings({
         { 5 * sizeof(float) }

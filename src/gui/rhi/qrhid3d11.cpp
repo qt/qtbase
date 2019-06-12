@@ -375,6 +375,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ElementIndexUint:
         return true;
+    case QRhi::Compute:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -443,6 +445,11 @@ QRhiGraphicsPipeline *QRhiD3D11::createGraphicsPipeline()
     return new QD3D11GraphicsPipeline(this);
 }
 
+QRhiComputePipeline *QRhiD3D11::createComputePipeline()
+{
+    return new QD3D11ComputePipeline(this);
+}
+
 QRhiShaderResourceBindings *QRhiD3D11::createShaderResourceBindings()
 {
     return new QD3D11ShaderResourceBindings(this);
@@ -450,9 +457,8 @@ QRhiShaderResourceBindings *QRhiD3D11::createShaderResourceBindings()
 
 void QRhiD3D11::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline *ps)
 {
-    Q_ASSERT(inPass);
-
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
     QD3D11GraphicsPipeline *psD = QRHI_RES(QD3D11GraphicsPipeline, ps);
     const bool pipelineChanged = cbD->currentPipeline != ps || cbD->currentPipelineGeneration != psD->generation;
 
@@ -471,9 +477,8 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                                    int dynamicOffsetCount,
                                    const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
 {
-    Q_ASSERT(inPass);
-
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
     Q_ASSERT(cbD->currentPipeline);
 
     if (!srb)
@@ -568,8 +573,8 @@ void QRhiD3D11::setVertexInput(QRhiCommandBuffer *cb,
                                int startBinding, int bindingCount, const QRhiCommandBuffer::VertexInput *bindings,
                                QRhiBuffer *indexBuf, quint32 indexOffset, QRhiCommandBuffer::IndexFormat indexFormat)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
 
     bool needsBindVBuf = false;
     for (int i = 0; i < bindingCount; ++i) {
@@ -632,8 +637,8 @@ void QRhiD3D11::setVertexInput(QRhiCommandBuffer *cb,
 
 void QRhiD3D11::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
     Q_ASSERT(cbD->currentTarget);
     const QSize outputSize = cbD->currentTarget->pixelSize();
 
@@ -656,8 +661,8 @@ void QRhiD3D11::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 
 void QRhiD3D11::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
     Q_ASSERT(cbD->currentTarget);
     const QSize outputSize = cbD->currentTarget->pixelSize();
 
@@ -678,8 +683,9 @@ void QRhiD3D11::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 
 void QRhiD3D11::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
     QD3D11CommandBuffer::Command cmd;
     cmd.cmd = QD3D11CommandBuffer::Command::BlendConstants;
     cmd.args.blendConstants.ps = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentPipeline);
@@ -692,8 +698,9 @@ void QRhiD3D11::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
 
 void QRhiD3D11::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
     QD3D11CommandBuffer::Command cmd;
     cmd.cmd = QD3D11CommandBuffer::Command::StencilRef;
     cmd.args.stencilRef.ps = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentPipeline);
@@ -704,8 +711,9 @@ void QRhiD3D11::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 void QRhiD3D11::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
     QD3D11CommandBuffer::Command cmd;
     cmd.cmd = QD3D11CommandBuffer::Command::Draw;
     cmd.args.draw.ps = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentPipeline);
@@ -719,8 +727,9 @@ void QRhiD3D11::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
 void QRhiD3D11::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
                             quint32 instanceCount, quint32 firstIndex, qint32 vertexOffset, quint32 firstInstance)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
     QD3D11CommandBuffer::Command cmd;
     cmd.cmd = QD3D11CommandBuffer::Command::DrawIndexed;
     cmd.args.drawIndexed.ps = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentPipeline);
@@ -777,27 +786,22 @@ const QRhiNativeHandles *QRhiD3D11::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiD3D11::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_ASSERT(inPass);
     Q_UNUSED(cb);
     flushCommandBuffer();
 }
 
 void QRhiD3D11::endExternal(QRhiCommandBuffer *cb)
 {
-    Q_ASSERT(inPass);
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
-    Q_ASSERT(cbD->currentTarget);
     Q_ASSERT(cbD->commands.isEmpty());
     cbD->resetCachedState();
-    enqueueSetRenderTarget(cbD, cbD->currentTarget);
+    if (cbD->currentTarget) // could be compute, no rendertarget then
+        enqueueSetRenderTarget(cbD, cbD->currentTarget);
 }
 
 QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     Q_UNUSED(flags);
-
-    Q_ASSERT(!inFrame);
-    inFrame = true;
 
     QD3D11SwapChain *swapChainD = QRHI_RES(QD3D11SwapChain, swapChain);
     contextState.currentSwapChain = swapChainD;
@@ -844,9 +848,6 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
 QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags)
 {
-    Q_ASSERT(inFrame);
-    inFrame = false;
-
     QD3D11SwapChain *swapChainD = QRHI_RES(QD3D11SwapChain, swapChain);
     Q_ASSERT(contextState.currentSwapChain = swapChainD);
     const int currentFrameSlot = swapChainD->currentFrameSlot;
@@ -899,8 +900,6 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
 QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
 {
-    Q_ASSERT(!inFrame);
-    inFrame = true;
     ofr.active = true;
 
     ofr.cbWrapper.resetState();
@@ -911,8 +910,6 @@ QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
 
 QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame()
 {
-    Q_ASSERT(inFrame && ofr.active);
-    inFrame = false;
     ofr.active = false;
 
     executeCommandBuffer(&ofr.cbWrapper);
@@ -1047,8 +1044,6 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 
 QRhi::FrameOpResult QRhiD3D11::finish()
 {
-    Q_ASSERT(!inPass);
-
     if (inFrame)
         flushCommandBuffer();
 
@@ -1379,7 +1374,7 @@ static inline QD3D11RenderTargetData *rtData(QRhiRenderTarget *rt)
 
 void QRhiD3D11::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
 {
-    Q_ASSERT(inFrame && !inPass);
+    Q_ASSERT(QRHI_RES(QD3D11CommandBuffer, cb)->recordingPass == QD3D11CommandBuffer::NoPass);
 
     enqueueResourceUpdates(cb, resourceUpdates);
 }
@@ -1398,12 +1393,12 @@ void QRhiD3D11::beginPass(QRhiCommandBuffer *cb,
                           const QRhiDepthStencilClearValue &depthStencilClearValue,
                           QRhiResourceUpdateBatch *resourceUpdates)
 {
-    Q_ASSERT(inFrame && !inPass);
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::NoPass);
 
     if (resourceUpdates)
         enqueueResourceUpdates(cb, resourceUpdates);
 
-    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
     bool wantsColorClear = true;
     bool wantsDsClear = true;
     QD3D11RenderTargetData *rtD = rtData(rt);
@@ -1431,17 +1426,15 @@ void QRhiD3D11::beginPass(QRhiCommandBuffer *cb,
     clearCmd.args.clear.s = depthStencilClearValue.stencilClearValue();
     cbD->commands.append(clearCmd);
 
+    cbD->recordingPass = QD3D11CommandBuffer::RenderPass;
     cbD->currentTarget = rt;
-
-    inPass = true;
 }
 
 void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
 {
-    Q_ASSERT(inPass);
-    inPass = false;
-
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::RenderPass);
+
     if (cbD->currentTarget->resourceType() == QRhiResource::TextureRenderTarget) {
         QD3D11TextureRenderTarget *rtTex = QRHI_RES(QD3D11TextureRenderTarget, cbD->currentTarget);
         const QVector<QRhiColorAttachment> colorAttachments = rtTex->m_desc.colorAttachments();
@@ -1491,10 +1484,47 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
         }
     }
 
+    cbD->recordingPass = QD3D11CommandBuffer::NoPass;
     cbD->currentTarget = nullptr;
 
     if (resourceUpdates)
         enqueueResourceUpdates(cb, resourceUpdates);
+}
+
+void QRhiD3D11::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+{
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::NoPass);
+
+    if (resourceUpdates)
+        enqueueResourceUpdates(cb, resourceUpdates);
+
+    cbD->recordingPass = QD3D11CommandBuffer::ComputePass;
+}
+
+void QRhiD3D11::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+{
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::ComputePass);
+
+    cbD->recordingPass = QD3D11CommandBuffer::NoPass;
+
+    if (resourceUpdates)
+        enqueueResourceUpdates(cb, resourceUpdates);
+}
+
+void QRhiD3D11::setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(ps);
+}
+
+void QRhiD3D11::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(z);
 }
 
 void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD)
@@ -1709,6 +1739,8 @@ void QRhiD3D11::setRenderTarget(QRhiRenderTarget *rt)
 
 void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *timestampSwapChain)
 {
+    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::NoPass);
+
     quint32 stencilRef = 0;
     float blendConstants[] = { 1, 1, 1, 1 };
 
@@ -1910,6 +1942,11 @@ bool QD3D11Buffer::build()
 {
     if (buffer)
         release();
+
+    if (m_usage.testFlag(QRhiBuffer::UniformBuffer) && m_type != Dynamic) {
+        qWarning("UniformBuffer must always be combined with Dynamic on D3D11");
+        return false;
+    }
 
     const int nonZeroSize = m_size <= 0 ? 256 : m_size;
     const int roundedSize = m_usage.testFlag(QRhiBuffer::UniformBuffer) ? aligned(nonZeroSize, 256) : nonZeroSize;
@@ -3008,7 +3045,7 @@ bool QD3D11GraphicsPipeline::build()
     }
 
     QByteArray vsByteCode;
-    for (const QRhiGraphicsShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
         QString error;
         QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), &error);
         if (bytecode.isEmpty()) {
@@ -3016,7 +3053,7 @@ bool QD3D11GraphicsPipeline::build()
             return false;
         }
         switch (shaderStage.type()) {
-        case QRhiGraphicsShaderStage::Vertex:
+        case QRhiShaderStage::Vertex:
             hr = rhiD->dev->CreateVertexShader(bytecode.constData(), bytecode.size(), nullptr, &vs);
             if (FAILED(hr)) {
                 qWarning("Failed to create vertex shader: %s", qPrintable(comErrorMessage(hr)));
@@ -3024,7 +3061,7 @@ bool QD3D11GraphicsPipeline::build()
             }
             vsByteCode = bytecode;
             break;
-        case QRhiGraphicsShaderStage::Fragment:
+        case QRhiShaderStage::Fragment:
             hr = rhiD->dev->CreatePixelShader(bytecode.constData(), bytecode.size(), nullptr, &fs);
             if (FAILED(hr)) {
                 qWarning("Failed to create pixel shader: %s", qPrintable(comErrorMessage(hr)));
@@ -3070,6 +3107,25 @@ bool QD3D11GraphicsPipeline::build()
     generation += 1;
     rhiD->registerResource(this);
     return true;
+}
+
+QD3D11ComputePipeline::QD3D11ComputePipeline(QRhiImplementation *rhi)
+    : QRhiComputePipeline(rhi)
+{
+}
+
+QD3D11ComputePipeline::~QD3D11ComputePipeline()
+{
+    release();
+}
+
+void QD3D11ComputePipeline::release()
+{
+}
+
+bool QD3D11ComputePipeline::build()
+{
+    return false;
 }
 
 QD3D11CommandBuffer::QD3D11CommandBuffer(QRhiImplementation *rhi)

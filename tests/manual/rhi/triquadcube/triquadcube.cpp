@@ -171,6 +171,7 @@ void Window::customInit()
     qDebug("isFeatureSupported(NPOTTextureRepeat): %d", m_r->isFeatureSupported(QRhi::NPOTTextureRepeat));
     qDebug("isFeatureSupported(RedOrAlpha8IsRed): %d", m_r->isFeatureSupported(QRhi::RedOrAlpha8IsRed));
     qDebug("isFeatureSupported(ElementIndexUint): %d", m_r->isFeatureSupported(QRhi::ElementIndexUint));
+    qDebug("isFeatureSupported(Compute): %d", m_r->isFeatureSupported(QRhi::Compute));
     qDebug("Min 2D texture width/height: %d", m_r->resourceLimit(QRhi::TextureSizeMin));
     qDebug("Max 2D texture width/height: %d", m_r->resourceLimit(QRhi::TextureSizeMax));
     qDebug("Max color attachment count: %d", m_r->resourceLimit(QRhi::MaxColorAttachments));

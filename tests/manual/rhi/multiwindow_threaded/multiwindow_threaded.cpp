@@ -484,8 +484,8 @@ void Renderer::init()
     m_ps->setFrontFace(QRhiGraphicsPipeline::CCW);
 
     m_ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
     });
 
     QRhiVertexInputLayout inputLayout;

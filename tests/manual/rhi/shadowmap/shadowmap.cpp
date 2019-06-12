@@ -128,8 +128,8 @@ void Window::customInit()
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
     d.ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/main.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/main.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/main.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/main.frag.qsb")) }
     });
     d.ps->setDepthTest(true);
     d.ps->setDepthWrite(true);
@@ -168,8 +168,8 @@ void Window::customInit()
     d.shadowPs = m_r->newGraphicsPipeline();
     d.releasePool << d.shadowPs;
     d.shadowPs->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/shadowmap.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/shadowmap.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/shadowmap.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/shadowmap.frag.qsb")) }
     });
     d.shadowPs->setDepthTest(true);
     d.shadowPs->setDepthWrite(true);

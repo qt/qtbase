@@ -266,8 +266,8 @@ void Window::customInit()
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
     d.ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
     });
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({

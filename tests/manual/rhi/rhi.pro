@@ -14,7 +14,9 @@ SUBDIRS += \
     offscreen \
     floattexture \
     mrt \
-    shadowmap
+    shadowmap \
+    computebuffer \
+    computeimage
 
 qtConfig(widgets) {
     SUBDIRS += \

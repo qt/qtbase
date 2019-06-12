@@ -61,6 +61,8 @@ static const int QVK_FRAMES_IN_FLIGHT = 2;
 static const int QVK_DESC_SETS_PER_POOL = 128;
 static const int QVK_UNIFORM_BUFFERS_PER_POOL = 256;
 static const int QVK_COMBINED_IMAGE_SAMPLERS_PER_POOL = 256;
+static const int QVK_STORAGE_BUFFERS_PER_POOL = 128;
+static const int QVK_STORAGE_IMAGES_PER_POOL = 128;
 
 static const int QVK_MAX_ACTIVE_TIMESTAMP_PAIRS = 16;
 
@@ -123,12 +125,14 @@ struct QVkTexture : public QRhiTexture
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
     bool finishBuild();
+    VkImageView imageViewForLevel(int level);
 
     VkImage image = VK_NULL_HANDLE;
     VkImageView imageView = VK_NULL_HANDLE;
     QVkAlloc imageAlloc = nullptr;
     VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
+    VkImageView perLevelImageViews[QRhi::MAX_LEVELS];
     bool owns = true;
     QRhiVulkanTextureNativeHandles nativeHandlesStruct;
     struct UsageState {
@@ -246,10 +250,20 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
         quint64 samplerId;
         uint samplerGeneration;
     };
+    struct BoundStorageImageData {
+        quint64 id;
+        uint generation;
+    };
+    struct BoundStorageBufferData {
+        quint64 id;
+        uint generation;
+    };
     struct BoundResourceData {
         union {
             BoundUniformBufferData ubuf;
             BoundSampledTextureData stex;
+            BoundStorageImageData simage;
+            BoundStorageBufferData sbuf;
         };
     };
     QVector<BoundResourceData> boundResourceData[QVK_FRAMES_IN_FLIGHT];
@@ -263,6 +277,20 @@ struct QVkGraphicsPipeline : public QRhiGraphicsPipeline
 {
     QVkGraphicsPipeline(QRhiImplementation *rhi);
     ~QVkGraphicsPipeline();
+    void release() override;
+    bool build() override;
+
+    VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    int lastActiveFrameSlot = -1;
+    uint generation = 0;
+    friend class QRhiVulkan;
+};
+
+struct QVkComputePipeline : public QRhiComputePipeline
+{
+    QVkComputePipeline(QRhiImplementation *rhi);
+    ~QVkComputePipeline();
     void release() override;
     bool build() override;
 
@@ -287,16 +315,25 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         return &nativeHandlesStruct;
     }
 
+    enum PassType {
+        NoPass,
+        RenderPass,
+        ComputePass
+    };
+
     void resetState() {
         resetCommands();
+        recordingPass = NoPass;
         currentTarget = nullptr;
         resetCachedState();
     }
 
     void resetCachedState() {
-        currentPipeline = nullptr;
+        currentGraphicsPipeline = nullptr;
+        currentComputePipeline = nullptr;
         currentPipelineGeneration = 0;
-        currentSrb = nullptr;
+        currentGraphicsSrb = nullptr;
+        currentComputeSrb = nullptr;
         currentSrbGeneration = 0;
         currentDescSetSlot = -1;
         currentIndexBuffer = VK_NULL_HANDLE;
@@ -306,10 +343,13 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
     }
 
+    PassType recordingPass;
     QRhiRenderTarget *currentTarget;
-    QRhiGraphicsPipeline *currentPipeline;
+    QRhiGraphicsPipeline *currentGraphicsPipeline;
+    QRhiComputePipeline *currentComputePipeline;
     uint currentPipelineGeneration;
-    QRhiShaderResourceBindings *currentSrb;
+    QRhiShaderResourceBindings *currentGraphicsSrb;
+    QRhiShaderResourceBindings *currentComputeSrb;
     uint currentSrbGeneration;
     int currentDescSetSlot;
     VkBuffer currentIndexBuffer;
@@ -343,7 +383,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             DebugMarkerBegin,
             DebugMarkerEnd,
             DebugMarkerInsert,
-            TransitionPassResources
+            TransitionPassResources,
+            Dispatch
         };
         Cmd cmd;
 
@@ -456,6 +497,9 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             struct {
                 int trackerIndex;
             } transitionResources;
+            struct {
+                int x, y, z;
+            } dispatch;
         } args;
     };
     QVector<Command> commands;
@@ -532,7 +576,12 @@ struct QVkSwapChain : public QRhiSwapChain
         VkFramebuffer fb = VK_NULL_HANDLE;
         VkImage msaaImage = VK_NULL_HANDLE;
         VkImageView msaaImageView = VK_NULL_HANDLE;
-        bool transferSource = false;
+        enum LastUse {
+            ScImageUseNone,
+            ScImageUseRender,
+            ScImageUseTransferSource
+        };
+        LastUse lastUse = ScImageUseNone;
     } imageRes[MAX_BUFFER_COUNT];
 
     struct FrameResources {
@@ -565,6 +614,7 @@ public:
     void destroy() override;
 
     QRhiGraphicsPipeline *createGraphicsPipeline() override;
+    QRhiComputePipeline *createComputePipeline() override;
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
@@ -628,6 +678,11 @@ public:
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
+
+    void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
+    void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
 
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
@@ -722,6 +777,7 @@ public:
     VkCommandPool cmdPool = VK_NULL_HANDLE;
     int gfxQueueFamilyIdx = -1;
     VkQueue gfxQueue = VK_NULL_HANDLE;
+    bool hasCompute = false;
     quint32 timestampValidBits = 0;
     bool importedAllocator = false;
     QVkAllocator allocator = nullptr;
@@ -765,8 +821,6 @@ public:
     VkFormat optimalDsFormat = VK_FORMAT_UNDEFINED;
     QMatrix4x4 clipCorrectMatrix;
 
-    bool inFrame = false;
-    bool inPass = false;
     QVkSwapChain *currentSwapChain = nullptr;
     QSet<QVkSwapChain *> swapchains;
     QRhiVulkanNativeHandles nativeHandlesStruct;
@@ -830,6 +884,7 @@ public:
                 QVkAlloc allocation;
                 VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
                 QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
+                VkImageView extraImageViews[QRhi::MAX_LEVELS];
             } texture;
             struct {
                 VkSampler sampler;

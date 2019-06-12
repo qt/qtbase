@@ -234,8 +234,8 @@ void ensureSharedResources(QRhiRenderPassDescriptor *rp)
             qFatal("Failed to load shader pack (fragment)");
 
         d.ps->setShaderStages({
-                                  { QRhiGraphicsShaderStage::Vertex, vs },
-                                  { QRhiGraphicsShaderStage::Fragment, fs }
+                                  { QRhiShaderStage::Vertex, vs },
+                                  { QRhiShaderStage::Fragment, fs }
                               });
 
         QRhiVertexInputLayout inputLayout;

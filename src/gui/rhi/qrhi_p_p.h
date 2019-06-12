@@ -70,6 +70,7 @@ public:
     virtual void destroy() = 0;
 
     virtual QRhiGraphicsPipeline *createGraphicsPipeline() = 0;
+    virtual QRhiComputePipeline *createComputePipeline() = 0;
     virtual QRhiShaderResourceBindings *createShaderResourceBindings() = 0;
     virtual QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                                      QRhiBuffer::UsageFlags usage,
@@ -132,6 +133,11 @@ public:
     virtual void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) = 0;
     virtual void debugMarkEnd(QRhiCommandBuffer *cb) = 0;
     virtual void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) = 0;
+
+    virtual void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;
+    virtual void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;
+    virtual void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) = 0;
+    virtual void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) = 0;
 
     virtual const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) = 0;
     virtual void beginExternal(QRhiCommandBuffer *cb) = 0;
@@ -200,6 +206,7 @@ public:
 protected:
     bool debugMarkers = false;
     int currentFrameSlot = 0; // for vk, mtl, and similar. unused by gl and d3d11.
+    bool inFrame = false;
 
 private:
     QRhi::Implementation implType;
@@ -210,7 +217,6 @@ private:
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingReleaseAndDestroyResources;
     QVector<QRhi::CleanupCallback> cleanupCallbacks;
-    bool inFrame = false;
 
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;
@@ -393,9 +399,20 @@ public:
         QRhiTexture *tex;
         QRhiSampler *sampler;
     };
+    struct StorageImageData {
+        QRhiTexture *tex;
+        int level;
+    };
+    struct StorageBufferData {
+        QRhiBuffer *buf;
+        int offset;
+        int maybeSize;
+    };
     union {
         UniformBufferData ubuf;
         SampledTextureData stex;
+        StorageImageData simage;
+        StorageBufferData sbuf;
     } u;
 };
 
@@ -487,33 +504,41 @@ public:
     enum BufferStage {
         BufVertexInputStage,
         BufVertexStage,
-        BufFragmentStage
+        BufFragmentStage,
+        BufComputeStage
     };
 
     enum BufferAccess {
         BufVertexInput,
         BufIndexRead,
-        BufUniformRead
+        BufUniformRead,
+        BufStorageLoad,
+        BufStorageStore,
+        BufStorageLoadStore
     };
 
-    void registerBufferOnce(QRhiBuffer *buf, int slot, BufferAccess access, BufferStage stage,
-                            const UsageState &stateAtPassBegin);
+    void registerBuffer(QRhiBuffer *buf, int slot, BufferAccess *access, BufferStage *stage,
+                        const UsageState &state);
 
     enum TextureStage {
         TexVertexStage,
         TexFragmentStage,
         TexColorOutputStage,
-        TexDepthOutputStage
+        TexDepthOutputStage,
+        TexComputeStage
     };
 
     enum TextureAccess {
         TexSample,
         TexColorOutput,
-        TexDepthOutput
+        TexDepthOutput,
+        TexStorageLoad,
+        TexStorageStore,
+        TexStorageLoadStore
     };
 
-    void registerTextureOnce(QRhiTexture *tex, TextureAccess access, TextureStage stage,
-                             const UsageState &stateAtPassBegin);
+    void registerTexture(QRhiTexture *tex, TextureAccess *access, TextureStage *stage,
+                         const UsageState &state);
 
     struct Buffer {
         QRhiBuffer *buf;

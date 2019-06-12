@@ -121,8 +121,8 @@ void Window::customInit()
     QShader fs = getShader(QLatin1String(":/cubemap.frag.qsb"));
     Q_ASSERT(fs.isValid());
     d.ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, vs },
-        { QRhiGraphicsShaderStage::Fragment, fs }
+        { QRhiShaderStage::Vertex, vs },
+        { QRhiShaderStage::Fragment, fs }
     });
 
     QRhiVertexInputLayout inputLayout;

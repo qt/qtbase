@@ -51,6 +51,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QVector>
+#include <array>
 
 QT_BEGIN_NAMESPACE
 
@@ -253,6 +254,8 @@ public:
     QVector<StorageBlock> storageBlocks() const;
     QVector<InOutVariable> combinedImageSamplers() const;
     QVector<InOutVariable> storageImages() const;
+
+    std::array<uint, 3> computeShaderLocalSize() const;
 
 private:
     QShaderDescriptionPrivate *d;

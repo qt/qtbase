@@ -254,6 +254,14 @@ struct QD3D11GraphicsPipeline : public QRhiGraphicsPipeline
     friend class QRhiD3D11;
 };
 
+struct QD3D11ComputePipeline : public QRhiComputePipeline
+{
+    QD3D11ComputePipeline(QRhiImplementation *rhi);
+    ~QD3D11ComputePipeline();
+    void release() override;
+    bool build() override;
+};
+
 struct QD3D11SwapChain;
 
 struct QD3D11CommandBuffer : public QRhiCommandBuffer
@@ -387,7 +395,14 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         } args;
     };
 
+    enum PassType {
+        NoPass,
+        RenderPass,
+        ComputePass
+    };
+
     QVector<Command> commands;
+    PassType recordingPass;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentPipeline;
     uint currentPipelineGeneration;
@@ -418,6 +433,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     }
     void resetState() {
         resetCommands();
+        recordingPass = NoPass;
         currentTarget = nullptr;
         resetCachedState();
     }
@@ -484,6 +500,7 @@ public:
     void destroy() override;
 
     QRhiGraphicsPipeline *createGraphicsPipeline() override;
+    QRhiComputePipeline *createComputePipeline() override;
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
@@ -548,6 +565,11 @@ public:
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
 
+    void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
+    void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
+
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
@@ -590,9 +612,6 @@ public:
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
-
-    bool inFrame = false;
-    bool inPass = false;
 
     struct {
         int vsHighestActiveSrvBinding = -1;

@@ -157,8 +157,8 @@ void Window::customInit()
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
     d.ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/texture.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/texture.frag.qsb")) }
     });
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({
@@ -197,8 +197,8 @@ void Window::customInit()
     d.triPs = m_r->newGraphicsPipeline();
     d.releasePool << d.triPs;
     d.triPs->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, getShader(QLatin1String(":/mrt.vert.qsb")) },
-        { QRhiGraphicsShaderStage::Fragment, getShader(QLatin1String(":/mrt.frag.qsb")) }
+        { QRhiShaderStage::Vertex, getShader(QLatin1String(":/mrt.vert.qsb")) },
+        { QRhiShaderStage::Fragment, getShader(QLatin1String(":/mrt.frag.qsb")) }
     });
     QVector<QRhiGraphicsPipeline::TargetBlend> blends;
     for (int i = 0; i < ATTCOUNT; ++i) {

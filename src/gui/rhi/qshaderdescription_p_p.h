@@ -60,6 +60,7 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     QShaderDescriptionPrivate()
         : ref(1)
     {
+        localSize[0] = localSize[1] = localSize[2] = 0;
     }
 
     QShaderDescriptionPrivate(const QShaderDescriptionPrivate *other)
@@ -70,7 +71,8 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
           pushConstantBlocks(other->pushConstantBlocks),
           storageBlocks(other->storageBlocks),
           combinedImageSamplers(other->combinedImageSamplers),
-          storageImages(other->storageImages)
+          storageImages(other->storageImages),
+          localSize(other->localSize)
     {
     }
 
@@ -88,6 +90,7 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     QVector<QShaderDescription::StorageBlock> storageBlocks;
     QVector<QShaderDescription::InOutVariable> combinedImageSamplers;
     QVector<QShaderDescription::InOutVariable> storageImages;
+    std::array<uint, 3> localSize;
 };
 
 QT_END_NAMESPACE

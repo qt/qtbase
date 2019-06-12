@@ -138,8 +138,8 @@ void TriangleOnCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
     QShader fs = getShader(QLatin1String(":/texture.frag.qsb"));
     Q_ASSERT(fs.isValid());
     m_ps->setShaderStages({
-        { QRhiGraphicsShaderStage::Vertex, vs },
-        { QRhiGraphicsShaderStage::Fragment, fs }
+        { QRhiShaderStage::Vertex, vs },
+        { QRhiShaderStage::Fragment, fs }
     });
 
     QRhiVertexInputLayout inputLayout;

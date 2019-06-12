@@ -154,6 +154,14 @@ struct QNullGraphicsPipeline : public QRhiGraphicsPipeline
     bool build() override;
 };
 
+struct QNullComputePipeline : public QRhiComputePipeline
+{
+    QNullComputePipeline(QRhiImplementation *rhi);
+    ~QNullComputePipeline();
+    void release() override;
+    bool build() override;
+};
+
 struct QNullCommandBuffer : public QRhiCommandBuffer
 {
     QNullCommandBuffer(QRhiImplementation *rhi);
@@ -189,6 +197,7 @@ public:
     void destroy() override;
 
     QRhiGraphicsPipeline *createGraphicsPipeline() override;
+    QRhiComputePipeline *createComputePipeline() override;
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
@@ -252,6 +261,11 @@ public:
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
+
+    void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
+    void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
 
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;

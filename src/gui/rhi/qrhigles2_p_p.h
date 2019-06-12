@@ -248,6 +248,14 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 Q_DECLARE_TYPEINFO(QGles2GraphicsPipeline::Uniform, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QGles2GraphicsPipeline::Sampler, Q_MOVABLE_TYPE);
 
+struct QGles2ComputePipeline : public QRhiComputePipeline
+{
+    QGles2ComputePipeline(QRhiImplementation *rhi);
+    ~QGles2ComputePipeline();
+    void release() override;
+    bool build() override;
+};
+
 struct QGles2CommandBuffer : public QRhiCommandBuffer
 {
     QGles2CommandBuffer(QRhiImplementation *rhi);
@@ -426,7 +434,14 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         } args;
     };
 
+    enum PassType {
+        NoPass,
+        RenderPass,
+        ComputePass
+    };
+
     QVector<Command> commands;
+    PassType recordingPass;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentPipeline;
     uint currentPipelineGeneration;
@@ -452,6 +467,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     }
     void resetState() {
         resetCommands();
+        recordingPass = NoPass;
         currentTarget = nullptr;
         resetCachedState();
     }
@@ -495,6 +511,7 @@ public:
     void destroy() override;
 
     QRhiGraphicsPipeline *createGraphicsPipeline() override;
+    QRhiComputePipeline *createComputePipeline() override;
     QRhiShaderResourceBindings *createShaderResourceBindings() override;
     QRhiBuffer *createBuffer(QRhiBuffer::Type type,
                              QRhiBuffer::UsageFlags usage,
@@ -558,6 +575,11 @@ public:
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
+
+    void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
+    void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;
 
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
@@ -645,8 +667,6 @@ public:
         uint uniformBuffers : 1;
         uint elementIndexUint : 1;
     } caps;
-    bool inFrame = false;
-    bool inPass = false;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;
     mutable QVector<int> supportedSampleCountList;

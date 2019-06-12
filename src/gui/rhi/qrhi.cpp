@@ -266,6 +266,18 @@ QT_BEGIN_NAMESPACE
     transitions. Such synchronization is done implicitly by the backends, where
     applicable (for example, Vulkan), by tracking resource usage as necessary.
 
+    \note Resources within a render or compute pass are expected to be bound to
+    a single usage during that pass. For example, a buffer can be used as
+    vertex, index, uniform, or storage buffer, but not a combination of them
+    within a single pass. However, it is perfectly fine to use a buffer as a
+    storage buffer in a compute pass, and then as a vertex buffer in a render
+    pass, for example, assuming the buffer declared both usages upon creation.
+
+    \note Textures have this rule relaxed in certain cases, because using two
+    subresources (typically two different mip levels) of the same texture for
+    different access (one for load, one for store) is supported even within the
+    same pass.
+
     \section3 Resource reuse
 
     From the user's point of view a QRhiResource is reusable immediately after
@@ -481,6 +493,8 @@ QT_BEGIN_NAMESPACE
     when running on plain OpenGL ES 2.0 implementations without the necessary
     extension. When false, only 16-bit unsigned elements are supported in the
     index buffer.
+
+    \value Compute Indicates that compute shaders are supported.
  */
 
 /*!
@@ -1131,21 +1145,22 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 #endif
 
 /*!
-    \class QRhiGraphicsShaderStage
+    \class QRhiShaderStage
     \inmodule QtRhi
-    \brief Specifies the type and the shader code for a shader stage in the graphics pipeline.
+    \brief Specifies the type and the shader code for a shader stage in the pipeline.
  */
 
 /*!
-    \enum QRhiGraphicsShaderStage::Type
+    \enum QRhiShaderStage::Type
     Specifies the type of the shader stage.
 
     \value Vertex Vertex stage
     \value Fragment Fragment (pixel) stage
+    \value Compute Compute stage (this may not always be supported at run time)
  */
 
 /*!
-    \fn QRhiGraphicsShaderStage::QRhiGraphicsShaderStage()
+    \fn QRhiShaderStage::QRhiShaderStage()
 
     Constructs a shader stage description for the vertex stage with an empty
     QShader.
@@ -1160,7 +1175,7 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
     In addition, it can also contain variants of the shader with slightly
     modified code. \a v can then be used to select the desired variant.
  */
-QRhiGraphicsShaderStage::QRhiGraphicsShaderStage(Type type, const QShader &shader, QShader::Variant v)
+QRhiShaderStage::QRhiShaderStage(Type type, const QShader &shader, QShader::Variant v)
     : m_type(type),
       m_shader(shader),
       m_shaderVariant(v)
@@ -1168,12 +1183,12 @@ QRhiGraphicsShaderStage::QRhiGraphicsShaderStage(Type type, const QShader &shade
 }
 
 /*!
-    \return \c true if the values in the two QRhiGraphicsShaderStage objects
+    \return \c true if the values in the two QRhiShaderStage objects
     \a a and \a b are equal.
 
-    \relates QRhiGraphicsShaderStage
+    \relates QRhiShaderStage
  */
-bool operator==(const QRhiGraphicsShaderStage &a, const QRhiGraphicsShaderStage &b) Q_DECL_NOTHROW
+bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHROW
 {
     return a.type() == b.type()
             && a.shader() == b.shader()
@@ -1181,12 +1196,12 @@ bool operator==(const QRhiGraphicsShaderStage &a, const QRhiGraphicsShaderStage 
 }
 
 /*!
-    \return \c false if the values in the two QRhiGraphicsShaderStage
+    \return \c false if the values in the two QRhiShaderStage
     objects \a a and \a b are equal; otherwise returns \c true.
 
-    \relates QRhiGraphicsShaderStage
+    \relates QRhiShaderStage
 */
-bool operator!=(const QRhiGraphicsShaderStage &a, const QRhiGraphicsShaderStage &b) Q_DECL_NOTHROW
+bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHROW
 {
     return !(a == b);
 }
@@ -1194,18 +1209,18 @@ bool operator!=(const QRhiGraphicsShaderStage &a, const QRhiGraphicsShaderStage 
 /*!
     \return the hash value for \a v, using \a seed to seed the calculation.
 
-    \relates QRhiGraphicsShaderStage
+    \relates QRhiShaderStage
  */
-uint qHash(const QRhiGraphicsShaderStage &v, uint seed) Q_DECL_NOTHROW
+uint qHash(const QRhiShaderStage &v, uint seed) Q_DECL_NOTHROW
 {
     return v.type() + qHash(v.shader(), seed) + v.shaderVariant();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QRhiGraphicsShaderStage &s)
+QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QRhiGraphicsShaderStage(type=" << s.type()
+    dbg.nospace() << "QRhiShaderStage(type=" << s.type()
                   << " shader=" << s.shader()
                   << " variant=" << s.shaderVariant()
                   << ')';
@@ -1781,9 +1796,25 @@ quint64 QRhiResource::globalResourceId() const
     \enum QRhiBuffer::UsageFlag
     Flag values to specify how the buffer is going to be used.
 
-    \value VertexBuffer Vertex buffer
-    \value IndexBuffer Index buffer
-    \value UniformBuffer Uniform (constant) buffer
+    \value VertexBuffer Vertex buffer. This allows the QRhiBuffer to be used in
+    \l{setVertexInput()}{QRhiCommandBuffer::setVertexInput()}.
+
+    \value IndexBuffer Index buffer. This allows the QRhiBuffer to be used in
+    \l{setVertexInput()}{QRhiCommandBuffer::setVertexInput()}.
+
+    \value UniformBuffer Uniform buffer (also called constant buffer). This
+    allows the QRhiBuffer to be used in combination with
+    \l{UniformBuffer}{QRhiShaderResourceBinding::UniformBuffer}. When
+    \l{QRhi::NonDynamicUniformBuffers}{NonDynamicUniformBuffers} is reported as
+    not supported, this usage can only be combined with the type Dynamic.
+
+    \value StorageBuffer Storage buffer. This allows the QRhiBuffer to be used
+    in combination with \l{BufferLoad}{QRhiShaderResourceBinding::BufferLoad},
+    \l{BufferStore}{QRhiShaderResourceBinding::BufferStore}, or
+    \l{BufferLoadStore}{QRhiShaderResourceBinding::BufferLoadStore}. This usage
+    can only be combined with the types Immutable or Static, and is only
+    available when the \l{QRhi::Compute}{Compute feature} is reported as
+    supported.
  */
 
 /*!
@@ -1941,6 +1972,9 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
      \value UsedWithGenerateMips The texture is going to be used with
      QRhiResourceUpdateBatch::generateMips().
+
+     \value UsedWithLoadStore The texture is going to be used with image
+     load/store operations, for example, in a compute shader.
  */
 
 /*!
@@ -2438,7 +2472,26 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
     Specifies type of the shader resource bound to a binding point
 
     \value UniformBuffer Uniform buffer
+
     \value SampledTexture Combined image sampler
+
+    \value ImageLoad Image load (with GLSL this maps to doing imageLoad() on a
+    single level - and either one or all layers - of a texture exposed to the
+    shader as an image object)
+
+    \value ImageStore Image store (with GLSL this maps to doing imageStore() or
+    imageAtomic*() on a single level - and either one or all layers - of a
+    texture exposed to the shader as an image object)
+
+    \value ImageLoadStore Image load and store
+
+    \value BufferLoad Storage buffer store (with GLSL this maps to reading from
+    a shader storage buffer)
+
+    \value BufferStore Storage buffer store (with GLSL this maps to writing to
+    a shader storage buffer)
+
+    \value BufferLoadStore Storage buffer load and store
  */
 
 /*!
@@ -2447,6 +2500,7 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
 
     \value VertexStage Vertex stage
     \value FragmentStage Fragment (pixel) stage
+    \value ComputeStage Compute stage
  */
 
 /*!
@@ -2513,6 +2567,8 @@ bool QRhiShaderResourceBinding::isLayoutCompatible(const QRhiShaderResourceBindi
 /*!
     \return a shader resource binding for the given binding number, pipeline
     stages, and buffer specified by \a binding, \a stage, and \a buf.
+
+    \note \a buf must have been created with QRhiBuffer::UniformBuffer.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -2539,21 +2595,17 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     QRhi::ubufAlignment().
 
     \note \a size must be greater than 0.
+
+    \note \a buf must have been created with QRhiBuffer::UniformBuffer.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
 {
     Q_ASSERT(size > 0);
-    QRhiShaderResourceBinding b;
+    QRhiShaderResourceBinding b = uniformBuffer(binding, stage, buf);
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
-    d->binding = binding;
-    d->stage = stage;
-    d->type = UniformBuffer;
-    d->u.ubuf.buf = buf;
     d->u.ubuf.offset = offset;
     d->u.ubuf.maybeSize = size;
-    d->u.ubuf.hasDynamicOffset = false;
     return b;
 }
 
@@ -2565,19 +2617,14 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     varying offset values without creating new bindings for the buffer. The
     size of the bound region is specified by \a size. Like with non-dynamic
     offsets, \c{offset + size} cannot exceed the size of \a buf.
+
+    \note \a buf must have been created with QRhiBuffer::UniformBuffer.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOffset(
         int binding, StageFlags stage, QRhiBuffer *buf, int size)
 {
-    QRhiShaderResourceBinding b;
+    QRhiShaderResourceBinding b = uniformBuffer(binding, stage, buf, 0, size);
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
-    d->binding = binding;
-    d->stage = stage;
-    d->type = UniformBuffer;
-    d->u.ubuf.buf = buf;
-    d->u.ubuf.offset = 0;
-    d->u.ubuf.maybeSize = size;
     d->u.ubuf.hasDynamicOffset = true;
     return b;
 }
@@ -2598,6 +2645,167 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
     d->type = SampledTexture;
     d->u.stex.tex = tex;
     d->u.stex.sampler = sampler;
+    return b;
+}
+
+/*!
+   \return a shader resource binding for a read-only storage image with the
+   given \a binding number and pipeline \a stage. The image load operations
+   will have access to all layers of the specified \a level. (so if the texture
+   is a cubemap, the shader must use imageCube instead of image2D)
+
+   \note \a tex must have been created with QRhiTexture::UsedWithLoadStore.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
+        int binding, StageFlags stage, QRhiTexture *tex, int level)
+{
+    QRhiShaderResourceBinding b;
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    Q_ASSERT(d->ref.load() == 1);
+    d->binding = binding;
+    d->stage = stage;
+    d->type = ImageLoad;
+    d->u.simage.tex = tex;
+    d->u.simage.level = level;
+    return b;
+}
+
+/*!
+   \return a shader resource binding for a write-only storage image with the
+   given \a binding number and pipeline \a stage. The image store operations
+   will have access to all layers of the specified \a level. (so if the texture
+   is a cubemap, the shader must use imageCube instead of image2D)
+
+   \note \a tex must have been created with QRhiTexture::UsedWithLoadStore.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
+        int binding, StageFlags stage, QRhiTexture *tex, int level)
+{
+    QRhiShaderResourceBinding b = imageLoad(binding, stage, tex, level);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->type = ImageStore;
+    return b;
+}
+
+/*!
+   \return a shader resource binding for a read/write storage image with the
+   given \a binding number and pipeline \a stage. The image load/store operations
+   will have access to all layers of the specified \a level. (so if the texture
+   is a cubemap, the shader must use imageCube instead of image2D)
+
+   \note \a tex must have been created with QRhiTexture::UsedWithLoadStore.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
+        int binding, StageFlags stage, QRhiTexture *tex, int level)
+{
+    QRhiShaderResourceBinding b = imageLoad(binding, stage, tex, level);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->type = ImageLoadStore;
+    return b;
+}
+
+/*!
+    \return a shader resource binding for a read-only storage buffer with the
+    given \a binding number and pipeline \a stage.
+
+    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
+        int binding, StageFlags stage, QRhiBuffer *buf)
+{
+    QRhiShaderResourceBinding b;
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    Q_ASSERT(d->ref.load() == 1);
+    d->binding = binding;
+    d->stage = stage;
+    d->type = BufferLoad;
+    d->u.sbuf.buf = buf;
+    d->u.sbuf.offset = 0;
+    d->u.sbuf.maybeSize = 0; // entire buffer
+    return b;
+}
+
+/*!
+    \return a shader resource binding for a read-only storage buffer with the
+    given \a binding number and pipeline \a stage. This overload binds a region
+    only, as specified by \a offset and \a size.
+
+    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
+        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+{
+    Q_ASSERT(size > 0);
+    QRhiShaderResourceBinding b = bufferLoad(binding, stage, buf);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->u.sbuf.offset = offset;
+    d->u.sbuf.maybeSize = size;
+    return b;
+}
+
+/*!
+    \return a shader resource binding for a write-only storage buffer with the
+    given \a binding number and pipeline \a stage.
+
+    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
+        int binding, StageFlags stage, QRhiBuffer *buf)
+{
+    QRhiShaderResourceBinding b = bufferLoad(binding, stage, buf);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->type = BufferStore;
+    return b;
+}
+
+/*!
+    \return a shader resource binding for a write-only storage buffer with the
+    given \a binding number and pipeline \a stage. This overload binds a region
+    only, as specified by \a offset and \a size.
+
+    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
+        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+{
+    Q_ASSERT(size > 0);
+    QRhiShaderResourceBinding b = bufferStore(binding, stage, buf);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->u.sbuf.offset = offset;
+    d->u.sbuf.maybeSize = size;
+    return b;
+}
+
+/*!
+    \return a shader resource binding for a read-write storage buffer with the
+    given \a binding number and pipeline \a stage.
+
+    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
+        int binding, StageFlags stage, QRhiBuffer *buf)
+{
+    QRhiShaderResourceBinding b = bufferLoad(binding, stage, buf);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->type = BufferLoadStore;
+    return b;
+}
+
+/*!
+    \return a shader resource binding for a read-write storage buffer with the
+    given \a binding number and pipeline \a stage. This overload binds a region
+    only, as specified by \a offset and \a size.
+
+    \note \a buf must have been created with QRhiBuffer::StorageBuffer.
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
+        int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
+{
+    Q_ASSERT(size > 0);
+    QRhiShaderResourceBinding b = bufferLoadStore(binding, stage, buf);
+    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
+    d->u.sbuf.offset = offset;
+    d->u.sbuf.maybeSize = size;
     return b;
 }
 
@@ -2635,6 +2843,29 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
     case QRhiShaderResourceBinding::SampledTexture:
         if (a.d->u.stex.tex != b.d->u.stex.tex
                 || a.d->u.stex.sampler != b.d->u.stex.sampler)
+        {
+            return false;
+        }
+        break;
+    case QRhiShaderResourceBinding::ImageLoad:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::ImageStore:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::ImageLoadStore:
+        if (a.d->u.simage.tex != b.d->u.simage.tex
+                || a.d->u.simage.level != b.d->u.simage.level)
+        {
+            return false;
+        }
+        break;
+    case QRhiShaderResourceBinding::BufferLoad:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::BufferStore:
+        Q_FALLTHROUGH();
+    case QRhiShaderResourceBinding::BufferLoadStore:
+        if (a.d->u.sbuf.buf != b.d->u.sbuf.buf
+                || a.d->u.sbuf.offset != b.d->u.sbuf.offset
+                || a.d->u.sbuf.maybeSize != b.d->u.sbuf.maybeSize)
         {
             return false;
         }
@@ -2691,6 +2922,45 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
         dbg.nospace() << " SampledTexture("
                       << "texture=" << d->u.stex.tex
                       << " sampler=" << d->u.stex.sampler
+                      << ')';
+        break;
+    case QRhiShaderResourceBinding::ImageLoad:
+        dbg.nospace() << " ImageLoad("
+                      << "texture=" << d->u.simage.tex
+                      << " level=" << d->u.simage.level
+                      << ')';
+        break;
+    case QRhiShaderResourceBinding::ImageStore:
+        dbg.nospace() << " ImageStore("
+                      << "texture=" << d->u.simage.tex
+                      << " level=" << d->u.simage.level
+                      << ')';
+        break;
+    case QRhiShaderResourceBinding::ImageLoadStore:
+        dbg.nospace() << " ImageLoadStore("
+                      << "texture=" << d->u.simage.tex
+                      << " level=" << d->u.simage.level
+                      << ')';
+        break;
+    case QRhiShaderResourceBinding::BufferLoad:
+        dbg.nospace() << " BufferLoad("
+                      << "buffer=" << d->u.sbuf.buf
+                      << " offset=" << d->u.sbuf.offset
+                      << " maybeSize=" << d->u.sbuf.maybeSize
+                      << ')';
+        break;
+    case QRhiShaderResourceBinding::BufferStore:
+        dbg.nospace() << " BufferStore("
+                      << "buffer=" << d->u.sbuf.buf
+                      << " offset=" << d->u.sbuf.offset
+                      << " maybeSize=" << d->u.sbuf.maybeSize
+                      << ')';
+        break;
+    case QRhiShaderResourceBinding::BufferLoadStore:
+        dbg.nospace() << " BufferLoadStore("
+                      << "buffer=" << d->u.sbuf.buf
+                      << " offset=" << d->u.sbuf.offset
+                      << " maybeSize=" << d->u.sbuf.maybeSize
                       << ')';
         break;
     default:
@@ -3194,6 +3464,34 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \return \c true when successful, \c false when a graphics operation failed.
     Regardless of the return value, calling release() is always safe.
  */
+
+/*!
+    \class QRhiComputePipeline
+    \inmodule QtRhi
+    \brief Compute pipeline state resource.
+
+    \note Setting the shader resource bindings is mandatory. The referenced
+    QRhiShaderResourceBindings must already be built by the time build() is
+    called.
+
+    \note Setting the shader is mandatory.
+ */
+
+/*!
+    \return the resource type.
+ */
+QRhiResource::Type QRhiComputePipeline::resourceType() const
+{
+    return ComputePipeline;
+}
+
+/*!
+    \internal
+ */
+QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
+    : QRhiResource(rhi)
+{
+}
 
 /*!
     \class QRhiCommandBuffer
@@ -3982,8 +4280,8 @@ void QRhiCommandBuffer::endPass(QRhiResourceUpdateBatch *resourceUpdates)
     therefore overoptimizing to avoid calls to this function is not necessary
     on the applications' side.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
 {
@@ -3994,14 +4292,13 @@ void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
     Records binding a set of shader resources, such as, uniform buffers or
     textures, that are made visible to one or more shader stages.
 
-    \a srb can be null in which case the current graphics pipeline's associated
-    QRhiGraphicsPipeline::shaderResourceBindings() is used. When \a srb is
-    non-null, it must be
+    \a srb can be null in which case the current graphics or compute pipeline's
+    associated QRhiShaderResourceBindings is used. When \a srb is non-null, it
+    must be
     \l{QRhiShaderResourceBindings::isLayoutCompatible()}{layout-compatible},
     meaning the layout (number of bindings, the type and binding number of each
     binding) must fully match the QRhiShaderResourceBindings that was
-    associated with the pipeline at the time of calling
-    QRhiGraphicsPipeline::build().
+    associated with the pipeline at the time of calling the pipeline's build().
 
     There are cases when a seemingly unnecessary setShaderResources() call is
     mandatory: when rebuilding a resource referenced from \a srb, for example
@@ -4029,8 +4326,9 @@ void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
     the conditions described above into account), so therefore overoptimizing
     to avoid calls to this function is not necessary on the applications' side.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render or compute pass,
+    meaning between a beginPass() and endPass(), or beginComputePass() and
+    endComputePass().
  */
 void QRhiCommandBuffer::setShaderResources(QRhiShaderResourceBindings *srb,
                                            int dynamicOffsetCount,
@@ -4056,8 +4354,8 @@ void QRhiCommandBuffer::setShaderResources(QRhiShaderResourceBindings *srb,
     automatically with most backends and therefore applications do not need to
     overoptimize to avoid calls to this function.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
 
     As a simple example, take a vertex shader with two inputs:
 
@@ -4110,8 +4408,8 @@ void QRhiCommandBuffer::setVertexInput(int startBinding, int bindingCount, const
     \note QRhi assumes OpenGL-style viewport coordinates, meaning x and y are
     bottom-left.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::setViewport(const QRhiViewport &viewport)
 {
@@ -4129,8 +4427,8 @@ void QRhiCommandBuffer::setViewport(const QRhiViewport &viewport)
     \note QRhi assumes OpenGL-style viewport coordinates, meaning x and y are
     bottom-left.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::setScissor(const QRhiScissor &scissor)
 {
@@ -4143,8 +4441,8 @@ void QRhiCommandBuffer::setScissor(const QRhiScissor &scissor)
     This can only be called when the bound pipeline has
     QRhiGraphicsPipeline::UsesBlendConstants set.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::setBlendConstants(const QColor &c)
 {
@@ -4157,8 +4455,8 @@ void QRhiCommandBuffer::setBlendConstants(const QColor &c)
     This can only be called when the bound pipeline has
     QRhiGraphicsPipeline::UsesStencilRef set.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning between
+    a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::setStencilRef(quint32 refValue)
 {
@@ -4173,8 +4471,8 @@ void QRhiCommandBuffer::setStencilRef(quint32 refValue)
     the index of the first vertex to draw. \a firstInstance is the instance ID
     of the first instance to draw.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::draw(quint32 vertexCount,
                              quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
@@ -4200,8 +4498,8 @@ void QRhiCommandBuffer::draw(quint32 vertexCount,
 
     \a vertexOffset is added to the vertex index.
 
-    \note This function can only be called inside a pass, meaning between a
-    beginPass() end endPass() call.
+    \note This function can only be called inside a render pass, meaning
+    between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
                                     quint32 instanceCount, quint32 firstIndex,
@@ -4252,6 +4550,69 @@ void QRhiCommandBuffer::debugMarkEnd()
 void QRhiCommandBuffer::debugMarkMsg(const QByteArray &msg)
 {
     m_rhi->debugMarkMsg(this, msg);
+}
+
+/*!
+    Records starting a new compute pass.
+
+    \a resourceUpdates, when not null, specifies a resource update batch that
+    is to be committed and then released.
+
+    \note Do not assume that any state or resource bindings persist between
+    passes.
+
+    \note A compute pass can record setComputePipeline(), setShaderResources(),
+    and dispatch() calls, not graphics ones. General functionality, such as,
+    debug markers and beginExternal() is available both in render and compute
+    passes.
+
+    \note Compute is only available when the \l{QRhi::Compute}{Compute} feature
+    is reported as supported.
+ */
+void QRhiCommandBuffer::beginComputePass(QRhiResourceUpdateBatch *resourceUpdates)
+{
+    m_rhi->beginComputePass(this, resourceUpdates);
+}
+
+/*!
+    Records ending the current compute pass.
+
+    \a resourceUpdates, when not null, specifies a resource update batch that
+    is to be committed and then released.
+ */
+void QRhiCommandBuffer::endComputePass(QRhiResourceUpdateBatch *resourceUpdates)
+{
+    m_rhi->endComputePass(this, resourceUpdates);
+}
+
+/*!
+    Records setting a new compute pipeline \a ps.
+
+    \note This function must be called before recording setShaderResources() or
+    dispatch() commands on the command buffer.
+
+    \note QRhi will optimize out unnecessary invocations within a pass, so
+    therefore overoptimizing to avoid calls to this function is not necessary
+    on the applications' side.
+
+    \note This function can only be called inside a compute pass, meaning
+    between a beginComputePass() and endComputePass() call.
+ */
+void QRhiCommandBuffer::setComputePipeline(QRhiComputePipeline *ps)
+{
+    m_rhi->setComputePipeline(this, ps);
+}
+
+/*!
+    Records dispatching compute work items, with \a x, \a y, and \a z
+    specifying the number of local workgroups in the corresponding dimension.
+
+    \note This function can only be called inside a compute pass, meaning
+    between a beginComputePass() and endComputePass() call.
+ */
+void QRhiCommandBuffer::dispatch(int x, int y, int z)
+{
+    m_rhi->dispatch(this, x, y, z);
 }
 
 /*!
@@ -4480,6 +4841,19 @@ QRhiGraphicsPipeline *QRhi::newGraphicsPipeline()
 }
 
 /*!
+    \return a new compute pipeline resource.
+
+    \note Compute is only available when the \l{QRhi::Compute}{Compute} feature
+    is reported as supported.
+
+    \sa QRhiResource::release()
+ */
+QRhiComputePipeline *QRhi::newComputePipeline()
+{
+    return d->createComputePipeline();
+}
+
+/*!
     \return a new shader resource binding collection resource.
 
     \sa QRhiResource::release()
@@ -4493,7 +4867,8 @@ QRhiShaderResourceBindings *QRhi::newShaderResourceBindings()
     \return a new buffer with the specified \a type, \a usage, and \a size.
 
     \note Some \a usage and \a type combinations may not be supported by all
-    backends. See \l{QRhi::NonDynamicUniformBuffers}{the feature flags}.
+    backends. See \l{QRhiBuffer::UsageFlag}{UsageFlags} and
+    \l{QRhi::NonDynamicUniformBuffers}{the feature flags}.
 
     \sa QRhiResource::release()
  */
@@ -4840,32 +5215,30 @@ static inline QRhiPassResourceTracker::BufferStage earlierStage(QRhiPassResource
     return QRhiPassResourceTracker::BufferStage(qMin(int(a), int(b)));
 }
 
-void QRhiPassResourceTracker::registerBufferOnce(QRhiBuffer *buf, int slot, BufferAccess access, BufferStage stage,
-                                                 const UsageState &stateAtPassBegin)
+void QRhiPassResourceTracker::registerBuffer(QRhiBuffer *buf, int slot, BufferAccess *access, BufferStage *stage,
+                                             const UsageState &state)
 {
     auto it = std::find_if(m_buffers.begin(), m_buffers.end(), [buf](const Buffer &b) { return b.buf == buf; });
     if (it != m_buffers.end()) {
-        if (it->access != access) {
+        if (it->access != *access) {
             const QByteArray name = buf->name();
             qWarning("Buffer %p (%s) used with different accesses within the same pass, this is not allowed.",
                      buf, name.constData());
             return;
         }
-        if (it->stage != stage)
-            it->stage = earlierStage(it->stage, stage);
-        // Multiple registrations of the same buffer is fine as long is it is
-        // a compatible usage. stateAtPassBegin is not actually the state at
-        // pass begin in the second, third, etc. invocation but that's fine
-        // since we'll just return here.
+        if (it->stage != *stage) {
+            it->stage = earlierStage(it->stage, *stage);
+            *stage = it->stage;
+        }
         return;
     }
 
     Buffer b;
     b.buf = buf;
     b.slot = slot;
-    b.access = access;
-    b.stage = stage;
-    b.stateAtPassBegin = stateAtPassBegin;
+    b.access = *access;
+    b.stage = *stage;
+    b.stateAtPassBegin = state; // first use -> initial state
     m_buffers.append(b);
 }
 
@@ -4875,30 +5248,44 @@ static inline QRhiPassResourceTracker::TextureStage earlierStage(QRhiPassResourc
     return QRhiPassResourceTracker::TextureStage(qMin(int(a), int(b)));
 }
 
-void QRhiPassResourceTracker::registerTextureOnce(QRhiTexture *tex, TextureAccess access, TextureStage stage,
-                                                  const UsageState &stateAtPassBegin)
+static inline bool isImageLoadStore(QRhiPassResourceTracker::TextureAccess access)
+{
+    return access == QRhiPassResourceTracker::TexStorageLoad
+            || access == QRhiPassResourceTracker::TexStorageStore
+            || access == QRhiPassResourceTracker::TexStorageLoadStore;
+}
+
+void QRhiPassResourceTracker::registerTexture(QRhiTexture *tex, TextureAccess *access, TextureStage *stage,
+                                              const UsageState &state)
 {
     auto it = std::find_if(m_textures.begin(), m_textures.end(), [tex](const Texture &t) { return t.tex == tex; });
     if (it != m_textures.end()) {
-        if (it->access != access) {
-            const QByteArray name = tex->name();
-            qWarning("Texture %p (%s) used with different accesses within the same pass, this is not allowed.",
-                     tex, name.constData());
+        if (it->access != *access) {
+            // Different subresources of a texture may be used for both load
+            // and store in the same pass. (think reading from one mip level
+            // and writing to another one in a compute shader) This we can
+            // handle by treating the entire resource as read-write.
+            if (isImageLoadStore(it->access) && isImageLoadStore(*access)) {
+                it->access = QRhiPassResourceTracker::TexStorageLoadStore;
+                *access = it->access;
+            } else {
+                const QByteArray name = tex->name();
+                qWarning("Texture %p (%s) used with different accesses within the same pass, this is not allowed.",
+                         tex, name.constData());
+            }
         }
-        if (it->stage != stage)
-            it->stage = earlierStage(it->stage, stage);
-        // Multiple registrations of the same texture is fine as long is it is
-        // a compatible usage. stateAtPassBegin is not actually the state at
-        // pass begin in the second, third, etc. invocation but that's fine
-        // since we'll just return here.
+        if (it->stage != *stage) {
+            it->stage = earlierStage(it->stage, *stage);
+            *stage = it->stage;
+        }
         return;
     }
 
     Texture t;
     t.tex = tex;
-    t.access = access;
-    t.stage = stage;
-    t.stateAtPassBegin = stateAtPassBegin;
+    t.access = *access;
+    t.stage = *stage;
+    t.stateAtPassBegin = state; // first use -> initial state
     m_textures.append(t);
 }
 
