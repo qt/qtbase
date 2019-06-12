@@ -23,6 +23,4 @@ extend_target(WinMain CONDITION NOT WINRT
 extend_target(WinMain CONDITION MINGW
     DEFINES QT_NEEDS_QMAIN
 )
-
-extend_target(Core LIBRARIES WinMain)
 # special case end

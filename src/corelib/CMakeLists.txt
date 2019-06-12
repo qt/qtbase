@@ -1080,6 +1080,17 @@ if(WIN32)
 endif()
 
 qt_internal_add_link_flags_gc_sections(Core PRIVATE)
+
+if(WIN32)
+    set(isExe $<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>)
+    set(isWin32 $<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>)
+    set(isNotExcluded $<NOT:$<BOOL:$<TARGET_PROPERTY:Qt5_NO_LINK_QTMAIN>>>)
+    set(isPolicyNEW $<TARGET_POLICY:CMP0020>)
+
+    target_link_libraries(Core INTERFACE $<$<AND:${isExe},${isWin32},${isNotExcluded},${isPolicyNEW}>:Qt::WinMain>)
+    qt_internal_module_info(win_main_module WinMain)
+    set_property(TARGET Core APPEND PROPERTY QT_EXTRA_PACKAGE_DEPENDENCIES "${win_main_module_versioned}\\\;${PROJECT_VERSION}")
+endif()
 # special case end
 
 qt_create_tracepoints(Core qtcore.tracepoints)

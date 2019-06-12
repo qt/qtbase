@@ -59,6 +59,11 @@ function(qt_internal_create_module_depends_file target)
     get_target_property(target_deps "${target}" _qt_target_deps)
     set(target_deps_seen "")
 
+    get_target_property(extra_depends "${target}" QT_EXTRA_PACKAGE_DEPENDENCIES)
+    if(NOT extra_depends STREQUAL "${extra_depends}-NOTFOUND")
+        list(APPEND target_deps ${extra_depends})
+    endif()
+
     set(qtdeps "")
     set(third_party_deps "")
     set(third_party_deps_seen "")

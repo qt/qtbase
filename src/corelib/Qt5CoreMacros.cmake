@@ -397,10 +397,6 @@ function(add_qt_gui_executable target)
     endif()
     target_link_libraries("${target}" PRIVATE Qt::Core Qt::Gui)
 
-    if(WIN32)
-        target_link_libraries("${target}" PRIVATE Qt::WinMain)
-    endif()
-
     if(ANDROID)
         qt_android_generate_deployment_settings("${target}")
     endif()
