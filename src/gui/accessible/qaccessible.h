@@ -299,6 +299,7 @@ public:
         Paragraph      = 0x00000083,
         WebDocument    = 0x00000084,
         Section        = 0x00000085,
+        Notification   = 0x00000086,
 
         // IAccessible2 roles
         // IA2_ROLE_CANVAS = 0x401, ### Qt 6 use this one instead of Canvas above
