@@ -21,14 +21,6 @@ set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_path_suffix})
 qt_path_join(__GlobalConfig_install_dir ${QT_CONFIG_INSTALL_DIR} ${__GlobalConfig_path_suffix})
 
-
-if (ANDROID)
-    qt_install(FILES
-        "${QT_CMAKE_DIR}/QtPlatformAndroid.cmake"
-         DESTINATION "${__GlobalConfig_install_dir}"
-    )
-endif()
-
 # Generate and install Qt5 config file.
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
