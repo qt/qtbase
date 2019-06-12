@@ -12,6 +12,7 @@ HEADERS +=  \
         tools/qcontainerfwd.h \
         tools/qcontainertools_impl.h \
         tools/qcryptographichash.h \
+        tools/qflatmap_p.h \
         tools/qfreelist_p.h \
         tools/qhash.h \
         tools/qhashfunctions.h \
