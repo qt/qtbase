@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <qcoreapplication.h>
 #include <qreadwritelock.h>
+#include <qelapsedtimer.h>
 #include <qmutex.h>
 #include <qthread.h>
 #include <qwaitcondition.h>
@@ -237,7 +238,7 @@ void tst_QReadWriteLock::tryReadLock()
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                QTime timer;
+                QElapsedTimer timer;
                 timer.start();
                 QVERIFY(!readWriteLock.tryLockForRead(1000));
                 QVERIFY(timer.elapsed() >= 1000);
@@ -500,7 +501,7 @@ public:
     int holdTime;
     int waitTime;
     bool print;
-    QTime t;
+    QElapsedTimer t;
     inline ReadLockLoopThread(QReadWriteLock &l, int runTime, int holdTime=0, int waitTime=0, bool print=false)
     :testRwlock(l)
     ,runTime(runTime)
@@ -536,7 +537,7 @@ public:
     int holdTime;
     int waitTime;
     bool print;
-    QTime t;
+    QElapsedTimer t;
     inline WriteLockLoopThread(QReadWriteLock &l, int runTime, int holdTime=0, int waitTime=0, bool print=false)
     :testRwlock(l)
     ,runTime(runTime)
@@ -574,7 +575,7 @@ public:
     int runTime;
     int waitTime;
     int maxval;
-    QTime t;
+    QElapsedTimer t;
     inline WriteLockCountThread(QReadWriteLock &l, int runTime, int waitTime, int maxval)
     :testRwlock(l)
     ,runTime(runTime)
@@ -615,7 +616,7 @@ public:
     QReadWriteLock &testRwlock;
     int runTime;
     int waitTime;
-    QTime t;
+    QElapsedTimer t;
     inline ReadLockCountThread(QReadWriteLock &l, int runTime, int waitTime)
     :testRwlock(l)
     ,runTime(runTime)
@@ -873,7 +874,7 @@ void tst_QReadWriteLock::deleteOnUnlock()
 
     DeleteOnUnlockThread thread2(&lock, &startup, &waitMutex);
 
-    QTime t;
+    QElapsedTimer t;
     t.start();
     while(t.elapsed() < 4000) {
         lock = new QReadWriteLock();
@@ -899,7 +900,7 @@ void tst_QReadWriteLock::uncontendedLocks()
     uint count=0;
     int millisecs=1000;
     {
-        QTime t;
+        QElapsedTimer t;
         t.start();
         while(t.elapsed() <millisecs)
         {
@@ -908,7 +909,7 @@ void tst_QReadWriteLock::uncontendedLocks()
     }
     {
         QReadWriteLock rwlock;
-        QTime t;
+        QElapsedTimer t;
         t.start();
         while(t.elapsed() <millisecs)
         {
@@ -919,7 +920,7 @@ void tst_QReadWriteLock::uncontendedLocks()
     }
     {
         QReadWriteLock rwlock;
-        QTime t;
+        QElapsedTimer t;
         t.start();
         while(t.elapsed() <millisecs)
         {

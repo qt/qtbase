@@ -32,6 +32,7 @@
 #include <QtSql>
 #include <QtSql/private/qsqltablemodel_p.h>
 #include <QThread>
+#include <QElapsedTimer>
 
 const QString test(qTableName("test", __FILE__, QSqlDatabase())),
                    test2(qTableName("test2", __FILE__, QSqlDatabase())),
@@ -1804,12 +1805,12 @@ void tst_QSqlTableModel::sqlite_bigTable()
     QSqlQuery q(db);
     QVERIFY_SQL( q, exec("create table "+bigtable+"(id int primary key, name varchar)"));
     QVERIFY_SQL( q, prepare("insert into "+bigtable+"(id, name) values (?, ?)"));
-    QTime startTime;
-    startTime.start();
+    QElapsedTimer timing;
+    timing.start();
     for (int i = 0; i < 10000; ++i) {
         q.addBindValue(i);
         q.addBindValue(QString::number(i));
-        if(i%1000 == 0 && startTime.elapsed() > 5000)
+        if (i % 1000 == 0 && timing.elapsed() > 5000)
             qDebug() << i << "records written";
         QVERIFY_SQL( q, exec());
     }

@@ -96,8 +96,8 @@ void RateController::transfer()
     if (sockets.isEmpty())
         return;
 
-    int msecs = 1000;
-    if (!stopWatch.isNull())
+    qint64 msecs = 1000;
+    if (stopWatch.isValid())
         msecs = qMin(msecs, stopWatch.elapsed());
 
     qint64 bytesToWrite = (upLimit * msecs) / 1000;

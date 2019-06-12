@@ -31,6 +31,7 @@
 
 #include <QAtomicInt>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 
 #include <limits.h>
 
@@ -851,7 +852,7 @@ void tst_QAtomicInt::operators()
 
 void tst_QAtomicInt::testAndSet_loop()
 {
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     int iterations = 10000000;

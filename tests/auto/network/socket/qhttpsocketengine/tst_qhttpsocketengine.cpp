@@ -38,6 +38,7 @@
 #include <qhostaddress.h>
 #include <qtcpsocket.h>
 #include <qdebug.h>
+#include <qelapsedtimer.h>
 #include <qtcpserver.h>
 
 #include "../../../network-settings.h"
@@ -397,7 +398,7 @@ void tst_QHttpSocketEngine::tcpLoopbackPerformance()
     QByteArray message1(messageSize, '@');
     QByteArray answer(messageSize, '@');
 
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     qlonglong readBytes = 0;
     while (timer.elapsed() < 30000) {
@@ -629,7 +630,7 @@ void tst_QHttpSocketEngine::downloadBigFile()
 
     bytesAvailable = 0;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     QTestEventLoop::instance().enterLoop(60);

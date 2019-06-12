@@ -29,6 +29,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
 #include <QtNetwork/qnetworkproxy.h>
@@ -1989,7 +1990,7 @@ public slots:
         QTestEventLoop::instance().exitLoop();
     }
     void waitSomeMore(QSslSocket *socket) {
-        QTime t;
+        QElapsedTimer t;
         t.start();
         while (!socket->encryptedBytesAvailable()) {
             QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents, 250);

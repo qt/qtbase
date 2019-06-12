@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 #include <QtTest/QtTest>
-#include <qdatetime.h>
+#include <qelapsedtimer.h>
 #include <qthreadpool.h>
 #include <qstring.h>
 #include <qmutex.h>
@@ -882,7 +882,7 @@ void tst_QThreadPool::priorityStart()
 
 void tst_QThreadPool::waitForDone()
 {
-    QTime total, pass;
+    QElapsedTimer total, pass;
     total.start();
 
     QThreadPool threadPool;
@@ -1113,7 +1113,7 @@ void tst_QThreadPool::tryTake()
 
 void tst_QThreadPool::destroyingWaitsForTasksToFinish()
 {
-    QTime total, pass;
+    QElapsedTimer total, pass;
     total.start();
 
     while (total.elapsed() < 10000) {
@@ -1204,7 +1204,7 @@ void tst_QThreadPool::stressTest()
         }
     };
 
-    QTime total;
+    QElapsedTimer total;
     total.start();
     while (total.elapsed() < 30000) {
         Task t;

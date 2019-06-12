@@ -180,7 +180,7 @@
 #include "qimagereader.h"
 #include "qpixmap.h"
 #include "qrect.h"
-#include "qdatetime.h"
+#include "qelapsedtimer.h"
 #include "qtimer.h"
 #include "qpair.h"
 #include "qmap.h"

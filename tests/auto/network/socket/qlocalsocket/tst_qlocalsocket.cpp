@@ -32,6 +32,7 @@
 
 #include <qtextstream.h>
 #include <qdatastream.h>
+#include <qelapsedtimer.h>
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
@@ -1031,7 +1032,7 @@ void tst_QLocalSocket::waitForDisconnect()
     QLocalSocket *serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket);
     socket.disconnectFromServer();
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     QVERIFY(serverSocket->waitForDisconnected(3000));
     QVERIFY(timer.elapsed() < 2000);

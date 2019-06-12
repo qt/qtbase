@@ -43,6 +43,7 @@
 #include <QtNetwork/private/qnetworksession_p.h>
 #include <QTcpServer>
 #include <QHostInfo>
+#include <QElapsedTimer>
 #include <QTcpSocket>
 
 #include "../../../network-settings.h"
@@ -2160,7 +2161,7 @@ void tst_QFtp::qtbug7359Crash()
     QFtp ftp;
     ftp.connectToHost("127.0.0.1");
 
-    QTime t;
+    QElapsedTimer t;
     int elapsed;
 
     t.start();

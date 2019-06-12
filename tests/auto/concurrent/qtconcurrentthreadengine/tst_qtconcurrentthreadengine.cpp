@@ -28,6 +28,7 @@
 #include <qtconcurrentthreadengine.h>
 #include <qexception.h>
 #include <QThread>
+#include <QElapsedTimer>
 #include <QtTest/QtTest>
 
 using namespace QtConcurrent;
@@ -382,7 +383,7 @@ void tst_QtConcurrentThreadEngine::cancelQueuedSlowUser()
 {
     const int times = 100;
 
-    QTime t;
+    QElapsedTimer t;
     t.start();
 
     {

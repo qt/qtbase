@@ -28,6 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QElapsedTimer>
 #include <QtTest/QtTest>
 
 class tst_Sleep: public QObject
@@ -41,7 +42,7 @@ private slots:
 
 void tst_Sleep::sleep()
 {
-    QTime t;
+    QElapsedTimer t;
     t.start();
 
     QTest::qSleep(100);

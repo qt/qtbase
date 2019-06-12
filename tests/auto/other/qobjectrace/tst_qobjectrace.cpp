@@ -85,7 +85,7 @@ class RaceThread : public QThread
 {
     Q_OBJECT
     RaceObject *object;
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
 
 public:
     RaceThread()
