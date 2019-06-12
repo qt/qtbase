@@ -8,10 +8,10 @@ windows_specific_instrucitons:
   - &export_target_architecture_and_sdk
     # Export TARGET_ARCHITECTURE and WINDOWS_SDK_VERSION for MSVC cross compilation
     type: Group
-    disable_if:
+    enable_if:
       condition: property
       property: host.os
-      not_equals_value: Windows
+      equals_value: Windows
     instructions:
       - type: EnvironmentVariable
         variableName: TARGET_ARCHITECTURE
@@ -23,31 +23,31 @@ windows_specific_instrucitons:
       - type: EnvironmentVariable
         variableName: TARGET_ARCHITECTURE
         variableValue: amd64_x86
-        disable_if:
+        enable_if:
           condition: and
           conditions:
             - condition: property
               property: target.arch
-              not_equals_property: X86
+              equals_property: X86
             - condition: property
               property: host.arch
-              not_equals_property: X86_64
+              equals_property: X86_64
       - type: EnvironmentVariable
         # HACK. Overwrite TARGET_ARCHITECTURE as we do not use standard MSVC cross
         # compilation targets here. The target architecture will be detected by Qt.
         variableName: TARGET_ARCHITECTURE
         variableValue: x86
-        disable_if:
+        enable_if:
           condition: property
           property: target.os
-          not_in_values: ["WINRT", "WINPHONE", "WINCE"]
+          in_values: ["WINRT", "WINPHONE", "WINCE"]
       - type: EnvironmentVariable
         variableName: WINDOWS_SDK_VERSION
         variableValue: "10.0.14393.0"
-        disable_if:
+        enable_if:
           condition: property
           property: target.os
-          not_equals_value: WINRT
+          equals_value: WINRT
       - type: EnvironmentVariable
         variableName: WINDOWS_SDK_VERSION
         variableValue: ""
@@ -62,10 +62,10 @@ windows_specific_instrucitons:
     # TODO cleanup, that step could be removed if we have same installation paths or we read the path from registry
     # or we use %ProgramFiles(x86)%.
     type: Group
-    disable_if:
+    enable_if:
       condition: property
       property: host.os
-      not_equals_value: Windows
+      equals_value: Windows
     instructions:
       - type: EnvironmentVariable
         variableName: PROGRAM_FILES_PATH
@@ -87,52 +87,52 @@ windows_specific_instrucitons:
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "%VS90COMNTOOLS%\\vsvars32.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2008
+          equals_value: MSVC2008
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "%VS100COMNTOOLS%\\vsvars32.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2010
+          equals_value: MSVC2010
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2012
+          equals_value: MSVC2012
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2013
+          equals_value: MSVC2013
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2015
+          equals_value: MSVC2015
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2017
+          equals_value: MSVC2017
       - type: EnvironmentVariable
         variableName: VC_SCRIPT
         variableValue: "{{.Env.PROGRAM_FILES_PATH}}\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        disable_if:
+        enable_if:
           condition: property
           property: host.compiler
-          not_equals_value: MSVC2019
+          equals_value: MSVC2019
 
 build_instructions:
   - type: MakeDirectory
@@ -150,17 +150,17 @@ build_instructions:
     fileMode: 420
     maxTimeInSeconds: 20
     maxTimeBetweenOutput: 20
-    disable_if:
+    enable_if:
       condition: property
       property: host.os
-      not_equals_value: Windows
+      equals_value: Windows
   - type: EnvironmentVariable
     variableName: ENV_PREFIX
     variableValue: "c:\\users\\qt\\prefix.bat"
-    disable_if:
+    enable_if:
       condition: property
       property: host.os
-      not_equals_value: Windows
+      equals_value: Windows
   - type: EnvironmentVariable
     variableName: ENV_PREFIX
     variableValue: ""
@@ -179,10 +179,10 @@ build_instructions:
     variableValue: "{{.InstallRoot}}"
   - type: ExecuteCommand  # TODO: remove me, just debuging
     command: cmd.exe /c type {{.BuildDir}}\\CMakeCache.txt
-    disable_if:
+    enable_if:
       condition: property
       property: host.os
-      not_equals_value: Windows
+      equals_value: Windows
     maxTimeInSeconds: 60
     userMessageOnFailure: Could not print the file cmake config file. This should not be possible.
   - type: ExecuteCommand
@@ -192,10 +192,10 @@ build_instructions:
     userMessageOnFailure: >
       Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
   - type: SignPackage
-    disable_if:
+    enable_if:
       condition: property
       property: host.os
-      not_equals_value: Windows
+      equals_value: Windows
     directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
