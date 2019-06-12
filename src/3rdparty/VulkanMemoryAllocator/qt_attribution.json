@@ -1,0 +1,16 @@
+[
+    {
+        "Id": "VulkanMemoryAllocator",
+        "Name": "Vulkan Memory Allocator",
+        "QDocModule": "qtrhi",
+        "Description": "Vulkan Memory Allocator",
+        "QtUsage": "Memory management for the Vulkan backend of QRhi.",
+
+        "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
+        "Version": "2.2.0",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "LICENSE.txt",
+        "Copyright": "Copyright (c) 2017-2018 Advanced Micro Devices, Inc. All rights reserved."
+    }
+]
