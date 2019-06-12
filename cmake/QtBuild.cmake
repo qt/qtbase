@@ -769,7 +769,9 @@ function(qt_register_target_dependencies target public_libs private_libs)
     foreach(lib IN LISTS public_libs private_libs)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
-            if (lib STREQUAL Platform OR lib STREQUAL GlobalConfig
+            if (lib STREQUAL Platform
+                    OR lib STREQUAL GlobalConfig
+                    OR lib STREQUAL GlobalConfigPrivate
                     OR lib STREQUAL PlatformModuleInternal
                     OR lib STREQUAL PlatformPluginInternal
                     OR lib STREQUAL PlatformToolInternal)
