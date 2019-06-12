@@ -1509,9 +1509,6 @@ function(add_qt_plugin target)
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
-    if(FEATURE_largefile)
-        target_compile_definitions("${target}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
-    endif()
     if(NOT ${arg_EXCEPTIONS})
         qt_internal_set_no_exceptions_flags("${target}")
     endif()
@@ -1626,9 +1623,6 @@ function(add_qt_executable name)
         WIN32_EXECUTABLE "${arg_GUI}"
         MACOSX_BUNDLE "${arg_GUI}"
     )
-    if(FEATURE_largefile)
-        target_compile_definitions("${name}" PRIVATE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
-    endif()
     if(NOT ${arg_EXCEPTIONS})
         qt_internal_set_no_exceptions_flags("${name}")
     endif()
