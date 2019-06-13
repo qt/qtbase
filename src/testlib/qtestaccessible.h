@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 class QObject;
 
 // Use pointers since we subclass QAccessibleEvent
-typedef QList<QAccessibleEvent*> EventList;
+using EventList = QList<QAccessibleEvent*>;
 
 bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 {

@@ -301,7 +301,7 @@ class TestMethods {
 public:
     Q_DISABLE_COPY_MOVE(TestMethods)
 
-    typedef std::vector<QMetaMethod> MetaMethods;
+    using MetaMethods = std::vector<QMetaMethod>;
 
     explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
 
