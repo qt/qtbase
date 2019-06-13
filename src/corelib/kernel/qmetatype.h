@@ -1645,6 +1645,23 @@ namespace QtPrivate
         static bool registerConverter(int) { return false; }
     };
 
+    template<class T>
+    struct Qt5CompatibilityHook
+    {
+        static inline void postRegister(int, const QByteArray &) {};
+    };
+
+    Q_CORE_EXPORT void qt5CompatibilityHookPostRegister(int id, const QByteArray &normalizedTypeName);
+
+    template<class T>
+    struct Qt5CompatibilityHook<QVector<T>>
+    {
+        static inline void postRegister(int id, const QByteArray &normalizedTypeName)
+        {
+            qt5CompatibilityHookPostRegister(id, normalizedTypeName);
+        }
+    };
+
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
@@ -1771,6 +1788,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
         QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
         QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter(id);
+        QtPrivate::Qt5CompatibilityHook<T>::postRegister(id, normalizedTypeName);
     }
 
     return id;
