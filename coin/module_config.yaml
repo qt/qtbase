@@ -4,7 +4,7 @@ accept_configuration:
   property: host.os
   equals_property: target.os
 
-windows_specific_instrucitons:
+windows_specific_instructions:
   - &export_target_architecture_and_sdk
     # Export TARGET_ARCHITECTURE and WINDOWS_SDK_VERSION for MSVC cross compilation
     type: Group
