@@ -69,6 +69,13 @@ endmacro()
 macro(qt_build_repo)
     qt_build_repo_begin(${ARGN})
 
+    # If testing is enabled, try to find the qtbase Test package.
+    # Do this before adding src, because there might be test related conditions
+    # in source.
+    if (BUILD_TESTING)
+        find_package(Qt5 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
+    endif()
+
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")
         add_subdirectory(src)
     endif()
@@ -80,7 +87,6 @@ macro(qt_build_repo)
     endif()
 
     if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
-        find_package(Qt5 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test Xml)
         add_subdirectory(tests)
     endif()
 
