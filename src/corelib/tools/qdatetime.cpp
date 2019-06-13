@@ -1903,7 +1903,7 @@ int QTime::msecsTo(const QTime &t) const
     24 hours each time midnight passes; and, beside this, changes in it may not
     correspond to elapsed time, if a daylight-saving transition intervenes.
 
-    \sa QDateTime::currentDateTime(), QDateTime::curentDateTimeUtc()
+    \sa QDateTime::currentDateTime(), QDateTime::currentDateTimeUtc()
 */
 
 #if QT_CONFIG(datestring)
@@ -3023,7 +3023,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     datetime by adding a number of seconds, days, months, or years.
 
     QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
-    time}, to \l{Qt::UTC}{UTC}, to a specified \l{{Qt::OffsetFromUTC}{offset
+    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset
     from UTC} or to a specified \l{{Qt::TimeZone}{time zone}, in conjunction
     with the QTimeZone class. For example, a time zone of "Europe/Berlin" will
     apply the daylight-saving rules as used in Germany since 1970. In contrast,

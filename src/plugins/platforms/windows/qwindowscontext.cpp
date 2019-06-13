@@ -317,6 +317,8 @@ QWindowsContext::~QWindowsContext()
         OleUninitialize();
 
     d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
+    if (d->m_displayContext)
+        ReleaseDC(nullptr, d->m_displayContext);
     m_instance = nullptr;
 }
 
