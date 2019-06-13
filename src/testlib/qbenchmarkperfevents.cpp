@@ -147,7 +147,7 @@ bool QBenchmarkPerfEventsMeasurer::isAvailable()
 {
     // this generates an EFAULT because attr == NULL if perf_event_open is available
     // if the kernel is too old, it generates ENOSYS
-    return perf_event_open(0, 0, 0, 0, 0) == -1 && errno != ENOSYS;
+    return perf_event_open(nullptr, 0, 0, 0, 0) == -1 && errno != ENOSYS;
 }
 
 /* Event list structure

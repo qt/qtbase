@@ -148,7 +148,7 @@ void QXunitTestLogger::leaveTestFunction()
 void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    const char *typeBuf = 0;
+    const char *typeBuf = nullptr;
     char buf[100];
 
     switch (type) {
@@ -292,7 +292,7 @@ void QXunitTestLogger::addTag(QTestElement* element)
 void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
     QTestElement *errorElement = new QTestElement(QTest::LET_Error);
-    const char *typeBuf = 0;
+    const char *typeBuf = nullptr;
 
     switch (type) {
     case QAbstractTestLogger::Warn:

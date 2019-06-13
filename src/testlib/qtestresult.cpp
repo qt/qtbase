@@ -49,33 +49,33 @@
 #include <stdio.h>
 #include <string.h>
 
-static const char *currentAppName = 0;
+static const char *currentAppName = nullptr;
 
 QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
-    static QTestData *currentTestData = 0;
-    static QTestData *currentGlobalTestData = 0;
-    static const char *currentTestFunc = 0;
-    static const char *currentTestObjectName = 0;
+    static QTestData *currentTestData = nullptr;
+    static QTestData *currentGlobalTestData = nullptr;
+    static const char *currentTestFunc = nullptr;
+    static const char *currentTestObjectName = nullptr;
     static bool failed = false;
     static bool skipCurrentTest = false;
     static bool blacklistCurrentTest = false;
 
-    static const char *expectFailComment = 0;
+    static const char *expectFailComment = nullptr;
     static int expectFailMode = 0;
 }
 
 void QTestResult::reset()
 {
-    QTest::currentTestData = 0;
-    QTest::currentGlobalTestData = 0;
-    QTest::currentTestFunc = 0;
-    QTest::currentTestObjectName = 0;
+    QTest::currentTestData = nullptr;
+    QTest::currentGlobalTestData = nullptr;
+    QTest::currentTestFunc = nullptr;
+    QTest::currentTestObjectName = nullptr;
     QTest::failed = false;
 
-    QTest::expectFailComment = 0;
+    QTest::expectFailComment = nullptr;
     QTest::expectFailMode = 0;
     QTest::blacklistCurrentTest = false;
 
@@ -127,18 +127,18 @@ static void clearExpectFail()
 {
     QTest::expectFailMode = 0;
     delete [] const_cast<char *>(QTest::expectFailComment);
-    QTest::expectFailComment = 0;
+    QTest::expectFailComment = nullptr;
 }
 
 void QTestResult::finishedCurrentTestData()
 {
     if (QTest::expectFailMode)
-        addFailure("QEXPECT_FAIL was called without any subsequent verification statements", 0, 0);
+        addFailure("QEXPECT_FAIL was called without any subsequent verification statements", nullptr, 0);
     clearExpectFail();
 
     if (!QTest::failed && QTestLog::unhandledIgnoreMessages()) {
         QTestLog::printUnhandledIgnoreMessages();
-        addFailure("Not all expected messages were received", 0, 0);
+        addFailure("Not all expected messages were received", nullptr, 0);
     }
     QTestLog::clearIgnoreMessages();
 }
@@ -158,7 +158,7 @@ void QTestResult::finishedCurrentTestDataCleanup()
 
 void QTestResult::finishedCurrentTestFunction()
 {
-    QTest::currentTestFunc = 0;
+    QTest::currentTestFunc = nullptr;
     QTest::failed = false;
 
     QTestLog::leaveTestFunction();
@@ -171,14 +171,12 @@ const char *QTestResult::currentTestFunction()
 
 const char *QTestResult::currentDataTag()
 {
-    return QTest::currentTestData ? QTest::currentTestData->dataTag()
-                                   : static_cast<const char *>(0);
+    return QTest::currentTestData ? QTest::currentTestData->dataTag() : nullptr;
 }
 
 const char *QTestResult::currentGlobalDataTag()
 {
-    return QTest::currentGlobalTestData ? QTest::currentGlobalTestData->dataTag()
-                                         : static_cast<const char *>(0);
+    return QTest::currentGlobalTestData ? QTest::currentGlobalTestData->dataTag() : nullptr;
 }
 
 static bool isExpectFailData(const char *dataIndex)

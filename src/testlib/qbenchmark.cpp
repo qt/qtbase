@@ -73,7 +73,7 @@ void QBenchmarkGlobalData::setMode(Mode mode)
 
 QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
 {
-    QBenchmarkMeasurerBase *measurer = 0;
+    QBenchmarkMeasurerBase *measurer = nullptr;
     if (0) {
 #if QT_CONFIG(valgrind)
     } else if (mode_ == CallgrindChildProcess || mode_ == CallgrindParentProcess) {
@@ -112,7 +112,7 @@ QBenchmarkTestMethodData::QBenchmarkTestMethodData() = default;
 
 QBenchmarkTestMethodData::~QBenchmarkTestMethodData()
 {
-    QBenchmarkTestMethodData::current = 0;
+    QBenchmarkTestMethodData::current = nullptr;
 }
 
 void QBenchmarkTestMethodData::beginDataRun()

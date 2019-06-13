@@ -56,7 +56,7 @@ namespace QTest
 
 inline static void qPrintMessage(const QByteArray &ba)
 {
-    QTestLog::info(ba.constData(), 0, 0);
+    QTestLog::info(ba.constData(), nullptr, 0);
 }
 
 Q_GLOBAL_STATIC(QList<QByteArray>, ignoreClasses)
@@ -169,7 +169,7 @@ static void qSignalDumperCallbackEndSignal(QObject *caller, int /*signal_index*/
 void QSignalDumper::startDump()
 {
     static QSignalSpyCallbackSet set = { QTest::qSignalDumperCallback,
-        QTest::qSignalDumperCallbackSlot, QTest::qSignalDumperCallbackEndSignal, 0 };
+        QTest::qSignalDumperCallbackSlot, QTest::qSignalDumperCallbackEndSignal, nullptr };
     qt_register_signal_spy_callbacks(&set);
 }
 

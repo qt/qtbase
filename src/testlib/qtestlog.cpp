@@ -166,7 +166,7 @@ namespace QTest {
         IgnoreResultList *next = nullptr;
     };
 
-    static IgnoreResultList *ignoreResultList = 0;
+    static IgnoreResultList *ignoreResultList = nullptr;
 
     static QVector<QAbstractTestLogger*> loggers;
     static bool loggerUsingStdout = false;
@@ -181,7 +181,7 @@ namespace QTest {
     {
         if (!ignoreResultList)
             return false;
-        IgnoreResultList *last = 0;
+        IgnoreResultList *last = nullptr;
         IgnoreResultList *list = ignoreResultList;
         while (list) {
             if (list->matches(type, message)) {
@@ -191,7 +191,7 @@ namespace QTest {
                 else if (list->next)
                     ignoreResultList = list->next;
                 else
-                    ignoreResultList = 0;
+                    ignoreResultList = nullptr;
 
                 delete list;
                 return true;
@@ -438,11 +438,11 @@ void QTestLog::stopLogging()
 void QTestLog::addLogger(LogMode mode, const char *filename)
 {
     if (filename && strcmp(filename, "-") == 0)
-        filename = 0;
+        filename = nullptr;
     if (!filename)
         QTest::loggerUsingStdout = true;
 
-    QAbstractTestLogger *logger = 0;
+    QAbstractTestLogger *logger = nullptr;
     switch (mode) {
     case QTestLog::Plain:
         logger = new QPlainTestLogger(filename);

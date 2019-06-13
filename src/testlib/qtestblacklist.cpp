@@ -224,7 +224,7 @@ static bool checkCondition(const QByteArray &condition)
 }
 
 static bool ignoreAll = false;
-static std::set<QByteArray> *ignoredTests = 0;
+static std::set<QByteArray> *ignoredTests = nullptr;
 
 namespace QTestPrivate {
 

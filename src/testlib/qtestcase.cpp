@@ -289,7 +289,7 @@ namespace QTest
 {
 class WatchDog;
 
-static QObject *currentTestObject = 0;
+static QObject *currentTestObject = nullptr;
 static QString mainSourcePath;
 
 #if defined(Q_OS_MACOS)
@@ -423,7 +423,7 @@ Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
 Q_TESTLIB_EXPORT QStringList testTags;
 
-static void qPrintTestSlots(FILE *stream, const char *filter = 0)
+static void qPrintTestSlots(FILE *stream, const char *filter = nullptr)
 {
     for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
@@ -516,7 +516,7 @@ static int qToInt(const char *str)
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool qml)
 {
     int logFormat = -1; // Not set
-    const char *logFilename = 0;
+    const char *logFilename = nullptr;
 
     QTest::testFunctions.clear();
     QTest::testTags.clear();
@@ -897,7 +897,7 @@ struct QTestDataSetter
     }
     ~QTestDataSetter()
     {
-        QTestResult::setCurrentTestData(0);
+        QTestResult::setCurrentTestData(nullptr);
     }
 };
 
@@ -974,11 +974,11 @@ void TestMethods::invokeTestOnData(int index) const
                 if (i == -1) {
                     QTestLog::info(qPrintable(
                         QString::fromLatin1("warmup stage result      : %1")
-                            .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
+                            .arg(QBenchmarkTestMethodData::current->result.value)), nullptr, 0);
                 } else {
                     QTestLog::info(qPrintable(
                         QString::fromLatin1("accumulation stage result: %1")
-                            .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
+                            .arg(QBenchmarkTestMethodData::current->result.value)), nullptr, 0);
                 }
             }
         }
@@ -1115,7 +1115,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
         if (data && !dataCount) {
             // Let empty data tag through.
             if (!*data)
-                data = 0;
+                data = nullptr;
             else {
                 fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), data);
                 fprintf(stderr, "Function has no testdata.\n");
@@ -1130,10 +1130,9 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
             if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                 foundFunction = true;
 
-                QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+                QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : nullptr);
 
-                QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
-                                  : table.testData(curDataIndex));
+                QTestDataSetter s(curDataIndex >= dataCount ? nullptr : table.testData(curDataIndex));
 
                 QTestPrivate::qtestMouseButtons = Qt::NoButton;
                 if (watchDog)
@@ -1156,14 +1155,14 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
             return false;
         }
 
-        QTestResult::setCurrentGlobalTestData(0);
+        QTestResult::setCurrentGlobalTestData(nullptr);
         ++curGlobalDataIndex;
     } while (curGlobalDataIndex < globalDataCount);
 
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setSkipCurrentTest(false);
     QTestResult::setBlacklistCurrentTest(false);
-    QTestResult::setCurrentTestData(0);
+    QTestResult::setCurrentTestData(nullptr);
 
     return true;
 }
@@ -1241,7 +1240,7 @@ char *toHexRepresentation(const char *ba, int length)
      * */
     const int maxLen = 50;
     const int len = qMin(maxLen, length);
-    char *result = 0;
+    char *result = nullptr;
 
     if (length > maxLen) {
         const int size = len * 3 + 4;
@@ -1497,7 +1496,7 @@ void TestMethods::invokeTests(QObject *testObject) const
         QTestResult::finishedCurrentTestDataCleanup();
     }
     QTestResult::finishedCurrentTestFunction();
-    QTestResult::setCurrentTestFunction(0);
+    QTestResult::setCurrentTestFunction(nullptr);
 }
 
 #if defined(Q_OS_UNIX)
@@ -1567,7 +1566,7 @@ FatalSignalHandler::FatalSignalHandler()
     stack.ss_flags = 0;
     stack.ss_size = sizeof alternate_stack;
     stack.ss_sp = alternate_stack;
-    sigaltstack(&stack, 0);
+    sigaltstack(&stack, nullptr);
     act.sa_flags |= SA_ONSTACK;
 #endif
 
@@ -1586,7 +1585,7 @@ FatalSignalHandler::FatalSignalHandler()
             oldact.sa_flags & SA_SIGINFO ||
 #endif
             oldact.sa_handler != SIG_DFL) {
-            sigaction(fatalSignals[i], &oldact, 0);
+            sigaction(fatalSignals[i], &oldact, nullptr);
         } else
         {
             sigaddset(&handledSignals, fatalSignals[i]);
@@ -1611,7 +1610,7 @@ FatalSignalHandler::~FatalSignalHandler()
 
         // If someone overwrote it in the mean time, put it back
         if (oldact.sa_handler != FatalSignalHandler::signal)
-            sigaction(i, &oldact, 0);
+            sigaction(i, &oldact, nullptr);
     }
 }
 
@@ -1927,7 +1926,7 @@ int QTest::qRun()
          QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
          if (QTestResult::currentTestFunction()) {
              QTestResult::finishedCurrentTestFunction();
-             QTestResult::setCurrentTestFunction(0);
+             QTestResult::setCurrentTestFunction(nullptr);
          }
 
         QTestLog::stopLogging();
@@ -1936,7 +1935,7 @@ int QTest::qRun()
              IOPMAssertionRelease(powerID);
          }
 #endif
-         currentTestObject = 0;
+         currentTestObject = nullptr;
 
          // Rethrow exception to make debugging easier.
          throw;
@@ -1957,13 +1956,13 @@ int QTest::qRun()
  */
 void QTest::qCleanup()
 {
-    currentTestObject = 0;
+    currentTestObject = nullptr;
 
     QTestTable::clearGlobalTestTable();
     QTestLog::stopLogging();
 
     delete QBenchmarkGlobalData::current;
-    QBenchmarkGlobalData::current = 0;
+    QBenchmarkGlobalData::current = nullptr;
 
     QSignalDumper::endDump();
 
@@ -2727,7 +2726,7 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
 char *QTest::toString(const char *str)
 {
     if (!str)
-        return 0;
+        return nullptr;
     char *msg = new char[strlen(str) + 1];
     return qstrcpy(msg, str);
 }
