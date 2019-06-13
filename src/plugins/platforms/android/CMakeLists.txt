@@ -59,6 +59,14 @@ add_qt_plugin(qtforandroid
         Qt::Gui
         android
         jnigraphics
+# special case begin
+    INSTALL_DIRECTORY
+        platforms/android
+    OUTPUT_DIRECTORY
+        platforms/android
+    ARCHIVE_INSTALL_DIRECTORY
+        platforms/android
+# special case end
 )
 
 #### Keys ignored in scope 1:.:.:android.pro:<TRUE>:
