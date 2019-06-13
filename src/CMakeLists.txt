@@ -1,5 +1,3 @@
-qt_find_apple_system_frameworks()
-
 add_subdirectory(3rdparty)
 
 function(find_or_build_bootstrap_names)

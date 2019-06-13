@@ -8,8 +8,6 @@ qt_copy_or_install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs"
                    DESTINATION ${mkspecs_install_dir})
 # special case end
 
-qt_find_apple_system_frameworks() # special case
-
 #####################################################################
 ## qmake Binary:
 #####################################################################

@@ -36,6 +36,9 @@ macro(qt_build_repo_begin)
 
     # Optionally include a repo specific Setup module.
     include(${PROJECT_NAME}Setup OPTIONAL)
+
+    # Find Apple frameworks if needed.
+    qt_find_apple_system_frameworks()
 endmacro()
 
 macro(qt_build_repo_end)
