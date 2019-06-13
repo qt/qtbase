@@ -103,9 +103,7 @@ QTeamCityLogger::QTeamCityLogger(const char *filename)
 {
 }
 
-QTeamCityLogger::~QTeamCityLogger()
-{
-}
+QTeamCityLogger::~QTeamCityLogger() = default;
 
 void QTeamCityLogger::startLogging()
 {

@@ -46,9 +46,7 @@ QT_BEGIN_NAMESPACE
 
 QBenchmarkEvent::QBenchmarkEvent() = default;
 
-QBenchmarkEvent::~QBenchmarkEvent()
-{
-}
+QBenchmarkEvent::~QBenchmarkEvent() = default;
 
 void QBenchmarkEvent::start()
 {

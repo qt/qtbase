@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 class QBenchmarkMeasurerBase
 {
 public:
-    virtual ~QBenchmarkMeasurerBase() {}
+    virtual ~QBenchmarkMeasurerBase() = default;
     virtual void init() {}
     virtual void start() = 0;
     virtual qint64 checkpoint() = 0;

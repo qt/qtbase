@@ -54,8 +54,7 @@ QTestXunitStreamer::QTestXunitStreamer(QXunitTestLogger *logger)
     QTEST_ASSERT(testLogger);
 }
 
-QTestXunitStreamer::~QTestXunitStreamer()
-{}
+QTestXunitStreamer::~QTestXunitStreamer() = default;
 
 void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf, int size)
 {

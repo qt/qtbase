@@ -316,9 +316,7 @@ QPlainTestLogger::QPlainTestLogger(const char *filename)
 {
 }
 
-QPlainTestLogger::~QPlainTestLogger()
-{
-}
+QPlainTestLogger::~QPlainTestLogger() = default;
 
 void QPlainTestLogger::startLogging()
 {
