@@ -184,6 +184,9 @@ public:
     static void setWindowTitle(const QXcbConnection *conn, xcb_window_t window, const QString &title);
     static QString windowTitle(const QXcbConnection *conn, xcb_window_t window);
 
+    int swapInterval() const { return m_swapInterval; }
+    void setSwapInterval(int swapInterval) { m_swapInterval = swapInterval; }
+
 public Q_SLOTS:
     void updateSyncRequestCounter();
 
@@ -276,6 +279,7 @@ protected:
     SyncState m_syncState = NoSyncNeeded;
 
     QXcbSyncWindowRequest *m_pendingSyncRequest = nullptr;
+    int m_swapInterval = -1;
 };
 
 class QXcbForeignWindow : public QXcbWindow

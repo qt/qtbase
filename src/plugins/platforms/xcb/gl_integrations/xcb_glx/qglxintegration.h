@@ -87,7 +87,6 @@ private:
     GLXContext m_shareContext;
     QSurfaceFormat m_format;
     bool m_isPBufferCurrent;
-    int m_swapInterval;
     bool m_ownsContext;
     GLenum (APIENTRY * m_getGraphicsResetStatus)();
     bool m_lost;
