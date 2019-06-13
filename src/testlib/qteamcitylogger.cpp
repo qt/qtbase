@@ -222,9 +222,7 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
 {
     QString formattedString;
 
-    for (int i = 0; i < str.length(); i++) {
-        QChar ch = str.at(i);
-
+    for (QChar ch : str) {
         switch (ch.toLatin1()) {
         case '\n':
             formattedString.append(QLatin1String("|n"));

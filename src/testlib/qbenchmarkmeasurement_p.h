@@ -66,7 +66,7 @@ public:
     virtual bool isMeasurementAccepted(qint64 measurement) = 0;
     virtual int adjustIterationCount(int suggestion) = 0;
     virtual int adjustMedianCount(int suggestion) = 0;
-    virtual bool repeatCount() { return 1; }
+    virtual bool repeatCount() { return true; }
     virtual bool needsWarmupIteration() { return false; }
     virtual QTest::QBenchmarkMetric metricType() = 0;
 };

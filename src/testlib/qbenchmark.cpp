@@ -66,8 +66,7 @@ void QBenchmarkGlobalData::setMode(Mode mode)
 {
     mode_ = mode;
 
-    if (measurer)
-        delete measurer;
+    delete measurer;
     measurer = createMeasurer();
 }
 
@@ -98,11 +97,8 @@ QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
 
 int QBenchmarkGlobalData::adjustMedianIterationCount()
 {
-    if (medianIterationCount != -1) {
-        return medianIterationCount;
-    } else {
-        return measurer->adjustMedianCount(1);
-    }
+    return medianIterationCount != -1
+        ? medianIterationCount : measurer->adjustMedianCount(1);
 }
 
 

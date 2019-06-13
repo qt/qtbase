@@ -1040,7 +1040,7 @@ public:
     void run() override {
         QMutexLocker locker(&mutex);
         waitCondition.wakeAll();
-        while (1) {
+        while (true) {
             int t = timeout.loadRelaxed();
             if (!t)
                 break;
@@ -1273,10 +1273,8 @@ char *toHexRepresentation(const char *ba, int length)
         ++o;
         if (i == len)
             break;
-        else {
-            result[o] = ' ';
-            ++o;
-        }
+        result[o] = ' ';
+        ++o;
     }
 
     return result;

@@ -67,7 +67,7 @@ public:
     bool isMeasurementAccepted(qint64 measurement) override;
     int adjustIterationCount(int suggestion) override;
     int adjustMedianCount(int suggestion) override;
-    bool repeatCount() override { return 1; }
+    bool repeatCount() override { return true; }
     bool needsWarmupIteration() override { return true; }
     QTest::QBenchmarkMetric metricType() override;
 
