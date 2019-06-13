@@ -500,10 +500,7 @@ void QBenchmarkPerfEventsMeasurer::listCounters()
            "Attributes can be combined, for example: -perfcounter branch-mispredicts:kh\n");
 }
 
-QBenchmarkPerfEventsMeasurer::QBenchmarkPerfEventsMeasurer()
-    : fd(-1)
-{
-}
+QBenchmarkPerfEventsMeasurer::QBenchmarkPerfEventsMeasurer() = default;
 
 QBenchmarkPerfEventsMeasurer::~QBenchmarkPerfEventsMeasurer()
 {

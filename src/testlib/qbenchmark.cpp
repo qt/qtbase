@@ -51,14 +51,6 @@ QT_BEGIN_NAMESPACE
 QBenchmarkGlobalData *QBenchmarkGlobalData::current;
 
 QBenchmarkGlobalData::QBenchmarkGlobalData()
-    : measurer(0)
-    , walltimeMinimum(-1)
-    , iterationCount(-1)
-    , medianIterationCount(-1)
-    , createChart(false)
-    , verboseOutput(false)
-    , minimumTotal(-1)
-    , mode_(WallTime)
 {
     setMode(mode_);
 }
@@ -116,10 +108,7 @@ int QBenchmarkGlobalData::adjustMedianIterationCount()
 
 QBenchmarkTestMethodData *QBenchmarkTestMethodData::current;
 
-QBenchmarkTestMethodData::QBenchmarkTestMethodData()
-:resultAccepted(false), runOnce(false), iterationCount(-1)
-{
-}
+QBenchmarkTestMethodData::QBenchmarkTestMethodData() = default;
 
 QBenchmarkTestMethodData::~QBenchmarkTestMethodData()
 {

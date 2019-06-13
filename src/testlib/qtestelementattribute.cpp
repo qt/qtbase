@@ -104,11 +104,7 @@ QT_BEGIN_NAMESPACE
   \value LET_SystemError
 */
 
-QTestElementAttribute::QTestElementAttribute()
-    :attributeValue(0),
-    attributeIndex(QTest::AI_Undefined)
-{
-}
+QTestElementAttribute::QTestElementAttribute() = default;
 
 QTestElementAttribute::~QTestElementAttribute()
 {

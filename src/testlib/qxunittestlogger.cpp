@@ -59,13 +59,6 @@ QT_BEGIN_NAMESPACE
 
 QXunitTestLogger::QXunitTestLogger(const char *filename)
     : QAbstractTestLogger(filename)
-    , listOfTestcases(0)
-    , currentLogElement(0)
-    , errorLogElement(0)
-    , logFormatter(0)
-    , testCounter(0)
-    , failureCounter(0)
-    , errorCounter(0)
 {
 }
 

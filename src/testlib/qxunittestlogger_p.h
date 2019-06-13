@@ -79,14 +79,14 @@ class QXunitTestLogger : public QAbstractTestLogger
                     const char *file = nullptr, int line = 0) override;
 
     private:
-        QTestElement *listOfTestcases;
-        QTestElement *currentLogElement;
-        QTestElement *errorLogElement;
-        QTestXunitStreamer *logFormatter;
+        QTestElement *listOfTestcases = nullptr;
+        QTestElement *currentLogElement = nullptr;
+        QTestElement *errorLogElement = nullptr;
+        QTestXunitStreamer *logFormatter = nullptr;
 
-        int testCounter;
-        int failureCounter;
-        int errorCounter;
+        int testCounter = 0;
+        int failureCounter = 0;
+        int errorCounter = 0;
 };
 
 QT_END_NAMESPACE

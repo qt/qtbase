@@ -58,11 +58,11 @@ public:
     }
 
     struct Element {
-        Element() : name(nullptr), type(0) {}
+        Element() = default;
         Element(const char *n, int t) : name(n), type(t) {}
 
-        const char *name;
-        int type;
+        const char *name = nullptr;
+        int type = 0;
     };
 
     using ElementList = std::vector<Element>;

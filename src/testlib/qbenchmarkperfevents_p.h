@@ -76,7 +76,7 @@ public:
     static void setCounter(const char *name);
     static void listCounters();
 private:
-    int fd;
+    int fd = -1;
 
     qint64 readValue();
 };

@@ -74,13 +74,13 @@ class QTestCoreElement: public QTestCoreList<ElementType>
         QTest::LogElementType elementType() const;
 
     private:
-        QTestElementAttribute *listOfAttributes;
+        QTestElementAttribute *listOfAttributes = nullptr;
         QTest::LogElementType type;
 };
 
 template<class ElementType>
 QTestCoreElement<ElementType>::QTestCoreElement(int t)
-    :listOfAttributes(nullptr), type(QTest::LogElementType(t))
+    : type(QTest::LogElementType(t))
 {
 }
 

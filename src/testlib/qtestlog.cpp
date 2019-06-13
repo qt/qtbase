@@ -111,7 +111,7 @@ namespace QTest {
     struct IgnoreResultList
     {
         inline IgnoreResultList(QtMsgType tp, const QVariant &patternIn)
-            : type(tp), pattern(patternIn), next(0) {}
+            : type(tp), pattern(patternIn) {}
 
         static inline void clearList(IgnoreResultList *&list)
         {
@@ -163,7 +163,7 @@ namespace QTest {
 
         QtMsgType type;
         QVariant pattern;
-        IgnoreResultList *next;
+        IgnoreResultList *next = nullptr;
     };
 
     static IgnoreResultList *ignoreResultList = 0;
