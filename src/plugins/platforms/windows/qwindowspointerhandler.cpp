@@ -269,7 +269,10 @@ static Qt::MouseButtons queryMouseButtons()
 
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
 {
-    QWindow *currentWindowUnderPointer = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+
+    QWindow *currentWindowUnderPointer = platformWindow->hasMouseCapture() ?
+                QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT) : window;
 
     while (currentWindowUnderPointer && currentWindowUnderPointer->flags() & Qt::WindowTransparentForInput)
         currentWindowUnderPointer = currentWindowUnderPointer->parent();

@@ -195,6 +195,9 @@ public:
     int waiters;
     bool terminationEnabled, terminatePending;
 #endif // Q_OS_WIN
+#ifdef Q_OS_WASM
+    static int idealThreadCount;
+#endif
     QThreadData *data;
 
     static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);

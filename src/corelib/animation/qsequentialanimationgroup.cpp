@@ -532,7 +532,8 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
     Q_Q(QSequentialAnimationGroup);
     QAnimationGroupPrivate::animationRemoved(index, anim);
 
-    Q_ASSERT(currentAnimation); // currentAnimation should always be set
+    if (!currentAnimation)
+        return;
 
     if (actualDuration.size() > index)
         actualDuration.removeAt(index);

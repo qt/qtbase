@@ -146,7 +146,10 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
     Not all \l{Qt::}{ItemDataRole}s will have an effect on a
     QHeaderView. If you need to draw other roles, you can subclass
     QHeaderView and reimplement \l{QHeaderView::}{paintEvent()}.
-    QHeaderView respects the following item data roles:
+    QHeaderView respects the following item data roles, unless they are
+    in conflict with the style (which can happen for styles that follow
+    the desktop theme):
+
     \l{Qt::}{TextAlignmentRole}, \l{Qt::}{DisplayRole},
     \l{Qt::}{FontRole}, \l{Qt::}{DecorationRole},
     \l{Qt::}{ForegroundRole}, and \l{Qt::}{BackgroundRole}.

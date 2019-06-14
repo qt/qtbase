@@ -2280,53 +2280,53 @@ void tst_QGraphicsView::cursor2()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-15, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
 
     view.setDragMode(QGraphicsView::ScrollHandDrag);
 
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::OpenHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::OpenHandCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-15, -15));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::OpenHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::OpenHandCursor);
 
     view.setDragMode(QGraphicsView::NoDrag);
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
     view.viewport()->setCursor(Qt::PointingHandCursor);
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
 
     item2->setCursor(Qt::SizeAllCursor);
 
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-15, -15));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-15, -15));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
 
     view.setDragMode(QGraphicsView::ScrollHandDrag);
 
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::OpenHandCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::OpenHandCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-15, -15));
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
 }
 #endif
 

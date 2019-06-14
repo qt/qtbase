@@ -1991,6 +1991,7 @@ bool VCMIDLTool::parseOption(const char* option)
         break;
     case 0x5eb7af2: // /header filename
         offset = 5;
+        Q_FALLTHROUGH();
     case 0x0000358: // /h filename
         HeaderFileName = option + offset + 3;
         break;

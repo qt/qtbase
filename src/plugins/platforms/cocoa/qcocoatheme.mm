@@ -80,70 +80,32 @@
 
 #include <CoreServices/CoreServices.h>
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) : NSObject
-@property (readonly, nonatomic) QCocoaTheme *theme;
-- (instancetype)initWithTheme:(QCocoaTheme *)theme;
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeAppAppearanceObserver);
-
-@implementation QCocoaThemeAppAppearanceObserver
-- (instancetype)initWithTheme:(QCocoaTheme *)theme
-{
-    if ((self = [super init])) {
-        _theme = theme;
-        [NSApp addObserver:self forKeyPath:@"effectiveAppearance" options:NSKeyValueObservingOptionNew context:nullptr];
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
-    [super dealloc];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
-        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
-{
-    Q_UNUSED(change);
-    Q_UNUSED(context);
-
-    Q_ASSERT(object == NSApp);
-    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
-
-    if (__builtin_available(macOS 10.14, *))
-        NSAppearance.currentAppearance = NSApp.effectiveAppearance;
-
-    self.theme->handleSystemThemeChange();
-}
-@end
-#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-
 QT_BEGIN_NAMESPACE
 
 const char *QCocoaTheme::name = "cocoa";
 
 QCocoaTheme::QCocoaTheme()
-    : m_systemPalette(nullptr), m_appearanceObserver(nil)
+    : m_systemPalette(nullptr)
 {
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
-        m_appearanceObserver = [[QCocoaThemeAppAppearanceObserver alloc] initWithTheme:this];
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
+        m_appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
+            if (__builtin_available(macOS 10.14, *))
+                NSAppearance.currentAppearance = NSApp.effectiveAppearance;
+
+            handleSystemThemeChange();
+        });
+    }
 #endif
 
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSSystemColorsDidChangeNotification
-        object:nil queue:nil usingBlock:^(NSNotification *) {
+    m_systemColorObserver = QMacNotificationObserver(nil,
+        NSSystemColorsDidChangeNotification, [this] {
             handleSystemThemeChange();
-        }];
+    });
 }
 
 QCocoaTheme::~QCocoaTheme()
 {
-    if (m_appearanceObserver)
-        [m_appearanceObserver release];
-
     reset();
     qDeleteAll(m_fonts);
 }

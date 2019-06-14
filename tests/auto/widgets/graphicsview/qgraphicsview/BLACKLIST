@@ -4,6 +4,7 @@ xcb
 xcb
 [cursor2]
 xcb
+windows
 [rubberBandExtendSelection]
 xcb
 [rotated_rubberBand]
