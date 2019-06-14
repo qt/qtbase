@@ -4,7 +4,7 @@ add_library(Qt::Platform ALIAS Platform)
 target_include_directories(Platform
     INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${QT_PLATFORM_DEFINITION_DIR}>
-    $<BUILD_INTERFACE:${QT_BUILD_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${INSTALL_DATADIR}/${QT_PLATFORM_DEFINITION_DIR}>
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
     )
@@ -65,8 +65,8 @@ qt_install(FILES
 ## files always lived in Qt::Core, so we keep it that way
 add_library(GlobalConfig INTERFACE)
 target_include_directories(GlobalConfig INTERFACE
-    $<BUILD_INTERFACE:${QT_BUILD_DIR}/include>
-    $<BUILD_INTERFACE:${QT_BUILD_DIR}/include/QtCore>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore>
     $<INSTALL_INTERFACE:include>
     $<INSTALL_INTERFACE:include/QtCore>
 )
@@ -84,8 +84,8 @@ add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 add_library(GlobalConfigPrivate INTERFACE)
 target_link_libraries(GlobalConfigPrivate INTERFACE GlobalConfig)
 target_include_directories(GlobalConfigPrivate INTERFACE
-    $<BUILD_INTERFACE:${QT_BUILD_DIR}/include/QtCore/${PROJECT_VERSION}>
-    $<BUILD_INTERFACE:${QT_BUILD_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
     $<INSTALL_INTERFACE:include/QtCore/${PROJECT_VERSION}>
     $<INSTALL_INTERFACE:include/QtCore/${PROJECT_VERSION}/QtCore>
 )

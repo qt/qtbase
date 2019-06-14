@@ -272,10 +272,6 @@ endfunction()
 # cmake_install.cmake file with an empty one. This means we will always replace the file on
 # every reconfiguration, but not when doing null builds.
 function(remove_install_target)
-    if (TARGET remove_cmake_install)
-        return() # target was already created
-    endif()
-
     set(file_in "${CMAKE_BINARY_DIR}/.remove_cmake_install_in.txt")
     set(file_generated "${CMAKE_BINARY_DIR}/.remove_cmake_install_generated.txt")
     set(cmake_install_file "${CMAKE_BINARY_DIR}/cmake_install.cmake")
@@ -947,24 +943,20 @@ function(qt_install_injections module build_dir install_dir)
         #
         # ${some_prefix}'s value depends on the build type.
         # If doing a prefix build, it should point to
-        # the current repo's build dir which is ${qtdeclarative_build_dir}.
+        # ${current_repo_build_dir} which is ${qtdeclarative_build_dir}.
         # If doing a non-prefix build, it should point to
-        # qtbase's build dir.
+        # ${qtbase_build_dir}.
         #
         # In the code below, ${some_prefix} == ${build_dir}.
         set(lower_case_forwarding_header_path "${build_dir}/${INSTALL_INCLUDEDIR}/${module}")
         if(destinationdir)
             string(APPEND lower_case_forwarding_header_path "/${destinationdir}")
         endif()
-        if (IS_ABSOLUTE "${file}")
-            set(file_path "${file}")
-        else()
-            set(file_path "${PROJECT_BINARY_DIR}/${file}")
-        endif()
+        set(current_repo_build_dir "${PROJECT_BINARY_DIR}")
 
         file(RELATIVE_PATH relpath
                            "${lower_case_forwarding_header_path}"
-                           "${file_path}")
+                           "${current_repo_build_dir}/${file}")
         set(main_contents "#include \"${relpath}\"")
         file(GENERATE OUTPUT "${lower_case_forwarding_header_path}/${original_file_name}"
              CONTENT "${main_contents}")
@@ -974,7 +966,7 @@ function(qt_install_injections module build_dir install_dir)
         # will be a no-op.
         qt_path_join(install_destination
                      ${install_dir} ${INSTALL_INCLUDEDIR} ${module} ${destinationdir})
-        qt_install(FILES ${file_path}
+        qt_install(FILES ${current_repo_build_dir}/${file}
                    DESTINATION ${install_destination}
                    RENAME ${destinationname} OPTIONAL)
 
@@ -1145,7 +1137,7 @@ function(add_qt_module target)
     qt_autogen_tools_initial_setup(${target})
 
     set(_public_includes
-        $<BUILD_INTERFACE:${QT_BUILD_DIR}/include>
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<BUILD_INTERFACE:${module_include_dir}>
     )
     if(NOT arg_NO_MODULE_HEADERS)
@@ -1497,7 +1489,7 @@ function(add_qt_plugin target)
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
             # For the syncqt headers
-            $<BUILD_INTERFACE:${QT_BUILD_DIR}/include>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES ${arg_PUBLIC_INCLUDE_DIRECTORIES}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformPluginInternal
@@ -2063,6 +2055,7 @@ function(qt_compute_injection_forwarding_header target)
     get_filename_component(file_name "${arg_SOURCE}" NAME)
 
     set(source_absolute_path "${CMAKE_CURRENT_BINARY_DIR}/${arg_SOURCE}")
+    file(RELATIVE_PATH relpath "${CMAKE_BINARY_DIR}" "${source_absolute_path}")
 
     if (arg_PRIVATE)
         set(fwd "${PROJECT_VERSION}/${module}/private/${file_name}")
@@ -2070,7 +2063,7 @@ function(qt_compute_injection_forwarding_header target)
         set(fwd "${file_name}")
     endif()
 
-    string(APPEND ${arg_OUT_VAR} " ${source_absolute_path}:${fwd}")
+    string(APPEND ${arg_OUT_VAR} " ${relpath}:${fwd}")
     set(${arg_OUT_VAR} ${${arg_OUT_VAR}} PARENT_SCOPE)
 endfunction()
 
