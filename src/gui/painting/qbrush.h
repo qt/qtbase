@@ -371,6 +371,8 @@ public:
         GagarinView = 178,
         FabledSunset = 179,
         PerfectBlue = 180,
+
+        NumPresets
     };
     Q_ENUM(Preset)
 
