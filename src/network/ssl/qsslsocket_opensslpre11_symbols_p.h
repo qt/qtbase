@@ -84,6 +84,8 @@ int q_CRYPTO_num_locks();
 void q_CRYPTO_set_locking_callback(void (*a)(int, int, const char *, int));
 void q_CRYPTO_set_id_callback(unsigned long (*a)());
 void q_CRYPTO_free(void *a);
+int q_CRYPTO_set_ex_data(CRYPTO_EX_DATA *ad, int idx, void *val);
+void *q_CRYPTO_get_ex_data(const CRYPTO_EX_DATA *ad, int idx);
 unsigned long q_ERR_peek_last_error();
 void q_ERR_free_strings();
 void q_EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *a);

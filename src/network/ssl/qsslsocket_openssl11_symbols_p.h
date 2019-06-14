@@ -105,6 +105,8 @@ ASN1_TIME *q_X509_getm_notAfter(X509 *a);
 long q_X509_get_version(X509 *a);
 EVP_PKEY *q_X509_get_pubkey(X509 *a);
 void q_X509_STORE_set_verify_cb(X509_STORE *ctx, X509_STORE_CTX_verify_cb verify_cb);
+int q_X509_STORE_set_ex_data(X509_STORE *ctx, int idx, void *data);
+void *q_X509_STORE_get_ex_data(X509_STORE *r, int idx);
 STACK_OF(X509) *q_X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
 void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
 int q_DH_bits(DH *dh);
