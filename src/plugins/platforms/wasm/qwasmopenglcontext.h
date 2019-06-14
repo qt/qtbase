@@ -34,6 +34,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformScreen;
 class QWasmOpenGLContext : public QPlatformOpenGLContext
 {
 public:
@@ -50,12 +51,11 @@ public:
     QFunctionPointer getProcAddress(const char *procName) override;
 
 private:
-    void maybeRecreateEmscriptenContext(QPlatformSurface *surface);
+    bool maybeCreateEmscriptenContext(QPlatformSurface *surface);
     static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE createEmscriptenContext(const QString &canvasId, QSurfaceFormat format);
 
-    bool m_contextLost = false;
     QSurfaceFormat m_requestedFormat;
-    QPlatformSurface *m_surface = nullptr;
+    QPlatformScreen *m_screen = nullptr;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_context = 0;
 };
 

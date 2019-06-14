@@ -113,6 +113,11 @@ QAnimationGroup::QAnimationGroup(QAnimationGroupPrivate &dd, QObject *parent)
 */
 QAnimationGroup::~QAnimationGroup()
 {
+    Q_D(QAnimationGroup);
+    // We need to clear the animations now while we are still a valid QAnimationGroup.
+    // If we wait until ~QObject() the QAbstractAnimation's pointer back to us would
+    // point to a QObject, not a valid QAnimationGroup.
+    d->clear(true);
 }
 
 /*!
@@ -256,7 +261,7 @@ QAbstractAnimation *QAnimationGroup::takeAnimation(int index)
 void QAnimationGroup::clear()
 {
     Q_D(QAnimationGroup);
-    qDeleteAll(d->animations);
+    d->clear(false);
 }
 
 /*!
@@ -284,6 +289,24 @@ bool QAnimationGroup::event(QEvent *event)
     return QAbstractAnimation::event(event);
 }
 
+void QAnimationGroupPrivate::clear(bool onDestruction)
+{
+    const QList<QAbstractAnimation *> animationsCopy = animations; // taking a copy
+    animations.clear();
+    // Clearing backwards so the indices doesn't change while we remove animations.
+    for (int i = animationsCopy.count() - 1; i >= 0; --i) {
+        QAbstractAnimation *animation = animationsCopy.at(i);
+        animation->setParent(nullptr);
+        QAbstractAnimationPrivate::get(animation)->group = nullptr;
+        // If we are in ~QAnimationGroup() it is not safe to called the virtual
+        // animationRemoved method, which can still be a method in a
+        // QAnimationGroupPrivate derived class that assumes q_ptr is still
+        // a valid derived class of QAnimationGroup.
+        if (!onDestruction)
+            animationRemoved(i, animation);
+        delete animation;
+    }
+}
 
 void QAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *)
 {

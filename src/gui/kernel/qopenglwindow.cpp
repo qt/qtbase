@@ -440,7 +440,7 @@ void QOpenGLWindow::makeCurrent()
         d->context->makeCurrent(this);
     } else {
         if (!d->offscreenSurface) {
-            d->offscreenSurface.reset(new QOffscreenSurface);
+            d->offscreenSurface.reset(new QOffscreenSurface(screen()));
             d->offscreenSurface->setFormat(d->context->format());
             d->offscreenSurface->create();
         }

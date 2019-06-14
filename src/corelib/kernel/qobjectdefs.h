@@ -138,6 +138,10 @@ class QString;
 # define QT_TR_FUNCTIONS
 #endif
 
+#ifdef Q_CLANG_QDOC
+#define QT_TR_FUNCTIONS
+#endif
+
 // ### Qt6: remove
 #define Q_OBJECT_CHECK  /* empty, unused since Qt 5.2 */
 

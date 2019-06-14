@@ -52,6 +52,7 @@
 QPainter painter(this);
 
 painter.setPen(Qt::darkGreen);
+// Using the (x  y  w  h) overload
 painter.drawRect(1, 2, 6, 4);
 //! [0]
 
@@ -69,6 +70,7 @@ QPainter painter(this);
 painter.setRenderHint(
     QPainter::Antialiasing);
 painter.setPen(Qt::darkGreen);
+// Using the (x  y  w  h) overload
 painter.drawRect(1, 2, 6, 4);
 //! [2]
 

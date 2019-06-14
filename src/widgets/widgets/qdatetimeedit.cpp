@@ -1529,7 +1529,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
 QTimeEdit::QTimeEdit(QWidget *parent)
     : QDateTimeEdit(QDATETIMEEDIT_TIME_MIN, QVariant::Time, parent)
 {
-    connect(this, SIGNAL(timeChanged(QTime)), SIGNAL(userTimeChanged(QTime)));
+    connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
 }
 
 /*!
@@ -1540,6 +1540,7 @@ QTimeEdit::QTimeEdit(QWidget *parent)
 QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
     : QDateTimeEdit(time, QVariant::Time, parent)
 {
+    connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
 }
 
 /*!
@@ -1598,7 +1599,7 @@ QTimeEdit::~QTimeEdit()
 QDateEdit::QDateEdit(QWidget *parent)
     : QDateTimeEdit(QDATETIMEEDIT_DATE_INITIAL, QVariant::Date, parent)
 {
-    connect(this, SIGNAL(dateChanged(QDate)), SIGNAL(userDateChanged(QDate)));
+    connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
 }
 
 /*!
@@ -1609,6 +1610,7 @@ QDateEdit::QDateEdit(QWidget *parent)
 QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
     : QDateTimeEdit(date, QVariant::Date, parent)
 {
+    connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
 }
 
 /*!

@@ -317,6 +317,8 @@ QWindowsContext::~QWindowsContext()
         OleUninitialize();
 
     d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
+    if (d->m_displayContext)
+        ReleaseDC(nullptr, d->m_displayContext);
     m_instance = nullptr;
 }
 
@@ -749,6 +751,12 @@ QWindowsWindow *QWindowsContext::findPlatformWindowAt(HWND parent,
     QWindowsWindow *result = nullptr;
     const POINT screenPoint = { screenPointIn.x(), screenPointIn.y() };
     while (findPlatformWindowHelper(screenPoint, cwex_flags, this, &parent, &result)) {}
+    // QTBUG-40815: ChildWindowFromPointEx() can hit on special windows from
+    // screen recorder applications like ScreenToGif. Fall back to WindowFromPoint().
+    if (result == nullptr) {
+        if (const HWND window = WindowFromPoint(screenPoint))
+            result = findPlatformWindow(window);
+    }
     return result;
 }
 
@@ -925,7 +933,7 @@ bool QWindowsContext::systemParametersInfo(unsigned action, unsigned param, void
 bool QWindowsContext::systemParametersInfoForScreen(unsigned action, unsigned param, void *out,
                                                     const QPlatformScreen *screen)
 {
-    return systemParametersInfo(action, param, out, screen ? screen->logicalDpi().first : 0);
+    return systemParametersInfo(action, param, out, screen ? unsigned(screen->logicalDpi().first) : 0u);
 }
 
 bool QWindowsContext::systemParametersInfoForWindow(unsigned action, unsigned param, void *out,
@@ -944,7 +952,8 @@ bool QWindowsContext::nonClientMetrics(NONCLIENTMETRICS *ncm, unsigned dpi)
 bool QWindowsContext::nonClientMetricsForScreen(NONCLIENTMETRICS *ncm,
                                                 const QPlatformScreen *screen)
 {
-    return nonClientMetrics(ncm, screen ? screen->logicalDpi().first : 0);
+    const int dpi = screen ? qRound(screen->logicalDpi().first) : 0;
+    return nonClientMetrics(ncm, unsigned(dpi));
 }
 
 bool QWindowsContext::nonClientMetricsForWindow(NONCLIENTMETRICS *ncm, const QPlatformWindow *win)

@@ -97,35 +97,35 @@ QEnterEvent::~QEnterEvent()
 /*!
    \fn QPoint QEnterEvent::globalPos() const
 
-   Returns the global position of the widget \e{at the time of the event}.
+   Returns the global position of the mouse cursor \e{at the time of the event}.
 */
 /*!
    \fn int QEnterEvent::globalX() const
 
-   Returns the global position on the X-axis of the mouse cursor relative to the the widget.
+   Returns the global position on the X-axis of the mouse cursor \e{at the time of the event}.
 */
 /*!
    \fn int QEnterEvent::globalY() const
 
-   Returns the global position on the Y-axis of the mouse cursor relative to the the widget.
+   Returns the global position on the Y-axis of the mouse cursor \e{at the time of the event}.
 */
 /*!
-   \fn QPoint QEnterEvent::localPos() const
+   \fn QPointF QEnterEvent::localPos() const
 
    Returns the mouse cursor's position relative to the receiving widget.
 */
 /*!
    \fn QPoint QEnterEvent::pos() const
 
-   Returns the position of the mouse cursor in global screen coordinates.
+   Returns the position of the mouse cursor relative to the receiving widget.
 */
 /*!
-   \fn QPoint QEnterEvent::screenPos() const
+   \fn QPointF QEnterEvent::screenPos() const
 
    Returns the position of the mouse cursor relative to the receiving screen.
 */
 /*!
-   \fn QPoint QEnterEvent::windowPos() const
+   \fn QPointF QEnterEvent::windowPos() const
 
    Returns the position of the mouse cursor relative to the receiving window.
 */
