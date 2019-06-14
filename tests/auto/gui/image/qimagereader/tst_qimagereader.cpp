@@ -164,6 +164,9 @@ private slots:
     void preserveTexts_data();
     void preserveTexts();
 
+    void devicePixelRatio_data();
+    void devicePixelRatio();
+
 private:
     QString prefix;
     QTemporaryDir m_temporaryDir;
@@ -1976,6 +1979,28 @@ void tst_QImageReader::preserveTexts()
     QCOMPARE(r.text(key3), text3.simplified());
 }
 
+void tst_QImageReader::devicePixelRatio_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QSize>("size");
+    QTest::addColumn<qreal>("dpr");
+
+    QTest::newRow("1x") << "qticon16.png" << QSize(16, 16) << 1.0;
+    QTest::newRow("2x") << "qticon16@2x.png" << QSize(32, 32) << 2.0;
+    QTest::newRow("3x") << "qticon16@3x.png" << QSize(48, 48) << 3.0;
+}
+
+void tst_QImageReader::devicePixelRatio()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QSize, size);
+    QFETCH(qreal, dpr);
+
+    QImageReader r(":/images/" + fileName);
+    QImage img = r.read();
+    QCOMPARE(img.size(), size);
+    QCOMPARE(img.devicePixelRatio(), dpr);
+}
 
 QTEST_MAIN(tst_QImageReader)
 #include "tst_qimagereader.moc"
