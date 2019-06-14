@@ -2464,7 +2464,7 @@ static int qt_timezone()
         // - It also takes DST into account, so we need to adjust it to always
         //   get the Standard Time offset.
         return -t.tm_gmtoff + (t.tm_isdst ? (long)SECS_PER_HOUR : 0L);
-#elif defined(Q_OS_INTEGRITY)
+#elif defined(Q_OS_INTEGRITY) || defined(Q_OS_RTEMS)
         return 0;
 #else
         return timezone;
