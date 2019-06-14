@@ -315,7 +315,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_u8 *SLJIT_FUNC sljit_stack_resize(struct sljit_st
 		aligned_new_start = (sljit_uw)new_start & ~sljit_page_align;
 		aligned_old_start = ((sljit_uw)stack->start) & ~sljit_page_align;
 		/* If madvise is available, we release the unnecessary space. */
-#if defined(MADV_DONTNEED)
+#if defined(MADV_DONTNEED) && !defined(__rtems__)
 		if (aligned_new_start > aligned_old_start)
 			madvise((void*)aligned_old_start, aligned_new_start - aligned_old_start, MADV_DONTNEED);
 #elif defined(POSIX_MADV_DONTNEED)

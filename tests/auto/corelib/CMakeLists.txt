@@ -9,4 +9,5 @@ add_subdirectory(serialization)
 add_subdirectory(statemachine)
 add_subdirectory(thread)
 add_subdirectory(tools)
+add_subdirectory(time)
 

@@ -60,6 +60,7 @@ extend_target(Bootstrap
         ../../corelib/serialization/qtextstream.cpp
         ../../corelib/serialization/qxmlstream.cpp
         ../../corelib/serialization/qxmlutils.cpp
+        ../../corelib/time/qdatetime.cpp
         ../../corelib/tools/qarraydata.cpp
         ../../corelib/tools/qbitarray.cpp
         ../../corelib/tools/qbytearray.cpp
@@ -67,7 +68,6 @@ extend_target(Bootstrap
         ../../corelib/tools/qcommandlineoption.cpp
         ../../corelib/tools/qcommandlineparser.cpp
         ../../corelib/tools/qcryptographichash.cpp
-        ../../corelib/tools/qdatetime.cpp
         ../../corelib/tools/qhash.cpp
         ../../corelib/tools/qline.cpp
         ../../corelib/tools/qlinkedlist.cpp

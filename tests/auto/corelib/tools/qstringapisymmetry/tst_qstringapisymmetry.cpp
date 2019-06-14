@@ -485,6 +485,47 @@ private Q_SLOTS:
     void indexOf_QStringView_QStringRef() { indexOf_impl<QStringView, QStringRef>(); }
     void indexOf_QStringView_QStringView_data() { indexOf_data(); }
     void indexOf_QStringView_QStringView() { indexOf_impl<QStringView, QStringView>(); }
+
+private:
+    template <typename Haystack, typename Needle> void contains_impl() const;
+    void contains_data();
+
+private Q_SLOTS:
+    void contains_QString_QString_data() { contains_data(); }
+    void contains_QString_QString() { contains_impl<QString, QString>(); }
+    void contains_QString_QLatin1String_data() { contains_data(); }
+    void contains_QString_QLatin1String() { contains_impl<QString, QLatin1String>(); }
+    void contains_QString_QStringRef_data() { contains_data(); }
+    void contains_QString_QStringRef() { contains_impl<QString, QStringRef>(); }
+    void contains_QString_QStringView_data() { contains_data(); }
+    void contains_QString_QStringView() { contains_impl<QString, QStringView>(); }
+
+    void contains_QLatin1String_QString_data() { contains_data(); }
+    void contains_QLatin1String_QString() { contains_impl<QLatin1String, QString>(); }
+    void contains_QLatin1String_QLatin1String_data() { contains_data(); }
+    void contains_QLatin1String_QLatin1String() { contains_impl<QLatin1String, QLatin1String>(); }
+    void contains_QLatin1String_QStringRef_data() { contains_data(); }
+    void contains_QLatin1String_QStringRef() { contains_impl<QLatin1String, QStringRef>(); }
+    void contains_QLatin1String_QStringView_data() { contains_data(); }
+    void contains_QLatin1String_QStringView() { contains_impl<QLatin1String, QStringView>(); }
+
+    void contains_QStringRef_QString_data() { contains_data(); }
+    void contains_QStringRef_QString() { contains_impl<QStringRef, QString>(); }
+    void contains_QStringRef_QLatin1String_data() { contains_data(); }
+    void contains_QStringRef_QLatin1String() { contains_impl<QStringRef, QLatin1String>(); }
+    void contains_QStringRef_QStringRef_data() { contains_data(); }
+    void contains_QStringRef_QStringRef() { contains_impl<QStringRef, QStringRef>(); }
+    void contains_QStringRef_QStringView_data() { contains_data(); }
+    void contains_QStringRef_QStringView() { contains_impl<QStringRef, QStringView>(); }
+
+    void contains_QStringView_QString_data() { contains_data(); }
+    void contains_QStringView_QString() { contains_impl<QStringView, QString>(); }
+    void contains_QStringView_QLatin1String_data() { contains_data(); }
+    void contains_QStringView_QLatin1String() { contains_impl<QStringView, QLatin1String>(); }
+    void contains_QStringView_QStringRef_data() { contains_data(); }
+    void contains_QStringView_QStringRef() { contains_impl<QStringView, QStringRef>(); }
+    void contains_QStringView_QStringView_data() { contains_data(); }
+    void contains_QStringView_QStringView() { contains_impl<QStringView, QStringView>(); }
 };
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
@@ -617,6 +658,14 @@ static QString b = QStringLiteral("b");
 static QString B = QStringLiteral("B");
 static QString c = QStringLiteral("c");
 static QString C = QStringLiteral("C");
+static QString d = QStringLiteral("d");
+static QString D = QStringLiteral("D");
+static QString e = QStringLiteral("e");
+static QString E = QStringLiteral("E");
+static QString f = QStringLiteral("f");
+static QString F = QStringLiteral("F");
+static QString g = QStringLiteral("g");
+static QString G = QStringLiteral("G");
 static QString ab = QStringLiteral("ab");
 static QString aB = QStringLiteral("aB");
 static QString Ab = QStringLiteral("Ab");
@@ -1501,6 +1550,81 @@ void tst_QStringApiSymmetry::indexOf_impl() const
     }
 }
 
+static QString ABCDEFGHIEfGEFG = QStringLiteral("ABCDEFGHIEfGEFG");
+static QString EFG = QStringLiteral("EFG");
+static QString efg = QStringLiteral("efg");
+static QString asd = QStringLiteral("asd");
+static QString asdf = QStringLiteral("asdf");
+static QString Z = QStringLiteral("Z");
+
+void tst_QStringApiSymmetry::contains_data()
+{
+    QTest::addColumn<QString>("haystackU16");
+    QTest::addColumn<QLatin1String>("haystackL1");
+    QTest::addColumn<QString>("needleU16");
+    QTest::addColumn<QLatin1String>("needleL1");
+    QTest::addColumn<bool>("resultCS");
+    QTest::addColumn<bool>("resultCIS");
+
+    QTest::addRow("haystack: null, needle: null") << null << QLatin1String()
+                                     << null << QLatin1String() << true << true;
+    QTest::addRow("haystack: empty, needle: null")  << empty << QLatin1String("")
+                                     << null << QLatin1String() << true << true;
+    QTest::addRow("haystack: a, needle: null") << a << QLatin1String("a")
+                                     << null << QLatin1String() << true << true;
+    QTest::addRow("haystack: null, needle: empty") << null << QLatin1String()
+                                     << empty << QLatin1String("") << true << true;
+    QTest::addRow("haystack: a, needle: empty") << a << QLatin1String("a")
+                                     << empty << QLatin1String("") << true << true;;
+    QTest::addRow("haystack: empty, needle: empty") << empty << QLatin1String("")
+                                     << empty << QLatin1String("") << true << true;
+    QTest::addRow("haystack: empty, needle: a") << empty << QLatin1String("")
+                                     << a << QLatin1String("a") << false << false;
+    QTest::addRow("haystack: null, needle: a") << null << QLatin1String()
+                                     << a << QLatin1String("a") << false << false;
+
+#define ROW(h, n, cs, cis) \
+    QTest::addRow("haystack: %s, needle: %s", #h, #n) << h << QLatin1String(#h) \
+                                       << n << QLatin1String(#n) \
+                                       << cs << cis
+
+    ROW(ABCDEFGHIEfGEFG, A, true, true);
+    ROW(ABCDEFGHIEfGEFG, a, false, true);
+    ROW(ABCDEFGHIEfGEFG, Z, false, false);
+    ROW(ABCDEFGHIEfGEFG, EFG, true, true);
+    ROW(ABCDEFGHIEfGEFG, efg, false, true);
+    ROW(ABCDEFGHIEfGEFG, E, true, true);
+    ROW(ABCDEFGHIEfGEFG, e, false, true);
+#undef ROW
+}
+
+template <typename Haystack, typename Needle>
+void tst_QStringApiSymmetry::contains_impl() const
+{
+    QFETCH(const QString, haystackU16);
+    QFETCH(const QLatin1String, haystackL1);
+    QFETCH(const QString, needleU16);
+    QFETCH(const QLatin1String, needleL1);
+    QFETCH(const bool, resultCS);
+    QFETCH(const bool, resultCIS);
+
+    const auto haystackU8 = haystackU16.toUtf8();
+    const auto needleU8 = needleU16.toUtf8();
+
+    const auto haystack = make<Haystack>(QStringRef(&haystackU16), haystackL1, haystackU8);
+    const auto needle = make<Needle>(QStringRef(&needleU16), needleL1, needleU8);
+
+    QCOMPARE(haystack.contains(needle), resultCS);
+    QCOMPARE(haystack.contains(needle, Qt::CaseSensitive), resultCS);
+    QCOMPARE(haystack.contains(needle, Qt::CaseInsensitive), resultCIS);
+
+    if (needle.size() == 1)
+    {
+        QCOMPARE(haystack.contains(needle[0]), resultCS);
+        QCOMPARE(haystack.contains(needle[0], Qt::CaseSensitive), resultCS);
+        QCOMPARE(haystack.contains(needle[0], Qt::CaseInsensitive), resultCIS);
+    }
+}
 
 QTEST_APPLESS_MAIN(tst_QStringApiSymmetry)
 

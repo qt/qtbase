@@ -154,10 +154,10 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
             // This is fragile, but unfortunately testlib doesn't plumb
             // the expected and actual values to the loggers (yet).
             static QRegularExpression verifyRegex(
-                QLatin1Literal("^'(?<actualexpression>.*)' returned (?<actual>\\w+).+\\((?<message>.*)\\)$"));
+                QLatin1String("^'(?<actualexpression>.*)' returned (?<actual>\\w+).+\\((?<message>.*)\\)$"));
 
             static QRegularExpression comparRegex(
-                QLatin1Literal("^(?<message>.*)\n"
+                QLatin1String("^(?<message>.*)\n"
                     "\\s*Actual\\s+\\((?<actualexpression>.*)\\)\\s*: (?<actual>.*)\n"
                     "\\s*Expected\\s+\\((?<expectedexpresssion>.*)\\)\\s*: (?<expected>.*)$"));
 
@@ -168,22 +168,22 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 
             if (match.hasMatch()) {
                 bool isVerify = match.regularExpression() == verifyRegex;
-                QString message = match.captured(QLatin1Literal("message"));
+                QString message = match.captured(QLatin1String("message"));
                 QString expected;
                 QString actual;
 
                 if (isVerify) {
-                    QString expression = QLatin1Literal(" (")
-                        % match.captured(QLatin1Literal("actualexpression")) % QLatin1Char(')') ;
-                    actual = match.captured(QLatin1Literal("actual")).toLower() % expression;
-                    expected = (actual.startsWith(QLatin1Literal("true")) ? QLatin1Literal("false") : QLatin1Literal("true")) % expression;
+                    QString expression = QLatin1String(" (")
+                        % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')') ;
+                    actual = match.captured(QLatin1String("actual")).toLower() % expression;
+                    expected = (actual.startsWith(QLatin1String("true")) ? QLatin1String("false") : QLatin1String("true")) % expression;
                     if (message.isEmpty())
-                        message = QLatin1Literal("Verification failed");
+                        message = QLatin1String("Verification failed");
                 } else {
-                    expected = match.captured(QLatin1Literal("expected"))
-                        % QLatin1Literal(" (") % match.captured(QLatin1Literal("expectedexpresssion")) % QLatin1Char(')');
-                    actual = match.captured(QLatin1Literal("actual"))
-                        % QLatin1Literal(" (") % match.captured(QLatin1Literal("actualexpression")) % QLatin1Char(')');
+                    expected = match.captured(QLatin1String("expected"))
+                        % QLatin1String(" (") % match.captured(QLatin1String("expectedexpresssion")) % QLatin1Char(')');
+                    actual = match.captured(QLatin1String("actual"))
+                        % QLatin1String(" (") % match.captured(QLatin1String("actualexpression")) % QLatin1Char(')');
                 }
 
                 QTestCharBuffer diagnosticsYamlish;

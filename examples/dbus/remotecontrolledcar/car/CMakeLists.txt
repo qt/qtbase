@@ -11,8 +11,8 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS DBus)
-find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS DBus)
+find_package(Qt6 COMPONENTS Widgets)
 
 # special case begin
 set(car_SRCS)

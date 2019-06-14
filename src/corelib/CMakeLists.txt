@@ -163,6 +163,7 @@ add_qt_module(Core
         thread/qthread.cpp thread/qthread.h
         thread/qthreadstorage.h
         thread/qwaitcondition.h
+        time/qdatetime.cpp time/qdatetime.h time/qdatetime_p.h
         tools/qalgorithms.h
         tools/qarraydata.cpp tools/qarraydata.h
         tools/qarraydataops.h
@@ -179,7 +180,6 @@ add_qt_module(Core
         tools/qcontainertools_impl.h
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
-        tools/qdatetime.cpp tools/qdatetime.h tools/qdatetime_p.h
         tools/qdoublescanprint_p.h
         tools/qeasingcurve.cpp tools/qeasingcurve.h
         tools/qfreelist.cpp tools/qfreelist_p.h
@@ -674,48 +674,6 @@ extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_icu
         tools/qcollator_posix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_timezone
-    SOURCES
-        tools/qtimezone.cpp tools/qtimezone.h
-        tools/qtimezoneprivate.cpp tools/qtimezoneprivate_p.h
-        tools/qtimezoneprivate_data_p.h
-)
-
-extend_target(Core CONDITION APPLE AND QT_FEATURE_timezone AND NOT NACL
-    SOURCES
-        tools/qtimezoneprivate_mac.mm
-)
-
-extend_target(Core CONDITION ANDROID AND QT_FEATURE_timezone AND NOT ANDROID_EMBEDDED AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qtimezoneprivate_android.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qtimezoneprivate_tz.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qtimezoneprivate_icu.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qtimezoneprivate_icu.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qtimezoneprivate_win.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_datetimeparser
-    SOURCES
-        tools/qdatetimeparser.cpp tools/qdatetimeparser_p.h
-)
-
 extend_target(Core CONDITION QT_FEATURE_regularexpression
     SOURCES
         tools/qregularexpression.cpp tools/qregularexpression.h
@@ -732,6 +690,48 @@ extend_target(Core CONDITION QT_FEATURE_commandlineparser
 extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_OSX OR NOT ICC)
     LIBRARIES
         m
+)
+
+extend_target(Core CONDITION QT_FEATURE_timezone
+    SOURCES
+        time/qtimezone.cpp time/qtimezone.h
+        time/qtimezoneprivate.cpp time/qtimezoneprivate_p.h
+        time/qtimezoneprivate_data_p.h
+)
+
+extend_target(Core CONDITION APPLE AND QT_FEATURE_timezone AND NOT NACL
+    SOURCES
+        time/qtimezoneprivate_mac.mm
+)
+
+extend_target(Core CONDITION ANDROID AND QT_FEATURE_timezone AND NOT ANDROID_EMBEDDED AND (NACL OR NOT APPLE)
+    SOURCES
+        time/qtimezoneprivate_android.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+    SOURCES
+        time/qtimezoneprivate_tz.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+    SOURCES
+        time/qtimezoneprivate_icu.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+    SOURCES
+        time/qtimezoneprivate_icu.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+    SOURCES
+        time/qtimezoneprivate_win.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_datetimeparser
+    SOURCES
+        time/qdatetimeparser.cpp time/qdatetimeparser_p.h
 )
 
 extend_target(Core CONDITION QT_FEATURE_zstd
@@ -814,7 +814,7 @@ extend_target(Core CONDITION WINRT
         kernel/qfunctions_winrt.cpp kernel/qfunctions_winrt.h
 )
 
-extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY
+extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT rtems
     SOURCES
         ../3rdparty/forkfd/forkfd.h
         io/forkfd_qt.cpp

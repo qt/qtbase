@@ -117,7 +117,7 @@ struct QWindowsHwndSystemTrayIconEntry
     QWindowsSystemTrayIcon *trayIcon;
 };
 
-typedef QVector<QWindowsHwndSystemTrayIconEntry> HwndTrayIconEntries;
+using HwndTrayIconEntries = QVector<QWindowsHwndSystemTrayIconEntry>;
 
 Q_GLOBAL_STATIC(HwndTrayIconEntries, hwndTrayIconEntries)
 

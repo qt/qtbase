@@ -11,8 +11,8 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Widgets)
-find_package(Qt5 COMPONENTS Test)
+find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS Test)
 
 add_qt_gui_executable(tutorial2
     testqstring.cpp

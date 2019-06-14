@@ -16,8 +16,6 @@ SUBDIRS=\
     qcommandlineparser \
     qcontiguouscache \
     qcryptographichash \
-    qdate \
-    qdatetime \
     qeasingcurve \
     qexplicitlyshareddatapointer \
     qfreelist \
@@ -62,8 +60,6 @@ SUBDIRS=\
     qstringref \
     qstringview \
     qtextboundaryfinder \
-    qtime \
-    qtimezone \
     qtimeline \
     qvarlengtharray \
     qvector \

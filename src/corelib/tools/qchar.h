@@ -58,6 +58,19 @@ private:
     char ch;
 };
 
+Q_DECL_CONSTEXPR inline bool operator==(char lhs, QLatin1Char rhs) noexcept { return lhs == rhs.toLatin1(); }
+Q_DECL_CONSTEXPR inline bool operator!=(char lhs, QLatin1Char rhs) noexcept { return lhs != rhs.toLatin1(); }
+Q_DECL_CONSTEXPR inline bool operator<=(char lhs, QLatin1Char rhs) noexcept { return lhs <= rhs.toLatin1(); }
+Q_DECL_CONSTEXPR inline bool operator>=(char lhs, QLatin1Char rhs) noexcept { return lhs >= rhs.toLatin1(); }
+Q_DECL_CONSTEXPR inline bool operator< (char lhs, QLatin1Char rhs) noexcept { return lhs <  rhs.toLatin1(); }
+Q_DECL_CONSTEXPR inline bool operator> (char lhs, QLatin1Char rhs) noexcept { return lhs >  rhs.toLatin1(); }
+
+Q_DECL_CONSTEXPR inline bool operator==(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() == rhs; }
+Q_DECL_CONSTEXPR inline bool operator!=(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() != rhs; }
+Q_DECL_CONSTEXPR inline bool operator<=(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() <= rhs; }
+Q_DECL_CONSTEXPR inline bool operator>=(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() >= rhs; }
+Q_DECL_CONSTEXPR inline bool operator< (QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() <  rhs; }
+Q_DECL_CONSTEXPR inline bool operator> (QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() >  rhs; }
 
 class Q_CORE_EXPORT QChar {
 public:

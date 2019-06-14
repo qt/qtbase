@@ -5,6 +5,7 @@ SUBDIRS = \
         mimetypes \
         kernel \
         thread \
+        time \
         tools \
         codecs \
         plugin

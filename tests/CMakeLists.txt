@@ -2,8 +2,8 @@
 if(NOT TARGET Qt::Test)
     cmake_minimum_required(VERSION 3.14.0)
     project(QtBaseTests C CXX ASM)
-    find_package(Qt5 REQUIRED COMPONENTS BuildInternals Core Test)
-    find_package(Qt5 COMPONENTS DBus Gui OpenGL Widgets Xml)
+    find_package(Qt6 REQUIRED COMPONENTS BuildInternals Core Test)
+    find_package(Qt6 COMPONENTS DBus Gui OpenGL Widgets Xml)
     qt_set_up_standalone_tests_build()
 
     # Find a few packages that are usually found in configure.cmake,

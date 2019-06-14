@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -129,106 +129,6 @@ static const uchar latin1_lowercased[256] = {
 int qFindByteArray(
     const char *haystack0, int haystackLen, int from,
     const char *needle0, int needleLen);
-
-/*
- * This pair of functions is declared in qtools_p.h and is used by the Qt
- * containers to allocate memory and grow the memory block during append
- * operations.
- *
- * They take size_t parameters and return size_t so they will change sizes
- * according to the pointer width. However, knowing Qt containers store the
- * container size and element indexes in ints, these functions never return a
- * size larger than INT_MAX. This is done by casting the element count and
- * memory block size to int in several comparisons: the check for negative is
- * very fast on most platforms as the code only needs to check the sign bit.
- *
- * These functions return SIZE_MAX on overflow, which can be passed to malloc()
- * and will surely cause a NULL return (there's no way you can allocate a
- * memory block the size of your entire VM space).
- */
-
-/*!
-    \internal
-    \since 5.7
-
-    Returns the memory block size for a container containing \a elementCount
-    elements, each of \a elementSize bytes, plus a header of \a headerSize
-    bytes. That is, this function returns \c
-      {elementCount * elementSize + headerSize}
-
-    but unlike the simple calculation, it checks for overflows during the
-    multiplication and the addition.
-
-    Both \a elementCount and \a headerSize can be zero, but \a elementSize
-    cannot.
-
-    This function returns SIZE_MAX (~0) on overflow or if the memory block size
-    would not fit an int.
-*/
-size_t qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize) noexcept
-{
-    unsigned count = unsigned(elementCount);
-    unsigned size = unsigned(elementSize);
-    unsigned header = unsigned(headerSize);
-    Q_ASSERT(elementSize);
-    Q_ASSERT(size == elementSize);
-    Q_ASSERT(header == headerSize);
-
-    if (Q_UNLIKELY(count != elementCount))
-        return std::numeric_limits<size_t>::max();
-
-    unsigned bytes;
-    if (Q_UNLIKELY(mul_overflow(size, count, &bytes)) ||
-            Q_UNLIKELY(add_overflow(bytes, header, &bytes)))
-        return std::numeric_limits<size_t>::max();
-    if (Q_UNLIKELY(int(bytes) < 0))     // catches bytes >= 2GB
-        return std::numeric_limits<size_t>::max();
-
-    return bytes;
-}
-
-/*!
-    \internal
-    \since 5.7
-
-    Returns the memory block size and the number of elements that will fit in
-    that block for a container containing \a elementCount elements, each of \a
-    elementSize bytes, plus a header of \a headerSize bytes. This function
-    assumes the container will grow and pre-allocates a growth factor.
-
-    Both \a elementCount and \a headerSize can be zero, but \a elementSize
-    cannot.
-
-    This function returns SIZE_MAX (~0) on overflow or if the memory block size
-    would not fit an int.
-
-    \note The memory block may contain up to \a elementSize - 1 bytes more than
-    needed.
-*/
-CalculateGrowingBlockSizeResult
-qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize) noexcept
-{
-    CalculateGrowingBlockSizeResult result = {
-        std::numeric_limits<size_t>::max(),std::numeric_limits<size_t>::max()
-    };
-
-    unsigned bytes = unsigned(qCalculateBlockSize(elementCount, elementSize, headerSize));
-    if (int(bytes) < 0)     // catches std::numeric_limits<size_t>::max()
-        return result;
-
-    unsigned morebytes = qNextPowerOfTwo(bytes);
-    if (Q_UNLIKELY(int(morebytes) < 0)) {
-        // catches morebytes == 2GB
-        // grow by half the difference between bytes and morebytes
-        bytes += (morebytes - bytes) / 2;
-    } else {
-        bytes = morebytes;
-    }
-
-    result.elementCount = (bytes - unsigned(headerSize)) / unsigned(elementSize);
-    result.size = bytes;
-    return result;
-}
 
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
@@ -1539,7 +1439,7 @@ QByteArray &QByteArray::operator=(const char *str)
 
     \note Before Qt 5.14 it was possible to use this operator to access
     a character at an out-of-bounds position in the byte array, and
-    then assign to such position, causing the byte array to be
+    then assign to such a position, causing the byte array to be
     automatically resized. Furthermore, assigning a value to the
     returned QByteRef would cause a detach of the byte array, even if the
     byte array has been copied in the meanwhile (and the QByteRef kept

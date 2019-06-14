@@ -54,16 +54,26 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qnetworksession.h"
 #include "qnetworkconfiguration.h"
-#include <QHash>
 #include <QSharedPointer>
 #include <QWeakPointer>
 #include <QMutex>
+
+#include <unordered_map>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
-uint qHash(const QNetworkConfiguration& config);
+namespace QtPrivate {
+struct NetworkConfigurationHash {
+    using result_type = size_t;
+    using argument_type = QNetworkConfiguration;
+    size_t operator()(const QNetworkConfiguration &config) const noexcept
+    {
+        return std::hash<size_t>{}(size_t(config.type()) | (size_t(config.bearerType()) << 8) | (size_t(config.purpose()) << 16));
+    }
+};
+}
 
 class QSharedNetworkSessionManager
 {
@@ -71,7 +81,7 @@ public:
     static QSharedPointer<QNetworkSession> getSession(const QNetworkConfiguration &config);
     static void setSession(const QNetworkConfiguration &config, QSharedPointer<QNetworkSession> session);
 private:
-    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
+    std::unordered_map<QNetworkConfiguration, QWeakPointer<QNetworkSession>, QtPrivate::NetworkConfigurationHash> sessions;
 };
 
 QT_END_NAMESPACE

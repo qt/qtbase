@@ -69,7 +69,9 @@ public:
         DeviceTypePointer,
         DeviceTypeKeyboard,
         DeviceTypeTouch,
-        DeviceTypeTablet
+        DeviceTypeTablet,
+
+        NumDeviceTypes
     };
 
     QInputDeviceManager(QObject *parent = nullptr);

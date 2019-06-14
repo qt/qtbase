@@ -692,7 +692,7 @@ static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
     };
 #else
     auto getMetaData = [](QFunctionPointer fptr) {
-        auto f = reinterpret_cast<QPair<const char *, size_t> (*)()>(fptr);
+        auto f = reinterpret_cast<QPluginMetaData (*)()>(fptr);
         return f();
     };
 #endif
@@ -702,7 +702,7 @@ static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
         return false;
 
     auto metaData = getMetaData(pfn);
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(metaData.first, metaData.second, errMsg);
+    QJsonDocument doc = qJsonFromRawLibraryMetaData(reinterpret_cast<const char *>(metaData.data), metaData.size, errMsg);
     if (doc.isNull())
         return false;
     priv->metaData = doc.object();

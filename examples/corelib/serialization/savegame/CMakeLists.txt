@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Core)
 
 add_executable(savegame
     character.cpp character.h

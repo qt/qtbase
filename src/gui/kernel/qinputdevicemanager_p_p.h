@@ -52,9 +52,10 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qmap.h>
 #include <private/qobject_p.h>
 #include "qinputdevicemanager_p.h"
+
+#include <array>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +69,7 @@ public:
     int deviceCount(QInputDeviceManager::DeviceType type) const;
     void setDeviceCount(QInputDeviceManager::DeviceType type, int count);
 
-    QMap<QInputDeviceManager::DeviceType, int> m_deviceCount;
+    std::array<int, QInputDeviceManager::NumDeviceTypes> m_deviceCount;
 
     Qt::KeyboardModifiers keyboardModifiers;
 };

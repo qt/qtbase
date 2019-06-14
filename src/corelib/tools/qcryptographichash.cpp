@@ -58,6 +58,10 @@ typedef unsigned char BitSequence;
 typedef unsigned long long DataLength;
 typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
 
+#ifdef Q_OS_RTEMS
+#  undef ALIGN
+#endif
+
 #include "../../3rdparty/sha3/KeccakSponge.c"
 typedef spongeState hashState;
 

@@ -90,7 +90,7 @@ static QString createGuid(const QUuid &uuid)
 
     QTextStream stream(&guid);
 
-    hex(stream);
+    Qt::hex(stream);
 
     stream << "("
            << "0x" << uuid.data1    << ", "

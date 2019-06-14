@@ -162,12 +162,12 @@ function(qt_android_generate_deployment_settings target)
 
     # Host Qt Android  install path
     if (NOT QT_BUILDING_QT)
-        set(file_check "${Qt5_DIR}/plugins/platforms/android/libqtforandroid.so")
+        set(file_check "${Qt6_DIR}/plugins/platforms/android/libqtforandroid.so")
         if (NOT EXISTS ${file_check})
             message(SEND_ERROR "Detected Qt installation does not contain libqtforandroid.so. This is most likely due to the installation not being a build of Qt for Android. Please update your settings.")
             return()
         endif()
-        set(qt_android_install_dir ${Qt5_Dir})
+        set(qt_android_install_dir ${Qt6_Dir})
     else()
         # Building from source, use the same install prefix
         set(qt_android_install_dir ${CMAKE_INSTALL_PREFIX})

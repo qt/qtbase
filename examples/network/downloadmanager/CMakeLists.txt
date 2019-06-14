@@ -11,8 +11,8 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Core)
-find_package(Qt5 COMPONENTS Network)
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Network)
 
 add_executable(downloadmanager
     downloadmanager.cpp downloadmanager.h

@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(classwizard
     classwizard.cpp classwizard.h classwizard.qrc

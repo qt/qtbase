@@ -1385,16 +1385,16 @@ QGradient::QGradient(Preset preset)
         setCoordinateMode(ObjectMode);
         setSpread(PadSpread);
 
-        const QJsonValue start = presetData[QLatin1Literal("start")];
-        const QJsonValue end = presetData[QLatin1Literal("end")];
-        m_data.linear.x1 = start[QLatin1Literal("x")].toDouble();
-        m_data.linear.y1 = start[QLatin1Literal("y")].toDouble();
-        m_data.linear.x2 = end[QLatin1Literal("x")].toDouble();
-        m_data.linear.y2 = end[QLatin1Literal("y")].toDouble();
+        const QJsonValue start = presetData[QLatin1String("start")];
+        const QJsonValue end = presetData[QLatin1String("end")];
+        m_data.linear.x1 = start[QLatin1String("x")].toDouble();
+        m_data.linear.y1 = start[QLatin1String("y")].toDouble();
+        m_data.linear.x2 = end[QLatin1String("x")].toDouble();
+        m_data.linear.y2 = end[QLatin1String("y")].toDouble();
 
         for (const QJsonValue &stop : presetData[QLatin1String("stops")].toArray()) {
-            setColorAt(stop[QLatin1Literal("position")].toDouble(),
-                QColor(QRgb(stop[QLatin1Literal("color")].toInt())));
+            setColorAt(stop[QLatin1String("position")].toDouble(),
+                QColor(QRgb(stop[QLatin1String("color")].toInt())));
         }
 
         cachedPresets.insert(preset, *this);

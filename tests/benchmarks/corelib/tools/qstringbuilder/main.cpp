@@ -401,7 +401,7 @@ private slots:
     }
 
 private:
-    const QLatin1Literal l1literal;
+    const QLatin1String l1literal;
     const QLatin1String l1string;
     const QByteArray ba;
     const QString string;

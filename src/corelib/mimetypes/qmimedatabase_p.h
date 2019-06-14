@@ -63,6 +63,7 @@ QT_REQUIRE_CONFIG(mimetype);
 #include <QtCore/qmutex.h>
 #include <QtCore/qvector.h>
 
+#include <vector>
 #include <memory>
 
 QT_BEGIN_NAMESPACE

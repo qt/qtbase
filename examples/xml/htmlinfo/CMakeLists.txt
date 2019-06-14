@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(htmlinfo LANGUAGES CXX)
 
-find_package(Qt5 COMPONENTS Core) # special case: add
+find_package(Qt6 COMPONENTS Core) # special case: add
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

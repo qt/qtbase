@@ -63,7 +63,7 @@ add_qt_tool(qmake # special case
         ../src/corelib/tools/qbytearraymatcher.cpp ../src/corelib/tools/qbytearraymatcher.h
         ../src/corelib/tools/qchar.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
-        ../src/corelib/tools/qdatetime.cpp ../src/corelib/tools/qdatetime.h ../src/corelib/tools/qdatetime_p.h
+        ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h # special case
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
         ../src/corelib/tools/qlocale.cpp ../src/corelib/tools/qlocale.h

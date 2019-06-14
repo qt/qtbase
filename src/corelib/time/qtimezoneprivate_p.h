@@ -53,7 +53,7 @@
 //
 
 #include "qtimezone.h"
-#include "qlocale_p.h"
+#include "private/qlocale_p.h"
 #include "qvector.h"
 
 #if QT_CONFIG(icu)

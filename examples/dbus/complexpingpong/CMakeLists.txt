@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS DBus)
+find_package(Qt6 COMPONENTS DBus)
 
 add_qt_gui_executable(complexpong
     complexpong.cpp complexpong.h

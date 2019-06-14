@@ -78,6 +78,7 @@ public:
     virtual PFN_vkVoidFunction getInstanceProcAddr(const char *name) = 0;
     virtual bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) = 0;
     virtual void presentQueued(QWindow *window);
+    virtual void setDebugFilters(const QVector<QVulkanInstance::DebugFilter> &filters);
 
 private:
     QScopedPointer<QPlatformVulkanInstancePrivate> d_ptr;

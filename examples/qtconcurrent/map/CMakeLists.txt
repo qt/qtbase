@@ -11,8 +11,8 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Concurrent)
-find_package(Qt5 COMPONENTS Gui) # special case
+find_package(Qt6 COMPONENTS Concurrent)
+find_package(Qt6 COMPONENTS Gui) # special case
 
 add_executable(mapdemo
     main.cpp

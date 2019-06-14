@@ -60,7 +60,7 @@ CMake has a ninja backend that works quite well and is noticeably faster than ma
     cmake --build . # ... or ninja ;-)
 ```
 
-You can look into the generated ``build.ninja`` file if you're curious and you can also build targets directory such as ``ninja lib/libQt5Core.so``.
+You can look into the generated ``build.ninja`` file if you're curious and you can also build targets directory such as ``ninja lib/libQt6Core.so``.
 
 When you're done with the build, you may want to install it, using ``ninja install`` or ``make install``. The installation prefix is chosen when running cmake though:
 

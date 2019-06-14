@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(qrasterwindow LANGUAGES CXX)
 
-find_package(Qt5 COMPONENTS Gui) # special case
+find_package(Qt6 COMPONENTS Gui) # special case
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

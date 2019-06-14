@@ -17,7 +17,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Appends a 'debug postfix' to library targets (not executables)
-# e.g. lib/libQt5DBus_debug.5.12.0.dylib
+# e.g. lib/libQt6DBus_debug.5.12.0.dylib
 if(WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
 elseif(APPLE)

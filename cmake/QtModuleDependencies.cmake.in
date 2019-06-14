@@ -46,7 +46,7 @@ foreach(_target_dep ${_tool_deps})
     endif()
 endforeach()
 
-# note: target_deps example: "Qt5Core\;5.12.0;Qt5Gui\;5.12.0"
+# note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
 set(_target_deps "@target_deps@")
 foreach(_target_dep ${_target_deps})
     list(GET _target_dep 0 pkg)

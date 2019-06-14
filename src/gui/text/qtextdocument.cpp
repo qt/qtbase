@@ -2709,6 +2709,12 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
             if (imgFmt.hasProperty(QTextFormat::ImageName))
                 emitAttribute("src", imgFmt.name());
 
+            if (imgFmt.hasProperty(QTextFormat::ImageAltText))
+                emitAttribute("alt", imgFmt.stringProperty(QTextFormat::ImageAltText));
+
+            if (imgFmt.hasProperty(QTextFormat::ImageTitle))
+                emitAttribute("title", imgFmt.stringProperty(QTextFormat::ImageTitle));
+
             if (imgFmt.hasProperty(QTextFormat::ImageWidth))
                 emitAttribute("width", QString::number(imgFmt.width()));
 

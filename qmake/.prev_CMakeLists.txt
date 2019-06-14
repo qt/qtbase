@@ -48,7 +48,6 @@ add_qt_executable(qmake
         ../src/corelib/tools/qbytearraymatcher.cpp ../src/corelib/tools/qbytearraymatcher.h
         ../src/corelib/tools/qchar.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
-        ../src/corelib/tools/qdatetime.cpp ../src/corelib/tools/qdatetime.h ../src/corelib/tools/qdatetime_p.h
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
         ../src/corelib/tools/qlocale.cpp ../src/corelib/tools/qlocale.h
@@ -90,6 +89,7 @@ add_qt_executable(qmake
         option.cpp option.h
         project.cpp project.h
         property.cpp property.h
+        qdatetime.cpp-NOTFOUND qdatetime.h-NOTFOUND qdatetime_p.h-NOTFOUND
     DEFINES
         =\"\"
         PROEVALUATOR_FULL

@@ -188,6 +188,11 @@ public:
 
     void presentQueued(QWindow *window);
 
+    typedef bool (*DebugFilter)(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object,
+                                size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
+    void installDebugOutputFilter(DebugFilter filter);
+    void removeDebugOutputFilter(DebugFilter filter);
+
 private:
     QScopedPointer<QVulkanInstancePrivate> d_ptr;
     Q_DISABLE_COPY(QVulkanInstance)

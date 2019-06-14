@@ -5,6 +5,10 @@
 #####################################################################
 
 add_qt_module(Bootstrap
+    STATIC
+    INTERNAL_MODULE
+    NO_SYNC_QT
+    QMAKE_MODULE_CONFIG gc_binaries
     SOURCES
         ../../corelib/codecs/qlatincodec.cpp
         ../../corelib/codecs/qtextcodec.cpp
@@ -58,6 +62,7 @@ add_qt_module(Bootstrap
         ../../corelib/serialization/qtextstream.cpp
         ../../corelib/serialization/qxmlstream.cpp
         ../../corelib/serialization/qxmlutils.cpp
+        ../../corelib/time/qdatetime.cpp
         ../../corelib/tools/qarraydata.cpp
         ../../corelib/tools/qbitarray.cpp
         ../../corelib/tools/qbytearray.cpp
@@ -65,7 +70,6 @@ add_qt_module(Bootstrap
         ../../corelib/tools/qcommandlineoption.cpp
         ../../corelib/tools/qcommandlineparser.cpp
         ../../corelib/tools/qcryptographichash.cpp
-        ../../corelib/tools/qdatetime.cpp
         ../../corelib/tools/qhash.cpp
         ../../corelib/tools/qline.cpp
         ../../corelib/tools/qlinkedlist.cpp

@@ -55,6 +55,7 @@ Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 static const QChar Space = QLatin1Char(' ');
 static const QChar Newline = QLatin1Char('\n');
 static const QChar LineBreak = QChar(0x2028);
+static const QChar DoubleQuote = QLatin1Char('"');
 static const QChar Backtick = QLatin1Char('`');
 static const QChar Period = QLatin1Char('.');
 
@@ -133,6 +134,24 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
             writeFrame(iterator.currentFrame());
         else { // no frame, it's a block
             QTextBlock block = iterator.currentBlock();
+            // Look ahead and detect some cases when we should
+            // suppress needless blank lines, when there will be a big change in block format
+            bool nextIsDifferent = false;
+            bool ending = false;
+            {
+                QTextFrame::iterator next = iterator;
+                ++next;
+                if (next.atEnd()) {
+                    nextIsDifferent = true;
+                    ending = true;
+                } else {
+                    QTextBlockFormat format = iterator.currentBlock().blockFormat();
+                    QTextBlockFormat nextFormat = next.currentBlock().blockFormat();
+                    if (nextFormat.indent() != format.indent() ||
+                            nextFormat.property(QTextFormat::BlockCodeLanguage) != format.property(QTextFormat::BlockCodeLanguage))
+                        nextIsDifferent = true;
+                }
+            }
             if (table) {
                 QTextTableCell cell = table->cellAt(block.position());
                 if (tableRow < cell.row()) {
@@ -149,7 +168,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                 if (lastWasList)
                     m_stream << Newline;
             }
-            int endingCol = writeBlock(block, !table, table && tableRow == 0);
+            int endingCol = writeBlock(block, !table, table && tableRow == 0, nextIsDifferent);
             m_doubleNewlineWritten = false;
             if (table) {
                 QTextTableCell cell = table->cellAt(block.position());
@@ -161,11 +180,19 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                     m_stream << QString(paddingLen, Space);
                 for (int col = cell.column(); col < spanEndCol; ++col)
                     m_stream << "|";
-            } else if (block.textList() || block.blockFormat().hasProperty(QTextFormat::BlockCodeLanguage)) {
+            } else if (m_fencedCodeBlock && ending) {
+                m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space)
+                         << m_codeBlockFence << Newline << Newline;
+                m_codeBlockFence.clear();
+            } else if (m_indentedCodeBlock && nextIsDifferent) {
                 m_stream << Newline;
             } else if (endingCol > 0) {
-                m_stream << Newline << Newline;
-                m_doubleNewlineWritten = true;
+                if (block.textList() || block.blockFormat().hasProperty(QTextFormat::BlockCodeLanguage)) {
+                    m_stream << Newline;
+                } else {
+                    m_stream << Newline << Newline;
+                    m_doubleNewlineWritten = true;
+                }
             }
             lastWasList = block.textList();
         }
@@ -258,11 +285,13 @@ static void maybeEscapeFirstChar(QString &s)
     }
 }
 
-int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ignoreFormat)
+int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ignoreFormat, bool ignoreEmpty)
 {
+    if (block.text().isEmpty() && ignoreEmpty)
+        return 0;
     const int ColumnLimit = 80;
     QTextBlockFormat blockFmt = block.blockFormat();
-    bool indentedCodeBlock = false;
+    bool missedBlankCodeBlockLine = false;
     if (block.textList()) { // it's a list-item
         auto fmt = block.textList()->format();
         const int listLevel = fmt.indent();
@@ -323,7 +352,28 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     } else if (blockFmt.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
         m_stream << "- - -\n"; // unambiguous horizontal rule, not an underline under a heading
         return 0;
+    } else if (blockFmt.hasProperty(QTextFormat::BlockCodeFence) || blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0) {
+        // It's important to preserve blank lines in code blocks.  But blank lines in code blocks
+        // inside block quotes are getting preserved anyway (along with the "> " prefix).
+        if (!blockFmt.hasProperty(QTextFormat::BlockQuoteLevel))
+            missedBlankCodeBlockLine = true; // only if we don't get any fragments below
+        if (!m_fencedCodeBlock) {
+            QString fenceChar = blockFmt.stringProperty(QTextFormat::BlockCodeFence);
+            if (fenceChar.isEmpty())
+                fenceChar = QLatin1String("`");
+            m_codeBlockFence = QString(3, fenceChar.at(0));
+            // A block quote can contain an indented code block, but not vice-versa.
+            m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space) << m_codeBlockFence
+                     << Space << blockFmt.stringProperty(QTextFormat::BlockCodeLanguage) << Newline;
+            m_fencedCodeBlock = true;
+        }
     } else if (!blockFmt.indent()) {
+        if (m_fencedCodeBlock) {
+            m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space)
+                     << m_codeBlockFence << Newline;
+            m_fencedCodeBlock = false;
+            m_codeBlockFence.clear();
+        }
         m_wrappedLineIndent = 0;
         m_linePrefix.clear();
         if (blockFmt.hasProperty(QTextFormat::BlockQuoteLevel)) {
@@ -336,7 +386,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         if (blockFmt.hasProperty(QTextFormat::BlockCodeLanguage)) {
             // A block quote can contain an indented code block, but not vice-versa.
             m_linePrefix += QString(4, Space);
-            indentedCodeBlock = true;
+            m_indentedCodeBlock = true;
         }
     }
     if (blockFmt.headingLevel())
@@ -357,6 +407,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     bool strikeOut = false;
     QString backticks(Backtick);
     for (QTextBlock::Iterator frag = block.begin(); !frag.atEnd(); ++frag) {
+        missedBlankCodeBlockLine = false;
         QString fragmentText = frag.fragment().text();
         while (fragmentText.endsWith(Newline))
             fragmentText.chop(1);
@@ -372,7 +423,14 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         QTextCharFormat fmt = frag.fragment().charFormat();
         if (fmt.isImageFormat()) {
             QTextImageFormat ifmt = fmt.toImageFormat();
-            QString s = QLatin1String("![image](") + ifmt.name() + QLatin1Char(')');
+            QString desc = ifmt.stringProperty(QTextFormat::ImageAltText);
+            if (desc.isEmpty())
+                desc = QLatin1String("image");
+            QString s = QLatin1String("![") + desc + QLatin1String("](") + ifmt.name();
+            QString title = ifmt.stringProperty(QTextFormat::ImageTitle);
+            if (!title.isEmpty())
+                s += Space + DoubleQuote + title + DoubleQuote;
+            s += QLatin1Char(')');
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
@@ -393,7 +451,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             bool monoFrag = fontInfo.fixedPitch();
             QString markers;
             if (!ignoreFormat) {
-                if (monoFrag != mono && !indentedCodeBlock) {
+                if (monoFrag != mono && !m_indentedCodeBlock && !m_fencedCodeBlock) {
                     if (monoFrag)
                         backticks = QString(adjacentBackticksCount(fragmentText) + 1, Backtick);
                     markers += backticks;
@@ -493,6 +551,8 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         m_stream << "~~";
         col += 2;
     }
+    if (missedBlankCodeBlockLine)
+        m_stream << Newline;
     return col;
 }
 

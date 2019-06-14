@@ -84,7 +84,7 @@ private:
     const HCURSOR m_hcursor;
 };
 
-typedef QSharedPointer<CursorHandle> CursorHandlePtr;
+using CursorHandlePtr = QSharedPointer<CursorHandle>;
 
 class QWindowsCursor : public QPlatformCursor
 {

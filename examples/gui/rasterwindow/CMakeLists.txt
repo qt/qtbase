@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(rasterwindow LANGUAGES CXX)
 
-find_package(Qt5 COMPONENTS Widgets) # special case: add
+find_package(Qt6 COMPONENTS Widgets) # special case: add
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

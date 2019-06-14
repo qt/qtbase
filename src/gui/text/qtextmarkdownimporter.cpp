@@ -165,12 +165,13 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         MD_BLOCK_CODE_DETAIL *detail = static_cast<MD_BLOCK_CODE_DETAIL *>(det);
         m_codeBlock = true;
         m_blockCodeLanguage = QLatin1String(detail->lang.text, int(detail->lang.size));
+        m_blockCodeFence = detail->fence_char;
         QString info = QLatin1String(detail->info.text, int(detail->info.size));
         m_needsInsertBlock = true;
         if (m_blockQuoteDepth)
-            qCDebug(lcMD, "CODE lang '%s' info '%s' inside QUOTE %d", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockQuoteDepth);
+            qCDebug(lcMD, "CODE lang '%s' info '%s' fenced with '%c' inside QUOTE %d", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockCodeFence, m_blockQuoteDepth);
         else
-            qCDebug(lcMD, "CODE lang '%s' info '%s'", qPrintable(m_blockCodeLanguage), qPrintable(info));
+            qCDebug(lcMD, "CODE lang '%s' info '%s' fenced with '%c'", qPrintable(m_blockCodeLanguage), qPrintable(info), m_blockCodeFence);
     } break;
     case MD_BLOCK_H: {
         MD_BLOCK_H_DETAIL *detail = static_cast<MD_BLOCK_H_DETAIL *>(det);
@@ -326,6 +327,7 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
     case MD_BLOCK_CODE: {
         m_codeBlock = false;
         m_blockCodeLanguage.clear();
+        m_blockCodeFence = 0;
         if (m_blockQuoteDepth)
             qCDebug(lcMD, "CODE ended inside QUOTE %d", m_blockQuoteDepth);
         else
@@ -362,15 +364,10 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         } break;
     case MD_SPAN_IMG: {
         m_imageSpan = true;
+        m_imageFormat = QTextImageFormat();
         MD_SPAN_IMG_DETAIL *detail = static_cast<MD_SPAN_IMG_DETAIL *>(det);
-        QString src = QString::fromUtf8(detail->src.text, int(detail->src.size));
-        QString title = QString::fromUtf8(detail->title.text, int(detail->title.size));
-        QTextImageFormat img;
-        img.setName(src);
-        if (m_needsInsertBlock)
-            insertBlock();
-        qCDebug(lcMD) << "image" << src << "title" << title << "relative to" << m_doc->baseUrl();
-        m_cursor->insertImage(img);
+        m_imageFormat.setName(QString::fromUtf8(detail->src.text, int(detail->src.size)));
+        m_imageFormat.setProperty(QTextFormat::ImageTitle, QString::fromUtf8(detail->title.text, int(detail->title.size)));
         break;
     }
     case MD_SPAN_CODE:
@@ -406,8 +403,6 @@ int QTextMarkdownImporter::cbLeaveSpan(int spanType, void *detail)
 
 int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 {
-    if (m_imageSpan)
-        return 0; // it's the alt-text
     if (m_needsInsertBlock)
         insertBlock();
 #if QT_CONFIG(regularexpression)
@@ -481,6 +476,17 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         break;
     }
 
+    if (m_imageSpan) {
+        // TODO we don't yet support alt text with formatting, because of the cases where m_cursor
+        // already inserted the text above.  Rather need to accumulate it in case we need it here.
+        m_imageFormat.setProperty(QTextFormat::ImageAltText, s);
+        qCDebug(lcMD) << "image" << m_imageFormat.name()
+                      << "title" << m_imageFormat.stringProperty(QTextFormat::ImageTitle)
+                      << "alt" << s << "relative to" << m_doc->baseUrl();
+        m_cursor->insertImage(m_imageFormat);
+        return 0; // no error
+    }
+
     if (!s.isEmpty())
         m_cursor->insertText(s);
     if (m_cursor->currentList()) {
@@ -536,6 +542,8 @@ void QTextMarkdownImporter::insertBlock()
     }
     if (m_codeBlock) {
         blockFormat.setProperty(QTextFormat::BlockCodeLanguage, m_blockCodeLanguage);
+        if (m_blockCodeFence)
+            blockFormat.setProperty(QTextFormat::BlockCodeFence, QString(QLatin1Char(m_blockCodeFence)));
         charFormat.setFont(m_monoFont);
     } else {
         blockFormat.setTopMargin(m_paragraphMargin);

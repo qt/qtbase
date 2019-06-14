@@ -11,9 +11,9 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Sql)
-find_package(Qt5 COMPONENTS Widgets)
-find_package(Qt5 COMPONENTS Xml)
+find_package(Qt6 COMPONENTS Sql)
+find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS Xml)
 
 add_qt_gui_executable(masterdetail
     database.h

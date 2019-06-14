@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15.0)
 
 project(QtBase
-    VERSION 5.14.0
+    VERSION 6.0.0
     DESCRIPTION "Qt Base Libraries"
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C ASM

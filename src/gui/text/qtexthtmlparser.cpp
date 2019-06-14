@@ -1556,6 +1556,10 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                 } else if (key == QLatin1String("height")) {
                     node->imageHeight = -2; // register that there is a value for it.
                     setFloatAttribute(&node->imageHeight, value);
+                } else if (key == QLatin1String("alt")) {
+                    node->imageAlt = value;
+                } else if (key == QLatin1String("title")) {
+                    node->text = value;
                 }
                 break;
             case Html_tr:
@@ -1630,6 +1634,10 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     linkHref = value;
                 else if (key == QLatin1String("type"))
                     linkType = value;
+                break;
+            case Html_pre:
+                if (key == QLatin1String("class") && value.startsWith(QLatin1String("language-")))
+                    node->blockFormat.setProperty(QTextFormat::BlockCodeLanguage, value.mid(9));
                 break;
             default:
                 break;

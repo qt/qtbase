@@ -73,7 +73,7 @@ macro(qt_build_repo)
     # Do this before adding src, because there might be test related conditions
     # in source.
     if (BUILD_TESTING)
-        find_package(Qt5 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
+        find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
     endif()
 
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")

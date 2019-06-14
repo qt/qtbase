@@ -493,7 +493,7 @@ public:
     typedef void (*Deleter)(void *);
     typedef void *(*Creator)(const void *);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if 1 || QT_VERSION < QT_VERSION_CHECK(6, 0, 0) // ### Qt6: fix this
     typedef void (*Destructor)(void *);
     typedef void *(*Constructor)(void *, const void *); // TODO Qt6: remove me
 #endif

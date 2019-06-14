@@ -1318,7 +1318,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
                 QString function = m.captured(2);
 
                 // skip the trace from QtCore that are because of the qDebug itself
-                if (!numberPrinted && library.contains(QLatin1String("Qt5Core"))
+                if (!numberPrinted && library.contains(QLatin1String("Qt6Core"))
                         && (function.isEmpty() || function.contains(QLatin1String("Message"), Qt::CaseInsensitive)
                             || function.contains(QLatin1String("QDebug")))) {
                     continue;

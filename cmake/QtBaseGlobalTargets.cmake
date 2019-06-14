@@ -21,7 +21,7 @@ set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_path_suffix})
 qt_path_join(__GlobalConfig_install_dir ${QT_CONFIG_INSTALL_DIR} ${__GlobalConfig_path_suffix})
 
-# Generate and install Qt5 config file.
+# Generate and install Qt6 config file.
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
@@ -34,7 +34,7 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 
-# Generate and install Qt5Tools config file.
+# Generate and install Qt6Tools config file.
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtToolsConfig.cmake.in"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ToolsConfig.cmake"

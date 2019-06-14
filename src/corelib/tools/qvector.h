@@ -303,7 +303,7 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
-    { QVector<T> tmp; tmp.reserve(int(vector.size())); std::copy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    { return QVector<T>(vector.begin(), vector.end()); }
     Q_DECL_DEPRECATED_X("Use std::vector<T>(vector.begin(), vector.end()) instead.")
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }

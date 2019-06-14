@@ -178,6 +178,7 @@ public:
         HeadingLevel = 0x1070,
         BlockQuoteLevel = 0x1080,
         BlockCodeLanguage = 0x1090,
+        BlockCodeFence = 0x1091,
         BlockMarker = 0x10A0,
 
         // character properties
@@ -253,6 +254,8 @@ public:
 
         // image properties
         ImageName = 0x5000,
+        ImageTitle = 0x5001,
+        ImageAltText = 0x5002,
         ImageWidth = 0x5010,
         ImageHeight = 0x5011,
         ImageQuality = 0x5014,

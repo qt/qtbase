@@ -564,6 +564,9 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value BlockTrailingHorizontalRulerWidth The width of a horizontal ruler element.
     \value HeadingLevel     The level of a heading, for example 1 corresponds to an HTML H1 tag; otherwise 0.
                             This enum value has been added in Qt 5.12.
+    \value BlockCodeFence   The character that was used in the "fences" around a Markdown code block.
+                            If the code block was indented rather than fenced, the block should not have this property.
+                            This enum value has been added in Qt 5.14.
 
     \value BlockQuoteLevel  The depth of nested quoting on this block: 1 means the block is a top-level block quote.
                             Blocks that are not block quotes should not have this property.
@@ -659,7 +662,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     Image properties
 
-    \value ImageName
+    \value ImageName        The filename or source of the image.
+    \value ImageTitle       The title attribute of an HTML image tag, or
+                            the quoted string that comes after the URL in a Markdown image link.
+                            This enum value has been added in Qt 5.14.
+    \value ImageAltText     The alt attribute of an HTML image tag, or
+                            the image description in a Markdown image link.
+                            This enum value has been added in Qt 5.14.
     \value ImageWidth
     \value ImageHeight
     \value ImageQuality

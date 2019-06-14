@@ -11,8 +11,8 @@ set(CMAKE_AUTOUIC ON)
 
 set(INSTALL_EXAMPLEDIR "examples")
 
-find_package(Qt5 COMPONENTS Gui)
-find_package(Qt5 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS Core)
 
 add_executable(windows
     main.cpp

@@ -118,7 +118,7 @@ QSurfaceFormat QIOSContext::format() const
     return m_format;
 }
 
-#define QT_IOS_GL_STATUS_CASE(val) case val: return QLatin1Literal(#val)
+#define QT_IOS_GL_STATUS_CASE(val) case val: return QLatin1String(#val)
 
 static QString fboStatusString(GLenum status)
 {

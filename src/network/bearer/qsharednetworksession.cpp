@@ -57,36 +57,30 @@ inline QSharedNetworkSessionManager* sharedNetworkSessionManager()
     return rv;
 }
 
-static void doDeleteLater(QObject* obj)
-{
-    obj->deleteLater();
-}
+struct DeleteLater {
+    void operator()(QObject* obj) const
+    {
+        obj->deleteLater();
+    }
+};
 
 QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(const QNetworkConfiguration &config)
 {
-    QSharedNetworkSessionManager *m(sharedNetworkSessionManager());
-    const auto it = m->sessions.constFind(config);
+    QSharedNetworkSessionManager *m = sharedNetworkSessionManager();
+    auto &entry = m->sessions[config];
     //if already have a session, return it
-    if (it != m->sessions.cend()) {
-        QSharedPointer<QNetworkSession> p = it.value().toStrongRef();
-        if (!p.isNull())
-            return p;
-    }
+    if (auto p = entry.toStrongRef())
+        return p;
     //otherwise make one
-    QSharedPointer<QNetworkSession> session(new QNetworkSession(config), doDeleteLater);
-    m->sessions[config] = session;
+    QSharedPointer<QNetworkSession> session(new QNetworkSession(config), DeleteLater{});
+    entry = session;
     return session;
 }
 
 void QSharedNetworkSessionManager::setSession(const QNetworkConfiguration &config, QSharedPointer<QNetworkSession> session)
 {
-    QSharedNetworkSessionManager *m(sharedNetworkSessionManager());
-    m->sessions[config] = session;
-}
-
-uint qHash(const QNetworkConfiguration& config)
-{
-    return ((uint)config.type()) | (((uint)config.bearerType()) << 8) | (((uint)config.purpose()) << 16);
+    QSharedNetworkSessionManager *m = sharedNetworkSessionManager();
+    m->sessions[config] = std::move(session);
 }
 
 QT_END_NAMESPACE

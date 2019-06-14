@@ -95,6 +95,7 @@ public:
     QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution = false);
     QDistanceField(const QPainterPath &path, glyph_t glyph, bool doubleResolution = false);
     QDistanceField(const QDistanceField &other);
+    QDistanceField &operator=(const QDistanceField &other);
 
     bool isNull() const;
 

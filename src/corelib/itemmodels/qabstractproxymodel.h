@@ -103,7 +103,11 @@ Q_SIGNALS:
     void sourceModelChanged(QPrivateSignal);
 
 protected Q_SLOTS:
-    void resetInternalData();
+    void resetInternalData()
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    override
+#endif
+    ;
 
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);

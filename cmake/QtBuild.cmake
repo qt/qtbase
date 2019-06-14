@@ -675,7 +675,7 @@ endfunction()
 # When doing qt_internal_module_info(foo Core) this method will set
 # the following variables in the caller's scope:
 #  * foo with the value "QtCore"
-#  * foo_versioned with the value "Qt5Core" (based on major Qt version)
+#  * foo_versioned with the value "Qt6Core" (based on major Qt version)
 #  * foo_upper with the value "CORE"
 #  * foo_lower with the value "core"
 #  * foo_include_dir with the module's include directory in the binary tree
@@ -775,7 +775,7 @@ function(qt_register_target_dependencies target public_libs private_libs)
                     OR lib STREQUAL PlatformModuleInternal
                     OR lib STREQUAL PlatformPluginInternal
                     OR lib STREQUAL PlatformToolInternal)
-                list(APPEND target_deps "Qt5\;${PROJECT_VERSION}")
+                list(APPEND target_deps "Qt6\;${PROJECT_VERSION}")
             elseif ("${lib}" MATCHES "(.*)Private")
                 list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${CMAKE_MATCH_1}\;${PROJECT_VERSION}")
             else()
@@ -1250,8 +1250,8 @@ function(add_qt_module target)
 
     if(target STREQUAL Core)
         # Propagate non-build related variables that are needed for consuming Qt packages.
-        # Do this in CoreConfig instead of Qt5Config, so that consumers can also use
-        # find_package(Qt5Core) instead of find_package(Qt5 COMPONENTS Core)
+        # Do this in CoreConfig instead of Qt6Config, so that consumers can also use
+        # find_package(Qt6Core) instead of find_package(Qt6 COMPONENTS Core)
         string(APPEND extra_cmake_code "
 set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
@@ -1718,7 +1718,7 @@ function(add_qt_tool name)
     endif()
 
     if(arg_TOOLS_TARGET AND NOT QT_WILL_BUILD_TOOLS)
-        set(tools_package_name "Qt5${arg_TOOLS_TARGET}Tools")
+        set(tools_package_name "Qt6${arg_TOOLS_TARGET}Tools")
         message(STATUS "Searching for tool '${full_name}' in package ${tools_package_name}.")
 
         # Only search in path provided by QT_HOST_PATH. We need to do it with CMAKE_PREFIX_PATH
@@ -1728,7 +1728,7 @@ function(add_qt_tool name)
         set(CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
 
         # Search both with sysroots prepended as well as in the host system. When cross compiling
-        # the mode_package might be set to ONLY only, and the Qt5 tools packages are actually
+        # the mode_package might be set to ONLY only, and the Qt6 tools packages are actually
         # in the host system.
         set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
         set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
@@ -1944,7 +1944,7 @@ function(add_qt_simd_part target)
     endif()
 endfunction()
 
-# From Qt5CoreMacros
+# From Qt6CoreMacros
 # Function used to create the names of output files preserving relative dirs
 function(qt_make_output_file infile prefix suffix source_dir binary_dir result)
     get_filename_component(outfilename "${infile}" NAME_WE)

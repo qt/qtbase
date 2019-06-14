@@ -105,7 +105,7 @@ void qfile_vs_qnetworkaccessmanager::qnamFileRead()
     }
 
     qint64 elapsed = t.elapsed();
-    qDebug() << endl << "Finished!";
+    qDebug() << Qt::endl << "Finished!";
     qDebug() << "Bytes:" << size;
     qDebug() << "Speed:" <<  (qreal(size*iterations) / 1024.0) / (qreal(elapsed) / 1000.0) << "KB/sec";
 }
@@ -138,7 +138,7 @@ void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead()
     }
 
     qint64 elapsed = t.elapsed();
-    qDebug() << endl << "Finished!";
+    qDebug() << Qt::endl << "Finished!";
     qDebug() << "Bytes:" << size;
     qDebug() << "Speed:" <<  (qreal(size*iterations) / 1024.0) / (qreal(elapsed) / 1000.0) << "KB/sec";
 }
@@ -167,7 +167,7 @@ void qfile_vs_qnetworkaccessmanager::qfileFileRead()
     }
 
     qint64 elapsed = t.elapsed();
-    qDebug() << endl << "Finished!";
+    qDebug() << Qt::endl << "Finished!";
     qDebug() << "Bytes:" << size;
     qDebug() << "Speed:" <<  (qreal(size*iterations) / 1024.0) / (qreal(elapsed) / 1000.0) << "KB/sec";
 }

@@ -87,7 +87,8 @@
 #define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-#  define QT_NO_UNSHARABLE_CONTAINERS
+// ### Qt6: FIXME and get rid of unsharable containers
+//#  define QT_NO_UNSHARABLE_CONTAINERS
 #  define QT6_VIRTUAL virtual
 #  define QT6_NOT_VIRTUAL
 #else
@@ -379,7 +380,7 @@ typedef double qreal;
 #define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
 #define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major(minor, text)
 
-#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor()
+#define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
 #define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
 
 /*

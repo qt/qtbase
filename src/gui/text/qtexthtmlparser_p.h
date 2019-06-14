@@ -184,6 +184,7 @@ struct QTextHtmlParserNode {
     QString textListNumberPrefix;
     QString textListNumberSuffix;
     QString imageName;
+    QString imageAlt;
     qreal imageWidth;
     qreal imageHeight;
     QTextLength width;
