@@ -414,34 +414,7 @@ bool QNetworkConfiguration::isRoamingAvailable() const
 */
 QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 {
-    QList<QNetworkConfiguration> results;
-
-    if (!d)
-        return results;
-
-    QMutexLocker locker(&d->mutex);
-
-    if (d->type != QNetworkConfiguration::ServiceNetwork || !d->isValid)
-        return results;
-
-    for (auto it = d->serviceNetworkMembers.begin(), end = d->serviceNetworkMembers.end(); it != end;) {
-        QNetworkConfigurationPrivatePointer p = it.value();
-        //if we have an invalid member get rid of it -> was deleted earlier on
-        {
-            QMutexLocker childLocker(&p->mutex);
-
-            if (!p->isValid) {
-                it = d->serviceNetworkMembers.erase(it);
-                continue;
-            }
-        }
-        QNetworkConfiguration item;
-        item.d = p;
-        results << item;
-        ++it;
-    }
-
-    return results;
+    return {};
 }
 
 /*!
