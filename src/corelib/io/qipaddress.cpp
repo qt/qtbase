@@ -256,7 +256,7 @@ static inline QChar toHex(uchar c)
     return QChar::fromLatin1(QtMiscUtils::toHexLower(c));
 }
 
-void toString(QString &appendTo, IPv6Address address)
+void toString(QString &appendTo, const IPv6Address address)
 {
     // the longest IPv6 address possible is:
     //   "1111:2222:3333:4444:5555:6666:255.255.255.255"

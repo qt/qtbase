@@ -64,7 +64,7 @@ typedef quint8 IPv6Address[16];
 Q_CORE_EXPORT bool parseIp4(IPv4Address &address, const QChar *begin, const QChar *end);
 Q_CORE_EXPORT const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end);
 Q_CORE_EXPORT void toString(QString &appendTo, IPv4Address address);
-Q_CORE_EXPORT void toString(QString &appendTo, IPv6Address address);
+Q_CORE_EXPORT void toString(QString &appendTo, const IPv6Address address);
 
 } // namespace
 
