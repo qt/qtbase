@@ -311,6 +311,14 @@ QString QMimeType::genericIconName() const
     return d->genericIconName;
 }
 
+static QString make_default_icon_name_from_mimetype_name(QString iconName)
+{
+    const int slashindex = iconName.indexOf(QLatin1Char('/'));
+    if (slashindex != -1)
+        iconName[slashindex] = QLatin1Char('-');
+    return iconName;
+}
+
 /*!
     \property QMimeType::iconName
     \brief the file name of an icon image that represents the MIME type
@@ -324,12 +332,7 @@ QString QMimeType::iconName() const
 {
     QMimeDatabasePrivate::instance()->loadIcon(const_cast<QMimeTypePrivate&>(*d));
     if (d->iconName.isEmpty()) {
-        // Make default icon name from the mimetype name
-        QString iconName = name();
-        const int slashindex = iconName.indexOf(QLatin1Char('/'));
-        if (slashindex != -1)
-            iconName[slashindex] = QLatin1Char('-');
-        const_cast<QMimeType*>(this)->d->iconName = std::move(iconName);
+        return make_default_icon_name_from_mimetype_name(name());
     }
     return d->iconName;
 }
