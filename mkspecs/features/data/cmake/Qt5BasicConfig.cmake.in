@@ -59,7 +59,7 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
         file(STRINGS \"${prl_file_location}\" _prl_strings REGEX \"QMAKE_PRL_LIBS[ \\t]*=\")
         string(REGEX REPLACE \"QMAKE_PRL_LIBS[ \\t]*=[ \\t]*([^\\n]*)\" \"\\\\1\" _static_depends ${_prl_strings})
         string(REGEX REPLACE \"[ \\t]+\" \";\" _static_depends ${_static_depends})
-        string(REGEX REPLACE \"[ \\t]+\" \";\" _standard_libraries ${CMAKE_CXX_STANDARD_LIBRARIES})
+        string(REGEX REPLACE \"[ \\t]+\" \";\" _standard_libraries \"${CMAKE_CXX_STANDARD_LIBRARIES}\")
         set(_search_paths)
         string(REPLACE \"\\$\\$[QT_INSTALL_LIBS]\" \"${_qt5_install_libs}\" _static_depends \"${_static_depends}\")
         foreach(_flag ${_static_depends})
