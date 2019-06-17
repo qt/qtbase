@@ -44,7 +44,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QShaderDescription
     \inmodule QtRhi
-    \since 5.14
 
     \brief Describes the interface of a shader.
 

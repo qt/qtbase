@@ -76,7 +76,6 @@ public:
 private:
     int m_version = 100;
     Flags m_flags;
-    Q_DECL_UNUSED_MEMBER quint64 m_reserved = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QShaderVersion::Flags)
@@ -97,7 +96,6 @@ public:
 private:
     QByteArray m_shader;
     QByteArray m_entryPoint;
-    Q_DECL_UNUSED_MEMBER quint64 m_reserved = 0;
 };
 
 Q_DECLARE_TYPEINFO(QShaderCode, Q_MOVABLE_TYPE);
@@ -182,7 +180,6 @@ private:
     QShader::Source m_source = QShader::SpirvShader;
     QShaderVersion m_sourceVersion;
     QShader::Variant m_sourceVariant = QShader::StandardShader;
-    Q_DECL_UNUSED_MEMBER quint64 m_reserved = 0;
 };
 
 Q_DECLARE_TYPEINFO(QShaderKey, Q_MOVABLE_TYPE);

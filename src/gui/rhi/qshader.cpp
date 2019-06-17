@@ -43,7 +43,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QShader
     \inmodule QtRhi
-    \since 5.14
 
     \brief Contains multiple versions of a shader translated to multiple shading languages,
     together with reflection metadata.
