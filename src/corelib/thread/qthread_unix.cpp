@@ -720,6 +720,12 @@ void QThread::start(Priority priority)
         }
     }
 
+#ifdef Q_OS_INTEGRITY
+    if (Q_LIKELY(objectName().isEmpty()))
+        pthread_attr_setthreadname(&attr, metaObject()->className());
+    else
+        pthread_attr_setthreadname(&attr, objectName().toLocal8Bit());
+#endif
     pthread_t threadId;
     int code = pthread_create(&threadId, &attr, QThreadPrivate::start, this);
     if (code == EPERM) {
