@@ -563,6 +563,7 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
+    void makeThreadLocalNativeContextCurrent() override;
 
     void flushCommandBuffer();
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,

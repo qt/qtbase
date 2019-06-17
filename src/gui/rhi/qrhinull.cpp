@@ -166,6 +166,11 @@ void QRhiNull::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
+void QRhiNull::makeThreadLocalNativeContextCurrent()
+{
+    // nothing to do here
+}
+
 QRhiRenderBuffer *QRhiNull::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                int sampleCount, QRhiRenderBuffer::Flags flags)
 {

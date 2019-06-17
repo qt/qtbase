@@ -574,6 +574,7 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
+    void makeThreadLocalNativeContextCurrent() override;
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();

@@ -408,6 +408,11 @@ void QRhiD3D11::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
+void QRhiD3D11::makeThreadLocalNativeContextCurrent()
+{
+    // nothing to do here
+}
+
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                 int sampleCount, QRhiRenderBuffer::Flags flags)
 {

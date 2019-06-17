@@ -649,6 +649,14 @@ void QRhiGles2::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
+void QRhiGles2::makeThreadLocalNativeContextCurrent()
+{
+    if (inFrame && !ofr.active)
+        ensureContext(currentSwapChain->surface);
+    else
+        ensureContext();
+}
+
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                 int sampleCount, QRhiRenderBuffer::Flags flags)
 {

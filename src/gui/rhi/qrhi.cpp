@@ -4444,6 +4444,20 @@ const QRhiNativeHandles *QRhi::nativeHandles()
 }
 
 /*!
+    With OpenGL this makes the OpenGL context current on the current thread.
+    The function has no effect with other backends.
+
+    Calling this function is relevant typically in Qt framework code, when one
+    has to ensure external OpenGL code provided by the application can still
+    run like it did before with direct usage of OpenGL, as long as the QRhi is
+    using the OpenGL backend.
+ */
+void QRhi::makeThreadLocalNativeContextCurrent()
+{
+    d->makeThreadLocalNativeContextCurrent();
+}
+
+/*!
     \return the associated QRhiProfiler instance.
 
     An instance is always available for each QRhi, but it is not very useful

@@ -268,6 +268,7 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
+    void makeThreadLocalNativeContextCurrent() override;
 
     QRhiNullNativeHandles nativeHandlesStruct;
     QRhiSwapChain *currentSwapChain = nullptr;

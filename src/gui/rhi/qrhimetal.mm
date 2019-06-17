@@ -538,6 +538,11 @@ void QRhiMetal::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
+void QRhiMetal::makeThreadLocalNativeContextCurrent()
+{
+    // nothing to do here
+}
+
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                 int sampleCount, QRhiRenderBuffer::Flags flags)
 {
