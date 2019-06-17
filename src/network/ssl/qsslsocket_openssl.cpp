@@ -1575,27 +1575,15 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     // 3) It checks CertID in response.
     // 4) Ensures the responder is authorized to sign the status respond.
     //
-    // Here it's important to notice that it calls X509_cert_verify and
-    // as a result, possibly, our verification callback. Given this callback
-    // at the moment uses a global variable, we have to lock. This will change
-    // as soon as we fix our verification procedure.
-    // Also note, OpenSSL prior to 1.0.2b would only use bs->certs to
+    // Note, OpenSSL prior to 1.0.2b would only use bs->certs to
     // verify the responder's chain (see their commit 4ba9a4265bd).
     // Working this around - is too much fuss for ancient versions we
     // are dropping quite soon anyway.
     {
         const unsigned long verificationFlags = 0;
-        const QMutexLocker locker(&_q_sslErrorList()->mutex);
-        // Before unlocking the mutex, startHandshake() stores errors (found in SSL_connect()
-        // or SSL_accept()) into the local variable, so it's safe to clear it here - as soon
-        // as we managed to lock, whoever had the lock before, already stored their own copy
-        // of errors.
-        _q_sslErrorList()->errors.clear();
         const int success = q_OCSP_basic_verify(basicResponse, peerChain, store, verificationFlags);
-        if (success <= 0 || _q_sslErrorList()->errors.size()) {
-            _q_sslErrorList()->errors.clear();
+        if (success <= 0)
             ocspErrors.push_back(QSslError::OcspResponseCannotBeTrusted);
-        }
     }
 
     if (q_OCSP_resp_count(basicResponse) != 1) {
