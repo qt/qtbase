@@ -178,4 +178,10 @@ void q_BIO_set_shutdown(BIO *a, int shut);
 #define q_SSL_CTX_set_max_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
 
+extern "C" {
+typedef int (*q_SSL_psk_use_session_cb_func_t)(SSL *, const EVP_MD *, const unsigned char **, size_t *,
+                                               SSL_SESSION **);
+}
+void q_SSL_set_psk_use_session_callback(SSL *s, q_SSL_psk_use_session_cb_func_t);
+
 #endif

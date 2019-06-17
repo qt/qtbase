@@ -50,6 +50,12 @@ contains(TEMPLATE, .*lib) {
     }
     lib_replace.CONFIG = path
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
+    !equals(qt_libdir, $$rplbase/lib) {
+        qtlibdir_replace.match = $$qt_libdir
+        qtlibdir_replace.replace = $$qqt_libdir
+        qtlibdir_replace.CONFIG = path
+        QMAKE_PRL_INSTALL_REPLACE += qtlibdir_replace
+    }
 }
 
 # The remainder of this file must not apply to host tools/libraries,

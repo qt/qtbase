@@ -2171,7 +2171,7 @@ protected:
 
         // delayed reading data
         QTest::qSleep(100);
-        if (!socket->waitForReadyRead(2000))
+        if (!socket->waitForReadyRead(2000) && socket->bytesAvailable() == 0)
             return;             // error
         socket->readAll();
         dataReadSemaphore.release();
@@ -2242,7 +2242,7 @@ void tst_QSslSocket::waitForMinusOne()
     socket.write("How are you doing?");
     QVERIFY(socket.bytesToWrite() != 0);
     QVERIFY(socket.waitForBytesWritten(-1));
-    QVERIFY(server.dataReadSemaphore.tryAcquire(1, 2000));
+    QVERIFY(server.dataReadSemaphore.tryAcquire(1, 2500));
 
     // third verification: it should wait for 100 ms:
     QVERIFY(socket.waitForReadyRead(-1));
@@ -3550,12 +3550,7 @@ protected:
         socket = new QSslSocket(this);
         socket->setSslConfiguration(config);
         socket->setPeerVerifyMode(peerVerifyMode);
-        if (QSslSocket::sslLibraryVersionNumber() > 0x10101000L) {
-            // FIXME. With OpenSSL 1.1.1 and TLS 1.3 PSK auto-test is broken.
-            socket->setProtocol(QSsl::TlsV1_2);
-        } else {
-            socket->setProtocol(protocol);
-        }
+        socket->setProtocol(protocol);
         if (ignoreSslErrors)
             connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
 
@@ -3935,11 +3930,6 @@ void tst_QSslSocket::pskServer()
         return;
 
     QSslSocket socket;
-#ifdef TLS1_3_VERSION
-    // FIXME: with OpenSSL 1.1.1 (thus TLS 1.3) test is known to fail
-    // due to the different PSK mechanism (?) - to be investigated ASAP.
-    socket.setProtocol(QSsl::TlsV1_2);
-#endif
     this->socket = &socket;
 
     QSignalSpy connectedSpy(&socket, SIGNAL(connected()));
