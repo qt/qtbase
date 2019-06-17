@@ -468,7 +468,7 @@ typedef int (Empty::*memFun) ();
         QCOMPARE(Q_ALIGNOF(type), size_t(alignment)); \
         /* Compare to native operator for compilers that support it,
            otherwise...  erm... check consistency! :-) */ \
-        QCOMPARE(QT_EMULATED_ALIGNOF(type), Q_ALIGNOF(type)); \
+        QCOMPARE(alignof(type), Q_ALIGNOF(type)); \
     } while (false)
     /**/
 
@@ -521,7 +521,7 @@ void tst_QGlobal::qAlignOf()
     TEST_AlignOf_impl(AlignmentInStruct<double>, Q_ALIGNOF(AlignmentInStruct<qint64>));
 
     // 32-bit x86 ABI, Clang disagrees with gcc
-#if !defined(Q_PROCESSOR_X86_32) || !defined(Q_CC_CLANG)
+#if !defined(Q_PROCESSOR_X86_32) || !defined(Q_CC_CLANG) || defined(Q_OS_ANDROID)
     TEST_AlignOf_impl(qint64 [5],       Q_ALIGNOF(qint64));
 #else
     TEST_AlignOf_impl(qint64 [5],       Q_ALIGNOF(AlignmentInStruct<qint64>));
