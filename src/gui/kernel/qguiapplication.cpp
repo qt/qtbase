@@ -1040,7 +1040,9 @@ QList<QScreen *> QGuiApplication::screens()
 
     The \a point is in relation to the virtualGeometry() of each set of virtual
     siblings. If the point maps to more than one set of virtual siblings the first
-    match is returned.
+    match is returned.  If you wish to search only the virtual desktop siblings
+    of a known screen (for example siblings of the screen of your application
+    window \c QWidget::windowHandle()->screen()), use QScreen::virtualSiblingAt().
 
     \since 5.10
 */
