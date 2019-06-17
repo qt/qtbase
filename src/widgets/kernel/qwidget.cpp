@@ -2589,14 +2589,27 @@ bool QWidgetPrivate::setScreenForPoint(const QPoint &pos)
     Q_Q(QWidget);
     if (!q->isWindow())
         return false;
-    // Find the screen for pos and make the widget undertand it is on that screen.
+    // Find the screen for pos and make the widget understand it is on that screen.
+    return setScreen(QGuiApplication::screenAt(pos));
+}
+
+/*!
+\internal
+Ensures that the widget's QWindow is set to be on the given \a screen.
+Returns true if the screen was changed.
+*/
+
+bool QWidgetPrivate::setScreen(QScreen *screen)
+{
+    Q_Q(QWidget);
+    if (!screen || !q->isWindow())
+        return false;
     const QScreen *currentScreen = windowHandle() ? windowHandle()->screen() : nullptr;
-    QScreen *actualScreen = QGuiApplication::screenAt(pos);
-    if (actualScreen && currentScreen != actualScreen) {
+    if (currentScreen != screen) {
         if (!windowHandle()) // Try to create a window handle if not created.
             createWinId();
         if (windowHandle())
-            windowHandle()->setScreen(actualScreen);
+            windowHandle()->setScreen(screen);
         return true;
     }
     return false;
