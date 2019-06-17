@@ -46,34 +46,42 @@ The basic way of building with cmake is as follows:
 
 ```
     cd {build directory}
-    cmake {path to source directory}
+    cmake -DCMAKE_INSTALL_PREFIX=/path/where/to/install {path to source directory}
     cmake --build .
+    cmake --install .
 ```
 
-``cmake --build`` is just a simple wrapper around the basic build tool that CMake generated a build system for. It works with any supported build backend supported by cmake, but you can also use the backend build tool directly, e.g. by running ``make`` in this case.
+You need one build directory per Qt module. The build directory can be a sub-directory inside the module ``qtbase/build`` or an independent directory ``qtbase_build``.
+The installation prefix is chosen when running cmake by passing ``-DCMAKE_INSTALL_PREFIX``. To build more than one Qt module, make sure to pass the same install prefix.
+
+``cmake --build`` and ``cmake --install`` are simple wrappers around the basic build tool that CMake generated a build system for. It works with any supported build backend supported by cmake, but you can also use the backend build tool directly, e.g. by running ``make``.
 
 CMake has a ninja backend that works quite well and is noticeably faster than make, so you may want to use that:
 
 ```
     cd {build directory}
-    cmake -GNinja {path to source directory}
-    cmake --build . # ... or ninja ;-)
+    cmake -GNinja -DCMAKE_INSTALL_PREFIX=/path/where/to/install {path to source directory}
+    cmake --build .
+    cmake --install .
 ```
 
 You can look into the generated ``build.ninja`` file if you're curious and you can also build targets directory such as ``ninja lib/libQt6Core.so``.
 
-When you're done with the build, you may want to install it, using ``ninja install`` or ``make install``. The installation prefix is chosen when running cmake though:
-
-```
-    cd {build directory}
-    cmake -GNinja -DCMAKE_INSTALL_PREFIX=/path/where/to/install {path to source directory}
-    ninja
-    ninja install
-```
-
 Make sure to remove CMakeCache.txt if you forgot to set the CMAKE_INSTALL_PREFIX on the first configuration, otherwise a second re-configuration will not pick up the new install prefix.
 
 You can use ``cmake-gui {path to build directory}`` or ``ccmake {path to build directory}`` to configure the values of individual cmake variables or Qt features. After changing a value, you need to choose the *configure* step (usually several times:-/), followed by the *generate* step (to generate makefiles/ninja files).
+
+## Developer Build
+
+When working on Qt itself, it can be tedious to wait for the install step. In that case you want to use the developer build option, to get as many auto tests enabled and no longer
+be required to make install:
+
+```
+    cd {build directory}
+    cmake -GNinja -DCMAKE_INSTALL_PREFIX=/path/to/qtbase_build -DFEATURE_developer_build=ON {path to source directory}
+    cmake --build .
+    # do NOT make install
+```
 
 ## Specifying configure.json features on the command line
 
