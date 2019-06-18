@@ -357,6 +357,7 @@ public:
 
     void mergeCachedResources(const QTextDocumentPrivate *priv);
 
+    friend struct QTextHtmlParserNode;
     friend class QTextHtmlExporter;
     friend class QTextCursor;
 };
