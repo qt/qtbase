@@ -1583,8 +1583,8 @@ void QMakeEvaluator::updateFeaturePaths()
     }
 
     for (int i = 0; i < feature_roots.count(); ++i)
-        if (!feature_roots.at(i).endsWith((ushort)'/'))
-            feature_roots[i].append((ushort)'/');
+        if (!feature_roots.at(i).endsWith(QLatin1Char('/')))
+            feature_roots[i].append(QLatin1Char('/'));
 
     feature_roots.removeDuplicates();
 

@@ -621,7 +621,7 @@ void QMakeParser::read(ProFile *pro, const QStringRef &in, int line, SubGrammar 
                             if (c != term) {
                                 parseError(fL1S("Missing %1 terminator [found %2]")
                                     .arg(QChar(term))
-                                    .arg(c ? QString(c) : QString::fromLatin1("end-of-line")));
+                                    .arg(c ? QString(QChar(c)) : QString::fromLatin1("end-of-line")));
                                 m_inError = true;
                                 // Just parse on, as if there was a terminator ...
                             } else {
