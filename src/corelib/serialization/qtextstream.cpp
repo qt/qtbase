@@ -888,7 +888,7 @@ inline bool QTextStreamPrivate::getChar(QChar *ch)
     if ((string && stringOffset == string->size())
         || (device && readBuffer.isEmpty() && !fillReadBuffer())) {
         if (ch)
-            *ch = 0;
+            *ch = QChar();
         return false;
     }
     if (ch)

@@ -443,17 +443,17 @@ public:
 #endif
     inline unsigned char combiningClass() const noexcept { return QChar::combiningClass(ucs); }
 
-    inline QChar mirroredChar() const noexcept { return QChar::mirroredChar(ucs); }
+    inline QChar mirroredChar() const noexcept { return QChar(QChar::mirroredChar(ucs)); }
     inline bool hasMirrored() const noexcept { return QChar::hasMirrored(ucs); }
 
     QString decomposition() const;
     inline Decomposition decompositionTag() const noexcept { return QChar::decompositionTag(ucs); }
 
     inline int digitValue() const noexcept { return QChar::digitValue(ucs); }
-    inline QChar toLower() const noexcept { return QChar::toLower(ucs); }
-    inline QChar toUpper() const noexcept { return QChar::toUpper(ucs); }
-    inline QChar toTitleCase() const noexcept { return QChar::toTitleCase(ucs); }
-    inline QChar toCaseFolded() const noexcept { return QChar::toCaseFolded(ucs); }
+    inline QChar toLower() const noexcept { return QChar(QChar::toLower(ucs)); }
+    inline QChar toUpper() const noexcept { return QChar(QChar::toUpper(ucs)); }
+    inline QChar toTitleCase() const noexcept { return QChar(QChar::toTitleCase(ucs)); }
+    inline QChar toCaseFolded() const noexcept { return QChar(QChar::toCaseFolded(ucs)); }
 
     inline Script script() const noexcept { return QChar::script(ucs); }
 

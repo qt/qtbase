@@ -951,10 +951,10 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
             }
             uint code = (endian == BigEndianness) ? qFromBigEndian<quint32>(tuple) : qFromLittleEndian<quint32>(tuple);
             if (QChar::requiresSurrogates(code)) {
-                *qch++ = QChar::highSurrogate(code);
-                *qch++ = QChar::lowSurrogate(code);
+                *qch++ = QChar(QChar::highSurrogate(code));
+                *qch++ = QChar(QChar::lowSurrogate(code));
             } else {
-                *qch++ = code;
+                *qch++ = QChar(code);
             }
             num = 0;
         }

@@ -2220,9 +2220,8 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
     bool skipped = false;
     // copy all basic code points verbatim to output.
     for (uint j = 0; j < (uint) ucLength; ++j) {
-        ushort js = s[j].unicode();
-        if (js < 0x80)
-            *d++ = js;
+        if (s[j].unicode() < 0x80)
+            *d++ = s[j];
         else
             skipped = true;
     }

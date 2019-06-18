@@ -82,7 +82,7 @@ public:
 
     static inline QChar getFilterSepChar(const QString &nameFilter);
 
-    static inline QStringList splitFilters(const QString &nameFilter, QChar sep = 0);
+    static inline QStringList splitFilters(const QString &nameFilter, QChar sep = {});
 
     void setPath(const QString &path);
 

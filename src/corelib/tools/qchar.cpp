@@ -1885,11 +1885,11 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
                 QChar *d = s.data();
                 // ligatureHelper() never changes planes
                 if (QChar::requiresSurrogates(ligature)) {
-                    d[starter] = QChar::highSurrogate(ligature);
-                    d[starter + 1] = QChar::lowSurrogate(ligature);
+                    d[starter] = QChar(QChar::highSurrogate(ligature));
+                    d[starter + 1] = QChar(QChar::lowSurrogate(ligature));
                     s.remove(i, 2);
                 } else {
-                    d[starter] = ligature;
+                    d[starter] = QChar(ligature);
                     s.remove(i, 1);
                 }
                 continue;
@@ -1962,16 +1962,16 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             int p = pos;
             // exchange characters
             if (!QChar::requiresSurrogates(u2)) {
-                uc[p++] = u2;
+                uc[p++] = QChar(u2);
             } else {
-                uc[p++] = QChar::highSurrogate(u2);
-                uc[p++] = QChar::lowSurrogate(u2);
+                uc[p++] = QChar(QChar::highSurrogate(u2));
+                uc[p++] = QChar(QChar::lowSurrogate(u2));
             }
             if (!QChar::requiresSurrogates(u1)) {
-                uc[p++] = u1;
+                uc[p++] = QChar(u1);
             } else {
-                uc[p++] = QChar::highSurrogate(u1);
-                uc[p++] = QChar::lowSurrogate(u1);
+                uc[p++] = QChar(QChar::highSurrogate(u1));
+                uc[p++] = QChar(QChar::lowSurrogate(u1));
             }
             if (pos > 0)
                 --pos;

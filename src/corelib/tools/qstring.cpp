@@ -3208,7 +3208,7 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
         return remove(ch, cs);
 
     if (after.d->size == 1)
-        return replace(ch, after.d->data()[0], cs);
+        return replace(ch, after.front(), cs);
 
     if (d->size == 0)
         return *this;
@@ -6666,7 +6666,7 @@ static QString detachAndConvertCase(T &str, QStringIterator it)
         } else if (Q_UNLIKELY(QChar::requiresSurrogates(uc))) {
             // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
             pp++;
-            *pp++ = QChar::lowSurrogate(uc + caseDiff);
+            *pp++ = QChar(QChar::lowSurrogate(uc + caseDiff));
         } else {
             *pp++ = QChar(uc + caseDiff);
         }

@@ -293,9 +293,9 @@ void QUrlQueryPrivate::setQuery(const QString &query)
         const QChar *delimiter = nullptr;
         while (pos != end) {
             // scan for the component parts of this pair
-            if (!delimiter && pos->unicode() == valueDelimiter)
+            if (!delimiter && *pos == valueDelimiter)
                 delimiter = pos;
-            if (pos->unicode() == pairDelimiter)
+            if (*pos == pairDelimiter)
                 break;
             ++pos;
         }
@@ -584,8 +584,8 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
 */
 void QUrlQuery::setQueryDelimiters(QChar valueDelimiter, QChar pairDelimiter)
 {
-    d->valueDelimiter = valueDelimiter.unicode();
-    d->pairDelimiter = pairDelimiter.unicode();
+    d->valueDelimiter = valueDelimiter;
+    d->pairDelimiter = pairDelimiter;
 }
 
 /*!

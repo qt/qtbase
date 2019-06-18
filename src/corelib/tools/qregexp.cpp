@@ -2035,7 +2035,7 @@ bool QRegExpMatchState::matchHere()
 #ifndef QT_NO_REGEXP_CCLASS
                         const QRegExpCharClass &cc = eng->cl.at(m ^ QRegExpEngine::CharClassBit);
                         if (eng->cs)
-                            inside = cc.in(ch);
+                            inside = cc.in(QChar(ch));
                         else if (cc.negative())
                             inside = cc.in(QChar(ch).toLower()) &&
                                      cc.in(QChar(ch).toUpper());

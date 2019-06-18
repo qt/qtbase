@@ -1423,7 +1423,7 @@ inline int QXmlStreamReaderPrivate::fastScanNMTOKEN()
     int n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
-        if (fastDetermineNameChar(c) == NotName) {
+        if (fastDetermineNameChar(QChar(c)) == NotName) {
             putChar(c);
             return n;
         } else {

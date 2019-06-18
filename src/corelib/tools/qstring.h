@@ -1002,11 +1002,11 @@ inline QString::QString(QLatin1String aLatin1) : d(fromLatin1_helper(aLatin1.lat
 inline int QString::length() const
 { return d->size; }
 inline const QChar QString::at(int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return d->data()[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return QChar(d->data()[i]); }
 inline const QChar QString::operator[](int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return d->data()[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return QChar(d->data()[i]); }
 inline const QChar QString::operator[](uint i) const
-{ Q_ASSERT(i < uint(size())); return d->data()[i]; }
+{ Q_ASSERT(i < uint(size())); return QChar(d->data()[i]); }
 inline bool QString::isEmpty() const
 { return d->size == 0; }
 inline const QChar *QString::unicode() const
@@ -1118,11 +1118,11 @@ public:
     {
         using namespace QtPrivate::DeprecatedRefClassBehavior;
         if (Q_LIKELY(i < s.d->size))
-            return s.d->data()[i];
+            return QChar(s.d->data()[i]);
 #ifdef QT_DEBUG
         warn(WarningType::OutOfRange, EmittingClass::QCharRef);
 #endif
-        return 0;
+        return QChar();
     }
     inline QCharRef &operator=(QChar c)
     {

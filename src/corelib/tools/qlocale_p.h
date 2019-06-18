@@ -285,9 +285,9 @@ public:
     quint16 m_language_id, m_script_id, m_country_id;
 
     // FIXME QTBUG-69324: not all unicode code-points map to single-token UTF-16 :-(
-    quint16 m_decimal, m_group, m_list, m_percent, m_zero, m_minus, m_plus, m_exponential;
-    quint16 m_quotation_start, m_quotation_end;
-    quint16 m_alternate_quotation_start, m_alternate_quotation_end;
+    char16_t m_decimal, m_group, m_list, m_percent, m_zero, m_minus, m_plus, m_exponential;
+    char16_t m_quotation_start, m_quotation_end;
+    char16_t m_alternate_quotation_start, m_alternate_quotation_end;
 
     quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
     quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
@@ -417,7 +417,7 @@ inline char QLocaleData::digitToCLocale(QChar in) const
     if (in == m_group)
         return ',';
 
-    if (in == m_exponential || in == QChar::toUpper(m_exponential))
+    if (in == m_exponential || in == QChar(QChar::toUpper(m_exponential)))
         return 'e';
 
     // In several languages group() is a non-breaking space (U+00A0) or its thin
