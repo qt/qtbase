@@ -122,9 +122,9 @@ public:
     QString interfaceName;
     QMap<QString, QString> configurationInterface;
     void getUserConfigurations();
-    QString getNetworkNameFromSsid(const QString &ssid);
-    QString getSsidFromNetworkName(const QString &name);
-    bool isKnownSsid(const QString &ssid);
+    QString getNetworkNameFromSsid(const QString &ssid) const;
+    QString getSsidFromNetworkName(const QString &name) const;
+    bool isKnownSsid(const QString &ssid) const;
     QMap<QString, QMap<QString,QString> > userProfiles;
 
 signals:
@@ -135,7 +135,7 @@ protected:
 
 private:
     QList<QNetworkConfigurationPrivate *> fetchedConfigurations;
-    QMutex mutex;
+    mutable QMutex mutex;
     QStringList foundNetwork(const QString &id, const QString &ssid, const QNetworkConfiguration::StateFlags state, const QString &interfaceName, const QNetworkConfiguration::Purpose purpose);
 
 };
