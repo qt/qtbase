@@ -1206,8 +1206,10 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     Q_ASSERT(currentSwapChain == swapChainD);
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
-    if (needsPresent)
+    if (needsPresent) {
         [swapChainD->cbWrapper.d->cb presentDrawable: swapChainD->d->curDrawable];
+        swapChainD->d->curDrawable = nil;
+    }
 
     __block int thisFrameSlot = currentFrameSlot;
     [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer>) {
@@ -1689,7 +1691,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
             if (color0.needsDrawableForTex || color0.needsDrawableForResolveTex) {
                 Q_ASSERT(currentSwapChain);
                 QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, currentSwapChain);
-                swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
+                if (!swapChainD->d->curDrawable)
+                    swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
                 if (!swapChainD->d->curDrawable) {
                     qWarning("No drawable");
                     return;
@@ -3496,6 +3499,8 @@ bool QMetalSwapChain::buildOrResize()
     pixelSize = m_currentPixelSize;
 
     [d->layer setDevice: rhiD->d->dev];
+
+    d->curDrawable = nil;
 
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         if (!d->sem[i])
