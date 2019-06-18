@@ -3298,7 +3298,7 @@ void *aligned_alloc(size_t alignment, size_t size)
             std::shared_mutex m_Mutex;
         };
         #define VMA_RW_MUTEX VmaRWMutex
-    #elif defined(_WIN32)
+    #elif defined(_WIN32) && !defined(__MINGW32__)
         // Use SRWLOCK from WinAPI.
         class VmaRWMutex
         {
