@@ -3701,7 +3701,7 @@ bool QString::operator>(QLatin1String other) const noexcept
 */
 int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
 #endif  // QT_STRINGVIEW_LEVEL < 2
@@ -3745,7 +3745,7 @@ int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 
 int QString::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::findString(QStringView(unicode(), size()), from, str, cs));
 }
 
@@ -3758,7 +3758,7 @@ int QString::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 */
 int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qFindChar(QStringView(unicode(), length()), ch, from, cs));
 }
 
@@ -3777,7 +3777,7 @@ int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
 
@@ -3799,7 +3799,7 @@ int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) co
 */
 int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
@@ -3826,7 +3826,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
 */
 int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
@@ -3838,7 +3838,7 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
 */
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qLastIndexOf(*this, ch, from, cs));
 }
 
@@ -3860,7 +3860,7 @@ int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
@@ -4192,7 +4192,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
 int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
@@ -4209,7 +4209,7 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qt_string_count(QStringView(unicode(), size()), ch, cs));
 }
 
@@ -4226,7 +4226,7 @@ int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 */
 int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
@@ -11172,7 +11172,7 @@ QStringRef QString::midRef(int position, int n) const
 */
 int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
@@ -11207,7 +11207,7 @@ int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) co
 */
 int QStringRef::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qFindChar(QStringView(unicode(), length()), ch, from, cs));
 }
 
@@ -11228,7 +11228,7 @@ int QStringRef::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QStringRef::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::findString(QStringView(unicode(), size()), from, str, cs));
 }
 
@@ -11249,7 +11249,7 @@ int QStringRef::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) con
 */
 int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::findString(QStringView(unicode(), size()), from, QStringView(str.unicode(), str.size()), cs));
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
@@ -11270,7 +11270,7 @@ int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs)
 */
 int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
@@ -11285,7 +11285,7 @@ int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs
 */
 int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qLastIndexOf(*this, ch, from, cs));
 }
 
@@ -11306,7 +11306,7 @@ int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
@@ -11327,7 +11327,7 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
 */
 int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
@@ -11360,7 +11360,7 @@ int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity
 */
 int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
@@ -11378,7 +11378,7 @@ int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
 */
 int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qt_string_count(QStringView(unicode(), size()), ch, cs));
 }
 
@@ -11396,7 +11396,7 @@ int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 */
 int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
-    // ### Qt6: qsize
+    // ### Qt6: qsizetype
     return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
