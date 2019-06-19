@@ -43,6 +43,7 @@
 #include "qjsonwriter_p.h"
 #include "qjson_p.h"
 #include "private/qutfcodec_p.h"
+#include <private/qnumeric_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -131,8 +132,9 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
     case QJsonValue::Double: {
         const double d = v.toDouble(b);
         if (qIsFinite(d)) { // +2 to format to ensure the expected precision
-            const double abs = std::abs(d);
-            json += QByteArray::number(d, abs == static_cast<quint64>(abs) ? 'f' : 'g', QLocale::FloatingPointShortest);
+            quint64 absInt;
+            json += QByteArray::number(d, convertDoubleTo(std::abs(d), &absInt) ? 'f' : 'g',
+                                       QLocale::FloatingPointShortest);
         } else {
             json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
         }
