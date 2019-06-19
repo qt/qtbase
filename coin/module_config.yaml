@@ -169,14 +169,11 @@ build_instructions:
       property: host.os
       equals_value: Windows
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -GNinja {{.SourceDir}}"
+    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -DBUILD_TESTING=OFF -GNinja {{.SourceDir}}"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
       Failed to call cmake. Contact Liang then.
-  - type: EnvironmentVariable
-    variableName: DESTDIR
-    variableValue: "{{.InstallRoot}}"
   - type: ExecuteCommand  # TODO: remove me, just debuging
     command: cmd.exe /c type {{.BuildDir}}\\CMakeCache.txt
     enable_if:
@@ -196,7 +193,16 @@ build_instructions:
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
-      Failed to install sources. In the current state bug can be everywhere. Contact Liang first.
+      Failed to install package.
+  - type: EnvironmentVariable
+    variableName: DESTDIR
+    variableValue: "{{.InstallRoot}}"
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --install ."
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to install package for archiving.
   - type: SignPackage
     enable_if:
       condition: property
@@ -208,6 +214,25 @@ build_instructions:
   - type: UploadArtifact
     archiveDirectory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     transferType: UploadModuleBuildArtifact
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}/tests"
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_PREFIX_PATH:PATH={{.InstallDir}} -GNinja {{.SourceDir}}/tests"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to call cmake. Contact Liang then.
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --build ."
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
+  - type: UploadTestArtifact
+    transferType: UploadModuleTestsArtifact
+    archiveDirectory: "{{.SourceDir}}/tests"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
 test_instructions:
