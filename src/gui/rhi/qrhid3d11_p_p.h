@@ -65,9 +65,12 @@ struct QD3D11Buffer : public QRhiBuffer
     void release() override;
     bool build() override;
 
+    ID3D11UnorderedAccessView *unorderedAccessView();
+
     ID3D11Buffer *buffer = nullptr;
     QByteArray dynBuf;
     bool hasPendingDynamicUpdates = false;
+    ID3D11UnorderedAccessView *uav = nullptr;
     uint generation = 0;
     friend class QRhiD3D11;
 };
@@ -101,6 +104,7 @@ struct QD3D11Texture : public QRhiTexture
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
     bool finishBuild();
+    ID3D11UnorderedAccessView *unorderedAccessViewForLevel(int level);
 
     ID3D11Texture2D *tex = nullptr;
     bool owns = true;
@@ -109,6 +113,7 @@ struct QD3D11Texture : public QRhiTexture
     uint mipLevelCount = 0;
     DXGI_SAMPLE_DESC sampleDesc;
     QRhiD3D11TextureNativeHandles nativeHandlesStruct;
+    ID3D11UnorderedAccessView *perLevelViews[QRhi::MAX_LEVELS];
     uint generation = 0;
     friend class QRhiD3D11;
 };
@@ -209,10 +214,20 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
         quint64 samplerId;
         uint samplerGeneration;
     };
+    struct BoundStorageImageData {
+        quint64 id;
+        uint generation;
+    };
+    struct BoundStorageBufferData {
+        quint64 id;
+        uint generation;
+    };
     struct BoundResourceData {
         union {
             BoundUniformBufferData ubuf;
             BoundSampledTextureData stex;
+            BoundStorageImageData simage;
+            BoundStorageBufferData sbuf;
         };
     };
     QVector<BoundResourceData> boundResourceData;
@@ -225,11 +240,20 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     QRhiBatchedBindings<UINT> fsubufoffsets;
     QRhiBatchedBindings<UINT> fsubufsizes;
 
+    QRhiBatchedBindings<ID3D11Buffer *> csubufs;
+    QRhiBatchedBindings<UINT> csubufoffsets;
+    QRhiBatchedBindings<UINT> csubufsizes;
+
     QRhiBatchedBindings<ID3D11SamplerState *> vssamplers;
     QRhiBatchedBindings<ID3D11ShaderResourceView *> vsshaderresources;
 
     QRhiBatchedBindings<ID3D11SamplerState *> fssamplers;
     QRhiBatchedBindings<ID3D11ShaderResourceView *> fsshaderresources;
+
+    QRhiBatchedBindings<ID3D11SamplerState *> cssamplers;
+    QRhiBatchedBindings<ID3D11ShaderResourceView *> csshaderresources;
+
+    QRhiBatchedBindings<ID3D11UnorderedAccessView *> csUAVs;
 
     friend class QRhiD3D11;
 };
@@ -260,6 +284,10 @@ struct QD3D11ComputePipeline : public QRhiComputePipeline
     ~QD3D11ComputePipeline();
     void release() override;
     bool build() override;
+
+    ID3D11ComputeShader *cs = nullptr;
+    uint generation = 0;
+    friend class QRhiD3D11;
 };
 
 struct QD3D11SwapChain;
@@ -272,6 +300,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
 
     struct Command {
         enum Cmd {
+            ResetShaderResources,
             SetRenderTarget,
             Clear,
             Viewport,
@@ -290,7 +319,9 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             GenMip,
             DebugMarkBegin,
             DebugMarkEnd,
-            DebugMarkMsg
+            DebugMarkMsg,
+            BindComputePipeline,
+            Dispatch
         };
         enum ClearFlag { Color = 1, Depth = 2, Stencil = 4 };
         Cmd cmd;
@@ -392,6 +423,14 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             struct {
                 char s[64];
             } debugMark;
+            struct {
+                QD3D11ComputePipeline *ps;
+            } bindComputePipeline;
+            struct {
+                UINT x;
+                UINT y;
+                UINT z;
+            } dispatch;
         } args;
     };
 
@@ -404,9 +443,11 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     QVector<Command> commands;
     PassType recordingPass;
     QRhiRenderTarget *currentTarget;
-    QRhiGraphicsPipeline *currentPipeline;
+    QRhiGraphicsPipeline *currentGraphicsPipeline;
+    QRhiComputePipeline *currentComputePipeline;
     uint currentPipelineGeneration;
-    QRhiShaderResourceBindings *currentSrb;
+    QRhiShaderResourceBindings *currentGraphicsSrb;
+    QRhiShaderResourceBindings *currentComputeSrb;
     uint currentSrbGeneration;
     ID3D11Buffer *currentIndexBuffer;
     quint32 currentIndexOffset;
@@ -438,9 +479,11 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         resetCachedState();
     }
     void resetCachedState() {
-        currentPipeline = nullptr;
+        currentGraphicsPipeline = nullptr;
+        currentComputePipeline = nullptr;
         currentPipelineGeneration = 0;
-        currentSrb = nullptr;
+        currentGraphicsSrb = nullptr;
+        currentComputeSrb = nullptr;
         currentSrbGeneration = 0;
         currentIndexBuffer = nullptr;
         currentIndexOffset = 0;
@@ -596,11 +639,10 @@ public:
     void bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                              const uint *dynOfsPairs, int dynOfsPairCount,
                              bool offsetOnlyChange);
-    void setRenderTarget(QRhiRenderTarget *rt);
+    void resetShaderResources();
     void executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *timestampSwapChain = nullptr);
     DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount) const;
     void finishActiveReadbacks();
-    void enqueueSetRenderTarget(QD3D11CommandBuffer *cbD, QRhiRenderTarget *rt);
     void reportLiveObjects(ID3D11Device *device);
 
     bool debugLayer = false;
@@ -614,8 +656,12 @@ public:
     QRhiD3D11NativeHandles nativeHandlesStruct;
 
     struct {
+        int vsHighestActiveVertexBufferBinding = -1;
+        bool vsHasIndexBufferBound = false;
         int vsHighestActiveSrvBinding = -1;
         int fsHighestActiveSrvBinding = -1;
+        int csHighestActiveSrvBinding = -1;
+        int csHighestActiveUavBinding = -1;
         QD3D11SwapChain *currentSwapChain = nullptr;
     } contextState;
 
