@@ -108,18 +108,12 @@ static Options g_options;
 
 static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = false)
 {
-#if defined(Q_OS_WIN32)
-    QString processedCommand = QLatin1Char('\"') + command + QLatin1Char('\"');
-#else
-    const QString& processedCommand = command;
-#endif
-
     if (verbose)
-        fprintf(stdout, "Execute %s\n", processedCommand.toUtf8().constData());
-    FILE *process = popen(processedCommand.toUtf8().constData(), QT_POPEN_READ);
+        fprintf(stdout, "Execute %s\n", command.toUtf8().constData());
+    FILE *process = popen(command.toUtf8().constData(), QT_POPEN_READ);
 
     if (!process) {
-        fprintf(stderr, "Cannot execute command %s", qPrintable(processedCommand));
+        fprintf(stderr, "Cannot execute command %s", qPrintable(command));
         return false;
     }
     char buffer[512];
@@ -368,7 +362,7 @@ static bool parseTestArgs()
         g_options.testArgs += QStringLiteral(" -o output.%1,%1").arg(format);
 
     g_options.testArgs += unhandledArgs;
-    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \"%1\" -n %2/%3").arg(shellQuote(g_options.testArgs.trimmed()),
+    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \"'%1'\" -n %2/%3").arg(shellQuote(g_options.testArgs.trimmed()),
                                                                                                       g_options.package,
                                                                                                       g_options.activity);
     return true;
@@ -376,8 +370,8 @@ static bool parseTestArgs()
 
 static bool isRunning() {
     QByteArray output;
-    if (!execCommand(QStringLiteral("%1 shell 'ps | grep \" %2\"'").arg(g_options.adbCommand,
-                                                                           shellQuoteUnix(g_options.package)), &output)) {
+    if (!execCommand(QStringLiteral("%1 shell \"ps | grep ' %2'\"").arg(g_options.adbCommand,
+                                                                        shellQuote(g_options.package)), &output)) {
 
         return false;
     }
