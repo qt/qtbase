@@ -74,6 +74,7 @@
 #else
 # define QT_FEATURE_alloca_malloc_h -1
 #endif
+#define QT_FEATURE_binaryjson -1
 #define QT_FEATURE_cborstream -1
 #define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)

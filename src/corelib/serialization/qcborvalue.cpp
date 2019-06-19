@@ -3109,4 +3109,6 @@ QT_END_NAMESPACE
 #include "qcborarray.cpp"
 #include "qcbormap.cpp"
 
+#ifndef QT_NO_QOBJECT
 #include "moc_qcborvalue.cpp"
+#endif

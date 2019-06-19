@@ -44,13 +44,14 @@
 #include "qjson_p.h"
 #include "private/qutfcodec_p.h"
 #include <private/qnumeric_p.h>
+#include <private/qcborvalue_p.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QJsonPrivate;
 
-static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json, int indent, bool compact);
-static void arrayContentToJson(const QJsonPrivate::Array *a, QByteArray &json, int indent, bool compact);
+static void objectContentToJson(const QCborContainerPrivate *o, QByteArray &json, int indent, bool compact);
+static void arrayContentToJson(const QCborContainerPrivate *a, QByteArray &json, int indent, bool compact);
 
 static inline uchar hexdig(uint u)
 {
@@ -126,16 +127,20 @@ static QByteArray escapedString(const QString &s)
     return ba;
 }
 
-static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &v, QByteArray &json, int indent, bool compact)
+static void valueToJson(const QCborValue &v, QByteArray &json, int indent, bool compact)
 {
-    QJsonValue::Type type = (QJsonValue::Type)(uint)v.type;
+    QCborValue::Type type = v.type();
     switch (type) {
-    case QJsonValue::Bool:
-        json += v.toBoolean() ? "true" : "false";
+    case QCborValue::True:
+        json += "true";
         break;
-    case QJsonValue::Double: {
-        const double d = v.toDouble(b);
-        if (qIsFinite(d)) { // +2 to format to ensure the expected precision
+    case QCborValue::False:
+        json += "false";
+        break;
+    case QCborValue::Integer:
+    case QCborValue::Double: {
+        const double d = v.toDouble();
+        if (qIsFinite(d)) {
             quint64 absInt;
             json += QByteArray::number(d, convertDoubleTo(std::abs(d), &absInt) ? 'f' : 'g',
                                        QLocale::FloatingPointShortest);
@@ -144,42 +149,44 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
         }
         break;
     }
-    case QJsonValue::String:
+    case QCborValue::String:
         json += '"';
-        json += escapedString(v.toString(b));
+        json += escapedString(v.toString());
         json += '"';
         break;
-    case QJsonValue::Array:
+    case QCborValue::Array:
         json += compact ? "[" : "[\n";
-        arrayContentToJson(static_cast<QJsonPrivate::Array *>(v.base(b)), json, indent + (compact ? 0 : 1), compact);
+        arrayContentToJson(
+                QJsonPrivate::Value::container(v), json, indent + (compact ? 0 : 1), compact);
         json += QByteArray(4*indent, ' ');
         json += ']';
         break;
-    case QJsonValue::Object:
+    case QCborValue::Map:
         json += compact ? "{" : "{\n";
-        objectContentToJson(static_cast<QJsonPrivate::Object *>(v.base(b)), json, indent + (compact ? 0 : 1), compact);
+        objectContentToJson(
+                QJsonPrivate::Value::container(v), json, indent + (compact ? 0 : 1), compact);
         json += QByteArray(4*indent, ' ');
         json += '}';
         break;
-    case QJsonValue::Null:
+    case QCborValue::Null:
     default:
         json += "null";
     }
 }
 
-static void arrayContentToJson(const QJsonPrivate::Array *a, QByteArray &json, int indent, bool compact)
+static void arrayContentToJson(const QCborContainerPrivate *a, QByteArray &json, int indent, bool compact)
 {
-    if (!a || !a->length)
+    if (!a || a->elements.empty())
         return;
 
     QByteArray indentString(4*indent, ' ');
 
-    uint i = 0;
-    while (1) {
+    qsizetype i = 0;
+    while (true) {
         json += indentString;
-        valueToJson(a, a->at(i), json, indent, compact);
+        valueToJson(a->valueAt(i), json, indent, compact);
 
-        if (++i == a->length) {
+        if (++i == a->elements.size()) {
             if (!compact)
                 json += '\n';
             break;
@@ -190,23 +197,23 @@ static void arrayContentToJson(const QJsonPrivate::Array *a, QByteArray &json, i
 }
 
 
-static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json, int indent, bool compact)
+static void objectContentToJson(const QCborContainerPrivate *o, QByteArray &json, int indent, bool compact)
 {
-    if (!o || !o->length)
+    if (!o || o->elements.empty())
         return;
 
     QByteArray indentString(4*indent, ' ');
 
-    uint i = 0;
-    while (1) {
-        QJsonPrivate::Entry *e = o->entryAt(i);
+    qsizetype i = 0;
+    while (true) {
+        QCborValue e = o->valueAt(i);
         json += indentString;
         json += '"';
-        json += escapedString(e->key());
+        json += escapedString(o->valueAt(i).toString());
         json += compact ? "\":" : "\": ";
-        valueToJson(o, e->value, json, indent, compact);
+        valueToJson(o->valueAt(i + 1), json, indent, compact);
 
-        if (++i == o->length) {
+        if ((i += 2) == o->elements.size()) {
             if (!compact)
                 json += '\n';
             break;
@@ -216,18 +223,18 @@ static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json,
     }
 }
 
-void Writer::objectToJson(const QJsonPrivate::Object *o, QByteArray &json, int indent, bool compact)
+void Writer::objectToJson(const QCborContainerPrivate *o, QByteArray &json, int indent, bool compact)
 {
-    json.reserve(json.size() + (o ? (int)o->size : 16));
+    json.reserve(json.size() + (o ? (int)o->elements.size() : 16));
     json += compact ? "{" : "{\n";
     objectContentToJson(o, json, indent + (compact ? 0 : 1), compact);
     json += QByteArray(4*indent, ' ');
     json += compact ? "}" : "}\n";
 }
 
-void Writer::arrayToJson(const QJsonPrivate::Array *a, QByteArray &json, int indent, bool compact)
+void Writer::arrayToJson(const QCborContainerPrivate *a, QByteArray &json, int indent, bool compact)
 {
-    json.reserve(json.size() + (a ? (int)a->size : 16));
+    json.reserve(json.size() + (a ? (int)a->elements.size() : 16));
     json += compact ? "[" : "[\n";
     arrayContentToJson(a, json, indent + (compact ? 0 : 1), compact);
     json += QByteArray(4*indent, ' ');

@@ -41,14 +41,16 @@
 #define QJSONDOCUMENT_H
 
 #include <QtCore/qjsonvalue.h>
+#include <QtCore/qscopedpointer.h>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 class QDebug;
+class QCborValue;
 
-namespace QJsonPrivate {
-    class Parser;
-}
+namespace QJsonPrivate { class Parser; }
 
 struct Q_CORE_EXPORT QJsonParseError
 {
@@ -76,6 +78,7 @@ struct Q_CORE_EXPORT QJsonParseError
     ParseError error;
 };
 
+class QJsonDocumentPrivate;
 class Q_CORE_EXPORT QJsonDocument
 {
 public:
@@ -93,11 +96,7 @@ public:
     QJsonDocument(const QJsonDocument &other);
     QJsonDocument &operator =(const QJsonDocument &other);
 
-    QJsonDocument(QJsonDocument &&other) noexcept
-        : d(other.d)
-    {
-        other.d = nullptr;
-    }
+    QJsonDocument(QJsonDocument &&other) noexcept;
 
     QJsonDocument &operator =(QJsonDocument &&other) noexcept
     {
@@ -105,21 +104,20 @@ public:
         return *this;
     }
 
-    void swap(QJsonDocument &other) noexcept
-    {
-        qSwap(d, other.d);
-    }
+    void swap(QJsonDocument &other) noexcept;
 
     enum DataValidation {
         Validate,
         BypassValidation
     };
 
+#if QT_CONFIG(binaryjson)
     static QJsonDocument fromRawData(const char *data, int size, DataValidation validation = Validate);
     const char *rawData(int *size) const;
 
     static QJsonDocument fromBinaryData(const QByteArray &data, DataValidation validation  = Validate);
     QByteArray toBinaryData() const;
+#endif // QT_CONFIG(binaryjson)
 
     static QJsonDocument fromVariant(const QVariant &variant);
     QVariant toVariant() const;
@@ -160,13 +158,12 @@ public:
 
 private:
     friend class QJsonValue;
-    friend class QJsonPrivate::Data;
     friend class QJsonPrivate::Parser;
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);
 
-    QJsonDocument(QJsonPrivate::Data *data);
+    QJsonDocument(const QCborValue &data);
 
-    QJsonPrivate::Data *d;
+    std::unique_ptr<QJsonDocumentPrivate> d;
 };
 
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonDocument)
