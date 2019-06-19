@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QACTION_P_H
-#define QACTION_P_H
+#ifndef QGUIACTION_P_H
+#define QGUIACTION_P_H
 
 //
 //  W A R N I N G
@@ -51,49 +51,77 @@
 // We mean it.
 //
 
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <QtGui/private/qguiaction_p.h>
-#include "QtWidgets/qaction.h"
-#if QT_CONFIG(menu)
-#include "QtWidgets/qmenu.h"
-#endif
-#if QT_CONFIG(graphicsview)
-#include "private/qgraphicswidget_p.h"
+#include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qguiaction.h>
+#include <QtGui/qfont.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/private/qshortcutmap_p.h>
 #endif
 #include "private/qobject_p.h"
 
+QT_REQUIRE_CONFIG(action);
+
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_ACTION
-
 
 class QShortcutMap;
 
-class Q_WIDGETS_EXPORT QActionPrivate : public QGuiActionPrivate
+class Q_GUI_EXPORT QGuiActionPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QAction)
+    Q_DECLARE_PUBLIC(QGuiAction)
 public:
-    QActionPrivate() = default;
+    QGuiActionPrivate();
+    ~QGuiActionPrivate();
 
 #if QT_CONFIG(shortcut)
-    QShortcutMap::ContextMatcher contextMatcher() const override;
+    virtual QShortcutMap::ContextMatcher contextMatcher() const;
 #endif
 
-    static QActionPrivate *get(QAction *q)
+    static QGuiActionPrivate *get(QGuiAction *q)
     {
         return q->d_func();
     }
 
-    bool showStatusText(QWidget *w, const QString &str);
 
-    QPointer<QMenu> menu;
-    QWidgetList widgets;
-#if QT_CONFIG(graphicsview)
-    QList<QGraphicsWidget *> graphicsWidgets;
+    QPointer<QGuiActionGroup> group;
+    QString text;
+    QString iconText;
+    QIcon icon;
+    QString tooltip;
+    QString statustip;
+    QString whatsthis;
+#if QT_CONFIG(shortcut)
+    QKeySequence shortcut;
+    QList<QKeySequence> alternateShortcuts;
 #endif
-};
+    QVariant userData;
+#if QT_CONFIG(shortcut)
+    int shortcutId = 0;
+    QVector<int> alternateShortcutIds;
+    Qt::ShortcutContext shortcutContext = Qt::WindowShortcut;
+    uint autorepeat : 1;
+#endif
+    QFont font;
+    uint enabled : 1, forceDisabled : 1;
+    uint visible : 1, forceInvisible : 1;
+    uint checkable : 1;
+    uint checked : 1;
+    uint separator : 1;
+    uint fontSet : 1;
 
-#endif // QT_NO_ACTION
+    int iconVisibleInMenu : 2;  // Only has values -1, 0, and 1
+    int shortcutVisibleInContextMenu : 2; // Only has values -1, 0, and 1
+
+    QGuiAction::MenuRole menuRole = QGuiAction::TextHeuristicRole;
+    QGuiAction::Priority priority = QGuiAction::NormalPriority;
+
+#if QT_CONFIG(shortcut)
+    void redoGrab(QShortcutMap &map);
+    void redoGrabAlternate(QShortcutMap &map);
+    void setShortcutEnabled(bool enable, QShortcutMap &map);
+#endif // QT_NO_SHORTCUT
+
+    void sendDataChanged();
+};
 
 QT_END_NAMESPACE
 

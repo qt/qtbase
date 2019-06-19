@@ -61,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 
-class QAction;
+class QGuiAction;
 #ifndef QT_NO_GESTURES
 class QGesture;
 #endif
@@ -756,13 +756,13 @@ private:
 #ifndef QT_NO_ACTION
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
-    QAction *act, *bef;
+    QGuiAction *act, *bef;
 public:
-    QActionEvent(int type, QAction *action, QAction *before = nullptr);
+    QActionEvent(int type, QGuiAction *action, QGuiAction *before = nullptr);
     ~QActionEvent();
 
-    inline QAction *action() const { return act; }
-    inline QAction *before() const { return bef; }
+    inline QGuiAction *action() const { return act; }
+    inline QGuiAction *before() const { return bef; }
 };
 #endif
 

@@ -157,10 +157,11 @@ public:
         Q_D(QTornOffMenu);
         if(menu != d->causedMenu)
             return;
+        auto action = static_cast<QAction *>(act->action());
         if (act->type() == QEvent::ActionAdded) {
-            insertAction(act->before(), act->action());
+            insertAction(static_cast<QAction *>(act->before()), action);
         } else if (act->type() == QEvent::ActionRemoved)
-            removeAction(act->action());
+            removeAction(action);
     }
     void actionEvent(QActionEvent *e) override
     {
@@ -3547,15 +3548,16 @@ void QMenu::actionEvent(QActionEvent *e)
                 wa->releaseWidget(widget);
             }
         }
-        d->widgetItems.remove(e->action());
+        d->widgetItems.remove(static_cast<QAction *>(e->action()));
     }
 
     if (!d->platformMenu.isNull()) {
+        auto action = static_cast<QAction *>(e->action());
         if (e->type() == QEvent::ActionAdded) {
             QPlatformMenuItem *beforeItem = e->before()
                 ? d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()))
                 : nullptr;
-            d->insertActionInPlatformMenu(e->action(), beforeItem);
+            d->insertActionInPlatformMenu(action, beforeItem);
         } else if (e->type() == QEvent::ActionRemoved) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             d->platformMenu->removeMenuItem(menuItem);
@@ -3563,7 +3565,7 @@ void QMenu::actionEvent(QActionEvent *e)
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             if (menuItem) {
-                d->copyActionToPlatformItem(e->action(), menuItem);
+                d->copyActionToPlatformItem(action, menuItem);
                 d->platformMenu->syncMenuItem(menuItem);
             }
         }

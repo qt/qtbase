@@ -259,7 +259,7 @@ void tst_QActionGroup::unCheckCurrentAction()
     action1.setChecked(true);
     QVERIFY(action1.isChecked());
     QVERIFY(!action2.isChecked());
-    QAction *current = group.checkedAction();
+    auto current = group.checkedAction();
     QCOMPARE(current, &action1);
     current->setChecked(false);
     QVERIFY(!action1.isChecked());

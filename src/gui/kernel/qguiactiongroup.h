@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,47 +37,68 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONGROUP_H
-#define QACTIONGROUP_H
+#ifndef QGUIACTIONGROUP_H
+#define QGUIACTIONGROUP_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-#include <QtGui/qguiactiongroup.h>
-#include <QtWidgets/qaction.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtGui/qguiaction.h>
+
+QT_REQUIRE_CONFIG(action);
 
 QT_BEGIN_NAMESPACE
 
+class QGuiActionGroupPrivate;
 
-#ifndef QT_NO_ACTION
-
-class QActionGroupPrivate;
-
-class Q_WIDGETS_EXPORT QActionGroup : public QGuiActionGroup
+class Q_GUI_EXPORT QGuiActionGroup : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QActionGroup)
+    Q_DECLARE_PRIVATE(QGuiActionGroup)
+
+    Q_PROPERTY(QGuiActionGroup::ExclusionPolicy exclusionPolicy READ exclusionPolicy WRITE setExclusionPolicy)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
 
 public:
-    explicit QActionGroup(QObject* parent);
-    ~QActionGroup();
+    enum class ExclusionPolicy {
+        None,
+        Exclusive,
+        ExclusiveOptional
+    };
+    Q_ENUM(ExclusionPolicy)
 
-    QAction *checkedAction() const;
+    explicit QGuiActionGroup(QObject *parent);
+    ~QGuiActionGroup();
 
-    QAction *addAction(QAction *a);
-    QAction *addAction(const QString &text);
-    QAction *addAction(const QIcon &icon, const QString &text);
+    QGuiAction *addAction(QGuiAction *a);
+    void removeAction(QGuiAction *a);
+    QList<QGuiAction*> guiActions() const;
+    QGuiAction *checkedGuiAction() const;
 
-    QList<QAction*> actions() const;
+    bool isExclusive() const;
+    bool isEnabled() const;
+    bool isVisible() const;
+    ExclusionPolicy exclusionPolicy() const;
 
-Q_SIGNALS:
-    void triggered(QAction *);
-    void hovered(QAction *);
+
+public Q_SLOTS:
+    void setEnabled(bool);
+    inline void setDisabled(bool b) { setEnabled(!b); }
+    void setVisible(bool);
+    void setExclusive(bool);
+    void setExclusionPolicy(ExclusionPolicy policy);
+
+private Q_SLOTS:
+    void _q_actionTriggered();
+    void _q_actionHovered();
+    void _q_actionChanged();
+
+protected:
+     QGuiActionGroup(QGuiActionGroupPrivate &dd, QObject *parent);
 
 private:
-    Q_DISABLE_COPY(QActionGroup)
+    Q_DISABLE_COPY(QGuiActionGroup)
 };
-
-#endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
 
-#endif // QACTIONGROUP_H
+#endif // QGUIACTIONGROUP_H

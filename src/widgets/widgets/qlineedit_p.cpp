@@ -370,7 +370,7 @@ void QLineEditIconButton::actionEvent(QActionEvent *e)
 {
     switch (e->type()) {
     case QEvent::ActionChanged: {
-        const QAction *action = e->action();
+        const auto *action = e->action();
         if (isVisibleTo(parentWidget()) != action->isVisible()) {
             setVisible(action->isVisible());
             if (QLineEditPrivate *lep = lineEditPrivate())
@@ -545,7 +545,7 @@ void QLineEditPrivate::positionSideWidgets()
     }
 }
 
-QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QAction *a) const
+QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QGuiAction *a) const
 {
     int i = 0;
     for (const auto &e : leadingSideWidgets) {
@@ -634,7 +634,7 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     return w;
 }
 
-void QLineEditPrivate::removeAction(QAction *action)
+void QLineEditPrivate::removeAction(QGuiAction *action)
 {
 #if QT_CONFIG(action)
     Q_Q(QLineEdit);

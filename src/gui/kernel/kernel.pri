@@ -126,6 +126,18 @@ SOURCES += \
         kernel/qhighdpiscaling.cpp \
         kernel/qtestsupport_gui.cpp
 
+qtConfig(action) {
+    HEADERS += \
+        kernel/qguiaction.h \
+        kernel/qguiaction_p.h \
+        kernel/qguiactiongroup.h \
+        kernel/qguiactiongroup_p.h
+
+    SOURCES += \
+        kernel/qguiactiongroup.cpp \
+        kernel/qguiaction.cpp
+}
+
 qtConfig(draganddrop) {
     HEADERS += \
         kernel/qdnd_p.h \

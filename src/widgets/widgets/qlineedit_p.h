@@ -239,7 +239,7 @@ public:
     QString placeholderText;
 
     QWidget *addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition, int flags = 0);
-    void removeAction(QAction *action);
+    void removeAction(QGuiAction *action);
     SideWidgetParameters sideWidgetParameters() const;
     QIcon clearButtonIcon() const;
     void setClearButtonEnabled(bool enabled);
@@ -261,7 +261,7 @@ private:
     };
     friend class QTypeInfo<SideWidgetLocation>;
 
-    SideWidgetLocation findSideWidget(const QAction *a) const;
+    SideWidgetLocation findSideWidget(const QGuiAction *a) const;
 
     SideWidgetEntryList leadingSideWidgets;
     SideWidgetEntryList trailingSideWidgets;

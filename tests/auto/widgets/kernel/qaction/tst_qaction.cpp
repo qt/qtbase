@@ -79,7 +79,7 @@ private slots:
 private:
     QEvent::Type m_lastEventType;
     const int m_keyboardScheme;
-    QAction *m_lastAction;
+    QGuiAction *m_lastAction;
 };
 
 tst_QAction::tst_QAction()

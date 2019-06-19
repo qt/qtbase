@@ -1288,21 +1288,22 @@ void QMenuBar::actionEvent(QActionEvent *e)
         if (!nativeMenuBar)
             return;
 
+        auto action = static_cast<QAction *>(e->action());
         if (e->type() == QEvent::ActionAdded) {
-            QPlatformMenu *menu = d->getPlatformMenu(e->action());
+            QPlatformMenu *menu = d->getPlatformMenu(action);
             if (menu) {
-                d->copyActionToPlatformMenu(e->action(), menu);
+                d->copyActionToPlatformMenu(action, menu);
 
-                QPlatformMenu *beforeMenu = d->findInsertionPlatformMenu(e->action());
+                QPlatformMenu *beforeMenu = d->findInsertionPlatformMenu(action);
                 d->platformMenuBar->insertMenu(menu, beforeMenu);
             }
         } else if (e->type() == QEvent::ActionRemoved) {
-            QPlatformMenu *menu = d->getPlatformMenu(e->action());
+            QPlatformMenu *menu = d->getPlatformMenu(action);
             if (menu)
                 d->platformMenuBar->removeMenu(menu);
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenu *cur = d->platformMenuBar->menuForTag(reinterpret_cast<quintptr>(e->action()));
-            QPlatformMenu *menu = d->getPlatformMenu(e->action());
+            QPlatformMenu *menu = d->getPlatformMenu(action);
 
             // the menu associated with the action can change, need to
             // remove and/or insert the new platform menu
@@ -1310,13 +1311,13 @@ void QMenuBar::actionEvent(QActionEvent *e)
                 if (cur)
                     d->platformMenuBar->removeMenu(cur);
                 if (menu) {
-                    d->copyActionToPlatformMenu(e->action(), menu);
+                    d->copyActionToPlatformMenu(action, menu);
 
-                    QPlatformMenu *beforeMenu = d->findInsertionPlatformMenu(e->action());
+                    QPlatformMenu *beforeMenu = d->findInsertionPlatformMenu(action);
                     d->platformMenuBar->insertMenu(menu, beforeMenu);
                 }
             } else if (menu) {
-                d->copyActionToPlatformMenu(e->action(), menu);
+                d->copyActionToPlatformMenu(action, menu);
                 d->platformMenuBar->syncMenu(menu);
             }
         }
