@@ -413,10 +413,11 @@ void QCALayerBackingStore::ensureBackBuffer()
 
 bool QCALayerBackingStore::recreateBackBufferIfNeeded()
 {
-    const qreal devicePixelRatio = window()->devicePixelRatio();
+    const QCocoaWindow *platformWindow = static_cast<QCocoaWindow *>(window()->handle());
+    const qreal devicePixelRatio = platformWindow->devicePixelRatio();
     QSize requestedBufferSize = m_requestedSize * devicePixelRatio;
 
-    const NSView *backingStoreView = static_cast<QCocoaWindow *>(window()->handle())->view();
+    const NSView *backingStoreView = platformWindow->view();
     Q_UNUSED(backingStoreView);
 
     auto bufferSizeMismatch = [&](const QSize requested, const QSize actual) {
