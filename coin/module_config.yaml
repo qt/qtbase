@@ -140,6 +140,9 @@ build_instructions:
     directory: "{{.SourceDir}}"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
+  - type: EnvironmentVariable
+    variableName: CMAKE_GENERATOR
+    variableValue: Ninja
   - *icc_export_variables
   - *export_target_architecture_and_sdk
   - *find_path_to_compiler
@@ -169,7 +172,7 @@ build_instructions:
       property: host.os
       equals_value: Windows
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -DBUILD_TESTING=OFF -GNinja {{.SourceDir}}"
+    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -DBUILD_TESTING=OFF {{.SourceDir}}"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
@@ -219,7 +222,7 @@ build_instructions:
   - type: ChangeDirectory
     directory: "{{.SourceDir}}/tests"
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_PREFIX_PATH:PATH={{.InstallDir}} -GNinja {{.SourceDir}}/tests"
+    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_PREFIX_PATH:PATH={{.InstallDir}} {{.SourceDir}}/tests"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
