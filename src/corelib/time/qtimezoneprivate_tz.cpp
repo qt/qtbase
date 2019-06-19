@@ -1112,7 +1112,7 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
             path = QFile::symLinkTarget(path);
         if (index >= 0) {
             // /etc/localtime is a symlink to the current TZ file, so extract from path
-            ianaId = path.mid(index + zoneinfo.size()).toUtf8();
+            ianaId = path.midRef(index + zoneinfo.size()).toUtf8();
         }
     }
 
@@ -1138,9 +1138,9 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
             while (ianaId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
                 line = ts.readLine();
                 if (line.startsWith(QLatin1String("ZONE="))) {
-                    ianaId = line.mid(6, line.size() - 7).toUtf8();
+                    ianaId = line.midRef(6, line.size() - 7).toUtf8();
                 } else if (line.startsWith(QLatin1String("TIMEZONE="))) {
-                    ianaId = line.mid(10, line.size() - 11).toUtf8();
+                    ianaId = line.midRef(10, line.size() - 11).toUtf8();
                 }
             }
         }
