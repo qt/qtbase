@@ -484,6 +484,8 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     )
 !!ENDIF // TEMPLATE != aux
 
+!!IF isEmpty(CMAKE_INTERNAL_MODULE)
+
     file(GLOB pluginTargets \"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}_*Plugin.cmake\")
 
     macro(_populate_$${CMAKE_MODULE_NAME}_plugin_properties Plugin Configuration PLUGIN_LOCATION)
@@ -505,6 +507,8 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
             include(${pluginTarget})
         endforeach()
     endif()
+
+!!ENDIF // isEmpty(CMAKE_INTERNAL_MODULE)
 
 
 !!IF !isEmpty(CMAKE_MODULE_EXTRAS)

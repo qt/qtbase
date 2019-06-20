@@ -26,6 +26,10 @@ contains(CMAKE_INSTALL_LIBS_DIR, ^(/usr)?/lib(64)?.*): CMAKE_USR_MOVE_WORKAROUND
 
 CMAKE_OUT_DIR = $$MODULE_BASE_OUTDIR/lib/cmake
 
+internal_module {
+    MODULE = "$${MODULE}_private"
+}
+
 # Core, Network, an external module named Foo
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
@@ -111,6 +115,10 @@ win32:!static:!staticlib {
 }
 
 static|staticlib:CMAKE_STATIC_TYPE = true
+
+internal_module {
+    CMAKE_INTERNAL_MODULE = true
+}
 
 CMAKE_DEBUG_TYPE =
 CMAKE_RELEASE_TYPE =
