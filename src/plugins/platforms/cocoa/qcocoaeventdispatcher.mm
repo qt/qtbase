@@ -377,16 +377,9 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         NSEvent* event = nil;
 
         // First, send all previously excluded input events, if any:
-        if (!excludeUserEvents) {
-            while (!d->queuedUserInputEvents.isEmpty()) {
-                event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
-                if (!filterNativeEvent("NSEvent", event, nullptr)) {
-                    [NSApp sendEvent:event];
-                    retVal = true;
-                }
-                [event release];
-            }
-        }
+        if (d->sendQueuedUserInputEvents())
+            retVal = true;
+
 
         // If Qt is used as a plugin, or as an extension in a native cocoa
         // application, we should not run or stop NSApplication; This will be
@@ -843,6 +836,23 @@ void QCocoaEventDispatcherPrivate::waitingObserverCallback(CFRunLoopObserverRef,
         emit static_cast<QCocoaEventDispatcher*>(info)->awake();
 }
 
+bool QCocoaEventDispatcherPrivate::sendQueuedUserInputEvents()
+{
+    Q_Q(QCocoaEventDispatcher);
+    if (processEventsFlags & QEventLoop::ExcludeUserInputEvents)
+        return false;
+    bool didSendEvent = false;
+    while (!queuedUserInputEvents.isEmpty()) {
+        NSEvent *event = static_cast<NSEvent *>(queuedUserInputEvents.takeFirst());
+        if (!q->filterNativeEvent("NSEvent", event, nullptr)) {
+            [NSApp sendEvent:event];
+            didSendEvent = true;
+        }
+        [event release];
+    }
+    return didSendEvent;
+}
+
 void QCocoaEventDispatcherPrivate::processPostedEvents()
 {
     if (blockSendPostedEvents) {
@@ -896,6 +906,7 @@ void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
         d->maybeCancelWaitForMoreEvents();
         return;
     }
+    d->sendQueuedUserInputEvents();
     d->processPostedEvents();
     d->maybeCancelWaitForMoreEvents();
 }

@@ -2342,7 +2342,7 @@ void tst_QFtp::loginURL()
 
     ftp = newFtp();
     addCommand(QFtp::ConnectToHost,
-               ftp->connectToHost(QHostInfo::localHostName(), port));
+               ftp->connectToHost("127.0.0.1", port));
     addCommand(QFtp::Login, ftp->login(user, password));
 
     QTestEventLoop::instance().enterLoop(5);
@@ -2350,7 +2350,7 @@ void tst_QFtp::loginURL()
     ftp = nullptr;
     server.stopServer();
     if (QTestEventLoop::instance().timeout())
-        QFAIL(msgTimedOut(QHostInfo::localHostName(), port));
+        QFAIL(msgTimedOut("127.0.0.1", port));
 
     QCOMPARE(server.getRawUser(), rawUser);
     QCOMPARE(server.getRawPassword(), rawPass);

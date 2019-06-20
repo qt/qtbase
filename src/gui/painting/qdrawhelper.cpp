@@ -4510,7 +4510,9 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
     if (mode == QPainter::CompositionMode_Source) {
         // inline for performance
         ushort c = data->solidColor.toRgb16();
-        while (count--) {
+        for (; count--; spans++) {
+            if (!spans->len)
+                continue;
             ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
                 qt_memfill(target, c, spans->len);
@@ -4523,13 +4525,14 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
                     ++target;
                 }
             }
-            ++spans;
         }
         return;
     }
 
     if (mode == QPainter::CompositionMode_SourceOver) {
-        while (count--) {
+        for (; count--; spans++) {
+            if (!spans->len)
+                continue;
             uint color = BYTE_MUL(data->solidColor.toArgb32(), spans->coverage);
             int ialpha = qAlpha(~color);
             ushort c = qConvertRgb32To16(color);
@@ -4561,7 +4564,6 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
                 // one last pixel beyond a full word
                 *target = c + BYTE_MUL_RGB16(*target, ialpha);
             }
-            ++spans;
         }
         return;
     }
@@ -4578,6 +4580,11 @@ void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handle
 
     int coverage = 0;
     while (count) {
+        if (!spans->len) {
+            ++spans;
+            --count;
+            continue;
+        }
         int x = spans->x;
         const int y = spans->y;
         int right = x + spans->len;
@@ -4730,7 +4737,9 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    for (; count--; spans++) {
+        if (!spans->len)
+            continue;
         int x = spans->x;
         int length = spans->len;
         int sx = xoff + x;
@@ -4758,7 +4767,6 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
                 }
             }
         }
-        ++spans;
     }
 }
 
@@ -4779,7 +4787,9 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    for (; count--; spans++) {
+        if (!spans->len)
+            continue;
         int x = spans->x;
         int length = spans->len;
         int sx = xoff + x;
@@ -4807,7 +4817,6 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
                 }
             }
         }
-        ++spans;
     }
 }
 
@@ -4827,7 +4836,9 @@ static void blend_untransformed_argb(int count, const QSpan *spans, void *userDa
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    for (; count--; spans++) {
+        if (!spans->len)
+            continue;
         int x = spans->x;
         int length = spans->len;
         int sx = xoff + x;
@@ -4847,7 +4858,6 @@ static void blend_untransformed_argb(int count, const QSpan *spans, void *userDa
                 op.func(dest, src, length, coverage);
             }
         }
-        ++spans;
     }
 }
 
@@ -4920,7 +4930,12 @@ static void blend_untransformed_rgb565(int count, const QSpan *spans, void *user
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    const QSpan *end = spans + count;
+    while (spans < end) {
+        if (!spans->len) {
+            ++spans;
+            continue;
+        }
         const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
         if (coverage == 0) {
             ++spans;

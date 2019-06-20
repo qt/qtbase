@@ -77,6 +77,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qsysinfo.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/quuid.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
@@ -544,7 +545,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
     // each one has to have window class names with a unique name
     // The first instance gets the unmodified name; if the class
     // has already been registered by another instance of Qt then
-    // add an instance-specific ID, the address of the window proc.
+    // add a UUID.
     static int classExists = -1;
 
     const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
@@ -555,7 +556,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
     }
 
     if (classExists)
-        cname += QString::number(reinterpret_cast<quintptr>(proc));
+        cname += QUuid::createUuid().toString();
 
     if (d->m_registeredWindowClassNames.contains(cname))        // already registered in our list
         return cname;
