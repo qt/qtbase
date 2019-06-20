@@ -1505,7 +1505,16 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                         n -= 3;
                     node->charFormat.setProperty(QTextFormat::FontSizeAdjustment, n);
                 } else if (key == QLatin1String("face")) {
-                    node->charFormat.setFontFamily(value);
+                    if (value.contains(QLatin1Char(','))) {
+                        const QStringList values = value.split(QLatin1Char(','));
+                        QStringList families;
+                        for (const QString &family : values)
+                            families << family.trimmed();
+                        node->charFormat.setFontFamilies(families);
+                        node->charFormat.setFontFamily(families.at(0));
+                    } else {
+                        node->charFormat.setFontFamily(value);
+                    }
                 } else if (key == QLatin1String("color")) {
                     QColor c; c.setNamedColor(value);
                     if (!c.isValid())
