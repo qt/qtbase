@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -563,15 +563,15 @@ void tst_QResourceEngine::setLocale()
     // default constructed QResource gets the default locale
     QResource resource;
     resource.setFileName("aliasdir/aliasdir.txt");
-    QVERIFY(!resource.isCompressed());
+    QCOMPARE(resource.compressionAlgorithm(), QResource::NoCompression);
 
     // change the default locale and make sure it doesn't affect the resource
     QLocale::setDefault(QLocale("de_CH"));
-    QVERIFY(!resource.isCompressed());
+    QCOMPARE(resource.compressionAlgorithm(), QResource::NoCompression);
 
     // then explicitly set the locale on qresource
     resource.setLocale(QLocale("de_CH"));
-    QVERIFY(resource.isCompressed());
+    QVERIFY(resource.compressionAlgorithm() != QResource::NoCompression);
 
     // the reset the default locale back
     QLocale::setDefault(QLocale::system());

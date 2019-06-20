@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2018 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -279,14 +279,14 @@ static inline QStringList *resourceSearchPaths()
     This enum is used by compressionAlgorithm() to indicate which algorithm the
     RCC tool used to compress the payload.
 
-    \value NoCompression    Contents are not compressed (isCompressed() is false).
+    \value NoCompression    Contents are not compressed
     \value ZlibCompression  Contents are compressed using \l{zlib}{https://zlib.net} and can
                             be decompressed using the qUncompress() function.
     \value ZstdCompression  Contents are compressed using \l{zstd}{https://zstd.net}. To
                             decompress, use the \c{ZSTD_decompress} function from the zstd
                             library.
 
-    \sa compressionAlgorithm(), isCompressed()
+    \sa compressionAlgorithm()
 */
 
 class QResourcePrivate {
@@ -551,12 +551,19 @@ bool QResource::isValid() const
     \sa isDir()
 */
 
-
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
+    \obsolete
+
     Returns \c true if the resource represents a file and the data backing it
     is in a compressed format, false otherwise. If the data is compressed,
     check compressionAlgorithm() to verify what algorithm to use to decompress
     the data.
+
+    \note This function is deprecated and can be replaced with
+    \code
+      compressionAlgorithm() != NoCompression
+    \endcode
 
     \sa data(), compressionAlgorithm(), isFile()
 */
@@ -565,6 +572,7 @@ bool QResource::isCompressed() const
 {
     return compressionAlgorithm() != NoCompression;
 }
+#endif
 
 /*!
     \since 5.13
@@ -582,7 +590,7 @@ bool QResource::isCompressed() const
 
     See \l{http://facebook.github.io/zstd/zstd_manual.html}{Zstandard manual}.
 
-    \sa isCompressed(), data(), isFile()
+    \sa data(), isFile()
 */
 QResource::Compression QResource::compressionAlgorithm() const
 {
@@ -606,11 +614,11 @@ qint64 QResource::size() const
 
 /*!
     Returns direct access to a read only segment of data that this resource
-    represents. If the resource is compressed the data returns is
-    compressed and qUncompress() must be used to access the data. If the
-    resource is a directory \nullptr is returned.
+    represents. If the resource is compressed the data returned is compressed
+    and the appropriate library functions must be used to access the data. If
+    the resource is a directory \nullptr is returned.
 
-    \sa size(), isCompressed(), isFile()
+    \sa size(), compressionAlgorithm(), isFile()
 */
 
 const uchar *QResource::data() const
@@ -1366,9 +1374,15 @@ bool QResourceFileEngine::open(QIODevice::OpenMode flags)
         qWarning("QResourceFileEngine::open: Missing file name");
         return false;
     }
-    if(flags & QIODevice::WriteOnly)
+    if (flags & QIODevice::WriteOnly)
         return false;
-    d->uncompress();
+    if (d->resource.compressionAlgorithm() != QResource::NoCompression) {
+        d->uncompress();
+        if (d->uncompressed.isNull()) {
+            d->errorString = QSystemError::stdString(EIO);
+            return false;
+        }
+    }
     if (!d->resource.isValid()) {
         d->errorString = QSystemError::stdString(ENOENT);
         return false;
@@ -1395,7 +1409,7 @@ qint64 QResourceFileEngine::read(char *data, qint64 len)
         len = size()-d->offset;
     if(len <= 0)
         return 0;
-    if(d->resource.isCompressed())
+    if (!d->uncompressed.isNull())
         memcpy(data, d->uncompressed.constData()+d->offset, len);
     else
         memcpy(data, d->resource.data()+d->offset, len);
@@ -1431,9 +1445,9 @@ bool QResourceFileEngine::link(const QString &)
 qint64 QResourceFileEngine::size() const
 {
     Q_D(const QResourceFileEngine);
-    if(!d->resource.isValid())
+    if (!d->resource.isValid())
         return 0;
-    if (d->resource.isCompressed()) {
+    if (d->resource.compressionAlgorithm() != QResource::NoCompression) {
         d->uncompress();
         return d->uncompressed.size();
     }
@@ -1596,7 +1610,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
     Q_UNUSED(flags);
 
     qint64 max = resource.size();
-    if (resource.isCompressed()) {
+    if (resource.compressionAlgorithm() != QResource::NoCompression) {
         uncompress();
         max = uncompressed.size();
     }
@@ -1609,7 +1623,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
     }
 
     const uchar *address = resource.data();
-    if (resource.isCompressed())
+    if (resource.compressionAlgorithm() != QResource::NoCompression)
         address = reinterpret_cast<const uchar *>(uncompressed.constData());
 
     return const_cast<uchar *>(address) + offset;

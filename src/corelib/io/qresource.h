@@ -72,7 +72,6 @@ public:
 
     bool isValid() const;
 
-    bool isCompressed() const;
     Compression compressionAlgorithm() const;
     qint64 size() const;
     const uchar *data() const;
@@ -83,6 +82,10 @@ public:
     static void addSearchPath(const QString &path);
     QT_DEPRECATED_X("Use QDir::searchPaths() instead")
     static QStringList searchPaths();
+#endif
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use QResource::compressionAlgorithm() instead")
+    bool isCompressed() const;
 #endif
 
     static bool registerResource(const QString &rccFilename, const QString &resourceRoot=QString());

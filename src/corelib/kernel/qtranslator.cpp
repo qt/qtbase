@@ -528,7 +528,8 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         // memory, so no need to use QFile to copy it again.
         Q_ASSERT(!d->resource);
         d->resource = new QResource(realname);
-        if (resource->isValid() && !resource->isCompressed() && resource->size() >= MagicLength
+        if (resource->isValid() && resource->compressionAlgorithm() == QResource::NoCompression
+                && resource->size() >= MagicLength
                 && !memcmp(resource->data(), magic, MagicLength)) {
             d->unmapLength = resource->size();
             d->unmapPointer = reinterpret_cast<char *>(const_cast<uchar *>(resource->data()));
