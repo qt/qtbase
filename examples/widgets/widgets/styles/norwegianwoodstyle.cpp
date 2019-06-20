@@ -58,6 +58,7 @@
 NorwegianWoodStyle::NorwegianWoodStyle() :
     QProxyStyle(QStyleFactory::create("windows"))
 {
+    setObjectName("NorwegianWood");
 }
 
 //! [0]

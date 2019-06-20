@@ -50,11 +50,14 @@
 
 #include <QApplication>
 
+#include "norwegianwoodstyle.h"
 #include "widgetgallery.h"
 
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(styles);
+
+    QApplication::setStyle(new NorwegianWoodStyle);
 
     QApplication app(argc, argv);
     WidgetGallery gallery;
