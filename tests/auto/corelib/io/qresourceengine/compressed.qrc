@@ -1,0 +1,5 @@
+<RCC version="1.0">
+    <qresource>
+        <file>zero.txt</file>
+    </qresource>
+</RCC>

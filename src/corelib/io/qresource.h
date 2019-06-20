@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -75,6 +76,8 @@ public:
     Compression compressionAlgorithm() const;
     qint64 size() const;
     const uchar *data() const;
+    qint64 uncompressedSize() const;
+    QByteArray uncompressedData() const;
     QDateTime lastModified() const;
 
 #if QT_DEPRECATED_SINCE(5, 13)
