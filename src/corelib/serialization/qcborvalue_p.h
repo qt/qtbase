@@ -236,6 +236,15 @@ public:
         elements.append(QtCbor::Element(addByteData(data, len), type,
                                         QtCbor::Element::HasByteData | extraFlags));
     }
+    void appendAsciiString(const QString &s);
+    void appendAsciiString(const char *str, qsizetype len)
+    {
+        appendByteData(str, len, QCborValue::String, QtCbor::Element::StringIsAscii);
+    }
+    void appendUtf8String(const char *str, qsizetype len)
+    {
+        appendByteData(str, len, QCborValue::String);
+    }
     void append(QLatin1String s)
     {
         if (!QtPrivate::isAscii(s))
