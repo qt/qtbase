@@ -1131,6 +1131,8 @@ function(add_qt_module target)
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
         ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
@@ -1814,6 +1816,10 @@ function(add_qt_tool name)
         DISABLE_AUTOGEN_TOOLS ${disable_autogen_tools}
     )
     qt_internal_add_target_aliases("${name}")
+
+    set_target_properties("${name}" PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+    )
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
         # Assign a tool to an export set, and mark the module to which the tool belongs.
