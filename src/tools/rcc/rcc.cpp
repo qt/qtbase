@@ -58,7 +58,7 @@ enum {
     CONSTANT_COMPRESSTHRESHOLD_DEFAULT = 70
 };
 
-#if QT_CONFIG(zstd)
+#if QT_CONFIG(zstd) && QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zstd
 #elif !defined(QT_NO_COMPRESS)
 #  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zlib
