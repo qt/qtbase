@@ -55,6 +55,7 @@ public:
     QNSWindowBackingStore(QWindow *window);
     ~QNSWindowBackingStore();
 
+    void resize(const QSize &size, const QRegion &staticContents) override;
     void flush(QWindow *, const QRegion &, const QPoint &) override;
 
 private:

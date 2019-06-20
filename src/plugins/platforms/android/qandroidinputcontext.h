@@ -151,6 +151,9 @@ private slots:
 private:
     void sendInputMethodEvent(QInputMethodEvent *event);
     QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQuery(Qt::InputMethodQueries queries = Qt::ImQueryAll);
+    bool focusObjectIsComposing() const;
+    void focusObjectStartComposing();
+    bool focusObjectStopComposing();
 
 private:
     ExtractedText m_extractedText;
@@ -158,9 +161,8 @@ private:
     int m_composingTextStart;
     int m_composingCursor;
     QMetaObject::Connection m_updateCursorPosConnection;
-    bool m_blockUpdateSelection;
     HandleModes m_handleMode;
-    QAtomicInt m_batchEditNestingLevel;
+    int m_batchEditNestingLevel;
     QObject *m_focusObject;
     QTimer m_hideCursorHandleTimer;
 };
