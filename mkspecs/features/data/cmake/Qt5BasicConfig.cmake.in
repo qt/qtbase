@@ -317,6 +317,22 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     list(REMOVE_DUPLICATES Qt5$${CMAKE_MODULE_NAME}_EXECUTABLE_COMPILE_FLAGS)
 !!ENDIF // TEMPLATE != aux
 
+    # It can happen that the same FooConfig.cmake file is included when calling find_package()
+    # on some Qt component. An example of that is when using a Qt static build with auto inclusion
+    # of plugins:
+    #
+    # Qt5WidgetsConfig.cmake -> Qt5GuiConfig.cmake -> Qt5Gui_QSvgIconPlugin.cmake ->
+    # Qt5SvgConfig.cmake -> Qt5WidgetsConfig.cmake ->
+    # finish processing of second Qt5WidgetsConfig.cmake ->
+    # return to first Qt5WidgetsConfig.cmake ->
+    # add_library cannot create imported target "Qt5::Widgets".
+    #
+    # Make sure to return early in the original Config inclusion, because the target has already
+    # been defined as part of the second inclusion.
+    if(TARGET Qt5::$${CMAKE_MODULE_NAME})
+        return()
+    endif()
+
     set(_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES \"$${CMAKE_QT5_MODULE_DEPS}\")
 
 !!IF !isEmpty(CMAKE_INTERFACE_QT5_MODULE_DEPS)
