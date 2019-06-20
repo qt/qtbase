@@ -688,19 +688,6 @@ extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
-# special case begin
-# qpa headers are expected to be located right next to QtGui's private
-# headers. So a private QtGui header is #include <private/qfoo_p.h> and
-# a qpa header is #include <qpa/qplatformfoo.h>, both of them implying
-# linkage against Qt::GuiPrivate.
-qt_read_headers_pri("Gui" "module_headers")
-
-# No need to copy these in a non-prefix build, syncqt.pl takes care of generating the files
-# in the build dir.
-qt_install(FILES ${module_headers_qpa}
-    DESTINATION ${INSTALL_INCLUDEDIR}/QtGui/${PROJECT_VERSION}/QtGui/qpa)
-# special case end
-
 qt_create_tracepoints(Gui qtgui.tracepoints)
 add_qt_docs(
     doc/qtgui.qdocconf

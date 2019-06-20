@@ -1118,6 +1118,9 @@ function(add_qt_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
+        if(module_headers_qpa)
+            qt_install(FILES ${module_headers_qpa} DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/qpa)
+        endif()
     endif()
 
     # Plugin types associated to a module
