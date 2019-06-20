@@ -75,23 +75,17 @@ static QString qt_strippedText(QString s)
 }
 
 
-QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
-                                   visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
-                                   iconVisibleInMenu(-1),
-                                   shortcutVisibleInContextMenu(-1),
-                                   menuRole(QAction::TextHeuristicRole),
-                                   priority(QAction::NormalPriority)
-{
-#ifndef QT_NO_SHORTCUT
-    shortcutId = 0;
-    shortcutContext = Qt::WindowShortcut;
-    autorepeat = true;
+QActionPrivate::QActionPrivate() :
+#if QT_CONFIG(shortcut)
+    autorepeat(1),
 #endif
+    enabled(1), forceDisabled(0), visible(1), forceInvisible(0), checkable(0),
+    checked(0), separator(0), fontSet(false),
+    iconVisibleInMenu(-1), shortcutVisibleInContextMenu(-1)
+{
 }
 
-QActionPrivate::~QActionPrivate()
-{
-}
+QActionPrivate::~QActionPrivate() = default;
 
 bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
 {
@@ -127,7 +121,7 @@ void QActionPrivate::sendDataChanged()
     emit q->changed();
 }
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 void QActionPrivate::redoGrab(QShortcutMap &map)
 {
     Q_Q(QAction);
@@ -345,7 +339,7 @@ QWidget *QAction::parentWidget() const
     QObject *ret = parent();
     while (ret && !ret->isWidgetType())
         ret = ret->parent();
-    return (QWidget*)ret;
+    return static_cast<QWidget*>(ret);
 }
 
 /*!
@@ -374,7 +368,7 @@ QList<QGraphicsWidget *> QAction::associatedGraphicsWidgets() const
 }
 #endif
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 /*!
     \property QAction::shortcut
     \brief the action's primary shortcut key
@@ -573,7 +567,7 @@ QAction::~QAction()
 #endif
     if (d->group)
         d->group->removeAction(this);
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     if (d->shortcutId && qApp) {
         QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(d->shortcutId, this);
         for(int i = 0; i < d->alternateShortcutIds.count(); ++i) {
@@ -1027,7 +1021,7 @@ void QAction::setEnabled(bool b)
         return;
     QAPP_CHECK("setEnabled");
     d->enabled = b;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     d->setShortcutEnabled(b, QGuiApplicationPrivate::instance()->shortcutMap);
 #endif
     d->sendDataChanged();
@@ -1080,7 +1074,7 @@ bool QAction::isVisible() const
 bool
 QAction::event(QEvent *e)
 {
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     if (e->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         Q_ASSERT_X(se->key() == d_func()->shortcut || d_func()->alternateShortcuts.contains(se->key()),
@@ -1351,7 +1345,7 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QAction *action)
             d << " toolTip=" << action->toolTip();
         if (action->isCheckable())
             d << " checked=" << action->isChecked();
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         if (!action->shortcut().isEmpty())
             d << " shortcut=" << action->shortcut();
 #endif
