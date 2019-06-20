@@ -80,7 +80,7 @@ public:
 
 private:
     static void setTexture(QPalette &palette, QPalette::ColorRole role,
-                           const QPixmap &pixmap);
+                           const QImage &image);
     static QPainterPath roundRectPath(const QRect &rect);
 };
 //! [0]
