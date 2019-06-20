@@ -27,9 +27,9 @@ You may use vcpkg to install dependencies needed to build QtBase.
   * ```git clone -b qt https://github.com/tronical/vcpkg```
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
   * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``qt-x64-windows-static`` or ``qt-x86-windows-static``
-  * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl zstd``
-  * When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake``
-    Previously CMAKE_PREFIX_PATH was mentioned instead of CMAKE_TOOLCHAIN_FILE. Setting CMAKE_PREFIX_PATH to the vcpkg installed folder is not enough, because then find_package is not overridden by vcpkg and cmake might not propagate all library dependencies for static packages (freetype is one such package).
+  * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
+  * Build Qt dependencies:  ``vcpkg install @qt-packages-windows.txt``
+  * When running cmake in qtbase, support for vcpkg will be picked up automatically when the VCPKG_ROOT environment variable is set.
 
 # Building against homebrew on macOS
 
@@ -138,11 +138,12 @@ Vcpkg for Android can be set up using the following steps:
   * ```git clone -b qt https://github.com/tronical/vcpkg```
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
   * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``arm-android``
+  * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
   * Set the ``ANDROID_NDK_HOME`` environment variable to the path where you have installed the Android NDK.
   * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
-  * Build Qt dependencies:  ``vcpkg install zlib pcre2 harfbuzz freetype openssl zstd``
+  * Build Qt dependencies:  ``vcpkg install @qt-packages-android.txt``
 
-When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DANDROID_STL=c++_shared -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
+When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DANDROID_STL=c++_shared -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
 
 # Debugging CMake files
 

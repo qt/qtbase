@@ -1,7 +1,23 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
-    set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
+if(DEFINED ENV{VCPKG_ROOT})
+    set(vcpkg_toolchain_file "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+    get_filename_component(vcpkg_toolchain_file "${vcpkg_toolchain_file}" ABSOLUTE)
+
+    if(DEFINED CMAKE_TOOLCHAIN_FILE)
+        get_filename_component(supplied_toolchain_file "${CMAKE_TOOLCHAIN_FILE}" ABSOLUTE)
+        if(NOT supplied_toolchain_file STREQUAL vcpkg_toolchain_file)
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${CMAKE_TOOLCHAIN_FILE}" CACHE STRING "")
+        endif()
+        unset(supplied_toolchain_file)
+    endif()
+    set(CMAKE_TOOLCHAIN_FILE "${vcpkg_toolchain_file}" CACHE STRING "" FORCE)
+    message(STATUS "Using vcpkg from $ENV{VCPKG_ROOT}")
+    if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
+        set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
+        message(STATUS "Using vcpkg triplet ${VCPKG_TARGET_TRIPLET}")
+    endif()
+    unset(vcpkg_toolchain_file)
 endif()
 
 project(QtBase
