@@ -82,7 +82,7 @@ Q_CORE_EXPORT QBasicAtomicPointer<QSignalSpyCallbackSet> qt_signal_spy_callback_
 
 void qt_register_signal_spy_callbacks(QSignalSpyCallbackSet *callback_set)
 {
-    qt_signal_spy_callback_set.store(callback_set);
+    qt_signal_spy_callback_set.storeRelease(callback_set);
 }
 
 QDynamicMetaObjectData::~QDynamicMetaObjectData()
@@ -3696,7 +3696,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                                                 signal_index, argv);
     }
 
-    const QSignalSpyCallbackSet *signal_spy_set = callbacks_enabled ? qt_signal_spy_callback_set.load() : nullptr;
+    const QSignalSpyCallbackSet *signal_spy_set = callbacks_enabled ? qt_signal_spy_callback_set.loadAcquire() : nullptr;
 
     void *empty_argv[] = { nullptr };
     if (!argv)
