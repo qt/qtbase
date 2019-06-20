@@ -61,6 +61,7 @@
             "export": "",
             "headers": ["bcm_host.h"],
             "sources": [
+                { "type": "pkgConfig", "args": "bcm_host" },
                 { "type": "makeSpec", "spec": "BCM_HOST" }
             ]
         },
