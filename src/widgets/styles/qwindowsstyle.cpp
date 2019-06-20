@@ -244,11 +244,12 @@ void QWindowsStyle::polish(QApplication *app)
     if (!proxy()->styleHint(SH_UnderlineShortcut, 0) && app)
         app->installEventFilter(this);
 
-    d->activeCaptionColor = app->palette().highlight().color();
-    d->activeGradientCaptionColor = app->palette().highlight() .color();
-    d->inactiveCaptionColor = app->palette().dark().color();
-    d->inactiveGradientCaptionColor = app->palette().dark().color();
-    d->inactiveCaptionText = app->palette().window().color();
+    const auto &palette = QGuiApplication::palette();
+    d->activeGradientCaptionColor = palette.highlight().color();
+    d->activeCaptionColor = d->activeGradientCaptionColor;
+    d->inactiveGradientCaptionColor = palette.dark().color();
+    d->inactiveCaptionColor = d->inactiveGradientCaptionColor;
+    d->inactiveCaptionText = palette.window().color();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) //fetch native title bar colors
     if(app->desktopSettingsAware()){

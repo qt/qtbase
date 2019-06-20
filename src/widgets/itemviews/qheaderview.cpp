@@ -2896,7 +2896,7 @@ bool QHeaderView::viewportEvent(QEvent *e)
     case QEvent::Wheel: {
         QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea *>(parentWidget());
         if (asa)
-            return QApplication::sendEvent(asa->viewport(), e);
+            return QCoreApplication::sendEvent(asa->viewport(), e);
         break; }
     default:
         break;

@@ -359,7 +359,7 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
                     w->d_func()->setWSGeometry();
                 w->d_func()->setDirtyOpaqueRegion();
                 QMoveEvent e(r.topLeft(), oldp);
-                QApplication::sendEvent(w, &e);
+                QCoreApplication::sendEvent(w, &e);
             }
         }
     }
@@ -435,13 +435,13 @@ void QWidget::setEditFocus(bool on)
     if (!on && QWidgetPrivate::editingWidget == f) {
         QWidgetPrivate::editingWidget = 0;
         QEvent event(QEvent::LeaveEditFocus);
-        QApplication::sendEvent(f, &event);
-        QApplication::sendEvent(f->style(), &event);
+        QCoreApplication::sendEvent(f, &event);
+        QCoreApplication::sendEvent(f->style(), &event);
     } else if (on) {
         QWidgetPrivate::editingWidget = f;
         QEvent event(QEvent::EnterEditFocus);
-        QApplication::sendEvent(f, &event);
-        QApplication::sendEvent(f->style(), &event);
+        QCoreApplication::sendEvent(f, &event);
+        QCoreApplication::sendEvent(f->style(), &event);
     }
 }
 #endif
@@ -1223,8 +1223,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         q->create();
 
     QEvent e(QEvent::Create);
-    QApplication::sendEvent(q, &e);
-    QApplication::postEvent(q, new QEvent(QEvent::PolishRequest));
+    QCoreApplication::sendEvent(q, &e);
+    QCoreApplication::postEvent(q, new QEvent(QEvent::PolishRequest));
 
     extraPaintEngine = 0;
 
@@ -1624,7 +1624,7 @@ QWidget::~QWidget()
     // Remove all shortcuts grabbed by this
     // widget, unless application is closing
     if (!QApplicationPrivate::is_app_closing && testAttribute(Qt::WA_GrabbedShortcut))
-        qApp->d_func()->shortcutMap.removeShortcut(0, this, QKeySequence());
+        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(0, this, QKeySequence());
 #endif
 
     // delete layout while we still are a valid widget
@@ -1732,7 +1732,7 @@ QWidget::~QWidget()
     if (!d->children.isEmpty())
         d->deleteChildren();
 
-    QApplication::removePostedEvents(this);
+    QCoreApplication::removePostedEvents(this);
 
     QT_TRY {
         destroy();                                        // platform-dependent cleanup
@@ -2044,7 +2044,7 @@ void QWidgetPrivate::propagatePaletteChange()
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 
     QEvent pc(QEvent::PaletteChange);
-    QApplication::sendEvent(q, &pc);
+    QCoreApplication::sendEvent(q, &pc);
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget*>(children.at(i));
         if (w && (!w->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
@@ -2848,7 +2848,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
 #endif
 
     QEvent e(QEvent::StyleChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 
 #ifndef QT_NO_STYLE_STYLESHEET
     // dereference the old stylesheet style
@@ -3066,7 +3066,7 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
 {
     QWindowStateChangeEvent e(Qt::WindowStates(data->window_state), true);
     data->window_state  = newstate;
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -3128,7 +3128,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         activateWindow();
 
     QWindowStateChangeEvent e(oldstate);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -3354,7 +3354,7 @@ void QWidget::insertAction(QAction *before, QAction *action)
     apriv->widgets.append(this);
 
     QActionEvent e(QEvent::ActionAdded, action, before);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -3392,7 +3392,7 @@ void QWidget::removeAction(QAction *action)
 
     if (d->actions.removeAll(action)) {
         QActionEvent e(QEvent::ActionRemoved, action);
-        QApplication::sendEvent(this, &e);
+        QCoreApplication::sendEvent(this, &e);
     }
 }
 
@@ -3499,7 +3499,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
     }
 #endif //QT_NO_IM
     QEvent e(QEvent::EnabledChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 }
 
 /*!
@@ -4566,7 +4566,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     the "color", "background-color", "selection-color",
     "selection-background-color" and "alternate-background-color".
 
-    \sa QApplication::palette(), QWidget::font(), {Qt Style Sheets}
+    \sa QGuiApplication::palette(), QWidget::font(), {Qt Style Sheets}
 */
 const QPalette &QWidget::palette() const
 {
@@ -4629,7 +4629,7 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
             )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
-                if (!naturalPalette.isCopyOf(QApplication::palette())) {
+                if (!naturalPalette.isCopyOf(QGuiApplication::palette())) {
                     QPalette inheritedPalette = p->palette();
                     inheritedPalette.resolve(inheritedMask);
                     naturalPalette = inheritedPalette.resolve(naturalPalette);
@@ -4895,7 +4895,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
 #endif
 
     QEvent e(QEvent::FontChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 }
 
 void QWidgetPrivate::setLayoutDirection_helper(Qt::LayoutDirection direction)
@@ -4913,14 +4913,14 @@ void QWidgetPrivate::setLayoutDirection_helper(Qt::LayoutDirection direction)
         }
     }
     QEvent e(QEvent::LayoutDirectionChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 }
 
 void QWidgetPrivate::resolveLayoutDirection()
 {
     Q_Q(const QWidget);
     if (!q->testAttribute(Qt::WA_SetLayoutDirection))
-        setLayoutDirection_helper(q->isWindow() ? QApplication::layoutDirection() : q->parentWidget()->layoutDirection());
+        setLayoutDirection_helper(q->isWindow() ? QGuiApplication::layoutDirection() : q->parentWidget()->layoutDirection());
 }
 
 /*!
@@ -5040,7 +5040,7 @@ void QWidget::setCursor(const QCursor &cursor)
     d->setCursor_sys(cursor);
 
     QEvent event(QEvent::CursorChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 }
 
 void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
@@ -5062,7 +5062,7 @@ void QWidget::unsetCursor()
     d->unsetCursor_sys();
 
     QEvent event(QEvent::CursorChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 }
 
 void QWidgetPrivate::unsetCursor_sys()
@@ -5260,7 +5260,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
 static void sendResizeEvents(QWidget *target)
 {
     QResizeEvent e(target->size(), QSize());
-    QApplication::sendEvent(target, &e);
+    QCoreApplication::sendEvent(target, &e);
 
     const QObjectList children = target->children();
     for (int i = 0; i < children.size(); ++i) {
@@ -6014,7 +6014,7 @@ void QWidgetPrivate::setLocale_helper(const QLocale &loc, bool forceUpdate)
         }
     }
     QEvent e(QEvent::LocaleChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 }
 
 void QWidget::setLocale(const QLocale &locale)
@@ -6189,7 +6189,7 @@ void QWidget::setWindowIconText(const QString &iconText)
     d->setWindowIconText_helper(iconText);
 
     QEvent e(QEvent::IconTextChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 
     emit windowIconTextChanged(iconText);
 }
@@ -6213,7 +6213,7 @@ void QWidget::setWindowTitle(const QString &title)
     d->setWindowTitle_helper(title);
 
     QEvent e(QEvent::WindowTitleChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 
     emit windowTitleChanged(title);
 }
@@ -6251,11 +6251,11 @@ void QWidgetPrivate::setWindowIcon_helper()
     // QWidgetWindow to the top level QWidget ensures that the event reaches
     // the top level anyhow
     if (!q->windowHandle())
-        QApplication::sendEvent(q, &e);
+        QCoreApplication::sendEvent(q, &e);
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(children.at(i));
         if (w && !w->isWindow())
-            QApplication::sendEvent(w, &e);
+            QCoreApplication::sendEvent(w, &e);
     }
 }
 
@@ -6598,7 +6598,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
             if (reason != Qt::NoFocusReason) {
                 QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, reason);
-                QApplication::sendEvent(prev, &focusAboutToChange);
+                QCoreApplication::sendEvent(prev, &focusAboutToChange);
             }
         }
 
@@ -6625,9 +6625,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
                     // Send event to self
                     QFocusEvent event(QEvent::FocusOut, reason);
                     QPointer<QWidget> that = previousProxyFocus;
-                    QApplication::sendEvent(previousProxyFocus, &event);
+                    QCoreApplication::sendEvent(previousProxyFocus, &event);
                     if (that)
-                        QApplication::sendEvent(that->style(), &event);
+                        QCoreApplication::sendEvent(that->style(), &event);
                 }
                 if (!isHidden()) {
 #if QT_CONFIG(graphicsview)
@@ -6639,9 +6639,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
                     // Send event to self
                     QFocusEvent event(QEvent::FocusIn, reason);
                     QPointer<QWidget> that = f;
-                    QApplication::sendEvent(f, &event);
+                    QCoreApplication::sendEvent(f, &event);
                     if (that)
-                        QApplication::sendEvent(that->style(), &event);
+                        QCoreApplication::sendEvent(that->style(), &event);
                 }
             }
         }
@@ -6748,7 +6748,7 @@ void QWidget::clearFocus()
             QGuiApplication::inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
-        QApplication::sendEvent(this, &focusAboutToChange);
+        QCoreApplication::sendEvent(this, &focusAboutToChange);
     }
 
     QWidget *w = this;
@@ -7395,11 +7395,11 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
         if (isMove) {
             QMoveEvent e(q->pos(), oldPos);
-            QApplication::sendEvent(q, &e);
+            QCoreApplication::sendEvent(q, &e);
         }
         if (isResize) {
             QResizeEvent e(r.size(), olds);
-            QApplication::sendEvent(q, &e);
+            QCoreApplication::sendEvent(q, &e);
             if (q->windowHandle())
                 q->update();
         }
@@ -7697,13 +7697,13 @@ void QWidgetPrivate::updateContentsRect()
     if (q->isVisible()) {
         q->update();
         QResizeEvent e(q->data->crect.size(), q->data->crect.size());
-        QApplication::sendEvent(q, &e);
+        QCoreApplication::sendEvent(q, &e);
     } else {
         q->setAttribute(Qt::WA_PendingResizeEvent, true);
     }
 
     QEvent e(QEvent::ContentsRectChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 }
 
 /*!
@@ -7999,13 +7999,13 @@ void QWidgetPrivate::sendPendingMoveAndResizeEvents(bool recursive, bool disable
 
     if (q->testAttribute(Qt::WA_PendingMoveEvent)) {
         QMoveEvent e(data.crect.topLeft(), data.crect.topLeft());
-        QApplication::sendEvent(q, &e);
+        QCoreApplication::sendEvent(q, &e);
         q->setAttribute(Qt::WA_PendingMoveEvent, false);
     }
 
     if (q->testAttribute(Qt::WA_PendingResizeEvent)) {
         QResizeEvent e(data.crect.size(), QSize());
-        QApplication::sendEvent(q, &e);
+        QCoreApplication::sendEvent(q, &e);
         q->setAttribute(Qt::WA_PendingResizeEvent, false);
     }
 
@@ -8115,7 +8115,7 @@ void QWidgetPrivate::show_helper()
 
     // send the show event before showing the window
     QShowEvent showEvent;
-    QApplication::sendEvent(q, &showEvent);
+    QCoreApplication::sendEvent(q, &showEvent);
 
     show_sys();
 
@@ -8138,7 +8138,7 @@ void QWidgetPrivate::show_helper()
     // is spinnning; otherwise it might not show up on particular platforms.
     // This makes QSplashScreen behave the same on all platforms.
     if (!qApp->d_func()->in_exec && q->windowType() == Qt::SplashScreen)
-        QApplication::processEvents();
+        QCoreApplication::processEvents();
 
     data.in_show = false;  // reset qws optimization
 }
@@ -8164,9 +8164,9 @@ void QWidgetPrivate::show_sys()
     }
 
     if (renderToTexture && !q->isWindow())
-        QApplication::postEvent(q->parentWidget(), new QUpdateLaterEvent(q->geometry()));
+        QCoreApplication::postEvent(q->parentWidget(), new QUpdateLaterEvent(q->geometry()));
     else
-        QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
+        QCoreApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
 
     if ((!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
             || q->testAttribute(Qt::WA_OutsideWSRange)) {
@@ -8254,7 +8254,7 @@ void QWidgetPrivate::hide_helper()
     }
 
     QHideEvent hideEvent;
-    QApplication::sendEvent(q, &hideEvent);
+    QCoreApplication::sendEvent(q, &hideEvent);
     hideChildren(false);
 
     // next bit tries to move the focus if the focus widget is now
@@ -8425,7 +8425,7 @@ void QWidgetPrivate::setVisible(bool visible)
         }
 
         QEvent showToParentEvent(QEvent::ShowToParent);
-        QApplication::sendEvent(q, &showToParentEvent);
+        QCoreApplication::sendEvent(q, &showToParentEvent);
     } else { // hide
 #if 0 // Used to be included in Qt4 for Q_WS_WIN
         // reset WS_DISABLED style in a Blocked window
@@ -8456,11 +8456,11 @@ void QWidgetPrivate::setVisible(bool visible)
             if (q->parentWidget()->d_func()->layout)
                 q->parentWidget()->d_func()->layout->invalidate();
             else if (q->parentWidget()->isVisible())
-                QApplication::postEvent(q->parentWidget(), new QEvent(QEvent::LayoutRequest));
+                QCoreApplication::postEvent(q->parentWidget(), new QEvent(QEvent::LayoutRequest));
         }
 
         QEvent hideToParentEvent(QEvent::HideToParent);
-        QApplication::sendEvent(q, &hideToParentEvent);
+        QCoreApplication::sendEvent(q, &hideToParentEvent);
     }
 }
 
@@ -8535,7 +8535,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
         if (spontaneous) {
             QApplication::sendSpontaneousEvent(widget, &e);
         } else {
-            QApplication::sendEvent(widget, &e);
+            QCoreApplication::sendEvent(widget, &e);
             if (widget->internalWinId()
                 && widget->testAttribute(Qt::WA_DontCreateNativeAncestors)) {
                 // hide_sys() on an ancestor won't have any affect on this
@@ -8570,7 +8570,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
         if (mode == CloseWithSpontaneousEvent)
             QApplication::sendSpontaneousEvent(q, &e);
         else
-            QApplication::sendEvent(q, &e);
+            QCoreApplication::sendEvent(q, &e);
         if (!that.isNull() && !e.isAccepted()) {
             data.is_closing = 0;
             return false;
@@ -9085,7 +9085,7 @@ bool QWidget::event(QEvent *event)
         setAttribute(Qt::WA_WState_Polished);
         if (!QApplication::font(this).isCopyOf(QApplication::font()))
             d->resolveFont();
-        if (!QApplication::palette(this).isCopyOf(QApplication::palette()))
+        if (!QApplication::palette(this).isCopyOf(QGuiApplication::palette()))
             d->resolvePalette();
     }
         break;
@@ -9109,7 +9109,7 @@ bool QWidget::event(QEvent *event)
 #if QT_CONFIG(statustip)
         if (d->statusTip.size()) {
             QStatusTipEvent tip(d->statusTip);
-            QApplication::sendEvent(const_cast<QWidget *>(this), &tip);
+            QCoreApplication::sendEvent(const_cast<QWidget *>(this), &tip);
         }
 #endif
         enterEvent(event);
@@ -9120,7 +9120,7 @@ bool QWidget::event(QEvent *event)
         if (d->statusTip.size()) {
             QString empty;
             QStatusTipEvent tip(empty);
-            QApplication::sendEvent(const_cast<QWidget *>(this), &tip);
+            QCoreApplication::sendEvent(const_cast<QWidget *>(this), &tip);
         }
 #endif
         leaveEvent(event);
@@ -9271,7 +9271,7 @@ bool QWidget::event(QEvent *event)
         for (int i = 0; i < childList.size(); ++i) {
             QWidget *w = qobject_cast<QWidget *>(childList.at(i));
             if (w && w->isVisible() && !w->isWindow())
-                QApplication::sendEvent(w, event);
+                QCoreApplication::sendEvent(w, event);
         }
         break; }
 
@@ -9282,7 +9282,7 @@ bool QWidget::event(QEvent *event)
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
                 if (o)
-                    QApplication::sendEvent(o, event);
+                    QCoreApplication::sendEvent(o, event);
             }
         }
         update();
@@ -9321,7 +9321,7 @@ bool QWidget::event(QEvent *event)
                     QWidget *w  = static_cast<QWidget *>(o);
                     // do not forward the event to child windows; QApplication does this for us
                     if (!w->isWindow())
-                        QApplication::sendEvent(w, event);
+                        QCoreApplication::sendEvent(w, event);
                 }
             }
         }
@@ -9373,7 +9373,7 @@ bool QWidget::event(QEvent *event)
             for (int i = 0; i < childList.size(); ++i) {
                 QWidget *w = qobject_cast<QWidget *>(childList.at(i));
                 if (w && w->isVisible() && !w->isWindow())
-                    QApplication::sendEvent(w, event);
+                    QCoreApplication::sendEvent(w, event);
             }
             break;
         }
@@ -9482,8 +9482,8 @@ void QWidget::changeEvent(QEvent * event)
         break;
 
     case QEvent::ThemeChange:
-        if (QApplication::desktopSettingsAware() && windowType() != Qt::Desktop
-            && qApp && !QApplication::closingDown()) {
+        if (QGuiApplication::desktopSettingsAware() && windowType() != Qt::Desktop
+            && qApp && !QCoreApplication::closingDown()) {
             if (testAttribute(Qt::WA_WState_Polished))
                 QApplication::style()->unpolish(this);
             if (testAttribute(Qt::WA_WState_Polished))
@@ -10550,7 +10550,7 @@ void QWidgetPrivate::updateGeometry_helper(bool forceUpdate)
             if (parent->d_func()->layout)
                 parent->d_func()->layout->invalidate();
             else if (parent->isVisible())
-                QApplication::postEvent(parent, new QEvent(QEvent::LayoutRequest));
+                QCoreApplication::postEvent(parent, new QEvent(QEvent::LayoutRequest));
         }
     }
 }
@@ -10704,7 +10704,7 @@ static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget)
     QWidgetPrivate *d = QWidgetPrivate::get(widget);
     if (d->renderToTexture) {
         QEvent e(QEvent::WindowChangeInternal);
-        QApplication::sendEvent(widget, &e);
+        QCoreApplication::sendEvent(widget, &e);
     }
 
     for (int i = 0; i < d->children.size(); ++i) {
@@ -10753,7 +10753,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
 
     if (newParent && parent && !desktopWidget) {
-        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
+        if (testAttribute(Qt::WA_NativeWindow) && !QCoreApplication::testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
             parent->d_func()->enforceNativeChildren();
         else if (parent->d_func()->nativeChildrenForced() || parent->testAttribute(Qt::WA_PaintOnScreen))
             setAttribute(Qt::WA_NativeWindow);
@@ -10766,7 +10766,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         }
         if (newParent) {
             QEvent e(QEvent::ParentAboutToChange);
-            QApplication::sendEvent(this, &e);
+            QCoreApplication::sendEvent(this, &e);
         }
     }
     if (newParent && isAncestorOf(focusWidget()))
@@ -10839,7 +10839,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         // send and post remaining QObject events
         if (parent && d->sendChildEvents) {
             QChildEvent e(QEvent::ChildAdded, this);
-            QApplication::sendEvent(parent, &e);
+            QCoreApplication::sendEvent(parent, &e);
         }
 
 //### already hidden above ---> must probably do something smart on the mac
@@ -10857,7 +10857,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         }
 
         QEvent e(QEvent::ParentChange);
-        QApplication::sendEvent(this, &e);
+        QCoreApplication::sendEvent(this, &e);
     }
 #ifndef QT_NO_OPENGL
     //renderToTexture widgets also need to know when their top-level window changes
@@ -11220,7 +11220,7 @@ void QWidgetPrivate::update(T r)
         return;
 
     if (q->testAttribute(Qt::WA_WState_InPaintEvent)) {
-        QApplication::postEvent(q, new QUpdateLaterEvent(clipped));
+        QCoreApplication::postEvent(q, new QUpdateLaterEvent(clipped));
         return;
     }
 
@@ -11257,7 +11257,7 @@ void QWidgetPrivate::macUpdateSizeAttribute()
 {
     Q_Q(QWidget);
     QEvent event(QEvent::MacSizeChange);
-    QApplication::sendEvent(q, &event);
+    QCoreApplication::sendEvent(q, &event);
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(children.at(i));
         if (w && (!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
@@ -11313,7 +11313,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         else if (!on && (isWindow() || !parentWidget() || !parentWidget()->testAttribute(Qt::WA_DropSiteRegistered)))
             setAttribute(Qt::WA_DropSiteRegistered, false);
         QEvent e(QEvent::AcceptDropsChange);
-        QApplication::sendEvent(this, &e);
+        QCoreApplication::sendEvent(this, &e);
         break;
     }
     case Qt::WA_DropSiteRegistered:  {
@@ -11396,11 +11396,11 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_MouseTracking: {
         QEvent e(QEvent::MouseTrackingChange);
-        QApplication::sendEvent(this, &e);
+        QCoreApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_TabletTracking: {
         QEvent e(QEvent::TabletTrackingChange);
-        QApplication::sendEvent(this, &e);
+        QCoreApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_NativeWindow: {
         d->createTLExtra();
@@ -11413,7 +11413,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             QGuiApplication::inputMethod()->commit();
             QGuiApplication::inputMethod()->update(Qt::ImEnabled);
         }
-        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
+        if (!QCoreApplication::testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
@@ -11649,7 +11649,7 @@ void QWidget::setWindowModified(bool mod)
     d->setWindowModified_helper();
 
     QEvent e(QEvent::ModifiedChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 void QWidgetPrivate::setWindowModified_helper()
@@ -11695,7 +11695,7 @@ void QWidget::setToolTip(const QString &s)
     d->toolTip = s;
 
     QEvent event(QEvent::ToolTipChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 }
 
 QString QWidget::toolTip() const
@@ -11872,7 +11872,7 @@ int QWidget::grabShortcut(const QKeySequence &key, Qt::ShortcutContext context)
     if (key.isEmpty())
         return 0;
     setAttribute(Qt::WA_GrabbedShortcut);
-    return qApp->d_func()->shortcutMap.addShortcut(this, key, context, qWidgetShortcutContextMatcher);
+    return QGuiApplicationPrivate::instance()->shortcutMap.addShortcut(this, key, context, qWidgetShortcutContextMatcher);
 }
 
 /*!
@@ -11894,7 +11894,7 @@ void QWidget::releaseShortcut(int id)
 {
     Q_ASSERT(qApp);
     if (id)
-        qApp->d_func()->shortcutMap.removeShortcut(id, this, 0);
+        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(id, this, 0);
 }
 
 /*!
@@ -11913,7 +11913,7 @@ void QWidget::setShortcutEnabled(int id, bool enable)
 {
     Q_ASSERT(qApp);
     if (id)
-        qApp->d_func()->shortcutMap.setShortcutEnabled(enable, id, this, 0);
+        QGuiApplicationPrivate::instance()->shortcutMap.setShortcutEnabled(enable, id, this, 0);
 }
 
 /*!
@@ -11928,7 +11928,7 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 {
     Q_ASSERT(qApp);
     if (id)
-        qApp->d_func()->shortcutMap.setShortcutAutoRepeat(enable, id, this, 0);
+        QGuiApplicationPrivate::instance()->shortcutMap.setShortcutAutoRepeat(enable, id, this, 0);
 }
 #endif // QT_NO_SHORTCUT
 
@@ -11983,7 +11983,7 @@ void QWidget::raise()
         QWindowContainer::parentWasRaised(this);
 
     QEvent e(QEvent::ZOrderChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 void QWidgetPrivate::raise_sys()
@@ -12033,7 +12033,7 @@ void QWidget::lower()
         QWindowContainer::parentWasLowered(this);
 
     QEvent e(QEvent::ZOrderChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 void QWidgetPrivate::lower_sys()
@@ -12080,7 +12080,7 @@ void QWidget::stackUnder(QWidget* w)
         d->stackUnder_sys(w);
 
     QEvent e(QEvent::ZOrderChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 void QWidgetPrivate::stackUnder_sys(QWidget*)

@@ -2260,7 +2260,7 @@ void QTextEdit::setReadOnly(bool ro)
     d->control->setTextInteractionFlags(flags);
     setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
     QEvent event(QEvent::ReadOnlyChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 }
 
 /*!

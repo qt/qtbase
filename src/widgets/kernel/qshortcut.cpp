@@ -228,7 +228,7 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
 {
     bool visible = w->isVisible();
 #if defined(Q_OS_DARWIN) && QT_CONFIG(menubar)
-    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
+    if (!QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
 
@@ -488,7 +488,7 @@ QShortcut::QShortcut(const QKeySequence &key, QWidget *parent,
     Q_D(QShortcut);
     d->sc_context = context;
     d->sc_sequence = key;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
     if (member)
         connect(this, SIGNAL(activated()), parent, member);
     if (ambiguousMember)
@@ -502,7 +502,7 @@ QShortcut::~QShortcut()
 {
     Q_D(QShortcut);
     if (qApp)
-        qApp->d_func()->shortcutMap.removeShortcut(d->sc_id, this);
+        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(d->sc_id, this);
 }
 
 /*!
@@ -523,7 +523,7 @@ void QShortcut::setKey(const QKeySequence &key)
         return;
     QAPP_CHECK("setKey");
     d->sc_sequence = key;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
 }
 
 QKeySequence QShortcut::key() const
@@ -554,7 +554,7 @@ void QShortcut::setEnabled(bool enable)
         return;
     QAPP_CHECK("setEnabled");
     d->sc_enabled = enable;
-    qApp->d_func()->shortcutMap.setShortcutEnabled(enable, d->sc_id, this);
+    QGuiApplicationPrivate::instance()->shortcutMap.setShortcutEnabled(enable, d->sc_id, this);
 }
 
 bool QShortcut::isEnabled() const
@@ -582,7 +582,7 @@ void QShortcut::setContext(Qt::ShortcutContext context)
         return;
     QAPP_CHECK("setContext");
     d->sc_context = context;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
 }
 
 Qt::ShortcutContext QShortcut::context() const
@@ -634,7 +634,7 @@ void QShortcut::setAutoRepeat(bool on)
         return;
     QAPP_CHECK("setAutoRepeat");
     d->sc_autorepeat = on;
-    qApp->d_func()->shortcutMap.setShortcutAutoRepeat(on, d->sc_id, this);
+    QGuiApplicationPrivate::instance()->shortcutMap.setShortcutAutoRepeat(on, d->sc_id, this);
 }
 
 bool QShortcut::autoRepeat() const

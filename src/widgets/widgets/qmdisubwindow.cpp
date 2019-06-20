@@ -1826,7 +1826,7 @@ void QMdiSubWindowPrivate::showButtonsInMenuBar(QMenuBar *menuBar)
         // Make sure topLevelWindow->contentsRect returns correct geometry.
         // topLevelWidget->updateGeoemtry will not do the trick here since it will post the event.
         QEvent event(QEvent::LayoutRequest);
-        QApplication::sendEvent(topLevelWindow, &event);
+        QCoreApplication::sendEvent(topLevelWindow, &event);
     }
 }
 
@@ -1936,7 +1936,7 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
 #ifndef COLOR_GRADIENTINACTIVECAPTION
 #define COLOR_GRADIENTINACTIVECAPTION 28
 #endif
-    if (QApplication::desktopSettingsAware()) {
+    if (QGuiApplication::desktopSettingsAware()) {
         newPalette.setColor(QPalette::Active, QPalette::Highlight,
                             colorref2qrgb(GetSysColor(COLOR_ACTIVECAPTION)));
         newPalette.setColor(QPalette::Inactive, QPalette::Highlight,
@@ -3050,7 +3050,7 @@ void QMdiSubWindow::closeEvent(QCloseEvent *closeEvent)
     d->setActive(false);
     if (parentWidget() && testAttribute(Qt::WA_DeleteOnClose)) {
         QChildEvent childRemoved(QEvent::ChildRemoved, this);
-        QApplication::sendEvent(parentWidget(), &childRemoved);
+        QCoreApplication::sendEvent(parentWidget(), &childRemoved);
     }
     closeEvent->accept();
 }

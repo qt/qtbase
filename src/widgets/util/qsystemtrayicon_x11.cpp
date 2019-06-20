@@ -151,11 +151,11 @@ bool QSystemTrayIconSys::event(QEvent *e)
 {
     switch (e->type()) {
     case QEvent::ToolTip:
-        QApplication::sendEvent(q, e);
+        QCoreApplication::sendEvent(q, e);
         break;
 #if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
-        return QApplication::sendEvent(q, e);
+        return QCoreApplication::sendEvent(q, e);
 #endif
     default:
         break;

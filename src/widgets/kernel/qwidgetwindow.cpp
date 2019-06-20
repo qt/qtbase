@@ -155,7 +155,7 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
     // Enable QOpenGLWidget/QQuickWidget children if the platform plugin supports it,
     // and the application developer has not explicitly disabled it.
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)
-        && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
+        && !QCoreApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
         setSurfaceType(QSurface::RasterGLSurface);
     }
     connect(widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
@@ -496,8 +496,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     static const QEvent::Type contextMenuTrigger =
         QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
         QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
-    if (qApp->d_func()->inPopupMode()) {
-        QWidget *activePopupWidget = qApp->activePopupWidget();
+    if (QApplicationPrivate::inPopupMode()) {
+        QWidget *activePopupWidget = QApplication::activePopupWidget();
         QPoint mapped = event->pos();
         if (activePopupWidget != m_widget)
             mapped = activePopupWidget->mapFromGlobal(event->globalPos());
@@ -577,7 +577,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             }
         }
 
-        if (qApp->activePopupWidget() != activePopupWidget
+        if (QApplication::activePopupWidget() != activePopupWidget
             && qt_replay_popup_mouse_event
             && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ReplayMousePressOutsidePopup).toBool()) {
             if (m_widget->windowType() != Qt::Popup)
@@ -680,7 +680,7 @@ void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
     if (event->type() == QEvent::TouchCancel) {
         QApplicationPrivate::translateTouchCancel(event->device(), event->timestamp());
         event->accept();
-    } else if (qApp->d_func()->inPopupMode()) {
+    } else if (QApplicationPrivate::inPopupMode()) {
         // Ignore touch events for popups. This will cause QGuiApplication to synthesise mouse
         // events instead, which QWidgetWindow::handleMouseEvent will forward correctly:
         event->ignore();
@@ -744,7 +744,7 @@ void QWidgetWindow::updateMargins()
 static void sendScreenChangeRecursively(QWidget *widget)
 {
     QEvent e(QEvent::ScreenChangeInternal);
-    QApplication::sendEvent(widget, &e);
+    QCoreApplication::sendEvent(widget, &e);
     QWidgetPrivate *d = QWidgetPrivate::get(widget);
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));

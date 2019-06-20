@@ -47,15 +47,15 @@
 #include "qlist.h"
 #include "qstylehints.h"
 #include <private/qshortcutmap_p.h>
-#include <private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 #if QT_CONFIG(menu)
 #include <private/qmenu_p.h>
 #endif
 #include <private/qdebug_p.h>
 
 #define QAPP_CHECK(functionName) \
-    if (Q_UNLIKELY(!qApp)) { \
-        qWarning("QAction: Initialize QApplication before calling '" functionName "'."); \
+    if (Q_UNLIKELY(!QCoreApplication::instance())) { \
+        qWarning("QAction: Initialize Q(Gui)Application before calling '" functionName "'."); \
         return; \
     }
 
@@ -101,7 +101,7 @@ bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
 #else
     if(QObject *object = widget ? widget : parent) {
         QStatusTipEvent tip(str);
-        QApplication::sendEvent(object, &tip);
+        QCoreApplication::sendEvent(object, &tip);
         return true;
     }
 #endif
@@ -114,15 +114,15 @@ void QActionPrivate::sendDataChanged()
     QActionEvent e(QEvent::ActionChanged, q);
     for (int i = 0; i < widgets.size(); ++i) {
         QWidget *w = widgets.at(i);
-        QApplication::sendEvent(w, &e);
+        QCoreApplication::sendEvent(w, &e);
     }
 #if QT_CONFIG(graphicsview)
     for (int i = 0; i < graphicsWidgets.size(); ++i) {
         QGraphicsWidget *w = graphicsWidgets.at(i);
-        QApplication::sendEvent(w, &e);
+        QCoreApplication::sendEvent(w, &e);
     }
 #endif
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 
     emit q->changed();
 }
@@ -391,7 +391,7 @@ void QAction::setShortcut(const QKeySequence &shortcut)
         return;
 
     d->shortcut = shortcut;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
     d->sendDataChanged();
 }
 
@@ -420,8 +420,8 @@ void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 
     d->shortcut = primary;
     d->alternateShortcuts = listCopy;
-    d->redoGrab(qApp->d_func()->shortcutMap);
-    d->redoGrabAlternate(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
+    d->redoGrabAlternate(QGuiApplicationPrivate::instance()->shortcutMap);
     d->sendDataChanged();
 }
 
@@ -485,8 +485,8 @@ void QAction::setShortcutContext(Qt::ShortcutContext context)
         return;
     QAPP_CHECK("setShortcutContext");
     d->shortcutContext = context;
-    d->redoGrab(qApp->d_func()->shortcutMap);
-    d->redoGrabAlternate(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
+    d->redoGrabAlternate(QGuiApplicationPrivate::instance()->shortcutMap);
     d->sendDataChanged();
 }
 
@@ -513,8 +513,8 @@ void QAction::setAutoRepeat(bool on)
         return;
     QAPP_CHECK("setAutoRepeat");
     d->autorepeat = on;
-    d->redoGrab(qApp->d_func()->shortcutMap);
-    d->redoGrabAlternate(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
+    d->redoGrabAlternate(QGuiApplicationPrivate::instance()->shortcutMap);
     d->sendDataChanged();
 }
 
@@ -575,10 +575,10 @@ QAction::~QAction()
         d->group->removeAction(this);
 #ifndef QT_NO_SHORTCUT
     if (d->shortcutId && qApp) {
-        qApp->d_func()->shortcutMap.removeShortcut(d->shortcutId, this);
+        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(d->shortcutId, this);
         for(int i = 0; i < d->alternateShortcutIds.count(); ++i) {
             const int id = d->alternateShortcutIds.at(i);
-            qApp->d_func()->shortcutMap.removeShortcut(id, this);
+            QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(id, this);
         }
     }
 #endif
@@ -1028,7 +1028,7 @@ void QAction::setEnabled(bool b)
     QAPP_CHECK("setEnabled");
     d->enabled = b;
 #ifndef QT_NO_SHORTCUT
-    d->setShortcutEnabled(b, qApp->d_func()->shortcutMap);
+    d->setShortcutEnabled(b, QGuiApplicationPrivate::instance()->shortcutMap);
 #endif
     d->sendDataChanged();
 }
@@ -1061,8 +1061,8 @@ void QAction::setVisible(bool b)
     d->forceInvisible = !b;
     d->visible = b;
     d->enabled = b && !d->forceDisabled && (!d->group || d->group->isEnabled()) ;
-#ifndef QT_NO_SHORTCUT
-    d->setShortcutEnabled(d->enabled, qApp->d_func()->shortcutMap);
+#if QT_CONFIG(shortcut)
+    d->setShortcutEnabled(d->enabled, QGuiApplicationPrivate::instance()->shortcutMap);
 #endif
     d->sendDataChanged();
 }
@@ -1285,7 +1285,7 @@ void QAction::setIconVisibleInMenu(bool visible)
         d->iconVisibleInMenu = visible;
         // Only send data changed if we really need to.
         if (oldValue != -1
-            || visible == !QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus)) {
+            || visible == !QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus)) {
             d->sendDataChanged();
         }
     }
@@ -1295,7 +1295,7 @@ bool QAction::isIconVisibleInMenu() const
 {
     Q_D(const QAction);
     if (d->iconVisibleInMenu == -1) {
-        return !QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus);
+        return !QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus);
     }
     return d->iconVisibleInMenu;
 }
@@ -1323,7 +1323,7 @@ void QAction::setShortcutVisibleInContextMenu(bool visible)
         d->shortcutVisibleInContextMenu = visible;
         // Only send data changed if we really need to.
         if (oldValue != -1
-            || visible == !QApplication::instance()->testAttribute(Qt::AA_DontShowShortcutsInContextMenus)) {
+            || visible == !QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus)) {
             d->sendDataChanged();
         }
     }

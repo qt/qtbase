@@ -491,11 +491,11 @@ void QWidgetBackingStore::sendUpdateRequest(QWidget *widget, UpdateTime updateTi
     switch (updateTime) {
     case UpdateLater:
         updateRequestSent = true;
-        QApplication::postEvent(widget, new QEvent(QEvent::UpdateRequest), Qt::LowEventPriority);
+        QCoreApplication::postEvent(widget, new QEvent(QEvent::UpdateRequest), Qt::LowEventPriority);
         break;
     case UpdateNow: {
         QEvent event(QEvent::UpdateRequest);
-        QApplication::sendEvent(widget, &event);
+        QCoreApplication::sendEvent(widget, &event);
         break;
         }
     }
@@ -1507,7 +1507,7 @@ void QWidgetPrivate::invalidateBackingStore(const T &r)
     if (r.isEmpty())
         return;
 
-    if (QApplication::closingDown())
+    if (QCoreApplication::closingDown())
         return;
 
     Q_Q(QWidget);

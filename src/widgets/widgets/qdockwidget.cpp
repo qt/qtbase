@@ -1590,7 +1590,7 @@ bool QDockWidget::event(QEvent *event)
             // This is a workaround for loosing the mouse on Vista.
             QPoint pos = QCursor::pos();
             QMouseEvent fake(QEvent::MouseMove, mapFromGlobal(pos), pos, Qt::NoButton,
-                             QApplication::mouseButtons(), QApplication::keyboardModifiers());
+                             QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
             d->mouseMoveEvent(&fake);
         }
         break;

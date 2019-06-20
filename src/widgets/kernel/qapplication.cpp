@@ -622,7 +622,7 @@ void QApplicationPrivate::initialize()
     if (qt_is_gui_used)
         initializeMultitouch();
 
-    if (QApplication::desktopSettingsAware())
+    if (QGuiApplication::desktopSettingsAware())
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
             QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
         }
@@ -1172,7 +1172,7 @@ void QApplication::setStyle(QStyle *style)
             QWidget *w = *it;
             if (w->windowType() != Qt::Desktop && !w->testAttribute(Qt::WA_SetStyle)) {
                     QEvent e(QEvent::StyleChange);
-                    QApplication::sendEvent(w, &e);
+                    QCoreApplication::sendEvent(w, &e);
                     w->update();
             }
         }
@@ -1189,7 +1189,7 @@ void QApplication::setStyle(QStyle *style)
 
     if (QApplicationPrivate::focus_widget) {
         QFocusEvent in(QEvent::FocusIn, Qt::OtherFocusReason);
-        QApplication::sendEvent(QApplicationPrivate::focus_widget->style(), &in);
+        QCoreApplication::sendEvent(QApplicationPrivate::focus_widget->style(), &in);
         QApplicationPrivate::focus_widget->update();
     }
 }
@@ -1551,7 +1551,7 @@ void QApplication::setFont(const QFont &font, const char *className)
     if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
         // Send ApplicationFontChange to qApp itself, and to the widgets.
         QEvent e(QEvent::ApplicationFontChange);
-        QApplication::sendEvent(QApplication::instance(), &e);
+        QCoreApplication::sendEvent(QApplication::instance(), &e);
 
         QWidgetList wids = QApplication::allWidgets();
         for (QWidgetList::ConstIterator it = wids.constBegin(), cend = wids.constEnd(); it != cend; ++it) {
@@ -1565,7 +1565,7 @@ void QApplication::setFont(const QFont &font, const char *className)
         QList<QGraphicsScene *> &scenes = qApp->d_func()->scene_list;
         for (QList<QGraphicsScene *>::ConstIterator it = scenes.constBegin();
              it != scenes.constEnd(); ++it) {
-            QApplication::sendEvent(*it, &e);
+            QCoreApplication::sendEvent(*it, &e);
         }
 #endif // QT_CONFIG(graphicsview)
     }
@@ -1739,16 +1739,16 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 #endif
                 QFocusEvent out(QEvent::FocusOut, reason);
                 QPointer<QWidget> that = prev;
-                QApplication::sendEvent(prev, &out);
+                QCoreApplication::sendEvent(prev, &out);
                 if (that)
-                    QApplication::sendEvent(that->style(), &out);
+                    QCoreApplication::sendEvent(that->style(), &out);
             }
             if(focus && QApplicationPrivate::focus_widget == focus) {
                 QFocusEvent in(QEvent::FocusIn, reason);
                 QPointer<QWidget> that = focus;
-                QApplication::sendEvent(focus, &in);
+                QCoreApplication::sendEvent(focus, &in);
                 if (that)
-                    QApplication::sendEvent(that->style(), &in);
+                    QCoreApplication::sendEvent(that->style(), &in);
             }
             emit qApp->focusChanged(prev, focus_widget);
         }
@@ -1924,7 +1924,7 @@ bool QApplication::event(QEvent *e)
                 }
                 if (showToolTip) {
                     QHelpEvent e(QEvent::ToolTip, d->toolTipPos, d->toolTipGlobalPos);
-                    QApplication::sendEvent(d->toolTipWidget, &e);
+                    QCoreApplication::sendEvent(d->toolTipWidget, &e);
                     if (e.isAccepted()) {
                         QStyle *s = d->toolTipWidget->style();
                         int sleepDelay = s->styleHint(QStyle::SH_ToolTip_FallAsleepDelay, 0, d->toolTipWidget, 0);
@@ -2036,7 +2036,7 @@ void QApplication::setActiveWindow(QWidget* act)
             QGuiApplication::inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, Qt::ActiveWindowFocusReason);
-        QApplication::sendEvent(QApplicationPrivate::focus_widget, &focusAboutToChange);
+        QCoreApplication::sendEvent(QApplicationPrivate::focus_widget, &focusAboutToChange);
     }
 
     QApplicationPrivate::active_window = window;
@@ -2111,7 +2111,7 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
         wnd = wnd->parent();
     }
     if (wnd) {
-        const auto tlws = qApp->topLevelWidgets();
+        const auto tlws = QApplication::topLevelWidgets();
         for (QWidget *tlw : tlws) {
             if (tlw->windowHandle() == wnd)
                 return tlw;
@@ -2205,12 +2205,12 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
 #if 0
     if (leave) {
         QEvent e(QEvent::Leave);
-        QApplication::sendEvent(leave, & e);
+        QCoreApplication::sendEvent(leave, & e);
     }
     if (enter) {
         const QPoint windowPos = enter->window()->mapFromGlobal(globalPos);
         QEnterEvent e(enter->mapFromGlobal(globalPos), windowPos, globalPos);
-        QApplication::sendEvent(enter, & e);
+        QCoreApplication::sendEvent(enter, & e);
     }
     return;
 #endif
@@ -2271,12 +2271,12 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
     for (int i = 0; i < leaveList.size(); ++i) {
         auto *w = leaveList.at(i);
         if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
-            QApplication::sendEvent(w, &leaveEvent);
+            QCoreApplication::sendEvent(w, &leaveEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
                 (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                 Q_ASSERT(instance());
                 QHoverEvent he(QEvent::HoverLeave, QPoint(-1, -1), w->mapFromGlobal(QApplicationPrivate::instance()->hoverGlobalPos),
-                               QApplication::keyboardModifiers());
+                               QGuiApplication::keyboardModifiers());
                 qApp->d_func()->notify_helper(w, &he);
             }
         }
@@ -2292,11 +2292,11 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
                 const QPointF localPos = w->mapFromGlobal(globalPos);
                 QEnterEvent enterEvent(localPos, windowPos, globalPosF);
-                QApplication::sendEvent(w, &enterEvent);
+                QCoreApplication::sendEvent(w, &enterEvent);
                 if (w->testAttribute(Qt::WA_Hover) &&
                         (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                     QHoverEvent he(QEvent::HoverEnter, localPos, QPoint(-1, -1),
-                                   QApplication::keyboardModifiers());
+                                   QGuiApplication::keyboardModifiers());
                     qApp->d_func()->notify_helper(w, &he);
                 }
             }
@@ -2644,7 +2644,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
         if (spontaneous)
             result = QApplication::sendSpontaneousEvent(receiver, event);
         else
-            result = QApplication::sendEvent(receiver, event);
+            result = QCoreApplication::sendEvent(receiver, event);
     }
 
     if (!graphicsWidget && leaveAfterRelease && event->type() == QEvent::MouseButtonRelease
@@ -2898,7 +2898,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
 #ifndef QT_NO_DEBUG
-    d->checkReceiverThread(receiver);
+    QCoreApplicationPrivate::checkReceiverThread(receiver);
 #endif
 
     if (receiver->isWindowType()) {
@@ -3818,7 +3818,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     } else if (popupWidgets->count() == 1) { // this was the first popup
         if (QWidget *fw = QApplication::focusWidget()) {
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
-            QApplication::sendEvent(fw, &e);
+            QCoreApplication::sendEvent(fw, &e);
         }
     }
 }
@@ -4383,7 +4383,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         QTouchEvent touchEvent(eventType,
                                device,
-                               QApplication::keyboardModifiers(),
+                               QGuiApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
         bool containsPress = updateTouchPointsForWidget(widget, &touchEvent);
@@ -4426,7 +4426,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
 void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong timestamp)
 {
-    QTouchEvent touchEvent(QEvent::TouchCancel, device, QApplication::keyboardModifiers());
+    QTouchEvent touchEvent(QEvent::TouchCancel, device, QGuiApplication::keyboardModifiers());
     touchEvent.setTimestamp(timestamp);
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
             = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
@@ -4462,12 +4462,12 @@ void QApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const 
     const QWidgetList widgets = QApplication::allWidgets();
     for (auto widget : widgets) {
         if (toAllWidgets || (!className && widget->isWindow()) || (className && widget->inherits(className)))
-            QApplication::sendEvent(widget, &event);
+            QCoreApplication::sendEvent(widget, &event);
     }
 
 #if QT_CONFIG(graphicsview)
     for (auto scene : qAsConst(scene_list))
-        QApplication::sendEvent(scene, &event);
+        QCoreApplication::sendEvent(scene, &event);
 #endif // QT_CONFIG(graphicsview)
 }
 
