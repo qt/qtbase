@@ -711,7 +711,7 @@ void tst_QSslSocket::sslErrors()
     const auto socketSslErrors = socket->sslErrors();
     for (const QSslError &err : socketSslErrors)
         sslErrors << err.error();
-    qSort(sslErrors);
+    std::sort(sslErrors.begin(), sslErrors.end());
     QVERIFY(sslErrors.contains(QSslError::HostNameMismatch));
     QVERIFY(sslErrors.contains(FLUKE_CERTIFICATE_ERROR));
 
@@ -721,7 +721,7 @@ void tst_QSslSocket::sslErrors()
     const auto sslErrorsSpyErrors = qvariant_cast<QList<QSslError> >(qAsConst(sslErrorsSpy).first().first());
     for (const QSslError &err : sslErrorsSpyErrors)
         emittedErrors << err.error();
-    qSort(emittedErrors);
+    std::sort(emittedErrors.begin(), emittedErrors.end());
     QCOMPARE(sslErrors, emittedErrors);
 
     // check the same errors were emitted by peerVerifyError
@@ -730,7 +730,7 @@ void tst_QSslSocket::sslErrors()
     const QList<QVariantList> &peerVerifyList = peerVerifyErrorSpy;
     for (const QVariantList &args : peerVerifyList)
         peerErrors << qvariant_cast<QSslError>(args.first()).error();
-    qSort(peerErrors);
+    std::sort(peerErrors.begin(), peerErrors.end());
     QCOMPARE(sslErrors, peerErrors);
 }
 

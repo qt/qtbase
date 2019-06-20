@@ -1912,7 +1912,7 @@
 
     \section3 Custom sorting models
 
-    QSortFilterProxyModel instances use Qt's built-in qStableSort() function to set up
+    QSortFilterProxyModel instances use std::stable_sort() function to set up
     mappings between items in the source model and those in the proxy model, allowing a
     sorted hierarchy of items to be exposed to views without modifying the structure of the
     source model. To provide custom sorting behavior, reimplement the

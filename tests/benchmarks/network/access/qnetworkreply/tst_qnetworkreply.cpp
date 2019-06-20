@@ -908,7 +908,7 @@ void tst_qnetworkreply::httpsRequestChain()
 
     qint64 average = (elapsed / count);
 
-    qSort(helper.timeList);
+    std::sort(helper.timeList.begin(), helper.timeList.end());
     qint64 median = helper.timeList.at(5);
 
     qDebug() << "Total:" << elapsed << "   Average:" << average << "   Median:" << median;

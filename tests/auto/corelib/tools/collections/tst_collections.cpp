@@ -67,7 +67,6 @@ void foo()
 
 #include <algorithm>
 
-#include "qalgorithms.h"
 #include "qbitarray.h"
 #include "qbytearray.h"
 #include "qcache.h"
@@ -191,16 +190,6 @@ void tst_Collections::list()
         QVERIFY(list.size() == 6);
         QVERIFY(list.end() - list.begin() == list.size());
 
-#if !defined(Q_CC_MSVC) && !defined(Q_CC_SUN)
-        QVERIFY(std::binary_search(list.begin(), list.end(), 2) == true);
-        QVERIFY(std::binary_search(list.begin(), list.end(), 9) == false);
-#endif
-        QVERIFY(qBinaryFind(list.begin(), list.end(), 2) == list.begin() + 1);
-        QVERIFY(qLowerBound(list.begin(), list.end(), 2) == list.begin() + 1);
-        QVERIFY(qUpperBound(list.begin(), list.end(), 2) == list.begin() + 2);
-        QVERIFY(qBinaryFind(list.begin(), list.end(), 9) == list.end());
-        QVERIFY(qLowerBound(list.begin(), list.end(), 9) == list.end());
-        QVERIFY(qUpperBound(list.begin(), list.end(), 9) == list.end());
         {
             int sum = 0;
             QListIterator<int> i(list);
@@ -996,16 +985,8 @@ void tst_Collections::vector()
     v.append(2);
     QVERIFY(*v.begin() == 2);
     v.prepend(1);
-
-    v << 3 << 4 << 5 << 6;
-    QVERIFY(std::binary_search(v.begin(), v.end(), 2) == true);
-    QVERIFY(std::binary_search(v.begin(), v.end(), 9) == false);
-    QVERIFY(qBinaryFind(v.begin(), v.end(), 2) == v.begin() + 1);
-    QVERIFY(qLowerBound(v.begin(), v.end(), 2) == v.begin() + 1);
-    QVERIFY(qUpperBound(v.begin(), v.end(), 2) == v.begin() + 2);
-    QVERIFY(qBinaryFind(v.begin(), v.end(), 9) == v.end());
-    QVERIFY(qLowerBound(v.begin(), v.end(), 9) == v.end());
-    QVERIFY(qUpperBound(v.begin(), v.end(), 9) == v.end());
+    QVERIFY(*v.begin() == 1);
+    QVERIFY(*(v.begin() + 1) == 2);
 
     v.clear();
     v << 1 << 2 << 3;

@@ -192,7 +192,7 @@ static void doTestData(const QString &testString, const QList<int> &expectedBrea
     // test toPreviousBoundary()
     {
         QList<int> expectedBreakPositionsRev = expectedBreakPositions;
-        std::sort(expectedBreakPositionsRev.begin(), expectedBreakPositionsRev.end(), qGreater<int>());
+        std::sort(expectedBreakPositionsRev.begin(), expectedBreakPositionsRev.end(), std::greater<int>());
 
         QList<int> actualBreakPositions;
         boundaryFinder.toEnd();

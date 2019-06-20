@@ -32,7 +32,6 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qatomic.h>
-#include <QtCore/qalgorithms.h>
 #include <QtCore/qlist.h>
 #include <QtCore/private/qtools_p.h>
 
@@ -263,9 +262,9 @@ public:
     //static QRawVector<T> fromList(const QList<T> &list);
 
     static inline QRawVector<T> fromStdVector(const std::vector<T> &vector)
-    { QRawVector<T> tmp; qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    { QRawVector<T> tmp; std::copy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
-    { std::vector<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { std::vector<T> tmp; std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 
 private:
     T *allocate(int alloc);
@@ -568,7 +567,7 @@ typename QRawVector<T>::iterator QRawVector<T>::erase(iterator abegin, iterator 
     int l = int(aend - m_begin);
     int n = l - f;
     if (QTypeInfo<T>::isComplex) {
-        qCopy(m_begin + l, m_begin + m_size, m_begin + f);
+        std::copy(m_begin + l, m_begin + m_size, m_begin + f);
         T *i = m_begin + m_size;
         T *b = m_begin + m_size - n;
         while (i != b) {

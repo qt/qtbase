@@ -131,7 +131,7 @@ while (i != set.end()) {
 //! [10]
 QSet<QString> set;
 ...
-QSet<QString>::iterator it = qFind(set.begin(), set.end(), "Jeanette");
+QSet<QString>::iterator it = std::find(set.begin(), set.end(), "Jeanette");
 if (it != set.end())
     cout << "Found Jeanette" << Qt::endl;
 //! [10]
@@ -150,7 +150,7 @@ for (i = set.begin(); i != set.end(); ++i)
 //! [12]
 QSet<QString> set;
 ...
-QSet<QString>::iterator it = qFind(set.begin(), set.end(), "Jeanette");
+QSet<QString>::iterator it = std::find(set.begin(), set.end(), "Jeanette");
 if (it != set.constEnd())
     cout << "Found Jeanette" << Qt::endl;
 //! [12]
@@ -161,7 +161,7 @@ QSet<QString> set;
 set << "red" << "green" << "blue" << ... << "black";
 
 QList<QString> list = set.toList();
-qSort(list);
+std::sort(list.begin(), list.end());
 //! [13]
 
 
