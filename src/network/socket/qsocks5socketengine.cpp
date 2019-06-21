@@ -1188,6 +1188,8 @@ void QSocks5SocketEnginePrivate::_q_controlSocketReadNotification()
             break;
         case RequestMethodSent:
             parseRequestMethodReply();
+            if (socks5State == Connected && data->controlSocket->bytesAvailable())
+                _q_controlSocketReadNotification();
             break;
         case Connected: {
             QByteArray buf;
