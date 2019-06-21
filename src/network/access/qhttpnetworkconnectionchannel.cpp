@@ -1115,11 +1115,13 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator* auth)
 {
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
 #ifndef QT_NO_SSL
         || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
 #endif
         ) {
-        connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
+        if (spdyRequestsToSend.count() > 0)
+            connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
     } else { // HTTP
         // Need to dequeue the request before we can emit the error.
         if (!reply)
