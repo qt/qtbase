@@ -1500,8 +1500,6 @@ static inline GLenum toGlTextureCompareFunc(QRhiSampler::CompareOp op)
 void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
-    Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::NoPass);
-
     GLenum indexType = GL_UNSIGNED_SHORT;
     quint32 indexStride = sizeof(quint16);
     quint32 indexOffset = 0;

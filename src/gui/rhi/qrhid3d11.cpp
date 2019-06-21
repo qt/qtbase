@@ -1938,8 +1938,6 @@ void QRhiD3D11::resetShaderResources()
 
 void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *timestampSwapChain)
 {
-    Q_ASSERT(cbD->recordingPass == QD3D11CommandBuffer::NoPass);
-
     quint32 stencilRef = 0;
     float blendConstants[] = { 1, 1, 1, 1 };
 
