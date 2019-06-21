@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
         if (!g_options.makeCommand.isEmpty()) {
             // we need to run make INSTALL_ROOT=path install to install the application file(s) first
             if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
-                             .arg(g_options.makeCommand, g_options.buildPath), nullptr, g_options.verbose)) {
+                             .arg(g_options.makeCommand, QDir::toNativeSeparators(g_options.buildPath)), nullptr, g_options.verbose)) {
                 return 1;
             }
         }
