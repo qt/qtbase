@@ -1133,11 +1133,17 @@ void QApplication::setStyle(QStyle *style)
     } else if (QApplicationPrivate::sys_pal) {
         clearSystemPalette();
         initSystemPalette();
-        QApplicationPrivate::initializeWidgetFontHash();
     } else if (!QApplicationPrivate::sys_pal) {
         // Initialize the sys_pal if it hasn't happened yet...
         QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
     }
+
+    // The default widget font hash is based on the platform theme,
+    // not the style, but the widget fonts could in theory have been
+    // affected by polish of the previous style, without a proper
+    // cleanup in unpolish, so reset it now before polishing the
+    // new style.
+    QApplicationPrivate::initializeWidgetFontHash();
 
     // initialize the application with the new style
     QApplicationPrivate::app_style->polish(qApp);
