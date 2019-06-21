@@ -173,6 +173,7 @@ build_instructions:
       equals_value: Windows
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} -DBUILD_TESTING=OFF {{.SourceDir}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
