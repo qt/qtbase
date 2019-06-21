@@ -1482,9 +1482,9 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf);
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
 
 // pointer to QtMsgHandler debug handler (without context)
-static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMsgHandler);
+static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 // pointer to QtMessageHandler debug handler (with context)
-static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMessageHandler);
+static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
 #if QT_CONFIG(journald)
 static void systemd_default_message_handler(QtMsgType type,
@@ -1650,14 +1650,17 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     // prevent recursion in case the message handler generates messages
     // itself, e.g. by using Qt API
     if (grabMessageHandler()) {
+        struct Ungrabber {
+            ~Ungrabber() { ungrabMessageHandler(); }
+        } ungrabber;
+        auto oldStyle = msgHandler.loadAcquire();
+        auto newStye = messageHandler.loadAcquire();
         // prefer new message handler over the old one
-        if (msgHandler.load() == qDefaultMsgHandler
-                || messageHandler.load() != qDefaultMessageHandler) {
-            (*messageHandler.load())(msgType, context, message);
+        if (newStye || !oldStyle) {
+            (newStye ? newStye : qDefaultMessageHandler)(msgType, context, message);
         } else {
-            (*msgHandler.load())(msgType, message.toLocal8Bit().constData());
+            (oldStyle ? oldStyle : qDefaultMsgHandler)(msgType, message.toLocal8Bit().constData());
         }
-        ungrabMessageHandler();
     } else {
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
     }
@@ -1867,18 +1870,20 @@ void qErrnoWarning(int code, const char *msg, ...)
 
 QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
 {
-    if (!h)
-        h = qDefaultMessageHandler;
-    //set 'h' and return old message handler
-    return messageHandler.fetchAndStoreRelaxed(h);
+    const auto old = messageHandler.fetchAndStoreOrdered(h);
+    if (old)
+        return old;
+    else
+        return qDefaultMessageHandler;
 }
 
 QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 {
-    if (!h)
-        h = qDefaultMsgHandler;
-    //set 'h' and return old message handler
-    return msgHandler.fetchAndStoreRelaxed(h);
+    const auto old = msgHandler.fetchAndStoreOrdered(h);
+    if (old)
+        return old;
+    else
+        return qDefaultMsgHandler;
 }
 
 void qSetMessagePattern(const QString &pattern)
