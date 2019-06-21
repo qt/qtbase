@@ -426,16 +426,10 @@ bool Q_WIDGETS_EXPORT qt_tab_all_widgets()
 // ######## move to QApplicationPrivate
 // Default application palettes and fonts (per widget type)
 Q_GLOBAL_STATIC(PaletteHash, app_palettes)
-PaletteHash *qt_app_palettes_hash()
-{
-    return app_palettes();
-}
-
 Q_GLOBAL_STATIC(FontHash, app_fonts)
-FontHash *qt_app_fonts_hash()
-{
-    return app_fonts();
-}
+// Exported accessors for use outside of this file
+PaletteHash *qt_app_palettes_hash() { return app_palettes(); }
+FontHash *qt_app_fonts_hash() { return app_fonts(); }
 
 QWidgetList *QApplicationPrivate::popupWidgets = 0;        // has keyboard input focus
 
@@ -652,7 +646,7 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
     if (!platformTheme)
         return;
-    qt_app_palettes_hash()->clear();
+    app_palettes()->clear();
 
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
@@ -676,7 +670,7 @@ void QApplicationPrivate::initializeWidgetFontHash()
     const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
     if (!theme)
         return;
-    FontHash *fontHash = qt_app_fonts_hash();
+    FontHash *fontHash = app_fonts();
     fontHash->clear();
 
     if (const QFont *font = theme->font(QPlatformTheme::MenuFont))
