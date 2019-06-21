@@ -396,6 +396,7 @@ private:
     void emitPageBreakPolicy(QTextFormat::PageBreakFlags policy);
 
     void emitFontFamily(const QString &family);
+    void emitFontFamily(const QStringList &families);
 
     void emitBackgroundAttribute(const QTextFormat &format);
     QString findUrlForImage(const QTextDocument *doc, qint64 cacheKey, bool isPixmap);

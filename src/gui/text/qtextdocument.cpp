@@ -2299,7 +2299,11 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     if (mode == ExportEntireDocument) {
         html += QLatin1String(" style=\"");
 
-        emitFontFamily(defaultCharFormat.fontFamily());
+        QStringList fontFamilies = defaultCharFormat.fontFamilies().toStringList();
+        if (!fontFamilies.isEmpty())
+            emitFontFamily(fontFamilies);
+        else
+            emitFontFamily(defaultCharFormat.fontFamily());
 
         if (defaultCharFormat.hasProperty(QTextFormat::FontPointSize)) {
             html += QLatin1String(" font-size:");
@@ -2361,8 +2365,12 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     bool attributesEmitted = false;
 
     {
+        const QStringList families = format.fontFamilies().toStringList();
         const QString family = format.fontFamily();
-        if (!family.isEmpty() && family != defaultCharFormat.fontFamily()) {
+        if (!families.isEmpty() && families != defaultCharFormat.fontFamilies().toStringList()) {
+            emitFontFamily(families);
+            attributesEmitted = true;
+        } else if (!family.isEmpty() && family != defaultCharFormat.fontFamily()) {
             emitFontFamily(family);
             attributesEmitted = true;
         }
@@ -2636,6 +2644,27 @@ void QTextHtmlExporter::emitFontFamily(const QString &family)
     html += quote;
     html += family.toHtmlEscaped();
     html += quote;
+    html += QLatin1Char(';');
+}
+
+void QTextHtmlExporter::emitFontFamily(const QStringList &families)
+{
+    html += QLatin1String(" font-family:");
+
+    bool first = true;
+    for (const QString &family : families) {
+        QLatin1String quote("\'");
+        if (family.contains(QLatin1Char('\'')))
+            quote = QLatin1String("&quot;");
+
+        if (!first)
+            html += QLatin1String(",");
+        else
+            first = false;
+        html += quote;
+        html += family.toHtmlEscaped();
+        html += quote;
+    }
     html += QLatin1Char(';');
 }
 
