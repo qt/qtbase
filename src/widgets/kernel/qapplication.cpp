@@ -555,6 +555,12 @@ void QApplicationPrivate::init()
 
     // Must be called before initialize()
     QColormap::initialize();
+    if (sys_pal) {
+        // Now that we have a platform theme we need to reset
+        // the system palette to pick up the theme colors.
+        clearSystemPalette();
+        initSystemPalette();
+    }
     qt_init_tooltip_palette();
     QApplicationPrivate::initializeWidgetFontHash();
 
