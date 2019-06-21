@@ -434,13 +434,6 @@ void QApplicationPrivate::process_cmdline()
     if (styleOverride.isEmpty() && qEnvironmentVariableIsSet("QT_STYLE_OVERRIDE"))
         styleOverride = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
 
-    if (!styleOverride.isEmpty()) {
-        if (app_style) {
-            delete app_style;
-            app_style = 0;
-        }
-    }
-
     // process platform-indep command line
     if (!qt_is_gui_used || !argc)
         return;
@@ -606,8 +599,20 @@ void QApplicationPrivate::initialize()
     // needed for widgets in QML
     QAbstractDeclarativeData::setWidgetParent = QWidgetPrivate::setWidgetParentHelper;
 
-    if (application_type != QApplicationPrivate::Tty)
-        (void) QApplication::style();  // trigger creation of application style
+    if (application_type != QApplicationPrivate::Tty) {
+        if (!styleOverride.isEmpty()) {
+            if (auto *style = QStyleFactory::create(styleOverride.toLower())) {
+                QApplication::setStyle(style);
+            } else {
+                qWarning("QApplication: invalid style override '%s' passed, ignoring it.\n"
+                    "\tAvailable styles: %s", qPrintable(styleOverride),
+                    qPrintable(QStyleFactory::keys().join(QLatin1String(", "))));
+            }
+        }
+
+        // Trigger default style if none was set already
+        Q_UNUSED(QApplication::style());
+    }
 #if QT_CONFIG(statemachine)
     // trigger registering of QStateMachine's GUI types
     qRegisterGuiStateMachine();
@@ -1036,15 +1041,6 @@ QStyle *QApplication::style()
         // Compile-time search for default style
         //
         QStyle *&app_style = QApplicationPrivate::app_style;
-
-        if (!QApplicationPrivate::styleOverride.isEmpty()) {
-            const QString style = QApplicationPrivate::styleOverride.toLower();
-            app_style = QStyleFactory::create(style);
-            if (Q_UNLIKELY(!app_style)) {
-                qWarning("QApplication: invalid style override passed, ignoring it.\n"
-                "    Available styles: %s", qPrintable(QStyleFactory::keys().join(QLatin1String(", "))));
-            }
-        }
         if (!app_style)
             app_style = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
 
