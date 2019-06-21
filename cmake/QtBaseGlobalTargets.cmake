@@ -60,6 +60,34 @@ qt_install(FILES
     COMPONENT Devel
 )
 
+# Generate toolchain file for convenience
+if(QT_HOST_PATH)
+    get_filename_component(init_qt_host_path "${QT_HOST_PATH}" ABSOLUTE)
+    set(init_qt_host_path "set(QT_HOST_PATH \"${init_qt_host_path}\" CACHE PATH \"\" FORCE)")
+endif()
+
+if(CMAKE_TOOLCHAIN_FILE)
+    set(init_original_toolchain_file "set(qt_chainload_toolchain_file \"${CMAKE_TOOLCHAIN_FILE}\")")
+endif()
+
+if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
+    list(APPEND init_vcpkg "set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE \"${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}\")")
+endif()
+
+if(VCPKG_TARGET_TRIPLET)
+    list(APPEND init_vcpkg "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\")")
+endif()
+
+string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt.toolchain.cmake.in" "${__GlobalConfig_build_dir}/qt.toolchain.cmake" @ONLY)
+qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "${__GlobalConfig_install_dir}" COMPONENT Devel)
+
+# Also provide a convenience cmake wrapper
+if(UNIX)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in" "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY)
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake" DESTINATION "${INSTALL_BINDIR}")
+endif()
+
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
 ## files always lived in Qt::Core, so we keep it that way
