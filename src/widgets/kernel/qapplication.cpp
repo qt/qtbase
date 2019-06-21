@@ -1155,7 +1155,6 @@ void QApplication::setStyle(QStyle *style)
     } else if (QApplicationPrivate::sys_pal) {
         clearSystemPalette();
         initSystemPalette();
-        QApplicationPrivate::initializeWidgetPaletteHash();
         QApplicationPrivate::initializeWidgetFontHash();
         QApplicationPrivate::setPalette_helper(*QApplicationPrivate::sys_pal, /*className=*/0, /*clearWidgetPaletteHash=*/false);
     } else if (!QApplicationPrivate::sys_pal) {
