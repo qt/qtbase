@@ -100,7 +100,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0),
-      getMessageHook(0), wakeUps(0), activateNotifiersPosted(false),
+      wakeUps(0), activateNotifiersPosted(false),
       winEventNotifierActivatedEvent(NULL)
 {
 }
@@ -267,14 +267,6 @@ static inline UINT inputTimerMask()
         result &= ~(QS_TOUCH | QS_POINTER);
 #endif //  WINVER > 0x0601
     return result;
-}
-
-LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
-{
-    QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
-    Q_ASSERT(q != 0);
-
-    return q->d_func()->getMessageHook ? CallNextHookEx(0, code, wp, lp) : 0;
 }
 
 // Provide class name and atom for the message window used by
@@ -455,36 +447,9 @@ void QEventDispatcherWin32::createInternalHwnd()
         return;
     d->internalHwnd = qt_create_internal_window(this);
 
-    installMessageHook();
-
     // start all normal timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->registerTimer(d->timerVec.at(i));
-}
-
-void QEventDispatcherWin32::installMessageHook()
-{
-    Q_D(QEventDispatcherWin32);
-
-    if (d->getMessageHook)
-        return;
-
-    // setup GetMessage hook needed to drive our posted events
-    d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
-    if (Q_UNLIKELY(!d->getMessageHook)) {
-        int errorCode = GetLastError();
-        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %ls",
-               errorCode, qUtf16Printable(qt_error_string(errorCode)));
-    }
-}
-
-void QEventDispatcherWin32::uninstallMessageHook()
-{
-    Q_D(QEventDispatcherWin32);
-
-    if (d->getMessageHook)
-        UnhookWindowsHookEx(d->getMessageHook);
-    d->getMessageHook = 0;
 }
 
 QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
@@ -582,10 +547,6 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
-                // The Direct2d integration unsets getMessageHook. See QTBUG-42428
-                if (!d->getMessageHook)
-                    (void) qt_GetMessageHook(0, PM_REMOVE, reinterpret_cast<LPARAM>(&msg));
-
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     // Set result to 'true', if the message was sent by wakeUp().
                     if (msg.wParam == WMWP_QT_FROMWAKEUP) {
@@ -1043,8 +1004,6 @@ void QEventDispatcherWin32::closingDown()
     d->timerDict.clear();
 
     d->closingDown = true;
-
-    uninstallMessageHook();
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)

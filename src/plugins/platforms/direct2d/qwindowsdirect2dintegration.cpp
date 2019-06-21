@@ -63,7 +63,6 @@ public:
     QWindowsDirect2DEventDispatcher(QObject *parent = nullptr)
         : QWindowsGuiEventDispatcher(parent)
     {
-        uninstallMessageHook(); // ### Workaround for QTBUG-42428
     }
 };
 
