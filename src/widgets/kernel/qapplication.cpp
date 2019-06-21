@@ -381,8 +381,6 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
     0 if there is no such widget.
 */
 
-void qt_init(QApplicationPrivate *priv, int type
-   );
 void qt_init_tooltip_palette();
 void qt_cleanup();
 
@@ -571,7 +569,10 @@ void QApplicationPrivate::init()
     process_cmdline();
 
     // Must be called before initialize()
-    qt_init(this, application_type);
+    QColormap::initialize();
+    qt_init_tooltip_palette();
+    QApplicationPrivate::initializeWidgetFontHash();
+
     initialize();
     eventDispatcher->startingUp();
 
@@ -584,18 +585,6 @@ void QApplicationPrivate::init()
     QAccessible::installFactory(&qAccessibleFactory);
 #endif
 
-}
-
-void qt_init(QApplicationPrivate *priv, int type)
-{
-    Q_UNUSED(priv);
-    Q_UNUSED(type);
-
-    QColormap::initialize();
-
-    qt_init_tooltip_palette();
-
-    QApplicationPrivate::initializeWidgetFontHash();
 }
 
 void qt_init_tooltip_palette()
