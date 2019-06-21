@@ -610,7 +610,7 @@ QSimpleTextCodec::QSimpleTextCodec(int i) : forwardIndex(i), reverseMap(0)
 
 QSimpleTextCodec::~QSimpleTextCodec()
 {
-    delete reverseMap.loadRelaxed();
+    delete reverseMap.loadAcquire();
 }
 
 static QByteArray *buildReverseMap(int forwardIndex)
@@ -662,12 +662,12 @@ QByteArray QSimpleTextCodec::convertFromUnicode(const QChar *in, int length, Con
     const char replacement = (state && state->flags & ConvertInvalidToNull) ? 0 : '?';
     int invalid = 0;
 
-    QByteArray *rmap = reverseMap.loadRelaxed();
+    QByteArray *rmap = reverseMap.loadAcquire();
     if (!rmap){
         rmap = buildReverseMap(this->forwardIndex);
         if (!reverseMap.testAndSetRelease(0, rmap)) {
             delete rmap;
-            rmap = reverseMap.loadRelaxed();
+            rmap = reverseMap.loadAcquire();
         }
     }
 
