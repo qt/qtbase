@@ -1463,28 +1463,10 @@ void QApplication::setPalette(const QPalette &palette, const char* className)
 
 void QApplicationPrivate::setSystemPalette(const QPalette &pal)
 {
-    QPalette adjusted;
-
-#if 0
-    // adjust the system palette to avoid dithering
-    QColormap cmap = QColormap::instance();
-    if (cmap.depths() > 4 && cmap.depths() < 24) {
-        for (int g = 0; g < QPalette::NColorGroups; g++)
-            for (int i = 0; i < QPalette::NColorRoles; i++) {
-                QColor color = pal.color((QPalette::ColorGroup)g, (QPalette::ColorRole)i);
-                color = cmap.colorAt(cmap.pixel(color));
-                adjusted.setColor((QPalette::ColorGroup)g, (QPalette::ColorRole) i, color);
-            }
-    }
-#else
-    adjusted = pal;
-#endif
-
     if (!sys_pal)
-        sys_pal = new QPalette(adjusted);
+        sys_pal = new QPalette(pal);
     else
-        *sys_pal = adjusted;
-
+        *sys_pal = pal;
 
     if (!QApplicationPrivate::set_pal)
         QApplication::setPalette(*sys_pal);
