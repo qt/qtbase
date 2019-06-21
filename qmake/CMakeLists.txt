@@ -1,13 +1,5 @@
 # Generated from qmake.pro.
 
-# special case begin
-set(path_component "${INSTALL_DATADIR}")
-qt_path_join(mkspecs_install_dir ${QT_INSTALL_DIR} ${path_component})
-
-qt_copy_or_install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs"
-                   DESTINATION ${mkspecs_install_dir})
-# special case end
-
 #####################################################################
 ## qmake Binary:
 #####################################################################

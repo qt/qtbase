@@ -72,6 +72,15 @@ if (QT_WILL_BUILD_TOOLS)
     add_subdirectory(qmake)
 endif()
 
+# As long as we use the mkspecs (for qplatformdefs.h), we need to always
+# install it, especially when cross-compiling.
+set(mkspecs_install_dir "${INSTALL_DATADIR}")
+qt_path_join(mkspecs_install_dir ${QT_INSTALL_DIR} ${mkspecs_install_dir})
+
+qt_copy_or_install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs"
+                   DESTINATION ${mkspecs_install_dir})
+
+
 qt_build_repo_end()
 
 option(BUILD_EXAMPLES "Build Qt examples" ON)
