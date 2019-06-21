@@ -142,16 +142,19 @@ QApplicationPrivate *QApplicationPrivate::self = 0;
 
 static void initSystemPalette()
 {
-    if (!QApplicationPrivate::sys_pal) {
-        QPalette defaultPlatte;
-        if (QApplicationPrivate::app_style)
-            defaultPlatte = QApplicationPrivate::app_style->standardPalette();
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette()) {
-            QApplicationPrivate::setSystemPalette(themePalette->resolve(defaultPlatte));
-            QApplicationPrivate::initializeWidgetPaletteHash();
-        } else {
-            QApplicationPrivate::setSystemPalette(defaultPlatte);
-        }
+    if (QApplicationPrivate::sys_pal)
+        return; // Already initialized
+
+    QPalette defaultPalette;
+    if (QApplicationPrivate::app_style)
+        defaultPalette = QApplicationPrivate::app_style->standardPalette();
+
+    auto *platformTheme = QGuiApplicationPrivate::platformTheme();
+    if (const QPalette *themePalette = platformTheme ? platformTheme->palette() : nullptr) {
+        QApplicationPrivate::setSystemPalette(themePalette->resolve(defaultPalette));
+        QApplicationPrivate::initializeWidgetPaletteHash();
+    } else {
+        QApplicationPrivate::setSystemPalette(defaultPalette);
     }
 }
 
@@ -1130,12 +1133,10 @@ void QApplication::setStyle(QStyle *style)
     // might call QApplication::setPalette() itself
     if (QApplicationPrivate::set_pal) {
         QApplication::setPalette(*QApplicationPrivate::set_pal);
-    } else if (QApplicationPrivate::sys_pal) {
-        clearSystemPalette();
+    } else {
+        if (QApplicationPrivate::sys_pal)
+            clearSystemPalette();
         initSystemPalette();
-    } else if (!QApplicationPrivate::sys_pal) {
-        // Initialize the sys_pal if it hasn't happened yet...
-        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
     }
 
     // The default widget font hash is based on the platform theme,
