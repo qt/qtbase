@@ -5014,9 +5014,6 @@ public:
 // very similar to ioPostToHttpUploadProgress but for SSL
 void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 {
-#ifdef Q_OS_WIN
-    QSKIP("QTBUG-76157: get rid of locking in TLS handshake (QSslSocket)");
-#endif
     //QFile sourceFile(testDataDir + "/bigfile");
     //QVERIFY(sourceFile.open(QIODevice::ReadOnly));
     qint64 wantedSize = 2*1024*1024; // 2 MB
@@ -6398,10 +6395,6 @@ void tst_QNetworkReply::encrypted()
 
 void tst_QNetworkReply::abortOnEncrypted()
 {
-#ifdef Q_OS_WIN
-    QSKIP("QTBUG-76157: get rid of locking in TLS handshake (QSslSocket)");
-#endif
-
     SslServer server;
     server.listen();
     if (!server.isListening())
@@ -8479,9 +8472,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors_data()
 
     QTest::newRow("too-many-redirects") << "http://localhost" << tempRedirectReply << QNetworkReply::TooManyRedirectsError;
 #if QT_CONFIG(ssl)
-#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("insecure-redirect") << "https://localhost" << tempRedirectReply << QNetworkReply::InsecureRedirectError;
-#endif // Q_OS_WIN
 #endif
     QTest::newRow("unknown-redirect") << "http://localhost"<< tempRedirectReply.replace("http", "bad_protocol") << QNetworkReply::ProtocolUnknownError;
 }
@@ -8558,11 +8549,9 @@ void tst_QNetworkReply::ioHttpRedirectPolicy_data()
     QTest::newRow("nolesssafe-nossl") << QNetworkRequest::NoLessSafeRedirectPolicy << false << 1 << 200;
     QTest::newRow("same-origin-nossl") << QNetworkRequest::SameOriginRedirectPolicy << false << 1 << 200;
 #if QT_CONFIG(ssl)
-#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
     QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
     QTest::newRow("same-origin-ssl") << QNetworkRequest::SameOriginRedirectPolicy << true << 1 << 200;
-#endif // Q_OS_WIN
 #endif
 }
 
@@ -8616,41 +8605,33 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
     QTest::newRow("nolesssafe-nossl-nossl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
 #if QT_CONFIG(ssl)
-#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("nolesssafe-ssl-ssl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("https:/localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("nolesssafe-ssl-nossl-insecure-redirect") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-#endif // Q_OS_WIN
 #endif
     // 2. SameOriginRedirectsPolicy
     QTest::newRow("same-origin-nossl-nossl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
 #if QT_CONFIG(ssl)
-#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("same-origin-ssl-ssl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("same-origin-https-http-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-#endif // Q_OS_WIN
 #endif
     QTest::newRow("same-origin-http-https-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("https://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
     QTest::newRow("same-origin-http-http-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
 #if QT_CONFIG(ssl)
-#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("same-origin-https-https-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-#endif // Q_OS_WIN
 #endif
     QTest::newRow("same-origin-http-http-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
 #if QT_CONFIG(ssl)
-#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("same-origin-https-https-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
-#endif // Q_OS_WIN
 #endif
 }
 
@@ -9125,10 +9106,6 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
 
     for (int s = 0; s <= 1; s++) {
         withSsl = (s == 1);
-#ifdef Q_OS_WIN
-        if (withSsl)
-            QSKIP("QTBUG-76157: get rid of locking in TLS handshake (QSslSocket)");
-#endif // Q_OS_WIN
         // Test also needs to run several times because of 9c2ecf89
         for (int j = 0; j < 20; j++) {
             // emulate a minimal https server
