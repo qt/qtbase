@@ -207,6 +207,9 @@ void QHttpNetworkConnectionChannel::init()
 
 void QHttpNetworkConnectionChannel::close()
 {
+    if (state == QHttpNetworkConnectionChannel::ClosingState)
+        return;
+
     if (!socket)
         state = QHttpNetworkConnectionChannel::IdleState;
     else if (socket->state() == QAbstractSocket::UnconnectedState)
