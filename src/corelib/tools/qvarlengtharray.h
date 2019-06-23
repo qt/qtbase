@@ -44,6 +44,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qhashfunctions.h>
 
 #include <algorithm>
 #include <initializer_list>
@@ -597,6 +598,13 @@ inline bool operator>=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengt
     noexcept(noexcept(lhs < rhs))
 {
     return !(lhs < rhs);
+}
+
+template <typename T, int Prealloc>
+uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
+    noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
+{
+    return qHashRange(key.cbegin(), key.cend(), seed);
 }
 
 QT_END_NAMESPACE
