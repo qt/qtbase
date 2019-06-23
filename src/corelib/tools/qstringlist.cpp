@@ -283,6 +283,7 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 }
 
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QStringList QStringList::filter(const QString &str, Qt::CaseSensitivity cs) const
 
@@ -302,6 +303,26 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 
     \sa contains()
 */
+#endif
+
+/*!
+    \fn QStringList QStringList::filter(QStringView str, Qt::CaseSensitivity cs) const
+    \overload
+    \since 5.14
+*/
+QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView str,
+                                          Qt::CaseSensitivity cs)
+{
+    QStringMatcher matcher(str.data(), str.length(), cs);
+    QStringList res;
+    for (int i = 0; i < that->size(); ++i)
+        if (matcher.indexIn(that->at(i)) != -1)
+            res << that->at(i);
+    return res;
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/// Not really needed anymore, but kept for binary compatibility
 QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString &str,
                                           Qt::CaseSensitivity cs)
 {
@@ -312,6 +333,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
             res << that->at(i);
     return res;
 }
+#endif
 
 template<typename T>
 static bool stringList_contains(const QStringList &stringList, const T &str, Qt::CaseSensitivity cs)
@@ -466,6 +488,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 }
 #endif // QT_CONFIG(regularexpression)
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QStringList &QStringList::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 
@@ -481,12 +504,41 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 
     \sa QString::replace()
 */
+
+/*!
+    \fn QStringList &QStringList::replaceInStrings(QStringView before, const QString &after, Qt::CaseSensitivity cs)
+    \overload
+    \since 5.14
+*/
+
+/*!
+    \fn QStringList &QStringList::replaceInStrings(const QString &before, QStringView after, Qt::CaseSensitivity cs)
+    \overload
+    \since 5.14
+*/
+#endif
+
+/*!
+    \fn QStringList &QStringList::replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs)
+    \overload
+    \since 5.14
+*/
+void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView before,
+                                             QStringView after, Qt::CaseSensitivity cs)
+{
+    for (int i = 0; i < that->size(); ++i)
+        (*that)[i].replace(before.data(), before.length(), after.data(), after.length(), cs);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/// Not really needed anymore, but kept for binary compatibility
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &before,
                                              const QString &after, Qt::CaseSensitivity cs)
 {
     for (int i = 0; i < that->size(); ++i)
         (*that)[i].replace(before, after, cs);
 }
+#endif
 
 
 #ifndef QT_NO_REGEXP
@@ -561,6 +613,7 @@ static int accumulatedSize(const QStringList &list, int seplen)
     return result;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QString QStringList::join(const QString &separator) const
 
@@ -570,6 +623,7 @@ static int accumulatedSize(const QStringList &list, int seplen)
 
     \sa QString::split()
 */
+#endif
 
 /*!
     \fn QString QStringList::join(QChar separator) const
@@ -612,6 +666,16 @@ QString QtPrivate::QStringList_join(const QStringList &list, QLatin1String sep)
         }
     }
     return result;
+}
+
+/*!
+    \fn QString QStringList::join(QStringView separator) const
+    \overload
+    \since 5.14
+*/
+QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
+{
+    return QStringList_join(that, sep.data(), sep.length());
 }
 
 /*!
