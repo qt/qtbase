@@ -239,6 +239,8 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     } while (0)                                                         \
     /**/
 
+Q_DECLARE_METATYPE(QByteArray::Base64DecodingStatus);
+
 tst_QByteArray::tst_QByteArray()
 {
 }
@@ -637,9 +639,16 @@ void tst_QByteArray::base64()
 {
     QFETCH(QByteArray, rawdata);
     QFETCH(QByteArray, base64);
+    QByteArray::FromBase64Result result;
 
-    QByteArray arr = QByteArray::fromBase64(base64);
-    QCOMPARE(arr, rawdata);
+    result = QByteArray::fromBase64Encoding(base64, QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(result);
+    QCOMPARE(result.decoded, rawdata);
+
+    QByteArray arr = base64;
+    result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(result);
+    QCOMPARE(result.decoded, rawdata);
 
     QByteArray arr64 = rawdata.toBase64();
     QCOMPARE(arr64, base64);
@@ -668,21 +677,22 @@ void tst_QByteArray::fromBase64_data()
 {
     QTest::addColumn<QByteArray>("rawdata");
     QTest::addColumn<QByteArray>("base64");
+    QTest::addColumn<QByteArray::Base64DecodingStatus>("status");
 
-    QTest::newRow("1") << QByteArray("") << QByteArray("  ");
-    QTest::newRow("2") << QByteArray("1") << QByteArray("MQ");
-    QTest::newRow("3") << QByteArray("12") << QByteArray("MTI       ");
-    QTest::newRow("4") << QByteArray("123") << QByteArray("M=TIz");
-    QTest::newRow("5") << QByteArray("1234") << QByteArray("MTI zN A ");
-    QTest::newRow("6") << QByteArray("\n") << QByteArray("Cg");
-    QTest::newRow("7") << QByteArray("a\n") << QByteArray("======YQo=");
-    QTest::newRow("8") << QByteArray("ab\n") << QByteArray("Y\nWIK");
-    QTest::newRow("9") << QByteArray("abc\n") << QByteArray("YWJjCg==");
-    QTest::newRow("a") << QByteArray("abcd\n") << QByteArray("YWJ\1j\x9cZAo=");
-    QTest::newRow("b") << QByteArray("abcde\n") << QByteArray("YW JjZ\n G\tUK");
-    QTest::newRow("c") << QByteArray("abcdef\n") << QByteArray("YWJjZGVmCg=");
-    QTest::newRow("d") << QByteArray("abcdefg\n") << QByteArray("YWJ\rjZGVmZwo");
-    QTest::newRow("e") << QByteArray("abcdefgh\n") << QByteArray("YWJjZGVmZ2gK");
+    QTest::newRow("1") << QByteArray("") << QByteArray("  ") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("2") << QByteArray("1") << QByteArray("MQ=") << QByteArray::Base64DecodingStatus::IllegalInputLength;
+    QTest::newRow("3") << QByteArray("12") << QByteArray("MTI       ") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("4") << QByteArray("123") << QByteArray("M=TIz") << QByteArray::Base64DecodingStatus::IllegalInputLength;
+    QTest::newRow("5") << QByteArray("1234") << QByteArray("MTI zN A ") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("6") << QByteArray("\n") << QByteArray("Cg@") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("7") << QByteArray("a\n") << QByteArray("======YQo=") << QByteArray::Base64DecodingStatus::IllegalInputLength;
+    QTest::newRow("8") << QByteArray("ab\n") << QByteArray("Y\nWIK ") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("9") << QByteArray("abc\n") << QByteArray("YWJjCg=") << QByteArray::Base64DecodingStatus::IllegalInputLength;
+    QTest::newRow("a") << QByteArray("abcd\n") << QByteArray("YWJ\1j\x9cZAo=") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("b") << QByteArray("abcde\n") << QByteArray("YW JjZ\n G\tUK") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("c") << QByteArray("abcdef\n") << QByteArray("YWJjZGVmCg=") << QByteArray::Base64DecodingStatus::IllegalInputLength;
+    QTest::newRow("d") << QByteArray("abcdefg\n") << QByteArray("YWJ\rjZGVmZwo") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("e") << QByteArray("abcdefgh\n") << QByteArray("YWJjZGVmZ2gK====") << QByteArray::Base64DecodingStatus::IllegalPadding;
 
     QByteArray ba;
     ba.resize(256);
@@ -692,13 +702,12 @@ void tst_QByteArray::fromBase64_data()
                                            "c4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1u\n"
                                            "b3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpa\n"
                                            "anqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd\n"
-                                           "3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==                            ");
+                                           "3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==                            ") << QByteArray::Base64DecodingStatus::IllegalCharacter;
 
 
-    QTest::newRow("g") << QByteArray("foo\0bar", 7) << QByteArray("Zm9vAGJhcg");
-    QTest::newRow("h") << QByteArray("f\xd1oo\x9ctar") << QByteArray("ZtFvb5x0YXI=");
-    QTest::newRow("i") << QByteArray("\"\0\0\0\0\0\0\"", 8) << QByteArray("IgAAAAAAACI");
-
+    QTest::newRow("g") << QByteArray("foo\0bar", 7) << QByteArray("Zm9vAGJhcg=") << QByteArray::Base64DecodingStatus::IllegalInputLength;
+    QTest::newRow("h") << QByteArray("f\xd1oo\x9ctar") << QByteArray("ZtFvb5x 0YXI") << QByteArray::Base64DecodingStatus::IllegalCharacter;
+    QTest::newRow("i") << QByteArray("\"\0\0\0\0\0\0\"", 8) << QByteArray("IgAAAAAAACI ") << QByteArray::Base64DecodingStatus::IllegalCharacter;
 }
 
 
@@ -706,25 +715,120 @@ void tst_QByteArray::fromBase64()
 {
     QFETCH(QByteArray, rawdata);
     QFETCH(QByteArray, base64);
+    QFETCH(QByteArray::Base64DecodingStatus, status);
 
-    QByteArray arr = QByteArray::fromBase64(base64);
-    QCOMPARE(arr, rawdata);
+    QByteArray::FromBase64Result result;
 
-    arr = QByteArray::fromBase64(base64, QByteArray::Base64Encoding);
-    QCOMPARE(arr, rawdata);
+    result = QByteArray::fromBase64Encoding(base64);
+    QVERIFY(result);
+    QCOMPARE(result.decoded, rawdata);
+
+    result = QByteArray::fromBase64Encoding(base64, QByteArray::Base64Encoding);
+    QVERIFY(result);
+    QCOMPARE(result.decoded, rawdata);
+
+    result = QByteArray::fromBase64Encoding(base64, QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(!result);
+    QCOMPARE(result.decodingStatus, status);
+    QVERIFY(result.decoded.isEmpty());
+
+    QByteArray arr = base64;
+    QVERIFY(!arr.isDetached());
+    result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(!arr.isEmpty());
+    QVERIFY(!result);
+    QCOMPARE(result.decodingStatus, status);
+    QVERIFY(result.decoded.isEmpty());
+
+    arr.detach();
+    QVERIFY(arr.isDetached());
+    result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(arr.isEmpty());
+    QVERIFY(!result);
+    QCOMPARE(result.decodingStatus, status);
+    QVERIFY(result.decoded.isEmpty());
 
     // try "base64url" encoding
     QByteArray base64url = base64;
     base64url.replace('/', '_').replace('+', '-');
-    arr = QByteArray::fromBase64(base64url, QByteArray::Base64UrlEncoding);
-    QCOMPARE(arr, rawdata);
+    result = QByteArray::fromBase64Encoding(base64url, QByteArray::Base64UrlEncoding);
+    QVERIFY(result);
+    QCOMPARE(result.decoded, rawdata);
+
+    result = QByteArray::fromBase64Encoding(base64url, QByteArray::Base64UrlEncoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(!result);
+    QCOMPARE(result.decodingStatus, status);
+    QVERIFY(result.decoded.isEmpty());
+
+    arr = base64url;
+    arr.detach();
+    result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64UrlEncoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(arr.isEmpty());
+    QVERIFY(!result);
+    QCOMPARE(result.decodingStatus, status);
+    QVERIFY(result.decoded.isEmpty());
 
     if (base64 != base64url) {
         // check that the invalid decodings fail
-        arr = QByteArray::fromBase64(base64, QByteArray::Base64UrlEncoding);
-        QVERIFY(arr != rawdata);
-        arr = QByteArray::fromBase64(base64url, QByteArray::Base64Encoding);
-        QVERIFY(arr != rawdata);
+        result = QByteArray::fromBase64Encoding(base64, QByteArray::Base64UrlEncoding);
+        QVERIFY(result);
+        QVERIFY(result.decoded != rawdata);
+        result = QByteArray::fromBase64Encoding(base64url, QByteArray::Base64Encoding);
+        QVERIFY(result);
+        QVERIFY(result.decoded != rawdata);
+
+        result = QByteArray::fromBase64Encoding(base64, QByteArray::Base64UrlEncoding | QByteArray::AbortOnBase64DecodingErrors);
+        QVERIFY(!result);
+        QVERIFY(result.decoded.isEmpty());
+
+        arr = base64;
+        arr.detach();
+        result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64UrlEncoding | QByteArray::AbortOnBase64DecodingErrors);
+        QVERIFY(arr.isEmpty());
+        QVERIFY(!result);
+        QVERIFY(result.decoded.isEmpty());
+
+        result = QByteArray::fromBase64Encoding(base64url, QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+        QVERIFY(!result);
+        QVERIFY(result.decoded.isEmpty());
+
+        arr = base64url;
+        arr.detach();
+        result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+        QVERIFY(arr.isEmpty());
+        QVERIFY(!result);
+        QVERIFY(result.decoded.isEmpty());
+    }
+
+    // also remove padding, if any, and test again. note that by doing
+    // that we might be sanitizing the illegal input, so we can't assume now
+    // that result will be invalid in all cases
+    {
+        auto rightmostNotEqualSign = std::find_if_not(base64url.rbegin(), base64url.rend(), [](char c) { return c == '='; });
+        base64url.chop(std::distance(base64url.rbegin(), rightmostNotEqualSign)); // no QByteArray::erase...
+    }
+
+    result = QByteArray::fromBase64Encoding(base64url, QByteArray::Base64UrlEncoding);
+    QVERIFY(result);
+    QCOMPARE(result.decoded, rawdata);
+
+    result = QByteArray::fromBase64Encoding(base64url, QByteArray::Base64UrlEncoding | QByteArray::AbortOnBase64DecodingErrors);
+    if (result) {
+        QCOMPARE(result.decoded, rawdata);
+    } else {
+        QCOMPARE(result.decodingStatus, status);
+        QVERIFY(result.decoded.isEmpty());
+    }
+
+    arr = base64url;
+    arr.detach();
+    result = QByteArray::fromBase64Encoding(std::move(arr), QByteArray::Base64UrlEncoding | QByteArray::AbortOnBase64DecodingErrors);
+    QVERIFY(arr.isEmpty());
+    if (result) {
+        QCOMPARE(result.decoded, rawdata);
+    } else {
+        QCOMPARE(result.decodingStatus, status);
+        QVERIFY(result.decoded.isEmpty());
     }
 }
 
