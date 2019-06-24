@@ -57,14 +57,20 @@ function(qt_internal_set_warnings_are_errors_flags target)
     endif()
 endfunction()
 
+add_library(PlatformCommonInternal INTERFACE)
+add_library(Qt::PlatformCommonInternal ALIAS PlatformCommonInternal)
+
 add_library(PlatformModuleInternal INTERFACE)
 add_library(Qt::PlatformModuleInternal ALIAS PlatformModuleInternal)
+target_link_libraries(PlatformModuleInternal INTERFACE PlatformCommonInternal)
 
 add_library(PlatformPluginInternal INTERFACE)
 add_library(Qt::PlatformPluginInternal ALIAS PlatformPluginInternal)
+target_link_libraries(PlatformPluginInternal INTERFACE PlatformCommonInternal)
 
 add_library(PlatformToolInternal INTERFACE)
 add_library(Qt::PlatformToolInternal ALIAS PlatformToolInternal)
+target_link_libraries(PlatformToolInternal INTERFACE PlatformCommonInternal)
 
 if(WARNINGS_ARE_ERRORS)
     qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal)
@@ -85,4 +91,8 @@ endif()
 # linker. To build our own target we will use the lld linker.
 if (ANDROID)
     target_link_options(PlatformModuleInternal INTERFACE -fuse-ld=lld)
+endif()
+
+if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
+    target_compile_definitions(PlatformCommonInternal INTERFACE QT_NO_DEBUG)
 endif()
