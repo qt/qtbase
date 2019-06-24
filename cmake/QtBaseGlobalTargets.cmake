@@ -75,7 +75,7 @@ if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
 endif()
 
 if(VCPKG_TARGET_TRIPLET)
-    list(APPEND init_vcpkg "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\")")
+    list(APPEND init_vcpkg "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\" CACHE STRING \"\")")
 endif()
 
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
