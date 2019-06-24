@@ -394,7 +394,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         }
         QSize outSize(width,height);
         if (!scaledSize.isEmpty() && quint32(scaledSize.width()) <= width &&
-            quint32(scaledSize.height()) <= height && interlace_method == PNG_INTERLACE_NONE) {
+            quint32(scaledSize.height()) <= height && scaledSize != outSize && interlace_method == PNG_INTERLACE_NONE) {
             // Do inline downscaling
             outSize = scaledSize;
             if (doScaledRead)
