@@ -1536,6 +1536,32 @@ def write_simd_part(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
                                header = 'add_qt_simd_part({} SIMD {}\n'.format(target, simd),
                                footer = ')\n\n')
 
+def write_android_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: int = 0):
+    keys = [ 'ANDROID_BUNDLED_JAR_DEPENDENCIES'
+            , 'ANDROID_LIB_DEPENDENCIES'
+            , 'ANDROID_JAR_DEPENDENCIES'
+            , 'ANDROID_LIB_DEPENDENCY_REPLACEMENTS'
+            , 'ANDROID_BUNDLED_FILES'
+            , 'ANDROID_PERMISSIONS' ]
+
+    has_no_values = True
+    for key in keys:
+        value = scope.get(key)
+        if len(value) != 0:
+            if has_no_values:
+                if scope.condition:
+                    cm_fh.write('\n{}if(ANDROID AND ({}))\n'.format(spaces(indent), scope.condition))
+                else:
+                    cm_fh.write('\n{}if(ANDROID)\n'.format(spaces(indent)))
+                indent += 1
+                has_no_values = False
+            cm_fh.write('{}set_property(TARGET {} APPEND PROPERTY QT_{}\n'.format(spaces(indent), target, key))
+            write_list(cm_fh, value, '', indent + 1)
+            cm_fh.write('{})\n'.format(spaces(indent)))
+    indent -= 1
+
+    if not has_no_values:
+        cm_fh.write('{}endif()\n'.format(spaces(indent)))
 
 def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     cmake_function: str, scope: Scope, *,
@@ -1577,6 +1603,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
     write_simd_part(cm_fh, name, scope, indent)
 
+    write_android_part(cm_fh, name, scopes[0], indent)
+
     ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
@@ -1590,11 +1618,11 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
     for c in scopes[1:]:
         c.reset_visited_keys()
+        write_android_part(cm_fh, name, c, indent=indent)
         write_extend_target(cm_fh, name, c, indent=indent)
         ignored_keys_report = write_ignored_keys(c, spaces(indent))
         if ignored_keys_report:
             cm_fh.write(ignored_keys_report)
-
 
 def write_module(cm_fh: typing.IO[str], scope: Scope, *,
                  indent: int = 0) -> None:

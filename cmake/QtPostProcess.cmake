@@ -276,6 +276,18 @@ function(qt_generate_build_internals_extra_cmake_code)
     endif()
 endfunction()
 
+# For every Qt module check if there any android dependencies that require
+# processing.
+function(qt_modules_process_android_dependencies)
+    foreach (target ${QT_KNOWN_MODULES})
+        qt_android_dependencies(${target})
+    endforeach()
+endfunction()
+
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
 qt_internal_create_plugins_files()
+
+if (ANDROID)
+    qt_modules_process_android_dependencies()
+endif()

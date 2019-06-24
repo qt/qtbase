@@ -76,10 +76,19 @@ extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386"
         "/BASE:0x64000000"
 )
 
+if(ANDROID AND (QT_FEATURE_bearermanagement))
+    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
+        jar/QtAndroidBearer.jar
+    )
+    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
+        plugins/bearer/libqandroidbearer.so
+    )
+    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_PERMISSIONS
+        android.permission.ACCESS_NETWORK_STATE
+    )
+endif()
+
 #### Keys ignored in scope 3:.:.:network.pro:QT_FEATURE_bearermanagement:
-# ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroidBearer.jar"
-# ANDROID_LIB_DEPENDENCIES = "plugins/bearer/libqandroidbearer.so"
-# ANDROID_PERMISSIONS = "android.permission.ACCESS_NETWORK_STATE"
 # MODULE_PLUGIN_TYPES = "bearer"
 
 extend_target(Network CONDITION QT_FEATURE_ftp

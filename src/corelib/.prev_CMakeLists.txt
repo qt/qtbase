@@ -241,10 +241,19 @@ add_qt_simd_part(Core SIMD mips_dsp
 
 
 
+if(ANDROID)
+    set_property(TARGET Core APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
+        jar/QtAndroid.jar
+    )
+    set_property(TARGET Core APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
+        plugins/platforms/android/libqtforandroid.so
+    )
+    set_property(TARGET Core APPEND PROPERTY QT_ANDROID_PERMISSIONS
+        android.permission.INTERNET android.permission.WRITE_EXTERNAL_STORAGE
+    )
+endif()
+
 #### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
-# ANDROID_BUNDLED_JAR_DEPENDENCIES = "jar/QtAndroid.jar"
-# ANDROID_LIB_DEPENDENCIES = "plugins/platforms/android/libqtforandroid.so"
-# ANDROID_PERMISSIONS = "android.permission.INTERNET" "android.permission.WRITE_EXTERNAL_STORAGE"
 # CMAKE_DISABLED_FEATURES = "$$joinQT_DISABLED_FEATURES,"$$escape_expand(\\n)    ""
 # CMAKE_HOST_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA/src],$$[QT_INSTALL_PREFIX]"
 # CMAKE_INSTALL_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA],$$[QT_INSTALL_PREFIX]"

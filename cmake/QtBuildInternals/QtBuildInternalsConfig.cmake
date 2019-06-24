@@ -142,3 +142,7 @@ macro(qt_examples_build_end)
 
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
 endmacro()
+
+if (ANDROID)
+    include(QtBuildInternals/QtBuildInternalsAndroid)
+endif()

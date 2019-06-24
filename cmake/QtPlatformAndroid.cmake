@@ -74,7 +74,7 @@ if (NOT QT_ANDROID_SDK_BUILD_TOOLS_VERSION)
     list(SORT android_build_tools)
     list(REVERSE android_build_tools)
     list(GET android_build_tools 0 android_build_tools_latest)
-    set(qt_QT_ANDROID_SDK_BUILD_TOOLS_VERSION ${android_build_tools_latest})
+    set(QT_ANDROID_SDK_BUILD_TOOLS_VERSION ${android_build_tools_latest})
 endif()
 
 # Ensure we are using the shared version of libc++

@@ -1293,6 +1293,14 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
         PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
         )
+
+    if (ANDROID)
+        # Record install library location so it can be accessed by
+        # qt_android_dependencies without having to specify it again.
+        set_target_properties(${target} PROPERTIES
+            QT_ANDROID_MODULE_INSTALL_DIR ${INSTALL_LIBDIR})
+    endif()
+
     qt_install(EXPORT ${export_name}
                NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
                DESTINATION ${config_install_dir})
