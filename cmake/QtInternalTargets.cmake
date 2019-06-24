@@ -8,7 +8,7 @@ function(qt_internal_set_warnings_are_errors_flags target)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         # using AppleClang
         # Apple clang 4.0+
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "4.0.0")
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "4.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL "9.2")
             target_compile_options("${target}" INTERFACE -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
