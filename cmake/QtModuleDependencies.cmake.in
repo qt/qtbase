@@ -34,6 +34,12 @@ set(CMAKE_MODULE_PATH "${old_CMAKE_MODULE_PATH}")
 
 # Find Qt tool package.
 set(_tool_deps "@main_module_tool_deps@")
+
+# The tools do not provide linkage targets but executables, where a mismatch
+# between 32-bit target and 64-bit host does not matter.
+set(BACKUP_CMAKE_SIZEOF_VOID_P "${CMAKE_SIZEOF_VOID_P}")
+set(CMAKE_SIZEOF_VOID_P "")
+
 foreach(_target_dep ${_tool_deps})
     list(GET _target_dep 0 pkg)
     list(GET _target_dep 1 version)
@@ -42,9 +48,11 @@ foreach(_target_dep ${_tool_deps})
 
     if (NOT ${pkg}_FOUND)
         set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
+        set(CMAKE_SIZEOF_VOID_P "${BACKUP_CMAKE_SIZEOF_VOID_P}")
         return()
     endif()
 endforeach()
+set(CMAKE_SIZEOF_VOID_P "${BACKUP_CMAKE_SIZEOF_VOID_P}")
 
 # note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
 set(_target_deps "@target_deps@")
