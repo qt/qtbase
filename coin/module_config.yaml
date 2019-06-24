@@ -227,6 +227,7 @@ build_instructions:
     directory: "{{.SourceDir}}/tests"
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_PREFIX_PATH:PATH={{.InstallDir}} {{.SourceDir}}/tests"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
