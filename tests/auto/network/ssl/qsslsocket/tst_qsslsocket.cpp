@@ -2612,6 +2612,7 @@ void tst_QSslSocket::encryptWithoutConnecting()
 
 void tst_QSslSocket::resume_data()
 {
+    QSKIP("Temporary skip while updating certificates");
     QTest::addColumn<bool>("ignoreErrorsAfterPause");
     QTest::addColumn<QList<QSslError> >("errorsToIgnore");
     QTest::addColumn<bool>("expectSuccess");
