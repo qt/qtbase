@@ -1343,7 +1343,7 @@ function(qt_export_tools module_name)
     # Guards against the case when doing a cross-build and the function is called manually and not
     # by add_qt_module.
 
-    if(NOT "${module_name}" IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
+    if(NOT "${module_name}" IN_LIST QT_KNOWN_MODULES_WITH_TOOLS OR CMAKE_CROSSCOMPILING)
         return()
     endif()
 
@@ -1760,6 +1760,9 @@ function(add_qt_tool name)
         set(CMAKE_PREFIX_PATH "${BACKUP_CMAKE_PREFIX_PATH}")
 
         if(${${tools_package_name}_FOUND} AND TARGET ${full_name})
+            # Even if the tool is already visible, make sure that our modules remain associated
+            # with the tools.
+            qt_internal_append_known_modules_with_tools("${arg_TOOLS_TARGET}")
             get_property(path TARGET ${full_name} PROPERTY LOCATION)
             message(STATUS "${full_name} was found at ${path} using package ${tools_package_name}.")
             return()
