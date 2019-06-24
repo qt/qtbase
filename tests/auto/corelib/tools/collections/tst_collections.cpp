@@ -1370,7 +1370,7 @@ void tst_Collections::hash()
     {
         typedef QHash<QString, QString> Hash;
         Hash hash;
-        QString key;
+        QString key = QLatin1String("  ");
         for (int i = 0; i < 10; ++i) {
             key[0] = i + '0';
             for (int j = 0; j < 10; ++j) {
