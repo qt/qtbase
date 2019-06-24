@@ -1461,6 +1461,11 @@ function(add_qt_plugin target)
         add_library("${target}" STATIC)
     else()
         add_library("${target}" MODULE)
+        if(APPLE)
+            # CMake defaults to using .so extensions for loadable modules, aka plugins,
+            # but Qt plugins are actually suffixed with .dylib.
+            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
+        endif()
     endif()
     qt_internal_add_target_aliases("${target}")
 
