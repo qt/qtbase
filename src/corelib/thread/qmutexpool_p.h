@@ -68,7 +68,7 @@ public:
 
     inline QMutex *get(const void *address) {
         int index = uint(quintptr(address)) % mutexes.count();
-        QMutex *m = mutexes[index].load();
+        QMutex *m = mutexes[index].loadAcquire();
         if (m)
             return m;
         else
