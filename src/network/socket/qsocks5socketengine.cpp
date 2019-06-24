@@ -1753,6 +1753,11 @@ bool QSocks5SocketEngine::waitForRead(int msecs, bool *timedOut)
         return false;
     if (d->data->controlSocket->state() == QAbstractSocket::UnconnectedState)
         return true;
+    if (bytesAvailable() && d->readNotificationPending) {
+        // We've got some data incoming, but the queued call hasn't been performed yet.
+        // The data is where we expect it to be already, so just return true.
+        return true;
+    }
 
     // we're connected
     if (d->mode == QSocks5SocketEnginePrivate::ConnectMode ||
