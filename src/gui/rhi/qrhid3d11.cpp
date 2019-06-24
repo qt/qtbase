@@ -378,6 +378,10 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return true;
+    case QRhi::WideLines:
+        return false;
+    case QRhi::VertexShaderPointSize:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

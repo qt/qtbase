@@ -494,7 +494,23 @@ QT_BEGIN_NAMESPACE
     extension. When false, only 16-bit unsigned elements are supported in the
     index buffer.
 
-    \value Compute Indicates that compute shaders are supported.
+    \value Compute Indicates that compute shaders, image load/store, and
+    storage buffers are supported.
+
+    \value WideLines Indicates that lines with a width other than 1 are
+    supported. When reported as not supported, the line width set on the
+    graphics pipeline state is ignored. This can always be false with some
+    backends (D3D11, Metal). With Vulkan, the value depends on the
+    implementation.
+
+    \value VertexShaderPointSize Indicates that the size of rasterized points
+    set via \c{gl_PointSize} in the vertex shader is taken into account. When
+    reported as not supported, drawing points with a size other than 1 is not
+    supported. Setting \c{gl_PointSize} in the shader is still valid then, but
+    is ignored. (for example, when generating HLSL, the assignment is silently
+    dropped from the generated code) Note that some APIs (Metal, Vulkan)
+    require the point size to be set in the shader explicitly whenever drawing
+    points, even when the size is 1, as they do not automatically default to 1.
  */
 
 /*!

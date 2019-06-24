@@ -489,6 +489,9 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     // elsewhere states that the minimum bufferOffset is 4...
     texbufAlign = qMax<VkDeviceSize>(4, physDevProperties.limits.optimalBufferCopyOffsetAlignment);
 
+    f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
+    hasWideLines = physDevFeatures.wideLines;
+
     if (!importedAllocator) {
         VmaVulkanFunctions afuncs;
         afuncs.vkGetPhysicalDeviceProperties = wrap_vkGetPhysicalDeviceProperties;
@@ -3489,24 +3492,21 @@ QMatrix4x4 QRhiVulkan::clipSpaceCorrMatrix() const
 
 bool QRhiVulkan::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture::Flags flags) const
 {
-    VkPhysicalDeviceFeatures features;
-    f->vkGetPhysicalDeviceFeatures(physDev, &features);
-
     // Note that with some SDKs the validation layer gives an odd warning about
     // BC not being supported, even when our check here succeeds. Not much we
     // can do about that.
     if (format >= QRhiTexture::BC1 && format <= QRhiTexture::BC7) {
-        if (!features.textureCompressionBC)
+        if (!physDevFeatures.textureCompressionBC)
             return false;
     }
 
     if (format >= QRhiTexture::ETC2_RGB8 && format <= QRhiTexture::ETC2_RGBA8) {
-        if (!features.textureCompressionETC2)
+        if (!physDevFeatures.textureCompressionETC2)
             return false;
     }
 
     if (format >= QRhiTexture::ASTC_4x4 && format <= QRhiTexture::ASTC_12x12) {
-        if (!features.textureCompressionASTC_LDR)
+        if (!physDevFeatures.textureCompressionASTC_LDR)
             return false;
     }
 
@@ -3545,6 +3545,10 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return hasCompute;
+    case QRhi::WideLines:
+        return hasWideLines;
+    case QRhi::VertexShaderPointSize:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -5612,7 +5616,7 @@ bool QVkGraphicsPipeline::build()
     rastInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rastInfo.cullMode = toVkCullMode(m_cullMode);
     rastInfo.frontFace = toVkFrontFace(m_frontFace);
-    rastInfo.lineWidth = 1.0f;
+    rastInfo.lineWidth = rhiD->hasWideLines ? m_lineWidth : 1.0f;
     pipelineInfo.pRasterizationState = &rastInfo;
 
     VkPipelineMultisampleStateCreateInfo msInfo;

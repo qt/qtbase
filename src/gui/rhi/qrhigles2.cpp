@@ -618,6 +618,10 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.elementIndexUint;
     case QRhi::Compute:
         return false;
+    case QRhi::WideLines:
+        return true;
+    case QRhi::VertexShaderPointSize:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1848,6 +1852,9 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
     } else {
         f->glDisable(GL_STENCIL_TEST);
     }
+
+    if (psD->topology() == QRhiGraphicsPipeline::Lines || psD->topology() == QRhiGraphicsPipeline::LineStrip)
+        f->glLineWidth(psD->m_lineWidth);
 
     f->glUseProgram(psD->program);
 }
