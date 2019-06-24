@@ -801,9 +801,9 @@ void QSocks5SocketEnginePrivate::sendRequestMethod()
 
     QByteArray buf;
     buf.reserve(270); // big enough for domain name;
-    buf[0] = S5_VERSION_5;
-    buf[1] = command;
-    buf[2] = 0x00;
+    buf.append(char(S5_VERSION_5));
+    buf.append(command);
+    buf.append('\0');
     if (peerName.isEmpty() && !qt_socks5_set_host_address_and_port(address, port, &buf)) {
         QSOCKS5_DEBUG << "error setting address" << address << " : " << port;
         //### set error code ....
