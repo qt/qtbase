@@ -1057,8 +1057,8 @@ QStyle *QApplication::style()
 
         initSystemPalette();
 
-        if (QApplicationPrivate::set_pal) // Re-polish set palette with the new style
-            QApplication::setPalette(*QApplicationPrivate::set_pal);
+        if (auto *explicitlySetPalette = QApplicationPrivate::set_pal)
+            defaultStyle->polish(*explicitlySetPalette);
 
 #ifndef QT_NO_STYLE_STYLESHEET
         if (!QApplicationPrivate::styleSheet.isEmpty()) {
@@ -1132,8 +1132,8 @@ void QApplication::setStyle(QStyle *style)
     // take care of possible palette requirements of certain gui
     // styles. Do it before polishing the application since the style
     // might call QApplication::setPalette() itself
-    if (QApplicationPrivate::set_pal) {
-        QApplication::setPalette(*QApplicationPrivate::set_pal);
+    if (auto *explicitlySetPalette = QApplicationPrivate::set_pal) {
+        QApplicationPrivate::app_style->polish(*explicitlySetPalette);
     } else {
         if (QApplicationPrivate::sys_pal)
             clearSystemPalette();
