@@ -272,7 +272,7 @@ headersclean:!internal_module {
             hcleanFLAGS += -std=c++98
         }
 
-        hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        hcleanCOMMAND = $(CXX) -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
     } else: msvc:!intel_icl {
         # 4180: qualifier applied to function type has no meaning; ignored
         # 4458: declaration of 'identifier' hides class member
@@ -284,7 +284,7 @@ headersclean:!internal_module {
         # 4577: 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc
         greaterThan(QMAKE_MSC_VER, 18): hcleanFLAGS += -wd4577
 
-        hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -FI${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT} \
+        hcleanCOMMAND = $(CXX) -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -FI${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT} \
                         $$[QT_INSTALL_DATA/src]/mkspecs/features/data/dummy.cpp
     }
 

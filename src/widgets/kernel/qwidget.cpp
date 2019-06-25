@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
 **
 ** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
@@ -2617,14 +2617,27 @@ bool QWidgetPrivate::setScreenForPoint(const QPoint &pos)
     Q_Q(QWidget);
     if (!q->isWindow())
         return false;
-    // Find the screen for pos and make the widget undertand it is on that screen.
+    // Find the screen for pos and make the widget understand it is on that screen.
+    return setScreen(QGuiApplication::screenAt(pos));
+}
+
+/*!
+\internal
+Ensures that the widget's QWindow is set to be on the given \a screen.
+Returns true if the screen was changed.
+*/
+
+bool QWidgetPrivate::setScreen(QScreen *screen)
+{
+    Q_Q(QWidget);
+    if (!screen || !q->isWindow())
+        return false;
     const QScreen *currentScreen = windowHandle() ? windowHandle()->screen() : nullptr;
-    QScreen *actualScreen = QGuiApplication::screenAt(pos);
-    if (actualScreen && currentScreen != actualScreen) {
+    if (currentScreen != screen) {
         if (!windowHandle()) // Try to create a window handle if not created.
             createWinId();
         if (windowHandle())
-            windowHandle()->setScreen(actualScreen);
+            windowHandle()->setScreen(screen);
         return true;
     }
     return false;
@@ -7025,37 +7038,41 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
                 lastFocusChild = focusNext;
         }
     };
+    auto setPrev = [](QWidget *w, QWidget *prev)
+    {
+        w->d_func()->focus_prev = prev;
+    };
+    auto setNext = [](QWidget *w, QWidget *next)
+    {
+        w->d_func()->focus_next = next;
+    };
 
-    QWidget *lastFocusChildOfFirst, *lastFocusChildOfSecond;
-    determineLastFocusChild(first, lastFocusChildOfFirst);
+    // remove the second widget from the chain
+    QWidget *lastFocusChildOfSecond;
     determineLastFocusChild(second, lastFocusChildOfSecond);
-
-    // If the tab order is already correct, exit early
-    if (lastFocusChildOfFirst == second ||
-        lastFocusChildOfFirst->d_func()->focus_next == second) {
-        return;
+    {
+        QWidget *oldPrev = second->d_func()->focus_prev;
+        QWidget *prevWithFocus = oldPrev;
+        while (prevWithFocus->focusPolicy() == Qt::NoFocus)
+            prevWithFocus = prevWithFocus->d_func()->focus_prev;
+        // only widgets between first and second -> all is fine
+        if (prevWithFocus == first)
+            return;
+        QWidget *oldNext = lastFocusChildOfSecond->d_func()->focus_next;
+        setPrev(oldNext, oldPrev);
+        setNext(oldPrev, oldNext);
     }
 
-    // Note that we need to handle two different sections in the tab chain; The section
-    // that 'first' belongs to (firstSection), where we are about to insert 'second', and
-    // the section that 'second' used be a part of (secondSection). When we pull 'second'
-    // out of the second section and insert it into the first, we also need to ensure
-    // that we leave the second section in a connected state.
-    QWidget *firstChainOldSecond = lastFocusChildOfFirst->d_func()->focus_next;
-    QWidget *secondChainNewFirst = second->d_func()->focus_prev;
-    QWidget *secondChainNewSecond = lastFocusChildOfSecond->d_func()->focus_next;
-
-    // Insert 'second' after 'first'
-    lastFocusChildOfFirst->d_func()->focus_next = second;
-    second->d_func()->focus_prev = lastFocusChildOfFirst;
-
-    // The widget that used to be 'second' in the first section, should now become 'third'
-    lastFocusChildOfSecond->d_func()->focus_next = firstChainOldSecond;
-    firstChainOldSecond->d_func()->focus_prev = lastFocusChildOfSecond;
-
-    // Repair the second section after we pulled 'second' out of it
-    secondChainNewFirst->d_func()->focus_next = secondChainNewSecond;
-    secondChainNewSecond->d_func()->focus_prev = secondChainNewFirst;
+    // insert the second widget into the chain
+    QWidget *lastFocusChildOfFirst;
+    determineLastFocusChild(first, lastFocusChildOfFirst);
+    {
+        QWidget *oldNext = lastFocusChildOfFirst->d_func()->focus_next;
+        setPrev(second, lastFocusChildOfFirst);
+        setNext(lastFocusChildOfFirst, second);
+        setPrev(oldNext, lastFocusChildOfSecond);
+        setNext(lastFocusChildOfSecond, oldNext);
+    }
 }
 
 /*!\internal

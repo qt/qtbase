@@ -71,6 +71,24 @@ QImage::Format QNSWindowBackingStore::format() const
     return QRasterBackingStore::format();
 }
 
+void QNSWindowBackingStore::resize(const QSize &size, const QRegion &staticContents)
+{
+    qCDebug(lcQpaBackingStore) << "Resize requested to" << size;
+    QRasterBackingStore::resize(size, staticContents);
+
+    // The window shadow rendered by AppKit is based on the shape/content of the
+    // NSWindow surface. Technically any flush of the backingstore can result in
+    // a potentially new shape of the window, and would need a shadow invalidation,
+    // but this is likely too expensive to do at every flush for the few cases where
+    // clients change the shape dynamically. One case where we do know that the shadow
+    // likely needs invalidation, if the window has partially transparent content,
+    // is after a resize, where AppKit's default shadow may be based on the previous
+    // window content.
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+    if (cocoaWindow->isContentView() && !cocoaWindow->isOpaque())
+        cocoaWindow->m_needsInvalidateShadow = true;
+}
+
 /*!
     Flushes the given \a region from the specified \a window onto the
     screen.
@@ -217,6 +235,7 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
 
     QCocoaWindow *topLevelCocoaWindow = static_cast<QCocoaWindow *>(topLevelWindow->handle());
     if (Q_UNLIKELY(topLevelCocoaWindow->m_needsInvalidateShadow)) {
+        qCDebug(lcQpaBackingStore) << "Invalidating window shadow for" << topLevelCocoaWindow;
         [topLevelView.window invalidateShadow];
         topLevelCocoaWindow->m_needsInvalidateShadow = false;
     }
@@ -382,10 +401,11 @@ void QCALayerBackingStore::ensureBackBuffer()
 
 bool QCALayerBackingStore::recreateBackBufferIfNeeded()
 {
-    const qreal devicePixelRatio = window()->devicePixelRatio();
+    const QCocoaWindow *platformWindow = static_cast<QCocoaWindow *>(window()->handle());
+    const qreal devicePixelRatio = platformWindow->devicePixelRatio();
     QSize requestedBufferSize = m_requestedSize * devicePixelRatio;
 
-    const NSView *backingStoreView = static_cast<QCocoaWindow *>(window()->handle())->view();
+    const NSView *backingStoreView = platformWindow->view();
     Q_UNUSED(backingStoreView);
 
     auto bufferSizeMismatch = [&](const QSize requested, const QSize actual) {

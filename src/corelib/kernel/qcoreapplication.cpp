@@ -977,7 +977,11 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
+#if defined(QT_NO_QOBJECT)
     if (Q_UNLIKELY(qApp)) {
+#else
+    if (Q_UNLIKELY(QCoreApplicationPrivate::is_app_running)) {
+#endif
         switch (attribute) {
             case Qt::AA_EnableHighDpiScaling:
             case Qt::AA_DisableHighDpiScaling:

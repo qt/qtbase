@@ -55,8 +55,8 @@
     instance, the computation can be canceled with the cancel() function. To
     pause the computation, use the setPaused() function or one of the pause(),
     resume(), or togglePaused() convenience functions. Be aware that not all
-    asynchronous computations can be canceled or paused. For example, the
-    future returned by QtConcurrent::run() cannot be canceled; but the
+    running asynchronous computations can be canceled or paused. For example,
+    the future returned by QtConcurrent::run() cannot be canceled; but the
     future returned by QtConcurrent::mappedReduced() can.
 
     Progress information is provided by the progressValue(),
@@ -133,8 +133,8 @@
     Any QFutureWatcher object that is watching this future will not deliver
     progress and result ready signals on a canceled future.
 
-    Be aware that not all asynchronous computations can be canceled. For
-    example, the future returned by QtConcurrent::run() cannot be canceled;
+    Be aware that not all running asynchronous computations can be canceled.
+    For example, the future returned by QtConcurrent::run() cannot be canceled;
     but the future returned by QtConcurrent::mappedReduced() can.
 */
 
