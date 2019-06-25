@@ -289,7 +289,7 @@ function(remove_install_target)
     add_custom_target(remove_cmake_install ALL DEPENDS ${file_generated})
 endfunction()
 
-function(qt_set_up_developer_build)
+function(qt_set_up_nonprefix_build)
     if(NOT QT_WILL_INSTALL)
         remove_install_target()
     endif()

@@ -40,14 +40,10 @@ set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
-if(FEATURE_developer_build)
-    if(DEFINED QT_CMAKE_EXPORT_COMPILE_COMMANDS)
-        set(CMAKE_EXPORT_COMPILE_COMMANDS ${QT_CMAKE_EXPORT_COMPILE_COMMANDS})
-    else()
-        set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-    endif()
+# Detect non-prefix builds, either when the install prefix is set to the binary dir
+# or when enabling developer builds and no prefix is specified.
+if((CMAKE_INSTALL_PREFIX STREQUAL CMAKE_BINARY_DIR) OR (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND FEATURE_developer_build))
     set(QT_WILL_INSTALL OFF)
-    set(QT_BUILD_TESTING ON)
     # Handle non-prefix builds by setting the cmake install prefix to the project binary dir.
     if(PROJECT_NAME STREQUAL "QtBase")
         set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH
@@ -59,6 +55,15 @@ if(FEATURE_developer_build)
 else()
     set(QT_WILL_INSTALL ON)
     set(QT_BUILD_TESTING OFF)
+endif()
+
+if(FEATURE_developer_build)
+    if(DEFINED QT_CMAKE_EXPORT_COMPILE_COMMANDS)
+        set(CMAKE_EXPORT_COMPILE_COMMANDS ${QT_CMAKE_EXPORT_COMPILE_COMMANDS})
+    else()
+        set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    endif()
+    set(QT_BUILD_TESTING ON)
 endif()
 
 ## Set up testing
@@ -86,8 +91,8 @@ include(QtCompilerOptimization)
 ## Compiler flags:
 include(QtCompilerFlags)
 
-## Set up developer build:
-qt_set_up_developer_build()
+## Set up non-prefix build:
+qt_set_up_nonprefix_build()
 
 ## Find host tools (if non native):
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
