@@ -1030,46 +1030,45 @@ void QApplication::setStyleSheet(const QString& styleSheet)
 */
 QStyle *QApplication::style()
 {
-    if (QApplicationPrivate::app_style)
-        return QApplicationPrivate::app_style;
-    if (!qobject_cast<QApplication *>(QCoreApplication::instance())) {
-        Q_ASSERT(!"No style available without QApplication!");
-        return 0;
-    }
-
     if (!QApplicationPrivate::app_style) {
-        // Compile-time search for default style
-        //
-        QStyle *&app_style = QApplicationPrivate::app_style;
-        if (!app_style)
-            app_style = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
+        // Create default style
+        if (!qobject_cast<QApplication *>(QCoreApplication::instance())) {
+            Q_ASSERT(!"No style available without QApplication!");
+            return nullptr;
+        }
 
-        if (!app_style) {
+        auto &defaultStyle = QApplicationPrivate::app_style;
+
+        defaultStyle = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
+        if (!defaultStyle) {
             const QStringList styles = QStyleFactory::keys();
             for (const auto &style : styles) {
-                if ((app_style = QStyleFactory::create(style)))
+                if ((defaultStyle = QStyleFactory::create(style)))
                     break;
             }
         }
-        if (!app_style) {
+        if (!defaultStyle) {
             Q_ASSERT(!"No styles available!");
             return 0;
         }
-    }
-    // take ownership of the style
-    QApplicationPrivate::app_style->setParent(qApp);
 
-    initSystemPalette();
+        // Take ownership of the style
+        defaultStyle->setParent(qApp);
 
-    if (QApplicationPrivate::set_pal) // repolish set palette with the new style
-        QApplication::setPalette(*QApplicationPrivate::set_pal);
+        initSystemPalette();
+
+        if (QApplicationPrivate::set_pal) // Re-polish set palette with the new style
+            QApplication::setPalette(*QApplicationPrivate::set_pal);
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (!QApplicationPrivate::styleSheet.isEmpty()) {
-        qApp->setStyleSheet(QApplicationPrivate::styleSheet);
-    } else
+        if (!QApplicationPrivate::styleSheet.isEmpty()) {
+            qApp->setStyleSheet(QApplicationPrivate::styleSheet);
+        } else
 #endif
-        QApplicationPrivate::app_style->polish(qApp);
+        {
+            defaultStyle->polish(qApp);
+        }
+    }
 
     return QApplicationPrivate::app_style;
 }
