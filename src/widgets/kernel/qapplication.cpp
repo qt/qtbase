@@ -1390,10 +1390,9 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         hash->insert(className, pal);
     }
 
-    if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-        // Send ApplicationPaletteChange to qApp itself, and to the widgets.
+
+    if (qApp)
         qApp->d_func()->sendApplicationPaletteChange(all, className);
-    }
 
     if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))) {
         QCoreApplication::setAttribute(Qt::AA_SetPalette);
@@ -4431,6 +4430,9 @@ void QApplicationPrivate::notifyThemeChanged()
 
 void QApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
 {
+    if (!is_app_running || is_app_closing)
+        return;
+
     QGuiApplicationPrivate::sendApplicationPaletteChange();
 
     QEvent event(QEvent::ApplicationPaletteChange);

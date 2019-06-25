@@ -4102,8 +4102,7 @@ void QGuiApplicationPrivate::notifyThemeChanged()
         clearPalette();
         initPalette();
         emit qGuiApp->paletteChanged(*app_pal);
-        if (is_app_running && !is_app_closing)
-            sendApplicationPaletteChange();
+        sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
         const auto locker = qt_scoped_lock(applicationFontMutex);
@@ -4117,6 +4116,9 @@ void QGuiApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, con
 {
     Q_UNUSED(toAllWidgets)
     Q_UNUSED(className)
+
+    if (!is_app_running || is_app_closing)
+        return;
 
     QEvent event(QEvent::ApplicationPaletteChange);
     QGuiApplication::sendEvent(QGuiApplication::instance(), &event);
