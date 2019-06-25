@@ -136,6 +136,30 @@ icc_specific_instructions: &icc_export_variables
     property: host.compiler
     equals_value: ICC_18
 
+call_cmake_instructions: &call_cmake
+  type: Group
+  instructions:
+    - type: ExecuteCommand
+      command: "{{.Env.ENV_PREFIX}} {{.InstallDir}}\\bin\\qt-cmake {{.SourceDir}}/tests"
+      maxTimeInSeconds: 6000
+      maxTimeBetweenOutput: 120
+      userMessageOnFailure: >
+        Failed to call cmake. Contact Liang then.
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows
+    - type: ExecuteCommand
+      command: "{{.InstallDir}}/bin/qt-cmake {{.SourceDir}}/tests"
+      maxTimeInSeconds: 6000
+      maxTimeBetweenOutput: 120
+      userMessageOnFailure: >
+        Failed to call cmake. Contact Liang then.
+      disable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows
+
 build_instructions:
   - type: MakeDirectory
     directory: .git
@@ -225,13 +249,7 @@ build_instructions:
     maxTimeBetweenOutput: 1200
   - type: ChangeDirectory
     directory: "{{.SourceDir}}/tests"
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_PREFIX_PATH:PATH={{.InstallDir}} {{.SourceDir}}/tests"
-    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 120
-    userMessageOnFailure: >
-      Failed to call cmake. Contact Liang then.
+  - *call_cmake
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build ."
     maxTimeInSeconds: 6000
