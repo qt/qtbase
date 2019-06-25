@@ -2001,7 +2001,8 @@ QMacStyle::QMacStyle()
     Q_D(QMacStyle);
     // FIXME: Tie this logic into theme change, or even polish/unpolish
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        d->appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [&d] {
+        d->appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
+            Q_D(QMacStyle);
             for (NSView *b : d->cocoaControls)
                 [b release];
             d->cocoaControls.clear();
@@ -2495,11 +2496,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
 QPalette QMacStyle::standardPalette() const
 {
-    QPalette pal = QCommonStyle::standardPalette();
-    pal.setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
-    pal.setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
-    pal.setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
-    return pal;
+    auto platformTheme = QGuiApplicationPrivate::platformTheme();
+    auto styleNames = platformTheme->themeHint(QPlatformTheme::StyleNames);
+    if (styleNames.toStringList().contains("macintosh"))
+        return *platformTheme->palette();
+    else
+        return QStyle::standardPalette();
 }
 
 int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w,

@@ -340,7 +340,7 @@ void tst_Http2::flowControlServerSide()
     clearHTTP2State();
 
     serverPort = 0;
-    nRequests = 30;
+    nRequests = 10;
 
     const Http2::RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, 7}};
 

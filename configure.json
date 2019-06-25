@@ -82,7 +82,7 @@
             "force-pkg-config": { "type": "void", "name": "pkg-config" },
             "framework": "boolean",
             "gc-binaries": { "type": "boolean", "name": "gc_binaries" },
-            "gdb-index": { "type": "boolean", "name": "gdb_index" },
+            "gdb-index": { "type": "boolean", "name": "enable_gdb_index" },
             "gcc-sysroot": "boolean",
             "gcov": "boolean",
             "gnumake": { "type": "boolean", "name": "GNUmake" },

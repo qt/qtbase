@@ -1011,16 +1011,16 @@ void QCocoaWindow::setMask(const QRegion &region)
         } else {
             m_view.layer.mask = nil;
         }
-    }
-
-    if (isContentView()) {
-        // Setting the mask requires invalidating the NSWindow shadow, but that needs
-        // to happen after the backingstore has been redrawn, so that AppKit can pick
-        // up the new window shape based on the backingstore content. Doing a display
-        // directly here is not an option, as the window might not be exposed at this
-        // time, and so would not result in an updated backingstore.
-        m_needsInvalidateShadow = true;
-        [m_view setNeedsDisplay:YES];
+    } else {
+        if (isContentView()) {
+            // Setting the mask requires invalidating the NSWindow shadow, but that needs
+            // to happen after the backingstore has been redrawn, so that AppKit can pick
+            // up the new window shape based on the backingstore content. Doing a display
+            // directly here is not an option, as the window might not be exposed at this
+            // time, and so would not result in an updated backingstore.
+            m_needsInvalidateShadow = true;
+            [m_view setNeedsDisplay:YES];
+        }
     }
 }
 

@@ -349,6 +349,9 @@ bool QOpenGLTextureBlitterPrivate::buildProgram(ProgramIndex idx, const char *vs
 
     p->glProgram->setUniformValue(p->swizzleUniformPos, false);
 
+    // minmize state left set after a create()
+    p->glProgram->release();
+
     return true;
 }
 
