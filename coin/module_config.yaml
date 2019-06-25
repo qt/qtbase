@@ -261,3 +261,14 @@ build_instructions:
     archiveDirectory: "{{.SourceDir}}/tests"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
+
+test_instructions:
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}/tests"
+  - type: ExecuteCommand
+    command: "ctest -V --rerun-failed"
+    ignoreExitCode: true
+    maxTimeInSeconds: 7200
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: >
+      Failed to run tests.
