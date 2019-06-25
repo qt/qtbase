@@ -243,10 +243,3 @@ build_instructions:
     archiveDirectory: "{{.SourceDir}}/tests"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
-test_instructions:
-  - type: ExecuteCommand
-    command: echo "hello world - test"
-    maxTimeInSeconds: 60
-    maxTimeBetweenOutput: 12
-    userMessageOnFailure: >
-      Failed to call echo. Contact Liang then.
