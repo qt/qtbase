@@ -3299,7 +3299,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
     QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
     if (qGuiApp)
-        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+        qGuiApp->d_func()->sendApplicationPaletteChange();
 }
 
 void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
@@ -4101,7 +4101,6 @@ void QGuiApplicationPrivate::notifyThemeChanged()
     if (!testAttribute(Qt::AA_SetPalette)) {
         clearPalette();
         initPalette();
-        emit qGuiApp->paletteChanged(*app_pal);
         sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
@@ -4115,7 +4114,9 @@ void QGuiApplicationPrivate::notifyThemeChanged()
 void QGuiApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
 {
     Q_UNUSED(toAllWidgets)
-    Q_UNUSED(className)
+
+    if (!className)
+        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 
     if (!is_app_running || is_app_closing)
         return;

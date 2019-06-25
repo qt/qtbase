@@ -1390,14 +1390,11 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         hash->insert(className, pal);
     }
 
+    if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal)))
+        QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
     if (qApp)
         qApp->d_func()->sendApplicationPaletteChange(all, className);
-
-    if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))) {
-        QCoreApplication::setAttribute(Qt::AA_SetPalette);
-        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
-    }
 }
 
 /*!
@@ -4433,7 +4430,7 @@ void QApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const 
     if (!is_app_running || is_app_closing)
         return;
 
-    QGuiApplicationPrivate::sendApplicationPaletteChange();
+    QGuiApplicationPrivate::sendApplicationPaletteChange(toAllWidgets, className);
 
     QEvent event(QEvent::ApplicationPaletteChange);
     const QWidgetList widgets = QApplication::allWidgets();
