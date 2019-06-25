@@ -382,7 +382,6 @@ QString QApplicationPrivate::styleSheet;           // default application styles
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = 0;
 
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
-QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer
@@ -803,8 +802,6 @@ QApplication::~QApplication()
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = 0;
     clearSystemPalette();
-    delete QApplicationPrivate::set_pal;
-    QApplicationPrivate::set_pal = 0;
     app_palettes()->clear();
 
     delete QApplicationPrivate::sys_font;
@@ -1057,8 +1054,8 @@ QStyle *QApplication::style()
 
         initSystemPalette();
 
-        if (auto *explicitlySetPalette = QApplicationPrivate::set_pal)
-            defaultStyle->polish(*explicitlySetPalette);
+        if (testAttribute(Qt::AA_SetPalette))
+            defaultStyle->polish(*QGuiApplicationPrivate::app_pal);
 
 #ifndef QT_NO_STYLE_STYLESHEET
         if (!QApplicationPrivate::styleSheet.isEmpty()) {
@@ -1132,8 +1129,8 @@ void QApplication::setStyle(QStyle *style)
     // take care of possible palette requirements of certain gui
     // styles. Do it before polishing the application since the style
     // might call QApplication::setPalette() itself
-    if (auto *explicitlySetPalette = QApplicationPrivate::set_pal) {
-        QApplicationPrivate::app_style->polish(*explicitlySetPalette);
+    if (testAttribute(Qt::AA_SetPalette)) {
+        QApplicationPrivate::app_style->polish(*QGuiApplicationPrivate::app_pal);
     } else {
         if (QApplicationPrivate::sys_pal)
             clearSystemPalette();
@@ -1397,11 +1394,8 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         // Send ApplicationPaletteChange to qApp itself, and to the widgets.
         qApp->d_func()->sendApplicationPaletteChange(all, className);
     }
+
     if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))) {
-        if (!QApplicationPrivate::set_pal)
-            QApplicationPrivate::set_pal = new QPalette(palette);
-        else
-            *QApplicationPrivate::set_pal = palette;
         QCoreApplication::setAttribute(Qt::AA_SetPalette);
         emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
     }
@@ -1444,7 +1438,7 @@ void QApplicationPrivate::setSystemPalette(const QPalette &pal)
     else
         *sys_pal = pal;
 
-    if (!QApplicationPrivate::set_pal)
+    if (!testAttribute(Qt::AA_SetPalette))
         QApplication::setPalette(*sys_pal);
 }
 
