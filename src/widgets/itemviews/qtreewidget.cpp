@@ -1285,6 +1285,8 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 
     Sets the background brush of the label in the given \a column to the
     specified \a brush.
+    Setting a default-constructed brush will let the view use the
+    default color from the style.
 
     \note If \l{Qt Style Sheets} are used on the same widget as setBackground(),
     style sheets will take precedence if the settings conflict.
@@ -1314,6 +1316,8 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 
     Returns the brush used to render the foreground (e.g. text) of the
     specified \a column.
+    Setting a default-constructed brush will let the view use the
+    default color from the style.
 
     \sa background()
 */
@@ -1357,8 +1361,8 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
   \since 4.1
 
   Sets the size hint for the tree item in the given \a column to be \a size.
-  If no size hint is set, the item delegate will compute the size hint based
-  on the item data.
+  If no size hint is set or \a size is invalid, the item
+  delegate will compute the size hint based on the item data.
 */
 
 /*!

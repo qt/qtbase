@@ -1064,8 +1064,8 @@ QTableWidgetSelectionRange::~QTableWidgetSelectionRange()
   \since 4.1
 
   Sets the size hint for the table item to be \a size.
-  If no size hint is set, the item delegate will compute the
-  size hint based on the item data.
+  If no size hint is set or \a size is invalid, the item
+  delegate will compute the size hint based on the item data.
 */
 
 /*!
@@ -1279,6 +1279,8 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \since 4.2
 
     Sets the item's background brush to the specified \a brush.
+    Setting a default-constructed brush will let the view use the
+    default color from the style.
 
     \sa setForeground()
 */
@@ -1313,6 +1315,8 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \since 4.2
 
     Sets the item's foreground brush to the specified \a brush.
+    Setting a default-constructed brush will let the view use the
+    default color from the style.
 
     \sa setBackground()
 */

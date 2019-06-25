@@ -1404,9 +1404,17 @@ void tst_QTableWidget::setItemData()
     QCOMPARE(table.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole, Qt::ToolTipRole}));
 
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("Display"));
+    QCOMPARE(table.model()->data(idx, Qt::EditRole).toString(), QLatin1String("Display"));
     QCOMPARE(table.model()->data(idx, Qt::ToolTipRole).toString(), QLatin1String("ToolTip"));
     QCOMPARE(dataChangedSpy.count(), 1);
-    QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.takeFirst().at(0)));
+    QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.first().at(0)));
+    QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.first().at(1)));
+    const auto roles = qvariant_cast<QVector<int>>(dataChangedSpy.first().at(2));
+    QCOMPARE(roles.size(), 3);
+    QVERIFY(roles.contains(Qt::DisplayRole));
+    QVERIFY(roles.contains(Qt::EditRole));
+    QVERIFY(roles.contains(Qt::ToolTipRole));
+    dataChangedSpy.clear();
 
     table.model()->setItemData(idx, data);
     QCOMPARE(dataChangedSpy.count(), 0);
@@ -1416,6 +1424,21 @@ void tst_QTableWidget::setItemData()
     table.model()->setItemData(idx, data);
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("dizplaye"));
     QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(QVector<int>({Qt::DisplayRole, Qt::EditRole}), qvariant_cast<QVector<int>>(dataChangedSpy.first().at(2)));
+
+    item->setBackground(QBrush(Qt::red));
+    item->setForeground(QBrush(Qt::green));
+    item->setSizeHint(QSize(10, 10));
+    QCOMPARE(item->data(Qt::BackgroundRole), QVariant(QBrush(Qt::red)));
+    QCOMPARE(item->data(Qt::ForegroundRole), QVariant(QBrush(Qt::green)));
+    QCOMPARE(item->data(Qt::SizeHintRole), QVariant(QSize(10, 10)));
+    // an empty brush should result in a QVariant()
+    item->setBackground(QBrush());
+    item->setForeground(QBrush());
+    item->setSizeHint(QSize());
+    QCOMPARE(item->data(Qt::BackgroundRole), QVariant());
+    QCOMPARE(item->data(Qt::ForegroundRole), QVariant());
+    QCOMPARE(item->data(Qt::SizeHintRole), QVariant());
 }
 
 void tst_QTableWidget::cellWidget()

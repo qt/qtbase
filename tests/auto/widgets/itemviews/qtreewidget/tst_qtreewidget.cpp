@@ -1994,6 +1994,20 @@ void tst_QTreeWidget::itemData()
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
     flags = widget.model()->itemData(widget.model()->index(0, 1));
     QCOMPARE(flags.count(), 0);
+
+    item.setBackground(0, QBrush(Qt::red));
+    item.setForeground(0, QBrush(Qt::green));
+    item.setSizeHint(0, QSize(10, 10));
+    QCOMPARE(item.data(0, Qt::BackgroundRole), QVariant(QBrush(Qt::red)));
+    QCOMPARE(item.data(0, Qt::ForegroundRole), QVariant(QBrush(Qt::green)));
+    QCOMPARE(item.data(0, Qt::SizeHintRole), QVariant(QSize(10, 10)));
+    // an empty brush should result in a QVariant()
+    item.setBackground(0, QBrush());
+    item.setForeground(0, QBrush());
+    item.setSizeHint(0, QSize());
+    QCOMPARE(item.data(0, Qt::BackgroundRole), QVariant());
+    QCOMPARE(item.data(0, Qt::ForegroundRole), QVariant());
+    QCOMPARE(item.data(0, Qt::SizeHintRole), QVariant());
 }
 
 void tst_QTreeWidget::enableDisable()
