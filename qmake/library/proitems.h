@@ -31,6 +31,7 @@
 
 #include "qmake_global.h"
 
+#include <qdebug.h>
 #include <qstring.h>
 #include <qvector.h>
 #include <qhash.h>
@@ -467,6 +468,8 @@ struct ProFunctionDefs {
     QHash<ProKey, ProFunctionDef> testFunctions;
     QHash<ProKey, ProFunctionDef> replaceFunctions;
 };
+
+QDebug operator<<(QDebug debug, const ProString &str);
 
 QT_END_NAMESPACE
 

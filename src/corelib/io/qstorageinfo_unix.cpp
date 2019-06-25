@@ -846,6 +846,9 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 
         const QString mountDir = it.rootPath();
         QStorageInfo info(mountDir);
+        info.d->device = it.device();
+        info.d->fileSystemType = it.fileSystemType();
+        info.d->subvolume = it.subvolume();
         if (info.bytesTotal() == 0 && info != root())
             continue;
         volumes.append(info);

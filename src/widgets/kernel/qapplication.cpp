@@ -381,8 +381,6 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
     0 if there is no such widget.
 */
 
-void qt_init(QApplicationPrivate *priv, int type
-   );
 void qt_init_tooltip_palette();
 void qt_cleanup();
 
@@ -428,16 +426,10 @@ bool Q_WIDGETS_EXPORT qt_tab_all_widgets()
 // ######## move to QApplicationPrivate
 // Default application palettes and fonts (per widget type)
 Q_GLOBAL_STATIC(PaletteHash, app_palettes)
-PaletteHash *qt_app_palettes_hash()
-{
-    return app_palettes();
-}
-
 Q_GLOBAL_STATIC(FontHash, app_fonts)
-FontHash *qt_app_fonts_hash()
-{
-    return app_fonts();
-}
+// Exported accessors for use outside of this file
+PaletteHash *qt_app_palettes_hash() { return app_palettes(); }
+FontHash *qt_app_fonts_hash() { return app_fonts(); }
 
 QWidgetList *QApplicationPrivate::popupWidgets = 0;        // has keyboard input focus
 
@@ -571,7 +563,10 @@ void QApplicationPrivate::init()
     process_cmdline();
 
     // Must be called before initialize()
-    qt_init(this, application_type);
+    QColormap::initialize();
+    qt_init_tooltip_palette();
+    QApplicationPrivate::initializeWidgetFontHash();
+
     initialize();
     eventDispatcher->startingUp();
 
@@ -584,18 +579,6 @@ void QApplicationPrivate::init()
     QAccessible::installFactory(&qAccessibleFactory);
 #endif
 
-}
-
-void qt_init(QApplicationPrivate *priv, int type)
-{
-    Q_UNUSED(priv);
-    Q_UNUSED(type);
-
-    QColormap::initialize();
-
-    qt_init_tooltip_palette();
-
-    QApplicationPrivate::initializeWidgetFontHash();
 }
 
 void qt_init_tooltip_palette()
@@ -663,7 +646,7 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
     if (!platformTheme)
         return;
-    qt_app_palettes_hash()->clear();
+    app_palettes()->clear();
 
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
@@ -687,7 +670,7 @@ void QApplicationPrivate::initializeWidgetFontHash()
     const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
     if (!theme)
         return;
-    FontHash *fontHash = qt_app_fonts_hash();
+    FontHash *fontHash = app_fonts();
     fontHash->clear();
 
     if (const QFont *font = theme->font(QPlatformTheme::MenuFont))
@@ -1166,9 +1149,7 @@ void QApplication::setStyle(QStyle *style)
     } else if (QApplicationPrivate::sys_pal) {
         clearSystemPalette();
         initSystemPalette();
-        QApplicationPrivate::initializeWidgetPaletteHash();
         QApplicationPrivate::initializeWidgetFontHash();
-        QApplicationPrivate::setPalette_helper(*QApplicationPrivate::sys_pal, /*className=*/0, /*clearWidgetPaletteHash=*/false);
     } else if (!QApplicationPrivate::sys_pal) {
         // Initialize the sys_pal if it hasn't happened yet...
         QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
@@ -1466,28 +1447,10 @@ void QApplication::setPalette(const QPalette &palette, const char* className)
 
 void QApplicationPrivate::setSystemPalette(const QPalette &pal)
 {
-    QPalette adjusted;
-
-#if 0
-    // adjust the system palette to avoid dithering
-    QColormap cmap = QColormap::instance();
-    if (cmap.depths() > 4 && cmap.depths() < 24) {
-        for (int g = 0; g < QPalette::NColorGroups; g++)
-            for (int i = 0; i < QPalette::NColorRoles; i++) {
-                QColor color = pal.color((QPalette::ColorGroup)g, (QPalette::ColorRole)i);
-                color = cmap.colorAt(cmap.pixel(color));
-                adjusted.setColor((QPalette::ColorGroup)g, (QPalette::ColorRole) i, color);
-            }
-    }
-#else
-    adjusted = pal;
-#endif
-
     if (!sys_pal)
-        sys_pal = new QPalette(adjusted);
+        sys_pal = new QPalette(pal);
     else
-        *sys_pal = adjusted;
-
+        *sys_pal = pal;
 
     if (!QApplicationPrivate::set_pal)
         QApplication::setPalette(*sys_pal);
