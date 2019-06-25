@@ -17,12 +17,13 @@ foreach(_target_dep ${_third_party_deps})
         list(APPEND find_package_args "${version}")
     endif()
 
-    if(components)
-        list(APPEND find_package_args "COMPONENTS" ${components})
-    endif()
-
     if (NOT ${pkg}_FOUND)
-        find_dependency(${find_package_args})
+        if(components)
+            string(REPLACE " " ";" components "${components}")
+            find_dependency(${find_package_args} COMPONENTS ${components})
+        else()
+            find_dependency(${find_package_args})
+        endif()
     endif()
 
     if (NOT ${pkg}_FOUND)

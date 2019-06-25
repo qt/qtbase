@@ -18,10 +18,11 @@ foreach(_target_dep ${_third_party_deps})
     endif()
 
     if(components)
-        list(APPEND find_package_args "COMPONENTS" ${components})
+        string(REPLACE " " ";" components "${components}")
+        find_dependency(${find_package_args} COMPONENTS ${components})
+    else()
+        find_dependency(${find_package_args})
     endif()
-
-    find_dependency(${find_package_args})
 
     if (NOT ${pkg}_FOUND)
         set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)

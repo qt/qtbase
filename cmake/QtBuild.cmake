@@ -2174,9 +2174,9 @@ macro(qt_find_package)
                 endif()
 
                 if(arg_COMPONENTS)
-                    set_target_properties(${qt_find_package_target_name}
-                                          PROPERTIES
-                                          INTERFACE_QT_PACKAGE_COMPONENTS ${arg_COMPONENTS})
+                    string(REPLACE ";" " " components_as_string "${arg_COMPONENTS}")
+                    set_property(TARGET ${qt_find_package_target_name}
+                                 PROPERTY INTERFACE_QT_PACKAGE_COMPONENTS ${components_as_string})
                 endif()
 
                 get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
