@@ -1,0 +1,224 @@
+/****************************************************************************
+**
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qtdbus-cmake-qt5-add-dbus-interface.html
+\ingroup cmake-commands-qtdbus
+
+\title qt5_add_dbus_interface
+
+\brief Generates C++ sources implementing an interface for a D-Bus interface
+description file.
+
+\section1 Synopsis
+
+\badcode
+qt5_add_dbus_interface(<VAR> dbus_spec basename)
+\endcode
+
+\section1 Description
+
+Generates C++ sources implementing an interface for a D-Bus interface description
+file defined in \c{dbus_spec}. The generated files are named after \c{basename}:
+\c{basename.h}, \c{basename.cpp}, \c{basename.moc}. The paths of the files
+are added to \c{<VAR>}.
+
+The function sets up a call to the \l{Qt D-Bus XML compiler (qdbusxml2cpp)}
+in interface (proxy) mode. By default, \c{qdbusxml2cpp} generates a C++
+class named after the interface name, with a namespaced alias:
+
+\table
+\header
+  \li D-Bus Interface Name
+  \li Class name
+  \li Namespaced name
+\row
+  \li \c{org.example.chat}
+  \li \c{OrgExampleChatInterface}
+  \li \c{org.example.chat}
+\endtable
+
+\section1 Options
+
+Options can be set using \c set_source_file_property on the \c dbus_spec:
+
+\table
+\header
+  \li Option
+  \li Value
+  \li Description
+\row
+  \li \c CLASSNAME
+  \li \c class_name
+  \li Override the default interface class name with \c{class_name}.
+\row
+  \li \c NO_NAMESPACE
+  \li boolean
+  \li Do not generate the namespaced name if set to \c{ON}.
+\row
+  \li \c INCLUDE
+  \li \c path
+  \li Add an \c{#include "path"} in the generated code.
+\endtable
+*/
+
+/*!
+\page qtdbus-cmake-qt5-add-dbus-interfaces.html
+\ingroup cmake-commands-qtdbus
+
+\title qt5_add_dbus_interfaces
+
+\brief Generates C++ sources implementing interfaces for D-Bus interface
+description files.
+
+\section1 Synopsis
+
+\badcode
+qt5_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])
+\endcode
+
+\section1 Description
+
+Generates C++ sources implementing D-Bus interfaces defined in \c{dbus_spec1},
+\c{dbus_spec2}, where each argument needs to be the path to a valid D-Bus
+interface description file. The paths of the generated files are added to
+\c{<VAR>}.
+
+For each argument, a call to the \l{Qt D-Bus XML compiler (qdbusxml2cpp)}
+in interface (proxy) mode is set up.
+
+The generated C++ source files are named after the XML file: For the file
+\c{org.example.chat.xml} the generated header will be named
+\c{orgexamplechatinterface.h}.
+
+\section1 Options
+
+Options can be set using \c set_source_file_property on each of the file
+arguments:
+
+\table
+\header
+  \li Option
+  \li Value
+  \li Description
+\row
+  \li \c CLASSNAME
+  \li \c class_name
+  \li Override the default interface class name with \c{class_name}.
+\row
+  \li \c NO_NAMESPACE
+  \li boolean
+  \li Do not generate the namespaced name if set to \c{ON}.
+\row
+  \li \c INCLUDE
+  \li \c path
+  \li Add an \c{#include "path"} in the generated code.
+\endtable
+*/
+
+/*!
+\page qtdbus-cmake-qt5-generate-dbus-interface.html
+\ingroup cmake-commands-qtdbus
+
+\title qt5_generate_dbus_interface
+
+\brief Generates a D-Bus interface from a header file.
+
+\section1 Synopsis
+
+\badcode
+qt5_generate_dbus_interface(header
+    [customName]
+    [OPTIONS options]
+)
+\endcode
+
+\section1 Description
+
+Parses the C++ source or header file containing a QObject-derived class
+declaration and generates a file containing the D-BUS Introspection XML.
+
+By default, the generated XML file is stored in the current binary directory,
+and has the same base name as the header. You can specify a different name or
+path by adding \c{customName} as an optional second argument.
+
+\section1 Options
+
+The function sets up a call to the \c{qdbuscpp2xml} command line tool. Further
+arguments to the tool can be set after \c{OPTIONS}.
+*/
+
+/*!
+\page qtdbus-cmake-qt5-add-dbus-adaptor.html
+\ingroup cmake-commands-qtdbus
+
+\title qt5_add_dbus_adaptor
+
+\brief Generates an adaptor class for a D-Bus interface.
+
+\section1 Synopsis
+
+\badcode
+qt5_add_dbus_adaptor(<VAR> dbus_spec header parent_class
+                     [basename]
+                     [classname])
+\endcode
+
+\section1 Description
+
+Generates a C++ header file implementing an adaptor for a D-Bus interface
+description file defined in \c{dbus_spec}. The path of the generated file is
+added to \c{<VAR>}. The generated adaptor class takes a pointer to
+\c{parent_class} as QObject parent. \c{parent_class} should be declared in
+\c{header}, which is included in the generated code as \c{#include "header"}.
+
+The function sets up a call to the \l{Qt D-Bus XML compiler (qdbusxml2cpp)}
+in adaptor mode. The default file and class name are generated from the last
+segment in the \c{dbus_spec} base name:
+
+\table
+\header
+  \li XML file
+  \li Header file
+  \li Class name
+\row
+  \li \c{org.example.chat}
+  \li \c{chatadaptor.h}
+  \li \c{ChatAdaptor}
+\endtable
+
+
+You can change the name of the header file to be generated by passing
+\c{basename} as the fifth argument. The \c{.h} suffix is always added.
+
+You can change the default class name by passing \c{classname} as the sixth
+argument.
+
+\section1 Examples
+
+\snippet cmake/examples.cmake qt5_add_dbus_adaptor
+*/

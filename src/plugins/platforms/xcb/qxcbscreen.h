@@ -208,6 +208,7 @@ public:
 
 private:
     void sendStartupMessage(const QByteArray &message) const;
+    int forcedDpi() const;
 
     QByteArray getOutputProperty(xcb_atom_t atom) const;
     QByteArray getEdid() const;
