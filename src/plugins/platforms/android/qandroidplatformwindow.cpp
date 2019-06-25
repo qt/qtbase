@@ -49,13 +49,14 @@
 
 QT_BEGIN_NAMESPACE
 
+static QBasicAtomicInt winIdGenerator = Q_BASIC_ATOMIC_INITIALIZER(0);
+
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     : QPlatformWindow(window)
 {
     m_windowFlags = Qt::Widget;
     m_windowState = Qt::WindowNoState;
-    static QAtomicInt winIdGenerator(1);
-    m_windowId = winIdGenerator.fetchAndAddRelaxed(1);
+    m_windowId = winIdGenerator.fetchAndAddRelaxed(1) + 1;
     setWindowState(window->windowStates());
 }
 

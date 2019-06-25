@@ -2799,12 +2799,12 @@ void QFontCache::cleanup()
         cache->setLocalData(0);
 }
 
-QBasicAtomicInt font_cache_id = Q_BASIC_ATOMIC_INITIALIZER(1);
+static QBasicAtomicInt font_cache_id = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QFontCache::QFontCache()
     : QObject(), total_cost(0), max_cost(min_cost),
       current_timestamp(0), fast(false), timer_id(-1),
-      m_id(font_cache_id.fetchAndAddRelaxed(1))
+      m_id(font_cache_id.fetchAndAddRelaxed(1) + 1)
 {
 }
 

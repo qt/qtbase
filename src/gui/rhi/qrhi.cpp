@@ -5192,10 +5192,11 @@ int QRhi::ubufAlignment() const
     return d->ubufAlignment();
 }
 
+static QBasicAtomicInteger<QRhiGlobalObjectIdGenerator::Type> counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+
 QRhiGlobalObjectIdGenerator::Type QRhiGlobalObjectIdGenerator::newId()
 {
-    static QRhiGlobalObjectIdGenerator inst;
-    return ++inst.counter;
+    return counter.fetchAndAddRelaxed(1) + 1;
 }
 
 bool QRhiPassResourceTracker::isEmpty() const

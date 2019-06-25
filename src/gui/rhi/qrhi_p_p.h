@@ -52,7 +52,6 @@
 #include "qrhiprofiler_p_p.h"
 #include <QBitArray>
 #include <QAtomicInt>
-#include <QAtomicInteger>
 
 QT_BEGIN_NAMESPACE
 
@@ -484,9 +483,6 @@ public:
     using Type = quint32;
 #endif
     static Type newId();
-
-private:
-    QAtomicInteger<Type> counter;
 };
 
 class QRhiPassResourceTracker
