@@ -86,6 +86,9 @@ qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "$
 if(UNIX)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in" "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY)
     qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake" DESTINATION "${INSTALL_BINDIR}")
+else()
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in" "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake.bat" @ONLY)
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake.bat" DESTINATION "${INSTALL_BINDIR}")
 endif()
 
 ## Library to hold global features:
