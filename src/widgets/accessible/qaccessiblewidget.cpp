@@ -273,22 +273,6 @@ QRect QAccessibleWidget::rect() const
     return QRect(wpos.x(), wpos.y(), w->width(), w->height());
 }
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <private/qobject_p.h>
-QT_END_INCLUDE_NAMESPACE
-
-class QACConnectionObject : public QObject
-{
-    Q_DECLARE_PRIVATE(QObject)
-public:
-    inline bool isSender(const QObject *receiver, const char *signal) const
-    { return d_func()->isSender(receiver, signal); }
-    inline QObjectList receiverList(const char *signal) const
-    { return d_func()->receiverList(signal); }
-    inline QObjectList senderList() const
-    { return d_func()->senderList(); }
-};
-
 /*!
     Registers \a signal as a controlling signal.
 
@@ -347,9 +331,9 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
 
     if (match & QAccessible::Controlled) {
         QObjectList allReceivers;
-        QACConnectionObject *connectionObject = (QACConnectionObject*)object();
+        QObject *connectionObject = object();
         for (int sig = 0; sig < d->primarySignals.count(); ++sig) {
-            const QObjectList receivers = connectionObject->receiverList(d->primarySignals.at(sig).toLatin1());
+            const QObjectList receivers = connectionObject->d_func()->receiverList(d->primarySignals.at(sig).toLatin1());
             allReceivers += receivers;
         }
 

@@ -71,6 +71,7 @@ class QObjectPrivate;
 class QObject;
 class QThread;
 class QWidget;
+class QAccessibleWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
@@ -459,6 +460,7 @@ protected:
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;
     friend class QWidget;
+    friend class QAccessibleWidget;
     friend class QThreadData;
 
 private:
