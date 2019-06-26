@@ -312,7 +312,7 @@ public:
             }
         }
         int signalVectorCount() const {
-            return  signalVector ? signalVector.loadRelaxed()->count() : -1;
+            return  signalVector.loadAcquire() ? signalVector.loadRelaxed()->count() : -1;
         }
 
         static void deleteOrphaned(ConnectionOrSignalVector *c);

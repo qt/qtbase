@@ -219,7 +219,7 @@ QObjectPrivate::QObjectPrivate(int version)
 QObjectPrivate::~QObjectPrivate()
 {
     if (extraData && !extraData->runningTimers.isEmpty()) {
-        if (Q_LIKELY(threadData->thread == QThread::currentThread())) {
+        if (Q_LIKELY(threadData->thread.loadAcquire() == QThread::currentThread())) {
             // unregister pending timers
             if (threadData->hasEventDispatcher())
                 threadData->eventDispatcher.loadRelaxed()->unregisterTimers(q_ptr);
@@ -493,11 +493,11 @@ bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
     if (!signalVector)
         return false;
 
-    if (signalVector->at(-1).first)
+    if (signalVector->at(-1).first.loadAcquire())
         return true;
 
     if (signalIndex < uint(cd->signalVectorCount())) {
-        const QObjectPrivate::Connection *c = signalVector->at(signalIndex).first;
+        const QObjectPrivate::Connection *c = signalVector->at(signalIndex).first.loadAcquire();
         return c != nullptr;
     }
     return false;
@@ -819,8 +819,8 @@ static bool check_parent_thread(QObject *parent,
                                 QThreadData *currentThreadData)
 {
     if (parent && parentThreadData != currentThreadData) {
-        QThread *parentThread = parentThreadData->thread;
-        QThread *currentThread = currentThreadData->thread;
+        QThread *parentThread = parentThreadData->thread.loadAcquire();
+        QThread *currentThread = currentThreadData->thread.loadAcquire();
         qWarning("QObject: Cannot create children for a parent that is in a different thread.\n"
                  "(Parent is %s(%p), parent's thread is %s(%p), current thread is %s(%p)",
                  parent->metaObject()->className(),
@@ -987,11 +987,11 @@ QObject::~QObject()
             QObjectPrivate::ConnectionList &connectionList = cd->connectionsForSignal(signal);
 
             while (QObjectPrivate::Connection *c = connectionList.first.loadRelaxed()) {
-                Q_ASSERT(c->receiver);
+                Q_ASSERT(c->receiver.loadAcquire());
 
                 QBasicMutex *m = signalSlotLock(c->receiver.loadRelaxed());
                 bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
-                if (c->receiver) {
+                if (c->receiver.loadAcquire()) {
                     cd->removeConnection(c);
                     Q_ASSERT(connectionList.first.loadRelaxed() != c);
                 }
@@ -1003,7 +1003,7 @@ QObject::~QObject()
         /* Disconnect all senders:
          */
         while (QObjectPrivate::Connection *node = cd->senders) {
-            Q_ASSERT(node->receiver);
+            Q_ASSERT(node->receiver.loadAcquire());
             QObject *sender = node->sender;
             // Send disconnectNotify before removing the connection from sender's connection list.
             // This ensures any eventual destructor of sender will block on getting receiver's lock
@@ -1453,7 +1453,7 @@ bool QObject::blockSignals(bool block) noexcept
 */
 QThread *QObject::thread() const
 {
-    return d_func()->threadData->thread;
+    return d_func()->threadData->thread.loadAcquire();
 }
 
 /*!
@@ -1500,7 +1500,7 @@ void QObject::moveToThread(QThread *targetThread)
 {
     Q_D(QObject);
 
-    if (d->threadData->thread == targetThread) {
+    if (d->threadData->thread.loadAcquire() == targetThread) {
         // object is already in this thread
         return;
     }
@@ -1516,7 +1516,7 @@ void QObject::moveToThread(QThread *targetThread)
 
     QThreadData *currentData = QThreadData::current();
     QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : nullptr;
-    if (d->threadData->thread == 0 && currentData == targetData) {
+    if (d->threadData->thread.loadAcquire() == 0 && currentData == targetData) {
         // one exception to the rule: we allow moving objects with no thread affinity to the current thread
         currentData = d->threadData;
     } else if (d->threadData != currentData) {
@@ -3716,7 +3716,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
 
     bool senderDeleted = false;
     {
-    Q_ASSERT(sp->connections);
+    Q_ASSERT(sp->connections.loadAcquire());
     QObjectPrivate::ConnectionDataPointer connections(sp->connections.loadRelaxed());
     QObjectPrivate::SignalVector *signalVector = connections->signalVector.loadRelaxed();
 
@@ -3773,7 +3773,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 QSemaphore semaphore;
                 {
                     QBasicMutexLocker locker(signalSlotLock(sender));
-                    if (!c->receiver)
+                    if (!c->receiver.loadAcquire())
                         continue;
                     QMetaCallEvent *ev = c->isSlotObject ?
                         new QMetaCallEvent(c->slotObj, sender, signal_index, 0, 0, argv, &semaphore) :

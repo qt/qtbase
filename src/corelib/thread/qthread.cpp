@@ -73,8 +73,8 @@ QThreadData::~QThreadData()
     // crashing during QCoreApplicationData's global static cleanup we need to
     // safeguard the main thread here.. This fix is a bit crude, but it solves
     // the problem...
-    if (this->thread == QCoreApplicationPrivate::theMainThread) {
-       QCoreApplicationPrivate::theMainThread = 0;
+    if (this->thread.loadAcquire() == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
+       QCoreApplicationPrivate::theMainThread.storeRelease(nullptr);
        QThreadData::clearCurrentThreadData();
     }
 
@@ -85,8 +85,8 @@ QThreadData::~QThreadData()
     // because this destructor is still running (the _ref sub-object has not
     // been destroyed) and there's no reentrancy. The refcount will become
     // negative, but that's acceptable.
-    QThread *t = thread;
-    thread = 0;
+    QThread *t = thread.loadAcquire();
+    thread.storeRelease(nullptr);
     delete t;
 
     for (int i = 0; i < postEventList.size(); ++i) {
@@ -393,7 +393,7 @@ QThread *QThread::currentThread()
 {
     QThreadData *data = QThreadData::current();
     Q_ASSERT(data != 0);
-    return data->thread;
+    return data->thread.loadAcquire();
 }
 
 /*!
@@ -980,7 +980,7 @@ bool QThread::event(QEvent *event)
 
 void QThread::requestInterruption()
 {
-    if (this == QCoreApplicationPrivate::theMainThread) {
+    if (this == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
         qWarning("QThread::requestInterruption has no effect on the main thread");
         return;
     }
