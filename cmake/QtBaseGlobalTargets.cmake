@@ -78,7 +78,17 @@ if(VCPKG_TARGET_TRIPLET)
     list(APPEND init_vcpkg "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\" CACHE STRING \"\")")
 endif()
 
+if(APPLE)
+    if(CMAKE_OSX_SYSROOT)
+        list(APPEND init_platform "set(CMAKE_OSX_SYSROOT \"${CMAKE_OSX_SYSROOT}\" CACHE PATH \"\")")
+    endif()
+    if(CMAKE_OSX_DEPLOYMENT_TARGET)
+        list(APPEND init_platform "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
+    endif()
+endif()
+
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
+string(REPLACE ";" "\n" init_platform "${init_platform}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt.toolchain.cmake.in" "${__GlobalConfig_build_dir}/qt.toolchain.cmake" @ONLY)
 qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "${__GlobalConfig_install_dir}" COMPONENT Devel)
 

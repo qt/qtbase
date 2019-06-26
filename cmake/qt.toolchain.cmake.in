@@ -1,6 +1,8 @@
 list(APPEND CMAKE_PREFIX_PATH "@CMAKE_INSTALL_PREFIX@")
 list(APPEND CMAKE_FIND_ROOT_PATH "@CMAKE_INSTALL_PREFIX@")
 
+@init_platform@
+
 @init_qt_host_path@
 
 @init_original_toolchain_file@
