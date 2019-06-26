@@ -85,7 +85,7 @@ QT_IMPL_METATYPE_EXTERN(QDBusSlotCache)
 static dbus_int32_t server_slot = -1;
 
 static QBasicAtomicInt isDebugging = Q_BASIC_ATOMIC_INITIALIZER(-1);
-#define qDBusDebug              if (::isDebugging == 0); else qDebug
+#define qDBusDebug              if (::isDebugging.loadRelaxed() == 0); else qDebug
 
 static inline QDebug operator<<(QDebug dbg, const QThread *th)
 {
@@ -1039,12 +1039,12 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
       isAuthenticated(false)
 {
     static const bool threads = q_dbus_threads_init_default();
-    if (::isDebugging == -1)
-       ::isDebugging = qEnvironmentVariableIntValue("QDBUS_DEBUG");
     Q_UNUSED(threads);
+    if (::isDebugging.loadRelaxed() == -1)
+       ::isDebugging.storeRelaxed(qEnvironmentVariableIntValue("QDBUS_DEBUG"));
 
 #ifdef QDBUS_THREAD_DEBUG
-    if (::isDebugging > 1)
+    if (::isDebugging.loadRelaxed() > 1)
         qdbusThreadDebug = qdbusDefaultThreadDebug;
 #endif
 
