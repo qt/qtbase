@@ -2264,7 +2264,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
 
     QCOMPARE(model.rowCount(), 3);
     QCOMPARE(proxy.rowCount(), 3);
-    proxy.setFilterRegExp( QRegExp("f"));
+    proxy.setFilterRegularExpression(QRegularExpression("f"));
     QCOMPARE(proxy.rowCount(), 2);
 
     QList<QPersistentModelIndex> indexList;
@@ -2276,7 +2276,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
     foreach(QPersistentModelIndex index, indexList)
         QVERIFY(selection.isSelected(index));
 
-    proxy.setFilterRegExp(QRegExp());
+    proxy.setFilterRegularExpression(QRegularExpression());
     QCOMPARE(proxy.rowCount(), 3);
 
     //let's check the selection hasn't changed

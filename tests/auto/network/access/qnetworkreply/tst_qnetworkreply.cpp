@@ -32,8 +32,11 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QUrl>
 #include <QtCore/QEventLoop>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QRandomGenerator>
+#include <QtCore/QRegularExpression>
+#include <QtCore/QRegularExpressionMatch>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
@@ -1147,7 +1150,7 @@ protected:
         }
 
         // now write in "blocking mode", this is where the rate measuring starts
-        QTime timer;
+        QElapsedTimer timer;
         timer.start();
         //const qint64 writtenBefore = dataIndex;
         //qint64 measuredTotalBytes = wantedSize - writtenBefore;
@@ -1246,7 +1249,7 @@ protected:
         }
 
         qint64 bytesRead = 0;
-        QTime stopWatch;
+        QElapsedTimer stopWatch;
         stopWatch.start();
         do {
             if (device->bytesAvailable() == 0) {
@@ -4147,10 +4150,10 @@ void tst_QNetworkReply::ioGetFromHttpWithCache()
     request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
 
     QFETCH(QStringList, extraHttpHeaders);
-    QStringListIterator it(extraHttpHeaders);
-    while (it.hasNext()) {
-        QString header = it.next();
-        QString value = it.next();
+    QVERIFY(extraHttpHeaders.size() % 2 == 0);
+    for (auto it = extraHttpHeaders.cbegin(), end = extraHttpHeaders.cend(); it != end; /*double-stepping*/) {
+        QString header = *it++;
+        QString value = *it++;
         request.setRawHeader(header.toLatin1(), value.toLatin1()); // To latin1? Deal with it!
     }
 
@@ -5036,6 +5039,9 @@ public:
 // very similar to ioPostToHttpUploadProgress but for SSL
 void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-76157: get rid of locking in TLS handshake (QSslSocket)");
+#endif
     //QFile sourceFile(testDataDir + "/bigfile");
     //QVERIFY(sourceFile.open(QIODevice::ReadOnly));
     qint64 wantedSize = 2*1024*1024; // 2 MB
@@ -5148,8 +5154,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     const int rate = 200; // in kB per sec
     RateControlledReader reader(server, reply.data(), rate, bufferSize);
 
-    QTime loopTime;
-    loopTime.start();
+    QElapsedTimer loopTimer;
+    loopTimer.start();
 
     const int result = waitForFinish(reply);
     if (notEnoughDataForFastSender) {
@@ -5159,7 +5165,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
 
     QVERIFY2(result == Success, msgWaitForFinished(reply));
 
-    const int elapsedTime = loopTime.elapsed();
+    const int elapsedTime = loopTimer.elapsed();
     server.wait();
     reader.wrapUp();
 
@@ -5445,12 +5451,12 @@ void tst_QNetworkReply::rateControl()
     RateControlledReader reader(sender, reply.data(), rate, 20);
 
     // this test is designed to run for 25 seconds at most
-    QTime loopTime;
-    loopTime.start();
+    QElapsedTimer loopTimer;
+    loopTimer.start();
 
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
-    int elapsedTime = loopTime.elapsed();
+    int elapsedTime = loopTimer.elapsed();
 
     if (!errorSpy.isEmpty()) {
         qDebug() << "ERROR!" << errorSpy[0][0] << reply->errorString();
@@ -6120,8 +6126,8 @@ void tst_QNetworkReply::httpConnectionCount()
     }
 
     int pendingConnectionCount = 0;
-    QTime time;
-    time.start();
+    QElapsedTimer timer;
+    timer.start();
 
     while(pendingConnectionCount <= 20) {
         QTestEventLoop::instance().enterLoop(1);
@@ -6133,7 +6139,7 @@ void tst_QNetworkReply::httpConnectionCount()
         }
 
         // at max. wait 10 sec
-        if (time.elapsed() > 10000)
+        if (timer.elapsed() > 10000)
             break;
     }
 
@@ -6417,6 +6423,10 @@ void tst_QNetworkReply::encrypted()
 
 void tst_QNetworkReply::abortOnEncrypted()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-76157: get rid of locking in TLS handshake (QSslSocket)");
+#endif
+
     SslServer server;
     server.listen();
     if (!server.isListening())
@@ -7910,9 +7920,10 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 "Content-Type: text/plain\r\n"
                 "\r\n"
                 "auth";
-            QRegExp rx("Authorization: Basic ([^\r\n]*)\r\n");
-            if (rx.indexIn(receivedData) > 0) {
-                if (QByteArray::fromBase64(rx.cap(1).toLatin1()) == "login:password") {
+            QRegularExpression rx("Authorization: Basic ([^\r\n]*)\r\n");
+            QRegularExpressionMatch match = rx.match(receivedData);
+            if (match.hasMatch()) {
+                if (QByteArray::fromBase64(match.captured(1).toLatin1()) == "login:password") {
                     dataToTransmit =
                           "HTTP/1.0 200 OK\r\n"
                           "Content-Type: text/plain\r\n"
@@ -8496,7 +8507,9 @@ void tst_QNetworkReply::ioHttpRedirectErrors_data()
 
     QTest::newRow("too-many-redirects") << "http://localhost" << tempRedirectReply << QNetworkReply::TooManyRedirectsError;
 #if QT_CONFIG(ssl)
+#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("insecure-redirect") << "https://localhost" << tempRedirectReply << QNetworkReply::InsecureRedirectError;
+#endif // Q_OS_WIN
 #endif
     QTest::newRow("unknown-redirect") << "http://localhost"<< tempRedirectReply.replace("http", "bad_protocol") << QNetworkReply::ProtocolUnknownError;
 }
@@ -8573,9 +8586,11 @@ void tst_QNetworkReply::ioHttpRedirectPolicy_data()
     QTest::newRow("nolesssafe-nossl") << QNetworkRequest::NoLessSafeRedirectPolicy << false << 1 << 200;
     QTest::newRow("same-origin-nossl") << QNetworkRequest::SameOriginRedirectPolicy << false << 1 << 200;
 #if QT_CONFIG(ssl)
+#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
     QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
     QTest::newRow("same-origin-ssl") << QNetworkRequest::SameOriginRedirectPolicy << true << 1 << 200;
+#endif // Q_OS_WIN
 #endif
 }
 
@@ -8629,33 +8644,41 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
     QTest::newRow("nolesssafe-nossl-nossl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
 #if QT_CONFIG(ssl)
+#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("nolesssafe-ssl-ssl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("https:/localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("nolesssafe-ssl-nossl-insecure-redirect") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif // Q_OS_WIN
 #endif
     // 2. SameOriginRedirectsPolicy
     QTest::newRow("same-origin-nossl-nossl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
 #if QT_CONFIG(ssl)
+#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("same-origin-ssl-ssl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("same-origin-https-http-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif // Q_OS_WIN
 #endif
     QTest::newRow("same-origin-http-https-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("https://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
     QTest::newRow("same-origin-http-http-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
 #if QT_CONFIG(ssl)
+#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("same-origin-https-https-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif // Q_OS_WIN
 #endif
     QTest::newRow("same-origin-http-http-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
 #if QT_CONFIG(ssl)
+#ifndef Q_OS_WIN // QTBUG-76157
     QTest::newRow("same-origin-https-https-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif // Q_OS_WIN
 #endif
 }
 
@@ -9130,6 +9153,10 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
 
     for (int s = 0; s <= 1; s++) {
         withSsl = (s == 1);
+#ifdef Q_OS_WIN
+        if (withSsl)
+            QSKIP("QTBUG-76157: get rid of locking in TLS handshake (QSslSocket)");
+#endif // Q_OS_WIN
         // Test also needs to run several times because of 9c2ecf89
         for (int j = 0; j < 20; j++) {
             // emulate a minimal https server

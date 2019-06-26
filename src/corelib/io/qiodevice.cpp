@@ -169,7 +169,7 @@ QIODevicePrivate::QIODevicePrivate()
        , baseReadLineDataCalled(false)
        , accessMode(Unset)
 #ifdef QT_NO_QOBJECT
-       , q_ptr(0)
+       , q_ptr(nullptr)
 #endif
 {
 }

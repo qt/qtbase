@@ -69,12 +69,15 @@ inline D2D1_RECT_F to_d2d_rect_f(const QRectF &qrect)
 
 inline D2D1_SIZE_U to_d2d_size_u(const QSizeF &qsize)
 {
-    return D2D1::SizeU(qsize.width(), qsize.height());
+
+    return D2D1::SizeU(UINT32(qRound(qsize.width())),
+                       UINT32(qRound(qsize.height())));
 }
 
 inline D2D1_SIZE_U to_d2d_size_u(const QSize &qsize)
 {
-    return D2D1::SizeU(qsize.width(), qsize.height());
+    return D2D1::SizeU(UINT32(qsize.width()),
+                       UINT32(qsize.height()));
 }
 
 inline D2D1_POINT_2F to_d2d_point_2f(const QPointF &qpoint)

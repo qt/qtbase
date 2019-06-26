@@ -120,6 +120,7 @@
 
 #ifdef Q_OS_WASM
 #include <emscripten.h>
+#include <emscripten/val.h>
 #endif
 
 #ifdef QT_BOOTSTRAPPED
@@ -216,11 +217,11 @@ QString QCoreApplicationPrivate::appVersion() const
 }
 #endif
 
-QString *QCoreApplicationPrivate::cachedApplicationFilePath = 0;
+QString *QCoreApplicationPrivate::cachedApplicationFilePath = nullptr;
 
 bool QCoreApplicationPrivate::checkInstance(const char *function)
 {
-    bool b = (QCoreApplication::self != 0);
+    bool b = (QCoreApplication::self != nullptr);
     if (!b)
         qWarning("QApplication::%s: Please instantiate the QApplication object first", function);
     return b;
@@ -257,7 +258,7 @@ void QCoreApplicationPrivate::processCommandLineArguments()
     }
 
     if (j < argc) {
-        argv[j] = 0;
+        argv[j] = nullptr;
         argc = j;
     }
 }
@@ -367,11 +368,11 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
 }
 
-QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
+QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = nullptr;
 
 #endif // QT_NO_QOBJECT
 
-QCoreApplication *QCoreApplication::self = 0;
+QCoreApplication *QCoreApplication::self = nullptr;
 uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents) |
     (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
@@ -455,12 +456,12 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , aboutToQuitEmitted(false)
     , threadData_clean(false)
 #else
-    , q_ptr(0)
+    , q_ptr(nullptr)
 #endif
 {
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
-    if (argc == 0 || argv == 0) {
+    if (argc == 0 || argv == nullptr) {
         argc = 0;
         argv = const_cast<char **>(&empty);
     }
@@ -551,8 +552,8 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(0);
 QThread *QCoreApplicationPrivate::mainThread()
 {
-    Q_ASSERT(theMainThread.load() != 0);
-    return theMainThread.load();
+    Q_ASSERT(theMainThread.loadRelaxed() != 0);
+    return theMainThread.loadRelaxed();
 }
 
 bool QCoreApplicationPrivate::threadRequiresCoreApplication()
@@ -799,6 +800,10 @@ void QCoreApplicationPrivate::init()
                 Module.print(err);
         });
     );
+
+#if QT_CONFIG(thread)
+    QThreadPrivate::idealThreadCount = emscripten::val::global("navigator")["hardwareConcurrency"].as<int>();
+#endif
 #endif
 
     // Store app name/version (so they're still available after QCoreApplication is destroyed)
@@ -849,7 +854,7 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     Q_ASSERT(!eventDispatcher);
-    eventDispatcher = threadData->eventDispatcher.load();
+    eventDispatcher = threadData->eventDispatcher.loadRelaxed();
 
     // otherwise we create one
     if (!eventDispatcher)
@@ -886,7 +891,7 @@ QCoreApplication::~QCoreApplication()
 {
     qt_call_post_routines();
 
-    self = 0;
+    self = nullptr;
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = true;
     QCoreApplicationPrivate::is_app_running = false;
@@ -894,7 +899,7 @@ QCoreApplication::~QCoreApplication()
 
 #if QT_CONFIG(thread)
     // Synchronize and stop the global thread pool threads.
-    QThreadPool *globalThreadPool = 0;
+    QThreadPool *globalThreadPool = nullptr;
     QT_TRY {
         globalThreadPool = QThreadPool::globalInstance();
     } QT_CATCH (...) {
@@ -905,10 +910,10 @@ QCoreApplication::~QCoreApplication()
 #endif
 
 #ifndef QT_NO_QOBJECT
-    d_func()->threadData->eventDispatcher = 0;
+    d_func()->threadData->eventDispatcher = nullptr;
     if (QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher->closingDown();
-    QCoreApplicationPrivate::eventDispatcher = 0;
+    QCoreApplicationPrivate::eventDispatcher = nullptr;
 #endif
 
 #if QT_CONFIG(library)
@@ -972,7 +977,11 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
+#if defined(QT_NO_QOBJECT)
     if (Q_UNLIKELY(qApp)) {
+#else
+    if (Q_UNLIKELY(QCoreApplicationPrivate::is_app_running)) {
+#endif
         switch (attribute) {
             case Qt::AA_EnableHighDpiScaling:
             case Qt::AA_DisableHighDpiScaling:
@@ -1297,7 +1306,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     QThreadData *data = QThreadData::current();
     if (!data->hasEventDispatcher())
         return;
-    data->eventDispatcher.load()->processEvents(flags);
+    data->eventDispatcher.loadRelaxed()->processEvents(flags);
 }
 
 /*!
@@ -1329,7 +1338,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
         return;
     QElapsedTimer start;
     start.start();
-    while (data->eventDispatcher.load()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
+    while (data->eventDispatcher.loadRelaxed()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
         if (start.elapsed() > ms)
             break;
     }
@@ -1733,7 +1742,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
             --data->postEventList.recursion;
             if (!data->postEventList.recursion && !data->canWait && data->hasEventDispatcher())
-                data->eventDispatcher.load()->wakeUp();
+                data->eventDispatcher.loadRelaxed()->wakeUp();
 
             // clear the global list, i.e. remove everything that was
             // delivered.
@@ -1984,7 +1993,7 @@ void QCoreApplicationPrivate::deref()
 
 void QCoreApplicationPrivate::maybeQuit()
 {
-    if (quitLockRef.load() == 0 && in_exec && quitLockRefEnabled && shouldQuit())
+    if (quitLockRef.loadRelaxed() == 0 && in_exec && quitLockRefEnabled && shouldQuit())
         QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::Quit));
 }
 
@@ -2953,7 +2962,7 @@ bool QCoreApplication::hasPendingEvents()
 QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {
     if (QCoreApplicationPrivate::theMainThread)
-        return QCoreApplicationPrivate::theMainThread.load()->eventDispatcher();
+        return QCoreApplicationPrivate::theMainThread.loadRelaxed()->eventDispatcher();
     return 0;
 }
 

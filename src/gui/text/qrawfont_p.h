@@ -87,7 +87,7 @@ public:
     ~QRawFontPrivate()
     {
 #ifndef QT_NO_DEBUG
-        Q_ASSERT(ref.load() == 0);
+        Q_ASSERT(ref.loadRelaxed() == 0);
 #endif
         cleanUp();
     }

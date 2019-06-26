@@ -100,7 +100,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::GetSelection(SAFEARRAY **pRet
             for (LONG i = 0; i < selCount; ++i) {
                 int startOffset = 0, endOffset = 0;
                 textInterface->selection((int)i, &startOffset, &endOffset);
-                QWindowsUiaTextRangeProvider *textRangeProvider = new QWindowsUiaTextRangeProvider(id(), startOffset, endOffset);
+                auto *textRangeProvider = new QWindowsUiaTextRangeProvider(id(), startOffset, endOffset);
                 SafeArrayPutElement(*pRetVal, &i, static_cast<IUnknown *>(textRangeProvider));
                 textRangeProvider->Release();
             }
@@ -110,7 +110,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::GetSelection(SAFEARRAY **pRet
         if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, 1))) {
             LONG i = 0;
             int cursorPosition = textInterface->cursorPosition();
-            QWindowsUiaTextRangeProvider *textRangeProvider = new QWindowsUiaTextRangeProvider(id(), cursorPosition, cursorPosition);
+            auto *textRangeProvider = new QWindowsUiaTextRangeProvider(id(), cursorPosition, cursorPosition);
             SafeArrayPutElement(*pRetVal, &i, static_cast<IUnknown *>(textRangeProvider));
             textRangeProvider->Release();
         }
@@ -138,7 +138,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::GetVisibleRanges(SAFEARRAY **
     // Considering the entire text as visible.
     if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, 1))) {
         LONG i = 0;
-        QWindowsUiaTextRangeProvider *textRangeProvider = new QWindowsUiaTextRangeProvider(id(), 0, textInterface->characterCount());
+        auto *textRangeProvider = new QWindowsUiaTextRangeProvider(id(), 0, textInterface->characterCount());
         SafeArrayPutElement(*pRetVal, &i, static_cast<IUnknown *>(textRangeProvider));
         textRangeProvider->Release();
     }

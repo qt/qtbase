@@ -137,7 +137,7 @@ bool qt_windowsIsTabletMode(HWND hwnd)
     const wchar_t uiViewSettingsId[] = L"Windows.UI.ViewManagement.UIViewSettings";
     HSTRING_HEADER uiViewSettingsIdRefHeader;
     HSTRING uiViewSettingsIdHs = nullptr;
-    const UINT32 uiViewSettingsIdLen = UINT32(sizeof(uiViewSettingsId) / sizeof(uiViewSettingsId[0]) - 1);
+    const auto uiViewSettingsIdLen = UINT32(sizeof(uiViewSettingsId) / sizeof(uiViewSettingsId[0]) - 1);
     if (FAILED(baseComDll.windowsCreateStringReference(uiViewSettingsId, uiViewSettingsIdLen, &uiViewSettingsIdRefHeader, &uiViewSettingsIdHs)))
         return false;
 

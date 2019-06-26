@@ -481,7 +481,7 @@ void tst_QWaitCondition::wakeOne()
         }
         mutex.unlock();
 
-        QCOMPARE(count.load(), ThreadCount);
+        QCOMPARE(count.loadRelaxed(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; ++x) {
@@ -502,10 +502,10 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 1);
-            QCOMPARE(count.load(), ThreadCount - (x + 1));
+            QCOMPARE(count.loadRelaxed(), ThreadCount - (x + 1));
         }
 
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
 
         // QReadWriteLock
         QReadWriteLock readWriteLock;
@@ -530,7 +530,7 @@ void tst_QWaitCondition::wakeOne()
         }
         readWriteLock.unlock();
 
-        QCOMPARE(count.load(), ThreadCount);
+        QCOMPARE(count.loadRelaxed(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; ++x) {
@@ -551,10 +551,10 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 1);
-            QCOMPARE(count.load(), ThreadCount - (x + 1));
+            QCOMPARE(count.loadRelaxed(), ThreadCount - (x + 1));
         }
 
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
     }
 
     // wake up threads, two at a time
@@ -585,7 +585,7 @@ void tst_QWaitCondition::wakeOne()
         }
         mutex.unlock();
 
-        QCOMPARE(count.load(), ThreadCount);
+        QCOMPARE(count.loadRelaxed(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; x += 2) {
@@ -608,10 +608,10 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 2);
-            QCOMPARE(count.load(), ThreadCount - (x + 2));
+            QCOMPARE(count.loadRelaxed(), ThreadCount - (x + 2));
         }
 
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
 
         // QReadWriteLock
         QReadWriteLock readWriteLock;
@@ -636,7 +636,7 @@ void tst_QWaitCondition::wakeOne()
         }
         readWriteLock.unlock();
 
-        QCOMPARE(count.load(), ThreadCount);
+        QCOMPARE(count.loadRelaxed(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; x += 2) {
@@ -659,10 +659,10 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 2);
-            QCOMPARE(count.load(), ThreadCount - (x + 2));
+            QCOMPARE(count.loadRelaxed(), ThreadCount - (x + 2));
         }
 
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
     }
 }
 
@@ -692,7 +692,7 @@ void tst_QWaitCondition::wakeAll()
         }
         mutex.unlock();
 
-        QCOMPARE(count.load(), ThreadCount);
+        QCOMPARE(count.loadRelaxed(), ThreadCount);
 
         // wake up all threads at once
         mutex.lock();
@@ -707,7 +707,7 @@ void tst_QWaitCondition::wakeAll()
         }
 
         QCOMPARE(exited, ThreadCount);
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
 
         // QReadWriteLock
         QReadWriteLock readWriteLock;
@@ -728,7 +728,7 @@ void tst_QWaitCondition::wakeAll()
         }
         readWriteLock.unlock();
 
-        QCOMPARE(count.load(), ThreadCount);
+        QCOMPARE(count.loadRelaxed(), ThreadCount);
 
         // wake up all threads at once
         readWriteLock.lockForWrite();
@@ -743,7 +743,7 @@ void tst_QWaitCondition::wakeAll()
         }
 
         QCOMPARE(exited, ThreadCount);
-        QCOMPARE(count.load(), 0);
+        QCOMPARE(count.loadRelaxed(), 0);
     }
 }
 

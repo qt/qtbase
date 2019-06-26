@@ -297,13 +297,12 @@ Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 */
 Qt::MouseButton cocoaButton2QtButton(NSEvent *event)
 {
-    switch (event.type) {
-    case NSEventTypeMouseMoved:
+    if (cocoaEvent2QtMouseEvent(event) == QEvent::MouseMove)
         return Qt::NoButton;
 
+    switch (event.type) {
     case NSEventTypeRightMouseUp:
     case NSEventTypeRightMouseDown:
-    case NSEventTypeRightMouseDragged:
         return Qt::RightButton;
 
     default:

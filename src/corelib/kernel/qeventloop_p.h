@@ -63,8 +63,8 @@ public:
     inline QEventLoopPrivate()
         : inExec(false)
     {
-        returnCode.store(-1);
-        exit.store(true);
+        returnCode.storeRelaxed(-1);
+        exit.storeRelaxed(true);
     }
 
     QAtomicInt quitLockRef;

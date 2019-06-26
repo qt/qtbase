@@ -321,20 +321,12 @@ int QDesktopWidgetPrivate::screenNumber(const QWidget *w)
     if (screens.isEmpty()) // This should never happen
         return primaryScreen();
 
-    const QWindow *winHandle = w->windowHandle();
-    if (!winHandle) {
-        if (const QWidget *nativeParent = w->nativeParentWidget())
-            winHandle = nativeParent->windowHandle();
-    }
-
     // If there is more than one virtual desktop
     if (screens.count() != screens.constFirst()->virtualSiblings().count()) {
         // Find the root widget, get a QScreen from it and use the
         // virtual siblings for checking the window position.
-        if (winHandle) {
-            if (const QScreen *winScreen = winHandle->screen())
-                screens = winScreen->virtualSiblings();
-        }
+        if (const QScreen *winScreen = qt_widget_private(const_cast<QWidget *>(w))->associatedScreen())
+            screens = winScreen->virtualSiblings();
     }
 
     // Get the screen number from window position using screen geometry

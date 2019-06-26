@@ -842,7 +842,7 @@ void tst_Compiler::cxx11_constexpr()
     static constexpr QBasicAtomicInt atomic = Q_BASIC_ATOMIC_INITIALIZER(1);
     static constexpr int i = constexprValue();
     QCOMPARE(i, constexprValue());
-    QCOMPARE(atomic.load(), 1);
+    QCOMPARE(atomic.loadRelaxed(), 1);
 #endif
 }
 

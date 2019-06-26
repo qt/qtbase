@@ -1364,6 +1364,8 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
             blockOffset = 0;
         }
     } else {
+        if (blockOffset == block.length() - 1)
+            --blockOffset;  // make sure to skip end-of-paragraph character
         while (block.isValid()) {
             if (findInBlock(block, subString, blockOffset, options, &cursor))
                 return cursor;
@@ -2468,9 +2470,19 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
 
     if (format.foreground() != defaultCharFormat.foreground()
         && format.foreground().style() != Qt::NoBrush) {
-        html += QLatin1String(" color:");
-        html += colorValue(format.foreground().color());
-        html += QLatin1Char(';');
+        QBrush brush = format.foreground();
+        if (brush.style() == Qt::TexturePattern) {
+            const bool isPixmap = qHasPixmapTexture(brush);
+            const qint64 cacheKey = isPixmap ? brush.texture().cacheKey() : brush.textureImage().cacheKey();
+
+            html += QLatin1String(" -qt-fg-texture-cachekey:");
+            html += QString::number(cacheKey);
+            html += QLatin1String(";");
+        } else {
+            html += QLatin1String(" color:");
+            html += colorValue(brush.color());
+            html += QLatin1Char(';');
+        }
         attributesEmitted = true;
     }
 

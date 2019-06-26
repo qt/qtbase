@@ -1553,6 +1553,13 @@ bool qSharedBuild() noexcept
 */
 
 /*!
+    \macro Q_OS_WASM
+    \relates <QtGlobal>
+
+    Defined on Web Assembly.
+*/
+
+/*!
     \macro Q_CC_SYM
     \relates <QtGlobal>
 
@@ -2945,6 +2952,7 @@ QString QSysInfo::machineHostName()
     struct utsname u;
     if (uname(&u) == 0)
         return QString::fromLocal8Bit(u.nodename);
+    return QString();
 #else
 #  ifdef Q_OS_WIN
     // Important: QtNetwork depends on machineHostName() initializing ws2_32.dll
@@ -2957,7 +2965,6 @@ QString QSysInfo::machineHostName()
     hostName[sizeof(hostName) - 1] = '\0';
     return QString::fromLocal8Bit(hostName);
 #endif
-    return QString();
 }
 #endif // QT_BOOTSTRAPPED
 
@@ -3612,7 +3619,7 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
     (void)getenv_s(&requiredSize, 0, 0, varName);
     return requiredSize != 0;
 #else
-    return ::getenv(varName) != 0;
+    return ::getenv(varName) != nullptr;
 #endif
 }
 

@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include "../../../shared/highdpi.h"
 
 #include <QtTest/QtTest>
 
@@ -388,8 +389,10 @@ void tst_QDialog::toolDialogPosition()
     dialog.move(QPoint(100,100));
     const QPoint beforeShowPosition = dialog.pos();
     dialog.show();
+    const int fuzz = int(dialog.devicePixelRatioF());
     const QPoint afterShowPosition = dialog.pos();
-    QCOMPARE(afterShowPosition, beforeShowPosition);
+    QVERIFY2(HighDpi::fuzzyCompare(afterShowPosition, beforeShowPosition, fuzz),
+             HighDpi::msgPointMismatch(afterShowPosition, beforeShowPosition).constData());
 }
 
 class Dialog : public QDialog

@@ -195,6 +195,9 @@ public:
     int waiters;
     bool terminationEnabled, terminatePending;
 #endif // Q_OS_WIN
+#ifdef Q_OS_WASM
+    static int idealThreadCount;
+#endif
     QThreadData *data;
 
     static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);
@@ -254,11 +257,11 @@ public:
     void ref();
     void deref();
     inline bool hasEventDispatcher() const
-    { return eventDispatcher.load() != nullptr; }
+    { return eventDispatcher.loadRelaxed() != nullptr; }
     QAbstractEventDispatcher *createEventDispatcher();
     QAbstractEventDispatcher *ensureEventDispatcher()
     {
-        QAbstractEventDispatcher *ed = eventDispatcher.load();
+        QAbstractEventDispatcher *ed = eventDispatcher.loadRelaxed();
         if (Q_LIKELY(ed))
             return ed;
         return createEventDispatcher();

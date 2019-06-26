@@ -401,9 +401,7 @@ void tst_QSslCertificate::subjectAlternativeNames()
         certificate.subjectAlternativeNames();
 
     // verify that each entry in subjAltNames is present in fileContents
-    QMapIterator<QSsl::AlternativeNameEntryType, QString> it(altSubjectNames);
-    while (it.hasNext()) {
-        it.next();
+    for (auto it = altSubjectNames.cbegin(), end = altSubjectNames.cend(); it != end; ++it) {
         QByteArray type;
         if (it.key() == QSsl::EmailEntry)
             type = "email";

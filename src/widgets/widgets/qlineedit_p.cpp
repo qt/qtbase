@@ -355,9 +355,7 @@ QLineEditPrivate *QLineEditIconButton::lineEditPrivate() const
 void QLineEditIconButton::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    QWindow *window = nullptr;
-    if (const QWidget *nativeParent = nativeParentWidget())
-        window = nativeParent->windowHandle();
+    QWindow *window = qt_widget_private(this)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest);
     QIcon::Mode state = QIcon::Disabled;
     if (isEnabled())
         state = isDown() ? QIcon::Active : QIcon::Normal;

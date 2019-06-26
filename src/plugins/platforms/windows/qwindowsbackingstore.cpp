@@ -158,7 +158,7 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
             format = qt_maybeAlphaVersionWithSameDepth(format);
 
         QWindowsNativeImage *oldwni = m_image.data();
-        QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);
+        auto *newwni = new QWindowsNativeImage(size.width(), size.height(), format);
 
         if (oldwni && !region.isEmpty()) {
             const QImage &oldimg(oldwni->image());

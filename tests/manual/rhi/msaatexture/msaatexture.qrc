@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="color.vert.qsb">../shared/color.vert.qsb</file>
+  <file alias="color.frag.qsb">../shared/color.frag.qsb</file>
+  <file alias="texture.vert.qsb">../shared/texture.vert.qsb</file>
+  <file alias="texture.frag.qsb">../shared/texture.frag.qsb</file>
+  <file alias="texture_ms4.frag.qsb">../shared/texture_ms4.frag.qsb</file>
+</qresource>
+</RCC>

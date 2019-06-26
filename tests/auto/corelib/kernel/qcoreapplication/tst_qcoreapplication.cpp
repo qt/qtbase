@@ -775,49 +775,49 @@ private slots:
         QCoreApplicationPrivate *privateClass = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(qApp));
 
         {
-            QCOMPARE(privateClass->quitLockRef.load(), 0);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 0);
             // Test with a lock active so that the refcount doesn't drop to zero during these tests, causing a quit.
             // (until we exit the scope)
             QEventLoopLocker locker;
 
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 1);
 
             JobObject *job1 = new JobObject(this);
 
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 2);
 
             delete job1;
 
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 1);
 
             job1 = new JobObject(this);
 
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 2);
 
             JobObject *job2 = new JobObject(this);
 
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 3);
 
             delete job1;
 
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 2);
 
             JobObject *job3 = new JobObject(job2);
             Q_UNUSED(job3);
 
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 3);
 
             JobObject *job4 = new JobObject(job2);
             Q_UNUSED(job4);
 
-            QCOMPARE(privateClass->quitLockRef.load(), 4);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 4);
 
             delete job2;
 
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
+            QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 1);
 
         }
-        QCOMPARE(privateClass->quitLockRef.load(), 0);
+        QCOMPARE(privateClass->quitLockRef.loadRelaxed(), 0);
     }
 };
 

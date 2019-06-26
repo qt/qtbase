@@ -88,7 +88,7 @@ QAtomicInt iterations;
 class PrintFor : public IterateKernel<TestIterator, void>
 {
 public:
-    PrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.store(0); }
+    PrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); }
     bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         iterations.fetchAndAddRelaxed(end - begin);
@@ -107,7 +107,7 @@ public:
 class SleepPrintFor : public IterateKernel<TestIterator, void>
 {
 public:
-    SleepPrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.store(0); }
+    SleepPrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); }
     inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         QTest::qSleep(200);
@@ -127,7 +127,7 @@ public:
 void tst_QtConcurrentIterateKernel::instantiate()
 {
     startThreadEngine(new PrintFor(0, 40)).startBlocking();
-    QCOMPARE(iterations.load(), 40);
+    QCOMPARE(iterations.loadRelaxed(), 40);
 }
 
 void tst_QtConcurrentIterateKernel::cancel()
@@ -138,8 +138,8 @@ void tst_QtConcurrentIterateKernel::cancel()
         f.waitForFinished();
         QVERIFY(f.isCanceled());
          // the threads might run one iteration each before they are canceled.
-        QVERIFY2(iterations.load() <= QThread::idealThreadCount(),
-                 (QByteArray::number(iterations.load()) + ' ' + QByteArray::number(QThread::idealThreadCount())));
+        QVERIFY2(iterations.loadRelaxed() <= QThread::idealThreadCount(),
+                 (QByteArray::number(iterations.loadRelaxed()) + ' ' + QByteArray::number(QThread::idealThreadCount())));
     }
 }
 
@@ -147,7 +147,7 @@ QAtomicInt counter;
 class CountFor : public IterateKernel<TestIterator, void>
 {
 public:
-    CountFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.store(0); }
+    CountFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); }
     inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         counter.fetchAndAddRelaxed(end - begin);
@@ -164,10 +164,10 @@ void tst_QtConcurrentIterateKernel::stresstest()
     const int iterations = 1000;
     const int times = 50;
     for (int i = 0; i < times; ++i) {
-        counter.store(0);
+        counter.storeRelaxed(0);
         CountFor f(0, iterations);
         f.startBlocking();
-        QCOMPARE(counter.load(), iterations);
+        QCOMPARE(counter.loadRelaxed(), iterations);
     }
 }
 
@@ -186,7 +186,7 @@ public:
     // this class throttles between iterations 100 and 200,
     // and then records how many threads that run between
     // iterations 140 and 160.
-    ThrottleFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.store(0); throttling = false; }
+    ThrottleFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); throttling = false; }
     inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         if (200 >= begin && 200 < end) {
@@ -217,7 +217,7 @@ public:
 
     bool shouldThrottleThread()
     {
-       const int load = iterations.load();
+       const int load = iterations.loadRelaxed();
        return (load > 100 && load < 200);
     }
     bool throttling;
@@ -226,14 +226,14 @@ public:
 void tst_QtConcurrentIterateKernel::throttling()
 {
     const int totalIterations = 400;
-    iterations.store(0);
+    iterations.storeRelaxed(0);
 
     threads.clear();
 
     ThrottleFor f(0, totalIterations);
     f.startBlocking();
 
-    QCOMPARE(iterations.load(), totalIterations);
+    QCOMPARE(iterations.loadRelaxed(), totalIterations);
 
 
     QCOMPARE(threads.count(), 1);

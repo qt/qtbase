@@ -106,7 +106,7 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
             return false;
         }
         if (isValidInterfaceName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidInterface, QString::fromLatin1("Invalid interface class: %1").arg(name));
+        *error = QDBusError(QDBusError::InvalidInterface, QLatin1String("Invalid interface class: %1").arg(name));
         return false;
     }
 
@@ -118,7 +118,7 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
             return false;
         }
         if (isValidBusName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidService, QString::fromLatin1("Invalid service name: %1").arg(name));
+        *error = QDBusError(QDBusError::InvalidService, QLatin1String("Invalid service name: %1").arg(name));
         return false;
     }
 
@@ -130,7 +130,7 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
             return false;
         }
         if (isValidObjectPath(path)) return true;
-        *error = QDBusError(QDBusError::InvalidObjectPath, QString::fromLatin1("Invalid object path: %1").arg(path));
+        *error = QDBusError(QDBusError::InvalidObjectPath, QLatin1String("Invalid object path: %1").arg(path));
         return false;
     }
 
@@ -143,8 +143,8 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
             return false;
         }
         if (isValidMemberName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidMember, QString::fromLatin1("Invalid %1 name: %2")
-                            .arg(QString::fromLatin1(nameType), name));
+        *error = QDBusError(QDBusError::InvalidMember, QLatin1String("Invalid %1 name: %2")
+                            .arg(QLatin1String(nameType), name));
         return false;
     }
 
@@ -156,7 +156,7 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
             return false;
         }
         if (isValidErrorName(name)) return true;
-        *error = QDBusError(QDBusError::InvalidInterface, QString::fromLatin1("Invalid error name: %1").arg(name));
+        *error = QDBusError(QDBusError::InvalidInterface, QLatin1String("Invalid error name: %1").arg(name));
         return false;
     }
 

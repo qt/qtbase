@@ -2662,14 +2662,9 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
         break;
     }
     if (!tmpIcon.isNull()) {
-        QWindow *window = nullptr;
-        if (mb) {
-            window = mb->windowHandle();
-            if (!window) {
-                if (const QWidget *nativeParent = mb->nativeParentWidget())
-                    window = nativeParent->windowHandle();
-            }
-        }
+        QWindow *window = mb
+            ? qt_widget_private(mb)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)
+            : nullptr;
         return tmpIcon.pixmap(window, QSize(iconSize, iconSize));
     }
     return QPixmap();

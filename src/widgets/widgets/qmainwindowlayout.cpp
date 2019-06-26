@@ -2584,9 +2584,9 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
             }
         }
         for (QWidget *w : candidates) {
-            QWindow *handle1 = widget->windowHandle();
-            QWindow *handle2 = w->windowHandle();
-            if (handle1 && handle2 && handle1->screen() != handle2->screen())
+            const QScreen *screen1 = qt_widget_private(widget)->associatedScreen();
+            const QScreen *screen2 = qt_widget_private(w)->associatedScreen();
+            if (screen1 && screen2 && screen1 != screen2)
                 continue;
             if (!w->geometry().contains(mousePos))
                 continue;

@@ -77,14 +77,14 @@ QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
     // .so is preferred.
 # if defined(__ia64)
     if (!fullVersion.isEmpty()) {
-        suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
+        suffixes << QLatin1String(".so.%1").arg(fullVersion);
     } else {
         suffixes << QLatin1String(".so");
     }
 # endif
     if (!fullVersion.isEmpty()) {
-        suffixes << QString::fromLatin1(".sl.%1").arg(fullVersion);
-        suffixes << QString::fromLatin1(".%1").arg(fullVersion);
+        suffixes << QLatin1String(".sl.%1").arg(fullVersion);
+        suffixes << QLatin1String(".%1").arg(fullVersion);
     } else {
         suffixes << QLatin1String(".sl");
     }
@@ -93,15 +93,15 @@ QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
 
 #else
     if (!fullVersion.isEmpty()) {
-        suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
+        suffixes << QLatin1String(".so.%1").arg(fullVersion);
     } else {
         suffixes << QLatin1String(".so");
     }
 #endif
 # ifdef Q_OS_MAC
     if (!fullVersion.isEmpty()) {
-        suffixes << QString::fromLatin1(".%1.bundle").arg(fullVersion);
-        suffixes << QString::fromLatin1(".%1.dylib").arg(fullVersion);
+        suffixes << QLatin1String(".%1.bundle").arg(fullVersion);
+        suffixes << QLatin1String(".%1.dylib").arg(fullVersion);
     } else {
         suffixes << QLatin1String(".bundle") << QLatin1String(".dylib");
     }

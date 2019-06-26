@@ -4,6 +4,6 @@ SOURCES += tst_qtextbrowser.cpp
 
 QT += widgets testlib
 
-TESTDATA += *.html *.md subdir/*
+TESTDATA += *.html *.md markdown.really subdir/*
 
 builtin_testdata: DEFINES += BUILTIN_TESTDATA

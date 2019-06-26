@@ -52,7 +52,7 @@ class RefCount
 {
 public:
     inline bool ref() noexcept {
-        int count = atomic.load();
+        int count = atomic.loadRelaxed();
 #if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         if (count == 0) // !isSharable
             return false;
@@ -63,7 +63,7 @@ public:
     }
 
     inline bool deref() noexcept {
-        int count = atomic.load();
+        int count = atomic.loadRelaxed();
 #if !defined(QT_NO_UNSHARABLE_CONTAINERS)
         if (count == 0) // !isSharable
             return false;
@@ -86,24 +86,24 @@ public:
     bool isSharable() const noexcept
     {
         // Sharable === Shared ownership.
-        return atomic.load() != 0;
+        return atomic.loadRelaxed() != 0;
     }
 #endif
 
     bool isStatic() const noexcept
     {
         // Persistent object, never deleted
-        return atomic.load() == -1;
+        return atomic.loadRelaxed() == -1;
     }
 
     bool isShared() const noexcept
     {
-        int count = atomic.load();
+        int count = atomic.loadRelaxed();
         return (count != 1) && (count != 0);
     }
 
-    void initializeOwned() noexcept { atomic.store(1); }
-    void initializeUnsharable() noexcept { atomic.store(0); }
+    void initializeOwned() noexcept { atomic.storeRelaxed(1); }
+    void initializeUnsharable() noexcept { atomic.storeRelaxed(0); }
 
     QBasicAtomicInt atomic;
 };

@@ -143,7 +143,8 @@ template<typename T>
 QPointer<T>
 qPointerFromVariant(const QVariant &variant)
 {
-    return QPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
+    const auto wp = QtSharedPointer::weakPointerFromVariant_internal(variant);
+    return QPointer<T>{qobject_cast<T*>(QtPrivate::EnableInternalData::internalData(wp))};
 }
 
 template <class T>

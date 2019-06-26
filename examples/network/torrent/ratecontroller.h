@@ -53,7 +53,7 @@
 
 #include <QObject>
 #include <QSet>
-#include <QTime>
+#include <QElapsedTimer>
 
 class PeerWireClient;
 
@@ -79,7 +79,7 @@ public slots:
     void scheduleTransfer();
 
 private:
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     QSet<PeerWireClient *> sockets;
     int upLimit;
     int downLimit;

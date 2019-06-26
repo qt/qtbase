@@ -40,12 +40,15 @@
 #include "qevdevtabletmanager_p.h"
 #include "qevdevtablethandler_p.h"
 
+#include <QtInputSupport/private/qevdevutil_p.h>
+
 #include <QStringList>
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qinputdevicemanager_p_p.h>
+#include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,34 +67,23 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
-    QStringList devices;
+    auto parsed = QEvdevUtil::parseSpecification(spec);
+    m_spec = std::move(parsed.spec);
 
-    foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
-            devices.append(arg);
-            args.removeAll(arg);
-        }
-    }
-
-    // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1Char(':'));
-
-    foreach (const QString &device, devices)
+    for (const QString &device : qAsConst(parsed.devices))
         addDevice(device);
 
     // when no devices specified, use device discovery to scan and monitor
-    if (devices.isEmpty()) {
-        qCDebug(qLcEvdevTablet) << "evdevtablet: Using device discovery";
-        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this);
-        if (m_deviceDiscovery) {
-            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+    if (parsed.devices.isEmpty()) {
+        qCDebug(qLcEvdevTablet, "evdevtablet: Using device discovery");
+        if (auto deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this)) {
+            const QStringList devices = deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addDevice(device);
 
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected,
                     this, &QEvdevTabletManager::addDevice);
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
                     this, &QEvdevTabletManager::removeDevice);
         }
     }
@@ -99,33 +91,32 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
 
 QEvdevTabletManager::~QEvdevTabletManager()
 {
-    qDeleteAll(m_activeDevices);
 }
 
 void QEvdevTabletManager::addDevice(const QString &deviceNode)
 {
-    qCDebug(qLcEvdevTablet) << "Adding device at" << deviceNode;
-    QEvdevTabletHandlerThread *handler;
-    handler = new QEvdevTabletHandlerThread(deviceNode, m_spec);
+    qCDebug(qLcEvdevTablet, "Adding device at %ls", qUtf16Printable(deviceNode));
+    auto handler = qt_make_unique<QEvdevTabletHandlerThread>(deviceNode, m_spec);
     if (handler) {
-        m_activeDevices.insert(deviceNode, handler);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
+        m_activeDevices.add(deviceNode, std::move(handler));
+        updateDeviceCount();
     } else {
-        qWarning("evdevtablet: Failed to open tablet device %s", qPrintable(deviceNode));
+        qWarning("evdevtablet: Failed to open tablet device %ls", qUtf16Printable(deviceNode));
     }
 }
 
 void QEvdevTabletManager::removeDevice(const QString &deviceNode)
 {
-    if (m_activeDevices.contains(deviceNode)) {
-        qCDebug(qLcEvdevTablet) << "Removing device at" << deviceNode;
-        QEvdevTabletHandlerThread *handler = m_activeDevices.value(deviceNode);
-        m_activeDevices.remove(deviceNode);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
-        delete handler;
+    if (m_activeDevices.remove(deviceNode)) {
+        qCDebug(qLcEvdevTablet, "Removing device at %ls", qUtf16Printable(deviceNode));
+        updateDeviceCount();
     }
+}
+
+void QEvdevTabletManager::updateDeviceCount()
+{
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());
 }
 
 QT_END_NAMESPACE

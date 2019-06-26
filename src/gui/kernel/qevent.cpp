@@ -97,35 +97,35 @@ QEnterEvent::~QEnterEvent()
 /*!
    \fn QPoint QEnterEvent::globalPos() const
 
-   Returns the global position of the widget \e{at the time of the event}.
+   Returns the global position of the mouse cursor \e{at the time of the event}.
 */
 /*!
    \fn int QEnterEvent::globalX() const
 
-   Returns the global position on the X-axis of the mouse cursor relative to the the widget.
+   Returns the global position on the X-axis of the mouse cursor \e{at the time of the event}.
 */
 /*!
    \fn int QEnterEvent::globalY() const
 
-   Returns the global position on the Y-axis of the mouse cursor relative to the the widget.
+   Returns the global position on the Y-axis of the mouse cursor \e{at the time of the event}.
 */
 /*!
-   \fn QPoint QEnterEvent::localPos() const
+   \fn QPointF QEnterEvent::localPos() const
 
    Returns the mouse cursor's position relative to the receiving widget.
 */
 /*!
    \fn QPoint QEnterEvent::pos() const
 
-   Returns the position of the mouse cursor in global screen coordinates.
+   Returns the position of the mouse cursor relative to the receiving widget.
 */
 /*!
-   \fn QPoint QEnterEvent::screenPos() const
+   \fn QPointF QEnterEvent::screenPos() const
 
    Returns the position of the mouse cursor relative to the receiving screen.
 */
 /*!
-   \fn QPoint QEnterEvent::windowPos() const
+   \fn QPointF QEnterEvent::windowPos() const
 
    Returns the position of the mouse cursor relative to the receiving window.
 */
@@ -4921,7 +4921,7 @@ QVector<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setId(int id)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->id = id;
 }
@@ -4929,7 +4929,7 @@ void QTouchEvent::TouchPoint::setId(int id)
 /*! \internal */
 void QTouchEvent::TouchPoint::setUniqueId(qint64 uid)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->uniqueId = QPointingDeviceUniqueId::fromNumericId(uid);
 }
@@ -4937,7 +4937,7 @@ void QTouchEvent::TouchPoint::setUniqueId(qint64 uid)
 /*! \internal */
 void QTouchEvent::TouchPoint::setState(Qt::TouchPointStates state)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->state = state;
 }
@@ -4945,7 +4945,7 @@ void QTouchEvent::TouchPoint::setState(Qt::TouchPointStates state)
 /*! \internal */
 void QTouchEvent::TouchPoint::setPos(const QPointF &pos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->pos = pos;
 }
@@ -4953,7 +4953,7 @@ void QTouchEvent::TouchPoint::setPos(const QPointF &pos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setScenePos(const QPointF &scenePos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->scenePos = scenePos;
 }
@@ -4961,7 +4961,7 @@ void QTouchEvent::TouchPoint::setScenePos(const QPointF &scenePos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->screenPos = screenPos;
 }
@@ -4969,7 +4969,7 @@ void QTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setNormalizedPos(const QPointF &normalizedPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->normalizedPos = normalizedPos;
 }
@@ -4977,7 +4977,7 @@ void QTouchEvent::TouchPoint::setNormalizedPos(const QPointF &normalizedPos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->startPos = startPos;
 }
@@ -4985,7 +4985,7 @@ void QTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setStartScenePos(const QPointF &startScenePos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->startScenePos = startScenePos;
 }
@@ -4993,7 +4993,7 @@ void QTouchEvent::TouchPoint::setStartScenePos(const QPointF &startScenePos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->startScreenPos = startScreenPos;
 }
@@ -5001,7 +5001,7 @@ void QTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setStartNormalizedPos(const QPointF &startNormalizedPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->startNormalizedPos = startNormalizedPos;
 }
@@ -5009,7 +5009,7 @@ void QTouchEvent::TouchPoint::setStartNormalizedPos(const QPointF &startNormaliz
 /*! \internal */
 void QTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->lastPos = lastPos;
 }
@@ -5017,7 +5017,7 @@ void QTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setLastScenePos(const QPointF &lastScenePos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->lastScenePos = lastScenePos;
 }
@@ -5025,7 +5025,7 @@ void QTouchEvent::TouchPoint::setLastScenePos(const QPointF &lastScenePos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->lastScreenPos = lastScreenPos;
 }
@@ -5033,7 +5033,7 @@ void QTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
 /*! \internal */
 void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalizedPos)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->lastNormalizedPos = lastNormalizedPos;
 }
@@ -5044,7 +5044,7 @@ void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalized
 */
 void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->pos = rect.center();
     d->ellipseDiameters = rect.size();
@@ -5055,7 +5055,7 @@ void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
 */
 void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->scenePos = sceneRect.center();
     d->ellipseDiameters = sceneRect.size();
@@ -5066,7 +5066,7 @@ void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
 */
 void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->screenPos = screenRect.center();
     d->ellipseDiameters = screenRect.size();
@@ -5075,7 +5075,7 @@ void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
 /*! \internal */
 void QTouchEvent::TouchPoint::setPressure(qreal pressure)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->pressure = pressure;
 }
@@ -5083,7 +5083,7 @@ void QTouchEvent::TouchPoint::setPressure(qreal pressure)
 /*! \internal */
 void QTouchEvent::TouchPoint::setRotation(qreal angle)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->rotation = angle;
 }
@@ -5091,7 +5091,7 @@ void QTouchEvent::TouchPoint::setRotation(qreal angle)
 /*! \internal */
 void QTouchEvent::TouchPoint::setEllipseDiameters(const QSizeF &dia)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->ellipseDiameters = dia;
 }
@@ -5099,7 +5099,7 @@ void QTouchEvent::TouchPoint::setEllipseDiameters(const QSizeF &dia)
 /*! \internal */
 void QTouchEvent::TouchPoint::setVelocity(const QVector2D &v)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->velocity = v;
 }
@@ -5107,7 +5107,7 @@ void QTouchEvent::TouchPoint::setVelocity(const QVector2D &v)
 /*! \internal */
 void QTouchEvent::TouchPoint::setRawScreenPositions(const QVector<QPointF> &positions)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->rawScreenPositions = positions;
 }
@@ -5117,7 +5117,7 @@ void QTouchEvent::TouchPoint::setRawScreenPositions(const QVector<QPointF> &posi
 */
 void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d = d->detach();
     d->flags = flags;
 }

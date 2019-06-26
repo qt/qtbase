@@ -649,7 +649,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
 
     // mark as an error
     error = QDBusError(QDBusError::UnknownInterface,
-        QString::fromLatin1("Interface '%1' was not found")
+        QLatin1String("Interface '%1' was not found")
                        .arg(interface));
     return 0;
 }

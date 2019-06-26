@@ -334,19 +334,17 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
     \brief The QDate class provides date functions.
 
 
-    A QDate object encodes a calendar date, i.e. year, month, and day numbers,
-    in the proleptic Gregorian calendar by default. It can read the current date
-    from the system clock. It provides functions for comparing dates, and for
-    manipulating dates. For example, it is possible to add and subtract days,
-    months, and years to dates.
+    A QDate object represents a particular date. This can be expressed as a
+    calendar date, i.e. year, month, and day numbers, in the proleptic Gregorian
+    calendar.
 
     A QDate object is typically created by giving the year, month, and day
-    numbers explicitly. Note that QDate interprets two digit years as presented,
-    i.e., as years 0 through 99, without adding any offset.  A QDate can also be
-    constructed with the static function currentDate(), which creates a QDate
-    object containing the system clock's date.  An explicit date can also be set
-    using setDate(). The fromString() function returns a QDate given a string
-    and a date format which is used to interpret the date within the string.
+    numbers explicitly. Note that QDate interprets year numbers less than 100 as
+    presented, i.e., as years 1 through 99, without adding any offset. The
+    static function currentDate() creates a QDate object containing the date
+    read from the system clock. An explicit date can also be set using
+    setDate(). The fromString() function returns a QDate given a string and a
+    date format which is used to interpret the date within the string.
 
     The year(), month(), and day() functions provide access to the
     year, month, and day numbers. Also, dayOfWeek() and dayOfYear()
@@ -380,7 +378,7 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
     every day in a contiguous range, with 24 November 4714 BCE in the Gregorian
     calendar being Julian Day 0 (1 January 4713 BCE in the Julian calendar).
     As well as being an efficient and accurate way of storing an absolute date,
-    it is suitable for converting a Date into other calendar systems such as
+    it is suitable for converting a date into other calendar systems such as
     Hebrew, Islamic or Chinese. The Julian Day number can be obtained using
     QDate::toJulianDay() and can be set using QDate::fromJulianDay().
 
@@ -615,7 +613,7 @@ int QDate::weekNumber(int *yearNumber) const
         Q_ASSERT(week == 53 || week == 1);
     }
 
-    if (yearNumber != 0)
+    if (yearNumber)
         *yearNumber = year;
     return week;
 }
@@ -1516,19 +1514,17 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         if (parts.count() != 4)
             return QDate();
 
-        QStringRef monthName = parts.at(1);
-        const int month = fromShortMonthName(monthName);
-        if (month == -1) {
-            // Month name matches neither English nor other localised name.
-            return QDate();
-        }
-
         bool ok = false;
         int year = parts.at(3).toInt(&ok);
-        if (!ok)
+        int day = ok ? parts.at(2).toInt(&ok) : 0;
+        if (!ok || !day)
             return QDate();
 
-        return QDate(year, month, parts.at(2).toInt());
+        const int month = fromShortMonthName(parts.at(1));
+        if (month == -1) // Month name matches no English or localised name.
+            return QDate();
+
+        return QDate(year, month, day);
         }
 #endif // textdate
     case Qt::ISODate: {
@@ -1695,12 +1691,10 @@ bool QDate::isLeapYear(int y)
     Unlike QDateTime, QTime knows nothing about time zones or
     daylight-saving time (DST).
 
-    A QTime object is typically created either by giving the number
-    of hours, minutes, seconds, and milliseconds explicitly, or by
-    using the static function currentTime(), which creates a QTime
-    object that contains the system's local time. Note that the
-    accuracy depends on the accuracy of the underlying operating
-    system; not all systems provide 1-millisecond accuracy.
+    A QTime object is typically created either by giving the number of hours,
+    minutes, seconds, and milliseconds explicitly, or by using the static
+    function currentTime(), which creates a QTime object that represents the
+    system's local time.
 
     The hour(), minute(), second(), and msec() functions provide
     access to the number of hours, minutes, seconds, and milliseconds
@@ -2157,6 +2151,12 @@ int QTime::msecsTo(const QTime &t) const
 
     Note that the accuracy depends on the accuracy of the underlying
     operating system; not all systems provide 1-millisecond accuracy.
+
+    Furthermore, currentTime() only increases within each day; it shall drop by
+    24 hours each time midnight passes; and, beside this, changes in it may not
+    correspond to elapsed time, if a daylight-saving transition intervenes.
+
+    \sa QDateTime::currentDateTime(), QDateTime::currentDateTimeUtc()
 */
 
 #if QT_CONFIG(datestring)
@@ -2265,7 +2265,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
-        return fromIsoTimeString(QStringRef(&string), format, 0);
+        return fromIsoTimeString(QStringRef(&string), format, nullptr);
     }
 }
 
@@ -2512,7 +2512,7 @@ int QDateTimeParser::startsWithLocalTimeZone(const QStringRef name)
 // then null date/time will be returned, you should adjust the date first if
 // you need a guaranteed result.
 static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStatus *daylightStatus,
-                        QString *abbreviation, bool *ok = 0)
+                        QString *abbreviation, bool *ok = nullptr)
 {
     const qint64 msec = time->msec();
     int yy, mm, dd;
@@ -2601,7 +2601,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // Use the reentrant version of localtime() where available
     // as is thread-safe and doesn't use a shared static data area
-    tm *res = 0;
+    tm *res = nullptr;
     res = localtime_r(&secsSinceEpoch, &local);
     if (res)
         valid = true;
@@ -2611,7 +2611,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
 #else
     // Returns shared static data which may be overwritten at any time
     // So copy the result asap
-    tm *res = 0;
+    tm *res = nullptr;
     res = localtime(&secsSinceEpoch);
     if (res) {
         local = *res;
@@ -2674,7 +2674,7 @@ static qint64 timeToMSecs(const QDate &date, const QTime &time)
 
 // Convert an MSecs Since Epoch into Local Time
 static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
-                                  QDateTimePrivate::DaylightStatus *daylightStatus = 0)
+                                  QDateTimePrivate::DaylightStatus *daylightStatus = nullptr)
 {
     if (msecs < 0) {
         // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
@@ -2714,8 +2714,8 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
 // values from mktime for the adjusted local date and time.
 static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                                      QDateTimePrivate::DaylightStatus *daylightStatus,
-                                     QDate *localDate = 0, QTime *localTime = 0,
-                                     QString *abbreviation = 0)
+                                     QDate *localDate = nullptr, QTime *localTime = nullptr,
+                                     QString *abbreviation = nullptr)
 {
     QDate dt;
     QTime tm;
@@ -3018,7 +3018,7 @@ static void setDateTime(QDateTimeData &d, const QDate &date, const QTime &time)
     if (!useTime.isValid() && date.isValid())
         useTime = QTime::fromMSecsSinceStartOfDay(0);
 
-    QDateTimePrivate::StatusFlags newStatus = 0;
+    QDateTimePrivate::StatusFlags newStatus = { };
 
     // Set date value and status
     qint64 days = 0;
@@ -3096,7 +3096,7 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
         d->ref.ref();
-        d->m_status = mergeSpec(0, spec);
+        d->m_status = mergeSpec(nullptr, spec);
     }
 }
 
@@ -3181,13 +3181,13 @@ inline void QDateTime::Data::detach()
         x->m_status = QDateTimePrivate::StatusFlag(data.status & ~QDateTimePrivate::ShortData);
         x->m_msecs = data.msecs;
     } else {
-        if (d->ref.load() == 1)
+        if (d->ref.loadRelaxed() == 1)
             return;
 
         x = new QDateTimePrivate(*d);
     }
 
-    x->ref.store(1);
+    x->ref.storeRelaxed(1);
     if (!wasShort && !d->ref.deref())
         delete d;
     d = x;
@@ -3203,7 +3203,7 @@ inline QDateTimePrivate *QDateTime::Data::operator->()
 {
     // should we attempt to detach here?
     Q_ASSERT(!isShort());
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     return d;
 }
 
@@ -3272,15 +3272,30 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     provides functions for comparing datetimes and for manipulating a
     datetime by adding a number of seconds, days, months, or years.
 
-    A QDateTime object is typically created either by giving a date
-    and time explicitly in the constructor, or by using the static
-    function currentDateTime() that returns a QDateTime object set
-    to the system clock's time. The date and time can be changed with
-    setDate() and setTime(). A datetime can also be set using the
-    setTime_t() function that takes a POSIX-standard "number of
-    seconds since 00:00:00 on January 1, 1970" value. The fromString()
-    function returns a QDateTime, given a string and a date format
-    used to interpret the date within the string.
+    QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
+    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset
+    from UTC} or to a specified \l{{Qt::TimeZone}{time zone}, in conjunction
+    with the QTimeZone class. For example, a time zone of "Europe/Berlin" will
+    apply the daylight-saving rules as used in Germany since 1970. In contrast,
+    an offset from UTC of +3600 seconds is one hour ahead of UTC (usually
+    written in ISO standard notation as "UTC+01:00"), with no daylight-saving
+    offset or changes. When using either local time or a specified time zone,
+    time-zone transitions such as the starts and ends of daylight-saving time
+    (DST) are taken into account. The choice of system used to represent a
+    datetime is described as its "timespec".
+
+    A QDateTime object is typically created either by giving a date and time
+    explicitly in the constructor, or by using a static function such as
+    currentDateTime() or fromMSecsSinceEpoch(). The date and time can be changed
+    with setDate() and setTime(). A datetime can also be set using the
+    setMSecsSinceEpoch() function that takes the time, in milliseconds, since
+    00:00:00 on January 1, 1970. The fromString() function returns a QDateTime,
+    given a string and a date format used to interpret the date within the
+    string.
+
+    QDateTime::currentDateTime() returns a QDateTime that expresses the current
+    time with respect to local time. QDateTime::currentDateTimeUtc() returns a
+    QDateTime that expresses the current time with respect to UTC.
 
     The date() and time() functions provide access to the date and
     time parts of the datetime. The same information is provided in
@@ -3291,18 +3306,20 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     later.
 
     You can increment (or decrement) a datetime by a given number of
-    milliseconds using addMSecs(), seconds using addSecs(), or days
-    using addDays(). Similarly, you can use addMonths() and addYears().
-    The daysTo() function returns the number of days between two datetimes,
-    secsTo() returns the number of seconds between two datetimes, and
-    msecsTo() returns the number of milliseconds between two datetimes.
+    milliseconds using addMSecs(), seconds using addSecs(), or days using
+    addDays(). Similarly, you can use addMonths() and addYears(). The daysTo()
+    function returns the number of days between two datetimes, secsTo() returns
+    the number of seconds between two datetimes, and msecsTo() returns the
+    number of milliseconds between two datetimes. These operations are aware of
+    daylight-saving time (DST) and other time-zone transitions, where
+    applicable.
 
-    QDateTime can store datetimes as \l{Qt::LocalTime}{local time} or
-    as \l{Qt::UTC}{UTC}. QDateTime::currentDateTime() returns a
-    QDateTime expressed as local time; use toUTC() to convert it to
-    UTC. You can also use timeSpec() to find out if a QDateTime
-    object stores a UTC time or a local time. Operations such as
-    addSecs() and secsTo() are aware of daylight-saving time (DST).
+    Use toTimeSpec() to express a datetime in local time or UTC,
+    toOffsetFromUtc() to express in terms of an offset from UTC, or toTimeZone()
+    to express it with respect to a general time zone. You can use timeSpec() to
+    find out what time-spec a QDateTime object stores its time relative to. When
+    that is Qt::TimeZone, you can use timeZone() to find out which zone it is
+    using.
 
     \note QDateTime does not account for leap seconds.
 
@@ -3316,67 +3333,55 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     \section2 Range of Valid Dates
 
-    The range of valid values able to be stored in QDateTime is dependent on
-    the internal storage implementation. QDateTime is currently stored in a
-    qint64 as a serial msecs value encoding the date and time.  This restricts
-    the date range to about +/- 292 million years, compared to the QDate range
-    of +/- 2 billion years.  Care must be taken when creating a QDateTime with
-    extreme values that you do not overflow the storage.  The exact range of
-    supported values varies depending on the Qt::TimeSpec and time zone.
+    The range of values that QDateTime can represent is dependent on the
+    internal storage implementation. QDateTime is currently stored in a qint64
+    as a serial msecs value encoding the date and time. This restricts the date
+    range to about +/- 292 million years, compared to the QDate range of +/- 2
+    billion years. Care must be taken when creating a QDateTime with extreme
+    values that you do not overflow the storage. The exact range of supported
+    values varies depending on the Qt::TimeSpec and time zone.
 
-    \section2 Use of System Timezone
+    \section2 Use of Timezones
 
-    QDateTime uses the system's time zone information to determine the
-    offset of local time from UTC. If the system is not configured
-    correctly or not up-to-date, QDateTime will give wrong results as
-    well.
+    QDateTime uses the system's time zone information to determine the current
+    local time zone and its offset from UTC. If the system is not configured
+    correctly or not up-to-date, QDateTime will give wrong results.
+
+    QDateTime likewise uses system-provided information to determine the offsets
+    of other timezones from UTC. If this information is incomplete or out of
+    date, QDateTime will give wrong results. See the QTimeZone documentation for
+    more details.
+
+    On modern Unix systems, this means QDateTime usually has accurate
+    information about historical transitions (including DST, see below) whenever
+    possible. On Windows, where the system doesn't support historical timezone
+    data, historical accuracy is not maintained with respect to timezone
+    transitions, notably including DST.
 
     \section2 Daylight-Saving Time (DST)
 
-    QDateTime takes into account the system's time zone information
-    when dealing with DST. On modern Unix systems, this means it
-    applies the correct historical DST data whenever possible. On
-    Windows, where the system doesn't support historical DST data,
-    historical accuracy is not maintained with respect to DST.
+    QDateTime takes into account transitions between Standard Time and
+    Daylight-Saving Time. For example, if the transition is at 2am and the clock
+    goes forward to 3am, then there is a "missing" hour from 02:00:00 to
+    02:59:59.999 which QDateTime considers to be invalid. Any date arithmetic
+    performed will take this missing hour into account and return a valid
+    result. For example, adding one minute to 01:59:59 will get 03:00:00.
 
-    The range of valid dates taking DST into account is 1970-01-01 to
-    the present, and rules are in place for handling DST correctly
-    until 2037-12-31, but these could change. For dates falling
-    outside that range, QDateTime makes a \e{best guess} using the
-    rules for year 1970 or 2037, but we can't guarantee accuracy. This
-    means QDateTime doesn't take into account changes in a locale's
-    time zone before 1970, even if the system's time zone database
-    supports that information.
+    The range of valid dates taking DST into account is 1970-01-01 to the
+    present, and rules are in place for handling DST correctly until 2037-12-31,
+    but these could change. For dates falling outside that range, QDateTime
+    makes a \e{best guess} using the rules for year 1970 or 2037, but we can't
+    guarantee accuracy. This means QDateTime doesn't take into account changes
+    in a time zone before 1970, even if the system's time zone database provides
+    that information.
 
-    QDateTime takes into consideration the Standard Time to Daylight-Saving Time
-    transition.  For example if the transition is at 2am and the clock goes
-    forward to 3am, then there is a "missing" hour from 02:00:00 to 02:59:59.999
-    which QDateTime considers to be invalid.  Any date maths performed
-    will take this missing hour into account and return a valid result.
+    \section2 Offsets From UTC
 
-    \section2 Offset From UTC
-
-    A Qt::TimeSpec of Qt::OffsetFromUTC is also supported. This allows you
-    to define a QDateTime relative to UTC at a fixed offset of a given number
-    of seconds from UTC.  For example, an offset of +3600 seconds is one hour
-    ahead of UTC and is usually written in ISO standard notation as
-    "UTC+01:00".  Daylight-Saving Time never applies with this TimeSpec.
-
-    There is no explicit size restriction to the offset seconds, but there is
-    an implicit limit imposed when using the toString() and fromString()
-    methods which use a format of [+|-]hh:mm, effectively limiting the range
-    to +/- 99 hours and 59 minutes and whole minutes only.  Note that currently
-    no time zone lies outside the range of +/- 14 hours.
-
-    \section2 Time Zone Support
-
-    A Qt::TimeSpec of Qt::TimeZone is also supported in conjunction with the
-    QTimeZone class.  This allows you to define a datetime in a named time zone
-    adhering to a consistent set of daylight-saving transition rules.  For
-    example a time zone of "Europe/Berlin" will apply the daylight-saving
-    rules as used in Germany since 1970.  Note that the transition rules
-    applied depend on the platform support.  See the QTimeZone documentation
-    for more details.
+    There is no explicit size restriction on an offset from UTC, but there is an
+    implicit limit imposed when using the toString() and fromString() methods
+    which use a [+|-]hh:mm format, effectively limiting the range to +/- 99
+    hours and 59 minutes and whole minutes only. Note that currently no time
+    zone lies outside the range of +/- 14 hours.
 
     \sa QDate, QTime, QDateTimeEdit, QTimeZone
 */
@@ -3550,7 +3555,7 @@ QDate QDateTime::date() const
     if (!status.testFlag(QDateTimePrivate::ValidDate))
         return QDate();
     QDate dt;
-    msecsToTime(getMSecs(d), &dt, 0);
+    msecsToTime(getMSecs(d), &dt, nullptr);
     return dt;
 }
 
@@ -3566,7 +3571,7 @@ QTime QDateTime::time() const
     if (!status.testFlag(QDateTimePrivate::ValidTime))
         return QTime();
     QTime tm;
-    msecsToTime(getMSecs(d), 0, &tm);
+    msecsToTime(getMSecs(d), nullptr, &tm);
     return tm;
 }
 
@@ -3684,7 +3689,7 @@ QString QDateTime::timeZoneAbbreviation() const
     case Qt::LocalTime:  {
         QString abbrev;
         auto status = extractDaylightStatus(getStatus(d));
-        localMSecsToEpochMSecs(getMSecs(d), &status, 0, 0, &abbrev);
+        localMSecsToEpochMSecs(getMSecs(d), &status, nullptr, nullptr, &abbrev);
         return abbrev;
         }
     }
@@ -4499,7 +4504,7 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     Example:
     \snippet code/src_corelib_tools_qdatetime.cpp 16
 
-    \sa timeSpec(), toTimeZone(), toUTC(), toLocalTime()
+    \sa timeSpec(), toTimeZone(), toOffsetFromUtc()
 */
 
 QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
@@ -4769,14 +4774,14 @@ qint64 QDateTime::currentMSecsSinceEpoch() noexcept
     // posix compliant system
     // we have milliseconds
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
 }
 
 qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return qint64(tv.tv_sec);
 }
 #else
@@ -5098,48 +5103,45 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             return QDateTime();
 
         // Accept "Sun Dec 1 13:02:00 1974" and "Sun 1. Dec 13:02:00 1974"
+
+        // Year and time can be in either order.
+        // Guess which by looking for ':' in the time
+        int yearPart = 3;
+        int timePart = 3;
+        if (parts.at(3).contains(QLatin1Char(':')))
+            yearPart = 4;
+        else if (parts.at(4).contains(QLatin1Char(':')))
+            timePart = 4;
+        else
+            return QDateTime();
+
         int month = 0;
         int day = 0;
         bool ok = false;
 
-        // First try month then day
+        int year = parts.at(yearPart).toInt(&ok);
+        if (!ok || year == 0)
+            return QDateTime();
+
+        // Next try month then day
         month = fromShortMonthName(parts.at(1));
         if (month)
-            day = parts.at(2).toInt();
+            day = parts.at(2).toInt(&ok);
 
-        // If failed try day then month
-        if (!month || !day) {
+        // If failed, try day then month
+        if (!ok || !month || !day) {
             month = fromShortMonthName(parts.at(2));
             if (month) {
                 QStringRef dayStr = parts.at(1);
                 if (dayStr.endsWith(QLatin1Char('.'))) {
                     dayStr = dayStr.left(dayStr.size() - 1);
-                    day = dayStr.toInt();
+                    day = dayStr.toInt(&ok);
                 }
             }
         }
 
         // If both failed, give up
-        if (!month || !day)
-            return QDateTime();
-
-        // Year can be before or after time, "Sun Dec 1 1974 13:02:00" or "Sun Dec 1 13:02:00 1974"
-        // Guess which by looking for ':' in the time
-        int year = 0;
-        int yearPart = 0;
-        int timePart = 0;
-        if (parts.at(3).contains(QLatin1Char(':'))) {
-            yearPart = 4;
-            timePart = 3;
-        } else if (parts.at(4).contains(QLatin1Char(':'))) {
-            yearPart = 3;
-            timePart = 4;
-        } else {
-            return QDateTime();
-        }
-
-        year = parts.at(yearPart).toInt(&ok);
-        if (!ok)
+        if (!ok || !month || !day)
             return QDateTime();
 
         QDate date(year, month, day);

@@ -57,8 +57,6 @@ public:
 
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
-    static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
-
     void processEvents();
     void initEventHandlers();
     int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);

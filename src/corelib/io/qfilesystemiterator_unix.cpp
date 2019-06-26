@@ -50,15 +50,15 @@ QT_BEGIN_NAMESPACE
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
                                          const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
     : nativePath(entry.nativeFilePath())
-    , dir(0)
-    , dirEntry(0)
+    , dir(nullptr)
+    , dirEntry(nullptr)
     , lastError(0)
 {
     Q_UNUSED(filters)
     Q_UNUSED(nameFilters)
     Q_UNUSED(flags)
 
-    if ((dir = QT_OPENDIR(nativePath.constData())) == 0) {
+    if ((dir = QT_OPENDIR(nativePath.constData())) == nullptr) {
         lastError = errno;
     } else {
         if (!nativePath.endsWith('/'))

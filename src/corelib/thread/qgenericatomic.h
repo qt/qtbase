@@ -97,6 +97,18 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
+    T loadRelaxed(const T &_q_value) noexcept
+    {
+        return _q_value;
+    }
+
+    template <typename T, typename X> static Q_ALWAYS_INLINE
+    void storeRelaxed(T &_q_value, X newValue) noexcept
+    {
+        _q_value = newValue;
+    }
+
+    template <typename T> static Q_ALWAYS_INLINE
     T loadAcquire(const T &_q_value) noexcept
     {
         T tmp = *static_cast<const volatile T *>(&_q_value);
@@ -190,7 +202,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     {
         // implement fetchAndStore on top of testAndSet
         Q_FOREVER {
-            T tmp = load(_q_value);
+            T tmp = loadRelaxed(_q_value);
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, newValue))
                 return tmp;
         }
@@ -225,7 +237,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     {
         // implement fetchAndAdd on top of testAndSet
         Q_FOREVER {
-            T tmp = BaseClass::load(_q_value);
+            T tmp = BaseClass::loadRelaxed(_q_value);
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp + valueToAdd)))
                 return tmp;
         }
@@ -289,7 +301,7 @@ QT_WARNING_POP
     T fetchAndAndRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
     {
         // implement fetchAndAnd on top of testAndSet
-        T tmp = BaseClass::load(_q_value);
+        T tmp = BaseClass::loadRelaxed(_q_value);
         Q_FOREVER {
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp & operand), &tmp))
                 return tmp;
@@ -322,7 +334,7 @@ QT_WARNING_POP
     T fetchAndOrRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
     {
         // implement fetchAndOr on top of testAndSet
-        T tmp = BaseClass::load(_q_value);
+        T tmp = BaseClass::loadRelaxed(_q_value);
         Q_FOREVER {
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp | operand), &tmp))
                 return tmp;
@@ -355,7 +367,7 @@ QT_WARNING_POP
     T fetchAndXorRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
     {
         // implement fetchAndXor on top of testAndSet
-        T tmp = BaseClass::load(_q_value);
+        T tmp = BaseClass::loadRelaxed(_q_value);
         Q_FOREVER {
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp ^ operand), &tmp))
                 return tmp;

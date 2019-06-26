@@ -283,7 +283,7 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     Q_ASSERT(q->d_ptr->state);
 
     // Now initialize the painter with correct widget properties.
-    q->initFrom(pdev);
+    q->d_ptr->initFrom(pdev);
     QPoint offset;
     pdev->redirected(&offset);
     offset += q->d_ptr->engine->coordinateOffset();
@@ -1560,22 +1560,28 @@ void QPainter::initFrom(const QPaintDevice *device)
 {
     Q_ASSERT_X(device, "QPainter::initFrom(const QPaintDevice *device)", "QPaintDevice cannot be 0");
     Q_D(QPainter);
-    if (!d->engine) {
+    d->initFrom(device);
+}
+#endif
+
+void QPainterPrivate::initFrom(const QPaintDevice *device)
+{
+    if (!engine) {
         qWarning("QPainter::initFrom: Painter not active, aborted");
         return;
     }
 
-    device->initPainter(this);
+    Q_Q(QPainter);
+    device->initPainter(q);
 
-    if (d->extended) {
-        d->extended->penChanged();
-    } else if (d->engine) {
-        d->engine->setDirty(QPaintEngine::DirtyPen);
-        d->engine->setDirty(QPaintEngine::DirtyBrush);
-        d->engine->setDirty(QPaintEngine::DirtyFont);
+    if (extended) {
+        extended->penChanged();
+    } else if (engine) {
+        engine->setDirty(QPaintEngine::DirtyPen);
+        engine->setDirty(QPaintEngine::DirtyBrush);
+        engine->setDirty(QPaintEngine::DirtyFont);
     }
 }
-#endif
 
 /*!
     Saves the current painter state (pushes the state onto a stack). A
@@ -1843,7 +1849,7 @@ bool QPainter::begin(QPaintDevice *pd)
     // Copy painter properties from original paint device,
     // required for QPixmap::grabWidget()
     if (d->original_device->devType() == QInternal::Widget) {
-        initFrom(d->original_device);
+        d->initFrom(d->original_device);
     } else {
         d->state->layoutDirection = Qt::LayoutDirectionAuto;
         // make sure we have a font compatible with the paintdevice

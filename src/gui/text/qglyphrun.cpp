@@ -137,7 +137,7 @@ QGlyphRun::~QGlyphRun()
 */
 void QGlyphRun::detach()
 {
-    if (d->ref.load() != 1)
+    if (d->ref.loadRelaxed() != 1)
         d.detach();
 }
 

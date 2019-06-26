@@ -239,6 +239,7 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype l
 
 QT_END_NAMESPACE
 
+#include "qfloat16tables.cpp"
 #ifdef QFLOAT16_INCLUDE_FAST
 #  include "qfloat16_f16c.c"
 #endif

@@ -107,6 +107,7 @@ public:
     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
     static QString rawLocation(LibraryLocation, PathGroup);
     static void reload();
+    static void sysrootify(QString *path);
 #endif
 
     static QStringList platformPluginArguments(const QString &platformName);

@@ -225,6 +225,7 @@ public:
     void print(QPagedPaintDevice *printer) const;
 
     enum ResourceType {
+        UnknownResource = 0,
         HtmlResource  = 1,
         ImageResource = 2,
         StyleSheetResource = 3,
@@ -232,6 +233,7 @@ public:
 
         UserResource  = 100
     };
+    Q_ENUM(ResourceType)
 
     QVariant resource(int type, const QUrl &name) const;
     void addResource(int type, const QUrl &name, const QVariant &resource);

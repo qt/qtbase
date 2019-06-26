@@ -2882,7 +2882,7 @@ void tst_QVector::detachThreadSafety() const
     struct : QThread {
         void run() override
         {
-            QVector<T> copy(*detachThreadSafetyData<T>()->load());
+            QVector<T> copy(*detachThreadSafetyData<T>()->loadRelaxed());
             QVERIFY(!copy.isDetached());
             detachThreadSafetyLock.release();
             detachThreadSafetyLock.acquire(100);

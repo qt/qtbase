@@ -211,7 +211,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
         qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
                  "Use qDBusRegisterMetaType to register it",
                  QMetaType::typeName(id), id);
-        error(QString::fromLatin1("Unregistered type %1 passed in arguments")
+        error(QLatin1String("Unregistered type %1 passed in arguments")
               .arg(QLatin1String(QMetaType::typeName(id))));
         return false;
     }
@@ -253,7 +253,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginArray(int id)
         qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
                  "Use qDBusRegisterMetaType to register it",
                  QMetaType::typeName(id), id);
-        error(QString::fromLatin1("Unregistered type %1 passed in arguments")
+        error(QLatin1String("Unregistered type %1 passed in arguments")
               .arg(QLatin1String(QMetaType::typeName(id))));
         return this;
     }
@@ -268,14 +268,14 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(int kid, int vid)
         qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
                  "Use qDBusRegisterMetaType to register it",
                  QMetaType::typeName(kid), kid);
-        error(QString::fromLatin1("Unregistered type %1 passed in arguments")
+        error(QLatin1String("Unregistered type %1 passed in arguments")
               .arg(QLatin1String(QMetaType::typeName(kid))));
         return this;
     }
     if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
         qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
                  QMetaType::typeName(kid), kid);
-        error(QString::fromLatin1("Type %1 passed in arguments cannot be used as a key in a map")
+        error(QLatin1String("Type %1 passed in arguments cannot be used as a key in a map")
               .arg(QLatin1String(QMetaType::typeName(kid))));
         return this;
     }
@@ -286,7 +286,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(int kid, int vid)
         qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
                  "Use qDBusRegisterMetaType to register it",
                  typeName, vid);
-        error(QString::fromLatin1("Unregistered type %1 passed in arguments")
+        error(QLatin1String("Unregistered type %1 passed in arguments")
               .arg(QLatin1String(typeName)));
         return this;
     }
@@ -417,7 +417,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
         qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
                  "Use qDBusRegisterMetaType to register it",
                  QMetaType::typeName(id), id);
-        error(QString::fromLatin1("Unregistered type %1 passed in arguments")
+        error(QLatin1String("Unregistered type %1 passed in arguments")
               .arg(QLatin1String(QMetaType::typeName(id))));
         return false;
     }

@@ -184,7 +184,7 @@ public:
         }
         void deref() {
             if (!ref_.deref()) {
-                Q_ASSERT(!receiver.load());
+                Q_ASSERT(!receiver.loadRelaxed());
                 Q_ASSERT(!isSlotObject);
                 delete this;
             }
@@ -202,7 +202,7 @@ public:
             : receiver(receiver), sender(sender), signal(signal)
         {
             if (receiver) {
-                ConnectionData *cd = receiver->d_func()->connections.load();
+                ConnectionData *cd = receiver->d_func()->connections.loadRelaxed();
                 previous = cd->currentSender;
                 cd->currentSender = this;
             }
@@ -210,7 +210,7 @@ public:
         ~Sender()
         {
             if (receiver)
-                receiver->d_func()->connections.load()->currentSender = previous;
+                receiver->d_func()->connections.loadRelaxed()->currentSender = previous;
         }
         void receiverDeleted()
         {
@@ -268,8 +268,8 @@ public:
 
         ~ConnectionData()
         {
-            deleteOrphaned(orphaned.load());
-            SignalVector *v = signalVector.load();
+            deleteOrphaned(orphaned.loadRelaxed());
+            SignalVector *v = signalVector.loadRelaxed();
             if (v)
                 free(v);
         }
@@ -279,18 +279,18 @@ public:
         void removeConnection(Connection *c);
         void cleanOrphanedConnections(QObject *sender)
         {
-            if (orphaned.load() && ref == 1)
+            if (orphaned.loadRelaxed() && ref == 1)
                 cleanOrphanedConnectionsImpl(sender);
         }
         void cleanOrphanedConnectionsImpl(QObject *sender);
 
         ConnectionList &connectionsForSignal(int signal)
         {
-            return signalVector.load()->at(signal);
+            return signalVector.loadRelaxed()->at(signal);
         }
 
         void resizeSignalVector(uint size) {
-            SignalVector *vector = this->signalVector.load();
+            SignalVector *vector = this->signalVector.loadRelaxed();
             if (vector && vector->allocated > size)
                 return;
             size = (size + 7) & ~7;
@@ -305,14 +305,14 @@ public:
             newVector->next = nullptr;
             newVector->allocated = size;
 
-            signalVector.store(newVector);
+            signalVector.storeRelaxed(newVector);
             if (vector) {
-                vector->nextInOrphanList = orphaned.load();
-                orphaned.store(ConnectionOrSignalVector::fromSignalVector(vector));
+                vector->nextInOrphanList = orphaned.loadRelaxed();
+                orphaned.storeRelaxed(ConnectionOrSignalVector::fromSignalVector(vector));
             }
         }
         int signalVectorCount() const {
-            return  signalVector ? signalVector.load()->count() : -1;
+            return  signalVector ? signalVector.loadRelaxed()->count() : -1;
         }
 
         static void deleteOrphaned(ConnectionOrSignalVector *c);
@@ -366,11 +366,11 @@ public:
 
     void ensureConnectionData()
     {
-        if (connections.load())
+        if (connections.loadRelaxed())
             return;
         ConnectionData *cd = new ConnectionData;
         cd->ref.ref();
-        connections.store(cd);
+        connections.storeRelaxed(cd);
     }
 public:
     ExtraData *extraData;    // extra data set by the user

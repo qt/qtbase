@@ -80,15 +80,15 @@ enum GuardValues {
     {                                                           \
         struct HolderBase {                                     \
             ~HolderBase() noexcept                        \
-            { if (guard.load() == QtGlobalStatic::Initialized)  \
-                  guard.store(QtGlobalStatic::Destroyed); }     \
+            { if (guard.loadRelaxed() == QtGlobalStatic::Initialized)  \
+                  guard.storeRelaxed(QtGlobalStatic::Destroyed); }     \
         };                                                      \
         static struct Holder : public HolderBase {              \
             Type value;                                         \
             Holder()                                            \
                 noexcept(noexcept(Type ARGS))       \
                 : value ARGS                                    \
-            { guard.store(QtGlobalStatic::Initialized); }       \
+            { guard.storeRelaxed(QtGlobalStatic::Initialized); }       \
         } holder;                                               \
         return &holder.value;                                   \
     }
@@ -108,12 +108,12 @@ QT_BEGIN_NAMESPACE
         int x = guard.loadAcquire();                                    \
         if (Q_UNLIKELY(x >= QtGlobalStatic::Uninitialized)) {           \
             QMutexLocker locker(&mutex);                                \
-            if (guard.load() == QtGlobalStatic::Uninitialized) {        \
+            if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {        \
                 d = new Type ARGS;                                      \
                 static struct Cleanup {                                 \
                     ~Cleanup() {                                        \
                         delete d;                                       \
-                        guard.store(QtGlobalStatic::Destroyed);         \
+                        guard.storeRelaxed(QtGlobalStatic::Destroyed);         \
                     }                                                   \
                 } cleanup;                                              \
                 guard.storeRelease(QtGlobalStatic::Initialized);        \
@@ -129,8 +129,8 @@ struct QGlobalStatic
 {
     typedef T Type;
 
-    bool isDestroyed() const { return guard.load() <= QtGlobalStatic::Destroyed; }
-    bool exists() const { return guard.load() == QtGlobalStatic::Initialized; }
+    bool isDestroyed() const { return guard.loadRelaxed() <= QtGlobalStatic::Destroyed; }
+    bool exists() const { return guard.loadRelaxed() == QtGlobalStatic::Initialized; }
     operator Type *() { if (isDestroyed()) return nullptr; return innerFunction(); }
     Type *operator()() { if (isDestroyed()) return nullptr; return innerFunction(); }
     Type *operator->()

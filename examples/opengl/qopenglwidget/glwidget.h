@@ -56,7 +56,7 @@
 #include <QOpenGLBuffer>
 #include <QVector3D>
 #include <QMatrix4x4>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QVector>
 #include <QPushButton>
 
@@ -106,7 +106,7 @@ private:
     bool m_qtLogo;
     QList<Bubble *> m_bubbles;
     int m_frames;
-    QTime m_time;
+    QElapsedTimer m_time;
     QOpenGLShader *m_vshader1;
     QOpenGLShader *m_fshader1;
     QOpenGLShader *m_vshader2;

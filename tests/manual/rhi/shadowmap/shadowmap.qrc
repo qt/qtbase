@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>shadowmap.vert.qsb</file>
+    <file>shadowmap.frag.qsb</file>
+    <file>main.vert.qsb</file>
+    <file>main.frag.qsb</file>
+</qresource>
+</RCC>

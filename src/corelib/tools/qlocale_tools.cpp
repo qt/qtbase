@@ -398,7 +398,7 @@ qstrtoull(const char * nptr, const char **endptr, int base, bool *ok)
 
     *ok = true;
     errno = 0;
-    char *endptr2 = 0;
+    char *endptr2 = nullptr;
     unsigned long long result = qt_strtoull(nptr, &endptr2, base);
     if (endptr)
         *endptr = endptr2;
@@ -415,7 +415,7 @@ qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
 {
     *ok = true;
     errno = 0;
-    char *endptr2 = 0;
+    char *endptr2 = nullptr;
     long long result = qt_strtoll(nptr, &endptr2, base);
     if (endptr)
         *endptr = endptr2;

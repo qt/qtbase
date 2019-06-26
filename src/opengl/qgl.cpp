@@ -397,7 +397,7 @@ QGLFormat::QGLFormat(QGL::FormatOptions options, int plane)
 */
 void QGLFormat::detach()
 {
-    if (d->ref.load() != 1) {
+    if (d->ref.loadRelaxed() != 1) {
         QGLFormatPrivate *newd = new QGLFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
@@ -5208,7 +5208,7 @@ void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *shar
         return;
 
     // Make sure 'context' is not already shared with another group of contexts.
-    Q_ASSERT(context->d_ptr->group->m_refs.load() == 1);
+    Q_ASSERT(context->d_ptr->group->m_refs.loadRelaxed() == 1);
 
     // Free 'context' group resources and make it use the same resources as 'share'.
     QGLContextGroup *group = share->d_ptr->group;

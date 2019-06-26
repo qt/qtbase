@@ -81,7 +81,7 @@ public:
 
     // BasicLockable concept
     inline void unlock() noexcept {
-        Q_ASSERT(d_ptr.load()); //mutex must be locked
+        Q_ASSERT(d_ptr.loadRelaxed()); //mutex must be locked
         if (!fastTryUnlock())
             unlockInternal();
     }

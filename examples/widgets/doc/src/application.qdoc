@@ -327,9 +327,12 @@
     \snippet mainwindows/application/mainwindow.cpp 44
     \snippet mainwindows/application/mainwindow.cpp 45
 
-    Saving a file is very similar to loading one. Here, the
-    QFile::Text flag ensures that on Windows, "\\n" is converted into
-    "\\r\\n" to conform to the Windows convension.
+    Saving a file is similar to loading one. We use QSaveFile to ensure
+    all data are safely written and existing files are not damaged
+    should writing fail.
+    We use the QFile::Text flag to make sure that on Windows, "\\n"
+    is converted into "\\r\\n" to conform to the Windows convention.
+
 
     \snippet mainwindows/application/mainwindow.cpp 46
     \snippet mainwindows/application/mainwindow.cpp 47

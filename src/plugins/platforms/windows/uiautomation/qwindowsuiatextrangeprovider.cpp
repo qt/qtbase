@@ -92,7 +92,7 @@ HRESULT QWindowsUiaTextRangeProvider::Compare(ITextRangeProvider *range, BOOL *p
     if (!range || !pRetVal)
         return E_INVALIDARG;
 
-    QWindowsUiaTextRangeProvider *targetProvider = static_cast<QWindowsUiaTextRangeProvider *>(range);
+    auto *targetProvider = static_cast<QWindowsUiaTextRangeProvider *>(range);
     *pRetVal = ((targetProvider->m_startOffset == m_startOffset) && (targetProvider->m_endOffset == m_endOffset));
     return S_OK;
 }
@@ -110,7 +110,7 @@ HRESULT QWindowsUiaTextRangeProvider::CompareEndpoints(TextPatternRangeEndpoint 
     if (!targetRange || !pRetVal)
         return E_INVALIDARG;
 
-    QWindowsUiaTextRangeProvider *targetProvider = static_cast<QWindowsUiaTextRangeProvider *>(targetRange);
+    auto *targetProvider = static_cast<QWindowsUiaTextRangeProvider *>(targetRange);
 
     int point = (endpoint == TextPatternRangeEndpoint_Start) ? m_startOffset : m_endOffset;
     int targetPoint = (targetEndpoint == TextPatternRangeEndpoint_Start) ?
@@ -373,7 +373,7 @@ HRESULT QWindowsUiaTextRangeProvider::MoveEndpointByRange(TextPatternRangeEndpoi
     qCDebug(lcQpaUiAutomation) << __FUNCTION__
         << "endpoint=" << endpoint << "targetRange=" << targetRange << "targetEndpoint=" << targetEndpoint << "this: " << this;
 
-    QWindowsUiaTextRangeProvider *targetProvider = static_cast<QWindowsUiaTextRangeProvider *>(targetRange);
+    auto *targetProvider = static_cast<QWindowsUiaTextRangeProvider *>(targetRange);
 
     int targetPoint = (targetEndpoint == TextPatternRangeEndpoint_Start) ?
                 targetProvider->m_startOffset : targetProvider->m_endOffset;

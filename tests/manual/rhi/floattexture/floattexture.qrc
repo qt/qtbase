@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="texture.vert.qsb">../shared/texture.vert.qsb</file>
+  <file alias="texture.frag.qsb">../shared/texture.frag.qsb</file>
+  <file alias="OpenfootageNET_fieldairport-512.hdr">../shared/OpenfootageNET_fieldairport-512.hdr</file>
+</qresource>
+</RCC>

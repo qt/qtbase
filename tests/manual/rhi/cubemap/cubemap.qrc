@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file>cubemap.vert.qsb</file>
+  <file>cubemap.frag.qsb</file>
+  <file>c.png</file>
+</qresource>
+</RCC>

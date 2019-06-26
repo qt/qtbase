@@ -56,7 +56,7 @@ class SingletonObject: public QObject
     Q_OBJECT
 public:
     static int runCount;
-    SingletonObject() { val.store(42); ++runCount; }
+    SingletonObject() { val.storeRelaxed(42); ++runCount; }
     ~SingletonObject() { }
 
     QBasicAtomicInt val;
@@ -112,7 +112,7 @@ void tst_QThreadOnce::sameThread()
     QCOMPARE(controlVariable, 1);
 
     static QSingleton<SingletonObject> s;
-    QTEST((int)s->val.load(), "expectedValue");
+    QTEST((int)s->val.loadRelaxed(), "expectedValue");
     s->val.ref();
 
     QCOMPARE(SingletonObject::runCount, 1);
@@ -134,7 +134,7 @@ void tst_QThreadOnce::multipleThreads()
 
     QCOMPARE(controlVariable, 0); // nothing must have set them yet
     SingletonObject::runCount = 0;
-    IncrementThread::runCount.store(0);
+    IncrementThread::runCount.storeRelaxed(0);
 
     // wait for all of them to be ready
     sem2.acquire(NumberOfThreads);
@@ -145,7 +145,7 @@ void tst_QThreadOnce::multipleThreads()
     delete parent;
 
     QCOMPARE(controlVariable, 1);
-    QCOMPARE((int)IncrementThread::runCount.load(), NumberOfThreads);
+    QCOMPARE((int)IncrementThread::runCount.loadRelaxed(), NumberOfThreads);
     QCOMPARE(SingletonObject::runCount, 1);
 }
 

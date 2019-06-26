@@ -198,7 +198,9 @@ QString QJsonParseError::errorString() const
 using namespace QJsonPrivate;
 
 Parser::Parser(const char *json, int length)
-    : head(json), json(json), data(0), dataLength(0), current(0), nestingLevel(0), lastError(QJsonParseError::NoError)
+    : head(json), json(json), data(nullptr)
+    , dataLength(0), current(0), nestingLevel(0)
+    , lastError(QJsonParseError::NoError)
 {
     end = json + length;
 }

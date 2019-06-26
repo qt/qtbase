@@ -253,7 +253,7 @@ QString QMimeType::name() const
  */
 QString QMimeType::comment() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(*d);
+    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
 
     QStringList languageList;
     languageList << QLocale().name();
@@ -294,7 +294,7 @@ QString QMimeType::comment() const
  */
 QString QMimeType::genericIconName() const
 {
-    QMimeDatabasePrivate::instance()->loadGenericIcon(*d);
+    QMimeDatabasePrivate::instance()->loadGenericIcon(const_cast<QMimeTypePrivate&>(*d));
     if (d->genericIconName.isEmpty()) {
         // From the spec:
         // If the generic icon name is empty (not specified by the mimetype definition)
@@ -311,6 +311,14 @@ QString QMimeType::genericIconName() const
     return d->genericIconName;
 }
 
+static QString make_default_icon_name_from_mimetype_name(QString iconName)
+{
+    const int slashindex = iconName.indexOf(QLatin1Char('/'));
+    if (slashindex != -1)
+        iconName[slashindex] = QLatin1Char('-');
+    return iconName;
+}
+
 /*!
     \property QMimeType::iconName
     \brief the file name of an icon image that represents the MIME type
@@ -322,13 +330,9 @@ QString QMimeType::genericIconName() const
  */
 QString QMimeType::iconName() const
 {
-    QMimeDatabasePrivate::instance()->loadIcon(*d);
+    QMimeDatabasePrivate::instance()->loadIcon(const_cast<QMimeTypePrivate&>(*d));
     if (d->iconName.isEmpty()) {
-        // Make default icon name from the mimetype name
-        d->iconName = name();
-        const int slashindex = d->iconName.indexOf(QLatin1Char('/'));
-        if (slashindex != -1)
-            d->iconName[slashindex] = QLatin1Char('-');
+        return make_default_icon_name_from_mimetype_name(name());
     }
     return d->iconName;
 }
@@ -342,7 +346,7 @@ QString QMimeType::iconName() const
  */
 QStringList QMimeType::globPatterns() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(*d);
+    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
     return d->globPatterns;
 }
 
@@ -437,7 +441,7 @@ QStringList QMimeType::aliases() const
  */
 QStringList QMimeType::suffixes() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(*d);
+    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
 
     QStringList result;
     for (const QString &pattern : qAsConst(d->globPatterns)) {
@@ -480,7 +484,7 @@ QString QMimeType::preferredSuffix() const
 */
 QString QMimeType::filterString() const
 {
-    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(*d);
+    QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
     QString filter;
 
     if (!d->globPatterns.empty()) {

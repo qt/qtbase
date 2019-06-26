@@ -363,13 +363,13 @@ QPen::~QPen()
 
 void QPen::detach()
 {
-    if (d->ref.load() == 1)
+    if (d->ref.loadRelaxed() == 1)
         return;
 
     QPenData *x = new QPenData(*static_cast<QPenData *>(d));
     if (!d->ref.deref())
         delete d;
-    x->ref.store(1);
+    x->ref.storeRelaxed(1);
     d = x;
 }
 
@@ -885,7 +885,7 @@ bool QPen::operator==(const QPen &p) const
 
 bool QPen::isDetached()
 {
-    return d->ref.load() == 1;
+    return d->ref.loadRelaxed() == 1;
 }
 
 

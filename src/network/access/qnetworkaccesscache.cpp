@@ -40,10 +40,11 @@
 #include "qnetworkaccesscache_p.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qdatetime.h"
-#include "QtCore/qqueue.h"
 #include "qnetworkaccessmanager_p.h"
 #include "qnetworkreply_p.h"
 #include "qnetworkrequest.h"
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +64,7 @@ namespace {
 struct QNetworkAccessCache::Node
 {
     QDateTime timestamp;
-    QQueue<Receiver> receiverQueue;
+    std::vector<Receiver> receiverQueue;
     QByteArray key;
 
     Node *older, *newer;
@@ -277,10 +278,7 @@ bool QNetworkAccessCache::requestEntry(const QByteArray &key, QObject *target, c
         // object is not shareable and is in use
         // queue for later use
         Q_ASSERT(node->older == 0 && node->newer == 0);
-        Receiver receiver;
-        receiver.object = target;
-        receiver.member = member;
-        node->receiverQueue.enqueue(receiver);
+        node->receiverQueue.push_back({target, member});
 
         // request queued
         return true;
@@ -331,17 +329,19 @@ void QNetworkAccessCache::releaseEntry(const QByteArray &key)
     Q_ASSERT(node->useCount > 0);
 
     // are there other objects waiting?
-    if (!node->receiverQueue.isEmpty()) {
-        // queue another activation
-        Receiver receiver;
-        do {
-            receiver = node->receiverQueue.dequeue();
-        } while (receiver.object.isNull() && !node->receiverQueue.isEmpty());
+    const auto objectStillExists = [](const Receiver &r) { return !r.object.isNull(); };
 
-        if (!receiver.object.isNull()) {
-            emitEntryReady(node, receiver.object, receiver.member);
-            return;
-        }
+    auto &queue = node->receiverQueue;
+    auto qit = std::find_if(queue.begin(), queue.end(), objectStillExists);
+
+    const Receiver receiver = qit == queue.end() ? Receiver{} : std::move(*qit++) ;
+
+    queue.erase(queue.begin(), qit);
+
+    if (receiver.object) {
+        // queue another activation
+        emitEntryReady(node, receiver.object, receiver.member);
+        return;
     }
 
     if (!--node->useCount) {

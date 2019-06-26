@@ -56,7 +56,7 @@ static void cleanUpConfigurations(QHash<QString, QNetworkConfigurationPrivatePoi
 static bool hasUsedConfiguration(const QHash<QString, QNetworkConfigurationPrivatePointer> &configurations)
 {
     auto isUsed = [](const QNetworkConfigurationPrivatePointer &ptr) {
-        return ptr->ref.load() > 1;
+        return ptr->ref.loadRelaxed() > 1;
     };
     const auto end = configurations.end();
     return std::find_if(configurations.begin(), end, isUsed) != end;

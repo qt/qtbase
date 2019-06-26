@@ -518,7 +518,7 @@ QWindowsMenu::~QWindowsMenu()
 void QWindowsMenu::insertMenuItem(QPlatformMenuItem *menuItemIn, QPlatformMenuItem *before)
 {
     qCDebug(lcQpaMenus) << __FUNCTION__ << '(' << menuItemIn << ", before=" << before << ')' << this;
-    QWindowsMenuItem *menuItem = static_cast<QWindowsMenuItem *>(menuItemIn);
+    auto *menuItem = static_cast<QWindowsMenuItem *>(menuItemIn);
     const int index = insertBefore(&m_menuItems, menuItemIn, before);
     const bool append = index == m_menuItems.size() - 1;
     menuItem->insertIntoMenu(this, append, index);
@@ -689,7 +689,7 @@ void QWindowsPopupMenu::showPopup(const QWindow *parentWindow, const QRect &targ
                                   const QPlatformMenuItem *item)
 {
     qCDebug(lcQpaMenus) << __FUNCTION__ << '>' << this << parentWindow << targetRect << item;
-    const QWindowsBaseWindow *window = static_cast<const QWindowsBaseWindow *>(parentWindow->handle());
+    const auto *window = static_cast<const QWindowsBaseWindow *>(parentWindow->handle());
     const QPoint globalPos = window->mapToGlobal(targetRect.topLeft());
     trackPopupMenu(window->handle(), globalPos.x(), globalPos.y());
 }
@@ -756,7 +756,7 @@ QWindowsMenuBar::~QWindowsMenuBar()
 void QWindowsMenuBar::insertMenu(QPlatformMenu *menuIn, QPlatformMenu *before)
 {
     qCDebug(lcQpaMenus) << __FUNCTION__ << menuIn << "before=" << before;
-    QWindowsMenu *menu = static_cast<QWindowsMenu *>(menuIn);
+    auto *menu = static_cast<QWindowsMenu *>(menuIn);
     const int index = insertBefore(&m_menus, menuIn, before);
     menu->insertIntoMenuBar(this, index == m_menus.size() - 1, index);
 }

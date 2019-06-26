@@ -97,7 +97,7 @@ public:
         m_rowNumbers = rowNumbers;
     }
 
-    QModelIndex findIndex(QList<int> rows);
+    QModelIndex findIndex(const QList<int> &rows) const;
 
     void setStartRow(int row)
     {

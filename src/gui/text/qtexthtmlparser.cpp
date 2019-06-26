@@ -1335,6 +1335,17 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             default: break;
             }
             break;
+
+        case QCss::QtForegroundTextureCacheKey:
+        {
+            if (resourceProvider != nullptr && resourceProvider->docHandle() != nullptr) {
+                bool ok;
+                qint64 searchKey = decl.d->values.first().variant.toLongLong(&ok);
+                if (ok)
+                    applyForegroundImage(searchKey, resourceProvider);
+            }
+            break;
+        }
         default: break;
         }
     }
@@ -1366,6 +1377,37 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
 }
 
 #endif // QT_NO_CSSPARSER
+
+void QTextHtmlParserNode::applyForegroundImage(qint64 searchKey, const QTextDocument *resourceProvider)
+{
+    QTextDocumentPrivate *priv = resourceProvider->docHandle();
+    for (int i = 0; i < priv->formats.numFormats(); ++i) {
+        QTextCharFormat format = priv->formats.charFormat(i);
+        if (format.isValid()) {
+            QBrush brush = format.foreground();
+            if (brush.style() == Qt::TexturePattern) {
+                const bool isPixmap = qHasPixmapTexture(brush);
+
+                if (isPixmap && QCoreApplication::instance()->thread() != QThread::currentThread()) {
+                    qWarning("Can't apply QPixmap outside of GUI thread");
+                    return;
+                }
+
+                const qint64 cacheKey = isPixmap ? brush.texture().cacheKey() : brush.textureImage().cacheKey();
+                if (cacheKey == searchKey) {
+                    QBrush b;
+                    if (isPixmap)
+                        b.setTexture(brush.texture());
+                    else
+                        b.setTextureImage(brush.textureImage());
+                    b.setStyle(Qt::TexturePattern);
+                    charFormat.setForeground(b);
+                }
+            }
+        }
+    }
+
+}
 
 void QTextHtmlParserNode::applyBackgroundImage(const QString &url, const QTextDocument *resourceProvider)
 {

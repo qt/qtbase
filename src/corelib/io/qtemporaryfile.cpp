@@ -327,7 +327,7 @@ bool QTemporaryFileEngine::isReallyOpen() const
 {
     Q_D(const QFSFileEngine);
 
-    if (!((0 == d->fh) && (-1 == d->fd)
+    if (!((nullptr == d->fh) && (-1 == d->fd)
 #if defined Q_OS_WIN
                 && (INVALID_HANDLE_VALUE == d->fileHandle)
 #endif
@@ -902,7 +902,7 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
 {
     if (QAbstractFileEngine *engine = file.d_func()->engine()) {
         if(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
-            return 0; //native already
+            return nullptr; // native already
         //cache
         bool wasOpen = file.isOpen();
         qint64 old_off = 0;
@@ -934,7 +934,7 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
         //done
         return ret;
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

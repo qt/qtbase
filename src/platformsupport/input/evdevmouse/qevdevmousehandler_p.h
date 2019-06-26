@@ -56,6 +56,8 @@
 #include <QPoint>
 #include <QEvent>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
@@ -64,7 +66,7 @@ class QEvdevMouseHandler : public QObject
 {
     Q_OBJECT
 public:
-    static QEvdevMouseHandler *create(const QString &device, const QString &specification);
+    static std::unique_ptr<QEvdevMouseHandler> create(const QString &device, const QString &specification);
     ~QEvdevMouseHandler();
 
     void readMouseData();

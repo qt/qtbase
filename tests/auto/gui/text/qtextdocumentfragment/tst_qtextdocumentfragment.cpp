@@ -34,6 +34,7 @@
 #include <qtextdocumentfragment.h>
 #include <qtexttable.h>
 #include <qtextlist.h>
+#include <qregularexpression.h>
 #include <qdebug.h>
 #include <private/qtextdocument_p.h>
 
@@ -1925,7 +1926,7 @@ void tst_QTextDocumentFragment::html_nobr()
 
     QString text = doc->begin().begin().fragment().text();
     QString expectedText = input;
-    expectedText.replace(QRegExp("\\s+"), QString(QChar::Nbsp));
+    expectedText.replace(QRegularExpression("\\s+"), QString(QChar::Nbsp));
     QCOMPARE(text, expectedText);
 }
 

@@ -60,7 +60,7 @@ public:
     class NotBuiltinType;   // type is not a built-in type, but it may be a custom type or an unknown type
     class UnknownType;      // type not known to QMetaType system
     template<class ReturnType, class DelegateObject>
-    static ReturnType switcher(DelegateObject &logic, int type, const void *data);
+    static ReturnType switcher(DelegateObject &logic, int type, const void *data = nullptr);
 };
 
 

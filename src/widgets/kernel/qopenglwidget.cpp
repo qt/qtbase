@@ -1333,11 +1333,8 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (d->inBackingStorePaint)
         return QWidget::metric(metric);
 
-    QWidget *tlw = window();
-    QWindow *window = tlw ? tlw->windowHandle() : 0;
-    QScreen *screen = tlw && tlw->windowHandle() ? tlw->windowHandle()->screen() : 0;
-    if (!screen && QGuiApplication::primaryScreen())
-        screen = QGuiApplication::primaryScreen();
+    auto window = d->windowHandle(QWidgetPrivate::WindowHandleMode::TopLevel);
+    QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
 
     const float dpmx = qt_defaultDpiX() * 100. / 2.54;
     const float dpmy = qt_defaultDpiY() * 100. / 2.54;

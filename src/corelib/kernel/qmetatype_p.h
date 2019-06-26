@@ -140,12 +140,12 @@ public:
     /*saveOp*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Save), \
     /*loadOp*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Load),
 #  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
-    /*saveOp*/ 0, \
-    /*loadOp*/ 0,
+    /*saveOp*/ nullptr, \
+    /*loadOp*/ nullptr,
 #else
 #  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
-    /*saveOp*/ 0, \
-    /*loadOp*/ 0,
+    /*saveOp*/ nullptr, \
+    /*loadOp*/ nullptr,
 #  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
     QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type)
 #endif
@@ -153,7 +153,7 @@ public:
 #ifndef QT_BOOTSTRAPPED
 #define METAOBJECT_DELEGATE(Type) (QtPrivate::MetaObjectForType<Type>::value())
 #else
-#define METAOBJECT_DELEGATE(Type) 0
+#define METAOBJECT_DELEGATE(Type) nullptr
 #endif
 
 #define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
@@ -184,11 +184,11 @@ public:
 #define QT_METATYPE_INTERFACE_INIT_EMPTY() \
 { \
     QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(void) \
-    /*constructor*/ 0, \
-    /*destructor*/ 0, \
+    /*constructor*/ nullptr, \
+    /*destructor*/ nullptr, \
     /*size*/ 0, \
     /*flags*/ 0, \
-    /*metaObject*/ 0 , \
+    /*metaObject*/ nullptr , \
     /*typedConstructor*/ nullptr, \
     /*typedDestructor*/ nullptr \
 }

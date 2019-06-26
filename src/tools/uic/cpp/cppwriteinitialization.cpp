@@ -498,9 +498,7 @@ void WriteInitialization::acceptUI(DomUI *node)
              << language::startFunctionDefinition1("setupUi", parameterType, varName, m_option.indent);
 
     const QStringList connections = m_uic->databaseInfo()->connections();
-    for (int i=0; i<connections.size(); ++i) {
-        QString connection = connections.at(i);
-
+    for (const auto &connection : connections) {
         if (connection == QLatin1String("(default)"))
             continue;
 
@@ -706,7 +704,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         addWizardPage(varName, node, parentWidget);
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QToolBox"))) {
         const DomProperty *plabel = attributes.value(QLatin1String("label"));
-        DomString *plabelString = plabel ? plabel->elementString() : 0;
+        DomString *plabelString = plabel ? plabel->elementString() : nullptr;
         QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
             icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
@@ -729,7 +727,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         const DomProperty *ptitle = attributes.value(QLatin1String("title"));
-        DomString *ptitleString = ptitle ? ptitle->elementString() : 0;
+        DomString *ptitleString = ptitle ? ptitle->elementString() : nullptr;
         QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
             icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
@@ -844,7 +842,7 @@ void WriteInitialization::addButtonGroup(const DomWidget *buttonNode, const QStr
     const DomButtonGroup *group = m_driver->findButtonGroup(attributeName);
     // Legacy feature: Create missing groups on the fly as the UIC button group feature
     // was present before the actual Designer support (4.5)
-    const bool createGroupOnTheFly = group == 0;
+    const bool createGroupOnTheFly = group == nullptr;
     if (createGroupOnTheFly) {
         DomButtonGroup *newGroup = new DomButtonGroup;
         newGroup->setAttributeName(attributeName);
@@ -900,8 +898,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     if (m_layoutWidget) {
         bool left, top, right, bottom;
         left = top = right = bottom = false;
-        for (int i = 0; i < propList.size(); ++i) {
-            const DomProperty *p = propList.at(i);
+        for (const DomProperty *p : propList) {
             const QString propertyName = p->attributeName();
             if (propertyName == QLatin1String("leftMargin") && p->kind() == DomProperty::Number)
                 left = true;
@@ -2619,7 +2616,6 @@ static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QStr
 
 WriteInitialization::Item::Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver)
     :
-    m_parent(0),
     m_itemClassName(itemClassName),
     m_indent(indent),
     m_setupUiStream(setupUiStream),

@@ -400,7 +400,7 @@ QPoint QHighDpiScaling::mapPositionToGlobal(const QPoint &pos, const QPoint &win
 QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window)
 {
     QPoint windowPosCandidate = pos - windowGlobalPosition;
-    if (QGuiApplicationPrivate::screen_list.size() <= 1)
+    if (QGuiApplicationPrivate::screen_list.size() <= 1 || window->handle() == nullptr)
         return windowPosCandidate;
 
     // Device independent global (screen) space may discontiguous when high-dpi scaling

@@ -1535,10 +1535,10 @@ bool QDockWidget::event(QEvent *event)
         d->toggleViewAction->setChecked(true);
         QPoint parentTopLeft(0, 0);
         if (isWindow()) {
-            if (const QWindow *window = windowHandle())
-                parentTopLeft = window->screen()->availableVirtualGeometry().topLeft();
-            else
-                parentTopLeft = QGuiApplication::primaryScreen()->availableVirtualGeometry().topLeft();
+            const QScreen *screen = d->associatedScreen();
+            parentTopLeft = screen
+                ? screen->availableVirtualGeometry().topLeft()
+                : QGuiApplication::primaryScreen()->availableVirtualGeometry().topLeft();
         }
         emit visibilityChanged(geometry().right() >= parentTopLeft.x() && geometry().bottom() >= parentTopLeft.y());
 }

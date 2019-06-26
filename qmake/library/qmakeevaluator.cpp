@@ -1130,35 +1130,48 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
                 }
                 superdir = qdfi.path();
             }
-            QString sdir = inDir;
             QString dir = m_outputDir;
             forever {
-                conffile = sdir + QLatin1String("/.qmake.conf");
-                if (!m_vfs->exists(conffile, flags))
-                    conffile.clear();
                 cachefile = dir + QLatin1String("/.qmake.cache");
                 if (!m_vfs->exists(cachefile, flags))
                     cachefile.clear();
-                if (!conffile.isEmpty() || !cachefile.isEmpty()) {
-                    if (dir != sdir)
-                        m_sourceRoot = sdir;
+                if (!cachefile.isEmpty()) {
                     m_buildRoot = dir;
                     break;
                 }
                 if (dir == superdir)
                     goto no_cache;
-                QFileInfo qsdfi(sdir);
                 QFileInfo qdfi(dir);
-                if (qsdfi.isRoot() || qdfi.isRoot())
-                    goto no_cache;
-                sdir = qsdfi.path();
+                if (qdfi.isRoot()) {
+                    cachefile.clear();
+                    break;
+                }
                 dir = qdfi.path();
+            }
+            QString sdir = inDir;
+            forever {
+                conffile = sdir + QLatin1String("/.qmake.conf");
+                if (!m_vfs->exists(conffile, flags))
+                    conffile.clear();
+                if (!conffile.isEmpty()) {
+                    if (sdir != m_buildRoot)
+                        m_sourceRoot = sdir;
+                    break;
+                }
+                QFileInfo qsdfi(sdir);
+                if (qsdfi.isRoot()) {
+                    conffile.clear();
+                    break;
+                }
+                sdir = qsdfi.path();
             }
         } else {
             m_buildRoot = QFileInfo(cachefile).path();
         }
-        m_conffile = QDir::cleanPath(conffile);
-        m_cachefile = QDir::cleanPath(cachefile);
+        if (!conffile.isEmpty())
+            m_conffile = QDir::cleanPath(conffile);
+        if (!cachefile.isEmpty())
+            m_cachefile = QDir::cleanPath(cachefile);
     }
   no_cache:
 
@@ -1711,7 +1724,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateFunction(
 
     if (m_valuemapStack.size() >= 100) {
         evalError(fL1S("Ran into infinite recursion (depth > 100)."));
-        vr = ReturnFalse;
+        vr = ReturnError;
     } else {
         m_valuemapStack.push(ProValueMap());
         m_locationStack.push(m_current);

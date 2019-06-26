@@ -285,6 +285,8 @@ QImageTextureGlyphCache::~QImageTextureGlyphCache()
 void QImageTextureGlyphCache::resizeTextureData(int width, int height)
 {
     m_image = m_image.copy(0, 0, width, height);
+    // Regions not part of the copy are initialized to 0, and that is just what
+    // we need.
 }
 
 void QImageTextureGlyphCache::createTextureData(int width, int height)
@@ -305,6 +307,12 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
     default:
         Q_UNREACHABLE();
     }
+
+    // Regions not touched by the glyphs must be initialized to 0. (such
+    // locations may in fact be sampled with styled (shifted) text materials)
+    // When resizing, the QImage copy() does this implicitly but the initial
+    // contents must be zeroed out explicitly here.
+    m_image.fill(0);
 }
 
 void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subPixelPosition)

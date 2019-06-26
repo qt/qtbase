@@ -460,33 +460,12 @@ QT_BEGIN_NAMESPACE
     \row    \li \c{"[a-z]+\\d+"} \li \b true               \li \b true
     \endtable
 
-    Exact matching is not reflected in QRegularExpression. If you want to be
-    sure that the subject string matches the regular expression exactly, you can wrap the
-    pattern between a couple of anchoring expressions. Simply
-    putting the pattern between the \c{^} and the \c{$} anchors is enough
-    in most cases:
+    Exact matching is not reflected in QRegularExpression. If you want
+    to be sure that the subject string matches the regular expression
+    exactly, you can wrap the pattern using the anchoredPattern()
+    function:
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 24
-
-    However, remember that the \c{$} anchor not only matches at the end of the
-    string, but also at a newline character right before the end of the string;
-    that is, the previous pattern matches against the string "this pattern must
-    match exactly\\n". Also, the behaviour of both the \c{^} and the \c{$}
-    anchors changes if the MultiLineOption is set either explicitly (as a
-    pattern option) or implicitly (as a directive inside the pattern string).
-
-    Therefore, in the most general case, you should wrap the pattern between
-    the \c{\A} and the \c{\z} anchors:
-
-    \snippet code/src_corelib_tools_qregularexpression.cpp 25
-
-    Note the usage of the non-capturing group in order to preserve the meaning
-    of the branch operator inside the pattern.
-
-    The QRegularExpression::anchoredPattern() helper method does exactly that for
-    you.
-
-    \sa anchoredPattern
 
     \section3 Porting from QRegExp's Partial Matching
 

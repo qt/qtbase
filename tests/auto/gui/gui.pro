@@ -13,6 +13,7 @@ SUBDIRS = \
     text \
     util \
     itemmodels \
+    rhi
 
 !qtConfig(opengl)|winrt: SUBDIRS -= qopengl qopenglconfig
 

@@ -32,7 +32,7 @@
 #include <qcoreapplication.h>
 #include <qdatastream.h>
 #include <qhostaddress.h>
-#include <qdatetime.h>
+#include <qelapsedtimer.h>
 
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -403,7 +403,7 @@ void tst_PlatformSocketEngine::udpLoopbackPerformance()
     QHostAddress localhost = QHostAddress::LocalHost;
 
     qlonglong readBytes = 0;
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     while (timer.elapsed() < 5000) {
         udpSocket2.write(message1.data(), message1.size());
@@ -462,7 +462,7 @@ void tst_PlatformSocketEngine::tcpLoopbackPerformance()
     QByteArray message1(messageSize, '@');
     QByteArray answer(messageSize, '@');
 
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     qlonglong readBytes = 0;
     while (timer.elapsed() < 5000) {

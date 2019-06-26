@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="qt256_bc1_9mips.dds">../shared/qt256_bc1_9mips.dds</file>
+  <file alias="bwqt224_64_nomips.dds">../shared/bwqt224_64_nomips.dds</file>
+  <file alias="texture.vert.qsb">../shared/texture.vert.qsb</file>
+  <file alias="texture.frag.qsb">../shared/texture.frag.qsb</file>
+</qresource>
+</RCC>

@@ -256,6 +256,7 @@ public:
     QTransform hidpiScaleTransform() const;
     static bool attachPainterPrivate(QPainter *q, QPaintDevice *pdev);
     void detachPainterPrivate(QPainter *q);
+    void initFrom(const QPaintDevice *device);
 
     QPaintDevice *device;
     QPaintDevice *original_device;

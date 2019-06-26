@@ -72,13 +72,6 @@ public:
         isValid(false), roamingSupported(false),
         timeout(DefaultTimeout)
     {}
-    virtual ~QNetworkConfigurationPrivate()
-    {
-        //release pointers to member configurations
-        serviceNetworkMembers.clear();
-    }
-
-    QMap<unsigned int, QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
     mutable QMutex mutex;
 

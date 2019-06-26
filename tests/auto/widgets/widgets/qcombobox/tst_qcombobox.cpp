@@ -852,8 +852,8 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     // case insensitive
     testWidget->clearEditText();
     QSignalSpy spyReturn(testWidget, SIGNAL(activated(int)));
-    testWidget->setAutoCompletionCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE(testWidget->autoCompletionCaseSensitivity(), Qt::CaseInsensitive);
+    testWidget->completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    QCOMPARE(testWidget->completer()->caseSensitivity(), Qt::CaseInsensitive);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
     qApp->processEvents();
@@ -886,8 +886,8 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 
     // case sensitive
     testWidget->clearEditText();
-    testWidget->setAutoCompletionCaseSensitivity(Qt::CaseSensitive);
-    QCOMPARE(testWidget->autoCompletionCaseSensitivity(), Qt::CaseSensitive);
+    testWidget->completer()->setCaseSensitivity(Qt::CaseSensitive);
+    QCOMPARE(testWidget->completer()->caseSensitivity(), Qt::CaseSensitive);
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aww"));

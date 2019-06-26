@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtInputSupport/private/devicehandlerlist_p.h>
+
 #include <QObject>
 #include <QHash>
 #include <QSocketNotifier>
@@ -70,9 +72,10 @@ public:
     void removeDevice(const QString &deviceNode);
 
 private:
+    void updateDeviceCount();
+
     QString m_spec;
-    QDeviceDiscovery *m_deviceDiscovery;
-    QHash<QString, QEvdevTabletHandlerThread *> m_activeDevices;
+    QtInputSupport::DeviceHandlerList<QEvdevTabletHandlerThread> m_activeDevices;
 };
 
 QT_END_NAMESPACE

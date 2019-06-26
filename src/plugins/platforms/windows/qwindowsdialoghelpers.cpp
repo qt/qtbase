@@ -356,7 +356,7 @@ struct FindDialogContext
 
 static BOOL QT_WIN_CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
-    FindDialogContext *context = reinterpret_cast<FindDialogContext *>(lParam);
+    auto *context = reinterpret_cast<FindDialogContext *>(lParam);
     DWORD winPid = 0;
     GetWindowThreadProcessId(hwnd, &winPid);
     if (winPid != context->processId)
@@ -531,7 +531,7 @@ private:
 IFileDialogEvents *QWindowsNativeFileDialogEventHandler::create(QWindowsNativeFileDialogBase *nativeFileDialog)
 {
     IFileDialogEvents *result;
-    QWindowsNativeFileDialogEventHandler *eventHandler = new QWindowsNativeFileDialogEventHandler(nativeFileDialog);
+    auto *eventHandler = new QWindowsNativeFileDialogEventHandler(nativeFileDialog);
     if (FAILED(eventHandler->QueryInterface(IID_IFileDialogEvents, reinterpret_cast<void **>(&result)))) {
         qErrnoWarning("Unable to obtain IFileDialogEvents");
         return nullptr;
@@ -1112,7 +1112,7 @@ void QWindowsNativeFileDialogBase::setDefaultSuffixSys(const QString &s)
     // If this parameter is non-empty, it will be appended by the dialog for the 'Any files'
     // filter ('*'). If this parameter is non-empty and the current filter has a suffix,
     // the dialog will append the filter's suffix.
-    wchar_t *wSuffix = const_cast<wchar_t *>(reinterpret_cast<const wchar_t *>(s.utf16()));
+    auto *wSuffix = const_cast<wchar_t *>(reinterpret_cast<const wchar_t *>(s.utf16()));
     m_fileDialog->SetDefaultExtension(wSuffix);
 }
 
@@ -1125,7 +1125,7 @@ static inline IFileDialog2 *getFileDialog2(IFileDialog *fileDialog)
 
 void QWindowsNativeFileDialogBase::setLabelText(QFileDialogOptions::DialogLabel l, const QString &text)
 {
-    wchar_t *wText = const_cast<wchar_t *>(reinterpret_cast<const wchar_t *>(text.utf16()));
+    auto *wText = const_cast<wchar_t *>(reinterpret_cast<const wchar_t *>(text.utf16()));
     switch (l) {
     case QFileDialogOptions::FileName:
         m_fileDialog->SetFileNameLabel(wText);
@@ -1770,7 +1770,7 @@ void QWindowsXpNativeFileDialog::doExec(HWND owner)
 
 static int QT_WIN_CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 {
-    QWindowsXpNativeFileDialog *dialog = reinterpret_cast<QWindowsXpNativeFileDialog *>(lpData);
+    auto *dialog = reinterpret_cast<QWindowsXpNativeFileDialog *>(lpData);
     return dialog->existingDirCallback(hwnd, uMsg, lParam);
 }
 
@@ -1843,7 +1843,7 @@ void QWindowsXpNativeFileDialog::populateOpenFileName(OPENFILENAME *ofn, HWND ow
     const QList<FilterSpec> specs =
         filterSpecs(m_options->nameFilters(), m_options->options() & QFileDialogOptions::HideNameFilterDetails, &totalStringLength);
     const int size = specs.size();
-    wchar_t *ptr = new wchar_t[totalStringLength + 2 * size + 1];
+    auto *ptr = new wchar_t[totalStringLength + 2 * size + 1];
     ofn->lpstrFilter = ptr;
     for (const FilterSpec &spec : specs) {
         ptr += spec.description.toWCharArray(ptr);

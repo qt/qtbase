@@ -38,6 +38,7 @@
 
 #include <qtimer.h>
 #include <qthread.h>
+#include <qelapsedtimer.h>
 
 #if defined Q_OS_UNIX
 #include <unistd.h>
@@ -526,7 +527,7 @@ public:
     QBasicTimer m_timer;
 
     int m_interval;
-    QTime m_startedTime;
+    QElapsedTimer m_elapsedTimer;
     QEventLoop eventLoop;
 
     inline RestartedTimerFiresTooSoonObject()
@@ -538,7 +539,7 @@ public:
         static int interval = 1000;
 
         m_interval = interval;
-        m_startedTime.start();
+        m_elapsedTimer.start();
         m_timer.start(interval, this);
 
         // alternate between single-shot and 1 sec
@@ -552,7 +553,7 @@ public:
 
         m_timer.stop();
 
-        int elapsed = m_startedTime.elapsed();
+        int elapsed = m_elapsedTimer.elapsed();
 
         if (elapsed < m_interval / 2) {
             // severely too early!
@@ -590,10 +591,10 @@ public:
 public slots:
     void longLastingSlot()
     {
-        // Don't use timers for this, because we are testing them.
-        QTime time;
-        time.start();
-        while (time.elapsed() < 200) {
+        // Don't use QTimer for this, because we are testing it.
+        QElapsedTimer control;
+        control.start();
+        while (control.elapsed() < 200) {
             for (int c = 0; c < 100000; c++) {} // Mindless looping.
         }
         if (++count >= 2) {

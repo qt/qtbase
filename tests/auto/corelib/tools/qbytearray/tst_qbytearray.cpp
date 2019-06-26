@@ -1935,7 +1935,7 @@ void tst_QByteArray::repeatedSignature() const
 {
     /* repated() should be a const member. */
     const QByteArray string;
-    string.repeated(3);
+    (void)string.repeated(3);
 }
 
 void tst_QByteArray::repeated() const
@@ -2127,7 +2127,7 @@ void tst_QByteArray::movablity()
 {
     QFETCH(QByteArray, array);
 
-    QVERIFY(!QTypeInfo<QByteArray>::isStatic);
+    Q_STATIC_ASSERT(!QTypeInfo<QByteArray>::isStatic);
 
     const int size = array.size();
     const bool isEmpty = array.isEmpty();
@@ -2139,7 +2139,7 @@ void tst_QByteArray::movablity()
     // we need only memory space not the instance
     memSpace.~QByteArray();
     // move array -> memSpace
-    memcpy(&memSpace, &array, sizeof(QByteArray));
+    memcpy((void *)&memSpace, (const void *)&array, sizeof(QByteArray));
     // reconstruct empty QByteArray
     new (&array) QByteArray;
 
@@ -2149,8 +2149,8 @@ void tst_QByteArray::movablity()
     QCOMPARE(memSpace.capacity(), capacity);
 
     // try to not crash
-    memSpace.toLower();
-    memSpace.toUpper();
+    (void)memSpace.toLower();
+    (void)memSpace.toUpper();
     memSpace.prepend('a');
     memSpace.append("b", 1);
     memSpace.squeeze();
@@ -2166,7 +2166,7 @@ void tst_QByteArray::movablity()
 
     // move back memSpace -> array
     array.~QByteArray();
-    memcpy(&array, &memSpace, sizeof(QByteArray));
+    memcpy((void *)&array, (const void *)&memSpace, sizeof(QByteArray));
     // reconstruct empty QByteArray
     new (&memSpace) QByteArray;
 
