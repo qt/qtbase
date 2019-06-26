@@ -1261,7 +1261,7 @@ void tst_QFileInfo::fakeFileTimes_data()
     QTest::newRow("early") << QDateTime(QDate(1901, 12, 14), QTime(12, 0));
 
     // QTBUG-12006 claims XP handled this (2010-Mar-26 8:46:10) wrong due to an MS API bug:
-    QTest::newRow("XP-bug") << QDateTime::fromTime_t(1269593170);
+    QTest::newRow("XP-bug") << QDateTime::fromSecsSinceEpoch(1269593170);
 }
 
 void tst_QFileInfo::fakeFileTimes()

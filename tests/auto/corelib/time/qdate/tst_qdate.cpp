@@ -91,7 +91,7 @@ private slots:
     void negativeYear() const;
     void printNegativeYear() const;
     void roundtripGermanLocale() const;
-#if QT_CONFIG(textdate)
+#if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
     void shortDayName() const;
     void standaloneShortDayName() const;
     void longDayName() const;
@@ -1473,7 +1473,7 @@ void tst_QDate::roundtripGermanLocale() const
     theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
 }
 
-#if QT_CONFIG(textdate)
+#if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
 QT_WARNING_PUSH // the methods tested here are all deprecated
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 

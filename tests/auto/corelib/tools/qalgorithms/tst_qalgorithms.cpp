@@ -172,7 +172,7 @@ ResultSet testRun(ContainerType &container, Algorithm &algorithm, int millisecs)
 {
     TestInt::lessThanRefCount = 0;
     int count = 0;
-    QTime t;
+    QElapsedTimer t;
     t.start();
     while(t.elapsed() < millisecs) {
         ++count;
