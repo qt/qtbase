@@ -2369,7 +2369,7 @@
 */
 
 /*!
-    \enum Qt::SplitBehavior
+    \enum Qt::SplitBehaviorFlags
     \since 5.14
 
     This enum specifies how the split() functions should behave with

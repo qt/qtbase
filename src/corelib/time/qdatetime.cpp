@@ -3272,9 +3272,10 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     provides functions for comparing datetimes and for manipulating a
     datetime by adding a number of seconds, days, months, or years.
 
-    QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
-    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset
-    from UTC} or to a specified \l{{Qt::TimeZone}{time zone}, in conjunction
+    QDateTime can describe datetimes with respect to
+    \l{Qt::LocalTime}{local time}, to \l{Qt::UTC}{UTC}, to a specified
+    \l{Qt::OffsetFromUTC}{offset from UTC} or to a specified
+    \l{Qt::TimeZone}{time zone}, in conjunction
     with the QTimeZone class. For example, a time zone of "Europe/Berlin" will
     apply the daylight-saving rules as used in Germany since 1970. In contrast,
     an offset from UTC of +3600 seconds is one hour ahead of UTC (usually
