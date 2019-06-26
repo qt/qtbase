@@ -2575,7 +2575,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = UniformBuffer;
@@ -2639,7 +2639,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = SampledTexture;
@@ -2661,7 +2661,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = ImageLoad;
@@ -2715,7 +2715,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = BufferLoad;
