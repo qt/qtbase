@@ -729,7 +729,7 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
 
     // Create a deep copy of our configuration
     auto configurationCopy = new QSslConfigurationPrivate(dtlsBase->dtlsConfiguration);
-    configurationCopy->ref.store(0); // the QSslConfiguration constructor refs up
+    configurationCopy->ref.storeRelaxed(0); // the QSslConfiguration constructor refs up
 
     // DTLSTODO: check we do not set something DTLS-incompatible there ...
     TlsContext newContext(QSslContext::sharedFromConfiguration(dtlsBase->mode,

@@ -57,7 +57,7 @@ static const double RandomValueFP = double(0.3010463714599609);
 static void setRNGControl(uint v)
 {
 #ifdef QT_BUILD_INTERNAL
-    qt_randomdevice_control.store(v);
+    qt_randomdevice_control.storeRelaxed(v);
 #else
     Q_UNUSED(v);
 #endif

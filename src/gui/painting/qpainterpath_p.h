@@ -281,7 +281,7 @@ inline bool QPainterPathData::isClosed() const
 
 inline void QPainterPathData::close()
 {
-    Q_ASSERT(ref.load() == 1);
+    Q_ASSERT(ref.loadRelaxed() == 1);
     require_moveTo = true;
     const QPainterPath::Element &first = elements.at(cStart);
     QPainterPath::Element &last = elements.last();
@@ -308,7 +308,7 @@ inline void QPainterPathData::maybeMoveTo()
 
 inline void QPainterPathData::clear()
 {
-    Q_ASSERT(ref.load() == 1);
+    Q_ASSERT(ref.loadRelaxed() == 1);
 
     elements.clear();
 

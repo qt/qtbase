@@ -114,7 +114,7 @@ public:
     static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
     {
         if (QCoreApplication::instance())
-            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher.load();
+            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher.loadRelaxed();
         else
             return nullptr;
     }

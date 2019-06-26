@@ -147,7 +147,7 @@ using QtMiscUtils::fromHex;
 // Has been defined in the header / inlined before Qt 5.4
 QDebug::~QDebug()
 {
-    if (!--stream->ref) {
+    if (stream && !--stream->ref) {
         if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
             stream->buffer.chop(1);
         if (stream->message_output) {
@@ -843,36 +843,34 @@ QDebug &QDebug::resetFormat()
 class QDebugStateSaverPrivate
 {
 public:
-    QDebugStateSaverPrivate(QDebug &dbg)
-        : m_dbg(dbg),
-          m_spaces(dbg.autoInsertSpaces()),
-          m_flags(0),
-          m_streamParams(dbg.stream->ts.d_ptr->params)
+    QDebugStateSaverPrivate(QDebug::Stream *stream)
+        : m_stream(stream),
+          m_spaces(stream->space),
+          m_flags(stream->context.version > 1 ? stream->flags : 0),
+          m_streamParams(stream->ts.d_ptr->params)
     {
-        if (m_dbg.stream->context.version > 1)
-            m_flags = m_dbg.stream->flags;
     }
     void restoreState()
     {
-        const bool currentSpaces = m_dbg.autoInsertSpaces();
+        const bool currentSpaces = m_stream->space;
         if (currentSpaces && !m_spaces)
-            if (m_dbg.stream->buffer.endsWith(QLatin1Char(' ')))
-                m_dbg.stream->buffer.chop(1);
+            if (m_stream->buffer.endsWith(QLatin1Char(' ')))
+                m_stream->buffer.chop(1);
 
-        m_dbg.setAutoInsertSpaces(m_spaces);
-        m_dbg.stream->ts.d_ptr->params = m_streamParams;
-        if (m_dbg.stream->context.version > 1)
-            m_dbg.stream->flags = m_flags;
+        m_stream->space = m_spaces;
+        m_stream->ts.d_ptr->params = m_streamParams;
+        if (m_stream->context.version > 1)
+            m_stream->flags = m_flags;
 
         if (!currentSpaces && m_spaces)
-            m_dbg.stream->ts << ' ';
+            m_stream->ts << ' ';
     }
 
-    QDebug &m_dbg;
+    QDebug::Stream *m_stream;
 
     // QDebug state
     const bool m_spaces;
-    int m_flags;
+    const int m_flags;
 
     // QTextStream state
     const QTextStreamPrivate::Params m_streamParams;
@@ -886,7 +884,7 @@ public:
     \sa QDebug::setAutoInsertSpaces(), QDebug::autoInsertSpaces()
 */
 QDebugStateSaver::QDebugStateSaver(QDebug &dbg)
-    : d(new QDebugStateSaverPrivate(dbg))
+    : d(new QDebugStateSaverPrivate(dbg.stream))
 {
 }
 

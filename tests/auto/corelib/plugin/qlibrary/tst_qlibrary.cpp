@@ -30,7 +30,7 @@
 #include <QtTest/QtTest>
 #include <qdir.h>
 #include <qlibrary.h>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 
 
 // Helper macros to let us know if some suffixes and prefixes are valid
@@ -414,10 +414,12 @@ void tst_QLibrary::errorString()
             QFAIL(qPrintable(QString("Unknown operation: %1").arg(operation)));
             break;
     }
-    QRegExp re(errorString);
+#if QT_CONFIG(regularexpression)
+    QRegularExpression re(QRegularExpression::anchoredPattern(errorString));
     QString libErrorString = lib.errorString();
+    QVERIFY2(re.match(libErrorString).hasMatch(), qPrintable(libErrorString));
+#endif
     QVERIFY(!lib.isLoaded() || lib.unload());
-    QVERIFY2(re.exactMatch(libErrorString), qPrintable(libErrorString));
     QCOMPARE(ok, success);
 }
 

@@ -34,6 +34,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QtDebug>
 #include <QtTest/QtTest>
 #include <QXmlDefaultHandler>
@@ -259,7 +260,7 @@ public:
         // Delibrately wait a maximum of 10 seconds for the sake
         // of the test, so it doesn't unduly hang
         const int waitTime = qMax(10000, msecs);
-        QTime t;
+        QElapsedTimer t;
         t.start();
         while (t.elapsed() < waitTime) {
             QCoreApplication::processEvents();

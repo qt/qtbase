@@ -340,7 +340,7 @@ void QLinkedList<T>::freeData(QLinkedListData *x)
 {
     Node *y = reinterpret_cast<Node*>(x);
     Node *i = y->n;
-    Q_ASSERT(x->ref.atomic.load() == 0);
+    Q_ASSERT(x->ref.atomic.loadRelaxed() == 0);
     while (i != y) {
         Node *n = i;
         i = i->n;

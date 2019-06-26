@@ -93,7 +93,7 @@ void QDBusMetaTypeId::init()
 
     // reentrancy is not a problem since everything else is locked on their own
     // set the guard variable at the end
-    if (!initialized.load()) {
+    if (!initialized.loadRelaxed()) {
         // register our types with Qt Core (calling qMetaTypeId<T>() does this implicitly)
         (void)message();
         (void)argument();
@@ -145,7 +145,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QVector<QDBusUnixFileDescriptor> >();
 #endif
 
-        initialized.store(true);
+        initialized.storeRelaxed(true);
     }
 }
 

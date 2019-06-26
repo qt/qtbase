@@ -217,7 +217,7 @@ void tst_QFontCache::clear()
 
 #ifdef QT_BUILD_INTERNAL
     QList<QFontEngine *> leakedEngines = QFontEngine_stopCollectingEngines();
-for (int i = 0; i < leakedEngines.size(); ++i) qWarning() << i << leakedEngines.at(i) << leakedEngines.at(i)->ref.load();
+for (int i = 0; i < leakedEngines.size(); ++i) qWarning() << i << leakedEngines.at(i) << leakedEngines.at(i)->ref.loadRelaxed();
     // and we are not leaking!
     QCOMPARE(leakedEngines.size(), 0);
 #endif

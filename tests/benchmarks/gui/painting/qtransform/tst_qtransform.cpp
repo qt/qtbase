@@ -167,9 +167,7 @@ void tst_QTransform::func##_data() \
 { \
     QTest::addColumn<QTransform>("transform"); \
     QMap<const char *, QTransform> x = generateTransforms(); \
-    QMapIterator<const char *, QTransform> it(x); \
-    while (it.hasNext()) { \
-        it.next(); \
+    for (auto it = x.begin(), end = x.end(); it != end; ++it) { \
         QTest::newRow(it.key()) << it.value(); \
     } \
 }
@@ -180,14 +178,10 @@ void tst_QTransform::func##_data() \
     QTest::addColumn<QTransform>("x1"); \
     QTest::addColumn<QTransform>("x2"); \
     QMap<const char *, QTransform> x = generateTransforms(); \
-    QMapIterator<const char *, QTransform> it(x); \
-    while (it.hasNext()) { \
-        it.next(); \
+    for (auto it = x.cbegin(), end = x.cend(); it != end; ++it) { \
         const char *key1 = it.key(); \
         QTransform x1 = it.value(); \
-        QMapIterator<const char *, QTransform> it2(x); \
-        while (it2.hasNext()) { \
-            it2.next(); \
+        for (auto it2 = x.cbegin(), end = x.cend(); it2 != end; ++it2) { \
             QTest::newRow(QString("%1 + %2").arg(key1).arg(it2.key()).toLatin1().constData()) \
                 << x1 << it2.value(); \
         } \

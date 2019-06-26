@@ -592,10 +592,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                         w->window()->raise();
                     }
 
-                    QWindow *win = w->windowHandle();
-                    if (!win)
-                        win = w->nativeParentWidget()->windowHandle();
-                    if (win) {
+                    if (auto win = qt_widget_private(w)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)) {
                         const QRect globalGeometry = win->isTopLevel()
                             ? win->geometry()
                             : QRect(win->mapToGlobal(QPoint(0, 0)), win->size());

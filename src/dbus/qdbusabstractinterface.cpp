@@ -164,7 +164,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
             lastError = QDBusError(QDBusError::Failed,
-                                   QString::fromLatin1("Unregistered type %1 cannot be handled")
+                                   QLatin1String("Unregistered type %1 cannot be handled")
                                    .arg(QLatin1String(mp.typeName())));
             return false;
         }
@@ -220,15 +220,15 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     // there was an error...
-    QString errmsg = QLatin1String("Unexpected `%1' (%2) when retrieving property `%3.%4' "
-                                   "(expected type `%5' (%6))");
+    const auto errmsg = QLatin1String("Unexpected `%1' (%2) when retrieving property `%3.%4' "
+                                      "(expected type `%5' (%6))");
     lastError = QDBusError(QDBusError::InvalidSignature,
-                           errmsg.arg(QString::fromLatin1(foundType),
-                                      QString::fromLatin1(foundSignature),
+                           errmsg.arg(QLatin1String(foundType),
+                                      QLatin1String(foundSignature),
                                       interface,
-                                      QString::fromUtf8(mp.name()),
-                                      QString::fromLatin1(mp.typeName()),
-                                      QString::fromLatin1(expectedSignature)));
+                                      QLatin1String(mp.name()),
+                                      QLatin1String(mp.typeName()),
+                                      QLatin1String(expectedSignature)));
     return false;
 }
 
@@ -691,17 +691,19 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
 }
 
 /*!
-    Calls the method \a method on this interface and passes the parameters to this function to the
-    method.
+    \fn QDBusAbstractInterface::call(const QString &message)
+    \internal
+*/
+
+/*!
+    \fn QDBusAbstractInterface::call(const QString &message, Args&&...args)
+
+    Calls the method \a method on this interface and passes \a args to the method.
+    All \a args must be convertible to QVariant.
 
     The parameters to \c call are passed on to the remote function via D-Bus as input
     arguments. Output arguments are returned in the QDBusMessage reply. If the reply is an error
     reply, lastError() will also be set to the contents of the error message.
-
-    This function can be used with up to 8 parameters, passed in arguments \a arg1, \a arg2,
-    \a arg3, \a arg4, \a arg5, \a arg6, \a arg7 and \a arg8. If you need more than 8
-    parameters or if you have a variable number of parameters to be passed, use
-    callWithArgumentList().
 
     It can be used the following way:
 
@@ -710,6 +712,19 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
     This example illustrates function calling with 0, 1 and 2 parameters and illustrates different
     parameter types passed in each (the first call to \c "ProcessWorkUnicode" will contain one
     Unicode string, the second call to \c "ProcessWork" will contain one string and one byte array).
+
+    \note Before Qt 5.14, this function accepted a maximum of just eight (8) arguments.
+
+    \sa callWithArgumentList()
+*/
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \internal
+
+    This function exists for binary compatibility with Qt versions < 5.14.
+    Programs recompiled against Qt 5.14 will use the variadic template function
+    instead.
 */
 QDBusMessage QDBusAbstractInterface::call(const QString &method, const QVariant &arg1,
                                           const QVariant &arg2,
@@ -722,27 +737,44 @@ QDBusMessage QDBusAbstractInterface::call(const QString &method, const QVariant 
 {
     return call(QDBus::AutoDetect, method, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 }
+#endif
 
 /*!
+    \fn QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &message)
+    \internal
+*/
+
+/*!
+    \fn QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &message, Args&&...args)
+
     \overload
 
-    Calls the method \a method on this interface and passes the
-    parameters to this function to the method. If \a mode is \c
-    NoWaitForReply, then this function will return immediately after
+    Calls the method \a method on this interface and passes \a args to the method.
+    All \a args must be convertible to QVariant.
+
+    If \a mode is \c NoWaitForReply, then this function will return immediately after
     placing the call, without waiting for a reply from the remote
     method. Otherwise, \a mode indicates whether this function should
     activate the Qt Event Loop while waiting for the reply to arrive.
-
-    This function can be used with up to 8 parameters, passed in arguments \a arg1, \a arg2,
-    \a arg3, \a arg4, \a arg5, \a arg6, \a arg7 and \a arg8. If you need more than 8
-    parameters or if you have a variable number of parameters to be passed, use
-    callWithArgumentList().
 
     If this function reenters the Qt event loop in order to wait for the
     reply, it will exclude user input. During the wait, it may deliver
     signals and other method calls to your application. Therefore, it
     must be prepared to handle a reentrancy whenever a call is placed
     with call().
+
+    \note Before Qt 5.14, this function accepted a maximum of just eight (8) arguments.
+
+    \sa callWithArgumentList()
+*/
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \internal
+
+    This function exists for binary compatibility with Qt versions < 5.14.
+    Programs recompiled against Qt 5.14 will use the variadic template function
+    instead.
 */
 QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &method,
                                           const QVariant &arg1,
@@ -787,21 +819,22 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
 
     return callWithArgumentList(mode, method, argList);
 }
-
+#endif // Qt 5
 
 /*!
-    \since 4.5
-    Calls the method \a method on this interface and passes the parameters to this function to the
-    method.
+    \fn QDBusAbstractInterface::asyncCall(const QString &message)
+    \internal
+*/
+
+/*!
+    \fn QDBusAbstractInterface::asyncCall(const QString &message, Args&&...args)
+
+    Calls the method \a method on this interface and passes \a args to the method.
+    All \a args must be convertible to QVariant.
 
     The parameters to \c call are passed on to the remote function via D-Bus as input
     arguments. The returned QDBusPendingCall object can be used to find out information about
     the reply.
-
-    This function can be used with up to 8 parameters, passed in arguments \a arg1, \a arg2,
-    \a arg3, \a arg4, \a arg5, \a arg6, \a arg7 and \a arg8. If you need more than 8
-    parameters or if you have a variable number of parameters to be passed, use
-    asyncCallWithArgumentList().
 
     It can be used the following way:
 
@@ -810,6 +843,19 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
     This example illustrates function calling with 0, 1 and 2 parameters and illustrates different
     parameter types passed in each (the first call to \c "ProcessWorkUnicode" will contain one
     Unicode string, the second call to \c "ProcessWork" will contain one string and one byte array).
+
+    \note Before Qt 5.14, this function accepted a maximum of just eight (8) arguments.
+
+    \sa asyncCallWithArgumentList()
+*/
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+/*!
+    \internal
+
+    This function exists for binary compatibility with Qt versions < 5.14.
+    Programs recompiled against Qt 5.14 will use the variadic template function
+    instead.
 */
 QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, const QVariant &arg1,
                                                    const QVariant &arg2,
@@ -853,6 +899,7 @@ QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, const 
 
     return asyncCallWithArgumentList(method, argList);
 }
+#endif // Qt 5
 
 /*!
     \internal
@@ -863,6 +910,24 @@ QDBusMessage QDBusAbstractInterface::internalConstCall(QDBus::CallMode mode,
 {
     // ### move the code here, and make the other functions call this
     return const_cast<QDBusAbstractInterface*>(this)->callWithArgumentList(mode, method, args);
+}
+
+QDBusMessage QDBusAbstractInterface::doCall(QDBus::CallMode mode, const QString &method, const QVariant *args, size_t numArgs)
+{
+    QList<QVariant> list;
+    list.reserve(int(numArgs));
+    for (size_t i = 0; i < numArgs; ++i)
+        list.append(args[i]);
+    return callWithArgumentList(mode, method, list);
+}
+
+QDBusPendingCall QDBusAbstractInterface::doAsyncCall(const QString &method, const QVariant *args, size_t numArgs)
+{
+    QList<QVariant> list;
+    list.reserve(int(numArgs));
+    for (size_t i = 0; i < numArgs; ++i)
+        list.append(args[i]);
+    return asyncCallWithArgumentList(method, list);
 }
 
 QT_END_NAMESPACE

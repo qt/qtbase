@@ -99,9 +99,13 @@ public:
     typename Ops::Type _q_value;
 
     // Everything below is either implemented in ../arch/qatomic_XXX.h or (as fallback) in qgenericatomic.h
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_VERSION_X_5_14("Use loadRelaxed") T load() const noexcept { return loadRelaxed(); }
+    QT_DEPRECATED_VERSION_X_5_14("Use storeRelaxed") void store(T newValue) noexcept { storeRelaxed(newValue); }
+#endif
 
-    T load() const noexcept { return Ops::load(_q_value); }
-    void store(T newValue) noexcept { Ops::store(_q_value, newValue); }
+    T loadRelaxed() const noexcept { return Ops::loadRelaxed(_q_value); }
+    void storeRelaxed(T newValue) noexcept { Ops::storeRelaxed(_q_value, newValue); }
 
     T loadAcquire() const noexcept { return Ops::loadAcquire(_q_value); }
     void storeRelease(T newValue) noexcept { Ops::storeRelease(_q_value, newValue); }
@@ -236,8 +240,14 @@ public:
 
     AtomicType _q_value;
 
-    Type load() const noexcept { return Ops::load(_q_value); }
-    void store(Type newValue) noexcept { Ops::store(_q_value, newValue); }
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_VERSION_X_5_14("Use loadRelaxed") Type load() const noexcept { return loadRelaxed(); }
+    QT_DEPRECATED_VERSION_X_5_14("Use storeRelaxed") void store(Type newValue) noexcept { storeRelaxed(newValue); }
+#endif
+
+    Type loadRelaxed() const noexcept { return Ops::loadRelaxed(_q_value); }
+    void storeRelaxed(Type newValue) noexcept { Ops::storeRelaxed(_q_value, newValue); }
+
     operator Type() const noexcept { return loadAcquire(); }
     Type operator=(Type newValue) noexcept { storeRelease(newValue); return newValue; }
 

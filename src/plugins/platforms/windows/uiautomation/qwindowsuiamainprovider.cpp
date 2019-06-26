@@ -82,7 +82,7 @@ QWindowsUiaMainProvider *QWindowsUiaMainProvider::providerForAccessible(QAccessi
 
     QAccessible::Id id = QAccessible::uniqueId(accessible);
     QWindowsUiaProviderCache *providerCache = QWindowsUiaProviderCache::instance();
-    QWindowsUiaMainProvider *provider = qobject_cast<QWindowsUiaMainProvider *>(providerCache->providerForId(id));
+    auto *provider = qobject_cast<QWindowsUiaMainProvider *>(providerCache->providerForId(id));
 
     if (provider) {
         provider->AddRef();

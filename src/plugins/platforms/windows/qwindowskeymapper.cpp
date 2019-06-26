@@ -100,7 +100,7 @@ QWindowsKeyMapper::QWindowsKeyMapper()
     : m_useRTLExtensions(false), m_keyGrabber(nullptr)
 {
     memset(keyLayout, 0, sizeof(keyLayout));
-    QGuiApplication *app = static_cast<QGuiApplication *>(QGuiApplication::instance());
+    auto *app = static_cast<QGuiApplication *>(QGuiApplication::instance());
     QObject::connect(app, &QGuiApplication::applicationStateChanged,
                      app, clearKeyRecorderOnApplicationInActive);
     changeKeyboard();
@@ -950,7 +950,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
     const UINT msgType = msg.message;
 
     const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
-    quint32 vk_key = quint32(msg.wParam);
+    auto vk_key = quint32(msg.wParam);
     quint32 nModifiers = 0;
 
     QWindow *receiver = m_keyGrabber ? m_keyGrabber : window;
@@ -1182,7 +1182,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
         // results, if we map this virtual key-code directly (for eg '?' US layouts). So try
         // to find the correct key using the current message parameters & keyboard state.
         if (uch.isNull() && msgType == WM_IME_KEYDOWN) {
-            const QWindowsInputContext *windowsInputContext =
+            const auto *windowsInputContext =
                 qobject_cast<const QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
             if (!(windowsInputContext && windowsInputContext->isComposing()))
                 vk_key = ImmGetVirtualKey(reinterpret_cast<HWND>(window->winId()));

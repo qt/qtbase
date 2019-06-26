@@ -228,14 +228,14 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
         receivedSignature = "<empty signature>";
     QString errorMsg;
     if (receivedType) {
-        errorMsg = QString::fromLatin1("Unexpected reply signature: got \"%1\" (%4), "
+        errorMsg = QLatin1String("Unexpected reply signature: got \"%1\" (%4), "
                                          "expected \"%2\" (%3)")
                    .arg(QLatin1String(receivedSignature),
                         QLatin1String(expectedSignature),
                         QLatin1String(data.typeName()),
                         QLatin1String(receivedType));
     } else {
-        errorMsg = QString::fromLatin1("Unexpected reply signature: got \"%1\", "
+        errorMsg = QLatin1String("Unexpected reply signature: got \"%1\", "
                                          "expected \"%2\" (%3)")
                    .arg(QLatin1String(receivedSignature),
                         QLatin1String(expectedSignature),

@@ -54,7 +54,7 @@
 #include <QString>
 #include <QStringList>
 #include <QDir>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QApplication>
 #include <QDebug>
 
@@ -146,19 +146,19 @@ int main(int argc, char** argv)
 
     int singleThreadTime = 0;
     {
-        QTime time;
-        time.start();
+        QElapsedTimer timer;
+        timer.start();
         WordCount total = singleThreadedWordCount(files);
-        singleThreadTime = time.elapsed();
+        singleThreadTime = timer.elapsed();
         qDebug() << "single thread" << singleThreadTime;
     }
 
     int mapReduceTime = 0;
     {
-        QTime time;
-        time.start();
+        QElapsedTimer timer;
+        timer.start();
         WordCount total = mappedReduced(files, countWords, reduce);
-        mapReduceTime = time.elapsed();
+        mapReduceTime = timer.elapsed();
         qDebug() << "MapReduce" << mapReduceTime;
     }
     qDebug() << "MapReduce speedup x" << ((double)singleThreadTime - (double)mapReduceTime) / (double)mapReduceTime + 1;

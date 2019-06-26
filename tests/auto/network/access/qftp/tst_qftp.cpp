@@ -43,6 +43,7 @@
 #include <QtNetwork/private/qnetworksession_p.h>
 #include <QTcpServer>
 #include <QHostInfo>
+#include <QElapsedTimer>
 #include <QTcpSocket>
 
 #include "../../../network-settings.h"
@@ -2160,7 +2161,7 @@ void tst_QFtp::qtbug7359Crash()
     QFtp ftp;
     ftp.connectToHost("127.0.0.1");
 
-    QTime t;
+    QElapsedTimer t;
     int elapsed;
 
     t.start();
@@ -2365,7 +2366,7 @@ void tst_QFtp::loginURL()
 
     ftp = newFtp();
     addCommand(QFtp::ConnectToHost,
-               ftp->connectToHost(QHostInfo::localHostName(), port));
+               ftp->connectToHost("127.0.0.1", port));
     addCommand(QFtp::Login, ftp->login(user, password));
 
     QTestEventLoop::instance().enterLoop(5);
@@ -2373,7 +2374,7 @@ void tst_QFtp::loginURL()
     ftp = nullptr;
     server.stopServer();
     if (QTestEventLoop::instance().timeout())
-        QFAIL(msgTimedOut(QHostInfo::localHostName(), port));
+        QFAIL(msgTimedOut("127.0.0.1", port));
 
     QCOMPARE(server.getRawUser(), rawUser);
     QCOMPARE(server.getRawPassword(), rawPass);

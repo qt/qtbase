@@ -33,9 +33,7 @@
 
 QT_BEGIN_NAMESPACE
 
-DatabaseInfo::DatabaseInfo()
-{
-}
+DatabaseInfo::DatabaseInfo() = default;
 
 void DatabaseInfo::acceptUI(DomUI *node)
 {
@@ -59,10 +57,9 @@ void DatabaseInfo::acceptWidget(DomWidget *node)
     DomProperty *db = properties.value(QLatin1String("database"));
     if (db && db->elementStringList()) {
         QStringList info = db->elementStringList()->elementString();
-
-        QString connection = info.size() > 0 ? info.at(0) : QString();
-        if (connection.isEmpty())
+        if (info.isEmpty() || info.constFirst().isEmpty())
             return;
+        const QString &connection = info.constFirst();
         m_connections.append(connection);
 
         QString table = info.size() > 1 ? info.at(1) : QString();

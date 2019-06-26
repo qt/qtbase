@@ -107,6 +107,8 @@ Q_AUTOTEST_EXPORT void q_X509_up_ref(X509 *a);
 long q_X509_get_version(X509 *a);
 EVP_PKEY *q_X509_get_pubkey(X509 *a);
 void q_X509_STORE_set_verify_cb(X509_STORE *ctx, X509_STORE_CTX_verify_cb verify_cb);
+int q_X509_STORE_set_ex_data(X509_STORE *ctx, int idx, void *data);
+void *q_X509_STORE_get_ex_data(X509_STORE *r, int idx);
 STACK_OF(X509) *q_X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
 void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
 int q_DH_bits(DH *dh);
@@ -183,5 +185,11 @@ const OCSP_CERTID *q_OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *x);
 
 #define q_SSL_CTX_set_max_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
+
+extern "C" {
+typedef int (*q_SSL_psk_use_session_cb_func_t)(SSL *, const EVP_MD *, const unsigned char **, size_t *,
+                                               SSL_SESSION **);
+}
+void q_SSL_set_psk_use_session_callback(SSL *s, q_SSL_psk_use_session_cb_func_t);
 
 #endif

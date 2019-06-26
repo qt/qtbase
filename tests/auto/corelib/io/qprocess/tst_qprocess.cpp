@@ -32,6 +32,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QProcess>
 #include <QtCore/QDir>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QThread>
 #include <QtCore/QTemporaryDir>
@@ -420,7 +421,7 @@ void tst_QProcess::echoTest()
 
     process.write(input);
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     do {
         QVERIFY(process.isOpen());
@@ -479,7 +480,7 @@ void tst_QProcess::echoTest2()
     QVERIFY(spy1.isValid());
     QVERIFY(spy2.isValid());
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     forever {
         QTestEventLoop::instance().enterLoop(1);
@@ -2072,7 +2073,7 @@ void tst_QProcess::fileWriterProcess()
         stdinStr += line;
     }
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     const QString fileName = m_temporaryDir.path() + QLatin1String("/fileWriterProcess.txt");
     const QString binary = QDir::currentPath() + QLatin1String("/fileWriterProcess/fileWriterProcess");

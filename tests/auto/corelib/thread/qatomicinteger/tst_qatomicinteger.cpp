@@ -270,13 +270,13 @@ void tst_QAtomicIntegerXX::constructor()
     QFETCH(LargeInt, value);
 
     QAtomicInteger<T> atomic(value);
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QAtomicInteger<T> atomic2 = value;
-    QCOMPARE(atomic2.load(), T(value));
+    QCOMPARE(atomic2.loadRelaxed(), T(value));
 
-    QVERIFY(atomic.load() >= std::numeric_limits<T>::min());
-    QVERIFY(atomic.load() <= std::numeric_limits<T>::max());
+    QVERIFY(atomic.loadRelaxed() >= std::numeric_limits<T>::min());
+    QVERIFY(atomic.loadRelaxed() <= std::numeric_limits<T>::max());
 }
 
 void tst_QAtomicIntegerXX::copy()
@@ -285,17 +285,17 @@ void tst_QAtomicIntegerXX::copy()
 
     QAtomicInteger<T> atomic(value);
     QAtomicInteger<T> copy(atomic);
-    QCOMPARE(copy.load(), atomic.load());
+    QCOMPARE(copy.loadRelaxed(), atomic.loadRelaxed());
 
     QAtomicInteger<T> copy2 = atomic;
-    QCOMPARE(copy2.load(), atomic.load());
+    QCOMPARE(copy2.loadRelaxed(), atomic.loadRelaxed());
 
     // move
     QAtomicInteger<T> copy3(std::move(copy));
-    QCOMPARE(copy3.load(), atomic.load());
+    QCOMPARE(copy3.loadRelaxed(), atomic.loadRelaxed());
 
     QAtomicInteger<T> copy4 = std::move(copy2);
-    QCOMPARE(copy4.load(), atomic.load());
+    QCOMPARE(copy4.loadRelaxed(), atomic.loadRelaxed());
 }
 
 void tst_QAtomicIntegerXX::assign()
@@ -305,24 +305,24 @@ void tst_QAtomicIntegerXX::assign()
     QAtomicInteger<T> atomic(value);
     QAtomicInteger<T> copy;
     copy = atomic;
-    QCOMPARE(copy.load(), atomic.load());
+    QCOMPARE(copy.loadRelaxed(), atomic.loadRelaxed());
 
     QAtomicInteger<T> copy2;
     copy2 = atomic;  // operator=(const QAtomicInteger &)
-    QCOMPARE(copy2.load(), atomic.load());
+    QCOMPARE(copy2.loadRelaxed(), atomic.loadRelaxed());
 
     QAtomicInteger<T> copy2bis;
-    copy2bis = atomic.load(); // operator=(T)
-    QCOMPARE(copy2bis.load(), atomic.load());
+    copy2bis = atomic.loadRelaxed(); // operator=(T)
+    QCOMPARE(copy2bis.loadRelaxed(), atomic.loadRelaxed());
 
     // move
     QAtomicInteger<T> copy3;
     copy3 = std::move(copy);
-    QCOMPARE(copy3.load(), atomic.load());
+    QCOMPARE(copy3.loadRelaxed(), atomic.loadRelaxed());
 
     QAtomicInteger<T> copy4;
     copy4 = std::move(copy2);
-    QCOMPARE(copy4.load(), atomic.load());
+    QCOMPARE(copy4.loadRelaxed(), atomic.loadRelaxed());
 }
 
 void tst_QAtomicIntegerXX::operatorInteger()
@@ -331,7 +331,7 @@ void tst_QAtomicIntegerXX::operatorInteger()
 
     QAtomicInteger<T> atomic(value);
     T val2 = atomic;
-    QCOMPARE(val2, atomic.load());
+    QCOMPARE(val2, atomic.loadRelaxed());
     QCOMPARE(val2, T(value));
 }
 
@@ -346,7 +346,7 @@ void tst_QAtomicIntegerXX::loadAcquireStoreRelease()
     QCOMPARE(atomic.loadAcquire(), T(~value));
 
     atomic.storeRelease(value);
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 }
 
 void tst_QAtomicIntegerXX::refDeref()
@@ -364,16 +364,16 @@ void tst_QAtomicIntegerXX::refDeref()
     QAtomicInteger<T> atomic(value);
     if (!needToPreventOverflow) {
     QCOMPARE(atomic.ref(), (nextValue != 0));
-    QCOMPARE(atomic.load(), nextValue);
+    QCOMPARE(atomic.loadRelaxed(), nextValue);
     QCOMPARE(atomic.deref(), (value != 0));
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     if (!needToPreventUnderflow) {
     QCOMPARE(atomic.deref(), (prevValue != 0));
-    QCOMPARE(atomic.load(), prevValue);
+    QCOMPARE(atomic.loadRelaxed(), prevValue);
     QCOMPARE(atomic.ref(), (value != 0));
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     if (!needToPreventOverflow) {
     QCOMPARE(++atomic, nextValue);
@@ -392,7 +392,7 @@ void tst_QAtomicIntegerXX::refDeref()
     QCOMPARE(atomic--, T(value));
     QCOMPARE(atomic++, prevValue);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 }
 
 void tst_QAtomicIntegerXX::testAndSet()
@@ -402,16 +402,16 @@ void tst_QAtomicIntegerXX::testAndSet()
     QAtomicInteger<T> atomic(value);
 
     QVERIFY(atomic.testAndSetRelaxed(value, newValue));
-    QCOMPARE(atomic.load(), newValue);
+    QCOMPARE(atomic.loadRelaxed(), newValue);
     QVERIFY(!atomic.testAndSetRelaxed(value, newValue));
     QVERIFY(atomic.testAndSetRelaxed(newValue, value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QVERIFY(atomic.testAndSetAcquire(value, newValue));
-    QCOMPARE(atomic.load(), newValue);
+    QCOMPARE(atomic.loadRelaxed(), newValue);
     QVERIFY(!atomic.testAndSetAcquire(value, newValue));
     QVERIFY(atomic.testAndSetAcquire(newValue, value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QVERIFY(atomic.testAndSetRelease(value, newValue));
     QCOMPARE(atomic.loadAcquire(), newValue);
@@ -434,18 +434,18 @@ void tst_QAtomicIntegerXX::testAndSet3()
     QAtomicInteger<T> atomic(value);
 
     QVERIFY(atomic.testAndSetRelaxed(value, newValue, oldValue));
-    QCOMPARE(atomic.load(), newValue);
+    QCOMPARE(atomic.loadRelaxed(), newValue);
     QVERIFY(!atomic.testAndSetRelaxed(value, newValue, oldValue));
     QCOMPARE(oldValue, newValue);
     QVERIFY(atomic.testAndSetRelaxed(newValue, value, oldValue));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QVERIFY(atomic.testAndSetAcquire(value, newValue, oldValue));
-    QCOMPARE(atomic.load(), newValue);
+    QCOMPARE(atomic.loadRelaxed(), newValue);
     QVERIFY(!atomic.testAndSetAcquire(value, newValue, oldValue));
     QCOMPARE(oldValue, newValue);
     QVERIFY(atomic.testAndSetAcquire(newValue, value, oldValue));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QVERIFY(atomic.testAndSetRelease(value, newValue, oldValue));
     QCOMPARE(atomic.loadAcquire(), newValue);
@@ -469,14 +469,14 @@ void tst_QAtomicIntegerXX::fetchAndStore()
     QAtomicInteger<T> atomic(value);
 
     QCOMPARE(atomic.fetchAndStoreRelaxed(newValue), T(value));
-    QCOMPARE(atomic.load(), newValue);
+    QCOMPARE(atomic.loadRelaxed(), newValue);
     QCOMPARE(atomic.fetchAndStoreRelaxed(value), newValue);
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QCOMPARE(atomic.fetchAndStoreAcquire(newValue), T(value));
-    QCOMPARE(atomic.load(), newValue);
+    QCOMPARE(atomic.loadRelaxed(), newValue);
     QCOMPARE(atomic.fetchAndStoreAcquire(value), newValue);
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QCOMPARE(atomic.fetchAndStoreRelease(newValue), T(value));
     QCOMPARE(atomic.loadAcquire(), newValue);
@@ -509,29 +509,29 @@ void tst_QAtomicIntegerXX::fetchAndAdd()
 
     if (!needToPreventOverflow) {
     QCOMPARE(atomic.fetchAndAddRelaxed(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.loadRelaxed(), newValue1);
     QCOMPARE(atomic.fetchAndAddRelaxed(parcel2), newValue1);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     if (!needToPreventUnderflow) {
     QCOMPARE(atomic.fetchAndAddRelaxed(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.loadRelaxed(), newValue2);
     QCOMPARE(atomic.fetchAndAddRelaxed(parcel1), newValue2);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     if (!needToPreventOverflow) {
     QCOMPARE(atomic.fetchAndAddAcquire(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.loadRelaxed(), newValue1);
     QCOMPARE(atomic.fetchAndAddAcquire(parcel2), newValue1);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     if (!needToPreventUnderflow) {
     QCOMPARE(atomic.fetchAndAddAcquire(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.loadRelaxed(), newValue2);
     QCOMPARE(atomic.fetchAndAddAcquire(parcel1), newValue2);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     if (!needToPreventOverflow) {
     QCOMPARE(atomic.fetchAndAddRelease(parcel1), T(value));
@@ -590,29 +590,29 @@ void tst_QAtomicIntegerXX::fetchAndSub()
 
     if (!needToPreventUnderflow) {
     QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.loadRelaxed(), newValue1);
     QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), newValue1);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     if (!needToPreventOverflow) {
     QCOMPARE(atomic.fetchAndSubRelaxed(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.loadRelaxed(), newValue2);
     QCOMPARE(atomic.fetchAndSubRelaxed(parcel1), newValue2);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     if (!needToPreventUnderflow) {
     QCOMPARE(atomic.fetchAndSubAcquire(parcel1), T(value));
-    QCOMPARE(atomic.load(), newValue1);
+    QCOMPARE(atomic.loadRelaxed(), newValue1);
     QCOMPARE(atomic.fetchAndSubAcquire(parcel2), newValue1);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     if (!needToPreventOverflow) {
     QCOMPARE(atomic.fetchAndSubAcquire(parcel2), T(value));
-    QCOMPARE(atomic.load(), newValue2);
+    QCOMPARE(atomic.loadRelaxed(), newValue2);
     QCOMPARE(atomic.fetchAndSubAcquire(parcel1), newValue2);
     }
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     if (!needToPreventUnderflow) {
     QCOMPARE(atomic.fetchAndSubRelease(parcel1), T(value));
@@ -662,32 +662,32 @@ void tst_QAtomicIntegerXX::fetchAndOr()
 
     QCOMPARE(atomic.fetchAndOrRelaxed(zero), T(value));
     QCOMPARE(atomic.fetchAndOrRelaxed(one), T(value));
-    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.loadRelaxed(), T(value | 1));
     QCOMPARE(atomic.fetchAndOrRelaxed(minusOne), T(value | 1));
-    QCOMPARE(atomic.load(), minusOne);
+    QCOMPARE(atomic.loadRelaxed(), minusOne);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic.fetchAndOrAcquire(zero), T(value));
     QCOMPARE(atomic.fetchAndOrAcquire(one), T(value));
-    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.loadRelaxed(), T(value | 1));
     QCOMPARE(atomic.fetchAndOrAcquire(minusOne), T(value | 1));
-    QCOMPARE(atomic.load(), minusOne);
+    QCOMPARE(atomic.loadRelaxed(), minusOne);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic.fetchAndOrRelease(zero), T(value));
     QCOMPARE(atomic.fetchAndOrRelease(one), T(value));
-    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.loadRelaxed(), T(value | 1));
     QCOMPARE(atomic.fetchAndOrRelease(minusOne), T(value | 1));
-    QCOMPARE(atomic.load(), minusOne);
+    QCOMPARE(atomic.loadRelaxed(), minusOne);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic.fetchAndOrOrdered(zero), T(value));
     QCOMPARE(atomic.fetchAndOrOrdered(one), T(value));
-    QCOMPARE(atomic.load(), T(value | 1));
+    QCOMPARE(atomic.loadRelaxed(), T(value | 1));
     QCOMPARE(atomic.fetchAndOrOrdered(minusOne), T(value | 1));
-    QCOMPARE(atomic.load(), minusOne);
+    QCOMPARE(atomic.loadRelaxed(), minusOne);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic |= zero, T(value));
     QCOMPARE(atomic |= one, T(value | 1));
     QCOMPARE(atomic |= minusOne, minusOne);
@@ -703,37 +703,37 @@ void tst_QAtomicIntegerXX::fetchAndAnd()
     T minusOne = T(~0);
 
     QCOMPARE(atomic.fetchAndAndRelaxed(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndAndRelaxed(f), T(value));
-    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.loadRelaxed(), T(value & 0xf));
     QCOMPARE(atomic.fetchAndAndRelaxed(zero), T(value & 0xf));
-    QCOMPARE(atomic.load(), zero);
+    QCOMPARE(atomic.loadRelaxed(), zero);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic.fetchAndAndAcquire(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndAndAcquire(f), T(value));
-    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.loadRelaxed(), T(value & 0xf));
     QCOMPARE(atomic.fetchAndAndAcquire(zero), T(value & 0xf));
-    QCOMPARE(atomic.load(), zero);
+    QCOMPARE(atomic.loadRelaxed(), zero);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic.fetchAndAndRelease(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndAndRelease(f), T(value));
-    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.loadRelaxed(), T(value & 0xf));
     QCOMPARE(atomic.fetchAndAndRelease(zero), T(value & 0xf));
-    QCOMPARE(atomic.load(), zero);
+    QCOMPARE(atomic.loadRelaxed(), zero);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic.fetchAndAndOrdered(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndAndOrdered(f), T(value));
-    QCOMPARE(atomic.load(), T(value & 0xf));
+    QCOMPARE(atomic.loadRelaxed(), T(value & 0xf));
     QCOMPARE(atomic.fetchAndAndOrdered(zero), T(value & 0xf));
-    QCOMPARE(atomic.load(), zero);
+    QCOMPARE(atomic.loadRelaxed(), zero);
 
-    atomic.store(value);
+    atomic.storeRelaxed(value);
     QCOMPARE(atomic &= minusOne, T(value));
     QCOMPARE(atomic &= f, T(value & 0xf));
     QCOMPARE(atomic &= zero, zero);
@@ -749,48 +749,48 @@ void tst_QAtomicIntegerXX::fetchAndXor()
     T minusOne = T(~0);
 
     QCOMPARE(atomic.fetchAndXorRelaxed(zero), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorRelaxed(pattern), T(value));
-    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.loadRelaxed(), T(value ^ pattern));
     QCOMPARE(atomic.fetchAndXorRelaxed(pattern), T(value ^ pattern));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorRelaxed(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.loadRelaxed(), T(~value));
     QCOMPARE(atomic.fetchAndXorRelaxed(minusOne), T(~value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QCOMPARE(atomic.fetchAndXorAcquire(zero), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorAcquire(pattern), T(value));
-    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.loadRelaxed(), T(value ^ pattern));
     QCOMPARE(atomic.fetchAndXorAcquire(pattern), T(value ^ pattern));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorAcquire(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.loadRelaxed(), T(~value));
     QCOMPARE(atomic.fetchAndXorAcquire(minusOne), T(~value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QCOMPARE(atomic.fetchAndXorRelease(zero), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorRelease(pattern), T(value));
-    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.loadRelaxed(), T(value ^ pattern));
     QCOMPARE(atomic.fetchAndXorRelease(pattern), T(value ^ pattern));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorRelease(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.loadRelaxed(), T(~value));
     QCOMPARE(atomic.fetchAndXorRelease(minusOne), T(~value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QCOMPARE(atomic.fetchAndXorOrdered(zero), T(value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorOrdered(pattern), T(value));
-    QCOMPARE(atomic.load(), T(value ^ pattern));
+    QCOMPARE(atomic.loadRelaxed(), T(value ^ pattern));
     QCOMPARE(atomic.fetchAndXorOrdered(pattern), T(value ^ pattern));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
     QCOMPARE(atomic.fetchAndXorOrdered(minusOne), T(value));
-    QCOMPARE(atomic.load(), T(~value));
+    QCOMPARE(atomic.loadRelaxed(), T(~value));
     QCOMPARE(atomic.fetchAndXorOrdered(minusOne), T(~value));
-    QCOMPARE(atomic.load(), T(value));
+    QCOMPARE(atomic.loadRelaxed(), T(value));
 
     QCOMPARE(atomic ^= zero, T(value));
     QCOMPARE(atomic ^= pattern, T(value ^ pattern));

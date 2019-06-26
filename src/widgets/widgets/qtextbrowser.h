@@ -55,6 +55,7 @@ class Q_WIDGETS_EXPORT QTextBrowser : public QTextEdit
     Q_OBJECT
 
     Q_PROPERTY(QUrl source READ source WRITE setSource)
+    Q_PROPERTY(QTextDocument::ResourceType sourceType READ sourceType)
     Q_OVERRIDE(bool modified SCRIPTABLE false)
     Q_OVERRIDE(bool readOnly DESIGNABLE false SCRIPTABLE false)
     Q_OVERRIDE(bool undoRedoEnabled DESIGNABLE false SCRIPTABLE false)
@@ -67,6 +68,7 @@ public:
     virtual ~QTextBrowser();
 
     QUrl source() const;
+    QTextDocument::ResourceType sourceType() const;
 
     QStringList searchPaths() const;
     void setSearchPaths(const QStringList &paths);
@@ -88,7 +90,12 @@ public:
     void setOpenLinks(bool open);
 
 public Q_SLOTS:
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     virtual void setSource(const QUrl &name);
+    void setSource(const QUrl &name, QTextDocument::ResourceType type);
+#else
+    void setSource(const QUrl &name, QTextDocument::ResourceType type = QTextDocument::UnknownResource);
+#endif
     virtual void backward();
     virtual void forward();
     virtual void home();
@@ -112,6 +119,10 @@ protected:
     virtual void focusOutEvent(QFocusEvent *ev) override;
     virtual bool focusNextPrevChild(bool next) override;
     virtual void paintEvent(QPaintEvent *e) override;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    virtual
+#endif
+    void doSetSource(const QUrl &name, QTextDocument::ResourceType type = QTextDocument::UnknownResource);
 
 private:
     Q_DISABLE_COPY(QTextBrowser)

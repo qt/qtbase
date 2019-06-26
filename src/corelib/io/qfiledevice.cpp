@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QFileDevicePrivate::QFileDevicePrivate()
-    : fileEngine(0),
+    : fileEngine(nullptr),
       cachedSize(0),
       error(QFile::NoError), lastWasWrite(false)
 {
@@ -63,7 +63,7 @@ QFileDevicePrivate::QFileDevicePrivate()
 QFileDevicePrivate::~QFileDevicePrivate()
 {
     delete fileEngine;
-    fileEngine = 0;
+    fileEngine = nullptr;
 }
 
 QAbstractFileEngine * QFileDevicePrivate::engine() const

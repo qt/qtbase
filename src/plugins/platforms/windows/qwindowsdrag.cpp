@@ -627,7 +627,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                 m_chosenEffect = DROPEFFECT_COPY;
             HGLOBAL hData = GlobalAlloc(0, sizeof(DWORD));
             if (hData) {
-                DWORD *moveEffect = reinterpret_cast<DWORD *>(GlobalLock(hData));
+                auto *moveEffect = reinterpret_cast<DWORD *>(GlobalLock(hData));
                 *moveEffect = DROPEFFECT_MOVE;
                 GlobalUnlock(hData);
                 STGMEDIUM medium;
@@ -704,9 +704,9 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
 
     DWORD resultEffect;
     QWindowsDrag::m_canceled = false;
-    QWindowsOleDropSource *windowDropSource = new QWindowsOleDropSource(this);
+    auto *windowDropSource = new QWindowsOleDropSource(this);
     windowDropSource->createCursors();
-    QWindowsDropDataObject *dropDataObject = new QWindowsDropDataObject(dropData);
+    auto *dropDataObject = new QWindowsDropDataObject(dropData);
     const Qt::DropActions possibleActions = drag->supportedActions();
     const DWORD allowedEffects = translateToWinDragEffects(possibleActions);
     qCDebug(lcQpaMime) << '>' << __FUNCTION__ << "possible Actions=0x"

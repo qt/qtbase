@@ -695,7 +695,8 @@ static QStringList familyList(const QFontDef &req)
             if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
                 || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\''))))
                 str = str.mid(1, str.length() - 2);
-            family_list << str.toString();
+            if (!family_list.contains(str))
+                family_list << str.toString();
         }
     }
     // append the substitute list for each family in family_list
@@ -977,7 +978,7 @@ QFontEngine *loadSingleEngine(int script,
             if (!engine->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for \"%s\", script %d",
 +                        qPrintable(def.family), script);
-                if (engine->ref.load() == 0)
+                if (engine->ref.loadRelaxed() == 0)
                     delete engine;
                 return 0;
             }
@@ -2826,7 +2827,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         fe = QFontDatabase::findFont(req, script);
         if (fe) {
             if (fe->type() == QFontEngine::Box && !req.families.at(0).isEmpty()) {
-                if (fe->ref.load() == 0)
+                if (fe->ref.loadRelaxed() == 0)
                     delete fe;
                 fe = 0;
             } else {

@@ -2181,8 +2181,8 @@ public:
     void updatePeak()
     {
         forever {
-            const int localPeak = peakInstanceCount.load();
-            const int localCurrent = currentInstanceCount.load();
+            const int localPeak = peakInstanceCount.loadRelaxed();
+            const int localCurrent = currentInstanceCount.loadRelaxed();
             if (localCurrent <= localPeak)
                 break;
             if (peakInstanceCount.testAndSetOrdered(localPeak, localCurrent))
@@ -2220,35 +2220,35 @@ void tst_QtConcurrentMap::throttling()
     const int allowedTemporaries = QThread::idealThreadCount() * 40;
 
     {
-        currentInstanceCount.store(0);
-        peakInstanceCount.store(0);
+        currentInstanceCount.storeRelaxed(0);
+        peakInstanceCount.storeRelaxed(0);
 
         QList<InstanceCounter> instances;
         for (int i = 0; i < itemcount; ++i)
             instances.append(InstanceCounter());
 
-        QCOMPARE(currentInstanceCount.load(), itemcount);
+        QCOMPARE(currentInstanceCount.loadRelaxed(), itemcount);
 
         int results = QtConcurrent::blockingMappedReduced(instances, slowMap, fastReduce);
         QCOMPARE(results, itemcount);
-        QCOMPARE(currentInstanceCount.load(), itemcount);
-        QVERIFY(peakInstanceCount.load() < itemcount + allowedTemporaries);
+        QCOMPARE(currentInstanceCount.loadRelaxed(), itemcount);
+        QVERIFY(peakInstanceCount.loadRelaxed() < itemcount + allowedTemporaries);
     }
 
     {
-        QCOMPARE(currentInstanceCount.load(), 0);
-        peakInstanceCount.store(0);
+        QCOMPARE(currentInstanceCount.loadRelaxed(), 0);
+        peakInstanceCount.storeRelaxed(0);
 
         QList<InstanceCounter> instances;
         for (int i = 0; i < itemcount; ++i)
             instances.append(InstanceCounter());
 
-        QCOMPARE(currentInstanceCount.load(), itemcount);
+        QCOMPARE(currentInstanceCount.loadRelaxed(), itemcount);
         int results = QtConcurrent::blockingMappedReduced(instances, fastMap, slowReduce);
 
         QCOMPARE(results, itemcount);
-        QCOMPARE(currentInstanceCount.load(), itemcount);
-        QVERIFY(peakInstanceCount.load() < itemcount + allowedTemporaries);
+        QCOMPARE(currentInstanceCount.loadRelaxed(), itemcount);
+        QVERIFY(peakInstanceCount.loadRelaxed() < itemcount + allowedTemporaries);
     }
 }
 
@@ -2380,8 +2380,8 @@ InstanceCounter ic_fn(const InstanceCounter & ic)
 // assigned over with operator ==
 void tst_QtConcurrentMap::qFutureAssignmentLeak()
 {
-    currentInstanceCount.store(0);
-    peakInstanceCount.store(0);
+    currentInstanceCount.storeRelaxed(0);
+    peakInstanceCount.storeRelaxed(0);
     QFuture<InstanceCounter> future;
     {
         QList<InstanceCounter> list;
@@ -2400,9 +2400,9 @@ void tst_QtConcurrentMap::qFutureAssignmentLeak()
     // Use QTRY_COMPARE because QtConcurrent::ThreadEngine::asynchronousFinish()
     // deletes its internals after signaling finished, so it might still be holding
     // on to copies of InstanceCounter for a short while.
-    QTRY_COMPARE(currentInstanceCount.load(), 1000);
+    QTRY_COMPARE(currentInstanceCount.loadRelaxed(), 1000);
     future = QFuture<InstanceCounter>();
-    QTRY_COMPARE(currentInstanceCount.load(), 0);
+    QTRY_COMPARE(currentInstanceCount.loadRelaxed(), 0);
 }
 
 inline void increment(int &num)

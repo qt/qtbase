@@ -94,17 +94,16 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
     command << "lpstat" << "-d";
     QString output = getOutputFromCommand(command);
 
-    QRegExp noDefaultReg("[^:]*no .*default");
-    int pos = noDefaultReg.indexIn(output);
-    if (pos >= 0) {
+    QRegularExpression noDefaultReg("[^:]*no .*default");
+    QRegularExpressionMatch match;
+    match = noDefaultReg.match(output);
+    if (match.hasMatch())
         return QString();
-    }
 
-    QRegExp defaultReg("default.*: *([a-zA-Z0-9_-]+)");
-    defaultReg.indexIn(output);
-    printer = defaultReg.cap(1);
+    QRegularExpression defaultReg("default.*: *([a-zA-Z0-9_-]+)");
+    match = defaultReg.match(output);
+    printer = match.captured(1);
 #endif // Q_OS_UNIX
-
     return printer;
 }
 
@@ -121,10 +120,12 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     QString output = getOutputFromCommand(command);
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
-    QRegExp reg("^[Pp]rinter ([.a-zA-Z0-9-_@]+)");
+    QRegularExpression reg("^[Pp]rinter ([.a-zA-Z0-9-_@]+)");
+    QRegularExpressionMatch match;
     for (int c = 0; c < list.size(); ++c) {
-        if (reg.indexIn(list[c]) >= 0) {
-            QString printer = reg.cap(1);
+        match = reg.match(list[c]);
+        if (match.hasMatch()) {
+            QString printer = match.captured(1);
             ans << printer;
         }
     }

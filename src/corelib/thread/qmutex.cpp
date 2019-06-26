@@ -179,7 +179,7 @@ public:
 */
 QMutex::QMutex(RecursionMode mode)
 {
-    d_ptr.store(mode == Recursive ? new QRecursiveMutexPrivate : 0);
+    d_ptr.storeRelaxed(mode == Recursive ? new QRecursiveMutexPrivate : 0);
 }
 
 /*!
@@ -189,12 +189,12 @@ QMutex::QMutex(RecursionMode mode)
 */
 QMutex::~QMutex()
 {
-    QMutexData *d = d_ptr.load();
+    QMutexData *d = d_ptr.loadRelaxed();
     if (isRecursive()) {
         delete static_cast<QRecursiveMutexPrivate *>(d);
     } else if (d) {
 #ifndef QT_LINUX_FUTEX
-        if (d != dummyLocked() && static_cast<QMutexPrivate *>(d)->possiblyUnlocked.load()
+        if (d != dummyLocked() && static_cast<QMutexPrivate *>(d)->possiblyUnlocked.loadRelaxed()
             && tryLock()) {
             unlock();
             return;
@@ -517,7 +517,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         }
 
         QMutexPrivate *d = static_cast<QMutexPrivate *>(copy);
-        if (timeout == 0 && !d->possiblyUnlocked.load())
+        if (timeout == 0 && !d->possiblyUnlocked.loadRelaxed())
             return false;
 
         // At this point we have a pointer to a QMutexPrivate. But the other thread
@@ -541,7 +541,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         // is set to the BigNumber magic value set in unlockInternal()
         int old_waiters;
         do {
-            old_waiters = d->waiters.load();
+            old_waiters = d->waiters.loadRelaxed();
             if (old_waiters == -QMutexPrivate::BigNumber) {
                 // we are unlocking, and the thread that unlocks is about to change d to 0
                 // we try to acquire the mutex by changing to dummyLocked()
@@ -550,7 +550,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
                     d->deref();
                     return true;
                 } else {
-                    Q_ASSERT(d != d_ptr.load()); //else testAndSetAcquire should have succeeded
+                    Q_ASSERT(d != d_ptr.loadRelaxed()); //else testAndSetAcquire should have succeeded
                     // Mutex is likely to bo 0, we should continue the outer-loop,
                     //  set old_waiters to the magic value of BigNumber
                     old_waiters = QMutexPrivate::BigNumber;
@@ -563,7 +563,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             // The mutex was unlocked before we incremented waiters.
             if (old_waiters != QMutexPrivate::BigNumber) {
                 //we did not break the previous loop
-                Q_ASSERT(d->waiters.load() >= 1);
+                Q_ASSERT(d->waiters.loadRelaxed() >= 1);
                 d->waiters.deref();
             }
             d->deref();
@@ -572,11 +572,11 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
         if (d->wait(timeout)) {
             // reset the possiblyUnlocked flag if needed (and deref its corresponding reference)
-            if (d->possiblyUnlocked.load() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
+            if (d->possiblyUnlocked.loadRelaxed() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
                 d->deref();
             d->derefWaiters(1);
             //we got the lock. (do not deref)
-            Q_ASSERT(d == d_ptr.load());
+            Q_ASSERT(d == d_ptr.loadRelaxed());
             return true;
         } else {
             Q_ASSERT(timeout >= 0);
@@ -593,7 +593,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             return false;
         }
     }
-    Q_ASSERT(d_ptr.load() != 0);
+    Q_ASSERT(d_ptr.loadRelaxed() != 0);
     return true;
 }
 
@@ -618,7 +618,7 @@ void QBasicMutex::unlockInternal() noexcept
         //there is no one waiting on this mutex anymore, set the mutex as unlocked (d = 0)
         if (d_ptr.testAndSetRelease(d, 0)) {
             // reset the possiblyUnlocked flag if needed (and deref its corresponding reference)
-            if (d->possiblyUnlocked.load() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
+            if (d->possiblyUnlocked.loadRelaxed() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
                 d->deref();
         }
         d->derefWaiters(0);
@@ -657,20 +657,20 @@ QMutexPrivate *QMutexPrivate::allocate()
     int i = freelist()->next();
     QMutexPrivate *d = &(*freelist())[i];
     d->id = i;
-    Q_ASSERT(d->refCount.load() == 0);
+    Q_ASSERT(d->refCount.loadRelaxed() == 0);
     Q_ASSERT(!d->recursive);
-    Q_ASSERT(!d->possiblyUnlocked.load());
-    Q_ASSERT(d->waiters.load() == 0);
-    d->refCount.store(1);
+    Q_ASSERT(!d->possiblyUnlocked.loadRelaxed());
+    Q_ASSERT(d->waiters.loadRelaxed() == 0);
+    d->refCount.storeRelaxed(1);
     return d;
 }
 
 void QMutexPrivate::release()
 {
     Q_ASSERT(!recursive);
-    Q_ASSERT(refCount.load() == 0);
-    Q_ASSERT(!possiblyUnlocked.load());
-    Q_ASSERT(waiters.load() == 0);
+    Q_ASSERT(refCount.loadRelaxed() == 0);
+    Q_ASSERT(!possiblyUnlocked.loadRelaxed());
+    Q_ASSERT(waiters.loadRelaxed() == 0);
     freelist()->release(id);
 }
 
@@ -680,7 +680,7 @@ void QMutexPrivate::derefWaiters(int value) noexcept
     int old_waiters;
     int new_waiters;
     do {
-        old_waiters = waiters.load();
+        old_waiters = waiters.loadRelaxed();
         new_waiters = old_waiters;
         if (new_waiters < 0) {
             new_waiters += QMutexPrivate::BigNumber;
@@ -696,7 +696,7 @@ void QMutexPrivate::derefWaiters(int value) noexcept
 inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     Qt::HANDLE self = QThread::currentThreadId();
-    if (owner.load() == self) {
+    if (owner.loadRelaxed() == self) {
         ++count;
         Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
         return true;
@@ -709,7 +709,7 @@ inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     }
 
     if (success)
-        owner.store(self);
+        owner.storeRelaxed(self);
     return success;
 }
 
@@ -721,7 +721,7 @@ inline void QRecursiveMutexPrivate::unlock() noexcept
     if (count > 0) {
         count--;
     } else {
-        owner.store(0);
+        owner.storeRelaxed(0);
         mutex.QBasicMutex::unlock();
     }
 }

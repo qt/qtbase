@@ -41,6 +41,7 @@ private slots:
     void enabledPropagation();
     void visiblePropagation();
     void exclusive();
+    void exclusiveOptional();
     void separators();
     void testActionInTwoQActionGroup();
     void unCheckCurrentAction();
@@ -148,6 +149,52 @@ void tst_QActionGroup::exclusive()
     actTwo->setChecked( true );
     QVERIFY( !actOne->isChecked() );
     QVERIFY( actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+}
+
+void tst_QActionGroup::exclusiveOptional()
+{
+    QActionGroup group(0);
+    group.setExclusive(true);
+    QVERIFY( group.isExclusive() );
+
+    QAction* actOne = new QAction( &group );
+    actOne->setCheckable( true );
+    QAction* actTwo = new QAction( &group );
+    actTwo->setCheckable( true );
+    QAction* actThree = new QAction( &group );
+    actThree->setCheckable( true );
+
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actOne->trigger();
+    QVERIFY( actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actOne->trigger();
+    QVERIFY( actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    group.setExclusionPolicy( QActionGroup::ExclusionPolicy::ExclusiveOptional );
+    QVERIFY( group.isExclusive() );
+
+    actOne->trigger();
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actTwo->trigger();
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actTwo->trigger();
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
     QVERIFY( !actThree->isChecked() );
 }
 

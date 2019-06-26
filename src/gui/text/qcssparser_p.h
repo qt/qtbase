@@ -196,6 +196,7 @@ enum Property {
     LineHeight,
     QtLineHeightType,
     FontKerning,
+    QtForegroundTextureCacheKey,
     NumProperties
 };
 

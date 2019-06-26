@@ -849,7 +849,7 @@ QCborContainerPrivate *QCborContainerPrivate::clone(QCborContainerPrivate *d, qs
 
 QCborContainerPrivate *QCborContainerPrivate::detach(QCborContainerPrivate *d, qsizetype reserved)
 {
-    if (!d || d->ref.load() != 1)
+    if (!d || d->ref.loadRelaxed() != 1)
         return clone(d, reserved);
     return d;
 }
@@ -884,12 +884,12 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
 
         // detect self-assignment
         if (Q_UNLIKELY(this == value.container)) {
-            Q_ASSERT(ref.load() >= 2);
+            Q_ASSERT(ref.loadRelaxed() >= 2);
             if (disp == MoveContainer)
                 ref.deref();    // not deref() because it can't drop to 0
             QCborContainerPrivate *d = QCborContainerPrivate::clone(this);
             d->elements.detach();
-            d->ref.store(1);
+            d->ref.storeRelaxed(1);
             e.container = d;
         } else {
             e.container = value.container;
@@ -1368,7 +1368,7 @@ static Element decodeBasicValueFromCbor(QCborStreamReader &reader)
 static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &reader)
 {
     auto d = new QCborContainerPrivate;
-    d->ref.store(1);
+    d->ref.storeRelaxed(1);
     d->decodeFromCbor(reader);
     return d;
 }
@@ -1643,7 +1643,7 @@ QCborValue::QCborValue(const QByteArray &ba)
     : n(0), container(new QCborContainerPrivate), t(ByteArray)
 {
     container->appendByteData(ba.constData(), ba.size(), t);
-    container->ref.store(1);
+    container->ref.storeRelaxed(1);
 }
 
 /*!
@@ -1656,7 +1656,7 @@ QCborValue::QCborValue(const QString &s)
     : n(0), container(new QCborContainerPrivate), t(String)
 {
     container->append(s);
-    container->ref.store(1);
+    container->ref.storeRelaxed(1);
 }
 
 /*!
@@ -1671,7 +1671,7 @@ QCborValue::QCborValue(QLatin1String s)
     : n(0), container(new QCborContainerPrivate), t(String)
 {
     container->append(s);
-    container->ref.store(1);
+    container->ref.storeRelaxed(1);
 }
 
 /*!
@@ -1719,7 +1719,7 @@ QCborValue::QCborValue(const QCborMap &m)
 QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
     : n(-1), container(new QCborContainerPrivate), t(Tag)
 {
-    container->ref.store(1);
+    container->ref.storeRelaxed(1);
     container->append(t);
     container->append(tv);
 }

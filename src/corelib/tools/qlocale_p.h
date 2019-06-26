@@ -250,14 +250,14 @@ public:
         if (qIsInf(d))
             return float(d);
         if (std::fabs(d) > std::numeric_limits<float>::max()) {
-            if (ok != nullptr)
+            if (ok)
                 *ok = false;
             const float huge = std::numeric_limits<float>::infinity();
             return d < 0 ? -huge : huge;
         }
         if (d != 0 && float(d) == 0) {
             // Values that underflow double already failed. Match them:
-            if (ok != 0)
+            if (ok)
                 *ok = false;
             return 0;
         }
@@ -337,7 +337,7 @@ public:
     {
         QLocalePrivate *retval = new QLocalePrivate;
         retval->m_data = data;
-        retval->ref.store(0);
+        retval->ref.storeRelaxed(0);
         retval->m_numberOptions = numberOptions;
         return retval;
     }

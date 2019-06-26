@@ -377,7 +377,7 @@ static int recode(QString &result, const ushort *begin, const ushort *end, QUrl:
 {
     const int origSize = result.size();
     const ushort *input = begin;
-    ushort *output = 0;
+    ushort *output = nullptr;
 
     EncodingAction action = EncodeCharacter;
     for ( ; input != end; ++input) {

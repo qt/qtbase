@@ -530,6 +530,24 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QString QStringView::arg(Args &&...args) const
+    \fn QString QLatin1String::arg(Args &&...args) const
+    \since 5.14
+
+    Replaces occurrences of \c{%N} in this string with the corresponding
+    argument from \a args. The arguments are not positional: the first of
+    the \a args replaces the \c{%N} with the lowest \c{N} (all of them), the
+    second of the \a args the \c{%N} with the next-lowest \c{N} etc.
+
+    \c Args can consist of anything that implicitly converts to QStringView
+    or QLatin1String.
+
+    In addition, the following types are also supported: QChar, QLatin1Char.
+
+    \sa QString::arg()
+*/
+
+/*!
     \fn QChar QStringView::front() const
 
     Returns the first character in the string. Same as first().
@@ -752,6 +770,24 @@ QT_BEGIN_NAMESPACE
     case-sensitive; otherwise the search is case-insensitive.
 
     \sa indexOf()
+*/
+
+/*!
+    \fn qsizetype QStringView::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::lastIndexOf(QLatin1String l1, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns the index position of the last occurrence of the string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively, in this string-view,
+    searching backward from index position \a from. If \a from is -1 (default),
+    the search starts at the last character; if \a from is -2, at the next to last
+    character and so on. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa QString::lastIndexOf()
 */
 
 /*!

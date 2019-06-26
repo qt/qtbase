@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
     Creates an empty array.
  */
 QJsonArray::QJsonArray()
-    : d(0), a(0)
+    : d(nullptr), a(nullptr)
 {
 }
 
@@ -168,8 +168,8 @@ QJsonArray::QJsonArray(QJsonPrivate::Data *data, QJsonPrivate::Array *array)
  */
 void QJsonArray::initialize()
 {
-    d = 0;
-    a = 0;
+    d = nullptr;
+    a = nullptr;
 }
 
 /*!
@@ -1226,7 +1226,7 @@ bool QJsonArray::detach2(uint reserve)
         d->ref.ref();
         return true;
     }
-    if (reserve == 0 && d->ref.load() == 1)
+    if (reserve == 0 && d->ref.loadRelaxed() == 1)
         return true;
 
     QJsonPrivate::Data *x = d->clone(a, reserve);

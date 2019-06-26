@@ -160,6 +160,7 @@ private slots:
     void selectionChanged();
 #ifndef QT_NO_CLIPBOARD
     void copyPasteBackgroundImage();
+    void copyPasteForegroundImage();
 #endif
     void setText();
     void cursorRect();
@@ -1903,6 +1904,36 @@ void tst_QTextEdit::copyPasteBackgroundImage()
     QVERIFY(ba.textureImage().cacheKey() == bb.textureImage().cacheKey() ||
             ba.texture().cacheKey() == bb.texture().cacheKey());
     QFile::remove(QLatin1String("foo.png"));
+}
+
+void tst_QTextEdit::copyPasteForegroundImage()
+{
+    ed->clear();
+
+    QPixmap pix(20, 20);
+    pix.fill(Qt::blue);
+
+    QTextCharFormat fmt;
+    {
+        QBrush textureBrush;
+        {
+            textureBrush.setTexture(pix);
+        }
+        textureBrush.setStyle(Qt::TexturePattern);
+        fmt.setForeground(textureBrush);
+    }
+    ed->textCursor().insertText("Foobar", fmt);
+
+    ed->moveCursor(QTextCursor::Start);
+    ed->moveCursor(QTextCursor::End, QTextCursor::KeepAnchor);
+
+    ed->copy();
+    ed->clear();
+    ed->paste();
+
+    QBrush brush = ed->textCursor().charFormat().foreground();
+    QCOMPARE(brush.style(), Qt::TexturePattern);
+    QCOMPARE(brush.texture().cacheKey(), pix.cacheKey());
 }
 #endif
 

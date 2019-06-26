@@ -424,7 +424,7 @@ struct QBasicAtomicBitField {
     bool allocateSpecific(int which) noexcept
     {
         QBasicAtomicInteger<uint> &entry = data[which / BitsPerInt];
-        const uint old = entry.load();
+        const uint old = entry.loadRelaxed();
         const uint bit = 1U << (which % BitsPerInt);
         return !(old & bit) // wasn't taken
             && entry.testAndSetRelaxed(old, old | bit); // still wasn't taken
@@ -445,10 +445,10 @@ struct QBasicAtomicBitField {
 
         // Then again, this should never execute many iterations, so
         // leave like this for now:
-        for (uint i = next.load(); i < NumBits; ++i) {
+        for (uint i = next.loadRelaxed(); i < NumBits; ++i) {
             if (allocateSpecific(i)) {
                 // remember next (possibly) free id:
-                const uint oldNext = next.load();
+                const uint oldNext = next.loadRelaxed();
                 next.testAndSetRelaxed(oldNext, qMax(i + 1, oldNext));
                 return i;
             }

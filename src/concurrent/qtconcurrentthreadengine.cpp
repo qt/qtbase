@@ -91,7 +91,7 @@ ThreadEngineBarrier::ThreadEngineBarrier()
 void ThreadEngineBarrier::acquire()
 {
     forever {
-        int localCount = count.load();
+        int localCount = count.loadRelaxed();
         if (localCount < 0) {
             if (count.testAndSetOrdered(localCount, localCount -1))
                 return;
@@ -105,7 +105,7 @@ void ThreadEngineBarrier::acquire()
 int ThreadEngineBarrier::release()
 {
     forever {
-        int localCount = count.load();
+        int localCount = count.loadRelaxed();
         if (localCount == -1) {
             if (count.testAndSetOrdered(-1, 0)) {
                 semaphore.release();
@@ -125,7 +125,7 @@ int ThreadEngineBarrier::release()
 void ThreadEngineBarrier::wait()
 {
     forever {
-        int localCount = count.load();
+        int localCount = count.loadRelaxed();
         if (localCount == 0)
             return;
 
@@ -139,7 +139,7 @@ void ThreadEngineBarrier::wait()
 
 int ThreadEngineBarrier::currentCount()
 {
-    return count.load();
+    return count.loadRelaxed();
 }
 
 // releases a thread, unless this is the last thread.
@@ -147,7 +147,7 @@ int ThreadEngineBarrier::currentCount()
 bool ThreadEngineBarrier::releaseUnlessLast()
 {
     forever {
-        int localCount = count.load();
+        int localCount = count.loadRelaxed();
         if (qAbs(localCount) == 1) {
             return false;
         } else if (localCount < 0) {

@@ -63,7 +63,7 @@ void tst_QAbstractItemModelTester::stringListModel()
     model.setStringList(QStringList() << "a" << "e" << "plop" << "b" << "c");
 
     proxy.setDynamicSortFilter(true);
-    proxy.setFilterRegExp(QRegExp("[^b]"));
+    proxy.setFilterRegularExpression(QRegularExpression("[^b]"));
 }
 
 void tst_QAbstractItemModelTester::treeWidgetModel()

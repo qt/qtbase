@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
     The default is to create a Null value.
  */
 QJsonValue::QJsonValue(Type type)
-    : ui(0), d(0), t(type)
+    : ui(0), d(nullptr), t(type)
 {
 }
 
@@ -120,7 +120,7 @@ QJsonValue::QJsonValue(Type type)
     \internal
  */
 QJsonValue::QJsonValue(QJsonPrivate::Data *data, QJsonPrivate::Base *base, const QJsonPrivate::Value &v)
-    : d(0)
+    : d(nullptr)
 {
     t = (Type)(uint)v.type;
     switch (t) {
@@ -154,7 +154,7 @@ QJsonValue::QJsonValue(QJsonPrivate::Data *data, QJsonPrivate::Base *base, const
     Creates a value of type Bool, with value \a b.
  */
 QJsonValue::QJsonValue(bool b)
-    : d(0), t(Bool)
+    : d(nullptr), t(Bool)
 {
     this->b = b;
 }
@@ -163,7 +163,7 @@ QJsonValue::QJsonValue(bool b)
     Creates a value of type Double, with value \a n.
  */
 QJsonValue::QJsonValue(double n)
-    : d(0), t(Double)
+    : d(nullptr), t(Double)
 {
     this->dbl = n;
 }
@@ -173,7 +173,7 @@ QJsonValue::QJsonValue(double n)
     Creates a value of type Double, with value \a n.
  */
 QJsonValue::QJsonValue(int n)
-    : d(0), t(Double)
+    : d(nullptr), t(Double)
 {
     this->dbl = n;
 }
@@ -185,7 +185,7 @@ QJsonValue::QJsonValue(int n)
     If you pass in values outside this range expect a loss of precision to occur.
  */
 QJsonValue::QJsonValue(qint64 n)
-    : d(0), t(Double)
+    : d(nullptr), t(Double)
 {
     this->dbl = double(n);
 }
@@ -194,7 +194,7 @@ QJsonValue::QJsonValue(qint64 n)
     Creates a value of type String, with value \a s.
  */
 QJsonValue::QJsonValue(const QString &s)
-    : d(0), t(String)
+    : d(nullptr), t(String)
 {
     stringDataFromQStringHelper(s);
 }
@@ -221,7 +221,7 @@ void QJsonValue::stringDataFromQStringHelper(const QString &string)
     Creates a value of type String, with value \a s.
  */
 QJsonValue::QJsonValue(QLatin1String s)
-    : d(0), t(String)
+    : d(nullptr), t(String)
 {
     // ### FIXME: Avoid creating the temp QString below
     QString str(s);

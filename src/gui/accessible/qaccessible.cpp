@@ -350,6 +350,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value MenuItem         An item in a menu or menu bar.
     \value NoRole           The object has no role. This usually indicates an invalid object.
     \value Note             A section whose content is parenthetic or ancillary to the main content of the resource.
+    \value Notification     An object that represents a notification (e.g. in the system tray). This role only has an effect on Linux.
     \value PageTab          A page tab that the user can select to switch to a different page in a dialog.
     \value PageTabList      A list of page tabs.
     \value Paragraph        A paragraph of text (usually found in documents).

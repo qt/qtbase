@@ -40,6 +40,7 @@
 #include <qhostinfo.h>
 #include <qtcpsocket.h>
 #include <qmap.h>
+#include <qelapsedtimer.h>
 #include <qnetworkdatagram.h>
 #include <QNetworkProxy>
 #include <QNetworkInterface>
@@ -922,7 +923,7 @@ void tst_QUdpSocket::performance()
     client.connectToHost(serverAddress, server.localPort());
     QVERIFY(client.waitForConnected(10000));
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     qint64 nbytes = 0;

@@ -251,6 +251,7 @@ struct QTextHtmlParserNode {
     void setListStyle(const QVector<QCss::Value> &cssValues);
 #endif
 
+    void applyForegroundImage(qint64 cacheKey, const QTextDocument *resourceProvider);
     void applyBackgroundImage(const QString &url, const QTextDocument *resourceProvider);
 
     bool hasOnlyWhitespace() const;

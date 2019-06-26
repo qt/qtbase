@@ -80,13 +80,9 @@ qint64 DynamicTreeModel::findParentId(qint64 searchId) const
     if (searchId <= 0)
         return -1;
 
-    QHashIterator<qint64, QList<QList<qint64> > > i(m_childItems);
-    while (i.hasNext()) {
-        i.next();
-        QListIterator<QList<qint64> > j(i.value());
-        while (j.hasNext()) {
-            QList<qint64> l = j.next();
-            if (l.contains(searchId))
+    for (auto i = m_childItems.cbegin(), end = m_childItems.cend(); i != end; ++i) {
+        for (const auto &list : i.value()) {
+            if (list.contains(searchId))
                 return i.key();
         }
     }
@@ -163,13 +159,12 @@ ModelChangeCommand::ModelChangeCommand(DynamicTreeModel *model, QObject *parent)
 {
 }
 
-QModelIndex ModelChangeCommand::findIndex(QList<int> rows)
+QModelIndex ModelChangeCommand::findIndex(const QList<int> &rows) const
 {
     const int col = 0;
     QModelIndex parent = QModelIndex();
-    QListIterator<int> i(rows);
-    while (i.hasNext()) {
-        parent = m_model->index(i.next(), col, parent);
+    for (int row : rows) {
+        parent = m_model->index(row, col, parent);
         if (!parent.isValid())
             qFatal("%s: parent must be valid", Q_FUNC_INFO);
     }

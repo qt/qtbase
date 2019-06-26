@@ -45,6 +45,8 @@
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver));
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QPalette;
@@ -82,9 +84,10 @@ public:
 
 private:
     mutable QPalette *m_systemPalette;
+    QMacNotificationObserver m_systemColorObserver;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
-    QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver) *m_appearanceObserver;
+    QMacKeyValueObserver m_appearanceObserver;
 };
 
 QT_END_NAMESPACE

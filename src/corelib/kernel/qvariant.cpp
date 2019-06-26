@@ -119,19 +119,19 @@ namespace { // annonymous used to hide QVariant handlers
 static void construct(QVariant::Private *x, const void *copy)
 {
     QVariantConstructor<CoreTypesFilter> constructor(x, copy);
-    QMetaTypeSwitcher::switcher<void>(constructor, x->type, 0);
+    QMetaTypeSwitcher::switcher<void>(constructor, x->type);
 }
 
 static void clear(QVariant::Private *d)
 {
     QVariantDestructor<CoreTypesFilter> cleaner(d);
-    QMetaTypeSwitcher::switcher<void>(cleaner, d->type, 0);
+    QMetaTypeSwitcher::switcher<void>(cleaner, d->type);
 }
 
 static bool isNull(const QVariant::Private *d)
 {
     QVariantIsNull<CoreTypesFilter> isNull(d);
-    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, 0);
+    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type);
 }
 
 /*!
@@ -143,7 +143,7 @@ static bool isNull(const QVariant::Private *d)
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
     QVariantComparator<CoreTypesFilter> comparator(a, b);
-    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
+    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type);
 }
 
 /*!
@@ -1401,7 +1401,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
     QVariantDebugStream<CoreTypesFilter> stream(dbg, d);
-    QMetaTypeSwitcher::switcher<void>(stream, d->type, 0);
+    QMetaTypeSwitcher::switcher<void>(stream, d->type);
 }
 #endif
 
@@ -1410,16 +1410,16 @@ const QVariant::Handler qt_kernel_variant_handler = {
     clear,
     isNull,
 #ifndef QT_NO_DATASTREAM
-    0,
-    0,
+    nullptr,
+    nullptr,
 #endif
     compare,
     convert,
-    0,
+    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else
-    0
+    nullptr
 #endif
 };
 
@@ -1436,16 +1436,16 @@ const QVariant::Handler qt_dummy_variant_handler = {
     dummyClear,
     dummyIsNull,
 #ifndef QT_NO_DATASTREAM
-    0,
-    0,
+    nullptr,
+    nullptr,
 #endif
     dummyCompare,
     dummyConvert,
-    0,
+    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     dummyStreamDebug
 #else
-    0
+    nullptr
 #endif
 };
 
@@ -1555,16 +1555,16 @@ const QVariant::Handler qt_custom_variant_handler = {
     customClear,
     customIsNull,
 #ifndef QT_NO_DATASTREAM
-    0,
-    0,
+    nullptr,
+    nullptr,
 #endif
     customCompare,
     customConvert,
-    0,
+    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     customStreamDebug
 #else
-    0
+    nullptr
 #endif
 };
 
@@ -2125,7 +2125,7 @@ QVariant::QVariant(const char *val)
 */
 
 QVariant::QVariant(Type type)
-{ create(type, 0); }
+{ create(type, nullptr); }
 QVariant::QVariant(int typeId, const void *copy)
 { create(typeId, copy); d.is_null = false; }
 
@@ -2366,7 +2366,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
 
 void QVariant::detach()
 {
-    if (!d.is_shared || d.data.shared->ref.load() == 1)
+    if (!d.is_shared || d.data.shared->ref.loadRelaxed() == 1)
         return;
 
     Private dd;
@@ -2667,7 +2667,7 @@ inline T qVariantToHelper(const QVariant::Private &d, const HandlersManager &han
             return ret;
     }
 
-    handlerManager[d.type]->convert(&d, targetType, &ret, 0);
+    handlerManager[d.type]->convert(&d, targetType, &ret, nullptr);
     return ret;
 }
 
@@ -3217,7 +3217,7 @@ bool QVariant::toBool() const
         return d.data.b;
 
     bool res = false;
-    handlerManager[d.type]->convert(&d, Bool, &res, 0);
+    handlerManager[d.type]->convert(&d, Bool, &res, nullptr);
 
     return res;
 }
@@ -3735,7 +3735,7 @@ bool QVariant::convert(int targetTypeId)
     if (!oldValue.canConvert(targetTypeId))
         return false;
 
-    create(targetTypeId, 0);
+    create(targetTypeId, nullptr);
     // Fail if the value is not initialized or was forced null by a previous failed convert.
     if (oldValue.d.is_null && oldValue.d.type != QMetaType::Nullptr)
         return false;
@@ -3760,7 +3760,7 @@ bool QVariant::convert(int targetTypeId)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    return handlerManager[type]->convert(&d, type, ptr, 0);
+    return handlerManager[type]->convert(&d, type, ptr, nullptr);
 }
 
 

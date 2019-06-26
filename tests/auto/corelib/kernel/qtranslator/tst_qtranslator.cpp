@@ -310,7 +310,7 @@ struct TranslateThread : public QThread
     void run() {
         bool startSignalled = false;
 
-        while (terminate.load() == 0) {
+        while (terminate.loadRelaxed() == 0) {
             const QString result =  QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0);
 
             if (!startSignalled) {

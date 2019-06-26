@@ -830,7 +830,7 @@ bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
 */
 void QPalette::detach()
 {
-    if (d->ref.load() != 1) {
+    if (d->ref.loadRelaxed() != 1) {
         QPalettePrivate *x = new QPalettePrivate;
         for(int grp = 0; grp < (int)NColorGroups; grp++) {
             for(int role = 0; role < (int)NColorRoles; role++)
@@ -1008,6 +1008,8 @@ QDataStream &operator<<(QDataStream &s, const QPalette &p)
                 max = QPalette::HighlightedText + 1;
             else if (s.version() <= QDataStream::Qt_4_3)
                 max = QPalette::AlternateBase + 1;
+            else if (s.version() <= QDataStream::Qt_5_11)
+                max = QPalette::ToolTipText + 1;
             for (int r = 0; r < max; r++)
                 s << p.d->br[grp][r];
         }
@@ -1048,6 +1050,9 @@ QDataStream &operator>>(QDataStream &s, QPalette &p)
         } else if (s.version() <= QDataStream::Qt_4_3) {
             p = QPalette();
             max = QPalette::AlternateBase + 1;
+        } else if (s.version() <= QDataStream::Qt_5_11) {
+            p = QPalette();
+            max = QPalette::ToolTipText + 1;
         }
 
         QBrush tmp;

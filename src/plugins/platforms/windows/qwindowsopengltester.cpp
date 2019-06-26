@@ -457,7 +457,7 @@ bool QWindowsOpenGLTester::testDesktopGL()
 
         // Check the version. If we got 1.x then it's all hopeless and we can stop right here.
         typedef const GLubyte * (APIENTRY * GetString_t)(GLenum name);
-        GetString_t GetString = reinterpret_cast<GetString_t>(
+        auto GetString = reinterpret_cast<GetString_t>(
             reinterpret_cast<QFunctionPointer>(::GetProcAddress(lib, "glGetString")));
         if (GetString) {
             if (const char *versionStr = reinterpret_cast<const char *>(GetString(GL_VERSION))) {

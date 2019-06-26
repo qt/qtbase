@@ -107,6 +107,10 @@ template <class X, class T>
 QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &ptr);
 #endif
 
+namespace QtPrivate {
+struct EnableInternalData;
+}
+
 namespace QtSharedPointer {
     template <class T> class ExternalRefCount;
 
@@ -150,11 +154,11 @@ namespace QtSharedPointer {
         inline ExternalRefCountData(DestroyerFn d)
             : destroyer(d)
         {
-            strongref.store(1);
-            weakref.store(1);
+            strongref.storeRelaxed(1);
+            weakref.storeRelaxed(1);
         }
         inline ExternalRefCountData(Qt::Initialization) { }
-        ~ExternalRefCountData() { Q_ASSERT(!weakref.load()); Q_ASSERT(strongref.load() <= 0); }
+        ~ExternalRefCountData() { Q_ASSERT(!weakref.loadRelaxed()); Q_ASSERT(strongref.loadRelaxed() <= 0); }
 
         void destroy() { destroyer(this); }
 
@@ -518,12 +522,12 @@ public:
         if (o) {
             // increase the strongref, but never up from zero
             // or less (-1 is used by QWeakPointer on untracked QObject)
-            int tmp = o->strongref.load();
+            int tmp = o->strongref.loadRelaxed();
             while (tmp > 0) {
                 // try to increment from "tmp" to "tmp + 1"
                 if (o->strongref.testAndSetRelaxed(tmp, tmp + 1))
                     break;   // succeeded
-                tmp = o->strongref.load();  // failed, try again
+                tmp = o->strongref.loadRelaxed();  // failed, try again
             }
 
             if (tmp > 0) {
@@ -536,7 +540,7 @@ public:
 
         qSwap(d, o);
         qSwap(this->value, actual);
-        if (!d || d->strongref.load() == 0)
+        if (!d || d->strongref.loadRelaxed() == 0)
             this->value = nullptr;
 
         // dereference saved data
@@ -562,7 +566,7 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    bool isNull() const noexcept { return d == nullptr || d->strongref.load() == 0 || value == nullptr; }
+    bool isNull() const noexcept { return d == nullptr || d->strongref.loadRelaxed() == 0 || value == nullptr; }
     operator RestrictedBool() const noexcept { return isNull() ? nullptr : &QWeakPointer::value; }
     bool operator !() const noexcept { return isNull(); }
 
@@ -672,21 +676,12 @@ public:
 #endif
 
 private:
-
+    friend struct QtPrivate::EnableInternalData;
 #if defined(Q_NO_TEMPLATE_FRIENDS)
 public:
 #else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QPointer;
-#  ifndef QT_NO_QOBJECT
-    template<typename X>
-    friend QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<X*>::Value, X>::type>
-    qWeakPointerFromVariant(const QVariant &variant);
-#  endif
-    template<typename X>
-    friend QPointer<X>
-    qPointerFromVariant(const QVariant &variant);
-    friend QtPrivate::QSmartPointerConvertFunctor<QWeakPointer>;
 #endif
 
     template <class X>
@@ -714,12 +709,23 @@ public:
     // a weak pointer's data but the weak pointer itself
     inline T *internalData() const noexcept
     {
-        return d == nullptr || d->strongref.load() == 0 ? nullptr : value;
+        return d == nullptr || d->strongref.loadRelaxed() == 0 ? nullptr : value;
     }
 
     Data *d;
     T *value;
 };
+
+namespace QtPrivate {
+struct EnableInternalData {
+    template <typename T>
+    static T *internalData(const QWeakPointer<T> &p) noexcept { return p.internalData(); }
+};
+// hack to delay name lookup to instantiation time by making
+// EnableInternalData a dependent name:
+template <typename T>
+struct EnableInternalDataWrap : EnableInternalData {};
+}
 
 template <class T>
 class QEnableSharedFromThis
@@ -996,7 +1002,7 @@ template<typename T>
 QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
 qWeakPointerFromVariant(const QVariant &variant)
 {
-    return QWeakPointer<T>(qobject_cast<T*>(QtSharedPointer::weakPointerFromVariant_internal(variant).internalData()));
+    return QWeakPointer<T>(qobject_cast<T*>(QtPrivate::EnableInternalData::internalData(QtSharedPointer::weakPointerFromVariant_internal(variant))));
 }
 template<typename T>
 QSharedPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>

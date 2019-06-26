@@ -688,6 +688,12 @@ static const char *winPosInsertAfter(quintptr h)
 
 static const char *sessionMgrLogOffOption(uint p)
 {
+#ifndef ENDSESSION_CLOSEAPP
+#define ENDSESSION_CLOSEAPP 0x00000001
+#endif
+#ifndef ENDSESSION_CRITICAL
+#define ENDSESSION_CRITICAL 0x40000000
+#endif
     static const QWinMessageMapping<uint> values[] = {
         {ENDSESSION_CLOSEAPP, "Close application"},
         {ENDSESSION_CRITICAL, "Force application end"},
@@ -881,12 +887,6 @@ QString decodeMSG(const MSG& msg)
                 parameters += QLatin1Char(')');
             }
             break;
-#ifndef ENDSESSION_CLOSEAPP
-#define ENDSESSION_CLOSEAPP 0x00000001
-#endif
-#ifndef ENDSESSION_CRITICAL
-#define ENDSESSION_CRITICAL 0x40000000
-#endif
         case WM_QUERYENDSESSION:
             parameters = QLatin1String("End session: ");
             if (const char *logoffOption = sessionMgrLogOffOption(uint(wParam)))

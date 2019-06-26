@@ -65,6 +65,12 @@ QWasmWindow::~QWasmWindow()
     m_compositor->removeWindow(this);
 }
 
+void QWasmWindow::destroy()
+{
+    if (m_backingStore)
+        m_backingStore->destroy();
+}
+
 void QWasmWindow::initialize()
 {
     QRect rect = windowGeometry();

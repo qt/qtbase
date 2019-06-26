@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     \snippet qelapsedtimer/main.cpp 0
 
     In this example, the timer is started by a call to start() and the
-    elapsed timer is calculated by the elapsed() function.
+    elapsed time is calculated by the elapsed() function.
 
     The time elapsed can also be used to recalculate the time available for
     another operation, after the first one is complete. This is useful when

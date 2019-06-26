@@ -35,6 +35,7 @@
 #include <QBuffer>
 #include <QByteArray>
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -996,7 +997,7 @@ struct CompareIndicesForArray
 void tst_QTextStream::performance()
 {
     // Phase #1 - test speed of reading a huge text file with QFile.
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
 
     const int N = 3;
     const char * readMethods[N] = {

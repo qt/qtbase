@@ -29,6 +29,7 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 #include <QtCore/QDateTime>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QTextStream>
 #include <QtCore/QRandomGenerator>
 #include <QtCore/QStandardPaths>
@@ -195,7 +196,7 @@ static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 #ifndef QT_NO_SSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
 #endif
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     int t = timeout;
     forever {
@@ -421,7 +422,7 @@ void tst_NetworkSelfTest::serverReachability()
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 12346);
 
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     socket.waitForConnected(10000);
     QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");

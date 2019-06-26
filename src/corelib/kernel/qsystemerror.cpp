@@ -112,7 +112,7 @@ static QString windowsErrorString(int errorCode)
 
 static QString standardLibraryErrorString(int errorCode)
 {
-    const char *s = 0;
+    const char *s = nullptr;
     QString ret;
     switch (errorCode) {
     case 0:

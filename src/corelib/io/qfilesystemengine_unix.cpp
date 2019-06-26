@@ -813,7 +813,7 @@ QString QFileSystemEngine::resolveUserName(uint userId)
 #endif
 
 #if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
-    struct passwd *pw = 0;
+    struct passwd *pw = nullptr;
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
     struct passwd entry;
     getpwuid_r(userId, &entry, buf.data(), buf.size(), &pw);
@@ -837,7 +837,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #endif
 
 #if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
-    struct group *gr = 0;
+    struct group *gr = nullptr;
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID) && (__ANDROID_API__ >= 24))
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (size_max == -1)

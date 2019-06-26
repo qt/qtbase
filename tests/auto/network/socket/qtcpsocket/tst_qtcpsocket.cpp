@@ -66,7 +66,7 @@
 #endif
 #include <QTextStream>
 #include <QThread>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QTimer>
 #include <QDebug>
 // RVCT compiles also unused inline methods
@@ -237,7 +237,6 @@ private:
     qint64 bytesAvailable;
     qint64 expectedLength;
     bool readingBody;
-    QTime timer;
 
     QByteArray expectedReplyIMAP_cached;
 
@@ -1518,7 +1517,7 @@ void tst_QTcpSocket::downloadBigFile()
     expectedLength = 0;
     readingBody = false;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     enterLoop(600);
@@ -2482,7 +2481,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
     QEventLoop loop;
     connect(&serverProcess, SIGNAL(finished(int)), &loop, SLOT(quit()));
     connect(&clientProcess, SIGNAL(finished(int)), &loop, SLOT(quit()));
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     QTimer::singleShot(20000, &loop, SLOT(quit()));
 
@@ -2522,7 +2521,7 @@ void tst_QTcpSocket::connectToMultiIP()
     // rationale: this domain resolves to 3 A-records, 2 of them are
     // invalid. QTcpSocket should never spend more than 30 seconds per IP, and
     // 30s*2 = 60s.
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     socket->connectToHost("multi.dev.qt-project.org", 80);
     QVERIFY(socket->waitForConnected(60500));
@@ -2714,7 +2713,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
 
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::httpServerName(), 12346);
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     socket.waitForConnected(10000);
     QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");

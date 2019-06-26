@@ -34,6 +34,7 @@
 #include <QSharedMemory>
 #include <QTest>
 #include <QThread>
+#include <QElapsedTimer>
 
 #define EXISTING_SHARE "existing"
 #define EXISTING_SIZE 1024
@@ -645,7 +646,7 @@ public:
 
         char *memory = (char*)producer.data();
         memory[1] = '0';
-        QTime timer;
+        QElapsedTimer timer;
         timer.start();
         int i = 0;
         while (i < 5 && timer.elapsed() < 5000) {

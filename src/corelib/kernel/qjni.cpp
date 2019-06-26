@@ -47,9 +47,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline QString keyBase()
+static inline QLatin1String keyBase()
 {
-    return QStringLiteral("%1%2:%3");
+    return QLatin1String("%1%2:%3");
 }
 
 static QString qt_convertJString(jstring string)
@@ -154,7 +154,7 @@ static jmethodID getCachedMethodID(JNIEnv *env,
     if (className.isEmpty())
         return getMethodID(env, clazz, name, sig, isStatic);
 
-    const QString key = keyBase().arg(QLatin1String(className)).arg(QLatin1String(name)).arg(QLatin1String(sig));
+    const QString key = keyBase().arg(QLatin1String(className), QLatin1String(name), QLatin1String(sig));
     QHash<QString, jmethodID>::const_iterator it;
 
     {
@@ -206,7 +206,7 @@ static jfieldID getCachedFieldID(JNIEnv *env,
     if (className.isNull())
         return getFieldID(env, clazz, name, sig, isStatic);
 
-    const QString key = keyBase().arg(QLatin1String(className)).arg(QLatin1String(name)).arg(QLatin1String(sig));
+    const QString key = keyBase().arg(QLatin1String(className), QLatin1String(name), QLatin1String(sig));
     QHash<QString, jfieldID>::const_iterator it;
 
     {

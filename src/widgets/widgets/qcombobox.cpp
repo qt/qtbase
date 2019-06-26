@@ -1521,7 +1521,7 @@ int QComboBox::maxCount() const
 /*!
     \obsolete
 
-    Use setCompleter() instead.
+    Use completer() instead.
 */
 bool QComboBox::autoCompletion() const
 {
@@ -1881,12 +1881,11 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     d->updateFocusPolicy();
     d->lineEdit->setFocusProxy(this);
     d->lineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
+#if QT_DEPRECATED_SINCE(5, 13)
 #if QT_CONFIG(completer)
     setAutoCompletion(d->autoCompletion);
-#endif
 
 #ifdef QT_KEYPAD_NAVIGATION
-#if QT_CONFIG(completer)
     if (QApplication::keypadNavigationEnabled()) {
         // Editable combo boxes will have a completer that is set to UnfilteredPopupCompletion.
         // This means that when the user enters edit mode they are immediately presented with a
@@ -1897,6 +1896,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
             connect(d->completer, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated()));
         }
     }
+#endif
 #endif
 #endif
 
@@ -2838,19 +2838,15 @@ void QComboBox::showPopup()
     bool startTimer = !container->isVisible();
     container->raise();
     container->create();
-    QWindow *containerWindow = container->window()->windowHandle();
-    if (containerWindow) {
-        QWindow *win = window()->windowHandle();
-        if (win) {
-            QScreen *currentScreen = win->screen();
-            if (currentScreen && !currentScreen->virtualSiblings().contains(containerWindow->screen())) {
-                containerWindow->setScreen(currentScreen);
+    if (QWindow *containerWindow = qt_widget_private(container)->windowHandle(QWidgetPrivate::WindowHandleMode::TopLevel)) {
+        QScreen *currentScreen = d->associatedScreen();
+        if (currentScreen && !currentScreen->virtualSiblings().contains(containerWindow->screen())) {
+            containerWindow->setScreen(currentScreen);
 
-                // This seems to workaround an issue in xcb+multi GPU+multiscreen
-                // environment where the window might not always show up when screen
-                // is changed.
-                container->hide();
-            }
+            // This seems to workaround an issue in xcb+multi GPU+multiscreen
+            // environment where the window might not always show up when screen
+            // is changed.
+            container->hide();
         }
     }
     container->show();

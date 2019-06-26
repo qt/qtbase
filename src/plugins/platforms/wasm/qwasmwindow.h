@@ -58,6 +58,7 @@ public:
 
     QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore);
     ~QWasmWindow();
+    void destroy();
 
     void initialize() override;
 

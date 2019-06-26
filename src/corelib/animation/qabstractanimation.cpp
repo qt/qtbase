@@ -1063,10 +1063,12 @@ QAbstractAnimation::~QAbstractAnimation()
     if (d->state != Stopped) {
         QAbstractAnimation::State oldState = d->state;
         d->state = Stopped;
-        emit stateChanged(oldState, d->state);
+        emit stateChanged(d->state, oldState);
         if (oldState == QAbstractAnimation::Running)
             QAnimationTimer::unregisterAnimation(this);
     }
+    if (d->group)
+        d->group->removeAnimation(this);
 }
 
 /*!

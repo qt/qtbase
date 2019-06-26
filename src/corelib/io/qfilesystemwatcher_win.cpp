@@ -695,9 +695,8 @@ void QWindowsFileSystemWatcherEngineThread::run()
 
                         qErrnoWarning(error, "%ls", qUtf16Printable(msgFindNextFailed(h)));
                     }
-                    QMutableHashIterator<QFileSystemWatcherPathKey, QWindowsFileSystemWatcherEngine::PathInfo> it(h);
-                    while (it.hasNext()) {
-                        QWindowsFileSystemWatcherEngineThread::PathInfoHash::iterator x = it.next();
+                    for (auto it = h.begin(), end = h.end(); it != end; /*erasing*/ ) {
+                        auto x = it++;
                         QString absolutePath = x.value().absolutePath;
                         QFileInfo fileInfo(x.value().path);
                         DEBUG() << "checking" << x.key();
@@ -723,6 +722,7 @@ void QWindowsFileSystemWatcherEngineThread::run()
 
                                 handleForDir.remove(QFileSystemWatcherPathKey(absolutePath));
                                 // h is now invalid
+                                break;
                             }
                         } else if (x.value().isDir) {
                             DEBUG() << x.key() << "directory changed!";

@@ -136,7 +136,7 @@ static QString getExternalStoragePublicDirectory(const char *directoryField)
  */
 static QString getExternalFilesDir(const char *directoryField = 0)
 {
-    QString &path = (*androidDirCache)[QString(QLatin1String("APPNAME_%1")).arg(QLatin1String(directoryField))];
+    QString &path = (*androidDirCache)[QLatin1String("APPNAME_%1").arg(QLatin1String(directoryField))];
     if (!path.isEmpty())
         return path;
 

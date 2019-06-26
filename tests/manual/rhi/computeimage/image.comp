@@ -1,0 +1,20 @@
+#version 440
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(std140, binding = 0) uniform UniformBuffer
+{
+    float factor;
+} ubuf;
+
+layout (binding = 1, rgba8) uniform readonly image2D texIn;
+layout (binding = 2, rgba8) uniform writeonly image2D texOut;
+
+void main()
+{
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 d = ivec2(1, 1);
+    vec4 diff = imageLoad(texIn, pos + d) - imageLoad(texIn, pos - d);
+    float c = (diff.x + diff.y + diff.z) / ubuf.factor + 0.5f;
+    imageStore(texOut, pos, vec4(c, c, c, 1.0));
+}

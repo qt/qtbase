@@ -178,7 +178,7 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
     if (image.format() != QImage::Format_ARGB32)
         image = image.convertToFormat(QImage::Format_ARGB32);
 
-    uchar *buf = new uchar[bpl_bmp];
+    auto *buf = new uchar[bpl_bmp];
 
     memset(buf, 0, size_t(bpl_bmp));
     for (int y=image.height()-1; y>=0; y--) {
@@ -264,7 +264,7 @@ static bool qt_read_dibv5(QDataStream &s, QImage &image)
     const int  bpl = image.bytesPerLine();
     uchar *data = image.bits();
 
-    uchar *buf24 = new uchar[bpl];
+    auto *buf24 = new uchar[bpl];
     const int bpl24 = ((w * nbits + 31) / 32) * 4;
 
     while (--h >= 0) {
@@ -286,7 +286,7 @@ static bool qt_read_dibv5(QDataStream &s, QImage &image)
 
     if (bi.bV5Height < 0) {
         // Flip the image
-        uchar *buf = new uchar[bpl];
+        auto *buf = new uchar[bpl];
         h = -bi.bV5Height;
         for (int y = 0; y < h/2; ++y) {
             memcpy(buf, data + y * bpl, size_t(bpl));
@@ -772,16 +772,16 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             }
 
             QByteArray result(size, '\0');
-            DROPFILES* d = reinterpret_cast<DROPFILES *>(result.data());
+            auto* d = reinterpret_cast<DROPFILES *>(result.data());
             d->pFiles = sizeof(DROPFILES);
             GetCursorPos(&d->pt); // try
             d->fNC = true;
             char *files = (reinterpret_cast<char*>(d)) + d->pFiles;
 
             d->fWide = true;
-            wchar_t *f = reinterpret_cast<wchar_t *>(files);
+            auto *f = reinterpret_cast<wchar_t *>(files);
             for (int i=0; i<fileNames.size(); i++) {
-                const size_t l = size_t(fileNames.at(i).length());
+                const auto l = size_t(fileNames.at(i).length());
                 memcpy(f, fileNames.at(i).utf16(), l * sizeof(ushort));
                 f += l;
                 *f++ = 0;
@@ -852,9 +852,9 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
             if (data.isEmpty())
                 return QVariant();
 
-            const DROPFILES *hdrop = reinterpret_cast<const DROPFILES *>(data.constData());
+            const auto *hdrop = reinterpret_cast<const DROPFILES *>(data.constData());
             if (hdrop->fWide) {
-                const wchar_t *filesw = reinterpret_cast<const wchar_t *>(data.constData() + hdrop->pFiles);
+                const auto *filesw = reinterpret_cast<const wchar_t *>(data.constData() + hdrop->pFiles);
                 int i = 0;
                 while (filesw[i]) {
                     QString fileurl = QString::fromWCharArray(filesw + i);
@@ -1055,7 +1055,7 @@ QVector<FORMATETC> QWindowsMimeImage::formatsForMime(const QString &mimeType, co
     QVector<FORMATETC> formatetcs;
     if (mimeData->hasImage() && mimeType == QLatin1String("application/x-qt-image")) {
         //add DIBV5 if image has alpha channel. Do not add CF_PNG here as it will confuse MS Office (QTBUG47656).
-        QImage image = qvariant_cast<QImage>(mimeData->imageData());
+        auto image = qvariant_cast<QImage>(mimeData->imageData());
         if (!image.isNull() && image.hasAlphaChannel())
             formatetcs += setCf(CF_DIBV5);
         formatetcs += setCf(CF_DIB);
@@ -1097,7 +1097,7 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
 {
     int cf = getCf(formatetc);
     if ((cf == CF_DIB || cf == CF_DIBV5 || cf == int(CF_PNG)) && mimeData->hasImage()) {
-        QImage img = qvariant_cast<QImage>(mimeData->imageData());
+        auto img = qvariant_cast<QImage>(mimeData->imageData());
         if (img.isNull())
             return false;
         QByteArray ba;

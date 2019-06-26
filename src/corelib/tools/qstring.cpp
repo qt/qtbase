@@ -145,7 +145,8 @@ extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int leng
 // internal
 qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs);
 static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept;
-static inline qsizetype qt_last_index_of(QStringView haystack, QChar needle, qsizetype from, Qt::CaseSensitivity cs);
+template <typename Haystack>
+static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle, qsizetype from, Qt::CaseSensitivity cs) noexcept;
 static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline qsizetype qt_string_count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
@@ -3044,7 +3045,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
 {
     // Copy after if it lies inside our own d->data() area (which we could
     // possibly invalidate via a realloc or modify by replacement).
-    QChar *afterBuffer = 0;
+    QChar *afterBuffer = nullptr;
     if (pointsIntoRange(after, d->data(), d->size)) // Use copy in place of vulnerable original:
         after = afterBuffer = textCopy(after, alen);
 
@@ -3129,7 +3130,7 @@ QString &QString::replace(const QChar *before, int blen,
         return *this;
 
     QStringMatcher matcher(before, blen, cs);
-    QChar *beforeBuffer = 0, *afterBuffer = 0;
+    QChar *beforeBuffer = nullptr, *afterBuffer = nullptr;
 
     int index = 0;
     while (1) {
@@ -3779,74 +3780,6 @@ int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) co
     // ### Qt6: qsize
     return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
 }
-#endif // QT_STRINGVIEW_LEVEL < 2
-
-static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *needle, int sl, Qt::CaseSensitivity cs)
-{
-    /*
-        See indexOf() for explanations.
-    */
-
-    auto sv = [sl](const ushort *v) { return QStringView(v, sl); };
-
-    const ushort *end = haystack;
-    haystack += from;
-    const uint sl_minus_1 = sl - 1;
-    const ushort *n = needle+sl_minus_1;
-    const ushort *h = haystack+sl_minus_1;
-    uint hashNeedle = 0, hashHaystack = 0;
-    int idx;
-
-    if (cs == Qt::CaseSensitive) {
-        for (idx = 0; idx < sl; ++idx) {
-            hashNeedle = ((hashNeedle<<1) + *(n-idx));
-            hashHaystack = ((hashHaystack<<1) + *(h-idx));
-        }
-        hashHaystack -= *haystack;
-
-        while (haystack >= end) {
-            hashHaystack += *haystack;
-            if (hashHaystack == hashNeedle
-                 && qt_compare_strings(sv(needle), sv(haystack), Qt::CaseSensitive) == 0)
-                return haystack - end;
-            --haystack;
-            REHASH(haystack[sl]);
-        }
-    } else {
-        for (idx = 0; idx < sl; ++idx) {
-            hashNeedle = ((hashNeedle<<1) + foldCase(n-idx, needle));
-            hashHaystack = ((hashHaystack<<1) + foldCase(h-idx, end));
-        }
-        hashHaystack -= foldCase(haystack, end);
-
-        while (haystack >= end) {
-            hashHaystack += foldCase(haystack, end);
-            if (hashHaystack == hashNeedle
-                 && qt_compare_strings(sv(haystack), sv(needle), Qt::CaseInsensitive) == 0)
-                return haystack - end;
-            --haystack;
-            REHASH(foldCase(haystack + sl, end));
-        }
-    }
-    return -1;
-}
-
-static inline int lastIndexOfHelper(
-        const QStringRef &haystack, int from, const QStringRef &needle, Qt::CaseSensitivity cs)
-{
-    return lastIndexOfHelper(reinterpret_cast<const ushort*>(haystack.unicode()), from,
-                             reinterpret_cast<const ushort*>(needle.unicode()), needle.size(), cs);
-}
-
-static inline int lastIndexOfHelper(
-        const QStringRef &haystack, int from, QLatin1String needle, Qt::CaseSensitivity cs)
-{
-    const int size = needle.size();
-    QVarLengthArray<ushort> s(size);
-    qt_from_latin1(s.data(), needle.latin1(), size);
-    return lastIndexOfHelper(reinterpret_cast<const ushort*>(haystack.unicode()), from,
-                             s.data(), size, cs);
-}
 
 /*!
   Returns the index position of the last occurrence of the string \a
@@ -3866,8 +3799,11 @@ static inline int lastIndexOfHelper(
 */
 int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    return QStringRef(this).lastIndexOf(QStringRef(&str), from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
+
+#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
   \since 4.5
@@ -3890,7 +3826,8 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
 */
 int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    return QStringRef(this).lastIndexOf(str, from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
 /*!
@@ -3902,9 +3839,10 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsize
-    return int(qt_last_index_of(QStringView(unicode(), size()), ch, from, cs));
+    return int(qLastIndexOf(*this, ch, from, cs));
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
   \since 4.8
   \overload lastIndexOf()
@@ -3922,8 +3860,27 @@ int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    return QStringRef(this).lastIndexOf(str, from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+  \fn int QString::lastIndexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
+  \since 5.14
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string view \a
+  str in this string, searching backward from index position \a
+  from. If \a from is -1 (default), the search starts at the last
+  character; if \a from is -2, at the next to last character and so
+  on. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa indexOf(), contains(), count()
+*/
 
 
 #if !(defined(QT_NO_REGEXP) && !QT_CONFIG(regularexpression))
@@ -5591,7 +5548,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf16::convertToUnicode((const char *)unicode, size*2, 0);
+    return QUtf16::convertToUnicode((const char *)unicode, size*2, nullptr);
 }
 
 /*!
@@ -5645,7 +5602,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf32::convertToUnicode((const char *)unicode, size*4, 0);
+    return QUtf32::convertToUnicode((const char *)unicode, size*4, nullptr);
 }
 
 
@@ -8060,7 +8017,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         version = QChar::currentUnicodeVersion();
     } else if (int(version) <= NormalizationCorrectionsVersionMax) {
         const QString &s = *data;
-        QChar *d = 0;
+        QChar *d = nullptr;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
@@ -8797,19 +8754,23 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
 }
 
-static int getEscape(const QChar *uc, int *pos, int len, int maxNumber = 999)
+static inline ushort to_unicode(const QChar c) { return c.unicode(); }
+static inline ushort to_unicode(const char c) { return QLatin1Char{c}.unicode(); }
+
+template <typename Char>
+static int getEscape(const Char *uc, qsizetype *pos, qsizetype len, int maxNumber = 999)
 {
     int i = *pos;
     ++i;
     if (i < len && uc[i] == QLatin1Char('L'))
         ++i;
     if (i < len) {
-        int escape = uc[i].unicode() - '0';
+        int escape = to_unicode(uc[i]) - '0';
         if (uint(escape) >= 10U)
             return -1;
         ++i;
         while (i < len) {
-            int digit = uc[i].unicode() - '0';
+            int digit = to_unicode(uc[i]) - '0';
             if (uint(digit) >= 10U)
                 break;
             escape = (escape * 10) + digit;
@@ -8860,18 +8821,23 @@ static int getEscape(const QChar *uc, int *pos, int len, int maxNumber = 999)
 namespace {
 struct Part
 {
-    Part() : stringRef(), number(0) {}
-    Part(const QString &s, int pos, int len, int num = -1) noexcept
-        : stringRef(&s, pos, len), number(num) {}
+    Part() = default; // for QVarLengthArray; do not use
+    Q_DECL_CONSTEXPR Part(QStringView s, int num = -1)
+        : tag{QtPrivate::ArgBase::U16}, number{num}, data{s.utf16()}, size{s.size()} {}
+    Q_DECL_CONSTEXPR Part(QLatin1String s, int num = -1)
+        : tag{QtPrivate::ArgBase::L1}, number{num}, data{s.data()}, size{s.size()} {}
 
-    QStringRef stringRef;
+    void reset(QStringView s) noexcept { *this = {s, number}; }
+    void reset(QLatin1String s) noexcept { *this = {s, number}; }
+
+    QtPrivate::ArgBase::Tag tag;
     int number;
+    const void *data;
+    qsizetype size;
 };
 } // unnamed namespace
 
-template <>
-class QTypeInfo<Part> : public QTypeInfoMerger<Part, QStringRef, int> {}; // Q_DECLARE_METATYPE
-
+Q_DECLARE_TYPEINFO(Part, Q_PRIMITIVE_TYPE);
 
 namespace {
 
@@ -8880,24 +8846,25 @@ enum { ExpectedParts = 32 };
 typedef QVarLengthArray<Part, ExpectedParts> ParseResult;
 typedef QVarLengthArray<int, ExpectedParts/2> ArgIndexToPlaceholderMap;
 
-static ParseResult parseMultiArgFormatString(const QString &s)
+template <typename StringView>
+static ParseResult parseMultiArgFormatString(StringView s)
 {
     ParseResult result;
 
-    const QChar *uc = s.constData();
-    const int len = s.size();
-    const int end = len - 1;
-    int i = 0;
-    int last = 0;
+    const auto uc = s.data();
+    const auto len = s.size();
+    const auto end = len - 1;
+    qsizetype i = 0;
+    qsizetype last = 0;
 
     while (i < end) {
         if (uc[i] == QLatin1Char('%')) {
-            int percent = i;
+            qsizetype percent = i;
             int number = getEscape(uc, &i, len);
             if (number != -1) {
                 if (last != percent)
-                    result.push_back(Part(s, last, percent - last)); // literal text (incl. failed placeholders)
-                result.push_back(Part(s, percent, i - percent, number));  // parsed placeholder
+                    result.push_back(Part{s.mid(last, percent - last)}); // literal text (incl. failed placeholders)
+                result.push_back(Part{s.mid(percent, i - percent), number});  // parsed placeholder
                 last = i;
                 continue;
             }
@@ -8906,7 +8873,7 @@ static ParseResult parseMultiArgFormatString(const QString &s)
     }
 
     if (last < len)
-        result.push_back(Part(s, last, len - last)); // trailing literal text
+        result.push_back(Part{s.mid(last, len - last)}); // trailing literal text
 
     return result;
 }
@@ -8915,9 +8882,9 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
 {
     ArgIndexToPlaceholderMap result;
 
-    for (ParseResult::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it) {
-        if (it->number >= 0)
-            result.push_back(it->number);
+    for (Part part : parts) {
+        if (part.number >= 0)
+            result.push_back(part.number);
     }
 
     std::sort(result.begin(), result.end());
@@ -8927,52 +8894,105 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
     return result;
 }
 
-static int resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QString *args[])
+static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const ArgIndexToPlaceholderMap &argIndexToPlaceholderMap, const QtPrivate::ArgBase *args[])
 {
-    int totalSize = 0;
-    for (ParseResult::iterator pit = parts.begin(), end = parts.end(); pit != end; ++pit) {
-        if (pit->number != -1) {
-            const ArgIndexToPlaceholderMap::const_iterator ait
-                    = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), pit->number);
-            if (ait != argIndexToPlaceholderMap.end())
-                pit->stringRef = QStringRef(args[ait - argIndexToPlaceholderMap.begin()]);
+    using namespace QtPrivate;
+    qsizetype totalSize = 0;
+    for (Part &part : parts) {
+        if (part.number != -1) {
+            const auto it = std::find(argIndexToPlaceholderMap.begin(), argIndexToPlaceholderMap.end(), part.number);
+            if (it != argIndexToPlaceholderMap.end()) {
+                const auto &arg = *args[it - argIndexToPlaceholderMap.begin()];
+                switch (arg.tag) {
+                case ArgBase::L1:
+                    part.reset(static_cast<const QLatin1StringArg&>(arg).string);
+                    break;
+                case ArgBase::U8:
+                    Q_UNREACHABLE(); // waiting for QUtf8String...
+                    break;
+                case ArgBase::U16:
+                    part.reset(static_cast<const QStringViewArg&>(arg).string);
+                    break;
+                }
+            }
         }
-        totalSize += pit->stringRef.size();
+        totalSize += part.size;
     }
     return totalSize;
 }
 
 } // unnamed namespace
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QString QString::multiArg(int numArgs, const QString **args) const
 {
+    QVarLengthArray<QtPrivate::QStringViewArg, 9> sva;
+    sva.reserve(numArgs);
+    QVarLengthArray<const QtPrivate::ArgBase *, 9> pointers;
+    pointers.reserve(numArgs);
+    for (int i = 0; i < numArgs; ++i) {
+        sva.push_back(QtPrivate::qStringLikeToArg(*args[i]));
+        pointers.push_back(&sva.back());
+    }
+    return QtPrivate::argToQString(qToStringViewIgnoringNull(*this), static_cast<size_t>(numArgs), pointers.data());
+}
+#endif
+
+Q_ALWAYS_INLINE QString to_string(QLatin1String s) noexcept { return s; }
+Q_ALWAYS_INLINE QString to_string(QStringView s) noexcept { return s.toString(); }
+
+template <typename StringView>
+static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPrivate::ArgBase **args)
+{
     // Step 1-2 above
-    ParseResult parts = parseMultiArgFormatString(*this);
+    ParseResult parts = parseMultiArgFormatString(pattern);
 
     // 3-4
     ArgIndexToPlaceholderMap argIndexToPlaceholderMap = makeArgIndexToPlaceholderMap(parts);
 
-    if (argIndexToPlaceholderMap.size() > numArgs) // 3a
-        argIndexToPlaceholderMap.resize(numArgs);
-    else if (argIndexToPlaceholderMap.size() < numArgs) // 3b
-        qWarning("QString::arg: %d argument(s) missing in %s",
-                 numArgs - argIndexToPlaceholderMap.size(), toLocal8Bit().data());
+    if (static_cast<size_t>(argIndexToPlaceholderMap.size()) > numArgs) // 3a
+        argIndexToPlaceholderMap.resize(int(numArgs));
+    else if (Q_UNLIKELY(static_cast<size_t>(argIndexToPlaceholderMap.size()) < numArgs)) // 3b
+        qWarning("QString::arg: %d argument(s) missing in %ls",
+                 int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(to_string(pattern)));
 
     // 5
-    const int totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
+    const qsizetype totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
 
     // 6:
     QString result(totalSize, Qt::Uninitialized);
-    QChar *out = result.data();
+    auto out = const_cast<QChar*>(result.constData());
 
-    for (ParseResult::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it) {
-        if (const int sz = it->stringRef.size()) {
-            memcpy(out, it->stringRef.constData(), sz * sizeof(QChar));
-            out += sz;
+    for (Part part : parts) {
+        switch (part.tag) {
+        case QtPrivate::ArgBase::L1:
+            if (part.size) {
+                qt_from_latin1(reinterpret_cast<ushort*>(out),
+                               reinterpret_cast<const char*>(part.data), part.size);
+            }
+            break;
+        case QtPrivate::ArgBase::U8:
+            Q_UNREACHABLE(); // waiting for QUtf8String
+            break;
+        case QtPrivate::ArgBase::U16:
+            if (part.size)
+                memcpy(out, part.data, part.size * sizeof(QChar));
+            break;
         }
+        out += part.size;
     }
 
     return result;
+}
+
+QString QtPrivate::argToQString(QStringView pattern, size_t n, const ArgBase **args)
+{
+    return argToQStringImpl(pattern, n, args);
+}
+
+QString QtPrivate::argToQString(QLatin1String pattern, size_t n, const ArgBase **args)
+{
+    return argToQStringImpl(pattern, n, args);
 }
 
 /*! \fn bool QString::isSimpleText() const
@@ -9559,6 +9579,24 @@ QString &QString::setRawData(const QChar *unicode, int size)
     case-sensitive; otherwise the search is case-insensitive.
 
     \sa indexOf(), QStringView::contains(), QStringView::indexOf(), QString::indexOf()
+*/
+
+/*!
+    \fn int QLatin1String::lastIndexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::lastIndexOf(QLatin1String l1, int from, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::lastIndexOf(QChar c, int from, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns the index position of the last occurrence of the string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively, in this Latin-1 string,
+    searching backward from index position \a from. If \a from is -1 (default),
+    the search starts at the last character; if \a from is -2, at the next to last
+    character and so on. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), QStringView::lastIndexOf(), QStringView::indexOf(), QString::indexOf()
 */
 
 /*!
@@ -11232,7 +11270,8 @@ int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs)
 */
 int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
-    return lastIndexOf(QStringRef(&str), from, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
 /*!
@@ -11247,28 +11286,7 @@ int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs
 int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsize
-    return int(qt_last_index_of(QStringView(unicode(), size()), ch, from, cs));
-}
-
-template<typename T>
-static int last_index_of_impl(const QStringRef &haystack, int from, const T &needle, Qt::CaseSensitivity cs)
-{
-    const int sl = needle.size();
-    if (sl == 1)
-        return haystack.lastIndexOf(needle.at(0), from, cs);
-
-    const int l = haystack.size();
-    if (from < 0)
-        from += l;
-    int delta = l - sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    return lastIndexOfHelper(haystack, from, needle, cs);
+    return int(qLastIndexOf(*this, ch, from, cs));
 }
 
 /*!
@@ -11288,7 +11306,8 @@ static int last_index_of_impl(const QStringRef &haystack, int from, const T &nee
 */
 int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    return last_index_of_impl(*this, from, str, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
 
 /*!
@@ -11308,8 +11327,26 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
 */
 int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    return last_index_of_impl(*this, from, str, cs);
+    // ### Qt6: qsize
+    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
 }
+
+/*!
+  \fn int QStringRef::lastIndexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
+  \since 5.14
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string view \a
+  str in this string, searching backward from index position \a
+  from. If \a from is -1 (default), the search starts at the last
+  character; if \a from is -2, at the next to last character and so
+  on. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa indexOf(), contains(), count()
+*/
 
 /*!
     \since 4.8
@@ -11613,33 +11650,6 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
     \sa indexOf(), count()
 */
 
-static inline qsizetype qt_last_index_of(QStringView haystack, QChar needle,
-                                   qsizetype from, Qt::CaseSensitivity cs)
-{
-    if (from < 0)
-        from += haystack.size();
-    if (std::size_t(from) >= std::size_t(haystack.size()))
-        return -1;
-    if (from >= 0) {
-        ushort c = needle.unicode();
-        const ushort *b = reinterpret_cast<const ushort*>(haystack.data());
-        const ushort *n = b + from;
-        if (cs == Qt::CaseSensitive) {
-            for (; n >= b; --n)
-                if (*n == c)
-                    return n - b;
-        } else {
-            c = foldCase(c);
-            for (; n >= b; --n)
-                if (foldCase(*n) == c)
-                    return n - b;
-        }
-    }
-    return -1;
-
-
-}
-
 static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
 {
     qsizetype num = 0;
@@ -11821,6 +11831,38 @@ bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseS
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
+namespace {
+template <typename Pointer>
+uint foldCaseHelper(Pointer ch, Pointer start) = delete;
+
+template <>
+uint foldCaseHelper<const QChar*>(const QChar* ch, const QChar* start)
+{
+    return foldCase(reinterpret_cast<const ushort*>(ch), reinterpret_cast<const ushort*>(start));
+}
+
+template <>
+uint foldCaseHelper<const char*>(const char* ch, const char*)
+{
+    return foldCase(ushort(uchar(*ch)));
+}
+
+template <typename T>
+ushort valueTypeToUtf16(T t) = delete;
+
+template <>
+ushort valueTypeToUtf16<QChar>(QChar t)
+{
+    return t.unicode();
+}
+
+template <>
+ushort valueTypeToUtf16<char>(char t)
+{
+    return ushort(uchar(t));
+}
+}
+
 /*!
     \internal
 
@@ -11929,6 +11971,97 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
     return -1;
 }
 
+template <typename Haystack>
+static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle,
+                                     qsizetype from, Qt::CaseSensitivity cs) noexcept
+{
+    if (from < 0)
+        from += haystack.size();
+    if (std::size_t(from) >= std::size_t(haystack.size()))
+        return -1;
+    if (from >= 0) {
+        ushort c = needle.unicode();
+        const auto b = haystack.data();
+        auto n = b + from;
+        if (cs == Qt::CaseSensitive) {
+            for (; n >= b; --n)
+                if (valueTypeToUtf16(*n) == c)
+                    return n - b;
+        } else {
+            c = foldCase(c);
+            for (; n >= b; --n)
+                if (foldCase(valueTypeToUtf16(*n)) == c)
+                    return n - b;
+        }
+    }
+    return -1;
+}
+
+template<typename Haystack, typename Needle>
+static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
+                              Needle needle0, Qt::CaseSensitivity cs) noexcept
+{
+    const qsizetype sl = needle0.size();
+    if (sl == 1)
+        return qLastIndexOf(haystack0, needle0.front(), from, cs);
+
+    const qsizetype l = haystack0.size();
+    if (from < 0)
+        from += l;
+    if (from == l && sl == 0)
+        return from;
+    const qsizetype delta = l - sl;
+    if (std::size_t(from) >= std::size_t(l) || delta < 0)
+        return -1;
+    if (from > delta)
+        from = delta;
+
+    auto sv = [sl](const typename Haystack::value_type *v) { return Haystack(v, sl); };
+
+    auto haystack = haystack0.data();
+    const auto needle = needle0.data();
+    const auto *end = haystack;
+    haystack += from;
+    const std::size_t sl_minus_1 = sl - 1;
+    const auto *n = needle + sl_minus_1;
+    const auto *h = haystack + sl_minus_1;
+    std::size_t hashNeedle = 0, hashHaystack = 0;
+    qsizetype idx;
+
+    if (cs == Qt::CaseSensitive) {
+        for (idx = 0; idx < sl; ++idx) {
+            hashNeedle = (hashNeedle << 1) + valueTypeToUtf16(*(n - idx));
+            hashHaystack = (hashHaystack << 1) + valueTypeToUtf16(*(h - idx));
+        }
+        hashHaystack -= valueTypeToUtf16(*haystack);
+
+        while (haystack >= end) {
+            hashHaystack += valueTypeToUtf16(*haystack);
+            if (hashHaystack == hashNeedle
+                 && qt_compare_strings(needle0, sv(haystack), Qt::CaseSensitive) == 0)
+                return haystack - end;
+            --haystack;
+            REHASH(valueTypeToUtf16(haystack[sl]));
+        }
+    } else {
+        for (idx = 0; idx < sl; ++idx) {
+            hashNeedle = (hashNeedle << 1) + foldCaseHelper(n - idx, needle);
+            hashHaystack = (hashHaystack << 1) + foldCaseHelper(h - idx, end);
+        }
+        hashHaystack -= foldCaseHelper(haystack, end);
+
+        while (haystack >= end) {
+            hashHaystack += foldCaseHelper(haystack, end);
+            if (hashHaystack == hashNeedle
+                 && qt_compare_strings(sv(haystack), needle0, Qt::CaseInsensitive) == 0)
+                return haystack - end;
+            --haystack;
+            REHASH(foldCaseHelper(haystack + sl, end));
+        }
+    }
+    return -1;
+}
+
 qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
 {
     if (haystack.size() < needle.size())
@@ -11960,6 +12093,26 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QLatin1S
     qt_from_latin1(n.data(), needle.latin1(), needle.size());
     return QtPrivate::findString(QStringView(reinterpret_cast<const QChar*>(h.constData()), h.size()), from,
                                  QStringView(reinterpret_cast<const QChar*>(n.constData()), n.size()), cs);
+}
+
+qsizetype QtPrivate::lastIndexOf(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs) noexcept
+{
+    return qLastIndexOf(haystack, from, needle, cs);
+}
+
+qsizetype QtPrivate::lastIndexOf(QStringView haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
+{
+    return qLastIndexOf(haystack, from, needle, cs);
+}
+
+qsizetype QtPrivate::lastIndexOf(QLatin1String haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs) noexcept
+{
+    return qLastIndexOf(haystack, from, needle, cs);
+}
+
+qsizetype QtPrivate::lastIndexOf(QLatin1String haystack, qsizetype from, QLatin1String needle, Qt::CaseSensitivity cs) noexcept
+{
+    return qLastIndexOf(haystack, from, needle, cs);
 }
 
 /*!

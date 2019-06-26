@@ -85,7 +85,7 @@ class RaceThread : public QThread
 {
     Q_OBJECT
     RaceObject *object;
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
 
 public:
     RaceThread()
@@ -414,7 +414,7 @@ void tst_QObjectRace::disconnectRace()
 {
     enum { ThreadCount = 20, TimeLimit = 3000 };
 
-    QCOMPARE(countedStructObjectsCount.load(), 0u);
+    QCOMPARE(countedStructObjectsCount.loadRelaxed(), 0u);
 
     {
         QScopedPointer<DisconnectRaceSenderObject> sender(new DisconnectRaceSenderObject());
@@ -440,7 +440,7 @@ void tst_QObjectRace::disconnectRace()
         QVERIFY(senderThread->wait());
     }
 
-    QCOMPARE(countedStructObjectsCount.load(), 0u);
+    QCOMPARE(countedStructObjectsCount.loadRelaxed(), 0u);
 
     {
         QScopedPointer<DisconnectRaceSenderObject> sender(new DisconnectRaceSenderObject());
@@ -466,7 +466,7 @@ void tst_QObjectRace::disconnectRace()
         }
     }
 
-    QCOMPARE(countedStructObjectsCount.load(), 0u);
+    QCOMPARE(countedStructObjectsCount.loadRelaxed(), 0u);
 }
 
 QTEST_MAIN(tst_QObjectRace)

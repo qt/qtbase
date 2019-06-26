@@ -58,15 +58,15 @@ public:
     void setEnabled(QtMsgType type, bool enable);
 
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED
-    bool isDebugEnabled() const { return bools.enabledDebug.load(); }
-    bool isInfoEnabled() const { return bools.enabledInfo.load(); }
-    bool isWarningEnabled() const { return bools.enabledWarning.load(); }
-    bool isCriticalEnabled() const { return bools.enabledCritical.load(); }
+    bool isDebugEnabled() const { return bools.enabledDebug.loadRelaxed(); }
+    bool isInfoEnabled() const { return bools.enabledInfo.loadRelaxed(); }
+    bool isWarningEnabled() const { return bools.enabledWarning.loadRelaxed(); }
+    bool isCriticalEnabled() const { return bools.enabledCritical.loadRelaxed(); }
 #else
-    bool isDebugEnabled() const { return enabled.load() >> DebugShift & 1; }
-    bool isInfoEnabled() const { return enabled.load() >> InfoShift & 1; }
-    bool isWarningEnabled() const { return enabled.load() >> WarningShift & 1; }
-    bool isCriticalEnabled() const { return enabled.load() >> CriticalShift & 1; }
+    bool isDebugEnabled() const { return enabled.loadRelaxed() >> DebugShift & 1; }
+    bool isInfoEnabled() const { return enabled.loadRelaxed() >> InfoShift & 1; }
+    bool isWarningEnabled() const { return enabled.loadRelaxed() >> WarningShift & 1; }
+    bool isCriticalEnabled() const { return enabled.loadRelaxed() >> CriticalShift & 1; }
 #endif
     const char *categoryName() const { return name; }
 

@@ -82,7 +82,7 @@ private:
     void add(const QString &className, bool determineHeader = true, const QString &header = QString(), bool global = false);
 
 private:
-    typedef std::set<QString> OrderedSet;
+    using OrderedSet = std::set<QString>;
     void insertIncludeForClass(const QString &className, QString header = QString(), bool global = false);
     void insertInclude(const QString &header, bool global);
     void writeHeaders(const OrderedSet &headers, bool global);
@@ -97,7 +97,7 @@ private:
 
     QSet<QString> m_knownClasses;
 
-    typedef QMap<QString, QString> StringMap;
+    using StringMap = QMap<QString, QString>;
     StringMap m_classToHeader;
     StringMap m_oldHeaderToNewHeader;
 

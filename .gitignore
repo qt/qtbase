@@ -56,8 +56,6 @@ qt*-config.pri
 /src/angle/src/QtANGLE/libANGLE/
 /src/angle/src/libGLESv2/libANGLE/
 
-/src/corelib/global/qfloat16tables.cpp
-
 /examples/*/*/*
 !/examples/*/*/*[.]*
 !/examples/*/*/README

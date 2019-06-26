@@ -327,7 +327,7 @@ QT_BEGIN_NAMESPACE
 QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
     :
 #if QT_CONFIG(textcodec)
-    readConverterSavedState(0),
+    readConverterSavedState(nullptr),
 #endif
     readConverterSavedStateOffset(0),
     locale(QLocale::c())
@@ -381,7 +381,7 @@ void QTextStreamPrivate::Params::reset()
     padChar = QLatin1Char(' ');
     fieldAlignment = QTextStream::AlignRight;
     realNumberNotation = QTextStream::SmartNotation;
-    numberFlags = 0;
+    numberFlags = { };
 }
 
 /*!
@@ -391,9 +391,9 @@ void QTextStreamPrivate::reset()
 {
     params.reset();
 
-    device = 0;
+    device = nullptr;
     deleteDevice = false;
-    string = 0;
+    string = nullptr;
     stringOffset = 0;
     stringOpenMode = QIODevice::NotOpen;
 
@@ -406,7 +406,7 @@ void QTextStreamPrivate::reset()
     resetCodecConverterStateHelper(&readConverterState);
     resetCodecConverterStateHelper(&writeConverterState);
     delete readConverterSavedState;
-    readConverterSavedState = 0;
+    readConverterSavedState = nullptr;
     writeConverterState.flags |= QTextCodec::IgnoreHeader;
     autoDetectUnicode = true;
 #endif
@@ -1207,7 +1207,7 @@ bool QTextStream::seek(qint64 pos)
         resetCodecConverterStateHelper(&d->readConverterState);
         resetCodecConverterStateHelper(&d->writeConverterState);
         delete d->readConverterSavedState;
-        d->readConverterSavedState = 0;
+        d->readConverterSavedState = nullptr;
         d->writeConverterState.flags |= QTextCodec::IgnoreHeader;
 #endif
         return true;
@@ -1295,7 +1295,7 @@ void QTextStream::skipWhiteSpace()
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(Q_VOID);
-    d->scan(0, 0, 0, QTextStreamPrivate::NotSpace);
+    d->scan(nullptr, nullptr, 0, QTextStreamPrivate::NotSpace);
     d->consumeLastToken();
 }
 
@@ -1751,7 +1751,7 @@ QString QTextStream::read(qint64 maxlen)
 */
 QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong *ret)
 {
-    scan(0, 0, 0, NotSpace);
+    scan(nullptr, nullptr, 0, NotSpace);
     consumeLastToken();
 
     // detect int encoding
@@ -1980,7 +1980,7 @@ bool QTextStreamPrivate::getReal(double *f)
     ParserState state = Init;
     InputToken input = None;
 
-    scan(0, 0, 0, NotSpace);
+    scan(nullptr, nullptr, 0, NotSpace);
     consumeLastToken();
 
     const int BufferSize = 128;
@@ -2084,7 +2084,7 @@ QTextStream &QTextStream::operator>>(QChar &c)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->scan(0, 0, 0, QTextStreamPrivate::NotSpace);
+    d->scan(nullptr, nullptr, 0, QTextStreamPrivate::NotSpace);
     if (!d->getChar(&c))
         setStatus(ReadPastEnd);
     return *this;
@@ -2245,7 +2245,7 @@ QTextStream &QTextStream::operator>>(QString &str)
     CHECK_VALID_STREAM(*this);
 
     str.clear();
-    d->scan(0, 0, 0, QTextStreamPrivate::NotSpace);
+    d->scan(nullptr, nullptr, 0, QTextStreamPrivate::NotSpace);
     d->consumeLastToken();
 
     const QChar *ptr;
@@ -2273,7 +2273,7 @@ QTextStream &QTextStream::operator>>(QByteArray &array)
     CHECK_VALID_STREAM(*this);
 
     array.clear();
-    d->scan(0, 0, 0, QTextStreamPrivate::NotSpace);
+    d->scan(nullptr, nullptr, 0, QTextStreamPrivate::NotSpace);
     d->consumeLastToken();
 
     const QChar *ptr;
@@ -2308,7 +2308,7 @@ QTextStream &QTextStream::operator>>(char *c)
     Q_D(QTextStream);
     *c = 0;
     CHECK_VALID_STREAM(*this);
-    d->scan(0, 0, 0, QTextStreamPrivate::NotSpace);
+    d->scan(nullptr, nullptr, 0, QTextStreamPrivate::NotSpace);
     d->consumeLastToken();
 
     const QChar *ptr;

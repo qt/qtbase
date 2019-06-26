@@ -91,7 +91,7 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     } else {
         if (const HDC hdc = CreateDC(info.szDevice, nullptr, nullptr, nullptr)) {
             const QDpi dpi = monitorDPI(hMonitor);
-            data->dpi = dpi.first ? dpi : deviceDPI(hdc);
+            data->dpi = dpi.first > 0 ? dpi : deviceDPI(hdc);
             data->depth = GetDeviceCaps(hdc, BITSPIXEL);
             data->format = data->depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
             data->physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
@@ -120,7 +120,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
 {
     QWindowsScreenData data;
     if (monitorData(hMonitor, &data)) {
-        WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
+        auto *result = reinterpret_cast<WindowsScreenDataList *>(p);
         // QWindowSystemInterface::handleScreenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
@@ -552,7 +552,7 @@ bool QWindowsScreenManager::handleScreenChanges()
         if (existingIndex != -1) {
             m_screens.at(existingIndex)->handleChanges(newData);
         } else {
-            QWindowsScreen *newScreen = new QWindowsScreen(newData);
+            auto *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
             QWindowSystemInterface::handleScreenAdded(newScreen,
                                                              newData.flags & QWindowsScreenData::PrimaryScreen);
