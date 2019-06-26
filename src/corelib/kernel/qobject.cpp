@@ -4187,13 +4187,14 @@ void QObject::dumpObjectInfo() const
 }
 
 #ifndef QT_NO_USERDATA
+static QBasicAtomicInteger<uint> user_data_registration = Q_BASIC_ATOMIC_INITIALIZER(0);
+
 /*!
     \internal
  */
 uint QObject::registerUserData()
 {
-    static int user_data_registration = 0;
-    return user_data_registration++;
+    return user_data_registration.fetchAndAddRelaxed(1);
 }
 
 /*!
