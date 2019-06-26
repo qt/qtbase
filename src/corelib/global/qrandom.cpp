@@ -359,17 +359,17 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     quint32 *buffer = begin;
     qsizetype count = end - begin;
 
-    if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
-        uint value = uint(qt_randomdevice_control) & RandomDataMask;
+    if (Q_UNLIKELY(uint(qt_randomdevice_control.loadAcquire()) & SetRandomData)) {
+        uint value = uint(qt_randomdevice_control.loadAcquire()) & RandomDataMask;
         std::fill_n(buffer, count, value);
         return;
     }
 
     qsizetype filled = 0;
-    if (qt_has_hwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
+    if (qt_has_hwrng() && (uint(qt_randomdevice_control.loadAcquire()) & SkipHWRNG) == 0)
         filled += qt_random_cpu(buffer, count);
 
-    if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
+    if (filled != count && (uint(qt_randomdevice_control.loadAcquire()) & SkipSystemRNG) == 0) {
         qsizetype bytesFilled =
                 fillBuffer(buffer + filled, (count - filled) * qsizetype(sizeof(*buffer)));
         filled += bytesFilled / qsizetype(sizeof(*buffer));
@@ -1222,7 +1222,7 @@ void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
     quint32 *begin = static_cast<quint32 *>(buffer);
     quint32 *end = static_cast<quint32 *>(bufferEnd);
 
-    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control) & (UseSystemRNG|SetRandomData)))
+    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control.loadAcquire()) & (UseSystemRNG|SetRandomData)))
         return SystemGenerator::self().generate(begin, end);
 
     SystemAndGlobalGenerators::PRNGLocker lock(this);

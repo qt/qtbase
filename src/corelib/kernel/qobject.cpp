@@ -421,7 +421,7 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
     ConnectionOrSignalVector *c = nullptr;
     {
         QBasicMutexLocker l(signalSlotLock(sender));
-        if (ref > 1)
+        if (ref.loadAcquire() > 1)
             return;
 
         // Since ref == 1, no activate() is in process since we locked the mutex. That implies,

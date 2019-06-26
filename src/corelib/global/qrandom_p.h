@@ -76,7 +76,9 @@ Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control = Q_BASIC_ATOMIC
 #elif defined(QT_BUILD_INTERNAL)
 extern Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control;
 #else
-enum { qt_randomdevice_control = 0 };
+static const struct {
+    uint loadAcquire() const { return 0; }
+} qt_randomdevice_control;
 #endif
 
 inline bool qt_has_hwrng()

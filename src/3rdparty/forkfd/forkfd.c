@@ -267,7 +267,7 @@ static int tryReaping(pid_t pid, struct pipe_payload *payload)
 static void freeInfo(Header *header, ProcessInfo *entry)
 {
     entry->deathPipe = -1;
-    entry->pid = 0;
+    ffd_atomic_store(&entry->pid, 0, FFD_ATOMIC_RELEASE);
 
     (void)ffd_atomic_add_fetch(&header->busyCount, -1, FFD_ATOMIC_RELEASE);
     assert(header->busyCount >= 0);
