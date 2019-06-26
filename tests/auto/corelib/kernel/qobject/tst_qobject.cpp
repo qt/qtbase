@@ -5221,7 +5221,7 @@ namespace ManyArgumentNamespace {
         }
     };
 
-    struct Funct6 {
+    struct Funct6 final {
         void operator()(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e, const QString&f) {
             MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
             MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e); MANYARGUMENT_COMPARE(f);
