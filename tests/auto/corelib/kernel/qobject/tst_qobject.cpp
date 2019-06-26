@@ -81,7 +81,9 @@ private slots:
     void senderTest();
     void declareInterface();
     void qpointerResetBeforeDestroyedSignal();
+#ifndef QT_NO_USERDATA
     void testUserData();
+#endif
     void childDeletesItsSibling();
     void dynamicProperties();
     void floatProperty();
@@ -2338,6 +2340,7 @@ void tst_QObject::declareInterface()
 
 }
 
+#ifndef QT_NO_USERDATA
 class CustomData : public QObjectUserData
 {
 public:
@@ -2380,6 +2383,7 @@ void tst_QObject::testUserData()
         QCOMPARE(data->id, id);
     }
 }
+#endif // QT_NO_USERDATA
 
 class DestroyedListener : public QObject
 {
