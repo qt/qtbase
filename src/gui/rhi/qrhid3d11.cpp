@@ -150,7 +150,8 @@ static QString comErrorMessage(HRESULT hr)
     return result;
 }
 
-static inline uint aligned(uint v, uint byteAlign)
+template <class Int>
+static inline Int aligned(Int v, Int byteAlign)
 {
     return (v + byteAlign - 1) & ~(byteAlign - 1);
 }
@@ -595,7 +596,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 for (int i = 0; i < dynamicOffsetCount; ++i) {
                     const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
                     const uint binding = dynOfs.first;
-                    Q_ASSERT(aligned(dynOfs.second, 256) == dynOfs.second);
+                    Q_ASSERT(aligned(dynOfs.second, quint32(256)) == dynOfs.second);
                     const uint offsetInConstants = dynOfs.second / 16;
                     *p++ = binding;
                     *p++ = offsetInConstants;
