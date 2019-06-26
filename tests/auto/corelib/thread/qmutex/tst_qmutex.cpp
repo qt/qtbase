@@ -69,7 +69,8 @@ private slots:
 static const int iterations = 100;
 
 QAtomicInt lockCount(0);
-QMutex normalMutex, recursiveMutex(QMutex::Recursive);
+QMutex normalMutex;
+QRecursiveMutex recursiveMutex;
 QSemaphore testsTurn;
 QSemaphore threadsTurn;
 
@@ -993,9 +994,9 @@ public:
     QMutex mutex;
     QWaitCondition cond;
 
-    QMutex &test_mutex;
+    QRecursiveMutex &test_mutex;
 
-    inline rmutex_Thread(QMutex &m) : test_mutex(m) { }
+    inline rmutex_Thread(QRecursiveMutex &m) : test_mutex(m) { }
 
     void run()
     {
@@ -1024,7 +1025,7 @@ void tst_QMutex::lock_unlock_locked_tryLock()
     QMutex mutex;
     mutex_Thread thread(mutex);
 
-    QMutex rmutex(QMutex::Recursive);
+    QRecursiveMutex rmutex;
     rmutex_Thread rthread(rmutex);
 
     for (int i = 0; i < iterations; ++i) {
