@@ -56,7 +56,7 @@
 #include "qplatformdefs.h"
 #include "QtCore/qatomic.h"
 #include "QtCore/qdatetime.h"
-#include "QtCore/qpair.h"
+#include "QtCore/qshareddata.h"
 
 #if QT_CONFIG(timezone)
 #include "qtimezone.h"
@@ -64,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDateTimePrivate
+class QDateTimePrivate : public QSharedData
 {
 public:
     // forward the declarations from QDateTime (this makes them public)
@@ -110,13 +110,6 @@ public:
         DaylightMask        = SetToStandardTime | SetToDaylightTime
     };
 
-    QDateTimePrivate() : m_msecs(0),
-                         m_status(StatusFlag(Qt::LocalTime << TimeSpecShift)),
-                         m_offsetFromUtc(0),
-                         ref(0)
-    {
-    }
-
     static QDateTime::Data create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
                                   int offsetSeconds);
 
@@ -124,10 +117,9 @@ public:
     static QDateTime::Data create(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
 #endif // timezone
 
-    qint64 m_msecs;
-    StatusFlags m_status;
-    int m_offsetFromUtc;
-    mutable QAtomicInt ref;
+    StatusFlags m_status = StatusFlag(Qt::LocalTime << TimeSpecShift);
+    qint64 m_msecs = 0;
+    int m_offsetFromUtc = 0;
 #if QT_CONFIG(timezone)
     QTimeZone m_timeZone;
 #endif // timezone
