@@ -392,6 +392,12 @@ endif()
 function(add_qt_gui_executable target)
     if(ANDROID)
         add_library("${target}" MODULE ${ARGN})
+        # On our qmake builds we do don't compile the executables with
+        # visibility=hidden. Not having this flag set will cause the
+        # executable to have main() hidden and can then no longer be loaded
+        # through dlopen()
+        set_property(TARGET "${target}" PROPERTY C_VISIBILITY_PRESET default)
+        set_property(TARGET "${target}" PROPERTY CXX_VISIBILITY_PRESET default)
     else()
         add_executable("${target}" WIN32 MACOSX_BUNDLE ${ARGN})
     endif()
@@ -399,11 +405,6 @@ function(add_qt_gui_executable target)
 
     if(ANDROID)
         qt_android_generate_deployment_settings("${target}")
-        # On our qmake builds we do don't compile the executables with
-        # visibility=hidden. Not having this flag set will cause the
-        # executable to have main() hidden and can then no longer be loaded
-        # through dlopen()
-        target_compile_options(${target} PRIVATE -fvisibility=default)
     endif()
 endfunction()
 
