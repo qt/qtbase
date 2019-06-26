@@ -113,9 +113,6 @@ public:
     struct ExtraData
     {
         ExtraData() {}
-    #ifndef QT_NO_USERDATA
-        QVector<QObjectUserData *> userData;
-    #endif
         QList<QByteArray> propertyNames;
         QVector<QVariant> propertyValues;
         QVector<int> runningTimers;

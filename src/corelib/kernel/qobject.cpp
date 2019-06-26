@@ -233,10 +233,6 @@ QObjectPrivate::~QObjectPrivate()
 
     if (metaObject) metaObject->objectDestroyed(q_ptr);
 
-#ifndef QT_NO_USERDATA
-    if (extraData)
-        qDeleteAll(extraData->userData);
-#endif
     delete extraData;
 }
 
@@ -4187,58 +4183,6 @@ void QObject::dumpObjectInfo() const
         qDebug("        <None>");
     }
 }
-
-#ifndef QT_NO_USERDATA
-static QBasicAtomicInteger<uint> user_data_registration = Q_BASIC_ATOMIC_INITIALIZER(0);
-
-/*!
-    \internal
- */
-uint QObject::registerUserData()
-{
-    return user_data_registration.fetchAndAddRelaxed(1);
-}
-
-/*!
-    \fn QObjectUserData::QObjectUserData()
-    \internal
- */
-
-/*!
-    \internal
- */
-QObjectUserData::~QObjectUserData()
-{
-}
-
-/*!
-    \internal
- */
-void QObject::setUserData(uint id, QObjectUserData* data)
-{
-    Q_D(QObject);
-    if (!d->extraData)
-        d->extraData = new QObjectPrivate::ExtraData;
-
-    if (d->extraData->userData.size() <= (int) id)
-        d->extraData->userData.resize((int) id + 1);
-    d->extraData->userData[id] = data;
-}
-
-/*!
-    \internal
- */
-QObjectUserData* QObject::userData(uint id) const
-{
-    Q_D(const QObject);
-    if (!d->extraData)
-        return 0;
-    if ((int)id < d->extraData->userData.size())
-        return d->extraData->userData.at(id);
-    return 0;
-}
-
-#endif // QT_NO_USERDATA
 
 
 #ifndef QT_NO_DEBUG_STREAM
