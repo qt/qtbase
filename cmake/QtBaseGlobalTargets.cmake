@@ -85,6 +85,11 @@ if(APPLE)
     if(CMAKE_OSX_DEPLOYMENT_TARGET)
         list(APPEND init_platform "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
     endif()
+elseif(WIN32)
+    # On Windows compilers aren't easily mixed. Avoid that qtbase is built using cl.exe for example and then for another
+    # build gcc is picked up from %PATH%.
+    list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\")")
+    list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
 endif()
 
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
