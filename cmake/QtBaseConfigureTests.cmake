@@ -13,7 +13,7 @@ function(run_config_test_architecture)
     file(STRINGS "${_arch_file}" _arch_lines LENGTH_MINIMUM 16 LENGTH_MAXIMUM 1024 ENCODING UTF-8)
 
     foreach (_line ${_arch_lines})
-        string(LENGTH "${line}" lineLength)
+        string(LENGTH "${_line}" lineLength)
         string(FIND "${_line}" "==Qt=magic=Qt== Architecture:" _pos)
         if (_pos GREATER -1)
             math(EXPR _pos "${_pos}+29")
