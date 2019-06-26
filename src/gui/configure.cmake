@@ -103,6 +103,7 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
 endif()
 
+
 #### Tests
 
 # angle_d3d11_qdtd
@@ -766,7 +767,7 @@ qt_feature("xcb" PRIVATE
     SECTION "Platform plugins"
     LABEL "XCB"
     AUTODETECT NOT APPLE
-    CONDITION QT_FEATURE_thread AND QT_FEATURE_xkbcommon AND XCB_FOUND
+    CONDITION QT_FEATURE_thread AND QT_FEATURE_xkbcommon AND TARGET XCB::XCB
     ENABLE INPUT_xcb STREQUAL 'system' OR INPUT_xcb STREQUAL 'qt' OR INPUT_xcb STREQUAL 'yes'
 )
 qt_feature("xcb_glx_plugin" PRIVATE
