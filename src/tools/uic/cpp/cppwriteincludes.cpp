@@ -69,7 +69,7 @@ static inline QString moduleHeader(const QString &module, const QString &header)
 namespace CPP {
 
 WriteIncludes::WriteIncludes(Uic *uic)
-    : m_uic(uic), m_output(uic->output()), m_laidOut(false)
+    : m_uic(uic), m_output(uic->output())
 {
     // When possible (no namespace) use the "QtModule/QClass" convention
     // and create a re-mapping of the old header "qclass.h" to it. Do not do this

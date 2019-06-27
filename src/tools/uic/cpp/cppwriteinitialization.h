@@ -244,7 +244,7 @@ private:
     const Option &m_option;
     QString m_indent;
     QString m_dindent;
-    bool m_stdsetdef;
+    bool m_stdsetdef = true;
 
     struct Buddy
     {
@@ -294,11 +294,11 @@ private:
 
     // layout defaults
     LayoutDefaultHandler m_LayoutDefaultHandler;
-    int m_layoutMarginType;
+    int m_layoutMarginType = TopLevelMargin;
 
     QString m_generatedClass;
     QString m_mainFormVarName;
-    bool m_mainFormUsedInRetranslateUi;
+    bool m_mainFormUsedInRetranslateUi = false;
 
     QString m_delayedInitialization;
     QTextStream m_delayedOut;
@@ -309,8 +309,8 @@ private:
     QString m_delayedActionInitialization;
     QTextStream m_actionOut;
 
-    bool m_layoutWidget;
-    bool m_firstThemeIcon;
+    bool m_layoutWidget = false;
+    bool m_firstThemeIcon = true;
 };
 
 } // namespace CPP

@@ -455,22 +455,17 @@ WriteInitialization::WriteInitialization(Uic *uic) :
       m_driver(uic->driver()), m_output(uic->output()), m_option(uic->option()),
       m_indent(m_option.indent + m_option.indent),
       m_dindent(m_indent + m_option.indent),
-      m_stdsetdef(true),
-      m_layoutMarginType(TopLevelMargin),
-      m_mainFormUsedInRetranslateUi(false),
       m_delayedOut(&m_delayedInitialization, QIODevice::WriteOnly),
       m_refreshOut(&m_refreshInitialization, QIODevice::WriteOnly),
-      m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly),
-      m_layoutWidget(false),
-      m_firstThemeIcon(true)
+      m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly)
 {
 }
 
 void WriteInitialization::acceptUI(DomUI *node)
 {
-    m_actionGroupChain.push(0);
-    m_widgetChain.push(0);
-    m_layoutChain.push(0);
+    m_actionGroupChain.push(nullptr);
+    m_widgetChain.push(nullptr);
+    m_layoutChain.push(nullptr);
 
     acceptLayoutDefault(node->elementLayoutDefault());
     acceptLayoutFunction(node->elementLayoutFunction());

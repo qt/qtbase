@@ -95,7 +95,7 @@ bool CustomWidgetsInfo::extendsOneOf(const QString &classNameIn,
 
 bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
 {
-    if (const DomCustomWidget *dcw = m_customWidgets.value(className, 0))
+    if (const DomCustomWidget *dcw = m_customWidgets.value(className, nullptr))
         if (dcw->hasElementContainer())
             return dcw->elementContainer() != 0;
     return false;
@@ -111,7 +111,7 @@ QString CustomWidgetsInfo::realClassName(const QString &className) const
 
 QString CustomWidgetsInfo::customWidgetAddPageMethod(const QString &name) const
 {
-    if (DomCustomWidget *dcw = m_customWidgets.value(name, 0))
+    if (DomCustomWidget *dcw = m_customWidgets.value(name, nullptr))
         return dcw->elementAddPageMethod();
     return QString();
 }
