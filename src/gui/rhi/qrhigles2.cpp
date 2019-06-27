@@ -175,12 +175,32 @@ QT_BEGIN_NAMESPACE
 #define GL_DEPTH_COMPONENT16              0x81A5
 #endif
 
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24              0x81A6
+#endif
+
 #ifndef GL_DEPTH_COMPONENT32F
 #define GL_DEPTH_COMPONENT32F             0x8CAC
 #endif
 
+#ifndef GL_STENCIL_INDEX
+#define GL_STENCIL_INDEX                  0x1901
+#endif
+
+#ifndef GL_STENCIL_INDEX8
+#define GL_STENCIL_INDEX8                 0x8D48
+#endif
+
 #ifndef GL_DEPTH24_STENCIL8
 #define GL_DEPTH24_STENCIL8               0x88F0
+#endif
+
+#ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#define GL_DEPTH_STENCIL_ATTACHMENT       0x821A
+#endif
+
+#ifndef GL_DEPTH_STENCIL
+#define GL_DEPTH_STENCIL                  0x84F9
 #endif
 
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
@@ -394,10 +414,17 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.floatFormats = caps.ctxMajor >= 3;
     caps.depthTexture = caps.ctxMajor >= 3;
     caps.packedDepthStencil = f->hasOpenGLExtension(QOpenGLExtensions::PackedDepthStencil);
+#ifdef Q_OS_WASM
+    caps.needsDepthStencilCombinedAttach = true;
+#else
+    caps.needsDepthStencilCombinedAttach = false;
+#endif
     caps.srgbCapableDefaultFramebuffer = f->hasOpenGLExtension(QOpenGLExtensions::SRGBFrameBuffer);
     caps.coreProfile = actualFormat.profile() == QSurfaceFormat::CoreProfile;
     caps.uniformBuffers = caps.ctxMajor >= 3 && (caps.gles || caps.ctxMinor >= 1);
     caps.elementIndexUint = f->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
+    caps.depth24 = f->hasOpenGLExtension(QOpenGLExtensions::Depth24);
+    caps.rgba8Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats);
 
     nativeHandlesStruct.context = ctx;
 
@@ -2261,21 +2288,30 @@ bool QGles2RenderBuffer::build()
     switch (m_type) {
     case QRhiRenderBuffer::DepthStencil:
         if (rhiD->caps.msaaRenderBuffer && samples > 1) {
-            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8,
+            const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
+            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, storage,
                                                       m_pixelSize.width(), m_pixelSize.height());
+            stencilRenderbuffer = 0;
+        } else if (rhiD->caps.packedDepthStencil || rhiD->caps.needsDepthStencilCombinedAttach) {
+            const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, storage,
+                                           m_pixelSize.width(), m_pixelSize.height());
+            stencilRenderbuffer = 0;
         } else {
-            if (rhiD->caps.packedDepthStencil) {
-                rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-                                               m_pixelSize.width(), m_pixelSize.height());
-                stencilRenderbuffer = 0;
-            } else {
-                rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_ATTACHMENT,
-                                               m_pixelSize.width(), m_pixelSize.height());
-                rhiD->f->glGenRenderbuffers(1, &stencilRenderbuffer);
-                rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderbuffer);
-                rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_ATTACHMENT,
-                                               m_pixelSize.width(), m_pixelSize.height());
+            GLenum depthStorage = GL_DEPTH_COMPONENT;
+            if (rhiD->caps.gles) {
+                if (rhiD->caps.depth24)
+                    depthStorage = GL_DEPTH_COMPONENT24;
+                else
+                    depthStorage = GL_DEPTH_COMPONENT16; // plain ES 2.0 only has this
             }
+            const GLenum stencilStorage = rhiD->caps.gles ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, depthStorage,
+                                           m_pixelSize.width(), m_pixelSize.height());
+            rhiD->f->glGenRenderbuffers(1, &stencilRenderbuffer);
+            rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderbuffer);
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, stencilStorage,
+                                           m_pixelSize.width(), m_pixelSize.height());
         }
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
@@ -2284,7 +2320,7 @@ bool QGles2RenderBuffer::build()
             rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8,
                                                       m_pixelSize.width(), m_pixelSize.height());
         else
-            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8,
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA4,
                                            m_pixelSize.width(), m_pixelSize.height());
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
@@ -2667,11 +2703,19 @@ bool QGles2TextureRenderTarget::build()
     if (hasDepthStencil) {
         if (m_desc.depthStencilBuffer()) {
             QGles2RenderBuffer *depthRbD = QRHI_RES(QGles2RenderBuffer, m_desc.depthStencilBuffer());
-            rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRbD->renderbuffer);
-            if (depthRbD->stencilRenderbuffer)
-                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRbD->stencilRenderbuffer);
-            else // packed
-                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRbD->renderbuffer);
+            if (rhiD->caps.needsDepthStencilCombinedAttach) {
+                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                                   depthRbD->renderbuffer);
+            } else {
+                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                                   depthRbD->renderbuffer);
+                if (depthRbD->stencilRenderbuffer)
+                    rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                                       depthRbD->stencilRenderbuffer);
+                else // packed
+                    rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                                       depthRbD->renderbuffer);
+            }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthRbD->pixelSize();
                 d.sampleCount = depthRbD->samples;

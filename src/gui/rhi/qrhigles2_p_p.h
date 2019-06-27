@@ -638,10 +638,12 @@ public:
               floatFormats(false),
               depthTexture(false),
               packedDepthStencil(false),
+              needsDepthStencilCombinedAttach(false),
               srgbCapableDefaultFramebuffer(false),
               coreProfile(false),
               uniformBuffers(false),
-              elementIndexUint(false)
+              elementIndexUint(false),
+              depth24(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -662,10 +664,13 @@ public:
         uint floatFormats : 1;
         uint depthTexture : 1;
         uint packedDepthStencil : 1;
+        uint needsDepthStencilCombinedAttach : 1;
         uint srgbCapableDefaultFramebuffer : 1;
         uint coreProfile : 1;
         uint uniformBuffers : 1;
         uint elementIndexUint : 1;
+        uint depth24 : 1;
+        uint rgba8Format : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;
