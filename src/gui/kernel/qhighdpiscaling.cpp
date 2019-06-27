@@ -452,52 +452,30 @@ QDpi QHighDpiScaling::logicalDpi()
     return m_logicalDpi;
 }
 
-qreal QHighDpiScaling::factor(const QScreen *screen)
-{
-    // Fast path for when scaling in Qt is not used at all.
-    if (!m_active)
-        return qreal(1.0);
-
-    // The effective factor for a given screen is the product of the
-    // screen and global sub-factors
-    qreal factor = m_factor;
-    if (screen)
-        factor *= screenSubfactor(screen->handle());
-    return factor;
-}
-
-qreal QHighDpiScaling::factor(const QPlatformScreen *platformScreen)
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *platformScreen, QPoint *nativePosition)
 {
     if (!m_active)
-        return qreal(1.0);
-
-    return m_factor * screenSubfactor(platformScreen);
+        return { qreal(1), QPoint() };
+    const QPlatformScreen *actualScreen = nativePosition ?
+        platformScreen->screenForPosition(*nativePosition) : platformScreen;
+    return { m_factor * screenSubfactor(actualScreen), actualScreen->geometry().topLeft() };
 }
 
-qreal QHighDpiScaling::factor(const QWindow *window)
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QScreen *screen, QPoint *nativePosition)
 {
     if (!m_active)
-        return qreal(1.0);
-
-    return factor(window ? window->screen() : QGuiApplication::primaryScreen());
+        return { qreal(1), QPoint() };
+    if (!screen)
+        return { m_factor, QPoint() }; // the global factor
+    return scaleAndOrigin(screen->handle(), nativePosition);
 }
 
-QPoint QHighDpiScaling::origin(const QScreen *screen)
+QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *window, QPoint *nativePosition)
 {
-    return screen->geometry().topLeft();
-}
-
-QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
-{
-    return platformScreen->geometry().topLeft();
-}
-
-QPoint QHighDpiScaling::origin(const QWindow *window)
-{
-    if (window && window->isTopLevel() && window->screen())
-        return window->screen()->geometry().topLeft();
-
-    return QPoint(0, 0);
+    if (!m_active)
+        return { qreal(1), QPoint() };
+    QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
+    return scaleAndOrigin(screen, nativePosition);
 }
 
 #endif //QT_NO_HIGHDPISCALING

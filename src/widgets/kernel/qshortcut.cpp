@@ -189,10 +189,15 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
     }
 #endif
 
-    /* if a floating tool window is active, keep shortcuts on the
-     * parent working */
-    if (active_window != tlw && active_window && active_window->windowType() == Qt::Tool && active_window->parentWidget()) {
-        active_window = active_window->parentWidget()->window();
+    if (active_window && active_window != tlw) {
+        /* if a floating tool window is active, keep shortcuts on the parent working.
+         * and if a popup window is active (f.ex a completer), keep shortcuts on the
+         * focus proxy working */
+        if (active_window->windowType() == Qt::Tool && active_window->parentWidget()) {
+            active_window = active_window->parentWidget()->window();
+        } else if (active_window->windowType() == Qt::Popup && active_window->focusProxy()) {
+            active_window = active_window->focusProxy()->window();
+        }
     }
 
     if (active_window != tlw) {

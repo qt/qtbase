@@ -8,9 +8,11 @@ DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
 
 SOURCES += \
+    qvkconvenience.cpp \
     qbasicvulkanplatforminstance.cpp
 
 HEADERS += \
+    qvkconvenience_p.h \
     qbasicvulkanplatforminstance_p.h
 
 load(qt_module)
