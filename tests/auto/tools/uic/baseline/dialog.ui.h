@@ -52,8 +52,6 @@ public:
 
 
         retranslateUi(Dialog);
-
-        QMetaObject::connectSlotsByName(Dialog);
     } // setupUi
 
     void retranslateUi(QDialog *Dialog)

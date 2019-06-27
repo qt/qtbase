@@ -311,6 +311,7 @@ private:
 
     bool m_layoutWidget = false;
     bool m_firstThemeIcon = true;
+    bool m_connectSlotsByName = true;
 };
 
 } // namespace CPP

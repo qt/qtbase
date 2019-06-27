@@ -467,6 +467,9 @@ void WriteInitialization::acceptUI(DomUI *node)
     m_widgetChain.push(nullptr);
     m_layoutChain.push(nullptr);
 
+    if (node->hasAttributeConnectslotsbyname())
+        m_connectSlotsByName = node->attributeConnectslotsbyname();
+
     acceptLayoutDefault(node->elementLayoutDefault());
     acceptLayoutFunction(node->elementLayoutFunction());
 
@@ -536,7 +539,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (!m_delayedInitialization.isEmpty())
         m_output << "\n" << m_delayedInitialization << "\n";
 
-    if (m_option.autoConnection) {
+    if (m_option.autoConnection && m_connectSlotsByName) {
         m_output << "\n" << m_indent << "QMetaObject" << language::qualifier
             << "connectSlotsByName(" << varName << ')' << language::eol;
     }

@@ -76,6 +76,10 @@ void DomUI::read(QXmlStreamReader &reader)
             setAttributeIdbasedtr(attribute.value() == QLatin1String("true"));
             continue;
         }
+        if (name == QLatin1String("connectslotsbyname")) {
+            setAttributeConnectslotsbyname(attribute.value() == QLatin1String("true"));
+            continue;
+        }
         if (name == QLatin1String("stdsetdef")) {
             setAttributeStdsetdef(attribute.value().toInt());
             continue;
@@ -208,6 +212,9 @@ void DomUI::write(QXmlStreamWriter &writer, const QString &tagName) const
 
     if (hasAttributeIdbasedtr())
         writer.writeAttribute(QStringLiteral("idbasedtr"), (attributeIdbasedtr() ? QLatin1String("true") : QLatin1String("false")));
+
+    if (hasAttributeConnectslotsbyname())
+        writer.writeAttribute(QStringLiteral("connectslotsbyname"), (attributeConnectslotsbyname() ? QLatin1String("true") : QLatin1String("false")));
 
     if (hasAttributeStdsetdef())
         writer.writeAttribute(QStringLiteral("stdsetdef"), QString::number(attributeStdsetdef()));
