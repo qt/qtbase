@@ -322,8 +322,8 @@ public:
 protected:
     void timerEvent(QTimerEvent * event) override;
 
-    QMutex mutex;
-    int sweepTimerId;
+    QRecursiveMutex mutex;
+    int sweepTimerId = -1;
     //socket descriptor, data, timestamp
     QHash<int, QSocks5BindData *> store;
 };
@@ -331,8 +331,6 @@ protected:
 Q_GLOBAL_STATIC(QSocks5BindStore, socks5BindStore)
 
 QSocks5BindStore::QSocks5BindStore()
-    : mutex(QMutex::Recursive)
-    , sweepTimerId(-1)
 {
     QCoreApplication *app = QCoreApplication::instance();
     if (app && app->thread() != thread())
