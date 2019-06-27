@@ -864,6 +864,18 @@ void tst_QTextDocument::toHtml_data()
     {
         CREATE_DOC_AND_CURSOR();
 
+        QTextCharFormat fmt;
+        fmt.setFontFamily("Times");
+        fmt.setFontFamilies(QStringList{ "Times", "serif" });
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("font-family-with-fallback") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Times','serif';\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
         QTextBlockFormat fmt;
         fmt.setNonBreakableLines(true);
         cursor.insertBlock(fmt);

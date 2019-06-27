@@ -2306,13 +2306,31 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
     style()->drawComplexControl(QStyle::CC_ComboBox, &optCombo, &p, this);
 }
 
+/*
+    Returns the string for AM and PM markers.
+
+    If a translation for "AM" and "PM" is installed, then use that.
+    Otherwise, use the default implementation, which uses the locale.
+*/
 QString QDateTimeEditPrivate::getAmPmText(AmPm ap, Case cs) const
 {
+    QString original;
+    QString translated;
     if (ap == AmText) {
-        return (cs == UpperCase ? QDateTimeParser::tr("AM") : QDateTimeParser::tr("am"));
+        original = QLatin1String(cs == UpperCase ? "AM" : "am");
+        translated = (cs == UpperCase ? QDateTimeParser::tr("AM") : QDateTimeParser::tr("am"));
     } else {
-        return (cs == UpperCase ? QDateTimeParser::tr("PM") : QDateTimeParser::tr("pm"));
+        original = QLatin1String(cs == UpperCase ? "PM" : "pm");
+        translated = (cs == UpperCase ? QDateTimeParser::tr("PM") : QDateTimeParser::tr("pm"));
     }
+
+    // This logic fails if a translation exists but doesn't change the string,
+    // which we can accept as a corner-case for which a locale-derived answer
+    // will be acceptable.
+    if (original != translated)
+        return translated;
+
+    return QDateTimeParser::getAmPmText(ap, cs);
 }
 
 int QDateTimeEditPrivate::absoluteIndex(QDateTimeEdit::Section s, int index) const

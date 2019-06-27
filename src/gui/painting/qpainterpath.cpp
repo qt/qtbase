@@ -675,8 +675,9 @@ void QPainterPath::reserve(int size)
 {
     Q_D(QPainterPath);
     if ((!d && size > 0) || (d && d->elements.capacity() < size)) {
+        ensureData();
         detach();
-        d->elements.reserve(size);
+        d_func()->elements.reserve(size);
     }
 }
 

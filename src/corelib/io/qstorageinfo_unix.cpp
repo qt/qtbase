@@ -220,7 +220,7 @@ static bool shouldIncludeFs(const QStorageIterator &it)
         return false;
     }
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
     if (it.fileSystemType() == "rootfs")
         return false;
 #endif
@@ -849,7 +849,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
         info.d->device = it.device();
         info.d->fileSystemType = it.fileSystemType();
         info.d->subvolume = it.subvolume();
-        if (info.bytesTotal() == 0)
+        if (info.bytesTotal() == 0 && info != root())
             continue;
         volumes.append(info);
     }
