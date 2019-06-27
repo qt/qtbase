@@ -47,6 +47,7 @@
 #include "qendian.h"
 #include "qfile.h"
 #include "qlist.h"
+#include <private/qlocking_p.h>
 #include "qstringlist.h"
 #include "qvarlengtharray.h"
 #if !defined(QT_BOOTSTRAPPED)
@@ -86,7 +87,7 @@
 #endif // icu
 #endif // QT_BOOTSTRAPPED
 
-#include "qmutex.h"
+#include <mutex>
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -100,8 +101,13 @@ QT_BEGIN_NAMESPACE
 typedef QList<QTextCodec*>::ConstIterator TextCodecListConstIt;
 typedef QList<QByteArray>::ConstIterator ByteArrayListConstIt;
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
-QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
+Q_GLOBAL_STATIC(QRecursiveMutex, textCodecsMutex);
+
+class TextCodecsMutexLocker {
+    using Lock = decltype(qt_unique_lock(std::declval<QRecursiveMutex&>()));
+    // ### FIXME: this is used when textCodecsMutex already == nullptr
+    const Lock lock = qt_unique_lock(textCodecsMutex());
+};
 
 #if !QT_CONFIG(icu)
 static char qtolower(char c)
@@ -162,7 +168,7 @@ static QTextCodec *setupLocaleMapper()
     QTextCodec *locale = nullptr;
 
     {
-        QMutexLocker locker(textCodecsMutex());
+        const TextCodecsMutexLocker locker;
         if (globalData->allCodecs.isEmpty())
             setup();
     }
@@ -477,7 +483,7 @@ QTextCodec::ConverterState::~ConverterState()
 */
 QTextCodec::QTextCodec()
 {
-    QMutexLocker locker(textCodecsMutex());
+    const TextCodecsMutexLocker locker;
 
     QCoreGlobalData *globalInstance = QCoreGlobalData::instance();
     if (globalInstance->allCodecs.isEmpty())
@@ -501,7 +507,7 @@ QTextCodec::~QTextCodec()
 
     globalData->codecForLocale.testAndSetRelaxed(this, nullptr);
 
-    QMutexLocker locker(textCodecsMutex());
+    const TextCodecsMutexLocker locker;
 
     globalData->allCodecs.removeOne(this);
 
@@ -534,7 +540,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     if (name.isEmpty())
         return nullptr;
 
-    QMutexLocker locker(textCodecsMutex());
+    const TextCodecsMutexLocker locker;
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
@@ -578,7 +584,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 */
 QTextCodec* QTextCodec::codecForMib(int mib)
 {
-    QMutexLocker locker(textCodecsMutex());
+    const TextCodecsMutexLocker locker;
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
@@ -624,7 +630,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 */
 QList<QByteArray> QTextCodec::availableCodecs()
 {
-    QMutexLocker locker(textCodecsMutex());
+    const TextCodecsMutexLocker locker;
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (globalData->allCodecs.isEmpty())
@@ -656,7 +662,7 @@ QList<int> QTextCodec::availableMibs()
 #if QT_CONFIG(icu)
     return QIcuCodec::availableMibs();
 #else
-    QMutexLocker locker(textCodecsMutex());
+    const TextCodecsMutexLocker locker;
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (globalData->allCodecs.isEmpty())
@@ -706,9 +712,8 @@ QTextCodec* QTextCodec::codecForLocale()
     QTextCodec *codec = globalData->codecForLocale.loadAcquire();
     if (!codec) {
 #if QT_CONFIG(icu)
-        textCodecsMutex()->lock();
+        const TextCodecsMutexLocker locker;
         codec = QIcuCodec::defaultCodecUnlocked();
-        textCodecsMutex()->unlock();
 #else
         // setupLocaleMapper locks as necessary
         codec = setupLocaleMapper();
