@@ -30,6 +30,8 @@
 #include <QtTest/QtTest>
 #include <qapplication.h>
 #include <qtextedit.h>
+#include <qlineedit.h>
+#include <qcompleter.h>
 #include <qpushbutton.h>
 #include <qmainwindow.h>
 #include <qstatusbar.h>
@@ -120,6 +122,7 @@ private slots:
     void unicodeCompare();
     void context();
     void duplicatedShortcutOverride();
+    void shortcutToFocusProxy();
 
 protected:
     static Qt::KeyboardModifiers toButtons( int key );
@@ -1277,6 +1280,29 @@ void tst_QShortcut::testElement()
         sendKeyEvents(k1, c1, k2, c2, k3, c3, k4, c4);
         QCOMPARE((int)currentResult, (int)result);
     }
+}
+
+void tst_QShortcut::shortcutToFocusProxy()
+{
+    QLineEdit le;
+    QCompleter completer;
+    QStringListModel *slm = new QStringListModel(QStringList() << "a0" << "a1" << "a2", &completer);
+    completer.setModel(slm);
+    completer.setCompletionMode(QCompleter::PopupCompletion);
+    le.setCompleter(&completer);
+    QShortcut *shortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_S), &le);
+    QObject::connect(shortcut, &QShortcut::activated, &le, &QLineEdit::clear);
+    le.setFocus();
+    le.show();
+
+    QVERIFY(QTest::qWaitForWindowActive(&le));
+    QCOMPARE(QApplication::focusWidget(), &le);
+    QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_A);
+
+    QCOMPARE(le.text(), QString::fromLocal8Bit("a"));
+    QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_Alt);
+    QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_S, Qt::AltModifier);
+    QCOMPARE(le.text(), QString());
 }
 
 QTEST_MAIN(tst_QShortcut)
