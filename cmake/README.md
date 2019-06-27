@@ -137,13 +137,22 @@ Vcpkg for Android can be set up using the following steps:
 
   * ```git clone -b qt https://github.com/tronical/vcpkg```
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
-  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``arm-android``
+  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to on of the following values:
+    * ``arm-android`` (armeabi-v7a)
+    * ``arm64-android`` (arm64v8)
+    * ``x86-android`` (x86)
+    * ``x64-android`` (x86_64)
   * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
   * Set the ``ANDROID_NDK_HOME`` environment variable to the path where you have installed the Android NDK.
   * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
   * Build Qt dependencies:  ``vcpkg install @qt-packages-android.txt``
 
 When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DANDROID_STL=c++_shared -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
+
+If you don't supply the configuration argument ``-DANDROID_ABI=...``, it will default to ``armeabi-v7a``. To target other architectures, use on of the following values:
+  * arm64: ``-DANDROID_ABI=arm64-v8``
+  * x86: ``-DANDROID_ABI=x86``
+  * x86_64: ``-DANDROID_ABI=x86_64``
 
 # Debugging CMake files
 
