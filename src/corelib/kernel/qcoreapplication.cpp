@@ -2657,7 +2657,7 @@ QString QCoreApplication::applicationVersion()
 
 #if QT_CONFIG(library)
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, libraryPathMutex)
 
 /*!
     Returns a list of paths that the application will search when
