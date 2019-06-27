@@ -208,7 +208,7 @@ QFontPrivate::~QFontPrivate()
     scFont = 0;
 }
 
-extern QMutex *qt_fontdatabase_mutex();
+extern QRecursiveMutex *qt_fontdatabase_mutex();
 
 #define QT_FONT_ENGINE_FROM_DATA(data, script) data->engines[script]
 

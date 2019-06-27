@@ -705,7 +705,7 @@ static QStringList familyList(const QFontDef &req)
 }
 
 Q_GLOBAL_STATIC(QFontDatabasePrivate, privateDb)
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, fontDatabaseMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, fontDatabaseMutex)
 
 // used in qguiapplication.cpp
 void qt_cleanupFontDatabase()
@@ -717,8 +717,8 @@ void qt_cleanupFontDatabase()
     }
 }
 
-// used in qfontengine_x11.cpp
-QMutex *qt_fontdatabase_mutex()
+// used in qfont.cpp
+QRecursiveMutex *qt_fontdatabase_mutex()
 {
     return fontDatabaseMutex();
 }
