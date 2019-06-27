@@ -521,7 +521,9 @@ private slots:
     void stringRef_local8Bit_data();
     void stringRef_local8Bit();
     void fromLatin1();
+#if QT_DEPRECATED_SINCE(5, 0)
     void fromAscii();
+#endif
     void fromUcs4();
     void toUcs4();
     void arg();
@@ -4284,9 +4286,9 @@ void tst_QString::fromLocal8Bit_data()
     //QTest::newRow("null5") << QByteArray() << 5 << QString();
     //QTest::newRow("empty-1") << QByteArray("\0abcd", 5) << -1 << QString();
     //QTest::newRow("empty0") << QByteArray() << 0 << QString();
-    //QTest::newRow("empty5") << QByteArray("\0abcd", 5) << 5 << QString::fromAscii("\0abcd", 5);
-    //QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << -1 << QString::fromAscii("ab");
-    //QTest::newRow("other5") << QByteArray("ab\0cd", 5) << 5 << QString::fromAscii("ab\0cd", 5);
+    //QTest::newRow("empty5") << QByteArray("\0abcd", 5) << 5 << QString::fromLatin1("\0abcd", 5);
+    //QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << -1 << QString::fromLatin1("ab");
+    //QTest::newRow("other5") << QByteArray("ab\0cd", 5) << 5 << QString::fromLatin1("ab\0cd", 5);
 }
 
 void tst_QString::fromLocal8Bit()
@@ -4590,6 +4592,7 @@ void tst_QString::fromLatin1()
     QVERIFY(a.size() == 5);
 }
 
+#if QT_DEPRECATED_SINCE(5, 0)
 void tst_QString::fromAscii()
 {
     QString a;
@@ -4610,6 +4613,7 @@ void tst_QString::fromAscii()
     a = QString::fromAscii("\0abcd", 5);
     QVERIFY(a.size() == 5);
 }
+#endif
 
 void tst_QString::fromUcs4()
 {

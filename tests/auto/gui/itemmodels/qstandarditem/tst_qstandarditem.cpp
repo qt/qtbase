@@ -311,12 +311,14 @@ void tst_QStandardItem::getSetFlags()
     item.setCheckable(true);
     QCOMPARE(item.checkState(), Qt::Checked);
 
+#if QT_DEPRECATED_SINCE(5, 6)
     // deprecated API
     item.setTristate(true);
     QVERIFY(item.isTristate());
     QVERIFY(item.flags() & Qt::ItemIsTristate);
     item.setTristate(false);
     QVERIFY(!(item.flags() & Qt::ItemIsTristate));
+#endif
 }
 
 void tst_QStandardItem::getSetRowAndColumnCount()

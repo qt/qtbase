@@ -1807,16 +1807,36 @@ void tst_QMetaType::automaticTemplateRegistration()
         QCOMPARE(extractedPtr.data()->objectName(), sp.data()->objectName()); \
     }
 
+#if QT_DEPRECATED_SINCE(5, 0)
     TEST_NONOWNING_SMARTPOINTER(QWeakPointer, QObject, WeakPointerToQObject, qWeakPointerFromVariant)
     TEST_NONOWNING_SMARTPOINTER(QWeakPointer, QFile, WeakPointerToQObject, qWeakPointerFromVariant)
     TEST_NONOWNING_SMARTPOINTER(QWeakPointer, QTemporaryFile, WeakPointerToQObject, qWeakPointerFromVariant)
     TEST_NONOWNING_SMARTPOINTER(QWeakPointer, MyObject, WeakPointerToQObject, qWeakPointerFromVariant)
+#endif
 
     TEST_NONOWNING_SMARTPOINTER(QPointer, QObject, TrackingPointerToQObject, qPointerFromVariant)
     TEST_NONOWNING_SMARTPOINTER(QPointer, QFile, TrackingPointerToQObject, qPointerFromVariant)
     TEST_NONOWNING_SMARTPOINTER(QPointer, QTemporaryFile, TrackingPointerToQObject, qPointerFromVariant)
     TEST_NONOWNING_SMARTPOINTER(QPointer, MyObject, TrackingPointerToQObject, qPointerFromVariant)
 #undef TEST_NONOWNING_SMARTPOINTER
+
+
+#define TEST_WEAK_SMARTPOINTER(ELEMENT_TYPE, FLAG_TEST) \
+    { \
+        ELEMENT_TYPE elem; \
+        QSharedPointer < ELEMENT_TYPE > shared(new ELEMENT_TYPE); \
+        QWeakPointer < ELEMENT_TYPE > sp(shared); \
+        sp.toStrongRef()->setObjectName("Test name"); \
+        QVariant v = QVariant::fromValue(sp); \
+        QCOMPARE(v.typeName(), "QWeakPointer<" #ELEMENT_TYPE ">"); \
+        QVERIFY(QMetaType::typeFlags(::qMetaTypeId<QWeakPointer < ELEMENT_TYPE > >()) & QMetaType::FLAG_TEST); \
+    }
+
+    TEST_WEAK_SMARTPOINTER(QObject, WeakPointerToQObject)
+    TEST_WEAK_SMARTPOINTER(QFile, WeakPointerToQObject)
+    TEST_WEAK_SMARTPOINTER(QTemporaryFile, WeakPointerToQObject)
+    TEST_WEAK_SMARTPOINTER(MyObject, WeakPointerToQObject)
+#undef TEST_WEAK_SMARTPOINTER
 }
 
 template <typename T>

@@ -1036,7 +1036,9 @@ void tst_QFileInfo::systemFiles()
     QCOMPARE(fi.metadataChangeTime(), fi.lastModified());   // On Windows, they're the same
     QVERIFY(fi.birthTime().isValid());
     QVERIFY(fi.birthTime() <= fi.lastModified());
+#if QT_DEPRECATED_SINCE(5, 10)
     QCOMPARE(fi.created(), fi.birthTime());                 // On Windows, they're the same
+#endif
 }
 
 void tst_QFileInfo::compare_data()
@@ -2042,7 +2044,9 @@ static void stateCheck(const QFileInfo &info, const QString &dirname, const QStr
 
     QCOMPARE(info.permissions(), QFile::Permissions());
 
+#if QT_DEPRECATED_SINCE(5, 10)
     QVERIFY(!info.created().isValid());
+#endif
     QVERIFY(!info.birthTime().isValid());
     QVERIFY(!info.metadataChangeTime().isValid());
     QVERIFY(!info.lastRead().isValid());

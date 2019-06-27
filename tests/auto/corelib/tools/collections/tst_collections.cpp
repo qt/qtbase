@@ -1994,13 +1994,17 @@ void tst_Collections::qstring()
     QString nonNull = "";
     QVERIFY(null.left(10).isNull());
     QVERIFY(null.mid(0).isNull());
+    QVERIFY(null.isNull());
+    QVERIFY(!nonNull.isNull());
 
+#if QT_DEPRECATED_SINCE(5, 9)
     QVERIFY(null == QString::null);
     QVERIFY(QString::null  == null);
     QVERIFY(nonNull != QString::null);
     QVERIFY(QString::null != nonNull);
     QVERIFY(null == nonNull);
     QVERIFY(QString::null == QString::null);
+#endif
 
     QString fill = "123";
     fill.fill('a');
