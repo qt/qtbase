@@ -68,7 +68,7 @@ class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
 
 public:
     QNetworkSessionPrivate() : QObject(),
-        state(QNetworkSession::Invalid), isOpen(false), mutex(QMutex::Recursive)
+        state(QNetworkSession::Invalid), isOpen(false)
     {}
     virtual ~QNetworkSessionPrivate()
     {}
@@ -147,7 +147,7 @@ protected:
     QNetworkSession::State state;
     bool isOpen;
 
-    QMutex mutex;
+    QRecursiveMutex mutex;
 };
 
 QT_END_NAMESPACE

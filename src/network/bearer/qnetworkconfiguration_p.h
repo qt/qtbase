@@ -65,7 +65,6 @@ class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
     QNetworkConfigurationPrivate() :
-        mutex(QMutex::Recursive),
         type(QNetworkConfiguration::Invalid),
         purpose(QNetworkConfiguration::UnknownPurpose),
         bearerType(QNetworkConfiguration::BearerUnknown),
@@ -73,7 +72,7 @@ public:
         timeout(DefaultTimeout)
     {}
 
-    mutable QMutex mutex;
+    mutable QRecursiveMutex mutex;
 
     QString name;
     QString id;

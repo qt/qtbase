@@ -62,7 +62,7 @@ static bool hasUsedConfiguration(const QHash<QString, QNetworkConfigurationPriva
 }
 
 QBearerEngine::QBearerEngine(QObject *parent)
-    : QObject(parent), mutex(QMutex::Recursive)
+    : QObject(parent)
 {
 }
 
