@@ -611,6 +611,7 @@ public:
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     int effectiveSampleCount(int sampleCount) const;
+    QSize safeTextureSize(const QSize &size) const;
 
     QOpenGLContext *ctx = nullptr;
     bool importedContext = false;

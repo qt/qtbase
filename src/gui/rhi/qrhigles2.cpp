@@ -497,6 +497,43 @@ int QRhiGles2::effectiveSampleCount(int sampleCount) const
     return s;
 }
 
+static inline bool isPowerOfTwo(int x)
+{
+    // Assumption: x >= 1
+    return x == (x & -x);
+}
+
+QSize QRhiGles2::safeTextureSize(const QSize &pixelSize) const
+{
+    QSize size = pixelSize.isEmpty() ? QSize(1, 1) : pixelSize;
+
+    if (!caps.npotTexture) {
+        if (!isPowerOfTwo(size.width())) {
+            qWarning("Texture width %d is not a power of two, adjusting",
+                     size.width());
+            size.setWidth(qNextPowerOfTwo(size.width()));
+        }
+        if (!isPowerOfTwo(size.height())) {
+            qWarning("Texture height %d is not a power of two, adjusting",
+                     size.height());
+            size.setHeight(qNextPowerOfTwo(size.height()));
+        }
+    }
+
+    if (size.width() > caps.maxTextureSize) {
+        qWarning("Texture width %d exceeds maximum width %d, adjusting",
+                 size.width(), caps.maxTextureSize);
+        size.setWidth(caps.maxTextureSize);
+    }
+    if (size.height() > caps.maxTextureSize) {
+        qWarning("Texture height %d exceeds maximum height %d, adjusting",
+                 size.height(), caps.maxTextureSize);
+        size.setHeight(caps.maxTextureSize);
+    }
+
+    return size;
+}
+
 QRhiSwapChain *QRhiGles2::createSwapChain()
 {
     return new QGles2SwapChain(this);
@@ -2276,26 +2313,25 @@ bool QGles2RenderBuffer::build()
         qWarning("RenderBuffer: UsedWithSwapChainOnly is meaningless in combination with Color");
     }
 
-    if (m_pixelSize.isEmpty())
-        return false;
-
     if (!rhiD->ensureContext())
         return false;
 
     rhiD->f->glGenRenderbuffers(1, &renderbuffer);
     rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
 
+    const QSize size = rhiD->safeTextureSize(m_pixelSize);
+
     switch (m_type) {
     case QRhiRenderBuffer::DepthStencil:
         if (rhiD->caps.msaaRenderBuffer && samples > 1) {
             const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
             rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, storage,
-                                                      m_pixelSize.width(), m_pixelSize.height());
+                                                      size.width(), size.height());
             stencilRenderbuffer = 0;
         } else if (rhiD->caps.packedDepthStencil || rhiD->caps.needsDepthStencilCombinedAttach) {
             const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
             rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, storage,
-                                           m_pixelSize.width(), m_pixelSize.height());
+                                           size.width(), size.height());
             stencilRenderbuffer = 0;
         } else {
             GLenum depthStorage = GL_DEPTH_COMPONENT;
@@ -2307,21 +2343,21 @@ bool QGles2RenderBuffer::build()
             }
             const GLenum stencilStorage = rhiD->caps.gles ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
             rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, depthStorage,
-                                           m_pixelSize.width(), m_pixelSize.height());
+                                           size.width(), size.height());
             rhiD->f->glGenRenderbuffers(1, &stencilRenderbuffer);
             rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderbuffer);
             rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, stencilStorage,
-                                           m_pixelSize.width(), m_pixelSize.height());
+                                           size.width(), size.height());
         }
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
     case QRhiRenderBuffer::Color:
         if (rhiD->caps.msaaRenderBuffer && samples > 1)
             rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8,
-                                                      m_pixelSize.width(), m_pixelSize.height());
+                                                      size.width(), size.height());
         else
             rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA4,
-                                           m_pixelSize.width(), m_pixelSize.height());
+                                           size.width(), size.height());
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
     default:
@@ -2371,12 +2407,6 @@ void QGles2Texture::release()
     rhiD->unregisterResource(this);
 }
 
-static inline bool isPowerOfTwo(int x)
-{
-    // Assumption: x >= 1
-    return x == (x & -x);
-}
-
 bool QGles2Texture::prepareBuild(QSize *adjustedSize)
 {
     if (texture)
@@ -2386,9 +2416,7 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
     if (!rhiD->ensureContext())
         return false;
 
-    QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
-    if (!rhiD->caps.npotTexture && (!isPowerOfTwo(size.width()) || !isPowerOfTwo(size.height())))
-        size = QSize(qNextPowerOfTwo(size.width()), qNextPowerOfTwo(size.height()));
+    const QSize size = rhiD->safeTextureSize(m_pixelSize);
 
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
