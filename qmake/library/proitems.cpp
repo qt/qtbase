@@ -517,4 +517,9 @@ ProKey ProFile::getHashStr(const ushort *&tPtr)
     return ret;
 }
 
+QDebug operator<<(QDebug debug, const ProString &str)
+{
+    return debug << str.toQString();
+}
+
 QT_END_NAMESPACE

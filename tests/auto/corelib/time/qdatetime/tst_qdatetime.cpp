@@ -2489,17 +2489,20 @@ void tst_QDateTime::fromString_LOCALE_ILDATE()
 
 void tst_QDateTime::fromStringToStringLocale_data()
 {
+    QTest::addColumn<QLocale>("locale");
     QTest::addColumn<QDateTime>("dateTime");
 
-    QTest::newRow("data0") << QDateTime(QDate(1999, 1, 18), QTime(11, 49, 00));
+    QTest::newRow("frFR") << QLocale(QLocale::French, QLocale::France) << QDateTime(QDate(1999, 1, 18), QTime(11, 49, 00));
+    QTest::newRow("spCO") << QLocale(QLocale::Spanish, QLocale::Colombia) << QDateTime(QDate(1999, 1, 18), QTime(11, 49, 00));
 }
 
 void tst_QDateTime::fromStringToStringLocale()
 {
+    QFETCH(QLocale, locale);
     QFETCH(QDateTime, dateTime);
 
     QLocale def;
-    QLocale::setDefault(QLocale(QLocale::French, QLocale::France));
+    QLocale::setDefault(locale);
 #define ROUNDTRIP(format) \
     QCOMPARE(QDateTime::fromString(dateTime.toString(format), format), dateTime)
 
