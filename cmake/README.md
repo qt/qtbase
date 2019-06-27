@@ -147,12 +147,14 @@ Vcpkg for Android can be set up using the following steps:
   * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
   * Build Qt dependencies:  ``vcpkg install @qt-packages-android.txt``
 
-When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_NATIVE_API_LEVEL=21 -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DANDROID_STL=c++_shared -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
+When running cmake in qtbase, pass ``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
 
 If you don't supply the configuration argument ``-DANDROID_ABI=...``, it will default to ``armeabi-v7a``. To target other architectures, use on of the following values:
   * arm64: ``-DANDROID_ABI=arm64-v8``
   * x86: ``-DANDROID_ABI=x86``
   * x86_64: ``-DANDROID_ABI=x86_64``
+
+By default we set the android API level to 21. Should you need to change this supply the following configuration argument to the above CMake call: ``-DANDROID_NATIVE_API_LEVEL=${API_LEVEL}``
 
 # Debugging CMake files
 

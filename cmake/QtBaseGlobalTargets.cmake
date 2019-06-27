@@ -90,6 +90,10 @@ elseif(WIN32)
     # build gcc is picked up from %PATH%.
     list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\")")
     list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
+elseif(ANDROID)
+    list(APPEND init_platform "set(ANDROID_NATIVE_API_LEVEL \"${ANDROID_NATIVE_API_LEVEL}\" CACHE STRING \"\")")
+    list(APPEND init_platform "set(ANDROID_STL \"${ANDROID_STL}\" CACHE STRING \"\")")
+    list(APPEND init_platform "set(ANDROID_ABI \"${ANDROID_ABI}\" CACHE STRING \"\")")
 endif()
 
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
