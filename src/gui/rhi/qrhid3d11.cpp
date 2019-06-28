@@ -1480,6 +1480,8 @@ void QRhiD3D11::beginPass(QRhiCommandBuffer *cb,
 
     cbD->recordingPass = QD3D11CommandBuffer::RenderPass;
     cbD->currentTarget = rt;
+
+    cbD->resetCachedShaderResourceState();
 }
 
 void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -1556,6 +1558,8 @@ void QRhiD3D11::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch 
     cbD->commands.append(cmd);
 
     cbD->recordingPass = QD3D11CommandBuffer::ComputePass;
+
+    cbD->resetCachedShaderResourceState();
 }
 
 void QRhiD3D11::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
