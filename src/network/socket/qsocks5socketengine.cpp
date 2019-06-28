@@ -1611,8 +1611,10 @@ qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     QSocks5RevivedDatagram datagram = d->udpData->pendingDatagrams.dequeue();
     int copyLen = qMin<int>(maxlen, datagram.data.size());
     memcpy(data, datagram.data.constData(), copyLen);
-    header->senderAddress = datagram.address;
-    header->senderPort = datagram.port;
+    if (header) {
+        header->senderAddress = datagram.address;
+        header->senderPort = datagram.port;
+    }
     return copyLen;
 #else
     Q_UNUSED(data)
