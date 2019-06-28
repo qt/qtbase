@@ -1230,7 +1230,7 @@
         "ccache": {
             "label": "Using ccache",
             "autoDetect": false,
-            "condition": "config.unix && tests.ccache",
+            "condition": "tests.ccache",
             "output": [ "privateConfig" ]
         },
         "msvc_mp": {
