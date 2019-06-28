@@ -426,6 +426,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.depth24 = f->hasOpenGLExtension(QOpenGLExtensions::Depth24);
     caps.rgba8Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats);
     caps.instancing = caps.ctxMajor >= 3 && (caps.gles || caps.ctxMinor >= 3);
+    caps.baseVertex = caps.ctxMajor >= 3 && caps.ctxMinor >= 2;
 
     nativeHandlesStruct.context = ctx;
 
@@ -687,6 +688,10 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::VertexShaderPointSize:
         return true;
+    case QRhi::BaseVertex:
+        return caps.baseVertex;
+    case QRhi::BaseInstance:
+        return false; // not in ES 3.2, so won't bother
     default:
         Q_UNREACHABLE();
         return false;
@@ -934,7 +939,6 @@ void QRhiGles2::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 void QRhiGles2::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
-    Q_UNUSED(firstInstance);
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
 
@@ -944,14 +948,13 @@ void QRhiGles2::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
     cmd.args.draw.vertexCount = vertexCount;
     cmd.args.draw.firstVertex = firstVertex;
     cmd.args.draw.instanceCount = instanceCount;
+    cmd.args.draw.baseInstance = firstInstance;
     cbD->commands.append(cmd);
 }
 
 void QRhiGles2::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
                             quint32 instanceCount, quint32 firstIndex, qint32 vertexOffset, quint32 firstInstance)
 {
-    Q_UNUSED(firstInstance);
-    Q_UNUSED(vertexOffset); // no glDrawElementsBaseVertex
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
 
@@ -961,6 +964,8 @@ void QRhiGles2::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     cmd.args.drawIndexed.indexCount = indexCount;
     cmd.args.drawIndexed.firstIndex = firstIndex;
     cmd.args.drawIndexed.instanceCount = instanceCount;
+    cmd.args.drawIndexed.baseInstance = firstInstance;
+    cmd.args.drawIndexed.baseVertex = vertexOffset;
     cbD->commands.append(cmd);
 }
 
@@ -1705,16 +1710,33 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
                             quintptr(cmd.args.drawIndexed.firstIndex * indexStride + indexOffset));
                 if (cmd.args.drawIndexed.instanceCount == 1 || !caps.instancing) {
-                    f->glDrawElements(psD->drawMode,
-                                      cmd.args.drawIndexed.indexCount,
-                                      indexType,
-                                      ofs);
+                    if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
+                        f->glDrawElementsBaseVertex(psD->drawMode,
+                                                    cmd.args.drawIndexed.indexCount,
+                                                    indexType,
+                                                    ofs,
+                                                    cmd.args.drawIndexed.baseVertex);
+                    } else {
+                        f->glDrawElements(psD->drawMode,
+                                          cmd.args.drawIndexed.indexCount,
+                                          indexType,
+                                          ofs);
+                    }
                 } else {
-                    f->glDrawElementsInstanced(psD->drawMode,
-                                               cmd.args.drawIndexed.indexCount,
-                                               indexType,
-                                               ofs,
-                                               cmd.args.drawIndexed.instanceCount);
+                    if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
+                        f->glDrawElementsInstancedBaseVertex(psD->drawMode,
+                                                             cmd.args.drawIndexed.indexCount,
+                                                             indexType,
+                                                             ofs,
+                                                             cmd.args.drawIndexed.instanceCount,
+                                                             cmd.args.drawIndexed.baseVertex);
+                    } else {
+                        f->glDrawElementsInstanced(psD->drawMode,
+                                                   cmd.args.drawIndexed.indexCount,
+                                                   indexType,
+                                                   ofs,
+                                                   cmd.args.drawIndexed.instanceCount);
+                    }
                 }
             } else {
                 qWarning("No graphics pipeline active for drawIndexed; ignored");

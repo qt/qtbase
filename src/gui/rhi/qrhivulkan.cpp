@@ -3549,6 +3549,10 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return hasWideLines;
     case QRhi::VertexShaderPointSize:
         return true;
+    case QRhi::BaseVertex:
+        return true;
+    case QRhi::BaseInstance:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -4063,7 +4067,7 @@ void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 }
 
 void QRhiVulkan::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
-                quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
+                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
@@ -4078,7 +4082,7 @@ void QRhiVulkan::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
 }
 
 void QRhiVulkan::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
-                       quint32 instanceCount, quint32 firstIndex, qint32 vertexOffset, quint32 firstInstance)
+                             quint32 instanceCount, quint32 firstIndex, qint32 vertexOffset, quint32 firstInstance)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);

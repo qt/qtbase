@@ -174,6 +174,8 @@ void Window::customInit()
     qDebug("isFeatureSupported(Compute): %d", m_r->isFeatureSupported(QRhi::Compute));
     qDebug("isFeatureSupported(WideLines): %d", m_r->isFeatureSupported(QRhi::WideLines));
     qDebug("isFeatureSupported(VertexShaderPointSize): %d", m_r->isFeatureSupported(QRhi::VertexShaderPointSize));
+    qDebug("isFeatureSupported(BaseVertex): %d", m_r->isFeatureSupported(QRhi::BaseVertex));
+    qDebug("isFeatureSupported(BaseInstance): %d", m_r->isFeatureSupported(QRhi::BaseInstance));
     qDebug("Min 2D texture width/height: %d", m_r->resourceLimit(QRhi::TextureSizeMin));
     qDebug("Max 2D texture width/height: %d", m_r->resourceLimit(QRhi::TextureSizeMax));
     qDebug("Max color attachment count: %d", m_r->resourceLimit(QRhi::MaxColorAttachments));

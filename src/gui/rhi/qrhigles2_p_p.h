@@ -325,12 +325,15 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 quint32 vertexCount;
                 quint32 firstVertex;
                 quint32 instanceCount;
+                quint32 baseInstance;
             } draw;
             struct {
                 QRhiGraphicsPipeline *ps;
                 quint32 indexCount;
                 quint32 firstIndex;
                 quint32 instanceCount;
+                quint32 baseInstance;
+                qint32 baseVertex;
             } drawIndexed;
             struct {
                 QRhiGraphicsPipeline *ps;
@@ -648,7 +651,8 @@ public:
               elementIndexUint(false),
               depth24(false),
               rgba8Format(false),
-              instancing(false)
+              instancing(false),
+              baseVertex(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -677,6 +681,7 @@ public:
         uint depth24 : 1;
         uint rgba8Format : 1;
         uint instancing : 1;
+        uint baseVertex : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;

@@ -1318,7 +1318,9 @@ public:
         ElementIndexUint,
         Compute,
         WideLines,
-        VertexShaderPointSize
+        VertexShaderPointSize,
+        BaseVertex,
+        BaseInstance
     };
 
     enum BeginFrameFlag {

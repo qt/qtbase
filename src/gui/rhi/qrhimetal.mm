@@ -527,6 +527,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::VertexShaderPointSize:
         return true;
+    case QRhi::BaseVertex:
+        return true;
+    case QRhi::BaseInstance:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
