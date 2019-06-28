@@ -1991,6 +1991,23 @@ inline void fetchTransformed_pixelBounds(int max, int l1, int l2, int &v)
     }
 }
 
+static inline bool canUseFastMatrixPath(const qreal cx, const qreal cy, const qsizetype length, const QSpanData *data)
+{
+    if (Q_UNLIKELY(!data->fast_matrix))
+        return false;
+
+    qreal fx = (data->m21 * cy + data->m11 * cx + data->dx) * fixed_scale;
+    qreal fy = (data->m22 * cy + data->m12 * cx + data->dy) * fixed_scale;
+    qreal minc = std::min(fx, fy);
+    qreal maxc = std::max(fx, fy);
+    fx += std::trunc(data->m11 * fixed_scale) * length;
+    fy += std::trunc(data->m12 * fixed_scale) * length;
+    minc = std::min(minc, std::min(fx, fy));
+    maxc = std::max(maxc, std::max(fx, fy));
+
+    return minc >= std::numeric_limits<int>::min() && maxc <= std::numeric_limits<int>::max();
+}
+
 template<TextureBlendType blendType, QPixelLayout::BPP bpp, typename T>
 static void QT_FASTCALL fetchTransformed_fetcher(T *buffer, const QSpanData *data,
                                                  int y, int x, int length)
@@ -2008,7 +2025,7 @@ static void QT_FASTCALL fetchTransformed_fetcher(T *buffer, const QSpanData *dat
     // When templated 'fetch' should be inlined at compile time:
     const FetchPixelFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : FetchPixelFunc(fetchPixel<bpp>);
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
         int fdy = (int)(data->m12 * fixed_scale);
@@ -2962,7 +2979,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
     uint *end = buffer + length;
     uint *b = buffer;
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
         int fdy = (int)(data->m12 * fixed_scale);
@@ -3319,7 +3336,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
         int fdy = (int)(data->m12 * fixed_scale);
@@ -3505,7 +3522,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64_uint32(QRgba64 *buf
     QRgba64 *end = buffer + length;
     QRgba64 *b = buffer;
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         const int fdx = (int)(data->m11 * fixed_scale);
         const int fdy = (int)(data->m12 * fixed_scale);
@@ -3663,7 +3680,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64_uint64(QRgba64 *buf
     QRgba64 *end = buffer + length;
     QRgba64 *b = buffer;
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         const int fdx = (int)(data->m11 * fixed_scale);
         const int fdy = (int)(data->m12 * fixed_scale);
