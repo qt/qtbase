@@ -41,7 +41,6 @@
 #include "qdnslookup_p.h"
 
 #include <qurl.h>
-#include <private/qmutexpool_p.h>
 #include <private/qsystemerror_p.h>
 
 #include <qt_windows.h>

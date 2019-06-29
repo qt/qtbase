@@ -52,7 +52,6 @@
 #include "qelapsedtimer.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
-#include <private/qmutexpool_p.h>
 #include <private/qwineventnotifier_p.h>
 
 QT_BEGIN_NAMESPACE
