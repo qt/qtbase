@@ -825,6 +825,24 @@ struct QRegularExpressionMatchIteratorPrivate : QSharedData
 
 /*!
     \internal
+
+    Used to centralize the warning about using an invalid QRegularExpression.
+    In case the pattern is an illegal UTF-16 string, we can't pass print it
+    (pass it to qUtf16Printable, etc.), so we need to check for that.
+*/
+Q_DECL_COLD_FUNCTION
+void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *where)
+{
+    if (pattern.isValidUtf16()) {
+        qWarning("%s(): called on an invalid QRegularExpression object "
+                 "(pattern is '%ls')", where, qUtf16Printable(pattern));
+    } else {
+        qWarning("%s(): called on an invalid QRegularExpression object", where);
+    }
+}
+
+/*!
+    \internal
 */
 QRegularExpression::QRegularExpression(QRegularExpressionPrivate &dd)
     : d(&dd)
@@ -1131,7 +1149,7 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
         return;
 
     if (Q_UNLIKELY(!compiledPattern)) {
-        qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
+        qtWarnAboutInvalidRegularExpression(pattern, "QRegularExpressionPrivate::doMatch");
         return;
     }
 

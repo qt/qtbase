@@ -712,18 +712,23 @@ void tst_QRegularExpression::validity_data()
 
 void tst_QRegularExpression::validity()
 {
+    static const QRegularExpression ignoreMessagePattern(
+        "^" + QRegularExpression::escape("QRegularExpressionPrivate::doMatch(): "
+                                         "called on an invalid QRegularExpression object")
+    );
+
     QFETCH(QString, pattern);
     QFETCH(bool, validity);
     QRegularExpression re(pattern);
     QCOMPARE(re.isValid(), validity);
     if (!validity)
-        QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
+        QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QRegularExpressionMatch match = re.match("a pattern");
     QCOMPARE(match.isValid(), validity);
     consistencyCheck(match);
 
     if (!validity)
-        QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
+        QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QRegularExpressionMatchIterator iterator = re.globalMatch("a pattern");
     QCOMPARE(iterator.isValid(), validity);
 }

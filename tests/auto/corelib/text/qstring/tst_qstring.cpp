@@ -1725,14 +1725,18 @@ void tst_QString::indexOf2()
 #if QT_CONFIG(regularexpression)
 void tst_QString::indexOfInvalidRegex()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::indexOf: invalid QRegularExpression object");
+    static const QRegularExpression ignoreMessagePattern(
+        "^QString\\(View\\)::indexOf\\(\\): called on an invalid QRegularExpression object"
+    );
+
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\")), -1);
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::indexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, nullptr), -1);
 
     QRegularExpressionMatch match;
     QVERIFY(!match.hasMatch());
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::indexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
     QVERIFY(!match.hasMatch());
 }
@@ -1851,14 +1855,18 @@ void tst_QString::lastIndexOf()
 #if QT_CONFIG(regularexpression)
 void tst_QString::lastIndexOfInvalidRegex()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::lastIndexOf: invalid QRegularExpression object");
+    static const QRegularExpression ignoreMessagePattern(
+        "^QString\\(View\\)::lastIndexOf\\(\\): called on an invalid QRegularExpression object"
+    );
+
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::lastIndexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, nullptr), -1);
 
     QRegularExpressionMatch match;
     QVERIFY(!match.hasMatch());
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::lastIndexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
     QVERIFY(!match.hasMatch());
 }
@@ -1866,6 +1874,10 @@ void tst_QString::lastIndexOfInvalidRegex()
 
 void tst_QString::count()
 {
+    static const QRegularExpression ignoreMessagePattern(
+        "^QString\\(View\\)::count\\(\\): called on an invalid QRegularExpression object"
+    );
+
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
     QCOMPARE(a.count('A'),1);
@@ -1881,7 +1893,7 @@ void tst_QString::count()
     QCOMPARE(a.count(QRegularExpression("")), 16);
     QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
     QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::count: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(a.count(QRegularExpression("invalid regex\\")), 0);
 #endif
 
@@ -1900,7 +1912,7 @@ void tst_QString::count()
 #if QT_CONFIG(regularexpression)
     QCOMPARE(nullStr.count(QRegularExpression("")), 1);
     QCOMPARE(nullStr.count(QRegularExpression("[FG][HI]")), 0);
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::count: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(nullStr.count(QRegularExpression("invalid regex\\")), 0);
 #endif
 
@@ -1914,13 +1926,17 @@ void tst_QString::count()
 #if QT_CONFIG(regularexpression)
     QCOMPARE(emptyStr.count(QRegularExpression("")), 1);
     QCOMPARE(emptyStr.count(QRegularExpression("[FG][HI]")), 0);
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::count: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(emptyStr.count(QRegularExpression("invalid regex\\")), 0);
 #endif
 }
 
 void tst_QString::contains()
 {
+    static const QRegularExpression ignoreMessagePattern(
+        "^QString\\(View\\)::contains\\(\\): called on an invalid QRegularExpression object"
+    );
+
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
     QVERIFY(a.contains('A'));
@@ -1987,7 +2003,7 @@ void tst_QString::contains()
         QVERIFY(!a.contains(QRegularExpression("ZZZ"), 0));
     }
 
-    QTest::ignoreMessage(QtWarningMsg, "QString(View)::contains: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QVERIFY(!a.contains(QRegularExpression("invalid regex\\")));
 #endif
 
@@ -3226,13 +3242,17 @@ void tst_QString::replace_string_extra()
 #if QT_CONFIG(regularexpression)
 void tst_QString::replace_regexp()
 {
+    static const QRegularExpression ignoreMessagePattern(
+        "^QString::replace\\(\\): called on an invalid QRegularExpression object"
+    );
+
     QFETCH( QString, string );
     QFETCH( QString, regexp );
     QFETCH( QString, after );
 
     QRegularExpression regularExpression(regexp);
     if (!regularExpression.isValid())
-        QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
+        QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     string.replace(regularExpression, after);
     QTEST(string, "result");
 }
@@ -3347,6 +3367,10 @@ void tst_QString::remove_regexp_data()
 
 void tst_QString::remove_regexp()
 {
+    static const QRegularExpression ignoreMessagePattern(
+        "^QString::replace\\(\\): called on an invalid QRegularExpression object"
+    );
+
     QFETCH( QString, string );
     QFETCH( QString, regexp );
     QTEST(QString(), "after"); // non-empty replacement text tests should go in replace_regexp_data()
@@ -3354,7 +3378,7 @@ void tst_QString::remove_regexp()
     QRegularExpression regularExpression(regexp);
     // remove() delegates to replace(), which produces this warning:
     if (!regularExpression.isValid())
-        QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
+        QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     string.remove(regularExpression);
     QTEST(string, "result");
 }
