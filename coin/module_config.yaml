@@ -128,13 +128,42 @@ icc_specific_instructions: &icc_export_variables
     - type: PrependToEnvironmentVariable
       variableName: PATH
       variableValue: "{{.Env.ICC64_18_PATH}}"
-    - type: PrependToEnvironmentVariable
-      variableName: CONFIGURE_ARGS
-      variableValue: "-DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc "
   enable_if:
     condition: property
     property: host.compiler
     equals_value: ICC_18
+
+set_cmake_compiler: &set_cmake_c_cxx_compiler
+  type: Group
+  instructions:
+    - type: PrependToEnvironmentVariable
+      variableName: CONFIGURE_ARGS
+      variableValue: "-DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc "
+      enable_if:
+        condition: property
+        property: host.compiler
+        contains_value: ICC
+    - type: PrependToEnvironmentVariable
+      variableName: CONFIGURE_ARGS
+      variableValue: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ "
+      enable_if:
+        condition: property
+        property: host.compiler
+        contains_value: GCC
+    - type: PrependToEnvironmentVariable
+      variableName: CONFIGURE_ARGS
+      variableValue: "-DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe "
+      enable_if:
+        condition: property
+        property: host.compiler
+        contains_value: MSVC
+    - type: PrependToEnvironmentVariable
+      variableName: CONFIGURE_ARGS
+      variableValue: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ "
+      enable_if:
+        condition: property
+        property: host.compiler
+        contains_value: Clang
 
 call_cmake_instructions: &call_cmake
   type: Group
@@ -209,6 +238,7 @@ build_instructions:
     variableName: CMAKE_GENERATOR
     variableValue: Ninja
   - *icc_export_variables
+  - *set_cmake_c_cxx_compiler
   - *export_target_architecture_and_sdk
   - *find_path_to_compiler
   # With MSVC we need setup the environment before every subprocess call.
