@@ -313,7 +313,7 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView str,
                                           Qt::CaseSensitivity cs)
 {
-    QStringMatcher matcher(str.data(), str.length(), cs);
+    QStringMatcher matcher(str, cs);
     QStringList res;
     for (int i = 0; i < that->size(); ++i)
         if (matcher.indexIn(that->at(i)) != -1)
