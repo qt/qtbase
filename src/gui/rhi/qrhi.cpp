@@ -5337,4 +5337,32 @@ void QRhiPassResourceTracker::registerTexture(QRhiTexture *tex, TextureAccess *a
     m_textures.append(t);
 }
 
+QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages)
+{
+    // pick the earlier stage (as this is going to be dstAccessMask)
+    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
+        return QRhiPassResourceTracker::BufVertexStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
+        return QRhiPassResourceTracker::BufFragmentStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
+        return QRhiPassResourceTracker::BufComputeStage;
+
+    Q_UNREACHABLE();
+    return QRhiPassResourceTracker::BufVertexStage;
+}
+
+QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages)
+{
+    // pick the earlier stage (as this is going to be dstAccessMask)
+    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
+        return QRhiPassResourceTracker::TexVertexStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
+        return QRhiPassResourceTracker::TexFragmentStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
+        return QRhiPassResourceTracker::TexComputeStage;
+
+    Q_UNREACHABLE();
+    return QRhiPassResourceTracker::TexVertexStage;
+}
+
 QT_END_NAMESPACE

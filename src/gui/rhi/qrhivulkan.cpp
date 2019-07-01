@@ -3664,34 +3664,6 @@ void QRhiVulkan::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline
     psD->lastActiveFrameSlot = currentFrameSlot;
 }
 
-QRhiPassResourceTracker::BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages)
-{
-    // pick the earlier stage (as this is going to be dstAccessMask)
-    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
-        return QRhiPassResourceTracker::BufVertexStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
-        return QRhiPassResourceTracker::BufFragmentStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
-        return QRhiPassResourceTracker::BufComputeStage;
-
-    Q_UNREACHABLE();
-    return QRhiPassResourceTracker::BufVertexStage;
-}
-
-QRhiPassResourceTracker::TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages)
-{
-    // pick the earlier stage (as this is going to be dstAccessMask)
-    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
-        return QRhiPassResourceTracker::TexVertexStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
-        return QRhiPassResourceTracker::TexFragmentStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
-        return QRhiPassResourceTracker::TexComputeStage;
-
-    Q_UNREACHABLE();
-    return QRhiPassResourceTracker::TexVertexStage;
-}
-
 void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBindings *srb,
                                     int dynamicOffsetCount,
                                     const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
@@ -3747,7 +3719,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             bufD->lastActiveFrameSlot = currentFrameSlot;
             trackedRegisterBuffer(&passResTracker, bufD, bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0,
                                   QRhiPassResourceTracker::BufUniformRead,
-                                  toPassTrackerBufferStage(b->stage));
+                                  QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
 
             // Check both the "local" id (the generation counter) and the
             // global id. The latter is relevant when a newly allocated
@@ -3768,7 +3740,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             samplerD->lastActiveFrameSlot = currentFrameSlot;
             trackedRegisterTexture(&passResTracker, texD,
                                    QRhiPassResourceTracker::TexSample,
-                                   toPassTrackerTextureStage(b->stage));
+                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
 
             if (texD->generation != bd.stex.texGeneration
                     || texD->m_id != bd.stex.texId
@@ -3801,7 +3773,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
                 access = QRhiPassResourceTracker::TexStorageLoadStore;
             trackedRegisterTexture(&passResTracker, texD,
                                    access,
-                                   toPassTrackerTextureStage(b->stage));
+                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
 
             if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
                 rewriteDescSet = true;
@@ -3832,7 +3804,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
                 access = QRhiPassResourceTracker::BufStorageLoadStore;
             trackedRegisterBuffer(&passResTracker, bufD, bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0,
                                   access,
-                                  toPassTrackerBufferStage(b->stage));
+                                  QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
 
             if (bufD->generation != bd.sbuf.generation || bufD->m_id != bd.sbuf.id) {
                 rewriteDescSet = true;

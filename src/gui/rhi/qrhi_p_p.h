@@ -553,6 +553,9 @@ public:
     };
     const QVector<Texture> *textures() const { return &m_textures; }
 
+    static BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages);
+    static TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages);
+
 private:
     QVector<Buffer> m_buffers;
     QVector<Texture> m_textures;
