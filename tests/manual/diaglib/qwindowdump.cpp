@@ -73,7 +73,7 @@ if ((type & typeConstant) == typeConstant) \
 if (flags & flagConstant) \
     s << ' ' << #flagConstant;
 
-void formatWindowFlags(QTextStream &str, const Qt::WindowFlags flags)
+void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 {
     str << showbase << hex << unsigned(flags) << dec << noshowbase;
     const Qt::WindowFlags windowType = flags & Qt::WindowType_Mask;
@@ -158,7 +158,7 @@ void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions option
 }
 
 static void dumpWindowRecursion(QTextStream &str, const QWindow *w,
-                                FormatWindowOptions options = 0, int depth = 0)
+                                FormatWindowOptions options = {}, int depth = 0)
 {
     indentStream(str, 2 * depth);
     formatWindow(str, w, options);

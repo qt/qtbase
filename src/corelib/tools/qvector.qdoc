@@ -173,6 +173,24 @@
     For a detailed discussion comparing Qt containers with each other and
     with STL containers, see \l {Understand the Qt Containers}.
 
+    \section1 Maximum size and out-of-memory conditions
+
+    The current version of QVector is limited to just under 2 GB (2^31 bytes)
+    in size. The exact value is architecture-dependent, since it depends on the
+    overhead required for managing the data block, but is no more than 32
+    bytes. The number of elements that can be stored in a QVector is that size
+    divided by the size of each element.
+
+    In case memory allocation fails, QVector will use the \l Q_CHECK_PTR macro,
+    which will throw a \c std::bad_alloc exception if the application is being
+    compiled with exception support. If exceptions are disabled, then running
+    out of memory is undefined behavior.
+
+    Note that the operating system may impose further limits on applications
+    holding a lot of allocated memory, especially large, contiguous blocks.
+    Such considerations, the configuration of such behavior or any mitigation
+    are outside the scope of the Qt API.
+
     \sa QVectorIterator, QMutableVectorIterator, QList, QLinkedList
 */
 

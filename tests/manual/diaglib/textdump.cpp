@@ -381,7 +381,7 @@ static const EnumLookup *enumLookup(int v, const EnumLookup *array, size_t size)
         if (p->value == v)
             return p;
     }
-    return 0;
+    return nullptr;
 }
 
 static const char *enumName(int v, const EnumLookup *array, size_t size)
@@ -394,15 +394,12 @@ static const char *enumName(int v, const EnumLookup *array, size_t size)
 // that change will be output.
 struct FormattingContext
 {
-    FormattingContext() : category(-1), direction(-1), joiningType(-1)
-      , decompositionTag(-1), script(-1), unicodeVersion(-1) {}
-
-    int category;
-    int direction;
-    int joiningType;
-    int decompositionTag;
-    int script;
-    int unicodeVersion;
+    int category = -1;
+    int direction = -1;
+    int joiningType = -1;
+    int decompositionTag = -1;
+    int script = -1;
+    int unicodeVersion = -1;
 };
 
 static void formatCharacter(QTextStream &str, const QChar &qc, FormattingContext &context)
@@ -478,8 +475,8 @@ QString dumpTextAsCode(const QString &text)
     QString result;
     QTextStream str(&result);
     str << "    QString result;\n" << hex << showbase;
-    for (int i = 0; i < text.size(); ++i)
-        str << "    result += QChar(" << text.at(i).unicode() << ");\n";
+    for (QChar c : text)
+        str << "    result += QChar(" << c.unicode() << ");\n";
     str << '\n';
     return result;
 }

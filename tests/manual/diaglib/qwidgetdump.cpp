@@ -59,8 +59,8 @@ static const char *qtWidgetClasses[] = {
 
 static bool isQtWidget(const char *className)
 {
-    for (size_t i = 0, count = sizeof(qtWidgetClasses) / sizeof(qtWidgetClasses[0]); i < count; ++i) {
-        if (!qstrcmp(className, qtWidgetClasses[i]))
+    for (auto qtWidgetClass : qtWidgetClasses) {
+        if (qstrcmp(className, qtWidgetClass) == 0)
             return true;
     }
     return false;

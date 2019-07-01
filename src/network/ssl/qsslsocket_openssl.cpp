@@ -1573,7 +1573,6 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
     // verify the responder's chain (see their commit 4ba9a4265bd).
     // Working this around - is too much fuss for ancient versions we
     // are dropping quite soon anyway.
-
     const unsigned long verificationFlags = 0;
     const int success = q_OCSP_basic_verify(basicResponse, peerChain, store, verificationFlags);
     if (success <= 0)
