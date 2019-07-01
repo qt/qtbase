@@ -400,9 +400,9 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
     if (caps.gles)
-        caps.fixedIndexPrimitiveRestart = caps.ctxMajor >= 3;
+        caps.fixedIndexPrimitiveRestart = caps.ctxMajor >= 3; // ES 3.0
     else
-        caps.fixedIndexPrimitiveRestart = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3);
+        caps.fixedIndexPrimitiveRestart = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3); // 4.3
 
     if (caps.fixedIndexPrimitiveRestart)
         f->glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
@@ -411,8 +411,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.bgraInternalFormat = caps.bgraExternalFormat && caps.gles;
     caps.r8Format = f->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats);
     caps.r16Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized16Formats);
-    caps.floatFormats = caps.ctxMajor >= 3;
-    caps.depthTexture = caps.ctxMajor >= 3;
+    caps.floatFormats = caps.ctxMajor >= 3; // 3.0 or ES 3.0
+    caps.depthTexture = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.packedDepthStencil = f->hasOpenGLExtension(QOpenGLExtensions::PackedDepthStencil);
 #ifdef Q_OS_WASM
     caps.needsDepthStencilCombinedAttach = true;
@@ -421,12 +421,22 @@ bool QRhiGles2::create(QRhi::Flags flags)
 #endif
     caps.srgbCapableDefaultFramebuffer = f->hasOpenGLExtension(QOpenGLExtensions::SRGBFrameBuffer);
     caps.coreProfile = actualFormat.profile() == QSurfaceFormat::CoreProfile;
-    caps.uniformBuffers = caps.ctxMajor >= 3 && (caps.gles || caps.ctxMinor >= 1);
+
+    if (caps.gles)
+        caps.uniformBuffers = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.uniformBuffers = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1); // 3.1
+
     caps.elementIndexUint = f->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
     caps.depth24 = f->hasOpenGLExtension(QOpenGLExtensions::Depth24);
     caps.rgba8Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats);
-    caps.instancing = caps.ctxMajor >= 3 && (caps.gles || caps.ctxMinor >= 3);
-    caps.baseVertex = caps.ctxMajor >= 3 && caps.ctxMinor >= 2;
+
+    if (caps.gles)
+        caps.instancing = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.instancing = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 3); // 3.3
+
+    caps.baseVertex = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2); // 3.2 or ES 3.2
 
     nativeHandlesStruct.context = ctx;
 
