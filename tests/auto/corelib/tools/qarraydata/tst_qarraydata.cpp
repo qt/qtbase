@@ -1625,6 +1625,18 @@ void tst_QArrayData::literals()
             QCOMPARE(const_(v)[i], char('A' + i));
         QCOMPARE(const_(v)[10], char('\0'));
     }
+
+    {
+        struct LiteralType {
+            int value;
+            Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
+        };
+
+        QArrayDataPointer<LiteralType> d = Q_ARRAY_LITERAL(LiteralType, LiteralType(0), LiteralType(1), LiteralType(2));
+        QCOMPARE(d->size, 3);
+        for (int i = 0; i < 3; ++i)
+            QCOMPARE(d->data()[i].value, i);
+    }
 }
 
 // Variadic Q_ARRAY_LITERAL need to be available in the current configuration.
