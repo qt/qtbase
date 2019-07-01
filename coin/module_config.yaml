@@ -189,9 +189,18 @@ call_cmake_instructions: &call_cmake
         property: host.os
         equals_value: Windows
 
-upload_test_artifacts_instruction: &upload_test_artifacts
+build_and_upload_test_artifacts_instruction: &build_and_upload_test_artifacts
   type: Group
   instructions:
+    - type: ChangeDirectory
+      directory: "{{.SourceDir}}/tests"
+    - *call_cmake
+    - type: ExecuteCommand
+      command: "{{.Env.ENV_PREFIX}} cmake --build ."
+      maxTimeInSeconds: 6000
+      maxTimeBetweenOutput: 120
+      userMessageOnFailure: >
+        Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
     - type: UploadTestArtifact
       transferType: UploadModuleTestsArtifact
       archiveDirectory: "{{.SourceDir}}/tests"
@@ -200,7 +209,7 @@ upload_test_artifacts_instruction: &upload_test_artifacts
   disable_if:
       condition: property
       property: configureArgs
-      in_values: "-DBUILD_SHARED_LIBS=OFF"
+      contains_value: "-DBUILD_SHARED_LIBS=OFF"
 
 regular_specific_test_instructions: &regular_test_instructions
   type: Group
@@ -315,16 +324,7 @@ build_instructions:
     transferType: UploadModuleBuildArtifact
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
-  - type: ChangeDirectory
-    directory: "{{.SourceDir}}/tests"
-  - *call_cmake
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build ."
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 120
-    userMessageOnFailure: >
-      Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
-  - *upload_test_artifacts
+  - *build_and_upload_test_artifacts
 
 test_instructions:
   - *regular_test_instructions
