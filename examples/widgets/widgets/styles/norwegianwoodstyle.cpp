@@ -64,9 +64,9 @@ void NorwegianWoodStyle::polish(QPalette &palette)
     QColor beige(236, 182, 120);
     QColor slightlyOpaqueBlack(0, 0, 0, 63);
 
-    QPixmap backgroundImage(":/images/woodbackground.png");
-    QPixmap buttonImage(":/images/woodbutton.png");
-    QPixmap midImage = buttonImage;
+    QImage backgroundImage(":/images/woodbackground.png");
+    QImage buttonImage(":/images/woodbutton.png");
+    QImage midImage = buttonImage.convertToFormat(QImage::Format_RGB32);
 
     QPainter painter;
     painter.begin(&midImage);
@@ -311,11 +311,12 @@ void NorwegianWoodStyle::drawControl(ControlElement element,
 //! [37]
 void NorwegianWoodStyle::setTexture(QPalette &palette, QPalette::ColorRole role,
 //! [37] //! [38]
-                                    const QPixmap &pixmap)
+                                    const QImage &image)
 {
     for (int i = 0; i < QPalette::NColorGroups; ++i) {
-        QColor color = palette.brush(QPalette::ColorGroup(i), role).color();
-        palette.setBrush(QPalette::ColorGroup(i), role, QBrush(color, pixmap));
+        QBrush brush(image);
+        brush.setColor(palette.brush(QPalette::ColorGroup(i), role).color());
+        palette.setBrush(QPalette::ColorGroup(i), role, brush);
     }
 }
 //! [38]

@@ -1739,6 +1739,24 @@ const QString::Null QString::null = { };
     and the \c{'+'} will automatically be performed as the
     \c{QStringBuilder} \c{'%'} everywhere.
 
+    \section1 Maximum size and out-of-memory conditions
+
+    The current version of QString is limited to just under 2 GB (2^31 bytes)
+    in size. The exact value is architecture-dependent, since it depends on the
+    overhead required for managing the data block, but is no more than 32
+    bytes. Raw data blocks are also limited by the use of \c int type in the
+    current version to 2 GB minus 1 byte. Since QString uses two bytes per
+    character, that translates to just under 2^30 characters in one QString.
+
+    In case memory allocation fails, QString will throw a \c std::bad_alloc
+    exception. Out of memory conditions in the Qt containers are the only case
+    where Qt will throw exceptions.
+
+    Note that the operating system may impose further limits on applications
+    holding a lot of allocated memory, especially large, contiguous blocks.
+    Such considerations, the configuration of such behavior or any mitigation
+    are outside the scope of the Qt API.
+
     \sa fromRawData(), QChar, QLatin1String, QByteArray, QStringRef
 */
 

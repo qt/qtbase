@@ -197,7 +197,7 @@ static void formatApplicationState(QDebug debug)
 static void formatMouseState(QObject *o, QDebug debug)
 {
     if (o->isWidgetType()) {
-        const QWidget *w = static_cast<const QWidget *>(o);
+        auto w = static_cast<const QWidget *>(o);
         if (QWidget::mouseGrabber() == w)
             debug << " [grabbed]";
         if (w->hasMouseTracking())

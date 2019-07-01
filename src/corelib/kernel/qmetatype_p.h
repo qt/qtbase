@@ -74,7 +74,7 @@ template <typename T>
 class QTypeModuleInfo
 {
 public:
-    enum Module {
+    enum Module : bool {
         IsCore = false,
         IsWidget = false,
         IsGui = false,
