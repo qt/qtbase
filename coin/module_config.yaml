@@ -282,14 +282,6 @@ build_instructions:
     maxTimeBetweenOutput: 120
     userMessageOnFailure: >
       Failed to call cmake. Contact Liang then.
-  - type: ExecuteCommand  # TODO: remove me, just debuging
-    command: cmd.exe /c type {{.BuildDir}}\\CMakeCache.txt
-    enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
-    maxTimeInSeconds: 60
-    userMessageOnFailure: Could not print the file cmake config file. This should not be possible.
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build ."
     maxTimeInSeconds: 6000
