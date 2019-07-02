@@ -446,11 +446,10 @@ QJsonValue QJsonObject::operator [](const QString &key) const
  */
 QJsonValueRef QJsonObject::operator [](const QString &key)
 {
-    // ### somewhat inefficient, as we lookup the key twice if it doesn't yet exist
     bool keyExists = false;
-    int index = o ? o->indexOf(key, &keyExists) : -1;
+    int index = o ? o->indexOf(key, &keyExists) : 0;
     if (!keyExists) {
-        iterator i = insert(key, QJsonValue());
+        iterator i = insertAt(index, key, QJsonValue(), false);
         index = i.i;
     }
     return QJsonValueRef(this, index);
@@ -485,6 +484,16 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
         remove(key);
         return end();
     }
+    bool keyExists = false;
+    int pos = o ? o->indexOf(key, &keyExists) : 0;
+    return insertAt(pos, key, value, keyExists);
+}
+
+/*!
+    \internal
+ */
+QJsonObject::iterator QJsonObject::insertAt(int pos, const QString &key, const QJsonValue &value, bool keyExists)
+{
     QJsonValue val = value;
 
     bool latinOrIntValue;
@@ -500,8 +509,6 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
     if (!o->length)
         o->tableOffset = sizeof(QJsonPrivate::Object);
 
-    bool keyExists = false;
-    int pos = o->indexOf(key, &keyExists);
     if (keyExists)
         ++d->compactionCounter;
 
@@ -1289,7 +1296,7 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
     Q_ASSERT(o && i >= 0 && i < (int)o->length);
 
     QJsonPrivate::Entry *e = o->entryAt(i);
-    insert(e->key(), val);
+    insertAt(i, e->key(), val, true);
 }
 
 uint qHash(const QJsonObject &object, uint seed)

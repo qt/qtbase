@@ -251,6 +251,7 @@ private:
     QString keyAt(int i) const;
     QJsonValue valueAt(int i) const;
     void setValueAt(int i, const QJsonValue &val);
+    iterator insertAt(int i, const QString &key, const QJsonValue &val, bool exists);
 
     QJsonPrivate::Data *d;
     QJsonPrivate::Object *o;
