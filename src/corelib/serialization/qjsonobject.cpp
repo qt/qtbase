@@ -525,8 +525,7 @@ QJsonObject::iterator QJsonObject::insertAt(int pos, const QString &key, const Q
     if (valueSize)
         QJsonPrivate::Value::copyData(val, (char *)e + valueOffset, latinOrIntValue);
 
-    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
-        compact();
+    compactIfNeeded();
 
     return iterator(this, pos);
 }
@@ -546,11 +545,7 @@ void QJsonObject::remove(const QString &key)
     if (!keyExists)
         return;
 
-    detach2();
-    o->removeItems(index, 1);
-    ++d->compactionCounter;
-    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
-        compact();
+    removeAt(index);
 }
 
 /*!
@@ -573,11 +568,7 @@ QJsonValue QJsonObject::take(const QString &key)
         return QJsonValue(QJsonValue::Undefined);
 
     QJsonValue v(d, o, o->entryAt(index)->value);
-    detach2();
-    o->removeItems(index, 1);
-    ++d->compactionCounter;
-    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
-        compact();
+    removeAt(index);
 
     return v;
 }
@@ -659,10 +650,7 @@ QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 
     int index = it.i;
 
-    o->removeItems(index, 1);
-    ++d->compactionCounter;
-    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
-        compact();
+    removeAt(index);
 
     // iterator hasn't changed
     return it;
@@ -1268,6 +1256,15 @@ void QJsonObject::compact()
 /*!
     \internal
  */
+void QJsonObject::compactIfNeeded()
+{
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
+        compact();
+}
+
+/*!
+    \internal
+ */
 QString QJsonObject::keyAt(int i) const
 {
     Q_ASSERT(o && i >= 0 && i < (int)o->length);
@@ -1297,6 +1294,17 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
 
     QJsonPrivate::Entry *e = o->entryAt(i);
     insertAt(i, e->key(), val, true);
+}
+
+/*!
+    \internal
+ */
+void QJsonObject::removeAt(int index)
+{
+    detach2();
+    o->removeItems(index, 1);
+    ++d->compactionCounter;
+    compactIfNeeded();
 }
 
 uint qHash(const QJsonObject &object, uint seed)

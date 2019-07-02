@@ -247,10 +247,12 @@ private:
     void detach(uint reserve = 0);
     bool detach2(uint reserve = 0);
     void compact();
+    void compactIfNeeded();
 
     QString keyAt(int i) const;
     QJsonValue valueAt(int i) const;
     void setValueAt(int i, const QJsonValue &val);
+    void removeAt(int i);
     iterator insertAt(int i, const QString &key, const QJsonValue &val, bool exists);
 
     QJsonPrivate::Data *d;
