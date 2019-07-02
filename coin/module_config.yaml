@@ -233,7 +233,7 @@ regular_specific_test_instructions: &regular_test_instructions
   disable_if:
       condition: property
       property: configureArgs
-      in_values: "-DBUILD_SHARED_LIBS=OFF"
+      contains_value: "-DBUILD_SHARED_LIBS=OFF"
 
 
 build_instructions:
