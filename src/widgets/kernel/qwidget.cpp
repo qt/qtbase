@@ -1255,8 +1255,10 @@ void QWidgetPrivate::createRecursively()
 QWindow *QWidgetPrivate::windowHandle(WindowHandleMode mode) const
 {
     if (mode == WindowHandleMode::Direct || mode == WindowHandleMode::Closest) {
-        if (QTLWExtra *x = maybeTopData())
-            return x->window;
+        if (QTLWExtra *x = maybeTopData()) {
+            if (x->window != nullptr || mode == WindowHandleMode::Direct)
+                return x->window;
+        }
     }
     if (mode == WindowHandleMode::Closest) {
         if (auto nativeParent = q_func()->nativeParentWidget()) {
