@@ -216,7 +216,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QQueue) \
     F(QStack) \
     F(QSet) \
-    F(QLinkedList)
+    /*end*/
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(F) \
     F(QHash, class) \

@@ -5,6 +5,7 @@ INCLUDEPATH += $$PWD/../../../other/qvariant_common
 SOURCES = tst_qmetatype.cpp
 TESTDATA=./typeFlags.bin
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+DEFINES -= QT_NO_LINKED_LIST
 
 msvc|winrt {
     # Prevents "fatal error C1128: number of sections exceeded object file format limit".
