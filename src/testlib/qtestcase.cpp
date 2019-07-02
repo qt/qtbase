@@ -2206,7 +2206,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     }
 
     //  3. relative to test source.
-    if (found.isEmpty()) {
+    if (found.isEmpty() && qstrncmp(file, ":/", 2) != 0) {
         // srcdir is the directory containing the calling source file.
         QFileInfo srcdir = QFileInfo(QFile::decodeName(file)).path();
 
