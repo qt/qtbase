@@ -284,11 +284,9 @@ Q_INLINE_TEMPLATE void QSet<T>::reserve(int asize) { q_hash.reserve(asize); }
 template <class T>
 Q_INLINE_TEMPLATE QSet<T> &QSet<T>::unite(const QSet<T> &other)
 {
-    QSet<T> copy(other);
-    typename QSet<T>::const_iterator i = copy.constEnd();
-    while (i != copy.constBegin()) {
-        --i;
-        insert(*i);
+    if (!q_hash.isSharedWith(other.q_hash)) {
+        for (const T &e : other)
+            insert(e);
     }
     return *this;
 }
@@ -306,11 +304,9 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::intersect(const QSet<T> &other)
         copy2 = *this;
         *this = copy1;
     }
-    typename QSet<T>::const_iterator i = copy1.constEnd();
-    while (i != copy1.constBegin()) {
-        --i;
-        if (!copy2.contains(*i))
-            remove(*i);
+    for (const auto &e : qAsConst(copy1)) {
+        if (!copy2.contains(e))
+            remove(e);
     }
     return *this;
 }
@@ -346,14 +342,11 @@ Q_INLINE_TEMPLATE bool QSet<T>::intersects(const QSet<T> &other) const
 template <class T>
 Q_INLINE_TEMPLATE QSet<T> &QSet<T>::subtract(const QSet<T> &other)
 {
-    if (&other == this) {
+    if (q_hash.isSharedWith(other.q_hash)) {
         clear();
     } else {
-        auto i = other.constEnd();
-        while (i != other.constBegin()) {
-            --i;
-            remove(*i);
-        }
+        for (const auto &e : other)
+            remove(e);
     }
     return *this;
 }
