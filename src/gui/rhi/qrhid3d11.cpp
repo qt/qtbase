@@ -39,6 +39,7 @@
 #include <QWindow>
 #include <QOperatingSystemVersion>
 #include <qmath.h>
+#include <private/qsystemlibrary_p.h>
 
 #include <d3dcompiler.h>
 #include <comdef.h>
@@ -3218,6 +3219,18 @@ static inline D3D11_BLEND_OP toD3DBlendOp(QRhiGraphicsPipeline::BlendOp op)
     }
 }
 
+static pD3DCompile resolveD3DCompile()
+{
+    for (const wchar_t *libraryName : {L"D3DCompiler_47", L"D3DCompiler_43"}) {
+        QSystemLibrary library(libraryName);
+        if (library.load()) {
+            if (auto symbol = library.resolve("D3DCompile"))
+                return reinterpret_cast<pD3DCompile>(symbol);
+        }
+    }
+    return nullptr;
+}
+
 static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, QString *error)
 {
     QShaderCode dxbc = shader.shader({ QShader::DxbcShader, 50, shaderVariant });
@@ -3255,9 +3268,15 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
         return QByteArray();
     }
 
+    static const pD3DCompile d3dCompile = resolveD3DCompile();
+    if (d3dCompile == nullptr) {
+        qWarning("Unable to resolve function D3DCompile()");
+        return QByteArray();
+    }
+
     ID3DBlob *bytecode = nullptr;
     ID3DBlob *errors = nullptr;
-    HRESULT hr = D3DCompile(hlslSource.shader().constData(), hlslSource.shader().size(),
+    HRESULT hr = d3dCompile(hlslSource.shader().constData(), hlslSource.shader().size(),
                             nullptr, nullptr, nullptr,
                             hlslSource.entryPoint().constData(), target, 0, 0, &bytecode, &errors);
     if (FAILED(hr) || !bytecode) {

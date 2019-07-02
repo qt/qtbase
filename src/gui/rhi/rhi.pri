@@ -40,7 +40,7 @@ win32 {
     SOURCES += \
         rhi/qrhid3d11.cpp
 
-    LIBS += -ld3d11 -ldxgi -ldxguid -ld3dcompiler
+    LIBS += -ld3d11 -ldxgi -ldxguid
 }
 
 # darwin {
