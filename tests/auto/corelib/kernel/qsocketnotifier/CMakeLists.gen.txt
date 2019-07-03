@@ -1,0 +1,9 @@
+# Generated from qsocketnotifier.pro.
+
+#####################################################################
+## tst_qsocketnotifier Test:
+#####################################################################
+
+add_qt_test(tst_qsocketnotifier
+    SOURCES
+        tst_qsocketnotifier.cpp

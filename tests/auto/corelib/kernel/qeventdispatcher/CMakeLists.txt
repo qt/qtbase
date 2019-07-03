@@ -1,1 +1,13 @@
-add_qt_test(tst_qeventdispatcher SOURCES tst_qeventdispatcher.cpp)
+# Generated from qeventdispatcher.pro.
+
+#####################################################################
+## tst_qeventdispatcher Test:
+#####################################################################
+
+add_qt_test(tst_qeventdispatcher
+    SOURCES
+        tst_qeventdispatcher.cpp
+)
+
+#### Keys ignored in scope 1:.:.:qeventdispatcher.pro:<TRUE>:
+# CONFIG = "testcase"

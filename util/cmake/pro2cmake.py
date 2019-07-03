@@ -1026,9 +1026,35 @@ def map_condition(condition: str) -> str:
 def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
                   indent: int = 0, is_example: bool=False) -> None:
     ind = '    ' * indent
+
+    def find_all_remove_subdir(scope: Scope,
+                               current_conditions: typing.FrozenSet[str]=None,
+                               rm_subdir_conditions: typing.Dict[str, typing.Set[typing.FrozenSet[str]]]=None) -> typing.Dict[str, typing.Set[typing.FrozenSet[str]]]:
+        rm_subdir_conditions = rm_subdir_conditions if rm_subdir_conditions is not None else dict()
+        for sd in scope.get_files('SUBDIRS'):
+            if sd.startswith('-') and current_conditions is not None:
+                conditions = rm_subdir_conditions.get(sd[1:], set())
+                conditions.add(current_conditions)
+                rm_subdir_conditions[sd[1:]] = conditions
+        current_conditions = current_conditions if current_conditions is not None else frozenset()
+        for child_scope in scope.children:
+            assert child_scope.condition
+            find_all_remove_subdir(child_scope, frozenset((*current_conditions, child_scope.condition)), rm_subdir_conditions)
+        return rm_subdir_conditions
+
+    rm_subdir_conditions = find_all_remove_subdir(scope)
+
     for sd in scope.get_files('SUBDIRS'):
         if os.path.isdir(sd):
-            cm_fh.write('{}add_subdirectory({})\n'.format(ind, sd))
+            conditions = rm_subdir_conditions.get(sd)
+            cond_ind = ind
+            if conditions:
+                conditions_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")" for condition in conditions))
+                cm_fh.write(f'{ind}if(NOT ({conditions_str}))\n')
+                cond_ind += "    "
+            cm_fh.write(f'{cond_ind}add_subdirectory({sd})\n')
+            if conditions:
+                cm_fh.write(f'{ind}endif()\n')
         elif os.path.isfile(sd):
             subdir_result = parseProFile(sd, debug=False)
             subdir_scope \
@@ -1039,22 +1065,23 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
             do_include(subdir_scope)
             cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
         elif sd.startswith('-'):
-            cm_fh.write('{}### remove_subdirectory'
-                        '("{}")\n'.format(ind, sd[1:]))
+            pass
         else:
             print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
 
     for c in scope.children:
         cond = c.condition
-        if cond == 'else':
-            cm_fh.write('\n{}else()\n'.format(ind))
-        elif cond:
-            cm_fh.write('\n{}if({})\n'.format(ind, cond))
-
-        handle_subdir(c, cm_fh, indent=indent + 1, is_example=is_example)
-
-        if cond:
-            cm_fh.write('{}endif()\n'.format(ind))
+        temp_buf = io.StringIO('')  # we do not want to print empty conditions
+        handle_subdir(c, temp_buf, indent=indent + 1, is_example=is_example)
+        sub_call_str = temp_buf.getvalue()
+        if sub_call_str:
+            if cond == 'else':
+                cm_fh.write('\n{}else()\n'.format(ind))
+            elif cond:
+                cm_fh.write('\n{}if({})\n'.format(ind, cond))
+            cm_fh.write(sub_call_str)
+            if cond:
+                cm_fh.write('{}endif()\n'.format(ind))
 
 
 def sort_sources(sources: typing.List[str]) -> typing.List[str]:
