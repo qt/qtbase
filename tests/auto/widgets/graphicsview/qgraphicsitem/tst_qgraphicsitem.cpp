@@ -5057,12 +5057,6 @@ public:
 
 void tst_QGraphicsItem::paint()
 {
-#if defined(Q_OS_MACOS)
-    if (QSysInfo::productVersion() == QLatin1String("10.12")) {
-        QSKIP("Test is very flaky on MacOS_10_12, see QTBUG-76566");
-    }
-#endif
-
     QGraphicsScene scene;
 
     PaintTester paintTester;
@@ -5092,22 +5086,25 @@ void tst_QGraphicsItem::paint()
     PaintTester tester2;
     scene2.addItem(&tester2);
 
-    //First show one paint
-    QTRY_COMPARE(tester2.painted, 1);
+    //First show at least one paint
+    QCOMPARE(tester2.painted, 0);
+    QTRY_VERIFY(tester2.painted > 0);
+    int painted = tester2.painted;
 
     //nominal case, update call paint
     tester2.update();
-    QTRY_COMPARE(tester2.painted, 2);
+    QTRY_COMPARE(tester2.painted, painted + 1);
+    painted = tester2.painted;
 
     //we remove the item from the scene, number of updates is still the same
     tester2.update();
     scene2.removeItem(&tester2);
-    QTRY_COMPARE(tester2.painted, 2);
+    QTRY_COMPARE(tester2.painted, painted);
 
     //We re-add the item, the number of paint should increase
     scene2.addItem(&tester2);
     tester2.update();
-    QTRY_COMPARE(tester2.painted, 3);
+    QTRY_COMPARE(tester2.painted, painted + 1);
 }
 
 class HarakiriItem : public QGraphicsRectItem
@@ -11377,7 +11374,7 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     origView.reset();
     childYellow->setOpacity(0.0);
 
-    QTRY_COMPARE(origView.repaints, 1);
+    QTRY_VERIFY(origView.repaints > 0);
 
     view.show();
     qApp->setActiveWindow(&view);
@@ -11392,8 +11389,8 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
 #endif
 
-    QTRY_COMPARE(origView.repaints, 1);
-    QTRY_COMPARE(view.repaints, 1);
+    QTRY_VERIFY(origView.repaints > 0);
+    QTRY_VERIFY(view.repaints > 0);
 }
 
 void tst_QGraphicsItem::QT_2649_focusScope()
