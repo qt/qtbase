@@ -1565,8 +1565,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
     // NETMONTODO: network reply impl must be augmented to use the same monitoring
-    // capabilities as http network reply impl does.
-    if (!isLocalFile && !d->statusMonitor.isEnabled()) {
+    // capabilities as http network reply impl does. Once it does: uncomment the condition below
+    if (!isLocalFile /*&& !d->statusMonitor.isEnabled()*/) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }
