@@ -167,14 +167,8 @@ MakefileGenerator::initOutPaths()
         ProString &pathRef = v[dkey].first();
         pathRef = fileFixify(pathRef.toQString(), FileFixifyFromOutdir);
 
-#ifdef Q_OS_WIN
-        // We don't want to add a separator for DLLDESTDIR on Windows (###why?)
-        if (dkey != "DLLDESTDIR")
-#endif
-        {
-            if(!pathRef.endsWith(Option::dir_sep))
-                pathRef += Option::dir_sep;
-        }
+        if (!pathRef.endsWith(Option::dir_sep))
+            pathRef += Option::dir_sep;
 
         if (noIO() || (project->first("TEMPLATE") == "subdirs"))
             continue;
