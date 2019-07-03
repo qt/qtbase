@@ -20,6 +20,13 @@ endif()
 set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_path_suffix})
 qt_path_join(__GlobalConfig_install_dir ${QT_CONFIG_INSTALL_DIR} ${__GlobalConfig_path_suffix})
+set(__GlobalConfig_install_dir_absolute "${__GlobalConfig_install_dir}")
+if(QT_WILL_INSTALL)
+    # Need to prepend the install prefix when doing prefix builds, because the config install dir
+    # is relative then.
+    qt_path_join(__GlobalConfig_install_dir_absolute
+                 ${CMAKE_INSTALL_PREFIX} ${__GlobalConfig_install_dir_absolute})
+endif()
 
 # Generate and install Qt6 config file.
 configure_package_config_file(

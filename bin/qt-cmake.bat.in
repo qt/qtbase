@@ -1,1 +1,1 @@
-@CMAKE_COMMAND@ -DCMAKE_TOOLCHAIN_FILE=@CMAKE_INSTALL_PREFIX@/@__GlobalConfig_install_dir@/qt.toolchain.cmake %*
+@CMAKE_COMMAND@ -DCMAKE_TOOLCHAIN_FILE=@__GlobalConfig_install_dir_absolute@/qt.toolchain.cmake %*
