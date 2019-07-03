@@ -3829,6 +3829,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
                               static_cast<QRhiVulkanNativeHandles *>(importDevice));
         break;
 #else
+        Q_UNUSED(importDevice);
         qWarning("This build of Qt has no Vulkan support");
         break;
 #endif
