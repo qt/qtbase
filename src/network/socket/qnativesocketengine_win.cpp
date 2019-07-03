@@ -608,13 +608,13 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     socketType = qt_socket_getType(socketDescriptor);
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    QString socketProtocolStr = "UnknownProtocol";
-    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = "IPv4Protocol";
-    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = "IPv6Protocol";
+    QString socketProtocolStr = QStringLiteral("UnknownProtocol");
+    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = QStringLiteral("IPv4Protocol");
+    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = QStringLiteral("IPv6Protocol");
 
-    QString socketTypeStr = "UnknownSocketType";
-    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = "TcpSocket";
-    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = "UdpSocket";
+    QString socketTypeStr = QStringLiteral("UnknownSocketType");
+    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = QStringLiteral("TcpSocket");
+    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = QStringLiteral("UdpSocket");
 
     qDebug("QNativeSocketEnginePrivate::fetchConnectionParameters() localAddress == %s, localPort = %i, peerAddress == %s, peerPort = %i, socketProtocol == %s, socketType == %s", localAddress.toString().toLatin1().constData(), localPort, peerAddress.toString().toLatin1().constData(), peerPort, socketProtocolStr.toLatin1().constData(), socketTypeStr.toLatin1().constData());
 #endif
@@ -1477,8 +1477,8 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeWrite(%p \"%s\", %li) == %li",
-           data, qt_prettyDebug(data, qMin((int)ret, 16), (int)ret).data(), (int)len, (int)ret);
+    qDebug("QNativeSocketEnginePrivate::nativeWrite(%p \"%s\", %lli) == %lli",
+           data, qt_prettyDebug(data, qMin(int(ret), 16), int(ret)).data(), len, ret);
 #endif
 
     return ret;
@@ -1520,11 +1520,11 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxLength)
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     if (ret != -2) {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %li) == %li",
-               data, qt_prettyDebug(data, qMin((int)bytesRead, 16), (int)bytesRead).data(), (int)maxLength, (int)ret);
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %lli) == %lli",
+               data, qt_prettyDebug(data, qMin(int(bytesRead), 16), int(bytesRead)).data(), maxLength, ret);
     } else {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %li) == -2 (WOULD BLOCK)",
-               data, int(maxLength));
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %lli) == -2 (WOULD BLOCK)",
+               data, maxLength);
     }
 #endif
 
