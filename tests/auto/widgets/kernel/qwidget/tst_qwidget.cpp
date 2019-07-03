@@ -8856,6 +8856,12 @@ void tst_QWidget::translucentWidget()
         QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
     QCOMPARE(actual.size(),expected.size());
     QCOMPARE(actual,expected);
+
+    const QWindow *window = label.windowHandle();
+    const QSurfaceFormat translucentFormat = window->requestedFormat();
+    label.setAttribute(Qt::WA_TranslucentBackground, false);
+    const QSurfaceFormat opaqueFormat = window->requestedFormat();
+    QVERIFY(translucentFormat != opaqueFormat);
 }
 
 class MaskResizeTestWidget : public QWidget

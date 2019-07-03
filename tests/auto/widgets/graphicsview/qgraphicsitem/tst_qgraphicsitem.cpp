@@ -5055,6 +5055,12 @@ public:
 
 void tst_QGraphicsItem::paint()
 {
+#if defined(Q_OS_MACOS)
+    if (QSysInfo::productVersion() == QLatin1String("10.12")) {
+        QSKIP("Test is very flaky on MacOS_10_12, see QTBUG-76566");
+    }
+#endif
+
     QGraphicsScene scene;
 
     PaintTester paintTester;
