@@ -2210,7 +2210,9 @@ void QTabBar::wheelEvent(QWheelEvent *event)
 {
 #ifndef Q_OS_MAC
     Q_D(QTabBar);
-    int offset = event->delta() > 0 ? -1 : 1;
+    int delta = (qAbs(event->angleDelta().x()) > qAbs(event->angleDelta().y()) ?
+                     event->angleDelta().x() : event->angleDelta().y());
+    int offset = delta > 0 ? -1 : 1;
     d->setCurrentNextEnabledIndex(offset);
     QWidget::wheelEvent(event);
 #else

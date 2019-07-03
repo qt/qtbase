@@ -2102,7 +2102,9 @@ void tst_QComboBox::mouseWheel()
         box.setEditable(i==0?false:true);
         box.setCurrentIndex(startIndex);
 
-        QWheelEvent event = QWheelEvent(box.rect().bottomRight() , WHEEL_DELTA * wheelDirection, Qt::NoButton, Qt::NoModifier);
+        const QPoint wheelPoint = box.rect().bottomRight();
+        QWheelEvent event(wheelPoint, box.mapToGlobal(wheelPoint), QPoint(), QPoint(0, WHEEL_DELTA * wheelDirection),
+                              Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
         QVERIFY(applicationInstance->sendEvent(&box,&event));
 
         QCOMPARE(box.currentIndex(), expectedIndex);
@@ -2131,7 +2133,9 @@ void tst_QComboBox::popupWheelHandling()
     comboBox->showPopup();
     QTRY_VERIFY(comboBox->view() && comboBox->view()->isVisible());
     const QPoint popupPos = comboBox->view()->pos();
-    QWheelEvent event(QPointF(10, 10), WHEEL_DELTA, Qt::NoButton, Qt::NoModifier);
+    const QPoint wheelPoint(10, 10);
+    QWheelEvent event(wheelPoint, scrollArea.mapToGlobal(wheelPoint), QPoint(), QPoint(0, WHEEL_DELTA),
+                          Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QVERIFY(QCoreApplication::sendEvent(scrollArea.windowHandle(), &event));
     QCoreApplication::processEvents();
     QVERIFY(comboBox->view()->isVisible());

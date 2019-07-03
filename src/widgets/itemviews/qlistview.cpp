@@ -810,14 +810,14 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
 void QListView::wheelEvent(QWheelEvent *e)
 {
     Q_D(QListView);
-    if (e->orientation() == Qt::Vertical) {
+    if (qAbs(e->angleDelta().y()) > qAbs(e->angleDelta().x())) {
         if (e->angleDelta().x() == 0
-            && ((d->flow == TopToBottom && d->wrap) || (d->flow == LeftToRight && !d->wrap))
-            && d->vbar->minimum() == 0 && d->vbar->maximum() == 0) {
+                && ((d->flow == TopToBottom && d->wrap) || (d->flow == LeftToRight && !d->wrap))
+                && d->vbar->minimum() == 0 && d->vbar->maximum() == 0) {
             QPoint pixelDelta(e->pixelDelta().y(), e->pixelDelta().x());
             QPoint angleDelta(e->angleDelta().y(), e->angleDelta().x());
-            QWheelEvent hwe(e->pos(), e->globalPos(), pixelDelta, angleDelta, e->delta(),
-                            Qt::Horizontal, e->buttons(), e->modifiers(), e->phase(), e->source(), e->inverted());
+            QWheelEvent hwe(e->position(), e->globalPosition(), pixelDelta, angleDelta,
+                            e->buttons(), e->modifiers(), e->phase(), e->inverted(), e->source());
             if (e->spontaneous())
                 qt_sendSpontaneousEvent(d->hbar, &hwe);
             else

@@ -1324,7 +1324,7 @@ void QAbstractScrollArea::mouseMoveEvent(QMouseEvent *e)
 void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
     Q_D(QAbstractScrollArea);
-    if (e->orientation() == Qt::Horizontal)
+    if (qAbs(e->angleDelta().x()) > qAbs(e->angleDelta().y()))
         QCoreApplication::sendEvent(d->hbar, e);
     else
         QCoreApplication::sendEvent(d->vbar, e);

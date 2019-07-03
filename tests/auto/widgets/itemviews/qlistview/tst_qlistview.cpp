@@ -2516,9 +2516,9 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
     QPoint globalPos = lv.geometry().center();
     QPoint pos = lv.viewport()->geometry().center();
 
-    QWheelEvent wheelDownEvent(pos, globalPos, QPoint(0, 0), QPoint(0, -120), -120, Qt::Vertical, 0, 0);
-    QWheelEvent wheelUpEvent(pos, globalPos, QPoint(0, 0), QPoint(0, 120), 120, Qt::Vertical, 0, 0);
-    QWheelEvent wheelLeftDownEvent(pos, globalPos, QPoint(0, 0), QPoint(120, -120), -120, Qt::Vertical, 0, 0);
+    QWheelEvent wheelDownEvent(pos, globalPos, QPoint(0, 0), QPoint(0, -120), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+    QWheelEvent wheelUpEvent(pos, globalPos, QPoint(0, 0), QPoint(0, 120), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+    QWheelEvent wheelLeftDownEvent(pos, globalPos, QPoint(0, 0), QPoint(120, -120), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
 
     int hValue = lv.horizontalScrollBar()->value();
     QApplication::sendEvent(lv.viewport(), &wheelDownEvent);

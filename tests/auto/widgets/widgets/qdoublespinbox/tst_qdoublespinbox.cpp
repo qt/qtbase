@@ -1377,7 +1377,6 @@ void tst_QDoubleSpinBox::wheelEvents_data()
 {
 #if QT_CONFIG(wheelevent)
     QTest::addColumn<QPoint>("angleDelta");
-    QTest::addColumn<int>("qt4Delta");
     QTest::addColumn<int>("stepModifier");
     QTest::addColumn<Qt::KeyboardModifiers>("modifier");
     QTest::addColumn<Qt::MouseEventSource>("source");
@@ -1476,7 +1475,6 @@ void tst_QDoubleSpinBox::wheelEvents_data()
                                       modifierName.latin1(),
                                       sourceName.latin1())
                                 << angleDelta
-                                << units
                                 << static_cast<int>(stepModifier)
                                 << modifiers
                                 << source
@@ -1496,7 +1494,6 @@ void tst_QDoubleSpinBox::wheelEvents()
 {
 #if QT_CONFIG(wheelevent)
     QFETCH(QPoint, angleDelta);
-    QFETCH(int, qt4Delta);
     QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifier);
     QFETCH(Qt::MouseEventSource, source);
@@ -1512,9 +1509,8 @@ void tst_QDoubleSpinBox::wheelEvents()
     style->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
     spinBox.setStyle(style.data());
 
-    QWheelEvent event(QPointF(), QPointF(), QPoint(), angleDelta, qt4Delta,
-                      Qt::Vertical, Qt::NoButton, modifier, Qt::NoScrollPhase,
-                      source);
+    QWheelEvent event(QPointF(), QPointF(), QPoint(), angleDelta,
+                      Qt::NoButton, modifier, Qt::NoScrollPhase, source);
     for (int expected : expectedValues) {
         qApp->sendEvent(&spinBox, &event);
         QCOMPARE(spinBox.value(), expected);

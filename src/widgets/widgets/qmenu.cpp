@@ -2847,8 +2847,8 @@ void QMenu::paintEvent(QPaintEvent *e)
 void QMenu::wheelEvent(QWheelEvent *e)
 {
     Q_D(QMenu);
-    if (d->scroll && rect().contains(e->pos()))
-        d->scrollMenu(e->delta() > 0 ?
+    if (d->scroll && rect().contains(e->position().toPoint()))
+        d->scrollMenu(e->angleDelta().y() > 0 ?
                       QMenuPrivate::QMenuScroller::ScrollUp : QMenuPrivate::QMenuScroller::ScrollDown);
 }
 #endif

@@ -1293,8 +1293,15 @@ void QGraphicsProxyWidget::wheelEvent(QGraphicsSceneWheelEvent *event)
     pos = d->mapToReceiver(pos, receiver);
 
     // Send mouse event.
-    QWheelEvent wheelEvent(pos.toPoint(), event->screenPos(), event->delta(),
-                           event->buttons(), event->modifiers(), event->orientation());
+    QPoint angleDelta;
+    if (event->orientation() == Qt::Horizontal)
+        angleDelta.setX(event->delta());
+    else
+        angleDelta.setY(event->delta());
+    // pixelDelta, inverted, scrollPhase and source from the original QWheelEvent
+    // were not preserved in the QGraphicsSceneWheelEvent unfortunately
+    QWheelEvent wheelEvent(pos, event->screenPos(), QPoint(), angleDelta,
+                    event->buttons(), event->modifiers(), Qt::NoScrollPhase, false);
     QPointer<QWidget> focusWidget = d->widget->focusWidget();
     extern bool qt_sendSpontaneousEvent(QObject *, QEvent *);
     qt_sendSpontaneousEvent(receiver, &wheelEvent);

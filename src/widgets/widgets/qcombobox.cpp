@@ -3378,12 +3378,13 @@ void QComboBox::wheelEvent(QWheelEvent *e)
         !d->viewContainer()->isVisible()) {
         const int rowCount = count();
         int newIndex = currentIndex();
+        int delta = e->angleDelta().y();
 
-        if (e->delta() > 0) {
+        if (delta > 0) {
             newIndex--;
             while ((newIndex >= 0) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
                 newIndex--;
-        } else if (e->delta() < 0) {
+        } else if (delta < 0) {
             newIndex++;
             while (newIndex < rowCount && !(d->model->index(newIndex, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled))
                 newIndex++;

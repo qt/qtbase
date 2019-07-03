@@ -2239,8 +2239,13 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
         return;
     }
 
+#if QT_DEPRECATED_SINCE(5, 14)
      QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation,
                     mouse_buttons, e->modifiers, e->phase, e->source, e->inverted);
+#else
+    QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta,
+                   mouse_buttons, e->modifiers, e->phase, e->inverted, e->source);
+#endif
      ev.setTimestamp(e->timestamp);
      QGuiApplication::sendSpontaneousEvent(window, &ev);
 #else

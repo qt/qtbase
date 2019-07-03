@@ -1418,7 +1418,7 @@ void QCalendarView::keyPressEvent(QKeyEvent *event)
 #if QT_CONFIG(wheelevent)
 void QCalendarView::wheelEvent(QWheelEvent *event)
 {
-    const int numDegrees = event->delta() / 8;
+    const int numDegrees = event->angleDelta().y() / 8;
     const int numSteps = numDegrees / 15;
     const QModelIndex index = currentIndex();
     QDate currentDate = static_cast<QCalendarModel*>(model())->dateForCell(index.row(), index.column());

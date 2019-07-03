@@ -2669,12 +2669,14 @@ void tst_QTextEdit::wheelEvent()
     ed.setReadOnly(true);
 
     float defaultFontSize = ed.font().pointSizeF();
-    QWheelEvent wheelUp(QPointF(), QPointF(), QPoint(), QPoint(0, 120), 120, Qt::Vertical, Qt::NoButton, Qt::ControlModifier);
+    QWheelEvent wheelUp(QPointF(), QPointF(), QPoint(), QPoint(0, 120),
+                        Qt::NoButton, Qt::ControlModifier, Qt::NoScrollPhase, Qt::MouseEventNotSynthesized);
     ed.wheelEvent(&wheelUp);
 
     QCOMPARE(defaultFontSize + 1, ed.font().pointSizeF());
 
-    QWheelEvent wheelHalfDown(QPointF(), QPointF(), QPoint(), QPoint(0, -60), -60, Qt::Vertical, Qt::NoButton, Qt::ControlModifier);
+    QWheelEvent wheelHalfDown(QPointF(), QPointF(), QPoint(), QPoint(0, -60),
+                              Qt::NoButton, Qt::ControlModifier, Qt::NoScrollPhase, Qt::MouseEventNotSynthesized);
     ed.wheelEvent(&wheelHalfDown);
 
     QCOMPARE(defaultFontSize + 0.5, ed.font().pointSizeF());

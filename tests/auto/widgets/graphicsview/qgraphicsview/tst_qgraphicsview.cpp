@@ -2219,7 +2219,7 @@ void tst_QGraphicsView::wheelEvent()
     {
         QWheelEvent event(view.mapFromScene(widget->boundingRect().center()),
                           view.mapToGlobal(view.mapFromScene(widget->boundingRect().center())),
-                          120, 0, 0, Qt::Horizontal);
+                          QPoint(), QPoint(120, 0), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
         QApplication::sendEvent(view.viewport(), &event);
         QCOMPARE(scene.orientation, Qt::Horizontal);
     }
@@ -2228,7 +2228,7 @@ void tst_QGraphicsView::wheelEvent()
     {
         QWheelEvent event(view.mapFromScene(widget->boundingRect().center()),
                           view.mapToGlobal(view.mapFromScene(widget->boundingRect().center())),
-                          120, 0, 0, Qt::Vertical);
+                          QPoint(), QPoint(0, 120), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
         QApplication::sendEvent(view.viewport(), &event);
         QCOMPARE(scene.orientation, Qt::Vertical);
     }
