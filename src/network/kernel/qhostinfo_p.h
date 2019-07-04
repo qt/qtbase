@@ -232,7 +232,6 @@ public:
     ~QHostInfoLookupManager();
 
     void clear() override;
-    void work();
 
     // called from QHostInfo
     void scheduleLookup(QHostInfoRunnable *r);
@@ -255,9 +254,12 @@ protected:
 #if QT_CONFIG(thread)
     QThreadPool threadPool;
 #endif
-    QRecursiveMutex mutex;
+    QMutex mutex;
 
     bool wasDeleted;
+
+private:
+    void rescheduleWithMutexHeld();
 
 private slots:
 #if QT_CONFIG(thread)

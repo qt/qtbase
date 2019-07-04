@@ -944,10 +944,9 @@ void QHostInfoLookupManager::clear()
     cache.clear();
 }
 
-void QHostInfoLookupManager::work()
+// assumes mutex is locked by caller
+void QHostInfoLookupManager::rescheduleWithMutexHeld()
 {
-    QMutexLocker locker(&mutex);
-
     if (wasDeleted)
         return;
 
@@ -1012,7 +1011,7 @@ void QHostInfoLookupManager::scheduleLookup(QHostInfoRunnable *r)
         return;
 
     scheduledLookups.enqueue(r);
-    work();
+    rescheduleWithMutexHeld();
 }
 
 // called by QHostInfo
@@ -1068,7 +1067,7 @@ void QHostInfoLookupManager::lookupFinished(QHostInfoRunnable *r)
     currentLookups.removeOne(r);
 #endif
     finishedLookups.append(r);
-    work();
+    rescheduleWithMutexHeld();
 }
 
 // This function returns immediately when we had a result in the cache, else it will later emit a signal
