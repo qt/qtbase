@@ -63,9 +63,6 @@
 # include <QtCore/qlibrary.h>
 #endif
 #include <QtCore/qmutex.h>
-#if QT_CONFIG(thread)
-#include <private/qmutexpool_p.h>
-#endif
 #include <QtCore/qdatetime.h>
 #if defined(Q_OS_UNIX)
 #include <QtCore/qdir.h>
@@ -936,18 +933,16 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 }
 #endif
 
+static QBasicMutex symbolResolveMutex;
+static QBasicAtomicInt symbolsResolved = Q_BASIC_ATOMIC_INITIALIZER(false);
+static bool triedToResolveSymbols = false;
+
 bool q_resolveOpenSslSymbols()
 {
-    static bool symbolsResolved = false;
-    static bool triedToResolveSymbols = false;
-#if QT_CONFIG(thread)
-#if QT_CONFIG(opensslv11)
-    QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&q_OPENSSL_init_ssl));
-#else
-    QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&q_SSL_library_init));
-#endif
-#endif
-    if (symbolsResolved)
+    if (symbolsResolved.loadAcquire())
+        return true;
+    QMutexLocker locker(&symbolResolveMutex);
+    if (symbolsResolved.loadRelaxed())
         return true;
     if (triedToResolveSymbols)
         return false;
@@ -1402,7 +1397,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(d2i_PKCS12_bio)
     RESOLVEFUNC(PKCS12_free)
 
-    symbolsResolved = true;
+
+    symbolsResolved.storeRelease(true);
     delete libs.first;
     delete libs.second;
     return true;
