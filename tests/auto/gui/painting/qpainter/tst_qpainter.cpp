@@ -1637,6 +1637,7 @@ void tst_QPainter::qimageFormats_data()
     QTest::newRow("Qimage::Format_RGB555") << QImage::Format_RGB555;
     QTest::newRow("Qimage::Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8555_Premultiplied;
     QTest::newRow("Qimage::Format_RGB888") << QImage::Format_RGB888;
+    QTest::newRow("Qimage::Format_BGR888") << QImage::Format_BGR888;
     QTest::newRow("Qimage::Format_A2RGB30_Premultiplied") << QImage::Format_A2RGB30_Premultiplied;
     QTest::newRow("Qimage::Format_RGB30") << QImage::Format_RGB30;
 }

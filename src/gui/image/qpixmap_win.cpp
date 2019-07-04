@@ -281,6 +281,7 @@ Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapForm
     }
         break;
     case QImage::Format_RGB888:
+    case QImage::Format_BGR888:
         compression = BI_RGB;
         bitCount = 24u;
         break;
@@ -368,7 +369,7 @@ static QImage::Format imageFromWinHBITMAP_Format(const BITMAPINFOHEADER &header,
             ? QImage::Format_RGB32 : QImage::Format_ARGB32_Premultiplied;
         break;
     case 24:
-        result = QImage::Format_RGB888;
+        result = QImage::Format_BGR888;
         break;
     case 16:
         result = QImage::Format_RGB555;

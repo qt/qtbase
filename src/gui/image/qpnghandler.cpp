@@ -1079,6 +1079,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
     if (color_type == PNG_COLOR_TYPE_RGB) {
         switch (image.format()) {
         case QImage::Format_RGB888:
+        case QImage::Format_BGR888:
             break;
         case QImage::Format_RGBX8888:
         case QImage::Format_RGBX64:
@@ -1131,6 +1132,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
     case QImage::Format_RGB888:
+    case QImage::Format_BGR888:
     case QImage::Format_RGBX8888:
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBX64:

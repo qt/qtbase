@@ -1863,6 +1863,7 @@ void tst_QImageReader::saveFormat_data()
     QTest::newRow("Format_RGB555") << QImage::Format_RGB555;
     QTest::newRow("Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8555_Premultiplied;
     QTest::newRow("Format_RGB888") << QImage::Format_RGB888;
+    QTest::newRow("Format_BGR888") << QImage::Format_BGR888;
     QTest::newRow("Format_RGB444") << QImage::Format_RGB444;
     QTest::newRow("Format_ARGB4444_Premultiplied") << QImage::Format_ARGB4444_Premultiplied;
     QTest::newRow("Format_RGBA64") << QImage::Format_RGBA64;
