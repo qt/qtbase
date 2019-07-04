@@ -8200,6 +8200,9 @@ void tst_QNetworkReply::backgroundRequestInterruption_data()
 void tst_QNetworkReply::backgroundRequestInterruption()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
+    if (QNetworkStatusMonitor::isEnabled() && QByteArray(QTest::currentDataTag()).startsWith("http"))
+        QSKIP("This test (currently) doesn't make any sense when QNetworkStatusMonitor is enabled");
+
     QFETCH(QUrl, url);
     QFETCH(bool, background);
     QFETCH(QNetworkReply::NetworkError, error);
