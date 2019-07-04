@@ -66,7 +66,8 @@ QBenchmarkGlobalData::QBenchmarkGlobalData()
 QBenchmarkGlobalData::~QBenchmarkGlobalData()
 {
     delete measurer;
-    QBenchmarkGlobalData::current = 0;
+    if (QBenchmarkGlobalData::current == this)
+        QBenchmarkGlobalData::current = nullptr;
 }
 
 void QBenchmarkGlobalData::setMode(Mode mode)
