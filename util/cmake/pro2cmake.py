@@ -378,10 +378,12 @@ class Scope(object):
                     'QT_SOURCE_TREE': [SetOperation(['${QT_SOURCE_TREE}'])],
                     'QT_BUILD_TREE': [SetOperation(['${PROJECT_BUILD_DIR}'])],
                  }) -> None:
+        self._operations = copy.deepcopy(operations)
         if parent_scope:
             parent_scope._add_child(self)
         else:
             self._parent = None  # type: typing.Optional[Scope]
+            self._operations['QT'] = [SetOperation(['core', 'gui'])]
 
         self._basedir = base_dir
         if file:
@@ -398,7 +400,6 @@ class Scope(object):
         self._condition = map_condition(condition)
         self._children = []  # type: typing.List[Scope]
         self._included_children = []  # type: typing.List[Scope]
-        self._operations = copy.deepcopy(operations)
         self._visited_keys = set()  # type: typing.Set[str]
         self._total_condition = None  # type: typing.Optional[str]
 
