@@ -227,10 +227,7 @@ Q_SIGNALS:
     void highlighted(int index);
     void highlighted(const QString &);
     void currentIndexChanged(int index);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use currentTextChanged() instead")
     void currentIndexChanged(const QString &);
-#endif
     void currentTextChanged(const QString &);
 
 protected:
