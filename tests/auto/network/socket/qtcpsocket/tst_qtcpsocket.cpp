@@ -865,7 +865,8 @@ void tst_QTcpSocket::hostNotFound()
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
 #ifdef QT_TEST_SERVER
     QFETCH_GLOBAL(bool, setProxy);
-    if (setProxy) {
+    QFETCH_GLOBAL(int, proxyType);
+    if (setProxy && (proxyType & HttpProxy) == HttpProxy) {
         QEXPECT_FAIL("", "QTBUG-73953: The version of Squid in the docker container behaves "
                          "differently to the one in the network testing server, returning 503 "
                          "when we expect 404", Continue);
