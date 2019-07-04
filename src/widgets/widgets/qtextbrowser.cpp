@@ -57,7 +57,6 @@
 #endif
 #include <qtextobject.h>
 #include <qdesktopservices.h>
-#include <qmimedatabase.h>
 
 QT_BEGIN_NAMESPACE
 
