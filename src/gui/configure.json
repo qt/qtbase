@@ -1,7 +1,7 @@
 {
     "module": "gui",
     "depends": [
-        "core",
+        "core-private",
         "network"
     ],
     "testDir": "../../config.tests",
@@ -1375,7 +1375,7 @@
         },
         "egl": {
             "label": "EGL",
-            "condition": "(features.opengl || features.openvg) && (features.angle || libs.egl)",
+            "condition": "(features.opengl || features.openvg) && (features.angle || libs.egl) && (features.dlopen || !config.unix)",
             "output": [ "privateFeature", "feature" ]
         },
         "egl_x11": {
