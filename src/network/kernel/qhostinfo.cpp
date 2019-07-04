@@ -47,6 +47,7 @@
 #include <qabstracteventdispatcher.h>
 #include <qcoreapplication.h>
 #include <qmetaobject.h>
+#include <qscopeguard.h>
 #include <qstringlist.h>
 #include <qthread.h>
 #include <qurl.h>
@@ -826,11 +827,10 @@ QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *re
 void QHostInfoRunnable::run()
 {
     QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    const auto sg = qScopeGuard([&] { manager->lookupFinished(this); });
     // check aborted
-    if (manager->wasAborted(id)) {
-        manager->lookupFinished(this);
+    if (manager->wasAborted(id))
         return;
-    }
 
     QHostInfo hostInfo;
 
@@ -852,10 +852,8 @@ void QHostInfoRunnable::run()
     }
 
     // check aborted again
-    if (manager->wasAborted(id)) {
-        manager->lookupFinished(this);
+    if (manager->wasAborted(id))
         return;
-    }
 
     // signal emission
     hostInfo.setLookupId(id);
@@ -879,8 +877,6 @@ void QHostInfoRunnable::run()
     }
 
 #endif
-    manager->lookupFinished(this);
-
     // thread goes back to QThreadPool
 }
 
