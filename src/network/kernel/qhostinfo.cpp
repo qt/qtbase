@@ -85,13 +85,6 @@ private:
     QString m_toBeLookedUp;
 };
 
-// ### C++11: remove once we can use std::any_of()
-template<class InputIt, class UnaryPredicate>
-bool any_of(InputIt first, InputIt last, UnaryPredicate p)
-{
-    return std::find_if(first, last, p) != last;
-}
-
 template <typename InputIt, typename OutputIt1, typename OutputIt2, typename UnaryPredicate>
 std::pair<OutputIt1, OutputIt2> separate_if(InputIt first, InputIt last, OutputIt1 dest1, OutputIt2 dest2, UnaryPredicate p)
 {
@@ -950,7 +943,7 @@ void QHostInfoLookupManager::work()
 
 #if QT_CONFIG(thread)
     auto isAlreadyRunning = [this](QHostInfoRunnable *lookup) {
-        return any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(lookup->toBeLookedUp));
+        return std::any_of(currentLookups.cbegin(), currentLookups.cend(), ToBeLookedUpEquals(lookup->toBeLookedUp));
     };
 
     // Transfer any postponed lookups that aren't currently running to the scheduled list, keeping already-running lookups:
