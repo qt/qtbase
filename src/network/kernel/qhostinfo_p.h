@@ -208,30 +208,14 @@ public:
 };
 
 
-class QAbstractHostInfoLookupManager : public QObject
-{
-    Q_OBJECT
-
-public:
-    ~QAbstractHostInfoLookupManager() {}
-    virtual void clear() = 0;
-
-    QHostInfoCache cache;
-
-protected:
-     QAbstractHostInfoLookupManager() {}
-     static QAbstractHostInfoLookupManager* globalInstance();
-
-};
-
-class QHostInfoLookupManager : public QAbstractHostInfoLookupManager
+class QHostInfoLookupManager : public QObject
 {
     Q_OBJECT
 public:
     QHostInfoLookupManager();
     ~QHostInfoLookupManager();
 
-    void clear() override;
+    void clear();
 
     // called from QHostInfo
     void scheduleLookup(QHostInfoRunnable *r);
@@ -240,6 +224,8 @@ public:
     // called from QHostInfoRunnable
     void lookupFinished(QHostInfoRunnable *r);
     bool wasAborted(int id);
+
+    QHostInfoCache cache;
 
     friend class QHostInfoRunnable;
 protected:
