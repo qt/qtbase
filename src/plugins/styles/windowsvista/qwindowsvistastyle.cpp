@@ -84,9 +84,8 @@ static const int windowsRightBorder      = 15; // right border on windows
 */
 bool QWindowsVistaStylePrivate::useVista()
 {
-    return (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
-           && QWindowsVistaStylePrivate::useXP();
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista
+            && QWindowsVistaStylePrivate::useXP();
 }
 
 /* \internal

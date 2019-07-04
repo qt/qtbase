@@ -45,6 +45,7 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qoperatingsystemversion.h>
 
 #include <QtCore/qdebug.h>
 
@@ -612,7 +613,8 @@ bool QNativeWifiEngine::requiresPolling() const
 {
     // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
     // We need to poll for changes in available wireless networks.
-    return QSysInfo::WindowsVersion <= QSysInfo::WV_2003;
+    return QOperatingSystemVersion::current()
+            <= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 5, 2);
 }
 
 QT_END_NAMESPACE

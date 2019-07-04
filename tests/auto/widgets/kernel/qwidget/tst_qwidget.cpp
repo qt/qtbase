@@ -54,6 +54,7 @@
 #include <qrandom.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
@@ -7654,7 +7655,7 @@ void tst_QWidget::moveWindowInShowEvent()
 void tst_QWidget::repaintWhenChildDeleted()
 {
 #ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista) {
         QTest::qWait(1000);
     }
 #endif
@@ -8853,7 +8854,7 @@ void tst_QWidget::translucentWidget()
 
 #ifdef Q_OS_WIN
     QWidget *desktopWidget = QApplication::desktop()->screen(0);
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista)
         widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
     else
 #endif

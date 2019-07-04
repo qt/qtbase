@@ -177,6 +177,7 @@ void QSslSocketPrivate::ensureInitialized()
 
 long QSslSocketPrivate::sslLibraryVersionNumber()
 {
+    // ### Qt 6: Find a proper replacement for the deprecated method below.
     return QSysInfo::windowsVersion();
 }
 
