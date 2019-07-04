@@ -907,9 +907,10 @@ void QHostInfoRunnable::run()
 
 QHostInfoLookupManager::QHostInfoLookupManager() : wasDeleted(false)
 {
-    moveToThread(QCoreApplicationPrivate::mainThread());
 #if QT_CONFIG(thread)
-    connect(QCoreApplication::instance(), SIGNAL(destroyed()), SLOT(waitForThreadPoolDone()), Qt::DirectConnection);
+    QObject::connect(QCoreApplication::instance(), &QObject::destroyed,
+                     &threadPool, [&](QObject *) { threadPool.waitForDone(); },
+                     Qt::DirectConnection);
     threadPool.setMaxThreadCount(20); // do up to 20 DNS lookups in parallel
 #endif
 }

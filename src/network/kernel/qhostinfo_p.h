@@ -208,9 +208,8 @@ public:
 };
 
 
-class QHostInfoLookupManager : public QObject
+class QHostInfoLookupManager
 {
-    Q_OBJECT
 public:
     QHostInfoLookupManager();
     ~QHostInfoLookupManager();
@@ -246,11 +245,6 @@ protected:
 
 private:
     void rescheduleWithMutexHeld();
-
-private slots:
-#if QT_CONFIG(thread)
-    void waitForThreadPoolDone() { threadPool.waitForDone(); }
-#endif
 };
 
 QT_END_NAMESPACE
