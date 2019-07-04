@@ -84,6 +84,7 @@
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
+#include <private/qwidget_p.h>
 
 #include <private/qstylehelper_p.h>
 #if QT_CONFIG(animation)

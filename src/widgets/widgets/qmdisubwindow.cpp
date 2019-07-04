@@ -1986,7 +1986,7 @@ void QMdiSubWindowPrivate::updateActions()
     for (int i = 0; i < NumWindowStateActions; ++i)
         setVisible(WindowStateAction(i), false);
 
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && QT_CONFIG(action)
     if (q_func()->style()->inherits("QMacStyle"))
         for (int i = 0; i < NumWindowStateActions; ++i)
             if (QAction *action = actions[i])
