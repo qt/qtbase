@@ -628,11 +628,25 @@ bool QPngHandlerPrivate::readPngHeader()
         png_get_gAMA(png_ptr, info_ptr, &file_gamma);
         fileGamma = file_gamma;
         if (fileGamma > 0.0f && colorSpaceState <= GammaChrm) {
-            QColorSpacePrivate *csPrivate = colorSpace.d_func();
-            csPrivate->gamut = QColorSpace::Gamut::SRgb;
-            csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
-            csPrivate->gamma = fileGamma;
-            csPrivate->initialize();
+            QColorSpacePrimaries primaries;
+            if (png_get_valid(png_ptr, info_ptr, PNG_INFO_cHRM)) {
+                double white_x, white_y, red_x, red_y;
+                double green_x, green_y, blue_x, blue_y;
+                png_get_cHRM(png_ptr, info_ptr,
+                             &white_x, &white_y, &red_x, &red_y,
+                             &green_x, &green_y, &blue_x, &blue_y);
+                primaries.whitePoint = QPointF(white_x, white_y);
+                primaries.redPoint = QPointF(red_x, red_y);
+                primaries.greenPoint = QPointF(green_x, green_y);
+                primaries.bluePoint = QPointF(blue_x, blue_y);
+            }
+            if (primaries.areValid()) {
+                colorSpace = QColorSpace(primaries.whitePoint, primaries.redPoint, primaries.greenPoint, primaries.bluePoint,
+                                         QColorSpace::TransferFunction::Gamma, fileGamma);
+            } else {
+                colorSpace = QColorSpace(QColorSpace::Gamut::SRgb,
+                                         QColorSpace::TransferFunction::Gamma, fileGamma);
+            }
             colorSpaceState = GammaChrm;
         }
     }
@@ -666,7 +680,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         QColorSpacePrivate *csPrivate = colorSpace.d_func();
         csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
         csPrivate->gamma = gamma;
-        csPrivate->initialize();
+        csPrivate->setTransferFunction();
         colorSpaceState = GammaChrm;
     }
 
