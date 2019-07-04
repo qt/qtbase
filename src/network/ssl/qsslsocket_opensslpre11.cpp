@@ -67,7 +67,6 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qlibrary.h>
 
 QT_BEGIN_NAMESPACE
 
