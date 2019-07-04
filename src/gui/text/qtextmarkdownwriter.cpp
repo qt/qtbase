@@ -47,6 +47,9 @@
 #include "qtextcursor.h"
 #include "qtextimagehandler_p.h"
 #include "qloggingcategory.h"
+#if QT_CONFIG(itemmodel)
+#include "qabstractitemmodel.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +73,7 @@ bool QTextMarkdownWriter::writeAll(const QTextDocument *document)
     return true;
 }
 
+#if QT_CONFIG(itemmodel)
 void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
 {
     QVector<int> tableColumnWidths(table->columnCount());
@@ -101,6 +105,7 @@ void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
     }
     m_listInfo.clear();
 }
+#endif
 
 void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
 {
