@@ -952,22 +952,9 @@ void qt_qhostinfo_cache_inject(const QString &hostname, const QHostInfo &resolut
 QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(128)
 {
 #ifdef QT_QHOSTINFO_CACHE_DISABLED_BY_DEFAULT
-    enabled = false;
+    enabled.store(false, std::memory_order_relaxed);
 #endif
 }
-
-bool QHostInfoCache::isEnabled()
-{
-    return enabled;
-}
-
-// this function is currently only used for the auto tests
-// and not usable by public API
-void QHostInfoCache::setEnabled(bool e)
-{
-    enabled = e;
-}
-
 
 QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
 {
