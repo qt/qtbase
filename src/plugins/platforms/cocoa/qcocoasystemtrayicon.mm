@@ -264,13 +264,18 @@ bool QCocoaSystemTrayIcon::supportsMessages() const
 void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &message,
                                        const QIcon& icon, MessageIcon, int)
 {
-    Q_UNUSED(icon);
     if (!m_sys)
         return;
 
     NSUserNotification *notification = [[NSUserNotification alloc] init];
     notification.title = [NSString stringWithUTF8String:title.toUtf8().data()];
     notification.informativeText = [NSString stringWithUTF8String:message.toUtf8().data()];
+
+    if (!icon.isNull()) {
+        auto *nsimage = qt_mac_create_nsimage(icon);
+        [nsimage setTemplate:icon.isMask()];
+        notification.contentImage = [nsimage autorelease];
+    }
 
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
