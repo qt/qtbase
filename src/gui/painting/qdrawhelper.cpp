@@ -669,8 +669,7 @@ static void QT_FASTCALL rbSwap_rgb30(uchar *d, const uchar *s, int count)
 {
     const uint *src = reinterpret_cast<const uint *>(s);
     uint *dest = reinterpret_cast<uint *>(d);
-    for (int i = 0; i < count; ++i)
-        dest[i] = qRgbSwapRgb30(src[i]);
+    UNALIASED_CONVERSION_LOOP(dest, src, count, qRgbSwapRgb30);
 }
 
 template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutRGB()
@@ -6774,6 +6773,9 @@ static void qInitDrawhelperFunctions()
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_ssse3;
+        extern void QT_FASTCALL rbSwap_888_ssse3(uchar *dst, const uchar *src, int count);
+        qPixelLayouts[QImage::Format_RGB888].rbSwap = rbSwap_888_ssse3;
+        qPixelLayouts[QImage::Format_BGR888].rbSwap = rbSwap_888_ssse3;
     }
 #endif // SSSE3
 
