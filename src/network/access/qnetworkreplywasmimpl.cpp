@@ -236,6 +236,7 @@ QNetworkReplyWasmImpl::~QNetworkReplyWasmImpl()
 
 QByteArray QNetworkReplyWasmImpl::methodName() const
 {
+    const Q_D( QNetworkReplyWasmImpl);
     switch (operation()) {
     case QNetworkAccessManager::HeadOperation:
         return "HEAD";
@@ -247,6 +248,8 @@ QByteArray QNetworkReplyWasmImpl::methodName() const
         return "POST";
     case QNetworkAccessManager::DeleteOperation:
         return "DELETE";
+    case QNetworkAccessManager::CustomOperation:
+        return d->request.attribute(QNetworkRequest::CustomVerbAttribute).toByteArray();
     default:
         break;
     }

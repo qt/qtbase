@@ -2232,6 +2232,8 @@ void QObject::removeEventFilter(QObject *obj)
 */
 
 /*!
+    \threadsafe
+
     Schedules this object for deletion.
 
     The object will be deleted when control returns to the event
