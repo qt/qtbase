@@ -132,7 +132,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     if (!m_startupId.isNull())
         qunsetenv("DESKTOP_STARTUP_ID");
 
+    const int focusInDelay = 100;
     m_focusInTimer.setSingleShot(true);
+    m_focusInTimer.setInterval(focusInDelay);
     m_focusInTimer.callOnTimeout([]() {
         // No FocusIn events for us, proceed with FocusOut normally.
         QWindowSystemInterface::handleWindowActivated(nullptr, Qt::ActiveWindowFocusReason);

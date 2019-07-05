@@ -848,7 +848,7 @@ void QXcbWindow::doFocusOut()
     connection()->setFocusWindow(nullptr);
     relayFocusToModalWindow();
     // Do not set the active window to nullptr if there is a FocusIn coming.
-    connection()->focusInTimer().start(400);
+    connection()->focusInTimer().start();
 }
 
 struct QtMotifWmHints {
