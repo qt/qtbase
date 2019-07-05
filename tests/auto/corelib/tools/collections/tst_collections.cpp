@@ -3484,9 +3484,6 @@ void tst_Collections::foreach_2()
     QCOMPARE(varl1.count(), intlist.count());
     QCOMPARE(varl2.count(), intlist.count());
     QCOMPARE(varl3.count(), intlist.count());
-    foreach_test_arrays(varl1);
-    foreach_test_arrays(varl2);
-    foreach_test_arrays(varl3);
 
     QVarLengthArray<QString> varl4;
     QVarLengthArray<QString, 3> varl5;
@@ -3499,9 +3496,6 @@ void tst_Collections::foreach_2()
     QCOMPARE(varl4.count(), strlist.count());
     QCOMPARE(varl5.count(), strlist.count());
     QCOMPARE(varl6.count(), strlist.count());
-    foreach_test_arrays(varl4);
-    foreach_test_arrays(varl5);
-    foreach_test_arrays(varl6);
 }
 
 struct IntOrString
