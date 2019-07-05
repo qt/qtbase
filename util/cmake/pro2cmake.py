@@ -1534,6 +1534,18 @@ def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
         for mo in moc_options:
             cm_fh.write('{}        "{}"\n'.format(ind, mo))
 
+    precompiled_header = scope.get('PRECOMPILED_HEADER')
+    if precompiled_header:
+        cm_fh.write('{}    PRECOMPILED_HEADER\n'.format(ind))
+        for header in precompiled_header:
+            cm_fh.write('{}        "{}"\n'.format(ind, header))
+
+    no_pch_sources = scope.get('NO_PCH_SOURCES')
+    if no_pch_sources:
+        cm_fh.write('{}    NO_PCH_SOURCES\n'.format(ind))
+        for source in no_pch_sources:
+            cm_fh.write('{}        "{}"\n'.format(ind, source))
+
 
 def is_simple_condition(condition: str) -> bool:
     return ' ' not in condition \

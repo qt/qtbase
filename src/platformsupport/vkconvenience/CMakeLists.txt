@@ -20,10 +20,11 @@ add_qt_module(VulkanSupport
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    PRECOMPILED_HEADER
+        "../../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:vkconvenience.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "vulkan_support"
-# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
 # _LOADED = "qt_module"

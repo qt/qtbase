@@ -915,6 +915,33 @@ function(qt_register_target_dependencies target public_libs private_libs)
     set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
 endfunction()
 
+function(qt_update_precompiled_header target precompiled_header)
+    if (precompiled_header AND BUILD_WITH_PCH)
+        set_property(TARGET "${target}" APPEND PROPERTY "PRECOMPILE_HEADERS" "${precompiled_header}")
+    endif()
+endfunction()
+
+function(qt_update_precompiled_header_with_library target library)
+    if (TARGET "${library}")
+        get_target_property(TARGET_TYPE "${library}" TYPE)
+        if (NOT TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+            get_target_property(HEADER "${library}" MODULE_HEADER)
+            qt_update_precompiled_header("${target}" "${HEADER}")
+        endif()
+    endif()
+endfunction()
+
+function(qt_update_ignore_pch_source target sources)
+    if (sources)
+        set_source_files_properties(${sources} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+    endif()
+endfunction()
+
+function(qt_ignore_pch_obj_c_sources target sources)
+    list(FILTER sources INCLUDE REGEX "\\.mm$")
+    qt_update_ignore_pch_source("${target}" "${sources}")
+endfunction()
+
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
 function(extend_target target)
@@ -927,8 +954,8 @@ function(extend_target target)
     if (NOT TARGET "${target}")
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
-    qt_parse_all_arguments(arg "extend_target" "HEADER_MODULE" ""
-        "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS" ${ARGN})
+    qt_parse_all_arguments(arg "extend_target" "HEADER_MODULE" "PRECOMPILED_HEADER"
+        "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
     if ("x${arg_CONDITION}" STREQUAL x)
         set(arg_CONDITION ON)
     endif()
@@ -950,6 +977,7 @@ function(extend_target target)
         endforeach()
 
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
+            qt_update_precompiled_header_with_library("${target}" "${lib}")
             string(REGEX REPLACE "_nolink$" "" base_lib "${lib}")
             if(NOT base_lib STREQUAL lib)
                 qt_create_nolink_target("${base_lib}" ${target})
@@ -1033,6 +1061,11 @@ function(extend_target target)
         qt_autogen_tools(${target}
                          ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
                          DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS})
+
+        qt_update_precompiled_header("${target}" "${arg_PRECOMPILED_HEADER}")
+        qt_update_ignore_pch_source("${target}" "${arg_NO_PCH_SOURCES}")
+        ## Ignore objective-c files for PCH (not supported atm)
+        qt_ignore_pch_obj_c_sources("${target}" "${arg_SOURCES}")
 
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
@@ -1218,8 +1251,8 @@ function(add_qt_module target)
     # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE"
-        "CONFIG_MODULE_NAME"
-        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES" ${ARGN})
+        "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
+        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -1275,6 +1308,8 @@ function(add_qt_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
+        set_property(TARGET "${target}" PROPERTY MODULE_HEADER "${module_include_dir}/${module}")
+
         if(module_headers_qpa)
             qt_install(FILES ${module_headers_qpa} DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/qpa)
         endif()
@@ -1369,6 +1404,8 @@ function(add_qt_module target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
+        NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
     )
 
     if(NOT ${arg_EXCEPTIONS} AND NOT ${arg_HEADER_MODULE})

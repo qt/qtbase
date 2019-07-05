@@ -41,6 +41,9 @@ set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 ## Should this Qt be built with Werror?
 option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
 
+## Should Qt be built using PCH?
+option(BUILD_WITH_PCH "Build Qt using precompiled headers?" ON)
+
 ## Decide whether tools will be built.
 qt_check_if_tools_will_be_built()
 

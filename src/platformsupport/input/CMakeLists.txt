@@ -22,12 +22,13 @@ add_qt_module(InputSupport
         Qt::Core
         Qt::DeviceDiscoverySupport
         Qt::Gui
+    PRECOMPILED_HEADER
+        "../../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 3:.:.:input-support.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "input_support"
-# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
 # _LOADED = "qt_module"
 
 ## Scopes:

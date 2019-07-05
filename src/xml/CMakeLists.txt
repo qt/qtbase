@@ -19,7 +19,6 @@ add_qt_module(Xml
 )
 
 #### Keys ignored in scope 1:.:.:xml.pro:<TRUE>:
-# PRECOMPILED_HEADER = <EMPTY>
 # _LOADED = "qt_module"
 
 ## Scopes:

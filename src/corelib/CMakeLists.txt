@@ -250,6 +250,11 @@ add_qt_module(Core
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     DISABLE_TOOLS_EXPORT # special case:
+    PRECOMPILED_HEADER
+        global/qt_pch.h
+    NO_PCH_SOURCES
+        text/qstring_compat.cpp
+        tools/qvector_msvc.cpp
     # special case begin
     # Generated in QtBaseGlobalTargets
     EXTRA_CMAKE_FILES ${QT_CORE_RESOURCE_GENERATED_FILE_PATH}

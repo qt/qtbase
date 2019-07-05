@@ -63,6 +63,8 @@ add_qt_module(Widgets
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    PRECOMPILED_HEADER
+        "kernel/qt_widgets_pch.h"
 )
 
 add_dependencies(Widgets ${QT_CMAKE_EXPORT_NAMESPACE}::uic)  # special case

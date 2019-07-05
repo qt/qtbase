@@ -116,12 +116,13 @@ add_qt_tool(qmake # special case
         library
         $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES> # special case
         ${CMAKE_BINARY_DIR}/src/corelib/global # special case: for qconfig.cpp
+    PRECOMPILED_HEADER
+        "qmake_pch.h"
 )
 
 qt_internal_add_target_aliases(Bootstrap) # special case
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
-# PRECOMPILED_HEADER = "qmake_pch.h"
 # _OPTION = "host_build"
 
 ## Scopes:

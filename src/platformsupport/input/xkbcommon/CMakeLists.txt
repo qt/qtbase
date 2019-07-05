@@ -19,12 +19,13 @@ add_qt_module(XkbCommonSupport
         Qt::Core
         Qt::Gui
         XKB::XKB
+    PRECOMPILED_HEADER
+        "../../../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:xkbcommon.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "xkbcommon_support"
-# PRECOMPILED_HEADER = "../../../corelib/global/qt_pch.h"
 # _LOADED = "qt_module"
 
 ## Scopes:

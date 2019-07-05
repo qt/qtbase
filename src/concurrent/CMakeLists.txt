@@ -29,11 +29,11 @@ add_qt_module(Concurrent
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRECOMPILED_HEADER
+        "../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:concurrent.pro:<TRUE>:
-# CONFIG = "exceptions"
-# PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
 # _LOADED = "qt_module"
 
 ## Scopes:

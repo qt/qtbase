@@ -17,12 +17,13 @@ add_qt_module(ServiceSupport
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    PRECOMPILED_HEADER
+        "../../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:services.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "service_support"
-# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
 # _LOADED = "qt_module"
 
 ## Scopes:

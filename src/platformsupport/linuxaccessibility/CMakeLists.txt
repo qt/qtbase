@@ -39,10 +39,11 @@ add_qt_module(LinuxAccessibilitySupport
         Qt::Core
         Qt::DBus
         Qt::Gui
+    PRECOMPILED_HEADER
+        "../../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:linuxaccessibility.pro:<TRUE>:
 # CONFIG = "static" "internal_module"
 # MODULE = "linuxaccessibility_support"
-# PRECOMPILED_HEADER = "../../corelib/global/qt_pch.h"
 # _LOADED = "qt_module"

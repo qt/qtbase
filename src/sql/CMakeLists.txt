@@ -27,11 +27,12 @@ add_qt_module(Sql
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRECOMPILED_HEADER
+        "../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:sql.pro:<TRUE>:
 # MODULE_PLUGIN_TYPES = "sqldrivers"
-# PRECOMPILED_HEADER = "../corelib/global/qt_pch.h"
 # SQL_P = "sql"
 # _LOADED = "qt_module"
 

@@ -264,6 +264,10 @@ add_qt_module(Gui
         ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
+    NO_PCH_SOURCES
+        "painting/qdrawhelper.cpp"
+    PRECOMPILED_HEADER
+        "kernel/qt_gui_pch.h"
 )
 
 # Resources:
