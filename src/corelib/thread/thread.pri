@@ -28,6 +28,7 @@ qtConfig(thread) {
         thread/qbasicatomic.h \
         thread/qfutex_p.h \
         thread/qgenericatomic.h \
+        thread/qlocking_p.h \
         thread/qmutex_p.h \
         thread/qorderedmutexlocker_p.h \
         thread/qreadwritelock_p.h \
