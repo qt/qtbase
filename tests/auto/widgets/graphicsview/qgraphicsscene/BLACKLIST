@@ -3,11 +3,5 @@ opensuse-42.3 ci
 [removeFullyTransparentItem]
 osx-10.12
 [tabFocus_sceneWithNestedFocusWidgets]
-opensuse
-opensuse-leap
-[inputMethod]
-opensuse
-opensuse-leap
-[hoverEvents_parentChild]
-ubuntu
+opensuse-42.3
 

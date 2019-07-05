@@ -2,8 +2,6 @@
 redhatenterpriselinuxworkstation-6.6
 # QTBUG-48455
 [fileWriterProcess]
-msvc-2015 ci
-msvc-2017 ci
-[softExitInSlots]
-# QTBUG-66903
-windows
+windows-10 msvc-2015
+windows-10 msvc-2017
+

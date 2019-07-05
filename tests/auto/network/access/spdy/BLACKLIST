@@ -1,4 +1,10 @@
 [download]
-linux
+opensuse-leap
+ubuntu-18.04
+ubuntu-16.04
+b2qt
 [upload]
-linux
+opensuse-leap
+ubuntu-18.04
+b2qt
+
