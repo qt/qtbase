@@ -45,11 +45,18 @@
 #include "qsslcertificateextension_p.h"
 
 #include <QtCore/qendian.h>
+#include <QtCore/qmutex.h>
 
-#if QT_CONFIG(thread)
-#include <QtCore/private/qmutexpool_p.h>
-#endif
 QT_BEGIN_NAMESPACE
+
+Q_CONSTEXPR int MutexPoolSize = 17;
+static QBasicMutex mutexPool[MutexPoolSize];
+namespace QMutexPool {
+    static QBasicMutex *globalInstanceGet(const void *addr)
+    {
+        return mutexPool + (quintptr(addr) % MutexPoolSize);
+    }
+}
 
 // forward declaration
 static QMultiMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
