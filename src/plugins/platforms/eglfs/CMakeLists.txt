@@ -80,6 +80,7 @@ extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
 add_qt_plugin(qeglfs
     TYPE platforms
     CLASS_NAME QEglFSIntegrationPlugin
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs # special case
     SOURCES
         qeglfsmain.cpp
     DEFINES

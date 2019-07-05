@@ -1449,7 +1449,7 @@ function(add_qt_plugin target)
 
     qt_parse_all_arguments(arg "add_qt_plugin" "STATIC;EXCEPTIONS"
         "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY"
-        "${__default_private_args};${__default_public_args}" ${ARGN})
+        "${__default_private_args};${__default_public_args};DEFAULT_IF" ${ARGN})
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
 
@@ -1501,7 +1501,15 @@ function(add_qt_plugin target)
         set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
     endif()
 
-    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_MODULE")
+    set(_default_plugin 1)
+    if (DEFINED arg_DEFAULT_IF)
+      if (NOT ${arg_DEFAULT_IF})
+          set(_default_plugin 0)
+      endif()
+    endif()
+
+    set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
+    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_MODULE;QT_DEFAULT_PLUGIN")
 
     extend_target("${target}"
         SOURCES ${arg_SOURCES}

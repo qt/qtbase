@@ -190,6 +190,7 @@ extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_p
 add_qt_plugin(qxcb
     TYPE platforms
     CLASS_NAME QXcbIntegrationPlugin
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES xcb # special case
     SOURCES
         qxcbmain.cpp
     DEFINES

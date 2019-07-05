@@ -38,6 +38,18 @@ define_property(TARGET
         For instance, Sql for qsqlite"
 )
 
+define_property(TARGET
+    PROPERTY
+        QT_DEFAULT_PLUGIN
+    BRIEF_DOCS
+        "Indicates whether a plug-in is added by default."
+    FULL_DOCS
+        "This is a property on Qt plug-ins.
+        It is mainly used to indicate if a plug-in should be added
+        to the default set of plug-ins when building a static app -
+        for instance, which QPA should be linked."
+)
+
 define_property(GLOBAL
     PROPERTY
         QT_KNOWN_PLUGINS

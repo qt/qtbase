@@ -7,6 +7,7 @@
 add_qt_plugin(qvnc
     TYPE platforms
     CLASS_NAME QVncIntegrationPlugin
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES vnc # special case
     SOURCES
         main.cpp
         qvnc.cpp qvnc_p.h

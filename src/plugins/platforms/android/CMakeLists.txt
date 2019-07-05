@@ -6,6 +6,7 @@
 
 add_qt_plugin(qtforandroid
     TYPE platforms
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
         androiddeadlockprotector.cpp androiddeadlockprotector.h

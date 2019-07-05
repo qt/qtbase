@@ -7,6 +7,7 @@
 add_qt_plugin(qminimalegl
     TYPE platforms
     CLASS_NAME QMinimalEglIntegrationPlugin
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimalegl # special case
     SOURCES
         main.cpp
         qminimaleglintegration.cpp qminimaleglintegration.h

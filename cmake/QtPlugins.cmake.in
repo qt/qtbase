@@ -3,7 +3,7 @@
 if(NOT @BUILD_SHARED_LIBS@)
     set(_module_target "@INSTALL_CMAKE_NAMESPACE@::@QT_MODULE@")
 
-    set(_default_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>")
+    set(_default_plugins_are_enabled "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>")
     set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
     set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
 
@@ -15,17 +15,17 @@ if(NOT @BUILD_SHARED_LIBS@)
           continue()
         endif()
 
-        set(_user_specified_genex "$<IN_LIST:${_plugin_target},${_manual_plugins_genex}>")
+        set(_plugin_is_default "$<TARGET_PROPERTY:${_plugin_target},QT_DEFAULT_PLUGIN>")
+        set(_plugin_is_not_blacklisted "$<NOT:$<IN_LIST:${_plugin_target},${_no_plugins_genex}>>")
+        set(_plugin_is_whitelisted "$<IN_LIST:${_plugin_target},${_manual_plugins_genex}>")
 
         string(CONCAT _plugin_condition
                     "$<BOOL:$<OR:"
-                        # Add this plugin if it\'s in the list of manual plugins or plugins for the type
-                        "${_user_specified_genex},"
-                        # Add this plugin if the default plugins haven't been disabled, the module of the plug-in
-                        # is either empty or equal to the module name, and the user hasn't blacklisted it
+                        "${_plugin_is_whitelisted},"
                         "$<AND:"
-                            "${_default_plugins_genex},"
-                            "$<NOT:$<IN_LIST:${_plugin_target},${_no_plugins_genex}>>"
+                            "${_default_plugins_are_enabled},"
+                            "${_plugin_is_default},"
+                            "${_plugin_is_not_blacklisted}"
                         ">"
                     ">>"
         )

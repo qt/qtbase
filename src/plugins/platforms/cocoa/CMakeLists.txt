@@ -9,6 +9,7 @@ qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
 
 add_qt_plugin(qcocoa
     TYPE platforms
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa # special case
     CLASS_NAME QCocoaIntegrationPlugin
     SOURCES
         main.mm
