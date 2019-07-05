@@ -4219,6 +4219,15 @@ void tst_QGraphicsItem::cursor()
     }
 
     QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
+
+    item1->setEnabled(false);
+    {
+        QTest::mouseMove(view.viewport(), item1Center);
+        QMouseEvent event(QEvent::MouseMove, item1Center, view.viewport()->mapToGlobal(item1Center), Qt::NoButton, 0, 0);
+        QApplication::sendEvent(view.viewport(), &event);
+    }
+
+    QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
 }
 #endif
 /*
