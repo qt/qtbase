@@ -11517,10 +11517,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         break;
     case Qt::WA_TranslucentBackground:
-        if (on) {
+        if (on)
             setAttribute(Qt::WA_NoSystemBackground);
-            d->updateIsTranslucent();
-        }
+        d->updateIsTranslucent();
 
         break;
     case Qt::WA_AcceptTouchEvents:

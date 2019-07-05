@@ -56,9 +56,16 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
     get_filename_component(_qt5_install_libs \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/lib\" ABSOLUTE)
 
     if(EXISTS \"${prl_file_location}\")
-        file(STRINGS \"${prl_file_location}\" _prl_strings REGEX \"QMAKE_PRL_LIBS[ \\t]*=\")
-        string(REGEX REPLACE \"QMAKE_PRL_LIBS[ \\t]*=[ \\t]*([^\\n]*)\" \"\\\\1\" _static_depends ${_prl_strings})
-        string(REGEX REPLACE \"[ \\t]+\" \";\" _static_depends ${_static_depends})
+        file(STRINGS \"${prl_file_location}\" _prl_strings REGEX \"QMAKE_PRL_LIBS_FOR_CMAKE[ \\t]*=\")
+
+        # file(STRINGS) replaces all semicolons read from the file with backslash semicolons.
+        # We need to do a reverse transformation in CMake. For that we replace all backslash
+        # semicolons with just semicolons, but due to the qmake substitution feature
+        # creating this file, we need to double the amount of backslashes, so the final file
+        # should have three backslashes and one semicolon.
+        string(REGEX REPLACE \"\\\\\\;\" \";\" _prl_strings \"${_prl_strings}\")
+
+        string(REGEX REPLACE \"QMAKE_PRL_LIBS_FOR_CMAKE[ \\t]*=[ \\t]*([^\\n]*)\" \"\\\\1\" _static_depends \"${_prl_strings}\")
         string(REGEX REPLACE \"[ \\t]+\" \";\" _standard_libraries \"${CMAKE_CXX_STANDARD_LIBRARIES}\")
         set(_search_paths)
         string(REPLACE \"\\$\\$[QT_INSTALL_LIBS]\" \"${_qt5_install_libs}\" _static_depends \"${_static_depends}\")
