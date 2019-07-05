@@ -1811,7 +1811,8 @@ void tst_QGraphicsItem::selected_multi()
 
     {
         // Ctrl-move on item1
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->scenePos()) + QPoint(1, 0), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
+        const QPoint item1Point = view.mapFromScene(item1->scenePos()) + QPoint(1, 0);
+        QMouseEvent event(QEvent::MouseMove, item1Point, view.viewport()->mapToGlobal(item1Point), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(!item1->isSelected());
         QVERIFY(!item2->isSelected());
@@ -1832,7 +1833,8 @@ void tst_QGraphicsItem::selected_multi()
 
     {
         // Ctrl-move on item1
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->scenePos()) + QPoint(1, 0), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
+        const QPoint item1Point = view.mapFromScene(item1->scenePos()) + QPoint(1, 0);
+        QMouseEvent event(QEvent::MouseMove, item1Point, view.viewport()->mapToGlobal(item1Point), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(item1->isSelected());
         QVERIFY(!item2->isSelected());
@@ -4178,37 +4180,41 @@ void tst_QGraphicsItem::cursor()
     item1->setCursor(Qt::IBeamCursor);
     item2->setCursor(Qt::PointingHandCursor);
 
-    QTest::mouseMove(&view, view.rect().center());
+    QPoint viewCenter = view.rect().center();
+    QPoint item1Center = view.mapFromScene(item1->sceneBoundingRect().center());
+    QPoint item2Center = view.mapFromScene(item2->sceneBoundingRect().center());
+
+    QTest::mouseMove(&view, viewCenter);
 
     const Qt::CursorShape viewportShape = view.viewport()->cursor().shape();
 
     {
         QTest::mouseMove(view.viewport(), QPoint(100, 50));
-        QMouseEvent event(QEvent::MouseMove, QPoint(100, 50), Qt::NoButton, 0, 0);
+        QMouseEvent event(QEvent::MouseMove, QPoint(100, 50), view.viewport()->mapToGlobal(QPoint(100, 50)), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
     QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(item1->sceneBoundingRect().center()));
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->sceneBoundingRect().center()), Qt::NoButton, 0, 0);
+        QTest::mouseMove(view.viewport(), item1Center);
+        QMouseEvent event(QEvent::MouseMove, item1Center, view.viewport()->mapToGlobal(item1Center), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
     QTRY_COMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(item2->sceneBoundingRect().center()));
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item2->sceneBoundingRect().center()), Qt::NoButton, 0, 0);
+        QTest::mouseMove(view.viewport(), item2Center);
+        QMouseEvent event(QEvent::MouseMove, item2Center, view.viewport()->mapToGlobal(item2Center), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
     QTRY_COMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
 
     {
-        QTest::mouseMove(view.viewport(), view.rect().center());
-        QMouseEvent event(QEvent::MouseMove, QPoint(100, 25), Qt::NoButton, 0, 0);
+        QTest::mouseMove(view.viewport(), viewCenter);
+        QMouseEvent event(QEvent::MouseMove, QPoint(100, 25), view.viewport()->mapToGlobal(QPoint(100, 50)), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
