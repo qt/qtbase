@@ -312,13 +312,17 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
         if (data.type() == QVariant::String) {
             txt = data.toString();
         } else if (data.type() == QVariant::ByteArray) {
+            if (type == QTextDocument::HtmlResource) {
 #if QT_CONFIG(textcodec)
-            QByteArray ba = data.toByteArray();
-            QTextCodec *codec = Qt::codecForHtml(ba);
-            txt = codec->toUnicode(ba);
+                QByteArray ba = data.toByteArray();
+                QTextCodec *codec = Qt::codecForHtml(ba);
+                txt = codec->toUnicode(ba);
 #else
-            txt = data.toString();
+                txt = data.toString();
 #endif
+            } else {
+                txt = QString::fromUtf8(data.toByteArray());
+            }
         }
         if (Q_UNLIKELY(txt.isEmpty()))
             qWarning("QTextBrowser: No document for %s", url.toString().toLatin1().constData());
