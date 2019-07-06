@@ -1841,7 +1841,7 @@ bool QListViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QMo
 
 void QListViewPrivate::removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const
 {
-    auto isCurrentOrDisabled = [=](const QModelIndex &index) {
+    auto isCurrentOrDisabled = [this, current](const QModelIndex &index) {
         return !isIndexEnabled(index) || index == current;
     };
     indexes->erase(std::remove_if(indexes->begin(), indexes->end(),
