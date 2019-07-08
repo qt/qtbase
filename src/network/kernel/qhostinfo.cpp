@@ -594,8 +594,9 @@ QHostInfo QHostInfoAgent::lookup(const QString &hostName)
     \sa lookupId()
 */
 QHostInfo::QHostInfo(int id)
-    : d(new QHostInfoPrivate)
+    : d_ptr(new QHostInfoPrivate)
 {
+    Q_D(QHostInfo);
     d->lookupId = id;
 }
 
@@ -603,9 +604,19 @@ QHostInfo::QHostInfo(int id)
     Constructs a copy of \a other.
 */
 QHostInfo::QHostInfo(const QHostInfo &other)
-    : d(new QHostInfoPrivate(*other.d.data()))
+    : d_ptr(new QHostInfoPrivate(*other.d_ptr))
 {
 }
+
+/*!
+    Move-constucts a new QHostInfo from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 5.14
+*/
 
 /*!
     Assigns the data of the \a other object to this host info object,
@@ -613,7 +624,10 @@ QHostInfo::QHostInfo(const QHostInfo &other)
 */
 QHostInfo &QHostInfo::operator=(const QHostInfo &other)
 {
-    *d.data() = *other.d.data();
+    if (d_ptr)
+        *d_ptr = *other.d_ptr;
+    else
+        d_ptr = new QHostInfoPrivate(*other.d_ptr);
     return *this;
 }
 
@@ -622,6 +636,7 @@ QHostInfo &QHostInfo::operator=(const QHostInfo &other)
 */
 QHostInfo::~QHostInfo()
 {
+    delete d_ptr;
 }
 
 /*!
@@ -636,6 +651,7 @@ QHostInfo::~QHostInfo()
 */
 QList<QHostAddress> QHostInfo::addresses() const
 {
+    Q_D(const QHostInfo);
     return d->addrs;
 }
 
@@ -646,6 +662,7 @@ QList<QHostAddress> QHostInfo::addresses() const
 */
 void QHostInfo::setAddresses(const QList<QHostAddress> &addresses)
 {
+    Q_D(QHostInfo);
     d->addrs = addresses;
 }
 
@@ -656,6 +673,7 @@ void QHostInfo::setAddresses(const QList<QHostAddress> &addresses)
 */
 QString QHostInfo::hostName() const
 {
+    Q_D(const QHostInfo);
     return d->hostName;
 }
 
@@ -666,6 +684,7 @@ QString QHostInfo::hostName() const
 */
 void QHostInfo::setHostName(const QString &hostName)
 {
+    Q_D(QHostInfo);
     d->hostName = hostName;
 }
 
@@ -677,6 +696,7 @@ void QHostInfo::setHostName(const QString &hostName)
 */
 QHostInfo::HostInfoError QHostInfo::error() const
 {
+    Q_D(const QHostInfo);
     return d->err;
 }
 
@@ -687,6 +707,7 @@ QHostInfo::HostInfoError QHostInfo::error() const
 */
 void QHostInfo::setError(HostInfoError error)
 {
+    Q_D(QHostInfo);
     d->err = error;
 }
 
@@ -697,6 +718,7 @@ void QHostInfo::setError(HostInfoError error)
 */
 int QHostInfo::lookupId() const
 {
+    Q_D(const QHostInfo);
     return d->lookupId;
 }
 
@@ -707,6 +729,7 @@ int QHostInfo::lookupId() const
 */
 void QHostInfo::setLookupId(int id)
 {
+    Q_D(QHostInfo);
     d->lookupId = id;
 }
 
@@ -718,6 +741,7 @@ void QHostInfo::setLookupId(int id)
 */
 QString QHostInfo::errorString() const
 {
+    Q_D(const QHostInfo);
     return d->errorStr;
 }
 
@@ -729,6 +753,7 @@ QString QHostInfo::errorString() const
 */
 void QHostInfo::setErrorString(const QString &str)
 {
+    Q_D(QHostInfo);
     d->errorStr = str;
 }
 
