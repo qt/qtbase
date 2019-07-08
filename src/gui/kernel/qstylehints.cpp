@@ -65,6 +65,20 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
     return QGuiApplicationPrivate::platformIntegration()->styleHint(ih);
 }
 
+static inline QVariant themeableHint(QPlatformTheme::ThemeHint th)
+{
+    if (!QCoreApplication::instance()) {
+        qWarning("Must construct a QGuiApplication before accessing a platform theme hint.");
+        return QVariant();
+    }
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QVariant themeHint = theme->themeHint(th);
+        if (themeHint.isValid())
+            return themeHint;
+    }
+    return QPlatformTheme::defaultThemeHint(th);
+}
+
 class QStyleHintsPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QStyleHints)
@@ -80,6 +94,8 @@ public:
     int m_showShortcutsInContextMenus = -1;
     int m_wheelScrollLines = -1;
     int m_mouseQuickSelectionThreshold = -1;
+    int m_mouseDoubleClickDistance = -1;
+    int m_touchDoubleTapDistance = -1;
 };
 
 /*!
@@ -130,6 +146,34 @@ int QStyleHints::mouseDoubleClickInterval() const
     return d->m_mouseDoubleClickInterval >= 0 ?
            d->m_mouseDoubleClickInterval :
            themeableHint(QPlatformTheme::MouseDoubleClickInterval, QPlatformIntegration::MouseDoubleClickInterval).toInt();
+}
+
+/*!
+    \property QStyleHints::mouseDoubleClickDistance
+    \brief the maximum distance, in pixels, that the mouse can be moved between
+    two consecutive mouse clicks and still have it detected as a double-click
+    \since 5.14
+*/
+int QStyleHints::mouseDoubleClickDistance() const
+{
+    Q_D(const QStyleHints);
+    return d->m_mouseDoubleClickDistance >= 0 ?
+                d->m_mouseDoubleClickDistance :
+                themeableHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
+}
+
+/*!
+    \property QStyleHints::touchDoubleTapDistance
+    \brief the maximum distance, in pixels, that a finger can be moved between
+    two consecutive taps and still have it detected as a double-tap
+    \since 5.14
+*/
+int QStyleHints::touchDoubleTapDistance() const
+{
+    Q_D(const QStyleHints);
+    return d->m_touchDoubleTapDistance >= 0 ?
+                d->m_touchDoubleTapDistance :
+                themeableHint(QPlatformTheme::TouchDoubleTapDistance).toInt();
 }
 
 /*!
