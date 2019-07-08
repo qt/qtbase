@@ -337,8 +337,10 @@ public:
     explicit QDockWidgetGroupWindow(QWidget* parent = nullptr, Qt::WindowFlags f = nullptr)
         : QWidget(parent, f) {}
     QDockAreaLayoutInfo *layoutInfo() const;
+#if QT_CONFIG(tabbar)
     const QDockAreaLayoutInfo *tabLayoutInfo() const;
     QDockWidget *activeTabbedDockWidget() const;
+#endif
     void destroyOrHideIfEmpty();
     void adjustFlags();
     bool hasNativeDecos() const;
@@ -494,13 +496,13 @@ public:
     void splitDockWidget(QDockWidget *after,
                          QDockWidget *dockwidget,
                          Qt::Orientation orientation);
-    void tabifyDockWidget(QDockWidget *first, QDockWidget *second);
     Qt::DockWidgetArea dockWidgetArea(QWidget* widget) const;
+    bool restoreDockWidget(QDockWidget *dockwidget);
+#if QT_CONFIG(tabbar)
+    void tabifyDockWidget(QDockWidget *first, QDockWidget *second);
     void raise(QDockWidget *widget);
     void setVerticalTabsEnabled(bool enabled);
-    bool restoreDockWidget(QDockWidget *dockwidget);
 
-#if QT_CONFIG(tabbar)
     QDockAreaLayoutInfo *dockInfo(QWidget *w);
     bool _documentMode;
     bool documentMode() const;

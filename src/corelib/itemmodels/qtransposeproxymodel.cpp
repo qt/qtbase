@@ -445,3 +445,5 @@ void QTransposeProxyModel::sort(int column, Qt::SortOrder order)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtransposeproxymodel.cpp"

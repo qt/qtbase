@@ -242,8 +242,8 @@ private:
 
     template <typename FP> FP _toFloatingPoint() const noexcept
     {
-        using UInt = typename QIntegerForSizeof<FP>::Unsigned;
-        UInt u = UInt(value64);
+        using UIntFP = typename QIntegerForSizeof<FP>::Unsigned;
+        UIntFP u = UIntFP(value64);
         FP f;
         memcpy(static_cast<void *>(&f), &u, sizeof(f));
         return f;

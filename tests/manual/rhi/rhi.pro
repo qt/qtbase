@@ -16,7 +16,8 @@ SUBDIRS += \
     mrt \
     shadowmap \
     computebuffer \
-    computeimage
+    computeimage \
+    instancing
 
 qtConfig(widgets) {
     SUBDIRS += \

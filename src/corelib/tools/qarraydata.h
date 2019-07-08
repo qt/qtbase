@@ -323,8 +323,14 @@ struct QArrayDataPointerRef
         }())                                                                    \
     /**/
 
+#ifdef Q_COMPILER_CONSTEXPR
+#define Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type) Q_STATIC_ASSERT(std::is_literal_type<Type>::value)
+#else
+#define Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type) do {} while (0)
+#endif
+
 #define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
-    Q_STATIC_ASSERT(std::is_literal_type<Type>::value);                         \
+    Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type);                                   \
                                                                                 \
     /* Portable compile-time array size computation */                          \
     Q_CONSTEXPR Type data[] = { __VA_ARGS__ }; Q_UNUSED(data);                  \

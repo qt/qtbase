@@ -1432,7 +1432,7 @@ bool QOpenGLWidget::event(QEvent *e)
     Q_D(QOpenGLWidget);
     switch (e->type()) {
     case QEvent::WindowChangeInternal:
-        if (qGuiApp->testAttribute(Qt::AA_ShareOpenGLContexts))
+        if (QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts))
             break;
         if (d->initialized)
             d->reset();
@@ -1445,7 +1445,7 @@ bool QOpenGLWidget::event(QEvent *e)
         {
             // Special case: did grabFramebuffer() for a hidden widget that then became visible.
             // Recreate all resources since the context now needs to share with the TLW's.
-            if (!qGuiApp->testAttribute(Qt::AA_ShareOpenGLContexts))
+            if (!QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts))
                 d->reset();
         }
         if (!d->initialized && !size().isEmpty() && window()->windowHandle()) {

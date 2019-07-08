@@ -311,8 +311,11 @@ void tst_QSettings::initTestCase()
 
 void tst_QSettings::cleanupTestFiles()
 {
-    QSettings::setSystemIniPath(settingsPath("__system__"));
-    QSettings::setUserIniPath(settingsPath("__user__"));
+    QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, settingsPath("__system__"));
+    QSettings::setPath(QSettings::NativeFormat, QSettings::SystemScope, settingsPath("__system__"));
+
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, settingsPath("__user__"));
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, settingsPath("__user__"));
 
     QDir settingsDir(settingsPath());
     if (settingsDir.exists())

@@ -89,15 +89,15 @@ public:
     QString tooltip;
     QString statustip;
     QString whatsthis;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     QKeySequence shortcut;
     QList<QKeySequence> alternateShortcuts;
 #endif
     QVariant userData;
-#ifndef QT_NO_SHORTCUT
-    int shortcutId;
+#if QT_CONFIG(shortcut)
+    int shortcutId = 0;
     QVector<int> alternateShortcutIds;
-    Qt::ShortcutContext shortcutContext;
+    Qt::ShortcutContext shortcutContext = Qt::WindowShortcut;
     uint autorepeat : 1;
 #endif
     QFont font;
@@ -112,19 +112,17 @@ public:
     int iconVisibleInMenu : 2;  // Only has values -1, 0, and 1
     int shortcutVisibleInContextMenu : 2; // Only has values -1, 0, and 1
 
-    QAction::MenuRole menuRole;
-    QAction::Priority priority;
+    QAction::MenuRole menuRole = QAction::TextHeuristicRole;
+    QAction::Priority priority = QAction::NormalPriority;
 
-    QList<QWidget *> widgets;
+    QWidgetList widgets;
 #if QT_CONFIG(graphicsview)
     QList<QGraphicsWidget *> graphicsWidgets;
 #endif
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     void redoGrab(QShortcutMap &map);
     void redoGrabAlternate(QShortcutMap &map);
     void setShortcutEnabled(bool enable, QShortcutMap &map);
-
-    static QShortcutMap *globalMap;
 #endif // QT_NO_SHORTCUT
 
     void sendDataChanged();

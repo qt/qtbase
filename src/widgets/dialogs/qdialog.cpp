@@ -282,7 +282,7 @@ void QDialogPrivate::deletePlatformHelper()
     progress dialogs, where the user must have the ability to interact
     with the dialog, e.g.  to cancel a long running operation. If you
     use show() and setModal(true) together to perform a long operation,
-    you must call QApplication::processEvents() periodically during
+    you must call QCoreApplication::processEvents() periodically during
     processing to enable the user to interact with the dialog. (See
     QProgressDialog.)
 
@@ -691,7 +691,7 @@ void QDialog::contextMenuEvent(QContextMenuEvent *e)
         if (p.data()->exec(e->globalPos()) == wt) {
             QHelpEvent e(QEvent::WhatsThis, w->rect().center(),
                          w->mapToGlobal(w->rect().center()));
-            QApplication::sendEvent(w, &e);
+            QCoreApplication::sendEvent(w, &e);
         }
         delete p.data();
     }
@@ -826,7 +826,7 @@ QT_WARNING_POP
 #endif
         if (fw && !fw->hasFocus()) {
             QFocusEvent e(QEvent::FocusIn, Qt::TabFocusReason);
-            QApplication::sendEvent(fw, &e);
+            QCoreApplication::sendEvent(fw, &e);
         }
 
 #ifndef QT_NO_ACCESSIBILITY

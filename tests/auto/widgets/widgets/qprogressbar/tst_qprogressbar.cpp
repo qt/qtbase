@@ -174,7 +174,7 @@ void tst_QProgressBar::format()
 #ifndef Q_OS_MAC
     // Animated scroll bars get paint events all the time
 #ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::WindowsVista)
 #endif
     QVERIFY(!bar.repainted);
 #endif

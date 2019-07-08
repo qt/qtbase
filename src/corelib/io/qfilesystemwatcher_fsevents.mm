@@ -50,6 +50,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qvarlengtharray.h>
+#include <qscopeguard.h>
 
 #undef FSEVENT_DEBUG
 #ifdef FSEVENT_DEBUG
@@ -338,10 +339,10 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
     bool needsRestart = false;
 
     WatchingState oldState = watchingState;
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString origPath = it.next().normalized(QString::NormalizationForm_C);
+    QStringList unhandled;
+    for (const QString &path : paths) {
+        auto sg = qScopeGuard([&]{ unhandled.push_back(path); });
+        QString origPath = path.normalized(QString::NormalizationForm_C);
         QString realPath = origPath;
         if (realPath.endsWith(QDir::separator()))
             realPath = realPath.mid(0, realPath.size() - 1);
@@ -362,16 +363,16 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 continue;
             directories->append(origPath);
             watchedPath = realPath;
-            it.remove();
         } else {
             if (files->contains(origPath))
                 continue;
             files->append(origPath);
-            it.remove();
 
             watchedPath = fi.path();
             parentPath = watchedPath;
         }
+
+        sg.dismiss();
 
         for (PathRefCounts::const_iterator i = watchingState.watchedPaths.begin(),
                 ei = watchingState.watchedPaths.end(); i != ei; ++i) {
@@ -409,14 +410,14 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             // ok, something went wrong, let's try to restore the previous state
             watchingState = std::move(oldState);
             // and because we don't know which path caused the issue (if any), fail on all of them
-            p = paths;
+            unhandled = paths;
 
             if (wasRunning)
                 startStream();
         }
     }
 
-    return p;
+    return unhandled;
 }
 
 QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &paths,
@@ -430,10 +431,9 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
     bool needsRestart = false;
 
     WatchingState oldState = watchingState;
-    QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString origPath = it.next();
+    QStringList unhandled;
+    for (const QString &origPath : paths) {
+        auto sg = qScopeGuard([&]{ unhandled.push_back(origPath); });
         QString realPath = origPath;
         if (realPath.endsWith(QDir::separator()))
             realPath = realPath.mid(0, realPath.size() - 1);
@@ -447,7 +447,7 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
                 needsRestart |= derefPath(dirIt->dirInfo.watchedPath);
                 watchingState.watchedDirectories.erase(dirIt);
                 directories->removeAll(origPath);
-                it.remove();
+                sg.dismiss();
                 DEBUG("Removed directory '%s'", qPrintable(realPath));
             }
         } else {
@@ -463,7 +463,7 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
                     if (filesInDir.isEmpty())
                         watchingState.watchedFiles.erase(pIt);
                     files->removeAll(origPath);
-                    it.remove();
+                    sg.dismiss();
                     DEBUG("Removed file '%s'", qPrintable(realPath));
                 }
             }
@@ -479,7 +479,7 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
         }
     }
 
-    return p;
+    return unhandled;
 }
 
 // Returns false if FSEventStream* calls failed for some mysterious reason, true if things got a

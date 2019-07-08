@@ -596,7 +596,10 @@ void tst_QStringRef::startsWith()
         QVERIFY(!ref.startsWith("C"));
         QVERIFY(!ref.startsWith("ABCDEF"));
         QVERIFY(ref.startsWith(""));
+        QVERIFY(ref.startsWith(QString()));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.startsWith(QString::null));
+#endif
         QVERIFY(ref.startsWith('A'));
         QVERIFY(ref.startsWith(QLatin1Char('A')));
         QVERIFY(ref.startsWith(QChar('A')));
@@ -623,7 +626,10 @@ void tst_QStringRef::startsWith()
         QVERIFY(!ref.startsWith("c", Qt::CaseInsensitive));
         QVERIFY(!ref.startsWith("abcdef", Qt::CaseInsensitive));
         QVERIFY(ref.startsWith("", Qt::CaseInsensitive));
+        QVERIFY(ref.startsWith(QString(), Qt::CaseInsensitive));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.startsWith(QString::null, Qt::CaseInsensitive));
+#endif
         QVERIFY(ref.startsWith('a', Qt::CaseInsensitive));
         QVERIFY(ref.startsWith('A', Qt::CaseInsensitive));
         QVERIFY(ref.startsWith(QLatin1Char('a'), Qt::CaseInsensitive));
@@ -656,7 +662,10 @@ void tst_QStringRef::startsWith()
         const QString a = QString::fromLatin1("");
         CREATE_REF(a);
         QVERIFY(ref.startsWith(""));
+        QVERIFY(ref.startsWith(QString()));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.startsWith(QString::null));
+#endif
         QVERIFY(!ref.startsWith("ABC"));
 
         QVERIFY(ref.startsWith(QLatin1String("")));
@@ -670,7 +679,10 @@ void tst_QStringRef::startsWith()
     {
         const QStringRef ref;
         QVERIFY(!ref.startsWith(""));
+        QVERIFY(ref.startsWith(QString()));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.startsWith(QString::null));
+#endif
         QVERIFY(!ref.startsWith("ABC"));
 
         QVERIFY(!ref.startsWith(QLatin1String("")));
@@ -693,7 +705,10 @@ void tst_QStringRef::endsWith()
         QVERIFY(!ref.endsWith("C"));
         QVERIFY(!ref.endsWith("ABCDEF"));
         QVERIFY(ref.endsWith(""));
+        QVERIFY(ref.endsWith(QString()));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.endsWith(QString::null));
+#endif
         QVERIFY(ref.endsWith('B'));
         QVERIFY(ref.endsWith(QLatin1Char('B')));
         QVERIFY(ref.endsWith(QChar('B')));
@@ -720,7 +735,10 @@ void tst_QStringRef::endsWith()
         QVERIFY(!ref.endsWith("c", Qt::CaseInsensitive));
         QVERIFY(!ref.endsWith("abcdef", Qt::CaseInsensitive));
         QVERIFY(ref.endsWith("", Qt::CaseInsensitive));
+        QVERIFY(ref.endsWith(QString(), Qt::CaseInsensitive));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.endsWith(QString::null, Qt::CaseInsensitive));
+#endif
         QVERIFY(ref.endsWith('b', Qt::CaseInsensitive));
         QVERIFY(ref.endsWith('B', Qt::CaseInsensitive));
         QVERIFY(ref.endsWith(QLatin1Char('b'), Qt::CaseInsensitive));
@@ -754,7 +772,10 @@ void tst_QStringRef::endsWith()
         const QString a = QString::fromLatin1("");
         CREATE_REF(a);
         QVERIFY(ref.endsWith(""));
+        QVERIFY(ref.endsWith(QString()));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.endsWith(QString::null));
+#endif
         QVERIFY(!ref.endsWith("ABC"));
         QVERIFY(!ref.endsWith(QLatin1Char(0)));
         QVERIFY(!ref.endsWith(QLatin1Char('x')));
@@ -768,7 +789,10 @@ void tst_QStringRef::endsWith()
     {
         QStringRef ref;
         QVERIFY(!ref.endsWith(""));
+        QVERIFY(ref.endsWith(QString()));
+#if QT_DEPRECATED_SINCE(5, 9)
         QVERIFY(ref.endsWith(QString::null));
+#endif
         QVERIFY(!ref.endsWith("ABC"));
 
         QVERIFY(!ref.endsWith(QLatin1String("")));

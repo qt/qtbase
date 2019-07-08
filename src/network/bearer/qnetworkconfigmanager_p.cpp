@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-    : QObject(), pollTimer(0), mutex(QMutex::Recursive),
+    : QObject(), pollTimer(0),
       loader(QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")),
       forcedPolling(0), firstUpdate(true)
 {

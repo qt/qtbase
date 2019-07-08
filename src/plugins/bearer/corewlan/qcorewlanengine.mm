@@ -203,9 +203,7 @@ void QScanThread::run()
         }
     }
     // add known configurations that are not around.
-    QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
-    while (i.hasNext()) {
-        i.next();
+    for (auto i = userProfiles.cbegin(), end = userProfiles.cend(); i != end; ++i) {
 
         QString networkName = i.key();
         const QString id = QString::number(qHash(QLatin1String("corewlan:") + networkName));
@@ -215,11 +213,8 @@ void QScanThread::run()
             const QString ssidId = QString::number(qHash(QLatin1String("corewlan:") + networkSsid));
             QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
             QString interfaceName;
-            QMapIterator<QString, QString> ij(i.value());
-            while (ij.hasNext()) {
-                ij.next();
-                interfaceName = ij.value();
-            }
+            if (!i.value().isEmpty())
+                interfaceName = i.value().last();
 
             if (currentInterfaceServiceActive) {
                 if (networkSsid == QString::fromNSString([currentInterface ssid])) {
@@ -269,11 +264,7 @@ QStringList QScanThread::foundNetwork(const QString &id, const QString &name, co
 QList<QNetworkConfigurationPrivate *> QScanThread::getConfigurations()
 {
     QMutexLocker locker(&mutex);
-
-    QList<QNetworkConfigurationPrivate *> foundConfigurations = fetchedConfigurations;
-    fetchedConfigurations.clear();
-
-    return foundConfigurations;
+    return qExchange(fetchedConfigurations, {});
 }
 
 void QScanThread::getUserConfigurations()
@@ -363,17 +354,12 @@ void QScanThread::getUserConfigurations()
     }
 }
 
-QString QScanThread::getSsidFromNetworkName(const QString &name)
+QString QScanThread::getSsidFromNetworkName(const QString &name) const
 {
     QMutexLocker locker(&mutex);
 
-    QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
-    while (i.hasNext()) {
-        i.next();
-        QMap<QString,QString> map = i.value();
-        QMapIterator<QString, QString> ij(i.value());
-         while (ij.hasNext()) {
-             ij.next();
+    for (auto i = userProfiles.cbegin(), end = userProfiles.cend(); i != end; ++i) {
+        for (auto ij = i.value().cbegin(), end = i.value().cend(); ij != end; ++ij) {
              const QString networkNameHash = QString::number(qHash(QLatin1String("corewlan:") +i.key()));
              if(name == i.key() || name == networkNameHash) {
                  return ij.key();
@@ -383,36 +369,24 @@ QString QScanThread::getSsidFromNetworkName(const QString &name)
     return QString();
 }
 
-QString QScanThread::getNetworkNameFromSsid(const QString &ssid)
+QString QScanThread::getNetworkNameFromSsid(const QString &ssid) const
 {
     QMutexLocker locker(&mutex);
 
-    QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
-    while (i.hasNext()) {
-        i.next();
-        QMap<QString,QString> map = i.value();
-        QMapIterator<QString, QString> ij(i.value());
-         while (ij.hasNext()) {
-             ij.next();
-             if(ij.key() == ssid) {
-                 return i.key();
-             }
-         }
+    for (auto i = userProfiles.cbegin(), end = userProfiles.cend(); i != end; ++i) {
+        if (i.value().contains(ssid))
+            return i.key();
     }
     return QString();
 }
 
-bool QScanThread::isKnownSsid(const QString &ssid)
+bool QScanThread::isKnownSsid(const QString &ssid) const
 {
     QMutexLocker locker(&mutex);
 
-    QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
-    while (i.hasNext()) {
-        i.next();
-        QMap<QString,QString> map = i.value();
-        if(map.keys().contains(ssid)) {
+    for (auto i = userProfiles.cbegin(), end = userProfiles.cend(); i != end; ++i) {
+        if (i.value().contains(ssid))
             return true;
-        }
     }
     return false;
 }
@@ -430,8 +404,7 @@ QCoreWlanEngine::~QCoreWlanEngine()
 {
     scanThread->wait();
 
-    while (!foundConfigurations.isEmpty())
-        delete foundConfigurations.takeFirst();
+    qDeleteAll(qExchange(foundConfigurations, {}));
     [listener remove];
     [listener release];
 }
@@ -486,9 +459,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
         const QString idHash2 = QString::number(qHash(QLatin1String("corewlan:") + scanThread->getNetworkNameFromSsid(ptr->name)));
 
         QString wantedNetwork;
-        QMapIterator<QString, QMap<QString, QString> > i(scanThread->userProfiles);
-        while (i.hasNext()) {
-            i.next();
+        for (auto i = scanThread->userProfiles.cbegin(), end = scanThread->userProfiles.cend(); i != end; ++i) {
             wantedNetwork = i.key();
             const QString networkNameHash = QString::number(qHash(QLatin1String("corewlan:") + wantedNetwork));
             if (id == networkNameHash) {

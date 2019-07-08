@@ -106,7 +106,7 @@ int main (int argc, char *argv[])
   if (! p.parse (file_name))
     exit (EXIT_FAILURE);
 
-  if (grammar.rules.isEmpty ())
+  if (grammar.rules.empty())
     {
       qerr() << "*** Fatal. No rules!" << Qt::endl;
       exit (EXIT_FAILURE);

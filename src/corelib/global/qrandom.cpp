@@ -359,17 +359,17 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     quint32 *buffer = begin;
     qsizetype count = end - begin;
 
-    if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
-        uint value = uint(qt_randomdevice_control) & RandomDataMask;
+    if (Q_UNLIKELY(uint(qt_randomdevice_control.loadAcquire()) & SetRandomData)) {
+        uint value = uint(qt_randomdevice_control.loadAcquire()) & RandomDataMask;
         std::fill_n(buffer, count, value);
         return;
     }
 
     qsizetype filled = 0;
-    if (qt_has_hwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
+    if (qt_has_hwrng() && (uint(qt_randomdevice_control.loadAcquire()) & SkipHWRNG) == 0)
         filled += qt_random_cpu(buffer, count);
 
-    if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
+    if (filled != count && (uint(qt_randomdevice_control.loadAcquire()) & SkipSystemRNG) == 0) {
         qsizetype bytesFilled =
                 fillBuffer(buffer + filled, (count - filled) * qsizetype(sizeof(*buffer)));
         filled += bytesFilled / qsizetype(sizeof(*buffer));
@@ -903,6 +903,10 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     \snippet code/src_corelib_global_qrandom.cpp 12
 
+    If the \a highest parameter is negative, the result will be negative too;
+    if it is infinite or NaN, the result will be infinite or NaN too (that is,
+    not random).
+
     \sa generateDouble(), bounded()
  */
 
@@ -934,7 +938,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
-    \a highest (exclusive). \a highest must not be negative.
+    \a highest (exclusive). \a highest must be positive.
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
@@ -946,8 +950,11 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \fn quint32 QRandomGenerator::bounded(quint32 lowest, quint32 highest)
     \overload
 
-    Generates one random 32-bit quantity in the range between \a lowest (inclusive)
-    and \a highest (exclusive). The same result may also be obtained by using
+    Generates one random 32-bit quantity in the range between \a lowest
+    (inclusive) and \a highest (exclusive). The \a highest parameter must be
+    greater than \a lowest.
+
+    The same result may also be obtained by using
     \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution}
     with parameters \a lowest and \c{\a highest - 1}. That class can also be used to
     obtain quantities larger than 32 bits.
@@ -968,7 +975,8 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \overload
 
     Generates one random 32-bit quantity in the range between \a lowest
-    (inclusive) and \a highest (exclusive), both of which may be negative.
+    (inclusive) and \a highest (exclusive), both of which may be negative, but
+    \a highest must be greater than \a lowest.
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
@@ -1222,7 +1230,7 @@ void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
     quint32 *begin = static_cast<quint32 *>(buffer);
     quint32 *end = static_cast<quint32 *>(bufferEnd);
 
-    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control) & (UseSystemRNG|SetRandomData)))
+    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control.loadAcquire()) & (UseSystemRNG|SetRandomData)))
         return SystemGenerator::self().generate(begin, end);
 
     SystemAndGlobalGenerators::PRNGLocker lock(this);

@@ -1678,12 +1678,9 @@ int QDockAreaLayoutInfo::prev(int index) const
     return -1;
 }
 
+#if QT_CONFIG(tabbar)
 void QDockAreaLayoutInfo::tab(int index, QLayoutItem *dockWidgetItem)
 {
-#if !QT_CONFIG(tabbar)
-    Q_UNUSED(index);
-    Q_UNUSED(dockWidgetItem);
-#else
     if (tabbed) {
         item_list.append(QDockAreaLayoutItem(dockWidgetItem));
         updateTabBar();
@@ -1699,8 +1696,8 @@ void QDockAreaLayoutInfo::tab(int index, QLayoutItem *dockWidgetItem)
         new_info->updateTabBar();
         new_info->setCurrentTab(dockWidgetItem->widget());
     }
-#endif // QT_CONFIG(tabbar)
 }
+#endif // QT_CONFIG(tabbar)
 
 void QDockAreaLayoutInfo::split(int index, Qt::Orientation orientation,
                                        QLayoutItem *dockWidgetItem)
@@ -3137,6 +3134,7 @@ void QDockAreaLayout::addDockWidget(QInternal::DockPosition pos, QDockWidget *do
     removePlaceHolder(dockWidget->objectName());
 }
 
+#if QT_CONFIG(tabbar)
 void QDockAreaLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 {
     const QList<int> path = indexOf(first);
@@ -3149,6 +3147,7 @@ void QDockAreaLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 
     removePlaceHolder(second->objectName());
 }
+#endif // QT_CONFIG(tabbar)
 
 void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
                                   const QList<int> &sizes, Qt::Orientation o)

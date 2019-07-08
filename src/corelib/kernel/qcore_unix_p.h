@@ -52,8 +52,8 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
 #include "qplatformdefs.h"
+#include <QtCore/private/qglobal_p.h>
 #include "qatomic.h"
 #include "qbytearray.h"
 

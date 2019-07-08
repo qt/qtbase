@@ -50,7 +50,6 @@
 #include "qsqltablemodel_p.h"
 
 #include <qdebug.h>
-#include <qstringlistmodel.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -158,7 +158,7 @@ void QWidgetLineControl::copy(QClipboard::Mode mode) const
 {
     QString t = selectedText();
     if (!t.isEmpty() && m_echoMode == QLineEdit::Normal) {
-        QApplication::clipboard()->setText(t, mode);
+        QGuiApplication::clipboard()->setText(t, mode);
     }
 }
 
@@ -172,7 +172,7 @@ void QWidgetLineControl::copy(QClipboard::Mode mode) const
 */
 void QWidgetLineControl::paste(QClipboard::Mode clipboardMode)
 {
-    QString clip = QApplication::clipboard()->text(clipboardMode);
+    QString clip = QGuiApplication::clipboard()->text(clipboardMode);
     if (!clip.isEmpty() || hasSelectedText()) {
         separate(); //make it a separate undo/redo command
         insert(clip);
@@ -1524,9 +1524,9 @@ void QWidgetLineControl::setBlinkingCursorEnabled(bool enable)
     m_blinkEnabled = enable;
 
     if (enable)
-        connect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetLineControl::updateCursorBlinking);
+        connect(QGuiApplication::styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetLineControl::updateCursorBlinking);
     else
-        disconnect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetLineControl::updateCursorBlinking);
+        disconnect(QGuiApplication::styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetLineControl::updateCursorBlinking);
 
     updateCursorBlinking();
 }
@@ -1680,7 +1680,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
         if (hasAcceptableInput() || fixup()) {
 
-            QInputMethod *inputMethod = QApplication::inputMethod();
+            QInputMethod *inputMethod = QGuiApplication::inputMethod();
             inputMethod->commit();
             QWidget *lineEdit = qobject_cast<QWidget *>(parent());
             if (!(lineEdit && lineEdit->inputMethodHints() & Qt::ImhMultiLine))

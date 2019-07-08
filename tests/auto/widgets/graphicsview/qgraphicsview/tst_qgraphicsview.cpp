@@ -352,8 +352,8 @@ void tst_QGraphicsView::renderHints()
 
     view.setScene(&scene);
 
-    view.setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::NonCosmeticDefaultPen);
-    QCOMPARE(view.renderHints(), QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::NonCosmeticDefaultPen);
+    view.setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing);
+    QCOMPARE(view.renderHints(), QPainter::TextAntialiasing | QPainter::Antialiasing);
 
     QCOMPARE(item->hints, 0);
     view.show();
@@ -361,8 +361,8 @@ void tst_QGraphicsView::renderHints()
     view.repaint();
     QTRY_COMPARE(item->hints, view.renderHints());
 
-    view.setRenderHints(QPainter::Antialiasing | QPainter::NonCosmeticDefaultPen);
-    QCOMPARE(view.renderHints(), QPainter::Antialiasing | QPainter::NonCosmeticDefaultPen);
+    view.setRenderHints(QPainter::Antialiasing);
+    QCOMPARE(view.renderHints(), QPainter::Antialiasing);
 
     view.repaint();
     QTRY_COMPARE(item->hints, view.renderHints());

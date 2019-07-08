@@ -51,7 +51,9 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qcborcommon.h>
 #include <QtCore/qdatetime.h>
+#if QT_CONFIG(itemmodel)
 #include <QtCore/qabstractitemmodel.h>
+#endif
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
@@ -129,12 +131,14 @@ template<> inline char *toString(const QChar &c)
     return qstrdup(qPrintable(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16))));
 }
 
+#if QT_CONFIG(itemmodel)
 template<> inline char *toString(const QModelIndex &idx)
 {
     char msg[128];
     qsnprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)", idx.row(), idx.column(), idx.internalPointer(), idx.model());
     return qstrdup(msg);
 }
+#endif
 
 template<> inline char *toString(const QPoint &p)
 {

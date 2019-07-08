@@ -569,8 +569,8 @@ void qScrollEffect(QWidget* w, QEffects::DirFlags orient, int time)
     if (!w)
         return;
 
-    QApplication::sendPostedEvents(w, QEvent::Move);
-    QApplication::sendPostedEvents(w, QEvent::Resize);
+    QCoreApplication::sendPostedEvents(w, QEvent::Move);
+    QCoreApplication::sendPostedEvents(w, QEvent::Resize);
     Qt::WindowFlags flags = Qt::ToolTip;
 
     // those can be popups - they would steal the focus, but are disabled
@@ -591,8 +591,8 @@ void qFadeEffect(QWidget* w, int time)
     if (!w)
         return;
 
-    QApplication::sendPostedEvents(w, QEvent::Move);
-    QApplication::sendPostedEvents(w, QEvent::Resize);
+    QCoreApplication::sendPostedEvents(w, QEvent::Move);
+    QCoreApplication::sendPostedEvents(w, QEvent::Resize);
 
     Qt::WindowFlags flags = Qt::ToolTip;
 

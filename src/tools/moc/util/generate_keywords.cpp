@@ -214,6 +214,7 @@ static const Keyword keywords[] = {
     { "return", "RETURN" },
     { "Q_OBJECT", "Q_OBJECT_TOKEN" },
     { "Q_NAMESPACE", "Q_NAMESPACE_TOKEN" },
+    { "Q_NAMESPACE_EXPORT", "Q_NAMESPACE_EXPORT_TOKEN" },
     { "Q_GADGET", "Q_GADGET_TOKEN" },
     { "Q_PROPERTY", "Q_PROPERTY_TOKEN" },
     { "Q_PLUGIN_METADATA", "Q_PLUGIN_METADATA_TOKEN" },

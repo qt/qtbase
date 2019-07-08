@@ -192,7 +192,7 @@ static void doTestData(const QString &testString, const QList<int> &expectedBrea
     // test toPreviousBoundary()
     {
         QList<int> expectedBreakPositionsRev = expectedBreakPositions;
-        std::sort(expectedBreakPositionsRev.begin(), expectedBreakPositionsRev.end(), qGreater<int>());
+        std::sort(expectedBreakPositionsRev.begin(), expectedBreakPositionsRev.end(), std::greater<int>());
 
         QList<int> actualBreakPositions;
         boundaryFinder.toEnd();
@@ -538,6 +538,13 @@ void tst_QTextBoundaryFinder::sentenceBoundaries_manual_data()
         expectedBreakPositions << 0 << 3 << 10;
 
         QTest::newRow("data3") << testString << expectedBreakPositions;
+    }
+    {
+        QString testString(QString::fromUtf8("Doing TEST, doing another test."));
+        QList<int> expectedBreakPositions;
+        expectedBreakPositions << 0 << 31;
+
+        QTest::newRow("data4") << testString << expectedBreakPositions;
     }
 }
 

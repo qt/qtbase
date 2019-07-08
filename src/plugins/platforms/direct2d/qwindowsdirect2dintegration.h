@@ -61,7 +61,6 @@ public:
     QPlatformNativeInterface *nativeInterface() const override;
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const override;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
-    QAbstractEventDispatcher *createEventDispatcher() const override;
 
     QWindowsDirect2DContext *direct2DContext() const;
 

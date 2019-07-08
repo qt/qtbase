@@ -560,7 +560,7 @@ QRect QStyle::itemPixmapRect(const QRect &rect, int alignment, const QPixmap &pi
         x += w - pixmapWidth;
     else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)
         x += w/2 - pixmapWidth/2;
-    else if ((alignment & Qt::AlignLeft) != Qt::AlignLeft && QApplication::isRightToLeft())
+    else if ((alignment & Qt::AlignLeft) != Qt::AlignLeft && QGuiApplication::isRightToLeft())
         x += w - pixmapWidth;
     result = QRect(x, y, pixmapWidth, pixmapHeight);
     return result;
@@ -624,7 +624,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
                             const QPixmap &pixmap) const
 {
     qreal scale = pixmap.devicePixelRatio();
-    QRect aligned = alignedRect(QApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
+    QRect aligned = alignedRect(QGuiApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
     QRect inter = aligned.intersected(rect);
 
     painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);

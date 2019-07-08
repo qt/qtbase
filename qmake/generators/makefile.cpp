@@ -1015,6 +1015,14 @@ MakefileGenerator::writePrlFile(QTextStream &t)
         for (ProStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
             t << qv(project->values((*it).toKey()));
         t << Qt::endl;
+
+        t << "QMAKE_PRL_LIBS_FOR_CMAKE = ";
+        QString sep;
+        for (ProStringList::Iterator it = libs.begin(); it != libs.end(); ++it) {
+            t << sep << project->values((*it).toKey()).join(';').replace('\\', "\\\\");
+            sep = ';';
+        }
+        t << Qt::endl;
     }
 }
 
@@ -3441,7 +3449,7 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
     QString ret;
     if (project->isEmpty(replace_rule)
         || project->isActiveConfig("no_sed_meta_install")) {
-        ret += "-$(INSTALL_FILE) " + escapeFilePath(src) + ' ' + escapeFilePath(dst);
+        ret += "$(INSTALL_FILE) " + escapeFilePath(src) + ' ' + escapeFilePath(dst);
     } else {
         QString sedargs;
         const ProStringList &replace_rules = project->values(replace_rule);
@@ -3456,9 +3464,9 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
             }
         }
         if (sedargs.isEmpty()) {
-            ret += "-$(INSTALL_FILE) " + escapeFilePath(src) + ' ' + escapeFilePath(dst);
+            ret += "$(INSTALL_FILE) " + escapeFilePath(src) + ' ' + escapeFilePath(dst);
         } else {
-            ret += "-$(SED) " + sedargs + ' ' + escapeFilePath(src) + " > " + escapeFilePath(dst);
+            ret += "$(SED) " + sedargs + ' ' + escapeFilePath(src) + " > " + escapeFilePath(dst);
         }
     }
     return ret;

@@ -1086,7 +1086,7 @@ QString QDirModel::filePath(const QModelIndex &index) const
     if (d->indexValid(index)) {
         QFileInfo fi = fileInfo(index);
         if (d->resolveSymlinks && fi.isSymLink())
-            fi = d->resolvedInfo(fi);
+            fi = QDirModelPrivate::resolvedInfo(fi);
         return QDir::cleanPath(fi.absoluteFilePath());
     }
     return QString(); // root path
@@ -1108,7 +1108,7 @@ QString QDirModel::fileName(const QModelIndex &index) const
     if (QFileSystemEntry::isRootPath(path))
         return path;
     if (d->resolveSymlinks && info.isSymLink())
-        info = d->resolvedInfo(info);
+        info = QDirModelPrivate::resolvedInfo(info);
     return info.fileName();
 }
 

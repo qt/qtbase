@@ -432,7 +432,7 @@ bool QFontDialog::eventFilter(QObject *o , QEvent *e)
          k->key() == Qt::Key_PageDown)) {
 
             int ci = d->sizeList->currentItem();
-            (void)QApplication::sendEvent(d->sizeList, k);
+            QCoreApplication::sendEvent(d->sizeList, k);
 
             if (ci != d->sizeList->currentItem()
                     && style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, this))
@@ -680,7 +680,7 @@ void QFontDialogPrivate::updateSampleFont(const QFont &newFont)
 void QFontDialogPrivate::_q_writingSystemHighlighted(int index)
 {
     writingSystem = QFontDatabase::WritingSystem(index);
-    sampleEdit->setText(fdb.writingSystemSample(writingSystem));
+    sampleEdit->setText(QFontDatabase::writingSystemSample(writingSystem));
     updateFamilies();
 }
 

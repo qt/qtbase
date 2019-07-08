@@ -2832,7 +2832,7 @@ static QByteArray createLigatureInfo()
             QList<Ligature> l = ligatureHashes.value(uc);
             if (!l.isEmpty()) {
                 Q_ASSERT(!QChar::requiresSurrogates(uc));
-                qSort(l); // needed for bsearch in ligatureHelper code
+                std::sort(l.begin(), l.end()); // needed for bsearch in ligatureHelper code
 
                 ligatures.append(l.size());
                 for (int j = 0; j < l.size(); ++j) {
@@ -2864,7 +2864,7 @@ static QByteArray createLigatureInfo()
             QList<Ligature> l = ligatureHashes.value(uc);
             if (!l.isEmpty()) {
                 Q_ASSERT(QChar::requiresSurrogates(uc));
-                qSort(l); // needed for bsearch in ligatureHelper code
+                std::sort(l.begin(), l.end()); // needed for bsearch in ligatureHelper code
 
                 ligatures.append(l.size());
                 for (int j = 0; j < l.size(); ++j) {

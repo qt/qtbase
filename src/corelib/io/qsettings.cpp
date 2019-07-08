@@ -2048,8 +2048,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     QPixmap, which are part of Qt GUI. In other words, there is no
     \c toColor(), \c toImage(), or \c toPixmap() functions in QVariant.
 
-    Instead, you can use the QVariant::value() or the qVariantValue()
-    template function. For example:
+    Instead, you can use the QVariant::value() template function.
+    For example:
 
     \snippet code/src_corelib_io_qsettings.cpp 0
 

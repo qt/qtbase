@@ -175,12 +175,32 @@ QT_BEGIN_NAMESPACE
 #define GL_DEPTH_COMPONENT16              0x81A5
 #endif
 
+#ifndef GL_DEPTH_COMPONENT24
+#define GL_DEPTH_COMPONENT24              0x81A6
+#endif
+
 #ifndef GL_DEPTH_COMPONENT32F
 #define GL_DEPTH_COMPONENT32F             0x8CAC
 #endif
 
+#ifndef GL_STENCIL_INDEX
+#define GL_STENCIL_INDEX                  0x1901
+#endif
+
+#ifndef GL_STENCIL_INDEX8
+#define GL_STENCIL_INDEX8                 0x8D48
+#endif
+
 #ifndef GL_DEPTH24_STENCIL8
 #define GL_DEPTH24_STENCIL8               0x88F0
+#endif
+
+#ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#define GL_DEPTH_STENCIL_ATTACHMENT       0x821A
+#endif
+
+#ifndef GL_DEPTH_STENCIL
+#define GL_DEPTH_STENCIL                  0x84F9
 #endif
 
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
@@ -394,10 +414,19 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.floatFormats = caps.ctxMajor >= 3;
     caps.depthTexture = caps.ctxMajor >= 3;
     caps.packedDepthStencil = f->hasOpenGLExtension(QOpenGLExtensions::PackedDepthStencil);
+#ifdef Q_OS_WASM
+    caps.needsDepthStencilCombinedAttach = true;
+#else
+    caps.needsDepthStencilCombinedAttach = false;
+#endif
     caps.srgbCapableDefaultFramebuffer = f->hasOpenGLExtension(QOpenGLExtensions::SRGBFrameBuffer);
     caps.coreProfile = actualFormat.profile() == QSurfaceFormat::CoreProfile;
     caps.uniformBuffers = caps.ctxMajor >= 3 && (caps.gles || caps.ctxMinor >= 1);
     caps.elementIndexUint = f->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
+    caps.depth24 = f->hasOpenGLExtension(QOpenGLExtensions::Depth24);
+    caps.rgba8Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats);
+    caps.instancing = caps.ctxMajor >= 3 && (caps.gles || caps.ctxMinor >= 3);
+    caps.baseVertex = caps.ctxMajor >= 3 && caps.ctxMinor >= 2;
 
     nativeHandlesStruct.context = ctx;
 
@@ -468,6 +497,43 @@ int QRhiGles2::effectiveSampleCount(int sampleCount) const
         return 1;
     }
     return s;
+}
+
+static inline bool isPowerOfTwo(int x)
+{
+    // Assumption: x >= 1
+    return x == (x & -x);
+}
+
+QSize QRhiGles2::safeTextureSize(const QSize &pixelSize) const
+{
+    QSize size = pixelSize.isEmpty() ? QSize(1, 1) : pixelSize;
+
+    if (!caps.npotTexture) {
+        if (!isPowerOfTwo(size.width())) {
+            qWarning("Texture width %d is not a power of two, adjusting",
+                     size.width());
+            size.setWidth(qNextPowerOfTwo(size.width()));
+        }
+        if (!isPowerOfTwo(size.height())) {
+            qWarning("Texture height %d is not a power of two, adjusting",
+                     size.height());
+            size.setHeight(qNextPowerOfTwo(size.height()));
+        }
+    }
+
+    if (size.width() > caps.maxTextureSize) {
+        qWarning("Texture width %d exceeds maximum width %d, adjusting",
+                 size.width(), caps.maxTextureSize);
+        size.setWidth(caps.maxTextureSize);
+    }
+    if (size.height() > caps.maxTextureSize) {
+        qWarning("Texture height %d exceeds maximum height %d, adjusting",
+                 size.height(), caps.maxTextureSize);
+        size.setHeight(caps.maxTextureSize);
+    }
+
+    return size;
 }
 
 QRhiSwapChain *QRhiGles2::createSwapChain()
@@ -601,7 +667,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::Timestamps:
         return false;
     case QRhi::Instancing:
-        return false;
+        return caps.instancing;
     case QRhi::CustomInstanceStepRate:
         return false;
     case QRhi::PrimitiveRestart:
@@ -618,6 +684,14 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.elementIndexUint;
     case QRhi::Compute:
         return false;
+    case QRhi::WideLines:
+        return true;
+    case QRhi::VertexShaderPointSize:
+        return true;
+    case QRhi::BaseVertex:
+        return caps.baseVertex;
+    case QRhi::BaseInstance:
+        return false; // not in ES 3.2, so won't bother
     default:
         Q_UNREACHABLE();
         return false;
@@ -865,8 +939,6 @@ void QRhiGles2::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 void QRhiGles2::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
-    Q_UNUSED(instanceCount); // no instancing
-    Q_UNUSED(firstInstance);
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
 
@@ -875,15 +947,14 @@ void QRhiGles2::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
     cmd.args.draw.ps = cbD->currentPipeline;
     cmd.args.draw.vertexCount = vertexCount;
     cmd.args.draw.firstVertex = firstVertex;
+    cmd.args.draw.instanceCount = instanceCount;
+    cmd.args.draw.baseInstance = firstInstance;
     cbD->commands.append(cmd);
 }
 
 void QRhiGles2::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
                             quint32 instanceCount, quint32 firstIndex, qint32 vertexOffset, quint32 firstInstance)
 {
-    Q_UNUSED(instanceCount); // no instancing
-    Q_UNUSED(firstInstance);
-    Q_UNUSED(vertexOffset); // no glDrawElementsBaseVertex
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
 
@@ -892,6 +963,9 @@ void QRhiGles2::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     cmd.args.drawIndexed.ps = cbD->currentPipeline;
     cmd.args.drawIndexed.indexCount = indexCount;
     cmd.args.drawIndexed.firstIndex = firstIndex;
+    cmd.args.drawIndexed.instanceCount = instanceCount;
+    cmd.args.drawIndexed.baseInstance = firstInstance;
+    cmd.args.drawIndexed.baseVertex = vertexOffset;
     cbD->commands.append(cmd);
 }
 
@@ -1545,13 +1619,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 const QVector<QRhiVertexInputBinding> bindings = psD->m_vertexInputLayout.bindings();
                 const QVector<QRhiVertexInputAttribute> attributes = psD->m_vertexInputLayout.attributes();
                 for (const QRhiVertexInputAttribute &a : attributes) {
-                    if (a.binding() != cmd.args.bindVertexBuffer.binding)
+                    const int bindingIdx = a.binding();
+                    if (bindingIdx != cmd.args.bindVertexBuffer.binding)
                         continue;
 
                     // we do not support more than one vertex buffer
                     f->glBindBuffer(GL_ARRAY_BUFFER, cmd.args.bindVertexBuffer.buffer);
 
-                    const int stride = bindings[a.binding()].stride();
+                    const int stride = bindings[bindingIdx].stride();
                     int size = 1;
                     GLenum type = GL_FLOAT;
                     bool normalize = false;
@@ -1590,10 +1665,17 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     default:
                         break;
                     }
+
+                    const int locationIdx = a.location();
                     quint32 ofs = a.offset() + cmd.args.bindVertexBuffer.offset;
-                    f->glVertexAttribPointer(a.location(), size, type, normalize, stride,
+                    f->glVertexAttribPointer(locationIdx, size, type, normalize, stride,
                                              reinterpret_cast<const GLvoid *>(quintptr(ofs)));
-                    f->glEnableVertexAttribArray(a.location());
+                    f->glEnableVertexAttribArray(locationIdx);
+                    if (bindings[bindingIdx].classification() == QRhiVertexInputBinding::PerInstance
+                            && caps.instancing)
+                    {
+                        f->glVertexAttribDivisor(locationIdx, bindings[bindingIdx].instanceStepRate());
+                    }
                 }
             } else {
                 qWarning("No graphics pipeline active for setVertexInput; ignored");
@@ -1609,21 +1691,53 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         case QGles2CommandBuffer::Command::Draw:
         {
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.draw.ps);
-            if (psD)
-                f->glDrawArrays(psD->drawMode, cmd.args.draw.firstVertex, cmd.args.draw.vertexCount);
-            else
+            if (psD) {
+                if (cmd.args.draw.instanceCount == 1 || !caps.instancing) {
+                    f->glDrawArrays(psD->drawMode, cmd.args.draw.firstVertex, cmd.args.draw.vertexCount);
+                } else {
+                    f->glDrawArraysInstanced(psD->drawMode, cmd.args.draw.firstVertex, cmd.args.draw.vertexCount,
+                                             cmd.args.draw.instanceCount);
+                }
+            } else {
                 qWarning("No graphics pipeline active for draw; ignored");
+            }
         }
             break;
         case QGles2CommandBuffer::Command::DrawIndexed:
         {
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.drawIndexed.ps);
             if (psD) {
-                quint32 ofs = cmd.args.drawIndexed.firstIndex * indexStride + indexOffset;
-                f->glDrawElements(psD->drawMode,
-                                  cmd.args.drawIndexed.indexCount,
-                                  indexType,
-                                  reinterpret_cast<const GLvoid *>(quintptr(ofs)));
+                const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
+                            quintptr(cmd.args.drawIndexed.firstIndex * indexStride + indexOffset));
+                if (cmd.args.drawIndexed.instanceCount == 1 || !caps.instancing) {
+                    if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
+                        f->glDrawElementsBaseVertex(psD->drawMode,
+                                                    cmd.args.drawIndexed.indexCount,
+                                                    indexType,
+                                                    ofs,
+                                                    cmd.args.drawIndexed.baseVertex);
+                    } else {
+                        f->glDrawElements(psD->drawMode,
+                                          cmd.args.drawIndexed.indexCount,
+                                          indexType,
+                                          ofs);
+                    }
+                } else {
+                    if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
+                        f->glDrawElementsInstancedBaseVertex(psD->drawMode,
+                                                             cmd.args.drawIndexed.indexCount,
+                                                             indexType,
+                                                             ofs,
+                                                             cmd.args.drawIndexed.instanceCount,
+                                                             cmd.args.drawIndexed.baseVertex);
+                    } else {
+                        f->glDrawElementsInstanced(psD->drawMode,
+                                                   cmd.args.drawIndexed.indexCount,
+                                                   indexType,
+                                                   ofs,
+                                                   cmd.args.drawIndexed.instanceCount);
+                    }
+                }
             } else {
                 qWarning("No graphics pipeline active for drawIndexed; ignored");
             }
@@ -1848,6 +1962,9 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
     } else {
         f->glDisable(GL_STENCIL_TEST);
     }
+
+    if (psD->topology() == QRhiGraphicsPipeline::Lines || psD->topology() == QRhiGraphicsPipeline::LineStrip)
+        f->glLineWidth(psD->m_lineWidth);
 
     f->glUseProgram(psD->program);
 }
@@ -2242,43 +2359,51 @@ bool QGles2RenderBuffer::build()
         qWarning("RenderBuffer: UsedWithSwapChainOnly is meaningless in combination with Color");
     }
 
-    if (m_pixelSize.isEmpty())
-        return false;
-
     if (!rhiD->ensureContext())
         return false;
 
     rhiD->f->glGenRenderbuffers(1, &renderbuffer);
     rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
 
+    const QSize size = rhiD->safeTextureSize(m_pixelSize);
+
     switch (m_type) {
     case QRhiRenderBuffer::DepthStencil:
         if (rhiD->caps.msaaRenderBuffer && samples > 1) {
-            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8,
-                                                      m_pixelSize.width(), m_pixelSize.height());
+            const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
+            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, storage,
+                                                      size.width(), size.height());
+            stencilRenderbuffer = 0;
+        } else if (rhiD->caps.packedDepthStencil || rhiD->caps.needsDepthStencilCombinedAttach) {
+            const GLenum storage = rhiD->caps.needsDepthStencilCombinedAttach ? GL_DEPTH_STENCIL : GL_DEPTH24_STENCIL8;
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, storage,
+                                           size.width(), size.height());
+            stencilRenderbuffer = 0;
         } else {
-            if (rhiD->caps.packedDepthStencil) {
-                rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-                                               m_pixelSize.width(), m_pixelSize.height());
-                stencilRenderbuffer = 0;
-            } else {
-                rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_ATTACHMENT,
-                                               m_pixelSize.width(), m_pixelSize.height());
-                rhiD->f->glGenRenderbuffers(1, &stencilRenderbuffer);
-                rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderbuffer);
-                rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_ATTACHMENT,
-                                               m_pixelSize.width(), m_pixelSize.height());
+            GLenum depthStorage = GL_DEPTH_COMPONENT;
+            if (rhiD->caps.gles) {
+                if (rhiD->caps.depth24)
+                    depthStorage = GL_DEPTH_COMPONENT24;
+                else
+                    depthStorage = GL_DEPTH_COMPONENT16; // plain ES 2.0 only has this
             }
+            const GLenum stencilStorage = rhiD->caps.gles ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, depthStorage,
+                                           size.width(), size.height());
+            rhiD->f->glGenRenderbuffers(1, &stencilRenderbuffer);
+            rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderbuffer);
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, stencilStorage,
+                                           size.width(), size.height());
         }
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
     case QRhiRenderBuffer::Color:
         if (rhiD->caps.msaaRenderBuffer && samples > 1)
             rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8,
-                                                      m_pixelSize.width(), m_pixelSize.height());
+                                                      size.width(), size.height());
         else
-            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8,
-                                           m_pixelSize.width(), m_pixelSize.height());
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA4,
+                                           size.width(), size.height());
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
     default:
@@ -2328,12 +2453,6 @@ void QGles2Texture::release()
     rhiD->unregisterResource(this);
 }
 
-static inline bool isPowerOfTwo(int x)
-{
-    // Assumption: x >= 1
-    return x == (x & -x);
-}
-
 bool QGles2Texture::prepareBuild(QSize *adjustedSize)
 {
     if (texture)
@@ -2343,9 +2462,7 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
     if (!rhiD->ensureContext())
         return false;
 
-    QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
-    if (!rhiD->caps.npotTexture && (!isPowerOfTwo(size.width()) || !isPowerOfTwo(size.height())))
-        size = QSize(qNextPowerOfTwo(size.width()), qNextPowerOfTwo(size.height()));
+    const QSize size = rhiD->safeTextureSize(m_pixelSize);
 
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
@@ -2660,11 +2777,19 @@ bool QGles2TextureRenderTarget::build()
     if (hasDepthStencil) {
         if (m_desc.depthStencilBuffer()) {
             QGles2RenderBuffer *depthRbD = QRHI_RES(QGles2RenderBuffer, m_desc.depthStencilBuffer());
-            rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRbD->renderbuffer);
-            if (depthRbD->stencilRenderbuffer)
-                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRbD->stencilRenderbuffer);
-            else // packed
-                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRbD->renderbuffer);
+            if (rhiD->caps.needsDepthStencilCombinedAttach) {
+                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                                   depthRbD->renderbuffer);
+            } else {
+                rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                                   depthRbD->renderbuffer);
+                if (depthRbD->stencilRenderbuffer)
+                    rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                                       depthRbD->stencilRenderbuffer);
+                else // packed
+                    rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                                       depthRbD->renderbuffer);
+            }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthRbD->pixelSize();
                 d.sampleCount = depthRbD->samples;

@@ -36,7 +36,7 @@
 class tst_QMutexLockerThread : public QThread
 {
 public:
-    QMutex mutex;
+    QRecursiveMutex mutex;
     QSemaphore semaphore, testSemaphore;
 
     void waitForTest()
@@ -45,10 +45,6 @@ public:
         testSemaphore.acquire();
     }
 
-    tst_QMutexLockerThread()
-        : mutex(QMutex::Recursive)
-    {
-    }
 };
 
 class tst_QMutexLocker : public QObject

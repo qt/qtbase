@@ -330,7 +330,7 @@ public:
     {
         // Make sure QGraphicsProxyWidget::paint does not modify the render hints set on the painter.
         painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform
-                                | QPainter::NonCosmeticDefaultPen | QPainter::TextAntialiasing);
+                                | QPainter::TextAntialiasing);
         const QPainter::RenderHints oldRenderHints = painter->renderHints();
         QGraphicsProxyWidget::paint(painter, option, widget);
         QCOMPARE(painter->renderHints(), oldRenderHints);

@@ -71,11 +71,15 @@ class QObjectPrivate;
 class QObject;
 class QThread;
 class QWidget;
+class QAccessibleWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
 #if QT_CONFIG(regularexpression)
 class QRegularExpression;
+#endif
+#if !QT_DEPRECATED_SINCE(5, 14) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+# define QT_NO_USERDATA
 #endif
 #ifndef QT_NO_USERDATA
 class QObjectUserData;
@@ -405,8 +409,11 @@ public:
 #endif // QT_NO_PROPERTIES
 
 #ifndef QT_NO_USERDATA
+    QT_DEPRECATED_VERSION_5_14
     static uint registerUserData();
+    QT_DEPRECATED_VERSION_X_5_14("Use setProperty()")
     void setUserData(uint id, QObjectUserData* data);
+    QT_DEPRECATED_VERSION_X_5_14("Use property()")
     QObjectUserData* userData(uint id) const;
 #endif // QT_NO_USERDATA
 
@@ -453,6 +460,7 @@ protected:
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;
     friend class QWidget;
+    friend class QAccessibleWidget;
     friend class QThreadData;
 
 private:

@@ -451,8 +451,7 @@ class QFontDatabasePrivate
 public:
     QFontDatabasePrivate()
         : count(0), families(0),
-          fallbacksCache(64),
-          reregisterAppFonts(false)
+          fallbacksCache(64)
     { }
 
     ~QFontDatabasePrivate() {
@@ -488,7 +487,6 @@ public:
     };
     QVector<ApplicationFont> applicationFonts;
     int addAppFont(const QByteArray &fontData, const QString &fileName);
-    bool reregisterAppFonts;
     bool isApplicationFont(const QString &fileName);
 
     void invalidate();
@@ -707,7 +705,7 @@ static QStringList familyList(const QFontDef &req)
 }
 
 Q_GLOBAL_STATIC(QFontDatabasePrivate, privateDb)
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, fontDatabaseMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, fontDatabaseMutex)
 
 // used in qguiapplication.cpp
 void qt_cleanupFontDatabase()
@@ -719,8 +717,8 @@ void qt_cleanupFontDatabase()
     }
 }
 
-// used in qfontengine_x11.cpp
-QMutex *qt_fontdatabase_mutex()
+// used in qfont.cpp
+QRecursiveMutex *qt_fontdatabase_mutex()
 {
     return fontDatabaseMutex();
 }
@@ -897,15 +895,12 @@ static void initializeDb()
     QFontDatabasePrivate *db = privateDb();
 
     // init by asking for the platformfontdb for the first time or after invalidation
-    if (!db->count)
+    if (!db->count) {
         QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
-
-    if (db->reregisterAppFonts) {
         for (int i = 0; i < db->applicationFonts.count(); i++) {
             if (!db->applicationFonts.at(i).families.isEmpty())
                 registerFont(&db->applicationFonts[i]);
         }
-        db->reregisterAppFonts = false;
     }
 }
 
@@ -1033,11 +1028,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
-    QFontDatabasePrivate *db = privateDb();
-
     fnt->families = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data,fnt->fileName);
-
-    db->reregisterAppFonts = true;
 }
 
 static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &styleKey,
@@ -2451,13 +2442,18 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     if (font.fileName.isEmpty() && !fontData.isEmpty())
         font.fileName = QLatin1String(":qmemoryfonts/") + QString::number(i);
 
+    bool wasEmpty = privateDb()->count == 0;
     registerFont(&font);
     if (font.families.isEmpty())
         return -1;
 
     applicationFonts[i] = font;
 
-    invalidate();
+    // If the cache has not yet been populated, we need to reload the application font later
+    if (wasEmpty)
+        invalidate();
+    else
+        emit qApp->fontDatabaseChanged();
     return i;
 }
 
@@ -2598,7 +2594,6 @@ bool QFontDatabase::removeApplicationFont(int handle)
 
     db->applicationFonts[handle] = QFontDatabasePrivate::ApplicationFont();
 
-    db->reregisterAppFonts = true;
     db->invalidate();
     return true;
 }

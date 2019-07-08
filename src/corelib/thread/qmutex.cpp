@@ -147,7 +147,7 @@ public:
     It is constructed and destroyed with almost no overhead,
     which means it is fine to have many mutexes as part of other classes.
 
-    \sa QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
+    \sa QRecursiveMutex, QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
 */
 
 /*!
@@ -156,12 +156,19 @@ public:
     \value Recursive  In this mode, a thread can lock the same mutex
                       multiple times and the mutex won't be unlocked
                       until a corresponding number of unlock() calls
-                      have been made.
+                      have been made. You should use QRecursiveMutex
+                      for this use-case.
 
     \value NonRecursive  In this mode, a thread may only lock a mutex
                          once.
 
-    \sa QMutex()
+    \sa QMutex(), QRecursiveMutex
+*/
+
+/*!
+    \fn QMutex::QMutex()
+
+    Constructs a new mutex. The mutex is created in an unlocked state.
 */
 
 /*!
@@ -205,13 +212,15 @@ QMutex::~QMutex()
 }
 
 /*! \fn void QMutex::lock()
+    \fn QRecursiveMutex::lock()
+
     Locks the mutex. If another thread has locked the mutex then this
     call will block until that thread has unlocked it.
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e dead-lock when the mutex is locked recursively.
 
     \sa unlock()
@@ -228,6 +237,7 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 }
 
 /*! \fn bool QMutex::tryLock(int timeout)
+    \fn bool QRecursiveMutex::tryLock(int timeout)
 
     Attempts to lock the mutex. This function returns \c true if the lock
     was obtained; otherwise it returns \c false. If another thread has
@@ -243,8 +253,8 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e always return false when attempting to lock the mutex
     recursively.
 
@@ -262,6 +272,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 }
 
 /*! \fn bool QMutex::try_lock()
+    \fn bool QRecursiveMutex::try_lock()
     \since 5.8
 
     Attempts to lock the mutex. This function returns \c true if the lock
@@ -275,6 +286,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 
 /*! \fn template <class Rep, class Period> bool QMutex::try_lock_for(std::chrono::duration<Rep, Period> duration)
+    \fn template <class Rep, class Period> bool QRecursiveMutex::try_lock_for(std::chrono::duration<Rep, Period> duration)
     \since 5.8
 
     Attempts to lock the mutex. This function returns \c true if the lock
@@ -290,8 +302,8 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e always return false when attempting to lock the mutex
     recursively.
 
@@ -299,6 +311,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 
 /*! \fn template<class Clock, class Duration> bool QMutex::try_lock_until(std::chrono::time_point<Clock, Duration> timePoint)
+    \fn template<class Clock, class Duration> bool QRecursiveMutex::try_lock_until(std::chrono::time_point<Clock, Duration> timePoint)
     \since 5.8
 
     Attempts to lock the mutex. This function returns \c true if the lock
@@ -314,8 +327,8 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e always return false when attempting to lock the mutex
     recursively.
 
@@ -323,6 +336,8 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 
 /*! \fn void QMutex::unlock()
+    \fn void QRecursiveMutex::unlock()
+
     Unlocks the mutex. Attempting to unlock a mutex in a different
     thread to the one that locked it results in an error. Unlocking a
     mutex that is not locked results in undefined behavior.
@@ -361,6 +376,58 @@ bool QBasicMutex::isRecursive() noexcept
 bool QBasicMutex::isRecursive() const noexcept
 {
     return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
+}
+
+/*!
+    \class QRecursiveMutex
+    \inmodule QtCore
+    \since 5.14
+    \brief The QRecursiveMutex class provides access serialization between threads.
+
+    \threadsafe
+
+    \ingroup thread
+
+    The QRecursiveMutex class is a mutex, like QMutex, with which it is
+    API-compatible. It differs from QMutex by accepting lock() calls from
+    the same thread any number of times. QMutex would deadlock in this situation.
+
+    QRecursiveMutex is much more expensive to construct and operate on, so
+    use a plain QMutex whenever you can. Sometimes, one public function,
+    however, calls another public function, and they both need to lock the
+    same mutex. In this case, you have two options:
+
+    \list
+    \li Factor the code that needs mutex protection into private functions,
+    which assume that the mutex is held when they are called, and lock a
+    plain QMutex in the public functions before you call the private
+    implementation ones.
+    \li Or use a recursive mutex, so it doesn't matter that the first public
+    function has already locked the mutex when the second one wishes to do so.
+    \endlist
+
+    \sa QMutex, QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
+*/
+
+/*!
+    Constructs a new recursive mutex. The mutex is created in an unlocked state.
+
+    \sa lock(), unlock()
+*/
+QRecursiveMutex::QRecursiveMutex()
+    : QMutex()
+{
+    d_ptr.storeRelaxed(new QRecursiveMutexPrivate);
+}
+
+/*!
+    Destroys the mutex.
+
+    \warning Destroying a locked mutex may result in undefined behavior.
+*/
+QRecursiveMutex::~QRecursiveMutex()
+{
+    delete static_cast<QRecursiveMutexPrivate*>(d_ptr.fetchAndStoreAcquire(nullptr));
 }
 
 /*!
@@ -422,6 +489,17 @@ bool QBasicMutex::isRecursive() const noexcept
     Constructs a QMutexLocker and locks \a mutex. The mutex will be
     unlocked when the QMutexLocker is destroyed. If \a mutex is zero,
     QMutexLocker does nothing.
+
+    \sa QMutex::lock()
+*/
+
+/*!
+    \fn QMutexLocker::QMutexLocker(QRecursiveMutex *mutex)
+    \since 5.14
+
+    Constructs a QMutexLocker and locks \a mutex. The mutex will be
+    unlocked (unlock() called) when the QMutexLocker is destroyed.
+    If \a mutex is \nullptr, QMutexLocker does nothing.
 
     \sa QMutex::lock()
 */

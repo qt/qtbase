@@ -909,7 +909,7 @@ static QStyle::StandardPixmap subControlIcon(int pe)
 QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject *object)
 : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0)
 {
-    QPalette palette = QApplication::palette(); // ###: ideally widget's palette
+    QPalette palette = QGuiApplication::palette(); // ###: ideally widget's palette
     ValueExtractor v(declarations, palette);
     features = v.extractStyleFeatures();
 
@@ -2734,7 +2734,7 @@ static void updateObjects(const QList<const QObject *>& objects)
     for (const QObject *object : objects) {
         if (auto widget = qobject_cast<QWidget*>(const_cast<QObject*>(object))) {
             widget->style()->polish(widget);
-            QApplication::sendEvent(widget, &event);
+            QCoreApplication::sendEvent(widget, &event);
         }
     }
 }
@@ -6073,7 +6073,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
         w->d_func()->directFontResolveMask = font.resolve();
 
         QEvent e(QEvent::FontChange);
-        QApplication::sendEvent(w, &e);
+        QCoreApplication::sendEvent(w, &e);
     }
 }
 

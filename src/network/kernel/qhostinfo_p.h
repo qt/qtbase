@@ -252,7 +252,7 @@ protected:
 #if QT_CONFIG(thread)
     QThreadPool threadPool;
 #endif
-    QMutex mutex;
+    QRecursiveMutex mutex;
 
     bool wasDeleted;
 

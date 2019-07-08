@@ -250,7 +250,7 @@ void MingwMakefileGenerator::init()
     }
 
     if(project->isActiveConfig("dll")) {
-        project->values("QMAKE_CLEAN").append(project->first("MINGW_IMPORT_LIB"));
+        project->values("QMAKE_DISTCLEAN").append(project->first("MINGW_IMPORT_LIB"));
     }
 }
 

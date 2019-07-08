@@ -1253,12 +1253,12 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
         *iconRect = QRect(tr.left() + offsetX, tr.center().y() - tabIconSize.height() / 2,
                           tabIconSize.width(), tabIconSize.height());
         if (!verticalTabs)
-            *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
+            *iconRect = QStyle::visualRect(opt->direction, opt->rect, *iconRect);
         tr.setLeft(tr.left() + tabIconSize.width() + 4);
     }
 
     if (!verticalTabs)
-        tr = proxyStyle->visualRect(opt->direction, opt->rect, tr);
+        tr = QStyle::visualRect(opt->direction, opt->rect, tr);
 
     *textRect = tr;
 }
@@ -4835,7 +4835,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
     case PM_MessageBoxIconSize:
 #ifdef Q_OS_MAC
-        if (QApplication::desktopSettingsAware()) {
+        if (QGuiApplication::desktopSettingsAware()) {
             ret = 64; // No DPI scaling, it's handled elsewhere.
         } else
 #endif
@@ -5460,14 +5460,14 @@ static QIcon clearTextIcon(bool rtl)
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                      const QWidget *widget) const
 {
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QGuiApplication::isRightToLeft());
 #ifdef QT_NO_IMAGEFORMAT_PNG
     Q_UNUSED(widget);
     Q_UNUSED(sp);
 #else
     QPixmap pixmap;
 
-    if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
+    if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
         case SP_DialogYesButton:
         case SP_DialogOkButton:
@@ -5829,7 +5829,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                                  const QWidget *widget) const
 {
     QIcon icon;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QGuiApplication::isRightToLeft());
 
 #ifdef Q_OS_WIN
     switch (standardIcon) {
@@ -5881,7 +5881,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 
 #endif
 
-    if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
+    if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:
                 icon = QIcon::fromTheme(QLatin1String("user-home"));
@@ -6057,13 +6057,13 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         default:
             break;
         }
-    } // if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
+    } // if (QGuiApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
 
     if (!icon.isNull())
         return icon;
 
 #if defined(Q_OS_MAC)
-    if (QApplication::desktopSettingsAware()) {
+    if (QGuiApplication::desktopSettingsAware()) {
         switch (standardIcon) {
         case SP_DirIcon: {
             // A rather special case
@@ -6129,7 +6129,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         default:
             break;
         }
-    } // if (QApplication::desktopSettingsAware())
+    } // if (QGuiApplication::desktopSettingsAware())
 #endif // Q_OS_MAC
 
     switch (standardIcon) {

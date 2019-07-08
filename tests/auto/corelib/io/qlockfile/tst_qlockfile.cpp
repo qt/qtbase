@@ -496,7 +496,7 @@ void tst_QLockFile::noPermissionsWindows()
     QSKIP("This test is for desktop Windows only");
 #endif
 #ifdef Q_OS_WIN
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows7)
         QSKIP("This test requires at least Windows 7");
 #endif
     if (const int p = processProperties()) {

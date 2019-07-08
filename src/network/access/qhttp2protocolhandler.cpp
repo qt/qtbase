@@ -219,7 +219,8 @@ void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
 
     auto data = qobject_cast<QNonContiguousByteDevice *>(sender());
     Q_ASSERT(data);
-    const qint32 streamID = data->property("HTTP2StreamID").toInt();
+    const qint32 streamID = streamIDs.value(data);
+    Q_ASSERT(streamID != 0);
     Q_ASSERT(activeStreams.contains(streamID));
     auto &stream = activeStreams[streamID];
 
@@ -234,12 +235,17 @@ void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
 
 void QHttp2ProtocolHandler::_q_replyDestroyed(QObject *reply)
 {
-    const quint32 streamID = reply->property("HTTP2StreamID").toInt();
+    const quint32 streamID = streamIDs.take(reply);
     if (activeStreams.contains(streamID)) {
         sendRST_STREAM(streamID, CANCEL);
         markAsReset(streamID);
         deleteActiveStream(streamID);
     }
+}
+
+void QHttp2ProtocolHandler::_q_uploadDataDestroyed(QObject *uploadData)
+{
+    streamIDs.remove(uploadData);
 }
 
 void QHttp2ProtocolHandler::_q_readyRead()
@@ -1249,7 +1255,7 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
     replyPrivate->connection = m_connection;
     replyPrivate->connectionChannel = m_channel;
     reply->setSpdyWasUsed(true);
-    reply->setProperty("HTTP2StreamID", newStreamID);
+    streamIDs.insert(reply, newStreamID);
     connect(reply, SIGNAL(destroyed(QObject*)),
             this, SLOT(_q_replyDestroyed(QObject*)));
 
@@ -1261,7 +1267,9 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
         if (auto src = newStream.data()) {
             connect(src, SIGNAL(readyRead()), this,
                     SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
-            src->setProperty("HTTP2StreamID", newStreamID);
+            connect(src, &QHttp2ProtocolHandler::destroyed,
+                    this, &QHttp2ProtocolHandler::_q_uploadDataDestroyed);
+            streamIDs.insert(src, newStreamID);
         }
     }
 
@@ -1343,10 +1351,14 @@ void QHttp2ProtocolHandler::deleteActiveStream(quint32 streamID)
 {
     if (activeStreams.contains(streamID)) {
         auto &stream = activeStreams[streamID];
-        if (stream.reply())
+        if (stream.reply()) {
             stream.reply()->disconnect(this);
-        if (stream.data())
+            streamIDs.remove(stream.reply());
+        }
+        if (stream.data()) {
             stream.data()->disconnect(this);
+            streamIDs.remove(stream.data());
+        }
         activeStreams.remove(streamID);
     }
 

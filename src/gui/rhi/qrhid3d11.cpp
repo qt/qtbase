@@ -39,6 +39,7 @@
 #include <QWindow>
 #include <QOperatingSystemVersion>
 #include <qmath.h>
+#include <private/qsystemlibrary_p.h>
 
 #include <d3dcompiler.h>
 #include <comdef.h>
@@ -150,7 +151,8 @@ static QString comErrorMessage(HRESULT hr)
     return result;
 }
 
-static inline uint aligned(uint v, uint byteAlign)
+template <class Int>
+static inline Int aligned(Int v, Int byteAlign)
 {
     return (v + byteAlign - 1) & ~(byteAlign - 1);
 }
@@ -377,6 +379,14 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return true;
+    case QRhi::WideLines:
+        return false;
+    case QRhi::VertexShaderPointSize:
+        return false;
+    case QRhi::BaseVertex:
+        return true;
+    case QRhi::BaseInstance:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -595,7 +605,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 for (int i = 0; i < dynamicOffsetCount; ++i) {
                     const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
                     const uint binding = dynOfs.first;
-                    Q_ASSERT(aligned(dynOfs.second, 256) == dynOfs.second);
+                    Q_ASSERT(aligned(dynOfs.second, quint32(256)) == dynOfs.second);
                     const uint offsetInConstants = dynOfs.second / 16;
                     *p++ = binding;
                     *p++ = offsetInConstants;
@@ -1471,6 +1481,8 @@ void QRhiD3D11::beginPass(QRhiCommandBuffer *cb,
 
     cbD->recordingPass = QD3D11CommandBuffer::RenderPass;
     cbD->currentTarget = rt;
+
+    cbD->resetCachedShaderResourceState();
 }
 
 void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -1547,6 +1559,8 @@ void QRhiD3D11::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch 
     cbD->commands.append(cmd);
 
     cbD->recordingPass = QD3D11CommandBuffer::ComputePass;
+
+    cbD->resetCachedShaderResourceState();
 }
 
 void QRhiD3D11::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -3205,6 +3219,18 @@ static inline D3D11_BLEND_OP toD3DBlendOp(QRhiGraphicsPipeline::BlendOp op)
     }
 }
 
+static pD3DCompile resolveD3DCompile()
+{
+    for (const wchar_t *libraryName : {L"D3DCompiler_47", L"D3DCompiler_43"}) {
+        QSystemLibrary library(libraryName);
+        if (library.load()) {
+            if (auto symbol = library.resolve("D3DCompile"))
+                return reinterpret_cast<pD3DCompile>(symbol);
+        }
+    }
+    return nullptr;
+}
+
 static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, QString *error)
 {
     QShaderCode dxbc = shader.shader({ QShader::DxbcShader, 50, shaderVariant });
@@ -3242,9 +3268,15 @@ static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Varian
         return QByteArray();
     }
 
+    static const pD3DCompile d3dCompile = resolveD3DCompile();
+    if (d3dCompile == nullptr) {
+        qWarning("Unable to resolve function D3DCompile()");
+        return QByteArray();
+    }
+
     ID3DBlob *bytecode = nullptr;
     ID3DBlob *errors = nullptr;
-    HRESULT hr = D3DCompile(hlslSource.shader().constData(), hlslSource.shader().size(),
+    HRESULT hr = d3dCompile(hlslSource.shader().constData(), hlslSource.shader().size(),
                             nullptr, nullptr, nullptr,
                             hlslSource.entryPoint().constData(), target, 0, 0, &bytecode, &errors);
     if (FAILED(hr) || !bytecode) {

@@ -111,7 +111,7 @@ public:
    The user can hide the splash screen by clicking on it with the
    mouse. Since the splash screen is typically displayed before the
    event loop has started running, it is necessary to periodically
-   call QApplication::processEvents() to receive the mouse clicks.
+   call QCoreApplication::processEvents() to receive the mouse clicks.
 
    It is sometimes useful to update the splash screen with messages,
    for example, announcing connections established or modules loaded
@@ -170,13 +170,13 @@ void QSplashScreen::mousePressEvent(QMouseEvent *)
 
 /*!
     This overrides QWidget::repaint(). It differs from the standard repaint
-    function in that it also calls QApplication::processEvents() to ensure
+    function in that it also calls QCoreApplication::processEvents() to ensure
     the updates are displayed, even when there is no event loop present.
 */
 void QSplashScreen::repaint()
 {
     QWidget::repaint();
-    QApplication::processEvents();
+    QCoreApplication::processEvents();
 }
 
 /*!

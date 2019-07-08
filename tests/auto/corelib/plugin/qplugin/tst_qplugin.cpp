@@ -41,7 +41,6 @@ class tst_QPlugin : public QObject
     Q_OBJECT
 
     QDir dir;
-    QString invalidPluginName;
 
 public:
     tst_QPlugin();
@@ -64,15 +63,14 @@ void tst_QPlugin::initTestCase()
     QVERIFY2(dir.exists(),
              qPrintable(QString::fromLatin1("Cannot find the 'plugins' directory starting from '%1'").
                         arg(QDir::toNativeSeparators(QDir::currentPath()))));
-
-    const auto fileNames = dir.entryList({"*invalid*"}, QDir::Files);
-    if (!fileNames.isEmpty())
-        invalidPluginName = dir.absoluteFilePath(fileNames.first());
 }
 
 void tst_QPlugin::loadDebugPlugin()
 {
     const auto fileNames = dir.entryList(QStringList() << "*debug*", QDir::Files);
+    if (fileNames.isEmpty())
+        QSKIP("No debug plugins found - skipping test");
+
     for (const QString &fileName : fileNames) {
         if (!QLibrary::isLibrary(fileName))
             continue;
@@ -100,6 +98,9 @@ void tst_QPlugin::loadDebugPlugin()
 void tst_QPlugin::loadReleasePlugin()
 {
     const auto fileNames = dir.entryList(QStringList() << "*release*", QDir::Files);
+    if (fileNames.isEmpty())
+        QSKIP("No release plugins found - skipping test");
+
     for (const QString &fileName : fileNames) {
         if (!QLibrary::isLibrary(fileName))
             continue;
@@ -227,7 +228,13 @@ static qsizetype locateMetadata(const uchar *data, qsizetype len)
 
 void tst_QPlugin::scanInvalidPlugin()
 {
-    QVERIFY(!invalidPluginName.isEmpty());
+    const auto fileNames = dir.entryList({"*invalid*"}, QDir::Files);
+    QString invalidPluginName;
+    if (fileNames.isEmpty())
+        QSKIP("No invalid plugin found - skipping test");
+    else
+        invalidPluginName = dir.absoluteFilePath(fileNames.first());
+
 
     // copy the file
     QFileInfo fn(invalidPluginName);

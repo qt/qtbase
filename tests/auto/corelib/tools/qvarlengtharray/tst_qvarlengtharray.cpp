@@ -57,6 +57,7 @@ private slots:
     void initializeListComplex();
     void insertMove();
     void nonCopyable();
+    void implicitDefaultCtor();
 
 private:
     template<typename T>
@@ -1076,6 +1077,12 @@ void tst_QVarLengthArray::nonCopyable()
     QVERIFY(ptr4 == vec.at(3).get());
     QVERIFY(ptr5 == vec.at(4).get());
     QVERIFY(ptr6 == vec.at(5).get());
+}
+
+void tst_QVarLengthArray::implicitDefaultCtor()
+{
+    QVarLengthArray<int> def = {};
+    QCOMPARE(def.size(), 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

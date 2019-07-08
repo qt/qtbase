@@ -2525,7 +2525,7 @@ bool QMdiArea::event(QEvent *event)
     case QEvent::WindowIconChange:
         foreach (QMdiSubWindow *window, d->childWindows) {
             if (sanityCheck(window, "QMdiArea::WindowIconChange"))
-                QApplication::sendEvent(window, event);
+                QCoreApplication::sendEvent(window, event);
         }
         break;
     case QEvent::Hide:

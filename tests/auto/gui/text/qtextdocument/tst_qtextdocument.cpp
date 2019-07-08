@@ -188,6 +188,9 @@ private slots:
 
     void lineHeightType();
     void cssLineHeightMultiplier();
+
+    void fontTagFace();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -859,6 +862,18 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("font-family-with-quotes2") << QTextDocumentFragment(&doc)
                                   << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Foo&quot;s Family';\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setFontFamily("Times");
+        fmt.setFontFamilies(QStringList{ "Times", "serif" });
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("font-family-with-fallback") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Times','serif';\">Blah</span></p>");
     }
 
     {
@@ -3483,6 +3498,27 @@ void tst_QTextDocument::cssLineHeightMultiplier()
         QTextBlockFormat format = block.blockFormat();
         QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::ProportionalHeight));
         QCOMPARE(format.lineHeight(), 138.0);
+    }
+}
+
+void tst_QTextDocument::fontTagFace()
+{
+    {
+        QTextDocument td;
+        td.setHtml("<html><body><font face='Times'>Foobar</font></body></html>");
+        QTextFragment fragment = td.begin().begin().fragment();
+        QTextCharFormat format = fragment.charFormat();
+        QCOMPARE(format.fontFamily(), QLatin1String("Times"));
+    }
+
+    {
+        QTextDocument td;
+        td.setHtml("<html><body><font face='Times, serif'>Foobar</font></body></html>");
+        QTextFragment fragment = td.begin().begin().fragment();
+        QTextCharFormat format = fragment.charFormat();
+        QCOMPARE(format.fontFamily(), QLatin1String("Times"));
+        QStringList expectedFamilies = { QLatin1String("Times"), QLatin1String("serif") };
+        QCOMPARE(format.fontFamilies().toStringList(), expectedFamilies);
     }
 }
 

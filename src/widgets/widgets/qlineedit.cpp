@@ -84,7 +84,7 @@
 #include "qkeysequence.h"
 #define ACCEL_KEY(k) ((!QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus) \
                         && QGuiApplication::styleHints()->showShortcutsInContextMenus()) \
-                      && !qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? \
+                      && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(k) ? \
                       QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 #else
 #define ACCEL_KEY(k) QString()
@@ -684,10 +684,10 @@ QSize QLineEdit::sizeHint() const
     ensurePolished();
     QFontMetrics fm(font());
     const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
-    int h = qMax(fm.height(), iconSize - 2) + 2*d->verticalMargin
+    int h = qMax(fm.height(), iconSize - 2) + 2 * QLineEditPrivate::verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
-    int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
+    int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2 * QLineEditPrivate::horizontalMargin
             + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrame opt;
@@ -708,7 +708,7 @@ QSize QLineEdit::minimumSizeHint() const
     Q_D(const QLineEdit);
     ensurePolished();
     QFontMetrics fm = fontMetrics();
-    int h = fm.height() + qMax(2*d->verticalMargin, fm.leading())
+    int h = fm.height() + qMax(2 * QLineEditPrivate::verticalMargin, fm.leading())
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
     int w = fm.maxWidth()
@@ -1606,7 +1606,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 #ifndef QT_NO_CLIPBOARD
-    if (QApplication::clipboard()->supportsSelection()) {
+    if (QGuiApplication::clipboard()->supportsSelection()) {
         if (e->button() == Qt::LeftButton) {
             d->control->copy(QClipboard::Selection);
         } else if (!d->control->isReadOnly() && e->button() == Qt::MidButton) {
@@ -1960,17 +1960,18 @@ void QLineEdit::paintEvent(QPaintEvent *)
     Qt::Alignment va = QStyle::visualAlignment(d->control->layoutDirection(), QFlag(d->alignment));
     switch (va & Qt::AlignVertical_Mask) {
      case Qt::AlignBottom:
-         d->vscroll = r.y() + r.height() - fm.height() - d->verticalMargin;
+         d->vscroll = r.y() + r.height() - fm.height() - QLineEditPrivate::verticalMargin;
          break;
      case Qt::AlignTop:
-         d->vscroll = r.y() + d->verticalMargin;
+         d->vscroll = r.y() + QLineEditPrivate::verticalMargin;
          break;
      default:
          //center
          d->vscroll = r.y() + (r.height() - fm.height() + 1) / 2;
          break;
     }
-    QRect lineRect(r.x() + d->horizontalMargin, d->vscroll, r.width() - 2*d->horizontalMargin, fm.height());
+    QRect lineRect(r.x() + QLineEditPrivate::horizontalMargin, d->vscroll,
+                   r.width() - 2 * QLineEditPrivate::horizontalMargin, fm.height());
 
     if (d->shouldShowPlaceholderText()) {
         if (!d->placeholderText.isEmpty()) {
@@ -2206,7 +2207,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
-        action->setEnabled(!d->control->isReadOnly() && !QApplication::clipboard()->text().isEmpty());
+        action->setEnabled(!d->control->isReadOnly() && !QGuiApplication::clipboard()->text().isEmpty());
         setActionIcon(action, QStringLiteral("edit-paste"));
         connect(action, SIGNAL(triggered()), SLOT(paste()));
     }

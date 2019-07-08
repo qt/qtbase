@@ -46,11 +46,10 @@ QT_BEGIN_NAMESPACE
 
 static void cleanUpConfigurations(QHash<QString, QNetworkConfigurationPrivatePointer> &configurations)
 {
-    for (const auto &ptr : qAsConst(configurations)) {
+    for (auto &ptr : qExchange(configurations, {})) {
         ptr->isValid = false;
         ptr->id.clear();
     }
-    configurations.clear();
 }
 
 static bool hasUsedConfiguration(const QHash<QString, QNetworkConfigurationPrivatePointer> &configurations)
@@ -63,7 +62,7 @@ static bool hasUsedConfiguration(const QHash<QString, QNetworkConfigurationPriva
 }
 
 QBearerEngine::QBearerEngine(QObject *parent)
-    : QObject(parent), mutex(QMutex::Recursive)
+    : QObject(parent)
 {
 }
 

@@ -267,7 +267,7 @@ static int tryReaping(pid_t pid, struct pipe_payload *payload)
 static void freeInfo(Header *header, ProcessInfo *entry)
 {
     entry->deathPipe = -1;
-    entry->pid = 0;
+    ffd_atomic_store(&entry->pid, 0, FFD_ATOMIC_RELEASE);
 
     (void)ffd_atomic_add_fetch(&header->busyCount, -1, FFD_ATOMIC_RELEASE);
     assert(header->busyCount >= 0);
@@ -519,9 +519,9 @@ static void cleanup()
     ffd_atomic_store(&forkfd_status, 0, FFD_ATOMIC_RELAXED);
 
     /* free any arrays we might have */
-    array = children.header.nextArray;
+    array = ffd_atomic_load(&children.header.nextArray, FFD_ATOMIC_ACQUIRE);
     while (array != NULL) {
-        BigArray *next = array->header.nextArray;
+        BigArray *next = ffd_atomic_load(&array->header.nextArray, FFD_ATOMIC_ACQUIRE);
         free(array);
         array = next;
     }

@@ -279,7 +279,7 @@ public:
         void removeConnection(Connection *c);
         void cleanOrphanedConnections(QObject *sender)
         {
-            if (orphaned.loadRelaxed() && ref == 1)
+            if (orphaned.loadRelaxed() && ref.loadAcquire() == 1)
                 cleanOrphanedConnectionsImpl(sender);
         }
         void cleanOrphanedConnectionsImpl(QObject *sender);
@@ -312,7 +312,7 @@ public:
             }
         }
         int signalVectorCount() const {
-            return  signalVector ? signalVector.loadRelaxed()->count() : -1;
+            return  signalVector.loadAcquire() ? signalVector.loadRelaxed()->count() : -1;
         }
 
         static void deleteOrphaned(ConnectionOrSignalVector *c);

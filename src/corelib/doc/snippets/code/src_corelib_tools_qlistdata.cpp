@@ -247,7 +247,7 @@ QSet<int> set;
 set << 20 << 30 << 40 << ... << 70;
 
 QList<int> list = QList<int>::fromSet(set);
-qSort(list);
+std::sort(list.begin(), list.end());
 //! [23]
 
 

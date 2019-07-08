@@ -42,7 +42,7 @@ Changes for ARM 9/9/2010 [Downstream relative to Gladman's GitHub, upstream to Q
 #elif defined( __linux__ ) || defined( __GNUC__ ) || defined( __GNU_LIBRARY__ )
 #  if !defined( __MINGW32__ ) && !defined( _AIX ) && !defined(Q_OS_QNX)
 #    include <endian.h>
-#    if !defined( __BEOS__ )
+#    if !defined( __BEOS__ ) && !defined(Q_OS_RTEMS)
 #      include <byteswap.h>
 #    endif
 #  endif

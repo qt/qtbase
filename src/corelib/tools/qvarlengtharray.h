@@ -61,7 +61,9 @@ template<class T, int Prealloc>
 class QVarLengthArray
 {
 public:
-    inline explicit QVarLengthArray(int size = 0);
+    QVarLengthArray() : QVarLengthArray(0) {}
+
+    inline explicit QVarLengthArray(int size);
 
     inline QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
         : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))

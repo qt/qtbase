@@ -1508,7 +1508,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             if (d->detailsText)
                 textToCopy += d->detailsText->text() + QLatin1Char('\n') + separator;
 #endif
-            QApplication::clipboard()->setText(textToCopy);
+            QGuiApplication::clipboard()->setText(textToCopy);
             return;
         }
 #endif // Q_OS_WIN

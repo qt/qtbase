@@ -948,11 +948,8 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
 end:
     if (!tn)
         return QString();
-    QString str = QString((const QChar *)tn, tn_length/2);
-    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
-        QChar *data = str.data();
-        qbswap<sizeof(QChar)>(data, str.length(), data);
-    }
+    QString str(tn_length / 2, Qt::Uninitialized);
+    qFromBigEndian<ushort>(tn, str.length(), str.data());
     return str;
 }
 

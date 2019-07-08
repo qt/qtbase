@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+   <file>../images/images/subdir/triangle.png</file>
+   <file>specialchar$file.txt</file>
+</qresource>
+</RCC>

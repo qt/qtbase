@@ -301,7 +301,7 @@ class TestMethods {
 public:
     Q_DISABLE_COPY_MOVE(TestMethods)
 
-    typedef std::vector<QMetaMethod> MetaMethods;
+    using MetaMethods = std::vector<QMetaMethod>;
 
     explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
 
@@ -2206,7 +2206,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     }
 
     //  3. relative to test source.
-    if (found.isEmpty()) {
+    if (found.isEmpty() && qstrncmp(file, ":/", 2) != 0) {
         // srcdir is the directory containing the calling source file.
         QFileInfo srcdir = QFileInfo(QFile::decodeName(file)).path();
 

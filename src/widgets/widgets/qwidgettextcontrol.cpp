@@ -97,7 +97,7 @@
 #include <qkeysequence.h>
 #define ACCEL_KEY(k) ((!QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus) \
                        && QGuiApplication::styleHints()->showShortcutsInContextMenus()) \
-                      && !qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? \
+                      && !QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(k) ? \
                       QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 
 #else
@@ -648,7 +648,7 @@ void QWidgetTextControlPrivate::_q_updateCurrentCharFormatAndSelection()
 #ifndef QT_NO_CLIPBOARD
 void QWidgetTextControlPrivate::setClipboardSelection()
 {
-    QClipboard *clipboard = QApplication::clipboard();
+    QClipboard *clipboard = QGuiApplication::clipboard();
     if (!cursor.hasSelection() || !clipboard->supportsSelection())
         return;
     Q_Q(QWidgetTextControl);
@@ -719,9 +719,9 @@ void QWidgetTextControlPrivate::setCursorVisible(bool visible)
     updateCursorBlinking();
 
     if (cursorVisible)
-        connect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
+        connect(QGuiApplication::styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
     else
-        disconnect(qApp->styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
+        disconnect(QGuiApplication::styleHints(), &QStyleHints::cursorFlashTimeChanged, this, &QWidgetTextControlPrivate::updateCursorBlinking);
 }
 
 void QWidgetTextControlPrivate::updateCursorBlinking()
@@ -959,12 +959,12 @@ void QWidgetTextControl::copy()
     if (!d->cursor.hasSelection())
         return;
     QMimeData *data = createMimeDataFromSelection();
-    QApplication::clipboard()->setMimeData(data);
+    QGuiApplication::clipboard()->setMimeData(data);
 }
 
 void QWidgetTextControl::paste(QClipboard::Mode mode)
 {
-    const QMimeData *md = QApplication::clipboard()->mimeData(mode);
+    const QMimeData *md = QGuiApplication::clipboard()->mimeData(mode);
     if (md)
         insertFromMimeData(md);
 }
@@ -1787,9 +1787,9 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
         selectionChanged(true);
     } else if (button == Qt::MidButton
                && (interactionFlags & Qt::TextEditable)
-               && QApplication::clipboard()->supportsSelection()) {
+               && QGuiApplication::clipboard()->supportsSelection()) {
         setCursorPosition(pos);
-        const QMimeData *md = QApplication::clipboard()->mimeData(QClipboard::Selection);
+        const QMimeData *md = QGuiApplication::clipboard()->mimeData(QClipboard::Selection);
         if (md)
             q->insertFromMimeData(md);
 #endif
@@ -2598,7 +2598,7 @@ bool QWidgetTextControl::canPaste() const
 #ifndef QT_NO_CLIPBOARD
     Q_D(const QWidgetTextControl);
     if (d->interactionFlags & Qt::TextEditable) {
-        const QMimeData *md = QApplication::clipboard()->mimeData();
+        const QMimeData *md = QGuiApplication::clipboard()->mimeData();
         return md && canInsertFromMimeData(md);
     }
 #endif
@@ -3175,7 +3175,7 @@ QString QWidgetTextControl::toHtml() const
 }
 #endif
 
-#ifndef QT_NO_TEXTHTMLPARSER
+#if QT_CONFIG(textmarkdownwriter)
 QString QWidgetTextControl::toMarkdown(QTextDocument::MarkdownFeatures features) const
 {
     return document()->toMarkdown(features);
@@ -3331,7 +3331,7 @@ void QWidgetTextControlPrivate::_q_copyLink()
 #ifndef QT_NO_CLIPBOARD
     QMimeData *md = new QMimeData;
     md->setText(linkToCopy);
-    QApplication::clipboard()->setMimeData(md);
+    QGuiApplication::clipboard()->setMimeData(md);
 #endif
 }
 

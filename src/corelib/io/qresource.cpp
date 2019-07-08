@@ -197,13 +197,13 @@ Q_DECLARE_TYPEINFO(QResourceRoot, Q_MOVABLE_TYPE);
 typedef QList<QResourceRoot*> ResourceList;
 struct QResourceGlobalData
 {
-    QMutex resourceMutex{QMutex::Recursive};
+    QRecursiveMutex resourceMutex;
     ResourceList resourceList;
     QStringList resourceSearchPaths;
 };
 Q_GLOBAL_STATIC(QResourceGlobalData, resourceGlobalData)
 
-static inline QMutex *resourceMutex()
+static inline QRecursiveMutex *resourceMutex()
 { return &resourceGlobalData->resourceMutex; }
 
 static inline ResourceList *resourceList()

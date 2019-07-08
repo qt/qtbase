@@ -101,7 +101,7 @@ private:
     StringMap m_classToHeader;
     StringMap m_oldHeaderToNewHeader;
 
-    bool m_laidOut;
+    bool m_laidOut = false;
 };
 
 } // namespace CPP

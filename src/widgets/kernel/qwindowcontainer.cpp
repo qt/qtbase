@@ -223,7 +223,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     // Otherwise we may end up with BadMatch failures on X11.
     if (embeddedWindow->surfaceType() == QSurface::RasterSurface
         && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)
-        && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets))
+        && !QCoreApplication::testAttribute(Qt::AA_ForceRasterWidgets))
         embeddedWindow->setSurfaceType(QSurface::RasterGLSurface);
 
     d->window = embeddedWindow;

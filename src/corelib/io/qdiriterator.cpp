@@ -97,6 +97,9 @@
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
+#if QT_CONFIG(regularexpression)
+#include <QtCore/qregularexpression.h>
+#endif
 
 #include <QtCore/private/qfilesystemiterator_p.h>
 #include <QtCore/private/qfilesystementry_p.h>
@@ -136,8 +139,11 @@ public:
     const QDir::Filters filters;
     const QDirIterator::IteratorFlags iteratorFlags;
 
-#ifndef QT_NO_REGEXP
+#if defined(QT_BOOTSTRAPPED)
+    // ### Qt6: Get rid of this once we don't bootstrap qmake anymore
     QVector<QRegExp> nameRegExps;
+#elif QT_CONFIG(regularexpression)
+    QVector<QRegularExpression> nameRegExps;
 #endif
 
     QDirIteratorPrivateIteratorStack<QAbstractFileEngineIterator> fileEngineIterators;
@@ -162,13 +168,21 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QS
       , filters(QDir::NoFilter == filters ? QDir::AllEntries : filters)
       , iteratorFlags(flags)
 {
-#ifndef QT_NO_REGEXP
+#if defined(QT_BOOTSTRAPPED)
     nameRegExps.reserve(nameFilters.size());
-    for (int i = 0; i < nameFilters.size(); ++i)
+    for (const auto &filter : nameFilters) {
         nameRegExps.append(
-            QRegExp(nameFilters.at(i),
+            QRegExp(filter,
                     (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
                     QRegExp::Wildcard));
+    }
+#elif QT_CONFIG(regularexpression)
+    nameRegExps.reserve(nameFilters.size());
+    for (const auto &filter : nameFilters) {
+        QString re = QRegularExpression::anchoredPattern(QRegularExpression::wildcardToRegularExpression(filter));
+        nameRegExps.append(
+            QRegularExpression(re, (filters & QDir::CaseSensitive) ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption));
+    }
 #endif
     QFileSystemMetaData metaData;
     if (resolveEngine)
@@ -335,19 +349,23 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
         return false;
 
     // name filter
-#ifndef QT_NO_REGEXP
+#if QT_CONFIG(regularexpression) || defined(QT_BOOTSTRAPPED)
     // Pass all entries through name filters, except dirs if the AllDirs
     if (!nameFilters.isEmpty() && !((filters & QDir::AllDirs) && fi.isDir())) {
         bool matched = false;
-        for (QVector<QRegExp>::const_iterator iter = nameRegExps.constBegin(),
-                                              end = nameRegExps.constEnd();
-                iter != end; ++iter) {
-
-            QRegExp copy = *iter;
+        for (const auto &re : nameRegExps) {
+#if defined(QT_BOOTSTRAPPED)
+            QRegExp copy = re;
             if (copy.exactMatch(fileName)) {
                 matched = true;
                 break;
             }
+#else
+            if (re.match(fileName).hasMatch()) {
+                matched = true;
+                break;
+            }
+#endif
         }
         if (!matched)
             return false;

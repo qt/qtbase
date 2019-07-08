@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkAccessBackendFactoryData: public QList<QNetworkAccessBackendFactory *>
 {
 public:
-    QNetworkAccessBackendFactoryData() : mutex(QMutex::Recursive)
+    QNetworkAccessBackendFactoryData()
     {
         valid.ref();
     }
@@ -68,7 +68,7 @@ public:
         valid.deref();
     }
 
-    QMutex mutex;
+    QRecursiveMutex mutex;
     //this is used to avoid (re)constructing factory data from destructors of other global classes
     static QBasicAtomicInt valid;
 };

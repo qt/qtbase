@@ -1420,7 +1420,7 @@ void QRegExpMatchState::match(const QChar *str0, int len0, int pos0,
 
 #ifndef QT_NO_REGEXP_OPTIM
     if (eng->trivial && !oneTest) {
-        // ### Qt6: qsize
+        // ### Qt6: qsizetype
         pos = int(QtPrivate::findString(QStringView(str0, len0), pos0, QStringView(eng->goodStr.unicode(), eng->goodStr.length()), eng->cs));
         matchLen = eng->goodStr.length();
         matched = (pos != -1);
