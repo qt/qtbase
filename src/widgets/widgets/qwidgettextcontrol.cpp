@@ -3175,7 +3175,7 @@ QString QWidgetTextControl::toHtml() const
 }
 #endif
 
-#ifndef QT_NO_TEXTHTMLPARSER
+#if QT_CONFIG(textmarkdownwriter)
 QString QWidgetTextControl::toMarkdown(QTextDocument::MarkdownFeatures features) const
 {
     return document()->toMarkdown(features);
