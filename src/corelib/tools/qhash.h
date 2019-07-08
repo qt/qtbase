@@ -298,10 +298,10 @@ public:
     T take(const Key &key);
 
     bool contains(const Key &key) const;
-    const Key key(const T &value) const;
-    const Key key(const T &value, const Key &defaultKey) const;
-    const T value(const Key &key) const;
-    const T value(const Key &key, const T &defaultValue) const;
+    Key key(const T &value) const;
+    Key key(const T &value, const Key &defaultKey) const;
+    T value(const Key &key) const;
+    T value(const Key &key, const T &defaultValue) const;
     T &operator[](const Key &key);
     const T operator[](const Key &key) const;
 
@@ -631,7 +631,7 @@ Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::operator=(const QHash &other)
 }
 
 template <class Key, class T>
-Q_INLINE_TEMPLATE const T QHash<Key, T>::value(const Key &akey) const
+Q_INLINE_TEMPLATE T QHash<Key, T>::value(const Key &akey) const
 {
     Node *node;
     if (d->size == 0 || (node = *findNode(akey)) == e) {
@@ -642,7 +642,7 @@ Q_INLINE_TEMPLATE const T QHash<Key, T>::value(const Key &akey) const
 }
 
 template <class Key, class T>
-Q_INLINE_TEMPLATE const T QHash<Key, T>::value(const Key &akey, const T &adefaultValue) const
+Q_INLINE_TEMPLATE T QHash<Key, T>::value(const Key &akey, const T &adefaultValue) const
 {
     Node *node;
     if (d->size == 0 || (node = *findNode(akey)) == e) {
@@ -679,13 +679,13 @@ Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::keys(const T &avalue) const
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE const Key QHash<Key, T>::key(const T &avalue) const
+Q_OUTOFLINE_TEMPLATE Key QHash<Key, T>::key(const T &avalue) const
 {
     return key(avalue, Key());
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE const Key QHash<Key, T>::key(const T &avalue, const Key &defaultValue) const
+Q_OUTOFLINE_TEMPLATE Key QHash<Key, T>::key(const T &avalue, const Key &defaultValue) const
 {
     const_iterator i = begin();
     while (i != end()) {

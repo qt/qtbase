@@ -704,7 +704,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa count(), QMultiMap::contains()
 */
 
-/*! \fn template <class Key, class T> const T QMap<Key, T>::value(const Key &key, const T &defaultValue) const
+/*! \fn template <class Key, class T> T QMap<Key, T>::value(const Key &key, const T &defaultValue) const
 
     Returns the value associated with the key \a key.
 

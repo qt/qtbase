@@ -364,8 +364,8 @@ public:
     T take(const Key &key);
 
     bool contains(const Key &key) const;
-    const Key key(const T &value, const Key &defaultKey = Key()) const;
-    const T value(const Key &key, const T &defaultValue = T()) const;
+    Key key(const T &value, const Key &defaultKey = Key()) const;
+    T value(const Key &key, const T &defaultValue = T()) const;
     T &operator[](const Key &key);
     const T operator[](const Key &key) const;
 
@@ -630,7 +630,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wreturn-stack-address")
 
 template <class Key, class T>
-Q_INLINE_TEMPLATE const T QMap<Key, T>::value(const Key &akey, const T &adefaultValue) const
+Q_INLINE_TEMPLATE T QMap<Key, T>::value(const Key &akey, const T &adefaultValue) const
 {
     Node *n = d->findNode(akey);
     return n ? n->value : adefaultValue;
@@ -979,7 +979,7 @@ Q_OUTOFLINE_TEMPLATE QList<Key> QMap<Key, T>::keys(const T &avalue) const
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE const Key QMap<Key, T>::key(const T &avalue, const Key &defaultKey) const
+Q_OUTOFLINE_TEMPLATE Key QMap<Key, T>::key(const T &avalue, const Key &defaultKey) const
 {
     const_iterator i = begin();
     while (i != end()) {

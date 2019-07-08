@@ -1449,7 +1449,7 @@ uint qHash(long double key, uint seed) noexcept
     \sa count(), QMultiHash::contains()
 */
 
-/*! \fn template <class Key, class T> const T QHash<Key, T>::value(const Key &key) const
+/*! \fn template <class Key, class T> T QHash<Key, T>::value(const Key &key) const
 
     Returns the value associated with the \a key.
 
@@ -1461,7 +1461,7 @@ uint qHash(long double key, uint seed) noexcept
     \sa key(), values(), contains(), operator[]()
 */
 
-/*! \fn template <class Key, class T> const T QHash<Key, T>::value(const Key &key, const T &defaultValue) const
+/*! \fn template <class Key, class T> T QHash<Key, T>::value(const Key &key, const T &defaultValue) const
     \overload
 
     If the hash contains no item with the given \a key, the function returns
