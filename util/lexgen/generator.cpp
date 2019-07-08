@@ -183,7 +183,7 @@ Generator::Generator(const DFA &_dfa, const Config &config)
      : dfa(_dfa), cfg(config)
 {
     QList<InputType> lst = cfg.maxInputSet.toList();
-    qSort(lst);
+    std::sort(lst.begin(), lst.end());
     minInput = lst.first();
     maxInput = lst.last();
 
@@ -230,7 +230,7 @@ static QVector<Generator::TransitionSequence> convertToSequences(const Transitio
         return sequences;
 
     QList<InputType> keys = transitions.keys();
-    qSort(keys);
+    std::sort(keys.begin(), keys.end());
     int i = 0;
     Generator::TransitionSequence sequence;
     sequence.first = keys.at(0);
@@ -359,7 +359,7 @@ void Generator::generateTransitions(CodeBlock &body, const TransitionMap &transi
         }
     } else {
         QList<InputType> keys = transitions.keys();
-        qSort(keys);
+        std::sort(keys.begin(), keys.end());
 
         body << "switch (ch.unicode()) {";
         body.indent();

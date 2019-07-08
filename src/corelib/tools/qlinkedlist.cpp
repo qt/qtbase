@@ -742,8 +742,7 @@ const QLinkedListData QLinkedListData::shared_null = {
     \snippet code/src_corelib_tools_qlinkedlist.cpp 7
 
     STL-style iterators can be used as arguments to \l{generic
-    algorithms}. For example, here's how to find an item in the list
-    using the qFind() algorithm:
+    algorithms}. For example, here's how to find an item in the list:
 
     \snippet code/src_corelib_tools_qlinkedlist.cpp 8
 
@@ -987,8 +986,7 @@ const QLinkedListData QLinkedListData::shared_null = {
     \snippet code/src_corelib_tools_qlinkedlist.cpp 14
 
     STL-style iterators can be used as arguments to \l{generic
-    algorithms}. For example, here's how to find an item in the list
-    using the qFind() algorithm:
+    algorithms}. For example, here's how to find an item in the list:
 
     \snippet code/src_corelib_tools_qlinkedlist.cpp 15
 

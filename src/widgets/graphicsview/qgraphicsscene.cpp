@@ -114,7 +114,7 @@
     Another responsibility that QGraphicsScene has, is to propagate events
     from QGraphicsView. To send an event to a scene, you construct an event
     that inherits QEvent, and then send it using, for example,
-    QApplication::sendEvent(). event() is responsible for dispatching
+    QCoreApplication::sendEvent(). event() is responsible for dispatching
     the event to the individual items. Some common events are handled by
     convenience event handlers. For example, key press events are handled by
     keyPressEvent(), and mouse press events are handled by mousePressEvent().
@@ -451,7 +451,7 @@ void QGraphicsScenePrivate::_q_polishItems()
         }
         if (itemd->isWidget) {
             QEvent event(QEvent::Polish);
-            QApplication::sendEvent((QGraphicsWidget *)item, &event);
+            QCoreApplication::sendEvent((QGraphicsWidget *)item, &event);
         }
     }
 
@@ -774,7 +774,7 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
     // Update activate state.
     activePanel = panel;
     QEvent event(QEvent::ActivationChange);
-    QApplication::sendEvent(q, &event);
+    QCoreApplication::sendEvent(q, &event);
 
     // Activate
     if (panel) {
@@ -1243,7 +1243,7 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
         return false;
     if (QGraphicsObject *o = item->toGraphicsObject()) {
         bool spont = event->spontaneous();
-        if (spont ? qt_sendSpontaneousEvent(o, event) : QApplication::sendEvent(o, event))
+        if (spont ? qt_sendSpontaneousEvent(o, event) : QCoreApplication::sendEvent(o, event))
             return true;
         event->spont = spont;
     }
@@ -1569,7 +1569,7 @@ void QGraphicsScenePrivate::updateFont(const QFont &font)
 
     // Send the scene a FontChange event.
     QEvent event(QEvent::FontChange);
-    QApplication::sendEvent(q, &event);
+    QCoreApplication::sendEvent(q, &event);
 }
 
 /*!
@@ -1593,7 +1593,7 @@ void QGraphicsScenePrivate::setPalette_helper(const QPalette &palette)
 */
 void QGraphicsScenePrivate::resolvePalette()
 {
-    QPalette naturalPalette = QApplication::palette();
+    QPalette naturalPalette = QGuiApplication::palette();
     naturalPalette.resolve(0);
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     updatePalette(resolvedPalette);
@@ -1626,7 +1626,7 @@ void QGraphicsScenePrivate::updatePalette(const QPalette &palette)
 
     // Send the scene a PaletteChange event.
     QEvent event(QEvent::PaletteChange);
-    QApplication::sendEvent(q, &event);
+    QCoreApplication::sendEvent(q, &event);
 }
 
 /*!
@@ -3548,10 +3548,10 @@ bool QGraphicsScene::eventFilter(QObject *watched, QEvent *event)
 
     switch (event->type()) {
     case QEvent::ApplicationPaletteChange:
-        QApplication::postEvent(this, new QEvent(QEvent::ApplicationPaletteChange));
+        QCoreApplication::postEvent(this, new QEvent(QEvent::ApplicationPaletteChange));
         break;
     case QEvent::ApplicationFontChange:
-        QApplication::postEvent(this, new QEvent(QEvent::ApplicationFontChange));
+        QCoreApplication::postEvent(this, new QEvent(QEvent::ApplicationFontChange));
         break;
     default:
         break;
@@ -5605,7 +5605,7 @@ void QGraphicsScene::setStyle(QStyle *style)
 
     // Notify the scene.
     QEvent event(QEvent::StyleChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 
     // Notify all widgets that don't have a style explicitly set.
     const auto items_ = items();
@@ -5613,7 +5613,7 @@ void QGraphicsScene::setStyle(QStyle *style)
         if (item->isWidget()) {
             QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
             if (!widget->testAttribute(Qt::WA_SetStyle))
-                QApplication::sendEvent(widget, &event);
+                QCoreApplication::sendEvent(widget, &event);
         }
     }
 }
@@ -5686,7 +5686,7 @@ QPalette QGraphicsScene::palette() const
 void QGraphicsScene::setPalette(const QPalette &palette)
 {
     Q_D(QGraphicsScene);
-    QPalette naturalPalette = QApplication::palette();
+    QPalette naturalPalette = QGuiApplication::palette();
     naturalPalette.resolve(0);
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     d->setPalette_helper(resolvedPalette);

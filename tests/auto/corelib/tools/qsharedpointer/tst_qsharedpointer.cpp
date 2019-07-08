@@ -75,8 +75,10 @@ private slots:
     void functionCallDownCast();
     void upCast();
     void qobjectWeakManagement();
+#if QT_DEPRECATED_SINCE(5, 0)
     void noSharedPointerFromWeakQObject();
     void sharedPointerFromQObjectWithWeak();
+#endif
     void weakQObjectFromSharedPointer();
     void objectCast();
     void objectCastStdSharedPtr();
@@ -882,6 +884,78 @@ void tst_QSharedPointer::qobjectWeakManagement()
         QWeakPointer<QObject> weak;
         weak = QWeakPointer<QObject>();
         QVERIFY(weak.isNull());
+        QVERIFY(weak.toStrongRef().isNull());
+    }
+
+    {
+        QObject *obj = new QObject;
+        QSharedPointer<QObject> shared(obj);
+        QWeakPointer<QObject> weak(shared);
+        QVERIFY(!weak.isNull());
+        QVERIFY(weak.toStrongRef() == obj);
+
+        // now delete
+        shared.reset();
+        QVERIFY(weak.isNull());
+    }
+    safetyCheck();
+
+    {
+        // same, bit with operator=
+        QObject *obj = new QObject;
+        QSharedPointer<QObject> shared(obj);
+        QWeakPointer<QObject> weak;
+        weak = shared;
+        QVERIFY(!weak.isNull());
+        QVERIFY(weak.toStrongRef() == obj);
+
+        // now delete
+        shared.reset();
+        QVERIFY(weak.isNull());
+    }
+    safetyCheck();
+
+    {
+        // with two QWeakPointers
+        QObject *obj = new QObject;
+        QSharedPointer<QObject> shared(obj);
+        QWeakPointer<QObject> weak(shared);
+
+        {
+            QWeakPointer<QObject> weak2(shared);
+            QVERIFY(!weak2.isNull());
+            QVERIFY(weak == weak2);
+        }
+        QVERIFY(!weak.isNull());
+
+        shared.reset();
+        QVERIFY(weak.isNull());
+    }
+    safetyCheck();
+
+    {
+        // same, but delete the pointer while two QWeakPointers exist
+        QObject *obj = new QObject;
+        QSharedPointer<QObject> shared(obj);
+        QWeakPointer<QObject> weak(shared);
+
+        {
+            QWeakPointer<QObject> weak2(shared);
+            QVERIFY(!weak2.isNull());
+
+            shared.reset();
+            QVERIFY(weak.isNull());
+            QVERIFY(weak2.isNull());
+        }
+        QVERIFY(weak.isNull());
+    }
+    safetyCheck();
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    {
+        QWeakPointer<QObject> weak;
+        weak = QWeakPointer<QObject>();
+        QVERIFY(weak.isNull());
         QVERIFY(!weak.data());
     }
 
@@ -972,8 +1046,10 @@ void tst_QSharedPointer::qobjectWeakManagement()
         QVERIFY(weak.isNull());
     }
     safetyCheck();
+#endif
 }
 
+#if QT_DEPRECATED_SINCE(5, 0)
 void tst_QSharedPointer::noSharedPointerFromWeakQObject()
 {
     // you're not allowed to create a QSharedPointer from an unmanaged QObject
@@ -1007,18 +1083,32 @@ void tst_QSharedPointer::sharedPointerFromQObjectWithWeak()
     }
     QVERIFY(weak.isNull());
 }
+#endif
 
 void tst_QSharedPointer::weakQObjectFromSharedPointer()
 {
-    // this is the inverse of the above: you're allowed to create a QWeakPointer
-    // from a managed QObject
-    QSharedPointer<QObject> shared(new QObject);
-    QWeakPointer<QObject> weak = shared.data();
-    QVERIFY(!weak.isNull());
+#if QT_DEPRECATED_SINCE(5, 0)
+    {
+        // this is the inverse of the above: you're allowed to create a QWeakPointer
+        // from a managed QObject
+        QSharedPointer<QObject> shared(new QObject);
+        QWeakPointer<QObject> weak = shared.data();
+        QVERIFY(!weak.isNull());
 
-    // delete:
-    shared.clear();
-    QVERIFY(weak.isNull());
+        // delete:
+        shared.clear();
+        QVERIFY(weak.isNull());
+    }
+#endif
+    {
+        QSharedPointer<QObject> shared(new QObject);
+        QWeakPointer<QObject> weak = shared;
+        QVERIFY(!weak.isNull());
+
+        // delete:
+        shared.clear();
+        QVERIFY(weak.isNull());
+    }
 }
 
 void tst_QSharedPointer::objectCast()
@@ -2376,6 +2466,7 @@ void tst_QSharedPointer::qvariantCast()
     // Intentionally does not compile.
 //     QSharedPointer<int> sop = qSharedPointerFromVariant<int>(v);
 
+#if QT_DEPRECATED_SINCE(5, 0)
     v = QVariant::fromValue(sp.toWeakRef());
 
     {
@@ -2419,6 +2510,7 @@ void tst_QSharedPointer::qvariantCast()
         QWeakPointer<QThread> other = qWeakPointerFromVariant<QThread>(v);
         QVERIFY(!other);
     }
+#endif
 }
 
 class SomeClass : public QEnableSharedFromThis<SomeClass>

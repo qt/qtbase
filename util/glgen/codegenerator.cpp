@@ -184,7 +184,7 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
 
     // Get the set of version functions classes we need to create
     QList<Version> versions = m_parser->versions();
-    qSort(versions.begin(), versions.end(), qGreater<Version>());
+    std::sort(m_versions.begin(), m_versions.end(), std::greater<Version>());
 
     // Outout the #include statements
     stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << endl;

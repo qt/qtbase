@@ -51,21 +51,10 @@
 #include <QtCore/qversionnumber.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
-#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
-
-class QWindowsDirect2DEventDispatcher : public QWindowsGuiEventDispatcher
-{
-public:
-    QWindowsDirect2DEventDispatcher(QObject *parent = nullptr)
-        : QWindowsGuiEventDispatcher(parent)
-    {
-        uninstallMessageHook(); // ### Workaround for QTBUG-42428
-    }
-};
 
 class QWindowsDirect2DIntegrationPrivate
 {
@@ -186,11 +175,6 @@ QPlatformPixmap *QWindowsDirect2DIntegration::createPlatformPixmap(QPlatformPixm
 QPlatformBackingStore *QWindowsDirect2DIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QWindowsDirect2DBackingStore(window);
-}
-
-QAbstractEventDispatcher *QWindowsDirect2DIntegration::createEventDispatcher() const
-{
-    return new QWindowsDirect2DEventDispatcher;
 }
 
 QWindowsDirect2DContext *QWindowsDirect2DIntegration::direct2DContext() const

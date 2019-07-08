@@ -145,7 +145,9 @@
 
 #include "QtWidgets/qscrollbar.h"
 #include "QtCore/qdir.h"
+#if QT_CONFIG(stringlistmodel)
 #include "QtCore/qstringlistmodel.h"
+#endif
 #if QT_CONFIG(dirmodel)
 #include "QtWidgets/qdirmodel.h"
 #endif
@@ -1504,7 +1506,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
     case QEvent::InputMethod:
     case QEvent::ShortcutOverride:
-        QApplication::sendEvent(d->widget, e);
+        QCoreApplication::sendEvent(d->widget, e);
         break;
 
     default:

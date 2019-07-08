@@ -549,7 +549,8 @@ void tst_QPluginLoader::staticPlugins()
     }
     QVERIFY(found);
 
-    QCOMPARE(metaData.value("version").toInt(), QT_VERSION);
+    // We don't store the patch release version anymore (since 5.13)
+    QCOMPARE(metaData.value("version").toInt() / 0x100, QT_VERSION / 0x100);
     QCOMPARE(metaData.value("IID").toString(), "SomeIID");
     QCOMPARE(metaData.value("ExtraMetaData"), QJsonArray({ "StaticPlugin", "foo" }));
     QCOMPARE(metaData.value("URI").toString(), "qt.test.pluginloader.staticplugin");

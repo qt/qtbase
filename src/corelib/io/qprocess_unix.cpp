@@ -517,7 +517,7 @@ void QProcessPrivate::startProcess()
     if (stderrChannel.pipe[0] != -1)
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 
-    if (threadData->eventDispatcher) {
+    if (threadData->eventDispatcher.loadAcquire()) {
         deathNotifier = new QSocketNotifier(forkfd, QSocketNotifier::Read, q);
         QObject::connect(deathNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_processDied()));

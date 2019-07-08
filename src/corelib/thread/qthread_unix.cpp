@@ -141,7 +141,7 @@ static void destroy_current_thread_data(void *p)
     pthread_setspecific(current_thread_data_key, p);
     QThreadData *data = static_cast<QThreadData *>(p);
     if (data->isAdopted) {
-        QThread *thread = data->thread;
+        QThread *thread = data->thread.loadAcquire();
         Q_ASSERT(thread);
         QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
         Q_ASSERT(!thread_p->finished);
@@ -253,8 +253,8 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->deref();
         data->isAdopted = true;
         data->threadId.storeRelaxed(to_HANDLE(pthread_self()));
-        if (!QCoreApplicationPrivate::theMainThread)
-            QCoreApplicationPrivate::theMainThread = data->thread.loadRelaxed();
+        if (!QCoreApplicationPrivate::theMainThread.loadAcquire())
+            QCoreApplicationPrivate::theMainThread.storeRelease(data->thread.loadRelaxed());
     }
     return data;
 }
@@ -285,7 +285,7 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
     else
         return new QEventDispatcherUNIX;
 #elif !defined(QT_NO_GLIB)
-    const bool isQtMainThread = data->thread == QCoreApplicationPrivate::mainThread();
+    const bool isQtMainThread = data->thread.loadAcquire() == QCoreApplicationPrivate::mainThread();
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
         && (isQtMainThread || qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB"))
         && QEventDispatcherGlib::versionSupported())

@@ -60,9 +60,9 @@ class QOpenUrlHandlerRegistry : public QObject
 {
     Q_OBJECT
 public:
-    inline QOpenUrlHandlerRegistry() : mutex(QMutex::Recursive) {}
+    QOpenUrlHandlerRegistry() = default;
 
-    QMutex mutex;
+    QRecursiveMutex mutex;
 
     struct Handler
     {

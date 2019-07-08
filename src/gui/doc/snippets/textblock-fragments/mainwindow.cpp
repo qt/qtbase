@@ -114,7 +114,7 @@ void MainWindow::insertCalendar()
     int year = date.year(), month = date.month();
 
     for (int weekDay = 1; weekDay <= 7; ++weekDay) {
-        cursor.insertText(QString("%1 ").arg(QDate::shortDayName(weekDay), 3),
+        cursor.insertText(QString("%1 ").arg(QLocale::system().dayName(weekDay), 3),
             boldFormat);
     }
 

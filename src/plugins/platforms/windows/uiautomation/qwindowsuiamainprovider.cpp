@@ -153,7 +153,7 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 int count = listacc->childCount();
                 for (int i = 0; i < count; ++i) {
                     QAccessibleInterface *item = listacc->child(i);
-                    if (item && item->text(QAccessible::Name) == event->value()) {
+                    if (item && item->isValid() && item->text(QAccessible::Name) == event->value()) {
                         if (!item->state().selected) {
                             if (QAccessibleActionInterface *actionInterface = item->actionInterface())
                                 actionInterface->doAction(QAccessibleActionInterface::toggleAction());

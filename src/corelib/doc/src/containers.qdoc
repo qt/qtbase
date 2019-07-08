@@ -666,7 +666,7 @@
     \li \b{Logarithmic time:} O(log \e n). A function that runs in
        logarithmic time is a function whose running time is
        proportional to the logarithm of the number of items in the
-       container. One example is qBinaryFind().
+       container. One example is the binary search algorithm.
 
     \li \b{Linear time:} O(\e n). A function that runs in linear time
        will execute in a time directly proportional to the number of

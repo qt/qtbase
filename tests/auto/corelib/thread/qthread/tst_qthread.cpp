@@ -110,6 +110,12 @@ private slots:
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
 
+template <class Int>
+static QString msgElapsed(Int elapsed)
+{
+    return QString::fromLatin1("elapsed: %1").arg(elapsed);
+}
+
 class SignalRecorder : public QObject
 {
     Q_OBJECT
@@ -591,7 +597,7 @@ void tst_QThread::sleep()
     thread.interval = 2;
     thread.start();
     QVERIFY(thread.wait(five_minutes));
-    QVERIFY(thread.elapsed >= 2000);
+    QVERIFY2(thread.elapsed >= 2000, qPrintable(msgElapsed(thread.elapsed)));
 }
 
 void tst_QThread::msleep()
@@ -602,9 +608,9 @@ void tst_QThread::msleep()
     thread.start();
     QVERIFY(thread.wait(five_minutes));
 #if defined (Q_OS_WIN) // May no longer be needed
-    QVERIFY(thread.elapsed >= 100);
+    QVERIFY2(thread.elapsed >= 100, qPrintable(msgElapsed(thread.elapsed)));
 #else
-    QVERIFY(thread.elapsed >= 120);
+    QVERIFY2(thread.elapsed >= 120, qPrintable(msgElapsed(thread.elapsed)));
 #endif
 }
 
@@ -616,9 +622,9 @@ void tst_QThread::usleep()
     thread.start();
     QVERIFY(thread.wait(five_minutes));
 #if defined (Q_OS_WIN) // May no longer be needed
-    QVERIFY(thread.elapsed >= 100);
+    QVERIFY2(thread.elapsed >= 100, qPrintable(msgElapsed(thread.elapsed)));
 #else
-    QVERIFY(thread.elapsed >= 120);
+    QVERIFY2(thread.elapsed >= 120, qPrintable(msgElapsed(thread.elapsed)));
 #endif
 }
 
@@ -1065,13 +1071,15 @@ void tst_QThread::wait2()
     timer.start();
     QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
     qint64 elapsed = timer.elapsed(); // On Windows, we sometimes get (WaitTime - 9).
-    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 10, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
+    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 10,
+             qPrintable(msgElapsed(elapsed)));
 
     timer.start();
     thread.cond1.wakeOne();
     QVERIFY(thread.wait(/*Waiting_Thread::WaitTime * 1.4*/));
     elapsed = timer.elapsed();
-    QVERIFY2(elapsed - Waiting_Thread::WaitTime >= -1, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
+    QVERIFY2(elapsed - Waiting_Thread::WaitTime >= -1,
+             qPrintable(msgElapsed(elapsed)));
 }
 
 

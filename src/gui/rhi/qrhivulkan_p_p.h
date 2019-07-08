@@ -783,9 +783,11 @@ public:
     QVkAllocator allocator = nullptr;
     QVulkanFunctions *f = nullptr;
     QVulkanDeviceFunctions *df = nullptr;
+    VkPhysicalDeviceFeatures physDevFeatures;
     VkPhysicalDeviceProperties physDevProperties;
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
+    bool hasWideLines = false;
 
     bool debugMarkersAvailable = false;
     bool vertexAttribDivisorAvailable = false;

@@ -54,8 +54,10 @@ QT_BEGIN_NAMESPACE
 class QRegExp;
 class QRegularExpression;
 
+#if !defined(QT_NO_JAVA_STYLE_ITERATORS)
 typedef QListIterator<QString> QStringListIterator;
 typedef QMutableListIterator<QString> QMutableStringListIterator;
+#endif
 
 class QStringList;
 
@@ -73,12 +75,21 @@ public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);
     inline int removeDuplicates();
 
+#if QT_STRINGVIEW_LEVEL < 2
     inline QString join(const QString &sep) const;
+#endif
+    inline QString join(QStringView sep) const;
     inline QString join(QLatin1String sep) const;
     inline QString join(QChar sep) const;
 
+    inline QStringList filter(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline QStringList &replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+#if QT_STRINGVIEW_LEVEL < 2
     inline QStringList filter(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     inline QStringList &replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+    inline QStringList &replaceInStrings(const QString &before, QStringView after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+    inline QStringList &replaceInStrings(QStringView before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+#endif
 
 #ifndef QT_NO_REGEXP
     inline QStringList filter(const QRegExp &rx) const;
@@ -163,18 +174,27 @@ inline const QStringList *QListSpecialMethods<QString>::self() const
 namespace QtPrivate {
     void Q_CORE_EXPORT QStringList_sort(QStringList *that, Qt::CaseSensitivity cs);
     int Q_CORE_EXPORT QStringList_removeDuplicates(QStringList *that);
+    QString Q_CORE_EXPORT QStringList_join(const QStringList *that, QStringView sep);
     QString Q_CORE_EXPORT QStringList_join(const QStringList *that, const QChar *sep, int seplen);
     Q_CORE_EXPORT QString QStringList_join(const QStringList &list, QLatin1String sep);
+    QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, QStringView str,
+                                               Qt::CaseSensitivity cs);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QString &str,
                                                Qt::CaseSensitivity cs);
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
 #endif
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QStringView str, Qt::CaseSensitivity cs);
     bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, QLatin1String str, Qt::CaseSensitivity cs);
+    void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, QStringView before, QStringView after,
+                                      Qt::CaseSensitivity cs);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QString &before, const QString &after,
                                       Qt::CaseSensitivity cs);
+#endif
 
 #ifndef QT_NO_REGEXP
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegExp &rx, const QString &after);
@@ -203,9 +223,16 @@ inline int QListSpecialMethods<QString>::removeDuplicates()
     return QtPrivate::QStringList_removeDuplicates(self());
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 inline QString QListSpecialMethods<QString>::join(const QString &sep) const
 {
     return QtPrivate::QStringList_join(self(), sep.constData(), sep.length());
+}
+#endif
+
+inline QString QListSpecialMethods<QString>::join(QStringView sep) const
+{
+    return QtPrivate::QStringList_join(self(), sep);
 }
 
 QString QListSpecialMethods<QString>::join(QLatin1String sep) const
@@ -218,10 +245,17 @@ inline QString QListSpecialMethods<QString>::join(QChar sep) const
     return QtPrivate::QStringList_join(self(), &sep, 1);
 }
 
+inline QStringList QListSpecialMethods<QString>::filter(QStringView str, Qt::CaseSensitivity cs) const
+{
+    return QtPrivate::QStringList_filter(self(), str, cs);
+}
+
+#if QT_STRINGVIEW_LEVEL < 2
 inline QStringList QListSpecialMethods<QString>::filter(const QString &str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_filter(self(), str, cs);
 }
+#endif
 
 #if QT_STRINGVIEW_LEVEL < 2
 inline bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
@@ -240,11 +274,31 @@ inline bool QStringList::contains(QStringView str, Qt::CaseSensitivity cs) const
     return QtPrivate::QStringList_contains(this, str, cs);
 }
 
+inline QStringList &QListSpecialMethods<QString>::replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs)
+{
+    QtPrivate::QStringList_replaceInStrings(self(), before, after, cs);
+    return *self();
+}
+
+#if QT_STRINGVIEW_LEVEL < 2
 inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 {
     QtPrivate::QStringList_replaceInStrings(self(), before, after, cs);
     return *self();
 }
+
+inline QStringList &QListSpecialMethods<QString>::replaceInStrings(QStringView before, const QString &after, Qt::CaseSensitivity cs)
+{
+    QtPrivate::QStringList_replaceInStrings(self(), before, qToStringViewIgnoringNull(after), cs);
+    return *self();
+}
+
+inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QString &before, QStringView after, Qt::CaseSensitivity cs)
+{
+    QtPrivate::QStringList_replaceInStrings(self(), QStringView(before), after, cs);
+    return *self();
+}
+#endif
 
 inline QStringList operator+(const QList<QString> &one, const QStringList &other)
 {

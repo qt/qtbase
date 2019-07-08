@@ -353,7 +353,10 @@ void tst_QStyle::testWindowsVistaStyle()
     QStyle *vistastyle = QStyleFactory::create("WindowsVista");
     QVERIFY(testAllFunctions(vistastyle));
 
-    if (QSysInfo::WindowsVersion == QSysInfo::WV_VISTA)
+    if (QOperatingSystemVersion::current().majorVersion()
+            == QOperatingSystemVersion::WindowsVista.majorVersion()
+            && QOperatingSystemVersion::current().minorVersion()
+            == QOperatingSystemVersion::WindowsVista.minorVersion())
         testPainting(vistastyle, "vista");
     delete vistastyle;
 }

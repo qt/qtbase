@@ -1036,7 +1036,9 @@ void tst_QFileInfo::systemFiles()
     QCOMPARE(fi.metadataChangeTime(), fi.lastModified());   // On Windows, they're the same
     QVERIFY(fi.birthTime().isValid());
     QVERIFY(fi.birthTime() <= fi.lastModified());
+#if QT_DEPRECATED_SINCE(5, 10)
     QCOMPARE(fi.created(), fi.birthTime());                 // On Windows, they're the same
+#endif
 }
 
 void tst_QFileInfo::compare_data()
@@ -1261,7 +1263,7 @@ void tst_QFileInfo::fakeFileTimes_data()
     QTest::newRow("early") << QDateTime(QDate(1901, 12, 14), QTime(12, 0));
 
     // QTBUG-12006 claims XP handled this (2010-Mar-26 8:46:10) wrong due to an MS API bug:
-    QTest::newRow("XP-bug") << QDateTime::fromTime_t(1269593170);
+    QTest::newRow("XP-bug") << QDateTime::fromSecsSinceEpoch(1269593170);
 }
 
 void tst_QFileInfo::fakeFileTimes()
@@ -1915,7 +1917,8 @@ void tst_QFileInfo::owner()
     DWORD  bufSize = 1024;
     if (GetUserNameW(usernameBuf, &bufSize)) {
         userName = QString::fromWCharArray(usernameBuf);
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && IsUserAdmin()) {
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista
+                && IsUserAdmin()) {
             // Special case : If the user is a member of Administrators group, all files
             // created by the current user are owned by the Administrators group.
             LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;
@@ -2042,7 +2045,9 @@ static void stateCheck(const QFileInfo &info, const QString &dirname, const QStr
 
     QCOMPARE(info.permissions(), QFile::Permissions());
 
+#if QT_DEPRECATED_SINCE(5, 10)
     QVERIFY(!info.created().isValid());
+#endif
     QVERIFY(!info.birthTime().isValid());
     QVERIFY(!info.metadataChangeTime().isValid());
     QVERIFY(!info.lastRead().isValid());

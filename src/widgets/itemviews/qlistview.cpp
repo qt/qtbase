@@ -821,13 +821,13 @@ void QListView::wheelEvent(QWheelEvent *e)
             if (e->spontaneous())
                 qt_sendSpontaneousEvent(d->hbar, &hwe);
             else
-                QApplication::sendEvent(d->hbar, &hwe);
+                QCoreApplication::sendEvent(d->hbar, &hwe);
             e->setAccepted(hwe.isAccepted());
         } else {
-            QApplication::sendEvent(d->vbar, e);
+            QCoreApplication::sendEvent(d->vbar, e);
         }
     } else {
-        QApplication::sendEvent(d->hbar, e);
+        QCoreApplication::sendEvent(d->hbar, e);
     }
 }
 #endif // QT_CONFIG(wheelevent)

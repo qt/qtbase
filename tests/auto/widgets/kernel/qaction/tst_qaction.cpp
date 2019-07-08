@@ -70,7 +70,7 @@ private slots:
     void shortcutFromKeyEvent(); // QTBUG-48325
 
 private:
-    int m_lastEventType;
+    QEvent::Type m_lastEventType;
     const int m_keyboardScheme;
     QAction *m_lastAction;
 };
@@ -82,7 +82,7 @@ tst_QAction::tst_QAction()
 
 void tst_QAction::init()
 {
-    m_lastEventType = 0;
+    m_lastEventType = QEvent::None;
     m_lastAction = nullptr;
 }
 
@@ -94,23 +94,23 @@ void tst_QAction::cleanup()
 // Testing get/set functions
 void tst_QAction::getSetCheck()
 {
-    QAction obj1(0);
+    QAction obj1(nullptr);
     // QActionGroup * QAction::actionGroup()
     // void QAction::setActionGroup(QActionGroup *)
-    QActionGroup *var1 = new QActionGroup(0);
+    QActionGroup *var1 = new QActionGroup(nullptr);
     obj1.setActionGroup(var1);
     QCOMPARE(var1, obj1.actionGroup());
-    obj1.setActionGroup((QActionGroup *)0);
-    QCOMPARE((QActionGroup *)0, obj1.actionGroup());
+    obj1.setActionGroup(nullptr);
+    QCOMPARE(obj1.actionGroup(), nullptr);
     delete var1;
 
     // QMenu * QAction::menu()
     // void QAction::setMenu(QMenu *)
-    QMenu *var2 = new QMenu(0);
+    QMenu *var2 = new QMenu(nullptr);
     obj1.setMenu(var2);
     QCOMPARE(var2, obj1.menu());
-    obj1.setMenu((QMenu *)0);
-    QCOMPARE((QMenu *)0, obj1.menu());
+    obj1.setMenu(nullptr);
+    QCOMPARE(obj1.menu(), nullptr);
     delete var2;
 
     QCOMPARE(obj1.priority(), QAction::NormalPriority);
@@ -148,7 +148,7 @@ void tst_QAction::setText()
 {
     QFETCH(QString, text);
 
-    QAction action(0);
+    QAction action(nullptr);
     action.setText(text);
 
     QCOMPARE(action.text(), text);
@@ -161,7 +161,7 @@ void tst_QAction::setIconText()
 {
     QFETCH(QString, iconText);
 
-    QAction action(0);
+    QAction action(nullptr);
     action.setIconText(iconText);
     QCOMPARE(action.iconText(), iconText);
 
@@ -171,7 +171,7 @@ void tst_QAction::setIconText()
 
 void tst_QAction::setUnknownFont() // QTBUG-42728
 {
-    QAction action(0);
+    QAction action(nullptr);
     QFont font("DoesNotExist", 11);
     action.setFont(font);
 
@@ -182,17 +182,17 @@ void tst_QAction::setUnknownFont() // QTBUG-42728
 void tst_QAction::updateState(QActionEvent *e)
 {
     if (!e) {
-        m_lastEventType = 0;
-        m_lastAction = 0;
+        m_lastEventType = QEvent::None;
+        m_lastAction = nullptr;
     } else {
-        m_lastEventType = (int)e->type();
+        m_lastEventType = e->type();
         m_lastAction = e->action();
     }
 }
 
 void tst_QAction::actionEvent()
 {
-    QAction a(0);
+    QAction a(nullptr);
     a.setText("action text");
 
     // add action
@@ -202,33 +202,33 @@ void tst_QAction::actionEvent()
     testWidget.addAction(&a);
     qApp->processEvents();
 
-    QCOMPARE(m_lastEventType, (int)QEvent::ActionAdded);
+    QCOMPARE(m_lastEventType, QEvent::ActionAdded);
     QCOMPARE(m_lastAction, &a);
 
     // change action
     a.setText("new action text");
     qApp->processEvents();
 
-    QCOMPARE(m_lastEventType, (int)QEvent::ActionChanged);
+    QCOMPARE(m_lastEventType, QEvent::ActionChanged);
     QCOMPARE(m_lastAction, &a);
 
     // remove action
     testWidget.removeAction(&a);
     qApp->processEvents();
 
-    QCOMPARE(m_lastEventType, (int)QEvent::ActionRemoved);
+    QCOMPARE(m_lastEventType, QEvent::ActionRemoved);
     QCOMPARE(m_lastAction, &a);
 }
 
 //basic testing of standard keys
 void tst_QAction::setStandardKeys()
 {
-    QAction act(0);
+    QAction act(nullptr);
     act.setShortcut(QKeySequence("CTRL+L"));
     QList<QKeySequence> list;
     act.setShortcuts(list);
     act.setShortcuts(QKeySequence::Copy);
-    QCOMPARE(act.shortcut(), act.shortcuts().first());
+    QCOMPARE(act.shortcut(), act.shortcuts().constFirst());
 
     QList<QKeySequence> expected;
     const QKeySequence ctrlC = QKeySequence(QStringLiteral("CTRL+C"));
@@ -263,7 +263,7 @@ void tst_QAction::alternateShortcuts()
         QList<QKeySequence> shlist = QList<QKeySequence>() << QKeySequence("CTRL+P") << QKeySequence("CTRL+A");
         act.setShortcuts(shlist);
 
-        QSignalSpy spy(&act, SIGNAL(triggered()));
+        QSignalSpy spy(&act, &QAction::triggered);
 
         act.setAutoRepeat(true);
         QTest::keyClick(&testWidget, Qt::Key_A, Qt::ControlModifier);
@@ -322,7 +322,7 @@ void tst_QAction::enabledVisibleInteraction()
     testWidget.show();
     QApplication::setActiveWindow(&testWidget);
 
-    QAction act(0);
+    QAction act(nullptr);
     // check defaults
     QVERIFY(act.isEnabled());
     QVERIFY(act.isVisible());
@@ -370,7 +370,7 @@ void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
 {
     // test without a group
     const QScopedPointer<QAction> actionWithoutGroup(new QAction("Test", nullptr));
-    QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), SIGNAL(triggered(bool)));
+    QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), QOverload<bool>::of(&QAction::triggered));
     QCOMPARE(spyWithoutGroup.count(), 0);
     actionWithoutGroup->trigger();
     // signal should be emitted
@@ -388,7 +388,7 @@ void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
 
 void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
 {
-    QActionGroup ag(0);
+    QActionGroup ag(nullptr);
     QAction *action = new QAction("Test", &ag);
     QAction *checkedAction = new QAction("Test 2", &ag);
     ag.addAction(action);
@@ -397,8 +397,8 @@ void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
     checkedAction->setCheckable(true);
     checkedAction->setChecked(true);
 
-    QSignalSpy actionSpy(checkedAction, SIGNAL(triggered(bool)));
-    QSignalSpy actionGroupSpy(&ag, SIGNAL(triggered(QAction*)));
+    QSignalSpy actionSpy(checkedAction, QOverload<bool>::of(&QAction::triggered));
+    QSignalSpy actionGroupSpy(&ag, QOverload<QAction*>::of(&QActionGroup::triggered));
     QCOMPARE(actionGroupSpy.count(), 0);
     QCOMPARE(actionSpy.count(), 0);
     checkedAction->trigger();
@@ -513,10 +513,10 @@ void tst_QAction::disableShortcutsWithBlockedWidgets()
 class ShortcutOverrideWidget : public QWidget
 {
 public:
-    ShortcutOverrideWidget(QWidget *parent = 0) : QWidget(parent), shortcutOverrideCount(0) {}
-    int shortcutOverrideCount;
+    using QWidget::QWidget;
+    int shortcutOverrideCount = 0;
 protected:
-    bool event(QEvent *e)
+    bool event(QEvent *e) override
     {
         if (e->type() == QEvent::ShortcutOverride)
             ++shortcutOverrideCount;

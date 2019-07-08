@@ -172,7 +172,7 @@ void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *b
                     rightDelta = w->geometry().right() - itm->geometry().right();
             }
             QWidget *w = q->parentWidget();
-            Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : QApplication::layoutDirection();
+            Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : QGuiApplication::layoutDirection();
             if (layoutDirection == Qt::RightToLeft)
                 qSwap(leftDelta, rightDelta);
 

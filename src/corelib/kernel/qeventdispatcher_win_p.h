@@ -73,8 +73,6 @@ class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
 
 protected:
     void createInternalHwnd();
-    void installMessageHook();
-    void uninstallMessageHook();
 
 public:
     explicit QEventDispatcherWin32(QObject *parent = 0);
@@ -115,7 +113,6 @@ protected:
 
 private:
     friend LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
-    friend LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int, WPARAM, LPARAM);
 };
 
 struct QSockNot {
@@ -169,7 +166,6 @@ public:
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;
-    HHOOK getMessageHook;
 
     // for controlling when to send posted events
     QAtomicInt wakeUps;

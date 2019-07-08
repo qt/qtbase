@@ -1588,7 +1588,7 @@ bool QPlainTextEdit::event(QEvent *e)
                 d->originalOffsetY = vBar->value();
             QPointF offset = g->offset();
             if (!offset.isNull()) {
-                if (QApplication::isRightToLeft())
+                if (QGuiApplication::isRightToLeft())
                     offset.rx() *= -1;
                 // QPlainTextEdit scrolls by lines only in vertical direction
                 QFontMetrics fm(document()->defaultFont());
@@ -2649,7 +2649,7 @@ void QPlainTextEdit::setReadOnly(bool ro)
     d->control->setTextInteractionFlags(flags);
     setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
     QEvent event(QEvent::ReadOnlyChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 }
 
 /*!

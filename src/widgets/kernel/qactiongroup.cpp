@@ -42,7 +42,6 @@
 #ifndef QT_NO_ACTION
 
 #include "qaction_p.h"
-#include "qapplication.h"
 #include "qevent.h"
 #include "qlist.h"
 
@@ -73,7 +72,7 @@ void QActionGroupPrivate::_q_actionChanged()
 {
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionChanged", "internal error");
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionChanged", "internal error");
     if (exclusionPolicy != QActionGroup::ExclusionPolicy::None) {
         if (action->isChecked()) {
             if (action != current) {
@@ -91,7 +90,7 @@ void QActionGroupPrivate::_q_actionTriggered()
 {
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionTriggered", "internal error");
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionTriggered", "internal error");
     emit q->triggered(action);
 }
 
@@ -99,7 +98,7 @@ void QActionGroupPrivate::_q_actionHovered()
 {
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionHovered", "internal error");
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionHovered", "internal error");
     emit q->hovered(action);
 }
 
@@ -363,10 +362,10 @@ void QActionGroup::setEnabled(bool b)
 {
     Q_D(QActionGroup);
     d->enabled = b;
-    for(QList<QAction*>::const_iterator it = d->actions.constBegin(); it != d->actions.constEnd(); ++it) {
-        if(!(*it)->d_func()->forceDisabled) {
-            (*it)->setEnabled(b);
-            (*it)->d_func()->forceDisabled = false;
+    for (auto action : qAsConst(d->actions)) {
+        if (!action->d_func()->forceDisabled) {
+            action->setEnabled(b);
+            action->d_func()->forceDisabled = false;
         }
     }
 }
@@ -400,10 +399,10 @@ void QActionGroup::setVisible(bool b)
 {
     Q_D(QActionGroup);
     d->visible = b;
-    for(QList<QAction*>::Iterator it = d->actions.begin(); it != d->actions.end(); ++it) {
-        if(!(*it)->d_func()->forceInvisible) {
-            (*it)->setVisible(b);
-            (*it)->d_func()->forceInvisible = false;
+    for (auto action : qAsConst(d->actions)) {
+        if (!action->d_func()->forceInvisible) {
+            action->setVisible(b);
+            action->d_func()->forceInvisible = false;
         }
     }
 }

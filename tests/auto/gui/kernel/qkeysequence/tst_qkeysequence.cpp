@@ -86,7 +86,7 @@ static const MacSpecialKey * const MacSpecialKeyEntriesEnd = entries + NumEntrie
 
 static QChar macSymbolForQtKey(int key)
 {
-    const MacSpecialKey *i = qBinaryFind(entries, MacSpecialKeyEntriesEnd, key);
+    const MacSpecialKey *i = std::lower_bound(entries, MacSpecialKeyEntriesEnd, key);
     if (i == MacSpecialKeyEntriesEnd)
         return QChar();
     return QChar(i->macSymbol);

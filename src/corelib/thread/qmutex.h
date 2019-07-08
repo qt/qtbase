@@ -62,6 +62,8 @@ QT_BEGIN_NAMESPACE
 # define QT_MUTEX_LOCK_NOEXCEPT
 #endif
 
+class QMutex;
+class QRecursiveMutex;
 class QMutexData;
 
 class Q_CORE_EXPORT QBasicMutex
@@ -120,14 +122,20 @@ private:
     }
 
     friend class QMutex;
+    friend class QRecursiveMutex;
     friend class QMutexData;
 };
 
 class Q_CORE_EXPORT QMutex : public QBasicMutex
 {
 public:
+#if defined(Q_COMPILER_CONSTEXPR)
+    constexpr QMutex() = default;
+#else
+    QMutex() { d_ptr.storeRelaxed(nullptr); }
+#endif
     enum RecursionMode { NonRecursive, Recursive };
-    explicit QMutex(RecursionMode mode = NonRecursive);
+    explicit QMutex(RecursionMode mode);
     ~QMutex();
 
     // BasicLockable concept
@@ -164,6 +172,7 @@ public:
 private:
     Q_DISABLE_COPY(QMutex)
     friend class QMutexLocker;
+    friend class QRecursiveMutex;
     friend class ::tst_QMutex;
 
 #if QT_HAS_INCLUDE(<chrono>)
@@ -192,6 +201,24 @@ private:
 #endif
 };
 
+class QRecursiveMutex : private QMutex
+{
+    // ### Qt 6: make it independent of QMutex
+    friend class QMutexLocker;
+public:
+    Q_CORE_EXPORT QRecursiveMutex();
+    Q_CORE_EXPORT ~QRecursiveMutex();
+
+    using QMutex::lock;
+    using QMutex::tryLock;
+    using QMutex::unlock;
+    using QMutex::try_lock;
+#if QT_HAS_INCLUDE(<chrono>)
+    using QMutex::try_lock_for;
+    using QMutex::try_lock_until;
+#endif
+};
+
 class Q_CORE_EXPORT QMutexLocker
 {
 public:
@@ -207,8 +234,11 @@ public:
             val |= 1;
         }
     }
+    explicit QMutexLocker(QRecursiveMutex *m) QT_MUTEX_LOCK_NOEXCEPT
+        : QMutexLocker{static_cast<QBasicMutex*>(m)} {}
 #else
     QMutexLocker(QMutex *) { }
+    QMutexLocker(QRecursiveMutex *) {}
 #endif
     inline ~QMutexLocker() { unlock(); }
 
@@ -284,6 +314,8 @@ public:
 private:
     Q_DISABLE_COPY(QMutex)
 };
+
+class QRecursiveMutex : public QMutex {};
 
 class Q_CORE_EXPORT QMutexLocker
 {

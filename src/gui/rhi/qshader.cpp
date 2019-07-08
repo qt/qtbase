@@ -389,7 +389,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
 
     QShader bs;
     QShaderPrivate *d = QShaderPrivate::get(&bs);
-    Q_ASSERT(d->ref.load() == 1); // must be detached
+    Q_ASSERT(d->ref.loadRelaxed() == 1); // must be detached
     int intVal;
     ds >> intVal;
     if (intVal != QSB_VERSION)

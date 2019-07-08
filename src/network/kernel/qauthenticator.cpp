@@ -52,7 +52,6 @@
 
 #ifdef Q_OS_WIN
 #include <qmutex.h>
-#include <private/qmutexpool_p.h>
 #include <rpc.h>
 #endif
 

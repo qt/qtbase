@@ -55,6 +55,10 @@ private slots:
     void checkStructure();
     void searchPath_data();
     void searchPath();
+#if QT_DEPRECATED_SINCE(5, 13)
+    void searchPath_deprecated_data();
+    void searchPath_deprecated();
+#endif
     void doubleSlashInRoot();
     void setLocale();
     void lastModified();
@@ -420,6 +424,58 @@ void tst_QResourceEngine::checkStructure()
 
 void tst_QResourceEngine::searchPath_data()
 {
+    auto searchPath = QFileInfo(QFINDTESTDATA("testqrc")).canonicalFilePath();
+
+    QTest::addColumn<QString>("searchPathPrefix");
+    QTest::addColumn<QString>("searchPath");
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("no_search_path")
+            << QString()
+            << QString()
+            << ":search_file.txt"
+            << QByteArray("root\n");
+    QTest::newRow("path1")
+            << "searchpath1"
+            << searchPath
+            << "searchpath1:searchpath1/search_file.txt"
+            << QByteArray("path1\n");
+    QTest::newRow("no_search_path2")
+            << QString()
+            << QString()
+            << ":/search_file.txt"
+            << QByteArray("root\n");
+    QTest::newRow("path2")
+            << "searchpath2"
+            << searchPath + "/searchpath2"
+            << "searchpath2:search_file.txt"
+            << QByteArray("path2\n");
+}
+
+void tst_QResourceEngine::searchPath()
+{
+    QFETCH(QString, searchPathPrefix);
+    QFETCH(QString, searchPath);
+    QFETCH(QString, file);
+    QFETCH(QByteArray, expected);
+
+    if (!searchPath.isEmpty())
+        QDir::addSearchPath(searchPathPrefix, searchPath);
+    QFile qf(file);
+    QVERIFY(qf.open(QFile::ReadOnly));
+    QByteArray actual = qf.readAll();
+
+    actual.replace('\r', "");
+
+    QCOMPARE(actual, expected);
+    qf.close();
+}
+
+#if QT_DEPRECATED_SINCE(5, 13)
+
+void tst_QResourceEngine::searchPath_deprecated_data()
+{
     QTest::addColumn<QString>("searchPath");
     QTest::addColumn<QString>("file");
     QTest::addColumn<QByteArray>("expected");
@@ -438,7 +494,7 @@ void tst_QResourceEngine::searchPath_data()
                          << QByteArray("path2\n");
 }
 
-void tst_QResourceEngine::searchPath()
+void tst_QResourceEngine::searchPath_deprecated()
 {
     QFETCH(QString, searchPath);
     QFETCH(QString, file);
@@ -455,6 +511,8 @@ void tst_QResourceEngine::searchPath()
     QCOMPARE(actual, expected);
     qf.close();
 }
+
+#endif
 
 void tst_QResourceEngine::checkUnregisterResource_data()
 {

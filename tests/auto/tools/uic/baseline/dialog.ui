@@ -1,4 +1,4 @@
-<ui version="4.0" >
+<ui version="4.0" connectslotsbyname="false">
  <class>Dialog</class>
  <widget class="QDialog" name="Dialog" >
   <property name="geometry" >

@@ -386,7 +386,7 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
     for technical reasons limited to between -784350574879 and 784354017364,
     which means from before 2 billion BCE to after 2 billion CE.
 
-    \sa QTime, QDateTime, QDateEdit, QDateTimeEdit, QCalendarWidget
+    \sa QTime, QDateTime, QDateTime::YearRange, QDateEdit, QDateTimeEdit, QCalendarWidget
 */
 
 /*!
@@ -2464,7 +2464,7 @@ static int qt_timezone()
         // - It also takes DST into account, so we need to adjust it to always
         //   get the Standard Time offset.
         return -t.tm_gmtoff + (t.tm_isdst ? (long)SECS_PER_HOUR : 0L);
-#elif defined(Q_OS_INTEGRITY)
+#elif defined(Q_OS_INTEGRITY) || defined(Q_OS_RTEMS)
         return 0;
 #else
         return timezone;
@@ -3272,9 +3272,10 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     provides functions for comparing datetimes and for manipulating a
     datetime by adding a number of seconds, days, months, or years.
 
-    QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
-    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset
-    from UTC} or to a specified \l{{Qt::TimeZone}{time zone}, in conjunction
+    QDateTime can describe datetimes with respect to
+    \l{Qt::LocalTime}{local time}, to \l{Qt::UTC}{UTC}, to a specified
+    \l{Qt::OffsetFromUTC}{offset from UTC} or to a specified
+    \l{Qt::TimeZone}{time zone}, in conjunction
     with the QTimeZone class. For example, a time zone of "Europe/Berlin" will
     apply the daylight-saving rules as used in Germany since 1970. In contrast,
     an offset from UTC of +3600 seconds is one hour ahead of UTC (usually
@@ -3384,6 +3385,25 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     zone lies outside the range of +/- 14 hours.
 
     \sa QDate, QTime, QDateTimeEdit, QTimeZone
+*/
+
+/*!
+    \enum QDateTime::YearRange
+
+    This enumerated type describes the range of years (in the Gregorian
+    calendar) representable by QDateTime:
+
+    \value First The later parts of this year are representable
+    \value Last The earlier parts of this year are representable
+
+    All dates strictly between these two years are also representable.
+    Note, however, that the Gregorian Calendar has no year zero.
+
+    \note QDate can describe dates in a wider range of years.  For most
+    purposes, this makes little difference, as the range of years that QDateTime
+    can support reaches 292 million years either side of 1970.
+
+    \sa isValid(), QDate
 */
 
 /*!
@@ -3534,7 +3554,7 @@ bool QDateTime::isNull() const
     hour, i.e. if the transition is at 2am and the clock goes forward to 3am
     then the time from 02:00:00 to 02:59:59.999 is considered to be invalid.
 
-    \sa QDate::isValid(), QTime::isValid()
+    \sa QDateTime::YearRange, QDate::isValid(), QTime::isValid()
 */
 
 bool QDateTime::isValid() const

@@ -1306,6 +1306,7 @@ static void init_plugins(const QList<QByteArray> &pluginList)
     }
 }
 
+#if QT_CONFIG(commandlineparser)
 void QGuiApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
 {
     QCoreApplicationPrivate::addQtOptions(options);
@@ -1357,6 +1358,7 @@ void QGuiApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
                          QGuiApplication::tr("Alias for --windowtitle."), QStringLiteral("title")));
     }
 }
+#endif // QT_CONFIG(commandlineparser)
 
 void QGuiApplicationPrivate::createPlatformIntegration()
 {
@@ -3260,9 +3262,12 @@ void QGuiApplication::setPalette(const QPalette &pal)
         QGuiApplicationPrivate::app_pal = new QPalette(pal);
     else
         *QGuiApplicationPrivate::app_pal = pal;
+
     applicationResourceFlags |= ApplicationPaletteExplicitlySet;
     QCoreApplication::setAttribute(Qt::AA_SetPalette);
-    emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+
+    if (qGuiApp)
+        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 }
 
 void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)

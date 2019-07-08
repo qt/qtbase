@@ -94,6 +94,8 @@ private slots:
     void urlEncoding();
     void sourceType_data();
     void sourceType();
+    void unicode_data();
+    void unicode();
 
 private:
     TestBrowser *browser;
@@ -719,6 +721,32 @@ void tst_QTextBrowser::sourceType()
     while (!iterator.atEnd())
         maxHeadingLevel = qMax(iterator++.currentBlock().blockFormat().intProperty(QTextFormat::HeadingLevel), maxHeadingLevel);
     QCOMPARE(maxHeadingLevel, expectedMaxHeadingLevel);
+}
+
+void tst_QTextBrowser::unicode_data()
+{
+    QTest::addColumn<QString>("sourceFile");
+    QTest::addColumn<QTextDocument::ResourceType>("sourceType");
+    QTest::addColumn<QString>("expectedText");
+
+#if QT_CONFIG(textmarkdownreader)
+    QTest::newRow("markdown with quotes and fractions") << "quotesAndFractions.md" << QTextDocument::MarkdownResource <<
+        "you\u2019ll hope to see \u275Dquotes\u275E \uFE601\u00BD \u2154 \u00BC \u2157 \u215A \u215D some \u201Cvulgar\u201D fractions (pardon my \u00ABFrench\u00BB)";
+#endif
+}
+
+void tst_QTextBrowser::unicode()
+{
+    QFETCH(QString, sourceFile);
+    QFETCH(QTextDocument::ResourceType, sourceType);
+    QFETCH(QString, expectedText);
+    browser->setSource(QUrl::fromLocalFile(QFINDTESTDATA(sourceFile)), sourceType);
+    QTextFrame::iterator iterator = browser->document()->rootFrame()->begin();
+    while (!iterator.atEnd()) {
+        QString blockText = iterator++.currentBlock().text();
+        if (!blockText.isEmpty())
+            QCOMPARE(blockText, expectedText);
+    }
 }
 
 QTEST_MAIN(tst_QTextBrowser)

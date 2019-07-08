@@ -119,8 +119,8 @@ for (i = list.begin(); i != list.end(); ++i)
 //! [8]
 QLinkedList<QString> list;
 ...
-QLinkedList<QString>::iterator it = qFind(list.begin(),
-                                          list.end(), "Joel");
+QLinkedList<QString>::iterator it = std::find(list.begin(),
+                                              list.end(), "Joel");
 if (it != list.end())
     cout << "Found Joel" << Qt::endl;
 //! [8]
@@ -189,8 +189,8 @@ for (i = list.constBegin(); i != list.constEnd(); ++i)
 //! [15]
 QLinkedList<QString> list;
 ...
-QLinkedList<QString>::iterator it = qFind(list.constBegin(),
-                                          list.constEnd(), "Joel");
+QLinkedList<QString>::const_iterator it = std::find(list.constBegin(),
+                                                    list.constEnd(), "Joel");
 if (it != list.constEnd())
     cout << "Found Joel" << Qt::endl;
 //! [15]

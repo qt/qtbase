@@ -56,8 +56,6 @@ QT_BEGIN_NAMESPACE
 #define FFD_ATOMIC_RELAXED  Relaxed
 #define FFD_ATOMIC_ACQUIRE  Acquire
 #define FFD_ATOMIC_RELEASE  Release
-#define loadRelaxed         load
-#define storeRelaxed        store
 
 #define FFD_CONCAT(x, y)    x ## y
 

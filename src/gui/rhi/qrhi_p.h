@@ -1068,6 +1068,9 @@ public:
     int sampleCount() const { return m_sampleCount; }
     void setSampleCount(int s) { m_sampleCount = s; }
 
+    float lineWidth() const { return m_lineWidth; }
+    void setLineWidth(float width) { m_lineWidth = width; }
+
     QVector<QRhiShaderStage> shaderStages() const { return m_shaderStages; }
     void setShaderStages(const QVector<QRhiShaderStage> &stages) { m_shaderStages = stages; }
 
@@ -1098,6 +1101,7 @@ protected:
     quint32 m_stencilReadMask = 0xFF;
     quint32 m_stencilWriteMask = 0xFF;
     int m_sampleCount = 1;
+    float m_lineWidth = 1.0f;
     QVector<QRhiShaderStage> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
@@ -1312,7 +1316,11 @@ public:
         NPOTTextureRepeat,
         RedOrAlpha8IsRed,
         ElementIndexUint,
-        Compute
+        Compute,
+        WideLines,
+        VertexShaderPointSize,
+        BaseVertex,
+        BaseInstance
     };
 
     enum BeginFrameFlag {

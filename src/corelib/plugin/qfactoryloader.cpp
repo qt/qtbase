@@ -170,7 +170,7 @@ public:
 
 Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_factoryloader_mutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_factoryloader_mutex)
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {

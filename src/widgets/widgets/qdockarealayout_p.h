@@ -144,7 +144,9 @@ public:
     void remove(const QList<int> &path);
     void unnest(int index);
     void split(int index, Qt::Orientation orientation, QLayoutItem *dockWidgetItem);
+#if QT_CONFIG(tabbar)
     void tab(int index, QLayoutItem *dockWidgetItem);
+#endif
     QDockAreaLayoutItem &item(const QList<int> &path);
     QDockAreaLayoutInfo *info(const QList<int> &path);
     QDockAreaLayoutInfo *info(QWidget *widget);
@@ -275,7 +277,9 @@ public:
     bool restoreDockWidget(QDockWidget *dockWidget);
     void splitDockWidget(QDockWidget *after, QDockWidget *dockWidget,
                          Qt::Orientation orientation);
+#if QT_CONFIG(tabbar)
     void tabifyDockWidget(QDockWidget *first, QDockWidget *second);
+#endif
     void resizeDocks(const QList<QDockWidget *> &docks, const QList<int> &sizes, Qt::Orientation o);
 
     void apply(bool animate);

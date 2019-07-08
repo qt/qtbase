@@ -2178,7 +2178,7 @@ void QFormLayoutPrivate::arrangeWidgets(const QVector<QLayoutStruct>& layouts, Q
     int i;
     const int rr = m_matrix.rowCount();
     QWidget *w = q->parentWidget();
-    Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : QApplication::layoutDirection();
+    Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : QGuiApplication::layoutDirection();
 
     Qt::Alignment formAlignment = fixedAlignment(q->formAlignment(), layoutDirection);
     int leftOffset = 0;

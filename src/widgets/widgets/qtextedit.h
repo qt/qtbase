@@ -331,7 +331,9 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_adjustScrollbars())
     Q_PRIVATE_SLOT(d_func(), void _q_ensureVisible(const QRectF &))
     Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged())
+#if QT_CONFIG(cursor)
     Q_PRIVATE_SLOT(d_func(), void _q_hoveredBlockWithMarkerChanged(const QTextBlock &))
+#endif
     friend class QTextEditControl;
     friend class QTextDocument;
     friend class QWidgetTextControl;

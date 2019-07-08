@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 
 QStyleOption::QStyleOption(int version, int type)
     : version(version), type(type), state(QStyle::State_None),
-      direction(QApplication::layoutDirection()), fontMetrics(QFont()), styleObject(0)
+      direction(QGuiApplication::layoutDirection()), fontMetrics(QFont()), styleObject(0)
 {
 }
 

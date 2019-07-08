@@ -54,6 +54,7 @@
 #include <qrandom.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
@@ -7056,7 +7057,7 @@ void tst_QWidget::renderWithPainter()
 
     // Make sure QWidget::render does not modify the render hints set on the painter.
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform
-                           | QPainter::NonCosmeticDefaultPen | QPainter::TextAntialiasing);
+                           | QPainter::TextAntialiasing);
     QPainter::RenderHints oldRenderHints = painter.renderHints();
     widget.render(&painter);
     QCOMPARE(painter.renderHints(), oldRenderHints);
@@ -7654,7 +7655,7 @@ void tst_QWidget::moveWindowInShowEvent()
 void tst_QWidget::repaintWhenChildDeleted()
 {
 #ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista) {
         QTest::qWait(1000);
     }
 #endif
@@ -8853,7 +8854,7 @@ void tst_QWidget::translucentWidget()
 
 #ifdef Q_OS_WIN
     QWidget *desktopWidget = QApplication::desktop()->screen(0);
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista)
         widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
     else
 #endif
@@ -8864,6 +8865,12 @@ void tst_QWidget::translucentWidget()
         QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
     QCOMPARE(actual.size(),expected.size());
     QCOMPARE(actual,expected);
+
+    const QWindow *window = label.windowHandle();
+    const QSurfaceFormat translucentFormat = window->requestedFormat();
+    label.setAttribute(Qt::WA_TranslucentBackground, false);
+    const QSurfaceFormat opaqueFormat = window->requestedFormat();
+    QVERIFY(translucentFormat != opaqueFormat);
 }
 
 class MaskResizeTestWidget : public QWidget

@@ -28,7 +28,6 @@
 
 #include <QTest>
 
-#include <QtAlgorithms>
 #include <QFile>
 #include <QFileInfo>
 #include <QRandomGenerator>

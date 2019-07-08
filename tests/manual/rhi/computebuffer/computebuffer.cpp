@@ -91,6 +91,9 @@ void Window::customInit()
     if (!m_r->isFeatureSupported(QRhi::Compute))
         qFatal("Compute is not supported");
 
+    if (!m_r->isFeatureSupported(QRhi::VertexShaderPointSize))
+        qWarning("Point sizes other than 1 not supported");
+
     // compute pass
 
     d.sbuf = m_r->newBuffer(QRhiBuffer::Immutable,

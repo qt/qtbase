@@ -47,7 +47,7 @@
 #include <qset.h>
 #include <qtimer.h>
 
-#if defined(Q_OS_LINUX) || (defined(Q_OS_QNX) && !defined(QT_NO_INOTIFY))
+#if (defined(Q_OS_LINUX) || defined(Q_OS_QNX)) && QT_CONFIG(inotify)
 #define USE_INOTIFY
 #endif
 

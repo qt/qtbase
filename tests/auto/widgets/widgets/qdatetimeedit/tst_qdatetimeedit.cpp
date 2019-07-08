@@ -3454,7 +3454,7 @@ void tst_QDateTimeEdit::timeSpec()
         }
         QVERIFY(edit.minimumTime() != min.time());
         QVERIFY(edit.minimumDateTime().timeSpec() != min.timeSpec());
-        QCOMPARE(edit.minimumDateTime().toTime_t(), min.toTime_t());
+        QCOMPARE(edit.minimumDateTime().toSecsSinceEpoch(), min.toSecsSinceEpoch());
     } else {
         QSKIP("Not tested in the GMT timezone");
     }

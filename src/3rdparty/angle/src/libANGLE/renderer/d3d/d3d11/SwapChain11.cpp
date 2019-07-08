@@ -504,6 +504,10 @@ EGLint SwapChain11::resize(const gl::Context *context,
     ASSERT(SUCCEEDED(result));
     if (SUCCEEDED(result))
     {
+#ifndef ANGLE_ENABLE_WINDOWS_STORE
+        if (mNativeWindow->getNativeWindow())
+            InvalidateRect(mNativeWindow->getNativeWindow(), nullptr, FALSE);
+#endif
         const auto &format =
             d3d11::Format::Get(mOffscreenRenderTargetFormat, mRenderer->getRenderer11DeviceCaps());
         mBackBufferTexture.set(backbufferTexture, format);

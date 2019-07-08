@@ -254,8 +254,7 @@ class QGlobalNetworkProxy
 {
 public:
     QGlobalNetworkProxy()
-        : mutex(QMutex::Recursive)
-        , applicationLevelProxy(0)
+        : applicationLevelProxy(0)
         , applicationLevelProxyFactory(0)
 #if QT_CONFIG(socks5)
         , socks5SocketEngineHandler(0)
@@ -338,7 +337,7 @@ public:
     QList<QNetworkProxy> proxyForQuery(const QNetworkProxyQuery &query);
 
 private:
-    QMutex mutex;
+    QRecursiveMutex mutex;
     QNetworkProxy *applicationLevelProxy;
     QNetworkProxyFactory *applicationLevelProxyFactory;
 #if QT_CONFIG(socks5)

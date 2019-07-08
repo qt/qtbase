@@ -227,12 +227,14 @@ bool QCoreApplicationPrivate::checkInstance(const char *function)
     return b;
 }
 
+#if QT_CONFIG(commandlineparser)
 void QCoreApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
 {
     options->append(QCommandLineOption(QStringLiteral("qmljsdebugger"),
                 QStringLiteral("Activates the QML/JS debugger with a specified port. The value must be of format port:1234[,block]. \"block\" makes the application wait for a connection."),
                 QStringLiteral("value")));
 }
+#endif
 
 void QCoreApplicationPrivate::processCommandLineArguments()
 {
@@ -385,8 +387,8 @@ struct QCoreApplicationData {
     ~QCoreApplicationData() {
 #ifndef QT_NO_QOBJECT
         // cleanup the QAdoptedThread created for the main() thread
-        if (QCoreApplicationPrivate::theMainThread) {
-            QThreadData *data = QThreadData::get2(QCoreApplicationPrivate::theMainThread);
+        if (auto *t = QCoreApplicationPrivate::theMainThread.loadAcquire()) {
+            QThreadData *data = QThreadData::get2(t);
             data->deref(); // deletes the data and the adopted thread
         }
 #endif
@@ -486,7 +488,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 #endif
 
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
-    if (cur != theMainThread)
+    if (cur != theMainThread.loadAcquire())
         qWarning("WARNING: QApplication was not created in the main() thread.");
 #endif
 }
@@ -862,7 +864,7 @@ void QCoreApplicationPrivate::init()
     Q_ASSERT(eventDispatcher);
 
     if (!eventDispatcher->parent()) {
-        eventDispatcher->moveToThread(threadData->thread);
+        eventDispatcher->moveToThread(threadData->thread.loadAcquire());
         eventDispatcher->setParent(q);
     }
 
@@ -1181,7 +1183,7 @@ static bool doNotify(QObject *receiver, QEvent *event)
 bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiver, QEvent *event)
 {
     // We can't access the application event filters outside of the main thread (race conditions)
-    Q_ASSERT(receiver->d_func()->threadData->thread == mainThread());
+    Q_ASSERT(receiver->d_func()->threadData->thread.loadAcquire() == mainThread());
 
     if (extraData) {
         // application event filters are only called for objects in the GUI thread
@@ -1234,7 +1236,7 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
-            && receiver->d_func()->threadData->thread == mainThread()
+            && receiver->d_func()->threadData->thread.loadAcquire() == mainThread()
             && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event)) {
         filtered = true;
         return filtered;
@@ -2655,7 +2657,7 @@ QString QCoreApplication::applicationVersion()
 
 #if QT_CONFIG(library)
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, libraryPathMutex)
 
 /*!
     Returns a list of paths that the application will search when
@@ -2905,7 +2907,7 @@ void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filt
         return;
     }
 
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance(QCoreApplicationPrivate::theMainThread);
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance(QCoreApplicationPrivate::theMainThread.loadAcquire());
     if (!filterObj || !eventDispatcher)
         return;
     eventDispatcher->installNativeEventFilter(filterObj);
@@ -2961,7 +2963,7 @@ bool QCoreApplication::hasPendingEvents()
 */
 QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {
-    if (QCoreApplicationPrivate::theMainThread)
+    if (QCoreApplicationPrivate::theMainThread.loadAcquire())
         return QCoreApplicationPrivate::theMainThread.loadRelaxed()->eventDispatcher();
     return 0;
 }
@@ -2974,7 +2976,7 @@ QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 */
 void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
 {
-    QThread *mainThread = QCoreApplicationPrivate::theMainThread;
+    QThread *mainThread = QCoreApplicationPrivate::theMainThread.loadAcquire();
     if (!mainThread)
         mainThread = QThread::currentThread(); // will also setup theMainThread
     mainThread->setEventDispatcher(eventDispatcher);

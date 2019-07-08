@@ -214,9 +214,11 @@ qtConfig(gui) {
         SUBDIRS += src_3rdparty_freetype
         src_platformsupport.depends += src_3rdparty_freetype
     }
-    SUBDIRS += src_tools_qvkgen
-    src_gui.depends += src_tools_qvkgen
-    TOOLS += src_tools_qvkgen
+    qtConfig(vkgen) {
+        SUBDIRS += src_tools_qvkgen
+        src_gui.depends += src_tools_qvkgen
+        TOOLS += src_tools_qvkgen
+    }
     SUBDIRS += src_gui src_platformsupport src_platformheaders
     qtConfig(opengl): SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport src_platformheaders

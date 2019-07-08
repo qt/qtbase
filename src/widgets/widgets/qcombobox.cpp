@@ -2618,7 +2618,7 @@ bool QComboBoxPrivate::showNativePopup()
     // We need to fake one here to un-press the button.
     QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,
                               Qt::MouseButtons(Qt::LeftButton), Qt::KeyboardModifiers());
-    qApp->sendEvent(q, &mouseReleased);
+    QCoreApplication::sendEvent(q, &mouseReleased);
 #endif
 
     return true;
@@ -2915,7 +2915,7 @@ void QComboBox::hidePopup()
         bool didFade = false;
         if (needFade) {
 #if defined(Q_OS_MAC)
-            QPlatformNativeInterface *platformNativeInterface = qApp->platformNativeInterface();
+            QPlatformNativeInterface *platformNativeInterface = QGuiApplication::platformNativeInterface();
             int at = platformNativeInterface->metaObject()->indexOfMethod("fadeWindow()");
             if (at != -1) {
                 QMetaMethod windowFade = platformNativeInterface->metaObject()->method(at);

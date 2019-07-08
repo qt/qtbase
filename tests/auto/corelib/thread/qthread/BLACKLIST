@@ -1,2 +1,4 @@
 [wait3_slowDestructor]
 windows
+[sleep]
+windows ci

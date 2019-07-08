@@ -155,7 +155,7 @@ void tst_QKeyEvent::modifiers_data()
         modifierCombinations.append(modifierCombination);
     }
 
-    qSort(modifierCombinations.begin(), modifierCombinations.end(), orderByModifier);
+    std::sort(modifierCombinations.begin(), modifierCombinations.end(), orderByModifier);
 
     QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     foreach (const QVector<int> combination, modifierCombinations) {

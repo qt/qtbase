@@ -523,6 +523,14 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::Compute:
         return true;
+    case QRhi::WideLines:
+        return false;
+    case QRhi::VertexShaderPointSize:
+        return true;
+    case QRhi::BaseVertex:
+        return true;
+    case QRhi::BaseInstance:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

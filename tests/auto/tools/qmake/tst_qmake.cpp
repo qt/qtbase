@@ -422,7 +422,7 @@ void tst_qmake::prompt()
 {
 #if 0
     QProcess qmake;
-    qmake.setReadChannelMode(QProcess::MergedChannels);
+    qmake.setProcessChannelMode(QProcess::MergedChannels);
     qmake.setWorkingDirectory(QLatin1String("testdata/prompt"));
     qmake.start(QLatin1String("qmake CONFIG-=debug_and_release CONFIG-=debug CONFIG+=release"),
                 QIODevice::Text | QIODevice::ReadWrite);

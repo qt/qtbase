@@ -324,11 +324,16 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 QRhiGraphicsPipeline *ps;
                 quint32 vertexCount;
                 quint32 firstVertex;
+                quint32 instanceCount;
+                quint32 baseInstance;
             } draw;
             struct {
                 QRhiGraphicsPipeline *ps;
                 quint32 indexCount;
                 quint32 firstIndex;
+                quint32 instanceCount;
+                quint32 baseInstance;
+                qint32 baseVertex;
             } drawIndexed;
             struct {
                 QRhiGraphicsPipeline *ps;
@@ -611,6 +616,7 @@ public:
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     int effectiveSampleCount(int sampleCount) const;
+    QSize safeTextureSize(const QSize &size) const;
 
     QOpenGLContext *ctx = nullptr;
     bool importedContext = false;
@@ -638,10 +644,15 @@ public:
               floatFormats(false),
               depthTexture(false),
               packedDepthStencil(false),
+              needsDepthStencilCombinedAttach(false),
               srgbCapableDefaultFramebuffer(false),
               coreProfile(false),
               uniformBuffers(false),
-              elementIndexUint(false)
+              elementIndexUint(false),
+              depth24(false),
+              rgba8Format(false),
+              instancing(false),
+              baseVertex(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -662,10 +673,15 @@ public:
         uint floatFormats : 1;
         uint depthTexture : 1;
         uint packedDepthStencil : 1;
+        uint needsDepthStencilCombinedAttach : 1;
         uint srgbCapableDefaultFramebuffer : 1;
         uint coreProfile : 1;
         uint uniformBuffers : 1;
         uint elementIndexUint : 1;
+        uint depth24 : 1;
+        uint rgba8Format : 1;
+        uint instancing : 1;
+        uint baseVertex : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;

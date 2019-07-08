@@ -89,8 +89,10 @@ public:
         Antialiasing = 0x01,
         TextAntialiasing = 0x02,
         SmoothPixmapTransform = 0x04,
-        HighQualityAntialiasing = 0x08,
-        NonCosmeticDefaultPen = 0x10,
+#if QT_DEPRECATED_SINCE(5, 14)
+        HighQualityAntialiasing Q_DECL_ENUMERATOR_DEPRECATED_X("Use Antialiasing instead") = 0x08,
+        NonCosmeticDefaultPen Q_DECL_ENUMERATOR_DEPRECATED_X("Default pen is non-cosmetic now") = 0x10,
+#endif
         Qt4CompatiblePainting = 0x20,
         LosslessImageRendering = 0x40,
     };

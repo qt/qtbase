@@ -390,7 +390,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
             QGraphicsSceneMoveEvent event;
             event.setOldPos(oldPos);
             event.setNewPos(pos());
-            QApplication::sendEvent(this, &event);
+            QCoreApplication::sendEvent(this, &event);
             if (wd->inSetPos) {
                 //set the new pos
                 d->geom.moveTopLeft(pos());
@@ -413,10 +413,10 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
             QGraphicsLayout *lay = wd->layout;
             if (QGraphicsLayout::instantInvalidatePropagation()) {
                 if (!lay || lay->isActivated()) {
-                    QApplication::sendEvent(this, &re);
+                    QCoreApplication::sendEvent(this, &re);
                 }
             } else {
-                QApplication::sendEvent(this, &re);
+                QCoreApplication::sendEvent(this, &re);
             }
         }
     }
@@ -427,7 +427,7 @@ relayoutChildrenAndReturn:
         if (QGraphicsLayout *lay = wd->layout) {
             if (!lay->isActivated()) {
                 QEvent layoutRequest(QEvent::LayoutRequest);
-                QApplication::sendEvent(this, &layoutRequest);
+                QCoreApplication::sendEvent(this, &layoutRequest);
             }
         }
     }
@@ -507,7 +507,7 @@ void QGraphicsWidget::setContentsMargins(QMarginsF margins)
         updateGeometry();
 
     QEvent e(QEvent::ContentsRectChange);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -963,7 +963,7 @@ void QGraphicsWidget::setStyle(QStyle *style)
 
     // Deliver StyleChange to the widget itself (doesn't propagate).
     QEvent event(QEvent::StyleChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
 }
 
 /*!
@@ -1028,7 +1028,7 @@ void QGraphicsWidget::setFont(const QFont &font)
 
     By default, this property contains the application's default palette.
 
-    \sa QApplication::palette(), QGraphicsScene::palette, QPalette::resolve()
+    \sa QGuiApplication::palette(), QGraphicsScene::palette, QPalette::resolve()
 */
 QPalette QGraphicsWidget::palette() const
 {
@@ -1100,7 +1100,7 @@ void QGraphicsWidget::updateGeometry()
             // This is for custom layouting
             QGraphicsWidget *parentWid = parentWidget();    //###
             if (parentWid->isVisible())
-                QApplication::postEvent(parentWid, new QEvent(QEvent::LayoutRequest));
+                QCoreApplication::postEvent(parentWid, new QEvent(QEvent::LayoutRequest));
         } else {
             /**
              * If this is the topmost widget, post a LayoutRequest event to the widget.
@@ -1108,7 +1108,7 @@ void QGraphicsWidget::updateGeometry()
              * widgets in one go. This will make a relayout flicker-free.
              */
             if (QGraphicsLayout::instantInvalidatePropagation())
-                QApplication::postEvent(static_cast<QGraphicsWidget *>(this), new QEvent(QEvent::LayoutRequest));
+                QCoreApplication::postEvent(static_cast<QGraphicsWidget *>(this), new QEvent(QEvent::LayoutRequest));
         }
         if (!QGraphicsLayout::instantInvalidatePropagation()) {
             bool wasResized = testAttribute(Qt::WA_Resized);
@@ -1145,14 +1145,14 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
     case ItemEnabledHasChanged: {
         // Send EnabledChange after the enabled state has changed.
         QEvent event(QEvent::EnabledChange);
-        QApplication::sendEvent(this, &event);
+        QCoreApplication::sendEvent(this, &event);
         break;
     }
     case ItemVisibleChange:
         if (value.toBool()) {
             // Send Show event before the item has been shown.
             QShowEvent event;
-            QApplication::sendEvent(this, &event);
+            QCoreApplication::sendEvent(this, &event);
             bool resized = testAttribute(Qt::WA_Resized);
             if (!resized) {
                 adjustSize();
@@ -1168,7 +1168,7 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         if (!value.toBool()) {
             // Send Hide event after the item has been hidden.
             QHideEvent event;
-            QApplication::sendEvent(this, &event);
+            QCoreApplication::sendEvent(this, &event);
         }
         break;
     case ItemPositionHasChanged:
@@ -1177,25 +1177,25 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
     case ItemParentChange: {
         // Deliver ParentAboutToChange.
         QEvent event(QEvent::ParentAboutToChange);
-        QApplication::sendEvent(this, &event);
+        QCoreApplication::sendEvent(this, &event);
         break;
     }
     case ItemParentHasChanged: {
         // Deliver ParentChange.
         QEvent event(QEvent::ParentChange);
-        QApplication::sendEvent(this, &event);
+        QCoreApplication::sendEvent(this, &event);
         break;
     }
     case ItemCursorHasChanged: {
         // Deliver CursorChange.
         QEvent event(QEvent::CursorChange);
-        QApplication::sendEvent(this, &event);
+        QCoreApplication::sendEvent(this, &event);
         break;
     }
     case ItemToolTipHasChanged: {
         // Deliver ToolTipChange.
         QEvent event(QEvent::ToolTipChange);
-        QApplication::sendEvent(this, &event);
+        QCoreApplication::sendEvent(this, &event);
         break;
     }
     default:
@@ -1930,7 +1930,7 @@ int QGraphicsWidget::grabShortcut(const QKeySequence &sequence, Qt::ShortcutCont
     if (sequence.isEmpty())
         return 0;
     // ### setAttribute(Qt::WA_GrabbedShortcut);
-    return qApp->d_func()->shortcutMap.addShortcut(this, sequence, context, qWidgetShortcutContextMatcher);
+    return QGuiApplicationPrivate::instance()->shortcutMap.addShortcut(this, sequence, context, qWidgetShortcutContextMatcher);
 }
 
 /*!
@@ -1954,7 +1954,7 @@ void QGraphicsWidget::releaseShortcut(int id)
 {
     Q_ASSERT(qApp);
     if (id)
-        qApp->d_func()->shortcutMap.removeShortcut(id, this, 0);
+        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(id, this, 0);
 }
 
 /*!
@@ -1975,7 +1975,7 @@ void QGraphicsWidget::setShortcutEnabled(int id, bool enabled)
 {
     Q_ASSERT(qApp);
     if (id)
-        qApp->d_func()->shortcutMap.setShortcutEnabled(enabled, id, this, 0);
+        QGuiApplicationPrivate::instance()->shortcutMap.setShortcutEnabled(enabled, id, this, 0);
 }
 
 /*!
@@ -1990,7 +1990,7 @@ void QGraphicsWidget::setShortcutAutoRepeat(int id, bool enabled)
 {
     Q_ASSERT(qApp);
     if (id)
-        qApp->d_func()->shortcutMap.setShortcutAutoRepeat(enabled, id, this, 0);
+        QGuiApplicationPrivate::instance()->shortcutMap.setShortcutAutoRepeat(enabled, id, this, 0);
 }
 #endif
 
@@ -2068,7 +2068,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     }
 
     QActionEvent e(QEvent::ActionAdded, action, before);
-    QApplication::sendEvent(this, &e);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -2111,7 +2111,7 @@ void QGraphicsWidget::removeAction(QAction *action)
 
     if (d->actions.removeAll(action)) {
         QActionEvent e(QEvent::ActionRemoved, action);
-        QApplication::sendEvent(this, &e);
+        QCoreApplication::sendEvent(this, &e);
     }
 }
 
@@ -2404,7 +2404,7 @@ QPainterPath QGraphicsWidget::shape() const
 bool QGraphicsWidget::close()
 {
     QCloseEvent closeEvent;
-    QApplication::sendEvent(this, &closeEvent);
+    QCoreApplication::sendEvent(this, &closeEvent);
     if (!closeEvent.isAccepted()) {
         return false;
     }

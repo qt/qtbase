@@ -32,7 +32,7 @@
 
 #include "qmutex.h"
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, onceInitializationMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, onceInitializationMutex)
 
 enum QOnceExtra {
     MustRunCode = 0x01,

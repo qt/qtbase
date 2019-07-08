@@ -116,11 +116,11 @@ private:
     friend class QFontEngineFT;
     friend class QtFreetypeData;
     friend struct QScopedPointerDeleter<QFreetypeFace>;
-    QFreetypeFace() : _lock(QMutex::Recursive) {}
+    QFreetypeFace() = default;
     ~QFreetypeFace() {}
     void cleanup();
     QAtomicInt ref;
-    QMutex _lock;
+    QRecursiveMutex _lock;
     QByteArray fontData;
 
     QFontEngine::Holder hbFace;

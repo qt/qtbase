@@ -57,8 +57,10 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include "../posix/qplatformdefs.h"
+#define __LINUX_ERRNO_EXTENSIONS__
+#include <errno.h>
 
+#include "../posix/qplatformdefs.h"
 
 #ifdef __STRICT_ANSI__
 #undef __STRICT_ANSI__

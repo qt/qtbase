@@ -384,7 +384,7 @@ QSet<int> NFA::epsilonClosure(const QSet<int> &initialClosure) const
 
     QStack<int> stateStack;
     stateStack.resize(closure.count());
-    qCopy(closure.constBegin(), closure.constEnd(), stateStack.begin());
+    std::copy(closure.constBegin(), closure.constEnd(), stateStack.begin());
 
     while (!stateStack.isEmpty()) {
         int t = stateStack.pop();

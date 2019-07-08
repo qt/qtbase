@@ -68,6 +68,10 @@ int runUic(int argc, char *argv[])
     outputOption.setValueName(QStringLiteral("file"));
     parser.addOption(outputOption);
 
+    QCommandLineOption noAutoConnectionOption(QStringList() << QStringLiteral("a") << QStringLiteral("no-autoconnection"));
+    noAutoConnectionOption.setDescription(QStringLiteral("Do not generate a call to QObject::connectSlotsByName()."));
+    parser.addOption(noAutoConnectionOption);
+
     QCommandLineOption noProtOption(QStringList() << QStringLiteral("p") << QStringLiteral("no-protection"));
     noProtOption.setDescription(QStringLiteral("Disable header protection."));
     parser.addOption(noProtOption);
@@ -106,6 +110,7 @@ int runUic(int argc, char *argv[])
 
     driver.option().dependencies = parser.isSet(dependenciesOption);
     driver.option().outputFile = parser.value(outputOption);
+    driver.option().autoConnection = !parser.isSet(noAutoConnectionOption);
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
     driver.option().idBased = parser.isSet(idBasedOption);

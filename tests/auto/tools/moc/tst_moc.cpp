@@ -149,6 +149,17 @@ namespace TestQNamespace {
     Q_FLAG_NS(TestFlag2)
 }
 
+
+#define TESTEXPORTMACRO Q_DECL_EXPORT
+
+namespace TestExportNamespace {
+    Q_NAMESPACE_EXPORT(TESTEXPORTMACRO)
+    enum class MyEnum {
+        Key1, Key2
+    };
+    Q_ENUM_NS(MyEnum)
+}
+
 QT_USE_NAMESPACE
 
 template <bool b> struct QTBUG_31218 {};
@@ -3892,6 +3903,10 @@ void tst_Moc::testQNamespace()
     QCOMPARE(meta.name(), "TestEnum1");
     QCOMPARE(meta.enclosingMetaObject(), &TestQNamespace::staticMetaObject);
     QCOMPARE(meta.keyCount(), 2);
+
+    QCOMPARE(TestExportNamespace::staticMetaObject.enumeratorCount(), 1);
+    checkEnum(TestExportNamespace::staticMetaObject.enumerator(0), "MyEnum",
+        {{"Key1", 0}, {"Key2", 1}});
 
     QCOMPARE(FooNamespace::staticMetaObject.enumeratorCount(), 1);
     QCOMPARE(FooNamespace::FooNestedNamespace::staticMetaObject.enumeratorCount(), 2);

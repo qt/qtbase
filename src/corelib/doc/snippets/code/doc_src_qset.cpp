@@ -131,9 +131,10 @@ while (i != set.end()) {
 //! [10]
 QSet<QString> set;
 ...
-QSet<QString>::iterator it = qFind(set.begin(), set.end(), "Jeanette");
+const auto predicate = [](const QString &s) { return s.compare("Jeanette", Qt::CaseInsensitive) == 0; };
+QSet<QString>::iterator it = std::find_if(set.begin(), set.end(), predicate);
 if (it != set.end())
-    cout << "Found Jeanette" << Qt::endl;
+    cout << "Found Jeanette" << endl;
 //! [10]
 
 
@@ -150,9 +151,10 @@ for (i = set.begin(); i != set.end(); ++i)
 //! [12]
 QSet<QString> set;
 ...
-QSet<QString>::iterator it = qFind(set.begin(), set.end(), "Jeanette");
+const auto predicate = [](const QString &s) { return s.compare("Jeanette", Qt::CaseInsensitive) == 0; };
+QSet<QString>::const_iterator it = std::find_if(set.cbegin(), set.cend(), predicate);
 if (it != set.constEnd())
-    cout << "Found Jeanette" << Qt::endl;
+    cout << "Found Jeanette" << endl;
 //! [12]
 
 
@@ -161,7 +163,7 @@ QSet<QString> set;
 set << "red" << "green" << "blue" << ... << "black";
 
 QList<QString> list = set.toList();
-qSort(list);
+std::sort(list.begin(), list.end());
 //! [13]
 
 

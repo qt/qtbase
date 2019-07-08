@@ -494,7 +494,31 @@ QT_BEGIN_NAMESPACE
     extension. When false, only 16-bit unsigned elements are supported in the
     index buffer.
 
-    \value Compute Indicates that compute shaders are supported.
+    \value Compute Indicates that compute shaders, image load/store, and
+    storage buffers are supported.
+
+    \value WideLines Indicates that lines with a width other than 1 are
+    supported. When reported as not supported, the line width set on the
+    graphics pipeline state is ignored. This can always be false with some
+    backends (D3D11, Metal). With Vulkan, the value depends on the
+    implementation.
+
+    \value VertexShaderPointSize Indicates that the size of rasterized points
+    set via \c{gl_PointSize} in the vertex shader is taken into account. When
+    reported as not supported, drawing points with a size other than 1 is not
+    supported. Setting \c{gl_PointSize} in the shader is still valid then, but
+    is ignored. (for example, when generating HLSL, the assignment is silently
+    dropped from the generated code) Note that some APIs (Metal, Vulkan)
+    require the point size to be set in the shader explicitly whenever drawing
+    points, even when the size is 1, as they do not automatically default to 1.
+
+    \value BaseVertex Indicates that \l{QRhiCommandBuffer::drawIndexed()}{drawIndexed()}
+    supports the \c vertexOffset argument. When reported as not supported, the
+    vertexOffset value in an indexed draw is ignored.
+
+    \value BaseInstance Indicates that instanced draw commands support the \c
+    firstInstance argument. When reported as not supported, the firstInstance
+    value is ignored and the instance ID starts from 0.
  */
 
 /*!
@@ -2575,7 +2599,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = UniformBuffer;
@@ -2639,7 +2663,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = SampledTexture;
@@ -2661,7 +2685,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = ImageLoad;
@@ -2715,7 +2739,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
 {
     QRhiShaderResourceBinding b;
     QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.load() == 1);
+    Q_ASSERT(d->ref.loadRelaxed() == 1);
     d->binding = binding;
     d->stage = stage;
     d->type = BufferLoad;
@@ -3805,6 +3829,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
                               static_cast<QRhiVulkanNativeHandles *>(importDevice));
         break;
 #else
+        Q_UNUSED(importDevice);
         qWarning("This build of Qt has no Vulkan support");
         break;
 #endif
@@ -4467,15 +4492,21 @@ void QRhiCommandBuffer::setStencilRef(quint32 refValue)
     Records a non-indexed draw.
 
     The number of vertices is specified in \a vertexCount. For instanced
-    drawing set \a instanceCount to a value other than 1. \a firstVertex is
-    the index of the first vertex to draw. \a firstInstance is the instance ID
-    of the first instance to draw.
+    drawing set \a instanceCount to a value other than 1. \a firstVertex is the
+    index of the first vertex to draw. When drawing multiple instances, the
+    first instance ID is specified by \a firstInstance.
+
+    \note \a firstInstance may not be supported, and is ignored when the
+    QRhi::BaseInstance feature is reported as not supported. The first ID is
+    always 0 in that case.
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::draw(quint32 vertexCount,
-                             quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
+                             quint32 instanceCount,
+                             quint32 firstVertex,
+                             quint32 firstInstance)
 {
     m_rhi->draw(this, vertexCount, instanceCount, firstVertex, firstInstance);
 }
@@ -4493,17 +4524,27 @@ void QRhiCommandBuffer::draw(quint32 vertexCount,
     \l{QRhi::NonFourAlignedEffectiveIndexBufferOffset}{NonFourAlignedEffectiveIndexBufferOffset}
     feature will be reported as not-supported.
 
-    For instanced drawing set \a instanceCount to a value other than 1. \a
-    firstInstance is the instance ID of the first instance to draw.
+    For instanced drawing set \a instanceCount to a value other than 1. When
+    drawing multiple instances, the first instance ID is specified by \a
+    firstInstance.
 
-    \a vertexOffset is added to the vertex index.
+    \note \a firstInstance may not be supported, and is ignored when the
+    QRhi::BaseInstance feature is reported as not supported. The first ID is
+    always 0 in that case.
+
+    \a vertexOffset (also called \c{base vertex}) is a signed value that is
+    added to the element index before indexing into the vertex buffer. Support
+    for this is not always available, and the value is ignored when the feature
+    QRhi::BaseVertex is reported as unsupported.
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
  */
 void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
-                                    quint32 instanceCount, quint32 firstIndex,
-                                    qint32 vertexOffset, quint32 firstInstance)
+                                    quint32 instanceCount,
+                                    quint32 firstIndex,
+                                    qint32 vertexOffset,
+                                    quint32 firstInstance)
 {
     m_rhi->drawIndexed(this, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
@@ -5192,10 +5233,11 @@ int QRhi::ubufAlignment() const
     return d->ubufAlignment();
 }
 
+static QBasicAtomicInteger<QRhiGlobalObjectIdGenerator::Type> counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+
 QRhiGlobalObjectIdGenerator::Type QRhiGlobalObjectIdGenerator::newId()
 {
-    static QRhiGlobalObjectIdGenerator inst;
-    return ++inst.counter;
+    return counter.fetchAndAddRelaxed(1) + 1;
 }
 
 bool QRhiPassResourceTracker::isEmpty() const

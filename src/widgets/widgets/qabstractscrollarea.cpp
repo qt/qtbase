@@ -1086,7 +1086,7 @@ bool QAbstractScrollArea::event(QEvent *e)
             QScrollBar *vBar = verticalScrollBar();
             QPointF delta = g->delta();
             if (!delta.isNull()) {
-                if (QApplication::isRightToLeft())
+                if (QGuiApplication::isRightToLeft())
                     delta.rx() *= -1;
                 int newX = hBar->value() - delta.x();
                 int newY = vBar->value() - delta.y();
@@ -1325,9 +1325,9 @@ void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
     Q_D(QAbstractScrollArea);
     if (e->orientation() == Qt::Horizontal)
-        QApplication::sendEvent(d->hbar, e);
+        QCoreApplication::sendEvent(d->hbar, e);
     else
-        QApplication::sendEvent(d->vbar, e);
+        QCoreApplication::sendEvent(d->vbar, e);
 }
 #endif
 

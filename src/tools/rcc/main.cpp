@@ -99,6 +99,37 @@ int createProject(const QString &outFileName)
     return 0;
 }
 
+// Escapes a path for use in a Depfile (Makefile syntax)
+QString makefileEscape(const QString &filepath)
+{
+    // Always use forward slashes
+    QString result = QDir::cleanPath(filepath);
+    // Spaces are escaped with a backslash
+    result.replace(QLatin1Char(' '), QLatin1String("\\ "));
+    // Pipes are escaped with a backslash
+    result.replace(QLatin1Char('|'), QLatin1String("\\|"));
+    // Dollars are escaped with a dollar
+    result.replace(QLatin1Char('$'), QLatin1String("$$"));
+
+    return result;
+}
+
+void writeDepFile(QIODevice &iodev, const QStringList &depsList, const QString &targetName)
+{
+    QTextStream out(&iodev);
+    out << qPrintable(makefileEscape(targetName));
+    out << QLatin1Char(':');
+
+    // Write depfile
+    for (int i = 0; i < depsList.size(); ++i) {
+        out << QLatin1Char(' ');
+
+        out << qPrintable(makefileEscape(depsList.at(i)));
+    }
+
+    out << QLatin1Char('\n');
+}
+
 int runRcc(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -175,6 +206,10 @@ int runRcc(int argc, char *argv[])
     QCommandLineOption mapOption(QStringLiteral("list-mapping"),
                                  QStringLiteral("Only output a mapping of resource paths to file system paths defined in the .qrc file, do not generate code."));
     parser.addOption(mapOption);
+
+    QCommandLineOption depFileOption(QStringList{QStringLiteral("d"), QStringLiteral("depfile")},
+                                     QStringLiteral("Write a depfile with the .qrc dependencies to <file>."), QStringLiteral("file"));
+    parser.addOption(depFileOption);
 
     QCommandLineOption projectOption(QStringLiteral("project"), QStringLiteral("Output a resource file containing all files from the current directory."));
     parser.addOption(projectOption);
@@ -266,6 +301,7 @@ int runRcc(int argc, char *argv[])
 
     QString outFilename = parser.value(outputOption);
     QString tempFilename = parser.value(tempOption);
+    QString depFilename = parser.value(depFileOption);
 
     if (projectRequested) {
         return createProject(outFilename);
@@ -350,6 +386,28 @@ int runRcc(int argc, char *argv[])
             out.write("\n");
         }
         return 0;
+    }
+
+    // Write depfile
+    if (!depFilename.isEmpty()) {
+        QFile depout;
+        depout.setFileName(depFilename);
+
+        if (outFilename.isEmpty() || outFilename == QLatin1String("-")) {
+            const QString msg = QString::fromUtf8("Unable to write depfile when outputting to stdout!\n");
+            errorDevice.write(msg.toUtf8());
+            return 1;
+        }
+
+        if (!depout.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            const QString msg = QString::fromUtf8("Unable to open depfile %1 for writing: %2\n")
+                    .arg(depout.fileName(), depout.errorString());
+            errorDevice.write(msg.toUtf8());
+            return 1;
+        }
+
+        writeDepFile(depout, library.dataFiles(), outFilename);
+        depout.close();
     }
 
     QFile temp;

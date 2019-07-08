@@ -1667,11 +1667,6 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
 }
 
 struct QGLContextGroupList {
-    QGLContextGroupList()
-        : m_mutex(QMutex::Recursive)
-    {
-    }
-
     void append(QGLContextGroup *group) {
         QMutexLocker locker(&m_mutex);
         m_list.append(group);
@@ -1683,7 +1678,7 @@ struct QGLContextGroupList {
     }
 
     QList<QGLContextGroup *> m_list;
-    QMutex m_mutex;
+    QRecursiveMutex m_mutex;
 };
 
 Q_GLOBAL_STATIC(QGLContextGroupList, qt_context_groups)

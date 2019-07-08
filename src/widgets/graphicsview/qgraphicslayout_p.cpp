@@ -108,7 +108,7 @@ Qt::LayoutDirection QGraphicsLayoutPrivate::visualDirection() const
         if (maybeWidget->isWidget())
             return static_cast<QGraphicsWidget*>(maybeWidget)->layoutDirection();
     }
-    return QApplication::layoutDirection();
+    return QGuiApplication::layoutDirection();
 }
 
 static bool removeLayoutItemFromLayout(QGraphicsLayout *lay, QGraphicsLayoutItem *layoutItem)

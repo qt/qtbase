@@ -404,7 +404,7 @@ void QMenuBarPrivate::setCurrentAction(QAction *action, bool popup, bool activat
     }  else if (previousAction) {
         QString empty;
         QStatusTipEvent tip(empty);
-        QApplication::sendEvent(q, &tip);
+        QCoreApplication::sendEvent(q, &tip);
 #endif
     }
     if (fw)
@@ -701,7 +701,7 @@ void QMenuBarPrivate::init()
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
 
-    if (!QApplication::instance()->testAttribute(Qt::AA_DontUseNativeMenuBar))
+    if (!QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuBar))
         platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
 
     if (platformMenuBar)
