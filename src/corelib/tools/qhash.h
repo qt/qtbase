@@ -136,7 +136,7 @@ struct QHashDummyValue
 {
 };
 
-inline bool operator==(const QHashDummyValue & /* v1 */, const QHashDummyValue & /* v2 */)
+constexpr bool operator==(const QHashDummyValue &, const QHashDummyValue &) noexcept
 {
     return true;
 }
