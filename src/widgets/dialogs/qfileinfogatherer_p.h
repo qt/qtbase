@@ -210,13 +210,13 @@ private:
     QAtomicInt abort;
 
 #if QT_CONFIG(filesystemwatcher)
-    QFileSystemWatcher *watcher;
-#endif
-#ifdef Q_OS_WIN
-    bool m_resolveSymlinks; // not accessed by run()
+    QFileSystemWatcher *watcher = nullptr;
 #endif
     QFileIconProvider *m_iconProvider; // not accessed by run()
     QFileIconProvider defaultProvider;
+#ifdef Q_OS_WIN
+    bool m_resolveSymlinks = true; // not accessed by run()
+#endif
 };
 
 QT_END_NAMESPACE

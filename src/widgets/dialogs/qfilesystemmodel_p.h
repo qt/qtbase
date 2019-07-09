@@ -99,13 +99,13 @@ public:
     class QFileSystemNode
     {
     public:
+        Q_DISABLE_COPY_MOVE(QFileSystemNode)
+
         explicit QFileSystemNode(const QString &filename = QString(), QFileSystemNode *p = nullptr)
-            : fileName(filename), populatedChildren(false), isVisible(false), dirtyChildrenIndex(-1), parent(p), info(nullptr) {}
+            : fileName(filename), parent(p) {}
         ~QFileSystemNode() {
             qDeleteAll(children);
             delete info;
-            info = nullptr;
-            parent = nullptr;
         }
 
         QString fileName;
@@ -204,31 +204,16 @@ public:
             }
         }
 
-        bool populatedChildren;
-        bool isVisible;
         QHash<QFileSystemModelNodePathKey, QFileSystemNode *> children;
         QList<QString> visibleChildren;
-        int dirtyChildrenIndex;
+        QExtendedInformation *info = nullptr;
         QFileSystemNode *parent;
-
-
-        QExtendedInformation *info;
-
+        int dirtyChildrenIndex = -1;
+        bool populatedChildren = false;
+        bool isVisible = false;
     };
 
-    QFileSystemModelPrivate() :
-            forceSort(true),
-            sortColumn(0),
-            sortOrder(Qt::AscendingOrder),
-            readOnly(true),
-            setRootPath(false),
-            filters(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs),
-            nameFilterDisables(true), // false on windows, true on mac and unix
-            disableRecursiveSort(false)
-    {
-        delayedSortTimer.setSingleShot(true);
-    }
-
+    QFileSystemModelPrivate() = default;
     void init();
     /*
       \internal
@@ -303,18 +288,7 @@ public:
     QFileInfoGatherer fileInfoGatherer;
 #endif // filesystemwatcher
     QTimer delayedSortTimer;
-    bool forceSort;
-    int sortColumn;
-    Qt::SortOrder sortOrder;
-    bool readOnly;
-    bool setRootPath;
-    QDir::Filters filters;
     QHash<const QFileSystemNode*, bool> bypassFilters;
-    bool nameFilterDisables;
-    //This flag is an optimization for the QFileDialog
-    //It enable a sort which is not recursive, it means
-    //we sort only what we see.
-    bool disableRecursiveSort;
 #if QT_CONFIG(regularexpression)
     QStringList nameFilters;
 #endif
@@ -322,7 +296,6 @@ public:
 
     QFileSystemNode root;
 
-    QBasicTimer fetchingTimer;
     struct Fetching {
         QString dir;
         QString file;
@@ -330,6 +303,18 @@ public:
     };
     QVector<Fetching> toFetch;
 
+    QBasicTimer fetchingTimer;
+
+    QDir::Filters filters = QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs;
+    int sortColumn = 0;
+    Qt::SortOrder sortOrder = Qt::AscendingOrder;
+    bool forceSort = true;
+    bool readOnly = true;
+    bool setRootPath = false;
+    bool nameFilterDisables = true; // false on windows, true on mac and unix
+    // This flag is an optimization for QFileDialog. It enables a sort which is
+    // not recursive, meaning we sort only what we see.
+    bool disableRecursiveSort = false;
 };
 Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_MOVABLE_TYPE);
 

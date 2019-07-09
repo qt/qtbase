@@ -79,14 +79,8 @@ static QString translateDriveName(const QFileInfo &drive)
     Creates thread
 */
 QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
-    : QThread(parent), abort(false),
-#if QT_CONFIG(filesystemwatcher)
-      watcher(0),
-#endif
-#ifdef Q_OS_WIN
-      m_resolveSymlinks(true),
-#endif
-      m_iconProvider(&defaultProvider)
+    : QThread(parent)
+    , m_iconProvider(&defaultProvider)
 {
 #if QT_CONFIG(filesystemwatcher)
     watcher = new QFileSystemWatcher(this);
