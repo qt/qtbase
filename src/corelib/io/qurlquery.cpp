@@ -146,7 +146,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+    \fn QUrlQuery::QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
 
     \since 5.13
 
