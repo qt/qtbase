@@ -233,12 +233,14 @@
             "label": "target architecture",
             "type": "architecture",
             "test": "arch",
+            "output": "arch",
             "log": "arch"
         },
         "host_architecture": {
             "label": "host architecture",
             "type": "architecture",
             "test": "arch",
+            "output": "arch_host",
             "host": true,
             "pro": "arch_host.pro",
             "log": "arch"

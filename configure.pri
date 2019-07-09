@@ -267,15 +267,16 @@ defineTest(qtConfTest_architecture) {
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
     test = $$eval($${1}.test)
+    output = $$eval($${1}.output)
     test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
-    unix:exists($$test_out_dir/arch): \
-        content = $$cat($$test_out_dir/arch, blob)
-    else: win32:exists($$test_out_dir/arch.exe): \
-        content = $$cat($$test_out_dir/arch.exe, blob)
-    else: android:exists($$test_out_dir/libarch.so): \
-        content = $$cat($$test_out_dir/libarch.so, blob)
-    else: wasm:exists($$test_out_dir/arch.wasm): \
-        content = $$cat($$test_out_dir/arch.wasm, blob)
+    unix:exists($$test_out_dir/$$output): \
+        content = $$cat($$test_out_dir/$$output, blob)
+    else: win32:exists($$test_out_dir/$${output}.exe): \
+        content = $$cat($$test_out_dir/$${output}.exe, blob)
+    else: android:exists($$test_out_dir/lib$${output}.so): \
+        content = $$cat($$test_out_dir/lib$${output}.so, blob)
+    else: wasm:exists($$test_out_dir/$${output}.wasm): \
+        content = $$cat($$test_out_dir/$${output}.wasm, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
