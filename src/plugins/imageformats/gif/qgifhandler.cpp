@@ -1215,9 +1215,11 @@ int QGifHandler::currentImageNumber() const
     return frameNumber;
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 QByteArray QGifHandler::name() const
 {
     return "gif";
 }
+#endif
 
 QT_END_NAMESPACE
