@@ -1136,9 +1136,11 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
     }
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 QByteArray QJpegHandler::name() const
 {
     return "jpeg";
 }
+#endif
 
 QT_END_NAMESPACE

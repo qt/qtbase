@@ -818,6 +818,7 @@ bool QtIcoHandler::write(const QImage &image)
     return ICOReader::write(device, imgs);
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
  * Return the common identifier of the format.
  * For ICO format this will return "ico".
@@ -826,7 +827,7 @@ QByteArray QtIcoHandler::name() const
 {
     return "ico";
 }
-
+#endif
 
 /*! \reimp
 

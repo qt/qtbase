@@ -1322,7 +1322,7 @@ QTextList *QTextBlock::textList() const
 QTextBlockUserData *QTextBlock::userData() const
 {
     if (!p || !n)
-        return 0;
+        return nullptr;
 
     const QTextBlockData *b = p->blockMap().fragment(n);
     return b->userData;

@@ -896,11 +896,6 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     \fn void QComboBox::currentIndexChanged(const QString &text)
     \since 4.1
 
-    \obsolete
-
-    Use currentTextChanged(const QString &) or currentIndexChanged(int)
-    instead.
-
     This signal is sent whenever the currentIndex in the combobox
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
