@@ -947,6 +947,12 @@ QString QDir::fromNativeSeparators(const QString &pathName)
     int i = pathName.indexOf(QLatin1Char('\\'));
     if (i != -1) {
         QString n(pathName);
+        if (n.startsWith(QLatin1String("\\\\?\\"))) {
+            n.remove(0, 4);
+            i = n.indexOf(QLatin1Char('\\'));
+            if (i == -1)
+                return n;
+        }
 
         QChar * const data = n.data();
         data[i++] = QLatin1Char('/');
@@ -2339,6 +2345,11 @@ static QString qt_cleanPath(const QString &path, bool *ok)
     if (path.isEmpty())
         return path;
     QString name = path;
+#if defined (Q_OS_WIN)
+    if (name.startsWith(QLatin1String("\\\\?\\")))
+        name.remove(0, 4);
+#endif
+
     QChar dir_separator = QDir::separator();
     if (dir_separator != QLatin1Char('/'))
        name.replace(dir_separator, QLatin1Char('/'));
