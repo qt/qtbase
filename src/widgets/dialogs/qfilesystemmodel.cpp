@@ -1264,6 +1264,107 @@ Qt::DropActions QFileSystemModel::supportedDropActions() const
 }
 
 /*!
+    \enum QFileSystemModel::Option
+    \since 5.14
+
+    \value DontWatch Do not add file watchers to the paths.
+    This reduces overhead when using the model for simple tasks
+    like line edit completion.
+
+    \value DontResolveSymlinks Don't resolve symlinks in the file
+    system model. By default, symlinks are resolved.
+
+    \value DontUseCustomDirectoryIcons Always use the default directory icon.
+    Some platforms allow the user to set a different icon. Custom icon lookup
+    causes a big performance impact over network or removable drives.
+    This sets the QFileIconProvider::DontUseCustomDirectoryIcons
+    option in the icon provider accordingly.
+
+    \sa resolveSymlinks
+*/
+
+/*!
+    \since 5.14
+    Sets the given \a option to be enabled if \a on is true; otherwise,
+    clears the given \a option.
+
+    Options should be set before changing properties.
+
+    \sa options, testOption()
+*/
+void QFileSystemModel::setOption(Option option, bool on)
+{
+    QFileSystemModel::Options previousOptions = options();
+    setOptions(previousOptions.setFlag(option, on));
+}
+
+/*!
+    \since 5.14
+
+    Returns \c true if the given \a option is enabled; otherwise, returns
+    false.
+
+    \sa options, setOption()
+*/
+bool QFileSystemModel::testOption(Option option) const
+{
+    return options().testFlag(option);
+}
+
+/*!
+    \property QFileSystemModel::options
+    \brief the various options that affect the model
+    \since 5.14
+
+    By default, all options are disabled.
+
+    Options should be set before changing properties.
+
+    \sa setOption(), testOption()
+*/
+void QFileSystemModel::setOptions(Options options)
+{
+    const Options changed = (options ^ QFileSystemModel::options());
+
+    if (changed.testFlag(DontResolveSymlinks))
+        setResolveSymlinks(!options.testFlag(DontResolveSymlinks));
+
+#if QT_CONFIG(filesystemwatcher)
+    Q_D(QFileSystemModel);
+    if (changed.testFlag(DontWatch))
+        d->fileInfoGatherer.setWatching(!options.testFlag(DontWatch));
+#endif
+
+    if (changed.testFlag(DontUseCustomDirectoryIcons)) {
+        if (auto provider = iconProvider()) {
+            QFileIconProvider::Options providerOptions = provider->options();
+            providerOptions.setFlag(QFileIconProvider::DontUseCustomDirectoryIcons,
+                                    options.testFlag(QFileSystemModel::DontUseCustomDirectoryIcons));
+            provider->setOptions(providerOptions);
+        } else {
+            qWarning("Setting QFileSystemModel::DontUseCustomDirectoryIcons has no effect when no provider is used");
+        }
+    }
+}
+
+QFileSystemModel::Options QFileSystemModel::options() const
+{
+    QFileSystemModel::Options result;
+    result.setFlag(DontResolveSymlinks, !resolveSymlinks());
+#if QT_CONFIG(filesystemwatcher)
+    Q_D(const QFileSystemModel);
+    result.setFlag(DontWatch, !d->fileInfoGatherer.isWatching());
+#else
+    result.setFlag(DontWatch);
+#endif
+    if (auto provider = iconProvider()) {
+        result.setFlag(DontUseCustomDirectoryIcons,
+                       provider->options().testFlag(QFileIconProvider::DontUseCustomDirectoryIcons));
+    }
+    return result;
+}
+
+/*!
     Returns the path of the item stored in the model under the
     \a index given.
 */
@@ -1509,6 +1610,8 @@ QDir::Filters QFileSystemModel::filter() const
     This is only relevant on Windows.
 
     By default, this property is \c true.
+
+    \sa QFileSystemModel::Options
 */
 void QFileSystemModel::setResolveSymlinks(bool enable)
 {

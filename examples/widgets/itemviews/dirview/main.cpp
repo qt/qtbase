@@ -65,8 +65,10 @@ int main(int argc, char *argv[])
     parser.setApplicationDescription("Qt Dir View Example");
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption dontUseCustomDirectoryIconsOption("c", "Set QFileIconProvider::DontUseCustomDirectoryIcons");
+    QCommandLineOption dontUseCustomDirectoryIconsOption("c", "Set QFileSystemModel::DontUseCustomDirectoryIcons");
     parser.addOption(dontUseCustomDirectoryIconsOption);
+    QCommandLineOption dontWatchOption("w", "Set QFileSystemModel::DontWatch");
+    parser.addOption(dontWatchOption);
     parser.addPositionalArgument("directory", "The directory to start in.");
     parser.process(app);
     const QString rootPath = parser.positionalArguments().isEmpty()
@@ -75,7 +77,9 @@ int main(int argc, char *argv[])
     QFileSystemModel model;
     model.setRootPath("");
     if (parser.isSet(dontUseCustomDirectoryIconsOption))
-        model.iconProvider()->setOptions(QFileIconProvider::DontUseCustomDirectoryIcons);
+        model.setOption(QFileSystemModel::DontUseCustomDirectoryIcons);
+    if (parser.isSet(dontWatchOption))
+        model.setOption(QFileSystemModel::DontWatch);
     QTreeView tree;
     tree.setModel(&model);
     if (!rootPath.isEmpty()) {
