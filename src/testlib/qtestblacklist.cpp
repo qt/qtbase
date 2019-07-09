@@ -169,12 +169,14 @@ static QSet<QByteArray> keywords()
 #endif
             ;
 
+#if QT_CONFIG(properties)
             QCoreApplication *app = QCoreApplication::instance();
             if (app) {
                 const QVariant platformName = app->property("platformName");
                 if (platformName.isValid())
                     set << platformName.toByteArray();
             }
+#endif
 
             return set;
 }
