@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     but if other instances of QPluginLoader are using the same
     library, the call will fail, and unloading will only happen when
     every instance has called unload(). Right before the unloading
-    happen, the root component will also be deleted.
+    happens, the root component will also be deleted.
 
     See \l{How to Create Qt Plugins} for more information about
     how to make your application extensible through plugins.

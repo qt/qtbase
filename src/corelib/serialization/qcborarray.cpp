@@ -273,7 +273,7 @@ QCborValue QCborArray::at(qsizetype i) const
     not be empty.
 
     QCborValueRef has the exact same API as \l QCborValue, with one important
-    difference: if you assign new values to it, this map will be updated with
+    difference: if you assign new values to it, this array will be updated with
     that new value.
 
     \sa operator[](), at(), last(), insert(), prepend(), append(),
@@ -287,7 +287,7 @@ QCborValue QCborArray::at(qsizetype i) const
     not be empty.
 
     QCborValueRef has the exact same API as \l QCborValue, with one important
-    difference: if you assign new values to it, this map will be updated with
+    difference: if you assign new values to it, this array will be updated with
     that new value.
 
     \sa operator[](), at(), first(), insert(), prepend(), append(),
@@ -302,7 +302,7 @@ QCborValue QCborArray::at(qsizetype i) const
     with undefined entries, until it has an entry at the specified index.
 
     QCborValueRef has the exact same API as \l QCborValue, with one important
-    difference: if you assign new values to it, this map will be updated with
+    difference: if you assign new values to it, this array will be updated with
     that new value.
 
     \sa at(), first(), last(), insert(), prepend(), append(),
