@@ -266,17 +266,30 @@ defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
+    host = $$eval($${1}.host)
+    isEmpty(host): host = false
+    file_prefix =
+    ext =
+    $$host {
+        equals(QMAKE_HOST.os, Windows): \
+            ext = .exe
+    } else {
+        win32 {
+            ext = .exe
+        } else:android {
+            file_prefix = lib
+            ext = .so
+        } else:wasm {
+            ext = .wasm
+        }
+    }
+
     test = $$eval($${1}.test)
     output = $$eval($${1}.output)
     test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
-    unix:exists($$test_out_dir/$$output): \
-        content = $$cat($$test_out_dir/$$output, blob)
-    else: win32:exists($$test_out_dir/$${output}.exe): \
-        content = $$cat($$test_out_dir/$${output}.exe, blob)
-    else: android:exists($$test_out_dir/lib$${output}.so): \
-        content = $$cat($$test_out_dir/lib$${output}.so, blob)
-    else: wasm:exists($$test_out_dir/$${output}.wasm): \
-        content = $$cat($$test_out_dir/$${output}.wasm, blob)
+    test_out_file = $$test_out_dir/$$file_prefix$$output$$ext
+    exists($$test_out_file): \
+        content = $$cat($$test_out_file, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
