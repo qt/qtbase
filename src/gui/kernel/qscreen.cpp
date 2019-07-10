@@ -149,6 +149,8 @@ QScreen::~QScreen()
 
 /*!
   Get the platform screen handle.
+
+  \sa {Qt Platform Abstraction}{Qt Platform Abstraction (QPA)}
 */
 QPlatformScreen *QScreen::handle() const
 {
