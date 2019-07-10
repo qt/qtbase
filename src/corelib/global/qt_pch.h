@@ -55,6 +55,10 @@
 #include <stdlib.h>
 #include <qglobal.h>
 #ifdef Q_OS_WIN
+# ifdef Q_CC_MINGW
+// <unistd.h> must be included before any other header pulls in <time.h>.
+#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
+# endif
 # define _POSIX_
 # include <limits.h>
 # undef _POSIX_
