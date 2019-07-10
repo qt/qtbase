@@ -367,7 +367,7 @@ class Q_CORE_EXPORT QVariant
     static inline QVariant fromValue(const T &value)
     { return qVariantFromValue(value); }
 
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if (QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
