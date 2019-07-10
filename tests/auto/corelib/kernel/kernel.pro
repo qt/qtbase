@@ -23,7 +23,8 @@ SUBDIRS=\
     qtimer \
     qtranslator \
     qvariant \
-    qwineventnotifier
+    qwineventnotifier \
+    qproperty
 
 !qtHaveModule(gui): SUBDIRS -= \
     qmimedata
@@ -35,7 +36,8 @@ SUBDIRS=\
 
 !qtConfig(private_tests): SUBDIRS -= \
     qsocketnotifier \
-    qsharedmemory
+    qsharedmemory \
+    qproperty
 
 # This test is only applicable on Windows
 !win32*|winrt: SUBDIRS -= qwineventnotifier

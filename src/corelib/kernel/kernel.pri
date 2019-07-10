@@ -43,7 +43,11 @@ HEADERS += \
         kernel/qsystemerror_p.h \
         kernel/qmetatype_p.h \
         kernel/qmetatypeswitcher_p.h \
-        kernel/qtestsupport_core.h
+        kernel/qtestsupport_core.h \
+        kernel/qproperty.h \
+        kernel/qpropertyprivate.h \
+        kernel/qproperty_p.h \
+        kernel/qpropertybinding_p.h
 
 SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
@@ -71,7 +75,9 @@ SOURCES += \
         kernel/qpointer.cpp \
         kernel/qmath.cpp \
         kernel/qsystemerror.cpp \
-        kernel/qtestsupport_core.cpp
+        kernel/qtestsupport_core.cpp \
+        kernel/qproperty.cpp \
+        kernel/qpropertybinding.cpp
 
 win32 {
         SOURCES += \
