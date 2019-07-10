@@ -1116,6 +1116,17 @@ You need to use libdouble-conversion for double/string conversion."
             "message": "detected a std::atomic implementation that fails for function pointers.
 Please apply the patch corresponding to your Standard Library vendor, found in
   qtbase/config.tests/atomicfptr"
+        },
+        {
+            "type": "error",
+            "condition": [
+                "config.unix || config.integrity",
+                "!features.poll_ppoll",
+                "!features.poll_pollts",
+                "!features.poll_poll",
+                "!features.poll_select"
+            ],
+            "message": "Qt requires poll(), ppoll(), poll_ts() or select() on this platform"
         }
     ],
 

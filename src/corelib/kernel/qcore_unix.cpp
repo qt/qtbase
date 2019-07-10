@@ -132,8 +132,10 @@ static inline int qt_ppoll(struct pollfd *fds, nfds_t nfds, const struct timespe
     return ::ppoll(fds, nfds, timeout_ts, nullptr);
 #elif QT_CONFIG(poll_poll)
     return ::poll(fds, nfds, timespecToMillisecs(timeout_ts));
-#else
+#elif QT_CONFIG(poll_select)
     return qt_poll(fds, nfds, timeout_ts);
+#else
+    // configure.json reports an error when everything is not available
 #endif
 }
 
