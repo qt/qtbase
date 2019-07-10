@@ -957,23 +957,27 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
 {
-    if (size() != other.size())
-        return false;
     if (d == other.d)
         return true;
+    if (size() != other.size())
+        return false;
 
     const_iterator it = begin();
 
     while (it != end()) {
         // Build two equal ranges for i.key(); one for *this and one for other.
         // For *this we can avoid a lookup via equal_range, as we know the beginning of the range.
-        auto thisEqualRangeEnd = it;
-        while (thisEqualRangeEnd != end() && it.key() == thisEqualRangeEnd.key())
-            ++thisEqualRangeEnd;
+        auto thisEqualRangeStart = it;
+        const Key &thisEqualRangeKey = it.key();
+        size_type n = 0;
+        do {
+            ++it;
+            ++n;
+        } while (it != end() && it.key() == thisEqualRangeKey);
 
-        const auto otherEqualRange = other.equal_range(it.key());
+        const auto otherEqualRange = other.equal_range(thisEqualRangeKey);
 
-        if (std::distance(it, thisEqualRangeEnd) != std::distance(otherEqualRange.first, otherEqualRange.second))
+        if (n != std::distance(otherEqualRange.first, otherEqualRange.second))
             return false;
 
         // Keys in the ranges are equal by construction; this checks only the values.
@@ -986,15 +990,13 @@ Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
         // is supported since MSVC 2015).
         //
         // ### Qt 6: if C++14 library support is a mandated minimum, remove the ifdef for MSVC.
-        if (!std::is_permutation(it, thisEqualRangeEnd, otherEqualRange.first
+        if (!std::is_permutation(thisEqualRangeStart, it, otherEqualRange.first
 #ifdef Q_CC_MSVC
                                  , otherEqualRange.second
 #endif
                                  )) {
             return false;
         }
-
-        it = thisEqualRangeEnd;
     }
 
     return true;
