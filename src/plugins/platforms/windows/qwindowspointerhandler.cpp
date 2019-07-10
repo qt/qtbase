@@ -80,13 +80,12 @@ bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, Q
     *result = 0;
     const quint32 pointerId = GET_POINTERID_WPARAM(msg.wParam);
 
-    POINTER_INPUT_TYPE pointerType;
-    if (!QWindowsContext::user32dll.getPointerType(pointerId, &pointerType)) {
+    if (!QWindowsContext::user32dll.getPointerType(pointerId, &m_pointerType)) {
         qWarning() << "GetPointerType() failed:" << qt_error_string();
         return false;
     }
 
-    switch (pointerType) {
+    switch (m_pointerType) {
     case QT_PT_POINTER:
     case QT_PT_MOUSE:
     case QT_PT_TOUCHPAD: {
@@ -728,7 +727,11 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     }
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
-    if (isMouseEventSynthesizedFromPenOrTouch()) {
+    // Following the logic of the old mouse handler, only events synthesized
+    // for touch screen are marked as such. On some systems, using the bit 7 of
+    // the extra msg info for checking if synthesized for touch does not work,
+    // so we use the pointer type of the last pointer message.
+    if (isMouseEventSynthesizedFromPenOrTouch() && m_pointerType == QT_PT_TOUCH) {
         if (QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)
             return false;
         source = Qt::MouseEventSynthesizedBySystem;
