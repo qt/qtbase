@@ -981,22 +981,8 @@ Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
             return false;
 
         // Keys in the ranges are equal by construction; this checks only the values.
-        //
-        // When using the 3-arg std::is_permutation, MSVC will emit warning C4996,
-        // passing an unchecked iterator to a Standard Library algorithm. We don't
-        // want to suppress the warning, and we can't use stdext::make_checked_array_iterator
-        // because QHash::(const_)iterator does not work with size_t and thus will
-        // emit more warnings. Use the 4-arg std::is_permutation instead (which
-        // is supported since MSVC 2015).
-        //
-        // ### Qt 6: if C++14 library support is a mandated minimum, remove the ifdef for MSVC.
-        if (!std::is_permutation(thisEqualRangeStart, it, otherEqualRange.first
-#ifdef Q_CC_MSVC
-                                 , otherEqualRange.second
-#endif
-                                 )) {
+        if (!qt_is_permutation(thisEqualRangeStart, it, otherEqualRange.first, otherEqualRange.second))
             return false;
-        }
     }
 
     return true;
