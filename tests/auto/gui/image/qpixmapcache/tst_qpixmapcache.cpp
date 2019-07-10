@@ -104,18 +104,28 @@ void tst_QPixmapCache::cacheLimit()
 
 void tst_QPixmapCache::setCacheLimit()
 {
+    QPixmap res;
     QPixmap *p1 = new QPixmap(2, 3);
     QPixmapCache::insert("P1", *p1);
+#if QT_DEPRECATED_SINCE(5, 13)
     QVERIFY(QPixmapCache::find("P1") != 0);
+#endif
+    QVERIFY(QPixmapCache::find("P1", &res));
     delete p1;
 
     QPixmapCache::setCacheLimit(0);
+#if QT_DEPRECATED_SINCE(5, 13)
     QVERIFY(!QPixmapCache::find("P1"));
+#endif
+    QVERIFY(!QPixmapCache::find("P1", &res));
 
     p1 = new QPixmap(2, 3);
     QPixmapCache::setCacheLimit(1000);
     QPixmapCache::insert("P1", *p1);
+#if QT_DEPRECATED_SINCE(5, 13)
     QVERIFY(QPixmapCache::find("P1") != 0);
+#endif
+    QVERIFY(QPixmapCache::find("P1", &res));
 
     delete p1;
 
@@ -200,6 +210,7 @@ void tst_QPixmapCache::find()
     QVERIFY(QPixmapCache::insert("P1", p1));
 
     QPixmap p2;
+#if QT_DEPRECATED_SINCE(5, 13)
     QVERIFY(QPixmapCache::find("P1", p2));
     QCOMPARE(p2.width(), 10);
     QCOMPARE(p2.height(), 10);
@@ -209,6 +220,12 @@ void tst_QPixmapCache::find()
     QPixmap *p3 = QPixmapCache::find("P1");
     QVERIFY(p3);
     QCOMPARE(p1, *p3);
+#endif
+
+    QVERIFY(QPixmapCache::find("P1", &p2));
+    QCOMPARE(p2.width(), 10);
+    QCOMPARE(p2.height(), 10);
+    QCOMPARE(p1, p2);
 
     //The int part of the API
     QPixmapCache::Key key = QPixmapCache::insert(p1);
@@ -261,12 +278,23 @@ void tst_QPixmapCache::insert()
     }
 
     int num = 0;
+#if QT_DEPRECATED_SINCE(5, 13)
     for (int k = 0; k < numberOfKeys; ++k) {
         if (QPixmapCache::find(QString::number(k)))
             ++num;
     }
 
     if (QPixmapCache::find("0"))
+        ++num;
+    num = 0;
+#endif
+    QPixmap res;
+    for (int k = 0; k < numberOfKeys; ++k) {
+        if (QPixmapCache::find(QString::number(k), &res))
+            ++num;
+    }
+
+    if (QPixmapCache::find("0", &res))
         ++num;
 
     QVERIFY(num <= estimatedNum);
@@ -340,17 +368,17 @@ void tst_QPixmapCache::remove()
     p1.fill(Qt::yellow);
 
     QPixmap p2;
-    QVERIFY(QPixmapCache::find("red", p2));
+    QVERIFY(QPixmapCache::find("red", &p2));
     QVERIFY(p1.toImage() != p2.toImage());
     QVERIFY(p1.toImage() == p1.toImage()); // sanity check
 
     QPixmapCache::remove("red");
-    QVERIFY(!QPixmapCache::find("red"));
+    QVERIFY(!QPixmapCache::find("red", &p2));
     QPixmapCache::remove("red");
-    QVERIFY(!QPixmapCache::find("red"));
+    QVERIFY(!QPixmapCache::find("red", &p2));
 
     QPixmapCache::remove("green");
-    QVERIFY(!QPixmapCache::find("green"));
+    QVERIFY(!QPixmapCache::find("green", &p2));
 
     //The int part of the API
     QPixmapCache::clear();
@@ -392,7 +420,7 @@ void tst_QPixmapCache::remove()
     key = QPixmapCache::insert(p1);
     QPixmapCache::remove(key);
     QVERIFY(QPixmapCache::find(key, &p1) == 0);
-    QVERIFY(QPixmapCache::find("red") != 0);
+    QVERIFY(QPixmapCache::find("red", &p1) != 0);
 }
 
 void tst_QPixmapCache::clear()
@@ -408,14 +436,14 @@ void tst_QPixmapCache::clear()
     const int numberOfKeys = estimatedNum + 1000;
 
     for (int i = 0; i < numberOfKeys; ++i)
-        QVERIFY(QPixmapCache::find("x" + QString::number(i)) == 0);
+        QVERIFY(!QPixmapCache::find("x" + QString::number(i), &p1));
 
     for (int j = 0; j < numberOfKeys; ++j)
         QPixmapCache::insert(QString::number(j), p1);
 
     int num = 0;
     for (int k = 0; k < numberOfKeys; ++k) {
-        if (QPixmapCache::find(QString::number(k), p1))
+        if (QPixmapCache::find(QString::number(k), &p1))
             ++num;
     }
     QVERIFY(num > 0);
@@ -423,7 +451,7 @@ void tst_QPixmapCache::clear()
     QPixmapCache::clear();
 
     for (int k = 0; k < numberOfKeys; ++k)
-        QVERIFY(!QPixmapCache::find(QString::number(k)));
+        QVERIFY(!QPixmapCache::find(QString::number(k), &p1));
 
     //The int part of the API
     QPixmap p2(10, 10);

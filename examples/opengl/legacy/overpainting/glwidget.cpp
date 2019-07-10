@@ -130,7 +130,7 @@ void GLWidget::initializeGL()
     glEnable(GL_MULTISAMPLE);
 
     logo = new QtLogo(this);
-    logo->setColor(qtGreen.dark());
+    logo->setColor(qtGreen.darker());
 }
 //! [2]
 
@@ -163,7 +163,7 @@ void GLWidget::paintEvent(QPaintEvent *event)
 //! [4]
 
 //! [6]
-    qglClearColor(qtPurple.dark());
+    qglClearColor(qtPurple.darker());
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

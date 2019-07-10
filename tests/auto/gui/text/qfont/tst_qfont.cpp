@@ -58,7 +58,9 @@ private slots:
     void insertAndRemoveSubstitutions();
     void serialize_data();
     void serialize();
+#if QT_DEPRECATED_SINCE(5, 13)
     void lastResortFont();
+#endif
     void styleName();
     void defaultFamily_data();
     void defaultFamily();
@@ -484,6 +486,7 @@ void tst_QFont::serialize()
     }
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 // QFont::lastResortFont() may abort with qFatal() on QWS/QPA
 // if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
 // This happens on our CI machines which run QWS autotests.
@@ -494,6 +497,7 @@ void tst_QFont::lastResortFont()
     QFont font;
     QVERIFY(!font.lastResortFont().isEmpty());
 }
+#endif
 
 void tst_QFont::styleName()
 {

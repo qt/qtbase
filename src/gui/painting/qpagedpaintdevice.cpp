@@ -42,6 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt 6: remove when the deprecated constructor is removed
 class QDummyPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
 {
     bool setPageLayout(const QPageLayout &newPageLayout) override

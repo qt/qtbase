@@ -1202,7 +1202,7 @@ void PaintCommands::command_drawRoundRect(QRegularExpressionMatch re)
 
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
-    m_painter->drawRoundRect(x, y, w, h, xs, ys);
+    m_painter->drawRoundedRect(x, y, w, h, xs, ys, Qt::RelativeSize);
     QT_WARNING_POP
 }
 

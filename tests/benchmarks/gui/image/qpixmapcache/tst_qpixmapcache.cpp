@@ -106,7 +106,7 @@ void tst_QPixmapCache::find()
     if (cacheType) {
         QBENCHMARK {
             for (int i = 0 ; i <= 10000 ; i++)
-                QPixmapCache::find(QString::asprintf("my-key-%d", i), p);
+                QPixmapCache::find(QString::asprintf("my-key-%d", i), &p);
         }
     } else {
         QBENCHMARK {
@@ -155,7 +155,7 @@ void tst_QPixmapCache::styleUseCaseComplexKey()
                 QPixmapCache::insert(QString::asprintf("%s-%d-%d-%d-%d-%d-%d", QString("my-progressbar-%1").arg(i).toLatin1().constData(), 5, 3, 0, 358, 100, 200), p);
 
             for (int i = 0 ; i <= 10000 ; i++)
-                QPixmapCache::find(QString::asprintf("%s-%d-%d-%d-%d-%d-%d", QString("my-progressbar-%1").arg(i).toLatin1().constData(), 5, 3, 0, 358, 100, 200), p);
+                QPixmapCache::find(QString::asprintf("%s-%d-%d-%d-%d-%d-%d", QString("my-progressbar-%1").arg(i).toLatin1().constData(), 5, 3, 0, 358, 100, 200), &p);
         }
     } else {
         QHash<styleStruct, QPixmapCache::Key> hash;

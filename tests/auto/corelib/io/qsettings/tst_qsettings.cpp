@@ -1366,7 +1366,9 @@ void tst_QSettings::testVariantTypes()
     if (format >= QSettings::InvalidFormat) {
         testVal("keysequence", QKeySequence(Qt::ControlModifier + Qt::Key_F1), QKeySequence, KeySequence);
     } else {
-        testVal("keysequence", QKeySequence(Qt::ControlModifier + Qt::Key_F1), QString, String);
+        testVal("keysequence",
+                QKeySequence(Qt::ControlModifier + Qt::Key_F1).toString(QKeySequence::NativeText),
+                QString, String);
     }
 
 #undef testVal
