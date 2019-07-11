@@ -5,6 +5,9 @@ project                 = QtWidgets
 description             = Qt Widgets Reference Documentation
 version                 = $QT_VERSION
 
+# dummy macOS headers for generating docs under non-mac platforms
+includepaths           += -I./macOS
+
 examplesinstallpath     = widgets
 
 qhp.projects            = QtWidgets
