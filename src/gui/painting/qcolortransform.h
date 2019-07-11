@@ -51,40 +51,41 @@ class QRgba64;
 class QColorSpacePrivate;
 class QColorTransformPrivate;
 
-class Q_GUI_EXPORT QColorTransform
+class QColorTransform
 {
 public:
-    QColorTransform() noexcept : d_ptr(nullptr) { }
-    ~QColorTransform() noexcept;
-    QColorTransform(const QColorTransform &colorTransform) noexcept
-            : d_ptr(colorTransform.d_ptr)
-    { }
+    QColorTransform() noexcept : d(nullptr) { }
+    Q_GUI_EXPORT ~QColorTransform();
+    Q_GUI_EXPORT QColorTransform(const QColorTransform &colorTransform) noexcept;
     QColorTransform(QColorTransform &&colorTransform) noexcept
-            : d_ptr(std::move(colorTransform.d_ptr))
+            : d{qExchange(colorTransform.d, nullptr)}
     { }
     QColorTransform &operator=(const QColorTransform &other) noexcept
     {
-        d_ptr = other.d_ptr;
+        QColorTransform{other}.swap(*this);
         return *this;
     }
     QColorTransform &operator=(QColorTransform &&other) noexcept
     {
-        d_ptr = std::move(other.d_ptr);
+        QColorTransform{std::move(other)}.swap(*this);
         return *this;
     }
 
-    QRgb map(const QRgb &argb) const;
-    QRgba64 map(const QRgba64 &rgba64) const;
-    QColor map(const QColor &color) const;
+    void swap(QColorTransform &other) noexcept { qSwap(d, other.d); }
+
+    Q_GUI_EXPORT QRgb map(QRgb argb) const;
+    Q_GUI_EXPORT QRgba64 map(QRgba64 rgba64) const;
+    Q_GUI_EXPORT QColor map(const QColor &color) const;
 
 private:
     friend class QColorSpace;
     friend class QColorSpacePrivate;
     friend class QImage;
 
-    Q_DECLARE_PRIVATE(QColorTransform)
-    QSharedPointer<QColorTransformPrivate> d_ptr;
+    const QColorTransformPrivate *d;
 };
+
+Q_DECLARE_SHARED(QColorTransform)
 
 QT_END_NAMESPACE
 

@@ -134,8 +134,18 @@ void QColorTransformPrivate::updateLutsOut() const
 */
 
 
-QColorTransform::~QColorTransform() noexcept
+QColorTransform::QColorTransform(const QColorTransform &colorTransform) noexcept
+    : d(colorTransform.d)
 {
+    if (d)
+        d->ref.ref();
+}
+
+
+QColorTransform::~QColorTransform()
+{
+    if (d && !d->ref.deref())
+        delete d;
 }
 
 /*!
@@ -143,11 +153,10 @@ QColorTransform::~QColorTransform() noexcept
 
     The input should be opaque or unpremultiplied.
 */
-QRgb QColorTransform::map(const QRgb &argb) const
+QRgb QColorTransform::map(QRgb argb) const
 {
-    if (!d_ptr)
+    if (!d)
         return argb;
-    Q_D(const QColorTransform);
     constexpr float f = 1.0f / 255.0f;
     QColorVector c = { qRed(argb) * f, qGreen(argb) * f, qBlue(argb) * f };
     c.x = d->colorSpaceIn->trc[0].apply(c.x);
@@ -175,11 +184,10 @@ QRgb QColorTransform::map(const QRgb &argb) const
 
     The input should be opaque or unpremultiplied.
 */
-QRgba64 QColorTransform::map(const QRgba64 &rgba64) const
+QRgba64 QColorTransform::map(QRgba64 rgba64) const
 {
-    if (!d_ptr)
+    if (!d)
         return rgba64;
-    Q_D(const QColorTransform);
     constexpr float f = 1.0f / 65535.0f;
     QColorVector c = { rgba64.red() * f, rgba64.green() * f, rgba64.blue() * f };
     c.x = d->colorSpaceIn->trc[0].apply(c.x);
@@ -208,9 +216,8 @@ QRgba64 QColorTransform::map(const QRgba64 &rgba64) const
 */
 QColor QColorTransform::map(const QColor &color) const
 {
-    if (!d_ptr)
+    if (!d)
         return color;
-    Q_D(const QColorTransform);
     QColor clr = color;
     if (color.spec() != QColor::ExtendedRgb || color.spec() != QColor::Rgb)
         clr = clr.toRgb();
@@ -228,7 +235,7 @@ QColor QColorTransform::map(const QColor &color) const
     c = d->colorMatrix.map(c);
     bool inGamut = c.x >= 0.0f && c.x <= 1.0f && c.y >= 0.0f && c.y <= 1.0f && c.z >= 0.0f && c.z <= 1.0f;
     if (inGamut) {
-        if (d_ptr->colorSpaceOut->lut.generated.loadAcquire()) {
+        if (d->colorSpaceOut->lut.generated.loadAcquire()) {
             c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
             c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
             c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);

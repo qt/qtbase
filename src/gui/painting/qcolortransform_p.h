@@ -54,9 +54,11 @@
 #include "qcolormatrix_p.h"
 #include "qcolorspace_p.h"
 
+#include <QtCore/qshareddata.h>
+
 QT_BEGIN_NAMESPACE
 
-class QColorTransformPrivate
+class QColorTransformPrivate : public QSharedData
 {
 public:
     QColorMatrix colorMatrix;

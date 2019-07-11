@@ -355,10 +355,11 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
 {
     Q_ASSERT(out);
     QColorTransform combined;
-    combined.d_ptr.reset(new QColorTransformPrivate);
-    combined.d_ptr->colorSpaceIn = this;
-    combined.d_ptr->colorSpaceOut = out;
-    combined.d_ptr->colorMatrix = out->toXyz.inverted() * toXyz;
+    auto ptr = new QColorTransformPrivate;
+    combined.d = ptr;
+    ptr->colorSpaceIn = this;
+    ptr->colorSpaceOut = out;
+    ptr->colorMatrix = out->toXyz.inverted() * toXyz;
     return combined;
 }
 
