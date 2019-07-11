@@ -66,6 +66,20 @@ public:
     QFileInfo(const QFileInfo &fileinfo);
     ~QFileInfo();
 
+    enum FileType {
+        Unknown,
+        // base type
+        Regular,
+        Directory,
+        // indirection flag
+        SymbolicLink = 0x10,
+        Shortcut     = 0x20,
+        // mask
+        FileTypeMask = 0x0f,
+        LinkTypeMask = 0xf0
+    };
+    Q_DECLARE_FLAGS(FileTypes, FileType)
+
     QFileInfo &operator=(const QFileInfo &fileinfo);
     QFileInfo &operator=(QFileInfo &&other) noexcept { swap(other); return *this; }
 
@@ -111,6 +125,8 @@ public:
     bool isFile() const;
     bool isDir() const;
     bool isSymLink() const;
+    inline bool isSymbolicLink() const  { return type() & SymbolicLink; }
+    inline bool isShortcut() const  { return type() & Shortcut; }
     bool isRoot() const;
     bool isBundle() const;
 
@@ -129,6 +145,7 @@ public:
     QFile::Permissions permissions() const;
 
     qint64 size() const;
+    FileTypes type() const;
 
     // ### Qt6: inline these functions
 #if QT_DEPRECATED_SINCE(5, 10)

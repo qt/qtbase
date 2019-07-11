@@ -236,6 +236,8 @@ private slots:
 
     void isSymLink_data();
     void isSymLink();
+    void link_data();
+    void link();
 
     void isHidden_data();
     void isHidden();
@@ -276,6 +278,9 @@ private slots:
     void invalidState_data();
     void invalidState();
     void nonExistingFile();
+
+    void type_data();
+    void type();
 
 private:
     const QString m_currentDir;
@@ -1337,6 +1342,88 @@ void tst_QFileInfo::isSymLink()
 #endif
 }
 
+Q_DECLARE_METATYPE(QFileInfo::FileType)
+
+void tst_QFileInfo::link_data()
+{
+    QFile::remove("link");
+    QFile::remove("link.lnk");
+    QFile::remove("brokenlink");
+    QFile::remove("brokenlink.lnk");
+    QFile::remove("dummyfile");
+    QFile::remove("relative/link");
+
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QFileInfo::FileType>("linkType");
+    QTest::addColumn<QString>("linkTarget");
+
+    QFile file1(m_sourceFile);
+    QFile file2("dummyfile");
+    file2.open(QIODevice::WriteOnly);
+
+    QTest::newRow("existent file") << m_sourceFile << QFileInfo::Unknown << "";
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    // windows shortcuts
+    QVERIFY(file1.link("link.lnk"));
+    QTest::newRow("link.lnk")
+        << "link.lnk" << QFileInfo::Shortcut << QFileInfo(m_sourceFile).absoluteFilePath();
+
+    QVERIFY(file2.link("brokenlink.lnk"));
+    QTest::newRow("broken link.lnk")
+        << "brokenlink.lnk" << QFileInfo::Shortcut << QFileInfo("dummyfile").absoluteFilePath();
+#endif
+
+#ifndef Q_NO_SYMLINKS
+#if defined(Q_OS_WIN)
+#if !defined(Q_OS_WINRT)
+    QString errorMessage;
+    DWORD creationResult = createSymbolicLink("link", m_sourceFile, &errorMessage);
+    if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
+        QWARN(msgInsufficientPrivileges(errorMessage));
+    } else {
+        QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+        QTest::newRow("link")
+            << "link" << QFileInfo::SymbolicLink << QFileInfo(m_sourceFile).absoluteFilePath();
+    }
+
+    creationResult = createSymbolicLink("brokenlink", "dummyfile", &errorMessage);
+    if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
+        QWARN(msgInsufficientPrivileges(errorMessage));
+    } else {
+        QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+        QTest::newRow("broken link")
+            << "brokenlink" << QFileInfo::SymbolicLink << QFileInfo("dummyfile").absoluteFilePath();
+    }
+#endif // !Q_OS_WINRT
+#else // Unix:
+    QVERIFY(file1.link("link"));
+    QTest::newRow("link")
+        << "link" << QFileInfo::SymbolicLink << QFileInfo(m_sourceFile).absoluteFilePath();
+
+    QVERIFY(file2.link("brokenlink"));
+    QTest::newRow("broken link")
+        << "brokenlink" << QFileInfo::SymbolicLink << QFileInfo("dummyfile").absoluteFilePath();
+
+    QDir::current().mkdir("relative");
+    QFile::link("../dummyfile", "relative/link");
+    QTest::newRow("relative link")
+        << "relative/link" << QFileInfo::SymbolicLink << QFileInfo("dummyfile").absoluteFilePath();
+#endif
+#endif // !Q_NO_SYMLINKS
+    file2.remove();
+}
+
+void tst_QFileInfo::link()
+{
+    QFETCH(QString, path);
+    QFETCH(QFileInfo::FileType, linkType);
+    QFETCH(QString, linkTarget);
+
+    QFileInfo fi(path);
+    QCOMPARE(fi.type() & QFileInfo::LinkTypeMask, linkType);
+    QCOMPARE(fi.symLinkTarget(), linkTarget);
+}
+
 void tst_QFileInfo::isHidden_data()
 {
     QTest::addColumn<QString>("path");
@@ -1638,7 +1725,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
     QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
 
     QFileInfo fi(path);
-    const bool actualIsSymLink = fi.isSymLink();
+    const bool actualIsSymLink = fi.isSymbolicLink();
     const QString actualSymLinkTarget = isSymLink ? fi.symLinkTarget() : QString();
     const QString actualCanonicalFilePath = isSymLink ? fi.canonicalFilePath() : QString();
     // Ensure that junctions, mountpoints are removed. If this fails, do not remove
@@ -1667,14 +1754,16 @@ void tst_QFileInfo::brokenShortcut()
     file.close();
 
     QFileInfo info(linkName);
-    QVERIFY(info.isSymLink());
+    QVERIFY(!info.isSymbolicLink());
+    QVERIFY(info.isShortcut());
     QVERIFY(!info.exists());
     QFile::remove(linkName);
 
     QDir current; // QTBUG-21863
     QVERIFY(current.mkdir(linkName));
     QFileInfo dirInfo(linkName);
-    QVERIFY(!dirInfo.isSymLink());
+    QVERIFY(!dirInfo.isSymbolicLink());
+    QVERIFY(!dirInfo.isShortcut());
     QVERIFY(dirInfo.isDir());
     current.rmdir(linkName);
 }
@@ -2032,7 +2121,8 @@ static void stateCheck(const QFileInfo &info, const QString &dirname, const QStr
     QVERIFY(!info.isHidden());
     QVERIFY(!info.isFile());
     QVERIFY(!info.isDir());
-    QVERIFY(!info.isSymLink());
+    QVERIFY(!info.isSymbolicLink());
+    QVERIFY(!info.isShortcut());
     QVERIFY(!info.isBundle());
     QVERIFY(!info.isRoot());
     QCOMPARE(info.isNativePath(), !filename.isEmpty());
@@ -2087,6 +2177,74 @@ void tst_QFileInfo::nonExistingFile()
     QString filename = "non-existing-file-foobar";
     QFileInfo info(filename);
     stateCheck(info, dirname, filename);
+}
+
+Q_DECLARE_METATYPE(QFileInfo::FileTypes)
+
+void tst_QFileInfo::type_data()
+{
+    QFile::remove("link.lnk");
+    QFile::remove("symlink.lnk");
+    QFile::remove("link");
+    QFile::remove("symlink");
+    QFile::remove("directory.lnk");
+    QFile::remove("directory");
+
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QFileInfo::FileTypes>("type");
+
+    QFile regularFile(m_sourceFile);
+    QTest::newRow("regular")
+        << regularFile.fileName() << QFileInfo::FileTypes(QFileInfo::Regular);
+    QTest::newRow("directory")
+        << QDir::currentPath() << QFileInfo::FileTypes(QFileInfo::Directory);
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    // windows shortcuts
+    QVERIFY(regularFile.link("link.lnk"));
+    QTest::newRow("shortcut")
+        << "link.lnk" << QFileInfo::FileTypes(QFileInfo::Shortcut | QFileInfo::Regular);
+    QVERIFY(regularFile.link("link"));
+    QTest::newRow("invalid-shortcut")
+        << "link" << QFileInfo::FileTypes(QFileInfo::Regular);
+    QVERIFY(QFile::link(QDir::currentPath(), "directory.lnk"));
+    QTest::newRow("directory-shortcut")
+        << "directory.lnk" << QFileInfo::FileTypes(QFileInfo::Shortcut | QFileInfo::Directory);
+#endif
+
+#ifndef Q_NO_SYMLINKS
+#if defined(Q_OS_WIN)
+#if !defined(Q_OS_WINRT)
+    QString errorMessage;
+    const DWORD creationResult = createSymbolicLink("symlink", m_sourceFile, &errorMessage);
+    if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
+        QWARN(msgInsufficientPrivileges(errorMessage));
+    } else {
+        QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+        QTest::newRow("NTFS-symlink")
+            << "symlink" << QFileInfo::FileTypes(QFileInfo::SymbolicLink | QFileInfo::Regular);
+    }
+#endif // !Q_OS_WINRT
+#else // Unix:
+    QVERIFY(regularFile.link("symlink.lnk"));
+    QTest::newRow("symlink.lnk")
+        << "symlink.lnk" << QFileInfo::FileTypes(QFileInfo::SymbolicLink | QFileInfo::Regular);
+    QVERIFY(regularFile.link("symlink"));
+    QTest::newRow("symlink")
+        << "symlink" << QFileInfo::FileTypes(QFileInfo::SymbolicLink | QFileInfo::Regular);
+    QVERIFY(QFile::link(QDir::currentPath(), "directory"));
+    QTest::newRow("directory-symlink")
+        << "directory" << QFileInfo::FileTypes(QFileInfo::SymbolicLink | QFileInfo::Directory);
+#endif
+#endif // !Q_NO_SYMLINKS
+}
+
+void tst_QFileInfo::type()
+{
+    QFETCH(QString, path);
+    QFETCH(QFileInfo::FileTypes, type);
+
+    QFileInfo info(path);
+    QCOMPARE(info.type(), type);
 }
 
 QTEST_MAIN(tst_QFileInfo)

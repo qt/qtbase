@@ -256,10 +256,9 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     \snippet code/src_corelib_io_qfileinfo.cpp 0
 
-    On Windows, symlinks (shortcuts) are \c .lnk files. The reported
-    size() is that of the symlink (not the link's target), and
-    opening a symlink using QFile opens the \c .lnk file. For
-    example:
+    On Windows, shortcuts are \c .lnk files. The reported size() is that of
+    the shortcut (not the link's target), and opening a shortcut using QFile
+    opens the \c .lnk file. For example:
 
     \snippet code/src_corelib_io_qfileinfo.cpp 1
 
@@ -309,6 +308,19 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     every time you request information from it call setCaching(false).
 
     \sa QDir, QFile
+*/
+
+/*!
+    \enum QFileInfo::FileType
+
+    This enum is returned by type() to describe the type of the file system
+    entity described by the QFileInfo object.
+
+    \value Unknown      The object refers to an unknown item.
+    \value Regular      The object refers to a regular file.
+    \value Directory    The object refers to a directory.
+    \value SymbolicLink The object refers to a symbolic link.
+    \value Shortcut     The object refers to a shortcut.
 */
 
 /*!
@@ -996,11 +1008,7 @@ bool QFileInfo::isNativePath() const
 */
 bool QFileInfo::isFile() const
 {
-    Q_D(const QFileInfo);
-    return d->checkAttribute<bool>(
-                QFileSystemMetaData::FileType,
-                [d]() { return d->metaData.isFile(); },
-                [d]() { return d->getFileFlags(QAbstractFileEngine::FileType); });
+    return (type() & FileTypeMask) == Regular;
 }
 
 /*!
@@ -1011,11 +1019,7 @@ bool QFileInfo::isFile() const
 */
 bool QFileInfo::isDir() const
 {
-    Q_D(const QFileInfo);
-    return d->checkAttribute<bool>(
-                QFileSystemMetaData::DirectoryType,
-                [d]() { return d->metaData.isDirectory(); },
-                [d]() { return d->getFileFlags(QAbstractFileEngine::DirectoryType); });
+    return (type() & FileTypeMask) == Directory;
 }
 
 
@@ -1036,7 +1040,7 @@ bool QFileInfo::isBundle() const
 }
 
 /*!
-    Returns \c true if this object points to a symbolic link;
+    Returns \c true if this object points to a symbolic link or shortcut;
     otherwise returns \c false.
 
     Symbolic links exist on Unix (including \macos and iOS) and Windows
@@ -1064,6 +1068,48 @@ bool QFileInfo::isSymLink() const
                 [d]() { return d->metaData.isLegacyLink(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
 }
+
+/*!
+    \fn bool QFileInfo::isSymbolicLink() const
+
+    Returns \c true if this object points to a symbolic link;
+    otherwise returns \c false.
+
+    Symbolic links exist on Unix (including \macos and iOS) and Windows
+    (NTFS-symlink) and are typically created by the \c{ln -s} or \c{mklink}
+    commands, respectively.
+
+    Unix handles symlinks transparently. Opening a symbolic link effectively
+    opens the \l{symLinkTarget()}{link's target}.
+
+    In contrast to isSymLink(), false will be returned for shortcuts
+    (\c *.lnk files) on Windows. Use QFileInfo::isShortcut() instead.
+
+    \note If the symlink points to a non existing file, exists() returns
+    false.
+
+    \sa isFile(), isDir(), isShortcut(), symLinkTarget()
+*/
+
+/*!
+    \fn bool QFileInfo::isShortcut() const
+
+    Returns \c true if this object points to a shortcut;
+    otherwise returns \c false.
+
+    Shortcuts only exist on Windows and are typically \c .lnk files.
+    For instance, true will be returned for shortcuts (\c *.lnk files) on
+    Windows, but false will be returned on Unix (including \macos and iOS).
+
+    The shortcut (.lnk) files are treated as regular files. Opening those will
+    open the \c .lnk file itself. In order to open the file a shortcut
+    references to, it must uses symLinkTarget() on a shortcut.
+
+    \note Even if a shortcut (broken shortcut) points to a non existing file,
+    isShortcut() returns true.
+
+    \sa isFile(), isDir(), isSymbolicLink(), symLinkTarget()
+*/
 
 /*!
     Returns \c true if the object points to a directory or to a symbolic
@@ -1266,6 +1312,53 @@ qint64 QFileInfo::size() const
             }
             return d->fileSize;
         });
+}
+
+/*!
+    Returns the QFileInfo::FileTypes.
+
+    QFileInfo::FileTypes combines with an indirection flag (link type) and a
+    base type it refers to.
+
+    For example, \c SymbolicLink combines with \c Regular meaning a symlink to
+    a regular file.
+
+    In addition, FileTypeMask and LinkTypeMask are used to extract the base
+    type and link type respectively.
+
+    \sa isFile(), isDir(), isShortcut(), isSymbolicLink()
+*/
+QFileInfo::FileTypes QFileInfo::type() const
+{
+    Q_D(const QFileInfo);
+
+    QFileInfo::FileTypes type = QFileInfo::Unknown;
+    if (d->checkAttribute<bool>(
+            QFileSystemMetaData::LegacyLinkType,
+            [d]() { return d->metaData.isLnkFile(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); })) {
+        type = QFileInfo::Shortcut;
+    } else if (d->checkAttribute<bool>(
+            QFileSystemMetaData::LegacyLinkType,
+            [d]() { return d->metaData.isLink(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); })) {
+        type = QFileInfo::SymbolicLink;
+    }
+
+    if (d->checkAttribute<bool>(
+            QFileSystemMetaData::DirectoryType,
+            [d]() { return d->metaData.isDirectory(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::DirectoryType); })) {
+        return type | QFileInfo::Directory;
+    }
+
+    if (d->checkAttribute<bool>(
+            QFileSystemMetaData::FileType,
+            [d]() { return d->metaData.isFile(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::FileType); })) {
+        return type | QFileInfo::Regular;
+    }
+    return type;
 }
 
 #if QT_DEPRECATED_SINCE(5, 10)
