@@ -594,7 +594,7 @@ class Scope(object):
 
         is_same_path = self.currentdir == self.basedir
 
-        if key == 'PWD':
+        if key == '_PRO_FILE_PWD_' or key == 'PWD':
             if is_same_path:
                 return ['${CMAKE_CURRENT_SOURCE_DIR}']
             else:
