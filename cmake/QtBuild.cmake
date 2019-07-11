@@ -735,6 +735,13 @@ function(qt_enable_autogen_tool target tool enable)
         list(REMOVE_ITEM autogen_target_depends ${tool_target_name})
     endif()
 
+    # f66c1db16c050c9d685a44a38ad7c5cf9f6fcc96 in qtbase introduced a new macro
+    # that the moc scanner has to look for. Inform the CMake moc scanner about it.
+    if(tool STREQUAL "moc" AND enable)
+        set_target_properties("${target}" PROPERTIES
+            AUTOMOC_MACRO_NAMES "Q_OBJECT;Q_GADGET;Q_NAMESPACE;Q_NAMESPACE_EXPORT")
+    endif()
+
     set_target_properties("${target}"
                           PROPERTIES
                           AUTO${captitalAutogenTool} "${enable}"
