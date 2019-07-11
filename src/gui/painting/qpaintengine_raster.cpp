@@ -2927,9 +2927,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         QFontEngine::GlyphFormat glyphFormat = fontEngine->glyphFormat != QFontEngine::Format_None ? fontEngine->glyphFormat : d->glyphCacheFormat;
 
         QImageTextureGlyphCache *cache =
-            static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphFormat, s->matrix));
+            static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphFormat, s->matrix, QColor(s->penData.solidColor)));
         if (!cache) {
-            cache = new QImageTextureGlyphCache(glyphFormat, s->matrix);
+            cache = new QImageTextureGlyphCache(glyphFormat, s->matrix, QColor(s->penData.solidColor));
             fontEngine->setGlyphCache(0, cache);
         }
 

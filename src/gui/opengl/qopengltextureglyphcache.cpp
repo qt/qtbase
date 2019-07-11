@@ -53,8 +53,8 @@ static int next_qopengltextureglyphcache_serial_number()
     return 1 + serial.fetchAndAddRelaxed(1);
 }
 
-QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
-    : QImageTextureGlyphCache(format, matrix)
+QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix, const QColor &color)
+    : QImageTextureGlyphCache(format, matrix, color)
     , m_textureResource(0)
     , pex(0)
     , m_blitProgram(0)

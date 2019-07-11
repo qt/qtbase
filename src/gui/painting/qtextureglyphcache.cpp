@@ -267,7 +267,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
     case QFontEngine::Format_A32:
         return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, m_transform);
     case QFontEngine::Format_ARGB:
-        return m_current_fontengine->bitmapForGlyph(g, subPixelPosition, m_transform);
+        return m_current_fontengine->bitmapForGlyph(g, subPixelPosition, m_transform, color());
     default:
         return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
     }

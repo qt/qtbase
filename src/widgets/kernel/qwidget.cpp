@@ -7453,6 +7453,17 @@ QByteArray QWidget::saveGeometry() const
     return array;
 }
 
+static void checkRestoredGeometry(const QRect &availableGeometry, QRect *restoredGeometry,
+                                  int frameHeight)
+{
+    if (!restoredGeometry->intersects(availableGeometry)) {
+        restoredGeometry->moveBottom(qMin(restoredGeometry->bottom(), availableGeometry.bottom()));
+        restoredGeometry->moveLeft(qMax(restoredGeometry->left(), availableGeometry.left()));
+        restoredGeometry->moveRight(qMin(restoredGeometry->right(), availableGeometry.right()));
+    }
+    restoredGeometry->moveTop(qMax(restoredGeometry->top(), availableGeometry.top() + frameHeight));
+}
+
 /*!
     \since 4.2
 
@@ -7507,7 +7518,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     quint8 fullScreen;
     qint32 restoredScreenWidth = 0;
 
-    stream >> restoredFrameGeometry
+    stream >> restoredFrameGeometry // Only used for sanity checks in version 0
            >> restoredNormalGeometry
            >> restoredScreenNumber
            >> maximized
@@ -7537,8 +7548,6 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     }
 
     const int frameHeight = 20;
-    if (!restoredFrameGeometry.isValid())
-        restoredFrameGeometry = QRect(QPoint(0,0), sizeHint());
 
     if (!restoredNormalGeometry.isValid())
         restoredNormalGeometry = QRect(QPoint(0, frameHeight), sizeHint());
@@ -7558,23 +7567,11 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     // - (Mac only) The window is higher than the available geometry. It must
     //   be possible to bring the size grip on screen by moving the window.
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
-    restoredFrameGeometry.setHeight(qMin(restoredFrameGeometry.height(), availableGeometry.height()));
     restoredNormalGeometry.setHeight(qMin(restoredNormalGeometry.height(), availableGeometry.height() - frameHeight));
 #endif
 
-    if (!restoredFrameGeometry.intersects(availableGeometry)) {
-        restoredFrameGeometry.moveBottom(qMin(restoredFrameGeometry.bottom(), availableGeometry.bottom()));
-        restoredFrameGeometry.moveLeft(qMax(restoredFrameGeometry.left(), availableGeometry.left()));
-        restoredFrameGeometry.moveRight(qMin(restoredFrameGeometry.right(), availableGeometry.right()));
-    }
-    restoredFrameGeometry.moveTop(qMax(restoredFrameGeometry.top(), availableGeometry.top()));
-
-    if (!restoredNormalGeometry.intersects(availableGeometry)) {
-        restoredNormalGeometry.moveBottom(qMin(restoredNormalGeometry.bottom(), availableGeometry.bottom()));
-        restoredNormalGeometry.moveLeft(qMax(restoredNormalGeometry.left(), availableGeometry.left()));
-        restoredNormalGeometry.moveRight(qMin(restoredNormalGeometry.right(), availableGeometry.right()));
-    }
-    restoredNormalGeometry.moveTop(qMax(restoredNormalGeometry.top(), availableGeometry.top() + frameHeight));
+    checkRestoredGeometry(availableGeometry, &restoredGeometry, frameHeight);
+    checkRestoredGeometry(availableGeometry, &restoredNormalGeometry, frameHeight);
 
     if (maximized || fullScreen) {
         // set geometry before setting the window state to make

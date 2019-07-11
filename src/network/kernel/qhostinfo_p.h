@@ -73,6 +73,7 @@
 #include <QNetworkSession>
 #include <QSharedPointer>
 
+#include <atomic>
 
 QT_BEGIN_NAMESPACE
 
@@ -176,10 +177,12 @@ public:
     void put(const QString &name, const QHostInfo &info);
     void clear();
 
-    bool isEnabled();
-    void setEnabled(bool e);
+    bool isEnabled() { return enabled.load(std::memory_order_relaxed); }
+    // this function is currently only used for the auto tests
+    // and not usable by public API
+    void setEnabled(bool e) { enabled.store(e, std::memory_order_relaxed); }
 private:
-    bool enabled;
+    std::atomic<bool> enabled;
     struct QHostInfoCacheElement {
         QHostInfo info;
         QElapsedTimer age;
