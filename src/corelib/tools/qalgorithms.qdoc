@@ -155,8 +155,8 @@
 
     \section2 Porting guidelines
 
-    Most of the times, an application using the deprecated Qt algorithmic functions
-    can be easily ported to use the equivalent STL functions. You need to
+    Most of the time, an application using the deprecated Qt algorithmic functions
+    can be easily ported to use the equivalent STL functions. You need to:
 
     \list 1
         \li add the \c{#include <algorithm>} preprocessor directive;
