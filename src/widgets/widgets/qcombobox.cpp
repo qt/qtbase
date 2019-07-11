@@ -2623,7 +2623,7 @@ bool QComboBoxPrivate::showNativePopup()
 
 /*!
     Displays the list of items in the combobox. If the list is empty
-    then the no items will be shown.
+    then no items will be shown.
 
     If you reimplement this function to show a custom pop-up, make
     sure you call hidePopup() to reset the internal state.

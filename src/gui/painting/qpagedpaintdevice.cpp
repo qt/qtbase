@@ -85,7 +85,7 @@ QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
     \class QPagedPaintDevice
     \inmodule QtGui
 
-    \brief The QPagedPaintDevice class is a represents a paintdevice that supports
+    \brief The QPagedPaintDevice class represents a paint device that supports
     multiple pages.
 
     \ingroup painting

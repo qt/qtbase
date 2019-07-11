@@ -2091,7 +2091,7 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 
     If \a size is negative, \a unicode is assumed to point to a \\0'-terminated
     array and its length is determined dynamically. The terminating
-    nul-character is not considered part of the string.
+    null character is not considered part of the string.
 
     QString makes a deep copy of the string data. The unicode data is copied as
     is and the Byte Order Mark is preserved if present.
@@ -5769,7 +5769,7 @@ QString QString::trimmed_helper(QString &str)
 
     The return value is of type QCharRef, a helper class for QString.
     When you get an object of type QCharRef, you can use it as if it
-    were a QChar &. If you assign to it, the assignment will apply to
+    were a reference to a QChar. If you assign to it, the assignment will apply to
     the character in the QString from which you got the reference.
 
     \note Before Qt 5.14 it was possible to use this operator to access

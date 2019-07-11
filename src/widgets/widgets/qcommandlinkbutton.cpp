@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \ingroup basicwidgets
     \inmodule QtWidgets
 
-    The command link is a new control that was introduced by Windows Vista. It's
+    The command link is a new control that was introduced by Windows Vista. Its
     intended use is similar to that of a radio button in that it is used to choose
     between a set of mutually exclusive options. Command link buttons should not
     be used by themselves but rather as an alternative to radio buttons in
