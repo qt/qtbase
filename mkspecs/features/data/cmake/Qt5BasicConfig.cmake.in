@@ -75,7 +75,7 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
                 # Handle normal libraries passed as -lfoo
                 set(_lib \"${CMAKE_MATCH_1}\")
                 foreach(_standard_library ${_standard_libraries})
-                    if(_standard_library MATCHES \"^${_lib}(\\.lib)?$\")
+                    if(_standard_library MATCHES \"^${_lib}(\\\\.lib)?$\")
                         set(_lib_is_default_linked TRUE)
                         break()
                     endif()
