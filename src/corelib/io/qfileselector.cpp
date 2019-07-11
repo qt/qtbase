@@ -228,7 +228,18 @@ QUrl QFileSelector::select(const QUrl &filePath) const
         QString selectedPath = d->select(equivalentPath);
         ret.setPath(selectedPath.remove(0, scheme.size()));
     } else {
+        // we need to store the original query and fragment, since toLocalFile() will strip it off
+        QString frag;
+        if (ret.hasFragment())
+            frag = ret.fragment();
+        QString query;
+        if (ret.hasQuery())
+            query= ret.query();
         ret = QUrl::fromLocalFile(d->select(ret.toLocalFile()));
+        if (!frag.isNull())
+            ret.setFragment(frag);
+        if (!query.isNull())
+            ret.setQuery(query);
     }
     return ret;
 }

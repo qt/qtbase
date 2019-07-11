@@ -533,8 +533,6 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_timer->setInterval(20);
     connect(m_timer, &QTimer::timeout, this, [this](){ update(); });
     m_timer->start();
-
-    m_time.start();
 }
 
 Scene::~Scene()

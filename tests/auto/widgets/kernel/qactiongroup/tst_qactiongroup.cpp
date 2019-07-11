@@ -41,6 +41,7 @@ private slots:
     void enabledPropagation();
     void visiblePropagation();
     void exclusive();
+    void exclusiveOptional();
     void separators();
     void testActionInTwoQActionGroup();
     void unCheckCurrentAction();
@@ -48,11 +49,11 @@ private slots:
 
 void tst_QActionGroup::enabledPropagation()
 {
-    QActionGroup testActionGroup( 0 );
+    QActionGroup testActionGroup(nullptr);
 
     QAction* childAction = new QAction( &testActionGroup );
     QAction* anotherChildAction = new QAction( &testActionGroup );
-    QAction* freeAction = new QAction(0);
+    QAction* freeAction = new QAction(nullptr);
 
     QVERIFY( testActionGroup.isEnabled() );
     QVERIFY( childAction->isEnabled() );
@@ -87,11 +88,11 @@ void tst_QActionGroup::enabledPropagation()
 
 void tst_QActionGroup::visiblePropagation()
 {
-    QActionGroup testActionGroup( 0 );
+    QActionGroup testActionGroup(nullptr);
 
     QAction* childAction = new QAction( &testActionGroup );
     QAction* anotherChildAction = new QAction( &testActionGroup );
-    QAction* freeAction = new QAction(0);
+    QAction* freeAction = new QAction(nullptr);
 
     QVERIFY( testActionGroup.isVisible() );
     QVERIFY( childAction->isVisible() );
@@ -124,7 +125,7 @@ void tst_QActionGroup::visiblePropagation()
 
 void tst_QActionGroup::exclusive()
 {
-    QActionGroup group(0);
+    QActionGroup group(nullptr);
     group.setExclusive(false);
     QVERIFY( !group.isExclusive() );
 
@@ -151,6 +152,52 @@ void tst_QActionGroup::exclusive()
     QVERIFY( !actThree->isChecked() );
 }
 
+void tst_QActionGroup::exclusiveOptional()
+{
+    QActionGroup group(0);
+    group.setExclusive(true);
+    QVERIFY( group.isExclusive() );
+
+    QAction* actOne = new QAction( &group );
+    actOne->setCheckable( true );
+    QAction* actTwo = new QAction( &group );
+    actTwo->setCheckable( true );
+    QAction* actThree = new QAction( &group );
+    actThree->setCheckable( true );
+
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actOne->trigger();
+    QVERIFY( actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actOne->trigger();
+    QVERIFY( actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    group.setExclusionPolicy( QActionGroup::ExclusionPolicy::ExclusiveOptional );
+    QVERIFY( group.isExclusive() );
+
+    actOne->trigger();
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actTwo->trigger();
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+
+    actTwo->trigger();
+    QVERIFY( !actOne->isChecked() );
+    QVERIFY( !actTwo->isChecked() );
+    QVERIFY( !actThree->isChecked() );
+}
+
 void tst_QActionGroup::separators()
 {
     QMainWindow mw;
@@ -168,7 +215,7 @@ void tst_QActionGroup::separators()
 
     menu.addActions(actGroup.actions());
 
-    QCOMPARE((int)menu.actions().size(), 2);
+    QCOMPARE(menu.actions().size(), 2);
 
     const auto removeActions = [&menu](const QList<QAction *> &actions) {
         for (QAction *action : actions)
@@ -176,14 +223,14 @@ void tst_QActionGroup::separators()
     };
     removeActions(actGroup.actions());
 
-    QCOMPARE((int)menu.actions().size(), 0);
+    QCOMPARE(menu.actions().size(), 0);
 
     action = new QAction(&actGroup);
     action->setText("test two");
 
     menu.addActions(actGroup.actions());
 
-    QCOMPARE((int)menu.actions().size(), 3);
+    QCOMPARE(menu.actions().size(), 3);
 }
 
 void tst_QActionGroup::testActionInTwoQActionGroup()
@@ -203,7 +250,7 @@ void tst_QActionGroup::testActionInTwoQActionGroup()
 
 void tst_QActionGroup::unCheckCurrentAction()
 {
-    QActionGroup group(0);
+    QActionGroup group(nullptr);
     QAction action1(&group) ,action2(&group);
     action1.setCheckable(true);
     action2.setCheckable(true);

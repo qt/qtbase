@@ -264,7 +264,7 @@ void QMenuPrivate::copyActionToPlatformItem(const QAction *action, QPlatformMenu
             item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
         } else {
             QStyleOption opt;
-            item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
+            item->setIconSize(QApplication::style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
         }
     } else {
         item->setIcon(QIcon());
@@ -907,7 +907,7 @@ void QMenuPrivate::updateLayoutDirection()
         else if (QWidget *w = q->parentWidget())
             setLayoutDirection_helper(w->layoutDirection());
         else
-            setLayoutDirection_helper(QApplication::layoutDirection());
+            setLayoutDirection_helper(QGuiApplication::layoutDirection());
     }
 }
 
@@ -1335,7 +1335,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             if (e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
                 QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
                                   e->button(), e->buttons(), e->modifiers(), e->source());
-                QApplication::sendEvent(caused, &new_e);
+                QCoreApplication::sendEvent(caused, &new_e);
                 return true;
             }
         }
@@ -1543,7 +1543,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
 
     if (d->currentAction && d->currentAction == action && !d->currentAction->isSeparator()) {
         option->state |= QStyle::State_Selected
-                     | (d->mouseDown ? QStyle::State_Sunken : QStyle::State_None);
+                     | (QMenuPrivate::mouseDown ? QStyle::State_Sunken : QStyle::State_None);
     }
 
     option->menuHasCheckableItems = d->hasCheckableItems;
@@ -2331,8 +2331,18 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->updateLayoutDirection();
 
     // Ensure that we get correct sizeHints by placing this window on the correct screen.
-    if (d->setScreenForPoint(p))
+    // However if the QMenu was constructed with a QDesktopScreenWidget as its parent,
+    // then initialScreenIndex was set, so we should respect that for the lifetime of this menu.
+    // Use d->popupScreen to remember, because initialScreenIndex will be reset after the first showing.
+    const int screenIndex = d->topData()->initialScreenIndex;
+    if (screenIndex >= 0)
+        d->popupScreen = screenIndex;
+    if (auto s = QGuiApplication::screens().value(d->popupScreen)) {
+        if (d->setScreen(s))
+            d->itemsDirty = true;
+    } else if (d->setScreenForPoint(p)) {
         d->itemsDirty = true;
+    }
 
     const bool contextMenu = d->isContextMenu();
     if (d->lastContextMenu != contextMenu) {
@@ -2352,7 +2362,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     QRect screen;
 #if QT_CONFIG(graphicsview)
-    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
+    bool isEmbedded = !bypassGraphicsProxyWidget(this) && QMenuPrivate::nearestGraphicsProxyWidget(this);
     if (isEmbedded)
         screen = d->popupGeometry();
     else
@@ -2688,8 +2698,8 @@ void QMenu::hideEvent(QHideEvent *)
     if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->causedPopup.widget))
         mb->d_func()->setCurrentAction(0);
 #endif
-    if (d->mouseDown == this)
-        d->mouseDown = 0;
+    if (QMenuPrivate::mouseDown == this)
+        QMenuPrivate::mouseDown = nullptr;
     d->hasHadMouse = false;
     if (d->activeMenu)
         d->hideMenu(d->activeMenu);
@@ -2864,7 +2874,7 @@ void QMenu::mousePressEvent(QMouseEvent *e)
         d->hideUpToMenuBar();
         return;
     }
-    d->mouseDown = this;
+    QMenuPrivate::mouseDown = this;
 
     QAction *action = d->actionAt(e->pos());
     d->setCurrentAction(action, 20);
@@ -2879,12 +2889,12 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
     Q_D(QMenu);
     if (d->aboutToHide || d->mouseEventTaken(e))
         return;
-    if(d->mouseDown != this) {
-        d->mouseDown = 0;
+    if (QMenuPrivate::mouseDown != this) {
+        QMenuPrivate::mouseDown = nullptr;
         return;
     }
 
-    d->mouseDown = 0;
+    QMenuPrivate::mouseDown = nullptr;
     d->setSyncAction();
     QAction *action = d->actionAt(e->pos());
 
@@ -2985,7 +2995,7 @@ QMenu::event(QEvent *e)
         d->updateActionRects();
         break; }
     case QEvent::Show:
-        d->mouseDown = 0;
+        QMenuPrivate::mouseDown = nullptr;
         d->updateActionRects();
         d->sloppyState.reset();
         if (d->currentAction)
@@ -3375,7 +3385,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
 #if QT_CONFIG(menubar)
             if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->topCausedWidget())) {
                 QAction *oldAct = mb->d_func()->currentAction;
-                QApplication::sendEvent(mb, e);
+                QCoreApplication::sendEvent(mb, e);
                 if (mb->d_func()->currentAction != oldAct)
                     key_consumed = true;
             }
@@ -3418,7 +3428,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     }
 
     if (e->buttons())
-        d->mouseDown = this;
+        QMenuPrivate::mouseDown = this;
 
     if (d->activeMenu)
         d->activeMenu->d_func()->setCurrentAction(0);
@@ -3583,7 +3593,7 @@ void QMenu::internalDelayedPopup()
 
     QRect screen;
 #if QT_CONFIG(graphicsview)
-    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
+    bool isEmbedded = !bypassGraphicsProxyWidget(this) && QMenuPrivate::nearestGraphicsProxyWidget(this);
     if (isEmbedded)
         screen = d->popupGeometry();
     else

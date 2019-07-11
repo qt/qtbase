@@ -33,6 +33,8 @@
 #include <QtCore/QEvent>
 #include <QtCore/QList>
 
+QT_FORWARD_DECLARE_CLASS(QDebug)
+
 namespace QtDiag {
 
 // Event filter that can for example be installed on QApplication
@@ -66,13 +68,15 @@ public:
     };
     Q_DECLARE_FLAGS(ObjectTypes, ObjectType)
 
-    explicit EventFilter(EventCategories eventCategories, QObject *p = 0);
-    explicit EventFilter(QObject *p = 0);
+    explicit EventFilter(EventCategories eventCategories, QObject *p = nullptr);
+    explicit EventFilter(QObject *p = nullptr);
 
-    bool eventFilter(QObject *, QEvent *);
+    bool eventFilter(QObject *, QEvent *) override;
 
     ObjectTypes objectTypes() const { return m_objectTypes; }
     void setObjectTypes(ObjectTypes objectTypes) { m_objectTypes = objectTypes; }
+
+    static void formatObject(const QObject *o, QDebug debug);
 
 private:
     void init(EventCategories eventCategories);
@@ -83,6 +87,15 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(EventFilter::EventCategories)
 Q_DECLARE_OPERATORS_FOR_FLAGS(EventFilter::ObjectTypes)
+
+struct formatQObject
+{
+    explicit formatQObject(const QObject *o) : m_object(o) {}
+
+    const QObject *m_object;
+};
+
+QDebug operator<<(QDebug d, const formatQObject &fo);
 
 } // namespace QtDiag
 

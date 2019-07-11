@@ -55,6 +55,8 @@
 #include <QTimer>
 #include <QDataStream>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
@@ -168,7 +170,7 @@ public:
         SwitchConsoleMask  = 0x0000007f
     };
 
-    static QEvdevKeyboardHandler *create(const QString &device,
+    static std::unique_ptr<QEvdevKeyboardHandler> create(const QString &device,
                                          const QString &specification,
                                          const QString &defaultKeymapFile = QString());
 

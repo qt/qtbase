@@ -455,22 +455,20 @@ WriteInitialization::WriteInitialization(Uic *uic) :
       m_driver(uic->driver()), m_output(uic->output()), m_option(uic->option()),
       m_indent(m_option.indent + m_option.indent),
       m_dindent(m_indent + m_option.indent),
-      m_stdsetdef(true),
-      m_layoutMarginType(TopLevelMargin),
-      m_mainFormUsedInRetranslateUi(false),
       m_delayedOut(&m_delayedInitialization, QIODevice::WriteOnly),
       m_refreshOut(&m_refreshInitialization, QIODevice::WriteOnly),
-      m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly),
-      m_layoutWidget(false),
-      m_firstThemeIcon(true)
+      m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly)
 {
 }
 
 void WriteInitialization::acceptUI(DomUI *node)
 {
-    m_actionGroupChain.push(0);
-    m_widgetChain.push(0);
-    m_layoutChain.push(0);
+    m_actionGroupChain.push(nullptr);
+    m_widgetChain.push(nullptr);
+    m_layoutChain.push(nullptr);
+
+    if (node->hasAttributeConnectslotsbyname())
+        m_connectSlotsByName = node->attributeConnectslotsbyname();
 
     acceptLayoutDefault(node->elementLayoutDefault());
     acceptLayoutFunction(node->elementLayoutFunction());
@@ -498,9 +496,7 @@ void WriteInitialization::acceptUI(DomUI *node)
              << language::startFunctionDefinition1("setupUi", parameterType, varName, m_option.indent);
 
     const QStringList connections = m_uic->databaseInfo()->connections();
-    for (int i=0; i<connections.size(); ++i) {
-        QString connection = connections.at(i);
-
+    for (const auto &connection : connections) {
         if (connection == QLatin1String("(default)"))
             continue;
 
@@ -543,7 +539,7 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (!m_delayedInitialization.isEmpty())
         m_output << "\n" << m_delayedInitialization << "\n";
 
-    if (m_option.autoConnection) {
+    if (m_option.autoConnection && m_connectSlotsByName) {
         m_output << "\n" << m_indent << "QMetaObject" << language::qualifier
             << "connectSlotsByName(" << varName << ')' << language::eol;
     }
@@ -706,7 +702,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         addWizardPage(varName, node, parentWidget);
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QToolBox"))) {
         const DomProperty *plabel = attributes.value(QLatin1String("label"));
-        DomString *plabelString = plabel ? plabel->elementString() : 0;
+        DomString *plabelString = plabel ? plabel->elementString() : nullptr;
         QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
             icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
@@ -729,7 +725,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         }
     } else if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QTabWidget"))) {
         const DomProperty *ptitle = attributes.value(QLatin1String("title"));
-        DomString *ptitleString = ptitle ? ptitle->elementString() : 0;
+        DomString *ptitleString = ptitle ? ptitle->elementString() : nullptr;
         QString icon;
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
             icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
@@ -844,7 +840,7 @@ void WriteInitialization::addButtonGroup(const DomWidget *buttonNode, const QStr
     const DomButtonGroup *group = m_driver->findButtonGroup(attributeName);
     // Legacy feature: Create missing groups on the fly as the UIC button group feature
     // was present before the actual Designer support (4.5)
-    const bool createGroupOnTheFly = group == 0;
+    const bool createGroupOnTheFly = group == nullptr;
     if (createGroupOnTheFly) {
         DomButtonGroup *newGroup = new DomButtonGroup;
         newGroup->setAttributeName(attributeName);
@@ -900,8 +896,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     if (m_layoutWidget) {
         bool left, top, right, bottom;
         left = top = right = bottom = false;
-        for (int i = 0; i < propList.size(); ++i) {
-            const DomProperty *p = propList.at(i);
+        for (const DomProperty *p : propList) {
             const QString propertyName = p->attributeName();
             if (propertyName == QLatin1String("leftMargin") && p->kind() == DomProperty::Number)
                 left = true;
@@ -2619,7 +2614,6 @@ static void generateMultiDirectiveEnd(QTextStream &outputStream, const QSet<QStr
 
 WriteInitialization::Item::Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver)
     :
-    m_parent(0),
     m_itemClassName(itemClassName),
     m_indent(indent),
     m_setupUiStream(setupUiStream),

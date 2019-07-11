@@ -92,7 +92,10 @@ private slots:
     void focusIndicator();
     void focusHistory();
     void urlEncoding();
-    void markdown();
+    void sourceType_data();
+    void sourceType();
+    void unicode_data();
+    void unicode();
 
 private:
     TestBrowser *browser;
@@ -679,19 +682,71 @@ void tst_QTextBrowser::urlEncoding()
     delete browser;
 }
 
-void tst_QTextBrowser::markdown()
+void tst_QTextBrowser::sourceType_data()
 {
-    browser->setSource(QUrl::fromLocalFile(QFINDTESTDATA("markdown.md")));
+    QTest::addColumn<QString>("sourceFile");
+    QTest::addColumn<QTextDocument::ResourceType>("sourceType");
+    QTest::addColumn<int>("expectedMaxHeadingLevel");
+    QTest::addColumn<QTextDocument::ResourceType>("expectedSourceType");
+
+#if QT_CONFIG(textmarkdownreader)
+    const int maxMdHeadingLevel = 3;
+    const QTextDocument::ResourceType mdExpectedType = QTextDocument::MarkdownResource;
+#else
+    // If Qt doesn't support markdown, and we read a MD document anyway, it won't have any H3's.
+    const int maxMdHeadingLevel = 0;
+    const QTextDocument::ResourceType mdExpectedType = QTextDocument::HtmlResource;
+#endif
+    QTest::newRow("markdown detected") << "markdown.md" << QTextDocument::UnknownResource << maxMdHeadingLevel << mdExpectedType;
+    QTest::newRow("markdown specified") << "markdown.really" << QTextDocument::MarkdownResource << maxMdHeadingLevel << mdExpectedType;
+    QTest::newRow("markdown not identified") << "markdown.really" << QTextDocument::UnknownResource << 0 << QTextDocument::HtmlResource;
+    QTest::newRow("html detected") << "heading.html" << QTextDocument::UnknownResource << 3 << QTextDocument::HtmlResource;
+    QTest::newRow("html specified") << "heading.html" << QTextDocument::HtmlResource << 3 << QTextDocument::HtmlResource;
+}
+
+void tst_QTextBrowser::sourceType()
+{
+    QFETCH(QString, sourceFile);
+    QFETCH(QTextDocument::ResourceType, sourceType);
+    QFETCH(int, expectedMaxHeadingLevel);
+    QFETCH(QTextDocument::ResourceType, expectedSourceType);
+    if (sourceType == QTextDocument::UnknownResource)
+        // verify that the property setter works, with its default parameter for sourceType
+        browser->setProperty("source", QUrl::fromLocalFile(QFINDTESTDATA(sourceFile)));
+    else
+        browser->setSource(QUrl::fromLocalFile(QFINDTESTDATA(sourceFile)), sourceType);
+    QCOMPARE(browser->sourceType(), expectedSourceType);
     QTextFrame::iterator iterator = browser->document()->rootFrame()->begin();
     int maxHeadingLevel = -1;
     while (!iterator.atEnd())
         maxHeadingLevel = qMax(iterator++.currentBlock().blockFormat().intProperty(QTextFormat::HeadingLevel), maxHeadingLevel);
+    QCOMPARE(maxHeadingLevel, expectedMaxHeadingLevel);
+}
+
+void tst_QTextBrowser::unicode_data()
+{
+    QTest::addColumn<QString>("sourceFile");
+    QTest::addColumn<QTextDocument::ResourceType>("sourceType");
+    QTest::addColumn<QString>("expectedText");
+
 #if QT_CONFIG(textmarkdownreader)
-    QCOMPARE(maxHeadingLevel, 3);
-#else
-    // If Qt doesn't support markdown, this document will be misidentified as HTML, so it won't have any H3's.
-    QCOMPARE(maxHeadingLevel, 0);
+    QTest::newRow("markdown with quotes and fractions") << "quotesAndFractions.md" << QTextDocument::MarkdownResource <<
+        "you\u2019ll hope to see \u275Dquotes\u275E \uFE601\u00BD \u2154 \u00BC \u2157 \u215A \u215D some \u201Cvulgar\u201D fractions (pardon my \u00ABFrench\u00BB)";
 #endif
+}
+
+void tst_QTextBrowser::unicode()
+{
+    QFETCH(QString, sourceFile);
+    QFETCH(QTextDocument::ResourceType, sourceType);
+    QFETCH(QString, expectedText);
+    browser->setSource(QUrl::fromLocalFile(QFINDTESTDATA(sourceFile)), sourceType);
+    QTextFrame::iterator iterator = browser->document()->rootFrame()->begin();
+    while (!iterator.atEnd()) {
+        QString blockText = iterator++.currentBlock().text();
+        if (!blockText.isEmpty())
+            QCOMPARE(blockText, expectedText);
+    }
 }
 
 QTEST_MAIN(tst_QTextBrowser)

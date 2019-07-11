@@ -147,7 +147,7 @@ public:
     It is constructed and destroyed with almost no overhead,
     which means it is fine to have many mutexes as part of other classes.
 
-    \sa QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
+    \sa QRecursiveMutex, QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
 */
 
 /*!
@@ -156,12 +156,19 @@ public:
     \value Recursive  In this mode, a thread can lock the same mutex
                       multiple times and the mutex won't be unlocked
                       until a corresponding number of unlock() calls
-                      have been made.
+                      have been made. You should use QRecursiveMutex
+                      for this use-case.
 
     \value NonRecursive  In this mode, a thread may only lock a mutex
                          once.
 
-    \sa QMutex()
+    \sa QMutex(), QRecursiveMutex
+*/
+
+/*!
+    \fn QMutex::QMutex()
+
+    Constructs a new mutex. The mutex is created in an unlocked state.
 */
 
 /*!
@@ -179,7 +186,7 @@ public:
 */
 QMutex::QMutex(RecursionMode mode)
 {
-    d_ptr.store(mode == Recursive ? new QRecursiveMutexPrivate : 0);
+    d_ptr.storeRelaxed(mode == Recursive ? new QRecursiveMutexPrivate : 0);
 }
 
 /*!
@@ -189,12 +196,12 @@ QMutex::QMutex(RecursionMode mode)
 */
 QMutex::~QMutex()
 {
-    QMutexData *d = d_ptr.load();
+    QMutexData *d = d_ptr.loadRelaxed();
     if (isRecursive()) {
         delete static_cast<QRecursiveMutexPrivate *>(d);
     } else if (d) {
 #ifndef QT_LINUX_FUTEX
-        if (d != dummyLocked() && static_cast<QMutexPrivate *>(d)->possiblyUnlocked.load()
+        if (d != dummyLocked() && static_cast<QMutexPrivate *>(d)->possiblyUnlocked.loadRelaxed()
             && tryLock()) {
             unlock();
             return;
@@ -205,13 +212,15 @@ QMutex::~QMutex()
 }
 
 /*! \fn void QMutex::lock()
+    \fn QRecursiveMutex::lock()
+
     Locks the mutex. If another thread has locked the mutex then this
     call will block until that thread has unlocked it.
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e dead-lock when the mutex is locked recursively.
 
     \sa unlock()
@@ -228,6 +237,7 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 }
 
 /*! \fn bool QMutex::tryLock(int timeout)
+    \fn bool QRecursiveMutex::tryLock(int timeout)
 
     Attempts to lock the mutex. This function returns \c true if the lock
     was obtained; otherwise it returns \c false. If another thread has
@@ -243,8 +253,8 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e always return false when attempting to lock the mutex
     recursively.
 
@@ -262,6 +272,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 }
 
 /*! \fn bool QMutex::try_lock()
+    \fn bool QRecursiveMutex::try_lock()
     \since 5.8
 
     Attempts to lock the mutex. This function returns \c true if the lock
@@ -275,6 +286,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 
 /*! \fn template <class Rep, class Period> bool QMutex::try_lock_for(std::chrono::duration<Rep, Period> duration)
+    \fn template <class Rep, class Period> bool QRecursiveMutex::try_lock_for(std::chrono::duration<Rep, Period> duration)
     \since 5.8
 
     Attempts to lock the mutex. This function returns \c true if the lock
@@ -290,8 +302,8 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e always return false when attempting to lock the mutex
     recursively.
 
@@ -299,6 +311,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 
 /*! \fn template<class Clock, class Duration> bool QMutex::try_lock_until(std::chrono::time_point<Clock, Duration> timePoint)
+    \fn template<class Clock, class Duration> bool QRecursiveMutex::try_lock_until(std::chrono::time_point<Clock, Duration> timePoint)
     \since 5.8
 
     Attempts to lock the mutex. This function returns \c true if the lock
@@ -314,8 +327,8 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     Calling this function multiple times on the same mutex from the
     same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
+    \l{QRecursiveMutex}{recursive mutex}. If this mutex is a
+    \l{QMutex}{non-recursive mutex}, this function will
     \e always return false when attempting to lock the mutex
     recursively.
 
@@ -323,6 +336,8 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 
 /*! \fn void QMutex::unlock()
+    \fn void QRecursiveMutex::unlock()
+
     Unlocks the mutex. Attempting to unlock a mutex in a different
     thread to the one that locked it results in an error. Unlocking a
     mutex that is not locked results in undefined behavior.
@@ -361,6 +376,58 @@ bool QBasicMutex::isRecursive() noexcept
 bool QBasicMutex::isRecursive() const noexcept
 {
     return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
+}
+
+/*!
+    \class QRecursiveMutex
+    \inmodule QtCore
+    \since 5.14
+    \brief The QRecursiveMutex class provides access serialization between threads.
+
+    \threadsafe
+
+    \ingroup thread
+
+    The QRecursiveMutex class is a mutex, like QMutex, with which it is
+    API-compatible. It differs from QMutex by accepting lock() calls from
+    the same thread any number of times. QMutex would deadlock in this situation.
+
+    QRecursiveMutex is much more expensive to construct and operate on, so
+    use a plain QMutex whenever you can. Sometimes, one public function,
+    however, calls another public function, and they both need to lock the
+    same mutex. In this case, you have two options:
+
+    \list
+    \li Factor the code that needs mutex protection into private functions,
+    which assume that the mutex is held when they are called, and lock a
+    plain QMutex in the public functions before you call the private
+    implementation ones.
+    \li Or use a recursive mutex, so it doesn't matter that the first public
+    function has already locked the mutex when the second one wishes to do so.
+    \endlist
+
+    \sa QMutex, QMutexLocker, QReadWriteLock, QSemaphore, QWaitCondition
+*/
+
+/*!
+    Constructs a new recursive mutex. The mutex is created in an unlocked state.
+
+    \sa lock(), unlock()
+*/
+QRecursiveMutex::QRecursiveMutex()
+    : QMutex()
+{
+    d_ptr.storeRelaxed(new QRecursiveMutexPrivate);
+}
+
+/*!
+    Destroys the mutex.
+
+    \warning Destroying a locked mutex may result in undefined behavior.
+*/
+QRecursiveMutex::~QRecursiveMutex()
+{
+    delete static_cast<QRecursiveMutexPrivate*>(d_ptr.fetchAndStoreAcquire(nullptr));
 }
 
 /*!
@@ -422,6 +489,17 @@ bool QBasicMutex::isRecursive() const noexcept
     Constructs a QMutexLocker and locks \a mutex. The mutex will be
     unlocked when the QMutexLocker is destroyed. If \a mutex is zero,
     QMutexLocker does nothing.
+
+    \sa QMutex::lock()
+*/
+
+/*!
+    \fn QMutexLocker::QMutexLocker(QRecursiveMutex *mutex)
+    \since 5.14
+
+    Constructs a QMutexLocker and locks \a mutex. The mutex will be
+    unlocked (unlock() called) when the QMutexLocker is destroyed.
+    If \a mutex is \nullptr, QMutexLocker does nothing.
 
     \sa QMutex::lock()
 */
@@ -517,7 +595,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         }
 
         QMutexPrivate *d = static_cast<QMutexPrivate *>(copy);
-        if (timeout == 0 && !d->possiblyUnlocked.load())
+        if (timeout == 0 && !d->possiblyUnlocked.loadRelaxed())
             return false;
 
         // At this point we have a pointer to a QMutexPrivate. But the other thread
@@ -541,7 +619,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         // is set to the BigNumber magic value set in unlockInternal()
         int old_waiters;
         do {
-            old_waiters = d->waiters.load();
+            old_waiters = d->waiters.loadRelaxed();
             if (old_waiters == -QMutexPrivate::BigNumber) {
                 // we are unlocking, and the thread that unlocks is about to change d to 0
                 // we try to acquire the mutex by changing to dummyLocked()
@@ -550,7 +628,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
                     d->deref();
                     return true;
                 } else {
-                    Q_ASSERT(d != d_ptr.load()); //else testAndSetAcquire should have succeeded
+                    Q_ASSERT(d != d_ptr.loadRelaxed()); //else testAndSetAcquire should have succeeded
                     // Mutex is likely to bo 0, we should continue the outer-loop,
                     //  set old_waiters to the magic value of BigNumber
                     old_waiters = QMutexPrivate::BigNumber;
@@ -563,7 +641,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             // The mutex was unlocked before we incremented waiters.
             if (old_waiters != QMutexPrivate::BigNumber) {
                 //we did not break the previous loop
-                Q_ASSERT(d->waiters.load() >= 1);
+                Q_ASSERT(d->waiters.loadRelaxed() >= 1);
                 d->waiters.deref();
             }
             d->deref();
@@ -572,11 +650,11 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
         if (d->wait(timeout)) {
             // reset the possiblyUnlocked flag if needed (and deref its corresponding reference)
-            if (d->possiblyUnlocked.load() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
+            if (d->possiblyUnlocked.loadRelaxed() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
                 d->deref();
             d->derefWaiters(1);
             //we got the lock. (do not deref)
-            Q_ASSERT(d == d_ptr.load());
+            Q_ASSERT(d == d_ptr.loadRelaxed());
             return true;
         } else {
             Q_ASSERT(timeout >= 0);
@@ -593,7 +671,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
             return false;
         }
     }
-    Q_ASSERT(d_ptr.load() != 0);
+    Q_ASSERT(d_ptr.loadRelaxed() != 0);
     return true;
 }
 
@@ -618,7 +696,7 @@ void QBasicMutex::unlockInternal() noexcept
         //there is no one waiting on this mutex anymore, set the mutex as unlocked (d = 0)
         if (d_ptr.testAndSetRelease(d, 0)) {
             // reset the possiblyUnlocked flag if needed (and deref its corresponding reference)
-            if (d->possiblyUnlocked.load() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
+            if (d->possiblyUnlocked.loadRelaxed() && d->possiblyUnlocked.testAndSetRelaxed(true, false))
                 d->deref();
         }
         d->derefWaiters(0);
@@ -657,20 +735,20 @@ QMutexPrivate *QMutexPrivate::allocate()
     int i = freelist()->next();
     QMutexPrivate *d = &(*freelist())[i];
     d->id = i;
-    Q_ASSERT(d->refCount.load() == 0);
+    Q_ASSERT(d->refCount.loadRelaxed() == 0);
     Q_ASSERT(!d->recursive);
-    Q_ASSERT(!d->possiblyUnlocked.load());
-    Q_ASSERT(d->waiters.load() == 0);
-    d->refCount.store(1);
+    Q_ASSERT(!d->possiblyUnlocked.loadRelaxed());
+    Q_ASSERT(d->waiters.loadRelaxed() == 0);
+    d->refCount.storeRelaxed(1);
     return d;
 }
 
 void QMutexPrivate::release()
 {
     Q_ASSERT(!recursive);
-    Q_ASSERT(refCount.load() == 0);
-    Q_ASSERT(!possiblyUnlocked.load());
-    Q_ASSERT(waiters.load() == 0);
+    Q_ASSERT(refCount.loadRelaxed() == 0);
+    Q_ASSERT(!possiblyUnlocked.loadRelaxed());
+    Q_ASSERT(waiters.loadRelaxed() == 0);
     freelist()->release(id);
 }
 
@@ -680,7 +758,7 @@ void QMutexPrivate::derefWaiters(int value) noexcept
     int old_waiters;
     int new_waiters;
     do {
-        old_waiters = waiters.load();
+        old_waiters = waiters.loadRelaxed();
         new_waiters = old_waiters;
         if (new_waiters < 0) {
             new_waiters += QMutexPrivate::BigNumber;
@@ -696,7 +774,7 @@ void QMutexPrivate::derefWaiters(int value) noexcept
 inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     Qt::HANDLE self = QThread::currentThreadId();
-    if (owner.load() == self) {
+    if (owner.loadRelaxed() == self) {
         ++count;
         Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
         return true;
@@ -709,7 +787,7 @@ inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     }
 
     if (success)
-        owner.store(self);
+        owner.storeRelaxed(self);
     return success;
 }
 
@@ -721,7 +799,7 @@ inline void QRecursiveMutexPrivate::unlock() noexcept
     if (count > 0) {
         count--;
     } else {
-        owner.store(0);
+        owner.storeRelaxed(0);
         mutex.QBasicMutex::unlock();
     }
 }

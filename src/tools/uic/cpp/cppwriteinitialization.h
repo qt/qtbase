@@ -85,8 +85,8 @@ namespace CPP {
 
 struct WriteInitialization : public TreeWalker
 {
-    typedef QList<DomProperty*> DomPropertyList;
-    typedef QHash<QString, DomProperty*> DomPropertyMap;
+    using DomPropertyList = QList<DomProperty*>;
+    using DomPropertyMap = QHash<QString, DomProperty*>;
 
     WriteInitialization(Uic *uic);
 
@@ -161,7 +161,7 @@ private:
 // special initialization
 //
     class Item {
-        Q_DISABLE_COPY(Item)
+        Q_DISABLE_COPY_MOVE(Item)
     public:
         Item(const QString &itemClassName, const QString &indent, QTextStream &setupUiStream, QTextStream &retranslateUiStream, Driver *driver);
         ~Item();
@@ -188,7 +188,7 @@ private:
         ItemData m_setupUiData;
         ItemData m_retranslateUiData;
         QList<Item *> m_children;
-        Item *m_parent;
+        Item *m_parent = nullptr;
 
         const QString m_itemClassName;
         const QString m_indent;
@@ -244,7 +244,7 @@ private:
     const Option &m_option;
     QString m_indent;
     QString m_dindent;
-    bool m_stdsetdef;
+    bool m_stdsetdef = true;
 
     struct Buddy
     {
@@ -259,13 +259,13 @@ private:
     QVector<Buddy> m_buddies;
 
     QSet<QString> m_buttonGroups;
-    typedef QHash<uint, QString> ColorBrushHash;
+    using ColorBrushHash = QHash<uint, QString>;
     ColorBrushHash m_colorBrushHash;
     // Map from font properties to  font variable name for reuse
     // Map from size policy to  variable for reuse
-    typedef QMap<FontHandle, QString> FontPropertiesNameMap;
-    typedef QMap<IconHandle, QString> IconPropertiesNameMap;
-    typedef QMap<SizePolicyHandle, QString> SizePolicyNameMap;
+    using FontPropertiesNameMap = QMap<FontHandle, QString>;
+    using IconPropertiesNameMap = QMap<IconHandle, QString>;
+    using SizePolicyNameMap = QMap<SizePolicyHandle, QString>;
     FontPropertiesNameMap m_fontPropertiesNameMap;
     IconPropertiesNameMap m_iconPropertiesNameMap;
     SizePolicyNameMap     m_sizePolicyNameMap;
@@ -294,11 +294,11 @@ private:
 
     // layout defaults
     LayoutDefaultHandler m_LayoutDefaultHandler;
-    int m_layoutMarginType;
+    int m_layoutMarginType = TopLevelMargin;
 
     QString m_generatedClass;
     QString m_mainFormVarName;
-    bool m_mainFormUsedInRetranslateUi;
+    bool m_mainFormUsedInRetranslateUi = false;
 
     QString m_delayedInitialization;
     QTextStream m_delayedOut;
@@ -309,8 +309,9 @@ private:
     QString m_delayedActionInitialization;
     QTextStream m_actionOut;
 
-    bool m_layoutWidget;
-    bool m_firstThemeIcon;
+    bool m_layoutWidget = false;
+    bool m_firstThemeIcon = true;
+    bool m_connectSlotsByName = true;
 };
 
 } // namespace CPP

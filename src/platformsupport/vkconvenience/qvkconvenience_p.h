@@ -59,7 +59,9 @@ QT_BEGIN_NAMESPACE
 class QVkConvenience
 {
 public:
+#if QT_CONFIG(opengl)
     static VkFormat vkFormatFromGlFormat(uint glFormat);
+#endif
 };
 
 QT_END_NAMESPACE

@@ -65,7 +65,7 @@ QThreadData::QThreadData(int initialRefCount)
 
 QThreadData::~QThreadData()
 {
-    Q_ASSERT(_ref.load() == 0);
+    Q_ASSERT(_ref.loadRelaxed() == 0);
 
     // In the odd case that Qt is running on a secondary thread, the main
     // thread instance will have been dereffed asunder because of the deref in
@@ -73,8 +73,8 @@ QThreadData::~QThreadData()
     // crashing during QCoreApplicationData's global static cleanup we need to
     // safeguard the main thread here.. This fix is a bit crude, but it solves
     // the problem...
-    if (this->thread == QCoreApplicationPrivate::theMainThread) {
-       QCoreApplicationPrivate::theMainThread = 0;
+    if (this->thread.loadAcquire() == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
+       QCoreApplicationPrivate::theMainThread.storeRelease(nullptr);
        QThreadData::clearCurrentThreadData();
     }
 
@@ -85,8 +85,8 @@ QThreadData::~QThreadData()
     // because this destructor is still running (the _ref sub-object has not
     // been destroyed) and there's no reentrancy. The refcount will become
     // negative, but that's acceptable.
-    QThread *t = thread;
-    thread = 0;
+    QThread *t = thread.loadAcquire();
+    thread.storeRelease(nullptr);
     delete t;
 
     for (int i = 0; i < postEventList.size(); ++i) {
@@ -105,7 +105,7 @@ void QThreadData::ref()
 {
 #if QT_CONFIG(thread)
     (void) _ref.ref();
-    Q_ASSERT(_ref.load() != 0);
+    Q_ASSERT(_ref.loadRelaxed() != 0);
 #endif
 }
 
@@ -171,6 +171,11 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 // to 128K.
 #ifdef Q_OS_INTEGRITY
     stackSize = 128 * 1024;
+#elif defined(Q_OS_RTEMS)
+    static bool envStackSizeOk = false;
+    static const int envStackSize = qEnvironmentVariableIntValue("QT_DEFAULT_THREAD_STACK_SIZE", &envStackSizeOk);
+    if (envStackSizeOk)
+        stackSize = envStackSize;
 #endif
 
 #if defined (Q_OS_WIN)
@@ -393,7 +398,7 @@ QThread *QThread::currentThread()
 {
     QThreadData *data = QThreadData::current();
     Q_ASSERT(data != 0);
-    return data->thread;
+    return data->thread.loadAcquire();
 }
 
 /*!
@@ -878,11 +883,11 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     if (!data && createIfNecessary) {
         data = new QThreadData;
         data->thread = new QAdoptedThread(data);
-        data->threadId.store(Qt::HANDLE(data->thread));
+        data->threadId.storeRelaxed(Qt::HANDLE(data->thread));
         data->deref();
         data->isAdopted = true;
         if (!QCoreApplicationPrivate::theMainThread)
-            QCoreApplicationPrivate::theMainThread = data->thread.load();
+            QCoreApplicationPrivate::theMainThread = data->thread.loadRelaxed();
     }
     return data;
 }
@@ -925,7 +930,7 @@ QThreadPrivate::~QThreadPrivate()
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {
     Q_D(const QThread);
-    return d->data->eventDispatcher.load();
+    return d->data->eventDispatcher.loadRelaxed();
 }
 
 /*!
@@ -980,7 +985,7 @@ bool QThread::event(QEvent *event)
 
 void QThread::requestInterruption()
 {
-    if (this == QCoreApplicationPrivate::theMainThread) {
+    if (this == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
         qWarning("QThread::requestInterruption has no effect on the main thread");
         return;
     }

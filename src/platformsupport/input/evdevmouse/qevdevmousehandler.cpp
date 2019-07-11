@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEvdevMouse, "qt.qpa.input")
 
-QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QString &specification)
+std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &device, const QString &specification)
 {
     qCDebug(qLcEvdevMouse) << "create mouse handler for" << device << specification;
 
@@ -91,10 +91,10 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
         ::ioctl(fd, EVIOCGRAB, grab);
-        return new QEvdevMouseHandler(device, fd, abs, compression, jitterLimit);
+        return std::unique_ptr<QEvdevMouseHandler>(new QEvdevMouseHandler(device, fd, abs, compression, jitterLimit));
     } else {
         qErrnoWarning(errno, "Cannot open mouse input device %s", qPrintable(device));
-        return 0;
+        return nullptr;
     }
 }
 

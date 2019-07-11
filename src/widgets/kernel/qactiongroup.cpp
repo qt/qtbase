@@ -42,7 +42,6 @@
 #ifndef QT_NO_ACTION
 
 #include "qaction_p.h"
-#include "qapplication.h"
 #include "qevent.h"
 #include "qlist.h"
 
@@ -52,12 +51,16 @@ class QActionGroupPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QActionGroup)
 public:
-    QActionGroupPrivate() : exclusive(1), enabled(1), visible(1)  { }
+    QActionGroupPrivate() : enabled(1),
+                            visible(1),
+                            exclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive)
+    {
+    }
     QList<QAction *> actions;
     QPointer<QAction> current;
-    uint exclusive : 1;
     uint enabled : 1;
     uint visible : 1;
+    QActionGroup::ExclusionPolicy exclusionPolicy;
 
 private:
     void _q_actionTriggered();  //private slot
@@ -69,8 +72,8 @@ void QActionGroupPrivate::_q_actionChanged()
 {
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionChanged", "internal error");
-    if(exclusive) {
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionChanged", "internal error");
+    if (exclusionPolicy != QActionGroup::ExclusionPolicy::None) {
         if (action->isChecked()) {
             if (action != current) {
                 if(current)
@@ -87,7 +90,7 @@ void QActionGroupPrivate::_q_actionTriggered()
 {
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionTriggered", "internal error");
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionTriggered", "internal error");
     emit q->triggered(action);
 }
 
@@ -95,7 +98,7 @@ void QActionGroupPrivate::_q_actionHovered()
 {
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionHovered", "internal error");
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionHovered", "internal error");
     emit q->hovered(action);
 }
 
@@ -127,11 +130,16 @@ void QActionGroupPrivate::_q_actionHovered()
     actions is chosen. Each action in an action group emits its
     triggered() signal as usual.
 
-    As stated above, an action group is \l exclusive by default; it
-    ensures that only one checkable action is active at any one time.
+    As stated above, an action group is exclusive by default; it
+    ensures that at most only one checkable action is active at any one time.
     If you want to group checkable actions without making them
-    exclusive, you can turn of exclusiveness by calling
+    exclusive, you can turn off exclusiveness by calling
     setExclusive(false).
+
+    By default the active action of an exclusive group cannot be unchecked.
+    In some cases it may be useful to allow unchecking all the actions,
+    you can allow this by calling
+    setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional).
 
     Actions can be added to an action group using addAction(), but it
     is usually more convenient to specify a group when creating
@@ -146,10 +154,33 @@ void QActionGroupPrivate::_q_actionHovered()
 */
 
 /*!
+    \enum QActionGroup::ExclusionPolicy
+
+    This enum specifies the different policies that can be used to
+    control how the group performs exclusive checking on checkable actions.
+
+    \value None
+           The actions in the group can be checked independently of each other.
+
+    \value Exclusive
+           Exactly one action can be checked at any one time.
+           This is the default policy.
+
+    \value ExclusiveOptional
+           At most one action can be checked at any one time. The actions
+           can also be all unchecked.
+
+    \sa exclusionPolicy
+    \since 5.14
+*/
+
+/*!
     Constructs an action group for the \a parent object.
 
     The action group is exclusive by default. Call setExclusive(false)
-    to make the action group non-exclusive.
+    to make the action group non-exclusive. To make the group exclusive
+    but allow unchecking the active action call instead
+    setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional)
 */
 QActionGroup::QActionGroup(QObject* parent) : QObject(*new QActionGroupPrivate, parent)
 {
@@ -258,26 +289,56 @@ QList<QAction*> QActionGroup::actions() const
 }
 
 /*!
-    \property QActionGroup::exclusive
-    \brief whether the action group does exclusive checking
+    \brief Enable or disable the group exclusion checking
 
-    If exclusive is true, only one checkable action in the action group
-    can ever be active at any time. If the user chooses another
-    checkable action in the group, the one they chose becomes active and
-    the one that was active becomes inactive.
+    This is a convenience method that calls
+    setExclusionPolicy(ExclusionPolicy::Exclusive).
 
-    \sa QAction::checkable
+    \sa QActionGroup::exclusionPolicy
 */
 void QActionGroup::setExclusive(bool b)
 {
-    Q_D(QActionGroup);
-    d->exclusive = b;
+    setExclusionPolicy(b ? QActionGroup::ExclusionPolicy::Exclusive
+                         : QActionGroup::ExclusionPolicy::None);
 }
 
+/*!
+    \brief Returs true if the group is exclusive
+
+    The group is exclusive if the ExclusionPolicy is either Exclusive
+    or ExclusionOptional.
+
+*/
 bool QActionGroup::isExclusive() const
 {
+    return exclusionPolicy() != QActionGroup::ExclusionPolicy::None;
+}
+
+/*!
+    \property QActionGroup::exclusionPolicy
+    \brief This property holds the group exclusive checking policy
+
+    If exclusionPolicy is set to Exclusive, only one checkable
+    action in the action group can ever be active at any time. If the user
+    chooses another checkable action in the group, the one they chose becomes
+    active and the one that was active becomes inactive. If exclusionPolicy is
+    set to ExclusionOptional the group is exclusive but the active checkable
+    action in the group can be unchecked leaving the group with no actions
+    checked.
+
+    \sa QAction::checkable
+    \since 5.14
+*/
+void QActionGroup::setExclusionPolicy(QActionGroup::ExclusionPolicy policy)
+{
+    Q_D(QActionGroup);
+    d->exclusionPolicy = policy;
+}
+
+QActionGroup::ExclusionPolicy QActionGroup::exclusionPolicy() const
+{
     Q_D(const QActionGroup);
-    return d->exclusive;
+    return d->exclusionPolicy;
 }
 
 /*!
@@ -301,10 +362,10 @@ void QActionGroup::setEnabled(bool b)
 {
     Q_D(QActionGroup);
     d->enabled = b;
-    for(QList<QAction*>::const_iterator it = d->actions.constBegin(); it != d->actions.constEnd(); ++it) {
-        if(!(*it)->d_func()->forceDisabled) {
-            (*it)->setEnabled(b);
-            (*it)->d_func()->forceDisabled = false;
+    for (auto action : qAsConst(d->actions)) {
+        if (!action->d_func()->forceDisabled) {
+            action->setEnabled(b);
+            action->d_func()->forceDisabled = false;
         }
     }
 }
@@ -338,10 +399,10 @@ void QActionGroup::setVisible(bool b)
 {
     Q_D(QActionGroup);
     d->visible = b;
-    for(QList<QAction*>::Iterator it = d->actions.begin(); it != d->actions.end(); ++it) {
-        if(!(*it)->d_func()->forceInvisible) {
-            (*it)->setVisible(b);
-            (*it)->d_func()->forceInvisible = false;
+    for (auto action : qAsConst(d->actions)) {
+        if (!action->d_func()->forceInvisible) {
+            action->setVisible(b);
+            action->d_func()->forceInvisible = false;
         }
     }
 }

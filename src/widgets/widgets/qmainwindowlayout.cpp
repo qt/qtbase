@@ -292,25 +292,31 @@ bool QDockWidgetGroupWindow::event(QEvent *e)
 
     switch (e->type()) {
     case QEvent::Close:
+#if QT_CONFIG(tabbar)
         // Forward the close to the QDockWidget just as if its close button was pressed
         if (QDockWidget *dw = activeTabbedDockWidget()) {
             e->ignore();
             dw->close();
             adjustFlags();
         }
+#endif
         return true;
     case QEvent::Move:
+#if QT_CONFIG(tabbar)
         // Let QDockWidgetPrivate::moseEvent handle the dragging
         if (QDockWidget *dw = activeTabbedDockWidget())
             static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(dw))->moveEvent(static_cast<QMoveEvent*>(e));
+#endif
         return true;
     case QEvent::NonClientAreaMouseMove:
     case QEvent::NonClientAreaMouseButtonPress:
     case QEvent::NonClientAreaMouseButtonRelease:
     case QEvent::NonClientAreaMouseButtonDblClick:
+#if QT_CONFIG(tabbar)
         // Let the QDockWidgetPrivate of the currently visible dock widget handle the drag and drop
         if (QDockWidget *dw = activeTabbedDockWidget())
             static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(dw))->nonClientAreaMouseEvent(static_cast<QMouseEvent*>(e));
+#endif
         return true;
     case QEvent::ChildAdded:
         if (qobject_cast<QDockWidget *>(static_cast<QChildEvent*>(e)->child()))
@@ -347,6 +353,7 @@ QDockAreaLayoutInfo *QDockWidgetGroupWindow::layoutInfo() const
     return static_cast<QDockWidgetGroupLayout *>(layout())->dockAreaLayoutInfo();
 }
 
+#if QT_CONFIG(tabbar)
 /*! \internal
     If this is a floating tab bar returns the currently the QDockWidgetGroupWindow that contains
     tab, otherwise, return nullptr;
@@ -383,7 +390,6 @@ const QDockAreaLayoutInfo *QDockWidgetGroupWindow::tabLayoutInfo() const
 QDockWidget *QDockWidgetGroupWindow::activeTabbedDockWidget() const
 {
     QDockWidget *dw = nullptr;
-#if QT_CONFIG(tabbar)
     const QDockAreaLayoutInfo *info = tabLayoutInfo();
     if (!info)
         return nullptr;
@@ -405,9 +411,9 @@ QDockWidget *QDockWidgetGroupWindow::activeTabbedDockWidget() const
             dw = qobject_cast<QDockWidget *>(item.widgetItem->widget());
         }
     }
-#endif
     return dw;
 }
+#endif // QT_CONFIG(tabbar)
 
 /*! \internal
     Destroy or hide this window if there is no more QDockWidget in it.
@@ -461,7 +467,11 @@ void QDockWidgetGroupWindow::adjustFlags()
     Qt::WindowFlags oldFlags = windowFlags();
     Qt::WindowFlags flags = oldFlags;
 
+#if QT_CONFIG(tabbar)
     QDockWidget *top = activeTabbedDockWidget();
+#else
+    QDockWidget *top = nullptr;
+#endif
     if (!top) { // nested tabs, show window decoration
         flags =
             ((oldFlags & ~Qt::FramelessWindowHint) | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
@@ -507,6 +517,7 @@ void QDockWidgetGroupWindow::adjustFlags()
 
 bool QDockWidgetGroupWindow::hasNativeDecos() const
 {
+#if QT_CONFIG(tabbar)
     QDockWidget *dw = activeTabbedDockWidget();
     if (!dw) // We have a group of nested QDockWidgets (not just floating tabs)
         return true;
@@ -515,6 +526,9 @@ bool QDockWidgetGroupWindow::hasNativeDecos() const
         return false;
 
     return dw->titleBarWidget() == nullptr;
+#else
+    return true;
+#endif
 }
 
 /*
@@ -531,16 +545,18 @@ bool QDockWidgetGroupWindow::hover(QLayoutItem *widgetItem, const QPoint &mouseP
         savedState = *layoutInfo();
 
     QMainWindow::DockOptions opts = static_cast<QMainWindow *>(parentWidget())->dockOptions();
+    QDockAreaLayoutInfo newState = savedState;
     bool nestingEnabled =
         (opts & QMainWindow::AllowNestedDocks) && !(opts & QMainWindow::ForceTabbedDocks);
     QDockAreaLayoutInfo::TabMode tabMode =
+#if !QT_CONFIG(tabbar)
+        QDockAreaLayoutInfo::NoTabs;
+#else
         nestingEnabled ? QDockAreaLayoutInfo::AllowTabs : QDockAreaLayoutInfo::ForceTabs;
     if (auto group = qobject_cast<QDockWidgetGroupWindow *>(widgetItem->widget())) {
         if (!group->tabLayoutInfo())
             tabMode = QDockAreaLayoutInfo::NoTabs;
     }
-
-    QDockAreaLayoutInfo newState = savedState;
     if (newState.tabbed) {
         // insertion into a top-level tab
         newState.item_list = { QDockAreaLayoutItem(new QDockAreaLayoutInfo(newState)) };
@@ -548,6 +564,7 @@ bool QDockWidgetGroupWindow::hover(QLayoutItem *widgetItem, const QPoint &mouseP
         newState.tabbed = false;
         newState.tabBar = nullptr;
     }
+#endif
 
     auto newGapPos = newState.gapIndex(mousePos, nestingEnabled, tabMode);
     Q_ASSERT(!newGapPos.isEmpty());
@@ -1498,14 +1515,6 @@ void QMainWindowLayout::addDockWidget(Qt::DockWidgetArea area,
     invalidate();
 }
 
-void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
-{
-    addChildWidget(second);
-    layoutState.dockAreaLayout.tabifyDockWidget(first, second);
-    emit second->dockLocationChanged(dockWidgetArea(first));
-    invalidate();
-}
-
 bool QMainWindowLayout::restoreDockWidget(QDockWidget *dockwidget)
 {
     addChildWidget(dockwidget);
@@ -1517,6 +1526,14 @@ bool QMainWindowLayout::restoreDockWidget(QDockWidget *dockwidget)
 }
 
 #if QT_CONFIG(tabbar)
+void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
+{
+    addChildWidget(second);
+    layoutState.dockAreaLayout.tabifyDockWidget(first, second);
+    emit second->dockLocationChanged(dockWidgetArea(first));
+    invalidate();
+}
+
 bool QMainWindowLayout::documentMode() const
 {
     return _documentMode;
@@ -1535,20 +1552,15 @@ void QMainWindowLayout::setDocumentMode(bool enabled)
     for (QTabBar *bar : qAsConst(unusedTabBars))
         bar->setDocumentMode(_documentMode);
 }
-#endif // QT_CONFIG(tabbar)
 
 void QMainWindowLayout::setVerticalTabsEnabled(bool enabled)
 {
-#if !QT_CONFIG(tabbar)
-    Q_UNUSED(enabled);
-#else
     if (verticalTabsEnabled == enabled)
         return;
 
     verticalTabsEnabled = enabled;
 
     updateTabBarShapes();
-#endif // QT_CONFIG(tabbar)
 }
 
 #if QT_CONFIG(tabwidget)
@@ -1609,7 +1621,6 @@ static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWid
 }
 #endif // QT_CONFIG(tabwidget)
 
-#if QT_CONFIG(tabbar)
 void QMainWindowLayout::updateTabBarShapes()
 {
 #if QT_CONFIG(tabwidget)
@@ -1851,19 +1862,17 @@ void QMainWindowLayout::tabMoved(int from, int to)
 
     info->moveTab(from, to);
 }
-#endif // QT_CONFIG(tabbar)
 
 void QMainWindowLayout::raise(QDockWidget *widget)
 {
-#if QT_CONFIG(tabbar)
     QDockAreaLayoutInfo *info = dockInfo(widget);
     if (info == 0)
         return;
     if (!info->tabbed)
         return;
     info->setCurrentTab(widget);
-#endif
 }
+#endif // QT_CONFIG(tabbar)
 
 #endif // QT_CONFIG(dockwidget)
 
@@ -2329,7 +2338,7 @@ void QMainWindowLayout::setDockOptions(QMainWindow::DockOptions opts)
 
     dockOptions = opts;
 
-#if QT_CONFIG(dockwidget)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
     setVerticalTabsEnabled(opts & QMainWindow::VerticalTabs);
 #endif
 
@@ -2413,7 +2422,7 @@ static bool unplugGroup(QMainWindowLayout *layout, QLayoutItem **item,
  */
 QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 {
-#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
     auto *groupWindow = qobject_cast<const QDockWidgetGroupWindow *>(widget->parentWidget());
     if (!widget->isWindow() && groupWindow) {
         if (group && groupWindow->tabLayoutInfo()) {
@@ -2525,10 +2534,10 @@ void QMainWindowLayout::updateGapIndicator()
 #endif // QT_CONFIG(rubberband)
 }
 
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
 {
     QTabBar::Shape result = QTabBar::RoundedSouth;
-#if QT_CONFIG(tabwidget)
     if (qobject_cast<QDockWidget *>(w)) {
         switch (static_cast<QDockWidgetPrivate *>(qt_widget_private(w))->tabPosition) {
         case QTabWidget::North:
@@ -2545,9 +2554,9 @@ static QTabBar::Shape tabwidgetPositionToTabBarShape(QWidget *w)
             break;
         }
     }
-#endif // tabwidget
     return result;
 }
+#endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 
 void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
 {
@@ -2584,13 +2593,14 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
             }
         }
         for (QWidget *w : candidates) {
-            QWindow *handle1 = widget->windowHandle();
-            QWindow *handle2 = w->windowHandle();
-            if (handle1 && handle2 && handle1->screen() != handle2->screen())
+            const QScreen *screen1 = qt_widget_private(widget)->associatedScreen();
+            const QScreen *screen2 = qt_widget_private(w)->associatedScreen();
+            if (screen1 && screen2 && screen1 != screen2)
                 continue;
             if (!w->geometry().contains(mousePos))
                 continue;
 
+#if QT_CONFIG(tabwidget)
             if (auto dropTo = qobject_cast<QDockWidget *>(w)) {
                 // dropping to a normal widget, we mutate it in a QDockWidgetGroupWindow with two
                 // tabs
@@ -2612,6 +2622,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
                 w = floatingTabs;
                 widget->raise(); // raise, as our newly created drop target is now on top
             }
+#endif
             Q_ASSERT(qobject_cast<QDockWidgetGroupWindow *>(w));
             auto group = static_cast<QDockWidgetGroupWindow *>(w);
             if (group->hover(widgetItem, group->mapFromGlobal(mousePos))) {

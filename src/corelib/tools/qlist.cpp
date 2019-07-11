@@ -75,7 +75,7 @@ template class Q_CORE_EXPORT QVector<QPoint>;
     the number of elements in the list.
 */
 
-const QListData::Data QListData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, { 0 } };
+const QListData::Data QListData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, { nullptr } };
 
 /*!
  *  Detaches the QListData by allocating new memory for a list which will be bigger

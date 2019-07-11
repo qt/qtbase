@@ -54,6 +54,7 @@
 #include <QtNetwork>
 
 #include <vector>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,9 +87,8 @@ private:
     void handleNewConnection(const QHostAddress &peerAddress, quint16 peerPort,
                              const QByteArray &clientHello);
 
-    using DtlsConnection = QSharedPointer<QDtls>;
-    void doHandshake(DtlsConnection newConnection, const QByteArray &clientHello);
-    void decryptDatagram(DtlsConnection connection, const QByteArray &clientMessage);
+    void doHandshake(QDtls *newConnection, const QByteArray &clientHello);
+    void decryptDatagram(QDtls *connection, const QByteArray &clientMessage);
     void shutdown();
 
     bool listening = false;
@@ -96,7 +96,7 @@ private:
 
     QSslConfiguration serverConfiguration;
     QDtlsClientVerifier cookieSender;
-    QVector<DtlsConnection> knownClients;
+    std::vector<std::unique_ptr<QDtls>> knownClients;
 
     Q_DISABLE_COPY(DtlsServer)
 };

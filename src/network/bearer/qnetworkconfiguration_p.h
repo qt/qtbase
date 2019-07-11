@@ -65,22 +65,14 @@ class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
     QNetworkConfigurationPrivate() :
-        mutex(QMutex::Recursive),
         type(QNetworkConfiguration::Invalid),
         purpose(QNetworkConfiguration::UnknownPurpose),
         bearerType(QNetworkConfiguration::BearerUnknown),
         isValid(false), roamingSupported(false),
         timeout(DefaultTimeout)
     {}
-    virtual ~QNetworkConfigurationPrivate()
-    {
-        //release pointers to member configurations
-        serviceNetworkMembers.clear();
-    }
 
-    QMap<unsigned int, QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
-
-    mutable QMutex mutex;
+    mutable QRecursiveMutex mutex;
 
     QString name;
     QString id;

@@ -48,7 +48,9 @@ private slots:
 
     void defaultHandler();
     void installMessageHandler();
+#if QT_DEPRECATED_SINCE(5, 0)
     void installMsgHandler();
+#endif
     void installBothHandler();
 
 #ifdef QT_BUILD_INTERNAL
@@ -112,7 +114,9 @@ void tst_qmessagehandler::initTestCase()
 
 void tst_qmessagehandler::cleanup()
 {
+#if QT_DEPRECATED_SINCE(5, 0)
     qInstallMsgHandler(0);
+#endif
     qInstallMessageHandler((QtMessageHandler)0);
     s_type = QtFatalMsg;
     s_file = 0;
@@ -143,6 +147,7 @@ void tst_qmessagehandler::installMessageHandler()
     QCOMPARE((void*)myHandler, (void*)customMessageHandler);
 }
 
+#if QT_DEPRECATED_SINCE(5, 0)
 void tst_qmessagehandler::installMsgHandler()
 {
     QtMsgHandler oldHandler = qInstallMsgHandler(customMsgHandler);
@@ -158,6 +163,7 @@ void tst_qmessagehandler::installMsgHandler()
     QtMsgHandler myHandler = qInstallMsgHandler(oldHandler);
     QCOMPARE((void*)myHandler, (void*)customMsgHandler);
 }
+#endif
 
 void tst_qmessagehandler::installBothHandler()
 {
@@ -870,12 +876,14 @@ void tst_qmessagehandler::setMessagePattern()
 #endif
 
     // make sure there is no QT_MESSAGE_PATTERN in the environment
-    QStringList environment = m_baseEnvironment;
-    QMutableListIterator<QString> iter(environment);
-    while (iter.hasNext()) {
-        if (iter.next().startsWith("QT_MESSAGE_PATTERN"))
-            iter.remove();
-    }
+    QStringList environment;
+    environment.reserve(m_baseEnvironment.size());
+    const auto doesNotStartWith = [](QLatin1String s) {
+        return [s](const QString &str) { return !str.startsWith(s); };
+    };
+    std::copy_if(m_baseEnvironment.cbegin(), m_baseEnvironment.cend(),
+                 std::back_inserter(environment),
+                 doesNotStartWith(QLatin1String("QT_MESSAGE_PATTERN")));
     process.setEnvironment(environment);
 
     process.start(appExe);

@@ -118,7 +118,6 @@ struct Options
         , timing(false)
         , generateAssetsFileList(true)
         , build(true)
-        , gradle(false)
         , auxMode(false)
         , deploymentMechanism(Bundled)
         , releasePackage(false)
@@ -150,7 +149,6 @@ struct Options
     bool timing;
     bool generateAssetsFileList;
     bool build;
-    bool gradle;
     bool auxMode;
     bool stripLibraries = true;
     ActionTimer timer;
@@ -159,7 +157,6 @@ struct Options
     QString sdkPath;
     QString sdkBuildToolsVersion;
     QString ndkPath;
-    QString antTool;
     QString jdkPath;
 
     // Build paths
@@ -212,6 +209,7 @@ struct Options
     bool sectionsOnly;
     bool protectedAuthenticationPath;
     bool jarSigner;
+    QString apkPath;
 
     // Gdbserver
     TriState gdbServer;
@@ -369,13 +367,6 @@ Options parseOptions()
             options.helpRequested = true;
         } else if (argument.compare(QLatin1String("--verbose"), Qt::CaseInsensitive) == 0) {
             options.verbose = true;
-        } else if (argument.compare(QLatin1String("--gradle"), Qt::CaseInsensitive) == 0) {
-            options.gradle = true;
-        } else if (argument.compare(QLatin1String("--ant"), Qt::CaseInsensitive) == 0) {
-            if (i + 1 == arguments.size())
-                options.helpRequested = true;
-            else
-                options.antTool = arguments.at(++i);
         } else if (argument.compare(QLatin1String("--deployment"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size()) {
                 options.helpRequested = true;
@@ -406,6 +397,11 @@ Options parseOptions()
                 options.helpRequested = true;
             else
                 options.jdkPath = arguments.at(++i);
+        } else if (argument.compare(QLatin1String("--apk"), Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                options.helpRequested = true;
+            else
+                options.apkPath = arguments.at(++i);
         } else if (argument.compare(QLatin1String("--sign"), Qt::CaseInsensitive) == 0) {
             if (i + 2 >= arguments.size()) {
                 options.helpRequested = true;
@@ -515,9 +511,6 @@ void printHelp()
                     "    --android-platform <platform>: Builds against the given android\n"
                     "       platform. By default, the highest available version will be\n"
                     "       used.\n"
-                    "    --gradle. Use gradle instead of ant to create and install the apk.\n"
-                    "    --ant <path/to/ant>: If unspecified, ant from the PATH will be\n"
-                    "       used.\n"
                     "    --release: Builds a package ready for release. By default, the\n"
                     "       package will be signed with a debug key.\n"
                     "    --sign <url/to/keystore> <alias>: Signs the package with the\n"
@@ -557,6 +550,7 @@ void printHelp()
                     "       dependencies into the build directory and update the XML templates.\n"
                     "       The project will not be built or installed.\n"
                     "    --no-strip: Do not strip debug symbols from libraries.\n"
+                    "    --apk <path/where/to/copy/the/apk>: Path where to copy the built apk.\n"
                     "    --help: Displays this information.\n\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
@@ -1024,16 +1018,13 @@ bool copyAndroidTemplate(const Options &options)
     if (options.verbose)
         fprintf(stdout, "Copying Android package template.\n");
 
-    if (options.gradle && !copyGradleTemplate(options))
+    if (!copyGradleTemplate(options))
         return false;
 
     if (!copyAndroidTemplate(options, QLatin1String("/src/android/templates")))
         return false;
 
-    if (options.gradle)
-        return true;
-
-    return copyAndroidTemplate(options, QLatin1String("/src/android/java"));
+    return true;
 }
 
 bool copyAndroidSources(const Options &options)
@@ -1281,36 +1272,6 @@ bool updateStringsXml(const Options &options)
                    .append("</string></resources>\n"));
         return true;
     }
-
-    if (!updateFile(fileName, replacements))
-        return false;
-
-    if (options.gradle)
-        return true;
-
-    // ant can't (easily) build multiple res folders,
-    // so we need to replace the "<!-- %%INSERT_STRINGS -->" placeholder
-    // from the main res folder
-    QFile stringsXml(fileName);
-    if (!stringsXml.open(QIODevice::ReadOnly)) {
-        fprintf(stderr, "Cannot open %s for reading.\n", qPrintable(fileName));
-        return false;
-    }
-
-    QXmlStreamReader reader(&stringsXml);
-    while (!reader.atEnd()) {
-        reader.readNext();
-        if (reader.isStartElement() &&
-            reader.name() == QLatin1String("string") &&
-            reader.attributes().hasAttribute(QLatin1String("name")) &&
-            reader.attributes().value(QLatin1String("name")) == QLatin1String("app_name")) {
-            return true;
-        }
-    }
-
-    replacements.clear();
-    replacements[QStringLiteral("<!-- %%INSERT_STRINGS -->")] = QString::fromLatin1("<string name=\"app_name\">%1</string>\n")
-                                                        .arg(QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1));
 
     if (!updateFile(fileName, replacements))
         return false;
@@ -2220,64 +2181,6 @@ QString findInPath(const QString &fileName)
     return QString();
 }
 
-bool buildAntProject(const Options &options)
-{
-    if (options.verbose)
-        fprintf(stdout, "Building Android package using ant.\n");
-
-    QString antTool = options.antTool;
-    if (antTool.isEmpty()) {
-#if defined(Q_OS_WIN32)
-        antTool = findInPath(QLatin1String("ant.bat"));
-#else
-        antTool = findInPath(QLatin1String("ant"));
-#endif
-    }
-
-    if (antTool.isEmpty()) {
-        fprintf(stderr, "Cannot find ant in PATH. Please use --ant option to pass in the correct path.\n");
-        return false;
-    }
-
-    if (options.verbose)
-        fprintf(stdout, "Using ant: %s\n", qPrintable(antTool));
-
-    QString oldPath = QDir::currentPath();
-    if (!QDir::setCurrent(options.outputDirectory)) {
-        fprintf(stderr, "Cannot current path to %s\n", qPrintable(options.outputDirectory));
-        return false;
-    }
-
-    QString ant = QString::fromLatin1("%1 %2").arg(shellQuote(antTool)).arg(options.releasePackage ? QLatin1String(" release") : QLatin1String(" debug"));
-
-    FILE *antCommand = openProcess(ant);
-    if (antCommand == 0) {
-        fprintf(stderr, "Cannot run ant command: %s\n.", qPrintable(ant));
-        return false;
-    }
-
-    char buffer[512];
-    while (fgets(buffer, sizeof(buffer), antCommand) != 0) {
-        fprintf(stdout, "%s", buffer);
-        fflush(stdout);
-    }
-
-    int errorCode = pclose(antCommand);
-    if (errorCode != 0) {
-        fprintf(stderr, "Building the android package failed!\n");
-        if (!options.verbose)
-            fprintf(stderr, "  -- For more information, run this command with --verbose.\n");
-        return false;
-    }
-
-    if (!QDir::setCurrent(oldPath)) {
-        fprintf(stderr, "Cannot change back to old path: %s\n", qPrintable(oldPath));
-        return false;
-    }
-
-    return true;
-}
-
 typedef QMap<QByteArray, QByteArray> GradleProperties;
 
 static GradleProperties readGradleProperties(const QString &path)
@@ -2335,7 +2238,7 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
     return true;
 }
 
-bool buildGradleProject(const Options &options)
+bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
     localProperties["sdk.dir"] = options.sdkPath.toLocal8Bit();
@@ -2403,12 +2306,6 @@ bool buildGradleProject(const Options &options)
     return true;
 }
 
-bool buildAndroidProject(const Options &options)
-{
-    return options.gradle ? buildGradleProject(options)
-                          : buildAntProject(options);
-}
-
 bool uninstallApk(const Options &options)
 {
     if (options.verbose)
@@ -2445,15 +2342,11 @@ enum PackageType {
 QString apkPath(const Options &options, PackageType pt)
 {
     QString path(options.outputDirectory);
-    if (options.gradle) {
-        path += QLatin1String("/build/outputs/apk/");
-        QString buildType(options.releasePackage ? QLatin1String("release/") : QLatin1String("debug/"));
-        if (QDir(path + buildType).exists())
-            path += buildType;
-        path += QDir(options.outputDirectory).dirName() + QLatin1Char('-');
-    } else {
-        path += QLatin1String("/bin/QtApp-");
-    }
+    path += QLatin1String("/build/outputs/apk/");
+    QString buildType(options.releasePackage ? QLatin1String("release/") : QLatin1String("debug/"));
+    if (QDir(path + buildType).exists())
+        path += buildType;
+    path += QDir(options.outputDirectory).dirName() + QLatin1Char('-');
     if (options.releasePackage) {
         path += QLatin1String("release-");
         if (pt == UnsignedAPK)
@@ -2501,6 +2394,14 @@ bool installApk(const Options &options)
     }
 
     return true;
+}
+
+bool copyPackage(const Options &options)
+{
+    fflush(stdout);
+    auto from = apkPath(options, options.keyStore.isEmpty() ? UnsignedAPK : SignedAPK);
+    QFile::remove(options.apkPath);
+    return QFile::copy(from, options.apkPath);
 }
 
 bool copyStdCpp(Options *options)
@@ -2873,7 +2774,8 @@ enum ErrorCode
     CannotSignPackage = 15,
     CannotInstallApk = 16,
     CannotGenerateAssetsFileList = 18,
-    CannotCopyAndroidExtraResources = 19
+    CannotCopyAndroidExtraResources = 19,
+    CannotCopyApk = 20
 };
 
 int main(int argc, char *argv[])
@@ -2930,8 +2832,7 @@ int main(int argc, char *argv[])
     }
 
     if (options.build) {
-        if (options.gradle)
-            cleanAndroidFiles(options);
+        cleanAndroidFiles(options);
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Cleaned Android file\n", options.timer.elapsed());
 
@@ -3005,9 +2906,6 @@ int main(int argc, char *argv[])
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Updated files\n", options.timer.elapsed());
 
-        if (!options.gradle && !createAndroidProject(options))
-            return CannotCreateAndroidProject;
-
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Created project\n", options.timer.elapsed());
 
@@ -3019,6 +2917,9 @@ int main(int argc, char *argv[])
 
         if (!options.keyStore.isEmpty() && !signPackage(options))
             return CannotSignPackage;
+
+        if (!options.apkPath.isEmpty() && !copyPackage(options))
+            return CannotCopyApk;
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Signed package\n", options.timer.elapsed());

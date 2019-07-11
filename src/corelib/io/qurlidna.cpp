@@ -1444,7 +1444,7 @@ static void mapToLowerCase(QString *str, int from)
 {
     int N = sizeof(NameprepCaseFolding) / sizeof(NameprepCaseFolding[0]);
 
-    ushort *d = 0;
+    ushort *d = nullptr;
     for (int i = from; i < str->size(); ++i) {
         uint uc = str->at(i).unicode();
         if (uc < 0x80) {
@@ -1474,7 +1474,7 @@ static void mapToLowerCase(QString *str, int from)
                     else
                         str->replace(--i, 2, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
                     i += l - 1;
-                    d = 0;
+                    d = nullptr;
                 } else {
                     if (!d)
                         d = reinterpret_cast<ushort *>(str->data());
@@ -2404,7 +2404,7 @@ static const char * const idn_whitelist[] = {
 };
 static const size_t idn_whitelist_size = sizeof idn_whitelist / sizeof *idn_whitelist;
 
-static QStringList *user_idn_whitelist = 0;
+static QStringList *user_idn_whitelist = nullptr;
 
 static bool lessThan(const QChar *a, int l, const char *c)
 {

@@ -891,7 +891,7 @@ void QHostInfoRunnable::run()
     // thread goes back to QThreadPool
 }
 
-QHostInfoLookupManager::QHostInfoLookupManager() : mutex(QMutex::Recursive), wasDeleted(false)
+QHostInfoLookupManager::QHostInfoLookupManager() : wasDeleted(false)
 {
     moveToThread(QCoreApplicationPrivate::mainThread());
 #if QT_CONFIG(thread)

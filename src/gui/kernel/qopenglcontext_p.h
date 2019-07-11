@@ -132,7 +132,6 @@ class Q_GUI_EXPORT QOpenGLContextGroupPrivate : public QObjectPrivate
 public:
     QOpenGLContextGroupPrivate()
         : m_context(nullptr)
-        , m_mutex(QMutex::Recursive)
         , m_refs(0)
     {
     }
@@ -147,7 +146,7 @@ public:
     QOpenGLContext *m_context;
 
     QList<QOpenGLContext *> m_shares;
-    QMutex m_mutex;
+    QRecursiveMutex m_mutex;
 
     QHash<QOpenGLMultiGroupSharedResource *, QOpenGLSharedResource *> m_resources;
     QAtomicInt m_refs;
@@ -186,7 +185,7 @@ public:
 private:
     QAtomicInt active;
     QList<QOpenGLContextGroup *> m_groups;
-    QMutex m_mutex;
+    QRecursiveMutex m_mutex;
 };
 
 class QPaintEngineEx;

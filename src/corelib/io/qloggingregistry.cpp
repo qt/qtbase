@@ -165,7 +165,7 @@ void QLoggingRule::parse(const QStringRef &pattern)
             p = QStringRef(p.string(), p.position() + 1, p.length() - 1);
         }
         if (p.contains(QLatin1Char('*'))) // '*' only supported at start/end
-            flags = 0;
+            flags = PatternFlags();
     }
 
     category = p.toString();
@@ -415,7 +415,7 @@ QLoggingRegistry::installFilter(QLoggingCategory::CategoryFilter filter)
 {
     QMutexLocker locker(&registryMutex);
 
-    if (filter == 0)
+    if (!filter)
         filter = defaultCategoryFilter;
 
     QLoggingCategory::CategoryFilter old = categoryFilter;

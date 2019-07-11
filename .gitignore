@@ -58,8 +58,6 @@ qt*-config.pri
 /src/angle/src/QtANGLE/libANGLE/
 /src/angle/src/libGLESv2/libANGLE/
 
-/src/corelib/global/qfloat16tables.cpp
-
 # FIXME: Ignore these again?
 # /examples/*/*/*
 # !/examples/*/*/*[.]*

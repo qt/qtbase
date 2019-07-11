@@ -59,7 +59,7 @@ enum {
     CONSTANT_COMPRESSTHRESHOLD_DEFAULT = 70
 };
 
-#if QT_CONFIG(zstd)
+#if QT_CONFIG(zstd) && QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zstd
 #elif !defined(QT_NO_COMPRESS)
 #  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::Zlib
@@ -67,11 +67,8 @@ enum {
 #  define CONSTANT_COMPRESSALGO_DEFAULT     RCCResourceLibrary::CompressionAlgorithm::None
 #endif
 
-#define writeString(s) write(s, sizeof(s))
-
 void RCCResourceLibrary::write(const char *str, int len)
 {
-    --len; // trailing \0 on string literals...
     int n = m_out.size();
     m_out.resize(n + len);
     memcpy(m_out.data() + n, str, len);
@@ -983,7 +980,7 @@ void RCCResourceLibrary::writeDecimal(int value)
     Q_ASSERT(m_format != RCCResourceLibrary::Binary);
     char buf[std::numeric_limits<int>::digits10 + 2];
     int n = snprintf(buf, sizeof(buf), "%d", value);
-    write(buf, n + 1);  // write() takes a size including terminating NUL
+    write(buf, n);
 }
 
 static const char hexDigits[] = "0123456789abcdef";

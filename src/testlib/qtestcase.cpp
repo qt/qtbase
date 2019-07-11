@@ -301,7 +301,7 @@ class TestMethods {
 public:
     Q_DISABLE_COPY_MOVE(TestMethods)
 
-    typedef std::vector<QMetaMethod> MetaMethods;
+    using MetaMethods = std::vector<QMetaMethod>;
 
     explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
 
@@ -1012,14 +1012,14 @@ public:
     WatchDog()
     {
         QMutexLocker locker(&mutex);
-        timeout.store(-1);
+        timeout.storeRelaxed(-1);
         start();
         waitCondition.wait(&mutex);
     }
     ~WatchDog() {
         {
             QMutexLocker locker(&mutex);
-            timeout.store(0);
+            timeout.storeRelaxed(0);
             waitCondition.wakeAll();
         }
         wait();
@@ -1027,13 +1027,13 @@ public:
 
     void beginTest() {
         QMutexLocker locker(&mutex);
-        timeout.store(defaultTimeout());
+        timeout.storeRelaxed(defaultTimeout());
         waitCondition.wakeAll();
     }
 
     void testFinished() {
         QMutexLocker locker(&mutex);
-        timeout.store(-1);
+        timeout.storeRelaxed(-1);
         waitCondition.wakeAll();
     }
 
@@ -1041,7 +1041,7 @@ public:
         QMutexLocker locker(&mutex);
         waitCondition.wakeAll();
         while (1) {
-            int t = timeout.load();
+            int t = timeout.loadRelaxed();
             if (!t)
                 break;
             if (Q_UNLIKELY(!waitCondition.wait(&mutex, t))) {
@@ -2207,7 +2207,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     }
 
     //  3. relative to test source.
-    if (found.isEmpty()) {
+    if (found.isEmpty() && qstrncmp(file, ":/", 2) != 0) {
         // srcdir is the directory containing the calling source file.
         QFileInfo srcdir = QFileInfo(QFile::decodeName(file)).path();
 

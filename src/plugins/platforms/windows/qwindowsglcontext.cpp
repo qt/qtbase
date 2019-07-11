@@ -1009,7 +1009,7 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
     QScopedPointer<QOpenGLTemporaryContext> temporaryContext;
     if (!QOpenGLStaticContext::opengl32.wglGetCurrentContext())
         temporaryContext.reset(new QOpenGLTemporaryContext);
-    QOpenGLStaticContext *result = new QOpenGLStaticContext;
+    auto *result = new QOpenGLStaticContext;
     qCDebug(lcQpaGl) << __FUNCTION__ << *result;
     return result;
 }
@@ -1051,7 +1051,7 @@ QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
             qWarning("QWindowsGLContext: Requires a QWGLNativeContext");
             return;
         }
-        QWGLNativeContext handle = nativeHandle.value<QWGLNativeContext>();
+        auto handle = nativeHandle.value<QWGLNativeContext>();
         HGLRC wglcontext = handle.context();
         HWND wnd = handle.window();
         if (!wglcontext || !wnd) {
@@ -1233,7 +1233,7 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
         hasRobustness = exts && strstr(exts, "GL_ARB_robustness");
     } else {
         typedef const GLubyte * (APIENTRY *glGetStringi_t)(GLenum, GLuint);
-        glGetStringi_t glGetStringi = reinterpret_cast<glGetStringi_t>(
+        auto glGetStringi = reinterpret_cast<glGetStringi_t>(
             reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetStringi")));
         if (glGetStringi) {
             GLint n = 0;
@@ -1305,7 +1305,7 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
     // Do we already have a DC entry for that window?
-    QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
+    auto *window = static_cast<QWindowsWindow *>(surface);
     window->aboutToMakeCurrent();
     const HWND hwnd = window->handle();
     if (const QOpenGLContextData *contextData = findByHWND(m_windowContexts, hwnd)) {
@@ -1374,7 +1374,7 @@ QFunctionPointer QWindowsGLContext::getProcAddress(const char *procName)
     // Even though we use QFunctionPointer, it does not mean the function can be called.
     // It will need to be cast to the proper function type with the correct calling
     // convention. QFunctionPointer is nothing more than a glorified void* here.
-    QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName));
+    auto procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName));
 
     // We support AllGLFunctionsQueryable, which means this function must be able to
     // return a function pointer even for functions that are in GL.h and exported

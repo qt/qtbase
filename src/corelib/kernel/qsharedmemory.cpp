@@ -150,11 +150,18 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
 
   \sa setKey()
  */
+
+#ifndef QT_NO_QOBJECT
 QSharedMemory::QSharedMemory(QObject *parent)
   : QObject(*new QSharedMemoryPrivate, parent)
 {
 }
-
+#else
+QSharedMemory::QSharedMemory()
+    : d_ptr(new QSharedMemoryPrivate)
+{
+}
+#endif
 /*!
   Constructs a shared memory object with the given \a parent and with
   its key set to \a key. Because its key is set, its create() and
@@ -162,11 +169,19 @@ QSharedMemory::QSharedMemory(QObject *parent)
 
   \sa setKey(), create(), attach()
  */
+#ifndef QT_NO_QOBJECT
 QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
     : QObject(*new QSharedMemoryPrivate, parent)
 {
     setKey(key);
 }
+#else
+QSharedMemory::QSharedMemory(const QString &key)
+    : d_ptr(new QSharedMemoryPrivate)
+{
+    setKey(key);
+}
+#endif
 
 /*!
   The destructor clears the key, which forces the shared memory object
@@ -604,4 +619,6 @@ QString QSharedMemory::errorString() const
 
 QT_END_NAMESPACE
 
+#ifndef QT_NO_QOBJECT
 #include "moc_qsharedmemory.cpp"
+#endif

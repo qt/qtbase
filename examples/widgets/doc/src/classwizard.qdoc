@@ -30,7 +30,7 @@
     \title Class Wizard Example
     \ingroup examples-dialogs
 
-    \brief The License Wizard example shows how to implement linear
+    \brief The Class Wizard example shows how to implement linear
     wizards using QWizard.
 
     \image classwizard.png Screenshot of the Class Wizard example

@@ -219,7 +219,7 @@ namespace QTest {
         }
 
         if (type != QtFatalMsg) {
-            if (counter.load() <= 0)
+            if (counter.loadRelaxed() <= 0)
                 return;
 
             if (!counter.deref()) {

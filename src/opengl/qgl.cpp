@@ -397,7 +397,7 @@ QGLFormat::QGLFormat(QGL::FormatOptions options, int plane)
 */
 void QGLFormat::detach()
 {
-    if (d->ref.load() != 1) {
+    if (d->ref.loadRelaxed() != 1) {
         QGLFormatPrivate *newd = new QGLFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
@@ -1667,11 +1667,6 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
 }
 
 struct QGLContextGroupList {
-    QGLContextGroupList()
-        : m_mutex(QMutex::Recursive)
-    {
-    }
-
     void append(QGLContextGroup *group) {
         QMutexLocker locker(&m_mutex);
         m_list.append(group);
@@ -1683,7 +1678,7 @@ struct QGLContextGroupList {
     }
 
     QList<QGLContextGroup *> m_list;
-    QMutex m_mutex;
+    QRecursiveMutex m_mutex;
 };
 
 Q_GLOBAL_STATIC(QGLContextGroupList, qt_context_groups)
@@ -5208,7 +5203,7 @@ void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *shar
         return;
 
     // Make sure 'context' is not already shared with another group of contexts.
-    Q_ASSERT(context->d_ptr->group->m_refs.load() == 1);
+    Q_ASSERT(context->d_ptr->group->m_refs.loadRelaxed() == 1);
 
     // Free 'context' group resources and make it use the same resources as 'share'.
     QGLContextGroup *group = share->d_ptr->group;

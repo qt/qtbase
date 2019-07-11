@@ -180,7 +180,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
             QString statustip = model->data(index, Qt::StatusTipRole).toString();
             if (parent && (shouldClearStatusTip || !statustip.isEmpty())) {
                 QStatusTipEvent tip(statustip);
-                QApplication::sendEvent(parent, &tip);
+                QCoreApplication::sendEvent(parent, &tip);
                 shouldClearStatusTip = !statustip.isEmpty();
             }
 #endif
@@ -189,7 +189,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
             if (parent && shouldClearStatusTip) {
                 QString emptyString;
                 QStatusTipEvent tip( emptyString );
-                QApplication::sendEvent(parent, &tip);
+                QCoreApplication::sendEvent(parent, &tip);
             }
 #endif
             emit q->viewportEntered();
@@ -521,7 +521,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
     the mouse was pressed on is specified by \a index. The signal is
     only emitted when the index is valid.
 
-    Use the QApplication::mouseButtons() function to get the state
+    Use the QGuiApplication::mouseButtons() function to get the state
     of the mouse buttons.
 
     \sa activated(), clicked(), doubleClicked(), entered()
@@ -1713,7 +1713,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         if (d->shouldClearStatusTip && d->parent) {
             QString empty;
             QStatusTipEvent tip(empty);
-            QApplication::sendEvent(d->parent, &tip);
+            QCoreApplication::sendEvent(d->parent, &tip);
             d->shouldClearStatusTip = false;
         }
     #endif
@@ -2338,7 +2338,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (d->model)
             variant = d->model->data(currentIndex(), Qt::DisplayRole);
         if (variant.type() == QVariant::String)
-            QApplication::clipboard()->setText(variant.toString());
+            QGuiApplication::clipboard()->setText(variant.toString());
         event->accept();
     }
 #endif
@@ -2845,7 +2845,7 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
         }
 
         QPointer<QWidget> ed = editor;
-        QApplication::sendPostedEvents(editor, 0);
+        QCoreApplication::sendPostedEvents(editor, 0);
         editor = ed;
 
         if (!isPersistent && editor)
@@ -3957,7 +3957,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
                 keyModifiers = (static_cast<const QInputEvent*>(event))->modifiers();
                 break;
             default:
-                keyModifiers = QApplication::keyboardModifiers();
+                keyModifiers = QGuiApplication::keyboardModifiers();
         }
     }
     switch (d->selectionMode) {
@@ -4015,7 +4015,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::multiSelectionComm
 QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionCommand(
     const QModelIndex &index, const QEvent *event) const
 {
-    Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+    Qt::KeyboardModifiers modifiers = QGuiApplication::keyboardModifiers();
     if (event) {
         switch (event->type()) {
         case QEvent::MouseMove: {
@@ -4425,7 +4425,7 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
     w->setFocus();
 
     if (event)
-        QApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
+        QCoreApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
 
     return true;
 }
@@ -4461,15 +4461,8 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     if (paintPairs.isEmpty())
         return QPixmap();
 
-    qreal scale = 1.0f;
-
-    Q_Q(const QAbstractItemView);
-    QWidget *window = q->window();
-    if (window) {
-        QWindow *windowHandle = window->windowHandle();
-        if (windowHandle)
-            scale = windowHandle->devicePixelRatio();
-    }
+    QWindow *window = windowHandle(WindowHandleMode::Closest);
+    const qreal scale = window ? window->devicePixelRatio() : qreal(1);
 
     QPixmap pixmap(r->size() * scale);
     pixmap.setDevicePixelRatio(scale);

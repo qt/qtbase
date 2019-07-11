@@ -43,12 +43,15 @@ void
 UnixMakefileGenerator::writePrlFile(QTextStream &t)
 {
     MakefileGenerator::writePrlFile(t);
+    const ProString tmplt = project->first("TEMPLATE");
+    if (tmplt != "lib" && tmplt != "aux")
+        return;
     // libtool support
-    if(project->isActiveConfig("create_libtool") && project->first("TEMPLATE") == "lib") { //write .la
+    if (project->isActiveConfig("create_libtool")) {
         writeLibtoolFile();
     }
     // pkg-config support
-    if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
+    if (project->isActiveConfig("create_pc"))
         writePkgConfigFile();
 }
 
@@ -164,6 +167,16 @@ static QString rfc1034Identifier(const QString &str)
     return s;
 }
 
+static QString escapeDir(const QString &dir)
+{
+    // When building on non-MSys MinGW, the path ends with a backslash, which
+    // GNU make will interpret that as a line continuation. Doubling the backslash
+    // avoids the problem, at the cost of the variable containing *both* backslashes.
+    if (dir.endsWith('\\'))
+        return dir + '\\';
+    return dir;
+}
+
 void
 UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 {
@@ -226,7 +239,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "####### Output directory\n\n";
     // This is used in commands by some .prf files.
     if (! project->values("OBJECTS_DIR").isEmpty())
-        t << "OBJECTS_DIR   = " << fileVar("OBJECTS_DIR") << Qt::endl;
+        t << "OBJECTS_DIR   = " << escapeDir(fileVar("OBJECTS_DIR")) << Qt::endl;
     else
         t << "OBJECTS_DIR   = ./\n";
     t << Qt::endl;
@@ -272,13 +285,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
                             << fileVarList("HEADERS") << ' ' << fileVarList("SOURCES") << Qt::endl;
     t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << Qt::endl;
-    QString destd = fileVar("DESTDIR");
-    // When building on non-MSys MinGW, the path ends with a backslash, which
-    // GNU make will interpret that as a line continuation. Doubling the backslash
-    // avoids the problem, at the cost of the variable containing *both* backslashes.
-    if (destd.endsWith('\\'))
-        destd += '\\';
-    t << "DESTDIR       = " << destd << Qt::endl;
+    t << "DESTDIR       = " << escapeDir(fileVar("DESTDIR")) << Qt::endl;
     t << "TARGET        = " << fileVar("TARGET") << Qt::endl;
     if(project->isActiveConfig("plugin")) {
         t << "TARGETD       = " << fileVar("TARGET") << Qt::endl;
@@ -1194,7 +1201,8 @@ void UnixMakefileGenerator::init2()
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
     if (project->first("TEMPLATE") == "aux") {
-        // nothing
+        project->values("PRL_TARGET") =
+            project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
     } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");

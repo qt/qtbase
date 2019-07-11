@@ -183,7 +183,7 @@ private:
 void DraggableLabel::mousePressEvent(QMouseEvent *)
 {
     QMimeData *mimeData = new QMimeData;
-    mimeData->setImageData(qVariantFromValue(m_pixmap));
+    mimeData->setImageData(QVariant::fromValue(m_pixmap));
     QDrag *drag = new QDrag(this);
     QPixmap pixmap = m_pixmap;
     if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {

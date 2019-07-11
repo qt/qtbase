@@ -665,9 +665,13 @@ qt_feature("opengl" PUBLIC
     CONDITION QT_FEATURE_opengl_desktop OR QT_FEATURE_opengl_dynamic OR QT_FEATURE_opengles2
 )
 qt_feature_definition("opengl" "QT_NO_OPENGL" NEGATE VALUE "1")
+qt_feature("vkgen" PRIVATE
+    LABEL "vkgen"
+    CONDITION QT_FEATURE_xmlstreamreader
+)
 qt_feature("vulkan" PUBLIC
     LABEL "Vulkan"
-    CONDITION Vulkan_FOUND
+    CONDITION QT_FEATURE_vkgen AND Vulkan_FOUND
 )
 qt_feature("openvg" PUBLIC
     LABEL "OpenVG"

@@ -37,6 +37,7 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qopenglfunctions.h>
 #include <QtGui/qopengltextureblitter.h>
+#include <QtGui/qoffscreensurface.h>
 #include <QtGui/qpainter.h>
 #include <private/qpixmapcache_p.h>
 
@@ -71,6 +72,28 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
 QWasmCompositor::~QWasmCompositor()
 {
     delete m_frameBuffer;
+    destroy();
+}
+
+void QWasmCompositor::destroy()
+{
+    // Destroy OpenGL resources. This is done here in a separate function
+    // which can be called while screen() still returns a valid screen
+    // (which it might not, during destruction). A valid QScreen is
+    // a requirement for QOffscreenSurface on Wasm since the native
+    // context is tied to a single canvas.
+    if (m_context) {
+        QOffscreenSurface offScreenSurface(screen()->screen());
+        offScreenSurface.setFormat(m_context->format());
+        offScreenSurface.create();
+        m_context->makeCurrent(&offScreenSurface);
+        for (QWasmWindow *window : m_windowStack)
+            window->destroy();
+        m_blitter.reset(nullptr);
+        m_context.reset(nullptr);
+    }
+
+    m_isEnabled = false; // prevent frame() from creating a new m_context
 }
 
 void QWasmCompositor::setEnabled(bool enabled)
@@ -251,10 +274,13 @@ void QWasmCompositor::blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, 
 void QWasmCompositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window)
 {
     QWasmBackingStore *backingStore = window->backingStore();
+    if (!backingStore)
+        return;
 
     QOpenGLTexture const *texture = backingStore->getUpdatedTexture();
-
-    blit(blitter, screen, texture, window->geometry());
+    QPoint windowCanvasPosition = window->geometry().topLeft() - screen->geometry().topLeft();
+    QRect windowCanvasGeometry = QRect(windowCanvasPosition, window->geometry().size());
+    blit(blitter, screen, texture, windowCanvasGeometry);
 }
 
 QPalette QWasmCompositor::makeWindowPalette()
@@ -650,7 +676,7 @@ void QWasmCompositor::frame()
 
     m_needComposit = false;
 
-    if (m_windowStack.empty() || !screen())
+    if (!m_isEnabled || m_windowStack.empty() || !screen())
         return;
 
     QWasmWindow *someWindow = nullptr;
@@ -673,7 +699,9 @@ void QWasmCompositor::frame()
         m_context->create();
     }
 
-    m_context->makeCurrent(someWindow->window());
+    bool ok = m_context->makeCurrent(someWindow->window());
+    if (!ok)
+        return;
 
     if (!m_blitter->isCreated())
         m_blitter->create();

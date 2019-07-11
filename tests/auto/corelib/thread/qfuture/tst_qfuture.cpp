@@ -49,6 +49,24 @@ struct ResultStoreInt : QtPrivate::ResultStoreBase
     ~ResultStoreInt() { clear<int>(); }
 };
 
+class LambdaThread : public QThread
+{
+public:
+    LambdaThread(std::function<void ()> fn)
+    :m_fn(fn)
+    {
+
+    }
+
+    void run() override
+    {
+        m_fn();
+    }
+
+private:
+    std::function<void ()> m_fn;
+};
+
 class tst_QFuture: public QObject
 {
     Q_OBJECT
@@ -67,6 +85,7 @@ private slots:
     void resultsAsList();
     void implicitConversions();
     void iterators();
+    void iteratorsThread();
     void pause();
     void throttling();
     void voidConversions();
@@ -1143,6 +1162,54 @@ void tst_QFuture::iterators()
             QVERIFY(it.hasNext());
         }
     }
+}
+void tst_QFuture::iteratorsThread()
+{
+    const int expectedResultCount = 10;
+    const int delay = 10;
+    QFutureInterface<int> futureInterface;
+
+    // Create result producer thread. The results are
+    // produced with delays in order to make the consumer
+    // wait.
+    QSemaphore sem;
+    LambdaThread thread = {[=, &futureInterface, &sem](){
+        for (int i = 1; i <= expectedResultCount; i += 2) {
+            int result = i;
+            futureInterface.reportResult(&result);
+            result = i + 1;
+            futureInterface.reportResult(&result);
+        }
+
+        sem.acquire(2);
+        futureInterface.reportFinished();
+    }};
+
+    futureInterface.reportStarted();
+    QFuture<int> future = futureInterface.future();
+
+    // Iterate over results while the thread is producing them.
+    thread.start();
+    int resultCount = 0;
+    int resultSum = 0;
+    for (int result : future) {
+        sem.release();
+        ++resultCount;
+        resultSum += result;
+    }
+    thread.wait();
+
+    QCOMPARE(resultCount, expectedResultCount);
+    QCOMPARE(resultSum, expectedResultCount * (expectedResultCount + 1) / 2);
+
+    // Reverse iterate
+    resultSum = 0;
+    QFutureIterator<int> it(future);
+    it.toBack();
+    while (it.hasPrevious())
+        resultSum += it.previous();
+
+    QCOMPARE(resultSum, expectedResultCount * (expectedResultCount + 1) / 2);
 }
 
 class SignalSlotObject : public QObject

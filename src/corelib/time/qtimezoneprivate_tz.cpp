@@ -39,7 +39,6 @@
 
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
-#include "qdatetime_p.h" // ### Qt 5.14: remove once YearRange is on QDateTime
 #include "private/qlocale_tools_p.h"
 
 #include <QtCore/QFile>
@@ -50,6 +49,12 @@
 #include <qdebug.h>
 
 #include <algorithm>
+#include <errno.h>
+#include <limits.h>
+#if !defined(Q_OS_INTEGRITY)
+#include <sys/param.h> // to use MAXSYMLINKS constant
+#endif
+#include <unistd.h>    // to use _SC_SYMLOOP_MAX constant
 
 QT_BEGIN_NAMESPACE
 
@@ -583,8 +588,8 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
         stdTime = QTime(2, 0, 0);
 
     // Limit year to the range QDateTime can represent:
-    const int minYear = int(QDateTimePrivate::YearRange::First);
-    const int maxYear = int(QDateTimePrivate::YearRange::Last);
+    const int minYear = int(QDateTime::YearRange::First);
+    const int maxYear = int(QDateTime::YearRange::Last);
     startYear = qBound(minYear, startYear, maxYear);
     endYear = qBound(minYear, endYear, maxYear);
     Q_ASSERT(startYear <= endYear);
@@ -1057,6 +1062,27 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
     return last > m_tranTimes.cbegin() ? dataForTzTransition(*--last) : invalidData();
 }
 
+static long getSymloopMax()
+{
+#if defined(SYMLOOP_MAX)
+    return SYMLOOP_MAX; // if defined, at runtime it can only be greater than this, so this is a safe bet
+#else
+    errno = 0;
+    long result = sysconf(_SC_SYMLOOP_MAX);
+    if (result >= 0)
+        return result;
+    // result is -1, meaning either error or no limit
+    Q_ASSERT(!errno); // ... but it can't be an error, POSIX mandates _SC_SYMLOOP_MAX
+
+    // therefore we can make up our own limit
+#  if defined(MAXSYMLINKS)
+    return MAXSYMLINKS;
+#  else
+    return 8;
+#  endif
+#endif
+}
+
 // TODO Could cache the value and monitor the required files for any changes
 QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 {
@@ -1074,12 +1100,18 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 
     // On most distros /etc/localtime is a symlink to a real file so extract name from the path
     if (ianaId.isEmpty()) {
-        const QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
-        if (!path.isEmpty()) {
+        const QLatin1String zoneinfo("/zoneinfo/");
+        QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
+        int index = -1;
+        long iteration = getSymloopMax();
+        // Symlink may point to another symlink etc. before being under zoneinfo/
+        // We stop on the first path under /zoneinfo/, even if it is itself a
+        // symlink, like America/Montreal pointing to America/Toronto
+        while (iteration-- > 0 && !path.isEmpty() && (index = path.indexOf(zoneinfo)) < 0)
+            path = QFile::symLinkTarget(path);
+        if (index >= 0) {
             // /etc/localtime is a symlink to the current TZ file, so extract from path
-            int index = path.indexOf(QLatin1String("/zoneinfo/"));
-            if (index != -1)
-                ianaId = path.mid(index + 10).toUtf8();
+            ianaId = path.midRef(index + zoneinfo.size()).toUtf8();
         }
     }
 
@@ -1105,9 +1137,9 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
             while (ianaId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
                 line = ts.readLine();
                 if (line.startsWith(QLatin1String("ZONE="))) {
-                    ianaId = line.mid(6, line.size() - 7).toUtf8();
+                    ianaId = line.midRef(6, line.size() - 7).toUtf8();
                 } else if (line.startsWith(QLatin1String("TIMEZONE="))) {
-                    ianaId = line.mid(10, line.size() - 11).toUtf8();
+                    ianaId = line.midRef(10, line.size() - 11).toUtf8();
                 }
             }
         }

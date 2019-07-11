@@ -69,7 +69,8 @@ private slots:
 static const int iterations = 100;
 
 QAtomicInt lockCount(0);
-QMutex normalMutex, recursiveMutex(QMutex::Recursive);
+QMutex normalMutex;
+QRecursiveMutex recursiveMutex;
 QSemaphore testsTurn;
 QSemaphore threadsTurn;
 
@@ -993,9 +994,9 @@ public:
     QMutex mutex;
     QWaitCondition cond;
 
-    QMutex &test_mutex;
+    QRecursiveMutex &test_mutex;
 
-    inline rmutex_Thread(QMutex &m) : test_mutex(m) { }
+    inline rmutex_Thread(QRecursiveMutex &m) : test_mutex(m) { }
 
     void run()
     {
@@ -1024,7 +1025,7 @@ void tst_QMutex::lock_unlock_locked_tryLock()
     QMutex mutex;
     mutex_Thread thread(mutex);
 
-    QMutex rmutex(QMutex::Recursive);
+    QRecursiveMutex rmutex;
     rmutex_Thread rthread(rmutex);
 
     for (int i = 0; i < iterations; ++i) {
@@ -1132,7 +1133,7 @@ void tst_QMutex::stressTest()
     for (int i = 1; i < threadCount; ++i)
         QVERIFY(threads[i].wait(10000));
     QCOMPARE(StressTestThread::errorCount, 0);
-    qDebug("locked %d times", int(StressTestThread::lockCount.load()));
+    qDebug("locked %d times", int(StressTestThread::lockCount.loadRelaxed()));
 }
 
 class TryLockRaceThread : public QThread
@@ -1286,28 +1287,28 @@ public:
         quint64 i = 0;
         while (t.elapsed() < one_minute) {
             i++;
-            uint nb = (i * 9 + lockCount.load() * 13) % threadCount;
+            uint nb = (i * 9 + lockCount.loadRelaxed() * 13) % threadCount;
             QMutexLocker locker(&mutex[nb]);
-            if (sentinel[nb].load()) errorCount.ref();
+            if (sentinel[nb].loadRelaxed()) errorCount.ref();
             if (sentinel[nb].fetchAndAddRelaxed(5)) errorCount.ref();
             if (!sentinel[nb].testAndSetRelaxed(5, 0)) errorCount.ref();
-            if (sentinel[nb].load()) errorCount.ref();
+            if (sentinel[nb].loadRelaxed()) errorCount.ref();
             lockCount.ref();
-            nb = (nb * 17 + i * 5 + lockCount.load() * 3) % threadCount;
+            nb = (nb * 17 + i * 5 + lockCount.loadRelaxed() * 3) % threadCount;
             if (mutex[nb].tryLock()) {
-                if (sentinel[nb].load()) errorCount.ref();
+                if (sentinel[nb].loadRelaxed()) errorCount.ref();
                 if (sentinel[nb].fetchAndAddRelaxed(16)) errorCount.ref();
                 if (!sentinel[nb].testAndSetRelaxed(16, 0)) errorCount.ref();
-                if (sentinel[nb].load()) errorCount.ref();
+                if (sentinel[nb].loadRelaxed()) errorCount.ref();
                 lockCount.ref();
                 mutex[nb].unlock();
             }
-            nb = (nb * 15 + i * 47 + lockCount.load() * 31) % threadCount;
+            nb = (nb * 15 + i * 47 + lockCount.loadRelaxed() * 31) % threadCount;
             if (mutex[nb].tryLock(2)) {
-                if (sentinel[nb].load()) errorCount.ref();
+                if (sentinel[nb].loadRelaxed()) errorCount.ref();
                 if (sentinel[nb].fetchAndAddRelaxed(53)) errorCount.ref();
                 if (!sentinel[nb].testAndSetRelaxed(53, 0)) errorCount.ref();
-                if (sentinel[nb].load()) errorCount.ref();
+                if (sentinel[nb].loadRelaxed()) errorCount.ref();
                 lockCount.ref();
                 mutex[nb].unlock();
             }
@@ -1327,8 +1328,8 @@ void tst_QMutex::moreStress()
     QVERIFY(threads[0].wait(one_minute + 10000));
     for (int i = 1; i < threadCount; ++i)
         QVERIFY(threads[i].wait(10000));
-    qDebug("locked %d times", MoreStressTestThread::lockCount.load());
-    QCOMPARE(MoreStressTestThread::errorCount.load(), 0);
+    qDebug("locked %d times", MoreStressTestThread::lockCount.loadRelaxed());
+    QCOMPARE(MoreStressTestThread::errorCount.loadRelaxed(), 0);
 }
 
 

@@ -72,11 +72,9 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
                                                   QLatin1String(NM_DBUS_PATH),
                                                   DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus());
-    QList<QVariant> argumentList;
-    argumentList << QLatin1String(NM_DBUS_INTERFACE);
     QDBusPendingReply<QVariantMap> propsReply
-            = managerPropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
-                                                                       argumentList);
+            = managerPropertiesInterface.call(QDBus::Block, QLatin1String("GetAll"), QLatin1String(NM_DBUS_INTERFACE));
+
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
     } else {
@@ -344,11 +342,8 @@ QNetworkManagerInterfaceDevice::QNetworkManagerInterfaceDevice(const QString &de
                                                   DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus(),parent);
 
-    QList<QVariant> argumentList;
-    argumentList << QLatin1String(NM_DBUS_INTERFACE_DEVICE);
     QDBusPendingReply<QVariantMap> propsReply
-            = devicePropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
-                                                                       argumentList);
+            = devicePropertiesInterface.call(QDBus::Block, QLatin1String("GetAll"), QLatin1String(NM_DBUS_INTERFACE_DEVICE));
 
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
@@ -446,11 +441,8 @@ QNetworkManagerInterfaceDeviceWired::QNetworkManagerInterfaceDeviceWired(const Q
                                                            DBUS_PROPERTIES_INTERFACE,
                                                            QDBusConnection::systemBus(),parent);
 
-    QList<QVariant> argumentList;
-    argumentList << QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRED);
     QDBusPendingReply<QVariantMap> propsReply
-            = deviceWiredPropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
-                                                                       argumentList);
+            = deviceWiredPropertiesInterface.call(QDBus::Block, QLatin1String("GetAll"), QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRED));
 
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
@@ -543,11 +535,9 @@ QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(c
                                                   DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus(),parent);
 
-    QList<QVariant> argumentList;
-    argumentList << QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS);
     QDBusPendingReply<QVariantMap> propsReply
-            = deviceWirelessPropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
-                                                                       argumentList);
+            = deviceWirelessPropertiesInterface.call(QDBus::Block, QLatin1String("GetAll"), QLatin1String(NM_DBUS_INTERFACE_DEVICE_WIRELESS));
+
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
     }
@@ -647,11 +637,9 @@ QNetworkManagerInterfaceDeviceModem::QNetworkManagerInterfaceDeviceModem(const Q
                                                   QLatin1String("org.freedesktop.DBus.Properties"),
                                                   QDBusConnection::systemBus(),parent);
 
-    QList<QVariant> argumentList;
-    argumentList << QLatin1String(NM_DBUS_INTERFACE_DEVICE_MODEM);
     QDBusPendingReply<QVariantMap> propsReply
-            = deviceModemPropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
-                                                                       argumentList);
+            = deviceModemPropertiesInterface.call(QDBus::Block, QLatin1String("GetAll"), QLatin1String(NM_DBUS_INTERFACE_DEVICE_MODEM));
+
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();
     }
@@ -746,9 +734,7 @@ QList <QDBusObjectPath> QNetworkManagerSettings::listConnections()
 
 QString QNetworkManagerSettings::getConnectionByUuid(const QString &uuid)
 {
-    QList<QVariant> argumentList;
-    argumentList << QVariant::fromValue(uuid);
-    QDBusReply<QDBusObjectPath > reply = callWithArgumentList(QDBus::Block,QLatin1String("GetConnectionByUuid"), argumentList);
+    QDBusReply<QDBusObjectPath > reply = call(QDBus::Block, QLatin1String("GetConnectionByUuid"), uuid);
     return reply.value().path();
 }
 
@@ -917,11 +903,8 @@ QNetworkManagerConnectionActive::QNetworkManagerConnectionActive(const QString &
                                                   QDBusConnection::systemBus());
 
 
-    QList<QVariant> argumentList;
-    argumentList << QLatin1String(NM_DBUS_INTERFACE_ACTIVE_CONNECTION);
     QDBusPendingReply<QVariantMap> propsReply
-            = connectionActivePropertiesInterface.callWithArgumentList(QDBus::Block,QLatin1String("GetAll"),
-                                                                       argumentList);
+            = connectionActivePropertiesInterface.call(QDBus::Block, QLatin1String("GetAll"), QLatin1String(NM_DBUS_INTERFACE_ACTIVE_CONNECTION));
 
     if (!propsReply.isError()) {
         propertyMap = propsReply.value();

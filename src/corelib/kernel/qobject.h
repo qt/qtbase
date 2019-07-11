@@ -71,11 +71,15 @@ class QObjectPrivate;
 class QObject;
 class QThread;
 class QWidget;
+class QAccessibleWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
 #if QT_CONFIG(regularexpression)
 class QRegularExpression;
+#endif
+#if !QT_DEPRECATED_SINCE(5, 14) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+# define QT_NO_USERDATA
 #endif
 #ifndef QT_NO_USERDATA
 class QObjectUserData;
@@ -113,12 +117,17 @@ public:
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;
+
+#ifdef QT_DEBUG
+    enum { CheckForParentChildLoopsWarnDepth = 4096 };
+#endif
 };
 
 
 class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
+
     Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
     Q_DECLARE_PRIVATE(QObject)
 
@@ -129,7 +138,7 @@ public:
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
-#if defined(QT_NO_TRANSLATION)
+#if defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)
     static QString tr(const char *sourceText, const char * = nullptr, int = -1)
         { return QString::fromUtf8(sourceText); }
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -400,8 +409,11 @@ public:
 #endif // QT_NO_PROPERTIES
 
 #ifndef QT_NO_USERDATA
+    QT_DEPRECATED_VERSION_5_14
     static uint registerUserData();
+    QT_DEPRECATED_VERSION_X_5_14("Use setProperty()")
     void setUserData(uint id, QObjectUserData* data);
+    QT_DEPRECATED_VERSION_X_5_14("Use property()")
     QObjectUserData* userData(uint id) const;
 #endif // QT_NO_USERDATA
 
@@ -448,6 +460,7 @@ protected:
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;
     friend class QWidget;
+    friend class QAccessibleWidget;
     friend class QThreadData;
 
 private:

@@ -39,6 +39,8 @@
 
 #include "qevdevkeyboardmanager_p.h"
 
+#include <QtInputSupport/private/qevdevutil_p.h>
+
 #include <QStringList>
 #include <QCoreApplication>
 #include <QLoggingCategory>
@@ -61,36 +63,24 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
-    QStringList devices;
-
-    foreach (const QString &arg, args) {
-        if (arg.startsWith(QLatin1String("/dev/"))) {
-            // if device is specified try to use it
-            devices.append(arg);
-            args.removeAll(arg);
-        }
-    }
-
-    // build new specification without /dev/ elements
-    m_spec = args.join(QLatin1Char(':'));
+    auto parsed = QEvdevUtil::parseSpecification(spec);
+    m_spec = std::move(parsed.spec);
 
     // add all keyboards for devices specified in the argument list
-    foreach (const QString &device, devices)
+    for (const QString &device : qAsConst(parsed.devices))
         addKeyboard(device);
 
-    if (devices.isEmpty()) {
-        qCDebug(qLcEvdevKey) << "evdevkeyboard: Using device discovery";
-        m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
-        if (m_deviceDiscovery) {
+    if (parsed.devices.isEmpty()) {
+        qCDebug(qLcEvdevKey, "evdevkeyboard: Using device discovery");
+        if (auto deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this)) {
             // scan and add already connected keyboards
-            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            const QStringList devices = deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addKeyboard(device);
 
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceDetected,
                     this, &QEvdevKeyboardManager::addKeyboard);
-            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+            connect(deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
                     this, &QEvdevKeyboardManager::removeKeyboard);
         }
     }
@@ -98,34 +88,32 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
 
 QEvdevKeyboardManager::~QEvdevKeyboardManager()
 {
-    qDeleteAll(m_keyboards);
-    m_keyboards.clear();
 }
 
 void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
 {
-    qCDebug(qLcEvdevKey) << "Adding keyboard at" << deviceNode;
-    QEvdevKeyboardHandler *keyboard;
-    keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
+    qCDebug(qLcEvdevKey, "Adding keyboard at %ls", qUtf16Printable(deviceNode));
+    auto keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
     if (keyboard) {
-        m_keyboards.insert(deviceNode, keyboard);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
+        m_keyboards.add(deviceNode, std::move(keyboard));
+        updateDeviceCount();
     } else {
-        qWarning("Failed to open keyboard device %s", qPrintable(deviceNode));
+        qWarning("Failed to open keyboard device %ls", qUtf16Printable(deviceNode));
     }
 }
 
 void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
 {
-    if (m_keyboards.contains(deviceNode)) {
-        qCDebug(qLcEvdevKey) << "Removing keyboard at" << deviceNode;
-        QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
-        m_keyboards.remove(deviceNode);
-        QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
-            QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
-        delete keyboard;
+    if (m_keyboards.remove(deviceNode)) {
+        qCDebug(qLcEvdevKey, "Removing keyboard at %ls", qUtf16Printable(deviceNode));
+        updateDeviceCount();
     }
+}
+
+void QEvdevKeyboardManager::updateDeviceCount()
+{
+    QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
+        QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());
 }
 
 void QEvdevKeyboardManager::loadKeymap(const QString &file)
@@ -141,22 +129,22 @@ void QEvdevKeyboardManager::loadKeymap(const QString &file)
             if (arg.startsWith(QLatin1String("keymap=")))
                 keymapFromSpec = arg.mid(7).toString();
         }
-        foreach (QEvdevKeyboardHandler *handler, m_keyboards) {
+        for (const auto &keyboard : m_keyboards) {
             if (keymapFromSpec.isEmpty())
-                handler->unloadKeymap();
+                keyboard.handler->unloadKeymap();
             else
-                handler->loadKeymap(keymapFromSpec);
+                keyboard.handler->loadKeymap(keymapFromSpec);
         }
     } else {
-        foreach (QEvdevKeyboardHandler *handler, m_keyboards)
-            handler->loadKeymap(file);
+        for (const auto &keyboard : m_keyboards)
+            keyboard.handler->loadKeymap(file);
     }
 }
 
 void QEvdevKeyboardManager::switchLang()
 {
-    foreach (QEvdevKeyboardHandler *handler, m_keyboards)
-        handler->switchLang();
+    for (const auto &keyboard : m_keyboards)
+        keyboard.handler->switchLang();
 }
 
 QT_END_NAMESPACE

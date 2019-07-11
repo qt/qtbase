@@ -151,7 +151,7 @@ QSaveFile::~QSaveFile()
     if (d->fileEngine) {
         d->fileEngine->remove();
         delete d->fileEngine;
-        d->fileEngine = 0;
+        d->fileEngine = nullptr;
     }
 }
 
@@ -252,7 +252,7 @@ bool QSaveFile::open(OpenMode mode)
                 return true;
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
             delete d->fileEngine;
-            d->fileEngine = 0;
+            d->fileEngine = nullptr;
         } else {
             QString msg =
                     QSaveFile::tr("QSaveFile cannot open '%1' without direct write fallback "
@@ -285,7 +285,7 @@ bool QSaveFile::open(OpenMode mode)
             err = QFileDevice::OpenError;
         d->setError(err, d->fileEngine->errorString());
         delete d->fileEngine;
-        d->fileEngine = 0;
+        d->fileEngine = nullptr;
         return false;
     }
 
@@ -339,7 +339,7 @@ bool QSaveFile::commit()
             d->fileEngine->remove();
             d->writeError = QFileDevice::NoError;
             delete d->fileEngine;
-            d->fileEngine = 0;
+            d->fileEngine = nullptr;
             return false;
         }
         // atomically replace old file with new file
@@ -349,12 +349,12 @@ bool QSaveFile::commit()
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
             d->fileEngine->remove();
             delete d->fileEngine;
-            d->fileEngine = 0;
+            d->fileEngine = nullptr;
             return false;
         }
     }
     delete d->fileEngine;
-    d->fileEngine = 0;
+    d->fileEngine = nullptr;
     return true;
 }
 

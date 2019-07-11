@@ -1826,7 +1826,7 @@ void QMdiSubWindowPrivate::showButtonsInMenuBar(QMenuBar *menuBar)
         // Make sure topLevelWindow->contentsRect returns correct geometry.
         // topLevelWidget->updateGeoemtry will not do the trick here since it will post the event.
         QEvent event(QEvent::LayoutRequest);
-        QApplication::sendEvent(topLevelWindow, &event);
+        QCoreApplication::sendEvent(topLevelWindow, &event);
     }
 }
 
@@ -1936,7 +1936,7 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
 #ifndef COLOR_GRADIENTINACTIVECAPTION
 #define COLOR_GRADIENTINACTIVECAPTION 28
 #endif
-    if (QApplication::desktopSettingsAware()) {
+    if (QGuiApplication::desktopSettingsAware()) {
         newPalette.setColor(QPalette::Active, QPalette::Highlight,
                             colorref2qrgb(GetSysColor(COLOR_ACTIVECAPTION)));
         newPalette.setColor(QPalette::Inactive, QPalette::Highlight,
@@ -1986,7 +1986,7 @@ void QMdiSubWindowPrivate::updateActions()
     for (int i = 0; i < NumWindowStateActions; ++i)
         setVisible(WindowStateAction(i), false);
 
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) && QT_CONFIG(action)
     if (q_func()->style()->inherits("QMacStyle"))
         for (int i = 0; i < NumWindowStateActions; ++i)
             if (QAction *action = actions[i])
@@ -3050,7 +3050,7 @@ void QMdiSubWindow::closeEvent(QCloseEvent *closeEvent)
     d->setActive(false);
     if (parentWidget() && testAttribute(Qt::WA_DeleteOnClose)) {
         QChildEvent childRemoved(QEvent::ChildRemoved, this);
-        QApplication::sendEvent(parentWidget(), &childRemoved);
+        QCoreApplication::sendEvent(parentWidget(), &childRemoved);
     }
     closeEvent->accept();
 }
@@ -3141,8 +3141,6 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     }
 
     Q_D(QMdiSubWindow);
-    if (isMaximized() && !d->drawTitleBarWhenMaximized())
-        return;
 
     if (d->resizeTimerId != -1) {
         // Only update the style option rect and the window title.
@@ -3162,6 +3160,17 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     }
 
     QStylePainter painter(this);
+    QStyleOptionFrame frameOptions;
+    frameOptions.initFrom(this);
+    frameOptions.state.setFlag(QStyle::State_Active, d->isActive);
+    if (isMaximized() && !d->drawTitleBarWhenMaximized()) {
+        if (!autoFillBackground() && (!widget() || !qt_widget_private(widget())->isOpaque)) {
+            // make sure we paint all pixels of a maximized QMdiSubWindow if no-one else does
+            painter.drawPrimitive(QStyle::PE_FrameWindow, frameOptions);
+        }
+        return;
+    }
+
     if (!d->windowTitle.isEmpty())
         painter.setFont(d->font);
     painter.drawComplexControl(QStyle::CC_TitleBar, d->cachedStyleOptions);
@@ -3169,10 +3178,7 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     if (isMinimized() && !d->hasBorder(d->cachedStyleOptions))
         return;
 
-    QStyleOptionFrame frameOptions;
-    frameOptions.initFrom(this);
     frameOptions.lineWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, 0, this);
-    frameOptions.state.setFlag(QStyle::State_Active, d->isActive);
 
     // ### Ensure that we do not require setting the cliprect for 4.4
     if (!isMinimized() && !d->hasBorder(d->cachedStyleOptions))

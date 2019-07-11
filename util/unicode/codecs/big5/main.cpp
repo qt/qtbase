@@ -128,7 +128,7 @@ int main(int argc, char **argv)
             list += QByteArray("    { 0x" + QByteArray::number(m.b5, 16) + ", 0x" + QByteArray::number(m.uc, 16) + " }\n");;
     }
     QByteArray ba;
-    qSort(list);
+    std::sort(list.begin(), list.end());
     foreach(QByteArray a, list)
         ba += a;
     qDebug() << "struct B5Map b5_to_uc_map = {\n" << ba + "\n};";
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
         if (!b5_ok.contains(m.uc))
             list += QByteArray("    { 0x" + QByteArray::number(m.uc, 16) + ", 0x" + QByteArray::number(m.b5, 16) + " }\n");;
     ba = QByteArray();
-    qSort(list);
+    std::sort(list.begin(), list.end());;
     foreach(QByteArray a, list)
         ba += a;
     qDebug() << "struct B5Map uc_to_b5_map = {\n" << ba + "\n};";

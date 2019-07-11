@@ -2517,17 +2517,19 @@ logn("Configure summary:")
 logn()
 qtConfPrintReport()
 
+load(qt_prefix_build_check)
+
 # final notes for the user
 logn()
 logn("Qt is now configured for building. Just run '$$QMAKE_MAKE_NAME'.")
 pfx = $$[QT_INSTALL_PREFIX]
-exists($$pfx/.qmake.cache) {
+qtIsPrefixBuild($$pfx) {
+    logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
+    logn("Qt will be installed into '$$system_path($$pfx)'.")
+} else {
     logn("Once everything is built, Qt is installed.")
     logn("You should NOT run '$$QMAKE_MAKE_NAME install'.")
     logn("Note that this build cannot be deployed to other machines or devices.")
-} else {
-    logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
-    logn("Qt will be installed into '$$system_path($$pfx)'.")
 }
 logn()
 logn("Prior to reconfiguration, make sure you remove any leftovers from")

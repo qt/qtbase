@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const QMapDataBase QMapDataBase::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, { 0, 0, 0 }, 0 };
+const QMapDataBase QMapDataBase::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, { 0, nullptr, nullptr }, nullptr };
 
 const QMapNodeBase *QMapNodeBase::nextNode() const
 {
@@ -92,7 +92,7 @@ void QMapDataBase::rotateLeft(QMapNodeBase *x)
     QMapNodeBase *&root = header.left;
     QMapNodeBase *y = x->right;
     x->right = y->left;
-    if (y->left != 0)
+    if (y->left != nullptr)
         y->left->setParent(x);
     y->setParent(x->parent());
     if (x == root)
@@ -111,7 +111,7 @@ void QMapDataBase::rotateRight(QMapNodeBase *x)
     QMapNodeBase *&root = header.left;
     QMapNodeBase *y = x->left;
     x->left = y->right;
-    if (y->right != 0)
+    if (y->right != nullptr)
         y->right->setParent(x);
     y->setParent(x->parent());
     if (x == root)
@@ -173,7 +173,7 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
     QMapNodeBase *y = z;
     QMapNodeBase *x;
     QMapNodeBase *x_parent;
-    if (y->left == 0) {
+    if (y->left == nullptr) {
         x = y->right;
         if (y == mostLeftNode) {
             if (x)
@@ -182,11 +182,11 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
                 mostLeftNode = y->parent();
         }
     } else {
-        if (y->right == 0) {
+        if (y->right == nullptr) {
             x = y->left;
         } else {
             y = y->right;
-            while (y->left != 0)
+            while (y->left != nullptr)
                 y = y->left;
             x = y->right;
         }
@@ -228,7 +228,7 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
             z->parent()->right = x;
     }
     if (y->color() != QMapNodeBase::Red) {
-        while (x != root && (x == 0 || x->color() == QMapNodeBase::Black)) {
+        while (x != root && (x == nullptr || x->color() == QMapNodeBase::Black)) {
             if (x == x_parent->left) {
                 QMapNodeBase *w = x_parent->right;
                 if (w->color() == QMapNodeBase::Red) {
@@ -237,13 +237,13 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
                     rotateLeft(x_parent);
                     w = x_parent->right;
                 }
-                if ((w->left == 0 || w->left->color() == QMapNodeBase::Black) &&
-                    (w->right == 0 || w->right->color() == QMapNodeBase::Black)) {
+                if ((w->left == nullptr || w->left->color() == QMapNodeBase::Black) &&
+                    (w->right == nullptr || w->right->color() == QMapNodeBase::Black)) {
                     w->setColor(QMapNodeBase::Red);
                     x = x_parent;
                     x_parent = x_parent->parent();
                 } else {
-                    if (w->right == 0 || w->right->color() == QMapNodeBase::Black) {
+                    if (w->right == nullptr || w->right->color() == QMapNodeBase::Black) {
                         if (w->left)
                             w->left->setColor(QMapNodeBase::Black);
                         w->setColor(QMapNodeBase::Red);
@@ -265,13 +265,13 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
                 rotateRight(x_parent);
                 w = x_parent->left;
             }
-            if ((w->right == 0 || w->right->color() == QMapNodeBase::Black) &&
-                (w->left == 0 || w->left->color() == QMapNodeBase::Black)) {
+            if ((w->right == nullptr || w->right->color() == QMapNodeBase::Black) &&
+                (w->left == nullptr|| w->left->color() == QMapNodeBase::Black)) {
                 w->setColor(QMapNodeBase::Red);
                 x = x_parent;
                 x_parent = x_parent->parent();
             } else {
-                if (w->left == 0 || w->left->color() == QMapNodeBase::Black) {
+                if (w->left == nullptr || w->left->color() == QMapNodeBase::Black) {
                     if (w->right)
                         w->right->setColor(QMapNodeBase::Black);
                     w->setColor(QMapNodeBase::Red);
@@ -363,8 +363,8 @@ QMapDataBase *QMapDataBase::createData()
     d->size = 0;
 
     d->header.p = 0;
-    d->header.left = 0;
-    d->header.right = 0;
+    d->header.left = nullptr;
+    d->header.right = nullptr;
     d->mostLeftNode = &(d->header);
 
     return d;

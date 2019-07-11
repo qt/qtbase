@@ -402,6 +402,8 @@ QT_WARNING_POP
     QVERIFY( var6.isNull() );
     QVariant varLL( (qlonglong)0 );
     QVERIFY( !varLL.isNull() );
+
+#if QT_DEPRECATED_SINCE(5, 9)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     QVariant var7(QString::null);
@@ -412,6 +414,7 @@ QT_WARNING_DISABLE_DEPRECATED
     var7 = QVariant::fromValue<QString>(QString::null);
 QT_WARNING_POP
     QVERIFY(var7.isNull());
+#endif
 
     QVariant var8(QMetaType::Nullptr, nullptr);
     QVERIFY(var8.isNull());
@@ -433,6 +436,9 @@ QT_WARNING_POP
     QVERIFY(var11.isNull());
 
     QVERIFY(QVariant::fromValue<int*>(nullptr).isNull());
+
+    QVariant var12(QVariant::fromValue<QString>(QString()));
+    QVERIFY(var12.isNull());
 }
 
 void tst_QVariant::swap()
@@ -2871,6 +2877,7 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
         QVERIFY(spVar.canConvert<QObject*>());
         QCOMPARE(f, spVar.value<QObject*>());
     }
+#if QT_DEPRECATED_SINCE(5, 0)
     {
         QFile *f = new QFile(this);
 QT_WARNING_PUSH
@@ -2880,6 +2887,15 @@ QT_WARNING_POP
         QVariant spVar = QVariant::fromValue(sp);
         QVERIFY(spVar.canConvert<QObject*>());
         QCOMPARE(f, spVar.value<QObject*>());
+    }
+#endif
+    {
+        QFile *f = new QFile(this);
+        QSharedPointer<QObject> sp(f);
+        QWeakPointer<QObject> wp = sp;
+        QVariant wpVar = QVariant::fromValue(wp);
+        QVERIFY(wpVar.canConvert<QObject*>());
+        QCOMPARE(f, wpVar.value<QObject*>());
     }
     {
         QFile *f = new QFile(this);

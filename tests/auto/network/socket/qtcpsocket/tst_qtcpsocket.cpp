@@ -66,7 +66,7 @@
 #endif
 #include <QTextStream>
 #include <QThread>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QTimer>
 #include <QDebug>
 // RVCT compiles also unused inline methods
@@ -237,7 +237,6 @@ private:
     qint64 bytesAvailable;
     qint64 expectedLength;
     bool readingBody;
-    QTime timer;
 
     QByteArray expectedReplyIMAP_cached;
 
@@ -327,8 +326,8 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::addColumn<bool>("ssl");
 
     QTest::newRow("WithoutProxy") << false << 0 << false;
-    //QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false; ### temporarily disabled, QTBUG-38385
-    //QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false; ### temporarily disabled, QTBUG-38385
+    QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false;
+    QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false;
 
     QTest::newRow("WithHttpProxy") << true << int(HttpProxy) << false;
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic) << false;
@@ -336,8 +335,8 @@ void tst_QTcpSocket::initTestCase_data()
 
 #ifndef QT_NO_SSL
     QTest::newRow("WithoutProxy SSL") << false << 0 << true;
-    //QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true; ### temporarily disabled, QTBUG-38385
-    //QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true; ### temporarily disabled, QTBUG-38385
+    QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true;
+    QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true;
 
     QTest::newRow("WithHttpProxy SSL") << true << int(HttpProxy) << true;
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
@@ -866,7 +865,8 @@ void tst_QTcpSocket::hostNotFound()
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
 #ifdef QT_TEST_SERVER
     QFETCH_GLOBAL(bool, setProxy);
-    if (setProxy) {
+    QFETCH_GLOBAL(int, proxyType);
+    if (setProxy && (proxyType & HttpProxy) == HttpProxy) {
         QEXPECT_FAIL("", "QTBUG-73953: The version of Squid in the docker container behaves "
                          "differently to the one in the network testing server, returning 503 "
                          "when we expect 404", Continue);
@@ -1518,7 +1518,7 @@ void tst_QTcpSocket::downloadBigFile()
     expectedLength = 0;
     readingBody = false;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     enterLoop(600);
@@ -2482,7 +2482,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
     QEventLoop loop;
     connect(&serverProcess, SIGNAL(finished(int)), &loop, SLOT(quit()));
     connect(&clientProcess, SIGNAL(finished(int)), &loop, SLOT(quit()));
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     QTimer::singleShot(20000, &loop, SLOT(quit()));
 
@@ -2522,7 +2522,7 @@ void tst_QTcpSocket::connectToMultiIP()
     // rationale: this domain resolves to 3 A-records, 2 of them are
     // invalid. QTcpSocket should never spend more than 30 seconds per IP, and
     // 30s*2 = 60s.
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     socket->connectToHost("multi.dev.qt-project.org", 80);
     QVERIFY(socket->waitForConnected(60500));
@@ -2714,7 +2714,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
 
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::httpServerName(), 12346);
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     socket.waitForConnected(10000);
     QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");

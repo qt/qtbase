@@ -199,6 +199,18 @@ QDBusReply<QStringList> QDBusConnectionInterface::registeredServiceNames() const
 }
 
 /*!
+  \property QDBusConnectionInterface::activatableServiceNames
+  \brief holds the activatable service names
+  \since 5.14
+
+  Lists all names that can be activated on the bus.
+*/
+QDBusReply<QStringList> QDBusConnectionInterface::activatableServiceNames() const
+{
+    return internalConstCall(QDBus::AutoDetect, QLatin1String("ListActivatableNames"));
+}
+
+/*!
     Returns \c true if the service name \a serviceName has is currently
     registered.
 */

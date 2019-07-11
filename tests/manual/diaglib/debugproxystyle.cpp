@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include "debugproxystyle.h"
+#include "eventfilter.h"
 
 #include <QDebug>
 #include <QWidget>
@@ -73,7 +74,7 @@ QDebug operator<<(QDebug debug, const QStyleOption *option)
         debug << ", state=" << option->state;
 #if QT_VERSION >= 0x050000
     if (option->styleObject && !option->styleObject->isWidgetType())
-        debug << ", styleObject=" << option->styleObject;
+        debug << ", styleObject=" << QtDiag::formatQObject(option->styleObject);
 #endif
     debug << ')';
     return debug;
@@ -97,19 +98,19 @@ DebugProxyStyle::DebugProxyStyle(QStyle *style) : QProxyStyle(style)
 
 void DebugProxyStyle::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    qDebug() << __FUNCTION__ << "element=" << element << option << widget;
+    qDebug() << __FUNCTION__ << "element=" << element << option << QtDiag::formatQObject(widget);
     QProxyStyle::drawPrimitive( element, option, painter, widget);
 }
 
 void DebugProxyStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    qDebug() << __FUNCTION__ << "element=" << element << option << widget;
+    qDebug() << __FUNCTION__ << "element=" << element << option << QtDiag::formatQObject(widget);
     QProxyStyle::drawControl(element, option, painter, widget);
 }
 
 void DebugProxyStyle::drawComplexControl(QStyle::ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
-    qDebug() << __FUNCTION__ << "control=" << control << option << widget;
+    qDebug() << __FUNCTION__ << "control=" << control << option << QtDiag::formatQObject(widget);
     QProxyStyle::drawComplexControl(control, option, painter, widget);
 }
 
@@ -122,21 +123,24 @@ void DebugProxyStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int a
 QSize DebugProxyStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
 {
     const QSize result = QProxyStyle::sizeFromContents(type, option, size, widget);
-    qDebug() << __FUNCTION__ << size << "type=" << type << option << widget << "returns" << result;
+    qDebug() << __FUNCTION__ << size << "type=" << type << option
+        << QtDiag::formatQObject(widget) << "returns" << result;
     return result;
 }
 
 QRect DebugProxyStyle::subElementRect(QStyle::SubElement element, const QStyleOption *option, const QWidget *widget) const
 {
     const QRect result = QProxyStyle::subElementRect(element, option, widget);
-    qDebug() << __FUNCTION__ << "element=" << element << option << widget << "returns" << result;
+    qDebug() << __FUNCTION__ << "element=" << element << option
+        << QtDiag::formatQObject(widget) << "returns" << result;
     return result;
 }
 
 QRect DebugProxyStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex *opt, QStyle::SubControl sc, const QWidget *widget) const
 {
     const QRect result = QProxyStyle::subControlRect(cc, opt, sc, widget);
-    qDebug() << __FUNCTION__ << "cc=" << cc << "sc=" << sc <<  opt << widget << "returns" << result;
+    qDebug() << __FUNCTION__ << "cc=" << cc << "sc=" << sc << opt
+        << QtDiag::formatQObject(widget) << "returns" << result;
     return result;
 }
 
@@ -159,7 +163,7 @@ int DebugProxyStyle::styleHint(StyleHint hint, const QStyleOption *option, const
                                QStyleHintReturn *returnData) const
 {
     const int result = QProxyStyle::styleHint(hint, option, widget, returnData);
-    qDebug() << __FUNCTION__ << hint << option << widget << "returnData="
+    qDebug() << __FUNCTION__ << hint << option << QtDiag::formatQObject(widget) << "returnData="
         << returnData << "returns" << result;
     return result;
 }
@@ -167,7 +171,8 @@ int DebugProxyStyle::styleHint(StyleHint hint, const QStyleOption *option, const
 int DebugProxyStyle::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
     const int result = QProxyStyle::pixelMetric(metric, option, widget);
-    qDebug() << __FUNCTION__ << "metric=" << metric << option << widget << "returns" << result;
+    qDebug() << __FUNCTION__ << "metric=" << metric << option
+        << QtDiag::formatQObject(widget) << "returns" << result;
     return result;
 }
 

@@ -89,6 +89,9 @@ private slots:
     void readback_data();
     void readback();
 
+    void depFileGeneration_data();
+    void depFileGeneration();
+
     void python();
 
     void cleanupTestCase();
@@ -416,6 +419,49 @@ void tst_rcc::readback()
     QCOMPARE(resourceData, fileSystemData);
 }
 
+void tst_rcc::depFileGeneration_data()
+{
+    QTest::addColumn<QString>("qrcfile");
+    QTest::addColumn<QString>("depfile");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("simple") << "simple.qrc" << "simple.d" << "simple.d.expected";
+    QTest::newRow("specialchar") << "specialchar.qrc" << "specialchar.d" << "specialchar.d.expected";
+}
+
+void tst_rcc::depFileGeneration()
+{
+    QFETCH(QString, qrcfile);
+    QFETCH(QString, depfile);
+    QFETCH(QString, expected);
+    const QString directory = m_dataPath + QLatin1String("/depfile");
+
+    QProcess process;
+    process.setWorkingDirectory(directory);
+    process.start(m_rcc, { "-d", depfile, "-o", qrcfile + ".cpp", qrcfile });
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(process).constData());
+    if (!process.waitForFinished()) {
+        process.kill();
+        QFAIL(msgProcessTimeout(process).constData());
+    }
+    QVERIFY2(process.exitStatus() == QProcess::NormalExit,
+             msgProcessCrashed(process).constData());
+    QVERIFY2(process.exitCode() == 0,
+             msgProcessFailed(process).constData());
+
+    QFile depFileOutput(directory + QLatin1String("/") + depfile);
+    QVERIFY(depFileOutput.open(QIODevice::ReadOnly | QIODevice::Text));
+    QByteArray depFileData = depFileOutput.readAll();
+    depFileOutput.close();
+
+    QFile depFileExpected(directory + QLatin1String("/") + expected);
+    QVERIFY(depFileExpected.open(QIODevice::ReadOnly | QIODevice::Text));
+    QByteArray expectedData = depFileExpected.readAll();
+    depFileExpected.close();
+
+    QCOMPARE(depFileData, expectedData);
+}
+
 void tst_rcc::python()
 {
     const QString path = m_dataPath + QLatin1String("/sizes");
@@ -450,6 +496,8 @@ void tst_rcc::cleanupTestCase()
 {
     QDir dataDir(m_dataPath + QLatin1String("/binary"));
     QFileInfoList entries = dataDir.entryInfoList(QStringList() << QLatin1String("*.rcc"));
+    QDir dataDepDir(m_dataPath + QLatin1String("/depfile"));
+    entries += dataDepDir.entryInfoList({QLatin1String("*.d"), QLatin1String("*.qrc.cpp")});
     foreach (const QFileInfo &entry, entries)
         QFile::remove(entry.absoluteFilePath());
 }

@@ -124,7 +124,7 @@ QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
  : QObject(*new QWinEventNotifierPrivate(hEvent, false), parent)
 {
     Q_D(QWinEventNotifier);
-    QAbstractEventDispatcher *eventDispatcher = d->threadData->eventDispatcher.load();
+    QAbstractEventDispatcher *eventDispatcher = d->threadData->eventDispatcher.loadRelaxed();
     if (Q_UNLIKELY(!eventDispatcher)) {
         qWarning("QWinEventNotifier: Can only be used with threads started with QThread");
         return;
@@ -197,7 +197,7 @@ void QWinEventNotifier::setEnabled(bool enable)
         return;
     d->enabled = enable;
 
-    QAbstractEventDispatcher *eventDispatcher = d->threadData->eventDispatcher.load();
+    QAbstractEventDispatcher *eventDispatcher = d->threadData->eventDispatcher.loadRelaxed();
     if (!eventDispatcher) { // perhaps application is shutting down
         if (!enable && d->waitHandle != nullptr)
             d->unregisterWaitObject();
@@ -256,7 +256,7 @@ void QWinEventNotifierPrivate::unregisterWaitObject()
 static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
 {
     QWinEventNotifierPrivate *nd = reinterpret_cast<QWinEventNotifierPrivate *>(context);
-    QAbstractEventDispatcher *eventDispatcher = nd->threadData->eventDispatcher.load();
+    QAbstractEventDispatcher *eventDispatcher = nd->threadData->eventDispatcher.loadRelaxed();
 
     // Happens when Q(Core)Application is destroyed before QWinEventNotifier.
     // https://bugreports.qt.io/browse/QTBUG-70214

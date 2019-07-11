@@ -67,6 +67,7 @@ struct QCssKnownValue
 static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-background-role", QtBackgroundRole },
     { "-qt-block-indent", QtBlockIndent },
+    { "-qt-fg-texture-cachekey", QtForegroundTextureCacheKey },
     { "-qt-line-height-type", QtLineHeightType },
     { "-qt-list-indent", QtListIndent },
     { "-qt-list-number-prefix", QtListNumberPrefix },

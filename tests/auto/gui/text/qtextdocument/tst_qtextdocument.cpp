@@ -188,6 +188,9 @@ private slots:
 
     void lineHeightType();
     void cssLineHeightMultiplier();
+
+    void fontTagFace();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -319,6 +322,15 @@ void tst_QTextDocument::find_data()
     QTest::newRow("nbsp") << "Hello" + QString(QChar(QChar::Nbsp)) +"World" << " " << int(QTextDocument::FindCaseSensitively) << 0 << 5 << 6;
 
     QTest::newRow("from-the-end") << "Hello World" << "Hello World" << int(QTextDocument::FindCaseSensitively| QTextDocument::FindBackward) << 11 << 0 << 11;
+
+    QTest::newRow("bw-cross-paras-1") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 7 << 3 << 4;
+    QTest::newRow("bw-cross-paras-2") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 6 << 3 << 4;
+    QTest::newRow("bw-cross-paras-3") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 5 << 3 << 4;
+    QTest::newRow("bw-cross-paras-4") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 3 << 0 << 1;
+    QTest::newRow("bw-cross-paras-5") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 5 << 1 << 2;
+    QTest::newRow("bw-cross-paras-6") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 4 << 1 << 2;
+    QTest::newRow("bw-cross-paras-7") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 3 << 1 << 2;
+    QTest::newRow("bw-cross-paras-8") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 2 << 1 << 2;
 }
 
 void tst_QTextDocument::find()
@@ -850,6 +862,18 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("font-family-with-quotes2") << QTextDocumentFragment(&doc)
                                   << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Foo&quot;s Family';\">Blah</span></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setFontFamily("Times");
+        fmt.setFontFamilies(QStringList{ "Times", "serif" });
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("font-family-with-fallback") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Times','serif';\">Blah</span></p>");
     }
 
     {
@@ -3474,6 +3498,27 @@ void tst_QTextDocument::cssLineHeightMultiplier()
         QTextBlockFormat format = block.blockFormat();
         QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::ProportionalHeight));
         QCOMPARE(format.lineHeight(), 138.0);
+    }
+}
+
+void tst_QTextDocument::fontTagFace()
+{
+    {
+        QTextDocument td;
+        td.setHtml("<html><body><font face='Times'>Foobar</font></body></html>");
+        QTextFragment fragment = td.begin().begin().fragment();
+        QTextCharFormat format = fragment.charFormat();
+        QCOMPARE(format.fontFamily(), QLatin1String("Times"));
+    }
+
+    {
+        QTextDocument td;
+        td.setHtml("<html><body><font face='Times, serif'>Foobar</font></body></html>");
+        QTextFragment fragment = td.begin().begin().fragment();
+        QTextCharFormat format = fragment.charFormat();
+        QCOMPARE(format.fontFamily(), QLatin1String("Times"));
+        QStringList expectedFamilies = { QLatin1String("Times"), QLatin1String("serif") };
+        QCOMPARE(format.fontFamilies().toStringList(), expectedFamilies);
     }
 }
 

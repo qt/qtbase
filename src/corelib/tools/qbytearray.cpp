@@ -943,6 +943,23 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     and QByteArray() compares equal to QByteArray(""). We recommend
     that you always use isEmpty() and avoid isNull().
 
+    \section1 Maximum size and out-of-memory conditions
+
+    The current version of QByteArray is limited to just under 2 GB (2^31
+    bytes) in size. The exact value is architecture-dependent, since it depends
+    on the overhead required for managing the data block, but is no more than
+    32 bytes. Raw data blocks are also limited by the use of \c int type in the
+    current version to 2 GB minus 1 byte.
+
+    In case memory allocation fails, QByteArray will throw a \c std::bad_alloc
+    exception. Out of memory conditions in the Qt containers are the only case
+    where Qt will throw exceptions.
+
+    Note that the operating system may impose further limits on applications
+    holding a lot of allocated memory, especially large, contiguous blocks.
+    Such considerations, the configuration of such behavior or any mitigation
+    are outside the scope of the QByteArray API.
+
     \section1 Notes on Locale
 
     \section2 Number-String Conversions
@@ -2072,7 +2089,7 @@ static inline QByteArray &qbytearray_insert(QByteArray *ba,
 {
     Q_ASSERT(pos >= 0);
 
-    if (pos < 0 || len <= 0 || arr == 0)
+    if (pos < 0 || len <= 0 || arr == nullptr)
         return *ba;
 
     int oldsize = ba->size();
@@ -4775,7 +4792,7 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
     QByteArray input = *ba;
     int len = input.count();
     const char *inputData = input.constData();
-    char *output = 0;
+    char *output = nullptr;
     int length = 0;
 
     for (int i = 0; i < len; ++i) {
@@ -4815,7 +4832,7 @@ void q_toPercentEncoding(QByteArray *ba, const char *exclude, const char *includ
 void q_normalizePercentEncoding(QByteArray *ba, const char *exclude)
 {
     q_fromPercentEncoding(ba, '%');
-    q_toPercentEncoding(ba, exclude, 0, '%');
+    q_toPercentEncoding(ba, exclude, nullptr, '%');
 }
 
 /*!

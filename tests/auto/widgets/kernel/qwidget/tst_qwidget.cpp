@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include "../../../shared/highdpi.h"
 
 #include <qboxlayout.h>
 #include <qapplication.h>
@@ -53,6 +54,7 @@
 #include <qrandom.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
@@ -140,19 +142,6 @@ static QByteArray msgComparisonFailed(T v1, const char *op, T v2)
     return s.toLocal8Bit();
 }
 
-// Compare a window position that may go through scaling in the platform plugin with fuzz.
-static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
-{
-    return (p1 - p2).manhattanLength() <= fuzz;
-}
-
-static QString msgPointMismatch(const QPoint &p1, const QPoint p2)
-{
-    QString result;
-    QDebug(&result) << p1 << "!=" << p2 << ", manhattanLength=" << (p1 - p2).manhattanLength();
-    return result;
-}
-
 class tst_QWidget : public QObject
 {
     Q_OBJECT
@@ -192,6 +181,7 @@ private slots:
     void tabOrderWithProxy();
     void tabOrderWithCompoundWidgets();
     void tabOrderNoChange();
+    void tabOrderNoChange2();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -418,6 +408,7 @@ private:
     QPoint m_safeCursorPos;
     const bool m_windowsAnimationsEnabled;
     QTouchDevice *m_touchScreen;
+    const int m_fuzz;
 };
 
 bool tst_QWidget::ensureScreenSize(int width, int height)
@@ -576,6 +567,7 @@ tst_QWidget::tst_QWidget()
     , m_safeCursorPos(0, 0)
     , m_windowsAnimationsEnabled(windowsAnimationsEnabled())
     , m_touchScreen(QTest::createTouchDevice())
+    , m_fuzz(int(QGuiApplication::primaryScreen()->devicePixelRatio()))
 {
     if (m_windowsAnimationsEnabled) // Disable animations which can interfere with screen grabbing in moveChild(), showAndMoveChild()
         setWindowsAnimationsEnabled(false);
@@ -1952,6 +1944,24 @@ static QVector<QWidget*> getFocusChain(QWidget *start, bool bForward)
     return ret;
 }
 
+//#define DEBUG_FOCUS_CHAIN
+static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nullptr)
+{
+#ifdef DEBUG_FOCUS_CHAIN
+    qDebug() << "Dump focus chain, start:" << start << "isForward:" << bForward << desc;
+    QWidget *cur = start;
+    do {
+        qDebug() << cur;
+        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
+        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+    } while (cur != start);
+#else
+    Q_UNUSED(start)
+    Q_UNUSED(bForward)
+    Q_UNUSED(desc)
+#endif
+}
+
 void tst_QWidget::tabOrderNoChange()
 {
     QWidget w;
@@ -1963,7 +1973,61 @@ void tst_QWidget::tabOrderNoChange()
 
     const auto focusChainForward = getFocusChain(&w, true);
     const auto focusChainBackward = getFocusChain(&w, false);
+    dumpFocusChain(&w, true);
     QWidget::setTabOrder(tabWidget, tv);
+    dumpFocusChain(&w, true);
+    QCOMPARE(focusChainForward, getFocusChain(&w, true));
+    QCOMPARE(focusChainBackward, getFocusChain(&w, false));
+}
+
+void tst_QWidget::tabOrderNoChange2()
+{
+    QWidget w;
+    auto *verticalLayout = new QVBoxLayout(&w);
+    auto *tabWidget = new QTabWidget(&w);
+    tabWidget->setObjectName("tabWidget");
+    verticalLayout->addWidget(tabWidget);
+
+    auto *tab1 = new QWidget(tabWidget);
+    tab1->setObjectName("tab1");
+    auto *vLay1 = new QVBoxLayout(tab1);
+    auto *le1 = new QLineEdit(tab1);
+    le1->setObjectName("le1");
+    auto *le2 = new QLineEdit(tab1);
+    le2->setObjectName("le2");
+    vLay1->addWidget(le1);
+    vLay1->addWidget(le2);
+    tabWidget->addTab(tab1, QStringLiteral("Tab 1"));
+
+    auto *tab2 = new QWidget(tabWidget);
+    tab2->setObjectName("tab2");
+    auto *vLay2 = new QVBoxLayout(tab2);
+    auto *le3 = new QLineEdit(tab2);
+    le3->setObjectName("le3");
+    auto *le4 = new QLineEdit(tab2);
+    le4->setObjectName("le4");
+    vLay2->addWidget(le3);
+    vLay2->addWidget(le4);
+    tabWidget->addTab(tab2, QStringLiteral("Tab 2"));
+
+    const auto focusChainForward = getFocusChain(&w, true);
+    const auto focusChainBackward = getFocusChain(&w, false);
+    dumpFocusChain(&w, true);
+    dumpFocusChain(&w, false);
+    // this will screw up the focus chain order without visible changes,
+    // so don't call it here for the simplicity of the test
+    //QWidget::setTabOrder(tabWidget, le1);
+
+    QWidget::setTabOrder(le1, le2);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le1, le2)");
+    QWidget::setTabOrder(le2, le3);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le2, le3)");
+    QWidget::setTabOrder(le3, le4);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le3, le4)");
+    QWidget::setTabOrder(le4, tabWidget);
+    dumpFocusChain(&w, true, "QWidget::setTabOrder(le4, tabWidget)");
+    dumpFocusChain(&w, false);
+
     QCOMPARE(focusChainForward, getFocusChain(&w, true));
     QCOMPARE(focusChainBackward, getFocusChain(&w, false));
 }
@@ -2049,10 +2113,9 @@ void tst_QWidget::windowState()
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
-    const int fuzz = int(QHighDpiScaling::factor(widget1.windowHandle()));
     QVERIFY(!(widget1.windowState() & Qt::WindowMaximized));
-    QTRY_VERIFY2(qFuzzyCompareWindowPosition(widget1.pos(), pos, fuzz),
-                 qPrintable(msgPointMismatch(widget1.pos(), pos)));
+    QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
+                 qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowMinimized);
@@ -2073,8 +2136,8 @@ void tst_QWidget::windowState()
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & (Qt::WindowMinimized|Qt::WindowMaximized)));
-    QTRY_VERIFY2(qFuzzyCompareWindowPosition(widget1.pos(), pos, fuzz),
-                 qPrintable(msgPointMismatch(widget1.pos(), pos)));
+    QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
+                 qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
@@ -2095,8 +2158,8 @@ void tst_QWidget::windowState()
     widget1.setWindowState(Qt::WindowNoState);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowNoState);
-    QTRY_VERIFY2(qFuzzyCompareWindowPosition(widget1.pos(), pos, fuzz),
-                 qPrintable(msgPointMismatch(widget1.pos(), pos)));
+    QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
+                 qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
@@ -2129,8 +2192,8 @@ void tst_QWidget::windowState()
     QVERIFY(!(widget1.windowState() & stateMask));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
-    QTRY_VERIFY2(qFuzzyCompareWindowPosition(widget1.pos(), pos, fuzz),
-                 qPrintable(msgPointMismatch(widget1.pos(), pos)));
+    QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
+                 qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QTRY_COMPARE(widget1.size(), size);
 }
 
@@ -2323,7 +2386,7 @@ void tst_QWidget::resizeEvent()
     {
         QWidget wParent;
         wParent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-        wParent.resize(200, 200);
+        wParent.resize(m_testWidgetSize);
         ResizeWidget wChild(&wParent);
         wParent.show();
         QVERIFY(QTest::qWaitForWindowExposed(&wParent));
@@ -2341,7 +2404,7 @@ void tst_QWidget::resizeEvent()
     {
         ResizeWidget wTopLevel;
         wTopLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-        wTopLevel.resize(200, 200);
+        wTopLevel.resize(m_testWidgetSize);
         wTopLevel.show();
         QVERIFY(QTest::qWaitForWindowExposed(&wTopLevel));
         if (m_platform == QStringLiteral("winrt"))
@@ -2379,17 +2442,20 @@ void tst_QWidget::showMinimized()
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Winrt does not support move and resize", Abort);
 #endif
-    QCOMPARE(plain.pos(), pos);
+    QVERIFY2(HighDpi::fuzzyCompare(plain.pos(), pos, m_fuzz),
+             qPrintable(HighDpi::msgPointMismatch(plain.pos(), pos)));
 
     plain.showNormal();
     QVERIFY(!plain.isMinimized());
     QVERIFY(plain.isVisible());
-    QCOMPARE(plain.pos(), pos);
+    QVERIFY2(HighDpi::fuzzyCompare(plain.pos(), pos, m_fuzz),
+             qPrintable(HighDpi::msgPointMismatch(plain.pos(), pos)));
 
     plain.showMinimized();
     QVERIFY(plain.isMinimized());
     QVERIFY(plain.isVisible());
-    QCOMPARE(plain.pos(), pos);
+    QVERIFY2(HighDpi::fuzzyCompare(plain.pos(), pos, m_fuzz),
+             qPrintable(HighDpi::msgPointMismatch(plain.pos(), pos)));
 
     plain.hide();
     QVERIFY(plain.isMinimized());
@@ -2781,7 +2847,9 @@ void tst_QWidget::setGeometry()
     tlw.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QWidget child(&tlw);
 
-    QRect tr(100,100,200,200);
+    const QPoint topLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
+    const QSize initialSize = 2 * m_testWidgetSize;
+    QRect tr(topLeft + QPoint(100,100), initialSize);
     QRect cr(50,50,50,50);
     tlw.setGeometry(tr);
     child.setGeometry(cr);
@@ -2792,8 +2860,7 @@ void tst_QWidget::setGeometry()
     QCOMPARE(child.geometry(), cr);
 
     tlw.setParent(nullptr, Qt::Window|Qt::FramelessWindowHint);
-    tr = QRect(0,0,100,100);
-    tr.moveTopLeft(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
+    tr = QRect(topLeft, initialSize / 2);
     tlw.setGeometry(tr);
     QCOMPARE(tlw.geometry(), tr);
     tlw.showNormal();
@@ -3265,7 +3332,8 @@ void tst_QWidget::saveRestoreGeometry()
 
         if (m_platform == QStringLiteral("winrt"))
             QEXPECT_FAIL("", "WinRT does not support move/resize", Abort);
-        QTRY_COMPARE(widget.pos(), position);
+        QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
+                     qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
         QCOMPARE(widget.size(), size);
         savedGeometry = widget.saveGeometry();
     }
@@ -3293,10 +3361,12 @@ void tst_QWidget::saveRestoreGeometry()
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QApplication::processEvents();
 
-        QTRY_COMPARE(widget.pos(), position);
+        QVERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
+                 qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
         QCOMPARE(widget.size(), size);
         widget.show();
-        QCOMPARE(widget.pos(), position);
+        QVERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
+                 qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
         QCOMPARE(widget.size(), size);
     }
 
@@ -3409,6 +3479,9 @@ void tst_QWidget::restoreVersion1Geometry()
     Q_UNUSED(expectedPosition);
     QFETCH(QSize, expectedSize);
     QFETCH(QRect, expectedNormalGeometry);
+
+    if (m_platform == QLatin1String("windows") && QGuiApplication::primaryScreen()->geometry().width() > 2000)
+        QSKIP("Skipping due to minimum decorated window size on Windows");
 
     // WindowActive is uninteresting for this test
     const Qt::WindowStates WindowStateMask = Qt::WindowFullScreen | Qt::WindowMaximized | Qt::WindowMinimized;
@@ -4990,7 +5063,8 @@ void tst_QWidget::windowMoveResize()
         widget.showNormal();
 
         QTest::qWait(10);
-        QTRY_COMPARE(widget.pos(), rect.topLeft());
+        QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), rect.topLeft(), m_fuzz),
+                     qPrintable(HighDpi::msgPointMismatch(widget.pos(), rect.topLeft())));
         // Windows: Minimum size of decorated windows.
         const bool expectResizeFail = (!windowFlags && (rect.width() < 160 || rect.height() < 40))
             && m_platform == QStringLiteral("windows");
@@ -6983,7 +7057,7 @@ void tst_QWidget::renderWithPainter()
 
     // Make sure QWidget::render does not modify the render hints set on the painter.
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform
-                           | QPainter::NonCosmeticDefaultPen | QPainter::TextAntialiasing);
+                           | QPainter::TextAntialiasing);
     QPainter::RenderHints oldRenderHints = painter.renderHints();
     widget.render(&painter);
     QCOMPARE(painter.renderHints(), oldRenderHints);
@@ -7581,7 +7655,7 @@ void tst_QWidget::moveWindowInShowEvent()
 void tst_QWidget::repaintWhenChildDeleted()
 {
 #ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista) {
         QTest::qWait(1000);
     }
 #endif
@@ -8780,7 +8854,7 @@ void tst_QWidget::translucentWidget()
 
 #ifdef Q_OS_WIN
     QWidget *desktopWidget = QApplication::desktop()->screen(0);
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista)
         widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
     else
 #endif
@@ -8791,6 +8865,12 @@ void tst_QWidget::translucentWidget()
         QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
     QCOMPARE(actual.size(),expected.size());
     QCOMPARE(actual,expected);
+
+    const QWindow *window = label.windowHandle();
+    const QSurfaceFormat translucentFormat = window->requestedFormat();
+    label.setAttribute(Qt::WA_TranslucentBackground, false);
+    const QSurfaceFormat opaqueFormat = window->requestedFormat();
+    QVERIFY(translucentFormat != opaqueFormat);
 }
 
 class MaskResizeTestWidget : public QWidget

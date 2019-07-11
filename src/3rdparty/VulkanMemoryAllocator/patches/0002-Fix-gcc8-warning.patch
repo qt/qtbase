@@ -1,0 +1,14 @@
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index fbe6f9e3e8..f043bdc289 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -12074,7 +12074,8 @@ void VmaBlockVector::ApplyDefragmentationMovesGpu(
+     const size_t blockCount = m_Blocks.size();
+ 
+     pDefragCtx->blockContexts.resize(blockCount);
+-    memset(pDefragCtx->blockContexts.data(), 0, blockCount * sizeof(VmaBlockDefragmentationContext));
++    for (size_t i = 0; i < blockCount; ++i)
++        pDefragCtx->blockContexts[i] = VmaBlockDefragmentationContext();
+ 
+     // Go over all moves. Mark blocks that are used with BLOCK_FLAG_USED.
+     const size_t moveCount = moves.size();

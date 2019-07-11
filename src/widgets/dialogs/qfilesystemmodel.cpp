@@ -1390,7 +1390,7 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
     if (d->rootDir.path() == longNewPath)
         return d->index(rootPath());
 
-    bool showDrives = (longNewPath.isEmpty() || longNewPath == d->myComputer());
+    bool showDrives = (longNewPath.isEmpty() || longNewPath == QFileSystemModelPrivate::myComputer());
     if (!showDrives && !newPathDir.exists())
         return d->index(rootPath());
 

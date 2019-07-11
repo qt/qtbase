@@ -178,6 +178,16 @@ void QCocoaMenu::setIsOpen(bool isOpen)
     m_isOpen = isOpen;
 }
 
+bool QCocoaMenu::isAboutToShow() const
+{
+    return m_isAboutToShow;
+}
+
+void QCocoaMenu::setIsAboutToShow(bool isAbout)
+{
+    m_isAboutToShow = isAbout;
+}
+
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
     QMacAutoReleasePool pool;

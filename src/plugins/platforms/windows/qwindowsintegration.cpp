@@ -324,7 +324,7 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
     if (window->type() == Qt::Desktop) {
-        QWindowsDesktopWindow *result = new QWindowsDesktopWindow(window);
+        auto *result = new QWindowsDesktopWindow(window);
         qCDebug(lcQpaWindows) << "Desktop window:" << window
             << Qt::showbase << Qt::hex << result->winId() << Qt::noshowbase << Qt::dec << result->geometry();
         return result;
@@ -371,7 +371,7 @@ QPlatformWindow *QWindowsIntegration::createForeignWindow(QWindow *window, WId n
        qWarning("Windows QPA: Invalid foreign window ID %p.", hwnd);
        return nullptr;
     }
-    QWindowsForeignWindow *result = new QWindowsForeignWindow(window, hwnd);
+    auto *result = new QWindowsForeignWindow(window, hwnd);
     const QRect obtainedGeometry = result->geometry();
     QScreen *screen = nullptr;
     if (const QPlatformScreen *pScreen = result->screenForGeometry(obtainedGeometry))

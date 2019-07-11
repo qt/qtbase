@@ -83,7 +83,7 @@ int main(int argc, char**argv)
                     // disconnected
                     exit(0);
                 }
-                qFill(buf, buf + bufsize, 0);
+                std::fill(buf, buf + bufsize, 0);
                 ret = socketEngine->read(buf, available);
                 if (ret > 0) {
                     printf("%s", buf);

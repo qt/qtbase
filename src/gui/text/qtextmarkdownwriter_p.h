@@ -56,16 +56,19 @@
 
 #include "qtextdocument_p.h"
 #include "qtextdocumentwriter.h"
-#include "QAbstractTableModel"
 
 QT_BEGIN_NAMESPACE
+
+class QAbstractItemModel;
 
 class Q_GUI_EXPORT QTextMarkdownWriter
 {
 public:
     QTextMarkdownWriter(QTextStream &stream, QTextDocument::MarkdownFeatures features);
     bool writeAll(const QTextDocument *document);
+#if QT_CONFIG(itemmodel)
     void writeTable(const QAbstractItemModel *table);
+#endif
 
     int writeBlock(const QTextBlock &block, bool table, bool ignoreFormat, bool ignoreEmpty);
     void writeFrame(const QTextFrame *frame);

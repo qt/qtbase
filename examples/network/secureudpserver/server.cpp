@@ -62,7 +62,7 @@ QString peer_info(const QHostAddress &address, quint16 port)
     return info.arg(address.toString()).arg(port);
 }
 
-QString connection_info(QSharedPointer<QDtls> connection)
+QString connection_info(QDtls *connection)
 {
     QString info(DtlsServer::tr("Session cipher: "));
     info += connection->sessionCipher().name();
@@ -157,7 +157,7 @@ void DtlsServer::readyRead()
     }
 
     const auto client = std::find_if(knownClients.begin(), knownClients.end(),
-                                     [&](const DtlsConnection &connection){
+                                     [&](const std::unique_ptr<QDtls> &connection){
         return connection->peerAddress() == peerAddress
                && connection->peerPort() == peerPort;
     });
@@ -170,7 +170,7 @@ void DtlsServer::readyRead()
 
     //! [6]
     if ((*client)->isConnectionEncrypted()) {
-        decryptDatagram(*client, dgram);
+        decryptDatagram(client->get(), dgram);
         if ((*client)->dtlsError() == QDtlsError::RemoteClosedConnectionError)
             knownClients.erase(client);
         return;
@@ -178,7 +178,7 @@ void DtlsServer::readyRead()
     //! [6]
 
     //! [7]
-    doHandshake(*client, dgram);
+    doHandshake(client->get(), dgram);
     //! [7]
 }
 
@@ -205,13 +205,13 @@ void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
         emit infoMessage(peerInfo + tr(": verified, starting a handshake"));
     //! [8]
     //! [9]
-        DtlsConnection newConnection(new QDtls(QSslSocket::SslServerMode));
+        std::unique_ptr<QDtls> newConnection{new QDtls{QSslSocket::SslServerMode}};
         newConnection->setDtlsConfiguration(serverConfiguration);
         newConnection->setPeer(peerAddress, peerPort);
-        newConnection->connect(newConnection.data(), &QDtls::pskRequired,
+        newConnection->connect(newConnection.get(), &QDtls::pskRequired,
                                this, &DtlsServer::pskRequired);
-        knownClients.push_back(newConnection);
-        doHandshake(newConnection, clientHello);
+        knownClients.push_back(std::move(newConnection));
+        doHandshake(knownClients.back().get(), clientHello);
     //! [9]
     } else if (cookieSender.dtlsError() != QDtlsError::NoError) {
         emit errorMessage(tr("DTLS error: ") + cookieSender.dtlsErrorString());
@@ -221,7 +221,7 @@ void DtlsServer::handleNewConnection(const QHostAddress &peerAddress,
 }
 
 //! [11]
-void DtlsServer::doHandshake(DtlsConnection newConnection, const QByteArray &clientHello)
+void DtlsServer::doHandshake(QDtls *newConnection, const QByteArray &clientHello)
 {
     const bool result = newConnection->doHandshake(&serverSocket, clientHello);
     if (!result) {
@@ -246,7 +246,7 @@ void DtlsServer::doHandshake(DtlsConnection newConnection, const QByteArray &cli
 //! [11]
 
 //! [12]
-void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &clientMessage)
+void DtlsServer::decryptDatagram(QDtls *connection, const QByteArray &clientMessage)
 {
     Q_ASSERT(connection->isConnectionEncrypted());
 
@@ -266,10 +266,9 @@ void DtlsServer::decryptDatagram(DtlsConnection connection, const QByteArray &cl
 //! [14]
 void DtlsServer::shutdown()
 {
-    for (DtlsConnection &connection : knownClients)
+    for (const auto &connection : qExchange(knownClients, {}))
         connection->shutdown(&serverSocket);
 
-    knownClients.clear();
     serverSocket.close();
 }
 //! [14]

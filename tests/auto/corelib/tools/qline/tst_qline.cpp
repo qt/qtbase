@@ -53,8 +53,10 @@ private slots:
     void testNormalVector();
     void testNormalVector_data();
 
+#if QT_DEPRECATED_SINCE(5, 14)
     void testAngle();
     void testAngle_data();
+#endif
 
     void testAngle2();
     void testAngle2_data();
@@ -378,6 +380,7 @@ void tst_QLine::testNormalVector()
     QCOMPARE(n.dy(), qreal(nvy));
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 void tst_QLine::testAngle_data()
 {
     QTest::addColumn<double>("xa1");
@@ -426,6 +429,7 @@ void tst_QLine::testAngle()
     double resultAngle = a.angle(b);
     QCOMPARE(qRound(resultAngle), qRound(angle));
 }
+#endif
 
 void tst_QLine::testAngle2_data()
 {

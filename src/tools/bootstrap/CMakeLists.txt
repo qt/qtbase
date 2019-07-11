@@ -46,7 +46,9 @@ extend_target(Bootstrap
         ../../corelib/kernel/qcoreapplication.cpp
         ../../corelib/kernel/qcoreglobaldata.cpp
         ../../corelib/kernel/qmetatype.cpp
+        ../../corelib/kernel/qsharedmemory.cpp
         ../../corelib/kernel/qsystemerror.cpp
+        ../../corelib/kernel/qsystemsemaphore.cpp
         ../../corelib/kernel/qvariant.cpp
         ../../corelib/plugin/quuid.cpp
         ../../corelib/serialization/qdatastream.cpp
@@ -70,7 +72,6 @@ extend_target(Bootstrap
         ../../corelib/tools/qcryptographichash.cpp
         ../../corelib/tools/qhash.cpp
         ../../corelib/tools/qline.cpp
-        ../../corelib/tools/qlinkedlist.cpp
         ../../corelib/tools/qlist.cpp
         ../../corelib/tools/qlocale.cpp
         ../../corelib/tools/qlocale_tools.cpp
@@ -125,6 +126,12 @@ extend_target(Bootstrap CONDITION UNIX
         ../../corelib/io/qfilesystemiterator_unix.cpp
         ../../corelib/io/qfsfileengine_unix.cpp
         ../../corelib/kernel/qcore_unix.cpp
+        ../../corelib/kernel/qsharedmemory_posix.cpp
+        ../../corelib/kernel/qsharedmemory_systemv.cpp
+        ../../corelib/kernel/qsharedmemory_unix.cpp
+        ../../corelib/kernel/qsystemsemaphore_posix.cpp
+        ../../corelib/kernel/qsystemsemaphore_systemv.cpp
+        ../../corelib/kernel/qsystemsemaphore_unix.cpp
 )
 
 extend_target(Bootstrap CONDITION WIN32
@@ -135,6 +142,8 @@ extend_target(Bootstrap CONDITION WIN32
         ../../corelib/io/qfsfileengine_win.cpp
         ../../corelib/io/qstandardpaths_win.cpp
         ../../corelib/kernel/qcoreapplication_win.cpp
+        ../../corelib/kernel/qsharedmemory_win.cpp
+        ../../corelib/kernel/qsystemsemaphore_win.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
     PUBLIC_LIBRARIES
         advapi32
@@ -147,6 +156,9 @@ extend_target(Bootstrap CONDITION WIN32
 extend_target(Bootstrap CONDITION APPLE_OSX
     SOURCES
         ../../corelib/global/qoperatingsystemversion_darwin.mm
+        ../../corelib/io/qfilesystemengine_unix.cpp
+        ../../corelib/io/qfilesystemiterator_unix.cpp
+        ../../corelib/io/qfsfileengine_unix.cpp
         ../../corelib/io/qstandardpaths_mac.mm
         ../../corelib/kernel/qcore_foundation.mm
         ../../corelib/kernel/qcore_mac.cpp

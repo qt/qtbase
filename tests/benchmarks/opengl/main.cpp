@@ -76,7 +76,6 @@ void OpenGLBench::initTestCase()
 
     QPainter p(pb);
     p.setRenderHint(QPainter::Antialiasing);
-    p.setRenderHint(QPainter::HighQualityAntialiasing);
 
     p.drawImage(0, 0, QImage(256, 256, QImage::Format_ARGB32_Premultiplied));
 }
@@ -120,7 +119,6 @@ void OpenGLBench::imageDrawing()
     QPainter p(pb);
     p.setRenderHint(QPainter::SmoothPixmapTransform, smoothPixmapTransform);
     p.setRenderHint(QPainter::Antialiasing, highQualityAntialiasing);
-    p.setRenderHint(QPainter::HighQualityAntialiasing, highQualityAntialiasing);
 
     QBENCHMARK {
         if (pixmap) {
@@ -182,7 +180,6 @@ void OpenGLBench::pathDrawing()
         dummy.addRect(-1, -1, 2, 2);
         QPainter p(pb);
         p.setRenderHint(QPainter::Antialiasing, highQualityAntialiasing);
-        p.setRenderHint(QPainter::HighQualityAntialiasing, highQualityAntialiasing);
         p.translate(pb->width() / 2, pb->height() / 2);
         p.rotate(30);
         p.drawPath(dummy);
@@ -196,7 +193,6 @@ void OpenGLBench::pathDrawing()
 
     QBENCHMARK {
         p.setRenderHint(QPainter::Antialiasing, highQualityAntialiasing);
-        p.setRenderHint(QPainter::HighQualityAntialiasing, highQualityAntialiasing);
 
         p.rotate(0.01);
         p.drawPath(path);
@@ -227,7 +223,6 @@ void OpenGLBench::startupCost()
         QGLPixelBuffer buffer(512, 512);
         QPainter p(&buffer);
         p.setRenderHint(QPainter::Antialiasing, highQualityAntialiasing);
-        p.setRenderHint(QPainter::HighQualityAntialiasing, highQualityAntialiasing);
 
         p.translate(buffer.width() / 2, buffer.height() / 2);
         p.drawPath(path);

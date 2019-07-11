@@ -135,7 +135,7 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     Q_D(QEventLoop);
     if (!d->threadData->hasEventDispatcher())
         return false;
-    return d->threadData->eventDispatcher.load()->processEvents(flags);
+    return d->threadData->eventDispatcher.loadRelaxed()->processEvents(flags);
 }
 
 /*!
@@ -165,7 +165,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
 {
     Q_D(QEventLoop);
     //we need to protect from race condition with QThread::exit
-    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
+    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread.loadAcquire()))->mutex);
     if (d->threadData->quitNow)
         return -1;
 
@@ -225,7 +225,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
 
     ref.exceptionCaught = false;
-    return d->returnCode.load();
+    return d->returnCode.loadRelaxed();
 }
 
 /*!
@@ -279,9 +279,9 @@ void QEventLoop::exit(int returnCode)
     if (!d->threadData->hasEventDispatcher())
         return;
 
-    d->returnCode.store(returnCode);
+    d->returnCode.storeRelaxed(returnCode);
     d->exit.storeRelease(true);
-    d->threadData->eventDispatcher.load()->interrupt();
+    d->threadData->eventDispatcher.loadRelaxed()->interrupt();
 
 #ifdef Q_OS_WASM
     // QEventLoop::exec() never returns in emscripten. We implement approximate behavior here.
@@ -318,7 +318,7 @@ void QEventLoop::wakeUp()
     Q_D(QEventLoop);
     if (!d->threadData->hasEventDispatcher())
         return;
-    d->threadData->eventDispatcher.load()->wakeUp();
+    d->threadData->eventDispatcher.loadRelaxed()->wakeUp();
 }
 
 

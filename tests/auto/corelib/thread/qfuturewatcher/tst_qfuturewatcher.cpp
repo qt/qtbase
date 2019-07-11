@@ -27,6 +27,7 @@
 ****************************************************************************/
 #include <QCoreApplication>
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QtTest/QtTest>
 
 #include <QtConcurrent>
@@ -878,7 +879,7 @@ void tst_QFutureWatcher::incrementalFilterResults()
 void tst_QFutureWatcher::qfutureSynchronizer()
 {
     int taskCount = 1000;
-    QTime t;
+    QElapsedTimer t;
     t.start();
 
     {

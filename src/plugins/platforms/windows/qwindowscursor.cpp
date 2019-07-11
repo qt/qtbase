@@ -752,7 +752,7 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
             && GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bmColor)
             && bmColor.bmWidth == bmColor.bmWidthBytes / 4) {
             const int colorBitsLength = bmColor.bmHeight * bmColor.bmWidthBytes;
-            uchar *colorBits = new uchar[colorBitsLength];
+            auto *colorBits = new uchar[colorBitsLength];
             GetBitmapBits(iconInfo.hbmColor, colorBitsLength, colorBits);
             const QImage colorImage(colorBits, bmColor.bmWidth, bmColor.bmHeight,
                                     bmColor.bmWidthBytes, QImage::Format_ARGB32);

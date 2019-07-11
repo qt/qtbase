@@ -254,8 +254,7 @@ class QGlobalNetworkProxy
 {
 public:
     QGlobalNetworkProxy()
-        : mutex(QMutex::Recursive)
-        , applicationLevelProxy(0)
+        : applicationLevelProxy(0)
         , applicationLevelProxyFactory(0)
 #if QT_CONFIG(socks5)
         , socks5SocketEngineHandler(0)
@@ -338,7 +337,7 @@ public:
     QList<QNetworkProxy> proxyForQuery(const QNetworkProxyQuery &query);
 
 private:
-    QMutex mutex;
+    QRecursiveMutex mutex;
     QNetworkProxy *applicationLevelProxy;
     QNetworkProxyFactory *applicationLevelProxyFactory;
 #if QT_CONFIG(socks5)
@@ -483,7 +482,7 @@ public:
 
 template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
 {
-    if (d && d->ref.load() == 1)
+    if (d && d->ref.loadRelaxed() == 1)
         return;
     QNetworkProxyPrivate *x = (d ? new QNetworkProxyPrivate(*d)
                                : new QNetworkProxyPrivate);
@@ -925,7 +924,7 @@ public:
 
 template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
 {
-    if (d && d->ref.load() == 1)
+    if (d && d->ref.loadRelaxed() == 1)
         return;
     QNetworkProxyQueryPrivate *x = (d ? new QNetworkProxyQueryPrivate(*d)
                                     : new QNetworkProxyQueryPrivate);

@@ -171,8 +171,10 @@ public:
                        Qt::Orientation orientation);
     void splitDockWidget(QDockWidget *after, QDockWidget *dockwidget,
                          Qt::Orientation orientation);
+#if QT_CONFIG(tabbar)
     void tabifyDockWidget(QDockWidget *first, QDockWidget *second);
     QList<QDockWidget*> tabifiedDockWidgets(QDockWidget *dockwidget) const;
+#endif
     void removeDockWidget(QDockWidget *dockwidget);
     bool restoreDockWidget(QDockWidget *dockwidget);
 

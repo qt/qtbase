@@ -92,7 +92,9 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
 
+#if QT_CONFIG(commandlineparser)
     void addQtOptions(QList<QCommandLineOption> *options) override;
+#endif
     virtual bool shouldQuit() override;
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
@@ -114,7 +116,7 @@ public:
     static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
     {
         if (QCoreApplication::instance())
-            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher.load();
+            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher.loadRelaxed();
         else
             return nullptr;
     }

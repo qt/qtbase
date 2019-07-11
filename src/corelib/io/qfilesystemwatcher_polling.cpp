@@ -110,33 +110,32 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QPollingFileSystemWatcherEngine::timeout()
 {
-    QMutableHashIterator<QString, FileInfo> fit(files);
-    while (fit.hasNext()) {
-        QHash<QString, FileInfo>::iterator x = fit.next();
+    for (auto it = files.begin(), end = files.end(); it != end; /*erasing*/) {
+        auto x = it++;
         QString path = x.key();
         QFileInfo fi(path);
         if (!fi.exists()) {
-            fit.remove();
+            files.erase(x);
             emit fileChanged(path, true);
         } else if (x.value() != fi) {
             x.value() = fi;
             emit fileChanged(path, false);
         }
     }
-    QMutableHashIterator<QString, FileInfo> dit(directories);
-    while (dit.hasNext()) {
-        QHash<QString, FileInfo>::iterator x = dit.next();
+
+    for (auto it = directories.begin(), end = directories.end(); it != end; /*erasing*/) {
+        auto x = it++;
         QString path = x.key();
         QFileInfo fi(path);
         if (!path.endsWith(QLatin1Char('/')))
             fi = QFileInfo(path + QLatin1Char('/'));
         if (!fi.exists()) {
-            dit.remove();
+            directories.erase(x);
             emit directoryChanged(path, true);
         } else if (x.value() != fi) {
             fi.refresh();
             if (!fi.exists()) {
-                dit.remove();
+                directories.erase(x);
                 emit directoryChanged(path, true);
             } else {
                 x.value() = fi;

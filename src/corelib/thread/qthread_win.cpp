@@ -138,11 +138,11 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         }
         threadData->deref();
         threadData->isAdopted = true;
-        threadData->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
+        threadData->threadId.storeRelaxed(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
 #ifndef Q_OS_WINRT
         if (!QCoreApplicationPrivate::theMainThread) {
-            QCoreApplicationPrivate::theMainThread = threadData->thread.load();
+            QCoreApplicationPrivate::theMainThread = threadData->thread.loadRelaxed();
         } else {
 #else
         // for winrt the main thread is set explicitly in QCoreApplication's constructor as the
@@ -184,9 +184,9 @@ void QThreadData::setMainThread()
         }
         threadData->deref();
         threadData->isAdopted = true;
-        threadData->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
+        threadData->threadId.storeRelaxed(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
     }
-    QCoreApplicationPrivate::theMainThread = threadData->thread.load();
+    QCoreApplicationPrivate::theMainThread = threadData->thread.loadRelaxed();
 }
 #endif
 
@@ -379,7 +379,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 
     qt_create_tls();
     TlsSetValue(qt_current_thread_data_tls_index, data);
-    data->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
+    data->threadId.storeRelaxed(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
     QThread::setTerminationEnabled(false);
 
@@ -421,7 +421,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
     QThreadStorageData::finish(tls_data);
     locker.relock();
 
-    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.load();
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.loadRelaxed();
     if (eventDispatcher) {
         d->data->eventDispatcher = 0;
         locker.unlock();

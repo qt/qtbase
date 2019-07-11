@@ -96,8 +96,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
         QWindow *qwindow = QGuiApplication::focusWindow();
         if (qwindow && qwindow->isActive()) {
             while (qwindow) {
-                QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(qwindow);
-                if (widgetWindow) {
+                if (auto widgetWindow = qobject_cast<QWidgetWindow *>(qwindow)) {
                     active_window = widgetWindow->widget();
                     break;
                 }
@@ -110,27 +109,25 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
         return false;
 
 #ifndef QT_NO_ACTION
-    if (QAction *a = qobject_cast<QAction *>(object))
+    if (auto a = qobject_cast<QAction *>(object))
         return correctActionContext(context, a, active_window);
 #endif
 
 #if QT_CONFIG(graphicsview)
-    if (QGraphicsWidget *gw = qobject_cast<QGraphicsWidget *>(object))
+    if (auto gw = qobject_cast<QGraphicsWidget *>(object))
         return correctGraphicsWidgetContext(context, gw, active_window);
 #endif
 
-    QWidget *w = qobject_cast<QWidget *>(object);
+    auto w = qobject_cast<QWidget *>(object);
     if (!w) {
-        QShortcut *s = qobject_cast<QShortcut *>(object);
-        if (s)
+        if (auto s = qobject_cast<QShortcut *>(object))
             w = s->parentWidget();
     }
 
     if (!w) {
-        QWindow *qwindow = qobject_cast<QWindow *>(object);
+        auto qwindow = qobject_cast<QWindow *>(object);
         while (qwindow) {
-            QWidgetWindow *widget_window = qobject_cast<QWidgetWindow *>(qwindow);
-            if (widget_window) {
+            if (auto widget_window = qobject_cast<QWidgetWindow *>(qwindow)) {
                 w = widget_window->widget();
                 break;
             }
@@ -148,7 +145,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 {
     bool visible = w->isVisible();
 #if QT_CONFIG(menubar)
-    if (QMenuBar *menuBar = qobject_cast<QMenuBar *>(w)) {
+    if (auto menuBar = qobject_cast<QMenuBar *>(w)) {
         if (auto *pmb = menuBar->platformMenuBar()) {
             if (menuBar->parentWidget()) {
                 visible = true;
@@ -166,7 +163,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
         return false;
 
     if (context == Qt::ApplicationShortcut)
-        return QApplicationPrivate::tryModalHelper(w, 0); // true, unless w is shadowed by a modal dialog
+        return QApplicationPrivate::tryModalHelper(w, nullptr); // true, unless w is shadowed by a modal dialog
 
     if (context == Qt::WidgetShortcut)
         return w == QApplication::focusWidget();
@@ -181,18 +178,23 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
     // Below is Qt::WindowShortcut context
     QWidget *tlw = w->window();
 #if QT_CONFIG(graphicsview)
-    if (QWExtra *topData = static_cast<QWidgetPrivate *>(QObjectPrivate::get(tlw))->extra) {
+    if (auto topData = static_cast<QWidgetPrivate *>(QObjectPrivate::get(tlw))->extra) {
         if (topData->proxyWidget) {
-            bool res = correctGraphicsWidgetContext(context, (QGraphicsWidget *)topData->proxyWidget, active_window);
+            bool res = correctGraphicsWidgetContext(context, topData->proxyWidget, active_window);
             return res;
         }
     }
 #endif
 
-    /* if a floating tool window is active, keep shortcuts on the
-     * parent working */
-    if (active_window != tlw && active_window && active_window->windowType() == Qt::Tool && active_window->parentWidget()) {
-        active_window = active_window->parentWidget()->window();
+    if (active_window && active_window != tlw) {
+        /* if a floating tool window is active, keep shortcuts on the parent working.
+         * and if a popup window is active (f.ex a completer), keep shortcuts on the
+         * focus proxy working */
+        if (active_window->windowType() == Qt::Tool && active_window->parentWidget()) {
+            active_window = active_window->parentWidget()->window();
+        } else if (active_window->windowType() == Qt::Popup && active_window->focusProxy()) {
+            active_window = active_window->focusProxy()->window();
+        }
     }
 
     if (active_window != tlw) {
@@ -228,7 +230,7 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
 {
     bool visible = w->isVisible();
 #if defined(Q_OS_DARWIN) && QT_CONFIG(menubar)
-    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
+    if (!QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
 
@@ -239,9 +241,9 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
         // Applicationwide shortcuts are always reachable unless their owner
         // is shadowed by modality. In QGV there's no modality concept, but we
         // must still check if all views are shadowed.
-        QList<QGraphicsView *> views = w->scene()->views();
-        for (int i = 0; i < views.size(); ++i) {
-            if (QApplicationPrivate::tryModalHelper(views.at(i), 0))
+        const auto &views = w->scene()->views();
+        for (auto view : views) {
+            if (QApplicationPrivate::tryModalHelper(view, nullptr))
                 return true;
         }
         return false;
@@ -253,7 +255,7 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
     if (context == Qt::WidgetWithChildrenShortcut) {
         const QGraphicsItem *ti = w->scene()->focusItem();
         if (ti && ti->isWidget()) {
-            const QGraphicsWidget *tw = static_cast<const QGraphicsWidget *>(ti);
+            const auto *tw = static_cast<const QGraphicsWidget *>(ti);
             while (tw && tw != w && (tw->windowType() == Qt::Widget || tw->windowType() == Qt::Popup))
                 tw = tw->parentWidget();
             return tw == w;
@@ -264,10 +266,9 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
     // Below is Qt::WindowShortcut context
 
     // Find the active view (if any).
-    QList<QGraphicsView *> views = w->scene()->views();
-    QGraphicsView *activeView = 0;
-    for (int i = 0; i < views.size(); ++i) {
-        QGraphicsView *view = views.at(i);
+    const auto &views = w->scene()->views();
+    QGraphicsView *activeView = nullptr;
+    for (auto view : views) {
         if (view->window() == active_window) {
             activeView = view;
             break;
@@ -286,15 +287,14 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
 #ifndef QT_NO_ACTION
 static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window)
 {
-    const QList<QWidget *> &widgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->widgets;
+    const QWidgetList &widgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->widgets;
 #if defined(DEBUG_QSHORTCUTMAP)
     if (widgets.isEmpty())
         qDebug() << a << "not connected to any widgets; won't trigger";
 #endif
-    for (int i = 0; i < widgets.size(); ++i) {
-        QWidget *w = widgets.at(i);
+    for (auto w : widgets) {
 #if QT_CONFIG(menu)
-        if (QMenu *menu = qobject_cast<QMenu *>(w)) {
+        if (auto menu = qobject_cast<QMenu *>(w)) {
 #ifdef Q_OS_DARWIN
             // On Mac, menu item shortcuts are processed before reaching any window.
             // That means that if a menu action shortcut has not been already processed
@@ -320,14 +320,13 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
     }
 
 #if QT_CONFIG(graphicsview)
-    const QList<QGraphicsWidget *> &graphicsWidgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->graphicsWidgets;
+    const auto &graphicsWidgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->graphicsWidgets;
 #if defined(DEBUG_QSHORTCUTMAP)
     if (graphicsWidgets.isEmpty())
         qDebug() << a << "not connected to any widgets; won't trigger";
 #endif
-    for (int i = 0; i < graphicsWidgets.size(); ++i) {
-        QGraphicsWidget *w = graphicsWidgets.at(i);
-        if (correctGraphicsWidgetContext(context, w, active_window))
+    for (auto graphicsWidget : graphicsWidgets) {
+        if (correctGraphicsWidgetContext(context, graphicsWidget, active_window))
             return true;
     }
 #endif
@@ -428,12 +427,12 @@ class QShortcutPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QShortcut)
 public:
-    QShortcutPrivate() : sc_context(Qt::WindowShortcut), sc_enabled(true), sc_autorepeat(true), sc_id(0) {}
+    QShortcutPrivate() = default;
     QKeySequence sc_sequence;
-    Qt::ShortcutContext sc_context;
-    bool sc_enabled;
-    bool sc_autorepeat;
-    int sc_id;
+    Qt::ShortcutContext sc_context = Qt::WindowShortcut;
+    bool sc_enabled = true;
+    bool sc_autorepeat = true;
+    int sc_id = 0;
     QString sc_whatsthis;
     void redoGrab(QShortcutMap &map);
 };
@@ -467,7 +466,7 @@ void QShortcutPrivate::redoGrab(QShortcutMap &map)
 QShortcut::QShortcut(QWidget *parent)
     : QObject(*new QShortcutPrivate, parent)
 {
-    Q_ASSERT(parent != 0);
+    Q_ASSERT(parent != nullptr);
 }
 
 /*!
@@ -488,7 +487,7 @@ QShortcut::QShortcut(const QKeySequence &key, QWidget *parent,
     Q_D(QShortcut);
     d->sc_context = context;
     d->sc_sequence = key;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
     if (member)
         connect(this, SIGNAL(activated()), parent, member);
     if (ambiguousMember)
@@ -502,7 +501,7 @@ QShortcut::~QShortcut()
 {
     Q_D(QShortcut);
     if (qApp)
-        qApp->d_func()->shortcutMap.removeShortcut(d->sc_id, this);
+        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(d->sc_id, this);
 }
 
 /*!
@@ -523,7 +522,7 @@ void QShortcut::setKey(const QKeySequence &key)
         return;
     QAPP_CHECK("setKey");
     d->sc_sequence = key;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
 }
 
 QKeySequence QShortcut::key() const
@@ -554,7 +553,7 @@ void QShortcut::setEnabled(bool enable)
         return;
     QAPP_CHECK("setEnabled");
     d->sc_enabled = enable;
-    qApp->d_func()->shortcutMap.setShortcutEnabled(enable, d->sc_id, this);
+    QGuiApplicationPrivate::instance()->shortcutMap.setShortcutEnabled(enable, d->sc_id, this);
 }
 
 bool QShortcut::isEnabled() const
@@ -582,7 +581,7 @@ void QShortcut::setContext(Qt::ShortcutContext context)
         return;
     QAPP_CHECK("setContext");
     d->sc_context = context;
-    d->redoGrab(qApp->d_func()->shortcutMap);
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
 }
 
 Qt::ShortcutContext QShortcut::context() const
@@ -634,7 +633,7 @@ void QShortcut::setAutoRepeat(bool on)
         return;
     QAPP_CHECK("setAutoRepeat");
     d->sc_autorepeat = on;
-    qApp->d_func()->shortcutMap.setShortcutAutoRepeat(on, d->sc_id, this);
+    QGuiApplicationPrivate::instance()->shortcutMap.setShortcutAutoRepeat(on, d->sc_id, this);
 }
 
 bool QShortcut::autoRepeat() const
@@ -662,7 +661,7 @@ bool QShortcut::event(QEvent *e)
     Q_D(QShortcut);
     bool handled = false;
     if (d->sc_enabled && e->type() == QEvent::Shortcut) {
-        QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
+        auto se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->sc_id && se->key() == d->sc_sequence){
 #if QT_CONFIG(whatsthis)
             if (QWhatsThis::inWhatsThisMode()) {

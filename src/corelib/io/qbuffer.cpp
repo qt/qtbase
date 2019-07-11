@@ -50,7 +50,7 @@ class QBufferPrivate : public QIODevicePrivate
 
 public:
     QBufferPrivate()
-    : buf(0)
+        : buf(nullptr)
 #ifndef QT_NO_QOBJECT
         , writtenSinceLastEmit(0), signalConnectionCount(0), signalsEmitted(false)
 #endif

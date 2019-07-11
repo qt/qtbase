@@ -6,7 +6,6 @@ function(find_or_build_bootstrap_names)
     endif()
     add_subdirectory(tools/moc)
     add_subdirectory(tools/rcc)
-    add_subdirectory(tools/qfloat16-tables)
     add_subdirectory(tools/tracegen)
 endfunction()
 

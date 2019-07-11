@@ -1,0 +1,83 @@
+Qt 5.12.4 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.3.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Platform Specific Changes                         *
+****************************************************************************
+
+ - X11 / XCB:
+   * [QTBUG-45375] QTabletEvent coordinates now come from AbsX/AbsY
+     valuators in the X11 event, in more precise 32.32 fixed-point format,
+     scaled to fit the virtual desktop. It's possible to revert to using
+     the legacy 16.16-format event_x/event_y coordinates as in previous
+     releases by setting the QT_XCB_TABLET_LEGACY_COORDINATES environment
+     variable.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - Global:
+   * [QTBUG-72073] Added the QT_NO_FLOAT16_OPERATORS macro in order to work
+     around a Microsoft <= VS2017 compiler bug that is exposed when using
+     std::bitset along with any Qt header that includes <qfloat16.h>.
+
+ - QDeadlineTimer:
+   * [QTBUG-69750] Fixed integer overflows leading to immediate timeouts.
+
+ - QFile:
+   * Made QFile::copy() issue a filesystem-synchronization system call,
+     which would make it less likely to result in incomplete or corrupt
+     files if the system reboots or uncleanly shuts down soon after the
+     function returns. New code is advised to use QSaveFile instead, which
+     also allows to display a progress report while copying.
+
+ - QFileInfo:
+   * [QTBUG-63970][QTBUG-30401][QTBUG-20791] Fixed resolving of symbolic
+     links to UNC shares on NTFS file systems.
+
+ - QMetaObject:
+   * Non-copyable lambdas can now be used with invokeMethod(). For
+     consistency reasons, the functor object is now always moved.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - [QTBUG-73231] QWindow::mapToGlobal()/mapFromGlobal() now handle windows
+   spanning screens correctly.
+
+ - [QTBUG-75522] QBezier: Fix possible endless loop when stroking curves
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QMenu:
+   * Shortcuts are again shown by default in context menus, except on
+     macOS. They can be forced off by setting
+     AA_DontShowShortcutsInContextMenus to true.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - libpng was updated to version 1.6.37
+ - Updated QLocale to CLDR v35.1
+ - Updated bundled SQLite to version 3.28.0

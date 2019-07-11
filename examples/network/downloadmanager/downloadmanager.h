@@ -83,7 +83,7 @@ private:
     QQueue<QUrl> downloadQueue;
     QNetworkReply *currentDownload = nullptr;
     QFile output;
-    QTime downloadTime;
+    QElapsedTimer downloadTimer;
     TextProgressBar progressBar;
 
     int downloadedCount = 0;

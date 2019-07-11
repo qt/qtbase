@@ -97,6 +97,8 @@ extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommo
 
 extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
     SOURCES
+        shared/devicehandlerlist_p.h
+        shared/qevdevutil.cpp shared/qevdevutil_p.h
         shared/qtouchoutputmapping.cpp shared/qtouchoutputmapping_p.h
 )
 

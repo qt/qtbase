@@ -84,6 +84,7 @@
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
+#include <private/qwidget_p.h>
 
 #include <private/qstylehelper_p.h>
 #if QT_CONFIG(animation)
@@ -244,11 +245,12 @@ void QWindowsStyle::polish(QApplication *app)
     if (!proxy()->styleHint(SH_UnderlineShortcut, 0) && app)
         app->installEventFilter(this);
 
-    d->activeCaptionColor = app->palette().highlight().color();
-    d->activeGradientCaptionColor = app->palette().highlight() .color();
-    d->inactiveCaptionColor = app->palette().dark().color();
-    d->inactiveGradientCaptionColor = app->palette().dark().color();
-    d->inactiveCaptionText = app->palette().window().color();
+    const auto &palette = QGuiApplication::palette();
+    d->activeGradientCaptionColor = palette.highlight().color();
+    d->activeCaptionColor = d->activeGradientCaptionColor;
+    d->inactiveGradientCaptionColor = palette.dark().color();
+    d->inactiveCaptionColor = d->inactiveGradientCaptionColor;
+    d->inactiveCaptionText = palette.window().color();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) //fetch native title bar colors
     if(app->desktopSettingsAware()){
@@ -380,23 +382,12 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     return QWindowsStylePrivate::InvalidMetric;
 }
 
-static QWindow *windowOf(const QWidget *w)
-{
-    QWindow *result = nullptr;
-    if (w) {
-        result = w->windowHandle();
-        if (!result) {
-            if (const QWidget *np = w->nativeParentWidget())
-                result = np->windowHandle();
-        }
-    }
-    return result;
-}
-
 static QScreen *screenOf(const QWidget *w)
 {
-    if (const QWindow *window = windowOf(w))
-        return window->screen();
+    if (w) {
+        if (auto screen = qt_widget_private(const_cast<QWidget *>(w))->associatedScreen())
+            return screen;
+    }
     return QGuiApplication::primaryScreen();
 }
 

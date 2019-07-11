@@ -145,10 +145,10 @@ public:
     bool isUnnamedFile() const override final;
 
     const QString &templateName;
-    quint32 fileMode;
+    quint32 fileMode = 0;
     int flags = 0;
-    bool filePathIsTemplate;
-    bool filePathWasTemplate;
+    bool filePathIsTemplate = true;
+    bool filePathWasTemplate = true;
     bool unnamedFile = false;
 };
 

@@ -54,12 +54,12 @@ QT_BEGIN_NAMESPACE
 static QBasicAtomicInt fetchedRoot = Q_BASIC_ATOMIC_INITIALIZER(false);
 Q_AUTOTEST_EXPORT void qt_test_resetFetchedRoot()
 {
-    fetchedRoot.store(false);
+    fetchedRoot.storeRelaxed(false);
 }
 
 Q_AUTOTEST_EXPORT bool qt_test_isFetchedRoot()
 {
-    return fetchedRoot.load();
+    return fetchedRoot.loadRelaxed();
 }
 #endif
 
@@ -111,7 +111,7 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 */
 QFileInfoGatherer::~QFileInfoGatherer()
 {
-    abort.store(true);
+    abort.storeRelaxed(true);
     QMutexLocker locker(&mutex);
     condition.wakeAll();
     locker.unlock();
@@ -247,9 +247,9 @@ void QFileInfoGatherer::run()
 {
     forever {
         QMutexLocker locker(&mutex);
-        while (!abort.load() && path.isEmpty())
+        while (!abort.loadRelaxed() && path.isEmpty())
             condition.wait(&mutex);
-        if (abort.load())
+        if (abort.loadRelaxed())
             return;
         const QString thisPath = qAsConst(path).front();
         path.pop_front();
@@ -303,7 +303,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     // List drives
     if (path.isEmpty()) {
 #ifdef QT_BUILD_INTERNAL
-        fetchedRoot.store(true);
+        fetchedRoot.storeRelaxed(true);
 #endif
         QFileInfoList infoList;
         if (files.isEmpty()) {
@@ -332,7 +332,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     QStringList allFiles;
     if (files.isEmpty()) {
         QDirIterator dirIt(path, QDir::AllEntries | QDir::System | QDir::Hidden);
-        while (!abort.load() && dirIt.hasNext()) {
+        while (!abort.loadRelaxed() && dirIt.hasNext()) {
             dirIt.next();
             fileInfo = dirIt.fileInfo();
             allFiles.append(fileInfo.fileName());
@@ -343,7 +343,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         emit newListOfFiles(path, allFiles);
 
     QStringList::const_iterator filesIt = filesToCheck.constBegin();
-    while (!abort.load() && filesIt != filesToCheck.constEnd()) {
+    while (!abort.loadRelaxed() && filesIt != filesToCheck.constEnd()) {
         fileInfo.setFile(path + QDir::separator() + *filesIt);
         ++filesIt;
         fetch(fileInfo, base, firstTime, updatedFiles, path);

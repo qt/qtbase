@@ -352,7 +352,7 @@ public:
     QBrushData *brush;
     QNullBrushData() : brush(new QBrushData)
     {
-        brush->ref.store(1);
+        brush->ref.storeRelaxed(1);
         brush->style = Qt::BrushStyle(0);
         brush->color = Qt::black;
     }
@@ -411,7 +411,7 @@ void QBrush::init(const QColor &color, Qt::BrushStyle style)
         d.reset(new QBrushData);
         break;
     }
-    d->ref.store(1);
+    d->ref.storeRelaxed(1);
     d->style = style;
     d->color = color;
 }
@@ -585,7 +585,7 @@ static Q_DECL_CONSTEXPR inline bool use_same_brushdata(Qt::BrushStyle lhs, Qt::B
 
 void QBrush::detach(Qt::BrushStyle newStyle)
 {
-    if (use_same_brushdata(newStyle, d->style) && d->ref.load() == 1) {
+    if (use_same_brushdata(newStyle, d->style) && d->ref.loadRelaxed() == 1) {
         d->style = newStyle;
         return;
     }
@@ -625,7 +625,7 @@ void QBrush::detach(Qt::BrushStyle newStyle)
         x.reset(new QBrushData);
         break;
     }
-    x->ref.store(1); // must be first lest the QBrushDataPointerDeleter turns into a no-op
+    x->ref.storeRelaxed(1); // must be first lest the QBrushDataPointerDeleter turns into a no-op
     x->style = newStyle;
     x->color = d->color;
     x->transform = d->transform;

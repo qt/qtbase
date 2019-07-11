@@ -291,7 +291,7 @@ void LegacySpecParser::parseFunctions(QTextStream &stream)
     }
 
     m_versions = versions.toList();
-    qSort(m_versions);
+    std::sort(m_versions.begin(), m_versions.end());
 }
 
 bool LegacySpecParser::inDeprecationException(const QString &functionName) const

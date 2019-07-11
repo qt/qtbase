@@ -269,7 +269,10 @@ static Qt::MouseButtons queryMouseButtons()
 
 static QWindow *getWindowUnderPointer(QWindow *window, QPoint globalPos)
 {
-    QWindow *currentWindowUnderPointer = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
+    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+
+    QWindow *currentWindowUnderPointer = platformWindow->hasMouseCapture() ?
+                QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT) : window;
 
     while (currentWindowUnderPointer && currentWindowUnderPointer->flags() & Qt::WindowTransparentForInput)
         currentWindowUnderPointer = currentWindowUnderPointer->parent();
@@ -318,7 +321,7 @@ static QTouchDevice *createTouchDevice()
     qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
         << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
         << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints;
-    QTouchDevice *result = new QTouchDevice;
+    auto *result = new QTouchDevice;
     result->setType(digitizers & NID_INTEGRATED_TOUCH
                     ? QTouchDevice::TouchScreen : QTouchDevice::TouchPad);
     QTouchDevice::Capabilities capabilities = QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition;
@@ -348,7 +351,7 @@ void QWindowsPointerHandler::handleCaptureRelease(QWindow *window,
                                                   QEvent::Type eventType,
                                                   Qt::MouseButtons mouseButtons)
 {
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    auto *platformWindow = static_cast<QWindowsWindow *>(window->handle());
 
     // Qt expects the platform plugin to capture the mouse on any button press until release.
     if (!platformWindow->hasMouseCapture() && eventType == QEvent::MouseButtonPress) {
@@ -384,7 +387,7 @@ void QWindowsPointerHandler::handleEnterLeave(QWindow *window,
                                               QWindow *currentWindowUnderPointer,
                                               QPoint globalPos)
 {
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    auto *platformWindow = static_cast<QWindowsWindow *>(window->handle());
     const bool hasCapture = platformWindow->hasMouseCapture();
 
     // No enter or leave events are sent as long as there is an autocapturing window.
@@ -468,7 +471,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (!screen)
         return false;
 
-    POINTER_TOUCH_INFO *touchInfo = static_cast<POINTER_TOUCH_INFO *>(vTouchInfo);
+    auto *touchInfo = static_cast<POINTER_TOUCH_INFO *>(vTouchInfo);
 
     const QRect screenGeometry = screen->geometry();
 
@@ -548,13 +551,13 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
 
-    POINTER_PEN_INFO *penInfo = static_cast<POINTER_PEN_INFO *>(vPenInfo);
+    auto *penInfo = static_cast<POINTER_PEN_INFO *>(vPenInfo);
 
     RECT pRect, dRect;
     if (!QWindowsContext::user32dll.getPointerDeviceRects(penInfo->pointerInfo.sourceDevice, &pRect, &dRect))
         return false;
 
-    const qint64 sourceDevice = (qint64)penInfo->pointerInfo.sourceDevice;
+    const auto sourceDevice = (qint64)penInfo->pointerInfo.sourceDevice;
     const QPoint globalPos = QPoint(penInfo->pointerInfo.ptPixelLocation.x, penInfo->pointerInfo.ptPixelLocation.y);
     const QPoint localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPos);
     const QPointF hiResGlobalPos = QPointF(dRect.left + qreal(penInfo->pointerInfo.ptHimetricLocation.x - pRect.left)

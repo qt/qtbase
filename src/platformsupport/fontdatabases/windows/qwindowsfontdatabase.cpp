@@ -1364,11 +1364,11 @@ QT_WARNING_POP
                 if (request.family != fontEngine->fontDef.family) {
                     qWarning("%s: Failed to load font. Got fallback instead: %s",
                              __FUNCTION__, qPrintable(fontEngine->fontDef.family));
-                    if (fontEngine->ref.load() == 0)
+                    if (fontEngine->ref.loadRelaxed() == 0)
                         delete fontEngine;
                     fontEngine = 0;
                 } else {
-                    Q_ASSERT(fontEngine->ref.load() == 0);
+                    Q_ASSERT(fontEngine->ref.loadRelaxed() == 0);
 
                     // Override the generated font name
                     switch (fontEngine->type()) {
@@ -1845,7 +1845,7 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request, const QS
 
     QString fam = faceName;
     if (fam.isEmpty())
-        fam = request.family;
+        fam = request.families.size() > 0 ? request.families.at(0) : request.family;
     if (Q_UNLIKELY(fam.size() >= LF_FACESIZE)) {
         qCritical("%s: Family name '%s' is too long.", __FUNCTION__, qPrintable(fam));
         fam.truncate(LF_FACESIZE - 1);

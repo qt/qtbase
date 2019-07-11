@@ -31,6 +31,7 @@
 
 #include <QAtomicInt>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 
 #include <limits.h>
 
@@ -104,12 +105,12 @@ static void warningFreeHelperTemplate()
     assemblyMarker<1>(&i);
 
     // the loads sometimes generate no assembly output
-    i.load();
+    i.loadRelaxed();
     assemblyMarker<11>(&i);
     i.loadAcquire();
     assemblyMarker<12>(&i);
 
-    i.store(newValue);
+    i.storeRelaxed(newValue);
     assemblyMarker<21>(&i);
     i.storeRelease(newValue);
     assemblyMarker<22>(&i);
@@ -281,9 +282,9 @@ void tst_QAtomicInt::constructor()
 {
     QFETCH(int, value);
     QAtomicInt atomic1(value);
-    QCOMPARE(atomic1.load(), value);
+    QCOMPARE(atomic1.loadRelaxed(), value);
     QAtomicInt atomic2 = value;
-    QCOMPARE(atomic2.load(), value);
+    QCOMPARE(atomic2.loadRelaxed(), value);
 }
 
 void tst_QAtomicInt::copy_constructor_data()
@@ -293,16 +294,16 @@ void tst_QAtomicInt::copy_constructor()
 {
     QFETCH(int, value);
     QAtomicInt atomic1(value);
-    QCOMPARE(atomic1.load(), value);
+    QCOMPARE(atomic1.loadRelaxed(), value);
 
     QAtomicInt atomic2(atomic1);
-    QCOMPARE(atomic2.load(), value);
+    QCOMPARE(atomic2.loadRelaxed(), value);
     QAtomicInt atomic3 = atomic1;
-    QCOMPARE(atomic3.load(), value);
+    QCOMPARE(atomic3.loadRelaxed(), value);
     QAtomicInt atomic4(atomic2);
-    QCOMPARE(atomic4.load(), value);
+    QCOMPARE(atomic4.loadRelaxed(), value);
     QAtomicInt atomic5 = atomic2;
-    QCOMPARE(atomic5.load(), value);
+    QCOMPARE(atomic5.loadRelaxed(), value);
 }
 
 void tst_QAtomicInt::assignment_operator_data()
@@ -326,13 +327,13 @@ void tst_QAtomicInt::assignment_operator()
     {
         QAtomicInt atomic1 = value;
         atomic1 = newval;
-        QCOMPARE(atomic1.load(), newval);
+        QCOMPARE(atomic1.loadRelaxed(), newval);
         atomic1 = value;
-        QCOMPARE(atomic1.load(), value);
+        QCOMPARE(atomic1.loadRelaxed(), value);
 
         QAtomicInt atomic2 = newval;
         atomic1 = atomic2;
-        QCOMPARE(atomic1.load(), atomic2.load());
+        QCOMPARE(atomic1.loadRelaxed(), atomic2.loadRelaxed());
     }
 }
 
@@ -400,7 +401,7 @@ void tst_QAtomicInt::ref()
     QFETCH(int, value);
     QAtomicInt x = value;
     QTEST(x.ref() ? 1 : 0, "result");
-    QTEST(x.load(), "expected");
+    QTEST(x.loadRelaxed(), "expected");
 }
 
 void tst_QAtomicInt::deref_data()
@@ -419,7 +420,7 @@ void tst_QAtomicInt::deref()
     QFETCH(int, value);
     QAtomicInt x = value;
     QTEST(x.deref() ? 1 : 0, "result");
-    QTEST(x.load(), "expected");
+    QTEST(x.loadRelaxed(), "expected");
 }
 
 void tst_QAtomicInt::isTestAndSetNative()
@@ -635,25 +636,25 @@ void tst_QAtomicInt::fetchAndStore()
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreRelaxed(newval), value);
-        QCOMPARE(atomic.load(), newval);
+        QCOMPARE(atomic.loadRelaxed(), newval);
     }
 
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreAcquire(newval), value);
-        QCOMPARE(atomic.load(), newval);
+        QCOMPARE(atomic.loadRelaxed(), newval);
     }
 
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreRelease(newval), value);
-        QCOMPARE(atomic.load(), newval);
+        QCOMPARE(atomic.loadRelaxed(), newval);
     }
 
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreOrdered(newval), value);
-        QCOMPARE(atomic.load(), newval);
+        QCOMPARE(atomic.loadRelaxed(), newval);
     }
 }
 
@@ -772,28 +773,28 @@ void tst_QAtomicInt::fetchAndAdd()
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddRelaxed(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(atomic.load(), value1 + value2);
+        QCOMPARE(atomic.loadRelaxed(), value1 + value2);
     }
 
     {
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddAcquire(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(atomic.load(), value1 + value2);
+        QCOMPARE(atomic.loadRelaxed(), value1 + value2);
     }
 
     {
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddRelease(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(atomic.load(), value1 + value2);
+        QCOMPARE(atomic.loadRelaxed(), value1 + value2);
     }
 
     {
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddOrdered(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(atomic.load(), value1 + value2);
+        QCOMPARE(atomic.loadRelaxed(), value1 + value2);
     }
 }
 
@@ -851,14 +852,14 @@ void tst_QAtomicInt::operators()
 
 void tst_QAtomicInt::testAndSet_loop()
 {
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     int iterations = 10000000;
 
     QAtomicInt val=0;
     for (int i = 0; i < iterations; ++i) {
-        int v = val.load();
+        int v = val.loadRelaxed();
         QVERIFY(val.testAndSetRelaxed(v, v+1));
         if ((i % 1000) == 999) {
             if (stopWatch.elapsed() > 60 * 1000) {
@@ -881,7 +882,7 @@ void tst_QAtomicInt::fetchAndAdd_loop()
     QAtomicInt val=0;
     for (int i = 0; i < iterations; ++i) {
         const int prev = val.fetchAndAddRelaxed(1);
-        QCOMPARE(prev, val.load() -1);
+        QCOMPARE(prev, val.loadRelaxed() -1);
     }
 }
 
@@ -919,7 +920,7 @@ void tst_QAtomicInt::fetchAndAdd_threadedLoop()
     t1.wait();
     t2.wait();
 
-    QCOMPARE(val.load(), 0);
+    QCOMPARE(val.loadRelaxed(), 0);
 }
 
 QTEST_MAIN(tst_QAtomicInt)

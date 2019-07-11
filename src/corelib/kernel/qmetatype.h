@@ -1715,12 +1715,17 @@ namespace QtPrivate {
         }
     };
 
+    // hack to delay name lookup to instantiation time by making
+    // EnableInternalData a dependent name:
+    template <typename T>
+    struct EnableInternalDataWrap;
+
     template<typename T>
     struct QSmartPointerConvertFunctor<QWeakPointer<T> >
     {
         QObject* operator()(const QWeakPointer<T> &p) const
         {
-            return p.internalData();
+            return QtPrivate::EnableInternalDataWrap<T>::internalData(p);
         }
     };
 }
@@ -1994,7 +1999,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
     static int qt_metatype_id() \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
-        if (const int id = metatype_id.load()) \
+        if (const int id = metatype_id.loadRelaxed()) \
             return id; \
         const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
         Q_ASSERT(tName); \

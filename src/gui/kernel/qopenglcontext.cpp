@@ -1610,8 +1610,7 @@ void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
     QOpenGLMultiGroupSharedResource instance.
 */
 QOpenGLMultiGroupSharedResource::QOpenGLMultiGroupSharedResource()
-    : active(0),
-      m_mutex(QMutex::Recursive)
+    : active(0)
 {
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
     qDebug("Creating context group resource object %p.", this);
@@ -1634,7 +1633,7 @@ QOpenGLMultiGroupSharedResource::~QOpenGLMultiGroupSharedResource()
         active.deref();
     }
 #ifndef QT_NO_DEBUG
-    if (active.load() != 0) {
+    if (active.loadRelaxed() != 0) {
         qWarning("QtGui: Resources are still available at program shutdown.\n"
                  "          This is possibly caused by a leaked QOpenGLWidget, \n"
                  "          QOpenGLFramebufferObject or QOpenGLPixelBuffer.");

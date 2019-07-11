@@ -548,7 +548,7 @@ class
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 Q_CORE_EXPORT
 #endif
-QByteRef {
+QByteRef {  // ### Qt 7: remove
     QByteArray &a;
     int i;
     inline QByteRef(QByteArray &array, int idx)

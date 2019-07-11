@@ -51,21 +51,10 @@
 #include <QtCore/qversionnumber.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
-#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
-
-class QWindowsDirect2DEventDispatcher : public QWindowsGuiEventDispatcher
-{
-public:
-    QWindowsDirect2DEventDispatcher(QObject *parent = nullptr)
-        : QWindowsGuiEventDispatcher(parent)
-    {
-        uninstallMessageHook(); // ### Workaround for QTBUG-42428
-    }
-};
 
 class QWindowsDirect2DIntegrationPrivate
 {
@@ -91,7 +80,7 @@ static QVersionNumber systemD2DVersion()
 
                     if (VerQueryValue(info.constData(), __TEXT("\\"),
                                       reinterpret_cast<void **>(&fi), &size) && size) {
-                        const VS_FIXEDFILEINFO *verInfo = reinterpret_cast<const VS_FIXEDFILEINFO *>(fi);
+                        const auto *verInfo = reinterpret_cast<const VS_FIXEDFILEINFO *>(fi);
                         return QVersionNumber{HIWORD(verInfo->dwFileVersionMS), LOWORD(verInfo->dwFileVersionMS),
                                               HIWORD(verInfo->dwFileVersionLS), LOWORD(verInfo->dwFileVersionLS)};
                     }
@@ -140,7 +129,7 @@ QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringLi
         return nullptr;
     }
 
-    QWindowsDirect2DIntegration *integration = new QWindowsDirect2DIntegration(paramList);
+    auto *integration = new QWindowsDirect2DIntegration(paramList);
 
     if (!integration->init()) {
         delete integration;
@@ -186,11 +175,6 @@ QPlatformPixmap *QWindowsDirect2DIntegration::createPlatformPixmap(QPlatformPixm
 QPlatformBackingStore *QWindowsDirect2DIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QWindowsDirect2DBackingStore(window);
-}
-
-QAbstractEventDispatcher *QWindowsDirect2DIntegration::createEventDispatcher() const
-{
-    return new QWindowsDirect2DEventDispatcher;
 }
 
 QWindowsDirect2DContext *QWindowsDirect2DIntegration::direct2DContext() const

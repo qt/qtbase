@@ -45,6 +45,9 @@ append new entries to enumdata.py's lists and update documentation in
 src/corelib/tools/qlocale.qdoc, adding the new entries in alphabetic
 order.
 
+While updating the locale data, check also for updates to MS-Win's
+time zone names; see cldr2qtimezone.py for details.
+
 .. _CLDR: ftp://unicode.org/Public/cldr/
 """
 

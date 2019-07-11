@@ -2577,7 +2577,7 @@ void QWizard::setWizardStyle(WizardStyle style)
             //Send a resizeevent since the antiflicker widget probably needs a new size
             //because of the backbutton in the window title
             QResizeEvent ev(geometry().size(), geometry().size());
-            QApplication::sendEvent(this, &ev);
+            QCoreApplication::sendEvent(this, &ev);
         }
 #endif
         d->updateLayout();

@@ -259,6 +259,12 @@ void tst_QStringList::filter()
     list5 = list5.filter( QRegularExpression("[i]ll") );
     list6 << "Bill Gates" << "Bill Clinton";
     QCOMPARE( list5, list6 );
+
+    QStringList list7, list8;
+    list7 << "Bill Gates" << "Joe Blow" << "Bill Clinton";
+    list7 = list7.filter( QStringView(QString("Bill")) );
+    list8 << "Bill Gates" << "Bill Clinton";
+    QCOMPARE( list7, list8 );
 }
 
 void tst_QStringList::sort()
@@ -316,6 +322,16 @@ void tst_QStringList::replaceInStrings()
     list10 << "Bill Clinton" << "Bill Gates";
     list9.replaceInStrings( QRegularExpression("^(.*), (.*)$"), "\\2 \\1" );
     QCOMPARE( list9, list10 );
+
+    QStringList list11, list12, list13, list14;
+    list11 << "alpha" << "beta" << "gamma" << "epsilon";
+    list12 << "alpha" << "beta" << "gamma" << "epsilon";
+    list13 << "alpha" << "beta" << "gamma" << "epsilon";
+    list11.replaceInStrings( QStringView(QString("a")), QStringView(QString("o")) );
+    list12.replaceInStrings( QStringView(QString("a")), QString("o") );
+    list13.replaceInStrings( QString("a"), QStringView(QString("o")) );
+    list14 << "olpho" << "beto" << "gommo" << "epsilon";
+    QCOMPARE( list11, list12 );
 }
 
 void tst_QStringList::contains()
@@ -427,6 +443,7 @@ void tst_QStringList::join() const
 
     QCOMPARE(input.join(separator), expectedResult);
     QCOMPARE(input.join(QLatin1String(separator.toLatin1())), expectedResult);
+    QCOMPARE(input.join(QStringView(separator)), expectedResult);
 }
 
 void tst_QStringList::join_data() const

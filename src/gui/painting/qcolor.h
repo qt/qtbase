@@ -67,9 +67,16 @@ public:
     enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl, ExtendedRgb };
     enum NameFormat { HexRgb, HexArgb };
 
-    inline QColor() noexcept;
+    Q_DECL_CONSTEXPR QColor() noexcept
+        : cspec(Invalid), ct(USHRT_MAX, 0, 0, 0, 0) {}
     QColor(Qt::GlobalColor color) noexcept;
-    inline QColor(int r, int g, int b, int a = 255);
+    Q_DECL_CONSTEXPR QColor(int r, int g, int b, int a = 255) noexcept
+        : cspec(isRgbaValid(r, g, b, a) ? Rgb : Invalid),
+          ct(cspec == Rgb ? a * 0x0101 : 0,
+             cspec == Rgb ? r * 0x0101 : 0,
+             cspec == Rgb ? g * 0x0101 : 0,
+             cspec == Rgb ? b * 0x0101 : 0,
+             0) {}
     QColor(QRgb rgb) noexcept;
     QColor(QRgba64 rgba64) noexcept;
 #if QT_STRINGVIEW_LEVEL < 2
@@ -81,8 +88,11 @@ public:
     QColor(Spec spec) noexcept;
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    inline QColor(const QColor &color) noexcept; // ### Qt 6: remove all of these, the trivial ones are fine.
-    QColor(QColor &&other) noexcept : cspec(other.cspec), ct(other.ct) {}
+    // ### Qt 6: remove all of these, the trivial ones are fine.
+    Q_DECL_CONSTEXPR QColor(const QColor &color) noexcept
+        : cspec(color.cspec), ct(color.ct)
+    {}
+    Q_DECL_CONSTEXPR QColor(QColor &&other) noexcept : cspec(other.cspec), ct(other.ct) {}
     QColor &operator=(QColor &&other) noexcept
     { cspec = other.cspec; ct = other.ct; return *this; }
     QColor &operator=(const QColor &) noexcept;
@@ -244,8 +254,18 @@ private:
     template <typename String>
     bool setColorFromString(String name);
 
+    static Q_DECL_CONSTEXPR bool isRgbaValid(int r, int g, int b, int a = 255) noexcept Q_DECL_CONST_FUNCTION
+    {
+        return uint(r) <= 255 && uint(g) <= 255 && uint(b) <= 255 && uint(a) <= 255;
+    }
+
     Spec cspec;
-    union {
+    union CT {
+#ifdef Q_COMPILER_UNIFORM_INIT
+        CT() {} // doesn't init anything, thus can't be constexpr
+        Q_DECL_CONSTEXPR explicit CT(ushort a1, ushort a2, ushort a3, ushort a4, ushort a5) noexcept
+            : array{a1, a2, a3, a4, a5} {}
+#endif
         struct {
             ushort alpha;
             ushort red;
@@ -292,12 +312,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QColor, QT_VERSION >= QT_VERSION_CHECK(6,0,0) ? Q_MOVABLE_TYPE : Q_RELOCATABLE_TYPE);
 
-inline QColor::QColor() noexcept
-{ invalidate(); }
-
-inline QColor::QColor(int r, int g, int b, int a)
-{ setRgb(r, g, b, a); }
-
 inline QColor::QColor(QLatin1String aname)
 { setNamedColor(aname); }
 
@@ -307,12 +321,6 @@ inline QColor::QColor(QStringView aname)
 #if QT_STRINGVIEW_LEVEL < 2
 inline QColor::QColor(const QString& aname)
 { setNamedColor(aname); }
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-inline QColor::QColor(const QColor &acolor) noexcept
-    : cspec(acolor.cspec)
-{ ct.argb = acolor.ct.argb; }
 #endif
 
 inline bool QColor::isValid() const noexcept

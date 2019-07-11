@@ -51,7 +51,9 @@ QTextStream &qout()
     static QTextStream result(stdout, QIODevice::WriteOnly);
     return result;
 }
+QT_END_NAMESPACE
 
+namespace std {
 bool operator < (Name a, Name b)
 {
     return *a < *b;
@@ -66,7 +68,7 @@ bool operator < (StatePointer a, StatePointer b)
 {
   return &*a < &*b;
 }
-QT_END_NAMESPACE
+}
 
 bool Read::operator < (const Read &other) const
 {
@@ -329,7 +331,7 @@ QPair<StatePointer, bool> Automaton::internState (const State &state)
 
 struct _Bucket
 {
-  QLinkedList<ItemPointer> items;
+  std::list<ItemPointer> items;
 
   void insert (ItemPointer item)
   { items.push_back (item); }
@@ -338,8 +340,8 @@ struct _Bucket
   {
     State st (aut->_M_grammar);
 
-    for (QLinkedList<ItemPointer>::iterator item = items.begin (); item != items.end (); ++item)
-      st.insert ((*item)->next ());
+    for (auto &item : items)
+      st.insert(item->next());
 
     return st;
   }

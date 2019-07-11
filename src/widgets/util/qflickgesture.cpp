@@ -228,7 +228,7 @@ public:
             // we did send a press, so we need to fake a release now
 
             // release all pressed mouse buttons
-            /* Qt::MouseButtons mouseButtons = QApplication::mouseButtons();
+            /* Qt::MouseButtons mouseButtons = QGuiApplication::mouseButtons();
             for (int i = 0; i < 32; ++i) {
                 if (mouseButtons & (1 << i)) {
                     Qt::MouseButton b = static_cast<Qt::MouseButton>(1 << i);
@@ -237,7 +237,7 @@ public:
 
                     qFGDebug() << "QFG: sending a fake mouse release at far-far-away to " << mouseTarget;
                     QMouseEvent re(QEvent::MouseButtonRelease, QPoint(), farFarAway,
-                                   b, mouseButtons, QApplication::keyboardModifiers());
+                                   b, mouseButtons, QGuiApplication::keyboardModifiers());
                     sendMouseEvent(&re);
                 }
             }*/
@@ -246,8 +246,8 @@ public:
 
             qFGDebug() << "QFG: sending a fake mouse release at far-far-away to " << mouseTarget;
             QMouseEvent re(QEvent::MouseButtonRelease, QPoint(), farFarAway, farFarAway,
-                           mouseButton, QApplication::mouseButtons() & ~mouseButton,
-                           QApplication::keyboardModifiers(), mouseEventSource);
+                           mouseButton, QGuiApplication::mouseButtons() & ~mouseButton,
+                           QGuiApplication::keyboardModifiers(), mouseEventSource);
             sendMouseEvent(&re, RegrabMouseAfterwards);
             // don't clear the mouseTarget just yet, since we need to explicitly ungrab the mouse on release!
         }

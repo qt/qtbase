@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
     \sa isEmpty()
  */
 QJsonObject::QJsonObject()
-    : d(0), o(0)
+    : d(nullptr), o(nullptr)
 {
 }
 
@@ -149,8 +149,8 @@ QJsonObject::QJsonObject(QJsonPrivate::Data *data, QJsonPrivate::Object *object)
 
 void QJsonObject::initialize()
 {
-    d = 0;
-    o = 0;
+    d = nullptr;
+    o = nullptr;
 }
 
 /*!
@@ -646,7 +646,7 @@ bool QJsonObject::operator!=(const QJsonObject &other) const
  */
 QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 {
-    Q_ASSERT(d && d->ref.load() == 1);
+    Q_ASSERT(d && d->ref.loadRelaxed() == 1);
     if (it.o != this || it.i < 0 || it.i >= (int)o->length)
         return iterator(this, o->length);
 
@@ -1231,7 +1231,7 @@ bool QJsonObject::detach2(uint reserve)
         d->ref.ref();
         return true;
     }
-    if (reserve == 0 && d->ref.load() == 1)
+    if (reserve == 0 && d->ref.loadRelaxed() == 1)
         return true;
 
     QJsonPrivate::Data *x = d->clone(o, reserve);

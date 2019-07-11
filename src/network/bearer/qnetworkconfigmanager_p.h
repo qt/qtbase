@@ -117,7 +117,7 @@ private:
     QThread *bearerThread;
 
 private:
-    mutable QMutex mutex;
+    mutable QRecursiveMutex mutex;
 
     QFactoryLoader loader;
     QList<QBearerEngine *> sessionEngines;

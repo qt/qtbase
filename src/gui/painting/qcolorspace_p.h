@@ -123,7 +123,7 @@ public:
                 table[0] = other.table[0];
                 table[1] = other.table[1];
                 table[2] = other.table[2];
-                generated.store(1);
+                generated.storeRelaxed(1);
             }
         }
         QSharedPointer<QColorTrcLut> &operator[](int i) { return table[i]; }

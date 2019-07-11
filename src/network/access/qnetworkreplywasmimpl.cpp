@@ -59,6 +59,9 @@ using namespace emscripten;
 
 static void q_requestErrorCallback(val event)
 {
+    if (event.isNull() || event.isUndefined())
+        return;
+
     val xhr = event["target"];
 
     quintptr func = xhr["data-handler"].as<quintptr>();
@@ -77,19 +80,24 @@ static void q_requestErrorCallback(val event)
 
 static void q_progressCallback(val event)
 {
+    if (event.isNull() || event.isUndefined())
+        return;
+
     val xhr = event["target"];
 
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(xhr["data-handler"].as<quintptr>());
     Q_ASSERT(reply);
 
-    if (xhr["lengthComputable"].as<bool>() && xhr["status"].as<int>() < 400)
-        reply->emitDataReadProgress(xhr["loaded"].as<qint64>(), xhr["total"].as<qint64>());
-
+    if (xhr["status"].as<int>() < 400)
+        reply->emitDataReadProgress(event["loaded"].as<int>(), event["total"].as<int>());
 }
 
 static void q_loadCallback(val event)
 {
+    if (event.isNull() || event.isUndefined())
+        return;
+
     val xhr = event["target"];
 
     QNetworkReplyWasmImplPrivate *reply =
@@ -121,6 +129,7 @@ static void q_loadCallback(val event)
             reader.set("data-handler", xhr["data-handler"]);
 
             reader.call<void>("readAsArrayBuffer", blob);
+            val::global("Module").delete_(reader);
         }
 
 
@@ -136,6 +145,9 @@ static void q_loadCallback(val event)
 
 static void q_responseHeadersCallback(val event)
 {
+    if (event.isNull() || event.isUndefined())
+        return;
+
     val xhr = event["target"];
 
     if (xhr["readyState"].as<int>() == 2) { // HEADERS_RECEIVED
@@ -152,11 +164,17 @@ static void q_responseHeadersCallback(val event)
 
 static void q_readBinary(val event)
 {
+    if (event.isNull() || event.isUndefined())
+        return;
+
     val fileReader = event["target"];
 
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fileReader["data-handler"].as<quintptr>());
     Q_ASSERT(reply);
+
+    if (reply->state == QNetworkReplyPrivate::Finished || reply->state == QNetworkReplyPrivate::Aborted)
+        return;
 
     // Set up source typed array
     val result = fileReader["result"]; // ArrayBuffer
@@ -171,6 +189,10 @@ static void q_readBinary(val event)
                                                             reinterpret_cast<quintptr>(buffer.data()), size);
     destinationTypedArray.call<void>("set", sourceTypedArray);
     reply->dataReceived(buffer, buffer.size());
+
+    event.delete_(fileReader);
+    Uint8Array.delete_(sourceTypedArray);
+
     QCoreApplication::processEvents();
 }
 
@@ -194,19 +216,27 @@ QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
 
 QNetworkReplyWasmImplPrivate::~QNetworkReplyWasmImplPrivate()
 {
+    m_xhr.set("onerror", val::null());
+    m_xhr.set("onload", val::null());
+    m_xhr.set("onprogress", val::null());
+    m_xhr.set("onreadystatechange", val::null());
+    m_xhr.set("data-handler", val::null());
+}
+
+QNetworkReplyWasmImpl::QNetworkReplyWasmImpl(QObject *parent)
+    : QNetworkReply(*new QNetworkReplyWasmImplPrivate(), parent)
+{
+    Q_D( QNetworkReplyWasmImpl);
+    d->state = QNetworkReplyPrivate::Idle;
 }
 
 QNetworkReplyWasmImpl::~QNetworkReplyWasmImpl()
 {
 }
 
-QNetworkReplyWasmImpl::QNetworkReplyWasmImpl(QObject *parent)
-    : QNetworkReply(*new QNetworkReplyWasmImplPrivate(), parent)
-{
-}
-
 QByteArray QNetworkReplyWasmImpl::methodName() const
 {
+    const Q_D( QNetworkReplyWasmImpl);
     switch (operation()) {
     case QNetworkAccessManager::HeadOperation:
         return "HEAD";
@@ -218,6 +248,8 @@ QByteArray QNetworkReplyWasmImpl::methodName() const
         return "POST";
     case QNetworkAccessManager::DeleteOperation:
         return "DELETE";
+    case QNetworkAccessManager::CustomOperation:
+        return d->request.attribute(QNetworkRequest::CustomVerbAttribute).toByteArray();
     default:
         break;
     }
@@ -226,19 +258,23 @@ QByteArray QNetworkReplyWasmImpl::methodName() const
 
 void QNetworkReplyWasmImpl::close()
 {
+    QNetworkReply::close();
     setFinished(true);
     emit finished();
-
-    QNetworkReply::close();
 }
 
 void QNetworkReplyWasmImpl::abort()
 {
-    Q_D(const QNetworkReplyWasmImpl);
-    setError( QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
+    Q_D( QNetworkReplyWasmImpl);
+    if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
+        return;
+
+    setError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
+
     d->doAbort();
 
     close();
+    d->state = QNetworkReplyPrivate::Aborted;
 }
 
 qint64 QNetworkReplyWasmImpl::bytesAvailable() const

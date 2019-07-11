@@ -113,6 +113,11 @@ private slots:
     void stream_QRegExp_data();
     void stream_QRegExp();
 
+#if QT_CONFIG(regularexpression)
+    void stream_QRegularExpression_data();
+    void stream_QRegularExpression();
+#endif
+
     void stream_Map_data();
     void stream_Map();
 
@@ -185,6 +190,7 @@ private slots:
 
     void floatingPointPrecision();
 
+    void compatibility_Qt5();
     void compatibility_Qt3();
     void compatibility_Qt2();
 
@@ -220,6 +226,9 @@ private:
     void writeQSize(QDataStream *s);
     void writeQString(QDataStream* dev);
     void writeQRegExp(QDataStream* dev);
+#if QT_CONFIG(regularexpression)
+    void writeQRegularExpression(QDataStream *dev);
+#endif
     void writeMap(QDataStream* dev);
     void writeHash(QDataStream* dev);
     void writeqint64(QDataStream *s);
@@ -249,6 +258,9 @@ private:
     void readQSize(QDataStream *s);
     void readQString(QDataStream *s);
     void readQRegExp(QDataStream *s);
+#if QT_CONFIG(regularexpression)
+    void readQRegularExpression(QDataStream *s);
+#endif
     void readMap(QDataStream *s);
     void readHash(QDataStream *s);
     void readqint64(QDataStream *s);
@@ -271,17 +283,17 @@ static int NColorRoles[] = {
     QPalette::HighlightedText + 1, // Qt_4_0, Qt_4_1
     QPalette::HighlightedText + 1, // Qt_4_2
     QPalette::AlternateBase + 1,   // Qt_4_3
-    QPalette::PlaceholderText + 1,     // Qt_4_4
-    QPalette::PlaceholderText + 1,     // Qt_4_5
-    QPalette::PlaceholderText + 1,     // Qt_4_6
-    QPalette::PlaceholderText + 1,     // Qt_5_0
-    QPalette::PlaceholderText + 1,     // Qt_5_1
-    QPalette::PlaceholderText + 1,     // Qt_5_2
-    QPalette::PlaceholderText + 1,     // Qt_5_3
-    QPalette::PlaceholderText + 1,     // Qt_5_4
-    QPalette::PlaceholderText + 1,     // Qt_5_5
-    QPalette::PlaceholderText + 1,     // Qt_5_6
-    0                              // add the correct value for Qt_5_7 here later
+    QPalette::ToolTipText + 1,     // Qt_4_4
+    QPalette::ToolTipText + 1,     // Qt_4_5
+    QPalette::ToolTipText + 1,     // Qt_4_6, Qt_4_7, Qt_4_8, Qt_4_9
+    QPalette::ToolTipText + 1,     // Qt_5_0
+    QPalette::ToolTipText + 1,     // Qt_5_1
+    QPalette::ToolTipText + 1,     // Qt_5_2, Qt_5_3
+    QPalette::ToolTipText + 1,     // Qt_5_4, Qt_5_5
+    QPalette::ToolTipText + 1,     // Qt_5_6, Qt_5_7, Qt_5_8, Qt_5_9, Qt_5_10, Qt_5_11
+    QPalette::PlaceholderText + 1, // Qt_5_12
+    QPalette::PlaceholderText + 1, // Qt_5_13
+    0                              // add the correct value for Qt_5_14 here later
 };
 
 // Testing get/set functions
@@ -557,6 +569,69 @@ void tst_QDataStream::readQRegExp(QDataStream *s)
     QCOMPARE(V.type(), QVariant::RegExp);
     QCOMPARE(V.toRegExp(), test);
 }
+
+// ************************************
+
+#if QT_CONFIG(regularexpression)
+static QRegularExpression QRegularExpressionData(int index)
+{
+    switch (index) {
+    case 0: return QRegularExpression();
+    case 1: return QRegularExpression("");
+    case 2: return QRegularExpression("A", QRegularExpression::CaseInsensitiveOption);
+    case 3: return QRegularExpression(QRegularExpression::wildcardToRegularExpression("ABCDE FGHI"));
+    case 4: return QRegularExpression(QRegularExpression::anchoredPattern("This is a long string"), QRegularExpression::CaseInsensitiveOption);
+    case 5: return QRegularExpression("And again a string with a \nCRLF", QRegularExpression::CaseInsensitiveOption);
+    case 6: return QRegularExpression("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/", QRegularExpression::InvertedGreedinessOption);
+    }
+    return QRegularExpression("foo");
+}
+#define MAX_QREGULAREXPRESSION_DATA 7
+
+void tst_QDataStream::stream_QRegularExpression_data()
+{
+    stream_data(MAX_QREGULAREXPRESSION_DATA);
+}
+
+void tst_QDataStream::stream_QRegularExpression()
+{
+    STREAM_IMPL(QRegularExpression);
+}
+
+void tst_QDataStream::writeQRegularExpression(QDataStream* s)
+{
+    QRegularExpression test(QRegularExpressionData(dataIndex(QTest::currentDataTag())));
+    *s << test;
+    *s << QString("Her er det noe tekst");
+    *s << test;
+    *s << QString("nonempty");
+    *s << test;
+    *s << QVariant(test);
+}
+
+void tst_QDataStream::readQRegularExpression(QDataStream *s)
+{
+    QRegularExpression R;
+    QString S;
+    QVariant V;
+    QRegularExpression test(QRegularExpressionData(dataIndex(QTest::currentDataTag())));
+
+    *s >> R;
+
+    QCOMPARE(R, test);
+    *s >> S;
+    QCOMPARE(S, QString("Her er det noe tekst"));
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> S;
+    QCOMPARE(S, QString("nonempty"));
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> V;
+    QCOMPARE(V.type(), QVariant::RegularExpression);
+    QCOMPARE(V.toRegularExpression(), test);
+}
+#endif //QT_CONFIG(regularexpression)
 
 // ************************************
 
@@ -3243,6 +3318,37 @@ void tst_QDataStream::streamRealDataTypes()
 
         QCOMPARE(stream.status(), QDataStream::Ok);
     }
+}
+
+void tst_QDataStream::compatibility_Qt5()
+{
+    QLinearGradient gradient(QPointF(0,0), QPointF(1,1));
+    gradient.setColorAt(0, Qt::red);
+    gradient.setColorAt(1, Qt::blue);
+
+    QBrush brush(gradient);
+    QPalette palette;
+    palette.setBrush(QPalette::Button, brush);
+    palette.setColor(QPalette::Light, Qt::green);
+
+    QByteArray stream;
+    {
+        QDataStream out(&stream, QIODevice::WriteOnly);
+        out.setVersion(QDataStream::Qt_5_7);
+        out << palette;
+        out << brush;
+    }
+    QBrush in_brush;
+    QPalette in_palette;
+    {
+        QDataStream in(stream);
+        in.setVersion(QDataStream::Qt_5_7);
+        in >> in_palette;
+        in >> in_brush;
+    }
+    QCOMPARE(in_brush.style(), Qt::LinearGradientPattern);
+    QCOMPARE(in_palette.brush(QPalette::Button).style(), Qt::LinearGradientPattern);
+    QCOMPARE(in_palette.color(QPalette::Light), QColor(Qt::green));
 }
 
 void tst_QDataStream::compatibility_Qt3()

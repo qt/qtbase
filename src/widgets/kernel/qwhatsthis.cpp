@@ -263,7 +263,7 @@ void QWhatsThat::mouseReleaseEvent(QMouseEvent* e)
         anchor.clear();
         if (!href.isEmpty()) {
             QWhatsThisClickedEvent e(href);
-            if (QApplication::sendEvent(widget, &e))
+            if (QCoreApplication::sendEvent(widget, &e))
                 return;
         }
     }
@@ -380,7 +380,7 @@ void QWhatsThisPrivate::notifyToplevels(QEvent *e)
 {
     const QWidgetList toplevels = QApplication::topLevelWidgets();
     for (auto *w : toplevels)
-        QApplication::sendEvent(w, e);
+        QCoreApplication::sendEvent(w, e);
 }
 
 QWhatsThisPrivate *QWhatsThisPrivate::instance = 0;
@@ -394,7 +394,7 @@ QWhatsThisPrivate::QWhatsThisPrivate()
     QPoint pos = QCursor::pos();
     if (QWidget *w = QApplication::widgetAt(pos)) {
         QHelpEvent e(QEvent::QueryWhatsThis, w->mapFromGlobal(pos), pos);
-        bool sentEvent = QApplication::sendEvent(w, &e);
+        const bool sentEvent = QCoreApplication::sendEvent(w, &e);
 #ifdef QT_NO_CURSOR
         Q_UNUSED(sentEvent);
 #else
@@ -439,7 +439,7 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
         if (me->button() == Qt::RightButton || customWhatsThis)
             return false;
         QHelpEvent e(QEvent::WhatsThis, me->pos(), me->globalPos());
-        if (!QApplication::sendEvent(w, &e) || !e.isAccepted())
+        if (!QCoreApplication::sendEvent(w, &e) || !e.isAccepted())
             leaveOnMouseRelease = true;
 
     } break;
@@ -448,12 +448,12 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
     {
         QMouseEvent *me = static_cast<QMouseEvent*>(e);
         QHelpEvent e(QEvent::QueryWhatsThis, me->pos(), me->globalPos());
-        bool sentEvent = QApplication::sendEvent(w, &e);
+        const bool sentEvent = QCoreApplication::sendEvent(w, &e);
 #ifdef QT_NO_CURSOR
         Q_UNUSED(sentEvent);
 #else
-        QApplication::changeOverrideCursor((!sentEvent || !e.isAccepted())?
-                                           Qt::ForbiddenCursor:Qt::WhatsThisCursor);
+        QGuiApplication::changeOverrideCursor((!sentEvent || !e.isAccepted())?
+                                              Qt::ForbiddenCursor:Qt::WhatsThisCursor);
 #endif
         Q_FALLTHROUGH();
     }

@@ -338,7 +338,7 @@ void QGraphicsLayout::invalidate()
             }
             if (layoutItem && !layoutItem->isLayout()) {
                 // If a layout has a parent that is not a layout it must be a QGraphicsWidget.
-                QApplication::postEvent(static_cast<QGraphicsWidget *>(layoutItem), new QEvent(QEvent::LayoutRequest));
+                QCoreApplication::postEvent(static_cast<QGraphicsWidget *>(layoutItem), new QEvent(QEvent::LayoutRequest));
             }
         }
     }

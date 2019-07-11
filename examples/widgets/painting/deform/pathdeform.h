@@ -54,7 +54,7 @@
 #include "arthurwidgets.h"
 
 #include <QBasicTimer>
-#include <QDateTime>
+#include <QElapsedTimer>
 #include <QPainterPath>
 
 class PathDeformRenderer : public ArthurFrame
@@ -103,7 +103,7 @@ private:
     QBasicTimer m_repaintTimer;
 //     QBasicTimer m_fpsTimer;
 //     int m_fpsCounter;
-    QTime m_repaintTracker;
+    QElapsedTimer m_repaintTracker;
 
     QVector<QPainterPath> m_paths;
     QVector<QPointF> m_advances;

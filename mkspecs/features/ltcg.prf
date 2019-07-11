@@ -1,4 +1,6 @@
-CONFIG(release, debug|release) {
+static:no-static-ltcg {
+    # Static library but no-static-ltcg enabled: skip LTCG
+} else: CONFIG(release, debug|release) {
     # We need fat object files when creating static libraries on some platforms
     # so the linker will know to load a particular object from the library
     # in the first place. On others, we have special ar and nm to create the symbol
@@ -22,13 +24,16 @@ CONFIG(release, debug|release) {
         }
     }
 
-    fat-lto {
+    fat-lto|if(static:fat-static-lto) {
         QMAKE_CFLAGS_LTCG += $$QMAKE_CFLAGS_LTCG_FATOBJECTS
         QMAKE_CXXFLAGS_LTCG += $$QMAKE_CXXFLAGS_LTCG_FATOBJECTS
     }
 
     load(link_ltcg)
-    QMAKE_CFLAGS *= $$QMAKE_CFLAGS_LTCG
-    QMAKE_CXXFLAGS *= $$QMAKE_CXXFLAGS_LTCG
-    QMAKE_LFLAGS *= $$QMAKE_LFLAGS_LTCG
+    QMAKE_CFLAGS -= $$QMAKE_CFLAGS_LTCG
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_LTCG
+    QMAKE_CXXFLAGS -= $$QMAKE_CXXFLAGS_LTCG
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_LTCG
+    QMAKE_LFLAGS -= $$QMAKE_LFLAGS_LTCG
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS_LTCG
 }

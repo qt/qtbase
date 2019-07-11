@@ -144,11 +144,11 @@ public:
         // Default ref counter for QFIBP
         inline bool ref() { return m_refCount.ref(); }
         inline bool deref() { return m_refCount.deref(); }
-        inline int load() const { return m_refCount.load(); }
+        inline int load() const { return m_refCount.loadRelaxed(); }
         // Ref counter for type T
         inline bool refT() { return m_refCountT.ref(); }
         inline bool derefT() { return m_refCountT.deref(); }
-        inline int loadT() const { return m_refCountT.load(); }
+        inline int loadT() const { return m_refCountT.loadRelaxed(); }
 
     private:
         QAtomicInt m_refCount;

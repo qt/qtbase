@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkAccessBackendFactoryData: public QList<QNetworkAccessBackendFactory *>
 {
 public:
-    QNetworkAccessBackendFactoryData() : mutex(QMutex::Recursive)
+    QNetworkAccessBackendFactoryData()
     {
         valid.ref();
     }
@@ -68,7 +68,7 @@ public:
         valid.deref();
     }
 
-    QMutex mutex;
+    QRecursiveMutex mutex;
     //this is used to avoid (re)constructing factory data from destructors of other global classes
     static QBasicAtomicInt valid;
 };
@@ -83,7 +83,7 @@ QNetworkAccessBackendFactory::QNetworkAccessBackendFactory()
 
 QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 {
-    if (QNetworkAccessBackendFactoryData::valid.load()) {
+    if (QNetworkAccessBackendFactoryData::valid.loadRelaxed()) {
         QMutexLocker locker(&factoryData()->mutex);
         factoryData()->removeAll(this);
     }
@@ -92,7 +92,7 @@ QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessManager::Operation op,
                                                                  const QNetworkRequest &request)
 {
-    if (QNetworkAccessBackendFactoryData::valid.load()) {
+    if (QNetworkAccessBackendFactoryData::valid.loadRelaxed()) {
         QMutexLocker locker(&factoryData()->mutex);
         QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin(),
                                                            end = factoryData()->constEnd();
@@ -110,7 +110,7 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
 
 QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
 {
-    if (QNetworkAccessBackendFactoryData::valid.load()) {
+    if (QNetworkAccessBackendFactoryData::valid.loadRelaxed()) {
         QMutexLocker locker(&factoryData()->mutex);
         QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin();
         QNetworkAccessBackendFactoryData::ConstIterator end = factoryData()->constEnd();

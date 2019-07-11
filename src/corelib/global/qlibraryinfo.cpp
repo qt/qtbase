@@ -432,7 +432,24 @@ void QLibraryInfo::reload()
 {
     QLibraryInfoPrivate::reload();
 }
-#endif
+
+void QLibraryInfo::sysrootify(QString *path)
+{
+    if (!QVariant::fromValue(rawLocation(SysrootifyPrefixPath, FinalPaths)).toBool())
+        return;
+
+    const QString sysroot = rawLocation(SysrootPath, FinalPaths);
+    if (sysroot.isEmpty())
+        return;
+
+    if (path->length() > 2 && path->at(1) == QLatin1Char(':')
+        && (path->at(2) == QLatin1Char('/') || path->at(2) == QLatin1Char('\\'))) {
+        path->replace(0, 2, sysroot); // Strip out the drive on Windows targets
+    } else {
+        path->prepend(sysroot);
+    }
+}
+#endif // QT_BUILD_QMAKE
 
 /*!
   Returns the location specified by \a loc.
@@ -444,18 +461,8 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if (loc < SysrootPath || loc > LastHostPath) {
-        QString sysroot = rawLocation(SysrootPath, FinalPaths);
-        if (!sysroot.isEmpty()
-                && QVariant::fromValue(rawLocation(SysrootifyPrefixPath, FinalPaths)).toBool()) {
-            if (ret.length() > 2 && ret.at(1) == QLatin1Char(':')
-                   && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\'))) {
-                ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
-            } else {
-                ret.prepend(sysroot);
-            }
-        }
-    }
+    if (loc < SysrootPath || loc > LastHostPath)
+        sysrootify(&ret);
 
     return ret;
 }
@@ -598,6 +605,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         } else {
             // we make any other path absolute to the prefix directory
             baseDir = rawLocation(PrefixPath, group);
+            if (group == EffectivePaths)
+                sysrootify(&baseDir);
         }
 #else
         if (loc == PrefixPath) {

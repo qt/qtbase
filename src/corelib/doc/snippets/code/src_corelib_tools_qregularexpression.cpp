@@ -286,15 +286,11 @@ if (!invalidRe.isValid()) {
 
 {
 //! [24]
-QRegularExpression re("^this pattern must match exactly$");
-//! [24]
-}
-
-{
-//! [25]
 QString p("a .*|pattern");
-QRegularExpression re("\\A(?:" + p + ")\\z"); // re matches exactly the pattern string p
-//! [25]
+
+// re matches exactly the pattern string p
+QRegularExpression re(QRegularExpression::anchoredPattern(p));
+//! [24]
 }
 
 {

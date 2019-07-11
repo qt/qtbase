@@ -82,7 +82,7 @@ QWindowsUiaMainProvider *QWindowsUiaMainProvider::providerForAccessible(QAccessi
 
     QAccessible::Id id = QAccessible::uniqueId(accessible);
     QWindowsUiaProviderCache *providerCache = QWindowsUiaProviderCache::instance();
-    QWindowsUiaMainProvider *provider = qobject_cast<QWindowsUiaMainProvider *>(providerCache->providerForId(id));
+    auto *provider = qobject_cast<QWindowsUiaMainProvider *>(providerCache->providerForId(id));
 
     if (provider) {
         provider->AddRef();
@@ -153,7 +153,7 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 int count = listacc->childCount();
                 for (int i = 0; i < count; ++i) {
                     QAccessibleInterface *item = listacc->child(i);
-                    if (item && item->text(QAccessible::Name) == event->value()) {
+                    if (item && item->isValid() && item->text(QAccessible::Name) == event->value()) {
                         if (!item->state().selected) {
                             if (QAccessibleActionInterface *actionInterface = item->actionInterface())
                                 actionInterface->doAction(QAccessibleActionInterface::toggleAction());

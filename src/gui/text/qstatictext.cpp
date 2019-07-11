@@ -181,7 +181,7 @@ QStaticText::QStaticText(const QStaticText &other)
 */
 QStaticText::~QStaticText()
 {
-    Q_ASSERT(!data || data->ref.load() >= 1);
+    Q_ASSERT(!data || data->ref.loadRelaxed() >= 1);
 }
 
 /*!
@@ -189,7 +189,7 @@ QStaticText::~QStaticText()
 */
 void QStaticText::detach()
 {
-    if (data->ref.load() != 1)
+    if (data->ref.loadRelaxed() != 1)
         data.detach();
 }
 

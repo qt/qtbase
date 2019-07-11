@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>inst.vert.qsb</file>
+    <file>inst.frag.qsb</file>
+</qresource>
+</RCC>

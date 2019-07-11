@@ -147,7 +147,7 @@ private:
 public:
     mutable QAtomicInt ref;
 
-    inline QResourceRoot(): tree(0), names(0), payloads(0), version(0) {}
+    inline QResourceRoot(): tree(nullptr), names(nullptr), payloads(nullptr), version(0) {}
     inline QResourceRoot(int version, const uchar *t, const uchar *n, const uchar *d) { setSource(version, t, n, d); }
     virtual ~QResourceRoot() { }
     int findNode(const QString &path, const QLocale &locale=QLocale()) const;
@@ -165,7 +165,7 @@ public:
     quint64 lastModified(int node) const;
     QStringList children(int node) const;
     virtual QString mappingRoot() const { return QString(); }
-    bool mappingRootSubdir(const QString &path, QString *match=0) const;
+    bool mappingRootSubdir(const QString &path, QString *match = nullptr) const;
     inline bool operator==(const QResourceRoot &other) const
     { return tree == other.tree && names == other.names && payloads == other.payloads && version == other.version; }
     inline bool operator!=(const QResourceRoot &other) const
@@ -197,13 +197,13 @@ Q_DECLARE_TYPEINFO(QResourceRoot, Q_MOVABLE_TYPE);
 typedef QList<QResourceRoot*> ResourceList;
 struct QResourceGlobalData
 {
-    QMutex resourceMutex{QMutex::Recursive};
+    QRecursiveMutex resourceMutex;
     ResourceList resourceList;
     QStringList resourceSearchPaths;
 };
 Q_GLOBAL_STATIC(QResourceGlobalData, resourceGlobalData)
 
-static inline QMutex *resourceMutex()
+static inline QRecursiveMutex *resourceMutex()
 { return &resourceGlobalData->resourceMutex; }
 
 static inline ResourceList *resourceList()
@@ -320,7 +320,7 @@ QResourcePrivate::clear()
 {
     absoluteFilePath.clear();
     compressionAlgo = QResource::NoCompression;
-    data = 0;
+    data = nullptr;
     size = 0;
     children.clear();
     lastModified = 0;
@@ -864,7 +864,7 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
 {
     if(node == -1) {
         *size = 0;
-        return 0;
+        return nullptr;
     }
     int offset = findOffset(node) + 4; //jump past name
 
@@ -881,7 +881,7 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
         return ret;
     }
     *size = 0;
-    return 0;
+    return nullptr;
 }
 
 quint64 QResourceRoot::lastModified(int node) const
@@ -991,7 +991,7 @@ class QDynamicBufferResourceRoot: public QResourceRoot
     const uchar *buffer;
 
 public:
-    inline QDynamicBufferResourceRoot(const QString &_root) : root(_root), buffer(0) { }
+    inline QDynamicBufferResourceRoot(const QString &_root) : root(_root), buffer(nullptr) { }
     inline ~QDynamicBufferResourceRoot() { }
     inline const uchar *mappingBuffer() const { return buffer; }
     QString mappingRoot() const override { return root; }
@@ -1063,12 +1063,14 @@ class QDynamicFileResourceRoot: public QDynamicBufferResourceRoot
     qsizetype unmapLength;
 
 public:
-    inline QDynamicFileResourceRoot(const QString &_root) : QDynamicBufferResourceRoot(_root), unmapPointer(0), unmapLength(0) { }
+    QDynamicFileResourceRoot(const QString &_root)
+        : QDynamicBufferResourceRoot(_root), unmapPointer(nullptr), unmapLength(0)
+    { }
     ~QDynamicFileResourceRoot() {
 #if defined(QT_USE_MMAP)
         if (unmapPointer) {
             munmap((char*)unmapPointer, unmapLength);
-            unmapPointer = 0;
+            unmapPointer = nullptr;
             unmapLength = 0;
         } else
 #endif

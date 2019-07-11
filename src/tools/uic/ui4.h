@@ -169,6 +169,11 @@ public:
     inline void setAttributeIdbasedtr(bool a) { m_attr_idbasedtr = a; m_has_attr_idbasedtr = true; }
     inline void clearAttributeIdbasedtr() { m_has_attr_idbasedtr = false; }
 
+    inline bool hasAttributeConnectslotsbyname() const { return m_has_attr_connectslotsbyname; }
+    inline bool attributeConnectslotsbyname() const { return m_attr_connectslotsbyname; }
+    inline void setAttributeConnectslotsbyname(bool a) { m_attr_connectslotsbyname = a; m_has_attr_connectslotsbyname = true; }
+    inline void clearAttributeConnectslotsbyname() { m_has_attr_connectslotsbyname = false; }
+
     inline bool hasAttributeStdsetdef() const { return m_has_attr_stdsetdef; }
     inline int attributeStdsetdef() const { return m_attr_stdsetdef; }
     inline void setAttributeStdsetdef(int a) { m_attr_stdsetdef = a; m_has_attr_stdsetdef = true; }
@@ -284,6 +289,9 @@ private:
 
     bool m_attr_idbasedtr = false;
     bool m_has_attr_idbasedtr = false;
+
+    bool m_attr_connectslotsbyname = false;
+    bool m_has_attr_connectslotsbyname = false;
 
     int m_attr_stdsetdef = 0;
     bool m_has_attr_stdsetdef = false;

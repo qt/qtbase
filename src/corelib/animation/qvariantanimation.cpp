@@ -283,11 +283,11 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
     qSwap(currentValue, ret);
     q->updateCurrentValue(currentValue);
     static QBasicAtomicInt changedSignalIndex = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (!changedSignalIndex.load()) {
+    if (!changedSignalIndex.loadRelaxed()) {
         //we keep the mask so that we emit valueChanged only when needed (for performance reasons)
         changedSignalIndex.testAndSetRelaxed(0, signalIndex("valueChanged(QVariant)"));
     }
-    if (isSignalConnected(changedSignalIndex.load()) && currentValue != ret) {
+    if (isSignalConnected(changedSignalIndex.loadRelaxed()) && currentValue != ret) {
         //the value has changed
         emit q->valueChanged(currentValue);
     }

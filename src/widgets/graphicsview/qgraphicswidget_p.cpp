@@ -190,7 +190,7 @@ void QGraphicsWidgetPrivate::updatePalette(const QPalette &palette)
 
     // Notify change.
     QEvent event(QEvent::PaletteChange);
-    QApplication::sendEvent(q, &event);
+    QCoreApplication::sendEvent(q, &event);
 }
 
 void QGraphicsWidgetPrivate::setLayoutDirection_helper(Qt::LayoutDirection direction)
@@ -212,7 +212,7 @@ void QGraphicsWidgetPrivate::setLayoutDirection_helper(Qt::LayoutDirection direc
 
     // Send the notification event to this widget item.
     QEvent e(QEvent::LayoutDirectionChange);
-    QApplication::sendEvent(q, &e);
+    QCoreApplication::sendEvent(q, &e);
 }
 
 void QGraphicsWidgetPrivate::resolveLayoutDirection()
@@ -226,9 +226,9 @@ void QGraphicsWidgetPrivate::resolveLayoutDirection()
     } else if (scene) {
         // ### shouldn't the scene have a layoutdirection really? how does
         // ### QGraphicsWidget get changes from QApplication::layoutDirection?
-        setLayoutDirection_helper(QApplication::layoutDirection());
+        setLayoutDirection_helper(QGuiApplication::layoutDirection());
     } else {
-        setLayoutDirection_helper(QApplication::layoutDirection());
+        setLayoutDirection_helper(QGuiApplication::layoutDirection());
     }
 }
 
@@ -290,7 +290,7 @@ void QGraphicsWidgetPrivate::updateFont(const QFont &font)
         return;
     // Notify change.
     QEvent event(QEvent::FontChange);
-    QApplication::sendEvent(q, &event);
+    QCoreApplication::sendEvent(q, &event);
 }
 
 QFont QGraphicsWidgetPrivate::naturalWidgetFont() const

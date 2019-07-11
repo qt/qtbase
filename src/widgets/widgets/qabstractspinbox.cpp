@@ -333,7 +333,7 @@ void QAbstractSpinBox::setReadOnly(bool enable)
     d->readOnly = enable;
     d->edit->setReadOnly(enable);
     QEvent event(QEvent::ReadOnlyChange);
-    QApplication::sendEvent(this, &event);
+    QCoreApplication::sendEvent(this, &event);
     update();
 }
 
@@ -574,10 +574,10 @@ QAbstractSpinBox::StepEnabled QAbstractSpinBox::stepEnabled() const
     if (d->wrapping)
         return StepEnabled(StepUpEnabled | StepDownEnabled);
     StepEnabled ret = StepNone;
-    if (d->variantCompare(d->value, d->maximum) < 0) {
+    if (QAbstractSpinBoxPrivate::variantCompare(d->value, d->maximum) < 0) {
         ret |= StepUpEnabled;
     }
-    if (d->variantCompare(d->value, d->minimum) > 0) {
+    if (QAbstractSpinBoxPrivate::variantCompare(d->value, d->minimum) > 0) {
         ret |= StepDownEnabled;
     }
     return ret;

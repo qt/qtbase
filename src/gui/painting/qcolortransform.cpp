@@ -71,7 +71,7 @@ void QColorTransformPrivate::updateLutsIn() const
     if (colorSpaceIn->lut.generated.loadAcquire())
         return;
     QMutexLocker lock(&QColorSpacePrivate::s_lutWriteLock);
-    if (colorSpaceIn->lut.generated.load())
+    if (colorSpaceIn->lut.generated.loadRelaxed())
         return;
 
     for (int i = 0; i < 3; ++i) {
@@ -96,7 +96,7 @@ void QColorTransformPrivate::updateLutsOut() const
     if (colorSpaceOut->lut.generated.loadAcquire())
         return;
     QMutexLocker lock(&QColorSpacePrivate::s_lutWriteLock);
-    if (colorSpaceOut->lut.generated.load())
+    if (colorSpaceOut->lut.generated.loadRelaxed())
         return;
     for (int i = 0; i < 3; ++i) {
         if (!colorSpaceOut->trc[i].isValid())

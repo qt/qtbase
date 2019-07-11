@@ -52,14 +52,26 @@ debug_and_release:debug_and_release_target {
 }
 
 # Allow for a custom test runner script
-$${type}.commands += $(TESTRUNNER)
+
+android: isEmpty($(TESTRUNNER)) {
+    APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
+    qtPrepareTool(ANDROIDTESTRUNNER, androidtestrunner)
+    qtPrepareTool(ANDROIDDEPLOYQT, androiddeployqt)
+    isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
+    contains(QMAKE_HOST.os, Windows): extension = .exe
+    $${type}.commands  = $$ANDROIDTESTRUNNER --androiddeployqt \"$$ANDROIDDEPLOYQT --input $$ANDROID_DEPLOYMENT_SETTINGS_FILE\"
+    $${type}.commands += --path \"$$OUT_PWD/android-build\"
+    $${type}.commands += --adb \"$$shell_path($${ANDROID_SDK_ROOT}$${QMAKE_DIR_SEP}platform-tools$${QMAKE_DIR_SEP}adb$${extension})\"
+    $${type}.commands += --make \"$(MAKE) -f $(MAKEFILE)\"
+    $${type}.commands += --apk $$APK_PATH
+} else: $${type}.commands += $(TESTRUNNER)
 
 unix {
     isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = .
 
     app_bundle: \
         $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
-    else: \
+    else: !android: \
         $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)
 } else {
     # Windows

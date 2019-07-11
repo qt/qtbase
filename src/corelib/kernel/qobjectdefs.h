@@ -138,6 +138,10 @@ class QString;
 # define QT_TR_FUNCTIONS
 #endif
 
+#ifdef Q_CLANG_QDOC
+#define QT_TR_FUNCTIONS
+#endif
+
 // ### Qt6: remove
 #define Q_OBJECT_CHECK  /* empty, unused since Qt 5.2 */
 
@@ -197,10 +201,14 @@ private: \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/
 
-/* qmake ignore Q_NAMESPACE */
-#define Q_NAMESPACE \
-    extern const QMetaObject staticMetaObject; \
+/* qmake ignore Q_NAMESPACE_EXPORT */
+#define Q_NAMESPACE_EXPORT(...) \
+    extern __VA_ARGS__ const QMetaObject staticMetaObject; \
     QT_ANNOTATE_CLASS(qt_qnamespace, "") \
+    /*end*/
+
+/* qmake ignore Q_NAMESPACE */
+#define Q_NAMESPACE Q_NAMESPACE_EXPORT() \
     /*end*/
 
 #endif // QT_NO_META_MACROS

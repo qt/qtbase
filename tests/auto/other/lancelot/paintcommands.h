@@ -37,7 +37,6 @@
 #include <qpixmap.h>
 #include <qbrush.h>
 #include <qhash.h>
-#include <qregexp.h>
 
 QT_FORWARD_DECLARE_CLASS(QPainter)
 #ifndef QT_NO_OPENGL

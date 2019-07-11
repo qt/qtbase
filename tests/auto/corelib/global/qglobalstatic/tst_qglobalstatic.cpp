@@ -145,7 +145,7 @@ void tst_QGlobalStatic::exception()
         exceptionCaught = true;
     }
     QVERIFY(exceptionCaught);
-    QCOMPARE(Q_QGS_throwingGS::guard.load(), 0);
+    QCOMPARE(Q_QGS_throwingGS::guard.loadRelaxed(), 0);
     QVERIFY(!throwingGS.exists());
     QVERIFY(!throwingGS.isDestroyed());
 }
@@ -154,10 +154,10 @@ QBasicAtomicInt exceptionControlVar = Q_BASIC_ATOMIC_INITIALIZER(1);
 Q_GLOBAL_STATIC_WITH_ARGS(ThrowingType, exceptionGS, (exceptionControlVar))
 void tst_QGlobalStatic::catchExceptionAndRetry()
 {
-    if (exceptionControlVar.load() != 1)
+    if (exceptionControlVar.loadRelaxed() != 1)
         QSKIP("This test cannot be run more than once");
-    ThrowingType::constructedCount.store(0);
-    ThrowingType::destructedCount.store(0);
+    ThrowingType::constructedCount.storeRelaxed(0);
+    ThrowingType::destructedCount.storeRelaxed(0);
 
     bool exceptionCaught = false;
     try {
@@ -165,11 +165,11 @@ void tst_QGlobalStatic::catchExceptionAndRetry()
     } catch (int) {
         exceptionCaught = true;
     }
-    QCOMPARE(ThrowingType::constructedCount.load(), 1);
+    QCOMPARE(ThrowingType::constructedCount.loadRelaxed(), 1);
     QVERIFY(exceptionCaught);
 
     exceptionGS();
-    QCOMPARE(ThrowingType::constructedCount.load(), 2);
+    QCOMPARE(ThrowingType::constructedCount.loadRelaxed(), 2);
 }
 
 QBasicAtomicInt threadStressTestControlVar = Q_BASIC_ATOMIC_INITIALIZER(5);
@@ -194,9 +194,9 @@ void tst_QGlobalStatic::threadStressTest()
         }
     };
 
-    ThrowingType::constructedCount.store(0);
-    ThrowingType::destructedCount.store(0);
-    int expectedConstructionCount = threadStressTestControlVar.load() + 1;
+    ThrowingType::constructedCount.storeRelaxed(0);
+    ThrowingType::destructedCount.storeRelaxed(0);
+    int expectedConstructionCount = threadStressTestControlVar.loadRelaxed() + 1;
     if (expectedConstructionCount <= 0)
         QSKIP("This test cannot be run more than once");
 

@@ -44,6 +44,7 @@
 #include "qlogging_p.h"
 #include "qlist.h"
 #include "qbytearray.h"
+#include "qscopeguard.h"
 #include "qstring.h"
 #include "qvarlengtharray.h"
 #include "qdebug.h"
@@ -158,6 +159,9 @@ static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
 #endif // !QT_BOOTSTRAPPED
 
 #include <cstdlib>
+#include <algorithm>
+#include <memory>
+#include <vector>
 
 #include <stdio.h>
 
@@ -194,7 +198,7 @@ static bool isFatal(QtMsgType msgType)
 
         // it's fatal if the current value is exactly 1,
         // otherwise decrement if it's non-zero
-        return fatalCriticals.load() && fatalCriticals.fetchAndAddRelaxed(-1) == 1;
+        return fatalCriticals.loadRelaxed() && fatalCriticals.fetchAndAddRelaxed(-1) == 1;
     }
 
     if (msgType == QtWarningMsg || msgType == QtCriticalMsg) {
@@ -202,7 +206,7 @@ static bool isFatal(QtMsgType msgType)
 
         // it's fatal if the current value is exactly 1,
         // otherwise decrement if it's non-zero
-        return fatalWarnings.load() && fatalWarnings.fetchAndAddRelaxed(-1) == 1;
+        return fatalWarnings.loadRelaxed() && fatalWarnings.fetchAndAddRelaxed(-1) == 1;
     }
 
     return false;
@@ -1076,8 +1080,8 @@ struct QMessagePattern {
     void setPattern(const QString &pattern);
 
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
-    const char **literals;
-    const char **tokens;
+    std::unique_ptr<std::unique_ptr<const char[]>[]> literals;
+    std::unique_ptr<const char*[]> tokens;
     QList<QString> timeArgs;   // timeFormats in sequence of %{time
 #ifndef QT_BOOTSTRAPPED
     QElapsedTimer timer;
@@ -1100,9 +1104,6 @@ Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_MOVABLE_TYPE);
 QBasicMutex QMessagePattern::mutex;
 
 QMessagePattern::QMessagePattern()
-    : literals(0)
-    , tokens(0)
-    , fromEnvironment(false)
 {
 #ifndef QT_BOOTSTRAPPED
     timer.start();
@@ -1110,6 +1111,7 @@ QMessagePattern::QMessagePattern()
     const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
     if (envPattern.isEmpty()) {
         setPattern(QLatin1String(defaultPattern));
+        fromEnvironment = false;
     } else {
         setPattern(envPattern);
         fromEnvironment = true;
@@ -1117,23 +1119,10 @@ QMessagePattern::QMessagePattern()
 }
 
 QMessagePattern::~QMessagePattern()
-{
-    for (int i = 0; literals[i]; ++i)
-        delete [] literals[i];
-    delete [] literals;
-    literals = 0;
-    delete [] tokens;
-    tokens = 0;
-}
+    = default;
 
 void QMessagePattern::setPattern(const QString &pattern)
 {
-    if (literals) {
-        for (int i = 0; literals[i]; ++i)
-            delete [] literals[i];
-        delete [] literals;
-    }
-    delete [] tokens;
     timeArgs.clear();
 #ifdef QLOGGING_HAVE_BACKTRACE
     backtraceArgs.clear();
@@ -1171,9 +1160,9 @@ void QMessagePattern::setPattern(const QString &pattern)
         lexemes.append(lexeme);
 
     // tokenizer
-    QVarLengthArray<const char*> literalsVar;
-    tokens = new const char*[lexemes.size() + 1];
-    tokens[lexemes.size()] = 0;
+    std::vector<std::unique_ptr<const char[]>> literalsVar;
+    tokens.reset(new const char*[lexemes.size() + 1]);
+    tokens[lexemes.size()] = nullptr;
 
     bool nestedIfError = false;
     bool inIf = false;
@@ -1267,7 +1256,7 @@ void QMessagePattern::setPattern(const QString &pattern)
             char *literal = new char[lexeme.size() + 1];
             strncpy(literal, lexeme.toLatin1().constData(), lexeme.size());
             literal[lexeme.size()] = '\0';
-            literalsVar.append(literal);
+            literalsVar.emplace_back(literal);
             tokens[i] = literal;
         }
     }
@@ -1279,9 +1268,8 @@ void QMessagePattern::setPattern(const QString &pattern)
     if (!error.isEmpty())
         qt_message_print(error);
 
-    literals = new const char*[literalsVar.size() + 1];
-    literals[literalsVar.size()] = 0;
-    memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
+    literals.reset(new std::unique_ptr<const char[]>[literalsVar.size() + 1]);
+    std::move(literalsVar.begin(), literalsVar.end(), &literals[0]);
 }
 
 #if defined(QLOGGING_HAVE_BACKTRACE) && !defined(QT_BOOTSTRAPPED)
@@ -1406,7 +1394,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 #endif
 
     // we do not convert file, function, line literals to local encoding due to overhead
-    for (int i = 0; pattern->tokens[i] != 0; ++i) {
+    for (int i = 0; pattern->tokens[i]; ++i) {
         const char *token = pattern->tokens[i];
         if (token == endifTokenC) {
             skip = false;
@@ -1512,9 +1500,9 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf);
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
 
 // pointer to QtMsgHandler debug handler (without context)
-static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMsgHandler);
+static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 // pointer to QtMessageHandler debug handler (with context)
-static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMessageHandler);
+static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
 // ------------------------ Alternate logging sinks -------------------------
 
@@ -1826,14 +1814,15 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     // prevent recursion in case the message handler generates messages
     // itself, e.g. by using Qt API
     if (grabMessageHandler()) {
+        const auto ungrab = qScopeGuard([]{ ungrabMessageHandler(); });
+        auto oldStyle = msgHandler.loadAcquire();
+        auto newStye = messageHandler.loadAcquire();
         // prefer new message handler over the old one
-        if (msgHandler.load() == qDefaultMsgHandler
-                || messageHandler.load() != qDefaultMessageHandler) {
-            (*messageHandler.load())(msgType, context, message);
+        if (newStye || !oldStyle) {
+            (newStye ? newStye : qDefaultMessageHandler)(msgType, context, message);
         } else {
-            (*msgHandler.load())(msgType, message.toLocal8Bit().constData());
+            (oldStyle ? oldStyle : qDefaultMsgHandler)(msgType, message.toLocal8Bit().constData());
         }
-        ungrabMessageHandler();
     } else {
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
     }
@@ -2084,18 +2073,20 @@ void qErrnoWarning(int code, const char *msg, ...)
 
 QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
 {
-    if (!h)
-        h = qDefaultMessageHandler;
-    //set 'h' and return old message handler
-    return messageHandler.fetchAndStoreRelaxed(h);
+    const auto old = messageHandler.fetchAndStoreOrdered(h);
+    if (old)
+        return old;
+    else
+        return qDefaultMessageHandler;
 }
 
 QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 {
-    if (!h)
-        h = qDefaultMsgHandler;
-    //set 'h' and return old message handler
-    return msgHandler.fetchAndStoreRelaxed(h);
+    const auto old = msgHandler.fetchAndStoreOrdered(h);
+    if (old)
+        return old;
+    else
+        return qDefaultMsgHandler;
 }
 
 void qSetMessagePattern(const QString &pattern)

@@ -78,14 +78,14 @@ void QAndroidEventDispatcher::stop()
 
 void QAndroidEventDispatcher::goingToStop(bool stop)
 {
-    m_goingToStop.store(stop ? 1 : 0);
+    m_goingToStop.storeRelaxed(stop ? 1 : 0);
     if (!stop)
         wakeUp();
 }
 
 bool QAndroidEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    if (m_goingToStop.load())
+    if (m_goingToStop.loadRelaxed())
         flags |= QEventLoop::ExcludeSocketNotifiers | QEventLoop::X11ExcludeTimers;
 
     {

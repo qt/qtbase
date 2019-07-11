@@ -323,11 +323,17 @@ struct QArrayDataPointerRef
         }())                                                                    \
     /**/
 
+#ifdef Q_COMPILER_CONSTEXPR
+#define Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type) Q_STATIC_ASSERT(std::is_literal_type<Type>::value)
+#else
+#define Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type) do {} while (0)
+#endif
+
 #define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
-    union { Type type_must_be_POD; } dummy; Q_UNUSED(dummy)                     \
+    Q_ARRAY_LITERAL_CHECK_LITERAL_TYPE(Type);                                   \
                                                                                 \
     /* Portable compile-time array size computation */                          \
-    Type data[] = { __VA_ARGS__ }; Q_UNUSED(data)                               \
+    Q_CONSTEXPR Type data[] = { __VA_ARGS__ }; Q_UNUSED(data);                  \
     enum { Size = sizeof(data) / sizeof(data[0]) };                             \
                                                                                 \
     static const QStaticArrayData<Type, Size> literal = {                       \

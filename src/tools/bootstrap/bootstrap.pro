@@ -60,6 +60,8 @@ SOURCES += \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \
+           ../../corelib/kernel/qsharedmemory.cpp \
+           ../../corelib/kernel/qsystemsemaphore.cpp \
            ../../corelib/plugin/quuid.cpp \
            ../../corelib/serialization/qdatastream.cpp \
            ../../corelib/serialization/qjson.cpp \
@@ -82,7 +84,6 @@ SOURCES += \
            ../../corelib/tools/qcryptographichash.cpp \
            ../../corelib/tools/qhash.cpp \
            ../../corelib/tools/qlist.cpp \
-           ../../corelib/tools/qlinkedlist.cpp \
            ../../corelib/tools/qlocale.cpp \
            ../../corelib/tools/qlocale_tools.cpp \
            ../../corelib/tools/qmap.cpp \
@@ -103,6 +104,12 @@ SOURCES += \
            ../../xml/sax/qxml.cpp
 
 unix:SOURCES += ../../corelib/kernel/qcore_unix.cpp \
+                ../../corelib/kernel/qsharedmemory_posix.cpp \
+                ../../corelib/kernel/qsharedmemory_systemv.cpp \
+                ../../corelib/kernel/qsharedmemory_unix.cpp \
+                ../../corelib/kernel/qsystemsemaphore_posix.cpp \
+                ../../corelib/kernel/qsystemsemaphore_systemv.cpp \
+                ../../corelib/kernel/qsystemsemaphore_unix.cpp \
                 ../../corelib/io/qfilesystemengine_unix.cpp \
                 ../../corelib/io/qfilesystemiterator_unix.cpp \
                 ../../corelib/io/qfsfileengine_unix.cpp
@@ -112,12 +119,18 @@ win32:SOURCES += ../../corelib/global/qoperatingsystemversion_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/kernel/qcoreapplication_win.cpp \
+                 ../../corelib/kernel/qsharedmemory_win.cpp \
+                 ../../corelib/kernel/qsystemsemaphore_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 mac {
     SOURCES += \
         ../../corelib/kernel/qcoreapplication_mac.cpp \
-        ../../corelib/kernel/qcore_mac.cpp
+        ../../corelib/kernel/qcore_mac.cpp \
+        ../../corelib/io/qfilesystemengine_unix.cpp \
+        ../../corelib/io/qfilesystemiterator_unix.cpp \
+        ../../corelib/io/qfsfileengine_unix.cpp
+
     OBJECTIVE_SOURCES += \
         ../../corelib/global/qoperatingsystemversion_darwin.mm \
         ../../corelib/kernel/qcore_mac_objc.mm \

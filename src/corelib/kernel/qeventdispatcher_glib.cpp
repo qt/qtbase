@@ -261,7 +261,7 @@ static gboolean postEventSourcePrepare(GSource *s, gint *timeout)
     *timeout = canWait ? -1 : 0;
 
     GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
-    source->d->wakeUpCalled = source->serialNumber.load() != source->lastSerialNumber;
+    source->d->wakeUpCalled = source->serialNumber.loadRelaxed() != source->lastSerialNumber;
     return !canWait || source->d->wakeUpCalled;
 }
 
@@ -273,7 +273,7 @@ static gboolean postEventSourceCheck(GSource *source)
 static gboolean postEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
     GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
-    source->lastSerialNumber = source->serialNumber.load();
+    source->lastSerialNumber = source->serialNumber.loadRelaxed();
     QCoreApplication::sendPostedEvents();
     source->d->runTimersOnceWithNormalPriority();
     return true; // i dunno, george...
@@ -320,7 +320,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     // setup post event source
     postEventSource = reinterpret_cast<GPostEventSource *>(g_source_new(&postEventSourceFuncs,
                                                                         sizeof(GPostEventSource)));
-    postEventSource->serialNumber.store(1);
+    postEventSource->serialNumber.storeRelaxed(1);
     postEventSource->d = this;
     g_source_set_can_recurse(&postEventSource->source, true);
     g_source_attach(&postEventSource->source, mainContext);

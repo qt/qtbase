@@ -337,8 +337,6 @@ QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
 
 void QWasmEventTranslator::initEventHandlers()
 {
-    qDebug() << "QWasmEventTranslator::initEventHandlers";
-
     QByteArray _canvasId = screen()->canvasId().toUtf8();
     const char *canvasId = _canvasId.constData();
 
@@ -377,9 +375,6 @@ void QWasmEventTranslator::initEventHandlers()
     emscripten_set_touchend_callback(canvasId, (void *)this, 1, &touchCallback);
     emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
     emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
-
-    emscripten_set_resize_callback(nullptr, (void *)this, 1, uiEvent_cb); // Note: handles browser window resize
-
 }
 
 template <typename Event>
@@ -557,9 +552,12 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
     QWindow *window2 = screen()->compositor()->windowAt(globalPoint, 5);
-    if (window2 == nullptr)
-        return;
-    lastWindow = window2;
+
+    if (window2 == nullptr) {
+        window2 = lastWindow;
+    } else {
+        lastWindow = window2;
+    }
 
     QPoint localPoint = window2->mapFromGlobal(globalPoint);
     bool interior = window2->geometry().contains(globalPoint);
@@ -621,7 +619,7 @@ void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
             }
 
             if (resizeMode != QWasmWindow::ResizeNone && !(htmlWindow->m_windowState & Qt::WindowFullScreen)) {
-                QPoint delta = QPoint(mouseEvent->canvasX, mouseEvent->canvasY) - resizePoint;
+                QPoint delta = QPoint(mouseEvent->targetX, mouseEvent->targetY) - resizePoint;
                 resizeWindow(draggedWindow, resizeMode, resizeStartRect, delta);
             }
         }
@@ -909,21 +907,6 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     QWasmEventDispatcher::maintainTimers();
 
     return accepted;
-}
-
-int QWasmEventTranslator::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
-{
-    Q_UNUSED(e)
-    QWasmEventTranslator *eventTranslator = static_cast<QWasmEventTranslator *>(userData);
-
-    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
-        // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas might also have been resized, so we
-        // update the Qt screen size (and canvas render size).
-        eventTranslator->screen()->updateQScreenAndCanvasRenderSize();
-    }
-
-    return 0;
 }
 
 QT_END_NAMESPACE

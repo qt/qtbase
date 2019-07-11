@@ -425,18 +425,27 @@ void MainWindow::openRecentFile()
 
 bool MainWindow::saveFile(const QString &fileName)
 {
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("SDI"),
-                             tr("Cannot write file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName), file.errorString()));
+    QString errorMessage;
+
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+    QSaveFile file(fileName);
+    if (file.open(QFile::WriteOnly | QFile::Text)) {
+        QTextStream out(&file);
+        out << textEdit->toPlainText();
+        if (!file.commit()) {
+            errorMessage = tr("Cannot write file %1:\n%2.")
+                           .arg(QDir::toNativeSeparators(fileName), file.errorString());
+        }
+    } else {
+        errorMessage = tr("Cannot open file %1 for writing:\n%2.")
+                       .arg(QDir::toNativeSeparators(fileName), file.errorString());
+    }
+    QGuiApplication::restoreOverrideCursor();
+
+    if (!errorMessage.isEmpty()) {
+        QMessageBox::warning(this, tr("SDI"), errorMessage);
         return false;
     }
-
-    QTextStream out(&file);
-    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
-    out << textEdit->toPlainText();
-    QGuiApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File saved"), 2000);

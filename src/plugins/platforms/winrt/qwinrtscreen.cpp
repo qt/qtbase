@@ -1097,7 +1097,7 @@ HRESULT QWinRTScreen::onPointerEntered(ICoreWindow *, IPointerEventArgs *args)
 
         d->currentTargetWindow = topWindow();
         if (d->mouseGrabWindow)
-            d->currentTargetWindow = d->mouseGrabWindow.load()->window();
+            d->currentTargetWindow = d->mouseGrabWindow.loadRelaxed()->window();
 
         qCDebug(lcQpaEvents) << __FUNCTION__ << "handleEnterEvent" << d->currentTargetWindow << pos;
         QWindowSystemInterface::handleEnterEvent(d->currentTargetWindow, pos, pos);
@@ -1121,7 +1121,7 @@ HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *args)
     d->touchPoints.remove(id);
 
     if (d->mouseGrabWindow)
-        d->currentTargetWindow = d->mouseGrabWindow.load()->window();
+        d->currentTargetWindow = d->mouseGrabWindow.loadRelaxed()->window();
 
     qCDebug(lcQpaEvents) << __FUNCTION__ << "handleLeaveEvent" << d->currentTargetWindow;
     QWindowSystemInterface::handleLeaveEvent(d->currentTargetWindow);
@@ -1152,7 +1152,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     d->currentTargetWindow = windowUnderPointer;
 
     if (d->mouseGrabWindow)
-        d->currentTargetWindow = d->mouseGrabWindow.load()->window();
+        d->currentTargetWindow = d->mouseGrabWindow.loadRelaxed()->window();
 
     if (d->currentTargetWindow) {
         const QPointF globalPosDelta = pos - posPoint;
@@ -1354,7 +1354,7 @@ void QWinRTScreen::emulateMouseMove(const QPointF &point, MousePositionTransitio
     d->currentTargetWindow = windowUnderPointer;
 
     if (d->mouseGrabWindow)
-        d->currentTargetWindow = d->mouseGrabWindow.load()->window();
+        d->currentTargetWindow = d->mouseGrabWindow.loadRelaxed()->window();
 
     if (d->currentTargetWindow) {
         const QPointF globalPosDelta = pos - posPoint;

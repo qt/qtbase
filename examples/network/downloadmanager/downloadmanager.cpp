@@ -132,7 +132,7 @@ void DownloadManager::startNextDownload()
 
     // prepare the output
     printf("Downloading %s...\n", url.toEncoded().constData());
-    downloadTime.start();
+    downloadTimer.start();
 }
 
 void DownloadManager::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -140,7 +140,7 @@ void DownloadManager::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
     progressBar.setStatus(bytesReceived, bytesTotal);
 
     // calculate the download speed
-    double speed = bytesReceived * 1000.0 / downloadTime.elapsed();
+    double speed = bytesReceived * 1000.0 / downloadTimer.elapsed();
     QString unit;
     if (speed < 1024) {
         unit = "bytes/sec";

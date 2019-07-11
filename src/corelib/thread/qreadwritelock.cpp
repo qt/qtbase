@@ -143,7 +143,7 @@ inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
 QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
     : d_ptr(recursionMode == Recursive ? new QReadWriteLockPrivate(true) : nullptr)
 {
-    Q_ASSERT_X(!(quintptr(d_ptr.load()) & StateMask), "QReadWriteLock::QReadWriteLock", "bad d_ptr alignment");
+    Q_ASSERT_X(!(quintptr(d_ptr.loadRelaxed()) & StateMask), "QReadWriteLock::QReadWriteLock", "bad d_ptr alignment");
 }
 
 /*!
@@ -154,7 +154,7 @@ QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
 */
 QReadWriteLock::~QReadWriteLock()
 {
-    auto d = d_ptr.load();
+    auto d = d_ptr.loadRelaxed();
     if (isUncontendedLocked(d)) {
         qWarning("QReadWriteLock: destroying locked QReadWriteLock");
         return;
@@ -263,7 +263,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
             return d->recursiveLockForRead(timeout);
 
         QMutexLocker lock(&d->mutex);
-        if (d != d_ptr.load()) {
+        if (d != d_ptr.loadRelaxed()) {
             // d_ptr has changed: this QReadWriteLock was unlocked before we had
             // time to lock d->mutex.
             // We are holding a lock to a mutex within a QReadWriteLockPrivate
@@ -370,7 +370,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
             return d->recursiveLockForWrite(timeout);
 
         QMutexLocker lock(&d->mutex);
-        if (d != d_ptr.load()) {
+        if (d != d_ptr.loadRelaxed()) {
             // The mutex was unlocked before we had time to lock the mutex.
             // We are holding to a mutex within a QReadWriteLockPrivate that is already released
             // (or even is already re-used) but that's ok because the QFreeList never frees them.
@@ -433,7 +433,7 @@ void QReadWriteLock::unlock()
         if (d->waitingReaders || d->waitingWriters) {
             d->unlock();
         } else {
-            Q_ASSERT(d_ptr.load() == d); // should not change when we still hold the mutex
+            Q_ASSERT(d_ptr.loadRelaxed() == d); // should not change when we still hold the mutex
             d_ptr.storeRelease(nullptr);
             d->release();
         }
@@ -444,7 +444,7 @@ void QReadWriteLock::unlock()
 /*! \internal  Helper for QWaitCondition::wait */
 QReadWriteLock::StateForWaitCondition QReadWriteLock::stateForWaitCondition() const
 {
-    QReadWriteLockPrivate *d = d_ptr.load();
+    QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
     switch (quintptr(d) & StateMask) {
     case StateLockedForRead: return LockedForRead;
     case StateLockedForWrite: return LockedForWrite;

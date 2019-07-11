@@ -48,11 +48,11 @@ QT_REQUIRE_CONFIG(mimetype);
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
 class QMimeTypePrivate;
-class QStringList;
 class QMimeType;
 
 Q_CORE_EXPORT uint qHash(const QMimeType &key, uint seed = 0) noexcept;

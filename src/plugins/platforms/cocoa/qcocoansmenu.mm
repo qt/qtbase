@@ -195,7 +195,9 @@ static NSString *qt_mac_removePrivateUnicode(NSString *string)
         return;
 
     platformMenu->setIsOpen(true);
+    platformMenu->setIsAboutToShow(true);
     emit platformMenu->aboutToShow();
+    platformMenu->setIsAboutToShow(false);
 }
 
 - (void)menuDidClose:(NSMenu *)menu

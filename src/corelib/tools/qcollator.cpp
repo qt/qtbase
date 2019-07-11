@@ -166,7 +166,7 @@ QCollator &QCollator::operator=(const QCollator &other)
  */
 void QCollator::detach()
 {
-    if (d->ref.load() != 1) {
+    if (d->ref.loadRelaxed() != 1) {
         QCollatorPrivate *x = new QCollatorPrivate(d->locale);
         if (!d->ref.deref())
             delete d;

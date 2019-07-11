@@ -57,7 +57,6 @@ add_qt_module(Gui
         image/qiconengineplugin.cpp image/qiconengineplugin.h
         image/qiconloader.cpp image/qiconloader_p.h
         image/qimage.cpp image/qimage.h image/qimage_p.h
-        image/qimage_compat.cpp
         image/qimage_conversions.cpp
         image/qimageiohandler.cpp image/qimageiohandler.h
         image/qimagepixmapcleanuphooks.cpp image/qimagepixmapcleanuphooks_p.h
@@ -194,6 +193,16 @@ add_qt_module(Gui
         painting/qtriangulatingstroker.cpp painting/qtriangulatingstroker_p.h
         painting/qtriangulator.cpp painting/qtriangulator_p.h
         painting/qvectorpath_p.h
+        rhi/qrhi.cpp rhi/qrhi_p.h
+        rhi/qrhi_p_p.h
+        rhi/qrhinull.cpp rhi/qrhinull_p.h
+        rhi/qrhinull_p_p.h
+        rhi/qrhiprofiler.cpp rhi/qrhiprofiler_p.h
+        rhi/qrhiprofiler_p_p.h
+        rhi/qshader.cpp rhi/qshader_p.h
+        rhi/qshader_p_p.h
+        rhi/qshaderdescription.cpp rhi/qshaderdescription_p.h
+        rhi/qshaderdescription_p_p.h
         text/qabstracttextdocumentlayout.cpp text/qabstracttextdocumentlayout.h text/qabstracttextdocumentlayout_p.h
         text/qdistancefield.cpp text/qdistancefield_p.h
         text/qfont.cpp text/qfont.h text/qfont_p.h
@@ -247,6 +256,8 @@ add_qt_module(Gui
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
+    INCLUDE_DIRECTORIES
+        ../3rdparty/VulkanMemoryAllocator
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}" # special case
     LIBRARIES
         Qt::CorePrivate
@@ -391,6 +402,8 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h
+        rhi/qrhigles2.cpp rhi/qrhigles2_p.h
+        rhi/qrhigles2_p_p.h
 )
 
 #### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:
@@ -403,8 +416,14 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
 # _LOADED = "testcocoon"
 
 extend_target(Gui CONDITION APPLE_OSX
+    SOURCES
+        rhi/qrhimetal.mm rhi/qrhimetal_p.h
+        rhi/qrhimetal_p_p.h
     LIBRARIES
         ${FWAppKit}
+    PUBLIC_LIBRARIES
+        ${FWAppKit}
+        ${FWMetal}
 )
 
 extend_target(Gui CONDITION APPLE
@@ -423,6 +442,12 @@ extend_target(Gui CONDITION QT_FEATURE_animation
 extend_target(Gui CONDITION WIN32
     SOURCES
         kernel/qwindowdefs_win.h
+        rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
+        rhi/qrhid3d11_p_p.h
+    PUBLIC_LIBRARIES
+        d3d11
+        dxgi
+        dxguid
 )
 
 #### Keys ignored in scope 8:.:.:gui.pro:WIN32:
@@ -563,7 +588,7 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
 
 # extend_target(Gui CONDITION GCC AND (QT_COMPILER_VERSION_MAJOR STREQUAL 5) ... # special case: remove
 
-#### Keys ignored in scope 50:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
+#### Keys ignored in scope 49:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND QT_ARCH___contains___arm:
 # CONFIG = "no_clang_integrated_as"
 
 extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
@@ -587,7 +612,7 @@ extend_target(Gui CONDITION QT_FEATURE_regularexpression
         util/qshadergenerator.cpp util/qshadergenerator_p.h
 )
 
-#### Keys ignored in scope 61:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
+#### Keys ignored in scope 60:.:opengl:opengl/opengl.pri:QT_FEATURE_opengles2:
 # CONFIG = "opengles2"
 
 extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
@@ -637,6 +662,8 @@ endif()
 
 extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
+        rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
+        rhi/qrhivulkan_p_p.h
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
@@ -679,6 +706,25 @@ endif()
 
 #### Keys ignored in scope 68:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # CONFIG = "generated_privates"
+
+#### Keys ignored in scope 68:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+# QMAKE_EXTRA_COMPILERS = "qvkgen_h" "qvkgen_ph" "qvkgen_pimpl"
+# QMAKE_QVKGEN_INPUT = "vulkan/vk.xml"
+# QMAKE_QVKGEN_LICENSE_HEADER = "$$QT_SOURCE_TREE/header.LGPL"
+# qvkgen_h.commands = "$$QMAKE_QVKGEN" "${QMAKE_FILE_IN}" "$$shell_quote$$QMAKE_QVKGEN_LICENSE_HEADER" "${QMAKE_FILE_OUT_PATH}/${QMAKE_FILE_OUT_BASE}"
+# qvkgen_h.input = "QMAKE_QVKGEN_INPUT"
+# qvkgen_h.output = "$$OUT_PWD/vulkan/qvulkanfunctions.h"
+# qvkgen_ph.commands = "$$escape_expand\\n"
+# qvkgen_ph.depends = "$$OUT_PWD/vulkan/qvulkanfunctions.h"
+# qvkgen_ph.input = "QMAKE_QVKGEN_INPUT"
+# qvkgen_ph.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.h"
+# qvkgen_pimpl.commands = "$$escape_expand\\n"
+# qvkgen_pimpl.depends = "$$OUT_PWD/vulkan/qvulkanfunctions_p.h"
+# qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
+# qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
+
+#### Keys ignored in scope 69:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+# qvkgen_h.variable_out = "HEADERS"
 
 #### Keys ignored in scope 70:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"

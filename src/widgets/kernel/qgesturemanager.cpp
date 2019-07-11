@@ -707,7 +707,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
         foreach(QGesture *g, gestures)
             event.setAccepted(g, false);
 
-        QApplication::sendEvent(receiver, &event);
+        QCoreApplication::sendEvent(receiver, &event);
         bool eventAccepted = event.isAccepted();
         const auto eventGestures = event.gestures();
         for (QGesture *gesture : eventGestures) {
@@ -734,7 +734,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             qCDebug(lcGestureManager) << "QGestureManager::deliverEvents: sending to" << it.key()
                     << "gestures:" << it.value();
             QGestureEvent event(it.value());
-            QApplication::sendEvent(it.key(), &event);
+            QCoreApplication::sendEvent(it.key(), &event);
             bool eventAccepted = event.isAccepted();
             const auto eventGestures = event.gestures();
             for (QGesture *gesture : eventGestures) {

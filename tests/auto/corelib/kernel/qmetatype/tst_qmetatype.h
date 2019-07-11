@@ -236,7 +236,7 @@ template<> struct TestValueFactory<QMetaType::QRegExp> {
 template<> struct TestValueFactory<QMetaType::QRegularExpression> {
     static QRegularExpression *create()
     {
-#ifndef QT_NO_REGEXP
+#if QT_CONFIG(regularexpression)
         return new QRegularExpression("abc.*def");
 #else
         return 0;

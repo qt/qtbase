@@ -84,8 +84,8 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_thread_qfuturewatcher.cpp 0
 
-    Be aware that not all asynchronous computations can be canceled or paused.
-    For example, the future returned by QtConcurrent::run() cannot be
+    Be aware that not all running asynchronous computations can be canceled or
+    paused. For example, the future returned by QtConcurrent::run() cannot be
     canceled; but the future returned by QtConcurrent::mappedReduced() can.
 
     QFutureWatcher<void> is specialized to not contain any of the result
@@ -124,9 +124,9 @@ QFutureWatcherBase::QFutureWatcherBase(QObject *parent)
     progressRangeChanged(), progressTextChanged(), resultReadyAt(), and
     resultsReadyAt() signals.
 
-    Be aware that not all asynchronous computations can be canceled. For
-    example, the QFuture returned by QtConcurrent::run() cannot be canceled;
-    but the QFuture returned by QtConcurrent::mappedReduced() can.
+    Be aware that not all running asynchronous computations can be canceled.
+    For example, the QFuture returned by QtConcurrent::run() cannot be
+    canceled; but the QFuture returned by QtConcurrent::mappedReduced() can.
 */
 void QFutureWatcherBase::cancel()
 {
@@ -402,7 +402,7 @@ void QFutureWatcherBase::disconnectOutputInterface(bool pendingAssignment)
 {
     if (pendingAssignment) {
         Q_D(QFutureWatcherBase);
-        d->pendingResultsReady.store(0);
+        d->pendingResultsReady.storeRelaxed(0);
         qDeleteAll(d->pendingCallOutEvents);
         d->pendingCallOutEvents.clear();
         d->finished = false; /* May soon be amended, during connectOutputInterface() */
@@ -441,7 +441,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
             emit q->finished();
         break;
         case QFutureCallOutEvent::Canceled:
-            pendingResultsReady.store(0);
+            pendingResultsReady.storeRelaxed(0);
             emit q->canceled();
         break;
         case QFutureCallOutEvent::Paused:
@@ -466,7 +466,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 
             emit q->resultsReadyAt(beginIndex, endIndex);
 
-            if (resultAtConnected.load() <= 0)
+            if (resultAtConnected.loadRelaxed() <= 0)
                 break;
 
             for (int i = beginIndex; i < endIndex; ++i)

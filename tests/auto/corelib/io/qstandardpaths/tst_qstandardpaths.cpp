@@ -32,7 +32,7 @@
 #include <qstandardpaths.h>
 #include <qfileinfo.h>
 #include <qsysinfo.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <qt_windows.h>
 #endif
@@ -566,7 +566,8 @@ void tst_qstandardpaths::testAllWritableLocations()
 
 void tst_qstandardpaths::testCleanPath()
 {
-    const QRegExp filter(QStringLiteral("\\\\"));
+#if QT_CONFIG(regularexpression)
+    const QRegularExpression filter(QStringLiteral("\\\\"));
     QVERIFY(filter.isValid());
     for (int i = 0; i <= QStandardPaths::GenericCacheLocation; ++i) {
         const QStringList paths = QStandardPaths::standardLocations(QStandardPaths::StandardLocation(i));
@@ -574,6 +575,9 @@ void tst_qstandardpaths::testCleanPath()
                  qPrintable(QString::fromLatin1("Backslash found in %1 %2")
                             .arg(i).arg(paths.join(QLatin1Char(',')))));
     }
+#else
+    QSKIP("regularexpression feature disabled");
+#endif
 }
 
 void tst_qstandardpaths::testXdgPathCleanup()

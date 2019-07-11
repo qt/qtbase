@@ -32,8 +32,11 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QUrl>
 #include <QtCore/QEventLoop>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QRandomGenerator>
+#include <QtCore/QRegularExpression>
+#include <QtCore/QRegularExpressionMatch>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
@@ -1147,7 +1150,7 @@ protected:
         }
 
         // now write in "blocking mode", this is where the rate measuring starts
-        QTime timer;
+        QElapsedTimer timer;
         timer.start();
         //const qint64 writtenBefore = dataIndex;
         //qint64 measuredTotalBytes = wantedSize - writtenBefore;
@@ -1246,7 +1249,7 @@ protected:
         }
 
         qint64 bytesRead = 0;
-        QTime stopWatch;
+        QElapsedTimer stopWatch;
         stopWatch.start();
         do {
             if (device->bytesAvailable() == 0) {
@@ -4147,10 +4150,10 @@ void tst_QNetworkReply::ioGetFromHttpWithCache()
     request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
 
     QFETCH(QStringList, extraHttpHeaders);
-    QStringListIterator it(extraHttpHeaders);
-    while (it.hasNext()) {
-        QString header = it.next();
-        QString value = it.next();
+    QVERIFY(extraHttpHeaders.size() % 2 == 0);
+    for (auto it = extraHttpHeaders.cbegin(), end = extraHttpHeaders.cend(); it != end; /*double-stepping*/) {
+        QString header = *it++;
+        QString value = *it++;
         request.setRawHeader(header.toLatin1(), value.toLatin1()); // To latin1? Deal with it!
     }
 
@@ -5148,8 +5151,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     const int rate = 200; // in kB per sec
     RateControlledReader reader(server, reply.data(), rate, bufferSize);
 
-    QTime loopTime;
-    loopTime.start();
+    QElapsedTimer loopTimer;
+    loopTimer.start();
 
     const int result = waitForFinish(reply);
     if (notEnoughDataForFastSender) {
@@ -5159,7 +5162,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
 
     QVERIFY2(result == Success, msgWaitForFinished(reply));
 
-    const int elapsedTime = loopTime.elapsed();
+    const int elapsedTime = loopTimer.elapsed();
     server.wait();
     reader.wrapUp();
 
@@ -5445,12 +5448,12 @@ void tst_QNetworkReply::rateControl()
     RateControlledReader reader(sender, reply.data(), rate, 20);
 
     // this test is designed to run for 25 seconds at most
-    QTime loopTime;
-    loopTime.start();
+    QElapsedTimer loopTimer;
+    loopTimer.start();
 
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
-    int elapsedTime = loopTime.elapsed();
+    int elapsedTime = loopTimer.elapsed();
 
     if (!errorSpy.isEmpty()) {
         qDebug() << "ERROR!" << errorSpy[0][0] << reply->errorString();
@@ -6120,8 +6123,8 @@ void tst_QNetworkReply::httpConnectionCount()
     }
 
     int pendingConnectionCount = 0;
-    QTime time;
-    time.start();
+    QElapsedTimer timer;
+    timer.start();
 
     while(pendingConnectionCount <= 20) {
         QTestEventLoop::instance().enterLoop(1);
@@ -6133,7 +6136,7 @@ void tst_QNetworkReply::httpConnectionCount()
         }
 
         // at max. wait 10 sec
-        if (time.elapsed() > 10000)
+        if (timer.elapsed() > 10000)
             break;
     }
 
@@ -7910,9 +7913,10 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 "Content-Type: text/plain\r\n"
                 "\r\n"
                 "auth";
-            QRegExp rx("Authorization: Basic ([^\r\n]*)\r\n");
-            if (rx.indexIn(receivedData) > 0) {
-                if (QByteArray::fromBase64(rx.cap(1).toLatin1()) == "login:password") {
+            QRegularExpression rx("Authorization: Basic ([^\r\n]*)\r\n");
+            QRegularExpressionMatch match = rx.match(receivedData);
+            if (match.hasMatch()) {
+                if (QByteArray::fromBase64(match.captured(1).toLatin1()) == "login:password") {
                     dataToTransmit =
                           "HTTP/1.0 200 OK\r\n"
                           "Content-Type: text/plain\r\n"

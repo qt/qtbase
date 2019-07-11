@@ -269,7 +269,7 @@
     \codeline
     \snippet itemviews/stardelegate/main.cpp 4
 
-    Notice the call to qVariantFromValue to convert a \c
+    Notice the call to QVariant::fromValue to convert a \c
     StarRating to a QVariant.
 
     \section1 Possible Extensions and Suggestions

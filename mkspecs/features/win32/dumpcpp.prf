@@ -22,15 +22,15 @@ dumpcpp_impl.depends += ${QMAKE_FILE_BASE}.h
 QMAKE_EXTRA_COMPILERS += dumpcpp_impl
 
 
-# Create dependencies from every object file to our generated header files.
-if(isEmpty(BUILDS)|build_pass):have_target:!contains(TEMPLATE, vc.*) {
+# Call dumpcpp the first time if the files do not exist to help find dependencies
+!build_pass:have_target:!contains(TEMPLATE, vc.*) {
     for(tlb, TYPELIBS) {
+        tlbCopy = $$replace(tlb, \", )
         hdr = $$basename(tlb)
-        hdr = $$section(hdr, ., 0, -2).h
-        TYPELIB_HEADERS += $$hdr
+        hdr = $$section(hdr, ., 0, -2)
+        tmp_command = $$QMAKE_DUMPCPP $$system_quote($$absolute_path($$tlb, $$_PRO_FILE_PWD_)) \
+                        -o $$system_quote($$OUT_PWD/$$hdr)
+        qaxcontainer_compat: tmp_command += -compat
+        !exists($$OUT_PWD/$${hdr}.h): system($$tmp_command)
     }
-
-    objtgt.target = $(OBJECTS)
-    objtgt.depends += $$TYPELIB_HEADERS
-    QMAKE_EXTRA_TARGETS += objtgt
 }

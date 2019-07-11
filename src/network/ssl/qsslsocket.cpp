@@ -924,7 +924,7 @@ QSslConfiguration QSslSocket::sslConfiguration() const
 
     // create a deep copy of our configuration
     QSslConfigurationPrivate *copy = new QSslConfigurationPrivate(d->configuration);
-    copy->ref.store(0);              // the QSslConfiguration constructor refs up
+    copy->ref.storeRelaxed(0);              // the QSslConfiguration constructor refs up
     copy->sessionCipher = d->sessionCipher();
     copy->sessionProtocol = d->sessionProtocol();
 
@@ -2378,7 +2378,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     if (!global)
         return;
 
-    ptr->ref.store(1);
+    ptr->ref.storeRelaxed(1);
     ptr->peerCertificate = global->peerCertificate;
     ptr->peerCertificateChain = global->peerCertificateChain;
     ptr->localCertificateChain = global->localCertificateChain;

@@ -667,7 +667,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     if (event->spontaneous())
         qt_sendSpontaneousEvent(scene, &mouseEvent);
     else
-        QApplication::sendEvent(scene, &mouseEvent);
+        QCoreApplication::sendEvent(scene, &mouseEvent);
 
     // Remember whether the last event was accepted or not.
     lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -1716,7 +1716,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
 
         if (isActiveWindow() && isVisible()) {
             QEvent windowDeactivate(QEvent::WindowDeactivate);
-            QApplication::sendEvent(d->scene, &windowDeactivate);
+            QCoreApplication::sendEvent(d->scene, &windowDeactivate);
         }
         if(hasFocus())
             d->scene->clearFocus();
@@ -1744,7 +1744,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
 
         if (isActiveWindow() && isVisible()) {
             QEvent windowActivate(QEvent::WindowActivate);
-            QApplication::sendEvent(d->scene, &windowActivate);
+            QCoreApplication::sendEvent(d->scene, &windowActivate);
         }
     } else {
         d->recalculateContentSize();
@@ -2809,7 +2809,7 @@ bool QGraphicsView::event(QEvent *event)
         switch (event->type()) {
         case QEvent::ShortcutOverride:
             if (d->scene)
-                return QApplication::sendEvent(d->scene, event);
+                return QCoreApplication::sendEvent(d->scene, event);
             break;
         case QEvent::KeyPress:
             if (d->scene) {
@@ -2821,7 +2821,7 @@ bool QGraphicsView::event(QEvent *event)
                     // and the base implementation will call QGraphicsView's
                     // focusNextPrevChild() function. If the event is ignored,
                     // we fall back to standard tab focus handling.
-                    QApplication::sendEvent(d->scene, event);
+                    QCoreApplication::sendEvent(d->scene, event);
                     if (event->isAccepted())
                         return true;
                     // Ensure the event doesn't propagate just because the
@@ -2850,10 +2850,10 @@ bool QGraphicsView::viewportEvent(QEvent *event)
 
     switch (event->type()) {
     case QEvent::Enter:
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
         break;
     case QEvent::WindowActivate:
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
         break;
     case QEvent::WindowDeactivate:
         // ### This is a temporary fix for until we get proper mouse
@@ -2862,19 +2862,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         // Remove all popups when the scene loses focus.
         if (!d->scene->d_func()->popupWidgets.isEmpty())
             d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.constFirst());
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
         break;
     case QEvent::Show:
         if (d->scene && isActiveWindow()) {
             QEvent windowActivate(QEvent::WindowActivate);
-            QApplication::sendEvent(d->scene, &windowActivate);
+            QCoreApplication::sendEvent(d->scene, &windowActivate);
         }
         break;
     case QEvent::Hide:
         // spontaneous event will generate a WindowDeactivate.
         if (!event->spontaneous() && d->scene && isActiveWindow()) {
             QEvent windowDeactivate(QEvent::WindowDeactivate);
-            QApplication::sendEvent(d->scene, &windowDeactivate);
+            QCoreApplication::sendEvent(d->scene, &windowDeactivate);
         }
         break;
     case QEvent::Leave: {
@@ -2892,7 +2892,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         Q_ASSERT(event->d == 0);
         QScopedValueRollback<QEventPrivate *> rb(event->d);
         event->d = reinterpret_cast<QEventPrivate *>(viewport());
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
         break;
     }
 #ifndef QT_NO_TOOLTIP
@@ -2902,7 +2902,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         helpEvent.setWidget(viewport());
         helpEvent.setScreenPos(toolTip->globalPos());
         helpEvent.setScenePos(mapToScene(toolTip->pos()));
-        QApplication::sendEvent(d->scene, &helpEvent);
+        QCoreApplication::sendEvent(d->scene, &helpEvent);
         toolTip->setAccepted(helpEvent.isAccepted());
         return true;
     }
@@ -2940,7 +2940,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
             touchEvent->setTarget(viewport());
             QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
-            (void) QApplication::sendEvent(d->scene, touchEvent);
+            QCoreApplication::sendEvent(d->scene, touchEvent);
         } else {
             event->ignore();
         }
@@ -2957,7 +2957,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         if (d->scene && d->sceneInteractionAllowed) {
             QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(event);
             gestureEvent->setWidget(viewport());
-            (void) QApplication::sendEvent(d->scene, gestureEvent);
+            QCoreApplication::sendEvent(d->scene, gestureEvent);
         }
         return true;
     }
@@ -2992,7 +2992,7 @@ void QGraphicsView::contextMenuEvent(QContextMenuEvent *event)
     contextEvent.setModifiers(event->modifiers());
     contextEvent.setReason((QGraphicsSceneContextMenuEvent::Reason)(event->reason()));
     contextEvent.setAccepted(event->isAccepted());
-    QApplication::sendEvent(d->scene, &contextEvent);
+    QCoreApplication::sendEvent(d->scene, &contextEvent);
     event->setAccepted(contextEvent.isAccepted());
 }
 #endif // QT_NO_CONTEXTMENU
@@ -3012,7 +3012,7 @@ void QGraphicsView::dropEvent(QDropEvent *event)
     d->populateSceneDragDropEvent(&sceneEvent, event);
 
     // Send it to the scene.
-    QApplication::sendEvent(d->scene, &sceneEvent);
+    QCoreApplication::sendEvent(d->scene, &sceneEvent);
 
     // Accept the originating event if the scene accepted the scene event.
     event->setAccepted(sceneEvent.isAccepted());
@@ -3043,7 +3043,7 @@ void QGraphicsView::dragEnterEvent(QDragEnterEvent *event)
     d->storeDragDropEvent(&sceneEvent);
 
     // Send it to the scene.
-    QApplication::sendEvent(d->scene, &sceneEvent);
+    QCoreApplication::sendEvent(d->scene, &sceneEvent);
 
     // Accept the originating event if the scene accepted the scene event.
     if (sceneEvent.isAccepted()) {
@@ -3081,7 +3081,7 @@ void QGraphicsView::dragLeaveEvent(QDragLeaveEvent *event)
     d->lastDragDropEvent = 0;
 
     // Send it to the scene.
-    QApplication::sendEvent(d->scene, &sceneEvent);
+    QCoreApplication::sendEvent(d->scene, &sceneEvent);
 
     // Accept the originating event if the scene accepted the scene event.
     if (sceneEvent.isAccepted())
@@ -3105,7 +3105,7 @@ void QGraphicsView::dragMoveEvent(QDragMoveEvent *event)
     d->storeDragDropEvent(&sceneEvent);
 
     // Send it to the scene.
-    QApplication::sendEvent(d->scene, &sceneEvent);
+    QCoreApplication::sendEvent(d->scene, &sceneEvent);
 
     // Ignore the originating event if the scene ignored the scene event.
     event->setAccepted(sceneEvent.isAccepted());
@@ -3123,7 +3123,7 @@ void QGraphicsView::focusInEvent(QFocusEvent *event)
     d->updateInputMethodSensitivity();
     QAbstractScrollArea::focusInEvent(event);
     if (d->scene)
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
     // Pass focus on if the scene cannot accept focus.
     if (!d->scene || !event->isAccepted())
         QAbstractScrollArea::focusInEvent(event);
@@ -3145,7 +3145,7 @@ void QGraphicsView::focusOutEvent(QFocusEvent *event)
     Q_D(QGraphicsView);
     QAbstractScrollArea::focusOutEvent(event);
     if (d->scene)
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
 }
 
 /*!
@@ -3158,7 +3158,7 @@ void QGraphicsView::keyPressEvent(QKeyEvent *event)
         QAbstractScrollArea::keyPressEvent(event);
         return;
     }
-    QApplication::sendEvent(d->scene, event);
+    QCoreApplication::sendEvent(d->scene, event);
     if (!event->isAccepted())
         QAbstractScrollArea::keyPressEvent(event);
 }
@@ -3171,7 +3171,7 @@ void QGraphicsView::keyReleaseEvent(QKeyEvent *event)
     Q_D(QGraphicsView);
     if (!d->scene || !d->sceneInteractionAllowed)
         return;
-    QApplication::sendEvent(d->scene, event);
+    QCoreApplication::sendEvent(d->scene, event);
     if (!event->isAccepted())
         QAbstractScrollArea::keyReleaseEvent(event);
 }
@@ -3210,7 +3210,7 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
-        QApplication::sendEvent(d->scene, &mouseEvent);
+        QCoreApplication::sendEvent(d->scene, &mouseEvent);
 
     // Update the original mouse event accepted state.
     const bool isAccepted = mouseEvent.isAccepted();
@@ -3261,7 +3261,7 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             if (event->spontaneous())
                 qt_sendSpontaneousEvent(d->scene, &mouseEvent);
             else
-                QApplication::sendEvent(d->scene, &mouseEvent);
+                QCoreApplication::sendEvent(d->scene, &mouseEvent);
 
             // Update the original mouse event accepted state.
             bool isAccepted = mouseEvent.isAccepted();
@@ -3397,7 +3397,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
-        QApplication::sendEvent(d->scene, &mouseEvent);
+        QCoreApplication::sendEvent(d->scene, &mouseEvent);
 
     // Update the last mouse event selected state.
     d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
@@ -3433,7 +3433,7 @@ void QGraphicsView::wheelEvent(QWheelEvent *event)
     wheelEvent.setDelta(event->delta());
     wheelEvent.setOrientation(event->orientation());
     wheelEvent.setAccepted(false);
-    QApplication::sendEvent(d->scene, &wheelEvent);
+    QCoreApplication::sendEvent(d->scene, &wheelEvent);
     event->setAccepted(wheelEvent.isAccepted());
     if (!event->isAccepted())
         QAbstractScrollArea::wheelEvent(event);
@@ -3720,7 +3720,7 @@ void QGraphicsView::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QGraphicsView);
     if (d->scene)
-        QApplication::sendEvent(d->scene, event);
+        QCoreApplication::sendEvent(d->scene, event);
 }
 
 /*!

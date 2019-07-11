@@ -2192,10 +2192,12 @@ void tst_QUrl::schemeValidator_data()
     QTest::newRow("percent-encoded") << "%68%74%%74%70://example.com" << false << "%68%74%%74%70";
 
     static const char controls[] = "!\"$&'()*,;<=>[\\]^_`{|}~";
-    for (size_t i = 0; i < sizeof(controls) - 1; ++i)
-        QTest::newRow(("with-" + QByteArray(1, controls[i])).constData())
-                << QString("pre%1post://example.com/").arg(QLatin1Char(controls[i]))
-                << false << QString("pre%1post").arg(QLatin1Char(controls[i]));
+    for (char control : controls) {
+        const QString scheme = QLatin1String("pre") + QLatin1Char(control) + QLatin1String("post");
+        QTest::newRow((QByteArrayLiteral("with-") + control).constData())
+            << (scheme + QLatin1String("://example.com/"))
+            << false << scheme;
+    }
 }
 
 void tst_QUrl::schemeValidator()
@@ -4074,13 +4076,12 @@ public:
     QVector<QUrl> m_urls;
 };
 
-static const UrlStorage * s_urlStorage = 0;
+static const UrlStorage * s_urlStorage = nullptr;
 
 void tst_QUrl::testThreadingHelper()
 {
     const UrlStorage* storage = s_urlStorage;
-    for (int i = 0 ; i < storage->m_urls.size(); ++i ) {
-        const QUrl& u = storage->m_urls.at(i);
+    for (const auto &u : storage->m_urls) {
         // QVERIFY/QCOMPARE trigger race conditions in helgrind
         if (!u.isValid())
             qFatal("invalid url");

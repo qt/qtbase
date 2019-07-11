@@ -29,7 +29,7 @@
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
-#include <qdatetime.h>
+#include <qelapsedtimer.h>
 #include <qmutex.h>
 #include <qthread.h>
 #include <qtimer.h>
@@ -110,6 +110,12 @@ private slots:
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
 
+template <class Int>
+static QString msgElapsed(Int elapsed)
+{
+    return QString::fromLatin1("elapsed: %1").arg(elapsed);
+}
+
 class SignalRecorder : public QObject
 {
     Q_OBJECT
@@ -121,7 +127,7 @@ public:
     { }
 
     bool wasActivated()
-    { return activationCount.load() > 0; }
+    { return activationCount.loadRelaxed() > 0; }
 
 public slots:
     void slot();
@@ -244,8 +250,8 @@ public:
         QMutexLocker locker(&mutex);
 
         elapsed = 0;
-        QTime time;
-        time.start();
+        QElapsedTimer timer;
+        timer.start();
         switch (sleepType) {
         case Second:
             sleep(interval);
@@ -257,7 +263,7 @@ public:
             usleep(interval);
             break;
         }
-        elapsed = time.elapsed();
+        elapsed = timer.elapsed();
 
         cond.wakeOne();
     }
@@ -591,7 +597,7 @@ void tst_QThread::sleep()
     thread.interval = 2;
     thread.start();
     QVERIFY(thread.wait(five_minutes));
-    QVERIFY(thread.elapsed >= 2000);
+    QVERIFY2(thread.elapsed >= 2000, qPrintable(msgElapsed(thread.elapsed)));
 }
 
 void tst_QThread::msleep()
@@ -601,11 +607,10 @@ void tst_QThread::msleep()
     thread.interval = 120;
     thread.start();
     QVERIFY(thread.wait(five_minutes));
-#if defined (Q_OS_WIN)
-    // Since the resolution of QTime is so coarse...
-    QVERIFY(thread.elapsed >= 100);
+#if defined (Q_OS_WIN) // May no longer be needed
+    QVERIFY2(thread.elapsed >= 100, qPrintable(msgElapsed(thread.elapsed)));
 #else
-    QVERIFY(thread.elapsed >= 120);
+    QVERIFY2(thread.elapsed >= 120, qPrintable(msgElapsed(thread.elapsed)));
 #endif
 }
 
@@ -616,11 +621,10 @@ void tst_QThread::usleep()
     thread.interval = 120000;
     thread.start();
     QVERIFY(thread.wait(five_minutes));
-#if defined (Q_OS_WIN)
-    // Since the resolution of QTime is so coarse...
-    QVERIFY(thread.elapsed >= 100);
+#if defined (Q_OS_WIN) // May no longer be needed
+    QVERIFY2(thread.elapsed >= 100, qPrintable(msgElapsed(thread.elapsed)));
 #else
-    QVERIFY(thread.elapsed >= 120);
+    QVERIFY2(thread.elapsed >= 120, qPrintable(msgElapsed(thread.elapsed)));
 #endif
 }
 
@@ -902,7 +906,7 @@ void tst_QThread::adoptMultipleThreads()
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(recorder.activationCount.load(), numThreads);
+    QCOMPARE(recorder.activationCount.loadRelaxed(), numThreads);
 }
 
 void tst_QThread::adoptMultipleThreadsOverlap()
@@ -939,7 +943,7 @@ void tst_QThread::adoptMultipleThreadsOverlap()
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(recorder.activationCount.load(), numThreads);
+    QCOMPARE(recorder.activationCount.loadRelaxed(), numThreads);
 }
 
 // Disconnects on WinCE
@@ -948,9 +952,9 @@ void tst_QThread::stressTest()
     if (EmulationDetector::isRunningArmOnX86())
         QSKIP("Qemu uses too much memory for each thread. Test would run out of memory.");
 
-    QTime t;
-    t.start();
-    while (t.elapsed() < one_minute) {
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < one_minute) {
         Current_Thread t;
         t.start();
         t.wait(one_minute);
@@ -1067,13 +1071,15 @@ void tst_QThread::wait2()
     timer.start();
     QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
     qint64 elapsed = timer.elapsed(); // On Windows, we sometimes get (WaitTime - 9).
-    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 10, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
+    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 10,
+             qPrintable(msgElapsed(elapsed)));
 
     timer.start();
     thread.cond1.wakeOne();
     QVERIFY(thread.wait(/*Waiting_Thread::WaitTime * 1.4*/));
     elapsed = timer.elapsed();
-    QVERIFY2(elapsed - Waiting_Thread::WaitTime >= -1, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
+    QVERIFY2(elapsed - Waiting_Thread::WaitTime >= -1,
+             qPrintable(msgElapsed(elapsed)));
 }
 
 
@@ -1210,7 +1216,7 @@ class DummyEventDispatcher : public QAbstractEventDispatcher {
 public:
     DummyEventDispatcher() : QAbstractEventDispatcher() {}
     bool processEvents(QEventLoop::ProcessEventsFlags) {
-        visited.store(true);
+        visited.storeRelaxed(true);
         emit awake();
         QCoreApplication::sendPostedEvents();
         return false;
@@ -1272,7 +1278,7 @@ void tst_QThread::customEventDispatcher()
     QMetaObject::invokeMethod(&obj, "visit", Qt::QueuedConnection);
     loop.exec();
     // test that the ED has really been used
-    QVERIFY(ed->visited.load());
+    QVERIFY(ed->visited.loadRelaxed());
 
     QPointer<DummyEventDispatcher> weak_ed(ed);
     QVERIFY(!weak_ed.isNull());

@@ -490,24 +490,24 @@ extend_target(Core CONDITION INTEGRITY
 # CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
 # CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 17:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
+#### Keys ignored in scope 18:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 19:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
+#### Keys ignored in scope 20:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
 # f16c_cxx = "false"
 
-#### Keys ignored in scope 21:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
+#### Keys ignored in scope 22:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 23:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
+#### Keys ignored in scope 24:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 24:.:global:global/global.pri:else:
+#### Keys ignored in scope 25:.:global:global/global.pri:else:
 # f16c_cxx = "false"
 
 # extend_target(Core CONDITION _ss_f16c_cxx ... # special case: Handled manually:
 
-#### Keys ignored in scope 26:.:global:global/global.pri:else:
+#### Keys ignored in scope 27:.:global:global/global.pri:else:
 # F16C_SOURCES = "global/qfloat16_f16c.c"
 
 extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
@@ -522,7 +522,7 @@ extend_target(Core CONDITION LINUX AND NOT static
         global/minimum-linux_p.h
 )
 
-#### Keys ignored in scope 31:.:global:global/global.pri:precompile_header:
+#### Keys ignored in scope 32:.:global:global/global.pri:precompile_header:
 # NO_PCH_ASM = "global/minimum-linux.S"
 # QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
 # no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
@@ -531,7 +531,7 @@ extend_target(Core CONDITION LINUX AND NOT static
 # no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
 # no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 
-#### Keys ignored in scope 32:.:global:global/global.pri:silent:
+#### Keys ignored in scope 33:.:global:global/global.pri:silent:
 # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&"
 
 extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
@@ -549,7 +549,7 @@ extend_target(Core CONDITION QT_FEATURE_journald
         PkgConfig::Libsystemd
 )
 
-#### Keys ignored in scope 36:.:global:global/global.pri:GCC AND ltcg:
+#### Keys ignored in scope 37:.:global:global/global.pri:GCC AND ltcg:
 # QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
 # versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
 # versiontagging_compiler.dependency_type = "TYPE_C"
@@ -558,7 +558,7 @@ extend_target(Core CONDITION QT_FEATURE_journald
 # versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 # versiontagging_compiler.variable_out = "OBJECTS"
 
-#### Keys ignored in scope 37:.:global:global/global.pri:silent:
+#### Keys ignored in scope 38:.:global:global/global.pri:silent:
 # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&"
 
 extend_target(Core CONDITION UNIX
@@ -1062,16 +1062,6 @@ else()
             global/qfloat16_f16c.c
     )
 endif()
-
-
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
-                   COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qfloat16-tables
-                   ARGS "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp"
-                   DEPENDS global/qfloat16.h
-                   COMMENT qfloat16-tables
-                   VERBATIM)
-target_sources(Core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/global/qfloat16tables.cpp")
-
 
 set_source_files_properties(
     thread/qmutex_linux.cpp

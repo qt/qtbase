@@ -815,7 +815,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         break;
                     }
                     cpp_state = InCode;
-                    // ... and fall through to handle buffer[x] as such.
+                    Q_FALLTHROUGH(); // to handle buffer[x] as such.
                 case InCode:
                     // matching quotes (string literals and character literals)
                     if (buffer[x] == '\'' || buffer[x] == '"') {
@@ -946,10 +946,12 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
 
     debug_msg(2, "findMocs: %s", file->file.local().toLatin1().constData());
     int line_count = 1;
-    bool ignore[3] = { false, false, false }; // [0] for Q_OBJECT, [1] for Q_GADGET, [2] for Q_NAMESPACE
+    // [0] for Q_OBJECT, [1] for Q_GADGET, [2] for Q_NAMESPACE, [3] for Q_NAMESPACE_EXPORT
+    bool ignore[4] = { false, false, false, false };
  /* qmake ignore Q_GADGET */
  /* qmake ignore Q_OBJECT */
  /* qmake ignore Q_NAMESPACE */
+ /* qmake ignore Q_NAMESPACE_EXPORT */
     for(int x = 0; x < buffer_len; x++) {
 #define SKIP_BSNL(pos) skipEscapedLineEnds(buffer, buffer_len, (pos), &line_count)
         x = SKIP_BSNL(x);
@@ -988,6 +990,12 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 23;
                                 ignore[2] = true;
+                            } else if (buffer_len >= (x + 30) &&
+                                       !strncmp(buffer + x + 1, "make ignore Q_NAMESPACE_EXPORT", 30)) {
+                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_NAMESPACE_EXPORT\"",
+                                           file->file.real().toLatin1().constData(), line_count);
+                                 x += 30;
+                                 ignore[3] = true;
                             }
                         } else if (buffer[x] == '*') {
                             extralines = 0;
@@ -1015,8 +1023,8 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
             int morelines = 0;
             int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &morelines);
             if (buffer[y] == 'Q') {
-                static const char interesting[][12] = { "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE"};
-                for (int interest = 0; interest < 3; ++interest) {
+                static const char interesting[][19] = { "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" };
+                for (int interest = 0; interest < 4; ++interest) {
                     if (ignore[interest])
                         continue;
 

@@ -645,7 +645,7 @@ QDateTimeEdit::Section QDateTimeEdit::currentSection() const
     if (QApplication::keypadNavigationEnabled() && d->focusOnButton)
         return NoSection;
 #endif
-    return d->convertToPublic(d->sectionType(d->currentSectionIndex));
+    return QDateTimeEditPrivate::convertToPublic(d->sectionType(d->currentSectionIndex));
 }
 
 void QDateTimeEdit::setCurrentSection(Section section)
@@ -659,7 +659,7 @@ void QDateTimeEdit::setCurrentSection(Section section)
     int index = d->currentSectionIndex + 1;
     for (int i=0; i<2; ++i) {
         while (index < size) {
-            if (d->convertToPublic(d->sectionType(index)) == section) {
+            if (QDateTimeEditPrivate::convertToPublic(d->sectionType(index)) == section) {
                 d->edit->setCursorPosition(d->sectionPos(index));
                 QDTEDEBUG << d->sectionPos(index);
                 return;
@@ -685,7 +685,7 @@ QDateTimeEdit::Section QDateTimeEdit::sectionAt(int index) const
     Q_D(const QDateTimeEdit);
     if (index < 0 || index >= d->sectionNodes.size())
         return NoSection;
-    return d->convertToPublic(d->sectionType(index));
+    return QDateTimeEditPrivate::convertToPublic(d->sectionType(index));
 }
 
 /*!
@@ -879,7 +879,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
         }
 
         d->formatExplicitlySet = true;
-        d->sections = d->convertSections(d->display);
+        d->sections = QDateTimeEditPrivate::convertSections(d->display);
         d->clearCache();
 
         d->currentSectionIndex = qMin(d->currentSectionIndex, d->sectionNodes.size() - 1);
@@ -1529,7 +1529,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
 QTimeEdit::QTimeEdit(QWidget *parent)
     : QDateTimeEdit(QDATETIMEEDIT_TIME_MIN, QVariant::Time, parent)
 {
-    connect(this, SIGNAL(timeChanged(QTime)), SIGNAL(userTimeChanged(QTime)));
+    connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
 }
 
 /*!
@@ -1540,6 +1540,7 @@ QTimeEdit::QTimeEdit(QWidget *parent)
 QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
     : QDateTimeEdit(time, QVariant::Time, parent)
 {
+    connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
 }
 
 /*!
@@ -1598,7 +1599,7 @@ QTimeEdit::~QTimeEdit()
 QDateEdit::QDateEdit(QWidget *parent)
     : QDateTimeEdit(QDATETIMEEDIT_DATE_INITIAL, QVariant::Date, parent)
 {
-    connect(this, SIGNAL(dateChanged(QDate)), SIGNAL(userDateChanged(QDate)));
+    connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
 }
 
 /*!
@@ -1609,6 +1610,7 @@ QDateEdit::QDateEdit(QWidget *parent)
 QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
     : QDateTimeEdit(date, QVariant::Date, parent)
 {
+    connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
 }
 
 /*!
@@ -2304,13 +2306,31 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
     style()->drawComplexControl(QStyle::CC_ComboBox, &optCombo, &p, this);
 }
 
+/*
+    Returns the string for AM and PM markers.
+
+    If a translation for "AM" and "PM" is installed, then use that.
+    Otherwise, use the default implementation, which uses the locale.
+*/
 QString QDateTimeEditPrivate::getAmPmText(AmPm ap, Case cs) const
 {
+    QString original;
+    QString translated;
     if (ap == AmText) {
-        return (cs == UpperCase ? QDateTimeParser::tr("AM") : QDateTimeParser::tr("am"));
+        original = QLatin1String(cs == UpperCase ? "AM" : "am");
+        translated = (cs == UpperCase ? QDateTimeParser::tr("AM") : QDateTimeParser::tr("am"));
     } else {
-        return (cs == UpperCase ? QDateTimeParser::tr("PM") : QDateTimeParser::tr("pm"));
+        original = QLatin1String(cs == UpperCase ? "PM" : "pm");
+        translated = (cs == UpperCase ? QDateTimeParser::tr("PM") : QDateTimeParser::tr("pm"));
     }
+
+    // This logic fails if a translation exists but doesn't change the string,
+    // which we can accept as a corner-case for which a locale-derived answer
+    // will be acceptable.
+    if (original != translated)
+        return translated;
+
+    return QDateTimeParser::getAmPmText(ap, cs);
 }
 
 int QDateTimeEditPrivate::absoluteIndex(QDateTimeEdit::Section s, int index) const

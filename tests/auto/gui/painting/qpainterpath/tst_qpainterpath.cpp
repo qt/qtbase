@@ -189,6 +189,10 @@ void tst_QPainterPath::reserveAndCapacity()
 
     p.reserve(0);
     QVERIFY(p.capacity() >= 1000);
+
+    QPainterPath p2;
+    p2.reserve(10);
+    QVERIFY(p.capacity() >= 10);
 }
 
 Q_DECLARE_METATYPE(QPainterPath)

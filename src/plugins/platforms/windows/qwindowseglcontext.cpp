@@ -469,10 +469,10 @@ bool QWindowsEGLContext::makeCurrent(QPlatformSurface *surface)
 
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
 
-    QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
+    auto *window = static_cast<QWindowsWindow *>(surface);
     window->aboutToMakeCurrent();
     int err = 0;
-    EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig, &err));
+    auto eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig, &err));
     if (eglSurface == EGL_NO_SURFACE) {
         if (err == EGL_CONTEXT_LOST) {
             m_eglContext = EGL_NO_CONTEXT;
@@ -531,9 +531,9 @@ void QWindowsEGLContext::doneCurrent()
 void QWindowsEGLContext::swapBuffers(QPlatformSurface *surface)
 {
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
-    QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
+    auto *window = static_cast<QWindowsWindow *>(surface);
     int err = 0;
-    EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig, &err));
+    auto eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig, &err));
     if (eglSurface == EGL_NO_SURFACE) {
         if (err == EGL_CONTEXT_LOST) {
             m_eglContext = EGL_NO_CONTEXT;

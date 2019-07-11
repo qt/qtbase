@@ -82,53 +82,6 @@ static QWindow *qt_getWindow(const QWidget *widget)
     return widget ? widget->window()->windowHandle() : 0;
 }
 
-@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
-
-@implementation NotificationReceiver
-{
-    QMacStylePrivate *privateStyle;
-}
-
-- (instancetype)initWithPrivateStyle:(QMacStylePrivate *)style
-{
-    if (self = [super init])
-        privateStyle = style;
-    return self;
-}
-
-- (void)scrollBarStyleDidChange:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-
-    // purge destroyed scroll bars:
-    QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
-
-    QEvent event(QEvent::StyleChange);
-    for (const auto &o : QMacStylePrivate::scrollBars)
-        QCoreApplication::sendEvent(o, &event);
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
-        change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
-{
-    Q_UNUSED(keyPath);
-    Q_UNUSED(object);
-    Q_UNUSED(change);
-    Q_UNUSED(context);
-
-    Q_ASSERT([keyPath isEqualToString:@"effectiveAppearance"]);
-    Q_ASSERT(object == NSApp);
-
-    for (NSView *b : privateStyle->cocoaControls)
-        [b release];
-    privateStyle->cocoaControls.clear();
-}
-
-@end
-
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
 
 @property (readonly, nonatomic) NSInteger animators;
@@ -280,6 +233,7 @@ static QLinearGradient titlebarGradientInactive()
     return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
 }
 
+#if QT_CONFIG(tabwidget)
 static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, CGContextRef ctx)
 {
     Q_ASSERT(option);
@@ -299,6 +253,7 @@ static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, 
             CGContextClipToRects(ctx, &cgRects[0], size_t(cgRects.size()));
     }
 }
+#endif
 
 static const QColor titlebarSeparatorLineActive(111, 111, 111);
 static const QColor titlebarSeparatorLineInactive(131, 131, 131);
@@ -323,6 +278,7 @@ static const qreal titleBarButtonSpacing = 8;
 // hovered: tab is hovered
 bool isDarkMode() { return qt_mac_applicationIsInDarkMode(); }
 
+#if QT_CONFIG(tabbar)
 static const QColor lightTabBarTabBackgroundActive(190, 190, 190);
 static const QColor darkTabBarTabBackgroundActive(38, 38, 38);
 static const QColor tabBarTabBackgroundActive() { return isDarkMode() ? darkTabBarTabBackgroundActive : lightTabBarTabBackgroundActive; }
@@ -368,6 +324,7 @@ static const QColor tabBarCloseButtonCrossSelected(115, 115, 115);
 
 static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
+#endif // QT_CONFIG(tabbar)
 
 static const int headerSectionArrowHeight = 6;
 static const int headerSectionSeparatorInset = 2;
@@ -512,6 +469,7 @@ static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
 }
 
 
+#if QT_CONFIG(tabbar)
 static void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed, bool documentMode)
 {
     p->setRenderHints(QPainter::Antialiasing);
@@ -549,7 +507,6 @@ static void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pres
     p->drawLine(margin, height - margin, width - margin, margin);
 }
 
-#if QT_CONFIG(tabbar)
 QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
 {
     const auto tabDirection = QMacStylePrivate::tabDirection(shape);
@@ -2032,33 +1989,34 @@ void QMacStylePrivate::resolveCurrentNSView(QWindow *window) const
 QMacStyle::QMacStyle()
     : QCommonStyle(*new QMacStylePrivate)
 {
-    Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    d->receiver = [[NotificationReceiver alloc] initWithPrivateStyle:d];
-    [[NSNotificationCenter defaultCenter] addObserver:d->receiver
-                                             selector:@selector(scrollBarStyleDidChange:)
-                                                 name:NSPreferredScrollerStyleDidChangeNotification
-                                               object:nil];
+    static QMacNotificationObserver scrollbarStyleObserver(nil,
+        NSPreferredScrollerStyleDidChangeNotification, []() {
+            // Purge destroyed scroll bars
+            QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
+
+            QEvent event(QEvent::StyleChange);
+            for (const auto &o : QMacStylePrivate::scrollBars)
+                QCoreApplication::sendEvent(o, &event);
+    });
+
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    Q_D(QMacStyle);
+    // FIXME: Tie this logic into theme change, or even polish/unpolish
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        [NSApplication.sharedApplication addObserver:d->receiver forKeyPath:@"effectiveAppearance"
-         options:NSKeyValueObservingOptionNew context:nullptr];
+        d->appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
+            Q_D(QMacStyle);
+            for (NSView *b : d->cocoaControls)
+                [b release];
+            d->cocoaControls.clear();
+        });
     }
 #endif
 }
 
 QMacStyle::~QMacStyle()
 {
-    Q_D(QMacStyle);
-    QMacAutoReleasePool pool;
-
-    [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
-        [NSApplication.sharedApplication removeObserver:d->receiver forKeyPath:@"effectiveAppearance"];
-#endif
-    [d->receiver release];
 }
 
 void QMacStyle::polish(QPalette &)
@@ -2175,10 +2133,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     int ret = 0;
 
     switch (metric) {
+#if QT_CONFIG(tabbar)
     case PM_TabCloseIndicatorWidth:
     case PM_TabCloseIndicatorHeight:
         ret = closeButtonSize;
         break;
+#endif
     case PM_ToolBarIconSize:
         ret = proxy()->pixelMetric(PM_LargeIconSize);
         break;
@@ -2335,10 +2295,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             ret = 16;
             break;
         case QStyleHelper::SizeDefault:
+#if QT_CONFIG(tabbar)
             const QStyleOptionTab *tb = qstyleoption_cast<const QStyleOptionTab *>(opt);
             if (tb && tb->documentMode)
                 ret = 30;
             else
+#endif
                 ret = QCommonStyle::pixelMetric(metric, opt, widget);
             break;
         }
@@ -2542,11 +2504,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
 QPalette QMacStyle::standardPalette() const
 {
-    QPalette pal = QCommonStyle::standardPalette();
-    pal.setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
-    pal.setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
-    pal.setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
-    return pal;
+    auto platformTheme = QGuiApplicationPrivate::platformTheme();
+    auto styleNames = platformTheme->themeHint(QPlatformTheme::StyleNames);
+    if (styleNames.toStringList().contains("macintosh"))
+        return *platformTheme->palette();
+    else
+        return QStyle::standardPalette();
 }
 
 int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w,
@@ -2994,7 +2957,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 p->restore();
                 return;
             }
-
+#if QT_CONFIG(tabwidget)
             QRegion region(tbb->rect);
             region -= tbb->tabBarRect;
             p->save();
@@ -3018,6 +2981,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             }
             proxy()->drawPrimitive(PE_FrameTabWidget, &twf, p, w);
             p->restore();
+#endif
         }
         break;
 #endif
@@ -3064,8 +3028,10 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             needTranslation = true;
         }
         d->drawNSViewInRect(box, adjustedRect, p, ^(CGContextRef ctx, const CGRect &rect) {
+#if QT_CONFIG(tabwidget)
             if (QTabWidget *tabWidget = qobject_cast<QTabWidget *>(opt->styleObject))
                 clipTabBarFrame(opt, this, ctx);
+#endif
             CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
             CGContextScaleCTM(ctx, 1, -1);
             if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave
@@ -3094,7 +3060,9 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             theStroker.setCapStyle(Qt::FlatCap);
             theStroker.setDashPattern(QVector<qreal>() << 1 << 2);
             path = theStroker.createStroke(path);
-            p->fillPath(path, QColor(0, 0, 0, 119));
+            const auto dark = qt_mac_applicationIsInDarkMode() ? opt->palette.dark().color().darker()
+                                                               : QColor(0, 0, 0, 119);
+            p->fillPath(path, dark);
         }
         break;
     case PE_FrameWindow:
@@ -3357,6 +3325,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         } break;
     case PE_FrameStatusBarItem:
         break;
+#if QT_CONFIG(tabbar)
     case PE_IndicatorTabClose: {
         // Make close button visible only on the hovered tab.
         QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget());
@@ -3381,6 +3350,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             }
         }
         } break;
+#endif // QT_CONFIG(tabbar)
     case PE_PanelStatusBar: {
         // Fill the status bar with the titlebar gradient.
         QLinearGradient linearGrad;

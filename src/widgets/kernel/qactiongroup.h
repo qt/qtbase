@@ -55,11 +55,18 @@ class Q_WIDGETS_EXPORT QActionGroup : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QActionGroup)
 
-    Q_PROPERTY(bool exclusive READ isExclusive WRITE setExclusive)
+    Q_PROPERTY(QActionGroup::ExclusionPolicy exclusionPolicy READ exclusionPolicy WRITE setExclusionPolicy)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
 
 public:
+    enum class ExclusionPolicy {
+        None,
+        Exclusive,
+        ExclusiveOptional
+    };
+    Q_ENUM(ExclusionPolicy)
+
     explicit QActionGroup(QObject* parent);
     ~QActionGroup();
 
@@ -73,6 +80,7 @@ public:
     bool isExclusive() const;
     bool isEnabled() const;
     bool isVisible() const;
+    ExclusionPolicy exclusionPolicy() const;
 
 
 public Q_SLOTS:
@@ -80,6 +88,7 @@ public Q_SLOTS:
     inline void setDisabled(bool b) { setEnabled(!b); }
     void setVisible(bool);
     void setExclusive(bool);
+    void setExclusionPolicy(ExclusionPolicy policy);
 
 Q_SIGNALS:
     void triggered(QAction *);

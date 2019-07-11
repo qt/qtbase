@@ -973,8 +973,14 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
         if (pageHeight <= 0)
             pageHeight = QFIXED_MAX;
 
-        const int tableStartPage = (td->position.y / pageHeight).truncate();
-        const int tableEndPage = ((td->position.y + td->size.height) / pageHeight).truncate();
+        QFixed absYPos = td->position.y;
+        QTextFrame *parentFrame = table->parentFrame();
+        while (parentFrame) {
+            absYPos += data(parentFrame)->position.y;
+            parentFrame = parentFrame->parentFrame();
+        }
+        const int tableStartPage = (absYPos / pageHeight).truncate();
+        const int tableEndPage = ((absYPos + td->size.height) / pageHeight).truncate();
 
         qreal border = td->border.toReal();
         drawFrameDecoration(painter, frame, fd, context.clip, frameRect);
@@ -1614,7 +1620,7 @@ QRectF QTextDocumentLayoutPrivate::layoutTable(QTextTable *table, int layoutFrom
         for (int i = 0; i < children.count(); ++i) {
             QTextFrame *frame = children.at(i);
             QTextTableCell cell = table->cellAt(frame->firstPosition());
-            td->childFrameMap.insertMulti(cell.row() + cell.column() * rows, frame);
+            td->childFrameMap.insert(cell.row() + cell.column() * rows, frame);
         }
     }
 
