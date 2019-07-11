@@ -68,6 +68,7 @@ class ProString {
 public:
     ProString();
     ProString(const ProString &other);
+    ProString &operator=(const ProString &) = default;
     PROITEM_EXPLICIT ProString(const QString &str);
     PROITEM_EXPLICIT ProString(const QStringRef &str);
     PROITEM_EXPLICIT ProString(const char *str);
