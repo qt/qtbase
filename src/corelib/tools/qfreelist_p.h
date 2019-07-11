@@ -218,7 +218,7 @@ template <typename T, typename ConstantsType>
 inline QFreeList<T, ConstantsType>::~QFreeList()
 {
     for (int i = 0; i < ConstantsType::BlockCount; ++i)
-        delete [] _v[i].load();
+        delete [] _v[i].loadAcquire();
 }
 
 template <typename T, typename ConstantsType>

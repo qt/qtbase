@@ -164,9 +164,8 @@ private slots:
     void waitForReadyReadInASlot();
     void remoteCloseError();
     void nestedEventLoopInErrorSlot();
-#ifndef Q_OS_WIN
-    void connectToLocalHostNoService();
-#endif
+    void connectToHostError_data();
+    void connectToHostError();
     void waitForConnectedInHostLookupSlot();
     void waitForConnectedInHostLookupSlot2();
     void readyReadSignalsAfterWaitForReadyRead();
@@ -2040,18 +2039,38 @@ void tst_QTcpSocket::nestedEventLoopInErrorSlot()
 }
 
 //----------------------------------------------------------------------------------
-#ifndef Q_OS_WIN
-void tst_QTcpSocket::connectToLocalHostNoService()
+
+void tst_QTcpSocket::connectToHostError_data()
 {
-    // This test was created after we received a report that claimed
-    // QTcpSocket would crash if trying to connect to "localhost" on a random
-    // port with no service listening.
+    QTest::addColumn<QString>("host");
+    QTest::addColumn<int>("port");
+    QTest::addColumn<QAbstractSocket::SocketError>("expectedError");
+
+    QTest::newRow("localhost no service") << QStringLiteral("localhost") << 31415 << QAbstractSocket::ConnectionRefusedError;
+    QTest::newRow("unreachable") << QStringLiteral("0.0.0.1") << 65000 << QAbstractSocket::NetworkError;
+}
+
+
+void tst_QTcpSocket::connectToHostError()
+{
     QTcpSocket *socket = newSocket();
-    socket->connectToHost("localhost", 31415); // no service running here, one suspects
+
+    QAbstractSocket::SocketError error = QAbstractSocket::UnknownSocketError;
+
+    QFETCH(QString, host);
+    QFETCH(int, port);
+    QFETCH(QAbstractSocket::SocketError, expectedError);
+
+    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),[&](QAbstractSocket::SocketError socketError){
+        error = socketError;
+    });
+    socket->connectToHost(host, port); // no service running here, one suspects
     QTRY_COMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    if (error != expectedError && error == QAbstractSocket::ConnectionRefusedError)
+        QEXPECT_FAIL("unreachable", "CI firewall interfers with this test", Continue);
+    QCOMPARE(error, expectedError);
     delete socket;
 }
-#endif
 
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::waitForConnectedInHostLookupSlot()

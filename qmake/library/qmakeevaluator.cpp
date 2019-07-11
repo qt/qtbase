@@ -1128,48 +1128,35 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
                 }
                 superdir = qdfi.path();
             }
+            QString sdir = inDir;
             QString dir = m_outputDir;
             forever {
+                conffile = sdir + QLatin1String("/.qmake.conf");
+                if (!m_vfs->exists(conffile, flags))
+                    conffile.clear();
                 cachefile = dir + QLatin1String("/.qmake.cache");
                 if (!m_vfs->exists(cachefile, flags))
                     cachefile.clear();
-                if (!cachefile.isEmpty()) {
+                if (!conffile.isEmpty() || !cachefile.isEmpty()) {
+                    if (dir != sdir)
+                        m_sourceRoot = sdir;
                     m_buildRoot = dir;
                     break;
                 }
                 if (dir == superdir)
                     goto no_cache;
-                QFileInfo qdfi(dir);
-                if (qdfi.isRoot()) {
-                    cachefile.clear();
-                    break;
-                }
-                dir = qdfi.path();
-            }
-            QString sdir = inDir;
-            forever {
-                conffile = sdir + QLatin1String("/.qmake.conf");
-                if (!m_vfs->exists(conffile, flags))
-                    conffile.clear();
-                if (!conffile.isEmpty()) {
-                    if (sdir != m_buildRoot)
-                        m_sourceRoot = sdir;
-                    break;
-                }
                 QFileInfo qsdfi(sdir);
-                if (qsdfi.isRoot()) {
-                    conffile.clear();
-                    break;
-                }
+                QFileInfo qdfi(dir);
+                if (qsdfi.isRoot() || qdfi.isRoot())
+                    goto no_cache;
                 sdir = qsdfi.path();
+                dir = qdfi.path();
             }
         } else {
             m_buildRoot = QFileInfo(cachefile).path();
         }
-        if (!conffile.isEmpty())
-            m_conffile = QDir::cleanPath(conffile);
-        if (!cachefile.isEmpty())
-            m_cachefile = QDir::cleanPath(cachefile);
+        m_conffile = QDir::cleanPath(conffile);
+        m_cachefile = QDir::cleanPath(cachefile);
     }
   no_cache:
 

@@ -1,8 +1,10 @@
 TEMPLATE = subdirs
 
-QT_FOR_CONFIG += core-private gui-private
+QT_FOR_CONFIG += core-private gui-private printsupport
+
 include($$OUT_PWD/corelib/qtcore-config.pri)
 include($$OUT_PWD/gui/qtgui-config.pri)
+include($$OUT_PWD/printsupport/qtprintsupport-config.pri)
 
 force_bootstrap|!qtConfig(commandlineparser): \
     CONFIG += force_dbus_bootstrap
@@ -221,11 +223,13 @@ qtConfig(gui) {
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
     qtConfig(widgets) {
         SUBDIRS += src_tools_uic src_widgets
-        !android-embedded: SUBDIRS += src_printsupport
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
-        !android-embedded: src_plugins.depends += src_printsupport
         src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
+        qtConfig(printer) {
+            SUBDIRS += src_printsupport
+            src_plugins.depends += src_printsupport
+        }
         qtConfig(opengl) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
