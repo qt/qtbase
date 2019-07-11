@@ -197,6 +197,7 @@ bool QSaveFile::open(OpenMode mode)
         return false;
     }
     unsetError();
+    d->writeError = QFileDevice::NoError;
     if ((mode & (ReadOnly | WriteOnly)) == 0) {
         qWarning("QSaveFile::open: Open mode not specified");
         return false;
