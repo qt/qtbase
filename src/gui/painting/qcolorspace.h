@@ -90,10 +90,18 @@ public:
                 TransferFunction fun, float gamma = 0.0f);
     ~QColorSpace();
 
-    QColorSpace(QColorSpace &&colorSpace) noexcept;
     QColorSpace(const QColorSpace &colorSpace);
-    QColorSpace &operator=(QColorSpace &&colorSpace) noexcept;
     QColorSpace &operator=(const QColorSpace &colorSpace);
+
+    QColorSpace(QColorSpace &&colorSpace) noexcept
+            : d_ptr(qExchange(colorSpace.d_ptr, nullptr))
+    { }
+    QColorSpace &operator=(QColorSpace &&colorSpace) noexcept
+    {
+        // Make the deallocation of this->d_ptr happen in ~QColorSpace()
+        QColorSpace(std::move(colorSpace)).swap(*this);
+        return *this;
+    }
 
     void swap(QColorSpace &colorSpace) noexcept
     { qSwap(d_ptr, colorSpace.d_ptr); }
@@ -123,7 +131,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QColorSpace)
-    QExplicitlySharedDataPointer<QColorSpacePrivate> d_ptr;
+    QColorSpacePrivate *d_ptr;
 };
 
 bool Q_GUI_EXPORT operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2);
