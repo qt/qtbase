@@ -137,7 +137,10 @@ public:
     QJsonObject toObject() const;
     QJsonObject toObject(const QJsonObject &defaultValue) const;
 
+#if QT_STRINGVIEW_LEVEL < 2
     const QJsonValue operator[](const QString &key) const;
+#endif
+    const QJsonValue operator[](QStringView key) const;
     const QJsonValue operator[](QLatin1String key) const;
     const QJsonValue operator[](int i) const;
 

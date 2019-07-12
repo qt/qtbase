@@ -436,6 +436,7 @@ void tst_QtJson::testObjectSimple()
     object.insert("boolean", true);
     QCOMPARE(object.value("boolean").toBool(), true);
     QCOMPARE(object.value(QLatin1String("boolean")).toBool(), true);
+    QJsonObject object2 = object;
 
     QStringList keys = object.keys();
     QVERIFY2(keys.contains("number"), "key number not found");
@@ -460,6 +461,23 @@ void tst_QtJson::testObjectSimple()
     QString before = object.value("string").toString();
     object.insert("string", QString::fromLatin1("foo"));
     QVERIFY2(object.value(QLatin1String("string")).toString() != before, "value should have been updated");
+
+    // same tests again but with QStringView keys
+    object2.insert(QStringView(u"value"), value);
+    QCOMPARE(object2.value("value"), value);
+
+    size = object2.size();
+    object2.remove(QStringView(u"boolean"));
+    QCOMPARE(object2.size(), size - 1);
+    QVERIFY2(!object2.contains(QStringView(u"boolean")), "key boolean should have been removed");
+
+    taken = object2.take(QStringView(u"value"));
+    QCOMPARE(taken, value);
+    QVERIFY2(!object2.contains("value"), "key value should have been removed");
+
+    before = object2.value("string").toString();
+    object2.insert(QStringView(u"string"), QString::fromLatin1("foo"));
+    QVERIFY2(object2.value(QStringView(u"string")).toString() != before, "value should have been updated");
 
     size = object.size();
     QJsonObject subobject;

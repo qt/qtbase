@@ -377,6 +377,7 @@ bool QJsonObject::isEmpty() const
     return !o->length;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a QJsonValue representing the value for the key \a key.
 
@@ -385,6 +386,16 @@ bool QJsonObject::isEmpty() const
     \sa QJsonValue, QJsonValue::isUndefined()
  */
 QJsonValue QJsonObject::value(const QString &key) const
+{
+    return value(QStringView(key));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonValue QJsonObject::value(QStringView key) const
 {
     if (!d)
         return QJsonValue(QJsonValue::Undefined);
@@ -412,6 +423,7 @@ QJsonValue QJsonObject::value(QLatin1String key) const
     return QJsonValue(d, o, o->entryAt(i)->value);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a QJsonValue representing the value for the key \a key.
 
@@ -423,8 +435,16 @@ QJsonValue QJsonObject::value(QLatin1String key) const
  */
 QJsonValue QJsonObject::operator [](const QString &key) const
 {
-    return value(key);
+    return (*this)[QStringView(key)];
 }
+#endif
+
+/*!
+    \fn QJsonValue QJsonObject::operator [](QStringView key) const
+
+    \overload
+    \since 5.14
+*/
 
 /*!
     \fn QJsonValue QJsonObject::operator [](QLatin1String key) const
@@ -433,6 +453,7 @@ QJsonValue QJsonObject::operator [](const QString &key) const
     \since 5.7
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a reference to the value for \a key.
 
@@ -445,6 +466,16 @@ QJsonValue QJsonObject::operator [](const QString &key) const
     \sa value()
  */
 QJsonValueRef QJsonObject::operator [](const QString &key)
+{
+    return (*this)[QStringView(key)];
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonValueRef QJsonObject::operator [](QStringView key)
 {
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : 0;
@@ -465,6 +496,7 @@ QJsonValueRef QJsonObject::operator [](QLatin1String key)
     return operator[](QString(key));
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Inserts a new item with the key \a key and a value of \a value.
 
@@ -480,6 +512,16 @@ QJsonValueRef QJsonObject::operator [](QLatin1String key)
  */
 QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &value)
 {
+    return insert(QStringView(key), value);
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonObject::iterator QJsonObject::insert(QStringView key, const QJsonValue &value)
+{
     if (value.t == QJsonValue::Undefined) {
         remove(key);
         return end();
@@ -492,7 +534,7 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
 /*!
     \internal
  */
-QJsonObject::iterator QJsonObject::insertAt(int pos, const QString &key, const QJsonValue &value, bool keyExists)
+QJsonObject::iterator QJsonObject::insertAt(int pos, QStringView key, const QJsonValue &value, bool keyExists)
 {
     QJsonValue val = value;
 
@@ -530,12 +572,23 @@ QJsonObject::iterator QJsonObject::insertAt(int pos, const QString &key, const Q
     return iterator(this, pos);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Removes \a key from the object.
 
     \sa insert(), take()
  */
 void QJsonObject::remove(const QString &key)
+{
+    remove(QStringView(key));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+void QJsonObject::remove(QStringView key)
 {
     if (!d)
         return;
@@ -548,6 +601,7 @@ void QJsonObject::remove(const QString &key)
     removeAt(index);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Removes \a key from the object.
 
@@ -558,6 +612,16 @@ void QJsonObject::remove(const QString &key)
     \sa insert(), remove(), QJsonValue
  */
 QJsonValue QJsonObject::take(const QString &key)
+{
+    return take(QStringView(key));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonValue QJsonObject::take(QStringView key)
 {
     if (!o)
         return QJsonValue(QJsonValue::Undefined);
@@ -573,12 +637,23 @@ QJsonValue QJsonObject::take(const QString &key)
     return v;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns \c true if the object contains key \a key.
 
     \sa insert(), remove(), take()
  */
 bool QJsonObject::contains(const QString &key) const
+{
+    return contains(QStringView(key));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+bool QJsonObject::contains(QStringView key) const
 {
     if (!o)
         return false;
@@ -656,6 +731,7 @@ QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
     return it;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns an iterator pointing to the item with key \a key in the
     map.
@@ -664,6 +740,16 @@ QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
     returns end().
  */
 QJsonObject::iterator QJsonObject::find(const QString &key)
+{
+    return find(QStringView(key));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonObject::iterator QJsonObject::find(QStringView key)
 {
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : 0;
@@ -687,9 +773,17 @@ QJsonObject::iterator QJsonObject::find(QLatin1String key)
     return iterator(this, index);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*! \fn QJsonObject::const_iterator QJsonObject::find(const QString &key) const
 
     \overload
+*/
+#endif
+
+/*! \fn QJsonObject::const_iterator QJsonObject::find(QStringView key) const
+
+    \overload
+    \since 5.14
 */
 
 /*! \fn QJsonObject::const_iterator QJsonObject::find(QLatin1String key) const
@@ -698,6 +792,7 @@ QJsonObject::iterator QJsonObject::find(QLatin1String key)
     \since 5.7
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a const iterator pointing to the item with key \a key in the
     map.
@@ -706,6 +801,16 @@ QJsonObject::iterator QJsonObject::find(QLatin1String key)
     returns constEnd().
  */
 QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
+{
+    return constFind(QStringView(key));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonObject::const_iterator QJsonObject::constFind(QStringView key) const
 {
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : 0;
