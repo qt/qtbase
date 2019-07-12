@@ -1464,7 +1464,7 @@ void tst_QSpinBox::wheelEvents()
     spinBox.setStyle(style.data());
 
     QWheelEvent event(QPointF(), QPointF(), QPoint(), angleDelta,
-                      Qt::NoButton, modifier, Qt::NoScrollPhase, source);
+                      Qt::NoButton, modifier, Qt::NoScrollPhase, false, source);
     for (int expected : expectedValues) {
         qApp->sendEvent(&spinBox, &event);
         QCOMPARE(spinBox.value(), expected);
