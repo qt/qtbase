@@ -607,7 +607,8 @@ bool QPngHandlerPrivate::readPngHeader()
 #endif
         png_uint_32 profLen;
         png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
-        if (!QIcc::fromIccProfile(QByteArray::fromRawData((const char *)profileData, profLen), &colorSpace)) {
+        colorSpace = QColorSpace::fromIccProfile(QByteArray::fromRawData((const char *)profileData, profLen));
+        if (!colorSpace.isValid()) {
             qWarning() << "QPngHandler: Failed to parse ICC profile";
         } else {
             colorSpaceState = Icc;
@@ -677,7 +678,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         // This configuration forces gamma correction and
         // thus changes the output colorspace
         png_set_gamma(png_ptr, 1.0f / gamma, fileGamma);
-        QColorSpacePrivate *csPrivate = colorSpace.d_func();
+        QColorSpacePrivate *csPrivate = QColorSpacePrivate::getWritable(colorSpace);
         csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
         csPrivate->gamma = gamma;
         csPrivate->setTransferFunction();

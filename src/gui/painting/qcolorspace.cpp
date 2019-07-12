@@ -683,20 +683,6 @@ QColorTransform QColorSpace::transformationToColorSpace(const QColorSpace &color
     return d_ptr->transformationToColorSpace(colorspace.d_ptr.constData());
 }
 
-/*!
-    \internal
-*/
-QColorSpacePrivate *QColorSpace::d_func()
-{
-    d_ptr.detach();
-    return d_ptr.data();
-}
-
-/*!
-    \fn const QColorSpacePrivate* QColorSpacePrivate::d_func() const
-    \internal
-*/
-
 /*****************************************************************************
   QColorSpace stream functions
  *****************************************************************************/

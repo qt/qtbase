@@ -288,7 +288,7 @@ QByteArray toIccProfile(const QColorSpace &space)
     if (!space.isValid())
         return QByteArray();
 
-    const QColorSpacePrivate *spaceDPtr = space.d_func();
+    const QColorSpacePrivate *spaceDPtr = QColorSpacePrivate::get(space);
 
     constexpr int tagCount = 9;
     constexpr uint profileDataOffset = 128 + 4 + 12 * tagCount;
@@ -569,7 +569,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         qCWarning(lcIcc) << "fromIccProfile: Bad XYZ data type";
         return false;
     }
-    QColorSpacePrivate *colorspaceDPtr = colorSpace->d_func();
+    QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::getWritable(*colorSpace);
 
     colorspaceDPtr->toXyz.r = fromXyzData(rXyz);
     colorspaceDPtr->toXyz.g = fromXyzData(gXyz);

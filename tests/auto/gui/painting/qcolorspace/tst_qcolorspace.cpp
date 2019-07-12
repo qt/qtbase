@@ -304,11 +304,11 @@ void tst_QColorSpace::primariesXyz()
     QColorSpace bt2020 = QColorSpace::Bt2020;
 
     // Check if our calculated matrices, match the precalculated ones.
-    QCOMPARE(sRgb.d_func()->toXyz, QColorMatrix::toXyzFromSRgb());
-    QCOMPARE(adobeRgb.d_func()->toXyz, QColorMatrix::toXyzFromAdobeRgb());
-    QCOMPARE(displayP3.d_func()->toXyz, QColorMatrix::toXyzFromDciP3D65());
-    QCOMPARE(proPhotoRgb.d_func()->toXyz, QColorMatrix::toXyzFromProPhotoRgb());
-    QCOMPARE(bt2020.d_func()->toXyz, QColorMatrix::toXyzFromBt2020());
+    QCOMPARE(QColorSpacePrivate::get(sRgb)->toXyz, QColorMatrix::toXyzFromSRgb());
+    QCOMPARE(QColorSpacePrivate::get(adobeRgb)->toXyz, QColorMatrix::toXyzFromAdobeRgb());
+    QCOMPARE(QColorSpacePrivate::get(displayP3)->toXyz, QColorMatrix::toXyzFromDciP3D65());
+    QCOMPARE(QColorSpacePrivate::get(proPhotoRgb)->toXyz, QColorMatrix::toXyzFromProPhotoRgb());
+    QCOMPARE(QColorSpacePrivate::get(bt2020)->toXyz, QColorMatrix::toXyzFromBt2020());
 }
 
 void tst_QColorSpace::primaries2_data()

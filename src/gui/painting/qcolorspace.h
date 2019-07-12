@@ -113,11 +113,9 @@ public:
 
     QColorTransform transformationToColorSpace(const QColorSpace &colorspace) const;
 
-    QColorSpacePrivate *d_func();
-    inline const QColorSpacePrivate *d_func() const { return d_ptr.constData(); }
 
 private:
-    friend class QColorSpacePrivate;
+    Q_DECLARE_PRIVATE(QColorSpace)
     QExplicitlySharedDataPointer<QColorSpacePrivate> d_ptr;
 };
 

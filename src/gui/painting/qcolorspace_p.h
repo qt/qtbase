@@ -95,6 +95,17 @@ public:
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
+    static QColorSpacePrivate *getWritable(QColorSpace &colorSpace)
+    {
+        colorSpace.d_ptr.detach();
+        return colorSpace.d_ptr.data();
+    }
+
+    static const QColorSpacePrivate *get(const QColorSpace &colorSpace)
+    {
+        return colorSpace.d_ptr.data();
+    }
+
     void initialize();
     void setToXyzMatrix();
     void setTransferFunction();
