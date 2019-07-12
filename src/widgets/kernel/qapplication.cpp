@@ -1962,7 +1962,7 @@ bool QApplication::event(QEvent *e)
 */
 
 // ### FIXME: topLevelWindows does not contain QWidgets without a parent
-// until create_sys is called. So we have to override the
+// until QWidgetPrivate::create is called. So we have to override the
 // QGuiApplication::notifyLayoutDirectionChange
 // to do the right thing.
 void QApplicationPrivate::notifyLayoutDirectionChange()

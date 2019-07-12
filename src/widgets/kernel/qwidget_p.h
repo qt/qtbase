@@ -352,7 +352,7 @@ public:
     void update(T t);
 
     void init(QWidget *desktopWidget, Qt::WindowFlags f);
-    void create_sys(WId window, bool initializeWindow, bool destroyOldWindow);
+    void create();
     void createRecursively();
     void createWinId();
 
