@@ -1818,7 +1818,9 @@ endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
 function(add_qt_test name)
-    qt_parse_all_arguments(arg "add_qt_test" "RUN_SERIAL;EXCEPTIONS" "" "${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_test"
+        "RUN_SERIAL;EXCEPTIONS"
+        "" "TESTDATA;${__default_private_args}" ${ARGN})
     set(path "${CMAKE_CURRENT_BINARY_DIR}")
 
     if (${arg_EXCEPTIONS})
@@ -1857,6 +1859,47 @@ function(add_qt_test name)
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
+
+
+    if(ANDROID OR IOS OR WINRT)
+        set(builtin_testdata TRUE)
+    endif()
+
+    if(builtin_testdata)
+        target_compile_definitions("${name}" PRIVATE BUILTIN_TESTDATA)
+
+        foreach(testdata IN LISTS arg_TESTDATA)
+            list(APPEND builtin_files ${testdata})
+        endforeach()
+
+        set(blacklist_path "BLACKLIST")
+        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${blacklist_path}")
+            list(APPEND builtin_files ${blacklist_path})
+        endif()
+
+        list(REMOVE_DUPLICATES builtin_files)
+
+        if (builtin_files)
+            add_qt_resource(${name} "testdata"
+                FILES ${builtin_files}
+                BASE ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
+    else()
+        # Install test data
+        foreach(testdata IN LISTS arg_TESTDATA)
+            set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
+            if (IS_DIRECTORY "${testdata}")
+                qt_copy_or_install(
+                    DIRECTORY "${testdata}"
+                    DESTINATION "${INSTALL_TESTSDIR}/${name}")
+            else()
+                qt_copy_or_install(
+                    FILES "${testdata}"
+                    DESTINATION "${INSTALL_TESTSDIR}/${name}")
+            endif()
+        endforeach()
+    endif()
+
 endfunction()
 
 
@@ -2044,11 +2087,16 @@ function(add_qt_resource target resourceName)
         if (NOT alias)
             set(alias "${file}")
         endif()
+
+        if (NOT IS_ABSOLUTE ${based_file})
+            set(based_file "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}")
+        endif()
+
         ### FIXME: escape file paths to be XML conform
         # <file ...>...</file>
         string(APPEND qrcContents "    <file alias=\"${alias}\">")
-        string(APPEND qrcContents "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}</file>\n")
-        list(APPEND files "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}")
+        string(APPEND qrcContents "${based_file}</file>\n")
+        list(APPEND files "${based_file}")
     endforeach()
 
     # </qresource></RCC>

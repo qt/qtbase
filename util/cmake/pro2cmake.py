@@ -1590,12 +1590,32 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     # Now write out the scopes:
     write_header(cm_fh, name, typename, indent=indent)
 
+    # collect all testdata and insert globbing commands
+    has_test_data = False
+    if typename == 'Test':
+        test_data = scope.expand('TESTDATA')
+        if test_data:
+            has_test_data = True
+            cm_fh.write('# Collect test data\n')
+            for data in test_data:
+                if data.endswith('*'):
+                    cm_fh.write('{}file(GLOB test_data_glob \n{}LIST_DIRECTORIES'
+                            ' true\n{}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}\n{}"{}")\n'\
+                            .format(spaces(indent), spaces(indent + 1), \
+                            spaces(indent + 1), spaces(indent + 1), data))
+                    cm_fh.write('{}list(APPEND test_data ${{test_data_glob}})\n'.format(spaces(indent)))
+                else:
+                    cm_fh.write('{}list(APPEND test_data "{}")\n'.format(spaces(indent), data))
+            cm_fh.write('\n')
+
     cm_fh.write('{}{}({}\n'.format(spaces(indent), cmake_function, name))
     for extra_line in extra_lines:
         cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
 
     write_sources_section(cm_fh, scopes[0], indent=indent, **kwargs)
 
+    if has_test_data:
+        cm_fh.write('{}    TESTDATA ${{test_data}}\n'.format(spaces(indent)))
     # Footer:
     cm_fh.write('{})\n'.format(spaces(indent)))
 
