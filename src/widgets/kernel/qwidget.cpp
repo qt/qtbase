@@ -1190,7 +1190,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea);
     q->setAttribute(Qt::WA_WState_Hidden);
 
-    //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
+    //give potential windows a bigger "pre-initial" size; create() will give them a new size later
     data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,640,480);
     focus_next = focus_prev = q;
 
@@ -1255,27 +1255,19 @@ void QWidgetPrivate::createRecursively()
 /*!
     Creates a new widget window.
 
-    The parameter \a window is ignored in Qt 5. Please use
-    QWindow::fromWinId() to create a QWindow wrapping a foreign
-    window and pass it to QWidget::createWindowContainer() instead.
-
-    Initializes the window (sets the geometry etc.) if \a
-    initializeWindow is true. If \a initializeWindow is false, no
-    initialization is performed. This parameter only makes sense if \a
-    window is a valid window.
-
-    Destroys the old window if \a destroyOldWindow is true. If \a
-    destroyOldWindow is false, you are responsible for destroying the
-    window yourself (using platform native code).
-
-    The QWidget constructor calls create(0,true,true) to create a
-    window for this widget.
+    The parameters \a window, \a initializeWindow, and \a destroyOldWindow
+    are ignored in Qt 5. Please use QWindow::fromWinId() to create a
+    QWindow wrapping a foreign window and pass it to
+    QWidget::createWindowContainer() instead.
 
     \sa createWindowContainer(), QWindow::fromWinId()
 */
 
 void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 {
+    Q_UNUSED(initializeWindow);
+    Q_UNUSED(destroyOldWindow);
+
     Q_D(QWidget);
     if (Q_UNLIKELY(window))
         qWarning("QWidget::create(): Parameter 'window' does not have any effect.");
@@ -1335,7 +1327,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     d->updateIsOpaque();
 
     setAttribute(Qt::WA_WState_Created);                        // set created flag
-    d->create_sys(window, initializeWindow, destroyOldWindow);
+    d->create();
 
     // a real toplevel window needs a backing store
     if (isWindow() && windowType() != Qt::Desktop) {
@@ -1404,13 +1396,9 @@ void q_createNativeChildrenAndSetParent(const QWidget *parentWidget)
 
 }
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
+void QWidgetPrivate::create()
 {
     Q_Q(QWidget);
-
-    Q_UNUSED(window);
-    Q_UNUSED(initializeWindow);
-    Q_UNUSED(destroyOldWindow);
 
     if (!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow())
         return; // we only care about real toplevels
@@ -9384,12 +9372,6 @@ bool QWidget::event(QEvent *event)
         d->renderToTextureReallyDirty = 1;
 #endif
         break;
-    case QEvent::PlatformSurface: {
-        auto surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
-        if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
-            d->setWinId(0);
-        break;
-    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11348,7 +11330,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             // windowModality property and then reshown.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
-            // don't call setModal_sys() before create_sys()
+            // don't call setModal_sys() before create()
             d->setModal_sys();
         }
         break;
