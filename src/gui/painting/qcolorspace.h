@@ -90,10 +90,13 @@ public:
                 TransferFunction fun, float gamma = 0.0f);
     ~QColorSpace();
 
-    QColorSpace(QColorSpace &&colorSpace);
+    QColorSpace(QColorSpace &&colorSpace) noexcept;
     QColorSpace(const QColorSpace &colorSpace);
-    QColorSpace &operator=(QColorSpace &&colorSpace);
+    QColorSpace &operator=(QColorSpace &&colorSpace) noexcept;
     QColorSpace &operator=(const QColorSpace &colorSpace);
+
+    void swap(QColorSpace &colorSpace) noexcept
+    { qSwap(d_ptr, colorSpace.d_ptr); }
 
     ColorSpaceId colorSpaceId() const noexcept;
     Gamut gamut() const noexcept;
@@ -123,6 +126,8 @@ inline bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorS
 {
     return !(colorSpace1 == colorSpace2);
 }
+
+Q_DECLARE_SHARED(QColorSpace)
 
 // QColorSpace stream functions
 #if !defined(QT_NO_DATASTREAM)

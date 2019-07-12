@@ -502,7 +502,7 @@ QColorSpace::~QColorSpace()
 {
 }
 
-QColorSpace::QColorSpace(QColorSpace &&colorSpace)
+QColorSpace::QColorSpace(QColorSpace &&colorSpace) noexcept
         : d_ptr(std::move(colorSpace.d_ptr))
 {
 }
@@ -512,7 +512,7 @@ QColorSpace::QColorSpace(const QColorSpace &colorSpace)
 {
 }
 
-QColorSpace &QColorSpace::operator=(QColorSpace &&colorSpace)
+QColorSpace &QColorSpace::operator=(QColorSpace &&colorSpace) noexcept
 {
     d_ptr = std::move(colorSpace.d_ptr);
     return *this;
@@ -523,6 +523,12 @@ QColorSpace &QColorSpace::operator=(const QColorSpace &colorSpace)
     d_ptr = colorSpace.d_ptr;
     return *this;
 }
+
+/*! \fn void QColorSpace::swap(QColorSpace &other)
+
+    Swaps color space \a other with this color space. This operation is very fast and
+    never fails.
+*/
 
 /*!
     Returns the id of the predefined color space this object
