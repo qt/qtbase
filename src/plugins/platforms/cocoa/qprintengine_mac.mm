@@ -522,16 +522,16 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         if (mode == property(PPK_Duplex).toInt() || !d->m_printDevice->supportedDuplexModes().contains(mode))
             break;
         switch (mode) {
-        case QPrinter::DuplexNone:
+        case QPrint::DuplexNone:
             PMSetDuplex(d->settings(), kPMDuplexNone);
             break;
-        case QPrinter::DuplexAuto:
+        case QPrint::DuplexAuto:
             PMSetDuplex(d->settings(), d->m_pageLayout.orientation() == QPageLayout::Landscape ? kPMDuplexTumble : kPMDuplexNoTumble);
             break;
-        case QPrinter::DuplexLongSide:
+        case QPrint::DuplexLongSide:
             PMSetDuplex(d->settings(), kPMDuplexNoTumble);
             break;
-        case QPrinter::DuplexShortSide:
+        case QPrint::DuplexShortSide:
             PMSetDuplex(d->settings(), kPMDuplexTumble);
             break;
         default:
