@@ -648,7 +648,7 @@ bool QPngHandlerPrivate::readPngHeader()
                 colorSpace = QColorSpace(primaries.whitePoint, primaries.redPoint, primaries.greenPoint, primaries.bluePoint,
                                          QColorSpace::TransferFunction::Gamma, fileGamma);
             } else {
-                colorSpace = QColorSpace(QColorSpace::Gamut::SRgb,
+                colorSpace = QColorSpace(QColorSpace::Primaries::SRgb,
                                          QColorSpace::TransferFunction::Gamma, fileGamma);
             }
             colorSpaceState = GammaChrm;

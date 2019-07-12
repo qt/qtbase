@@ -677,26 +677,26 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
         return false;
 
-    colorspaceDPtr->gamut = QColorSpace::Gamut::Custom;
+    colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
     if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: sRGB gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::SRgb;
+        qCDebug(lcIcc) << "fromIccProfile: sRGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromAdobeRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: Adobe RGB gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::AdobeRgb;
+        qCDebug(lcIcc) << "fromIccProfile: Adobe RGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::AdobeRgb;
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
-        qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::DciP3D65;
+        qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromBt2020()) {
-        qCDebug(lcIcc) << "fromIccProfile: BT.2020 gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::Bt2020;
+        qCDebug(lcIcc) << "fromIccProfile: BT.2020 primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::Bt2020;
     }
     if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::ProPhotoRgb;
+        qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
     }
     // Reset the matrix to our canonical values:
-    if (colorspaceDPtr->gamut != QColorSpace::Gamut::Custom)
+    if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
         colorspaceDPtr->setToXyzMatrix();
 
     // Parse TRC tags

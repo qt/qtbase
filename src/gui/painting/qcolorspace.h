@@ -63,7 +63,7 @@ public:
         Bt2020,
     };
     Q_ENUM(ColorSpaceId)
-    enum class Gamut {
+    enum class Primaries {
         Custom = 0,
         SRgb,
         AdobeRgb,
@@ -71,7 +71,7 @@ public:
         ProPhotoRgb,
         Bt2020,
     };
-    Q_ENUM(Gamut)
+    Q_ENUM(Primaries)
     enum class TransferFunction {
         Custom = 0,
         Linear,
@@ -83,8 +83,8 @@ public:
     Q_ENUM(TransferFunction)
 
     QColorSpace(ColorSpaceId colorSpaceId = Undefined);
-    QColorSpace(Gamut gamut, TransferFunction fun, float gamma = 0.0f);
-    QColorSpace(Gamut gamut, float gamma);
+    QColorSpace(Primaries primaries, TransferFunction fun, float gamma = 0.0f);
+    QColorSpace(Primaries primaries, float gamma);
     QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
                 const QPointF &greenPoint, const QPointF &bluePoint,
                 TransferFunction fun, float gamma = 0.0f);
@@ -99,7 +99,7 @@ public:
     { qSwap(d_ptr, colorSpace.d_ptr); }
 
     ColorSpaceId colorSpaceId() const noexcept;
-    Gamut gamut() const noexcept;
+    Primaries primaries() const noexcept;
     TransferFunction transferFunction() const noexcept;
     float gamma() const noexcept;
 

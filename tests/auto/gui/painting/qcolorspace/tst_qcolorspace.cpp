@@ -36,7 +36,7 @@
 #include <private/qcolorspace_p.h>
 
 Q_DECLARE_METATYPE(QColorSpace::ColorSpaceId)
-Q_DECLARE_METATYPE(QColorSpace::Gamut)
+Q_DECLARE_METATYPE(QColorSpace::Primaries)
 Q_DECLARE_METATYPE(QColorSpace::TransferFunction)
 
 class tst_QColorSpace : public QObject
@@ -61,7 +61,7 @@ private slots:
 
     void loadImage();
 
-    void gamut();
+    void primaries();
     void primariesXyz();
     void primaries2_data();
     void primaries2();
@@ -75,33 +75,33 @@ tst_QColorSpace::tst_QColorSpace()
 void tst_QColorSpace::namedColorSpaces_data()
 {
     QTest::addColumn<QColorSpace::ColorSpaceId>("colorSpaceId");
-    QTest::addColumn<QColorSpace::Gamut>("gamutId");
+    QTest::addColumn<QColorSpace::Primaries>("primariesId");
     QTest::addColumn<QColorSpace::TransferFunction>("transferFunctionId");
 
     QTest::newRow("sRGB") << QColorSpace::SRgb
-                          << QColorSpace::Gamut::SRgb
+                          << QColorSpace::Primaries::SRgb
                           << QColorSpace::TransferFunction::SRgb;
     QTest::newRow("sRGB Linear") << QColorSpace::SRgbLinear
-                                 << QColorSpace::Gamut::SRgb
+                                 << QColorSpace::Primaries::SRgb
                                  << QColorSpace::TransferFunction::Linear;
     QTest::newRow("Adobe RGB") << QColorSpace::AdobeRgb
-                               << QColorSpace::Gamut::AdobeRgb
+                               << QColorSpace::Primaries::AdobeRgb
                                << QColorSpace::TransferFunction::Gamma;
     QTest::newRow("Display-P3") << QColorSpace::DisplayP3
-                                << QColorSpace::Gamut::DciP3D65
+                                << QColorSpace::Primaries::DciP3D65
                                 << QColorSpace::TransferFunction::SRgb;
     QTest::newRow("ProPhoto RGB") << QColorSpace::ProPhotoRgb
-                                  << QColorSpace::Gamut::ProPhotoRgb
+                                  << QColorSpace::Primaries::ProPhotoRgb
                                   << QColorSpace::TransferFunction::ProPhotoRgb;
     QTest::newRow("BT.2020") << QColorSpace::Bt2020
-                             << QColorSpace::Gamut::Bt2020
+                             << QColorSpace::Primaries::Bt2020
                              << QColorSpace::TransferFunction::Bt2020;
 }
 
 void tst_QColorSpace::namedColorSpaces()
 {
     QFETCH(QColorSpace::ColorSpaceId, colorSpaceId);
-    QFETCH(QColorSpace::Gamut, gamutId);
+    QFETCH(QColorSpace::Primaries, primariesId);
     QFETCH(QColorSpace::TransferFunction, transferFunctionId);
 
     QColorSpace colorSpace = colorSpaceId;
@@ -109,7 +109,7 @@ void tst_QColorSpace::namedColorSpaces()
     QVERIFY(colorSpace.isValid());
 
     QCOMPARE(colorSpace.colorSpaceId(), colorSpaceId);
-    QCOMPARE(colorSpace.gamut(), gamutId);
+    QCOMPARE(colorSpace.primaries(), primariesId);
     QCOMPARE(colorSpace.transferFunction(), transferFunctionId);
 }
 
@@ -122,10 +122,10 @@ void tst_QColorSpace::toIccProfile_data()
 void tst_QColorSpace::toIccProfile()
 {
     QFETCH(QColorSpace::ColorSpaceId, colorSpaceId);
-    QFETCH(QColorSpace::Gamut, gamutId);
+    QFETCH(QColorSpace::Primaries, primariesId);
     QFETCH(QColorSpace::TransferFunction, transferFunctionId);
 
-    Q_UNUSED(gamutId);
+    Q_UNUSED(primariesId);
     Q_UNUSED(transferFunctionId);
 
     QColorSpace colorSpace = colorSpaceId;
@@ -280,7 +280,7 @@ void tst_QColorSpace::loadImage()
     QVERIFY(maxBlue2 > maxBlue);
 }
 
-void tst_QColorSpace::gamut()
+void tst_QColorSpace::primaries()
 {
     QColor black = QColor::fromRgbF(0.0, 0.0, 0.0);
     QColor white = QColor::fromRgbF(1.0, 1.0, 1.0);
@@ -331,21 +331,21 @@ void tst_QColorSpace::primariesXyz()
 
 void tst_QColorSpace::primaries2_data()
 {
-    QTest::addColumn<QColorSpace::Gamut>("gamut");
+    QTest::addColumn<QColorSpace::Primaries>("primariesId");
 
-    QTest::newRow("sRGB") << QColorSpace::Gamut::SRgb;
-    QTest::newRow("DCI-P3 (D65)") << QColorSpace::Gamut::DciP3D65;
-    QTest::newRow("Adobe RGB (1998)") << QColorSpace::Gamut::AdobeRgb;
-    QTest::newRow("ProPhoto RGB") << QColorSpace::Gamut::ProPhotoRgb;
-    QTest::newRow("BT.2020") << QColorSpace::Gamut::Bt2020;
+    QTest::newRow("sRGB") << QColorSpace::Primaries::SRgb;
+    QTest::newRow("DCI-P3 (D65)") << QColorSpace::Primaries::DciP3D65;
+    QTest::newRow("Adobe RGB (1998)") << QColorSpace::Primaries::AdobeRgb;
+    QTest::newRow("ProPhoto RGB") << QColorSpace::Primaries::ProPhotoRgb;
+    QTest::newRow("BT.2020") << QColorSpace::Primaries::Bt2020;
 }
 
 void tst_QColorSpace::primaries2()
 {
-    QFETCH(QColorSpace::Gamut, gamut);
-    QColorSpacePrimaries primaries(gamut);
+    QFETCH(QColorSpace::Primaries, primariesId);
+    QColorSpacePrimaries primaries(primariesId);
 
-    QColorSpace original(gamut,  QColorSpace::TransferFunction::Linear);
+    QColorSpace original(primariesId,  QColorSpace::TransferFunction::Linear);
     QColorSpace custom1(primaries.whitePoint, primaries.redPoint,
                         primaries.greenPoint, primaries.bluePoint, QColorSpace::TransferFunction::Linear);
     QCOMPARE(original, custom1);

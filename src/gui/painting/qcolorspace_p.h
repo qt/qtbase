@@ -66,7 +66,7 @@ class Q_GUI_EXPORT QColorSpacePrimaries
 {
 public:
    QColorSpacePrimaries() = default;
-   QColorSpacePrimaries(QColorSpace::Gamut gamut);
+   QColorSpacePrimaries(QColorSpace::Primaries primaries);
    QColorSpacePrimaries(QPointF whitePoint,
                         QPointF redPoint,
                         QPointF greenPoint,
@@ -91,7 +91,7 @@ class QColorSpacePrivate : public QSharedData
 public:
     QColorSpacePrivate();
     QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId);
-    QColorSpacePrivate(QColorSpace::Gamut gamut, QColorSpace::TransferFunction fun, float gamma);
+    QColorSpacePrivate(QColorSpace::Primaries primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
@@ -113,7 +113,7 @@ public:
     QColorTransform transformationToColorSpace(const QColorSpacePrivate *out) const;
 
     QColorSpace::ColorSpaceId id;
-    QColorSpace::Gamut gamut;
+    QColorSpace::Primaries primaries;
     QColorSpace::TransferFunction transferFunction;
     float gamma;
     QColorVector whitePoint;
