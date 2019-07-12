@@ -73,8 +73,6 @@ public:
         return *this;
     }
 
-    bool isNull() const { return d_ptr.isNull(); }
-
     QRgb map(const QRgb &argb) const;
     QRgba64 map(const QRgba64 &rgba64) const;
     QColor map(const QColor &color) const;
