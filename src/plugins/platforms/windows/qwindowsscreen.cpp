@@ -303,23 +303,28 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
         m_data.hMonitor = newData.hMonitor;
     }
 
-    if (m_data.geometry != newData.geometry || m_data.availableGeometry != newData.availableGeometry) {
-        m_data.geometry = newData.geometry;
-        m_data.availableGeometry = newData.availableGeometry;
-        QWindowSystemInterface::handleScreenGeometryChange(screen(),
-                                                           newData.geometry, newData.availableGeometry);
-    }
-    if (!qFuzzyCompare(m_data.dpi.first, newData.dpi.first)
-        || !qFuzzyCompare(m_data.dpi.second, newData.dpi.second)) {
-        m_data.dpi = newData.dpi;
+    // QGuiApplicationPrivate::processScreenGeometryChange() checks and emits
+    // DPI and orientation as well, so, assign new values and emit DPI first.
+    const bool geometryChanged = m_data.geometry != newData.geometry
+        || m_data.availableGeometry != newData.availableGeometry;
+    const bool dpiChanged = !qFuzzyCompare(m_data.dpi.first, newData.dpi.first)
+        || !qFuzzyCompare(m_data.dpi.second, newData.dpi.second);
+    const bool orientationChanged = m_data.orientation != newData.orientation;
+    m_data.dpi = newData.dpi;
+    m_data.orientation = newData.orientation;
+    m_data.geometry = newData.geometry;
+    m_data.availableGeometry = newData.availableGeometry;
+
+    if (dpiChanged) {
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(),
                                                                      newData.dpi.first,
                                                                      newData.dpi.second);
     }
-    if (m_data.orientation != newData.orientation) {
-        m_data.orientation = newData.orientation;
-        QWindowSystemInterface::handleScreenOrientationChange(screen(),
-                                                              newData.orientation);
+    if (orientationChanged)
+       QWindowSystemInterface::handleScreenOrientationChange(screen(), newData.orientation);
+    if (geometryChanged) {
+        QWindowSystemInterface::handleScreenGeometryChange(screen(),
+                                                           newData.geometry, newData.availableGeometry);
     }
 }
 
