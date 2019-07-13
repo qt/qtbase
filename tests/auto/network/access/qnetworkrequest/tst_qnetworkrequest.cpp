@@ -41,6 +41,7 @@ class tst_QNetworkRequest: public QObject
 private slots:
     void ctor_data();
     void ctor();
+    void implicitDefaultCtor();
     void setUrl_data();
     void setUrl();
     void setRawHeader_data();
@@ -76,6 +77,12 @@ void tst_QNetworkRequest::ctor()
         QNetworkRequest request(url);
         QCOMPARE(request.url(), url);
     }
+}
+
+void tst_QNetworkRequest::implicitDefaultCtor()
+{
+    QNetworkRequest r = {};
+    Q_UNUSED(r);
 }
 
 void tst_QNetworkRequest::setUrl_data()

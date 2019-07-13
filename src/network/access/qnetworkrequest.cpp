@@ -468,13 +468,24 @@ public:
 };
 
 /*!
+    Constructs a QNetworkRequest object with no URL to be requested.
+    Use setUrl() to set one.
+
+    \sa url(), setUrl()
+*/
+QNetworkRequest::QNetworkRequest()
+    : d(new QNetworkRequestPrivate)
+{
+}
+
+/*!
     Constructs a QNetworkRequest object with \a url as the URL to be
     requested.
 
     \sa url(), setUrl()
 */
 QNetworkRequest::QNetworkRequest(const QUrl &url)
-    : d(new QNetworkRequestPrivate)
+    : QNetworkRequest()
 {
     d->url = url;
 }
