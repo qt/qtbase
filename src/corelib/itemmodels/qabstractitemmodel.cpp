@@ -532,21 +532,16 @@ void QAbstractItemModelPrivate::invalidatePersistentIndex(const QModelIndex &ind
     }
 }
 
-namespace {
-    struct DefaultRoleNames : public QHash<int, QByteArray>
+using DefaultRoleNames = QHash<int, QByteArray>;
+Q_GLOBAL_STATIC_WITH_ARGS(DefaultRoleNames, qDefaultRoleNames, (
     {
-        DefaultRoleNames() {
-            (*this)[Qt::DisplayRole] = "display";
-            (*this)[Qt::DecorationRole] = "decoration";
-            (*this)[Qt::EditRole] = "edit";
-            (*this)[Qt::ToolTipRole] = "toolTip";
-            (*this)[Qt::StatusTipRole] = "statusTip";
-            (*this)[Qt::WhatsThisRole] = "whatsThis";
-        }
-    };
-}
-
-Q_GLOBAL_STATIC(DefaultRoleNames, qDefaultRoleNames)
+        { Qt::DisplayRole,    "display"    },
+        { Qt::DecorationRole, "decoration" },
+        { Qt::EditRole,       "edit"       },
+        { Qt::ToolTipRole,    "toolTip"    },
+        { Qt::StatusTipRole,  "statusTip"  },
+        { Qt::WhatsThisRole,  "whatsThis"  },
+    }))
 
 const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 {
