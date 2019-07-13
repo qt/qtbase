@@ -681,7 +681,7 @@ void QWasmCompositor::frame()
 
     QWasmWindow *someWindow = nullptr;
 
-    foreach (QWasmWindow *window, m_windowStack) {
+    for (QWasmWindow *window : qAsConst(m_windowStack)) {
         if (window->window()->surfaceClass() == QSurface::Window
                 && qt_window_private(static_cast<QWindow *>(window->window()))->receivedExpose) {
             someWindow = window;
@@ -715,7 +715,7 @@ void QWasmCompositor::frame()
     m_blitter->bind();
     m_blitter->setRedBlueSwizzle(true);
 
-    foreach (QWasmWindow *window, m_windowStack) {
+    for (QWasmWindow *window : qAsConst(m_windowStack)) {
         QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
 
         if (!compositedWindow.visible)

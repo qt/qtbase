@@ -7,6 +7,8 @@ QT += \
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
 
+DEFINES += QT_NO_FOREACH
+
 SOURCES = \
     main.cpp \
     qwasmintegration.cpp \
